@@ -76,7 +76,7 @@ export function DisciplinePage() {
   return (
     <div className="page">
       <PageHead title={disc.name} eyebrow="Discipline" fallback="/entrainer" />
-      <div className="disc-card banner" style={{ pointerEvents: 'none' }} aria-hidden>
+      <div className="disc-card dark-scope banner" style={{ pointerEvents: 'none' }} aria-hidden>
         <img src={DISCIPLINE_IMG[disc.id]} alt="" onError={(e) => (e.currentTarget.style.display = 'none')} />
         <span className="bar" />
         <span className="name" style={{ fontSize: '1.1rem' }}>

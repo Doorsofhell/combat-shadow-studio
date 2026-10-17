@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { idbStorage } from './storage';
+import { readSavedTheme, type ThemePref } from '../ui/theme/theme';
 
 export type CueId = 'trajectoire' | 'hanches' | 'pivot' | 'articulations' | 'pieds' | 'garde' | 'comparaison';
 
@@ -15,6 +16,8 @@ export const CUE_LABEL: Record<CueId, string> = {
 };
 
 export interface Settings {
+  /** menu theme; the training studio stays white */
+  theme: ThemePref;
   voiceVolume: number;
   effectsVolume: number;
   voice: boolean;
@@ -36,6 +39,7 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
+  theme: 'auto',
   voiceVolume: 1,
   effectsVolume: 0.8,
   voice: true,
@@ -60,14 +64,15 @@ interface SettingsState {
 export const useSettings = create<SettingsState>()(
   persist(
     (setState) => ({
-      settings: DEFAULT_SETTINGS,
+      // the theme saved for the first paint is the starting value until the store is loaded
+      settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme() },
       set: (p) => setState((s) => ({ settings: { ...s.settings, ...p } })),
     }),
     {
       name: 'css-settings',
       storage: createJSONStorage(() => idbStorage),
       // settings saved by an older version get the new fields with their default value
-      merge: (saved, current) => ({ ...current, settings: { ...DEFAULT_SETTINGS, ...((saved as { settings?: Partial<Settings> })?.settings ?? {}) } }),
+      merge: (saved, current) => ({ ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...((saved as { settings?: Partial<Settings> })?.settings ?? {}) } }),
     },
   ),
 );

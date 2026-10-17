@@ -158,7 +158,7 @@
 
 .cai-form .btn.icon.send {
   background: var(--red);
-  color: #fff;
+  color: var(--on-red);
   border-color: transparent;
 }
 

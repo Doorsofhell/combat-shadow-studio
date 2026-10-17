@@ -26,12 +26,12 @@ export function DisciplineCard({ id, level, to, onClick, selected, testId, tall 
   const style = tall ? { minHeight: 240 } : undefined;
   if (to)
     return (
-      <Link to={to} className={`disc-card ${selected ? 'on' : ''}`} data-testid={testId} style={style}>
+      <Link to={to} className={`disc-card dark-scope ${selected ? 'on' : ''}`} data-testid={testId} style={style}>
         {inner}
       </Link>
     );
   return (
-    <button type="button" className={`disc-card ${selected ? 'on' : ''}`} onClick={onClick} data-testid={testId} aria-pressed={selected} style={style}>
+    <button type="button" className={`disc-card dark-scope ${selected ? 'on' : ''}`} onClick={onClick} data-testid={testId} aria-pressed={selected} style={style}>
       {inner}
     </button>
   );

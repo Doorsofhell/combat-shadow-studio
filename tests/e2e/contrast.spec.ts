@@ -116,9 +116,24 @@ async function audit(page: Page, label: string) {
     if (skip.includes(n.any[0]?.data?.messageKey)) continue;
     const sel = n.target.join(' ');
     if (typeof n.target[0] !== 'string') continue;
-    if (await page.locator(sel).first().evaluate((e) => !!e.closest('[aria-hidden="true"]')).catch(() => true)) continue;
     const m = await measureRendered(page, sel);
     if (m && m.ratio < m.need) bad.push(`${label} ${sel} — rendu ${m.ratio.toFixed(2)}:1 < ${m.need}:1 (${n.any[0]?.data?.messageKey})`);
+  }
+  // axe skips aria-hidden content, but text that is visible must be readable all the same
+  const hidden = await page.evaluate(() => {
+    const out: string[] = [];
+    document.querySelectorAll('[aria-hidden="true"] *').forEach((el, i) => {
+      const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim());
+      const b = el.getBoundingClientRect();
+      if (!own || b.width < 2 || b.height < 2 || getComputedStyle(el).visibility === 'hidden' || +getComputedStyle(el).opacity === 0) return;
+      el.setAttribute('data-cr-hidden', String(i));
+      out.push(`[data-cr-hidden="${i}"]`);
+    });
+    return out;
+  });
+  for (const sel of hidden) {
+    const m = await measureRendered(page, sel);
+    if (m && m.ratio < m.need) bad.push(`${label} ${sel} (masqué aux lecteurs d’écran mais visible) — rendu ${m.ratio.toFixed(2)}:1 < ${m.need}:1`);
   }
   return bad;
 }

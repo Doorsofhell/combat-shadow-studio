@@ -8,6 +8,8 @@ chaque lot, point de restauration, rapport (TEST RÉUSSI / ÉCHOUÉ / NON EXÉCU
 | Nom | Commit | Contenu |
 | --- | --- | --- |
 | `restauration/ref-2026-10-17-v2` (branche GitHub) | `85dcebf` | V2 web publiée : état de référence avant les corrections UI/UX, thèmes et créateur 3D |
+| `restauration/lot-1` | v0.4.0 | Lisibilité des textes (WCAG AA) |
+| `restauration/lot-2` | v0.5.0 | Thèmes clair, sombre et automatique |
 
 Les étiquettes Git (tags) ne passent pas par le proxy de l’environnement : chaque point de restauration est donc une
 branche `restauration/...` sur GitHub. Retour arrière : `git checkout restauration/<nom>`.
@@ -35,7 +37,6 @@ Captures de référence : `/mnt/project-files/combat-shadow-studio/reference/<da
 - Réalité augmentée : jamais testée sur un appareil réel.
 - Comptes Firebase et synchronisation : testés sur émulateurs, masqués sans projet configuré.
 - Voix : dépend des voix installées ; saisie vocale uniquement en ligne et sur option.
-- Thème : menus sombres fixes, studio d’entraînement blanc ; pas de mode clair ni automatique.
 
 ### Non implémenté
 
@@ -61,9 +62,9 @@ Captures de référence : `/mnt/project-files/combat-shadow-studio/reference/<da
 | Sauvegarde | Personnages conservés après redémarrage | `coach-studio.spec`, `migration*.test` | – |
 | Animations | Aucun mouvement détérioré | `engine.test`, `camera.test` (toutes techniques, deux coachs, deux gardes) | rendus Lab |
 | Équipements | Positionnement correct | `customize.test` (zones, gants) | rendus par discipline |
-| Mode clair | Tous les écrans lisibles | à créer (contraste axe-core) | captures mode clair |
-| Mode sombre | Tous les écrans lisibles | à créer (contraste axe-core) | captures mode sombre |
-| Mode automatique | Suit le système | à créer (`emulateMedia`) | – |
+| Mode clair | Tous les écrans lisibles | `contrast.spec` (17 écrans, système clair), `theme.spec` | captures mode clair |
+| Mode sombre | Tous les écrans lisibles | `contrast.spec` (17 écrans, système sombre, états), `theme.spec` | captures mode sombre |
+| Mode automatique | Suit le système en direct, choix manuel prioritaire, pas de flash | `theme.spec`, `theme.test` | – |
 | Consignes | Toujours visibles pendant l’entraînement | `training-layout.spec` | captures entraînement |
 | Points clés | Visibles et lisibles | `training-layout.spec` | captures entraînement |
 | Commandes | Aucun bouton inaccessible | `training-layout.spec`, `app.spec` | – |

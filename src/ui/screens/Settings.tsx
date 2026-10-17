@@ -71,6 +71,21 @@ export function SettingsPage() {
     <div className="page">
       <PageHead title="Réglages" />
 
+      <Panel title="Apparence" id="p-apparence">
+        <PanelRow label="Thème des menus" hint="Automatique suit le réglage clair ou sombre de ton téléphone. Le studio d’entraînement reste blanc." column>
+          <Segmented
+            label="Thème des menus"
+            value={settings.theme}
+            onChange={(v) => set({ theme: v })}
+            options={[
+              { id: 'clair', label: 'Clair' },
+              { id: 'sombre', label: 'Sombre' },
+              { id: 'auto', label: 'Automatique' },
+            ]}
+          />
+        </PanelRow>
+      </Panel>
+
       <Panel title="Profil" id="p-profil">
         <LinkRow to="/profil" icon={<IconUser className="muted" />} label="Mon profil et mon compte" hint="Informations, profil sportif, export et suppression de tes données" />
         <LinkRow to="/combattant" icon={<IconFighter className="muted" />} label={fighter?.name ?? defaultFighterName(profile.coach)} hint="Personnaliser ton combattant" />

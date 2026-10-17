@@ -17,7 +17,7 @@
   position: relative;
   flex: 0 0 auto;
   height: clamp(200px, 38dvh, 560px);
-  background: radial-gradient(ellipse at 50% 38%, #2a2d38 0%, #16171d 55%, #101116 100%);
+  background: var(--scene);
   overflow: hidden;
 }
 
@@ -46,7 +46,7 @@
   min-height: var(--tap);
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: rgba(16, 17, 22, 0.86);
+  background: var(--overlay);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   color: var(--ink);
@@ -104,7 +104,7 @@
   top: 10px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(16, 17, 22, 0.72);
+  background: var(--overlay);
   color: var(--muted);
   font-size: 0.78rem;
   pointer-events: none;
@@ -437,7 +437,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.18);
+  border: 2px solid var(--line-strong);
 }
 
 .cs-badge {
@@ -496,7 +496,7 @@
   width: 48px;
   height: 48px;
   border-radius: 10px;
-  background: #2b2f3a;
+  background: var(--surface-2);
   display: grid;
   place-items: center;
   overflow: hidden;

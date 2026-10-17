@@ -11,6 +11,8 @@ import { Home } from './screens/Home';
 import { Onboarding } from './screens/Onboarding';
 import { CoachSelect } from './screens/CoachSelect';
 import { initAccount } from '../account/session';
+import { STUDIO_BG, THEME_BG, applyTheme } from './theme/theme';
+import { useResolvedTheme } from './theme/useTheme';
 
 /** kept for the screens that import it from here */
 export { PageHead } from './components/PageHead';
@@ -66,20 +68,23 @@ function DisplaySync() {
 
 const isTraining = (p: string) => p.startsWith('/entrainement');
 
-/** status bar / browser chrome colour: dark menus, white training studio */
+/** menu theme (light, dark, automatic) and status bar colour; the training studio stays white */
 function ThemeColor() {
   const loc = useLocation();
+  const pref = useSettings((x) => x.settings.theme);
+  const resolved = useResolvedTheme();
   useEffect(() => {
-    const c = isTraining(loc.pathname) ? '#ffffff' : '#101116';
+    const t = applyTheme(pref);
+    const studio = isTraining(loc.pathname);
     let m = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
     if (!m) {
       m = document.createElement('meta');
       m.name = 'theme-color';
       document.head.appendChild(m);
     }
-    m.content = c;
-    document.documentElement.style.colorScheme = isTraining(loc.pathname) ? 'light' : 'dark';
-  }, [loc.pathname]);
+    m.content = studio ? STUDIO_BG : THEME_BG[t];
+    document.documentElement.style.colorScheme = studio ? 'light' : t;
+  }, [loc.pathname, pref, resolved]);
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [loc.pathname]);
