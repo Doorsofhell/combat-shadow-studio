@@ -12,6 +12,7 @@ chaque lot, point de restauration, rapport (TEST RÉUSSI / ÉCHOUÉ / NON EXÉCU
 | `restauration/lot-2` | v0.5.0 | Thèmes clair, sombre et automatique |
 | `restauration/lot-3` | v0.6.0 | Postures de la génération aléatoire |
 | `restauration/lot-4a` | v0.7.0 | Caméra 3/4 par rapport au buste, cadrage serré, limites articulaires |
+| `restauration/lot-4c` | v0.9.0 | Commandes hiérarchisées, zone Caméra regroupée (angle, rotation, zoom, recentrer), progression |
 | `restauration/lot-4b` | v0.8.0 | Consigne principale et 3 à 5 points clés par technique, point de la phase en cours mis en évidence |
 
 Les étiquettes Git (tags) ne passent pas par le proxy de l’environnement : chaque point de restauration est donc une
@@ -72,6 +73,7 @@ Captures de référence : `/mnt/project-files/combat-shadow-studio/reference/<da
 | Sauvegarde | Personnages conservés après redémarrage | `coach-studio.spec`, `migration*.test` | – |
 | Animations | Aucun mouvement détérioré, aucune articulation au-delà de son amplitude | `engine.test` (dont biomécanique : coudes ≤ 150°, genoux ≤ 155°), `camera.test` (toutes techniques, deux coachs, deux gardes) | rendus Lab |
 | Consignes | Une consigne et 3 à 5 points clés (appuis, bassin, membres, garde) par technique, valables dans les deux gardes | `instructions.test` (64 techniques, Jab mot pour mot, phases), `engine.test` (phase jouée) | captures entraînement |
+| Commandes et zone Caméra | Lecture, précédent, suivant, coach ; Décomposer, Comment faire, Ralenti ; zone Caméra sans masquer le coach | `training-layout.spec` (zone Caméra sur 5 tailles, consigne, ralenti, ligne de temps) | captures entraînement |
 | Caméra et cadrage | Angle 3/4 du buste, corps entier jamais coupé, coach grand | `camera.test` (cadre, remplissage, Jab 3/4 dans chaque discipline) | captures entraînement |
 | Équipements | Positionnement correct | `customize.test` (zones, gants) | rendus par discipline |
 | Mode clair | Tous les écrans lisibles | `contrast.spec` (17 écrans, système clair), `theme.spec` | captures mode clair |

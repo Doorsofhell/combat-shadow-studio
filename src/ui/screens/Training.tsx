@@ -22,7 +22,7 @@ import type { StageView } from '../../three/StudioStage';
 import { StudyPanel, useStudy } from '../training/Study';
 import { ArBridge } from '../../ar/ArBridge';
 import { ArControls, ArIntroSheet, useArView } from '../training/ArMode';
-import { IconAr, IconBack, IconCamera, IconChat, IconExpand, IconInfo, IconLayers, IconNext, IconPause, IconPlay, IconPrev, IconRestart, IconSliders } from '../icons';
+import { IconAr, IconBack, IconCamera, IconChat, IconClock, IconClose, IconExpand, IconInfo, IconLayers, IconMinus, IconNext, IconPlus, IconPause, IconPlay, IconPrev, IconRestart, IconRotateLeft, IconRotateRight, IconSliders, IconTarget } from '../icons';
 
 export function Training() {
   const [q] = useSearchParams();
@@ -86,6 +86,10 @@ function TrainingView({ plan }: { plan: Plan }) {
   const [camMode, setCamMode] = useState<CameraMode>(settings.cameraMode ?? 'auto');
   const [closeUp, setCloseUp] = useState(false);
   const [studyRot, setStudyRot] = useState(0);
+  // « Caméra » zone: manual turn around the coach and zoom, on top of the chosen angle
+  const [camOpen, setCamOpen] = useState(false);
+  const [camRot, setCamRot] = useState(0);
+  const [camZoom, setCamZoom] = useState(1);
   const [immersive, setImmersive] = useState(false);
   const [sheet, setSheet] = useState(false);
   const [guideId, setGuideId] = useState<string | null>(null);
@@ -133,6 +137,7 @@ function TrainingView({ plan }: { plan: Plan }) {
   else stageView = { az: stageAzimuth(teach, item.discipline, southpaw), el: teach.el, zoom: teach.zoom, focus: teach.focus, closeUp: false };
   if (closeUp && teach.closeUp && !free) stageView = { ...stageView, zoom: teach.closeUp.zoom, focus: teach.closeUp.focus, closeUp: true };
   if (st.tech && studyRot && !free) stageView = { ...stageView, az: stageView.az + studyRot };
+  if (!free && (camRot || camZoom !== 1)) stageView = { ...stageView, az: stageView.az + camRot, zoom: stageView.zoom * camZoom };
   if (!free) lastView.current = stageView;
   // a temporary close-up always returns to the whole body
   useEffect(() => {
@@ -169,9 +174,23 @@ function TrainingView({ plan }: { plan: Plan }) {
       nav(`/entrainement?cat=${encodeURIComponent(a.comboId)}&mode=technique`);
     }
   };
-  const cycleCam = () => {
-    const i = CAMERA_MODES.findIndex((c) => c.id === camMode);
-    setCamMode(CAMERA_MODES[(i + 1) % CAMERA_MODES.length].id);
+  const ANGLES = CAMERA_MODES.filter((c) => c.id !== 'auto');
+  const stepAngle = (d: 1 | -1) => {
+    // from « Auto », the arrows start at the first or the last angle
+    const i = ANGLES.findIndex((c) => c.id === camMode);
+    const j = i < 0 ? (d > 0 ? 0 : ANGLES.length - 1) : (i + d + ANGLES.length) % ANGLES.length;
+    setCamMode(ANGLES[j].id);
+  };
+  const turnCam = (deg: number) => {
+    if (free) setCamMode('auto');
+    setCamRot((r) => ((r + deg + 540) % 360) - 180);
+  };
+  const zoomCam = (f: number) => setCamZoom((z) => Math.round(Math.min(1.8, Math.max(0.7, z * f)) * 100) / 100);
+  const resetCam = () => {
+    setCamMode('auto');
+    setCamRot(0);
+    setCamZoom(1);
+    setCloseUp(false);
   };
   const camLabel = CAMERA_MODES.find((c) => c.id === camMode)?.label ?? 'Auto';
 
@@ -233,7 +252,11 @@ function TrainingView({ plan }: { plan: Plan }) {
       ? livePhase.phase
       : null;
   const points = (view.phase === 'termine' ? [] : instr?.points ?? []).map((pt, i) => ({ id: `${focusId}#${i}`, ...pt, now: !!pt.phase && pt.phase === phaseNow }));
-  const stepSpeed = (d: number) => setSpeed(Math.round(Math.min(1.5, Math.max(0.25, view.speed + d)) * 100) / 100);
+  const SLOW = 0.25;
+  const slow = view.speed <= SLOW + 1e-3 && item.speed > SLOW;
+  // progression of the session: rounds of timed work, else exercises of the plan
+  const itemFrac = item.work && view.remaining !== null && view.phase === 'travail' ? Math.min(1, ((view.round - 1) * item.work + (item.work - view.remaining)) / (item.rounds * item.work)) : view.phase === 'termine' ? 1 : 0;
+  const progress = plan.items.length > 1 || item.work ? Math.min(1, (view.itemIndex + itemFrac) / plan.items.length) : null;
 
   // if the text is enlarged so much that everything cannot fit, switch to an explicit scrolling layout
   const [overflow, setOverflow] = useState(false);
@@ -303,7 +326,7 @@ function TrainingView({ plan }: { plan: Plan }) {
         </div>
         {view.phase === 'decompte' && !view.paused && !st.tech && view.remaining !== null && view.remaining <= 3.05 && <div className="countdown">{Math.max(1, Math.ceil(view.remaining))}</div>}
         <div className="stage-tools">
-          <button className="btn cam-btn" onClick={cycleCam} aria-label={`Angle de caméra : ${camLabel}. Toucher pour changer`} data-testid="cam-mode">
+          <button className={`btn cam-btn ${camOpen ? 'on' : ''}`} onClick={() => setCamOpen(!camOpen)} aria-label={`Caméra : ${camLabel}. Ouvrir les réglages de caméra`} aria-expanded={camOpen} data-testid="cam-mode">
             <IconCamera />
             <span>{camLabel}</span>
           </button>
@@ -319,20 +342,12 @@ function TrainingView({ plan }: { plan: Plan }) {
               else if (document.fullscreenElement) void document.exitFullscreen();
               setImmersive(!immersive);
             }}
-            aria-label="Mode immersif : masquer les commandes secondaires"
+            aria-label="Plein écran : masquer les commandes secondaires"
             aria-pressed={immersive}
+            data-testid="fullscreen"
           >
             <IconExpand />
           </button>
-          <div className="speed-step" role="group" aria-label="Vitesse d’exécution">
-            <button className="btn icon" onClick={() => stepSpeed(0.05)} aria-label="Accélérer">
-              +
-            </button>
-            <b aria-live="polite" data-testid="speed">×{view.speed.toFixed(2)}</b>
-            <button className="btn icon" onClick={() => stepSpeed(-0.05)} aria-label="Ralentir">
-              −
-            </button>
-          </div>
         </div>
         {item.soloNote && !immersive && !asking && <div className="solo-note">{item.soloNote}</div>}
         {asking && (
@@ -381,7 +396,7 @@ function TrainingView({ plan }: { plan: Plan }) {
           </ul>
         )}
         {!st.tech && (
-          <div className="tr-meta">
+          <div className="tr-meta" data-testid="timer-row">
             <span>
               Séance <b data-testid="session-time">{clock(view.sessionSec, false)}</b>
             </span>
@@ -389,13 +404,23 @@ function TrainingView({ plan }: { plan: Plan }) {
               Cumul <b data-testid="exercise-time">{formatDuration(view.exerciseSec)}</b>
             </span>
             <span>
-              <b>{view.reps}</b> rép.
+              <b data-testid="reps">{view.reps}</b> rép.
             </span>
             {item.work ? (
               <span>
                 Round <b>{view.round}</b>/{item.rounds}
               </span>
             ) : null}
+            {plan.items.length > 1 && (
+              <span>
+                Exercice <b>{view.itemIndex + 1}</b>/{plan.items.length}
+              </span>
+            )}
+            {progress !== null && (
+              <span className="tr-progress" role="progressbar" aria-label="Progression de la séance" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} data-testid="progress">
+                <i style={{ width: `${Math.round(progress * 100)}%` }} />
+              </span>
+            )}
           </div>
         )}
       </section>
@@ -413,36 +438,79 @@ function TrainingView({ plan }: { plan: Plan }) {
           />
         ) : (
           <>
-            <div className="tr-secondary">
-              <button className="btn sm" data-testid="decompose" aria-label="Décomposer le mouvement" onClick={() => openStudy(curId ?? seq[0])}>
-                <IconLayers width={18} />
-                <span className="sec-label">Décomposer</span>
-              </button>
-              <button
-                className="btn sm"
-                data-testid="how-to"
-                aria-label="Comment faire ?"
-                onClick={() => {
-                  pause();
-                  setGuideId(curId ?? seq[0]);
-                }}
-              >
-                <IconInfo width={18} />
-                <span className="sec-label">Comment faire ?</span>
-              </button>
-              {coachAiOn && (
-                <button className={`btn sm ${asking ? 'on' : ''}`} data-testid="ask-coach" aria-label="Demander au coach" aria-pressed={asking} onClick={() => (asking ? setAsking(false) : askCoach())}>
-                  <IconChat width={18} />
-                  <span className="sec-label">Demander au coach</span>
+            {camOpen ? (
+              <div className="tr-camera" role="group" aria-label="Caméra" data-testid="camera-panel">
+                <div className="cam-row">
+                  <button className={`btn sm ${camMode === 'auto' ? 'on' : ''}`} aria-pressed={camMode === 'auto'} onClick={() => setCamMode('auto')} data-testid="cam-auto">
+                    Auto
+                  </button>
+                  <div className="cam-angle">
+                    <button className="btn icon sm" onClick={() => stepAngle(-1)} aria-label="Angle précédent">
+                      <IconPrev width={18} />
+                    </button>
+                    <span aria-live="polite" data-testid="cam-angle">
+                      {camMode === 'auto' ? 'Angle conseillé' : camLabel}
+                    </span>
+                    <button className="btn icon sm" onClick={() => stepAngle(1)} aria-label="Angle suivant" data-testid="cam-next">
+                      <IconNext width={18} />
+                    </button>
+                  </div>
+                </div>
+                <div className="cam-row">
+                  <button className="btn icon sm" onClick={() => turnCam(-30)} aria-label="Tourner la caméra vers la gauche" data-testid="cam-left">
+                    <IconRotateLeft width={20} />
+                  </button>
+                  <button className="btn icon sm" onClick={() => turnCam(30)} aria-label="Tourner la caméra vers la droite" data-testid="cam-right">
+                    <IconRotateRight width={20} />
+                  </button>
+                  <button className="btn icon sm" onClick={() => zoomCam(1 / 1.15)} disabled={camZoom <= 0.7} aria-label="Dézoomer" data-testid="zoom-out">
+                    <IconMinus width={20} />
+                  </button>
+                  <button className="btn icon sm" onClick={() => zoomCam(1.15)} disabled={camZoom >= 1.8} aria-label="Zoomer" data-testid="zoom-in">
+                    <IconPlus width={20} />
+                  </button>
+                  <button className="btn sm" onClick={resetCam} aria-label="Recentrer la caméra" data-testid="cam-reset">
+                    <IconTarget width={18} />
+                    <span className="cam-reset-label">Recentrer</span>
+                  </button>
+                  <button className="btn icon sm" onClick={() => setCamOpen(false)} aria-label="Fermer les réglages de caméra" data-testid="cam-close">
+                    <IconClose width={20} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="tr-secondary">
+                <button className="btn sm" data-testid="decompose" aria-label="Décomposer le mouvement" onClick={() => openStudy(curId ?? seq[0])}>
+                  <IconLayers width={18} />
+                  <span className="sec-label">Décomposer</span>
                 </button>
-              )}
-            </div>
-            <div className="controls">
+                <button
+                  className="btn sm"
+                  data-testid="how-to"
+                  aria-label="Comment faire ?"
+                  onClick={() => {
+                    pause();
+                    setGuideId(curId ?? seq[0]);
+                  }}
+                >
+                  <IconInfo width={18} />
+                  <span className="sec-label">Comment faire ?</span>
+                </button>
+                <button className={`btn sm ${slow ? 'on' : ''}`} data-testid="slow" aria-label="Ralenti" aria-pressed={slow} onClick={() => setSpeed(slow ? item.speed : SLOW)}>
+                  <IconClock width={18} />
+                  <span className="sec-label">Ralenti</span>
+                </button>
+                <button className="btn sm icon-only" onClick={() => setSheet(true)} aria-label="Paramètres" data-testid="options">
+                  <IconSliders width={18} />
+                </button>
+              </div>
+            )}
+            <div className={`controls ${coachAiOn ? 'with-coach' : ''}`}>
+              <button className="btn icon ghost" onClick={restart} aria-label="Recommencer">
+                <IconRestart width={20} />
+              </button>
               <button className="btn icon" onClick={() => goto(view.itemIndex - 1)} disabled={view.itemIndex === 0} aria-label="Exercice précédent">
                 <IconPrev />
-              </button>
-              <button className="btn icon" onClick={restart} aria-label="Recommencer">
-                <IconRestart />
               </button>
               {!running ? (
                 <button className="btn primary main" onClick={start} data-testid="start">
@@ -460,9 +528,12 @@ function TrainingView({ plan }: { plan: Plan }) {
               <button className="btn icon" onClick={() => goto(view.itemIndex + 1)} disabled={view.itemIndex >= plan.items.length - 1} aria-label="Exercice suivant">
                 <IconNext />
               </button>
-              <button className="btn icon" onClick={() => setSheet(true)} aria-label="Options">
-                <IconSliders />
-              </button>
+              {coachAiOn && (
+                <button className={`btn coach-btn ${asking ? 'on' : ''}`} data-testid="ask-coach" aria-label="Demander au coach" aria-pressed={asking} onClick={() => (asking ? setAsking(false) : askCoach())}>
+                  <IconChat width={20} />
+                  <span>Coach</span>
+                </button>
+              )}
             </div>
           </>
         )}
@@ -580,6 +651,13 @@ function TrainingView({ plan }: { plan: Plan }) {
               </div>
               {camMode === 'auto' && <p className="cam-why">{teach.why}</p>}
               <p className="small muted">Glisse le doigt sur le coach pour passer en caméra libre à 360°.</p>
+            </div>
+            <div className="stack">
+              <span className="label">Vitesse d’exécution</span>
+              <div className="speed">
+                <input type="range" min={0.25} max={1.5} step={0.05} value={view.speed} onChange={(e) => setSpeed(Number(e.target.value))} aria-label="Vitesse d’exécution" data-testid="speed-range" />
+                <b data-testid="speed">×{view.speed.toFixed(2)}</b>
+              </div>
             </div>
             <div className="stack">
               <span className="label">Voix et sons</span>

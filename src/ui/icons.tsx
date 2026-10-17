@@ -78,6 +78,24 @@ export const IconChevron = (p: P) => (
     <path d="m9 18 6-6-6-6" />
   </svg>
 );
+export const IconMinus = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M5 12h14" />
+  </svg>
+);
+/** turn the camera to the left / right around the coach */
+export const IconRotateLeft = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 13a8 8 0 1 0 2.6-5.9L4 9.5" />
+    <path d="M4 4.5v5h5" />
+  </svg>
+);
+export const IconRotateRight = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M20 13a8 8 0 1 1-2.6-5.9L20 9.5" />
+    <path d="M20 4.5v5h-5" />
+  </svg>
+);
 export const IconExpand = (p: P) => (
   <svg {...base(p)}>
     <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />

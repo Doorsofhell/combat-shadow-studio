@@ -315,33 +315,125 @@
   gap: 6px;
 }
 
-.speed-step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  font-variant-numeric: tabular-nums;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.94);
+.controls {
+  display: grid;
+  grid-template-columns: 44px 48px minmax(0, 1fr) 48px;
+  gap: 8px;
 }
 
-.speed-step .btn {
-  min-width: 44px;
-  min-height: 40px;
-  font-size: 1.2rem;
+/* main controls: previous, play / pause, next, ask the coach; « recommencer » stays discreet */
+.controls.with-coach {
+  grid-template-columns: 44px 48px minmax(0, 1fr) 48px 60px;
+}
+
+.controls .btn.icon.ghost {
+  width: 44px;
+}
+
+.coach-btn {
+  flex-direction: column;
+  gap: 1px !important;
+  padding: 0 4px;
+  font-size: 0.72em;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.coach-btn.on,
+.tr-secondary .btn.on,
+.tr-camera .btn.on {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.tr-secondary:has(.icon-only) {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) 48px;
+  grid-auto-flow: row;
+}
+
+.tr-secondary .btn.icon-only {
   padding: 0;
+}
+
+/* the « Caméra » zone takes the place of the teaching buttons: it never covers the coach */
+.tr-camera {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cam-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tr-camera .btn.sm {
+  min-height: 44px;
+  padding: 0 10px;
+  gap: 6px;
+}
+
+.tr-camera .btn.icon.sm {
+  width: 44px;
+  padding: 0;
+}
+
+@media (max-width: 400px) {
+  .cam-reset-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .tr-camera .btn.sm:has(.cam-reset-label) {
+    width: 44px;
+    padding: 0;
+  }
+}
+
+.cam-angle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ink), transparent 94%);
+}
+
+.cam-angle span {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-weight: 650;
+  font-size: 0.9em;
+}
+
+.cam-angle .btn {
   background: transparent;
 }
 
-.speed-step b {
-  font-size: 0.72em;
-  text-align: center;
+/* séance, cumul, répétitions and progression on one compact row */
+.tr-progress {
+  flex: 1 1 24px;
+  min-width: 24px;
+  align-self: center;
+  height: 5px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ink), transparent 86%);
+  overflow: hidden;
 }
 
-.controls {
-  display: grid;
-  grid-template-columns: 48px 48px minmax(0, 1fr) 48px 48px;
-  gap: 8px;
+.tr-progress i {
+  display: block;
+  height: 100%;
+  background: var(--red);
+  border-radius: inherit;
+  transition: width 0.4s ease;
 }
 
 .controls .main {
@@ -376,6 +468,8 @@
 .training.immersive .tr-top .eyebrow,
 .training.immersive .tr-meta,
 .training.immersive .tr-secondary,
+.training.immersive .tr-camera,
+.training.immersive .coach-btn,
 .training.immersive .controls .btn.icon {
   display: none;
 }
@@ -439,7 +533,10 @@
   .tr-bottom .controls .main {
     min-height: 48px;
   }
-  .tr-secondary {
+  .tr-secondary,
+  .tr-secondary:has(.icon-only) {
+    grid-template-columns: none;
+    grid-auto-flow: column;
     grid-auto-columns: auto;
   }
   /* one row of controls: the secondary buttons keep their icon, the main button its full label */
@@ -449,6 +546,20 @@
   }
   .tr-bottom .controls {
     min-width: 300px;
+  }
+  /* the « Caméra » zone gets its own row above the controls */
+  .tr-bottom:has(.tr-camera) {
+    flex-wrap: wrap;
+  }
+  .tr-camera {
+    flex-direction: row;
+    flex: 1 1 100%;
+    order: -2;
+    min-width: 0;
+  }
+  .tr-camera .cam-row:first-child {
+    flex: 1;
+    min-width: 0;
   }
   .tr-top {
     padding-top: max(3px, env(safe-area-inset-top));

@@ -169,3 +169,59 @@ test('demander au coach : pause, réponse hors ligne, ralenti, sans défilement 
     await expect(page.getByTestId('current-move')).toHaveText('Crochet gauche');
   }
 });
+
+test('zone Caméra : angle, rotation, zoom, recentrer, sans masquer le coach ni déborder', async ({ page }) => {
+  await seed(page);
+  for (const s of SIZES) {
+    await page.setViewportSize({ width: s.width, height: s.height });
+    await open(page, `/#/entrainement?ex=boxe-debutant-02&mode=technique`);
+    await page.getByTestId('cam-mode').click();
+    await expect(page.getByTestId('camera-panel')).toBeVisible();
+    const r = await page.evaluate(() => {
+      const vw = innerWidth;
+      const vh = innerHeight;
+      const ids = ['cam-auto', 'cam-next', 'cam-left', 'cam-right', 'zoom-in', 'zoom-out', 'cam-reset', 'cam-close', 'start', 'ask-coach'];
+      const hidden = ids.filter((id) => {
+        const b = document.querySelector(`[data-testid=${id}]`)?.getBoundingClientRect();
+        return !b || b.width < 40 || b.height < 40 || b.left < -1 || b.right > vw + 1 || b.top < -1 || b.bottom > vh + 1;
+      });
+      const panel = document.querySelector('[data-testid=camera-panel]')!.getBoundingClientRect();
+      const stage = document.querySelector('.tr-stage')!.getBoundingClientRect();
+      const clipped = [...document.querySelectorAll('.tr-bottom *')]
+        // visually hidden labels (1 px, read by screen readers) are not visible text, as in checkFits
+        .filter((e) => [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim()) && e.getBoundingClientRect().width > 1 && (e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 2))
+        .map((e) => e.textContent);
+      return { hidden, overStage: panel.top < stage.bottom - 1, stageH: stage.height, scroll: document.scrollingElement!.scrollHeight - vh, clipped };
+    });
+    expect(r.hidden, `${s.name} boutons hors écran ou trop petits`).toEqual([]);
+    expect(r.overStage, `${s.name} la zone Caméra masque le coach`).toBe(false);
+    expect(r.stageH, `${s.name} hauteur du coach`).toBeGreaterThan(150);
+    expect(r.scroll, s.name).toBeLessThanOrEqual(0);
+    expect(r.clipped, `${s.name} textes coupés`).toEqual([]);
+  }
+  // the controls act: angle chosen, then everything back to the advised angle
+  await page.getByTestId('cam-next').click();
+  await expect(page.getByTestId('cam-angle')).toHaveText('Face');
+  await expect(page.getByTestId('cam-mode')).toContainText('Face');
+  await page.getByTestId('zoom-in').click();
+  await page.getByTestId('cam-left').click();
+  await page.getByTestId('cam-reset').click();
+  await expect(page.getByTestId('cam-mode')).toContainText('Auto');
+  await expect(page.getByTestId('cam-auto')).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('cam-close').click();
+  await expect(page.getByTestId('decompose')).toBeVisible();
+});
+
+test('consigne principale, points clés, ralenti et ligne de temps', async ({ page }) => {
+  await seed(page);
+  await page.setViewportSize({ width: 393, height: 851 });
+  await open(page, `/#/entrainement?ex=boxe-debutant-02&mode=technique`);
+  await expect(page.getByTestId('main-instruction')).toHaveText('Tends le bras avant dans l’axe, puis ramène immédiatement le poing en garde.');
+  await expect(page.getByTestId('key-points').locator('li')).toHaveCount(5);
+  await expect(page.getByTestId('timer-row')).toContainText('Séance');
+  await expect(page.getByTestId('timer-row')).toContainText('rép.');
+  await page.getByTestId('slow').click();
+  await expect(page.getByTestId('slow')).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('options').click();
+  await expect(page.getByTestId('speed')).toHaveText('×0.25');
+});
