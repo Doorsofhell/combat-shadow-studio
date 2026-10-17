@@ -1,6 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import pkg from './package.json' with { type: 'json' };
+
+/** the version is shown in the page title of every build (%VITE_APP_VERSION% in index.html) */
+process.env.VITE_APP_VERSION = pkg.version;
 
 /** CAP_BUILD=1: build for the Android app (Capacitor); files are packaged in the APK, no service worker */
 const NATIVE = process.env.CAP_BUILD === '1';

@@ -191,7 +191,7 @@ export function SettingsPage() {
 
       <Panel title="À propos" id="p-about">
         <p className="small muted" style={{ padding: '12px 0' }}>
-          Combat Shadow Studio, version de développement. Combattants 3D générés à partir de MakeHuman (licence CC0), animations produites par le moteur de l’application. Cette application ne
+          Combat Shadow Studio, version {import.meta.env.VITE_APP_VERSION} (développement). Combattants 3D générés à partir de MakeHuman (licence CC0), animations produites par le moteur de l’application. Cette application ne
           remplace pas un entraîneur ni un avis médical.
         </p>
       </Panel>

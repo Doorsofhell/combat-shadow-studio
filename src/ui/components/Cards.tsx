@@ -17,9 +17,6 @@ export function DisciplineCard({ id, level, to, onClick, selected, testId, tall 
   const inner = (
     <>
       <img src={DISCIPLINE_IMG[id]} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.display = 'none')} />
-      <span className="tag" aria-hidden>
-        {d.short}
-      </span>
       <span className="bar" aria-hidden />
       <span className="name">{d.name}</span>
       <span className="sub">{d.tagline}</span>

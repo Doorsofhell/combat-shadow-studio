@@ -12,7 +12,8 @@
   --c-bg: #101116;
   --c-surface: #20232c;
   --c-surface-2: #2a2e39;
-  --c-accent: #e5484d; /* primary actions, selection, attention only */
+  --c-accent: #d6363c; /* primary actions, selection, attention only (white text 4.9:1) */
+  --c-accent-ink: #ff7378; /* accent used as text on dark surfaces (5.9:1 on surface) */
   --c-text: #f5f5f5;
   --c-text-2: #a6a8b3;
   --c-gold: #c8a96b; /* distinctions, mastery, premium only */
@@ -26,6 +27,7 @@
   --line: rgba(255, 255, 255, 0.09);
   --soft: var(--c-surface);
   --red: var(--c-accent);
+  --red-ink: var(--c-accent-ink);
   --red-soft: rgba(229, 72, 77, 0.16);
   --on-red: #ffffff;
   --gold: var(--c-gold);
@@ -235,7 +237,7 @@ img {
 }
 
 .brand b {
-  color: var(--red);
+  color: var(--red-ink);
   font-weight: 700;
 }
 
@@ -331,7 +333,7 @@ img {
 
 .btn:disabled,
 .btn[aria-disabled='true'] {
-  opacity: 0.42;
+  opacity: 0.55;
   cursor: not-allowed;
   transform: none;
 }
@@ -347,11 +349,11 @@ img {
 }
 
 .btn.primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--red), #fff 9%);
+  background: color-mix(in srgb, var(--red), #000 8%); /* darker, never lighter: white text keeps AA */
 }
 
 .btn.primary:active:not(:disabled) {
-  background: color-mix(in srgb, var(--red), #000 10%);
+  background: color-mix(in srgb, var(--red), #000 16%);
 }
 
 .btn.secondary,
@@ -379,7 +381,7 @@ img {
 
 .btn.danger {
   background: transparent;
-  color: var(--red);
+  color: var(--red-ink);
   border-color: color-mix(in srgb, var(--red), transparent 55%);
 }
 
@@ -780,7 +782,7 @@ textarea.input {
 }
 
 .input::placeholder {
-  color: color-mix(in srgb, var(--muted), transparent 25%);
+  color: var(--muted);
 }
 
 textarea.input {
@@ -1038,7 +1040,7 @@ input[type='range'] {
 }
 
 .nav a.active svg {
-  color: var(--red);
+  color: var(--red-ink);
 }
 
 .nav a:focus-visible {
@@ -1239,21 +1241,8 @@ input[type='range'] {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(16, 17, 22, 0) 35%, rgba(16, 17, 22, 0.92) 88%);
-  z-index: -1;
-}
-
-.disc-card .tag {
-  position: absolute;
-  top: 8px;
-  left: 12px;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 2.6rem;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.07);
+  /* text sits on an almost opaque base: the render never shows through the words */
+  background: linear-gradient(to bottom, rgba(16, 17, 22, 0) 22%, rgba(16, 17, 22, 0.88) 46%, rgba(16, 17, 22, 0.97) 62%);
   z-index: -1;
 }
 
@@ -1276,7 +1265,7 @@ input[type='range'] {
 
 .disc-card .sub {
   font-size: 0.8rem;
-  color: var(--c-text-2);
+  color: var(--ink-2);
 }
 
 .disc-card .lvl {
@@ -1394,7 +1383,7 @@ input[type='range'] {
 
 .icon-tile.red {
   background: var(--red-soft);
-  color: var(--red);
+  color: var(--red-ink);
 }
 
 .icon-tile.gold {
@@ -1986,7 +1975,7 @@ button.panel-row {
 
 .ob-hero em {
   font-style: normal;
-  color: var(--red);
+  color: var(--red-ink);
 }
 
 .feature-list {
@@ -2025,7 +2014,7 @@ button.panel-row {
 }
 
 .prose li::marker {
-  color: var(--red);
+  color: var(--red-ink);
 }
 
 .steps {
@@ -2043,7 +2032,7 @@ button.panel-row {
 .steps li::marker {
   font-family: var(--font-display);
   font-weight: 700;
-  color: var(--red);
+  color: var(--red-ink);
 }
 
 .plain-list {

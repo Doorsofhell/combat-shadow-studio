@@ -46,7 +46,7 @@
   min-height: var(--tap);
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: rgba(16, 17, 22, 0.72);
+  background: rgba(16, 17, 22, 0.86);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   color: var(--ink);
@@ -64,7 +64,8 @@
 
 .cs-view-btn[aria-pressed='true'] {
   border-color: var(--red);
-  background: color-mix(in srgb, var(--red) 28%, rgba(16, 17, 22, 0.8));
+  background: var(--red);
+  color: var(--on-red);
 }
 
 .cs-anim {
