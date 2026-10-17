@@ -55,6 +55,35 @@ export class Author {
     return p;
   }
 
+  /**
+   * Neutral standing posture (reference posture of the fighter creator): upright, feet parallel at
+   * hip width, weight centred, arms hanging relaxed along the body, hands half open. The same for
+   * every discipline.
+   */
+  neutral(): Pose {
+    const { s, m } = this;
+    const p: Pose = {
+      hips: v3(0, m.hipsRest.y - 0.012 * s, 0),
+      pelvis: rot(0, 0, 0),
+      chest: rot(0, deg(1), 0),
+      head: rot(0, 0, 0),
+      handL: { space: 'world', pos: v3(0, 0, 0), pole: v3(0.2, 0, -1), pron: 0, fist: 0.3 },
+      handR: { space: 'world', pos: v3(0, 0, 0), pole: v3(-0.2, 0, -1), pron: 0, fist: 0.3 },
+      footL: { mode: 'ground', ball: v3(0.105 * s, 0, 0.1 * s), yaw: deg(-6), heel: 0 },
+      footR: { mode: 'ground', ball: v3(-0.105 * s, 0, 0.1 * s), yaw: deg(6), heel: 0 },
+    };
+    const arm = m.upperArm + m.foreArm;
+    for (const side of ['L', 'R'] as const) {
+      const sh = this.shoulder(p, side);
+      const out = side === 'L' ? 1 : -1;
+      // a slight bend at the elbow and the hand just beside the thigh, never through it
+      const hand = v3(sh.x + out * 0.065 * s, sh.y - arm * 0.95, sh.z + 0.025 * s);
+      if (side === 'L') p.handL.pos = hand;
+      else p.handR.pos = hand;
+    }
+    return p;
+  }
+
   dirToChest(p: Pose, d: V3): V3 {
     const r = new Vector3(d.x, d.y, d.z).applyQuaternion(this.frame(p).q.clone().invert());
     return v3(r.x, r.y, r.z);

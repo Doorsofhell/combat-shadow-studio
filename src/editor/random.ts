@@ -1,6 +1,6 @@
 import type { CoachId } from '../domain/types';
 import { FighterLook, Paint, Tattoo, defaultLook } from './look';
-import { BEARD_STYLES, BOTTOMS, HAIR_STYLES, PATTERNS, SHOES, TATTOO_ZONES, TOPS } from './normalize';
+import { BEARD_STYLES, BODY_RANGES, BOTTOMS, FACE_RANGES, HAIR_STYLES, PATTERNS, SHOES, TATTOO_ZONES, TOPS } from './normalize';
 
 export type Rng = () => number;
 
@@ -25,21 +25,86 @@ function randomPaint(rng: Rng, plainBias = 0.5): Paint {
   };
 }
 
+type R = readonly [number, number];
 /**
- * A plausible random fighter: body and face within moderate ranges, natural skin / hair / eye
- * colours, an outfit that suits the sex (no bare chest for a woman), a few tattoos at most.
- * Gear stays off: it is a training choice, see "Tenue conseillée". `rng` makes it testable.
+ * Body archetypes: the random look first picks a credible build, then varies it within that build,
+ * so mass, muscle and definition stay consistent (a heavy fighter is not shredded and thin-armed).
  */
-export function randomLook(sex: CoachId, rng: Rng = Math.random, tattooDesigns: readonly string[] = []): FighterLook {
+export interface Archetype {
+  id: string;
+  label: string;
+  height: R;
+  mass: R;
+  muscle: R;
+  definition: R;
+  /** shoulders, chest, arms, legs, waist, neck around the archetype's own centre */
+  parts: Partial<Record<'shoulders' | 'chest' | 'arms' | 'legs' | 'waist' | 'neck', R>>;
+}
+
+export const ARCHETYPES: Record<CoachId, Archetype[]> = {
+  homme: [
+    { id: 'leger', label: 'Léger et sec', height: [0.95, 1.02], mass: [-0.6, -0.25], muscle: [0.75, 1.05], definition: [0.6, 0.9], parts: { waist: [-0.5, -0.1], legs: [-0.3, 0.2] } },
+    { id: 'athletique', label: 'Athlétique', height: [0.97, 1.05], mass: [-0.25, 0.2], muscle: [0.95, 1.3], definition: [0.5, 0.85], parts: { shoulders: [0, 0.5], chest: [0, 0.5], waist: [-0.4, 0.1] } },
+    { id: 'puissant', label: 'Puissant', height: [0.98, 1.06], mass: [0.2, 0.6], muscle: [1, 1.3], definition: [0.2, 0.5], parts: { shoulders: [0.2, 0.5], neck: [0.1, 0.5], waist: [0, 0.4], legs: [0, 0.5] } },
+  ],
+  femme: [
+    { id: 'leger', label: 'Légère et sèche', height: [0.94, 1.01], mass: [-0.6, -0.25], muscle: [0.45, 0.8], definition: [0.5, 0.85], parts: { waist: [-0.5, -0.1] } },
+    { id: 'athletique', label: 'Athlétique', height: [0.96, 1.04], mass: [-0.25, 0.2], muscle: [0.6, 1], definition: [0.4, 0.8], parts: { shoulders: [-0.1, 0.4], legs: [0, 0.4] } },
+    { id: 'puissant', label: 'Puissante', height: [0.97, 1.05], mass: [0.2, 0.6], muscle: [0.7, 1], definition: [0.2, 0.5], parts: { shoulders: [0, 0.4], legs: [0.1, 0.5], waist: [0, 0.4] } },
+  ],
+};
+
+/** largest skin offset a body region may get (metres): beyond this the silhouette is no longer human */
+export const MAX_SHAPE_OFFSET = 0.03;
+
+/**
+ * Checks that a look can be shown without anatomical or rendering errors: every slider within its
+ * range, legs at the reference length (the random look never changes the skeleton), skin offsets
+ * within MAX_SHAPE_OFFSET, consistent build, outfit that suits the sex. Returns the problems found.
+ */
+export function validateLook(l: FighterLook, shape?: (l: FighterLook) => number[][]): string[] {
+  const bad: string[] = [];
+  for (const [k, [a, b]] of Object.entries(BODY_RANGES)) {
+    const v = l.body[k as keyof FighterLook['body']];
+    if (!(v >= a && v <= b)) bad.push(`corps.${k} hors limites (${v})`);
+  }
+  for (const [k, [a, b]] of Object.entries(FACE_RANGES)) {
+    const v = l.face[k as keyof FighterLook['face']];
+    if (!(v >= a && v <= b)) bad.push(`visage.${k} hors limites (${v})`);
+  }
+  if (shape) for (const vec of shape(l)) for (const v of vec) if (Math.abs(v) > MAX_SHAPE_OFFSET) bad.push(`déformation excessive (${v.toFixed(3)} m)`);
+  if (l.body.mass > 0.3 && l.body.defAbs > 0.75) bad.push('masse élevée et abdominaux très dessinés');
+  if (l.sex === 'femme' && l.outfit.top === 'aucun') bad.push('tenue : haut manquant');
+  return bad;
+}
+
+/**
+ * A plausible random fighter: a body archetype, then body and face within its ranges, natural skin
+ * / hair / eye colours, an outfit that suits the sex (no bare chest for a woman), a few tattoos at
+ * most. Only appearance changes: the skeleton, the reference posture and the animations are never
+ * touched (leg length stays at its reference value). Gear stays off: it is a training choice, see
+ * "Tenue conseillée". `rng` makes it testable. A look that fails validateLook() is replaced by the
+ * default look of that sex, which is always valid.
+ */
+export function randomLook(sex: CoachId, rng: Rng = Math.random, tattooDesigns: readonly string[] = [], shape?: (l: FighterLook) => number[][]): FighterLook {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const l = randomLookOnce(sex, rng, tattooDesigns);
+    if (!validateLook(l, shape).length) return l;
+  }
+  return defaultLook(sex);
+}
+
+function randomLookOnce(sex: CoachId, rng: Rng, tattooDesigns: readonly string[]): FighterLook {
   const l = defaultLook(sex);
   const male = sex === 'homme';
   const b = l.body;
-  b.height = between(rng, 0.94, 1.06);
-  b.mass = between(rng, -0.6, 0.6);
-  b.muscle = between(rng, male ? 0.6 : 0.4, male ? 1.3 : 1);
-  for (const k of ['shoulders', 'chest', 'arms', 'legs', 'waist', 'neck'] as const) b[k] = between(rng, -0.5, 0.5);
-  for (const k of ['defAbs', 'defArms', 'defShoulders', 'defLegs'] as const) b[k] = between(rng, 0.2, 0.9);
-  b.legLength = between(rng, 0.97, 1.03);
+  const a = pickOf(rng, ARCHETYPES[sex]);
+  b.height = between(rng, ...a.height);
+  b.mass = between(rng, ...a.mass);
+  b.muscle = between(rng, ...a.muscle);
+  for (const k of ['shoulders', 'chest', 'arms', 'legs', 'waist', 'neck'] as const) b[k] = between(rng, ...(a.parts[k] ?? [-0.3, 0.3]));
+  for (const k of ['defAbs', 'defArms', 'defShoulders', 'defLegs'] as const) b[k] = between(rng, ...a.definition);
+  b.legLength = 1;
   for (const k of ['jaw', 'cheeks', 'brow', 'nose'] as const) l.face[k] = between(rng, -0.7, 0.7);
   l.skin = pickOf(rng, SKIN_TONES);
   l.eyes = pickOf(rng, EYE_COLORS);

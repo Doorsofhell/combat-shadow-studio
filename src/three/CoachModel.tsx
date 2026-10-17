@@ -5,6 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import type { GLTFLoader } from 'three-stdlib';
 import { Color, Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, SRGBColorSpace, Texture } from 'three';
+import { restoreReferencePose, setLegLength } from './pose';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { CoachRig } from '../engine/rig';
 import { applyManga, outlineMaterial, toonMaterial } from './manga';
@@ -111,15 +112,6 @@ function useMeta(url: string): CoachMeta {
 
 const who = (c: CoachId) => (c === 'homme' ? 'male' : 'female');
 
-/** move the knees and ankles along their bones: longer or shorter legs, same skinning */
-function setLegLength(root: Object3D, f: number) {
-  root.traverse((o) => {
-    if (!/(Left|Right)(Leg|Foot)$/.test(o.name.replace(/^mixamorig[:]?/i, ''))) return;
-    const base = (o.userData.cssBase ??= o.position.clone()) as typeof o.position;
-    o.position.copy(base).multiplyScalar(f);
-  });
-}
-
 export interface CoachModelProps {
   coach: CoachId;
   style: CoachStyle;
@@ -154,10 +146,12 @@ export function CoachModel({ coach, style, quality, look, ghostGear = false, onR
         console.error(e);
       }
     }
+    restoreReferencePose(s); // records the reference pose before any animation
     return { scene: s, customizer: c };
   }, [gltf, quality, style, custom, meta, masks]);
   const legLength = look?.body.legLength ?? 1;
   const rig = useMemo(() => {
+    restoreReferencePose(scene);
     setLegLength(scene, legLength);
     scene.updateMatrixWorld(true);
     return new CoachRig(scene);

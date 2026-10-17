@@ -487,6 +487,26 @@ function zeroRegions(g: BufferGeometry) {
   setRegions(g, { A: new Float32Array(n * 4), B: new Float32Array(n * 4), C: new Float32Array(n * 4), D: new Float32Array(n * 4) });
 }
 
+/**
+ * Surface offsets (metres along the normal) of each body region for a look: the shape sliders
+ * only move the skin outwards or inwards; they never move a bone or a joint.
+ */
+export function shapeVectors(look: FighterLook): { A: number[]; B: number[]; C: number[]; D: number[] } {
+  const b = look.body;
+  const dm = b.muscle - (look.sex === 'homme' ? 1 : 0.7);
+  return {
+    A: [
+      0.009 * dm + 0.014 * b.arms + 0.005 * b.mass,
+      0.008 * dm + 0.014 * b.shoulders + 0.003 * b.mass,
+      0.008 * dm + 0.014 * b.chest + 0.006 * b.mass,
+      0.016 * Math.max(0, b.mass) + 0.005 * b.waist - 0.003 * Math.max(0, -b.mass),
+    ],
+    B: [0.007 * dm + 0.006 * b.shoulders + 0.004 * b.mass, 0.009 * dm + 0.014 * b.legs + 0.006 * b.mass, 0.006 * dm + 0.01 * b.legs, 0.006 * dm + 0.01 * b.mass + 0.004 * b.legs],
+    C: [0.008 * dm + 0.014 * b.neck + 0.004 * b.mass, 0.018 * b.waist + 0.012 * b.mass, 0.006 * look.face.jaw, 0.005 * look.face.cheeks],
+    D: [0.004 * look.face.brow, 0.004 * look.face.nose, look.sex === 'femme' ? 0.012 * b.chest : 0, 0.008 * dm + 0.012 * b.arms + 0.003 * b.mass],
+  };
+}
+
 // ----------------------------------------------------------------------------- garments
 
 /** signed coverage of a body vertex: > 0 covered (metres from the hem), < 0 bare */
@@ -868,17 +888,12 @@ export class Customizer {
 
   apply(look: FighterLook) {
     const b = look.body;
-    const dm = b.muscle - (look.sex === 'homme' ? 1 : 0.7);
     const u = this.u;
-    u.uShapeA.value.set(
-      0.009 * dm + 0.014 * b.arms + 0.005 * b.mass,
-      0.008 * dm + 0.014 * b.shoulders + 0.003 * b.mass,
-      0.008 * dm + 0.014 * b.chest + 0.006 * b.mass,
-      0.016 * Math.max(0, b.mass) + 0.005 * b.waist - 0.003 * Math.max(0, -b.mass),
-    );
-    u.uShapeB.value.set(0.007 * dm + 0.006 * b.shoulders + 0.004 * b.mass, 0.009 * dm + 0.014 * b.legs + 0.006 * b.mass, 0.006 * dm + 0.01 * b.legs, 0.006 * dm + 0.01 * b.mass + 0.004 * b.legs);
-    u.uShapeC.value.set(0.008 * dm + 0.014 * b.neck + 0.004 * b.mass, 0.018 * b.waist + 0.012 * b.mass, 0.006 * look.face.jaw, 0.005 * look.face.cheeks);
-    u.uShapeD.value.set(0.004 * look.face.brow, 0.004 * look.face.nose, look.sex === 'femme' ? 0.012 * b.chest : 0, 0.008 * dm + 0.012 * b.arms + 0.003 * b.mass);
+    const sh = shapeVectors(look);
+    u.uShapeA.value.fromArray(sh.A);
+    u.uShapeB.value.fromArray(sh.B);
+    u.uShapeC.value.fromArray(sh.C);
+    u.uShapeD.value.fromArray(sh.D);
     u.uDefA.value.set(b.defArms, b.defShoulders, (b.defAbs + b.defShoulders) / 2, b.defAbs);
     u.uDefB.value.set(b.defShoulders * 0.6, b.defLegs, b.defLegs, b.defLegs * 0.5);
     u.uSkinTone.value.copy(lin(look.skin));

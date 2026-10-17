@@ -23,6 +23,17 @@ export function guardIdle(a: Author): Motion {
   return { id: 'garde', keys: [{ t: 0, pose: g }, { t: 0.45, pose: down }, { t: 0.9, pose: g }], impacts: [], ...stand };
 }
 
+/** neutral standing posture with a slow breathing, reference posture of the fighter creator */
+export function neutralIdle(a: Author): Motion {
+  const n = a.neutral();
+  const s = a.s;
+  const breath = edit(n, (d) => {
+    d.chest.pitch -= deg(0.8);
+    d.hips.y -= 0.004 * s;
+  });
+  return { id: 'neutre', keys: [{ t: 0, pose: n }, { t: 1.6, pose: breath }, { t: 3.2, pose: n }], impacts: [], ...stand };
+}
+
 function straight(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
   const g = a.guard();
   const s = a.s;
@@ -572,6 +583,7 @@ function angleOut(a: Author): Motion {
 export function boxingMotions(a: Author): Motion[] {
   return [
     guardIdle(a),
+    neutralIdle(a),
     straight(a, 'L', 'chin'),
     straight(a, 'R', 'chin'),
     straight(a, 'L', 'body'),

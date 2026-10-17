@@ -51,6 +51,8 @@ export class ComboPlayer {
   private samplers = new Map<string, MotionSampler>();
   private lastPose: ResolvedPose | null = null;
   origin = { x: 0, z: 0, yaw: 0 };
+  /** posture held when nothing plays: the guard, or the neutral standing posture (fighter creator) */
+  private idle = IDLE;
 
   constructor(
     private rig: CoachRig,
@@ -58,7 +60,7 @@ export class ComboPlayer {
     private southpaw: boolean,
     public events: PlayerEvents = {},
   ) {
-    this.cur = this.make(IDLE, -1, IDLE, true);
+    this.cur = this.make(this.idle, -1, this.idle, true);
   }
 
   private sampler(motionId: string): MotionSampler {
@@ -81,6 +83,13 @@ export class ComboPlayer {
     this.rest = rest;
     this.stepIndex = 0;
     this.rep = 0;
+  }
+
+  /** posture between repetitions and when there is no sequence; takes effect at once if idling */
+  setIdle(motionId: string) {
+    if (motionId === this.idle) return;
+    this.idle = motionId;
+    if (this.cur.auto && this.cur.index === -1) this.cur = this.make(this.idle, -1, this.idle, true);
   }
 
   setSouthpaw(v: boolean) {
@@ -112,7 +121,7 @@ export class ComboPlayer {
   /** back to guard at the centre, sequence from the start */
   restart() {
     this.origin = { x: 0, z: 0, yaw: 0 };
-    this.cur = this.make(IDLE, -1, IDLE, true);
+    this.cur = this.make(this.idle, -1, this.idle, true);
     this.next = null;
     this.stepIndex = 0;
     this.rep = 0;
@@ -191,7 +200,7 @@ export class ComboPlayer {
       const id = this.queueAuto.shift()!;
       return this.make(id, -1, id, true);
     }
-    if (!this.steps.length || this.restLeft > 0) return this.make(IDLE, -1, IDLE, true);
+    if (!this.steps.length || this.restLeft > 0) return this.make(this.idle, -1, this.idle, true);
 
     if (this.stepIndex >= this.steps.length) {
       // repetition complete
@@ -208,7 +217,7 @@ export class ComboPlayer {
       if (this.rest > 0) {
         this.restLeft = this.rest;
         this.events.onRest?.(this.rest);
-        return this.make(IDLE, -1, IDLE, true);
+        return this.make(this.idle, -1, this.idle, true);
       }
     }
     const st = this.steps[this.stepIndex];

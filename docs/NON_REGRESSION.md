@@ -10,6 +10,7 @@ chaque lot, point de restauration, rapport (TEST RÉUSSI / ÉCHOUÉ / NON EXÉCU
 | `restauration/ref-2026-10-17-v2` (branche GitHub) | `85dcebf` | V2 web publiée : état de référence avant les corrections UI/UX, thèmes et créateur 3D |
 | `restauration/lot-1` | v0.4.0 | Lisibilité des textes (WCAG AA) |
 | `restauration/lot-2` | v0.5.0 | Thèmes clair, sombre et automatique |
+| `restauration/lot-3` | v0.6.0 | Postures de la génération aléatoire |
 
 Les étiquettes Git (tags) ne passent pas par le proxy de l’environnement : chaque point de restauration est donc une
 branche `restauration/...` sur GitHub. Retour arrière : `git checkout restauration/<nom>`.
@@ -47,6 +48,13 @@ Captures de référence : `/mnt/project-files/combat-shadow-studio/reference/<da
 ### Bugs connus au départ
 
 - Signalé par Youssef : la génération aléatoire produit parfois des postures anormales (membres ou articulations mal placés).
+  Cause trouvée au lot 3 : le squelette était reconstruit pendant l’animation (changement de longueur des jambes) et
+  prenait la garde pour posture de repos ; chaque mouvement ajoutait alors la garde une seconde fois. Corrigé.
+- Trouvé au lot 3, à traiter au lot 4 (biomécanique) : coude trop fléchi (jusqu’à 172° entre bras et avant-bras, limite
+  anatomique 150°) dans « genou circulaire avant » (coude gauche) et, pour la coach femme, « high kick arrière » en
+  muay-thaï (coude droit). Présent avec le squelette de référence.
+- Observé 2 fois sur une dizaine d’ouvertures, en développement et en rendu logiciel : une forme blanche géante
+  (le short) au premier affichage de l’éditeur. Non reproduit depuis ; à surveiller.
 - Signalé par Youssef : certains textes sont peu lisibles ou masqués par les couleurs.
 - Cartes des disciplines : grand titre en filigrane coupé et superposé à l’image.
 - Le geste retour du système ne déclenche pas la confirmation de l’éditeur.
@@ -58,7 +66,7 @@ Captures de référence : `/mnt/project-files/combat-shadow-studio/reference/<da
 | --- | --- | --- | --- |
 | Navigation | Tous les écrans restent accessibles | `app.spec` (5 onglets, réglages, confidentialité), `account.spec` | captures de tous les écrans |
 | Créateur 3D | Toutes les personnalisations existantes fonctionnent | `customize.test`, `editor.test`, `coach-studio.spec` | rendus par onglet |
-| Génération aléatoire | Personnages anatomiquement cohérents | `editor.test` (à compléter : 100 graines, bornes) | planche de 100 rendus |
+| Génération aléatoire | Personnages anatomiquement cohérents | `editor.test` (100 graines par sexe, archétypes, curseurs aux limites), `pose.test` (posture de référence, jambes aux limites dans toutes les animations) | planche de rendus aléatoires |
 | Sauvegarde | Personnages conservés après redémarrage | `coach-studio.spec`, `migration*.test` | – |
 | Animations | Aucun mouvement détérioré | `engine.test`, `camera.test` (toutes techniques, deux coachs, deux gardes) | rendus Lab |
 | Équipements | Positionnement correct | `customize.test` (zones, gants) | rendus par discipline |

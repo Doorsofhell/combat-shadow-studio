@@ -23,7 +23,9 @@ export const VIEW_BUTTONS: {
 ];
 
 /** animations the preview can play: the engine's guard idle, then single techniques and one combination */
-const ANIMS: { id: string; label: string; seq: string[] }[] = [
+/** reference postures (idle, no sequence) then techniques */
+const ANIMS: { id: string; label: string; seq: string[]; idle?: string }[] = [
+  { id: 'neutre', label: 'Posture neutre', seq: [], idle: 'neutre' },
   { id: 'garde', label: 'Garde (repos)', seq: [] },
   { id: 'jab', label: 'Jab', seq: ['jab'] },
   { id: 'direct', label: 'Direct', seq: ['direct'] },
@@ -90,12 +92,13 @@ export function Preview({
   onState: (s: Partial<PreviewState>) => void;
 }) {
   const player = useRef<ComboPlayer | null>(null);
-  const anim = ANIMS.find((a) => a.id === state.anim) ?? ANIMS[0];
+  const anim = ANIMS.find((a) => a.id === state.anim) ?? ANIMS[1];
   const stateRef = useRef({ anim, playing: state.playing });
   stateRef.current = { anim, playing: state.playing };
 
   const start = useCallback((p: ComboPlayer) => {
     const { anim: a, playing } = stateRef.current;
+    p.setIdle(a.idle ?? 'garde');
     p.restart();
     p.setSequence(steps(a.seq), a.seq.length ? 0.9 : 0);
     if (playing) p.play();

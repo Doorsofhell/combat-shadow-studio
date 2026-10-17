@@ -5,6 +5,7 @@ import { useSettings } from '../../store/settings';
 import { FighterLook, TattooZone, defaultLook } from '../../editor/look';
 import { normalizeLook } from '../../editor/normalize';
 import { randomLook } from '../../editor/random';
+import { shapeVectors } from '../../three/customize';
 import type { CoachId } from '../../domain/types';
 import { Button, ConfirmDialog, Tabs, toast } from '../components';
 import { Preview, PreviewState, ViewMode } from './coach/Preview';
@@ -12,6 +13,9 @@ import { BodyPanel, DESIGN_IDS, FacePanel, GearPanel, HairPanel, OutfitPanel, Sk
 import { FighterPanel, NewFighterSheet } from './coach/FighterPanel';
 import { useLeaveGuard } from './coach/useLeaveGuard';
 import './coach-studio.css';
+
+/** skin offsets of a look, for the validation of random looks */
+const shapeOf = (l: Parameters<typeof shapeVectors>[0]) => Object.values(shapeVectors(l));
 
 type TabId = 'combattant' | 'corps' | 'visage' | 'peau' | 'cheveux' | 'tatouages' | 'tenue' | 'equipement';
 const TABS: { id: TabId; label: string; testId: string }[] = [
@@ -206,7 +210,7 @@ export function CoachStudio() {
               store().setActive(fighter.id);
               toast(`${fighter.name} est ton combattant actif`);
             }}
-            onRandom={() => setDraft(randomLook(look.sex, Math.random, DESIGN_IDS))}
+            onRandom={() => setDraft(randomLook(look.sex, Math.random, DESIGN_IDS, shapeOf))}
           />
         );
       case 'corps':
@@ -239,7 +243,7 @@ export function CoachStudio() {
               {trimmed || fighter.name}
             </span>
           </div>
-          <Button variant="ghost" onClick={() => setDraft(randomLook(look.sex, Math.random, DESIGN_IDS))} aria-label="Apparence aléatoire">
+          <Button variant="ghost" onClick={() => setDraft(randomLook(look.sex, Math.random, DESIGN_IDS, shapeOf))} aria-label="Apparence aléatoire">
             Aléatoire
           </Button>
         </div>
