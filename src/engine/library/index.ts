@@ -18,7 +18,11 @@ export function getLibrary(rig: CoachRig, style: StanceStyle): MotionLibrary {
   if (!lib) {
     const a = new Author(rig.metrics, rig.chestFrame.bind(rig), style);
     lib = new Map();
-    for (const m of buildAll(a)) lib.set(m.id, m);
+    for (const m of buildAll(a)) {
+      // joint safety on every key pose: no elbow folded beyond its natural range
+      for (const k of m.keys) a.openElbows(k.pose);
+      lib.set(m.id, m);
+    }
     perRig.set(style, lib);
   }
   return lib;

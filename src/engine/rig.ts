@@ -98,6 +98,10 @@ function orthoTo(v: Vector3, axis: Vector3, fallback: Vector3) {
   return r.normalize();
 }
 
+/** largest flexion of a healthy adult elbow and knee (radians, angle between the two segments) */
+export const ELBOW_MAX_FLEX = (150 * Math.PI) / 180;
+export const KNEE_MAX_FLEX = (155 * Math.PI) / 180;
+
 export class CoachRig {
   readonly metrics: Metrics;
   private bones = new Map<string, BoneRest>();
@@ -365,12 +369,15 @@ export class CoachRig {
     for (const s of SIDES) this.solveLeg(s, s === 'L' ? p.footL : p.footR);
   }
 
-  private solveTwoBone(limb: Limb, target: Vector3, pole: Vector3) {
+  private solveTwoBone(limb: Limb, target: Vector3, pole: Vector3, maxFlex: number) {
     const S = this.bonePos(limb.upper);
     const a = limb.lenA;
     const b = limb.lenB;
     const toT = target.clone().sub(S);
-    const dist = clamp(toT.length(), Math.abs(a - b) + 1e-3, a + b - 1e-4);
+    // joint limit: the elbow or knee never folds beyond maxFlex (angle between the two segments),
+    // whatever the target; a target too close is held at the nearest reachable distance
+    const minDist = Math.sqrt(a * a + b * b + 2 * a * b * Math.cos(maxFlex));
+    const dist = clamp(toT.length(), Math.max(Math.abs(a - b) + 1e-3, minDist), a + b - 1e-4);
     const dir = toT.lengthSq() > 1e-10 ? toT.normalize() : new Vector3(0, -1, 0);
     const poleOrth = orthoTo(pole.clone(), dir, new Vector3(0, 0, -1));
     const cosA = clamp((a * a + dist * dist - b * b) / (2 * a * dist), -1, 1);
@@ -401,7 +408,7 @@ export class CoachRig {
       const shrug = new Quaternion().setFromAxisAngle(new Vector3(0, 0, 1), sgn * (0.06 * fwd + 0.08 * up));
       this.setWorldQ(sh, trunk.clone().multiply(prot).multiply(shrug).multiply(sh.worldQ));
     }
-    const { qUpper, qLower, p1Lower } = this.solveTwoBone(limb, h.pos, h.pole);
+    const { qUpper, qLower, p1Lower } = this.solveTwoBone(limb, h.pos, h.pole, ELBOW_MAX_FLEX);
     const sgn = s === 'L' ? 1 : -1;
     const pronAngle = (h.pron - 0.35) * (Math.PI / 2) * sgn + this.twistOffset[s];
     const twistFore = new Quaternion().setFromAxisAngle(p1Lower, pronAngle * 0.55);
@@ -430,7 +437,7 @@ export class CoachRig {
 
   private solveLeg(s: Side, f: ResolvedFoot) {
     const limb = this.legs[s];
-    const { qUpper, qLower } = this.solveTwoBone(limb, f.ankle, f.pole);
+    const { qUpper, qLower } = this.solveTwoBone(limb, f.ankle, f.pole, KNEE_MAX_FLEX);
     this.setWorldQ(limb.upper, qUpper.multiply(limb.upper.worldQ));
     this.setWorldQ(limb.lower, qLower.multiply(limb.lower.worldQ));
     const footQ = f.rot.clone();

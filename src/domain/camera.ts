@@ -1,5 +1,6 @@
 import { TECHNIQUE_BY_ID } from './techniques';
-import type { TechniqueCategory } from './types';
+import type { DisciplineId, TechniqueCategory } from './types';
+import { STANCES } from '../engine/author';
 
 /**
  * Teaching camera. Angles are expressed from the coach's point of view in orthodox guard:
@@ -18,6 +19,12 @@ export interface CameraView {
   why: string;
   /** optional temporary close-up on the area that matters */
   closeUp?: { zoom: number; focus: number; label: string };
+  /**
+   * 'torse': the azimuth is measured from the direction the trunk faces in the guard of the
+   * discipline, not from the line of the opponent. A bladed boxing guard turns the trunk about 45°:
+   * a "three quarters" taken from the opponent line would then show the coach almost in profile.
+   */
+  ref?: 'torse';
 }
 
 export type CameraMode = 'auto' | 'face' | 'profil-gauche' | 'profil-droit' | 'trois-quarts-gauche' | 'trois-quarts-droit' | 'arriere' | 'dessus' | 'libre';
@@ -38,44 +45,51 @@ const FULL = { zoom: 1, focus: 0.52 };
 
 /** default angle for each family of techniques */
 const BY_CATEGORY: Record<TechniqueCategory, CameraView> = {
-  garde: { az: 35, el: 6, ...FULL, why: 'Trois quarts côté avant : on voit l’écart des pieds, la hauteur des mains et le menton rentré.' },
-  poing: { az: 40, el: 6, ...FULL, why: 'Trois quarts côté avant : on voit l’extension du bras, la rotation de l’épaule et des hanches, et le pivot du pied arrière.' },
-  pied: { az: 70, el: 8, zoom: 0.9, focus: 0.5, why: 'Presque de profil, côté avant : on voit la trajectoire de la jambe, la rotation des hanches et le pivot du pied d’appui.' },
+  garde: { az: 55, el: 6, ...FULL, ref: 'torse', why: 'Trois quarts côté avant : on voit l’écart des pieds, la hauteur des mains et le menton rentré.' },
+  poing: {
+    az: 60,
+    el: 7,
+    ...FULL,
+    ref: 'torse',
+    why: 'Trois quarts côté avant : on voit la garde, l’extension du bras et la rotation du poing, les épaules, le bassin, les appuis et le retour en garde.',
+  },
+  pied: { az: 70, el: 8, zoom: 1, focus: 0.5, why: 'Presque de profil, côté avant : on voit la trajectoire de la jambe, la rotation des hanches et le pivot du pied d’appui.' },
   genou: { az: 80, el: 6, ...FULL, why: 'De profil : on voit la montée du genou, la poussée des hanches vers l’avant et le buste qui reste droit.' },
   coude: {
-    az: 35,
+    az: 55,
     el: 10,
     ...FULL,
+    ref: 'torse',
     why: 'Trois quarts : on voit l’arc du coude, la rotation des épaules et le pied qui pivote.',
     closeUp: { zoom: 1.9, focus: 0.78, label: 'Zoom sur le coude et les épaules' },
   },
   defense: { az: 0, el: 8, ...FULL, why: 'De face : on voit exactement où va la tête et comment le buste se déplace par rapport à l’attaque.' },
-  deplacement: { az: 30, el: 38, zoom: 0.9, focus: 0.45, why: 'Vue surélevée : on distingue le placement et l’orientation des deux pieds à chaque pas.' },
-  lutte: { az: 90, el: 10, zoom: 0.85, focus: 0.42, why: 'De profil, cadrage large : on voit la flexion des jambes, le dos droit et la projection des hanches.' },
-  sol: { az: 90, el: 18, zoom: 0.8, focus: 0.3, why: 'De profil et légèrement au-dessus : tout le corps reste visible pendant la descente au sol et le relevé.' },
-  feinte: { az: 25, el: 6, ...FULL, why: 'Trois quarts léger : on voit l’amorce du geste et le retour immédiat en garde.' },
+  deplacement: { az: 30, el: 38, zoom: 1, focus: 0.45, why: 'Vue surélevée : on distingue le placement et l’orientation des deux pieds à chaque pas.' },
+  lutte: { az: 90, el: 10, zoom: 1, focus: 0.42, why: 'De profil, cadrage large : on voit la flexion des jambes, le dos droit et la projection des hanches.' },
+  sol: { az: 90, el: 18, zoom: 1, focus: 0.3, why: 'De profil et légèrement au-dessus : tout le corps reste visible pendant la descente au sol et le relevé.' },
+  feinte: { az: 50, el: 6, ...FULL, ref: 'torse', why: 'Trois quarts léger : on voit l’amorce du geste et le retour immédiat en garde.' },
   clinch: { az: 60, el: 10, ...FULL, why: 'Trois quarts large : on voit la position des mains sur la nuque imaginaire et le genou qui monte.' },
 };
 
 /** techniques whose best angle differs from their family */
 const BY_TECHNIQUE: Record<string, Partial<CameraView>> = {
-  'crochet-avant': { az: 30, el: 28, why: 'Trois quarts surélevé : on voit l’arc horizontal du poing, le coude à hauteur d’épaule et le pivot du pied avant.' },
-  'crochet-arriere': { az: 30, el: 28, why: 'Trois quarts surélevé : on voit l’arc horizontal du poing, la rotation du buste et le pivot du pied arrière.' },
-  'crochet-avant-corps': { az: 35, el: 20, why: 'Trois quarts surélevé : on voit la flexion des jambes et l’arc du poing vers le corps.' },
-  'crochet-arriere-corps': { az: 35, el: 20, why: 'Trois quarts surélevé : on voit la flexion des jambes et l’arc du poing vers le corps.' },
-  'uppercut-avant': { az: 50, el: 4, why: 'Trois quarts : on voit les jambes qui poussent, le bassin qui tourne et le poing qui monte paume vers soi.' },
-  'uppercut-arriere': { az: 50, el: 4, why: 'Trois quarts : on voit les jambes qui poussent, le bassin qui tourne et le poing qui monte paume vers soi.' },
-  overhand: { az: 45, el: 14, why: 'Trois quarts légèrement au-dessus : on voit l’arc plongeant du poing et la flexion du buste.' },
+  'crochet-avant': { az: 55, el: 28, why: 'Trois quarts surélevé : on voit l’arc horizontal du poing, le coude à hauteur d’épaule et le pivot du pied avant.' },
+  'crochet-arriere': { az: 55, el: 28, why: 'Trois quarts surélevé : on voit l’arc horizontal du poing, la rotation du buste et le pivot du pied arrière.' },
+  'crochet-avant-corps': { az: 58, el: 20, why: 'Trois quarts surélevé : on voit la flexion des jambes et l’arc du poing vers le corps.' },
+  'crochet-arriere-corps': { az: 58, el: 20, why: 'Trois quarts surélevé : on voit la flexion des jambes et l’arc du poing vers le corps.' },
+  'uppercut-avant': { az: 70, el: 4, why: 'Trois quarts : on voit les jambes qui poussent, le bassin qui tourne et le poing qui monte paume vers soi.' },
+  'uppercut-arriere': { az: 70, el: 4, why: 'Trois quarts : on voit les jambes qui poussent, le bassin qui tourne et le poing qui monte paume vers soi.' },
+  overhand: { az: 65, el: 14, why: 'Trois quarts légèrement au-dessus : on voit l’arc plongeant du poing et la flexion du buste.' },
   'front-kick-avant': { az: 90, el: 6, why: 'De profil : on voit la montée du genou, l’extension de la jambe et la poussée des hanches.' },
   'front-kick-arriere': { az: 90, el: 6, why: 'De profil : on voit la montée du genou, l’extension de la jambe et la poussée des hanches.' },
   'teep-avant': { az: 90, el: 6, why: 'De profil : on voit le genou qui monte, la plante du pied qui pousse et le buste en arrière.' },
   'teep-arriere': { az: 90, el: 6, why: 'De profil : on voit le genou qui monte, la plante du pied qui pousse et le buste en arrière.' },
-  'low-kick-arriere': { az: 60, el: 10, zoom: 0.95, focus: 0.45, why: 'Trois quarts côté avant : on voit le pivot du pied d’appui, la rotation des hanches et le tibia qui frappe la cuisse.' },
-  'low-kick-avant': { az: 60, el: 10, zoom: 0.95, focus: 0.45, why: 'Trois quarts côté avant : on voit le petit pas d’armé, le pivot et le tibia qui frappe.' },
-  'high-kick-arriere': { az: 65, el: 4, zoom: 0.8, focus: 0.55, why: 'Cadrage entier élargi : l’amplitude complète de la jambe reste visible, du pivot du pied d’appui jusqu’à la tête.' },
-  'high-kick-avant': { az: 65, el: 4, zoom: 0.8, focus: 0.55, why: 'Cadrage entier élargi : l’amplitude complète de la jambe reste visible, du pivot du pied d’appui jusqu’à la tête.' },
-  'roundhouse-arriere': { az: 65, el: 6, zoom: 0.85, why: 'Trois quarts large : on voit la rotation complète des hanches et le pivot du pied d’appui.' },
-  'roundhouse-avant': { az: 65, el: 6, zoom: 0.85, why: 'Trois quarts large : on voit le changement d’appui, la rotation des hanches et la trajectoire de la jambe.' },
+  'low-kick-arriere': { az: 60, el: 10, zoom: 1, focus: 0.45, why: 'Trois quarts côté avant : on voit le pivot du pied d’appui, la rotation des hanches et le tibia qui frappe la cuisse.' },
+  'low-kick-avant': { az: 60, el: 10, zoom: 1, focus: 0.45, why: 'Trois quarts côté avant : on voit le petit pas d’armé, le pivot et le tibia qui frappe.' },
+  'high-kick-arriere': { az: 65, el: 4, zoom: 1, focus: 0.55, why: 'Cadrage entier élargi : l’amplitude complète de la jambe reste visible, du pivot du pied d’appui jusqu’à la tête.' },
+  'high-kick-avant': { az: 65, el: 4, zoom: 1, focus: 0.55, why: 'Cadrage entier élargi : l’amplitude complète de la jambe reste visible, du pivot du pied d’appui jusqu’à la tête.' },
+  'roundhouse-arriere': { az: 65, el: 6, zoom: 1, why: 'Trois quarts large : on voit la rotation complète des hanches et le pivot du pied d’appui.' },
+  'roundhouse-avant': { az: 65, el: 6, zoom: 1, why: 'Trois quarts large : on voit le changement d’appui, la rotation des hanches et la trajectoire de la jambe.' },
   'genou-circulaire-arriere': { az: 45, el: 12, why: 'Trois quarts : on voit le genou qui arrive en arc et la rotation des hanches.' },
   'genou-circulaire-avant': { az: 45, el: 12, why: 'Trois quarts : on voit le genou qui arrive en arc et la rotation des hanches.' },
   'genou-circulaire-clinch': { az: 45, el: 12 },
@@ -85,12 +99,12 @@ const BY_TECHNIQUE: Record<string, Partial<CameraView>> = {
   retrait: { az: 90, el: 6, why: 'De profil : on voit le poids qui passe sur la jambe arrière et la tête qui recule sans perdre la garde.' },
   'check-avant': { az: 60, el: 8, why: 'Trois quarts : on voit le genou qui monte, le tibia vers l’extérieur et le pied d’appui stable.' },
   'check-arriere': { az: 60, el: 8, why: 'Trois quarts : on voit le genou qui monte, le tibia vers l’extérieur et le pied d’appui stable.' },
-  'pivot-droite': { az: 20, el: 45, zoom: 0.9, focus: 0.4, why: 'Vue surélevée : on voit le pied avant qui reste planté et le pied arrière qui tourne autour.' },
-  'pivot-gauche': { az: 20, el: 45, zoom: 0.9, focus: 0.4, why: 'Vue surélevée : on voit le pied avant qui reste planté et le pied arrière qui tourne autour.' },
-  'sortie-angle': { az: 20, el: 42, zoom: 0.85, focus: 0.4 },
-  sprawl: { az: 90, el: 12, zoom: 0.8, focus: 0.3, why: 'De profil, cadrage large : on voit les jambes qui partent en arrière et les hanches plaquées au sol.' },
-  'feinte-lutte': { az: 70, el: 8, zoom: 0.9, focus: 0.45 },
-  'changement-niveau': { az: 80, el: 8, zoom: 0.9, focus: 0.45 },
+  'pivot-droite': { az: 20, el: 45, zoom: 1, focus: 0.4, why: 'Vue surélevée : on voit le pied avant qui reste planté et le pied arrière qui tourne autour.' },
+  'pivot-gauche': { az: 20, el: 45, zoom: 1, focus: 0.4, why: 'Vue surélevée : on voit le pied avant qui reste planté et le pied arrière qui tourne autour.' },
+  'sortie-angle': { az: 20, el: 42, zoom: 1, focus: 0.4 },
+  sprawl: { az: 90, el: 12, zoom: 1, focus: 0.3, why: 'De profil, cadrage large : on voit les jambes qui partent en arrière et les hanches plaquées au sol.' },
+  'feinte-lutte': { az: 70, el: 8, zoom: 1, focus: 0.45 },
+  'changement-niveau': { az: 80, el: 8, zoom: 1, focus: 0.45 },
 };
 
 const MANUAL: Record<Exclude<CameraMode, 'auto' | 'libre'>, Omit<CameraView, 'why'>> = {
@@ -100,7 +114,7 @@ const MANUAL: Record<Exclude<CameraMode, 'auto' | 'libre'>, Omit<CameraView, 'wh
   'profil-gauche': { az: 90, el: 6, ...FULL },
   'profil-droit': { az: -90, el: 6, ...FULL },
   arriere: { az: 180, el: 10, ...FULL },
-  dessus: { az: 25, el: 40, zoom: 0.9, focus: 0.45 },
+  dessus: { az: 25, el: 40, zoom: 1, focus: 0.45 },
 };
 
 /** best angle for one technique (orthodox guard; use oriented() for the real azimuth) */
@@ -140,4 +154,17 @@ export function manualView(mode: CameraMode): Omit<CameraView, 'why'> | null {
 /** azimuth in the scene: the lead side is the left in orthodox guard, the right in southpaw */
 export function oriented(view: Pick<CameraView, 'az'>, southpaw: boolean) {
   return southpaw ? -view.az : view.az;
+}
+
+const STYLE: Record<DisciplineId, keyof typeof STANCES> = { boxe: 'boxing', kickboxing: 'kickboxing', mma: 'mma', muaythai: 'muaythai' };
+
+/** how far the trunk is turned in the guard of a discipline, degrees (negative: lead shoulder forward) */
+export function torsoYaw(d: DisciplineId) {
+  const s = STANCES[STYLE[d]];
+  return ((s.pelvisYaw + s.chestYaw) * 180) / Math.PI;
+}
+
+/** azimuth of a teaching view in the scene, for a discipline and a guard */
+export function stageAzimuth(view: Pick<CameraView, 'az' | 'ref'>, d: DisciplineId, southpaw: boolean) {
+  return oriented({ az: view.ref === 'torse' ? view.az + torsoYaw(d) : view.az }, southpaw);
 }

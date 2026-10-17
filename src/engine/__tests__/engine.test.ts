@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { Vector3 } from 'three';
 import { loadSkeleton } from '../../test/skeleton';
-import { CoachRig } from '../rig';
+import { CoachRig, ELBOW_MAX_FLEX, KNEE_MAX_FLEX } from '../rig';
 import { getLibrary, getMotion } from '../library';
 import { MotionSampler, duration } from '../motion';
 import { ComboPlayer } from '../player';
@@ -53,6 +53,13 @@ describe('bibliothèque d’animations', () => {
             ] as const) {
               const root = bone.includes('Hand') ? rig.worldOf(bone.startsWith('Left') ? 'LeftArm' : 'RightArm')! : rig.worldOf(bone.startsWith('Left') ? 'LeftUpLeg' : 'RightUpLeg')!;
               if (root.distanceTo(target) > reach * 0.985) continue; // out of reach: the limb is straightened
+              // closer than the joint allows: the elbow / knee limit holds the hand or foot short of
+              // its target on purpose (anatomical limit, see the test below)
+              const hand = bone.includes('Hand');
+              const a = hand ? m.upperArm : m.thigh;
+              const b = hand ? m.foreArm : m.shin;
+              const flex = hand ? ELBOW_MAX_FLEX : KNEE_MAX_FLEX;
+              if (root.distanceTo(target) < Math.sqrt(a * a + b * b + 2 * a * b * Math.cos(flex)) * 1.05) continue;
               const err = rig.worldOf(bone)!.distanceTo(target);
               expect(err, `${c} ${style} ${motion.id} t${i} ${bone}`).toBeLessThan(0.02);
             }
@@ -97,6 +104,32 @@ describe('bibliothèque d’animations', () => {
     expect(a.handL.pos.z).toBeGreaterThan(a.handR.pos.z + 0.2);
     expect(b.handR.pos.z).toBeGreaterThan(b.handL.pos.z + 0.2);
     expect(b.handR.pos.x).toBeCloseTo(-a.handL.pos.x, 3);
+  });
+});
+
+/** angle between two segments, in degrees (0 = straight) */
+const bendDeg = (a: Vector3, b: Vector3, c: Vector3) => (b.clone().sub(a).angleTo(c.clone().sub(b)) * 180) / Math.PI;
+
+describe('biomécanique', () => {
+  test.each(['homme', 'femme'] as const)('%s : aucun coude ni genou plié au-delà de son amplitude naturelle, dans aucune animation', (c) => {
+    const rig = rigs[c];
+    const elbowMax = (ELBOW_MAX_FLEX * 180) / Math.PI + 0.5;
+    const kneeMax = (KNEE_MAX_FLEX * 180) / Math.PI + 0.5;
+    for (const style of STYLES)
+      for (const southpaw of [false, true])
+        for (const id of getLibrary(rig, style).keys()) {
+          if (id.includes('@')) continue;
+          const motion = getMotion(getLibrary(rig, style), id, southpaw)!;
+          const s = new MotionSampler(rig, motion);
+          for (let i = 0; i <= 24; i++) {
+            rig.apply(s.sample((duration(motion) * i) / 24));
+            for (const side of ['Left', 'Right']) {
+              const at = `${style} ${id}${southpaw ? ' gaucher' : ''} t${i} ${side}`;
+              expect(bendDeg(rig.worldOf(`${side}Arm`)!, rig.worldOf(`${side}ForeArm`)!, rig.worldOf(`${side}Hand`)!), `${at} coude`).toBeLessThan(elbowMax);
+              expect(bendDeg(rig.worldOf(`${side}UpLeg`)!, rig.worldOf(`${side}Leg`)!, rig.worldOf(`${side}Foot`)!), `${at} genou`).toBeLessThan(kneeMax);
+            }
+          }
+        }
   });
 });
 

@@ -1,7 +1,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { PerformanceMonitor } from '@react-three/drei';
-import { Box3, Group, Vector3 } from 'three';
+import { Group, Vector3 } from 'three';
 import { CoachModel } from './CoachModel';
 import { useSettings } from '../store/settings';
 import { StageView, StudioStage } from './StudioStage';
@@ -11,7 +11,7 @@ import type { ArBridge } from '../ar/ArBridge';
 import type { CoachRig } from '../engine/rig';
 import { ComboPlayer, PlayerEvents } from '../engine/player';
 import { MotionLibrary, getLibrary } from '../engine/library';
-import { sequenceEnvelope } from '../engine/envelope';
+import { Envelope, sequenceEnvelope } from '../engine/envelope';
 import type { StudyPlayer } from '../engine/study';
 import type { StanceStyle } from '../engine/author';
 import type { CoachId, DisciplineId } from '../domain/types';
@@ -30,11 +30,14 @@ export const STYLE_OF: Record<DisciplineId, StanceStyle> = {
 /** envelopes are computed in the model's own units; the fighter's height scales the whole model */
 /** the motion envelope is computed on the skeleton: scale it to the fighter's height and leave room
  * for what sticks out of the bones (tall hair, helmet, a bulky build) */
-function scaleBox(b: Box3, look: FighterLook | null | undefined) {
+function scaleBox(env: Envelope, look: FighterLook | null | undefined): Envelope {
+  const b = env.box;
+  const pts = env.pts;
   const k = look?.body.height ?? 1;
   b.min.multiplyScalar(k);
   b.max.multiplyScalar(k);
-  if (!look) return b;
+  for (let i = 0; i < pts.length; i++) pts[i] *= k;
+  if (!look) return env;
   const hair = look.hair.style === 'crete' ? 0.03 + 0.06 * look.hair.length : look.hair.style === 'afro' ? 0.03 + 0.05 * look.hair.length : 0;
   const top = Math.max(hair, look.gear.head !== 'aucun' ? 0.03 : 0);
   const bulk = 0.04 * Math.max(0, look.body.muscle - 1) + 0.04 * Math.max(0, look.body.mass);
@@ -43,7 +46,13 @@ function scaleBox(b: Box3, look: FighterLook | null | undefined) {
   b.max.x += bulk;
   b.min.z -= bulk;
   b.max.z += bulk;
-  return b;
+  // the head spheres (top of the envelope) grow with the hair or helmet, every limb with the bulk
+  const headY = b.max.y - top * k - 0.3 * k;
+  for (let i = 0; i < pts.length; i += 4) {
+    pts[i + 3] += bulk;
+    if (pts[i + 1] > headY) pts[i + 3] += top * k;
+  }
+  return env;
 }
 
 export interface CoachStageProps {
@@ -101,7 +110,7 @@ export function CoachStage(props: CoachStageProps) {
   const [rigState, setRigState] = useState<CoachRig | null>(null);
   const follow = useRef(new Vector3());
   const origin = useRef<{ x: number; z: number; yaw: number } | null>({ x: 0, z: 0, yaw: 0 });
-  const envelope = useRef<Box3 | null>(null);
+  const envelope = useRef<Envelope | null>(null);
   const coachGroup = useRef<Group>(null);
   const eventsRef = useRef(events);
   eventsRef.current = events;
@@ -179,7 +188,7 @@ export function CoachStage(props: CoachStageProps) {
   );
 
   // in study mode the camera frames the studied technique only
-  const studyEnvelope = useRef<Box3 | null>(null);
+  const studyEnvelope = useRef<Envelope | null>(null);
   useEffect(() => {
     const r = rigRef.current;
     const m = study?.current?.motion;

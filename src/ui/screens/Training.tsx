@@ -16,7 +16,7 @@ import { CoachAskPanel } from '../coach-ai/CoachAskPanel';
 import type { CoachAction } from '../../coach/engine';
 import { useCoachAi } from '../../store/coachAi';
 import { GuideCard } from '../GuideCard';
-import { CAMERA_MODES, CameraMode, manualView, oriented, sequenceView, techniqueView } from '../../domain/camera';
+import { CAMERA_MODES, CameraMode, manualView, sequenceView, stageAzimuth, techniqueView } from '../../domain/camera';
 import type { StageView } from '../../three/StudioStage';
 import { StudyPanel, useStudy } from '../training/Study';
 import { ArBridge } from '../../ar/ArBridge';
@@ -129,7 +129,7 @@ function TrainingView({ plan }: { plan: Plan }) {
   let stageView: StageView;
   if (manual) stageView = { ...manual, closeUp: false };
   else if (free && lastView.current) stageView = lastView.current;
-  else stageView = { az: oriented(teach, southpaw), el: teach.el, zoom: teach.zoom, focus: teach.focus, closeUp: false };
+  else stageView = { az: stageAzimuth(teach, item.discipline, southpaw), el: teach.el, zoom: teach.zoom, focus: teach.focus, closeUp: false };
   if (closeUp && teach.closeUp && !free) stageView = { ...stageView, zoom: teach.closeUp.zoom, focus: teach.closeUp.focus, closeUp: true };
   if (st.tech && studyRot && !free) stageView = { ...stageView, az: stageView.az + studyRot };
   if (!free) lastView.current = stageView;
@@ -458,7 +458,7 @@ function TrainingView({ plan }: { plan: Plan }) {
               </div>
             )}
             <div className="ar-bottom">
-              <ArControls bridge={ar} compact={arCompact} onToggleCompact={() => setArCompact((c) => !c)} recommendedAz={oriented(teach, southpaw)} />
+              <ArControls bridge={ar} compact={arCompact} onToggleCompact={() => setArCompact((c) => !c)} recommendedAz={stageAzimuth(teach, item.discipline, southpaw)} />
               {!arCompact && (
                 <div className="speed">
                   <span>Vitesse</span>

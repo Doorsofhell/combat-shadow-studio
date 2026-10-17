@@ -202,6 +202,20 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
     d[k.support] = supportPivot(d[k.support], (g[k.support] as { yaw: number }).yaw + turn * deg(kind === 'round' ? 60 : 20), deg(40));
     hands(d, 1);
   });
+  // the trunk turns a lot in the round knee: keep both framing hands far enough from their
+  // shoulder that the elbow stays within its natural range
+  for (const p of [load, hit]) {
+    for (const hs of ['L', 'R'] as const) {
+      const h = hs === 'L' ? p.handL : p.handR;
+      const sh = a.shoulder(p, hs);
+      const v = new Vector3(h.pos.x, h.pos.y, h.pos.z).sub(sh);
+      const min = (a.m.upperArm + a.m.foreArm) * 0.5;
+      if (v.length() < min) {
+        v.setLength(min).add(sh);
+        h.pos = v3(v.x, v.y, v.z);
+      }
+    }
+  }
   const hipH = a.hipJoint(hit, side === 'lead' ? 'L' : 'R');
   // knee point in front at body height, foot hanging under and behind it (toes pointed down)
   const kneePt = new Vector3(kind === 'round' ? turn * 0.1 * s : hipH.x * 0.3, a.target('body').y + 0.04 * s, hipH.z + a.m.thigh * 0.85);
@@ -210,6 +224,10 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
   const land = edit(g, (d) => {
     d.hips.y -= 0.01 * s;
   });
+  const guardHands = edit(hit, (d) => {
+    d.handL = structuredClone(g.handL);
+    d.handR = structuredClone(g.handR);
+  });
   return {
     id: `genou-${kind === 'round' ? 'circulaire' : 'direct'}-${side === 'lead' ? 'avant' : 'arriere'}${clinch ? '-clinch' : ''}`,
     keys: [
@@ -217,6 +235,8 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
       { t: 0.16, pose: load, ease: 'inOut' },
       { t: 0.34, pose: hit, ease: 'snap' },
       { t: 0.4, pose: hit, ease: 'linear' },
+      // hands back in guard first, while the knee is still up: the return never squeezes an elbow
+      { t: 0.48, pose: guardHands, ease: 'inOut' },
       { t: 0.68, pose: land, ease: 'inOut' },
     ],
     chainAt: 0.58,

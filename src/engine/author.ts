@@ -84,6 +84,27 @@ export class Author {
     return p;
   }
 
+  /**
+   * Moves each hand away from its shoulder when it is so close that the elbow would fold beyond its
+   * natural range (the IK holds the joint limit anyway; this keeps the hand on its target).
+   */
+  openElbows(p: Pose, maxFlexDeg = 145) {
+    const a = this.m.upperArm;
+    const b = this.m.foreArm;
+    const min = Math.sqrt(a * a + b * b + 2 * a * b * Math.cos((maxFlexDeg * Math.PI) / 180));
+    for (const side of ['L', 'R'] as const) {
+      const h = side === 'L' ? p.handL : p.handR;
+      const sh = this.shoulder(p, side);
+      const w = h.space === 'world' ? h.pos : this.toWorld(p, h.pos);
+      const v = new Vector3(w.x, w.y, w.z).sub(sh);
+      if (v.length() >= min) continue;
+      v.setLength(min).add(sh);
+      const nw = v3(v.x, v.y, v.z);
+      h.pos = h.space === 'world' ? nw : this.toChest(p, nw);
+    }
+    return p;
+  }
+
   dirToChest(p: Pose, d: V3): V3 {
     const r = new Vector3(d.x, d.y, d.z).applyQuaternion(this.frame(p).q.clone().invert());
     return v3(r.x, r.y, r.z);

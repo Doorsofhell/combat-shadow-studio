@@ -21,7 +21,17 @@ const POINTS: [bone: string, pad: number][] = [
   ['RightToeBase', 0.07],
 ];
 
-const cache = new WeakMap<CoachRig, Map<string, Box3>>();
+/**
+ * Space a sequence occupies: the box of the limbs, and the limbs themselves as spheres
+ * (x, y, z, radius, flattened) so the camera can frame the body tightly instead of the corners of
+ * its box, which stick out far beyond a bladed stance seen from three quarters.
+ */
+export interface Envelope {
+  box: Box3;
+  pts: number[];
+}
+
+const cache = new WeakMap<CoachRig, Map<string, Envelope>>();
 
 /**
  * Space a motion really occupies, in the coach's own frame (origin between the feet at the start,
@@ -29,14 +39,15 @@ const cache = new WeakMap<CoachRig, Map<string, Box3>>();
  * for the volume of the head, fists and feet. The camera frames this box, so a high kick or a
  * sprawl stays in view from its first frame instead of being chased.
  */
-export function motionEnvelope(rig: CoachRig, lib: MotionLibrary, motionId: string, southpaw: boolean): Box3 {
+export function motionEnvelope(rig: CoachRig, lib: MotionLibrary, motionId: string, southpaw: boolean): Envelope {
   let byRig = cache.get(rig);
   if (!byRig) cache.set(rig, (byRig = new Map()));
   const key = `${motionId}${southpaw ? '@g' : ''}`;
   const hit = byRig.get(key);
-  if (hit) return hit.clone();
+  if (hit) return { box: hit.box.clone(), pts: hit.pts.slice() };
   const m = getMotion(lib, motionId, southpaw);
   const box = new Box3();
+  const pts: number[] = [];
   if (m) {
     const s = new MotionSampler(rig, m);
     const n = 16;
@@ -48,17 +59,22 @@ export function motionEnvelope(rig: CoachRig, lib: MotionLibrary, motionId: stri
         if (!w) continue;
         box.expandByPoint(p.copy(w).addScalar(pad));
         box.expandByPoint(p.copy(w).addScalar(-pad));
+        pts.push(w.x, w.y, w.z, pad);
       }
     }
     box.min.y = Math.min(0, box.min.y);
   }
-  byRig.set(key, box);
-  return box.clone();
+  byRig.set(key, { box, pts });
+  return { box: box.clone(), pts: pts.slice() };
 }
 
 /** union of the envelopes of several motions (a combination, guard included) */
-export function sequenceEnvelope(rig: CoachRig, lib: MotionLibrary, motionIds: string[], southpaw: boolean): Box3 {
-  const box = motionEnvelope(rig, lib, 'garde', southpaw);
-  for (const id of new Set(motionIds)) box.union(motionEnvelope(rig, lib, id, southpaw));
-  return box;
+export function sequenceEnvelope(rig: CoachRig, lib: MotionLibrary, motionIds: string[], southpaw: boolean): Envelope {
+  const env = motionEnvelope(rig, lib, 'garde', southpaw);
+  for (const id of new Set(motionIds)) {
+    const e = motionEnvelope(rig, lib, id, southpaw);
+    env.box.union(e.box);
+    for (let i = 0; i < e.pts.length; i++) env.pts.push(e.pts[i]);
+  }
+  return env;
 }

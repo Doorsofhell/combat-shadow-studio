@@ -7,9 +7,9 @@ import { MotionSampler, duration } from '../motion';
 import { sequenceEnvelope } from '../envelope';
 import { analyseMotion, StudyPlayer } from '../study';
 import { TECHNIQUES } from '../../domain/techniques';
-import { oriented, sequenceView, techniqueView } from '../../domain/camera';
+import { oriented, sequenceView, stageAzimuth, techniqueView, torsoYaw } from '../../domain/camera';
 import { STYLE_OF } from '../../three/CoachStage';
-import { FOV, cameraBasis, fitDistance } from '../../three/framing';
+import { FOV, cameraBasis, centerOnSpheres, fitSpheres } from '../../three/framing';
 
 const BONES = ['Head', 'LeftHand', 'RightHand', 'LeftToeBase', 'RightToeBase', 'LeftFoot', 'RightFoot', 'Hips', 'LeftForeArm', 'RightForeArm'];
 const rigs = { homme: new CoachRig(loadSkeleton('homme')), femme: new CoachRig(loadSkeleton('femme')) };
@@ -20,11 +20,11 @@ function worstNdc(c: 'homme' | 'femme', techId: string, southpaw: boolean, aspec
   const rig = rigs[c];
   const lib = getLibrary(rig, STYLE_OF[t.disciplines[0]]);
   const v = techniqueView(techId);
-  const az = (oriented(v, southpaw) * Math.PI) / 180;
+  const az = (stageAzimuth(v, t.disciplines[0], southpaw) * Math.PI) / 180;
   const el = (v.el * Math.PI) / 180;
-  const box = sequenceEnvelope(rig, lib, [t.motion], southpaw);
-  const target = box.getCenter(new Vector3());
-  const dist = fitDistance(box, target, az, el, aspect) / v.zoom;
+  const env = sequenceEnvelope(rig, lib, [t.motion], southpaw);
+  const target = centerOnSpheres(env.pts, { x: 0, z: 0, yaw: 0 }, env.box.getCenter(new Vector3()), az, el);
+  const dist = fitSpheres(env.pts, { x: 0, z: 0, yaw: 0 }, target, az, el, aspect) / v.zoom;
   const b = cameraBasis(az, el);
   const cam = target.clone().addScaledVector(b.fwd, -dist);
   const tv = Math.tan((FOV * Math.PI) / 360);
@@ -60,12 +60,39 @@ describe('caméra pédagogique', () => {
         for (const southpaw of [false, true]) expect(worstNdc(c, t.id, southpaw, aspect), `${c} ${t.id} ${southpaw ? 'gaucher' : ''}`).toBeLessThan(0.97);
   });
 
+  test.each([
+    ['portrait', 0.75],
+    ['paysage', 1.8],
+  ])('le coach remplit le cadre : pas de grand espace vide autour du mouvement (%s)', (_n, aspect) => {
+    const fills: number[] = [];
+    for (const c of ['homme', 'femme'] as const)
+      for (const t of TECHNIQUES) {
+        const w = worstNdc(c, t.id, false, aspect);
+        fills.push(w);
+        // the farthest limb reaches at least 60 % of the half-frame (footwork travels: the lowest)
+        expect(w, `${c} ${t.id}`).toBeGreaterThan(0.6);
+      }
+    expect(fills.reduce((a, b) => a + b) / fills.length).toBeGreaterThan(0.75);
+  });
+
   test('une combinaison garde un angle unique, sans zoom serré', () => {
     const v = sequenceView(['jab', 'direct', 'crochet-avant', 'low-kick-arriere']);
     expect(v.az).toBe(techniqueView('low-kick-arriere').az);
     expect(v.zoom).toBeLessThanOrEqual(1);
     expect(v.closeUp).toBeUndefined();
-    expect(sequenceView(['jab', 'direct']).az).toBe(40);
+    // punches only: the three-quarter view of the trunk
+    expect(sequenceView(['jab', 'direct'])).toMatchObject({ az: 60, ref: 'torse' });
+  });
+
+  test('Jab : vu de trois quarts par rapport au buste dans chaque discipline, jamais de profil', () => {
+    for (const d of ['boxe', 'kickboxing', 'mma', 'muaythai'] as const) {
+      const az = stageAzimuth(techniqueView('jab'), d, false);
+      // angle between the camera and the direction the trunk faces
+      expect(az - torsoYaw(d), d).toBe(60);
+      // and the arm extension stays visible: the camera is not in the punch line
+      expect(az, d).toBeGreaterThanOrEqual(15);
+      expect(stageAzimuth(techniqueView('jab'), d, true), `${d} gaucher`).toBe(-az);
+    }
   });
 
   test('les angles sont inversés en garde gaucher', () => {

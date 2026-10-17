@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { DISCIPLINES, LEVELS } from '../../domain/types';
 import type { DisciplineId, LevelId, TrainingMode } from '../../domain/types';
 import { TECHNIQUE_BY_ID, techniquesFor } from '../../domain/techniques';
-import { sequenceView } from '../../domain/camera';
+import { sequenceView, stageAzimuth } from '../../domain/camera';
 import type { Catalog, CatalogCombo, CatalogGoal, CatalogStatus } from '../../domain/catalog/types';
 import { DISTANCE_LABEL, GOAL_LABEL, GUARD_LABEL, STANCE_LABEL, STATUS_HELP, STATUS_LABEL, tagLabel } from '../../domain/catalog/types';
 import { LENGTH_BANDS, allTags, catalogCounts, dailyPick, randomPick, recentCombos, searchCombos } from '../../domain/catalog/search';
@@ -680,6 +680,7 @@ export function ComboPage() {
 
   const ch = catalog.championById.get(c.champion);
   const view = sequenceView(c.sequence);
+  const viewAz = Math.round(stageAzimuth(view, c.discipline, false));
   const playable = isPlayable3D(c);
   const train = (m: TrainingMode, study = false) => {
     const p = new URLSearchParams({ cat: c.id, mode: m });
@@ -773,7 +774,7 @@ export function ComboPage() {
           Angle de caméra recommandé
         </span>
         <b>
-          {cameraLabel(view.az, view.el)} <span className="small muted">(azimut {view.az}°, élévation {view.el}°)</span>
+          {cameraLabel(viewAz, view.el)} <span className="small muted">(azimut {viewAz}°, élévation {view.el}°)</span>
         </b>
         <span className="small">{view.why}</span>
         <span className="small muted">En garde gaucher, l’angle est automatiquement inversé.</span>

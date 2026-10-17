@@ -11,6 +11,7 @@ chaque lot, point de restauration, rapport (TEST RÉUSSI / ÉCHOUÉ / NON EXÉCU
 | `restauration/lot-1` | v0.4.0 | Lisibilité des textes (WCAG AA) |
 | `restauration/lot-2` | v0.5.0 | Thèmes clair, sombre et automatique |
 | `restauration/lot-3` | v0.6.0 | Postures de la génération aléatoire |
+| `restauration/lot-4a` | v0.7.0 | Caméra 3/4 par rapport au buste, cadrage serré, limites articulaires |
 
 Les étiquettes Git (tags) ne passent pas par le proxy de l’environnement : chaque point de restauration est donc une
 branche `restauration/...` sur GitHub. Retour arrière : `git checkout restauration/<nom>`.
@@ -50,7 +51,7 @@ Captures de référence : `/mnt/project-files/combat-shadow-studio/reference/<da
 - Signalé par Youssef : la génération aléatoire produit parfois des postures anormales (membres ou articulations mal placés).
   Cause trouvée au lot 3 : le squelette était reconstruit pendant l’animation (changement de longueur des jambes) et
   prenait la garde pour posture de repos ; chaque mouvement ajoutait alors la garde une seconde fois. Corrigé.
-- Trouvé au lot 3, à traiter au lot 4 (biomécanique) : coude trop fléchi (jusqu’à 172° entre bras et avant-bras, limite
+- Trouvé au lot 3, corrigé au lot 4 : coude trop fléchi (jusqu’à 172° entre bras et avant-bras, limite
   anatomique 150°) dans « genou circulaire avant » (coude gauche) et, pour la coach femme, « high kick arrière » en
   muay-thaï (coude droit). Présent avec le squelette de référence.
 - Observé 2 fois sur une dizaine d’ouvertures, en développement et en rendu logiciel : une forme blanche géante
@@ -68,7 +69,8 @@ Captures de référence : `/mnt/project-files/combat-shadow-studio/reference/<da
 | Créateur 3D | Toutes les personnalisations existantes fonctionnent | `customize.test`, `editor.test`, `coach-studio.spec` | rendus par onglet |
 | Génération aléatoire | Personnages anatomiquement cohérents | `editor.test` (100 graines par sexe, archétypes, curseurs aux limites), `pose.test` (posture de référence, jambes aux limites dans toutes les animations) | planche de rendus aléatoires |
 | Sauvegarde | Personnages conservés après redémarrage | `coach-studio.spec`, `migration*.test` | – |
-| Animations | Aucun mouvement détérioré | `engine.test`, `camera.test` (toutes techniques, deux coachs, deux gardes) | rendus Lab |
+| Animations | Aucun mouvement détérioré, aucune articulation au-delà de son amplitude | `engine.test` (dont biomécanique : coudes ≤ 150°, genoux ≤ 155°), `camera.test` (toutes techniques, deux coachs, deux gardes) | rendus Lab |
+| Caméra et cadrage | Angle 3/4 du buste, corps entier jamais coupé, coach grand | `camera.test` (cadre, remplissage, Jab 3/4 dans chaque discipline) | captures entraînement |
 | Équipements | Positionnement correct | `customize.test` (zones, gants) | rendus par discipline |
 | Mode clair | Tous les écrans lisibles | `contrast.spec` (17 écrans, système clair), `theme.spec` | captures mode clair |
 | Mode sombre | Tous les écrans lisibles | `contrast.spec` (17 écrans, système sombre, états), `theme.spec` | captures mode sombre |

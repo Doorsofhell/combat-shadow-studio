@@ -2,7 +2,8 @@ import { ReactNode, useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { ContactShadows, OrbitControls } from '@react-three/drei';
 import { Box3, PerspectiveCamera, Vector3 } from 'three';
-import { FOV, fitDistance } from './framing';
+import { FOV, centerOnSpheres, fitDistance, fitSpheres } from './framing';
+import type { Envelope } from '../engine/envelope';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 /** where the camera should look from, in scene terms (azimuth already oriented for the guard) */
@@ -29,7 +30,7 @@ export interface StudioStageProps {
   /** follow this point (the coach's hips) horizontally */
   follow?: { current: Vector3 };
   /** space the whole sequence occupies, in the coach's local frame (see motionEnvelope) */
-  envelope?: { current: Box3 | null };
+  envelope?: { current: Envelope | null };
   /** coach origin, to place the envelope (x, z, yaw) */
   origin?: { current: { x: number; z: number; yaw: number } | null };
   orbit?: boolean;
@@ -84,7 +85,8 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
     const aspect = size.width / Math.max(1, size.height);
 
     // space to frame, placed at the coach's current origin
-    const local = envelope?.current ?? DEFAULT_BOX;
+    const env = envelope?.current;
+    const local = env?.box ?? DEFAULT_BOX;
     const o = origin?.current ?? { x: follow?.current.x ?? 0, z: follow?.current.z ?? 0, yaw: 0 };
     tmpBox.makeEmpty();
     const c = Math.cos(o.yaw);
@@ -97,11 +99,11 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
     }
     const target = tmpBox.getCenter(new Vector3());
     const height = Math.max(1, local.max.y);
-    if (vv.closeUp) target.y = vv.focus * height;
-
     const az = vv.az * deg;
     const el = vv.el * deg;
-    let dist = fitDistance(tmpBox, target, az, el, aspect) / Math.max(0.3, vv.zoom);
+    if (vv.closeUp) target.y = vv.focus * height;
+    else if (env?.pts.length) centerOnSpheres(env.pts, o, target, az, el);
+    let dist = (env?.pts.length ? fitSpheres(env.pts, o, target, az, el, aspect) : fitDistance(tmpBox, target, az, el, aspect)) / Math.max(0.3, vv.zoom);
     dist = Math.min(14, Math.max(1.2, dist));
 
     if (!cur.current) cur.current = { az, el, dist, target: target.clone() };
