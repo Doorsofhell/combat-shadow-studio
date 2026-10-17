@@ -32,6 +32,17 @@ export interface Motion {
 export const duration = (m: Motion) => m.keys[m.keys.length - 1].t;
 export const chainPoint = (m: Motion) => m.chainAt ?? duration(m);
 
+/**
+ * Phase of a motion at time t, for highlighting the key point that applies: preparation up to about
+ * half-way to the first impact (or to mid-motion without impact), execution up to shortly after
+ * it, then return to guard.
+ */
+export function motionPhase(m: Motion, t: number): 'preparation' | 'execution' | 'retour' {
+  const d = duration(m);
+  const peak = m.impacts[0] ?? d * 0.5;
+  return t < peak * 0.5 ? 'preparation' : t <= peak + (d - peak) * 0.2 ? 'execution' : 'retour';
+}
+
 export function ease(e: Ease | undefined, u: number) {
   switch (e) {
     case 'linear':

@@ -7,6 +7,7 @@ import { useSettings } from '../../store/settings';
 import { useCustom } from '../../store/custom';
 import { formatDuration } from '../../store/stats';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
+import { PointPhase, instructionOf } from '../../domain/instructions';
 import { DISCIPLINES, LEVELS, TrainingMode } from '../../domain/types';
 import { MODE_LABEL, Plan, customPlan, exercisePlan, programPlan } from '../training/plan';
 import { useSession } from '../training/useSession';
@@ -81,7 +82,7 @@ function TrainingView({ plan }: { plan: Plan }) {
   const updateProfile = useProfile((s) => s.update);
   const settings = useSettings((s) => s.settings);
   const setSettings = useSettings((s) => s.set);
-  const { view, item, events, onPlayer, start, pause, resume, restart, goto, setSpeed } = useSession(plan);
+  const { view, item, events, onPlayer, player, start, pause, resume, restart, goto, setSpeed } = useSession(plan);
   const [camMode, setCamMode] = useState<CameraMode>(settings.cameraMode ?? 'auto');
   const [closeUp, setCloseUp] = useState(false);
   const [studyRot, setStudyRot] = useState(0);
@@ -185,32 +186,53 @@ function TrainingView({ plan }: { plan: Plan }) {
   const phaseLabel =
     view.phase === 'decompte' ? 'Prépare-toi' : view.phase === 'repos' ? 'Repos' : view.phase === 'travail' ? (item.work ? `Round ${view.round}/${item.rounds}` : MODE_LABEL[plan.mode]) : view.phase === 'termine' ? 'Terminé' : 'Prêt';
 
-  let moveName = cur?.name ?? (view.phase === 'travail' ? 'Garde' : phaseLabel);
-  let cue = cur?.cues[0] ?? '';
+  // the technique taught right now: the one studied, the one played, else the first of the sequence
+  // between two repetitions the last move stays on screen, so the panel does not jump
+  const lastFocus = useRef<string | null>(null);
+  const focusId = st.tech ?? curId ?? (view.phase === 'travail' || view.phase === 'decompte' ? lastFocus.current ?? seq[0] : seq[0]);
+  lastFocus.current = focusId;
+  const focus = focusId ? TECHNIQUE_BY_ID.get(focusId) : undefined;
+  const instr = focus ? instructionOf(focus) : null;
+  let moveName = cur?.name ?? (view.phase === 'travail' ? focus?.name ?? 'Garde' : phaseLabel);
+  let cue = instr?.main ?? cur?.cues[0] ?? '';
   if (view.phase === 'pret') {
-    moveName = 'En garde';
-    cue = 'Appuie sur Démarrer quand tu es prêt.';
+    moveName = focus?.name ?? 'En garde';
+    if (!instr) cue = 'Appuie sur Démarrer quand tu es prêt.';
   } else if (view.phase === 'repos') {
     moveName = 'Repos';
     cue = view.banner ?? 'Respire, relâche les épaules, reste en mouvement léger.';
   } else if (view.phase === 'termine') {
     moveName = 'Séance terminée';
     cue = `${view.reps} répétitions, ${formatDuration(view.sessionSec)} de travail actif.`;
-  } else if (view.phase === 'travail' && !cur) {
+  } else if (view.phase === 'travail' && !cur && !instr) {
     cue = 'Retour en garde, respire.';
   }
 
-  // essential points always on screen: every key point of a single technique, or one line per
-  // move of a combination (the current move highlighted), condensed for the training screen
-  const uniq = [...new Set(seq)];
-  const focusId = st.tech ?? curId ?? (view.phase === 'travail' ? null : seq[0]);
-  const points: { id: string; label?: string; text: string }[] =
-    uniq.length === 1
-      ? (TECHNIQUE_BY_ID.get(uniq[0])?.keyPoints ?? []).map((k, i) => ({ id: `${uniq[0]}#${i}`, text: k }))
-      : uniq.map((id) => {
-          const t = TECHNIQUE_BY_ID.get(id);
-          return { id, label: t?.name ?? id, text: t?.keyPoints[0] ?? t?.cues[0] ?? '' };
-        });
+  // key points of the taught technique (feet, pelvis, limbs, return to guard); the one matching the
+  // phase being played is highlighted
+  const [livePhase, setLivePhase] = useState<{ techniqueId: string; phase: PointPhase } | null>(null);
+  const studyPhase = st.study.current?.phase;
+  useEffect(() => {
+    if (st.tech || view.phase !== 'travail') {
+      setLivePhase(null);
+      return;
+    }
+    const id = window.setInterval(() => {
+      const now = player.current?.phaseNow() ?? null;
+      setLivePhase((prev) => (prev?.techniqueId === now?.techniqueId && prev?.phase === now?.phase ? prev : now));
+    }, 100);
+    return () => window.clearInterval(id);
+  }, [st.tech, view.phase, player]);
+  const phaseNow: PointPhase | null = st.tech
+    ? studyPhase === 'point'
+      ? 'execution'
+      : studyPhase === 'preparation' || studyPhase === 'execution' || studyPhase === 'retour'
+        ? studyPhase
+        : null
+    : livePhase && livePhase.techniqueId === focusId
+      ? livePhase.phase
+      : null;
+  const points = (view.phase === 'termine' ? [] : instr?.points ?? []).map((pt, i) => ({ id: `${focusId}#${i}`, ...pt, now: !!pt.phase && pt.phase === phaseNow }));
   const stepSpeed = (d: number) => setSpeed(Math.round(Math.min(1.5, Math.max(0.25, view.speed + d)) * 100) / 100);
 
   // if the text is enlarged so much that everything cannot fit, switch to an explicit scrolling layout
@@ -344,15 +366,20 @@ function TrainingView({ plan }: { plan: Plan }) {
           )}
           {view.phase === 'travail' && next && !st.tech && <span className="next">Puis : {next.name}</span>}
         </div>
-        {!st.tech && <p className="tr-cue">{cue}</p>}
-        <ul className={`tr-points ${points.length > 2 ? 'cols' : ''}`} aria-label="Points clés">
-          {points.map((pt) => (
-            <li key={pt.id} className={pt.label && pt.id === focusId ? 'now' : ''}>
-              {pt.label && <b>{pt.label} : </b>}
-              {pt.text}
-            </li>
-          ))}
-        </ul>
+        {!st.tech && (
+          <p className="tr-cue" data-testid="main-instruction">
+            {cue}
+          </p>
+        )}
+        {points.length > 0 && (
+          <ul className={`tr-points ${points.length > 3 ? 'cols' : ''}`} aria-label="Points clés" data-testid="key-points">
+            {points.map((pt) => (
+              <li key={pt.id} className={pt.now ? 'now' : ''} data-zone={pt.zone} aria-current={pt.now ? 'step' : undefined}>
+                {pt.text}
+              </li>
+            ))}
+          </ul>
+        )}
         {!st.tech && (
           <div className="tr-meta">
             <span>

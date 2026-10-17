@@ -373,5 +373,5 @@ export function useSession(plan: Plan) {
     banner: s.banner,
   };
 
-  return { view, item, events, onPlayer, start, pause, resume, restart, goto, setSpeed };
+  return { view, item, events, onPlayer, player, start, pause, resume, restart, goto, setSpeed };
 }

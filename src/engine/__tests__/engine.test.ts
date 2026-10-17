@@ -137,6 +137,25 @@ describe('lecteur d’enchaînements', () => {
   const rig = rigs.homme;
   const steps = (ids: string[]) => ids.map((id) => ({ techniqueId: id, motionId: id }));
 
+  test('indique la technique jouée et sa phase (préparation, exécution, retour), rien en garde ni en pause', () => {
+    const p = new ComboPlayer(rig, getLibrary(rig, 'boxing'), false);
+    p.setSequence(steps(['jab']), 0.5);
+    expect(p.phaseNow()).toBeNull();
+    p.play();
+    const seen: string[] = [];
+    for (let f = 0; f < 60 * 4; f++) {
+      p.update(1 / 60);
+      const n = p.phaseNow();
+      if (n) {
+        expect(n.techniqueId).toBe('jab');
+        if (seen[seen.length - 1] !== n.phase) seen.push(n.phase);
+      }
+    }
+    expect(seen.slice(0, 3)).toEqual(['preparation', 'execution', 'retour']);
+    p.pause();
+    expect(p.phaseNow()).toBeNull();
+  });
+
   test('joue les mouvements dans l’ordre, compte les répétitions et enchaîne sans retour à une pose neutre', () => {
     const order: number[] = [];
     let reps = 0;

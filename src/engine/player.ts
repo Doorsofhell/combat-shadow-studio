@@ -3,7 +3,7 @@
  * (no return to a neutral pose between strikes), idles in guard between repetitions,
  * repositions the coach after footwork, and reports what is being played.
  */
-import { Motion, MotionSampler, chainPoint } from './motion';
+import { Motion, MotionSampler, chainPoint, motionPhase } from './motion';
 import { ResolvedPose, blendResolved, transformResolved } from './pose';
 import type { CoachRig } from './rig';
 import { MotionLibrary, getMotion } from './library';
@@ -108,6 +108,13 @@ export class ComboPlayer {
 
   get currentIndex() {
     return this.cur.auto ? -1 : this.cur.index;
+  }
+
+  /** the step being played and its phase, or null in guard, at rest or paused */
+  phaseNow(): { techniqueId: string; phase: 'preparation' | 'execution' | 'retour' } | null {
+    const a = this.next ?? this.cur;
+    if (!this.playing || a.auto) return null;
+    return { techniqueId: a.techniqueId, phase: motionPhase(a.sampler.motion, a.t) };
   }
 
   play() {

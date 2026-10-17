@@ -3,6 +3,7 @@ import type { CoachRig } from '../../engine/rig';
 import type { MotionLibrary } from '../../engine/library';
 import { STUDY_PHASE_LABEL, StudyPlayer } from '../../engine/study';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
+import { instructionOf } from '../../domain/instructions';
 import { CUE_LABEL, CueId, useSettings } from '../../store/settings';
 import { IconNext, IconPause, IconPlay, IconPrev } from '../icons';
 
@@ -80,7 +81,7 @@ export function StudyPanel({
   }, []);
   if (!study) return <div className="cue">Chargement du coach…</div>;
   const phase = study.phase;
-  const key = phase === 'point' ? t?.keyPoints[0] ?? t?.cues[0] : phase === 'depart' ? 'Observe la garde : écart des pieds, mains, menton.' : t?.cues[0];
+  const key = phase === 'depart' ? 'Observe la garde : écart des pieds, mains, menton.' : t ? instructionOf(t).main : '';
   const uniq = [...new Set(sequence)];
   return (
     <div className="study" data-testid="study-panel">
