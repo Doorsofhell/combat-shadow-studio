@@ -1,0 +1,171 @@
+import { expect, Page, test } from '@playwright/test';
+import { DEFAULT_PROFILE } from '../../src/store/profile';
+import { defaultLook } from '../../src/editor/look';
+
+/**
+ * The training screen must hold on one screen, without any scrolling: coach, move name, current
+ * instruction, every key point, timers and controls, on small to large phones, portrait and
+ * landscape, and with enlarged text.
+ */
+async function seed(page: Page) {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  await page.evaluate(
+    async ({ profile, look }) => {
+      const put = (k: string, v: unknown) =>
+        new Promise<void>((res, rej) => {
+          const r = indexedDB.open('keyval-store');
+          r.onupgradeneeded = () => r.result.createObjectStore('keyval');
+          r.onsuccess = () => {
+            const tx = r.result.transaction('keyval', 'readwrite');
+            tx.objectStore('keyval').put(JSON.stringify(v), k);
+            tx.oncomplete = () => res();
+            tx.onerror = () => rej(tx.error);
+          };
+        });
+      await put('u:local:css-profile', { state: { profile }, version: 0 });
+      await put('u:local:css-fighters', { state: { fighters: [{ id: 'f1', name: 'Test', look, createdAt: '', updatedAt: '' }], activeId: 'f1' }, version: 0 });
+    },
+    { profile: { ...DEFAULT_PROFILE, completed: true, coach: 'homme' }, look: defaultLook('homme') },
+  );
+  await page.reload();
+}
+
+/** a hash change does not reload the app: force a real navigation so every check starts clean */
+async function open(page: Page, path: string) {
+  await page.goto('about:blank');
+  await page.goto(path);
+}
+
+const SIZES = [
+  { name: 'petit 360x640', width: 360, height: 640 },
+  { name: 'standard 393x851', width: 393, height: 851 },
+  { name: 'grand 430x932', width: 430, height: 932 },
+  { name: 'paysage 740x360', width: 740, height: 360 },
+  { name: 'paysage 915x412', width: 915, height: 412 },
+];
+const EXERCISES = ['boxe-debutant-01', 'muaythai-expert-02', 'mma-expert-07'];
+
+async function checkFits(page: Page, label: string) {
+  const r = await page.evaluate(() => {
+    const vh = window.innerHeight;
+    const vw = window.innerWidth;
+    const root = document.querySelector('.training') as HTMLElement;
+    const inView = (sel: string) =>
+      [...document.querySelectorAll(sel)].every((e) => {
+        const b = e.getBoundingClientRect();
+        return b.width > 0 && b.top >= -1 && b.bottom <= vh + 1 && b.left >= -1 && b.right <= vw + 1;
+      });
+    const clipped = [...document.querySelectorAll('.tr-info *, .tr-top *, .tr-bottom *')]
+      .filter((e) => {
+        const el = e as HTMLElement;
+        // any element holding text directly (also buttons with an icon), except visually hidden labels
+        const ownText = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim());
+        if (!ownText || el.getBoundingClientRect().width <= 1) return false;
+        return el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 2;
+      })
+      .map((e) => `${e.className || e.tagName}:${e.textContent}`)
+      .join(' / ');
+    const stage = (document.querySelector('.tr-stage') as HTMLElement).getBoundingClientRect();
+    return {
+      scrollY: document.scrollingElement!.scrollHeight - vh,
+      scrollX: document.scrollingElement!.scrollWidth - vw,
+      rootScroll: root.scrollHeight - root.clientHeight,
+      overflowMode: root.classList.contains('overflow'),
+      points: inView('.tr-points li'),
+      cue: inView('.tr-cue'),
+      name: inView('[data-testid=current-move]'),
+      title: inView('[data-testid=exercise-name]'),
+      time: inView('[data-testid=session-time]'),
+      play: inView('[data-testid=start], [data-testid=pause], [data-testid=resume]'),
+      ar: inView('[data-testid=ar-button]'),
+      decompose: inView('[data-testid=decompose]'),
+      clipped,
+      stageH: stage.height,
+    };
+  });
+  expect(r.scrollY, `${label} défilement vertical`).toBeLessThanOrEqual(0);
+  expect(r.scrollX, `${label} défilement horizontal`).toBeLessThanOrEqual(0);
+  expect(r.rootScroll, `${label} débordement`).toBeLessThanOrEqual(1);
+  expect(r.overflowMode, label).toBe(false);
+  for (const k of ['points', 'cue', 'name', 'title', 'time', 'play', 'ar', 'decompose'] as const) expect(r[k], `${label} ${k} visible`).toBe(true);
+  expect(r.clipped, `${label} textes coupés`).toBe('');
+  expect(r.stageH, `${label} hauteur du coach`).toBeGreaterThan(150);
+}
+
+test('écran d’entraînement sans défilement, toutes tailles', async ({ page }) => {
+  await seed(page);
+  for (const s of SIZES) {
+    await page.setViewportSize({ width: s.width, height: s.height });
+    for (const ex of EXERCISES) {
+      await open(page, `/#/entrainement?ex=${ex}&mode=technique`);
+      await expect(page.getByTestId('exercise-name')).toBeVisible();
+      await page.waitForTimeout(400);
+      await checkFits(page, `${s.name} ${ex}`);
+    }
+  }
+});
+
+test('texte agrandi : tout reste visible, ou bascule explicite', async ({ page }) => {
+  await seed(page);
+  await page.setViewportSize({ width: 393, height: 851 });
+  for (const zoom of ['115%', '130%']) {
+    await open(page, `/#/entrainement?ex=mma-expert-07&mode=technique`);
+    await page.evaluate((z) => (document.documentElement.style.fontSize = z), zoom);
+    await page.waitForTimeout(400);
+    await checkFits(page, `police ${zoom}`);
+  }
+  // extreme enlargement: the explicit scrolling layout takes over instead of hiding content
+  await page.evaluate(() => (document.documentElement.style.fontSize = '220%'));
+  await page.setViewportSize({ width: 360, height: 640 });
+  await page.waitForTimeout(500);
+  const mode = await page.evaluate(() => {
+    const root = document.querySelector('.training') as HTMLElement;
+    return { overflow: root.classList.contains('overflow'), clipped: root.scrollHeight > root.clientHeight && getComputedStyle(root).overflowY === 'hidden' };
+  });
+  expect(mode.clipped).toBe(false);
+});
+
+test('mode Décomposer et pause : rien ne déborde', async ({ page }) => {
+  await seed(page);
+  await page.setViewportSize({ width: 360, height: 640 });
+  await open(page, `/#/entrainement?ex=boxe-debutant-08&mode=technique`);
+  await page.getByTestId('decompose').click();
+  await expect(page.getByTestId('study-panel')).toBeVisible();
+  const r = await page.evaluate(() => ({ s: document.scrollingElement!.scrollHeight - innerHeight, root: (() => { const t = document.querySelector('.training') as HTMLElement; return t.scrollHeight - t.clientHeight; })() }));
+  expect(r.s).toBeLessThanOrEqual(0);
+  expect(r.root).toBeLessThanOrEqual(1);
+});
+
+test('demander au coach : pause, réponse hors ligne, ralenti, sans défilement ni consignes masquées', async ({ page }) => {
+  await seed(page);
+  for (const [w, h] of [
+    [360, 640],
+    [740, 360],
+  ]) {
+    await page.setViewportSize({ width: w, height: h });
+    await open(page, `/#/entrainement?ex=boxe-debutant-01&mode=technique`);
+    await page.getByTestId('start').click();
+    await page.getByTestId('ask-coach').click();
+    await expect(page.getByTestId('phase')).toHaveText('Pause');
+    await page.getByTestId('coach-input').fill('Pourquoi dois-je pivoter le pied arrière ?');
+    await page.getByTestId('coach-send').click();
+    await expect(page.getByTestId('coach-answer')).toContainText('pied arrière');
+    const r = await page.evaluate(() => {
+      const panel = document.querySelector('[data-testid=coach-ask-panel]')!.getBoundingClientRect();
+      const info = document.querySelector('.tr-info')!.getBoundingClientRect();
+      const answer = document.querySelector('[data-testid=coach-answer]')!.getBoundingClientRect();
+      const overlap = !(panel.bottom <= info.top + 1 || panel.right <= info.left + 1 || panel.left >= info.right - 1);
+      return { scroll: document.scrollingElement!.scrollHeight - innerHeight, overlap, answerH: answer.height };
+    });
+    expect(r.scroll, `${w}x${h}`).toBeLessThanOrEqual(0);
+    expect(r.overlap, `${w}x${h} le panneau masque les consignes`).toBe(false);
+    expect(r.answerH, `${w}x${h} réponse lisible`).toBeGreaterThan(30);
+    // still paused: training resumes only on request
+    await expect(page.getByTestId('resume')).toBeVisible();
+    await page.getByTestId('coach-input').fill('Montre-moi le crochet gauche au ralenti');
+    await page.getByTestId('coach-send').click();
+    await expect(page.getByTestId('study-panel')).toBeVisible();
+    await expect(page.getByTestId('current-move')).toHaveText('Crochet gauche');
+  }
+});

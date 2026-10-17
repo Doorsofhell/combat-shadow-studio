@@ -1,0 +1,573 @@
+/* Training screen (white studio), augmented reality overlay and "Décomposer" mode. */
+/* -------------------------------------------------- training */
+.training,
+.light-scope {
+  /* WHITE TRAINING STUDIO: the one light screen of the app, whatever the menus' theme */
+  --bg: #ffffff;
+  --ink: #111214;
+  --ink-2: #3d4046;
+  --muted: #5f646c;
+  --line: #e3e4e8;
+  --soft: #f3f4f6;
+  --red: #d7263d;
+  --red-soft: #fdecef;
+  color: var(--ink);
+  color-scheme: light;
+}
+
+/* Fixed, scroll-free layout: header | 3D stage (takes what is left) | instructions | controls.
+   The stage is the only flexible row; every text row keeps its natural height, so nothing is
+   cut and nothing needs scrolling. Landscape: coach on the left, text and controls on the right. */
+.training {
+  position: fixed;
+  inset: 0;
+  height: 100dvh;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-areas: 'top' 'stage' 'info' 'bottom';
+  background: var(--bg);
+  overflow: hidden;
+  font-size: clamp(0.86rem, 0.8rem + 0.3vw, 1rem);
+}
+
+/* explicit alternative when the text is enlarged beyond what one screen can hold */
+.training.overflow {
+  overflow-y: auto;
+  grid-template-rows: auto minmax(min(46dvh, 340px), 1fr) auto auto;
+  height: auto;
+  min-height: 100dvh;
+}
+
+.tr-top {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: max(6px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 4px max(10px, env(safe-area-inset-left));
+}
+
+.tr-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.tr-top .title {
+  font-family: var(--font-display, 'Rajdhani', 'Inter', sans-serif);
+  font-weight: 700;
+  font-size: 1.15em;
+  line-height: 1.15;
+}
+
+.tr-top .eyebrow {
+  font-size: 0.72em;
+}
+
+.ar-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 0.75em;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ar-state.on {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+.tr-stage {
+  grid-area: stage;
+  position: relative;
+  min-height: 0;
+  background: radial-gradient(ellipse at 50% 92%, #eceef1 0%, #fff 60%);
+}
+
+.tr-stage canvas {
+  touch-action: none;
+}
+
+.stage-tools {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 2;
+}
+
+.stage-tools .btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  font-size: 0.75em;
+}
+
+.stage-tools .btn.on {
+  background: var(--ink);
+  color: #fff;
+}
+
+.cam-btn {
+  flex-direction: column;
+  gap: 0 !important;
+  line-height: 1.1;
+}
+
+.stage-badge {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.phase {
+  font-weight: 800;
+  font-size: 0.8rem;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #fff;
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.phase.light {
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.phase.repos {
+  background: #1b7f4b;
+}
+
+.phase.decompte,
+.phase.travail {
+  background: var(--red);
+}
+
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 6rem;
+  font-weight: 900;
+  color: var(--red);
+  pointer-events: none;
+  z-index: 3;
+  text-shadow: 0 2px 20px #fff;
+}
+
+.solo-note {
+  position: absolute;
+  left: 10px;
+  right: 64px;
+  bottom: 8px;
+  z-index: 2;
+  font-size: 0.75em;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 5px 9px;
+  color: var(--ink-2);
+}
+
+.tr-info {
+  grid-area: info;
+  padding: 8px max(14px, env(safe-area-inset-right)) 6px max(14px, env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border-top: 1px solid var(--line);
+}
+
+.tr-now {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tr-now .name {
+  font-family: var(--font-display, 'Rajdhani', 'Inter', sans-serif);
+  font-size: 1.55em;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.tr-now .next {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+.tr-cue {
+  font-size: 1.05em;
+  font-weight: 650;
+  color: var(--ink);
+  margin: 0;
+}
+
+.tr-points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 3px 14px;
+  font-size: 0.92em;
+  color: var(--ink-2);
+}
+
+.tr-points li {
+  position: relative;
+  padding-left: 14px;
+  line-height: 1.3;
+}
+
+.tr-points li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.5em;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--red);
+}
+
+.tr-points li.now {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.tr-points li.now::before {
+  width: 8px;
+  left: 1px;
+}
+
+@media (min-width: 520px) {
+  .tr-points.cols {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.tr-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 0.8em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.tr-meta b {
+  color: var(--ink);
+}
+
+.tr-bottom {
+  grid-area: bottom;
+  padding: 6px max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg);
+}
+
+.tr-secondary {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+
+.tr-secondary .btn.sm {
+  line-height: 1.1;
+  font-size: 0.82em;
+  padding: 2px 6px;
+  text-wrap: balance;
+}
+
+.tr-secondary .btn.sm {
+  min-height: 44px;
+  gap: 6px;
+}
+
+.speed-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.speed-step .btn {
+  min-width: 44px;
+  min-height: 40px;
+  font-size: 1.2rem;
+  padding: 0;
+  background: transparent;
+}
+
+.speed-step b {
+  font-size: 0.72em;
+  text-align: center;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 48px 48px minmax(0, 1fr) 48px 48px;
+  gap: 8px;
+}
+
+.controls .main {
+  min-height: 52px;
+  font-size: 1.05em;
+}
+
+.speed {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+
+.speed input {
+  flex: 1;
+  min-width: 0;
+}
+
+.speed b {
+  width: 46px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cue {
+  font-size: 0.95em;
+  color: var(--ink-2);
+}
+
+/* immersive: only the coach, the move, its points and the main control */
+.training.immersive .tr-top .eyebrow,
+.training.immersive .tr-meta,
+.training.immersive .tr-secondary,
+.training.immersive .controls .btn.icon {
+  display: none;
+}
+
+.training.immersive .controls {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* small phones: tighter spacing, same content */
+@media (max-height: 680px) {
+  .tr-info {
+    gap: 3px;
+    padding-top: 5px;
+  }
+  .tr-now .name {
+    font-size: 1.3em;
+  }
+  .controls .main {
+    min-height: 48px;
+  }
+}
+
+/* landscape: coach on the left, instructions on the right, one row of controls underneath */
+@media (orientation: landscape) and (min-width: 560px) {
+  .training {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'top top'
+      'stage info'
+      'bottom bottom';
+  }
+  .tr-info {
+    border-top: 0;
+    border-left: 1px solid var(--line);
+    justify-content: center;
+    padding-top: 4px;
+    gap: 3px;
+  }
+  .tr-now .name {
+    font-size: 1.3em;
+  }
+  .tr-points {
+    font-size: 0.86em;
+    gap: 2px 12px;
+  }
+  .tr-points.cols {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tr-bottom {
+    flex-direction: row;
+    align-items: center;
+    border-top: 1px solid var(--line);
+    padding-top: 5px;
+    padding-bottom: max(5px, env(safe-area-inset-bottom));
+  }
+  .tr-bottom .controls {
+    flex: 1;
+    order: -1;
+  }
+  .tr-bottom .controls .main {
+    min-height: 48px;
+  }
+  .tr-secondary {
+    grid-auto-columns: auto;
+  }
+  /* one row of controls: the secondary buttons keep their icon, the main button its full label */
+  .tr-secondary .btn.sm {
+    min-width: 44px;
+    padding: 0 10px;
+  }
+  .tr-bottom .controls {
+    min-width: 300px;
+  }
+  .tr-top {
+    padding-top: max(3px, env(safe-area-inset-top));
+    padding-bottom: 2px;
+  }
+}
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 18, 20, 0.35);
+  z-index: 30;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.sheet {
+  width: 100%;
+  max-width: 760px;
+  max-height: 85vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 18px 18px 0 0;
+  padding: 16px 16px max(16px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* -------------------------------------------------- augmented reality (WebXR DOM overlay) */
+.ar-overlay { display: none; }
+.ar-overlay:xr-overlay {
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: max(12px, env(safe-area-inset-top)) 12px max(14px, env(safe-area-inset-bottom));
+  pointer-events: none; color: #fff; font-family: inherit; background: transparent !important;
+}
+.ar-overlay:xr-overlay > * { pointer-events: auto; }
+.ar-top { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.phase.light { background: rgba(255,255,255,.9); color: var(--ink); }
+.ar-move { align-self: center; background: rgba(17,18,20,.6); padding: 6px 12px; border-radius: 999px; font-size: 15px; }
+.ar-bottom { display: flex; flex-direction: column; gap: 8px; background: rgba(17,18,20,.45); border-radius: 18px; padding: 10px; }
+.ar-bottom .speed { color: #fff; }
+.ar-controls { display: flex; flex-direction: column; gap: 8px; }
+.ar-hint { text-align: center; font-weight: 700; font-size: 14px; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+.ar-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px; }
+.ar-sliders label { display: flex; flex-direction: column; gap: 2px; }
+
+/* -------------------------------------------------- study ("Décomposer") */
+.study { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.study-controls { grid-template-columns: 48px minmax(0, 1fr) 48px; }
+.study-speeds { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; }
+.study-speeds .chip { justify-content: center; padding: 0 6px; white-space: nowrap; min-width: 0; }
+.study .cue.strong { color: var(--red); font-weight: 700; }
+.cam-why { font-size: 12px; color: var(--muted, #666); }
+
+
+@media (orientation: landscape) and (min-width: 560px) and (max-width: 979px) {
+  .tr-secondary .sec-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+/* -------------------------------------------------- "Demander au coach" (compact, over the lower part of the stage) */
+.tr-ask {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  z-index: 4;
+  display: flex;
+  justify-content: center;
+  max-height: calc(100% - 52px);
+}
+.tr-ask .cai-panel {
+  max-height: 100%;
+  min-height: 0;
+  gap: 6px;
+  padding: 8px 10px 8px;
+}
+/* compact: the answer takes what is left and scrolls inside the panel, nothing spills over the text */
+.tr-ask .cai-panel > * {
+  flex-shrink: 0;
+}
+.tr-ask .cai-answer {
+  flex: 1 1 auto;
+  min-height: 2.8em;
+  max-height: none;
+  overflow-y: auto;
+}
+.tr-ask .cai-suggest {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.tr-ask .cai-head h2 {
+  font-size: 0.95rem;
+}
+.tr-ask .cai-head .btn.icon,
+.tr-ask .cai-hist {
+  min-height: 34px;
+}
+.tr-ask .cai-actions .btn,
+.tr-ask .cai-suggest .chip {
+  min-height: 36px;
+}
+.tr-ask .cai-answer .q {
+  display: none;
+}
+@media (orientation: landscape) and (min-width: 560px) {
+  /* landscape: the panel covers the stage (training is paused), the instructions on the right stay visible */
+  .tr-ask {
+    left: 8px;
+    right: 58px;
+    top: 8px;
+    max-height: none;
+    align-items: flex-end;
+  }
+}

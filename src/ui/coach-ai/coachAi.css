@@ -1,0 +1,232 @@
+/* Coach IA : panneau compact de l’écran d’entraînement (clair, via .light-scope) et écran d’historique. */
+
+.cai-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 560px;
+  max-height: min(52dvh, 420px);
+  padding: 10px 12px 12px;
+  border-radius: var(--radius);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 28px rgba(17, 18, 20, 0.14);
+  color: var(--ink);
+  font-size: 0.95rem;
+  animation: cai-in var(--t-med) var(--ease) both;
+}
+
+@keyframes cai-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cai-panel {
+    animation: none;
+  }
+}
+
+.cai-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+}
+
+.cai-head h2 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.cai-head .grow {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.cai-badge::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2f9e6a;
+}
+
+.cai-badge.online::before {
+  background: #c27c0e;
+}
+
+.cai-head .btn.icon {
+  width: 40px;
+  min-height: 40px;
+  margin-right: -6px;
+}
+
+/* the answer keeps a few lines; longer answers scroll inside the panel */
+.cai-answer {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 7.8em;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  white-space: pre-line;
+  line-height: 1.45;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--soft);
+}
+
+.cai-answer .q {
+  display: block;
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin-bottom: 4px;
+}
+
+.cai-answer.placeholder {
+  color: var(--muted);
+}
+
+.cai-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cai-actions .btn {
+  min-height: 40px;
+  padding: 0 12px;
+  font-size: 0.88rem;
+  border-color: var(--line);
+}
+
+.cai-suggest {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.cai-suggest .chip {
+  min-height: 34px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  flex: none;
+}
+
+.cai-form {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.cai-form .input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  background: var(--bg);
+}
+
+.cai-form .btn.icon {
+  width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--line);
+}
+
+.cai-form .btn.icon.send {
+  background: var(--red);
+  color: #fff;
+  border-color: transparent;
+}
+
+.cai-form .btn.icon.listening {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.cai-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.cai-foot a {
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ---------------------------------------------------------------- history screen (dark) */
+.cai-history {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cai-history li {
+  border-radius: var(--radius);
+  background: var(--soft);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cai-history .q {
+  font-weight: 600;
+}
+
+.cai-history .a {
+  white-space: pre-line;
+  color: var(--ink-2);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.cai-history time {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.cai-hist {
+  font-size: 0.78rem;
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 4px;
+}

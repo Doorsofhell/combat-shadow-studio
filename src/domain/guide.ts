@@ -1,0 +1,675 @@
+/**
+ * Step-by-step execution sheet for every technique, written for an orthodox guard
+ * (left foot forward). In gaucher guard, swap left and right.
+ */
+export interface TechniqueGuide {
+  /** what to do, in order, from the guard back to the guard */
+  steps: string[];
+  /** frequent mistakes to avoid */
+  errors: string[];
+  /** when to breathe out */
+  breath?: string;
+}
+
+const EXPIRE_IMPACT = 'Souffle court par le nez ou la bouche au moment de l’impact.';
+
+export const GUIDES: Record<string, TechniqueGuide> = {
+  // ------------------------------------------------------------------ garde & déplacements
+  garde: {
+    steps: [
+      'Place le pied gauche devant, le pied droit derrière, écartés d’environ la largeur des épaules, comme sur deux rails parallèles.',
+      'Tourne le pied avant légèrement vers l’intérieur (environ 30°) et le pied arrière à 45°, talon arrière légèrement décollé.',
+      'Fléchis légèrement les genoux, poids réparti à 50/50 entre les deux pieds, sur l’avant des pieds.',
+      'Monte la main droite contre la joue droite, poing fermé sans serrer, coude collé aux côtes.',
+      'Place la main gauche devant, à hauteur du menton, environ 15 à 20 cm devant le visage.',
+      'Rentre le menton, monte légèrement l’épaule gauche, regarde devant toi à travers tes gants.',
+      'Relâche les épaules et respire calmement : la garde doit pouvoir tenir plusieurs minutes.',
+    ],
+    errors: ['Pieds sur une même ligne (déséquilibre latéral)', 'Menton levé', 'Coudes écartés qui ouvrent le corps', 'Jambes tendues'],
+    breath: 'Respiration lente et régulière par le nez.',
+  },
+  'pas-avant': {
+    steps: [
+      'Pars de la garde.',
+      'Pousse avec le pied arrière et fais glisser le pied avant d’environ 15 à 20 cm vers l’avant.',
+      'Ramène aussitôt le pied arrière de la même distance pour retrouver l’écartement de départ.',
+      'Les pieds restent proches du sol (pas rasants), les mains ne bougent pas.',
+    ],
+    errors: ['Avancer le pied arrière en premier', 'Croiser ou rapprocher les pieds', 'Sauter au lieu de glisser', 'Baisser la garde en avançant'],
+  },
+  'pas-arriere': {
+    steps: [
+      'Pars de la garde.',
+      'Pousse avec le pied avant et recule le pied arrière d’environ 15 à 20 cm.',
+      'Ramène le pied avant de la même distance.',
+      'Garde le buste légèrement penché vers l’avant et le menton rentré.',
+    ],
+    errors: ['Reculer le pied avant en premier', 'Se redresser ou pencher le buste en arrière', 'Reculer sur les talons'],
+  },
+  'pas-gauche': {
+    steps: [
+      'Pars de la garde.',
+      'Pousse avec le pied droit et déplace le pied gauche d’environ 15 cm vers la gauche.',
+      'Ramène le pied droit de la même distance vers la gauche.',
+      'Termine avec exactement le même écartement et la même orientation qu’au départ.',
+    ],
+    errors: ['Faire partir le pied droit en premier (les pieds se croisent)', 'Grands pas qui déséquilibrent', 'Tourner les épaules'],
+  },
+  'pas-droite': {
+    steps: [
+      'Pars de la garde.',
+      'Pousse avec le pied gauche et déplace le pied droit d’environ 15 cm vers la droite.',
+      'Ramène le pied gauche de la même distance.',
+      'Retrouve ta garde intacte, mains hautes.',
+    ],
+    errors: ['Faire partir le pied gauche en premier', 'Ramener les pieds l’un contre l’autre', 'Baisser la main droite'],
+  },
+  'pivot-droite': {
+    steps: [
+      'Pars de la garde, poids légèrement sur la jambe avant.',
+      'Reste sur l’avant du pied gauche : c’est ton axe de rotation.',
+      'Fais tourner le pied droit en arc de cercle vers la droite, d’environ un quart de tour.',
+      'Le buste tourne avec les hanches : tu fais face à un nouvel angle, toujours en garde.',
+    ],
+    errors: ['Pivoter sur le talon avant', 'Lever le pied avant', 'Ouvrir la garde pendant la rotation'],
+  },
+  'pivot-gauche': {
+    steps: [
+      'Pars de la garde.',
+      'Prends appui sur l’avant du pied gauche.',
+      'Fais tourner le pied droit en arc vers la gauche pour pivoter vers l’extérieur.',
+      'Termine face au nouvel angle, mains hautes.',
+    ],
+    errors: ['Pivoter sur le talon', 'Croiser les jambes', 'Regarder le sol'],
+  },
+  'sortie-angle': {
+    steps: [
+      'Pars de la garde.',
+      'Fais un pas du pied gauche en diagonale avant gauche.',
+      'Pivote immédiatement sur l’avant du pied gauche en ramenant le pied droit.',
+      'Tu te retrouves sur le côté de l’adversaire imaginaire, prêt à frapper.',
+    ],
+    errors: ['Sortir en ligne droite vers l’arrière', 'Rester face à la ligne d’attaque', 'Pas trop long qui écarte les pieds'],
+  },
+
+  // ------------------------------------------------------------------ poings
+  jab: {
+    steps: [
+      'Pars de la garde, menton rentré.',
+      'Lance le poing gauche en ligne droite vers le menton imaginaire, sans armer ni reculer la main.',
+      'Pendant le trajet, tourne le poing pour finir paume vers le sol, frappe avec les deux premières phalanges.',
+      'Monte l’épaule gauche pour protéger le menton ; la main droite reste collée à la joue.',
+      'Petit transfert du poids vers la jambe avant, le pied avant peut avancer de quelques centimètres.',
+      'Ramène le poing par le même chemin, aussi vite qu’à l’aller, jusqu’à la garde.',
+    ],
+    errors: ['Baisser la main avant de frapper (on voit le coup venir)', 'Bras complètement verrouillé', 'Lever le menton', 'Laisser tomber la main droite', 'Revenir en arc de cercle'],
+    breath: EXPIRE_IMPACT,
+  },
+  direct: {
+    steps: [
+      'Pars de la garde.',
+      'Pousse sur l’avant du pied droit en faisant pivoter le talon droit vers l’extérieur.',
+      'Tourne la hanche droite puis l’épaule droite vers l’avant : la rotation part du sol.',
+      'Lance le poing droit en ligne droite vers le menton, paume vers le sol à l’impact.',
+      'Le poids passe sur la jambe avant, le menton reste caché derrière l’épaule droite, la main gauche protège le visage.',
+      'Ramène le poing droit en ligne droite contre la joue et replace le talon arrière.',
+    ],
+    errors: ['Frapper seulement avec le bras sans tourner la hanche', 'Pied arrière à plat qui bloque la rotation', 'Pencher la tête au-delà du genou avant', 'Baisser la main gauche'],
+    breath: EXPIRE_IMPACT,
+  },
+  'jab-corps': {
+    steps: [
+      'Fléchis les genoux pour baisser ton niveau : la tête descend, le buste reste droit.',
+      'Lance le poing gauche en ligne droite vers le plexus ou l’estomac.',
+      'La main droite reste haute contre la joue, le menton derrière l’épaule gauche.',
+      'Ramène le poing et remonte en garde en poussant sur les jambes.',
+    ],
+    errors: ['Se pencher en avant au lieu de plier les genoux', 'Baisser les yeux vers la cible', 'Laisser la main droite tomber'],
+    breath: EXPIRE_IMPACT,
+  },
+  'direct-corps': {
+    steps: [
+      'Baisse ton niveau en fléchissant les genoux.',
+      'Pivote le pied et la hanche droite comme pour le direct.',
+      'Frappe en ligne droite vers le plexus, le poing légèrement plus bas que l’épaule.',
+      'La main gauche reste devant le visage ; remonte en garde après l’impact.',
+    ],
+    errors: ['Plonger la tête vers l’avant', 'Oublier la rotation de la hanche', 'Rester bas après le coup'],
+    breath: EXPIRE_IMPACT,
+  },
+  'crochet-avant': {
+    steps: [
+      'Pars de la garde, poids légèrement sur la jambe avant.',
+      'Lève le coude gauche à hauteur du poing pour que l’avant-bras soit horizontal, bras plié à environ 90°.',
+      'Pivote sur l’avant du pied gauche, talon vers l’extérieur, et tourne hanches et épaules vers la droite.',
+      'Le poing décrit un arc court vers la mâchoire, paume vers le sol ou vers toi.',
+      'La main droite reste collée à la joue droite, menton rentré.',
+      'Reviens en garde par le même arc en replaçant le pied avant.',
+    ],
+    errors: ['Armer le bras en arrière', 'Coude trop bas (coup qui monte)', 'Bras trop tendu, crochet trop large', 'Tourner sans pivoter le pied avant'],
+    breath: EXPIRE_IMPACT,
+  },
+  'crochet-arriere': {
+    steps: [
+      'Pars de la garde.',
+      'Pivote le pied droit sur l’avant, talon vers l’extérieur, et tourne la hanche droite vers l’avant.',
+      'Lève le coude droit à hauteur du poing, bras plié à 90°.',
+      'Le poing droit décrit un arc court vers la mâchoire, le poids passe sur la jambe avant.',
+      'La main gauche reste devant le visage.',
+      'Reviens en garde en remettant la main droite contre la joue.',
+    ],
+    errors: ['Arc trop large qui ouvre la garde', 'Rester sur le talon arrière', 'Laisser tomber la main gauche'],
+    breath: EXPIRE_IMPACT,
+  },
+  'crochet-avant-corps': {
+    steps: [
+      'Fléchis les genoux et décale légèrement le buste vers la gauche.',
+      'Coude gauche bas, bras plié, avant-bras presque vertical.',
+      'Pivote le pied avant et les hanches vers la droite : le poing remonte vers le foie ou les côtes.',
+      'La main droite protège le visage, le coude droit protège le flanc ; remonte en garde.',
+    ],
+    errors: ['Se pencher sans plier les genoux', 'Frapper avec le bras seul', 'Garder la tête au centre, exposée'],
+    breath: EXPIRE_IMPACT,
+  },
+  'crochet-arriere-corps': {
+    steps: [
+      'Fléchis les genoux et décale la tête vers la gauche, hors de la ligne centrale.',
+      'Pivote le pied droit et la hanche droite vers l’avant.',
+      'Frappe en arc court vers les côtes avec le poing droit, coude bas.',
+      'La main gauche protège le visage ; remonte en garde.',
+    ],
+    errors: ['Coude trop écarté', 'Tête au centre', 'Rester bas après le coup'],
+    breath: EXPIRE_IMPACT,
+  },
+  'uppercut-avant': {
+    steps: [
+      'Pars de la garde et transfère un peu de poids sur la jambe avant en fléchissant le genou gauche.',
+      'Laisse le poing gauche descendre de quelques centimètres seulement, paume tournée vers toi.',
+      'Pousse sur la jambe gauche et tourne légèrement la hanche gauche vers la droite.',
+      'Le poing monte verticalement sous le menton imaginaire, coude près du corps, bras plié.',
+      'Reviens immédiatement en garde.',
+    ],
+    errors: ['Baisser trop la main (le coup se voit)', 'Bras tendu, coup qui part loin devant', 'Sauter au lieu de pousser sur les jambes'],
+    breath: EXPIRE_IMPACT,
+  },
+  'uppercut-arriere': {
+    steps: [
+      'Fléchis légèrement les genoux, le poids un peu sur la jambe droite.',
+      'Laisse le poing droit descendre à hauteur de poitrine, paume vers toi.',
+      'Pousse sur la jambe droite et pivote le pied droit, la hanche droite tourne vers l’avant.',
+      'Le poing remonte verticalement devant toi jusqu’à hauteur du menton, coude vers le bas, avant-bras vertical.',
+      'La main gauche reste contre le visage ; ramène le poing droit contre la joue.',
+    ],
+    errors: ['Armer en baissant l’épaule', 'Coude qui s’écarte', 'Lever la tête en frappant'],
+    breath: EXPIRE_IMPACT,
+  },
+  overhand: {
+    steps: [
+      'Fléchis les genoux et décale la tête vers la gauche (petit changement de niveau).',
+      'Pivote le pied droit et la hanche droite.',
+      'Le poing droit passe en arc par-dessus, de haut en bas, comme pour passer au-dessus d’une garde.',
+      'Le poids passe franchement sur la jambe avant, menton derrière l’épaule droite.',
+      'Reviens en garde sans rester déséquilibré vers l’avant.',
+    ],
+    errors: ['Arc trop large qui part derrière la tête', 'Tomber vers l’avant', 'Garder la tête dans l’axe'],
+    breath: EXPIRE_IMPACT,
+  },
+
+  // ------------------------------------------------------------------ défenses
+  'esquive-droite': {
+    steps: [
+      'Pars de la garde.',
+      'Tourne légèrement les épaules vers la gauche et fléchis un peu le genou droit.',
+      'La tête se décale d’environ une largeur de tête vers la droite, à l’extérieur du jab imaginaire.',
+      'Les yeux restent sur l’adversaire, les mains restent hautes.',
+      'Reviens au centre en garde, prêt à contrer.',
+    ],
+    errors: ['Se pencher à partir de la taille', 'Baisser les mains', 'Esquive trop grande qui fait perdre l’équilibre'],
+  },
+  'esquive-gauche': {
+    steps: [
+      'Pars de la garde.',
+      'Tourne légèrement les épaules vers la droite et fléchis un peu le genou gauche.',
+      'La tête se décale vers la gauche, à l’intérieur, hors de la ligne du direct.',
+      'Garde les mains hautes et les yeux devant ; reviens au centre.',
+    ],
+    errors: ['Regarder le sol', 'Pencher le buste vers l’avant', 'Rester décalé trop longtemps'],
+  },
+  'roll-droite': {
+    steps: [
+      'Pars de la garde.',
+      'Plie les genoux pour passer sous un crochet gauche imaginaire.',
+      'Fais un U avec la tête : descends, passe de gauche à droite sous la trajectoire, remonte à droite.',
+      'Le dos reste droit, les mains restent hautes contre le visage.',
+      'Remonte en garde, prêt à contrer avec la main gauche.',
+    ],
+    errors: ['Se pencher en avant au lieu de plier les genoux', 'Baisser les mains', 'Mouvement trop lent ou trop ample'],
+  },
+  'roll-gauche': {
+    steps: [
+      'Plie les genoux pour passer sous un crochet droit imaginaire.',
+      'Fais un U avec la tête, de droite à gauche.',
+      'Le dos reste droit, les mains hautes.',
+      'Remonte en garde, prêt à contrer avec la main droite.',
+    ],
+    errors: ['Courber le dos', 'Regarder le sol', 'Remonter trop tard'],
+  },
+  'blocage-haut': {
+    steps: [
+      'Pars de la garde.',
+      'Monte l’avant-bras du côté attaqué contre la tête, coude vers l’avant, poing au-dessus du front.',
+      'Rentre le menton et contracte légèrement le buste pour absorber le coup.',
+      'L’autre main reste en garde ; redescends en garde aussitôt.',
+    ],
+    errors: ['Fermer les yeux', 'Ouvrir le coude sur le côté', 'Rester bloqué en défense sans riposter'],
+  },
+  'blocage-corps-avant': {
+    steps: [
+      'Pars de la garde.',
+      'Descends le coude contre les côtes du côté attaqué en tournant légèrement le buste vers ce côté.',
+      'Fléchis légèrement les genoux pour que le coude couvre le foie ou l’estomac.',
+      'La main reste près du visage ; reviens en garde.',
+    ],
+    errors: ['Baisser la main jusqu’à la ceinture', 'Écarter le coude du corps', 'Se pencher en avant'],
+  },
+  parade: {
+    steps: [
+      'Pars de la garde.',
+      'Avec la paume de la main droite, dévie le jab imaginaire de quelques centimètres vers l’intérieur.',
+      'Le geste est court : la main ne dépasse pas l’épaule gauche.',
+      'Ramène immédiatement la main contre la joue.',
+    ],
+    errors: ['Geste trop large qui ouvre le visage', 'Aller chercher le coup loin devant', 'Oublier de revenir en garde'],
+  },
+  retrait: {
+    steps: [
+      'Pars de la garde.',
+      'Transfère le poids sur la jambe arrière en reculant légèrement le buste, sans bouger les pieds.',
+      'La tête recule juste hors de portée, les mains restent hautes.',
+      'Reviens en avant en poussant sur la jambe arrière, souvent avec un contre.',
+    ],
+    errors: ['Pencher la tête en arrière en levant le menton', 'Reculer le buste au-delà du pied arrière', 'Baisser les mains'],
+  },
+  'check-avant': {
+    steps: [
+      'Pars de la garde, poids un peu sur la jambe arrière.',
+      'Lève le genou gauche vers l’extérieur et vers le haut, tibia vertical, pied fléchi.',
+      'Le genou va vers le coude gauche pour fermer l’espace ; les mains restent hautes.',
+      'Le pied d’appui reste bien planté, genou légèrement fléchi.',
+      'Repose le pied à sa place de garde.',
+    ],
+    errors: ['Lever la jambe droit devant au lieu de vers l’extérieur', 'Pied tendu (on encaisse sur la cheville)', 'Baisser les mains', 'Se pencher en arrière'],
+  },
+  'check-arriere': {
+    steps: [
+      'Pars de la garde, poids sur la jambe avant.',
+      'Lève le genou droit vers l’extérieur et vers le haut, tibia vertical.',
+      'Les mains restent hautes, le buste droit.',
+      'Repose le pied droit à sa place.',
+    ],
+    errors: ['Perdre l’équilibre vers l’arrière', 'Tibia incliné', 'Garde ouverte'],
+  },
+
+  // ------------------------------------------------------------------ pieds
+  'front-kick-avant': {
+    steps: [
+      'Pars de la garde, transfère le poids sur la jambe arrière.',
+      'Monte le genou gauche haut devant toi (armé), pied fléchi.',
+      'Pousse la hanche vers l’avant et déplie la jambe : frappe avec la plante, orteils relevés.',
+      'Le pied d’appui reste à plat ou sur l’avant du pied, les mains restent hautes.',
+      'Ramène le genou (réarmé) puis repose le pied en garde.',
+    ],
+    errors: ['Lancer la jambe sans monter le genou', 'Frapper avec les orteils', 'Pencher le buste loin en arrière', 'Reposer le pied trop loin'],
+    breath: EXPIRE_IMPACT,
+  },
+  'front-kick-arriere': {
+    steps: [
+      'Transfère le poids sur la jambe avant.',
+      'Monte le genou droit haut devant toi en le faisant passer près de la jambe d’appui.',
+      'Pousse la hanche droite vers l’avant et déplie la jambe, frappe avec la plante du pied.',
+      'Ramène le genou et repose le pied derrière, en garde.',
+    ],
+    errors: ['Armé trop bas', 'Buste qui part en arrière', 'Mains qui descendent'],
+    breath: EXPIRE_IMPACT,
+  },
+  'teep-avant': {
+    steps: [
+      'Pars de la garde, poids sur la jambe arrière.',
+      'Monte le genou gauche vers la poitrine, pied fléchi.',
+      'Pousse la hanche vers l’avant en dépliant la jambe : la plante du pied repousse l’estomac imaginaire.',
+      'Le buste se penche très légèrement en arrière pour l’équilibre, les mains restent hautes.',
+      'Ramène le genou et repose le pied devant, en garde.',
+    ],
+    errors: ['Coup de pied qui monte au lieu de pousser', 'Pas de poussée de hanche', 'Garde baissée', 'Reposer le pied à plat sans contrôle'],
+    breath: EXPIRE_IMPACT,
+  },
+  'teep-arriere': {
+    steps: [
+      'Transfère le poids sur la jambe avant.',
+      'Monte le genou droit vers la poitrine.',
+      'Pousse la hanche droite vers l’avant en dépliant la jambe, frappe avec la plante du pied.',
+      'Ramène le genou et repose le pied derrière.',
+    ],
+    errors: ['Jambe qui part sans armé', 'Pied d’appui qui ne pivote pas un peu', 'Se pencher trop en arrière'],
+    breath: EXPIRE_IMPACT,
+  },
+  'low-kick-arriere': {
+    steps: [
+      'Pars de la garde. Option : petit pas du pied gauche vers l’extérieur gauche pour ouvrir l’angle.',
+      'Pivote sur l’avant du pied gauche, talon vers la cible, environ 70 à 90°.',
+      'Tourne les hanches et laisse la jambe droite partir en arc, genou légèrement fléchi.',
+      'Frappe la cuisse imaginaire avec le bas du tibia, à mi-hauteur de cuisse.',
+      'Le bras droit descend le long du corps pour équilibrer, la main gauche protège le visage.',
+      'Ramène la jambe par le même chemin et repose-la en garde.',
+    ],
+    errors: ['Frapper avec le pied au lieu du tibia', 'Pied d’appui qui ne pivote pas (genou en torsion)', 'Garde qui tombe', 'Coup qui monte au lieu de traverser'],
+    breath: EXPIRE_IMPACT,
+  },
+  'low-kick-avant': {
+    steps: [
+      'Pars de la garde ; fais un petit pas de recul du pied gauche ou un changement de garde rapide si besoin.',
+      'Pivote sur l’avant du pied droit.',
+      'La jambe gauche part en arc, frappe avec le tibia sur l’intérieur ou l’extérieur de la cuisse.',
+      'Mains hautes ; ramène la jambe en garde.',
+    ],
+    errors: ['Pas de pivot du pied arrière', 'Frapper avec le pied', 'Rester déséquilibré après le coup'],
+    breath: EXPIRE_IMPACT,
+  },
+  'middle-kick-arriere': {
+    steps: [
+      'Pars de la garde. Option : petit pas du pied gauche vers l’extérieur gauche.',
+      'Pivote sur l’avant du pied gauche jusqu’à ce que le talon pointe vers la cible.',
+      'Tourne fortement les hanches : la jambe droite monte en arc, presque tendue, à hauteur des côtes.',
+      'Frappe avec le tibia sur les côtes ou le bras de l’adversaire imaginaire.',
+      'Le bras droit balance vers l’arrière pour l’équilibre, la main gauche protège le visage.',
+      'En muay-thaï la jambe traverse puis revient ; en kick-boxing elle se replie. Repose-la en garde.',
+    ],
+    errors: ['Hanches qui ne tournent pas (coup sans puissance)', 'Talon d’appui qui reste face à la cible', 'Frapper avec le pied', 'Se pencher très loin en arrière'],
+    breath: EXPIRE_IMPACT,
+  },
+  'middle-kick-avant': {
+    steps: [
+      'Fais un petit changement de garde ou un pas de recul du pied gauche pour donner de l’élan.',
+      'Pivote sur l’avant du pied droit.',
+      'La jambe gauche monte en arc à hauteur des côtes, frappe avec le tibia.',
+      'Mains hautes ; repose la jambe en garde.',
+    ],
+    errors: ['Pas d’élan, coup trop léger', 'Pied d’appui à plat', 'Garde ouverte'],
+    breath: EXPIRE_IMPACT,
+  },
+  'high-kick-arriere': {
+    steps: [
+      'Pars de la garde, pas d’ouverture du pied gauche vers l’extérieur.',
+      'Pivote sur l’avant du pied gauche, talon vers la cible, genou d’appui légèrement fléchi.',
+      'Tourne complètement les hanches : la jambe droite monte en arc jusqu’à la tête.',
+      'Frappe avec le bas du tibia ou le cou-de-pied sur le côté de la tête.',
+      'La main gauche reste devant le visage ; ramène la jambe et reviens en garde.',
+    ],
+    errors: ['Monter la jambe sans tourner les hanches', 'Jambe d’appui tendue et bloquée', 'Pencher trop le buste sur le côté', 'Viser trop haut sans souplesse : travaille d’abord le middle'],
+    breath: EXPIRE_IMPACT,
+  },
+  'high-kick-avant': {
+    steps: [
+      'Fais un changement de garde rapide ou un pas de recul du pied gauche.',
+      'Pivote sur l’avant du pied droit.',
+      'La jambe gauche monte en arc vers la tête, hanches tournées.',
+      'Frappe avec le tibia ou le cou-de-pied ; reviens en garde.',
+    ],
+    errors: ['Pas de pivot', 'Garde basse', 'Manque d’échauffement des hanches'],
+    breath: EXPIRE_IMPACT,
+  },
+  'roundhouse-arriere': {
+    steps: [
+      'Pars de la garde.',
+      'Pivote sur l’avant du pied gauche.',
+      'Monte le genou droit sur le côté (armé), pied pointé.',
+      'Déplie la jambe en fouettant : frappe avec le cou-de-pied.',
+      'Replie la jambe (réarmé) et repose-la derrière, en garde.',
+    ],
+    errors: ['Oublier l’armé du genou', 'Ne pas replier la jambe après l’impact', 'Pivot insuffisant'],
+    breath: EXPIRE_IMPACT,
+  },
+  'roundhouse-avant': {
+    steps: [
+      'Transfère le poids sur la jambe arrière.',
+      'Monte le genou gauche sur le côté en pivotant sur l’avant du pied droit.',
+      'Fouette avec la jambe gauche, frappe avec le cou-de-pied.',
+      'Replie la jambe et repose-la devant.',
+    ],
+    errors: ['Coup sans armé', 'Garde qui tombe', 'Reposer le pied trop loin'],
+    breath: EXPIRE_IMPACT,
+  },
+
+  // ------------------------------------------------------------------ genoux
+  'genou-direct-arriere': {
+    steps: [
+      'Pars de la garde ; en muay-thaï les mains peuvent avancer comme pour saisir la nuque.',
+      'Monte sur l’avant du pied gauche (appui).',
+      'Pousse la hanche droite vers l’avant et monte le genou droit, pied pointé vers le sol.',
+      'Frappe vers l’avant et vers le haut avec la pointe du genou, buste légèrement en arrière.',
+      'Repose le pied derrière, en garde.',
+    ],
+    errors: ['Monter le genou sans pousser la hanche', 'Se pencher vers l’avant', 'Pied fléchi vers le haut'],
+    breath: EXPIRE_IMPACT,
+  },
+  'genou-direct-avant': {
+    steps: [
+      'Fais un petit changement de pieds ou un pas pour donner de l’élan.',
+      'Monte le genou gauche en poussant la hanche gauche vers l’avant.',
+      'Frappe avec la pointe du genou, mains hautes.',
+      'Repose le pied devant, en garde.',
+    ],
+    errors: ['Pas de poussée de hanche', 'Garde ouverte', 'Perte d’équilibre'],
+    breath: EXPIRE_IMPACT,
+  },
+  'genou-circulaire-arriere': {
+    steps: [
+      'Pars de la garde, monte sur l’avant du pied gauche.',
+      'Lève le genou droit sur le côté, cuisse presque horizontale.',
+      'Tourne les hanches : le genou arrive en arc sur les côtes imaginaires.',
+      'Repose le pied en garde.',
+    ],
+    errors: ['Pied d’appui qui ne pivote pas', 'Mouvement qui part du pied au lieu de la hanche', 'Mains basses'],
+    breath: EXPIRE_IMPACT,
+  },
+  'genou-circulaire-avant': {
+    steps: [
+      'Transfère le poids sur la jambe arrière.',
+      'Lève le genou gauche sur le côté.',
+      'Tourne les hanches pour l’amener en arc vers les côtes.',
+      'Repose le pied devant.',
+    ],
+    errors: ['Hanches bloquées', 'Buste penché', 'Garde basse'],
+    breath: EXPIRE_IMPACT,
+  },
+
+  // ------------------------------------------------------------------ coudes
+  'coude-horizontal-avant': {
+    steps: [
+      'Pars de la garde, à courte distance.',
+      'Lève le coude gauche à hauteur d’épaule, main près de l’oreille ou de la poitrine.',
+      'Pivote sur l’avant du pied gauche et tourne hanches et épaules vers la droite.',
+      'Le coude passe horizontalement à hauteur de la mâchoire, frappe avec la pointe ou l’avant-bras près du coude.',
+      'La main droite protège le visage ; reviens en garde.',
+    ],
+    errors: ['Coude qui part en arc trop large', 'Frapper avec le bras sans tourner le corps', 'Main droite qui descend'],
+    breath: EXPIRE_IMPACT,
+  },
+  'coude-horizontal-arriere': {
+    steps: [
+      'Pars de la garde à courte distance.',
+      'Lève le coude droit à hauteur d’épaule.',
+      'Pivote le pied droit et tourne la hanche droite vers l’avant.',
+      'Le coude traverse horizontalement à hauteur de la mâchoire ; la main gauche protège.',
+      'Reviens en garde.',
+    ],
+    errors: ['Armer en reculant le coude', 'Talon arrière qui ne tourne pas', 'Tête qui avance trop'],
+    breath: EXPIRE_IMPACT,
+  },
+  'coude-diagonal-arriere': {
+    steps: [
+      'Lève le coude droit plus haut que la tête.',
+      'Pivote le pied droit et descends le coude en diagonale vers le sourcil ou la pommette imaginaire.',
+      'Le poids passe sur la jambe avant, la main gauche reste devant le visage.',
+      'Reviens en garde.',
+    ],
+    errors: ['Frapper en tombant vers l’avant', 'Garde gauche qui descend', 'Coude trop loin du corps'],
+    breath: EXPIRE_IMPACT,
+  },
+  'coude-diagonal-avant': {
+    steps: [
+      'Lève le coude gauche au-dessus de la tête.',
+      'Pivote sur l’avant du pied gauche et descends le coude en diagonale.',
+      'La main droite protège le visage ; reviens en garde.',
+    ],
+    errors: ['Pas de rotation du corps', 'Main droite basse', 'Perte d’équilibre'],
+    breath: EXPIRE_IMPACT,
+  },
+  'coude-montant-arriere': {
+    steps: [
+      'Fléchis légèrement les genoux.',
+      'Pousse sur la jambe droite et monte le coude droit verticalement devant ton visage, comme un uppercut très court.',
+      'La pointe du coude vise le menton imaginaire, la main droite passe près de l’oreille.',
+      'Redescends en garde.',
+    ],
+    errors: ['Coude qui part sur le côté', 'Lever la tête', 'Main gauche qui descend'],
+    breath: EXPIRE_IMPACT,
+  },
+  'coude-montant-avant': {
+    steps: [
+      'Fléchis légèrement les genoux.',
+      'Monte le coude gauche verticalement devant toi en poussant sur les jambes.',
+      'Pointe du coude vers le menton imaginaire ; reviens en garde.',
+    ],
+    errors: ['Mouvement de bras sans les jambes', 'Garde droite qui tombe'],
+    breath: EXPIRE_IMPACT,
+  },
+
+  // ------------------------------------------------------------------ clinch
+  'clinch-tirage': {
+    steps: [
+      'Avance les deux mains comme pour saisir l’arrière de la tête de l’adversaire, une main sur l’autre.',
+      'Serre les coudes l’un contre l’autre devant toi, avant-bras contre la clavicule imaginaire.',
+      'Tire vers le bas et vers toi en reculant légèrement les hanches.',
+      'Tiens-toi droit, hanches avancées, prêt à monter le genou.',
+    ],
+    errors: ['Croiser les doigts', 'Coudes écartés', 'Dos rond'],
+  },
+  'genou-clinch': {
+    steps: [
+      'Pars du clinch simulé, mains derrière la tête imaginaire.',
+      'Tire vers le bas avec les mains.',
+      'Monte le genou droit droit devant en poussant la hanche.',
+      'Repose le pied et garde la saisie.',
+    ],
+    errors: ['Lâcher la saisie', 'Monter le genou sans tirer', 'Se pencher vers l’avant'],
+    breath: EXPIRE_IMPACT,
+  },
+  'genou-circulaire-clinch': {
+    steps: [
+      'Pars du clinch simulé.',
+      'Tourne légèrement le buste pour décaler l’adversaire imaginaire.',
+      'Monte le genou sur le côté, en arc, vers les côtes.',
+      'Repose le pied, garde la saisie.',
+    ],
+    errors: ['Perdre l’équilibre', 'Genou sans rotation de hanche'],
+    breath: EXPIRE_IMPACT,
+  },
+
+  // ------------------------------------------------------------------ feintes
+  'feinte-jab': {
+    steps: [
+      'Pars de la garde.',
+      'Avance brièvement l’épaule et la main gauche de quelques centimètres, avec un petit pas ou un appui avant.',
+      'Arrête le geste avant l’extension : c’est une menace, pas un coup.',
+      'Reviens en garde et enchaîne aussitôt le vrai coup.',
+    ],
+    errors: ['Feinte trop longue', 'Baisser la main droite', 'Rester immobile après la feinte'],
+  },
+  'feinte-epaule': {
+    steps: [
+      'Pars de la garde.',
+      'Fais un petit mouvement sec de l’épaule droite vers l’avant, comme pour lancer le direct.',
+      'Les poings ne partent pas, les mains restent hautes.',
+      'Enchaîne immédiatement le coup prévu.',
+    ],
+    errors: ['Mouvement trop grand', 'Ouvrir la garde'],
+  },
+  'feinte-lutte': {
+    steps: [
+      'Pars de la garde.',
+      'Baisse brièvement ton niveau en pliant les genoux, comme pour entrer en lutte.',
+      'Les mains restent hautes, le dos droit.',
+      'Remonte aussitôt et frappe.',
+    ],
+    errors: ['Se pencher au lieu de plier les genoux', 'Baisser les mains'],
+  },
+
+  // ------------------------------------------------------------------ lutte & sol (MMA)
+  'changement-niveau': {
+    steps: [
+      'Pars de la garde.',
+      'Plie les genoux et les hanches pour descendre, dos droit, tête haute.',
+      'Les mains descendent à hauteur de la poitrine, coudes serrés.',
+      'Le pied avant peut avancer légèrement ; remonte en garde en poussant sur les jambes.',
+    ],
+    errors: ['Descendre en courbant le dos', 'Regarder le sol', 'Mains qui pendent'],
+  },
+  'entree-lutte': {
+    steps: [
+      'Change de niveau : genoux pliés, dos droit, tête haute.',
+      'Fais un grand pas pénétrant du pied gauche entre les jambes imaginaires de l’adversaire.',
+      'Le genou droit descend vers le sol, les bras s’ouvrent pour entourer les cuisses imaginaires.',
+      'Pose la tête sur le côté, contre la hanche imaginaire, et pousse vers l’avant.',
+      'En solo, reviens en garde au lieu de projeter.',
+    ],
+    errors: ['Tête qui descend devant (risque de guillotine)', 'Dos rond', 'Pas trop court qui n’amène pas les hanches', 'Genou qui tape le sol'],
+  },
+  sprawl: {
+    steps: [
+      'Pars de la garde.',
+      'Lance les deux jambes en arrière d’un coup, sur l’avant des pieds.',
+      'Écrase les hanches vers le sol, poitrine vers le bas, mains vers le sol ou sur le dos imaginaire.',
+      'Garde la tête haute.',
+      'Ramène les pieds sous toi et remonte en garde le plus vite possible.',
+    ],
+    errors: ['Hanches hautes', 'Genoux qui touchent le sol', 'Remonter trop lentement'],
+  },
+  'defense-lutte': {
+    steps: [
+      'Pars de la garde.',
+      'Baisse un peu les hanches et avance les deux avant-bras devant toi, coudes vers l’intérieur.',
+      'Recule le pied arrière pour garder la distance (cadre).',
+      'Reviens en garde.',
+    ],
+    errors: ['Se redresser', 'Bras tendus et rigides', 'Pieds sur une ligne'],
+  },
+  'descente-sol': {
+    steps: [
+      'Pars de la garde.',
+      'Recule le pied droit et pose la main droite au sol derrière toi.',
+      'Descends sur la hanche droite en contrôlant, jambe gauche pliée devant toi.',
+      'Garde la main gauche devant le visage et les jambes entre toi et l’adversaire.',
+    ],
+    errors: ['Se laisser tomber', 'Poser le coude au sol', 'Lâcher la garde haute'],
+  },
+  'sortie-hanche': {
+    steps: [
+      'Au sol sur le dos ou sur le côté, pieds posés, genoux pliés.',
+      'Pousse sur un pied et soulève les hanches.',
+      'Décale les hanches sur le côté et en arrière en pivotant sur l’épaule.',
+      'Les mains poussent devant toi comme pour créer un cadre ; reviens en position de départ.',
+    ],
+    errors: ['Rester à plat sur le dos', 'Bras tendus vers le haut', 'Mouvement sans pousser sur le pied'],
+  },
+  'releve-technique': {
+    steps: [
+      'Assis au sol, pose la main droite derrière toi et le pied gauche à plat devant.',
+      'La main gauche protège le visage.',
+      'Soulève les hanches en appui sur la main droite et le pied gauche.',
+      'Passe la jambe droite en arrière sous toi, loin derrière.',
+      'Reprends ta garde debout, en reculant si besoin.',
+    ],
+    errors: ['Se relever droit devant (exposé)', 'Lâcher la garde', 'Ramener la jambe trop près'],
+  },
+};

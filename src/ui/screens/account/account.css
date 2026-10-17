@@ -1,0 +1,103 @@
+/* Account screens (sign-in, profile). Tokens only, see src/ui/styles.css and docs/DESIGN.md. */
+.acc-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.acc-avatar {
+  flex: none;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.6rem;
+  letter-spacing: 0.02em;
+  position: relative;
+  overflow: hidden;
+}
+.acc-avatar .skin {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 10px;
+}
+.acc-avatar svg {
+  width: 34px;
+  height: 34px;
+}
+.acc-name {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+.acc-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.acc-pw {
+  display: flex;
+  gap: var(--space-2);
+}
+.acc-pw .input {
+  flex: 1;
+  min-width: 0;
+}
+.acc-or {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.acc-or::before,
+.acc-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+.acc-check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: var(--tap);
+  padding: var(--space-2) 0;
+  cursor: pointer;
+}
+.acc-check input {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--red);
+  flex: none;
+}
+.acc-grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.acc-fields {
+  padding: var(--space-3) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.acc-methods li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--tap);
+}
+.acc-methods {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}

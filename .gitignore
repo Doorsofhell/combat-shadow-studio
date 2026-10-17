@@ -1,0 +1,17 @@
+node_modules
+dist
+test-results
+playwright-report
+*.log
+dist-artifact
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+keystore.properties
+android/local.properties
+.dbg.mjs
+.shots-tmp.mjs
+tsconfig.tsbuildinfo
+*.tsbuildinfo

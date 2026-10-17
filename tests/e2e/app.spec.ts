@@ -1,0 +1,82 @@
+import { expect, Page, test } from '@playwright/test';
+
+async function onboard(page: Page, coach: 'homme' | 'femme') {
+  await page.goto('/');
+  await expect(page.getByText('Entraîne-toi seul')).toBeVisible();
+  await page.getByTestId('next').click();
+  // coach choice is mandatory, nothing is preselected
+  await expect(page.getByTestId('next')).toBeDisabled();
+  await page.getByTestId(`coach-${coach}`).click();
+  await expect(page.getByTestId('next')).toBeEnabled();
+  await page.getByTestId('next').click();
+  // simplified customisation, guard, discipline, level, goals
+  for (let i = 0; i < 5; i++) await page.getByTestId('next').click();
+  await page.getByTestId('finish').click();
+  await expect(page.getByTestId('home-cta')).toBeVisible();
+}
+
+test('premier lancement : questionnaire, choix obligatoire du coach, données conservées', async ({ page }) => {
+  await onboard(page, 'femme');
+  await page.reload();
+  await expect(page.getByTestId('home-cta')).toBeVisible();
+  await expect(page.getByTestId('fighter-name')).toHaveText('Ma combattante');
+  // bottom navigation: five destinations
+  await expect(page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link')).toHaveCount(5);
+  await page.getByTestId('nav-entrainer').click();
+  await expect(page.getByTestId('disc-boxe')).toBeVisible();
+});
+
+test('entraînement : démarrage, pause qui arrête le chronomètre, reprise, statistiques', async ({ page }) => {
+  await onboard(page, 'homme');
+  await page.getByTestId('nav-entrainer').click();
+  await page.getByTestId('disc-boxe').click();
+  await page.getByTestId('ex-boxe-debutant-08').click();
+  await page.getByTestId('go-training').click();
+  await expect(page.getByTestId('exercise-name')).toContainText('Jab');
+  await page.getByTestId('start').click();
+  await expect(page.getByTestId('phase')).toHaveText('Libre', { timeout: 15_000 });
+  await expect(page.getByTestId('current-move')).not.toHaveText('Garde', { timeout: 15_000 });
+  await page.waitForTimeout(3000);
+  await page.getByTestId('pause').click();
+  const t1 = await page.getByTestId('session-time').textContent();
+  await page.waitForTimeout(2500);
+  expect(await page.getByTestId('session-time').textContent()).toBe(t1);
+  expect(t1).not.toBe('0:00');
+  await page.getByTestId('resume').click();
+  await page.waitForTimeout(2200);
+  expect(await page.getByTestId('session-time').textContent()).not.toBe(t1);
+  await page.getByTestId('pause').click();
+  await page.goto('/#/stats');
+  await expect(page.getByTestId('total-time')).not.toHaveText('0 s');
+});
+
+test('créateur : un enchaînement impossible est bloqué, un enchaînement valide se lance', async ({ page }) => {
+  await onboard(page, 'homme');
+  await page.goto('/#/createur?d=mma');
+  await page.getByTestId('add-jab').click();
+  await page.getByTestId('add-releve-technique').click();
+  await expect(page.getByTestId('run-custom')).toBeDisabled();
+  await page.getByRole('button', { name: /Retirer Relevé/ }).click();
+  await page.getByTestId('add-descente-sol').click();
+  await page.getByTestId('add-releve-technique').click();
+  await expect(page.getByTestId('run-custom')).toBeEnabled();
+  await page.getByTestId('run-custom').click();
+  await expect(page.getByTestId('exercise-name')).toBeVisible();
+});
+
+test('programme : les blocs s’enchaînent avec leurs rounds', async ({ page }) => {
+  await onboard(page, 'femme');
+  await page.goto('/#/programmes/boxe-initiation-4-semaines');
+  await page.getByTestId('start-program').click();
+  await expect(page.getByTestId('exercise-name')).toContainText('Échauffement');
+  await page.getByTestId('start').click();
+  await expect(page.getByTestId('phase')).toHaveText(/Round 1\/2/, { timeout: 15_000 });
+});
+
+test('réglages et confidentialité accessibles depuis l’accueil', async ({ page }) => {
+  await onboard(page, 'homme');
+  await page.getByTestId('open-settings').click();
+  await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
+  await page.getByRole('link', { name: /Confidentialité/ }).click();
+  await expect(page.getByText('Tout reste sur ton appareil.')).toBeVisible();
+});

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Combat Shadow Studio</string>
+    <string name="title_activity_main">Combat Shadow Studio</string>
+    <string name="package_name">fr.combatshadowstudio.app</string>
+    <string name="custom_url_scheme">fr.combatshadowstudio.app</string>
+</resources>
