@@ -400,3 +400,39 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
   - voix : NON EXÉCUTÉ automatiquement (synthèse vocale absente du navigateur de test) ;
   - Firebase (2) : NON EXÉCUTÉ ; vrai téléphone Android : NON EXÉCUTÉ.
 - **Restauration** : `restauration/lot-6b`
+
+## 2026-10-18 · v0.16.0 · Vitesse des coups et registre des animations (Plan V2, chantier 2)
+
+- **Demande** : « Lance le prochain lot » : vérifier la chaîne cinétique signalée en v0.15.0 et créer le registre de
+  statut des animations (validée, à corriger, manquante, non implémentée).
+- **Constat après vérification** :
+  - **fausse alerte corrigée** : en v0.15.0, la mesure indiquait que sur les crochets, uppercuts, overhand et coudes
+    le bras finissait avant les hanches. C'était l'armé du coup (poing qui recule ou s'écarte) compté comme de la
+    frappe. La mesure suit désormais la progression vers la cible : aucun coup n'a le bras en avance sur les hanches ;
+  - **vrai défaut trouvé en mesurant la vitesse du poing ou du pied** : tous les coups s'arrêtaient net sur la cible
+    (vitesse 0 m/s à l'impact). Les directs partaient à leur vitesse maximale dès la première image (14 à 21 m/s),
+    jab au corps et direct au corps sautaient de 28 cm entre deux images à 60 i/s. Les coups de pied montaient à
+    20 à 35 m/s pendant l'armé du genou ;
+  - aucun glissement du pied d'appui sur les techniques debout (contrôle sur les 75 animations).
+- **Correction** :
+  - nouvelle courbe « frappe » : le membre part de l'arrêt, accélère, atteint sa vitesse de pointe aux deux tiers et
+    touche encore en vitesse ; nouvelle courbe « armé », deux fois plus douce que la précédente, pour la mise en
+    charge. Appliquées aux directs, jab, crochets, uppercuts, overhand, coudes, genoux et coups de pied. Les positions
+    clés (garde, armé, impact) ne changent pas, seulement la manière d'y aller ;
+  - mesures après correction : jab 4,4 m/s de pointe et 3,3 m/s à l'impact, direct 3,8 et 2,4, middle-kick 10,1 et
+    7,8, roundhouse 11,8 et 9,2 ;
+  - la phase « Armé » apparaît dans le mode Analyse quand les hanches tournent d'abord dans l'autre sens (uppercuts,
+    overhand, coudes) ;
+  - **registre des animations** (`src/engine/registry.ts`, `docs/ANIMATIONS.md`) : 7 contrôles automatiques par
+    technique (présence dans chaque discipline et chaque garde, amplitude des coudes et genoux, pied d'appui fixe,
+    continuité, chaîne hanches puis membre, touche en vitesse, vitesse de pointe plausible). Bilan : 75 contrôlées
+    automatiquement, 0 à corriger, 0 manquante, 10 non implémentées (fiches avec partenaire), **0 validée** car aucun
+    entraîneur n'a encore revu les mouvements. Un test échoue si le registre n'est plus à jour ;
+  - la fiche de chaque technique affiche l'état de son animation.
+- **Limites** : les seuils de vitesse (poing ≤ 12 m/s, pied ≤ 26 m/s) sont des ordres de grandeur, pas une norme ;
+  « contrôlée » ne veut pas dire « validée » ; les contrôles d'appui ne s'appliquent pas aux déplacements, à la lutte,
+  au sol et aux projections, où les pieds bougent volontairement.
+- **Fichiers** : `src/engine/motion.ts`, `src/engine/library/boxing.ts`, `upper.ts`, `legs.ts`,
+  `src/engine/phases.ts`, `src/engine/registry.ts` (nouveau), `src/domain/animationStatus.ts` et `.json` (nouveaux),
+  `src/ui/components/Cards.tsx`, `src/ui/screens/Library.tsx`, `docs/ANIMATIONS.md` (nouveau), tests
+  `registry.test.ts` (nouveau), `tests/e2e/bjj-judo.spec.ts`, `public/thumbs/`.
