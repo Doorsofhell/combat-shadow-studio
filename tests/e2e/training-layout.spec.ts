@@ -137,6 +137,38 @@ test('mode Décomposer et pause : rien ne déborde', async ({ page }) => {
   expect(r.root).toBeLessThanOrEqual(1);
 });
 
+test('analyse technique : phases mesurées, rejouer une phase, comparer les gardes, sans débordement', async ({ page }) => {
+  await seed(page);
+  await page.setViewportSize({ width: 360, height: 640 });
+  await open(page, `/#/entrainement?ex=boxe-debutant-08&mode=technique`);
+  await page.getByTestId('decompose').click();
+  const steps = page.getByTestId('study-steps');
+  await expect(steps).toBeVisible();
+  // a new technique is first shown at real speed
+  await expect(page.getByTestId('study-phase')).toHaveText(/Vitesse réelle|^1\./);
+  const n = await steps.getByRole('listitem').count();
+  expect(n).toBeGreaterThanOrEqual(4);
+  await expect(steps.getByRole('listitem').first()).toHaveText('1. Position de départ');
+  // replay the second phase: the coach plays it and stops on its end
+  const second = steps.getByRole('listitem').nth(1);
+  const label = ((await second.textContent()) ?? '').replace(/^2\. /, '');
+  await second.click();
+  await expect(second).toHaveClass(/on/);
+  await expect(page.getByTestId('study-play')).toHaveText(/Lecture/, { timeout: 10000 });
+  await expect(page.getByTestId('study-text')).not.toBeEmpty();
+  expect(label.length).toBeGreaterThan(3);
+  // the other guard, without touching the profile
+  const guard = page.getByTestId('study-guard');
+  await expect(guard).toHaveAttribute('aria-pressed', 'false');
+  await guard.click();
+  await expect(guard).toHaveAttribute('aria-pressed', 'true');
+  const r = await page.evaluate(() => ({ s: document.scrollingElement!.scrollHeight - innerHeight, root: (() => { const t = document.querySelector('.training') as HTMLElement; return t.scrollHeight - t.clientHeight; })() }));
+  expect(r.s).toBeLessThanOrEqual(0);
+  expect(r.root).toBeLessThanOrEqual(1);
+  await page.getByTestId('study-close').click();
+  await expect(page.getByTestId('study-panel')).toHaveCount(0);
+});
+
 test('demander au coach : pause, réponse hors ligne, ralenti, sans défilement ni consignes masquées', async ({ page }) => {
   await seed(page);
   for (const [w, h] of [

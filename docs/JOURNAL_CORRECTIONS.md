@@ -355,3 +355,37 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
   et reste peu visible en style Encre ; les images de choix du coach (`public/coaches/*.jpg`) sont encore les anciens
   rendus.
 - **Restauration** : `restauration/lot-6a`
+
+## 2026-10-18 · v0.15.0 · Mode Analyse technique (Plan V2, P2, premier lot)
+
+- **Demande** : Plan V2, chantier 5 : présenter le mouvement à vitesse normale puis au ralenti, s'arrêter aux phases
+  importantes, mettre en évidence les zones du corps, expliquer et dire chaque phase, rejouer une phase précise,
+  comparer les gardes ; décomposition fondée sur les données réelles de l'animation, modèle générique.
+- **Constat après vérification** : le mode « Décomposer » existait déjà (`src/engine/study.ts`) avec 5 étapes
+  génériques identiques pour toutes les techniques (départ, préparation, exécution, point clé, retour), le pas à pas
+  entre poses clés, le ralenti, la rotation de caméra et les repères (trajectoire, hanches, pivot, appuis). Il
+  manquait : des phases propres à chaque technique, la vitesse réelle avant le ralenti, la reprise d'une phase, la
+  voix par phase, la mise en évidence du segment qui travaille et la comparaison des gardes.
+- **Correction** :
+  - nouveau modèle générique `src/engine/phases.ts` : l'animation est échantillonnée jusqu'à la position clé et
+    chaque segment qui bouge vraiment (pivot ou talon d'un pied, changement de niveau, déplacement, hanches, épaules,
+    membre qui frappe) devient une phase, placée là où il fait l'essentiel de son travail (10 % à 90 % de son
+    mouvement). Hanches et épaules qui tournent ensemble forment une seule phase ; 4 phases de travail au plus ;
+    les segments qui travaillent en même temps sont présentés du sol vers le membre. Exemple mesuré, direct arrière :
+    départ, impulsion du pied arrière, rotation des hanches et des épaules, extension du bras arrière, impact, retour ;
+  - le membre qui frappe vient du nom de la technique quand il le dit (avant, arrière, jab, direct) : sur l'uppercut
+    arrière, la main avant bouge plus que la main arrière parce qu'elle suit le buste, la mesure seule se trompait ;
+  - projections et techniques de sol : « Position clé » au lieu d'« Impact » ;
+  - lecteur : vitesse réelle d'abord à chaque nouvelle technique, puis ralenti avec un arrêt de 1,2 s à la fin de
+    chaque phase ; chaque phase est un bouton qui la rejoue seule puis s'arrête ; le pas à pas s'arrête aussi sur les
+    fins de phases ;
+  - un anneau doré pulsé entoure la partie du corps de la phase en cours (pied, bassin, épaules, poing) ;
+  - la voix (si activée) annonce chaque phase et son explication ;
+  - bouton « Gaucher » pour voir la technique dans l'autre garde sans modifier le profil.
+- **Indicateurs à examiner (chantier 2, non corrigés dans ce lot)** : la mesure montre que sur les crochets,
+  uppercuts, overhand et coudes, le membre atteint sa position avant la fin de la rotation des hanches (par exemple
+  crochet avant : bras à 0,07 s, hanches à 0,14 s). Cela peut venir de l'armé du coup compté dans le déplacement du
+  membre ; à vérifier technique par technique avant toute retouche des animations.
+- **Fichiers** : `src/engine/phases.ts` (nouveau), `src/engine/study.ts`, `src/ui/training/Study.tsx`,
+  `src/ui/training/training.css`, `src/ui/screens/Training.tsx`, `src/three/StudyCues.tsx`,
+  `src/engine/__tests__/phases.test.ts` (nouveau), `tests/e2e/training-layout.spec.ts`.

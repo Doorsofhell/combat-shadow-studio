@@ -115,6 +115,8 @@ function TrainingView({ plan }: { plan: Plan }) {
   const southpaw = profile.guard === 'gaucher';
   const coach = profile.coach ?? 'homme';
   const st = useStudy(southpaw);
+  // the study can show the other guard for comparison
+  const stageSouthpaw = st.tech ? st.southpaw : southpaw;
   const [q] = useSearchParams();
   const autoStudy = useRef(q.get('study') === '1');
 
@@ -135,7 +137,7 @@ function TrainingView({ plan }: { plan: Plan }) {
   let stageView: StageView;
   if (manual) stageView = { ...manual, closeUp: false };
   else if (free && lastView.current) stageView = lastView.current;
-  else stageView = { az: stageAzimuth(teach, item.discipline, southpaw), el: teach.el, zoom: teach.zoom, focus: teach.focus, closeUp: false };
+  else stageView = { az: stageAzimuth(teach, item.discipline, stageSouthpaw), el: teach.el, zoom: teach.zoom, focus: teach.focus, closeUp: false };
   if (closeUp && teach.closeUp && !free) stageView = { ...stageView, zoom: teach.closeUp.zoom, focus: teach.closeUp.focus, closeUp: true };
   if (st.tech && studyRot && !free) stageView = { ...stageView, az: stageView.az + studyRot };
   // floor marks need to be seen from a little above
@@ -310,7 +312,7 @@ function TrainingView({ plan }: { plan: Plan }) {
         <CoachStage
           coach={coach}
           discipline={item.discipline}
-          southpaw={southpaw}
+          southpaw={stageSouthpaw}
           view={stageView}
           free={free}
           onUserOrbit={() => setCamMode('libre')}
@@ -459,6 +461,8 @@ function TrainingView({ plan }: { plan: Plan }) {
             onClose={() => st.close()}
             rotate={studyRot}
             onRotate={setStudyRot}
+            southpaw={st.southpaw}
+            onToggleGuard={st.toggleGuard}
           />
         ) : (
           <>

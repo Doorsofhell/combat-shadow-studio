@@ -5,11 +5,23 @@ import { Group, Mesh, Vector3 } from 'three';
 import type { CoachRig } from '../engine/rig';
 import { MotionSampler } from '../engine/motion';
 import type { StudyPlayer } from '../engine/study';
+import type { BodyFocus } from '../engine/phases';
 import { useSettings } from '../store/settings';
 
 const RED = '#c8102e';
 const GREY = '#8a8f98';
 const BLUE = '#2563eb';
+const GOLD = '#e0a400';
+
+/** where the body part of the current teaching phase is highlighted, and the shape used */
+const FOCUS: { id: BodyFocus; bone: string; ring: boolean; r: number }[] = [
+  { id: 'footL', bone: 'LeftFoot', ring: true, r: 0.12 },
+  { id: 'footR', bone: 'RightFoot', ring: true, r: 0.12 },
+  { id: 'hips', bone: 'Hips', ring: true, r: 0.24 },
+  { id: 'shoulders', bone: 'Spine2', ring: true, r: 0.27 },
+  { id: 'handL', bone: 'LeftHand', ring: false, r: 0.06 },
+  { id: 'handR', bone: 'RightHand', ring: false, r: 0.06 },
+];
 
 const SKELETON: [string, string][] = [
   ['Hips', 'Spine2'],
@@ -76,6 +88,7 @@ export function StudyCues({ rig, study }: { rig: CoachRig; study: { current: Stu
   const motion = study.current?.motion;
   const a = study.current?.analysis;
   const joints = useRef<Group>(null);
+  const focus = useRef<Group>(null);
 
   const geo = useMemo(() => {
     if (!motion || !a) return null;
@@ -116,6 +129,25 @@ export function StudyCues({ rig, study }: { rig: CoachRig; study: { current: Stu
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rig, motion]);
 
+  // the body part of the current teaching phase is circled in gold, pulsing gently
+  useFrame(({ clock }) => {
+    const g = focus.current;
+    const st = study.current;
+    if (!g || !st) return;
+    const on = st.phases[st.phaseIndex]?.focus ?? [];
+    const pulse = 1 + 0.08 * Math.sin(clock.elapsedTime * 5);
+    FOCUS.forEach((f, i) => {
+      const m = g.children[i] as Mesh | undefined;
+      if (!m) return;
+      m.visible = on.includes(f.id);
+      const w = m.visible ? rig.worldOf(f.bone) : null;
+      if (!w) return;
+      m.position.copy(w);
+      if (f.bone.endsWith('Foot')) m.position.y = 0.015;
+      m.scale.setScalar(pulse);
+    });
+  });
+
   // the working joints follow the live pose
   useFrame(() => {
     const g = joints.current;
@@ -130,6 +162,14 @@ export function StudyCues({ rig, study }: { rig: CoachRig; study: { current: Stu
   if (!geo || !a) return null;
   return (
     <group>
+      <group ref={focus} name="phase-focus">
+        {FOCUS.map((f) => (
+          <mesh key={f.id} visible={false} rotation={f.ring ? [-Math.PI / 2, 0, 0] : [0, 0, 0]} renderOrder={11}>
+            {f.ring ? <torusGeometry args={[f.r, 0.012, 8, 48]} /> : <sphereGeometry args={[f.r, 16, 12]} />}
+            <meshBasicMaterial color={GOLD} transparent opacity={f.ring ? 0.95 : 0.55} depthTest={false} />
+          </mesh>
+        ))}
+      </group>
       {cues.trajectoire && (
         <>
           <Line points={geo.path} color={RED} lineWidth={3} depthTest={false} renderOrder={9} />
