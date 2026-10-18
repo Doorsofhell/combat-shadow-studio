@@ -147,6 +147,46 @@ export function sequenceView(ids: string[]): CameraView {
   return { ...v, zoom: Math.min(1, v.zoom), closeUp: undefined, why: `Combinaison : angle fixe choisi pour le mouvement le plus ample. ${v.why}` };
 }
 
+/** footwork seen from above, but not so high that the strikes around it are lost (combinations) */
+const STEP_MAX_EL = 24;
+
+/**
+ * Automatic camera, step by step: each technique of the sequence is filmed from its own teaching
+ * angle. Two neighbours whose angles are close share one (no shaking between quick strikes), a
+ * combination of punches keeps one three-quarter view, and footwork inside a combination is seen
+ * from a moderate height so the punches around it stay readable.
+ */
+export function stepViews(ids: readonly string[], d: DisciplineId): CameraView[] {
+  const uniq = [...new Set(ids)];
+  if (uniq.length <= 1) return ids.map(() => techniqueView(ids[0] ?? 'garde'));
+  const onlyPunches = uniq.every((id) => ['poing', 'defense', 'feinte', 'garde'].includes(TECHNIQUE_BY_ID.get(id)?.category ?? ''));
+  if (onlyPunches) {
+    const v: CameraView = { ...BY_CATEGORY.poing, why: 'Combinaison de poings : trois quarts côté avant, un angle fixe pour suivre tout l’enchaînement.' };
+    return ids.map(() => v);
+  }
+  const eff = (v: CameraView) => (v.ref === 'torse' ? v.az + torsoYaw(d) : v.az);
+  // footwork only: nothing to lose by looking from above
+  const strikes = uniq.some((id) => !['deplacement', 'garde'].includes(TECHNIQUE_BY_ID.get(id)?.category ?? 'garde'));
+  const out: CameraView[] = [];
+  for (const id of ids) {
+    const t = techniqueView(id);
+    let v: CameraView = { ...t, zoom: Math.min(1, t.zoom), closeUp: undefined };
+    if (strikes && v.el > STEP_MAX_EL) v = { ...v, el: STEP_MAX_EL, focus: Math.max(v.focus, 0.45), why: `${v.why} Hauteur modérée dans une combinaison, pour garder les coups lisibles.` };
+    const prev = out[out.length - 1];
+    if (prev && Math.abs(eff(prev) - eff(v)) <= 20 && Math.abs(prev.el - v.el) <= 12) v = prev;
+    out.push(v);
+  }
+  return out;
+}
+
+/** short name of a view, for the camera button (Auto · 3/4 avant…) */
+export function viewName(v: Pick<CameraView, 'az' | 'el'>): string {
+  const a = Math.abs(((v.az + 540) % 360) - 180);
+  const side = v.az >= 0 ? 'avant' : 'arrière';
+  const base = a < 15 ? 'Face' : a < 75 ? `3/4 ${side}` : a < 110 ? `Profil ${side}` : a < 150 ? `3/4 dos` : 'Dos';
+  return v.el >= 20 ? `${base}, en hauteur` : base;
+}
+
 export function manualView(mode: CameraMode): Omit<CameraView, 'why'> | null {
   return mode === 'auto' || mode === 'libre' ? null : MANUAL[mode];
 }

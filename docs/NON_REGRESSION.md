@@ -12,6 +12,7 @@ chaque lot, point de restauration, rapport (TEST RÉUSSI / ÉCHOUÉ / NON EXÉCU
 | `restauration/lot-2` | v0.5.0 | Thèmes clair, sombre et automatique |
 | `restauration/lot-3` | v0.6.0 | Postures de la génération aléatoire |
 | `restauration/lot-4a` | v0.7.0 | Caméra 3/4 par rapport au buste, cadrage serré, limites articulaires |
+| `restauration/lot-4f` | v0.12.0 | Caméra Auto par technique, suit le coach après un pivot, « Auto » annule rotation et zoom, angles manuels exacts |
 | `restauration/lot-4e` | v0.11.0 | Images des techniques sur les cartes (coach 3D choisi), changement de coach femme depuis l’entraînement |
 | `restauration/lot-4d` | v0.10.0 | Repères au sol optionnels (pieds, orientation, avant/arrière, pivot, trajectoires) |
 | `restauration/lot-4c` | v0.9.0 | Commandes hiérarchisées, zone Caméra regroupée (angle, rotation, zoom, recentrer), progression |
@@ -76,6 +77,7 @@ Captures de référence : `/mnt/project-files/combat-shadow-studio/reference/<da
 | Animations | Aucun mouvement détérioré, aucune articulation au-delà de son amplitude | `engine.test` (dont biomécanique : coudes ≤ 150°, genoux ≤ 155°), `camera.test` (toutes techniques, deux coachs, deux gardes) | rendus Lab |
 | Consignes | Une consigne et 3 à 5 points clés (appuis, bassin, membres, garde) par technique, valables dans les deux gardes | `instructions.test` (64 techniques, Jab mot pour mot, phases), `engine.test` (phase jouée) | captures entraînement |
 | Commandes et zone Caméra | Lecture, précédent, suivant, coach ; Décomposer, Comment faire, Ralenti ; zone Caméra sans masquer le coach | `training-layout.spec` (zone Caméra sur 5 tailles, consigne, ralenti, ligne de temps) | captures entraînement |
+| Caméra Auto et manuelle | Angle par technique, pas de vue de haut sur les coups, suivi du coach après pivot, retour Auto complet, angle manuel exact | `camera.test` (stepViews, viewName), `training-layout.spec` (caméra ×2, zone Caméra) | mesure de la caméra pendant « Pivots et angles » |
 | Images des cartes | Une image par technique et par coach (homme, femme), coach actif affiché, images chargées | `thumbs.test`, `app.spec` (images) | captures bibliothèque, discipline, programmes, champions |
 | Coach femme à l’entraînement | Options > Coach femme affiche la coach, retour au coach homme | `training-layout.spec` (changer de coach) | capture entraînement |
 | Repères au sol | Désactivés par défaut, chacun s’active seul, légende, choix mémorisé | `settings.test`, `engine.test` (mouvement joué), `training-layout.spec` (repères) | captures entraînement |

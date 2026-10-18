@@ -18,7 +18,7 @@ import type { CoachAction } from '../../coach/engine';
 import { useCoachAi } from '../../store/coachAi';
 import { GuideCard } from '../GuideCard';
 import { chooseCoach } from '../components/fighter';
-import { CAMERA_MODES, CameraMode, manualView, sequenceView, stageAzimuth, techniqueView } from '../../domain/camera';
+import { CAMERA_MODES, CameraMode, manualView, stageAzimuth, stepViews, techniqueView, viewName } from '../../domain/camera';
 import type { StageView } from '../../three/StudioStage';
 import { StudyPanel, useStudy } from '../training/Study';
 import { ArBridge } from '../../ar/ArBridge';
@@ -126,8 +126,9 @@ function TrainingView({ plan }: { plan: Plan }) {
   const disc = DISCIPLINES.find((d) => d.id === item.discipline)!;
   const lvl = LEVELS.find((l) => l.id === item.level)!;
 
-  // teaching camera: best angle for the technique (or one stable angle for the whole combination)
-  const teach = st.tech ? techniqueView(st.tech) : sequenceView(seq);
+  // teaching camera: the best angle for the technique being played (close angles are shared)
+  const autoViews = useMemo(() => stepViews(seq, item.discipline), [seq, item.discipline]);
+  const teach = st.tech ? techniqueView(st.tech) : autoViews[Math.max(0, view.step)] ?? autoViews[0];
   const manual = manualView(camMode);
   const free = camMode === 'libre';
   const lastView = useRef<StageView | null>(null);
@@ -178,11 +179,16 @@ function TrainingView({ plan }: { plan: Plan }) {
     }
   };
   const ANGLES = CAMERA_MODES.filter((c) => c.id !== 'auto');
+  // a chosen angle is exact: any earlier rotation is dropped
+  const chooseAngle = (m: CameraMode) => {
+    setCamMode(m);
+    setCamRot(0);
+  };
   const stepAngle = (d: 1 | -1) => {
     // from « Auto », the arrows start at the first or the last angle
     const i = ANGLES.findIndex((c) => c.id === camMode);
     const j = i < 0 ? (d > 0 ? 0 : ANGLES.length - 1) : (i + d + ANGLES.length) % ANGLES.length;
-    setCamMode(ANGLES[j].id);
+    chooseAngle(ANGLES[j].id);
   };
   const turnCam = (deg: number) => {
     if (free) setCamMode('auto');
@@ -195,7 +201,10 @@ function TrainingView({ plan }: { plan: Plan }) {
     setCamZoom(1);
     setCloseUp(false);
   };
-  const camLabel = CAMERA_MODES.find((c) => c.id === camMode)?.label ?? 'Auto';
+  // « Auto » is the full automatic camera: no rotation or zoom left from a manual adjustment
+  const isAuto = camMode === 'auto' && camRot === 0 && camZoom === 1;
+  const autoName = `Auto · ${viewName(teach)}`;
+  const camLabel = camMode === 'auto' ? (isAuto ? autoName : 'Auto ajusté') : (CAMERA_MODES.find((c) => c.id === camMode)?.label ?? 'Auto');
 
   const fullscreen = () => {
     const el = root.current;
@@ -331,7 +340,7 @@ function TrainingView({ plan }: { plan: Plan }) {
         <div className="stage-tools">
           <button className={`btn cam-btn ${camOpen ? 'on' : ''}`} onClick={() => setCamOpen(!camOpen)} aria-label={`Caméra : ${camLabel}. Ouvrir les réglages de caméra`} aria-expanded={camOpen} data-testid="cam-mode">
             <IconCamera />
-            <span>{camLabel}</span>
+            <span>{isAuto ? 'Auto' : camLabel}</span>
           </button>
           {teach.closeUp && !free && (
             <button className={`btn ${closeUp ? 'on' : ''}`} onClick={() => setCloseUp(!closeUp)} aria-label={teach.closeUp.label} aria-pressed={closeUp}>
@@ -456,7 +465,7 @@ function TrainingView({ plan }: { plan: Plan }) {
             {camOpen ? (
               <div className="tr-camera" role="group" aria-label="Caméra" data-testid="camera-panel">
                 <div className="cam-row">
-                  <button className={`btn sm ${camMode === 'auto' ? 'on' : ''}`} aria-pressed={camMode === 'auto'} onClick={() => setCamMode('auto')} data-testid="cam-auto">
+                  <button className={`btn sm ${isAuto ? 'on' : ''}`} aria-pressed={isAuto} onClick={resetCam} data-testid="cam-auto">
                     Auto
                   </button>
                   <div className="cam-angle">
@@ -464,7 +473,7 @@ function TrainingView({ plan }: { plan: Plan }) {
                       <IconPrev width={18} />
                     </button>
                     <span aria-live="polite" data-testid="cam-angle">
-                      {camMode === 'auto' ? 'Angle conseillé' : camLabel}
+                      {isAuto ? viewName(teach) : camLabel}
                     </span>
                     <button className="btn icon sm" onClick={() => stepAngle(1)} aria-label="Angle suivant" data-testid="cam-next">
                       <IconNext width={18} />
@@ -659,12 +668,12 @@ function TrainingView({ plan }: { plan: Plan }) {
               <span className="label">Caméra</span>
               <div className="row">
                 {CAMERA_MODES.map((c) => (
-                  <button key={c.id} className={`chip ${camMode === c.id ? 'on' : ''}`} onClick={() => setCamMode(c.id)}>
+                  <button key={c.id} className={`chip ${(c.id === 'auto' ? isAuto : camMode === c.id) ? 'on' : ''}`} aria-pressed={c.id === 'auto' ? isAuto : camMode === c.id} onClick={() => (c.id === 'auto' ? resetCam() : chooseAngle(c.id))} data-testid={`cam-chip-${c.id}`}>
                     {c.label}
                   </button>
                 ))}
               </div>
-              {camMode === 'auto' && <p className="cam-why">{teach.why}</p>}
+              {isAuto && <p className="cam-why" data-testid="cam-why">{teach.why}</p>}
               <p className="small muted">Glisse le doigt sur le coach pour passer en caméra libre à 360°.</p>
             </div>
             <div className="stack">

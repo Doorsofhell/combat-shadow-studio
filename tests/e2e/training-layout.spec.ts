@@ -212,6 +212,78 @@ test('zone Caméra : angle, rotation, zoom, recentrer, sans masquer le coach ni 
   await expect(page.getByTestId('decompose')).toBeVisible();
 });
 
+/** where the camera looks from (degrees), exposed by the studio for these checks */
+const camera = (page: Page) => page.evaluate(() => (window as unknown as { __cssCamera: { az: number; el: number; dist: number; coachYaw: number } }).__cssCamera);
+const settle = (page: Page) => page.waitForTimeout(3500);
+/** waits until the camera has stopped gliding, then reads it */
+async function steady(page: Page) {
+  await expect.poll(() => camera(page), { timeout: 30_000 }).toBeTruthy();
+  let prev = await camera(page);
+  for (let i = 0; i < 40; i++) {
+    await page.waitForTimeout(500);
+    const c = await camera(page);
+    if (Math.abs(c.az - prev.az) < 0.2 && Math.abs(c.dist - prev.dist) < 0.005 && Math.abs(c.el - prev.el) < 0.2) return c;
+    prev = c;
+  }
+  return prev;
+}
+
+test('caméra : « Auto » annule rotation et zoom, un angle manuel est exact', async ({ page }) => {
+  await seed(page);
+  await page.setViewportSize({ width: 393, height: 851 });
+  await open(page, `/#/entrainement?ex=boxe-debutant-02&mode=technique`);
+  const auto = await steady(page);
+  await page.getByTestId('cam-mode').click();
+  await expect(page.getByTestId('cam-angle')).toHaveText('3/4 avant');
+  await page.getByTestId('cam-right').click();
+  await page.getByTestId('zoom-in').click();
+  await expect(page.getByTestId('cam-auto')).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByTestId('cam-mode')).toContainText('Auto ajusté');
+  await settle(page);
+  expect(Math.abs((await camera(page)).az - auto.az - 30)).toBeLessThan(3);
+  // back to Auto: the advised angle and distance, nothing left from the adjustment
+  await page.getByTestId('cam-auto').click();
+  await expect(page.getByTestId('cam-auto')).toHaveAttribute('aria-pressed', 'true');
+  // the camera glides back (it moves away slowly on purpose, so the view never pumps)
+  await expect.poll(async () => Math.abs((await camera(page)).az - auto.az), { timeout: 15_000 }).toBeLessThan(2);
+  await expect.poll(async () => Math.abs((await camera(page)).dist - auto.dist), { timeout: 15_000 }).toBeLessThan(0.1);
+  // a manual angle after a rotation is the angle itself
+  await page.getByTestId('cam-left').click();
+  await page.getByTestId('cam-next').click();
+  await expect(page.getByTestId('cam-angle')).toHaveText('Face');
+  await settle(page);
+  expect(Math.abs((await camera(page)).az)).toBeLessThan(2);
+  // the same choices from the Options sheet
+  await page.getByTestId('cam-close').click();
+  await page.getByTestId('options').click();
+  await page.getByTestId('cam-chip-profil-gauche').click();
+  await settle(page);
+  expect(Math.abs((await camera(page)).az - 90)).toBeLessThan(2);
+  await page.getByTestId('cam-chip-auto').click();
+  await expect(page.getByTestId('cam-why')).toBeVisible();
+  await settle(page);
+  expect(Math.abs((await camera(page)).az - auto.az)).toBeLessThan(2);
+});
+
+test('caméra Auto : pas de vue de haut sur les coups, et elle tourne avec le coach après un pivot', async ({ page }) => {
+  test.setTimeout(150_000);
+  await seed(page);
+  await page.setViewportSize({ width: 393, height: 851 });
+  // « Pivots et angles » : jab, pivot, direct, pivot, jab, direct
+  await open(page, `/#/entrainement?ex=boxe-avance-09&mode=technique`);
+  await settle(page);
+  const start = await camera(page);
+  expect(start.el, 'jab vu presque à hauteur d’homme').toBeLessThan(12);
+  await page.getByTestId('start').click();
+  // the coach has turned after the first pivot: the camera keeps the same angle relative to him
+  await expect.poll(async () => (await camera(page)).coachYaw, { timeout: 90_000, intervals: [500] }).toBeLessThan(-30);
+  await expect(page.getByTestId('current-move')).toHaveText('Direct arrière');
+  await settle(page);
+  const after = await camera(page);
+  expect(Math.abs(after.az - after.coachYaw - start.az), 'angle par rapport au coach').toBeLessThan(6);
+  expect(after.el, 'direct vu presque à hauteur d’homme').toBeLessThan(12);
+});
+
 test('consigne principale, points clés, ralenti et ligne de temps', async ({ page }) => {
   await seed(page);
   await page.setViewportSize({ width: 393, height: 851 });

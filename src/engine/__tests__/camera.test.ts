@@ -7,7 +7,7 @@ import { MotionSampler, duration } from '../motion';
 import { sequenceEnvelope } from '../envelope';
 import { analyseMotion, StudyPlayer } from '../study';
 import { TECHNIQUES } from '../../domain/techniques';
-import { oriented, sequenceView, stageAzimuth, techniqueView, torsoYaw } from '../../domain/camera';
+import { oriented, sequenceView, stageAzimuth, stepViews, techniqueView, torsoYaw, viewName } from '../../domain/camera';
 import { STYLE_OF } from '../../three/CoachStage';
 import { FOV, cameraBasis, centerOnSpheres, fitSpheres } from '../../three/framing';
 
@@ -93,6 +93,39 @@ describe('caméra pédagogique', () => {
       expect(az, d).toBeGreaterThanOrEqual(15);
       expect(stageAzimuth(techniqueView('jab'), d, true), `${d} gaucher`).toBe(-az);
     }
+  });
+
+  test('caméra Auto pas à pas : chaque technique sous son angle, sans vue de haut sur les coups', () => {
+    // « Pivots et angles » : the punches were filmed from 45° above because of the pivots
+    const seq = ['jab', 'pivot-droite', 'direct', 'pivot-gauche', 'jab', 'direct'];
+    const v = stepViews(seq, 'boxe');
+    expect(v).toHaveLength(seq.length);
+    for (const i of [0, 2, 4, 5]) expect(v[i].el, seq[i]).toBeLessThanOrEqual(10);
+    for (const i of [1, 3]) {
+      expect(v[i].el, seq[i]).toBeGreaterThanOrEqual(20);
+      expect(v[i].el, seq[i]).toBeLessThanOrEqual(24);
+    }
+    // a kick keeps its own angle inside a combination
+    const k = stepViews(['jab', 'direct', 'sortie-angle', 'crochet-avant', 'low-kick-arriere'], 'kickboxing');
+    expect(k[4].az).toBe(techniqueView('low-kick-arriere').az);
+    expect(k[0].el).toBeLessThanOrEqual(10);
+    // punches only: one stable three-quarter view, no shaking between quick strikes
+    const p = stepViews(['jab', 'direct', 'crochet-avant', 'direct'], 'boxe');
+    expect(new Set(p).size).toBe(1);
+    expect(p[0]).toMatchObject({ az: 60, ref: 'torse' });
+    // a single technique keeps its own angle, close-up included
+    expect(stepViews(['coude-horizontal-avant'], 'muaythai')[0]).toEqual(techniqueView('coude-horizontal-avant'));
+    // footwork only keeps the view from above
+    expect(stepViews(['pas-avant', 'pas-arriere'], 'boxe')[0].el).toBe(techniqueView('pas-avant').el);
+    // no step is ever closer than the whole body in a combination
+    for (const x of [...v, ...k]) expect(x.zoom).toBeLessThanOrEqual(1);
+  });
+
+  test('nom de l’angle affiché', () => {
+    expect(viewName({ az: 60, el: 7 })).toBe('3/4 avant');
+    expect(viewName({ az: 0, el: 6 })).toBe('Face');
+    expect(viewName({ az: 90, el: 6 })).toBe('Profil avant');
+    expect(viewName({ az: 20, el: 24 })).toBe('3/4 avant, en hauteur');
   });
 
   test('les angles sont inversés en garde gaucher', () => {

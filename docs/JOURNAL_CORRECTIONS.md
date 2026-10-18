@@ -148,3 +148,46 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
   - tests unitaires sur GitHub avant la compilation : TEST RÉUSSI ;
   - contenu de l'APK (titre v0.11.0, 128 images, 8 modèles 3D) : TEST RÉUSSI ;
   - installation et fonctionnement sur un vrai téléphone : NON EXÉCUTÉ (à faire par Youssef).
+
+## 2026-10-18 · v0.11.0 · Signalement : l'APK ne s'installe pas
+
+- **Signalement** : Play Protect affiche « Appli bloquée pour protéger votre appareil ». Même avec « Installer quand
+  même », l'application ne s'installe pas.
+- **Constat** :
+  - l'APK est complet (même empreinte SHA-256 que sur GitHub) et signé (signature Android v2) ;
+  - il ne contient pas de bibliothèque native et demande Android 7 minimum ;
+  - aucun défaut n'est trouvé dans le fichier. Le blocage vient du téléphone, car Play Protect ne connaît pas ce
+    développeur (APK de test hors Play Store).
+- **Suite** :
+  - en attente du message affiché après « Installer quand même » et de la version d'Android ;
+  - en attendant, la web app peut être ajoutée à l'écran d'accueil depuis Chrome ;
+  - solution durable : passer par le Play Store (test interne) avec la clé de publication.
+- **Tests** : vérification du fichier : TEST RÉUSSI. Installation sur le téléphone : ÉCHOUÉ, cause à préciser.
+
+## 2026-10-18 · v0.12.0 · Lot 4f : caméra automatique
+
+- **Signalement** : « la caméra automatique ne fonctionne pas correctement ». Youssef veut pouvoir choisir le mode
+  caméra à la main ou revenir en Auto, avec un Auto idéal pour l'apprentissage.
+- **Constat (mesuré pendant l'exercice « Pivots et angles »)** :
+  1. Un seul angle pour tout l'exercice. Le jab et le direct étaient filmés de haut, à 45°, à cause du pivot.
+  2. Après un pivot, le coach tourne de 60° mais la caméra reste fixe : il est vu presque de profil.
+  3. Après une rotation ou un zoom, le bouton « Auto » gardait le décalage (+30° mesuré) et le zoom. Les angles
+     manuels restaient aussi décalés : « Face » donnait 30° au lieu de 0°.
+- **Correction** :
+  - en Auto, chaque technique est filmée sous son angle pédagogique, avec une transition douce ;
+  - deux techniques voisines aux angles proches partagent le même angle, et les combinaisons de poings gardent un
+    3/4 fixe ;
+  - dans une combinaison, les déplacements sont vus d'une hauteur modérée (24° au plus) ; un exercice de
+    déplacements seuls garde la vue de haut ;
+  - l'angle est mesuré par rapport au coach, donc la caméra tourne avec lui après un pivot (en Auto et en manuel) ;
+  - « Auto » annule la rotation et le zoom manuels ; choisir un angle annule la rotation ; « Auto ajusté » s'affiche
+    après un réglage manuel ;
+  - le nom de l'angle Auto en cours est affiché (ex. « 3/4 avant »), avec sa raison dans les Options.
+- **Fichiers** : `src/domain/camera.ts` (`stepViews`, `viewName`), `src/three/StudioStage.tsx`,
+  `src/ui/screens/Training.tsx`.
+- **Tests** :
+  - unitaires (169), dont la caméra pas à pas et le nom de l'angle : TEST RÉUSSI ;
+  - navigateur (31), dont « Auto annule rotation et zoom, angle manuel exact » et « la caméra tourne avec le coach
+    après un pivot » : TEST RÉUSSI ;
+  - Firebase (2) : NON EXÉCUTÉ.
+- **Restauration** : `restauration/lot-4f`

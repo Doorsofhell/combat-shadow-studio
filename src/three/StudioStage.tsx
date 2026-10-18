@@ -8,7 +8,7 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 /** where the camera should look from, in scene terms (azimuth already oriented for the guard) */
 export interface StageView {
-  /** degrees, 0 = facing the coach, positive = towards +x (the coach's left side) */
+  /** degrees, relative to the direction the coach faces: 0 = facing the coach, positive = towards the coach's left side */
   az: number;
   /** degrees above horizontal */
   el: number;
@@ -40,6 +40,12 @@ export interface StudioStageProps {
   onUserOrbit?: () => void;
   /** dark menu stage: deeper floor shadow, rim light */
   dark?: boolean;
+}
+
+/** camera state read by the end-to-end tests (degrees): where it looks from, relative to the coach */
+function probe(s: { az: number; el: number; dist: number }, o: { yaw: number }, free: boolean) {
+  const w = window as unknown as { __cssCamera?: object };
+  w.__cssCamera = { az: (s.az * 180) / Math.PI, el: (s.el * 180) / Math.PI, dist: s.dist, coachYaw: (o.yaw * 180) / Math.PI, free };
 }
 
 const DEFAULT_BOX = new Box3(new Vector3(-0.55, 0, -0.6), new Vector3(0.55, 1.95, 0.7));
@@ -99,7 +105,8 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
     }
     const target = tmpBox.getCenter(new Vector3());
     const height = Math.max(1, local.max.y);
-    const az = vv.az * deg;
+    // the angle is the one asked relative to the coach: after a pivot the camera turns with him
+    const az = vv.az * deg + o.yaw;
     const el = vv.el * deg;
     if (vv.closeUp) target.y = vv.focus * height;
     else if (env?.pts.length) centerOnSpheres(env.pts, o, target, az, el);
@@ -120,6 +127,7 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
       s.dist = off.length();
       s.az = Math.atan2(off.x, off.z);
       s.el = Math.asin(Math.max(-1, Math.min(1, off.y / Math.max(1e-6, s.dist))));
+      probe(s, o, true);
       return;
     }
     let dAz = az - s.az;
@@ -136,6 +144,7 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
     );
     cam.lookAt(s.target);
     if (controls.current) controls.current.target.copy(s.target);
+    probe(s, o, false);
   });
 
   const hi = quality === 'haute';
