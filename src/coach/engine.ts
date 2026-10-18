@@ -96,13 +96,13 @@ function opener(ctx: CoachContext, key: string, kind: 'neutral' | 'question' = '
 
 /** nom avec article : « le jab », « l’uppercut gauche », « la parade », « le high kick » (h aspiré) */
 function article(t: Technique) {
-  const n = t.name.toLowerCase().normalize('NFD');
+  const n = t.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   if (/^[aeiouy]/.test(n)) return 'l’';
   if (/^(position|rotation|parade|sortie|feinte|defense|descente)/.test(n)) return 'la ';
   return 'le ';
 }
 const lowName = (t: Technique) => t.name.charAt(0).toLowerCase() + t.name.slice(1);
-const theName = (t: Technique) => `${article(t)}${lowName(t)}`;
+export const theName = (t: Technique) => `${article(t)}${lowName(t)}`;
 
 const DISC_OF: Record<DisciplineId, string> = { boxe: 'de la boxe anglaise', kickboxing: 'du kick-boxing', mma: 'du MMA', muaythai: 'du muay-thaï' };
 const DISC_IN: Record<DisciplineId, string> = { boxe: 'en boxe anglaise', kickboxing: 'en kick-boxing', mma: 'en MMA', muaythai: 'en muay-thaï' };

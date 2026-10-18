@@ -286,7 +286,7 @@ function TrainingView({ plan }: { plan: Plan }) {
   }, []);
 
   return (
-    <div className={`training ${immersive ? 'immersive' : ''} ${overflow ? 'overflow' : ''}`} ref={root} data-testid="training">
+    <div className={`training ${immersive ? 'immersive' : ''} ${overflow ? 'overflow' : ''} ${asking ? 'asking' : ''}`} ref={root} data-testid="training">
       <header className="tr-top">
         <button className="btn icon ghost" onClick={() => nav(-1)} aria-label="Quitter l’entraînement">
           <IconBack />

@@ -123,18 +123,158 @@
   border-color: var(--line);
 }
 
-.cai-suggest {
+/* suggested questions: a rail scrolled with the finger (pan-x), snapped on each card, with arrows */
+.cai-rail {
   display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 
-.cai-suggest .chip {
-  min-height: 34px;
-  font-size: 0.82rem;
+.cai-rail-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+/* arrows on each side of the rail */
+.cai-rail-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cai-rail-row .cai-suggest {
+  flex: 1;
+  min-width: 0;
+}
+
+.cai-rail-title {
+  flex: 1 0 auto;
   white-space: nowrap;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.cai-rail-count {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.cai-rail-hint {
+  flex: 0 1 auto;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  text-align: right;
+  color: var(--muted);
+}
+
+.cai-rail-arrow {
   flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+  transition: opacity var(--t-fast, 0.15s), background var(--t-fast, 0.15s);
+}
+
+.cai-rail-arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.cai-rail-arrow:not(:disabled):active {
+  background: var(--soft);
+}
+
+.cai-suggest {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 2px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  scrollbar-width: none;
+  padding: 2px 2px 4px;
+}
+
+.cai-suggest::-webkit-scrollbar {
+  display: none;
+}
+
+/* the edge fades say more cards are there; they never cover a card completely */
+.cai-suggest.fade-end {
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), rgba(0, 0, 0, 0.25));
+}
+.cai-suggest.fade-start {
+  mask-image: linear-gradient(to left, #000 calc(100% - 28px), rgba(0, 0, 0, 0.25));
+}
+.cai-suggest.fade-start.fade-end {
+  mask-image: linear-gradient(to right, rgba(0, 0, 0, 0.25), #000 28px, #000 calc(100% - 28px), rgba(0, 0, 0, 0.25));
+}
+
+/* each card shows its whole question, on two lines if needed, and the next card peeks in */
+.cai-q {
+  flex: 0 0 auto;
+  width: min(82%, 240px);
+  min-height: 44px;
+  scroll-snap-align: start;
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--t-fast, 0.15s), background var(--t-fast, 0.15s), border-color var(--t-fast, 0.15s);
+}
+
+.cai-q:hover {
+  border-color: var(--ink-2);
+}
+
+.cai-q:active {
+  transform: scale(0.97);
+  background: var(--soft);
+}
+
+.cai-q:focus-visible,
+.cai-rail-arrow:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cai-suggest {
+    scroll-behavior: auto;
+  }
+  .cai-q,
+  .cai-q:active {
+    transition: none;
+    transform: none;
+  }
 }
 
 .cai-form {

@@ -1,10 +1,13 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { askCoach, exampleQuestions, type CoachAction, type CoachAnswer, type CoachContext } from '../../coach/engine';
+import { suggestedQuestions } from '../../coach/suggest';
 import { getSpeechInput, speakReply, stopReply, type SpeechInput } from '../../coach/speech';
 import { useCatalog } from '../../store/catalog';
 import { useCoachAi } from '../../store/coachAi';
 import { IconClose } from '../icons';
+import { SuggestRail } from './SuggestRail';
+import { useKeyboardInset } from './useKeyboardInset';
 import './coachAi.css';
 
 export const COACH_HISTORY_ROUTE = '/coach-ia';
@@ -49,11 +52,29 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
 
   const speech: SpeechInput | null = useMemo(() => getSpeechInput({ allowOnline: ai.onlineSpeechOptIn }), [ai.onlineSpeechOptIn]);
   const examples = useMemo(() => exampleQuestions(context.discipline).slice(0, 4), [context.discipline]);
+  const [expanded, setExpanded] = useState(false);
+  const [overflowing, setOverflowing] = useState(false);
+  const askedSet = useRef(new Set<string>());
+  const lastSend = useRef({ q: '', at: 0 });
+  const keyboard = useKeyboardInset();
+
+  // questions about the movement being worked on, each one checked against the local engine
+  const forTechnique = useMemo(
+    () => suggestedQuestions({ ...context, preferences: { detail: ai.detail }, catalog }, 8),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [context.techniqueId, context.discipline, context.level, context.guard, ai.detail, catalog],
+  );
+  const suggestions = useMemo(() => {
+    if (!forTechnique.length) return answer?.suggestions?.length ? answer.suggestions : examples;
+    const fresh = forTechnique.filter((s) => s !== asked && !askedSet.current.has(s));
+    return fresh.length >= 2 ? fresh : forTechnique.filter((s) => s !== asked);
+  }, [forTechnique, answer, asked, examples]);
 
   const close = useRef(onClose);
   close.current = onClose;
   useEffect(() => {
-    input.current?.focus({ preventScroll: true });
+    // no keyboard popping up over the coach on a phone: focus only with a mouse / trackpad
+    if (window.matchMedia?.('(pointer: fine)').matches) input.current?.focus({ preventScroll: true });
     const key = (e: KeyboardEvent) => e.key === 'Escape' && close.current();
     document.addEventListener('keydown', key);
     return () => {
@@ -68,16 +89,30 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
     last.current.techniqueId = undefined;
   }, [context.techniqueId]);
 
-  const ask = (question: string) => {
+  // a long answer offers to enlarge the panel instead of being cut
+  useLayoutEffect(() => {
+    const el = answerBox.current;
+    setOverflowing(!!el && el.scrollHeight > el.clientHeight + 2);
+  }, [answer, expanded, keyboard.open]);
+
+  const ask = (question: string, suggested = false) => {
     const text = question.trim();
     if (!text) return;
-    const a = askCoach(text, { ...context, preferences: { detail: ai.detail }, catalog, lastTechniqueId: last.current.techniqueId, seed: last.current.seed });
+    // a double tap sends once
+    const now = performance.now();
+    if (text === lastSend.current.q && now - lastSend.current.at < 800) return;
+    lastSend.current = { q: text, at: now };
+    // a suggestion is asked exactly as it was checked: about the movement on screen
+    const lastTechniqueId = suggested ? undefined : last.current.techniqueId;
+    const a = askCoach(text, { ...context, preferences: { detail: ai.detail }, catalog, lastTechniqueId, seed: last.current.seed });
+    if (suggested) askedSet.current.add(text);
     if (a.intent === 'suggest_combo') last.current.seed++;
     if (a.techniqueId) last.current.techniqueId = a.techniqueId;
     setAsked(text);
     setAnswer(a);
     setQ('');
     answerBox.current?.scrollTo({ top: 0 });
+    answerBox.current?.scrollIntoView?.({ block: 'nearest' });
     ai.push({ question: text, answer: a.text, intent: a.intent, techniqueId: a.techniqueId });
     if (ai.voiceReplies) speakReply(a.text);
     // les demandes de démo / ralenti / répétition s’exécutent tout de suite
@@ -131,7 +166,12 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
   }
 
   return (
-    <section className="cai-panel light-scope" aria-label="Demande au coach" data-testid="coach-ask-panel">
+    <section
+      className={`cai-panel light-scope ${expanded ? 'expanded' : ''} ${keyboard.open ? 'kbd' : ''}`}
+      style={keyboard.open ? ({ '--kb': `${keyboard.inset}px`, '--vvh': `${keyboard.height}px` } as React.CSSProperties) : undefined}
+      aria-label="Demande au coach"
+      data-testid="coach-ask-panel"
+    >
       <div className="cai-head">
         <div className="grow">
           <h2>Coach IA</h2>
@@ -144,6 +184,11 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
             </span>
           )}
         </div>
+        {answer && (overflowing || expanded) && (
+          <button type="button" className="cai-hist cai-expand" onClick={() => setExpanded((v) => !v)} aria-expanded={expanded} data-testid="coach-expand">
+            {expanded ? 'Réduire' : 'Agrandir'}
+          </button>
+        )}
         <Link to={historyHref} className="cai-hist" data-testid="coach-history-link">
           Historique
         </Link>
@@ -159,7 +204,7 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
             {answer.text}
           </>
         ) : (
-          'Pose ta question sur la technique en cours, l’équilibre, la respiration… Je ne te vois pas : je t’explique et je te montre.'
+          'Choisis ou écris ta question. Je ne te vois pas : j’explique et je montre.'
         )}
       </div>
 
@@ -173,15 +218,7 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
         </div>
       )}
 
-      {(!answer || answer.suggestions?.length) && (
-        <div className="cai-suggest" aria-label="Exemples de questions">
-          {(answer?.suggestions ?? examples).slice(0, 4).map((s) => (
-            <button key={s} type="button" className="chip" onClick={() => ask(s)}>
-              {s}
-            </button>
-          ))}
-        </div>
-      )}
+      <SuggestRail questions={suggestions} onPick={(s) => ask(s, true)} label={answer ? 'Pour aller plus loin' : 'Suggestions'} />
 
       <form className="cai-form" onSubmit={submit}>
         <label htmlFor="cai-q" className="sr-only">

@@ -108,7 +108,7 @@ const FAQ: Faq[] = [
     text: 'La hanche est le moteur des coups circulaires et des directs arrière : elle tourne vers la cible, entraîne les épaules, et le bras ou la jambe ne fait que transmettre. Le pied d’appui pivote pour qu’elle puisse tourner librement.',
     simple: 'Imagine que ta ceinture tourne vers la cible à chaque coup : c’est elle qui donne la force, ton bras suit.',
     nuance: 'Une rotation complète donne de la puissance mais te met de profil plus longtemps : dose-la selon la distance et garde toujours la main libre en protection.',
-    tags: ['hanche', 'hanches', 'rotation', 'tourner', 'puissance', 'force', 'moteur'],
+    tags: ['hanche', 'hanches', 'rotation', 'tourner', 'puissance', 'force', 'moteur', 'utiliser ma hanche', 'hanche pour frapper', 'rotation de hanche'],
     related: ['direct', 'crochet-avant', 'middle-kick-arriere', 'low-kick-arriere'],
   },
   {
@@ -117,7 +117,7 @@ const FAQ: Faq[] = [
     text: 'En garde : pieds décalés de la largeur des épaules, genoux souples, poids réparti, main arrière contre la joue, main avant devant le menton, coudes près du corps, menton rentré. Après chaque coup, les mains reviennent à cette position par le même chemin.',
     simple: 'Mains hautes contre le visage, coudes serrés, menton baissé, genoux un peu pliés : c’est ta position de base, tu y reviens après chaque coup.',
     nuance: 'Une garde efficace reste détendue : épaules relâchées, mains qui bougent légèrement. Une garde crispée fatigue et ralentit tes départs.',
-    tags: ['garde', 'mains', 'protection', 'coudes', 'position', 'menton', 'base'],
+    tags: ['garde', 'mains', 'protection', 'coudes', 'position', 'menton', 'base', 'main avant', 'main arriere', 'placer ma main', 'placer mes mains'],
     related: ['garde', 'blocage-haut'],
   },
   {

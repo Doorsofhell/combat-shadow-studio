@@ -191,3 +191,44 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
     après un pivot » : TEST RÉUSSI ;
   - Firebase (2) : NON EXÉCUTÉ.
 - **Restauration** : `restauration/lot-4f`
+
+## 2026-10-18 · v0.13.0 (en cours) · Lot 4g : Coach IA, questions suggérées
+
+- **Signalement** : les questions suggérées ne défilent pas au doigt sur Android, elles ne sont pas toutes
+  accessibles et ne correspondent pas à la technique travaillée.
+- **Constat (téléphone Android émulé, 360 px, v0.12.0)** :
+  1. Le CSS de l'écran d'entraînement imposait `overflow: hidden` à la rangée (1307 px de contenu pour 322 px
+     visibles). Un glissement du doigt ne la déplaçait pas, et une seule question sur quatre était visible, coupée en
+     hauteur.
+  2. Le champ de saisie prenait le focus à l'ouverture, ce qui ouvrait le clavier Android sur le coach.
+  3. Les suggestions dépendaient seulement de la discipline (exemple : « crochet gauche » pendant un direct arrière).
+  4. Le moteur ne savait pas répondre à « Où placer ma main avant ? » ni à « Comment utiliser ma hanche pour frapper ? ».
+- **Correction** :
+  - rangée en vrai défilement horizontal (`touch-action: pan-x`, aimantation sur chaque carte), flèches gauche et
+    droite désactivées aux extrémités, compteur, mention « Glisse pour voir plus » et bords en fondu ;
+  - un glissement n'envoie jamais de question, et un double tap n'en envoie qu'une ;
+  - cartes en vrais boutons, sur deux lignes si besoin, jamais coupées ;
+  - la réponse s'affiche aussitôt et de nouvelles questions « Pour aller plus loin » sont proposées ;
+  - questions propres à la technique en cours (`src/coach/suggest.ts`), gardées seulement si le moteur local y répond
+    vraiment. On en compte au moins 4 par technique, et elles changent avec la technique ;
+  - vocabulaire du moteur complété (main avant, hanche), sans changer sa logique, et articles corrigés (« la défense ») ;
+  - plus d'ouverture automatique du clavier sur téléphone ; avec le clavier ouvert, le panneau se place juste
+    au-dessus et garde le champ et « Envoyer » visibles ;
+  - bouton « Agrandir » pour les longues réponses ;
+  - sur les petits écrans, pendant la pause, les points clés laissent leur place au panneau, et le nom du mouvement
+    et la consigne restent visibles.
+- **Fichiers** :
+  - `src/coach/suggest.ts`, `src/coach/engine.ts`, `src/coach/nlu.ts`, `src/coach/knowledge.ts` ;
+  - `src/ui/coach-ai/CoachAskPanel.tsx`, `SuggestRail.tsx`, `useKeyboardInset.ts`, `coachAi.css` ;
+  - `src/ui/training/training.css`, `src/ui/screens/Training.tsx`.
+- **Tests** :
+  - unitaires (176), dont 7 nouveaux sur les suggestions : toutes les techniques dans toutes leurs disciplines,
+    réponses réelles, exemples du direct arrière en MMA et du sprawl : TEST RÉUSSI ;
+  - navigateur (38), dont 7 nouveaux en émulation tactile : glissement dans les deux sens sans envoi, flèches,
+    chaque question répond, double tap, 4 disciplines, changement de technique, clavier ouvert (émulé), hors ligne,
+    320x568 et paysage, contraste AA clair et sombre : TEST RÉUSSI ;
+  - Firebase (2) : NON EXÉCUTÉ ;
+  - vrai téléphone Android : NON EXÉCUTÉ (aucun appareil disponible ici).
+- **Publication** : à la demande de Youssef, la v0.13.0 sera publiée en dernier, avec les illustrations et le BJJ et
+  le judo.
+- **Restauration** : `restauration/lot-4g`

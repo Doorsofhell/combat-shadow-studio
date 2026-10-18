@@ -124,7 +124,7 @@ const DOMAIN = [
   'enchainement', 'serie', 'exercice', 'seance', 'equilibre', 'menton', 'epaule', 'coude', 'genou', 'tibia', 'talon', 'pivoter', 'pivot',
   'puissance', 'vitesse', 'distance', 'angle', 'deplacement', 'lutte', 'sol', 'cardio', 'niveau', 'debutant', 'expert', 'champion', 'ring',
   'cage', 'sparring', 'esquive', 'bloquer', 'uppercut', 'crochet', 'jab', 'direct', 'gaucher', 'orthodoxe', 'muscle', 'souplesse', 'mains',
-  'demo', 'demonstration', 'ralenti', 'mouvement', 'geste', 'posture', 'appui', 'appuis',
+  'demo', 'demonstration', 'ralenti', 'mouvement', 'geste', 'posture', 'appui', 'appuis', 'main', 'bras', 'poignet',
 ];
 
 const OFF_TOPIC = [
@@ -235,7 +235,7 @@ const DIFF = ['difference', 'differences', 'differencier', 'different', 'differe
 const BALANCE = ['equilibre', 'desequilibre', 'stabilite', 'stable', 'tomber', 'je tombe', 'tenir sur une jambe', 'vaciller', 'perdre l equilibre'];
 const IMPROVE = ['ameliorer', 'ameliore', 'progresser', 'perfectionner', 'plus fort', 'plus vite', 'plus rapide', 'plus puissant', 'conseil', 'conseils', 'astuce', 'astuces', 'mieux', 'travailler mon', 'travailler ma', 'erreur', 'erreurs', 'optimiser', 'renforcer', 'gagner en', 'devenir meilleur'];
 const WHY = ['pourquoi', 'a quoi sert', 'ca sert a quoi', 'sert a quoi', 'interet', 'utilite', 'quel est le but', 'pour quelle raison', 'a quoi ca sert'];
-const EXPLAIN = ['comment', 'explique', 'expliquer', 'c est quoi', 'qu est ce', 'decris', 'decrire', 'que faut il', 'comment faire', 'comment on fait', 'qu est ce que', 'definition', 'details', 'detaille'];
+const EXPLAIN = ['comment', 'explique', 'expliquer', 'c est quoi', 'qu est ce', 'decris', 'decrire', 'que faut il', 'comment faire', 'comment on fait', 'qu est ce que', 'definition', 'details', 'detaille', 'ou placer', 'ou mettre', 'comment placer', 'comment utiliser'];
 
 /** analyse complète d’une question */
 export function parseQuestion(raw: string, opts: { exerciseId?: string } = {}): ParsedQuestion {

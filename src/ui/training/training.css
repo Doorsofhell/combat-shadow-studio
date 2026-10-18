@@ -633,7 +633,7 @@
   position: absolute;
   left: 8px;
   right: 8px;
-  bottom: 8px;
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
   z-index: 4;
   display: flex;
   justify-content: center;
@@ -652,22 +652,62 @@
 .tr-ask .cai-answer {
   flex: 1 1 auto;
   min-height: 2.8em;
-  max-height: none;
+  max-height: 5.8em;
   overflow-y: auto;
 }
-.tr-ask .cai-suggest {
-  flex-wrap: nowrap;
-  overflow: hidden;
+/* "Agrandir": a long answer takes the whole stage, still scrolling inside the panel */
+.tr-ask .cai-panel.expanded {
+  flex: 1;
+}
+.tr-ask .cai-panel.expanded .cai-answer {
+  max-height: none;
+}
+/* Android keyboard open: the panel sits right above it, the field and "Envoyer" stay visible */
+.tr-ask .cai-panel.kbd {
+  position: fixed;
+  left: 8px;
+  right: 8px;
+  bottom: calc(var(--kb, 0px) + 8px);
+  max-height: calc(var(--vvh, 60dvh) - 16px);
+  margin: 0 auto;
+  z-index: 30;
+  animation: none;
+}
+.tr-ask .cai-panel.kbd .cai-answer {
+  min-height: 1.6em;
 }
 .tr-ask .cai-head h2 {
   font-size: 0.95rem;
+  white-space: nowrap;
+}
+.tr-ask .cai-head {
+  min-height: 34px;
+}
+.tr-ask .cai-head .grow {
+  gap: 6px;
+}
+.tr-ask .cai-rail-head {
+  font-size: 0.95em;
+}
+/* short portrait screens: while the coach is open (training paused), the key points and timers give
+   their room to the panel; the move and its main instruction stay visible, and come back on closing */
+@media (orientation: portrait) and (max-height: 700px) {
+  .training.asking .tr-points,
+  .training.asking .tr-meta {
+    display: none;
+  }
+  .tr-ask {
+    top: 6px;
+    bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    max-height: none;
+    align-items: flex-end;
+  }
 }
 .tr-ask .cai-head .btn.icon,
 .tr-ask .cai-hist {
   min-height: 34px;
 }
-.tr-ask .cai-actions .btn,
-.tr-ask .cai-suggest .chip {
+.tr-ask .cai-actions .btn {
   min-height: 36px;
 }
 .tr-ask .cai-answer .q {
