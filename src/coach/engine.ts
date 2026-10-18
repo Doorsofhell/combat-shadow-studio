@@ -98,15 +98,15 @@ function opener(ctx: CoachContext, key: string, kind: 'neutral' | 'question' = '
 function article(t: Technique) {
   const n = t.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   if (/^[aeiouy]/.test(n)) return 'l’';
-  if (/^(position|rotation|parade|sortie|feinte|defense|descente)/.test(n)) return 'la ';
+  if (/^(position|posture|retention|rotation|parade|sortie|feinte|defense|descente)/.test(n)) return 'la ';
   return 'le ';
 }
 const lowName = (t: Technique) => t.name.charAt(0).toLowerCase() + t.name.slice(1);
 export const theName = (t: Technique) => `${article(t)}${lowName(t)}`;
 
-const DISC_OF: Record<DisciplineId, string> = { boxe: 'de la boxe anglaise', kickboxing: 'du kick-boxing', mma: 'du MMA', muaythai: 'du muay-thaï' };
-const DISC_IN: Record<DisciplineId, string> = { boxe: 'en boxe anglaise', kickboxing: 'en kick-boxing', mma: 'en MMA', muaythai: 'en muay-thaï' };
-const DISC_LABEL: Record<DisciplineId, string> = { boxe: 'boxe anglaise', kickboxing: 'kick-boxing', mma: 'MMA', muaythai: 'muay-thaï' };
+const DISC_OF: Record<DisciplineId, string> = { boxe: 'de la boxe anglaise', kickboxing: 'du kick-boxing', mma: 'du MMA', muaythai: 'du muay-thaï', bjj: 'du jiu-jitsu brésilien', judo: 'du judo' };
+const DISC_IN: Record<DisciplineId, string> = { boxe: 'en boxe anglaise', kickboxing: 'en kick-boxing', mma: 'en MMA', muaythai: 'en muay-thaï', bjj: 'en jiu-jitsu brésilien', judo: 'en judo' };
+const DISC_LABEL: Record<DisciplineId, string> = { boxe: 'boxe anglaise', kickboxing: 'kick-boxing', mma: 'MMA', muaythai: 'muay-thaï', bjj: 'jiu-jitsu brésilien', judo: 'judo' };
 
 function sideNote(t: Technique, guard: Guard) {
   if (guard !== 'gaucher') return '';
@@ -386,7 +386,7 @@ function difference(p: ParsedQuestion, ctx: CoachContext): CoachAnswer {
 }
 
 function catLabel(t: Technique) {
-  return { garde: 'Une position de garde', poing: 'Un coup de poing', pied: 'Un coup de pied', genou: 'Un coup de genou', coude: 'Un coup de coude', defense: 'Une défense', deplacement: 'Un déplacement', lutte: 'Une action de lutte', sol: 'Un mouvement au sol', feinte: 'Une feinte', clinch: 'Une action de clinch' }[t.category];
+  return { garde: 'Une position de garde', poing: 'Un coup de poing', pied: 'Un coup de pied', genou: 'Un coup de genou', coude: 'Un coup de coude', defense: 'Une défense', deplacement: 'Un déplacement', lutte: 'Une action de lutte', sol: 'Un mouvement au sol', feinte: 'Une feinte', clinch: 'Une action de clinch', projection: 'Une entrée de projection' }[t.category];
 }
 
 function demoLike(p: ParsedQuestion, ctx: CoachContext, intent: 'demo' | 'slow' | 'repeat'): CoachAnswer {

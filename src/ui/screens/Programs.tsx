@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PROGRAMS, PROGRAM_BY_ID, programSeconds } from '../../domain/programs';
 import { EXERCISE_BY_ID } from '../../domain/exercises';
 import { DISCIPLINES, ProgramBlock } from '../../domain/types';
-import { EmptyState, PageHead } from '../components';
+import { DisciplineLabel, EmptyState, PageHead } from '../components';
 import { IconChevron, IconPlay, IconPlus } from '../icons';
 
 const PHASE_LABEL: Record<ProgramBlock['phase'], string> = {
@@ -27,7 +27,7 @@ export function Programs() {
             <TechThumb id={programTechnique(p)} />
             <span className="body">
               <span className="eyebrow">
-                {discName(p.discipline)} · {p.durationMin} min
+                {p.discipline === 'mixte' ? discName(p.discipline) : <DisciplineLabel id={p.discipline} name={discName(p.discipline)} />} · {p.durationMin} min
               </span>
               <span className="title">
                 {p.name}

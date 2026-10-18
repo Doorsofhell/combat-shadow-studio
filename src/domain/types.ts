@@ -1,5 +1,5 @@
 export type CoachId = 'homme' | 'femme';
-export type DisciplineId = 'boxe' | 'kickboxing' | 'mma' | 'muaythai';
+export type DisciplineId = 'boxe' | 'kickboxing' | 'mma' | 'muaythai' | 'bjj' | 'judo';
 export type LevelId = 'debutant' | 'intermediaire' | 'avance' | 'expert';
 export type Guard = 'orthodoxe' | 'gaucher';
 
@@ -8,6 +8,8 @@ export const DISCIPLINES: { id: DisciplineId; name: string; short: string; tagli
   { id: 'kickboxing', name: 'Kick-boxing', short: 'Kick', tagline: 'Poings et pieds' },
   { id: 'mma', name: 'MMA', short: 'MMA', tagline: 'Striking, lutte et sol en solo' },
   { id: 'muaythai', name: 'Muay-thaï', short: 'Muay', tagline: 'Poings, pieds, genoux, coudes' },
+  { id: 'bjj', name: 'Jiu-jitsu brésilien', short: 'BJJ', tagline: 'Mobilité au sol, sorties et relevés' },
+  { id: 'judo', name: 'Judo', short: 'Judo', tagline: 'Postures, déplacements et entrées' },
 ];
 
 export const LEVELS: { id: LevelId; name: string; goal: string }[] = [
@@ -17,7 +19,7 @@ export const LEVELS: { id: LevelId; name: string; goal: string }[] = [
   { id: 'expert', name: 'Expert', goal: 'Séquences longues et exigeantes, rounds complets.' },
 ];
 
-export type TechniqueCategory = 'garde' | 'poing' | 'pied' | 'genou' | 'coude' | 'defense' | 'deplacement' | 'lutte' | 'sol' | 'feinte' | 'clinch';
+export type TechniqueCategory = 'garde' | 'poing' | 'pied' | 'genou' | 'coude' | 'defense' | 'deplacement' | 'lutte' | 'sol' | 'feinte' | 'clinch' | 'projection';
 
 /** A technique as shown to the user, linked to an animation (motion id). */
 export interface Technique {
@@ -34,7 +36,14 @@ export interface Technique {
   keyPoints: string[];
   /** shown when the move is a solo adaptation of a partner technique */
   soloNote?: string;
+  /**
+   * how it can be practised: 'solo' really works alone (default); 'duo' is shown with a virtual
+   * partner; 'partenaire' needs a real partner and a qualified coach: consultable, never a solo drill
+   */
+  mode?: TechniqueMode;
 }
+
+export type TechniqueMode = 'solo' | 'duo' | 'partenaire';
 
 export interface ComboStep {
   technique: string;

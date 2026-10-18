@@ -232,3 +232,66 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
 - **Publication** : à la demande de Youssef, la v0.13.0 sera publiée en dernier, avec les illustrations et le BJJ et
   le judo.
 - **Restauration** : `restauration/lot-4g`
+
+## 2026-10-18 · v0.13.0 · Lot 5a : illustrations des disciplines centralisées
+
+- **Demande** : refonte graphique globale des disciplines, une illustration officielle par discipline utilisée
+  partout depuis une ressource centrale (message de Youssef, 14:08).
+- **Constat après vérification** (audit `docs/AUDIT_DISCIPLINES.md`) :
+  1. une seule image par discipline, affichée sur 3 écrans seulement ; les 7 autres écrans affichaient du texte ;
+  2. le chemin des images était déclaré dans `Cards.tsx` et recopié dans `Discipline.tsx`, sans référentiel ;
+  3. les rendus existants ne correspondent pas à la direction premium demandée.
+- **Correction** :
+  - référentiel unique `src/domain/disciplineArt.ts` (sources WebP 240 et 600 px, cadrage, description, crédit,
+    révision) et composant `DisciplineArtwork` (couverture, vignette, pastille ; plein cadre ou buste) ;
+  - illustration affichée sur Accueil, Entraîner, Bienvenue, Page discipline, Techniques, Créateur, Légendes
+    (nouveau premier niveau par discipline), Programmes, Progrès et Profil ;
+  - anciens JPG convertis en WebP (hors ligne via le service worker), sans déformation (`object-fit: cover`) ;
+  - aucune fonction utilisateur pour remplacer les illustrations : seul l'éditeur modifie le référentiel.
+- **Reste à faire, signalé** : les illustrations premium (style anime, anthracite, rouge, or) ne peuvent pas être
+  produites ici. Les 4 rendus 3D candidats ont été envoyés à Youssef et ne remplacent pas les images actuelles.
+  BJJ et judo n'ont **pas encore d'illustration** (`ART_PENDING`) : leurs cartes affichent le nom sur fond sombre,
+  sans pictogramme de remplacement.
+- **Fichiers** : `src/domain/disciplineArt.ts`, `src/ui/components/DisciplineArtwork.tsx`, `Cards.tsx`, `Tabs.tsx`,
+  les écrans cités, `src/ui/styles.css`, `public/art/disciplines/`.
+- **Tests** : voir le lot 5b (exécutés ensemble).
+- **Restauration** : `restauration/lot-5` (même point que le lot 5b, les deux lots sont livrés ensemble)
+
+## 2026-10-18 · v0.13.0 · Lot 5b : BJJ et judo
+
+- **Demande** : ajout du jiu-jitsu brésilien et du judo, avec des parcours sur 4 niveaux et une distinction claire
+  entre solo, démonstration à deux et partenaire réel (message de Youssef, 14:09).
+- **Ce qui est fait** :
+  - modèle de données à 6 disciplines (menus, profil, caméra, coach IA, transitions, scène 3D) ;
+  - 11 techniques solo animées : garde BJJ, pont (upa), rétention de garde, changement de base, shizen-tai,
+    tsugi-ashi avant, arrière et latéral, tai-sabaki, kuzushi, uchikomi de seoi-nage (entrée seulement) ;
+    la sortie de hanche et le relevé technique du MMA servent aussi au BJJ ;
+  - parcours solo BJJ (16 exercices) et judo (15 exercices) sur 4 niveaux, avec uniquement des techniques solo ;
+  - 10 fiches « Partenaire réel requis » (`src/domain/partner.ts`) : ukemi, o-soto-gari, o-goshi, ippon-seoi-nage,
+    kesa-gatame, garde fermée, passage toreando, contrôle latéral, montée, clé de bras (principes). Étapes
+    déplacement, kuzushi, tsukuri, kake pour les projections ; position, transition, contrôle, sortie pour le BJJ.
+    Chaque fiche porte des consignes de sécurité ; aucune n'a d'exercice, de bouton de lancement ni d'animation ;
+  - badge de mode (Solo, Démonstration à deux, Partenaire réel requis) sur les fiches ;
+  - les chutes ne sont qu'expliquées, avec l'interdiction de les pratiquer à la maison ;
+  - images des 11 nouvelles techniques pour les deux coachs.
+- **Correction pendant le lot** : dans le tai-sabaki et l'uchikomi, les jambes se croisaient pendant la rotation
+  (le bassin tournait du mauvais côté). Rotation inversée et pieds replacés, vérifiés par mesure des articulations
+  et par rendu.
+- **Pas encore fait, donc BJJ et judo ne sont pas déclarés complets** :
+  - moteur à deux personnages et démonstrations avec partenaire virtuel ;
+  - légendes BJJ et judo sourcées, et navigation Légendes, Discipline, Champion, Fiche pour ces disciplines ;
+  - illustrations officielles du BJJ et du judo.
+- **Fichiers** : `src/domain/types.ts`, `techniques.ts`, `exercises.ts`, `partner.ts`, `guide.ts`, `instructions.ts`,
+  `src/engine/library/grappling.ts`, `src/coach/*`, `src/ui/screens/Library.tsx`, `src/ui/App.tsx`,
+  `public/thumbs/`.
+- **Tests** (lots 5a et 5b) :
+  - compilation TypeScript : TEST RÉUSSI ;
+  - unitaires (186), dont 6 nouveaux sur les fiches partenaire (mode, sécurité, étapes, préparation solo, aucun
+    exercice solo avec une technique à deux) et le test du référentiel d'illustrations : TEST RÉUSSI ;
+  - navigateur (55), dont 10 sur les illustrations officielles (10 écrans) et 7 sur le BJJ et le judo : TEST RÉUSSI ;
+  - contraste AA : le premier passage a échoué sur l'accueil (texte de la discipline à 4,15:1 sur le dégradé, car la
+    pastille rend la ligne plus haute). Texte renforcé, puis 3 passages : TEST RÉUSSI ;
+  - vérification visuelle en clair et en sombre (fiches, listes, techniques animées) : TEST RÉUSSI ;
+  - Firebase (2) : NON EXÉCUTÉ ;
+  - vrai téléphone Android : NON EXÉCUTÉ.
+- **Restauration** : `restauration/lot-5`

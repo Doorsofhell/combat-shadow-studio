@@ -6,7 +6,7 @@ import { isPlayable, validateSequence } from '../../domain/transitions';
 import { useCustom } from '../../store/custom';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { PageHead, Segmented, Tabs, toast } from '../components';
+import { DisciplineArtwork, DisciplineLabel, PageHead, Segmented, Tabs, toast } from '../components';
 import { RoundOptions } from './Discipline';
 import { IconPlay, IconTrash } from '../icons';
 
@@ -51,7 +51,7 @@ export function Builder() {
   return (
     <div className="page">
       <PageHead title="Créateur d’enchaînements" eyebrow="Personnalisé" fallback="/techniques?tab=createur" />
-      <Tabs label="Discipline" items={DISCIPLINES.map((x) => ({ id: x.id, label: x.short }))} value={d} onChange={setD} />
+      <Tabs label="Discipline" items={DISCIPLINES.map((x) => ({ id: x.id, label: x.short, icon: <DisciplineArtwork id={x.id} format="avatar" size="xs" /> }))} value={d} onChange={setD} />
 
       <div className="stack">
         <span className="label">
@@ -129,7 +129,7 @@ export function Builder() {
                   <b style={{ fontWeight: 600 }}>{c.name}</b>
                   <br />
                   <span className="small muted">
-                    {DISCIPLINES.find((x) => x.id === c.discipline)!.name} · {c.sequence.length} mouvements
+                    <DisciplineLabel id={c.discipline} name={DISCIPLINES.find((x) => x.id === c.discipline)?.name ?? ''} /> · {c.sequence.length} mouvements
                   </span>
                 </span>
                 <button type="button" className="btn sm ghost" onClick={() => (setD(c.discipline), setSeq(c.sequence), setName(c.name), setEditId(c.id))}>

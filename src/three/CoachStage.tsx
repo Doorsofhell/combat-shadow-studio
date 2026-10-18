@@ -26,6 +26,8 @@ export const STYLE_OF: Record<DisciplineId, StanceStyle> = {
   kickboxing: 'kickboxing',
   mma: 'mma',
   muaythai: 'muaythai',
+  bjj: 'bjj',
+  judo: 'judo',
 };
 
 /** envelopes are computed in the model's own units; the fighter's height scales the whole model */

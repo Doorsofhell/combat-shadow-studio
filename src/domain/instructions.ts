@@ -296,6 +296,54 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     main: 'Appui main arrière et pied avant, soulève les hanches et passe la jambe derrière.',
     points: [P('pieds', 'Pied avant à plat devant toi', 'preparation'), P('bassin', 'Hanches soulevées sur la main', 'execution'), P('jambe', 'Jambe libre loin derrière', 'execution'), P('garde', 'Main libre devant le visage'), P('garde', 'Garde debout, en reculant si besoin', 'retour')],
   },
+
+  // ------------------------------------------------------------------ jiu-jitsu brésilien
+  'garde-bjj': {
+    main: 'Appuis larges, genoux fléchis, hanches en arrière, mains ouvertes devant.',
+    points: [P('pieds', 'Appuis larges, sur l’avant des pieds'), P('bassin', 'Hanches un peu en arrière, dos droit'), P('bras', 'Coudes près du corps'), P('garde', 'Mains ouvertes devant, prêtes à cadrer')],
+  },
+  pont: {
+    main: 'Pieds près des fesses, monte les hanches et bascule vers une épaule.',
+    points: [P('pieds', 'Pieds à plat, près des fesses', 'preparation'), P('bassin', 'Hanches hautes, bascule sur l’épaule', 'execution'), P('tete', 'Menton rentré, pas d’appui sur la nuque'), P('garde', 'Redescente contrôlée', 'retour')],
+  },
+  'retention-garde': {
+    main: 'Jambes en cadre, les hanches pivotent pour rester face au partenaire.',
+    points: [P('jambe', 'Genoux entre lui et ta poitrine', 'execution'), P('bassin', 'Les hanches tournent, pas les épaules', 'execution'), P('pieds', 'Plantes de pieds vers l’avant'), P('garde', 'Mains devant la poitrine')],
+  },
+  'changement-base': {
+    main: 'Main posée, tourne la hanche et passe à quatre appuis, puis reviens.',
+    points: [P('bras', 'Mains sous les épaules', 'execution'), P('bassin', 'Hanches hautes, dos plat', 'execution'), P('pieds', 'Pointes de pieds au sol'), P('garde', 'Retour à l’assise, main posée', 'retour')],
+  },
+
+  // ------------------------------------------------------------------ judo
+  'shizen-tai': {
+    main: 'Debout, droit, pieds à largeur d’épaules, genoux souples, mains devant.',
+    points: [P('pieds', 'Pieds à largeur d’épaules'), P('bassin', 'Poids réparti, genoux souples'), P('tete', 'Dos droit, regard devant'), P('garde', 'Mains devant comme sur manche et revers')],
+  },
+  'tsugi-ashi-avant': {
+    main: 'Le pied avant glisse, le pied arrière le rejoint sans le dépasser.',
+    points: [P('pieds', 'Pied avant d’abord, pieds rasants', 'execution'), P('pieds', 'Le pied arrière ne dépasse jamais'), P('bassin', 'Buste droit, même hauteur'), P('garde', 'Mains devant pendant le pas')],
+  },
+  'tsugi-ashi-arriere': {
+    main: 'Le pied arrière glisse en arrière, le pied avant suit de la même distance.',
+    points: [P('pieds', 'Pied arrière d’abord, sans sauter', 'execution'), P('pieds', 'Même largeur à l’arrivée', 'retour'), P('bassin', 'Ne pas partir en arrière avec le buste'), P('garde', 'Mains devant pendant le pas')],
+  },
+  'tsugi-ashi-lateral': {
+    main: 'Le pied du côté visé glisse, l’autre le rejoint sans le toucher.',
+    points: [P('pieds', 'Le pied du côté visé part en premier', 'execution'), P('pieds', 'Les pieds ne se touchent pas'), P('bassin', 'Hanches face au partenaire'), P('garde', 'Mains devant pendant le pas')],
+  },
+  'tai-sabaki': {
+    main: 'Pivote sur le pied avant, le pied arrière fait un demi-cercle.',
+    points: [P('pieds', 'Le pied avant reste fixe', 'execution'), P('bassin', 'Même hauteur pendant la rotation', 'execution'), P('jambe', 'Le pied arrière décrit un demi-cercle'), P('garde', 'Retour en shizen-tai', 'retour')],
+  },
+  kuzushi: {
+    main: 'Recule d’un pas, tire la main avant vers la hanche et monte l’autre.',
+    points: [P('pieds', 'Petit pas en arrière', 'execution'), P('bras', 'Main avant tirée vers la hanche', 'execution'), P('bassin', 'Le tirage vient de tout le corps'), P('garde', 'Retour en shizen-tai', 'retour')],
+  },
+  'uchikomi-seoi': {
+    main: 'Entre, pivote dos au partenaire, genoux fléchis, mains qui tirent.',
+    points: [P('pieds', 'Pieds parallèles, à l’intérieur', 'execution'), P('bassin', 'Genoux fléchis, hanches basses', 'execution'), P('bras', 'Mains qui tirent vers l’avant'), P('garde', 'Retour en shizen-tai, sans projeter', 'retour')],
+  },
 };
 
 /** the instruction of a technique; falls back on its description and key points if missing */

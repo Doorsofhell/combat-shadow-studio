@@ -47,6 +47,19 @@ export interface ParsedQuestion {
 /** synonymes écrits à la main ; `generic` = expression vague, moins prioritaire qu’un nom précis */
 const SYNONYMS: [id: string, phrases: string[], generic?: boolean][] = [
   ['garde', ['position de garde', 'garde de base', 'stance', 'se mettre en garde']],
+  // BJJ / judo (names in parentheses are not said aloud)
+  ['retention-garde', ['retention de garde', 'retenir la garde', 'garder la garde', 'jambes en cadre']],
+  ['pont', ['pont', 'upa', 'bridge', 'faire le pont']],
+  ['sortie-hanche', ['sortie de hanche', 'shrimp', 'shrimping', 'hip escape', 'crevette']],
+  ['changement-base', ['changement de base', 'quatre appuis', 'quatre pattes']],
+  ['garde-bjj', ['posture de grappling', 'posture debout de grappling', 'posture de bjj']],
+  ['shizen-tai', ['shizen tai', 'shizentai', 'posture naturelle', 'shizen hontai']],
+  ['tsugi-ashi-avant', ['tsugi ashi', 'tsugi ashi avant', 'pas chasse']],
+  ['tsugi-ashi-arriere', ['tsugi ashi arriere']],
+  ['tsugi-ashi-lateral', ['tsugi ashi lateral']],
+  ['tai-sabaki', ['tai sabaki', 'taisabaki', 'rotation du corps']],
+  ['kuzushi', ['kuzushi']],
+  ['uchikomi-seoi', ['uchikomi', 'uchi komi', 'uchikomi de seoi nage', 'seoi nage', 'entree de seoi nage']],
   ['jab', ['jab', 'direct avant', 'direct du bras avant', 'direct gauche', 'coup droit avant']],
   ['direct', ['cross', 'direct', 'direct arriere', 'droit arriere', 'direct droit', 'direct du bras arriere', 'coup droit arriere']],
   ['crochet-avant', ['crochet gauche', 'crochet avant', 'crochet du bras avant', 'hook gauche', 'left hook', 'hook avant']],

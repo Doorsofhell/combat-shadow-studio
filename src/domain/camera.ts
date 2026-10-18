@@ -69,10 +69,16 @@ const BY_CATEGORY: Record<TechniqueCategory, CameraView> = {
   sol: { az: 90, el: 18, zoom: 1, focus: 0.3, why: 'De profil et légèrement au-dessus : tout le corps reste visible pendant la descente au sol et le relevé.' },
   feinte: { az: 50, el: 6, ...FULL, ref: 'torse', why: 'Trois quarts léger : on voit l’amorce du geste et le retour immédiat en garde.' },
   clinch: { az: 60, el: 10, ...FULL, why: 'Trois quarts large : on voit la position des mains sur la nuque imaginaire et le genou qui monte.' },
+  projection: { az: 70, el: 12, zoom: 1, focus: 0.45, why: 'Trois quarts presque de profil : on voit le pas d’entrée, le pivot, la flexion des genoux et le tirage des mains.' },
 };
 
 /** techniques whose best angle differs from their family */
 const BY_TECHNIQUE: Record<string, Partial<CameraView>> = {
+  'garde-bjj': { az: 60, el: 8, why: 'Trois quarts : on voit la largeur des appuis, la flexion des genoux et les mains ouvertes devant.' },
+  'shizen-tai': { az: 35, el: 8, why: 'Trois quarts léger : on voit la posture droite, les pieds à largeur d’épaules et les mains devant.' },
+  'tai-sabaki': { az: 20, el: 40, why: 'Vue surélevée : on suit le pied arrière qui tourne autour du pied avant.' },
+  pont: { az: 85, el: 22, why: 'De profil, légèrement au-dessus : on voit les pieds près des fesses et les hanches qui montent.' },
+  'retention-garde': { az: 60, el: 30, why: 'Trois quarts au-dessus : on voit les jambes en cadre et la rotation des hanches.' },
   'crochet-avant': { az: 55, el: 28, why: 'Trois quarts surélevé : on voit l’arc horizontal du poing, le coude à hauteur d’épaule et le pivot du pied avant.' },
   'crochet-arriere': { az: 55, el: 28, why: 'Trois quarts surélevé : on voit l’arc horizontal du poing, la rotation du buste et le pivot du pied arrière.' },
   'crochet-avant-corps': { az: 58, el: 20, why: 'Trois quarts surélevé : on voit la flexion des jambes et l’arc du poing vers le corps.' },
@@ -125,7 +131,7 @@ export function techniqueView(id: string): CameraView {
 }
 
 /** priority when one angle must serve a whole combination: the move that needs the widest view wins */
-const PRIORITY: Record<TechniqueCategory, number> = { sol: 9, lutte: 8, pied: 7, deplacement: 6, genou: 5, clinch: 4, coude: 3, poing: 2, defense: 2, feinte: 1, garde: 0 };
+const PRIORITY: Record<TechniqueCategory, number> = { sol: 9, lutte: 8, projection: 8, pied: 7, deplacement: 6, genou: 5, clinch: 4, coude: 3, poing: 2, defense: 2, feinte: 1, garde: 0 };
 
 /**
  * One stable angle for a whole sequence: a single technique keeps its own angle; a combination
@@ -196,7 +202,7 @@ export function oriented(view: Pick<CameraView, 'az'>, southpaw: boolean) {
   return southpaw ? -view.az : view.az;
 }
 
-const STYLE: Record<DisciplineId, keyof typeof STANCES> = { boxe: 'boxing', kickboxing: 'kickboxing', mma: 'mma', muaythai: 'muaythai' };
+const STYLE: Record<DisciplineId, keyof typeof STANCES> = { boxe: 'boxing', kickboxing: 'kickboxing', mma: 'mma', muaythai: 'muaythai', bjj: 'bjj', judo: 'judo' };
 
 /** how far the trunk is turned in the guard of a discipline, degrees (negative: lead shoulder forward) */
 export function torsoYaw(d: DisciplineId) {

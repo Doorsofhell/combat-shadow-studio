@@ -22,6 +22,7 @@ const Train = lazy(() => import('./screens/Train').then((m) => ({ default: m.Tra
 const DisciplinePage = lazy(() => import('./screens/Discipline').then((m) => ({ default: m.DisciplinePage })));
 const Library = lazy(() => import('./screens/Library').then((m) => ({ default: m.Library })));
 const TechniquePage = lazy(() => import('./screens/Library').then((m) => ({ default: m.TechniquePage })));
+const PartnerPage = lazy(() => import('./screens/Library').then((m) => ({ default: m.PartnerPage })));
 const Programs = lazy(() => import('./screens/Programs').then((m) => ({ default: m.Programs })));
 const ProgramPage = lazy(() => import('./screens/Programs').then((m) => ({ default: m.ProgramPage })));
 const Builder = lazy(() => import('./screens/Builder').then((m) => ({ default: m.Builder })));
@@ -158,6 +159,7 @@ export function App() {
             <Route path="/entrainement" element={<Training />} />
             <Route path="/techniques" element={<Library />} />
             <Route path="/techniques/:id" element={<TechniquePage />} />
+            <Route path="/partenaire/:id" element={<PartnerPage />} />
             <Route path="/programmes" element={<Programs />} />
             <Route path="/programmes/:id" element={<ProgramPage />} />
             <Route path="/createur" element={<Builder />} />

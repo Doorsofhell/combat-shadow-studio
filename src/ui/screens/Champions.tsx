@@ -16,6 +16,7 @@ import { useCustom } from '../../store/custom';
 import { useSettings } from '../../store/settings';
 import { MODE_HELP, MODE_LABEL } from '../training/plan';
 import { PageHead } from '../App';
+import { DisciplineCard, DisciplineLabel } from '../components';
 import { IconChevron, IconPlay, IconPlus, IconTrash } from '../icons';
 
 const DISC_NAME = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.name])) as Record<DisciplineId, string>;
@@ -182,6 +183,12 @@ export function Champions() {
         <Loading catalogError={error} retry={retry} />
       ) : (
         <>
+          {/* first level: the legends of each discipline */}
+          <div className="disc-grid compact" role="group" aria-label="Légendes par discipline" data-testid="legend-disciplines">
+            {DISCIPLINES.map((d) => (
+              <DisciplineCard key={d.id} id={d.id} to={`/champions?vue=champions&d=${d.id}`} testId={`legend-disc-${d.id}`} compact selected={view === 'champions' && q.get('d') === d.id} />
+            ))}
+          </div>
           <Counters list={catalog.combos} />
           <StatusExplainer />
           <div className="utabs" role="tablist" aria-label="Sections de la bibliothèque">
@@ -259,7 +266,7 @@ function Explorer({ catalog }: { catalog: Catalog }) {
         </button>
         {DISCIPLINES.map((d) => (
           <button key={d.id} className="chip" aria-pressed={query.discipline === d.id} onClick={() => setMany({ d: query.discipline === d.id ? null : d.id, tech: null, champion: null })}>
-            {d.short}
+            <DisciplineLabel id={d.id} name={d.short} />
           </button>
         ))}
       </div>
@@ -521,7 +528,14 @@ function Collections({ catalog }: { catalog: Catalog }) {
 }
 
 function ChampionGrid({ catalog }: { catalog: Catalog }) {
-  const [d, setD] = useState<DisciplineId | null>(null);
+  const [q, setQ] = useSearchParams();
+  const d = (DISCIPLINES.some((x) => x.id === q.get('d')) ? q.get('d') : null) as DisciplineId | null;
+  const setD = (v: DisciplineId | null) => {
+    const n = new URLSearchParams(q);
+    if (v) n.set('d', v);
+    else n.delete('d');
+    setQ(n, { replace: true });
+  };
   const count = useMemo(() => {
     const m = new Map<string, number>();
     for (const c of catalog.combos) if (!d || c.discipline === d) m.set(c.champion, (m.get(c.champion) ?? 0) + 1);
@@ -536,7 +550,7 @@ function ChampionGrid({ catalog }: { catalog: Catalog }) {
         </button>
         {DISCIPLINES.map((x) => (
           <button key={x.id} className="chip" aria-pressed={d === x.id} onClick={() => setD(x.id)}>
-            {x.short}
+            <DisciplineLabel id={x.id} name={x.short} />
           </button>
         ))}
       </div>
@@ -544,7 +558,11 @@ function ChampionGrid({ catalog }: { catalog: Catalog }) {
         {list.map((c) => (
           <Link key={c.id} to={`/champions/c/${c.id}`} className="champ-card" data-testid={`champ-${c.id}`}>
             <span className="name">{c.name}</span>
-            <span className="small muted">{c.disciplines.map((x) => DISC_SHORT[x]).join(' · ')}</span>
+            <span className="small muted row" style={{ gap: 8, flexWrap: 'wrap' }}>
+              {c.disciplines.map((x) => (
+                <DisciplineLabel key={x} id={x} name={DISC_SHORT[x]} />
+              ))}
+            </span>
             <span className="small">{c.traits.slice(0, 3).join(', ')}</span>
             <span className="badge gold" style={{ alignSelf: 'flex-start' }}>
               {count.get(c.id) ?? 0} fiches

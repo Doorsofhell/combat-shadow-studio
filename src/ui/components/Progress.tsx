@@ -67,13 +67,16 @@ export function BarChart({ data, label, format }: { data: BarDatum[]; label: str
 }
 
 /** Horizontal bars, one row per item (time per discipline, per level…). */
-export function HBarList({ rows, format }: { rows: { label: string; value: number }[]; format: (v: number) => string }) {
+export function HBarList({ rows, format }: { rows: { label: string; value: number; icon?: ReactNode }[]; format: (v: number) => string }) {
   const max = Math.max(1, ...rows.map((r) => r.value));
   return (
     <div className="stack" style={{ gap: 6 }} role="list">
       {rows.map((r) => (
         <div key={r.label} className="hbar" role="listitem">
-          <span className="lbl">{r.label}</span>
+          <span className="lbl">
+            {r.icon}
+            {r.label}
+          </span>
           <span className="track" aria-hidden>
             <i style={{ width: `${(r.value / max) * 100}%` }} />
           </span>

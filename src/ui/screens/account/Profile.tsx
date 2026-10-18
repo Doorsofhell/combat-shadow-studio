@@ -24,7 +24,7 @@ import { useSyncPrefs } from '../../../account/syncPrefs';
 import { buildFullExport } from '../../../account/export';
 import { passwordProblem, emailLooksValid } from '../../../account/auth/types';
 import type { SignInMethod } from '../../../account/auth/types';
-import { Chip, ConfirmDialog, LinkRow, PageHead, Panel, PanelRow, Segmented, Sheet, StatTile, Toggle, toast } from '../../components';
+import { DisciplineLabel, Chip, ConfirmDialog, LinkRow, PageHead, Panel, PanelRow, Segmented, Sheet, StatTile, Toggle, toast } from '../../components';
 import { IconDownload, IconFighter, IconShield, IconTrash, IconUser } from '../../icons';
 import { PasswordField } from './SignIn';
 import './account.css';
@@ -279,7 +279,7 @@ export function ProfilePage() {
           <div className="row" style={{ gap: 8 }} role="group" aria-label="Disciplines pratiquées">
             {DISCIPLINES.map((d) => (
               <Chip key={d.id} on={practised.includes(d.id)} onClick={() => toggleDiscipline(d.id)} testId={`pf-disc-${d.id}`}>
-                {d.name}
+                <DisciplineLabel id={d.id} name={d.name} />
               </Chip>
             ))}
           </div>

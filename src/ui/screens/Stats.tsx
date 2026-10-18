@@ -6,7 +6,7 @@ import { TECHNIQUE_BY_ID } from '../../domain/techniques';
 import { SessionRecord, byKey, formatDuration, localDay, monthKey, sessionCount, sum, useStats, weekKey } from '../../store/stats';
 import { useGoals } from '../../store/goals';
 import { MODE_LABEL } from '../training/plan';
-import { BarChart, EmptyState, FilterChips, GoalRing, HBarList, PageHead, ProgressBar, SectionHead, Segmented, Sheet, StatTile, Tabs, TechniqueCard, toast } from '../components';
+import { DisciplineArtwork, DisciplineLabel, BarChart, EmptyState, FilterChips, GoalRing, HBarList, PageHead, ProgressBar, SectionHead, Segmented, Sheet, StatTile, Tabs, TechniqueCard, toast } from '../components';
 import { IconTarget } from '../icons';
 
 const MONTHS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
@@ -199,7 +199,7 @@ export function Stats() {
           {disc === 'toutes' && (
             <div className="card stack">
               <h3>Par discipline</h3>
-              <HBarList format={formatDuration} rows={DISCIPLINES.map((d) => ({ label: d.name, value: byDisc[d.id] ?? 0 }))} />
+              <HBarList format={formatDuration} rows={DISCIPLINES.map((d) => ({ label: d.name, value: byDisc[d.id] ?? 0, icon: <DisciplineArtwork id={d.id} format="avatar" size="xs" /> }))} />
             </div>
           )}
           <div className="card stack">
@@ -255,7 +255,7 @@ function SessionRow({ s, withDate }: { s: SessionRecord; withDate?: boolean }) {
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ fontWeight: 600 }}>{s.exerciseName}</span>
         <span className="small muted" style={{ display: 'block' }}>
-          {DISCIPLINES.find((x) => x.id === s.discipline)?.name} · {LEVELS.find((l) => l.id === s.level)?.name} · {MODE_LABEL[s.mode]} ·{' '}
+          <DisciplineLabel id={s.discipline} name={DISCIPLINES.find((x) => x.id === s.discipline)?.name ?? ''} /> · {LEVELS.find((l) => l.id === s.level)?.name} · {MODE_LABEL[s.mode]} ·{' '}
           {withDate ? `${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} ` : ''}
           {d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
         </span>

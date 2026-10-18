@@ -9,7 +9,7 @@ import { useSettings } from '../../store/settings';
 import { formatDuration, useStats } from '../../store/stats';
 import { useGoals } from '../../store/goals';
 import { MODE_HELP, MODE_LABEL } from '../training/plan';
-import { DISCIPLINE_IMG, EmptyState, FilterChips, LevelSelector, PageHead, Segmented, Sheet } from '../components';
+import { DisciplineArtwork, EmptyState, FilterChips, LevelSelector, PageHead, Segmented, Sheet } from '../components';
 import { IconPlay, IconPlus, IconStar, IconStarFilled } from '../icons';
 
 export const KIND_LABEL: Record<Exercise['kind'], string> = {
@@ -78,7 +78,7 @@ export function DisciplinePage() {
     <div className="page">
       <PageHead title={disc.name} eyebrow="Discipline" fallback="/entrainer" />
       <div className="disc-card dark-scope banner" style={{ pointerEvents: 'none' }} aria-hidden>
-        <img src={DISCIPLINE_IMG[disc.id]} alt="" onError={(e) => (e.currentTarget.style.display = 'none')} />
+        <DisciplineArtwork id={disc.id} format="cover" eager />
         <span className="bar" />
         <span className="name" style={{ fontSize: '1.1rem' }}>
           {exercisesFor(disc.id, lvl.id).length} exercices

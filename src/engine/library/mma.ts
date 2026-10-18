@@ -185,7 +185,7 @@ function takedownDefence(a: Author): Motion {
 }
 
 /** seated base on the floor: left hand posted behind, right foot planted, left leg in front */
-function seated(a: Author): Pose {
+export function seated(a: Author): Pose {
   const s = a.s;
   return {
     hips: v3(0.0, 0.13 * s, -0.12 * s),

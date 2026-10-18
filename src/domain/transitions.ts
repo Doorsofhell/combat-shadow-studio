@@ -8,6 +8,9 @@ export type Range = 'long' | 'moyenne' | 'courte' | 'neutre';
 const STATES: Record<string, [BodyState, BodyState]> = {
   'descente-sol': ['stand', 'ground'],
   'sortie-hanche': ['ground', 'ground'],
+  pont: ['ground', 'ground'],
+  'retention-garde': ['ground', 'ground'],
+  'changement-base': ['ground', 'ground'],
   'releve-technique': ['ground', 'stand'],
 };
 
@@ -31,7 +34,7 @@ export interface Issue {
   message: string;
 }
 
-const DISC_NAME: Record<DisciplineId, string> = { boxe: 'la boxe anglaise', kickboxing: 'le kick-boxing', mma: 'le MMA', muaythai: 'le muay-thaï' };
+const DISC_NAME: Record<DisciplineId, string> = { boxe: 'la boxe anglaise', kickboxing: 'le kick-boxing', mma: 'le MMA', muaythai: 'le muay-thaï', bjj: 'le jiu-jitsu brésilien', judo: 'le judo' };
 
 /**
  * Checks a user-built sequence: unknown or forbidden techniques for the discipline, impossible body

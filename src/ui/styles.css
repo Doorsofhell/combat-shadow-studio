@@ -713,6 +713,10 @@ img {
 
 .tab {
   flex: 1 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-height: 44px;
   padding: 0 14px;
   border-radius: 10px;
@@ -1183,6 +1187,11 @@ input[type='range'] {
   pointer-events: auto;
 }
 
+/* the discipline avatar makes the eyebrow taller, so it reaches the lighter top of the fade: stronger text keeps AA */
+.hero-info .eyebrow {
+  color: var(--ink-2);
+}
+
 .hero-name {
   font-family: var(--font-display);
   font-weight: 700;
@@ -1292,14 +1301,36 @@ input[type='range'] {
   transform: scale(0.985);
 }
 
-.disc-card img {
+.disc-card .disc-art.cover {
   position: absolute;
   inset: 0;
+  z-index: -2;
+}
+
+/* -------------------------------------------------- official discipline artwork (DisciplineArtwork) */
+.disc-art {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  flex: none;
+  background: linear-gradient(165deg, #262a35 0%, #14151b 100%);
+}
+
+.disc-art img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 20%;
-  z-index: -2;
+  user-select: none;
+}
+
+.disc-art.tile {
+  border-radius: 10px;
+}
+
+.disc-art.avatar {
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(201, 162, 39, 0.55);
 }
 
 .disc-card::before {
@@ -1347,10 +1378,9 @@ input[type='range'] {
   padding-right: 48%;
 }
 
-.disc-card.banner img {
+.disc-card.banner .disc-art.cover {
   left: auto;
   width: 52%;
-  object-position: 50% 12%;
 }
 
 .disc-card.banner::before {
@@ -1419,6 +1449,9 @@ input[type='range'] {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  hyphens: auto;
   padding: 16px;
   border-radius: var(--radius);
   background: var(--raised);
@@ -1588,7 +1621,7 @@ input[type='range'] {
 
 .hbar {
   display: grid;
-  grid-template-columns: minmax(84px, 120px) 1fr auto;
+  grid-template-columns: minmax(84px, 150px) 1fr auto;
   align-items: center;
   gap: 10px;
   font-size: 0.88rem;
@@ -1596,9 +1629,12 @@ input[type='range'] {
 }
 
 .hbar .lbl {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.2;
 }
 
 .hbar .track {
@@ -2199,4 +2235,27 @@ button.panel-row {
   font-size: 0.8rem;
   background: var(--ink);
   color: var(--bg);
+}
+
+.disc-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  vertical-align: middle;
+}
+
+.tab:has(.disc-art) {
+  padding: 0 10px 0 6px;
+}
+
+/* compact discipline cards: first level of navigation (Légendes, Accueil) */
+.disc-card.compact {
+  min-height: 132px;
+  padding: 12px;
+}
+.disc-card.compact .name {
+  font-size: 1.1rem;
+}
+.disc-card.compact .bar {
+  margin-bottom: 6px;
 }

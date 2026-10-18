@@ -7,7 +7,7 @@ import { DISCIPLINES, DisciplineId, LEVELS, LevelId } from '../../domain/types';
 import type { HairStyle } from '../../editor/look';
 import { recommend } from '../../domain/recommend';
 import { CoachPicker } from './CoachSelect';
-import { DisciplineCard, LevelSelector, OptionGrid } from '../components';
+import { DisciplineLabel, DisciplineCard, LevelSelector, OptionGrid } from '../components';
 import { chooseCoach } from '../components/fighter';
 import { IconFighter, IconGlove, IconShield, IconTrend } from '../icons';
 
@@ -329,7 +329,7 @@ export function Onboarding() {
             <div className="card stack">
               <div className="eyebrow">Point de départ</div>
               <h3>
-                {DISCIPLINES.find((d) => d.id === rec.discipline)!.name} · {LEVELS.find((l) => l.id === rec.level)!.name}
+                <DisciplineLabel id={rec.discipline} name={DISCIPLINES.find((d) => d.id === rec.discipline)?.name ?? ''} /> · {LEVELS.find((l) => l.id === rec.level)!.name}
               </h3>
               <ul className="plain-list small">
                 {rec.exercises.map((e) => (

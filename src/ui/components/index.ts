@@ -2,6 +2,7 @@
 export * from './Button';
 export * from './Cards';
 export * from './Chips';
+export * from './DisciplineArtwork';
 export * from './LevelSelector';
 export * from './OptionGrid';
 export * from './PageHead';

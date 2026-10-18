@@ -174,5 +174,9 @@ export function recommendedGear(d: DisciplineId): Loadout {
       return { bottom: 'short-mma', shoes: 'pieds-nus', hands: 'gants-mma', shins: 'aucun', feet: 'aucun' };
     case 'muaythai':
       return { bottom: 'short-thai', shoes: 'pieds-nus', hands: 'bandes', shins: 'aucun', feet: 'chevillères' };
+    // grappling: no gloves, no shin guards (the judogi and the gi are not modelled yet)
+    case 'bjj':
+    case 'judo':
+      return { bottom: 'short-mma', shoes: 'pieds-nus', hands: 'aucun', shins: 'aucun', feet: 'aucun' };
   }
 }

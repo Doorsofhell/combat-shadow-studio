@@ -12,7 +12,7 @@ import { EXERCISE_BY_ID } from '../../domain/exercises';
 import { recommend } from '../../domain/recommend';
 import type { ComboPlayer, PlayerEvents } from '../../engine/player';
 import { MODE_LABEL } from '../training/plan';
-import { EmptyState, EntryCard, ProgressBar, SectionHead, StatTile } from '../components';
+import { DisciplineArtwork, DisciplineCard, DisciplineLabel, EmptyState, EntryCard, ProgressBar, SectionHead, StatTile } from '../components';
 import { defaultFighterName } from '../components/fighter';
 import { IconChevron, IconClock, IconGear, IconPlay, IconRestart, IconTrend, IconUser } from '../icons';
 
@@ -117,8 +117,11 @@ export function Home() {
         <div className="hero-fade" />
         <div className="hero-info">
           <div>
-            <div className="eyebrow">
-              {disc.name} · {level.name}
+            <div className="eyebrow disc-label">
+              <DisciplineArtwork id={disc.id} format="avatar" size="xs" />
+              <span>
+                {disc.name} · {level.name}
+              </span>
             </div>
             <div className="hero-name" data-testid="fighter-name">
               {name}
@@ -152,7 +155,7 @@ export function Home() {
             <span className="eyebrow">Reprendre</span>
             <span className="title">{last.exerciseName}</span>
             <span className="small muted">
-              {DISCIPLINES.find((d) => d.id === last.discipline)?.name} · {MODE_LABEL[last.mode]}
+              <DisciplineLabel id={last.discipline} name={DISCIPLINES.find((d) => d.id === last.discipline)?.name ?? ''} /> · {MODE_LABEL[last.mode]}
             </span>
           </span>
           <IconChevron />
@@ -232,7 +235,7 @@ export function Home() {
                   <TechThumb id={keyTechnique(e!.sequence)} />
                   <span className="body">
                     <span className="title">{e!.name}</span>
-                    <span className="small muted">{DISCIPLINES.find((d) => d.id === e!.discipline)!.name}</span>
+                    <span className="small muted"><DisciplineLabel id={e!.discipline} name={DISCIPLINES.find((d) => d.id === e!.discipline)?.name ?? ''} /></span>
                   </span>
                   <IconChevron />
                 </Link>
@@ -247,6 +250,15 @@ export function Home() {
           <EntryCard to={`/programmes/${recProg.id}`} icon={<IconTrend />} thumb={programTechnique(recProg)} tone="red" title={recProg.name} text={`${recProg.durationMin} min · ${recProg.frequency}`} />
         </section>
       )}
+
+      <section className="section" aria-labelledby="h-disc">
+        <SectionHead id="h-disc" title="Disciplines" action={<Link to="/entrainer">Entraîner</Link>} />
+        <div className="disc-grid compact" data-testid="home-disciplines">
+          {DISCIPLINES.map((d) => (
+            <DisciplineCard key={d.id} id={d.id} to={`/discipline/${d.id}`} level={profile.levels[d.id]} compact testId={`home-disc-${d.id}`} />
+          ))}
+        </div>
+      </section>
 
       {rec.exercises.length > 1 && (
         <section className="section" aria-labelledby="h-rec">

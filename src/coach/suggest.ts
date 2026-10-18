@@ -47,12 +47,27 @@ const BY_CATEGORY: Partial<Record<Technique['category'], string[]>> = {
   garde: ['faq:menton'],
   defense: ['faq:garde', 'faq:retour-garde', 'faq:menton', 'faq:distance'],
   lutte: ['faq:sprawl', 'faq:distance', 'faq:retour-garde'],
-  sol: ['faq:respiration'],
+  sol: [],
+  projection: [],
   clinch: ['faq:genoux'],
 };
 
 /** questions a learner asks about one technique in particular (answered by its sheet or its FAQ) */
 const BY_TECHNIQUE: Record<string, string[]> = {
+  'descente-sol': ['Comment descendre au sol sans me faire mal ?'],
+  'sortie-hanche': ['À quoi sert la sortie de hanche ?', 'Comment pousser avec mes pieds pendant le shrimp ?'],
+  'releve-technique': ['Comment me relever en sécurité ?'],
+  'garde-bjj': ['Où placer mes mains en posture de grappling ?', 'Comment placer mes pieds en posture de grappling ?'],
+  pont: ['Pourquoi faire le pont ?', 'Où placer mes pieds pendant le pont ?'],
+  'retention-garde': ['À quoi sert la rétention de garde ?', 'Comment garder mes jambes en cadre ?'],
+  'changement-base': ['À quoi sert le changement de base ?', 'Où placer mes mains à quatre appuis ?'],
+  'shizen-tai': ['Où placer mes mains en shizen-tai ?', 'Comment placer mes pieds en shizen-tai ?'],
+  'tsugi-ashi-avant': ['Pourquoi ne pas croiser les pieds ?'],
+  'tsugi-ashi-arriere': ['Pourquoi ne pas croiser les pieds ?'],
+  'tsugi-ashi-lateral': ['Pourquoi ne pas croiser les pieds ?'],
+  'tai-sabaki': ['Comment pivoter sur le pied avant ?', 'À quoi sert le tai-sabaki ?'],
+  kuzushi: ['À quoi sert le kuzushi ?', 'Comment tirer avec tout le corps ?', 'Comment éviter de perdre l’équilibre ?'],
+  'uchikomi-seoi': ['Pourquoi fléchir les genoux pendant l’uchikomi ?', 'Où placer mes pieds pendant l’uchikomi ?', 'Comment éviter de perdre l’équilibre ?'],
   sprawl: [
     'Comment lancer mes jambes en arrière pendant le sprawl ?',
     'Où placer mes hanches pendant le sprawl ?',
@@ -125,6 +140,8 @@ export function suggestedQuestions(ctx: Omit<CoachContext, 'lastTechniqueId' | '
   const hit = cache.get(key);
   if (hit) return hit.slice(0, max);
   const kept = candidates(t)
+    // judo: the chin FAQ is about punches, it does not fit a standing grip posture
+    .filter((c, i, all) => !(ctx.discipline === 'judo' && c.expect === 'faq:menton') && all.findIndex((x) => x.q === c.q) === i)
     .filter((c) => answersWell(askCoach(c.q, { ...ctx, preferences: { detail: 'court' } }), c.expect))
     .map((c) => c.q);
   cache.set(key, kept);

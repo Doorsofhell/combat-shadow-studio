@@ -3,6 +3,7 @@ import { Suspense, lazy, useCallback, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { CATEGORY_LABEL, TECHNIQUE_BY_ID, TECHNIQUES, techniquesFor } from '../../domain/techniques';
 import { EXERCISES, EXERCISE_BY_ID } from '../../domain/exercises';
+import { PARTNER_BY_ID, PARTNER_CATEGORY_LABEL, partnerFor } from '../../domain/partner';
 import { PROGRAMS } from '../../domain/programs';
 import { DISCIPLINES, DisciplineId, LevelId, Technique } from '../../domain/types';
 import { useProfile } from '../../store/profile';
@@ -14,7 +15,7 @@ import type { ComboPlayer, PlayerEvents } from '../../engine/player';
 import { playerSteps } from '../training/plan';
 import { say } from '../../audio/voice';
 import { GuideCard } from '../GuideCard';
-import { CameraControls, EmptyState, EntryCard, FilterChips, LevelSelector, PageHead, PlaybackControls, SectionHead, Tabs, TechniqueCard } from '../components';
+import { DisciplineArtwork, DisciplineLabel, ModeBadge, CameraControls, EmptyState, EntryCard, FilterChips, LevelSelector, PageHead, PlaybackControls, SectionHead, Tabs, TechniqueCard } from '../components';
 import { ExerciseList, ExerciseSheet } from './Discipline';
 import { IconChevron, IconLayers, IconPlus, IconStar, IconStarFilled, IconTrend, IconTrophy } from '../icons';
 import { CHAMPIONS_AVAILABLE } from './features';
@@ -60,7 +61,7 @@ export function Library() {
 }
 
 function DisciplineFilter({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) => void }) {
-  return <Tabs label="Discipline" items={DISCIPLINES.map((x) => ({ id: x.id, label: x.short }))} value={d} onChange={setD} />;
+  return <Tabs label="Discipline" items={DISCIPLINES.map((x) => ({ id: x.id, label: x.short, icon: <DisciplineArtwork id={x.id} format="avatar" size="xs" /> }))} value={d} onChange={setD} />;
 }
 
 function TechniquesTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) => void }) {
@@ -69,6 +70,7 @@ function TechniquesTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) =
   const list = techniquesFor(d);
   const cats = [...new Set(list.map((t) => t.category))];
   const shown = cat === 'tout' ? list : list.filter((t) => t.category === cat);
+  const partner = partnerFor(d);
   return (
     <>
       <DisciplineFilter d={d} setD={(x) => (setD(x), setCat('tout'))} />
@@ -85,6 +87,17 @@ function TechniquesTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) =
         ))}
       </div>
       <p className="small muted">{TECHNIQUES.length} techniques au total, chacune animée sur ton combattant 3D.</p>
+      {partner.length > 0 && (
+        <section className="section" data-testid="partner-section">
+          <SectionHead title="Avec un partenaire réel" />
+          <p className="small muted">Projections, contrôles et soumissions : expliqués ici, à pratiquer uniquement au club avec un enseignant. Pas d’exercice solo ni d’animation pour l’instant.</p>
+          <div className="stack" style={{ gap: 8 }}>
+            {partner.map((p) => (
+              <TechniqueCard key={p.id} to={`/partenaire/${p.id}`} title={p.name} description={p.description} glyph="à 2" testId={`partner-${p.id}`} meta={<span className="row" style={{ gap: 6, flexWrap: 'wrap', marginTop: 4 }}><ModeBadge mode={p.mode} /><span className="badge">{PARTNER_CATEGORY_LABEL[p.category]}</span></span>} />
+            ))}
+          </div>
+        </section>
+      )}
     </>
   );
 }
@@ -132,7 +145,7 @@ function CreatorTab() {
               <span className="body">
                 <span className="title">{c.name}</span>
                 <span className="small muted">
-                  {DISCIPLINES.find((x) => x.id === c.discipline)!.name} · {c.sequence.length} mouvements
+                  <DisciplineLabel id={c.discipline} name={DISCIPLINES.find((x) => x.id === c.discipline)?.name ?? ''} /> · {c.sequence.length} mouvements
                 </span>
               </span>
               <IconChevron />
@@ -274,6 +287,9 @@ export function TechniquePage() {
         }}
       />
       <CameraControls value={cam} onChange={setCam} />
+      <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
+        <ModeBadge mode={t.mode} />
+      </div>
       <p>{t.description}</p>
       {t.soloNote && <div className="note">{t.soloNote}</div>}
       <GuideCard id={t.id} southpaw={profile.guard === 'gaucher'} />
@@ -286,6 +302,55 @@ export function TechniquePage() {
         </ul>
       </div>
       <p className="small muted">Disciplines : {t.disciplines.map((x) => DISCIPLINES.find((y) => y.id === x)!.name).join(', ')}</p>
+    </div>
+  );
+}
+
+/** Fiche of a technique that needs a real partner: explanation and safety only, no animation, no solo drill. */
+export function PartnerPage() {
+  const { id } = useParams();
+  const p = id ? PARTNER_BY_ID.get(id) : undefined;
+  if (!p) return <EmptyState title="Fiche introuvable" action={<Link to="/techniques" className="btn">Retour aux techniques</Link>} />;
+  const disc = DISCIPLINES.find((x) => x.id === p.discipline)!;
+  const prep = p.prep ? TECHNIQUE_BY_ID.get(p.prep) : undefined;
+  return (
+    <div className="page" style={{ gap: 16 }} data-testid="partner-page">
+      <PageHead title={p.name} eyebrow={PARTNER_CATEGORY_LABEL[p.category]} fallback={`/techniques?d=${p.discipline}`} />
+      <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
+        <ModeBadge mode={p.mode} />
+        <DisciplineLabel id={p.discipline} name={disc.name} />
+      </div>
+      <p>{p.description}</p>
+      <div className="card stack" style={{ borderLeft: '3px solid var(--red)' }} data-testid="partner-safety">
+        <h3>Sécurité</h3>
+        <ul className="plain-list">
+          {p.safety.map((k, i) => (
+            <li key={i}>{k}</li>
+          ))}
+        </ul>
+      </div>
+      <div className="card stack">
+        <h3>Étapes</h3>
+        <ol className="plain-list" data-testid="partner-phases">
+          {p.phases.map((ph, i) => (
+            <li key={i}>
+              <strong>{ph.label}</strong> : {ph.text}
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div className="card stack">
+        <h3>Points clés</h3>
+        <ul className="plain-list">
+          {p.keyPoints.map((k, i) => (
+            <li key={i}>{k}</li>
+          ))}
+        </ul>
+      </div>
+      <p className="small muted">Pas d’animation à deux pour cette technique pour l’instant : elle demande une démonstration avec un partenaire virtuel, en préparation.</p>
+      {prep && (
+        <EntryCard to={`/techniques/${prep.id}?d=${p.discipline}`} icon={<IconLayers />} title={`Préparation en solo : ${prep.name}`} text="Le seul travail que tu peux faire seul, animé sur ton combattant." testId="partner-prep" />
+      )}
     </div>
   );
 }

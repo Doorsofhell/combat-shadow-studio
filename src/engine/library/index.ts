@@ -4,6 +4,7 @@ import type { CoachRig } from '../rig';
 import { boxingMotions } from './boxing';
 import { legMotions } from './legs';
 import { mmaMotions } from './mma';
+import { grapplingMotions } from './grappling';
 import { upperMotions } from './upper';
 
 export type MotionLibrary = Map<string, Motion>;
@@ -42,5 +43,5 @@ export function getMotion(lib: MotionLibrary, id: string, southpaw: boolean): Mo
 }
 
 function buildAll(a: Author): Motion[] {
-  return [...boxingMotions(a), ...legMotions(a), ...upperMotions(a), ...mmaMotions(a)];
+  return [...boxingMotions(a), ...legMotions(a), ...upperMotions(a), ...mmaMotions(a), ...grapplingMotions(a)];
 }

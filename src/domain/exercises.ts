@@ -279,7 +279,66 @@ const MUAY: Record<LevelId, Row[]> = {
   ],
 };
 
-const TABLE: Record<DisciplineId, Record<LevelId, Row[]>> = { boxe: BOXE, kickboxing: KICK, mma: MMA, muaythai: MUAY };
+// ---------------------------------------------------------------------------------- BJJ (solo only)
+// Every row is really done alone, on a mat. Passes, controls, sweeps and submissions need a partner:
+// they are fiches (src/domain/partner.ts), never exercises.
+const BJJ: Record<LevelId, Row[]> = {
+  debutant: [
+    ['Posture debout de grappling', 'technique', 'garde-bjj'],
+    ['Descente au sol et relevé technique', 'technique', 'descente-sol releve-technique'],
+    ['Pont (upa)', 'technique', 'descente-sol pont releve-technique'],
+    ['Sortie de hanche (shrimp)', 'technique', 'descente-sol sortie-hanche releve-technique'],
+    ['Changement de base', 'technique', 'descente-sol changement-base releve-technique'],
+  ],
+  intermediaire: [
+    ['Pont puis sortie de hanche', 'combinaison', 'descente-sol pont sortie-hanche releve-technique'],
+    ['Rétention de garde (solo)', 'technique', 'descente-sol retention-garde releve-technique'],
+    ['Shrimp et changement de base', 'combinaison', 'descente-sol sortie-hanche changement-base releve-technique'],
+    ['Deux shrimps et relevé', 'deplacement', 'descente-sol sortie-hanche sortie-hanche releve-technique'],
+  ],
+  avance: [
+    ['Sorties enchaînées', 'combinaison', 'descente-sol pont sortie-hanche retention-garde releve-technique'],
+    ['Mobilité complète', 'combinaison', 'descente-sol pont sortie-hanche changement-base releve-technique'],
+    ['Garde et relevé', 'combinaison', 'descente-sol retention-garde sortie-hanche releve-technique'],
+    ['Circuit de mobilité', 'cardio', 'descente-sol pont pont sortie-hanche sortie-hanche releve-technique'],
+  ],
+  expert: [
+    ['Round de mobilité au sol', 'round', 'descente-sol pont sortie-hanche retention-garde changement-base releve-technique'],
+    ['Round cardio au sol', 'cardio', 'descente-sol pont sortie-hanche sortie-hanche changement-base pont releve-technique'],
+    ['Enchaînement long', 'combinaison', 'descente-sol retention-garde pont sortie-hanche retention-garde releve-technique'],
+  ],
+};
+
+// ---------------------------------------------------------------------------------- judo (solo only)
+// Postures, displacements, kuzushi and uchikomi entries without a partner. No throw and no fall
+// (ukemi) is proposed at home: throws and falls are learned on a tatami with a teacher.
+const JUDO: Record<LevelId, Row[]> = {
+  debutant: [
+    ['Shizen-tai', 'technique', 'shizen-tai'],
+    ['Tsugi-ashi avant et arrière', 'deplacement', 'tsugi-ashi-avant tsugi-ashi-arriere'],
+    ['Tsugi-ashi latéral', 'deplacement', 'tsugi-ashi-lateral'],
+    ['Tai-sabaki', 'technique', 'tai-sabaki'],
+  ],
+  intermediaire: [
+    ['Kuzushi (déséquilibre, solo)', 'technique', 'kuzushi'],
+    ['Uchikomi de seoi-nage (solo)', 'technique', 'uchikomi-seoi'],
+    ['Avancer puis déséquilibrer', 'combinaison', 'tsugi-ashi-avant kuzushi'],
+    ['Déplacements et rotation', 'deplacement', 'tsugi-ashi-avant tsugi-ashi-arriere tai-sabaki'],
+  ],
+  avance: [
+    ['Kuzushi puis entrée', 'combinaison', 'kuzushi uchikomi-seoi'],
+    ['Reculer, déséquilibrer, entrer', 'combinaison', 'tsugi-ashi-arriere kuzushi uchikomi-seoi'],
+    ['Série d’uchikomi', 'cardio', 'uchikomi-seoi uchikomi-seoi uchikomi-seoi'],
+    ['Rotation et entrée', 'combinaison', 'tai-sabaki tsugi-ashi-avant uchikomi-seoi'],
+  ],
+  expert: [
+    ['Round d’uchikomi', 'round', 'tsugi-ashi-avant kuzushi uchikomi-seoi tsugi-ashi-arriere kuzushi uchikomi-seoi'],
+    ['Déplacements et entrées', 'combinaison', 'tsugi-ashi-lateral tai-sabaki kuzushi uchikomi-seoi tsugi-ashi-arriere uchikomi-seoi'],
+    ['Série longue d’uchikomi', 'cardio', 'uchikomi-seoi uchikomi-seoi uchikomi-seoi uchikomi-seoi uchikomi-seoi'],
+  ],
+};
+
+const TABLE: Record<DisciplineId, Record<LevelId, Row[]>> = { boxe: BOXE, kickboxing: KICK, mma: MMA, muaythai: MUAY, bjj: BJJ, judo: JUDO };
 
 export const EXERCISES: Exercise[] = (Object.keys(TABLE) as DisciplineId[]).flatMap((d) =>
   (Object.keys(TABLE[d]) as LevelId[]).flatMap((l) => build(d, l, TABLE[d][l])),

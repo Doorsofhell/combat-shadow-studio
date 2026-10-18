@@ -2,6 +2,7 @@ import type { DisciplineId, Technique } from './types';
 
 const ALL: DisciplineId[] = ['boxe', 'kickboxing', 'mma', 'muaythai'];
 const KICK: DisciplineId[] = ['kickboxing', 'mma', 'muaythai'];
+const GROUND: DisciplineId[] = ['mma', 'bjj'];
 
 /**
  * Technique catalogue. Names and cues are what the coach says; key points are what the user
@@ -319,20 +320,94 @@ export const TECHNIQUES: Technique[] = [
     cues: ['Hanches en arrière', 'Cadre avec les mains'], keyPoints: ['Ne pas se pencher sans reculer les hanches'],
   },
   {
-    id: 'descente-sol', name: 'Descente contrôlée au sol', call: 'Au sol', category: 'sol', disciplines: ['mma'], motion: 'descente-sol',
+    id: 'descente-sol', name: 'Descente contrôlée au sol', call: 'Au sol', category: 'sol', disciplines: GROUND, motion: 'descente-sol',
     description: 'Passage contrôlé de la garde debout à la position assise, main posée derrière, pied planté devant.',
     cues: ['Descends en contrôle', 'Main derrière'], keyPoints: ['Ne pas tomber sur le coccyx', 'La main protège toujours le visage'],
   },
   {
-    id: 'sortie-hanche', name: 'Sortie de hanche', call: 'Sortie de hanche', category: 'sol', disciplines: ['mma'], motion: 'sortie-hanche',
+    id: 'sortie-hanche', name: 'Sortie de hanche (shrimp)', call: 'Sortie de hanche', category: 'sol', disciplines: GROUND, motion: 'sortie-hanche',
     description: 'Au sol, les hanches glissent en arrière en poussant sur le pied et la main pour créer de l’espace.',
     cues: ['Pousse avec le pied', 'Hanches en arrière'], keyPoints: ['Le coude reste près du corps'],
     soloNote: 'Mouvement de mobilité au sol réalisé seul.',
   },
   {
-    id: 'releve-technique', name: 'Relevé technique', call: 'Relève-toi', category: 'sol', disciplines: ['mma'], motion: 'releve-technique',
+    id: 'releve-technique', name: 'Relevé technique', call: 'Relève-toi', category: 'sol', disciplines: GROUND, motion: 'releve-technique',
     description: 'Depuis l’assise : main et pied posés, les hanches se lèvent, la jambe passe en arrière, retour en garde à distance.',
     cues: ['Main et pied au sol', 'Lève les hanches', 'Jambe en arrière'], keyPoints: ['La main libre protège le visage', 'Revenir en garde, pas debout droit'],
+  },
+
+  // ------------------------------------------------------------------ jiu-jitsu brésilien (travail solo)
+  {
+    id: 'garde-bjj', name: 'Posture debout de grappling', call: 'En posture', category: 'garde', disciplines: ['bjj'], motion: 'garde',
+    description: 'Debout face au partenaire : appuis larges, genoux fléchis, hanches légèrement en arrière, mains ouvertes devant pour cadrer et saisir.',
+    cues: ['Genoux fléchis', 'Mains devant, ouvertes', 'Hanches en arrière'],
+    keyPoints: ['Le dos reste droit, la tête haute', 'Les coudes restent près du corps', 'Le poids reste sur l’avant des pieds'],
+  },
+  {
+    id: 'pont', name: 'Pont (upa)', call: 'Pont', category: 'sol', disciplines: ['bjj', 'mma'], motion: 'pont',
+    description: 'Allongé sur le dos, pieds à plat près des fesses : les hanches montent fort et basculent vers une épaule, puis redescendent en contrôle. Base de la sortie de montée.',
+    cues: ['Pieds près des fesses', 'Monte les hanches', 'Bascule sur l’épaule'],
+    keyPoints: ['La poussée vient des pieds et des hanches, pas de la nuque', 'Le menton reste rentré', 'Redescendre sans laisser tomber les hanches'],
+    soloNote: 'Mouvement réalisé seul, sur un tapis ou une surface souple. Sans partenaire, il entraîne la mobilité des hanches, pas la sortie elle-même.',
+  },
+  {
+    id: 'retention-garde', name: 'Rétention de garde (solo)', call: 'Garde', category: 'sol', disciplines: ['bjj'], motion: 'retention-garde',
+    description: 'Sur le dos, jambes levées en cadre : les hanches pivotent pour rester face à un partenaire imaginaire qui tourne, les genoux restent entre lui et la poitrine.',
+    cues: ['Jambes en cadre', 'Pivote les hanches', 'Genoux devant la poitrine'],
+    keyPoints: ['Les épaules restent au sol, les hanches tournent', 'Les mains protègent l’intérieur', 'Respirer pendant le mouvement'],
+    soloNote: 'Exercice de mobilité seul. La vraie rétention de garde se travaille avec un partenaire, sous l’encadrement d’un professeur.',
+  },
+  {
+    id: 'changement-base', name: 'Changement de base', call: 'Change de base', category: 'sol', disciplines: ['bjj'], motion: 'changement-base',
+    description: 'Depuis l’assise, la main posée et la hanche tournent pour passer à quatre appuis, hanches hautes, puis retour à l’assise.',
+    cues: ['Main posée', 'Tourne la hanche', 'Quatre appuis'],
+    keyPoints: ['Les mains restent sous les épaules', 'Le dos reste plat', 'Le regard reste devant'],
+  },
+
+  // ------------------------------------------------------------------ judo (travail solo)
+  {
+    id: 'shizen-tai', name: 'Shizen-tai (posture naturelle)', call: 'Shizen-tai', category: 'garde', disciplines: ['judo'], motion: 'garde',
+    description: 'Posture droite et naturelle : pieds à largeur d’épaules, genoux souples, dos droit, mains devant à hauteur de poitrine comme pour tenir la manche et le revers.',
+    cues: ['Dos droit', 'Genoux souples', 'Mains devant'],
+    keyPoints: ['Le poids est réparti sur les deux pieds', 'Les épaules restent relâchées', 'Ne pas se pencher en avant'],
+  },
+  {
+    id: 'tsugi-ashi-avant', name: 'Tsugi-ashi avant', call: 'Tsugi-ashi', category: 'deplacement', disciplines: ['judo'], motion: 'pas-avant',
+    description: 'Pas chassé : le pied avant glisse, le pied arrière le rejoint sans jamais le dépasser. Les pieds rasent le tapis.',
+    cues: ['Glisse les pieds', 'Ne croise jamais'],
+    keyPoints: ['Les pieds ne se croisent pas', 'Le buste reste droit au-dessus des appuis'],
+  },
+  {
+    id: 'tsugi-ashi-arriere', name: 'Tsugi-ashi arrière', call: 'Recule', category: 'deplacement', disciplines: ['judo'], motion: 'pas-arriere',
+    description: 'Le pied arrière glisse en arrière, le pied avant suit de la même distance, sans sauter.',
+    cues: ['Pied arrière d’abord', 'Pieds rasants'],
+    keyPoints: ['Garder la même largeur d’appuis', 'Ne pas se redresser en reculant'],
+  },
+  {
+    id: 'tsugi-ashi-lateral', name: 'Tsugi-ashi latéral', call: 'Sur le côté', category: 'deplacement', disciplines: ['judo'], motion: 'pas-gauche',
+    description: 'Déplacement de côté : le pied du côté visé part, l’autre le rejoint sans le toucher.',
+    cues: ['Glisse sur le côté', 'Pieds parallèles'],
+    keyPoints: ['Les pieds ne se touchent pas', 'Les hanches restent face au partenaire'],
+  },
+  {
+    id: 'tai-sabaki', name: 'Tai-sabaki (rotation du corps)', call: 'Tai-sabaki', category: 'deplacement', disciplines: ['judo'], motion: 'tai-sabaki',
+    description: 'Le corps tourne autour du pied avant : le pied arrière décrit un demi-cercle et le dos se retrouve face à la direction de départ, puis retour.',
+    cues: ['Pivote sur le pied avant', 'Le pied arrière fait le tour'],
+    keyPoints: ['Rester à la même hauteur pendant la rotation', 'Le pied d’appui ne glisse pas', 'Les mains restent devant'],
+  },
+  {
+    id: 'kuzushi', name: 'Kuzushi (déséquilibre, solo)', call: 'Kuzushi', category: 'projection', disciplines: ['judo'], motion: 'kuzushi',
+    description: 'La main avant (manche) tire vers la hanche pendant que la main arrière (revers) monte, avec un pas en arrière : c’est le geste qui déséquilibre le partenaire vers l’avant.',
+    cues: ['Tire vers la hanche', 'Monte le revers', 'Recule le pied'],
+    keyPoints: ['Le tirage vient de tout le corps, pas seulement des bras', 'Le dos reste droit'],
+    soloNote: 'Geste montré à vide : le déséquilibre réel d’un partenaire se travaille au dojo, avec un professeur.',
+  },
+  {
+    id: 'uchikomi-seoi', name: 'Uchikomi de seoi-nage (solo)', call: 'Entrée', category: 'projection', disciplines: ['judo'], motion: 'uchikomi-seoi',
+    description: 'Répétition de l’entrée de seoi-nage : pas devant, pivot, dos tourné au partenaire imaginaire, genoux fléchis pour placer les hanches sous sa ceinture, mains qui tirent vers l’avant. Seule l’entrée est travaillée.',
+    cues: ['Entre et pivote', 'Fléchis les genoux', 'Tire les mains'],
+    keyPoints: ['Les pieds finissent à l’intérieur, parallèles', 'Les genoux fléchis, pas le dos', 'Revenir en shizen-tai entre deux entrées'],
+    soloNote: 'Uchikomi à vide : l’entrée et le placement (tsukuri) seulement. La projection (kake) ne se fait qu’avec un partenaire, sur tatami, encadré par un professeur.',
   },
 ];
 
@@ -354,4 +429,5 @@ export const CATEGORY_LABEL: Record<Technique['category'], string> = {
   sol: 'Sol',
   feinte: 'Feintes',
   clinch: 'Clinch',
+  projection: 'Entrées de projection',
 };

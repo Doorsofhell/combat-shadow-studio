@@ -31,7 +31,7 @@ describe('migration des données existantes vers l’espace invité', () => {
     expect(p.completed).toBe(true);
     expect(p.limitations).toBe('genou droit fragile');
     expect(p.goals).toEqual(['apprentissage-technique', 'endurance']); // old goal ids mapped
-    expect(p.levels).toEqual({ boxe: 'avance', kickboxing: 'debutant', mma: 'debutant', muaythai: 'debutant' });
+    expect(p.levels).toEqual({ boxe: 'avance', kickboxing: 'debutant', mma: 'debutant', muaythai: 'debutant', bjj: 'debutant', judo: 'debutant' }); // disciplines added later get their default
     expect(p.pseudo).toBe(''); // new fields get their defaults
     expect(p.difficulty).toBe('progressive');
     expect(useStats.getState().sessions).toHaveLength(1);

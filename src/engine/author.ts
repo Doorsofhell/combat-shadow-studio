@@ -6,7 +6,7 @@ import { Quaternion, Vector3 } from 'three';
 import { FootPose, HandPose, Pose, V3, deg, quatFromRot, rot, v3 } from './pose';
 import type { Metrics, Side } from './rig';
 
-export type StanceStyle = 'boxing' | 'kickboxing' | 'mma' | 'muaythai';
+export type StanceStyle = 'boxing' | 'kickboxing' | 'mma' | 'muaythai' | 'bjj' | 'judo';
 
 export interface ChestFrameFn {
   (hips: Vector3, pelvis: Quaternion, chest: Quaternion): { origin: Vector3; q: Quaternion };
@@ -250,5 +250,18 @@ export const STANCES: Record<StanceStyle, StanceDef> = {
     knee: 0.035, hipsX: -0.02, hipsZ: -0.07, pelvisYaw: deg(-16), pelvisPitch: deg(-2), chestYaw: deg(-4), chestPitch: deg(2),
     chin: deg(5), leadHand: [0.1, 0.1, 0.33], rearHand: [-0.09, 0.1, 0.26], leadPron: -0.1, rearPron: -0.1, fist: 1,
     leadFoot: [0.13, 0.2], rearFoot: [-0.17, -0.22], leadYaw: deg(-6), rearYaw: deg(-30), leadHeel: deg(12), rearHeel: deg(8),
+  },
+  // BJJ standing base: low and wide, hips back, hands forward and open to frame and grip
+  bjj: {
+    knee: 0.15, hipsX: -0.02, hipsZ: -0.04, pelvisYaw: deg(-18), pelvisPitch: deg(18), chestYaw: deg(-2), chestPitch: deg(14),
+    chin: deg(3), leadHand: [0.12, -0.2, 0.38], rearHand: [-0.1, -0.17, 0.32], leadPron: 0.05, rearPron: 0.05, fist: 0.35,
+    leadFoot: [0.17, 0.2], rearFoot: [-0.22, -0.2], leadYaw: deg(-8), rearYaw: deg(-30), leadHeel: 0, rearHeel: deg(10),
+  },
+  // judo shizen-tai: upright and nearly square, knees soft, hands forward at chest height as if
+  // holding sleeve (lead) and lapel (rear) of a partner
+  judo: {
+    knee: 0.04, hipsX: 0, hipsZ: 0, pelvisYaw: deg(-10), pelvisPitch: deg(3), chestYaw: deg(-2), chestPitch: deg(5),
+    chin: deg(2), leadHand: [0.14, -0.26, 0.4], rearHand: [-0.1, -0.18, 0.36], leadPron: 0.4, rearPron: 0.5, fist: 0.65,
+    leadFoot: [0.16, 0.09], rearFoot: [-0.16, -0.07], leadYaw: deg(-6), rearYaw: deg(-14), leadHeel: 0, rearHeel: 0,
   },
 };

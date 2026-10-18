@@ -8,9 +8,15 @@ import { DISCIPLINES, LEVELS } from '../types';
 import { EXERCISE_BY_ID } from '../exercises';
 import { DEFAULT_PROFILE } from '../../store/profile';
 
+const GRAPPLING = ['bjj', 'judo'];
+
 describe('contenu', () => {
-  test('au moins 10 exercices par discipline et par niveau (160 minimum)', () => {
-    for (const d of DISCIPLINES) for (const l of LEVELS) expect(exercisesFor(d.id, l.id).length, `${d.id} ${l.id}`).toBeGreaterThanOrEqual(10);
+  test('au moins 10 exercices par discipline de frappe et par niveau (160 minimum)', () => {
+    for (const d of DISCIPLINES) {
+      // BJJ and judo only offer what is really done alone (no padding with fake solo drills): at least 3 per level
+      const min = GRAPPLING.includes(d.id) ? 3 : 10;
+      for (const l of LEVELS) expect(exercisesFor(d.id, l.id).length, `${d.id} ${l.id}`).toBeGreaterThanOrEqual(min);
+    }
     expect(EXERCISES.length).toBeGreaterThanOrEqual(160);
   });
 

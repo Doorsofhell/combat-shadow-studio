@@ -672,4 +672,120 @@ export const GUIDES: Record<string, TechniqueGuide> = {
     ],
     errors: ['Se relever droit devant (exposé)', 'Lâcher la garde', 'Ramener la jambe trop près'],
   },
+
+  // ------------------------------------------------------------------ jiu-jitsu brésilien (solo)
+  'garde-bjj': {
+    steps: [
+      'Écarte les pieds un peu plus que la largeur des épaules, pied gauche légèrement devant.',
+      'Fléchis les genoux et recule légèrement les hanches, dos droit, tête haute.',
+      'Avance les mains ouvertes devant toi, coudes près du corps, prêtes à cadrer ou à saisir.',
+      'Reste sur l’avant des pieds, prêt à avancer, reculer ou descendre au sol.',
+    ],
+    errors: ['Jambes tendues', 'Dos arrondi, tête baissée', 'Bras tendus loin devant (faciles à saisir)'],
+    breath: 'Respiration calme par le nez.',
+  },
+  pont: {
+    steps: [
+      'Allonge-toi sur le dos sur un tapis, genoux pliés, pieds à plat près des fesses, écartés de la largeur des hanches.',
+      'Rentre le menton et garde les coudes près du corps, mains devant la poitrine.',
+      'Pousse fort sur les pieds pour monter les hanches le plus haut possible.',
+      'En haut, bascule les hanches vers une épaule en regardant de ce côté.',
+      'Redescends en contrôle, sans laisser tomber les hanches, puis recommence de l’autre côté.',
+    ],
+    errors: ['Pousser avec la nuque ou la tête', 'Pieds trop loin des fesses', 'Hanches qui retombent d’un coup', 'Bras écartés au sol'],
+    breath: 'Souffle en montant les hanches, inspire en redescendant.',
+  },
+  'retention-garde': {
+    steps: [
+      'Allongé sur le dos, monte les jambes fléchies devant toi, plantes de pieds vers l’avant comme deux cadres.',
+      'Garde les épaules au sol, le menton rentré et les mains devant la poitrine.',
+      'Imagine un partenaire qui tourne autour de toi : fais pivoter les hanches pour rester face à lui.',
+      'Les genoux restent toujours entre lui et ta poitrine ; pousse sur les épaules pour tourner.',
+      'Pivote d’un côté puis de l’autre, puis reviens au centre.',
+    ],
+    errors: ['Laisser les jambes retomber au sol', 'Tourner la tête et les épaules au lieu des hanches', 'Genoux qui s’écartent et ouvrent la poitrine'],
+    breath: 'Respiration régulière, sans bloquer pendant les rotations.',
+  },
+  'changement-base': {
+    steps: [
+      'Assis au sol, la main gauche posée derrière toi, le pied droit à plat devant.',
+      'Pose la main droite au sol de l’autre côté et tourne les hanches vers le sol.',
+      'Passe à quatre appuis : mains sous les épaules, genoux et pointes de pieds au sol, hanches hautes.',
+      'Garde le regard devant et le dos plat un instant.',
+      'Reviens à l’assise par le même chemin, main posée en premier.',
+    ],
+    errors: ['Mains trop loin devant les épaules', 'Dos rond', 'Tête baissée vers le sol'],
+  },
+
+  // ------------------------------------------------------------------ judo (solo)
+  'shizen-tai': {
+    steps: [
+      'Tiens-toi droit, pieds écartés de la largeur des épaules, pointes légèrement ouvertes.',
+      'Fléchis à peine les genoux, poids réparti sur les deux pieds.',
+      'Garde le dos droit, les épaules relâchées et le regard devant.',
+      'Avance les mains à hauteur de poitrine : la main avant comme sur la manche du partenaire, la main arrière comme sur son revers.',
+    ],
+    errors: ['Se pencher en avant (défensif et figé)', 'Jambes tendues', 'Épaules crispées', 'Pieds trop serrés'],
+    breath: 'Respiration calme par le nez.',
+  },
+  'tsugi-ashi-avant': {
+    steps: [
+      'Pars de shizen-tai.',
+      'Fais glisser le pied avant d’environ 20 cm, en rasant le tapis.',
+      'Ramène le pied arrière de la même distance, sans jamais dépasser le pied avant.',
+      'Garde le buste droit et la même hauteur pendant tout le déplacement.',
+    ],
+    errors: ['Le pied arrière dépasse le pied avant', 'Sautiller au lieu de glisser', 'Se pencher en avant'],
+  },
+  'tsugi-ashi-arriere': {
+    steps: [
+      'Pars de shizen-tai.',
+      'Fais glisser le pied arrière d’environ 20 cm vers l’arrière.',
+      'Ramène le pied avant de la même distance.',
+      'Garde la même largeur d’appuis et le buste droit.',
+    ],
+    errors: ['Reculer le pied avant en premier', 'Se redresser ou partir en arrière avec le buste', 'Croiser les pieds'],
+  },
+  'tsugi-ashi-lateral': {
+    steps: [
+      'Pars de shizen-tai.',
+      'Fais glisser le pied du côté où tu vas d’environ 20 cm.',
+      'Ramène l’autre pied de la même distance, sans que les pieds se touchent.',
+      'Les hanches restent face au partenaire imaginaire.',
+    ],
+    errors: ['Faire partir le mauvais pied (les pieds se croisent)', 'Pieds qui se touchent', 'Tourner les épaules'],
+  },
+  'tai-sabaki': {
+    steps: [
+      'Pars de shizen-tai.',
+      'Garde le pied avant en place et pivote sur la plante de ce pied.',
+      'Fais décrire un demi-cercle au pied arrière, derrière toi, jusqu’à te retrouver dos à ta direction de départ.',
+      'Reste à la même hauteur, genoux souples, mains devant.',
+      'Reviens par le même chemin en shizen-tai.',
+    ],
+    errors: ['Le pied d’appui glisse ou se soulève', 'Se redresser pendant la rotation', 'Bras qui partent sur les côtés'],
+  },
+  kuzushi: {
+    steps: [
+      'Pars de shizen-tai, mains comme sur la manche (main avant) et le revers (main arrière).',
+      'Recule le pied arrière d’un petit pas.',
+      'En même temps, tire la main avant vers ta hanche, coude vers le bas, comme pour vider une manche.',
+      'Monte la main arrière vers l’avant et le haut, comme pour soulever le revers.',
+      'Reviens en shizen-tai et recommence en restant gainé.',
+    ],
+    errors: ['Tirer seulement avec les bras', 'Se pencher en arrière', 'Mains qui s’écartent du corps'],
+    breath: 'Souffle pendant le tirage.',
+  },
+  'uchikomi-seoi': {
+    steps: [
+      'Pars de shizen-tai, mains comme sur la manche et le revers d’un partenaire imaginaire.',
+      'Avance le pied droit devant toi, à l’intérieur, en commençant à tourner.',
+      'Pivote sur ce pied et ramène le pied gauche à côté de lui : tu te retrouves dos au partenaire, pieds parallèles.',
+      'Fléchis les genoux pour placer les hanches sous sa ceinture, dos droit.',
+      'Tire les mains vers l’avant et vers le bas, coude droit sous l’aisselle imaginaire.',
+      'Reviens en shizen-tai et recommence. Ne termine jamais par une projection sans partenaire ni tatami.',
+    ],
+    errors: ['Se pencher en avant au lieu de fléchir les genoux', 'Pieds qui finissent à l’extérieur', 'Bras qui tirent sans rotation du corps'],
+    breath: 'Souffle à chaque entrée.',
+  },
 };

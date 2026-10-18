@@ -12,6 +12,7 @@ import { stageAzimuth, techniqueView } from '../domain/camera';
 import { analyseMotion } from '../engine/study';
 import { sequenceEnvelope, type Envelope } from '../engine/envelope';
 import { STYLE_OF } from '../three/CoachStage';
+import { defaultLook, recommendedGear, type FighterLook } from '../editor/look';
 import type { StageView } from '../three/StudioStage';
 
 /** Developer view: freezes a motion at a given time, used for visual checks and screenshots. */
@@ -27,7 +28,7 @@ export function Lab() {
   const envelope = useRef<Envelope | null>(null);
   const origin = useRef({ x: 0, z: 0, yaw: 0 });
   const view = useMemo<StageView | undefined>(() => {
-    if (!tech) return undefined;
+    if (!tech) return q.get('az') ? { az: Number(q.get('az')), el: Number(q.get('el') ?? '12'), zoom: 1, focus: 0.5 } : undefined;
     const v = techniqueView(tech.id);
     // thumbnails (thumb=1): punches and elbows read better from the lead side than nearly face-on
     if (q.get('thumb') && ['poing', 'coude', 'feinte'].includes(tech.category)) return { az: 65, el: 8, zoom: 1, focus: v.focus };
@@ -35,6 +36,20 @@ export function Lab() {
   }, [tech, disc]);
   const cam = Number(q.get('cam') ?? '35');
   const southpaw = q.get('garde') === 'gaucher';
+  // art=1: official discipline artwork (discipline gear, collection palette: anthracite, red, gold)
+  const look = useMemo<FighterLook | null>(() => {
+    if (!q.get('art')) return null;
+    const l = defaultLook(coach);
+    const g = recommendedGear(disc);
+    const red = '#a3121f';
+    const gold = '#b8932f';
+    const ink = '#1b1d22';
+    return {
+      ...l,
+      outfit: { ...l.outfit, bottom: g.bottom, shoes: g.shoes, bottomPaint: { color: disc === 'muaythai' ? red : ink, color2: gold, pattern: 'bande' } },
+      gear: { ...l.gear, hands: g.hands, shins: g.shins, feet: g.feet, handsPaint: { color: red, color2: gold, pattern: 'uni' }, shinsPaint: { color: '#f2efe6', color2: red, pattern: 'uni' }, feetPaint: { color: '#f2efe6', color2: red, pattern: 'uni' } },
+    };
+  }, [q, coach, disc]);
   const sampler = useRef<MotionSampler | null>(null);
   const onRig = useCallback(
     (rig: CoachRig) => {
@@ -61,11 +76,11 @@ export function Lab() {
     [q],
   );
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#fff' }}>
+    <div style={{ position: 'fixed', inset: 0, background: q.get('alpha') ? 'transparent' : '#fff' }}>
       <Canvas shadows dpr={[1, 2]} gl={{ alpha: true, antialias: true, preserveDrawingBuffer: true }}>
         <Suspense fallback={null}>
           <StudioStage view={view} envelope={tech ? envelope : undefined} origin={tech ? origin : undefined} cameraAngle={cam} quality="haute" zoom={Number(q.get('zoom') ?? '1')} focusY={q.get('fy') ? Number(q.get('fy')) : undefined}>
-            <CoachModel coach={coach} style={q.get('look') === 'realiste' ? 'realiste' : 'manga'} quality="haute" onRig={onRig} onFrame={onFrame} />
+            <CoachModel coach={coach} style={q.get('look') === 'realiste' ? 'realiste' : 'manga'} quality="haute" look={look} onRig={onRig} onFrame={onFrame} />
           </StudioStage>
         </Suspense>
       </Canvas>

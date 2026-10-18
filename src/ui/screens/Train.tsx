@@ -7,7 +7,7 @@ import { DISCIPLINES, DisciplineId } from '../../domain/types';
 import { EXERCISE_BY_ID } from '../../domain/exercises';
 import { PROGRAMS } from '../../domain/programs';
 import { recommend } from '../../domain/recommend';
-import { DisciplineCard, EmptyState, FilterChips, PageHead, SectionHead } from '../components';
+import { DisciplineLabel, DisciplineCard, EmptyState, FilterChips, PageHead, SectionHead } from '../components';
 import { ExerciseSheet } from './Discipline';
 import { IconChevron, IconPlus } from '../icons';
 
@@ -103,7 +103,7 @@ export function Train() {
                 <span className="body">
                   <span className="title">{c.name}</span>
                   <span className="small muted">
-                    {DISCIPLINES.find((x) => x.id === c.discipline)!.name} · {c.sequence.length} mouvements
+                    <DisciplineLabel id={c.discipline} name={DISCIPLINES.find((x) => x.id === c.discipline)?.name ?? ''} /> · {c.sequence.length} mouvements
                   </span>
                 </span>
                 <IconChevron />

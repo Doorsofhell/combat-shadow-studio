@@ -1,40 +1,43 @@
 import { TechThumb } from './TechThumb';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { DISCIPLINES, DisciplineId, LEVELS, LevelId } from '../../domain/types';
+import { DISCIPLINES, DisciplineId, LEVELS, LevelId, TechniqueMode } from '../../domain/types';
+import { MODE_LABEL } from '../../domain/partner';
 import { IconChevron, IconStarFilled } from '../icons';
-
-/** Rendered images of our own 3D coach, one per discipline (public/disciplines). */
-export const DISCIPLINE_IMG: Record<DisciplineId, string> = {
-  boxe: './disciplines/boxe.jpg',
-  kickboxing: './disciplines/kickboxing.jpg',
-  mma: './disciplines/mma.jpg',
-  muaythai: './disciplines/muaythai.jpg',
-};
+import { DisciplineArtwork } from './DisciplineArtwork';
 
 /** Premium discipline card: render of the coach, name in Rajdhani, current level. */
-export function DisciplineCard({ id, level, to, onClick, selected, testId, tall }: { id: DisciplineId; level?: LevelId; to?: string; onClick?: () => void; selected?: boolean; testId?: string; tall?: boolean }) {
+export function DisciplineCard({ id, level, to, onClick, selected, testId, tall, compact }: { id: DisciplineId; level?: LevelId; to?: string; onClick?: () => void; selected?: boolean; testId?: string; tall?: boolean; compact?: boolean }) {
   const d = DISCIPLINES.find((x) => x.id === id)!;
   const inner = (
     <>
-      <img src={DISCIPLINE_IMG[id]} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.display = 'none')} />
+      <DisciplineArtwork id={id} format="cover" />
       <span className="bar" aria-hidden />
       <span className="name">{d.name}</span>
-      <span className="sub">{d.tagline}</span>
+      {!compact && <span className="sub">{d.tagline}</span>}
       {level && <span className="lvl">Niveau : {LEVELS.find((l) => l.id === level)!.name}</span>}
     </>
   );
   const style = tall ? { minHeight: 240 } : undefined;
   if (to)
     return (
-      <Link to={to} className={`disc-card dark-scope ${selected ? 'on' : ''}`} data-testid={testId} style={style}>
+      <Link to={to} className={`disc-card dark-scope ${selected ? 'on' : ''} ${compact ? 'compact' : ''}`} data-testid={testId} style={style}>
         {inner}
       </Link>
     );
   return (
-    <button type="button" className={`disc-card dark-scope ${selected ? 'on' : ''}`} onClick={onClick} data-testid={testId} aria-pressed={selected} style={style}>
+    <button type="button" className={`disc-card dark-scope ${selected ? 'on' : ''} ${compact ? 'compact' : ''}`} onClick={onClick} data-testid={testId} aria-pressed={selected} style={style}>
       {inner}
     </button>
+  );
+}
+
+/** How a technique is practised: alone, shown with a virtual partner, or only with a real partner. */
+export function ModeBadge({ mode = 'solo' }: { mode?: TechniqueMode }) {
+  return (
+    <span className={`badge mode-${mode} ${mode === 'partenaire' ? 'red' : mode === 'duo' ? 'gold' : ''}`} data-testid="mode-badge" data-mode={mode}>
+      {MODE_LABEL[mode]}
+    </span>
   );
 }
 

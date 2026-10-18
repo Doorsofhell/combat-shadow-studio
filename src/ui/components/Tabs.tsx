@@ -1,8 +1,10 @@
-import { KeyboardEvent, useRef } from 'react';
+import { KeyboardEvent, ReactNode, useRef } from 'react';
 
 export interface TabItem<T extends string> {
   id: T;
   label: string;
+  /** shown before the label (e.g. the discipline's official badge) */
+  icon?: ReactNode;
   testId?: string;
 }
 
@@ -38,6 +40,7 @@ export function Tabs<T extends string>({ items, value, onChange, label, variant 
           onClick={() => onChange(t.id)}
           data-testid={t.testId}
         >
+          {t.icon}
           {t.label}
         </button>
       ))}

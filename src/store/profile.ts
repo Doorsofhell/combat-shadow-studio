@@ -80,7 +80,7 @@ export const DEFAULT_PROFILE: Profile = {
   display: { textSize: 'normal', reduceMotion: false },
   experience: 'aucune',
   disciplines: [],
-  levels: { boxe: 'debutant', kickboxing: 'debutant', mma: 'debutant', muaythai: 'debutant' },
+  levels: { boxe: 'debutant', kickboxing: 'debutant', mma: 'debutant', muaythai: 'debutant', bjj: 'debutant', judo: 'debutant' },
   goals: [],
   daysPerWeek: 3,
   sessionMinutes: 30,

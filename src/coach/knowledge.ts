@@ -56,6 +56,7 @@ export const CATEGORY_NUANCE: Record<TechniqueCategory, string> = {
   sol: 'Au sol, la priorité reste de créer de l’espace puis de revenir debout en garde, à distance.',
   feinte: 'Une feinte ne marche que si elle ressemble à ton vrai coup : garde-la courte et enchaîne sans délai.',
   clinch: 'Le clinch se travaille réellement avec un partenaire ; en solo, concentre-toi sur la posture et le placement des hanches.',
+  projection: 'En solo, seule l’entrée se travaille : déplacement, déséquilibre et placement. La projection elle-même ne se fait qu’au dojo, avec un partenaire et un professeur.',
 };
 
 /** côté du membre d’après l’identifiant (« -avant » = membre avant, « -arriere » = membre arrière) */
