@@ -225,3 +225,30 @@ test('consigne principale, points clés, ralenti et ligne de temps', async ({ pa
   await page.getByTestId('options').click();
   await expect(page.getByTestId('speed')).toHaveText('×0.25');
 });
+
+test('repères au sol : chacun s’active seul, légende sans débordement, choix mémorisé', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await seed(page);
+  await page.setViewportSize({ width: 360, height: 640 });
+  await open(page, `/#/entrainement?ex=muaythai-intermediaire-11&mode=technique`);
+  await expect(page.getByTestId('mark-legend')).toHaveCount(0);
+  await page.getByTestId('options').click();
+  const ids = ['pieds', 'orientation', 'avantArriere', 'pivot', 'trajectoire'];
+  for (const id of ids) await expect(page.getByTestId(`mark-${id}`)).toHaveAttribute('aria-pressed', 'false');
+  await page.getByTestId('mark-pivot').click();
+  await expect(page.getByTestId('mark-pivot')).toHaveAttribute('aria-pressed', 'true');
+  for (const id of ids.filter((i) => i !== 'pivot')) await expect(page.getByTestId(`mark-${id}`)).toHaveAttribute('aria-pressed', 'false');
+  await page.getByTestId('mark-avantArriere').click();
+  await page.getByRole('button', { name: 'Fermer' }).last().click();
+  await expect(page.getByTestId('mark-legend')).toContainText('Pied avant');
+  await expect(page.getByTestId('mark-legend')).toContainText('Pivot');
+  await expect(page.getByTestId('mark-legend')).not.toContainText('Trajectoire');
+  await page.getByTestId('start').click();
+  await page.waitForTimeout(3000);
+  await checkFits(page, 'repères actifs');
+  // saved on the device: still on after reopening the screen
+  await open(page, `/#/entrainement?ex=boxe-debutant-02&mode=technique`);
+  await expect(page.getByTestId('mark-legend')).toContainText('Pivot');
+  expect(errors).toEqual([]);
+});

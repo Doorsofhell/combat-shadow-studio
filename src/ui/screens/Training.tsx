@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { CoachStage } from '../../three/CoachStage';
 import { useProfile } from '../../store/profile';
-import { useSettings } from '../../store/settings';
+import { GROUND_MARK_LABEL, GroundMarkId, useSettings } from '../../store/settings';
 import { useCustom } from '../../store/custom';
 import { formatDuration } from '../../store/stats';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
@@ -137,6 +137,9 @@ function TrainingView({ plan }: { plan: Plan }) {
   else stageView = { az: stageAzimuth(teach, item.discipline, southpaw), el: teach.el, zoom: teach.zoom, focus: teach.focus, closeUp: false };
   if (closeUp && teach.closeUp && !free) stageView = { ...stageView, zoom: teach.closeUp.zoom, focus: teach.closeUp.focus, closeUp: true };
   if (st.tech && studyRot && !free) stageView = { ...stageView, az: stageView.az + studyRot };
+  // floor marks need to be seen from a little above
+  const anyMark = Object.values(settings.groundMarks).some(Boolean);
+  if (anyMark && !free && !st.tech && stageView.el < 16) stageView = { ...stageView, el: 16 };
   if (!free && (camRot || camZoom !== 1)) stageView = { ...stageView, az: stageView.az + camRot, zoom: stageView.zoom * camZoom };
   if (!free) lastView.current = stageView;
   // a temporary close-up always returns to the whole body
@@ -349,6 +352,18 @@ function TrainingView({ plan }: { plan: Plan }) {
             <IconExpand />
           </button>
         </div>
+        {!st.tech && !arActive && (settings.groundMarks.avantArriere || settings.groundMarks.pivot || settings.groundMarks.trajectoire) && (
+          <div className="mark-legend" aria-label="Légende des repères" data-testid="mark-legend">
+            {settings.groundMarks.avantArriere && (
+              <>
+                <span><i className="dot red" /> Pied avant</span>
+                <span><i className="dot blue" /> Pied arrière</span>
+              </>
+            )}
+            {settings.groundMarks.trajectoire && <span><i className="bar red" /> Trajectoire</span>}
+            {settings.groundMarks.pivot && <span><i className="bar blue" /> Pivot</span>}
+          </div>
+        )}
         {item.soloNote && !immersive && !asking && <div className="solo-note">{item.soloNote}</div>}
         {asking && (
           <div className="tr-ask" data-testid="coach-panel">
@@ -651,6 +666,16 @@ function TrainingView({ plan }: { plan: Plan }) {
               </div>
               {camMode === 'auto' && <p className="cam-why">{teach.why}</p>}
               <p className="small muted">Glisse le doigt sur le coach pour passer en caméra libre à 360°.</p>
+            </div>
+            <div className="stack">
+              <span className="label">Repères au sol</span>
+              <div className="row" data-testid="ground-marks">
+                {(Object.keys(GROUND_MARK_LABEL) as GroundMarkId[]).map((k) => (
+                  <button key={k} className={`chip ${settings.groundMarks[k] ? 'on' : ''}`} aria-pressed={settings.groundMarks[k]} onClick={() => setSettings({ groundMarks: { ...settings.groundMarks, [k]: !settings.groundMarks[k] } })} data-testid={`mark-${k}`}>
+                    {GROUND_MARK_LABEL[k]}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="stack">
               <span className="label">Vitesse d’exécution</span>

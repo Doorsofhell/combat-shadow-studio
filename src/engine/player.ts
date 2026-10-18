@@ -110,6 +110,13 @@ export class ComboPlayer {
     return this.cur.auto ? -1 : this.cur.index;
   }
 
+  /** the step being played (motion, time and stance origin), or null when the coach is in guard */
+  activeStep(): { techniqueId: string; motion: Motion; t: number; origin: { x: number; z: number; yaw: number } } | null {
+    const a = this.next ?? this.cur;
+    if (a.auto) return null;
+    return { techniqueId: a.techniqueId, motion: a.sampler.motion, t: a.t, origin: a.origin };
+  }
+
   /** the step being played and its phase, or null in guard, at rest or paused */
   phaseNow(): { techniqueId: string; phase: 'preparation' | 'execution' | 'retour' } | null {
     const a = this.next ?? this.cur;

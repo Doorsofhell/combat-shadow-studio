@@ -15,6 +15,17 @@ export const CUE_LABEL: Record<CueId, string> = {
   comparaison: 'Position clé',
 };
 
+/** ground marks of the training screen, each one switched on or off on its own (all off by default) */
+export type GroundMarkId = 'pieds' | 'orientation' | 'avantArriere' | 'pivot' | 'trajectoire';
+
+export const GROUND_MARK_LABEL: Record<GroundMarkId, string> = {
+  pieds: 'Position des pieds',
+  orientation: 'Orientation des pieds',
+  avantArriere: 'Pied avant / arrière',
+  pivot: 'Direction du pivot',
+  trajectoire: 'Trajectoires',
+};
+
 export interface Settings {
   /** menu theme; the training studio stays white */
   theme: ThemePref;
@@ -34,6 +45,7 @@ export interface Settings {
   cues: Record<CueId, boolean>;
   /** gear drawn see-through in the "Décomposer" mode so joints stay visible (saved look unchanged) */
   seeThroughGear: boolean;
+  groundMarks: Record<GroundMarkId, boolean>;
   defaultRoundSec: number;
   defaultRestSec: number;
 }
@@ -52,6 +64,7 @@ export const DEFAULT_SETTINGS: Settings = {
   cameraMode: 'auto',
   cues: { trajectoire: true, hanches: true, pivot: true, articulations: true, pieds: true, garde: false, comparaison: false },
   seeThroughGear: false,
+  groundMarks: { pieds: false, orientation: false, avantArriere: false, pivot: false, trajectoire: false },
   defaultRoundSec: 180,
   defaultRestSec: 60,
 };
@@ -72,7 +85,10 @@ export const useSettings = create<SettingsState>()(
       name: 'css-settings',
       storage: createJSONStorage(() => idbStorage),
       // settings saved by an older version get the new fields with their default value
-      merge: (saved, current) => ({ ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...((saved as { settings?: Partial<Settings> })?.settings ?? {}) } }),
+      merge: (saved, current) => {
+        const s = (saved as { settings?: Partial<Settings> })?.settings ?? {};
+        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) } } };
+      },
     },
   ),
 );

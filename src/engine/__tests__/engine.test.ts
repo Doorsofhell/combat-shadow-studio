@@ -156,6 +156,22 @@ describe('lecteur d’enchaînements', () => {
     expect(p.phaseNow()).toBeNull();
   });
 
+  test('donne le mouvement joué et son origine pour les repères au sol, rien en garde', () => {
+    const p = new ComboPlayer(rig, getLibrary(rig, 'boxing'), false);
+    expect(p.activeStep()).toBeNull();
+    p.setSequence(steps(['pas-avant', 'jab']), 0.5);
+    p.play();
+    const seen = new Map<string, number>();
+    for (let f = 0; f < 60 * 5; f++) {
+      p.update(1 / 60);
+      const a = p.activeStep();
+      if (a) seen.set(a.techniqueId, a.origin.z);
+    }
+    expect([...seen.keys()]).toEqual(['pas-avant', 'jab']);
+    // the jab after the step forward is drawn from the new stance origin
+    expect(seen.get('jab')).not.toBe(seen.get('pas-avant'));
+  });
+
   test('joue les mouvements dans l’ordre, compte les répétitions et enchaîne sans retour à une pose neutre', () => {
     const order: number[] = [];
     let reps = 0;

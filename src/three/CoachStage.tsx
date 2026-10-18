@@ -7,6 +7,7 @@ import { useSettings } from '../store/settings';
 import { StageView, StudioStage } from './StudioStage';
 import { ArScene } from './ArScene';
 import { StudyCues } from './StudyCues';
+import { GroundMarks } from './GroundMarks';
 import type { ArBridge } from '../ar/ArBridge';
 import type { CoachRig } from '../engine/rig';
 import { ComboPlayer, PlayerEvents } from '../engine/player';
@@ -225,6 +226,7 @@ export function CoachStage(props: CoachStageProps) {
         <group ref={coachGroup}>
           <CoachModel key={`${shownCoach}-${discipline}-${style}`} coach={shownCoach} style={style} quality={q} look={look} ghostGear={ghostGear} onRig={onRig} onFrame={onFrame} />
           {studyActive && rigState && study && <StudyCues rig={rigState} study={study} />}
+          {!studyActive && !arActive && rigState && <GroundMarks rig={rigState} player={player} southpaw={southpaw} />}
         </group>
       </Suspense>
     </Canvas>
