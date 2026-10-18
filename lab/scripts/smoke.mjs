@@ -1,0 +1,13 @@
+import { chromium } from 'playwright';
+const exe = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const [, , engine, query, out] = process.argv;
+const b = await chromium.launch({ executablePath: exe, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--enable-precise-memory-info'] });
+const p = await b.newPage({ viewport: { width: 720, height: 1280 } });
+p.on('console', (m) => m.type() === 'error' && console.log('console:', m.text().slice(0, 300)));
+p.on('pageerror', (e) => console.log('pageerror:', e.message));
+await p.goto(`http://localhost:5199/${engine}.html?${query}`);
+await p.waitForFunction(() => window.__lab?.ready, null, { timeout: 120000 });
+await p.waitForTimeout(1500);
+console.log(JSON.stringify(await p.evaluate(() => ({ t: window.__lab.timings, k: window.__lab.keyTimes, j: window.__lab.joints() }))));
+await p.screenshot({ path: out });
+await b.close();

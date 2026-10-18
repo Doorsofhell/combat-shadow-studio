@@ -1,0 +1,11 @@
+{
+  "name": "css-lab-babylon-vs-three",
+  "private": true,
+  "description": "Experimental comparison lab (branch experiment/babylon-vs-three). Not part of the app build.",
+  "type": "module",
+  "dependencies": {
+    "@babylonjs/core": "9.31.0",
+    "@babylonjs/loaders": "9.31.0",
+    "@babylonjs/materials": "9.31.0"
+  }
+}

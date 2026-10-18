@@ -15,3 +15,6 @@ android/local.properties
 .shots-tmp.mjs
 tsconfig.tsbuildinfo
 *.tsbuildinfo
+lab/node_modules
+lab/dist
+lab/out
