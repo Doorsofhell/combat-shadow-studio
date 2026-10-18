@@ -18,6 +18,7 @@ chaque lot, point de restauration, rapport (TEST RÉUSSI / ÉCHOUÉ / NON EXÉCU
 | `restauration/lot-5c` | v0.13.1 | Textes lisibles en sombre dans le lecteur d'artifact (couleur et police du thème sur body) |
 | `restauration/lot-6a` | v0.14.0 | Style Encre par défaut ; relief anatomique cuit sur les 4 coachs (normal map conservée par les 3 styles) ; générateur dans `tools/generator` ; vignettes régénérées |
 | `restauration/lot-6b` | v0.15.0 | Mode Analyse technique : phases mesurées sur l'animation, vitesse réelle puis ralenti, reprise d'une phase, surbrillance, voix, comparaison des gardes |
+| `restauration/lot-6c` | v0.16.0 | Coups qui accélèrent jusqu'à l'impact, phase « Armé », registre des animations (7 contrôles), état de l'animation sur chaque fiche |
 | `restauration/lot-4e` | v0.11.0 | Images des techniques sur les cartes (coach 3D choisi), changement de coach femme depuis l’entraînement |
 | `restauration/lot-4d` | v0.10.0 | Repères au sol optionnels (pieds, orientation, avant/arrière, pivot, trajectoires) |
 | `restauration/lot-4c` | v0.9.0 | Commandes hiérarchisées, zone Caméra regroupée (angle, rotation, zoom, recentrer), progression |

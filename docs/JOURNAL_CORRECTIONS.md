@@ -436,3 +436,12 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
   `src/engine/phases.ts`, `src/engine/registry.ts` (nouveau), `src/domain/animationStatus.ts` et `.json` (nouveaux),
   `src/ui/components/Cards.tsx`, `src/ui/screens/Library.tsx`, `docs/ANIMATIONS.md` (nouveau), tests
   `registry.test.ts` (nouveau), `tests/e2e/bjj-judo.spec.ts`, `public/thumbs/`.
+- **Tests** :
+  - compilation TypeScript : TEST RÉUSSI ;
+  - unitaires (283 réussis, 1 ignoré), dont le registre (à jour, aucune technique manquante ou à corriger) et les
+    phases de l'analyse (au plus 4 phases de travail, armé compris) : TEST RÉUSSI ;
+  - navigateur (58 réussis, 2 ignorés : Firebase), dont l'état de l'animation sur une fiche solo et une fiche avec
+    partenaire : TEST RÉUSSI ;
+  - contrôle visuel des 300 vignettes régénérées (échantillon jab, crochet, middle-kick, coude) : TEST RÉUSSI ;
+  - validation par un entraîneur : NON EXÉCUTÉ ; vrai téléphone Android : NON EXÉCUTÉ.
+- **Restauration** : `restauration/lot-6c`
