@@ -295,3 +295,23 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
   - Firebase (2) : NON EXÉCUTÉ ;
   - vrai téléphone Android : NON EXÉCUTÉ.
 - **Restauration** : `restauration/lot-5`
+
+## 2026-10-18 · v0.13.1 · Signalement : textes illisibles en mode sombre
+
+- **Signalement** : capture de Youssef (fiche d'une combinaison de légende, mode sombre) : titres, objectif, listes
+  et angle de caméra en texte sombre sur fond sombre.
+- **Constat après vérification** : dans le navigateur de test, ces textes étaient bien clairs. La différence vient du
+  lecteur d'artifact : il enveloppe l'application dans sa propre page, dont le style impose au `body` un texte noir
+  en 14 px. Notre feuille de style ne fixait la couleur et la police que sur `:root`, donc tous les textes sans couleur
+  propre héritaient du noir du lecteur. L'APK n'est pas concerné (pas de page hôte).
+- **Correction** : le `body` reprend explicitement la police et la couleur du thème (`font: inherit; color: inherit`).
+  Les textes retrouvent aussi leur taille prévue (16 px au lieu de 14 px dans le lecteur).
+- **Fichiers** : `src/ui/styles.css`, `tests/e2e/theme.spec.ts`.
+- **Tests** :
+  - nouveau test qui simule la page hôte (texte noir 14 px imposé) en sombre et en clair, sur la fiche signalée :
+    TEST RÉUSSI ;
+  - compilation et unitaires (186) : TEST RÉUSSI ;
+  - navigateur (55) : TEST RÉUSSI. Lors du passage complet, 2 tests ont dépassé leur délai pendant que je calculais
+    des rendus 3D en parallèle ; relancés seuls : TEST RÉUSSI ;
+  - Firebase (2) : NON EXÉCUTÉ ; vrai téléphone : NON EXÉCUTÉ (à confirmer par Youssef).
+- **Restauration** : `restauration/lot-5c`

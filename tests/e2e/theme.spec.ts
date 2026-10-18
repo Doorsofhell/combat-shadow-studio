@@ -68,3 +68,27 @@ for (const pref of ['Clair', 'Sombre'] as const) {
     expect(await page.locator('meta[name="theme-color"]').getAttribute('content')).toBe('#ffffff');
   });
 }
+
+// the artifact viewer wraps the page in its own skeleton that styles body (black text, 14px): text must keep the theme
+for (const scheme of ['dark', 'light'] as const)
+  test(`page hébergée (styles hôte sur body) : textes lisibles en thème ${scheme}`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.addInitScript(() => {
+      const st = document.createElement('style');
+      st.textContent = ':root{color-scheme:light}body{margin:0;padding:0;font:14px sans-serif;background:#fff;color:#000}';
+      document.documentElement.prepend(st);
+    });
+    await seed(page);
+    await page.goto('/#/champions/kickboxing-hari-0001');
+    const h = page.locator('h2', { hasText: 'Séquence' });
+    await expect(h).toBeVisible();
+    const r = await page.evaluate(() => {
+      const ink = getComputedStyle(document.documentElement).color;
+      const pick = (s: string) => getComputedStyle(document.querySelector(s)!).color;
+      return { ink, body: getComputedStyle(document.body).color, h2: pick('.page h2'), li: pick('.grid2 li'), size: getComputedStyle(document.body).fontSize };
+    });
+    expect(r.body).toBe(r.ink);
+    expect(r.h2).toBe(r.ink);
+    expect(r.li).toBe(r.ink);
+    expect(r.size).toBe('16px');
+  });

@@ -151,6 +151,9 @@ body,
 body {
   min-height: 100dvh;
   overflow-x: hidden;
+  /* a host page (artifact viewer) may style body itself (black text, 14px): inherit the theme from :root instead */
+  font: inherit;
+  color: inherit;
 }
 
 button,
