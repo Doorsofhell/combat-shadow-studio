@@ -34,7 +34,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - name: APK de test
-        run: npm run android:apk-test
+        run: npm run build:android && cd android && ./gradlew assembleDebug --stacktrace
       - name: Nom versionné
         id: name
         run: |
