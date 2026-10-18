@@ -252,3 +252,14 @@ test('repères au sol : chacun s’active seul, légende sans débordement, choi
   await expect(page.getByTestId('mark-legend')).toContainText('Pivot');
   expect(errors).toEqual([]);
 });
+
+test('exercice précédent et suivant', async ({ page }) => {
+  await seed(page);
+  await page.setViewportSize({ width: 393, height: 851 });
+  await open(page, `/#/entrainement?ex=boxe-debutant-02&mode=technique`);
+  const first = await page.getByTestId('exercise-name').textContent();
+  await page.getByRole('button', { name: 'Exercice suivant' }).click();
+  await expect(page.getByTestId('exercise-name')).not.toHaveText(first!);
+  await page.getByRole('button', { name: 'Exercice précédent' }).click();
+  await expect(page.getByTestId('exercise-name')).toHaveText(first!);
+});
