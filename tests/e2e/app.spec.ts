@@ -80,3 +80,32 @@ test('réglages et confidentialité accessibles depuis l’accueil', async ({ pa
   await page.getByRole('link', { name: /Confidentialité/ }).click();
   await expect(page.getByText('Tout reste sur ton appareil.')).toBeVisible();
 });
+
+test('images : les cartes de techniques, exercices, programmes et champions montrent le coach choisi', async ({ page }) => {
+  await onboard(page, 'femme');
+  // every picture on a screen is really loaded, and it shows the coach the user chose
+  const checkImages = async (min = 6) => {
+    const imgs = page.locator('.tech-thumb img');
+    await expect.poll(async () => imgs.count()).toBeGreaterThanOrEqual(min);
+    // the lists may re-render while loading: read the pictures again on every poll
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          [...document.querySelectorAll<HTMLImageElement>('.tech-thumb img')].slice(0, 6).map((e) => {
+            e.scrollIntoView({ block: 'center' });
+            return `${/thumbs\/femme\//.test(e.src)}:${e.complete && e.naturalWidth > 0}`;
+          }),
+        ),
+      )
+      .toEqual(Array(6).fill('true:true'));
+  };
+  await page.goto('/#/techniques');
+  await checkImages();
+  await page.goto('/#/discipline/boxe');
+  await checkImages();
+  await page.goto('/#/programmes');
+  await checkImages();
+  await page.goto('/#/champions');
+  await page.getByRole('tab', { name: 'Explorer' }).click().catch(() => {});
+  await checkImages();
+});

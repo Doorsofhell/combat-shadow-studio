@@ -199,6 +199,7 @@ export function CoachStage(props: CoachStageProps) {
   return (
     <Canvas
       shadows={false}
+      data-coach={shownCoach}
       dpr={q === 'haute' ? [1, 2] : 1}
       gl={{ antialias: q === 'haute', alpha: true, powerPreference: 'high-performance' }}
       camera={{ position: [0, 1.1, 5], fov: 30 }}

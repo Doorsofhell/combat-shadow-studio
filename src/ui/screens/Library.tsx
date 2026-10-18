@@ -1,3 +1,4 @@
+import { TechThumb, keyTechnique, programTechnique } from '../components/TechThumb';
 import { Suspense, lazy, useCallback, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { CATEGORY_LABEL, TECHNIQUE_BY_ID, TECHNIQUES, techniquesFor } from '../../domain/techniques';
@@ -15,7 +16,7 @@ import { say } from '../../audio/voice';
 import { GuideCard } from '../GuideCard';
 import { CameraControls, EmptyState, EntryCard, FilterChips, LevelSelector, PageHead, PlaybackControls, SectionHead, Tabs, TechniqueCard } from '../components';
 import { ExerciseList, ExerciseSheet } from './Discipline';
-import { IconChevron, IconLayers, IconPlay, IconPlus, IconStar, IconStarFilled, IconTrend, IconTrophy } from '../icons';
+import { IconChevron, IconLayers, IconPlus, IconStar, IconStarFilled, IconTrend, IconTrophy } from '../icons';
 import { CHAMPIONS_AVAILABLE } from './features';
 
 const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
@@ -30,20 +31,6 @@ const HUB_TABS: { id: HubTab; label: string }[] = [
   { id: 'favoris', label: 'Favoris' },
   { id: 'programmes', label: 'Programmes' },
 ];
-
-const GLYPH: Record<Technique['category'], string> = {
-  garde: 'G',
-  poing: 'P',
-  pied: 'J',
-  genou: 'Ge',
-  coude: 'C',
-  defense: 'D',
-  deplacement: 'Dp',
-  lutte: 'L',
-  sol: 'S',
-  feinte: 'F',
-  clinch: 'Cl',
-};
 
 /** "Techniques" tab: individual techniques, combinations, legends, creator, favourites, programmes. */
 export function Library() {
@@ -94,7 +81,7 @@ function TechniquesTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) =
       />
       <div className="stack" style={{ gap: 8 }}>
         {shown.map((t) => (
-          <TechniqueCard key={t.id} to={`/techniques/${t.id}?d=${d}`} title={t.name} description={t.description} glyph={GLYPH[t.category]} favorite={fav.includes(t.id)} />
+          <TechniqueCard key={t.id} to={`/techniques/${t.id}?d=${d}`} title={t.name} description={t.description} thumb={t.id} favorite={fav.includes(t.id)} />
         ))}
       </div>
       <p className="small muted">{TECHNIQUES.length} techniques au total, chacune animée sur ton combattant 3D.</p>
@@ -141,9 +128,7 @@ function CreatorTab() {
         <div className="stack" style={{ gap: 8 }}>
           {combos.map((c) => (
             <Link key={c.id} to={`/entrainement?perso=${c.id}&mode=libre`} className="card link ex-card" aria-label={`Lancer ${c.name}`}>
-              <span className="icon-tile" aria-hidden>
-                <IconPlay />
-              </span>
+              <TechThumb id={keyTechnique(c.sequence)} />
               <span className="body">
                 <span className="title">{c.name}</span>
                 <span className="small muted">
@@ -181,7 +166,7 @@ function FavoritesTab() {
           <SectionHead title="Techniques" />
           <div className="stack" style={{ gap: 8 }}>
             {techs.map((t) => (
-              <TechniqueCard key={t.id} to={`/techniques/${t.id}`} title={t.name} description={t.description} glyph={GLYPH[t.category]} favorite />
+              <TechniqueCard key={t.id} to={`/techniques/${t.id}`} title={t.name} description={t.description} thumb={t.id} favorite />
             ))}
           </div>
         </section>
@@ -199,6 +184,7 @@ function ProgramsTab() {
       <div className="stack" style={{ gap: 8 }}>
         {PROGRAMS.slice(0, 4).map((p) => (
           <Link key={p.id} to={`/programmes/${p.id}`} className="card link ex-card">
+            <TechThumb id={programTechnique(p)} />
             <span className="body">
               <span className="eyebrow">{p.durationMin} min</span>
               <span className="title">{p.name}</span>

@@ -263,3 +263,15 @@ test('exercice précédent et suivant', async ({ page }) => {
   await page.getByRole('button', { name: 'Exercice précédent' }).click();
   await expect(page.getByTestId('exercise-name')).toHaveText(first!);
 });
+
+test('changer de coach pendant l’entraînement : la coach femme s’affiche', async ({ page }) => {
+  await seed(page);
+  await page.setViewportSize({ width: 393, height: 851 });
+  await open(page, `/#/entrainement?ex=boxe-debutant-02&mode=technique`);
+  await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'homme');
+  await page.getByTestId('options').click();
+  await page.getByRole('button', { name: 'Coach femme' }).click();
+  await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'femme');
+  await page.getByRole('button', { name: 'Coach homme' }).click();
+  await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'homme');
+});

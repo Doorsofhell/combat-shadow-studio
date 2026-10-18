@@ -1,3 +1,4 @@
+import { TechThumb, keyTechnique } from '../components/TechThumb';
 import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { DISCIPLINES, DisciplineId, Exercise, LEVELS, LevelId, TrainingMode } from '../../domain/types';
@@ -31,9 +32,9 @@ export function ExerciseList({ list, onOpen }: { list: Exercise[]; onOpen: (id: 
     <div className="stack" style={{ gap: 8 }}>
       {list.map((e, i) => (
         <button key={e.id} type="button" className="card link ex-card" onClick={() => onOpen(e.id)} data-testid={`ex-${e.id}`}>
-          <span className="num" aria-hidden>
-            {i + 1}
-          </span>
+          <TechThumb id={keyTechnique(e.sequence)}>
+            <span className="num">{i + 1}</span>
+          </TechThumb>
           <span className="body">
             <span className="title">
               {e.name}

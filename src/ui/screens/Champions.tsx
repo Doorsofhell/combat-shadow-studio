@@ -1,3 +1,4 @@
+import { TechThumb, keyTechnique } from '../components/TechThumb';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { DISCIPLINES, LEVELS } from '../../domain/types';
@@ -74,6 +75,7 @@ function ComboRow({ c, catalog, extra }: { c: CatalogCombo; catalog: Catalog; ex
   const ch = catalog.championById.get(c.champion);
   return (
     <div className="panel-row">
+      <TechThumb id={keyTechnique(c.sequence)} size="sm" />
       <Link to={`/champions/${c.id}`} className="grow" style={{ color: 'inherit', textDecoration: 'none' }} data-testid={`cat-${c.id}`}>
         <b style={{ display: 'block' }}>{c.name}</b>
         <span className="hint">

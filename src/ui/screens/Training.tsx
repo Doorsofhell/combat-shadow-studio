@@ -17,6 +17,7 @@ import { CoachAskPanel } from '../coach-ai/CoachAskPanel';
 import type { CoachAction } from '../../coach/engine';
 import { useCoachAi } from '../../store/coachAi';
 import { GuideCard } from '../GuideCard';
+import { chooseCoach } from '../components/fighter';
 import { CAMERA_MODES, CameraMode, manualView, sequenceView, stageAzimuth, techniqueView } from '../../domain/camera';
 import type { StageView } from '../../three/StudioStage';
 import { StudyPanel, useStudy } from '../training/Study';
@@ -78,7 +79,6 @@ function clock(sec: number, up = true) {
 function TrainingView({ plan }: { plan: Plan }) {
   const nav = useNavigate();
   const profile = useProfile((s) => s.profile);
-  const setCoach = useProfile((s) => s.setCoach);
   const updateProfile = useProfile((s) => s.update);
   const settings = useSettings((s) => s.settings);
   const setSettings = useSettings((s) => s.set);
@@ -636,10 +636,10 @@ function TrainingView({ plan }: { plan: Plan }) {
             <div className="stack">
               <span className="label">Coach</span>
               <div className="row">
-                <button className={`chip ${coach === 'homme' ? 'on' : ''}`} onClick={() => setCoach('homme')}>
+                <button className={`chip ${coach === 'homme' ? 'on' : ''}`} onClick={() => chooseCoach('homme')}>
                   Coach homme
                 </button>
-                <button className={`chip ${coach === 'femme' ? 'on' : ''}`} onClick={() => setCoach('femme')}>
+                <button className={`chip ${coach === 'femme' ? 'on' : ''}`} onClick={() => chooseCoach('femme')}>
                   Coach femme
                 </button>
               </div>

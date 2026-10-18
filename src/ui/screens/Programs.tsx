@@ -1,9 +1,10 @@
+import { TechThumb, programTechnique } from '../components/TechThumb';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PROGRAMS, PROGRAM_BY_ID, programSeconds } from '../../domain/programs';
 import { EXERCISE_BY_ID } from '../../domain/exercises';
 import { DISCIPLINES, ProgramBlock } from '../../domain/types';
 import { EmptyState, PageHead } from '../components';
-import { IconChevron, IconPlay, IconPlus, IconTrend } from '../icons';
+import { IconChevron, IconPlay, IconPlus } from '../icons';
 
 const PHASE_LABEL: Record<ProgramBlock['phase'], string> = {
   echauffement: 'Échauffement',
@@ -23,9 +24,7 @@ export function Programs() {
       <div className="stack" style={{ gap: 8 }}>
         {PROGRAMS.map((p) => (
           <Link key={p.id} to={`/programmes/${p.id}`} className="card link ex-card">
-            <span className="icon-tile" aria-hidden>
-              <IconTrend />
-            </span>
+            <TechThumb id={programTechnique(p)} />
             <span className="body">
               <span className="eyebrow">
                 {discName(p.discipline)} · {p.durationMin} min

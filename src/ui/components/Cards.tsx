@@ -1,3 +1,4 @@
+import { TechThumb } from './TechThumb';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { DISCIPLINES, DisciplineId, LEVELS, LevelId } from '../../domain/types';
@@ -38,10 +39,12 @@ export function DisciplineCard({ id, level, to, onClick, selected, testId, tall 
 }
 
 /** One technique / exercise row card (link). */
-export function TechniqueCard({ to, title, description, glyph, favorite, meta, testId }: { to: string; title: string; description?: string; glyph?: string; favorite?: boolean; meta?: ReactNode; testId?: string }) {
+export function TechniqueCard({ to, title, description, glyph, thumb, favorite, meta, testId }: { to: string; title: string; description?: string; glyph?: string; thumb?: string; favorite?: boolean; meta?: ReactNode; testId?: string }) {
   return (
     <Link to={to} className="tech-card" data-testid={testId}>
-      {glyph && (
+      {thumb ? (
+        <TechThumb id={thumb} />
+      ) : glyph && (
         <span className="glyph" aria-hidden>
           {glyph}
         </span>
@@ -72,12 +75,16 @@ export function ChampionCard({ to, name, style, meta }: { to: string; name: stri
 }
 
 /** Generic row card with an icon tile (hub entries, shortcuts). */
-export function EntryCard({ to, icon, title, text, tone, testId }: { to: string; icon: ReactNode; title: string; text?: string; tone?: 'red' | 'gold'; testId?: string }) {
+export function EntryCard({ to, icon, thumb, title, text, tone, testId }: { to: string; icon: ReactNode; thumb?: string; title: string; text?: string; tone?: 'red' | 'gold'; testId?: string }) {
   return (
     <Link to={to} className="card link ex-card" data-testid={testId}>
-      <span className={`icon-tile ${tone ?? ''}`} aria-hidden>
-        {icon}
-      </span>
+      {thumb ? (
+        <TechThumb id={thumb} />
+      ) : (
+        <span className={`icon-tile ${tone ?? ''}`} aria-hidden>
+          {icon}
+        </span>
+      )}
       <span className="body">
         <span className="title">{title}</span>
         {text && <span className="small muted">{text}</span>}

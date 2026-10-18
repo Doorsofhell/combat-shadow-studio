@@ -1,3 +1,4 @@
+import { TechThumb, keyTechnique, programTechnique } from '../components/TechThumb';
 import { Component, ReactNode, Suspense, lazy, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
@@ -13,7 +14,7 @@ import type { ComboPlayer, PlayerEvents } from '../../engine/player';
 import { MODE_LABEL } from '../training/plan';
 import { EmptyState, EntryCard, ProgressBar, SectionHead, StatTile } from '../components';
 import { defaultFighterName } from '../components/fighter';
-import { IconChevron, IconClock, IconGear, IconPlay, IconRestart, IconStarFilled, IconTrend, IconTrophy, IconUser } from '../icons';
+import { IconChevron, IconClock, IconGear, IconPlay, IconRestart, IconTrend, IconUser } from '../icons';
 
 /** the 3D bundle (three.js, R3F) stays out of the main chunk */
 const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
@@ -206,9 +207,7 @@ export function Home() {
           <div className="stack" style={{ gap: 8 }}>
             {legendFavs.map((c) => (
               <Link key={c!.id} to={`/champions/${c!.id}`} className="card link ex-card">
-                <span className="icon-tile gold" aria-hidden>
-                  <IconTrophy />
-                </span>
+                <TechThumb id={keyTechnique(c!.sequence)} />
                 <span className="body">
                   <span className="title">{c!.name}</span>
                   <span className="small muted">{catalog?.championById.get(c!.champion)?.name ?? 'Combinaison des légendes'}</span>
@@ -230,9 +229,7 @@ export function Home() {
               .slice(0, 3)
               .map((e) => (
                 <Link key={e!.id} to={`/discipline/${e!.discipline}?niveau=${e!.level}&ex=${e!.id}`} className="card link ex-card">
-                  <span className="icon-tile gold" aria-hidden>
-                    <IconStarFilled />
-                  </span>
+                  <TechThumb id={keyTechnique(e!.sequence)} />
                   <span className="body">
                     <span className="title">{e!.name}</span>
                     <span className="small muted">{DISCIPLINES.find((d) => d.id === e!.discipline)!.name}</span>
@@ -247,7 +244,7 @@ export function Home() {
       {recProg && (
         <section className="section" aria-labelledby="h-prog">
           <SectionHead id="h-prog" title="Programme recommandé" action={<Link to="/programmes">Programmes</Link>} />
-          <EntryCard to={`/programmes/${recProg.id}`} icon={<IconTrend />} tone="red" title={recProg.name} text={`${recProg.durationMin} min · ${recProg.frequency}`} />
+          <EntryCard to={`/programmes/${recProg.id}`} icon={<IconTrend />} thumb={programTechnique(recProg)} tone="red" title={recProg.name} text={`${recProg.durationMin} min · ${recProg.frequency}`} />
         </section>
       )}
 
@@ -257,6 +254,7 @@ export function Home() {
           <div className="stack" style={{ gap: 8 }}>
             {rec.exercises.slice(1, 4).map((e) => (
               <Link key={e.id} to={`/discipline/${e.discipline}?niveau=${e.level}&ex=${e.id}`} className="card link ex-card">
+                <TechThumb id={keyTechnique(e.sequence)} />
                 <span className="body">
                   <span className="eyebrow">{LEVELS.find((l) => l.id === e.level)!.name}</span>
                   <span className="title">{e.name}</span>

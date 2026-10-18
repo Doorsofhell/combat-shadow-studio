@@ -1,3 +1,4 @@
+import { TechThumb, keyTechnique, programTechnique } from '../components/TechThumb';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
@@ -8,7 +9,7 @@ import { PROGRAMS } from '../../domain/programs';
 import { recommend } from '../../domain/recommend';
 import { DisciplineCard, EmptyState, FilterChips, PageHead, SectionHead } from '../components';
 import { ExerciseSheet } from './Discipline';
-import { IconBolt, IconChevron, IconPlay, IconPlus, IconTrend } from '../icons';
+import { IconChevron, IconPlus } from '../icons';
 
 type ProgFilter = DisciplineId | 'mixte' | 'tous';
 
@@ -33,9 +34,7 @@ export function Train() {
           <div className="stack" style={{ gap: 8 }}>
             {quick.map((e, i) => (
               <button key={e.id} type="button" className="card link ex-card" onClick={() => setOpen(e.id)} data-testid={`quick-${e.id}`}>
-                <span className={`icon-tile ${i === 0 ? 'red' : ''}`} aria-hidden>
-                  {i === 0 ? <IconBolt /> : <IconPlay />}
-                </span>
+                <TechThumb id={keyTechnique(e.sequence)} />
                 <span className="body">
                   <span className="eyebrow">{i === 0 ? 'Recommandé' : DISCIPLINES.find((d) => d.id === e.discipline)!.short}</span>
                   <span className="title">{e.name}</span>
@@ -71,9 +70,7 @@ export function Train() {
           <div className="stack" style={{ gap: 8 }}>
             {progs.map((p) => (
               <Link key={p.id} to={`/programmes/${p.id}`} className="card link ex-card">
-                <span className="icon-tile" aria-hidden>
-                  <IconTrend />
-                </span>
+                <TechThumb id={programTechnique(p)} />
                 <span className="body">
                   <span className="eyebrow">{p.durationMin} min</span>
                   <span className="title">{p.name}</span>
@@ -102,9 +99,7 @@ export function Train() {
           <div className="stack" style={{ gap: 8 }}>
             {combos.map((c) => (
               <Link key={c.id} to={`/entrainement?perso=${c.id}&mode=libre`} className="card link ex-card" aria-label={`Lancer ${c.name}`}>
-                <span className="icon-tile red" aria-hidden>
-                  <IconPlay />
-                </span>
+                <TechThumb id={keyTechnique(c.sequence)} />
                 <span className="body">
                   <span className="title">{c.name}</span>
                   <span className="small muted">
