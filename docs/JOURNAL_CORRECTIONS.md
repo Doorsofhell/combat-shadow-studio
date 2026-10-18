@@ -315,3 +315,31 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
     des rendus 3D en parallèle ; relancés seuls : TEST RÉUSSI ;
   - Firebase (2) : NON EXÉCUTÉ ; vrai téléphone : NON EXÉCUTÉ (à confirmer par Youssef).
 - **Restauration** : `restauration/lot-5c`
+
+## 2026-10-18 · v0.14.0 · Style Encre par défaut et relief anatomique des coachs (Plan V2, P1)
+
+- **Demandes** : style « Encre » validé par Youssef (19:17) ; refonte du système humanoïde (19:29) et Plan global V2
+  (19:43) : musculature extrêmement définie, pipeline Blender/MakeHuman existant, branche `feature/combat-shadow-v2`.
+- **Constat après vérification** (détail dans `docs/AUDIT_HUMANOIDES.md`) :
+  - les coachs sont de vrais GLB articulés (rig Mixamo de 52 os, doigts compris), animés par notre moteur IK ;
+  - la peau n'avait **aucune carte de relief** : les séparations musculaires n'étaient que peintes, d'où l'aspect
+    « mannequin » ;
+  - la documentation annonçait des GLB compressés en Draco : **c'est faux**, le module Blender utilisé ne contient
+    pas Draco et l'option était ignorée ;
+  - le générateur n'était pas dans le dépôt.
+- **Corrections** :
+  - style Encre (hachures, lumière rasante, traits de pli) par défaut, avec migration des réglages enregistrés
+    (Manga devient Encre, Réaliste est conservé) ;
+  - carte de relief anatomique cuite dans Blender pour les 4 modèles (`tools/generator/anatomy.py`) : abdominaux,
+    pectoraux, pli de l'aine, dentelés, colonne, omoplates, deltoïdes, bras, cuisses, mollets ; amplitude réduite pour
+    la femme ;
+  - la carte est conservée par les 3 styles de rendu (`CoachModel.tsx`, `manga.ts`) ;
+  - un anneau au-dessus du genou (larme du vaste interne dessinée en cercle complet) a été vu sur le premier rendu et
+    remplacé par un arc ;
+  - générateur et documentation du pipeline Blender → GLB → Three.js versés dans `tools/generator/` ;
+  - vignettes des techniques régénérées avec le nouveau rendu.
+- **Inchangés** : squelette, maillage, repères `meta.json`, animations. Aucune animation à reprendre.
+- **Fichiers** : `src/three/CoachModel.tsx`, `src/three/manga.ts`, `src/store/settings.ts`,
+  `src/ui/screens/Settings.tsx`, `CoachStudio.tsx`, `src/ui/Lab.tsx`, `public/models/*`, `public/thumbs/`,
+  `tools/generator/*`, `docs/AUDIT_HUMANOIDES.md`, `README.md`, `docs/LICENCES.md`,
+  `src/three/__tests__/models.test.ts`, `src/store/__tests__/settings-style.test.ts`.

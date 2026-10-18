@@ -73,6 +73,9 @@ function upgradeMaterials(root: Object3D, quality: 'haute' | 'basse') {
           ? new MeshPhysicalMaterial({
               name: old.name,
               map,
+              // anatomical relief (furrows between the muscles) baked by the generator, skin only
+              normalMap: old.normalMap,
+              normalScale: old.normalScale,
               roughness: isHair ? 0.68 : 0.5,
               metalness: 0,
               sheen: isHair ? 0.4 : 0.35,
@@ -82,7 +85,7 @@ function upgradeMaterials(root: Object3D, quality: 'haute' | 'basse') {
               clearcoat: isHair ? 0 : 0.04,
               clearcoatRoughness: 0.6,
             })
-          : new MeshStandardMaterial({ name: old.name, map, roughness: 0.55, metalness: 0 });
+          : new MeshStandardMaterial({ name: old.name, map, normalMap: old.normalMap, normalScale: old.normalScale, roughness: 0.55, metalness: 0 });
       mesh.material = mat;
     } else if (old.isMeshStandardMaterial) {
       old.metalness = 0;

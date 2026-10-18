@@ -4,7 +4,7 @@
 | --- | --- | --- | --- | --- |
 | Maillage humain de base, cibles de morphologie, squelette « mixamo » de MPFB | MakeHuman / MPFB2 (github.com/makehumancommunity) | Ressources : CC0 1.0. Le code de MPFB (GPL v3) sert seulement à générer le modèle, il n’est pas distribué avec l’application | 0 € | corps des deux coachs |
 | Yeux « high-poly » et texture d’iris | dépôt makehuman (system assets) | CC0 1.0 | 0 € | yeux |
-| Peau, cheveux, short, brassière | générés par nos scripts (`generator/build.py`) | propriété du projet | 0 € | textures et vêtements |
+| Peau, cheveux, short, brassière | générés par nos scripts (`tools/generator/build.py`, relief `anatomy.py`) | propriété du projet | 0 € | textures et vêtements |
 | Animations | écrites dans `src/engine/library` | propriété du projet | 0 € | toutes les techniques |
 | Décodeur Draco | three.js (`public/draco`) | Apache 2.0 | 0 € | prévu pour compresser les modèles plus tard (non utilisé aujourd’hui) |
 | three.js, React, React Three Fiber, drei, Zustand, idb-keyval, React Router | npm | MIT | 0 € | application |

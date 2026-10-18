@@ -69,9 +69,9 @@ const INK_FRAGMENT = /* glsl */ `
 
 export type InkStyle = 'manga' | 'encre';
 
-export function toonMaterial(name: string, map: Texture | null, color?: Color, style: InkStyle = 'manga') {
-  if (style === 'encre') return inkMaterial(name, map, color);
-  const m = new MeshLambertMaterial({ name, map, color: color ?? new Color(1, 1, 1) });
+export function toonMaterial(name: string, map: Texture | null, color?: Color, style: InkStyle = 'manga', normalMap: Texture | null = null) {
+  if (style === 'encre') return inkMaterial(name, map, color, normalMap);
+  const m = new MeshLambertMaterial({ name, map, normalMap, color: color ?? new Color(1, 1, 1) });
   m.onBeforeCompile = (shader) => {
     shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>', TOON_FRAGMENT);
   };
@@ -79,8 +79,8 @@ export function toonMaterial(name: string, map: Texture | null, color?: Color, s
   return m;
 }
 
-function inkMaterial(name: string, map: Texture | null, color?: Color) {
-  const m = new MeshLambertMaterial({ name, map, color: color ?? new Color(1, 1, 1) });
+function inkMaterial(name: string, map: Texture | null, color?: Color, normalMap: Texture | null = null) {
+  const m = new MeshLambertMaterial({ name, map, normalMap, color: color ?? new Color(1, 1, 1) });
   m.onBeforeCompile = (shader) => {
     shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>', INK_FRAGMENT);
   };
@@ -118,7 +118,7 @@ export function applyManga(root: Object3D, style: InkStyle = 'manga') {
     const old = mesh.material as MeshStandardMaterial;
     const name = (old.name || '').toLowerCase();
     const isEyes = name.startsWith('eye');
-    mesh.material = toonMaterial(old.name, old.map ?? null, old.map ? undefined : old.color?.clone(), style);
+    mesh.material = toonMaterial(old.name, old.map ?? null, old.map ? undefined : old.color?.clone(), style, old.normalMap ?? null);
     (old as Material).dispose();
     const sk = mesh as SkinnedMesh;
     if (!isEyes && sk.isSkinnedMesh) {
