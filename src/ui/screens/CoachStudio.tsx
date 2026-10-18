@@ -251,11 +251,11 @@ export function CoachStudio() {
           <Tabs items={TABS} value={tab} onChange={onTab} label="Catégories" variant="underline" />
         </div>
         <div className="cs-scroll" role="tabpanel" aria-label={TABS.find((t) => t.id === tab)?.label} data-testid="editor-panel">
-          {settings.coachStyle !== 'manga' && (
+          {settings.coachStyle === 'realiste' && (
             <div className="note warn cs-note">
-              Ton apparence personnalisée s’affiche avec le style de coach « manga ».
-              <Button variant="secondary" onClick={() => setSettings({ coachStyle: 'manga' })}>
-                Passer au style manga
+              Ton apparence personnalisée s’affiche avec les styles « Encre » et « Manga ».
+              <Button variant="secondary" onClick={() => setSettings({ coachStyle: 'encre' })}>
+                Passer au style Encre
               </Button>
             </div>
           )}

@@ -36,8 +36,8 @@ export interface Settings {
   techniqueTips: boolean;
   impactSounds: boolean;
   quality: 'auto' | 'haute' | 'basse';
-  /** look of the coaches: cel-shaded manga (default) or realistic */
-  coachStyle: 'manga' | 'realiste';
+  /** look of the coaches: ink drawing in colour (default since v0.14), cel-shaded manga, or realistic */
+  coachStyle: 'encre' | 'manga' | 'realiste';
   cameraAngle: number;
   /** teaching camera mode; auto picks the best angle for each technique */
   cameraMode: import('../domain/camera').CameraMode;
@@ -59,7 +59,7 @@ export const DEFAULT_SETTINGS: Settings = {
   techniqueTips: true,
   impactSounds: false,
   quality: 'auto',
-  coachStyle: 'manga',
+  coachStyle: 'encre',
   cameraAngle: 35,
   cameraMode: 'auto',
   cues: { trajectoire: true, hanches: true, pivot: true, articulations: true, pieds: true, garde: false, comparaison: false },
@@ -84,6 +84,14 @@ export const useSettings = create<SettingsState>()(
     {
       name: 'css-settings',
       storage: createJSONStorage(() => idbStorage),
+      // v1 (0.14.0): the ink style becomes the default; 'manga' was the default before, so it moves to 'encre'
+      // (an explicit 'realiste' choice is kept)
+      version: 1,
+      migrate: (saved, version) => {
+        const st = (saved ?? {}) as { settings?: Partial<Settings> };
+        if (version < 1 && st.settings?.coachStyle === 'manga') st.settings = { ...st.settings, coachStyle: 'encre' };
+        return st as unknown as SettingsState;
+      },
       // settings saved by an older version get the new fields with their default value
       merge: (saved, current) => {
         const s = (saved as { settings?: Partial<Settings> })?.settings ?? {};

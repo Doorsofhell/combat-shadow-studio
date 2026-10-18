@@ -80,7 +80,7 @@ export function Lab() {
       <Canvas shadows dpr={[1, 2]} gl={{ alpha: true, antialias: true, preserveDrawingBuffer: true }}>
         <Suspense fallback={null}>
           <StudioStage view={view} envelope={tech ? envelope : undefined} origin={tech ? origin : undefined} cameraAngle={cam} quality="haute" zoom={Number(q.get('zoom') ?? '1')} focusY={q.get('fy') ? Number(q.get('fy')) : undefined}>
-            <CoachModel coach={coach} style={q.get('look') === 'realiste' ? 'realiste' : q.get('look') === 'encre' ? 'encre' : 'manga'} quality="haute" look={look} onRig={onRig} onFrame={onFrame} />
+            <CoachModel coach={coach} style={q.get('look') === 'realiste' ? 'realiste' : q.get('look') === 'manga' ? 'manga' : 'encre'} quality="haute" look={look} onRig={onRig} onFrame={onFrame} />
           </StudioStage>
         </Suspense>
       </Canvas>

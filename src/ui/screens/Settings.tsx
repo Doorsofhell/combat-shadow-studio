@@ -150,6 +150,7 @@ export function SettingsPage() {
             value={settings.coachStyle}
             onChange={(v) => set({ coachStyle: v })}
             options={[
+              { id: 'encre', label: 'Encre' },
               { id: 'manga', label: 'Manga' },
               { id: 'realiste', label: 'Réaliste' },
             ]}
