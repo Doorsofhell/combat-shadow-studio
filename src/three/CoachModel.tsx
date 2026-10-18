@@ -20,11 +20,11 @@ import type { CoachId } from '../domain/types';
 const JSON_MODELS = import.meta.env.VITE_COACH_FORMAT === 'json';
 const EXT = JSON_MODELS ? 'json' : 'glb';
 
-export type CoachStyle = 'manga' | 'realiste';
+export type CoachStyle = 'manga' | 'encre' | 'realiste';
 
 export function coachUrl(coach: CoachId, style: CoachStyle) {
   const who = coach === 'homme' ? 'male' : 'female';
-  return `./models/coach_${who}${style === 'manga' ? '_manga' : ''}.${EXT}`;
+  return `./models/coach_${who}${style !== 'realiste' ? '_manga' : ''}.${EXT}`;
 }
 
 function base64ToBuffer(b64: string) {
@@ -127,19 +127,19 @@ export interface CoachModelProps {
 
 export function CoachModel({ coach, style, quality, look, ghostGear = false, onRig, onFrame }: CoachModelProps) {
   const gltf = useGLTF(coachUrl(coach, style), DRACO, true, patchJsonModels);
-  const custom = style === 'manga';
+  const custom = style !== 'realiste';
   const meta = useMeta(`./models/coach_${who(coach)}_manga.meta.json`);
   const masks = useLoader(TextureLoader, `./models/coach_${who(coach)}_manga_masks.png`);
   const { scene, customizer } = useMemo(() => {
     const s = cloneSkinned(gltf.scene);
     upgradeMaterials(s, quality);
-    if (style === 'manga') applyManga(s);
+    if (style !== 'realiste') applyManga(s, style);
     let c: Customizer | null = null;
     if (custom) {
       masks.flipY = false;
       masks.colorSpace = NoColorSpace;
       try {
-        c = new Customizer(s, meta, masks, { toon: (n, col) => toonMaterial(n, null, col), outline: outlineMaterial });
+        c = new Customizer(s, meta, masks, { toon: (n, col) => toonMaterial(n, null, col, style === 'encre' ? 'encre' : 'manga'), outline: (w) => (style === 'encre' ? outlineMaterial(w * 1.25, '#1b1d22') : outlineMaterial(w)) });
         // development hook for the screenshot scripts
         if (import.meta.env.DEV) ((window as unknown as { __cssCustomizers?: Customizer[] }).__cssCustomizers ??= []).push(c);
       } catch (e) {

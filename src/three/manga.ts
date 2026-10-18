@@ -25,7 +25,52 @@ const TOON_FRAGMENT = /* glsl */ `
   #include <opaque_fragment>
 `;
 
-export function toonMaterial(name: string, map: Texture | null, color?: Color) {
+/**
+ * Ink rendering ("Encre"): painted colours with a soft light ramp, ink hatching whose density follows
+ * the shadow (one direction, then crossed, then a third pass in the deepest shadows), anthracite ink
+ * instead of pure black, and a light sheen on the lit planes of the muscles.
+ */
+const INK_FRAGMENT = /* glsl */ `
+  {
+    vec3 albedo = diffuseColor.rgb;
+    float la = max(dot(albedo, vec3(0.299, 0.587, 0.114)), 1e-3);
+    float scene = dot(outgoingLight, vec3(0.299, 0.587, 0.114)) / la;
+    // a raking key light from the upper left (view space) carves the muscles, like a drawn study;
+    // the scene light still darkens what the stage leaves in shadow
+    float key = dot(normalize(normal), normalize(vec3(-0.55, 0.62, 0.56)));
+    float light = min(0.2 + 0.95 * smoothstep(-0.25, 0.85, key), scene * 1.1);
+    float tone = smoothstep(0.2, 1.0, light);
+    vec3 col = albedo * mix(0.5, 1.08, tone);
+    // hatching in screen space, about 8 device px apart, slightly tilted like a pen stroke
+    vec2 p = gl_FragCoord.xy;
+    // a slight wobble, so the strokes read as drawn by hand
+    p += vec2(sin(p.y * 0.045), sin(p.x * 0.05)) * 1.6;
+    float d1 = abs(fract((p.x * 0.9 + p.y * 0.45) / 8.0) - 0.5) * 2.0;
+    float d2 = abs(fract((p.y * 0.95 - p.x * 0.5) / 8.0) - 0.5) * 2.0;
+    float d3 = abs(fract((p.x * 0.2 + p.y) / 6.0) - 0.5) * 2.0;
+    float w1 = clamp((0.72 - light) * 1.5, 0.0, 0.6);
+    float w2 = clamp((0.4 - light) * 1.3, 0.0, 0.4);
+    float w3 = clamp((0.28 - light) * 1.5, 0.0, 0.42);
+    float a1 = fwidth(d1), a2 = fwidth(d2), a3 = fwidth(d3);
+    float ink = max(max(1.0 - smoothstep(w1 - a1, w1 + a1, d1), 1.0 - smoothstep(w2 - a2, w2 + a2, d2)), 1.0 - smoothstep(w3 - a3, w3 + a3, d3));
+    if (w1 <= 0.0) ink = 0.0;
+    ink *= 0.9;
+    // form lines: where the light turns quickly (muscle edges, creases), the pen draws a contour
+    float crease = max(smoothstep(0.1, 0.24, fwidth(light)), smoothstep(0.025, 0.07, fwidth(la)) * step(la, 0.6));
+    ink = max(ink, crease * 0.75);
+    vec3 inkCol = albedo * 0.22 + vec3(0.07, 0.07, 0.085);
+    col = mix(col, inkCol, ink * 0.82);
+    // sheen on the most lit planes
+    col = mix(col, vec3(1.0, 0.98, 0.94), smoothstep(1.02, 1.2, light) * 0.2 * smoothstep(0.12, 0.3, la));
+    outgoingLight = col;
+  }
+  #include <opaque_fragment>
+`;
+
+export type InkStyle = 'manga' | 'encre';
+
+export function toonMaterial(name: string, map: Texture | null, color?: Color, style: InkStyle = 'manga') {
+  if (style === 'encre') return inkMaterial(name, map, color);
   const m = new MeshLambertMaterial({ name, map, color: color ?? new Color(1, 1, 1) });
   m.onBeforeCompile = (shader) => {
     shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>', TOON_FRAGMENT);
@@ -34,8 +79,17 @@ export function toonMaterial(name: string, map: Texture | null, color?: Color) {
   return m;
 }
 
-export function outlineMaterial(width: number) {
-  const m = new MeshBasicMaterial({ color: '#141212', side: BackSide });
+function inkMaterial(name: string, map: Texture | null, color?: Color) {
+  const m = new MeshLambertMaterial({ name, map, color: color ?? new Color(1, 1, 1) });
+  m.onBeforeCompile = (shader) => {
+    shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>', INK_FRAGMENT);
+  };
+  m.customProgramCacheKey = () => 'ink-toon';
+  return m;
+}
+
+export function outlineMaterial(width: number, color = '#141212') {
+  const m = new MeshBasicMaterial({ color, side: BackSide });
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uOutline = { value: width };
     shader.vertexShader = shader.vertexShader
@@ -50,12 +104,13 @@ export function outlineMaterial(width: number) {
         #endif`,
       );
   };
-  m.customProgramCacheKey = () => `manga-outline-${width}`;
+  m.customProgramCacheKey = () => `manga-outline-${width}-${color}`;
   return m;
 }
 
 /** Replaces the materials of a coach with the manga look and adds the ink outlines. */
-export function applyManga(root: Object3D) {
+export function applyManga(root: Object3D, style: InkStyle = 'manga') {
+  const ink = style === 'encre';
   const outlines: [Object3D, SkinnedMesh][] = [];
   root.traverse((o) => {
     const mesh = o as Mesh;
@@ -63,11 +118,11 @@ export function applyManga(root: Object3D) {
     const old = mesh.material as MeshStandardMaterial;
     const name = (old.name || '').toLowerCase();
     const isEyes = name.startsWith('eye');
-    mesh.material = toonMaterial(old.name, old.map ?? null, old.map ? undefined : old.color?.clone());
+    mesh.material = toonMaterial(old.name, old.map ?? null, old.map ? undefined : old.color?.clone(), style);
     (old as Material).dispose();
     const sk = mesh as SkinnedMesh;
     if (!isEyes && sk.isSkinnedMesh) {
-      const line = new SkinnedMesh(sk.geometry, outlineMaterial(name.startsWith('hair') ? 0.0035 : 0.0045));
+      const line = new SkinnedMesh(sk.geometry, ink ? outlineMaterial(name.startsWith('hair') ? 0.0042 : 0.0058, '#1b1d22') : outlineMaterial(name.startsWith('hair') ? 0.0035 : 0.0045));
       line.bind(sk.skeleton, sk.bindMatrix);
       line.frustumCulled = false;
       line.position.copy(sk.position);
