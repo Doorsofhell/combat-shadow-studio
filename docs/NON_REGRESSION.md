@@ -16,6 +16,7 @@ chaque lot, point de restauration, rapport (TEST RÉUSSI / ÉCHOUÉ / NON EXÉCU
 | `restauration/lot-4g` | v0.13.0 (non publiée) | Coach IA : questions suggérées par technique, défilement au doigt, flèches, pas d'envoi en glissant, clavier non ouvert automatiquement |
 | `restauration/lot-5` | v0.13.0 | Illustration officielle par discipline depuis un référentiel central (10 écrans) ; BJJ et judo : techniques et parcours solo, fiches partenaire réel, badge de mode |
 | `restauration/lot-5c` | v0.13.1 | Textes lisibles en sombre dans le lecteur d'artifact (couleur et police du thème sur body) |
+| `restauration/lot-6a` | v0.14.0 | Style Encre par défaut ; relief anatomique cuit sur les 4 coachs (normal map conservée par les 3 styles) ; générateur dans `tools/generator` ; vignettes régénérées |
 | `restauration/lot-4e` | v0.11.0 | Images des techniques sur les cartes (coach 3D choisi), changement de coach femme depuis l’entraînement |
 | `restauration/lot-4d` | v0.10.0 | Repères au sol optionnels (pieds, orientation, avant/arrière, pivot, trajectoires) |
 | `restauration/lot-4c` | v0.9.0 | Commandes hiérarchisées, zone Caméra regroupée (angle, rotation, zoom, recentrer), progression |

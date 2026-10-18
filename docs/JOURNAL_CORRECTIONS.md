@@ -343,3 +343,15 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
   `src/ui/screens/Settings.tsx`, `CoachStudio.tsx`, `src/ui/Lab.tsx`, `public/models/*`, `public/thumbs/`,
   `tools/generator/*`, `docs/AUDIT_HUMANOIDES.md`, `README.md`, `docs/LICENCES.md`,
   `src/three/__tests__/models.test.ts`, `src/store/__tests__/settings-style.test.ts`.
+- **Tests** :
+  - compilation TypeScript : TEST RÉUSSI ;
+  - unitaires (198), dont 10 nouveaux : relief présent sur les 4 modèles, même squelette de 52 os que les
+    animations, relief conservé par les styles Encre et Manga ; migration du style enregistré : TEST RÉUSSI ;
+  - navigateur (57) : TEST RÉUSSI, en un seul passage ;
+  - vérification visuelle avant/après (face, dos, Encre, Manga, Réaliste, homme et femme) et contrôle de vignettes :
+    TEST RÉUSSI ;
+  - Firebase (2) : NON EXÉCUTÉ ; vrai téléphone Android : NON EXÉCUTÉ.
+- **Limites** : le relief change l'éclairage, pas la silhouette ; le relief féminin est volontairement plus discret
+  et reste peu visible en style Encre ; les images de choix du coach (`public/coaches/*.jpg`) sont encore les anciens
+  rendus.
+- **Restauration** : `restauration/lot-6a`
