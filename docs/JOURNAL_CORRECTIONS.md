@@ -389,3 +389,14 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
 - **Fichiers** : `src/engine/phases.ts` (nouveau), `src/engine/study.ts`, `src/ui/training/Study.tsx`,
   `src/ui/training/training.css`, `src/ui/screens/Training.tsx`, `src/three/StudyCues.tsx`,
   `src/engine/__tests__/phases.test.ts` (nouveau), `tests/e2e/training-layout.spec.ts`.
+- **Tests** :
+  - compilation TypeScript : TEST RÉUSSI ;
+  - unitaires (280), dont 82 nouveaux : phases du direct, de l'uppercut arrière, du middle-kick et de l'uchikomi,
+    cohérence des phases pour chaque technique solo dans les deux gardes, vitesse réelle puis ralenti, arrêt sur la
+    fin de chaque phase, reprise d'une phase, phase affichée : TEST RÉUSSI ;
+  - navigateur (58), dont 1 nouveau (phases, reprise d'une phase, comparaison des gardes, aucun débordement à
+    360 × 640) : TEST RÉUSSI ;
+  - contrôle visuel sur téléphone 390 × 780 (phases, pause, surbrillance du poing) : TEST RÉUSSI ;
+  - voix : NON EXÉCUTÉ automatiquement (synthèse vocale absente du navigateur de test) ;
+  - Firebase (2) : NON EXÉCUTÉ ; vrai téléphone Android : NON EXÉCUTÉ.
+- **Restauration** : `restauration/lot-6b`
