@@ -80,7 +80,7 @@ function straight(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
     id: `${side === 'L' ? 'jab' : 'direct'}${low ? '-corps' : ''}`,
     keys: [
       { t: 0, pose: g },
-      { t: t1, pose: ext, ease: 'snap' },
+      { t: t1, pose: ext, ease: 'strike' },
       { t: t1 + 0.04, pose: ext, ease: 'linear' },
       { t: t2, pose: g, ease: 'inOut' },
     ],
@@ -142,8 +142,8 @@ function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
     id: `crochet-${side === 'L' ? 'avant' : 'arriere'}${body ? '-corps' : ''}`,
     keys: [
       { t: 0, pose: g },
-      { t: t1, pose: wind, ease: 'inOut' },
-      { t: t2, pose: hit, ease: 'snap' },
+      { t: t1, pose: wind, ease: 'load' },
+      { t: t2, pose: hit, ease: 'strike' },
       { t: t2 + 0.03, pose: hit, ease: 'linear' },
       { t: t3, pose: g, ease: 'inOut' },
     ],
@@ -195,8 +195,8 @@ function uppercut(a: Author, side: 'L' | 'R'): Motion {
     id: `uppercut-${side === 'L' ? 'avant' : 'arriere'}`,
     keys: [
       { t: 0, pose: g },
-      { t: t1, pose: dip, ease: 'inOut' },
-      { t: t2, pose: hit, ease: 'snap' },
+      { t: t1, pose: dip, ease: 'load' },
+      { t: t2, pose: hit, ease: 'strike' },
       { t: t2 + 0.03, pose: hit, ease: 'linear' },
       { t: t3, pose: g, ease: 'inOut' },
     ],
@@ -237,8 +237,8 @@ function overhand(a: Author): Motion {
     id: 'overhand',
     keys: [
       { t: 0, pose: g },
-      { t: 0.14, pose: load, ease: 'inOut' },
-      { t: 0.32, pose: hit, ease: 'snap' },
+      { t: 0.14, pose: load, ease: 'load' },
+      { t: 0.32, pose: hit, ease: 'strike' },
       { t: 0.36, pose: hit, ease: 'linear' },
       { t: 0.62, pose: g, ease: 'inOut' },
     ],

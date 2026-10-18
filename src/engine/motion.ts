@@ -5,7 +5,7 @@ import { Quaternion, Vector3 } from 'three';
 import { Pose, ResolvedFoot, ResolvedHand, ResolvedPose, mirrorPose, quatFromRot, toVec } from './pose';
 import type { CoachRig } from './rig';
 
-export type Ease = 'linear' | 'inOut' | 'out' | 'in' | 'snap';
+export type Ease = 'linear' | 'inOut' | 'out' | 'in' | 'snap' | 'strike' | 'load';
 export type BodyState = 'stand' | 'ground';
 
 export interface Key {
@@ -53,6 +53,10 @@ export function ease(e: Ease | undefined, u: number) {
       return u * u * u;
     case 'snap': // explosive start, soft arrival
       return 1 - Math.pow(1 - u, 4);
+    case 'load': // loading before a blow: gentle, half the peak speed of 'inOut'
+      return (1 - Math.cos(Math.PI * u)) / 2;
+    case 'strike': // a blow: starts from rest, speeds up, peaks at 2/3 and still travels when it lands
+      return u * u * (2 - u);
     default:
       return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
   }

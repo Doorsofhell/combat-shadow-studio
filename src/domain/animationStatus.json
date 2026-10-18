@@ -1,0 +1,362 @@
+{
+ "garde": {
+  "status": "controlee",
+  "notes": []
+ },
+ "pas-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "pas-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "pas-gauche": {
+  "status": "controlee",
+  "notes": []
+ },
+ "pas-droite": {
+  "status": "controlee",
+  "notes": []
+ },
+ "pivot-droite": {
+  "status": "controlee",
+  "notes": []
+ },
+ "pivot-gauche": {
+  "status": "controlee",
+  "notes": []
+ },
+ "sortie-angle": {
+  "status": "controlee",
+  "notes": []
+ },
+ "jab": {
+  "status": "controlee",
+  "notes": []
+ },
+ "direct": {
+  "status": "controlee",
+  "notes": []
+ },
+ "jab-corps": {
+  "status": "controlee",
+  "notes": []
+ },
+ "direct-corps": {
+  "status": "controlee",
+  "notes": []
+ },
+ "crochet-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "crochet-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "crochet-avant-corps": {
+  "status": "controlee",
+  "notes": []
+ },
+ "crochet-arriere-corps": {
+  "status": "controlee",
+  "notes": []
+ },
+ "uppercut-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "uppercut-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "overhand": {
+  "status": "controlee",
+  "notes": []
+ },
+ "esquive-droite": {
+  "status": "controlee",
+  "notes": []
+ },
+ "esquive-gauche": {
+  "status": "controlee",
+  "notes": []
+ },
+ "roll-droite": {
+  "status": "controlee",
+  "notes": []
+ },
+ "roll-gauche": {
+  "status": "controlee",
+  "notes": []
+ },
+ "blocage-haut": {
+  "status": "controlee",
+  "notes": []
+ },
+ "blocage-corps-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "parade": {
+  "status": "controlee",
+  "notes": []
+ },
+ "retrait": {
+  "status": "controlee",
+  "notes": []
+ },
+ "check-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "check-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "front-kick-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "front-kick-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "teep-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "teep-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "low-kick-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "low-kick-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "middle-kick-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "middle-kick-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "high-kick-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "high-kick-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "roundhouse-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "roundhouse-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "genou-direct-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "genou-direct-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "genou-circulaire-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "genou-circulaire-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "coude-horizontal-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "coude-horizontal-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "coude-diagonal-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "coude-diagonal-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "coude-montant-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "coude-montant-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "clinch-tirage": {
+  "status": "controlee",
+  "notes": []
+ },
+ "genou-clinch": {
+  "status": "controlee",
+  "notes": []
+ },
+ "genou-circulaire-clinch": {
+  "status": "controlee",
+  "notes": []
+ },
+ "feinte-jab": {
+  "status": "controlee",
+  "notes": []
+ },
+ "feinte-epaule": {
+  "status": "controlee",
+  "notes": []
+ },
+ "feinte-lutte": {
+  "status": "controlee",
+  "notes": []
+ },
+ "changement-niveau": {
+  "status": "controlee",
+  "notes": []
+ },
+ "entree-lutte": {
+  "status": "controlee",
+  "notes": []
+ },
+ "sprawl": {
+  "status": "controlee",
+  "notes": []
+ },
+ "defense-lutte": {
+  "status": "controlee",
+  "notes": []
+ },
+ "descente-sol": {
+  "status": "controlee",
+  "notes": []
+ },
+ "sortie-hanche": {
+  "status": "controlee",
+  "notes": []
+ },
+ "releve-technique": {
+  "status": "controlee",
+  "notes": []
+ },
+ "garde-bjj": {
+  "status": "controlee",
+  "notes": []
+ },
+ "pont": {
+  "status": "controlee",
+  "notes": []
+ },
+ "retention-garde": {
+  "status": "controlee",
+  "notes": []
+ },
+ "changement-base": {
+  "status": "controlee",
+  "notes": []
+ },
+ "shizen-tai": {
+  "status": "controlee",
+  "notes": []
+ },
+ "tsugi-ashi-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "tsugi-ashi-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "tsugi-ashi-lateral": {
+  "status": "controlee",
+  "notes": []
+ },
+ "tai-sabaki": {
+  "status": "controlee",
+  "notes": []
+ },
+ "kuzushi": {
+  "status": "controlee",
+  "notes": []
+ },
+ "uchikomi-seoi": {
+  "status": "controlee",
+  "notes": []
+ },
+ "ukemi": {
+  "status": "non-implementee",
+  "notes": [
+   "fiche avec partenaire réel ; démonstration à deux personnages pas encore animée"
+  ]
+ },
+ "o-soto-gari": {
+  "status": "non-implementee",
+  "notes": [
+   "fiche avec partenaire réel ; démonstration à deux personnages pas encore animée"
+  ]
+ },
+ "o-goshi": {
+  "status": "non-implementee",
+  "notes": [
+   "fiche avec partenaire réel ; démonstration à deux personnages pas encore animée"
+  ]
+ },
+ "seoi-nage": {
+  "status": "non-implementee",
+  "notes": [
+   "fiche avec partenaire réel ; démonstration à deux personnages pas encore animée"
+  ]
+ },
+ "kesa-gatame": {
+  "status": "non-implementee",
+  "notes": [
+   "fiche avec partenaire réel ; démonstration à deux personnages pas encore animée"
+  ]
+ },
+ "garde-fermee": {
+  "status": "non-implementee",
+  "notes": [
+   "fiche avec partenaire réel ; démonstration à deux personnages pas encore animée"
+  ]
+ },
+ "passage-toreando": {
+  "status": "non-implementee",
+  "notes": [
+   "fiche avec partenaire réel ; démonstration à deux personnages pas encore animée"
+  ]
+ },
+ "controle-lateral": {
+  "status": "non-implementee",
+  "notes": [
+   "fiche avec partenaire réel ; démonstration à deux personnages pas encore animée"
+  ]
+ },
+ "montee": {
+  "status": "non-implementee",
+  "notes": [
+   "fiche avec partenaire réel ; démonstration à deux personnages pas encore animée"
+  ]
+ },
+ "cle-de-bras-garde": {
+  "status": "non-implementee",
+  "notes": [
+   "fiche avec partenaire réel ; démonstration à deux personnages pas encore animée"
+  ]
+ }
+}

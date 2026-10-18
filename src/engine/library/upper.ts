@@ -71,8 +71,8 @@ function elbow(a: Author, side: 'L' | 'R', kind: 'horizontal' | 'diagonal' | 'mo
     id: `coude-${names[kind]}-${side === 'L' ? 'avant' : 'arriere'}`,
     keys: [
       { t: 0, pose: g },
-      { t: 0.12, pose: wind, ease: 'inOut' },
-      { t: 0.26, pose: hit, ease: 'snap' },
+      { t: 0.12, pose: wind, ease: 'load' },
+      { t: 0.26, pose: hit, ease: 'strike' },
       { t: 0.3, pose: hit, ease: 'linear' },
       { t: 0.52, pose: g, ease: 'inOut' },
     ],

@@ -15,7 +15,7 @@ import type { TechniqueCategory } from '../domain/types';
 /** body parts a phase draws attention to (highlighted on the coach) */
 export type BodyFocus = 'footL' | 'footR' | 'hips' | 'shoulders' | 'handL' | 'handR';
 
-export type PhaseKind = 'depart' | 'appui' | 'niveau' | 'pas' | 'hanches' | 'epaules' | 'membre' | 'cle' | 'retour';
+export type PhaseKind = 'depart' | 'arme' | 'appui' | 'niveau' | 'pas' | 'hanches' | 'epaules' | 'membre' | 'cle' | 'retour';
 
 export interface TechniquePhase {
   kind: PhaseKind;
@@ -30,7 +30,7 @@ export interface TechniquePhase {
 
 const SAMPLES = 48;
 /** proximal to distal: order of segments whose work overlaps in time */
-const CHAIN: PhaseKind[] = ['pas', 'niveau', 'appui', 'hanches', 'epaules', 'membre'];
+const CHAIN: PhaseKind[] = ['arme', 'pas', 'niveau', 'appui', 'hanches', 'epaules', 'membre'];
 /** categories whose striking or defending limb gets its own phase */
 const LIMB_CATEGORIES: TechniqueCategory[] = ['poing', 'pied', 'genou', 'coude', 'defense', 'feinte'];
 const MAX_PHASES = 4;
@@ -147,10 +147,14 @@ export function techniquePhases(rig: CoachRig, m: Motion, category: TechniqueCat
     label: 'Déplacement',
     text: 'Le poids passe d’un appui à l’autre sans croiser les pieds.',
   });
+  // rotations count toward their final direction: turning the other way first is the loading ("armé")
+  const hipTurn = poses.map((p) => wrap(yawOf(p.pelvis) - yawOf(p0.pelvis)));
+  const hipDir = Math.sign(hipTurn[SAMPLES]) || 1;
+  const load = Math.min(...hipTurn.map((v) => v * hipDir));
   signals.push({
     kind: 'hanches',
     focus: ['hips'],
-    values: poses.map((p) => Math.abs(wrap(yawOf(p.pelvis) - yawOf(p0.pelvis)))),
+    values: hipTurn.map((v) => Math.max(0, v * hipDir)),
     min: 10 * DEG,
     label: 'Rotation des hanches',
     text: 'Les hanches tournent et transmettent la force du sol vers le haut du corps.',
@@ -159,7 +163,11 @@ export function techniquePhases(rig: CoachRig, m: Motion, category: TechniqueCat
   signals.push({
     kind: 'epaules',
     focus: ['shoulders'],
-    values: poses.map((p) => Math.abs(wrap(yawOf(shoulders(p)) - sh0))),
+    values: (() => {
+      const turn = poses.map((p) => wrap(yawOf(shoulders(p)) - sh0));
+      const dir = Math.sign(turn[SAMPLES]) || 1;
+      return turn.map((v) => Math.max(0, v * dir));
+    })(),
     min: 12 * DEG,
     label: 'Rotation des épaules',
     text: 'Les épaules suivent les hanches et amènent le bras.',
@@ -168,8 +176,23 @@ export function techniquePhases(rig: CoachRig, m: Motion, category: TechniqueCat
   const eff = (p: ResolvedPose) => (effector === 'handL' ? p.handL.pos : effector === 'handR' ? p.handR.pos : effector === 'footL' ? p.footL.ankle : p.footR.ankle);
   const e0 = eff(p0).clone();
   if (LIMB_CATEGORIES.includes(category)) {
-    signals.push({ kind: 'membre', focus: [effector], values: poses.map((p) => eff(p).distanceTo(e0)), min: 0.08, ...limbPhase(category, effector, leadSide, techniqueId) });
+    // progress toward the key position, so that a wind-up (fist drawn back or to the side) is not counted as the strike
+    const eKey = eff(poses[SAMPLES]).clone();
+    const d0 = e0.distanceTo(eKey);
+    signals.push({ kind: 'membre', focus: [effector], values: poses.map((p) => Math.max(0, d0 - eff(p).distanceTo(eKey))), min: 0.08, ...limbPhase(category, effector, leadSide, techniqueId) });
   }
+
+  // loading: the hips first turn the other way by more than 5°
+  const loading =
+    load < -5 * DEG
+      ? (() => {
+          const v = hipTurn.map((x) => Math.max(0, -x * hipDir));
+          const max = Math.max(...v);
+          const t0 = times[v.findIndex((x) => x >= max * 0.1)];
+          const t1 = times[v.indexOf(max)];
+          return { kind: 'arme' as const, label: 'Armé', text: 'Le corps se charge en tournant un peu dans l’autre sens : c’est l’élan du coup.', t0, t1: Math.max(t0, t1), focus: ['hips', effector] as BodyFocus[] };
+        })()
+      : null;
 
   let moving = signals.map((sg) => ({ sg, w: windowOf(sg.values, times) })).filter(({ sg, w }) => w.max >= sg.min);
   // hips and shoulders turning together are one phase
@@ -183,7 +206,7 @@ export function techniquePhases(rig: CoachRig, m: Motion, category: TechniqueCat
   // keep the segments that change the most (relative to their threshold), the working limb always
   const limbEntry = moving.find((x) => x.sg.kind === 'membre');
   const others = moving.filter((x) => x !== limbEntry).sort((x, y) => y.w.max / y.sg.min - x.w.max / x.sg.min);
-  moving = [...others.slice(0, limbEntry ? MAX_PHASES - 1 : MAX_PHASES), ...(limbEntry ? [limbEntry] : [])];
+  moving = [...others.slice(0, MAX_PHASES - (limbEntry ? 1 : 0) - (loading ? 1 : 0)), ...(limbEntry ? [limbEntry] : [])];
   // in time order; segments working at the same moment (within 10 % of the motion) from the ground up
   const tie = 0.1 * peak;
   moving.sort((x, y) => (Math.abs(x.w.mid - y.w.mid) < tie ? CHAIN.indexOf(x.sg.kind) - CHAIN.indexOf(y.sg.kind) : x.w.mid - y.w.mid));
@@ -191,6 +214,7 @@ export function techniquePhases(rig: CoachRig, m: Motion, category: TechniqueCat
   const keyLabel = m.impacts.length && ['poing', 'pied', 'genou', 'coude'].includes(category) ? 'Impact' : 'Position clé';
   const phases: TechniquePhase[] = [
     { kind: 'depart', label: 'Position de départ', text: 'Observe la garde : écart des pieds, mains, menton.', t0: 0, t1: 0, focus: [] },
+    ...(loading ? [loading] : []),
     ...moving.map(({ sg, w }) => ({ kind: sg.kind, label: sg.label, text: sg.text, t0: w.t0, t1: Math.max(w.t1, w.t0), focus: sg.focus })),
     { kind: 'cle', label: keyLabel, text: '', t0: peak, t1: peak, focus: [effector] },
   ];

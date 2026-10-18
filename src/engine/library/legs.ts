@@ -113,8 +113,8 @@ function roundKick(a: Author, side: LegSide, height: 'thigh' | 'liver' | 'head',
     keys: [
       { t: 0, pose: g },
       { t: t[0], pose: load, ease: 'inOut' },
-      { t: t[1], pose: chamber, ease: 'inOut' },
-      { t: t[2], pose: hit, ease: 'snap' },
+      { t: t[1], pose: chamber, ease: 'load' },
+      { t: t[2], pose: hit, ease: 'strike' },
       { t: t[3], pose: back, ease: 'inOut' },
       { t: t[4], pose: land, ease: 'inOut' },
     ],
@@ -156,8 +156,8 @@ function straightKick(a: Author, side: LegSide, kind: 'teep' | 'front'): Motion 
     id: kind === 'teep' ? `teep-${side === 'lead' ? 'avant' : 'arriere'}` : `front-kick-${side === 'lead' ? 'avant' : 'arriere'}`,
     keys: [
       { t: 0, pose: g },
-      { t: 0.18, pose: chamber, ease: 'inOut' },
-      { t: 0.32, pose: hit, ease: 'snap' },
+      { t: 0.18, pose: chamber, ease: 'load' },
+      { t: 0.32, pose: hit, ease: 'strike' },
       { t: kind === 'teep' ? 0.4 : 0.36, pose: hit, ease: 'linear' },
       { t: 0.54, pose: chamber, ease: 'inOut' },
       { t: 0.74, pose: land, ease: 'inOut' },
@@ -232,8 +232,8 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
     id: `genou-${kind === 'round' ? 'circulaire' : 'direct'}-${side === 'lead' ? 'avant' : 'arriere'}${clinch ? '-clinch' : ''}`,
     keys: [
       { t: 0, pose: g },
-      { t: 0.16, pose: load, ease: 'inOut' },
-      { t: 0.34, pose: hit, ease: 'snap' },
+      { t: 0.16, pose: load, ease: 'load' },
+      { t: 0.34, pose: hit, ease: 'strike' },
       { t: 0.4, pose: hit, ease: 'linear' },
       // hands back in guard first, while the knee is still up: the return never squeezes an elbow
       { t: 0.48, pose: guardHands, ease: 'inOut' },

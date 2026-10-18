@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { DISCIPLINES, DisciplineId, LEVELS, LevelId, TechniqueMode } from '../../domain/types';
 import { MODE_LABEL } from '../../domain/partner';
+import { STATUS_HELP, STATUS_LABEL, animationStatusOf } from '../../domain/animationStatus';
 import { IconChevron, IconStarFilled } from '../icons';
 import { DisciplineArtwork } from './DisciplineArtwork';
 
@@ -37,6 +38,17 @@ export function ModeBadge({ mode = 'solo' }: { mode?: TechniqueMode }) {
   return (
     <span className={`badge mode-${mode} ${mode === 'partenaire' ? 'red' : mode === 'duo' ? 'gold' : ''}`} data-testid="mode-badge" data-mode={mode}>
       {MODE_LABEL[mode]}
+    </span>
+  );
+}
+
+/** state of the technique's animation (registry of automatic checks), with its meaning on hover / long press */
+export function AnimationBadge({ id }: { id: string }) {
+  const st = animationStatusOf(id);
+  if (!st) return null;
+  return (
+    <span className={`badge ${st.status === 'a-corriger' ? 'red' : st.status === 'validee' ? 'gold' : ''}`} title={STATUS_HELP[st.status]} data-testid="animation-status" data-status={st.status}>
+      Animation : {STATUS_LABEL[st.status].toLowerCase()}
     </span>
   );
 }

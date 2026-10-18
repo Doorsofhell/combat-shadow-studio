@@ -15,7 +15,7 @@ import type { ComboPlayer, PlayerEvents } from '../../engine/player';
 import { playerSteps } from '../training/plan';
 import { say } from '../../audio/voice';
 import { GuideCard } from '../GuideCard';
-import { DisciplineArtwork, DisciplineLabel, ModeBadge, CameraControls, EmptyState, EntryCard, FilterChips, LevelSelector, PageHead, PlaybackControls, SectionHead, Tabs, TechniqueCard } from '../components';
+import { AnimationBadge, DisciplineArtwork, DisciplineLabel, ModeBadge, CameraControls, EmptyState, EntryCard, FilterChips, LevelSelector, PageHead, PlaybackControls, SectionHead, Tabs, TechniqueCard } from '../components';
 import { ExerciseList, ExerciseSheet } from './Discipline';
 import { IconChevron, IconLayers, IconPlus, IconStar, IconStarFilled, IconTrend, IconTrophy } from '../icons';
 import { CHAMPIONS_AVAILABLE } from './features';
@@ -289,6 +289,7 @@ export function TechniquePage() {
       <CameraControls value={cam} onChange={setCam} />
       <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
         <ModeBadge mode={t.mode} />
+        <AnimationBadge id={t.id} />
       </div>
       <p>{t.description}</p>
       {t.soloNote && <div className="note">{t.soloNote}</div>}
@@ -318,6 +319,7 @@ export function PartnerPage() {
       <PageHead title={p.name} eyebrow={PARTNER_CATEGORY_LABEL[p.category]} fallback={`/techniques?d=${p.discipline}`} />
       <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
         <ModeBadge mode={p.mode} />
+        <AnimationBadge id={p.id} />
         <DisciplineLabel id={p.discipline} name={disc.name} />
       </div>
       <p>{p.description}</p>
