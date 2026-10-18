@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: apk
+  cancel-in-progress: true
+
 jobs:
   apk:
     runs-on: ubuntu-latest
@@ -51,3 +55,16 @@ jobs:
           git -c user.name="github-actions" -c user.email="github-actions@users.noreply.github.com" add "$F"
           git -c user.name="github-actions" -c user.email="github-actions@users.noreply.github.com" commit -qm "APK de test $F (${GITHUB_SHA::7})"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" apk-builds
+      # versioned pre-release on GitHub with the APK attached (test build, not the Play Store one)
+      - name: Pré-version GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          F=${{ steps.name.outputs.file }}
+          V=$(node -p "require('./package.json').version")
+          NOTES="APK de test Android de Combat Shadow Studio v$V, signé avec une clé de debug (installation manuelle, pas pour le Play Store). Pour installer une version suivante, désinstalle d'abord celle-ci. Commit ${GITHUB_SHA::7}."
+          if gh release view "v$V" >/dev/null 2>&1; then
+            gh release upload "v$V" "$F" --clobber
+          else
+            gh release create "v$V" "$F" --target "$GITHUB_SHA" --prerelease --title "Combat Shadow Studio v$V (APK de test)" --notes "$NOTES"
+          fi

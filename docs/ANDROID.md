@@ -16,6 +16,15 @@ compilation reproductible ; rien n’a encore été compilé pour publication.
 - JDK 21, Android SDK (plateforme 36, build-tools 36), Node 22.
 - `ANDROID_HOME` pointant vers le SDK (ou `android/local.properties` avec `sdk.dir=...`, jamais versionné).
 
+## APK de test construit sur GitHub
+
+L’environnement de développement ne peut pas télécharger le SDK Android (dl.google.com bloqué). Le workflow
+`.github/workflows/android-apk.yml` construit donc l’APK de test sur GitHub Actions : à chaque push sur la branche
+`build/apk` (ou lancement manuel), il lance les tests, `npm run android:apk-test`, puis publie
+`combat-shadow-studio-vX.Y.Z-test.apk` en artefact, sur la branche `apk-builds` et dans une pré-version GitHub `vX.Y.Z` (Releases). APK signé avec une clé de debug
+générée par le runner : pour installer une version suivante, désinstaller d’abord la précédente. Aucun AAB de
+publication n’est construit sur GitHub.
+
 ## Numéro de version
 
 `scripts/android-version.mjs` lit `version` dans `package.json` et écrit `android/version.properties` :
