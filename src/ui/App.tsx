@@ -27,6 +27,7 @@ const Programs = lazy(() => import('./screens/Programs').then((m) => ({ default:
 const ProgramPage = lazy(() => import('./screens/Programs').then((m) => ({ default: m.ProgramPage })));
 const Builder = lazy(() => import('./screens/Builder').then((m) => ({ default: m.Builder })));
 const Stats = lazy(() => import('./screens/Stats').then((m) => ({ default: m.Stats })));
+const Goals = lazy(() => import('./screens/Stats').then((m) => ({ default: m.Goals })));
 const History = lazy(() => import('./screens/Stats').then((m) => ({ default: m.History })));
 const SettingsPage = lazy(() => import('./screens/Settings').then((m) => ({ default: m.SettingsPage })));
 const Privacy = lazy(() => import('./screens/Privacy').then((m) => ({ default: m.Privacy })));
@@ -97,7 +98,7 @@ const NAV = [
   { to: '/entrainer', label: 'Entraîner', icon: <AppIcon id="train" />, match: ['/entrainer', '/discipline', '/programmes'] },
   { to: '/techniques', label: 'Techniques', icon: <AppIcon id="techniques" />, match: ['/techniques', '/createur', '/champions'] },
   { to: '/combattant', label: 'Coach', icon: <AppIcon id="coach" />, match: ['/combattant', '/coach', '/coach-ia'] },
-  { to: '/stats', label: 'Progrès', icon: <AppIcon id="progress" />, match: ['/stats', '/historique'] },
+  { to: '/stats', label: 'Progrès', icon: <AppIcon id="progress" />, match: ['/stats', '/historique', '/objectifs'] },
 ];
 
 function Nav() {
@@ -168,6 +169,7 @@ export function App() {
             <Route path="/champions/:id" element={<ComboPage />} />
             <Route path="/stats" element={<Stats />} />
             <Route path="/historique" element={<History />} />
+            <Route path="/objectifs" element={<Goals />} />
             <Route path="/reglages" element={<SettingsPage />} />
             <Route path="/confidentialite" element={<Privacy />} />
             <Route path="/connexion" element={<SignIn />} />

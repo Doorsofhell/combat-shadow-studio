@@ -647,3 +647,49 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
     hypothèses non encore vérifiées ;
   - vrai téléphone Android : NON EXÉCUTÉ.
 - **Restauration** : `restauration/lot-11`
+
+## 2026-10-19 · v0.22.0 · Lot 12 : menu Progrès avec analyse temporelle
+
+- **Demande** : refondre le menu Progrès en tableau de bord sans défilement, avec des périodes comparées à la période
+  précédente de même durée, une jauge du parcours, des onglets et des données fiables.
+- **Constat après vérification (audit de l'écran v0.21.0)** :
+  - écran à faire défiler (tuiles, objectifs, graphique, listes, dernières séances), sans choix de période ;
+  - totaux calculés sur toute l'histoire, sans comparaison ; graphique semaines / mois sans période précédente ;
+  - données fiables à la source : le temps actif exclut les pauses (`useSession.ts`), une ligne par séance et par
+    exercice, import sans doublon ;
+  - deux limites : le nombre de séances ne distinguait pas les périodes, et rien ne mesurait la couverture du
+    parcours (aucune mesure de maîtrise n'existe, et il n'en faut pas sans capteur).
+- **Correction** :
+  - `src/domain/progress.ts` (nouveau) : périodes 7 j, 30 j, 90 j, 12 mois (365 j) et personnalisée, période
+    précédente de même durée, jours du calendrier local (changement d'heure compris), totaux sans double compte,
+    écarts sans division par zéro (« Nouvelle activité », « stable » sous 5 %, « non comparable »), colonnes
+    alignées entre les deux périodes, répartitions par niveau, catégorie et exercice, couverture du parcours ;
+  - `src/ui/screens/progress/` (nouveau) : écran d'une seule hauteur (discipline, période, jauge, temps actif,
+    séances, répétitions, zone de graphiques à 5 onglets), volets de détail (comparaison des 6 mesures, parcours,
+    listes complètes, détail d'une séance), filtres niveau et catégorie, période personnalisée ;
+  - `src/store/progressView.ts` (nouveau) : vue choisie mémorisée, séparée des séances ;
+  - page « Objectifs » (`/objectifs`) : objectifs et techniques favorites conservés tels quels ;
+  - couleurs : rouge (période actuelle) et bleu (période précédente) contrôlés pour le daltonisme et le contraste
+    sur fonds sombre et clair ; états avec flèche et mots, jamais la couleur seule ;
+  - `docs/PROGRES.md` : règles de calcul.
+- **Limites** : la jauge compte les techniques pratiquées, pas leur maîtrise ; une combinaison personnelle supprimée
+  ne permet plus de retrouver ses techniques (signalé dans le détail) ; téléphone couché : la page défile ; vrai
+  téléphone Android : non vérifié.
+- **Fichiers** : `src/domain/progress.ts`, `src/domain/__tests__/progress.test.ts`, `src/store/progressView.ts`,
+  `src/account/scope.ts`, `src/ui/screens/progress/Dashboard.tsx`, `src/ui/screens/progress/charts.tsx`,
+  `src/ui/screens/Stats.tsx`, `src/ui/App.tsx`, `src/ui/styles.css`, `tests/e2e/progress-dashboard.spec.ts`,
+  `tests/e2e/progress-seed.ts`, `docs/PROGRES.md`.
+- **Tests** :
+  - `tsc` : TEST RÉUSSI ; tests unitaires : TEST RÉUSSI (337 réussis, 1 ignoré), dont 18 nouveaux sur les périodes
+    (hausse, baisse, égalité, période précédente vide, période actuelle vide, période personnalisée, discipline,
+    filtres, double compte, colonnes, parcours), passés dans 4 fuseaux horaires (Paris, New York, Tokyo, UTC) ;
+  - nouveaux tests de bout en bout `progress-dashboard.spec` : les 10 cas demandés, dont l'absence de défilement
+    vertical en 360×640, 360×740 et 412×915, thèmes clair et sombre, sur les 5 onglets ; plus le contraste avec
+    données sur les 5 onglets : TEST RÉUSSI (17/17) ;
+  - Playwright complet : 73 réussis, 3 échoués, 2 ignorés au premier passage. Deux échecs venaient de ce lot : le
+    chiffre de la jauge était peint en SVG sans la couleur du texte, ce que le contrôle de contraste ne savait pas
+    lire. Corrigé (couleur du texte appliquée), puis relance de `contrast`, `progress-dashboard`, `app` et
+    `discipline-art` : 35/35 réussis. Le troisième est le double tap du coach IA, instable déjà avant ce lot :
+    3/3 réussis en relance ;
+  - vrai téléphone Android : NON EXÉCUTÉ.
+- **Restauration** : `restauration/lot-12`
