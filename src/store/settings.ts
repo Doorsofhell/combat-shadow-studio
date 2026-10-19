@@ -48,6 +48,8 @@ export interface Settings {
   groundMarks: Record<GroundMarkId, boolean>;
   defaultRoundSec: number;
   defaultRestSec: number;
+  /** kick-boxing rule set shown in the lists (K1, low kick, full contact) or every technique */
+  kickboxingStyle: import('../domain/kickboxingStyles').KbStyleChoice;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -67,6 +69,7 @@ export const DEFAULT_SETTINGS: Settings = {
   groundMarks: { pieds: false, orientation: false, avantArriere: false, pivot: false, trajectoire: false },
   defaultRoundSec: 180,
   defaultRestSec: 60,
+  kickboxingStyle: 'tous',
 };
 
 interface SettingsState {

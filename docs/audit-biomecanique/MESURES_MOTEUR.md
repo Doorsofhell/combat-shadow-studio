@@ -91,7 +91,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 
 ## Transitions dans les exercices
 
-208 exercices joués deux fois avec le lecteur d’enchaînements de l’application, à 60 images/s. « Ajouté par la transition » : glissement maximal dans l’enchaînement moins le plus grand glissement des techniques jouées seules.
+218 exercices joués deux fois avec le lecteur d’enchaînements de l’application, à 60 images/s. « Ajouté par la transition » : glissement maximal dans l’enchaînement moins le plus grand glissement des techniques jouées seules.
 
 | Exercice | Enchaînement | Saut max entre deux images (cm) | Glissement max (cm / image) | Ajouté par la transition (cm / image) |
 |---|---|---|---|---|
@@ -152,6 +152,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `bjj-avance-04` | descente-sol → pont → pont → sortie-hanche → sortie-hanche → releve-technique | 17,3 | 11,09 | 0,00 |
 | `bjj-expert-03` | descente-sol → retention-garde → pont → sortie-hanche → retention-garde → releve-technique | 17,3 | 11,09 | 0,00 |
 | `muaythai-expert-01` | jab → direct → crochet-avant → coude-horizontal-arriere → genou-direct-arriere → low-kick-arriere | 19,9 | 0,68 | 0,00 |
+| `kickboxing-expert-12` | jab → direct → genou-direct-arriere → crochet-avant → low-kick-arriere | 16,5 | 0,68 | 0,00 |
 | `muaythai-expert-05` | jab → direct → crochet-avant → direct → low-kick-arriere → teep-avant → jab → direct → genou-direct-arriere → coude-horizontal-avant | 19,9 | 0,68 | 0,00 |
 | `muaythai-expert-07` | pas-avant → jab → direct → pas-avant → genou-direct-arriere → coude-horizontal-avant → pas-arriere → teep-avant | 19,9 | 1,03 | 0,00 |
 | `muaythai-expert-08` | teep-avant → jab → direct → low-kick-arriere → check-avant → middle-kick-arriere → genou-direct-arriere | 19,9 | 0,69 | 0,00 |
@@ -162,9 +163,14 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `muaythai-debutant-11` | jab → direct → genou-direct-arriere | 19,9 | 0,23 | 0,00 |
 | `muaythai-avance-01` | jab → direct → crochet-avant → genou-direct-arriere | 19,9 | 0,23 | 0,00 |
 | `muaythai-expert-03` | check-avant → blocage-haut → esquive-droite → direct → coude-horizontal-avant → genou-direct-arriere | 19,9 | 0,23 | 0,00 |
+| `kickboxing-debutant-12` | genou-direct-arriere | 16,5 | 0,23 | 0,00 |
+| `kickboxing-debutant-13` | jab → direct → genou-direct-arriere | 16,5 | 0,23 | 0,00 |
+| `kickboxing-intermediaire-13` | jab → crochet-avant → genou-direct-arriere | 16,5 | 0,23 | 0,00 |
 | `mma-expert-10` | jab → direct → genou-direct-arriere → crochet-avant → uppercut-arriere | 15,2 | 0,23 | 0,00 |
 | `mma-avance-07` | jab → direct → genou-direct-arriere | 15,2 | 0,23 | 0,00 |
+| `kickboxing-avance-12` | jab → direct → middle-kick-arriere → genou-direct-arriere | 16,5 | 0,40 | 0,00 |
 | `kickboxing-avance-09` | jab-corps → direct → crochet-avant-corps → middle-kick-arriere | 15,8 | 0,40 | 0,00 |
+| `kickboxing-intermediaire-12` | genou-circulaire-arriere | 15,2 | 0,29 | 0,00 |
 | `muaythai-intermediaire-08` | genou-circulaire-arriere | 18,4 | 0,29 | 0,00 |
 | `muaythai-avance-04` | clinch-tirage → genou-clinch → genou-circulaire-clinch → genou-clinch | 19,9 | 0,29 | 0,00 |
 | `muaythai-expert-04` | clinch-tirage → genou-clinch → genou-circulaire-clinch → genou-clinch → coude-diagonal-arriere → coude-montant-arriere | 19,9 | 0,29 | 0,00 |
@@ -174,4 +180,4 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `muaythai-expert-09` | direct → crochet-avant → middle-kick-arriere → direct → genou-direct-arriere → coude-horizontal-arriere → high-kick-arriere | 19,9 | 0,34 | 0,00 |
 | `mma-expert-04` | defense-lutte → sprawl → direct → crochet-avant → uppercut-arriere → crochet-avant | 15,6 | 4,81 | 0,00 |
 
-Exercices sans glissement ajouté de plus de 0,5 cm par image ni saut de plus de 15 cm : 130 sur 208.
+Exercices sans glissement ajouté de plus de 0,5 cm par image ni saut de plus de 15 cm : 134 sur 218.

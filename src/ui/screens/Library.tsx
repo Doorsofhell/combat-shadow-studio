@@ -16,7 +16,8 @@ import type { ComboPlayer, PlayerEvents } from '../../engine/player';
 import { playerSteps } from '../training/plan';
 import { say } from '../../audio/voice';
 import { GuideCard } from '../GuideCard';
-import { AnimationBadge, DisciplineLabel, ModeBadge, CameraControls, EmptyState, EntryCard, FilterChips, LevelSelector, PageHead, PlaybackControls, SectionHead, Tabs, TechniqueCard } from '../components';
+import { AnimationBadge, DisciplineLabel, ModeBadge, CameraControls, EmptyState, EntryCard, FilterChips, KbOnlyBadge, KickboxingRulesCard, KickboxingStylePicker, LevelSelector, PageHead, PlaybackControls, SectionHead, Tabs, TechniqueCard, useKbStyle } from '../components';
+import { filterExercises, filterTechniques } from '../../domain/kickboxingStyles';
 import { ExerciseList, ExerciseSheet } from './Discipline';
 import { AppIcon, DisciplineIcon } from '../icons';
 import { CHAMPIONS_AVAILABLE } from './features';
@@ -68,13 +69,15 @@ function DisciplineFilter({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId
 function TechniquesTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) => void }) {
   const [cat, setCat] = useState<Technique['category'] | 'tout'>('tout');
   const fav = useGoals((s) => s.favTechniques);
-  const list = techniquesFor(d);
+  const [kbStyle] = useKbStyle();
+  const list = filterTechniques(techniquesFor(d), d, kbStyle);
   const cats = [...new Set(list.map((t) => t.category))];
   const shown = cat === 'tout' ? list : list.filter((t) => t.category === cat);
   const partner = partnerFor(d);
   return (
     <>
       <DisciplineFilter d={d} setD={(x) => (setD(x), setCat('tout'))} />
+      {d === 'kickboxing' && <KickboxingStylePicker />}
       <FilterChips
         scroll
         label="Catégorie"
@@ -84,7 +87,15 @@ function TechniquesTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) =
       />
       <div className="stack" style={{ gap: 8 }}>
         {shown.map((t) => (
-          <TechniqueCard key={t.id} to={`/techniques/${t.id}?d=${d}`} title={t.name} description={t.description} thumb={t.id} favorite={fav.includes(t.id)} />
+          <TechniqueCard
+            key={t.id}
+            to={`/techniques/${t.id}?d=${d}`}
+            title={t.name}
+            description={t.description}
+            thumb={t.id}
+            favorite={fav.includes(t.id)}
+            meta={d === 'kickboxing' ? <KbOnlyBadge id={t.id} /> : undefined}
+          />
         ))}
       </div>
       <p className="small muted">{TECHNIQUES.length} techniques au total, chacune animée sur ton combattant 3D.</p>
@@ -107,11 +118,13 @@ function CombosTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) => vo
   const levels = useProfile((s) => s.profile.levels);
   const [lvl, setLvl] = useState<LevelId>(levels[d]);
   const [open, setOpen] = useState<string | null>(null);
-  const list = EXERCISES.filter((e) => e.discipline === d && e.level === lvl && e.kind === 'combinaison');
+  const [kbStyle] = useKbStyle();
+  const list = filterExercises(EXERCISES.filter((e) => e.discipline === d && e.level === lvl && e.kind === 'combinaison'), kbStyle);
   const ex = open ? EXERCISE_BY_ID.get(open) : undefined;
   return (
     <>
       <DisciplineFilter d={d} setD={(x) => (setD(x), setLvl(levels[x]))} />
+      {d === 'kickboxing' && <KickboxingStylePicker />}
       <LevelSelector value={lvl} onChange={setLvl} />
       <ExerciseList list={list} onOpen={setOpen} />
       {ex && <ExerciseSheet ex={ex} onClose={() => setOpen(null)} />}
@@ -295,6 +308,7 @@ export function TechniquePage() {
       <p>{t.description}</p>
       {t.soloNote && <div className="note">{t.soloNote}</div>}
       <GuideCard id={t.id} southpaw={profile.guard === 'gaucher'} />
+      {d === 'kickboxing' && <KickboxingRulesCard id={t.id} />}
       <div className="card stack">
         <h3>Consignes du coach</h3>
         <ul className="plain-list">

@@ -39,8 +39,8 @@ Priorité : **P1** = contredit une source ou risque de sécurité non signalé ;
 | 24 | `tai-sabaki` | Le geste montré est un mae-mawari-sabaki | jb-S12 | À faire |
 | 25 | `kuzushi` | Une seule direction présentée comme « le » kuzushi | jb-S12 | À faire |
 | 26 | `montee` | « Assis sur le ventre » s’écarte d’une source (poids sur le haut de la poitrine) | jb-S47 | À vérifier (source de self-défense) |
-| 27 | Roundhouse en kick-boxing | Seul le cou-de-pied est cité ; le tibia est autorisé selon le style | kbmt-S15, S19 | À faire |
-| 28 | Genoux | Absents du kick-boxing alors qu’autorisés en K1 | kbmt-S15, S16 | À faire |
+| 27 | Roundhouse en kick-boxing | Seul le cou-de-pied est cité ; le tibia est autorisé selon le style | kbmt-S15, S19, S45 | Corrigé v0.21.0 : surface autorisée indiquée par style sur la fiche (K1, low kick, full contact) |
+| 28 | Genoux | Absents du kick-boxing alors qu’autorisés en K1 | kbmt-S15, S16, S45 | Corrigé v0.21.0 : 4 genoux ajoutés au kick-boxing, proposés seulement en K1 |
 | 29 | Coudes | Aucune mention de sécurité ni d’âge | kbmt-S10, S15, S16 | À faire |
 | 30 | `releve-technique` | Main et pied opposés, se relever en s’éloignant, base large | mma-S19, S20 | À faire |
 | 31 | `pivot-*`, `sortie-angle` | Aucune source consultée ne les décrit | — | À documenter |

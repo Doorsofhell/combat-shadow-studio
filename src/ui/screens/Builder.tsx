@@ -6,7 +6,8 @@ import { isPlayable, validateSequence } from '../../domain/transitions';
 import { useCustom } from '../../store/custom';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { DisciplineLabel, PageHead, Segmented, Tabs, toast } from '../components';
+import { DisciplineLabel, KickboxingStylePicker, PageHead, Segmented, Tabs, toast, useKbStyle } from '../components';
+import { filterTechniques } from '../../domain/kickboxingStyles';
 import { RoundOptions } from './Discipline';
 import { AppIcon, DisciplineIcon } from '../icons';
 
@@ -27,7 +28,8 @@ export function Builder() {
   const issues = validateSequence(seq, d);
   const playable = seq.length > 0 && isPlayable(issues);
   const bad = new Set(issues.filter((i) => i.level === 'erreur' && i.index !== undefined).map((i) => i.index));
-  const palette = techniquesFor(d);
+  const [kbStyle] = useKbStyle();
+  const palette = filterTechniques(techniquesFor(d), d, kbStyle);
   const cats = [...new Set(palette.map((t) => t.category))];
 
   const store = () => {
@@ -52,6 +54,7 @@ export function Builder() {
     <div className="page">
       <PageHead title="Créateur d’enchaînements" eyebrow="Personnalisé" fallback="/techniques?tab=createur" />
       <Tabs label="Discipline" items={DISCIPLINES.map((x) => ({ id: x.id, label: x.short, icon: <DisciplineIcon id={x.id} size={24} /> }))} value={d} onChange={setD} />
+      {d === 'kickboxing' && <KickboxingStylePicker />}
 
       <div className="stack">
         <span className="label">

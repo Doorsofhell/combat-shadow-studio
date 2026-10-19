@@ -604,3 +604,46 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
   - Playwright complet : TEST RÉUSSI (59 réussis, 2 ignorés, aucun échec au premier passage) ;
   - vrai téléphone Android : NON EXÉCUTÉ.
 - **Restauration** : `restauration/lot-10`
+
+## 2026-10-19 · v0.21.0 · Lot 11 : kick-boxing en trois styles
+
+- **Demande** : pour le kick-boxing, garder tous les styles (K1, low kick, full contact).
+- **Constat après vérification** : l'application proposait un seul kick-boxing, sans dire quelles règles il suivait.
+  Les low kicks y figuraient alors qu'ils sont interdits en full contact. Les genoux en étaient absents alors qu'ils
+  sont autorisés en K1 (anomalie 28). La fiche du roundhouse ne citait que le cou-de-pied (anomalie 27). Aucun
+  règlement full contact n'avait été lu.
+- **Correction** :
+  - nouveau règlement lu : règles amateur de kick-boxing de l'Ontario, qui décrivent les trois styles (source
+    kbmt-S45), en plus des règles WAKO du low kick (kbmt-S15) et du K1 (kbmt-S16) ;
+  - `src/domain/kickboxingStyles.ts` : pour chaque style, ce que les règles autorisent, avec la règle et la source.
+    Full contact : pas de low kick ni de genou, check non proposé. Low kick : low kicks à la cuisse, pas de genou.
+    K1 : low kicks et genoux. Coudes et clinch absents des trois styles ;
+  - choix « Tous les styles / K1 / Low kick / Full contact » sur la page Kick-boxing, dans Techniques (techniques et
+    combinaisons) et dans le Créateur. Le choix est enregistré dans les réglages. En « Tous les styles », une
+    étiquette indique les techniques réservées à certains styles (« K1 seulement ») ;
+  - fiche d'une technique en kick-boxing : carte « Selon le style de kick-boxing » (autorisé, interdit ou non
+    proposé, la précision du règlement et sa source) ;
+  - les 4 genoux (définitions communes avec le muay-thaï, non dupliquées) sont ajoutés au kick-boxing ;
+  - 12 exercices ajoutés à la fin de chaque niveau, sans changer les identifiants existants : 6 avec genoux (K1) et
+    6 sans coup de pied aux jambes, pour que chaque style garde au moins 5 exercices par niveau.
+- **Limites** : résumés de règlements lus par un lecteur web, à vérifier sur les textes ; les règlements divergent
+  sur le clinch en K1 (interdit à la WAKO, permis en Ontario) et le texte de l'Ontario se contredit sur les genoux
+  en K1 (3.3.3 contre 5.3.1). Les programmes et les légendes ne sont pas filtrés par style. Aucune animation
+  nouvelle : les genoux réutilisent les animations du muay-thaï. Vrai téléphone : non vérifié.
+- **Fichiers** : `src/domain/kickboxingStyles.ts` (nouveau), `src/domain/techniques.ts`, `src/domain/exercises.ts`,
+  `src/domain/biomech/sources.ts`, `src/store/settings.ts`, `src/ui/components/KickboxingStyle.tsx` (nouveau),
+  `src/ui/screens/Discipline.tsx`, `Library.tsx`, `Builder.tsx`, `tests/e2e/kickboxing-style.spec.ts` (nouveau),
+  `src/domain/__tests__/kickboxingStyles.test.ts` (nouveau), documents d'audit (BIBLIOGRAPHIE, ANOMALIES,
+  PLAN_CORRECTION, recherche) et documents générés (ANIMATIONS, INVENTAIRE, MESURES_MOTEUR).
+- **Tests** :
+  - `tsc` : TEST RÉUSSI ; tests unitaires : TEST RÉUSSI (319 réussis, 1 ignoré), dont 7 nouveaux sur les styles ;
+  - Playwright complet : 58 réussis, 3 échoués, 2 ignorés au premier passage. Les 2 nouveaux tests des styles : TEST
+    RÉUSSI. Le panneau du coach à 360×640 (instabilité déjà connue) : 3/3 réussis en relance. Deux tests du coach IA
+    (défilement des questions suggérées, double tap) : ÉCHOUÉ par intermittence, 1 réussite sur 3 relances chacun ;
+    relancés aussi sur la v0.20.0 non modifiée, ils y échouent de la même façon (2 et 1 échecs sur 3) : défaut
+    antérieur à ce lot, sur des écrans que ce lot ne touche pas, à corriger dans un lot dédié. Causes probables lues
+    dans les journaux de test : le test touche la flèche « précédent » au moment où elle se désactive en fin de
+    défilement, et l'historique est relu après un rechargement de page qui peut interrompre son enregistrement ;
+    hypothèses non encore vérifiées ;
+  - vrai téléphone Android : NON EXÉCUTÉ.
+- **Restauration** : `restauration/lot-11`

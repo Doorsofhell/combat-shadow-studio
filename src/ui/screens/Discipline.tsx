@@ -9,7 +9,8 @@ import { useSettings } from '../../store/settings';
 import { formatDuration, useStats } from '../../store/stats';
 import { useGoals } from '../../store/goals';
 import { MODE_HELP, MODE_LABEL } from '../training/plan';
-import { DisciplineArtwork, EmptyState, FilterChips, LevelSelector, PageHead, Segmented, Sheet } from '../components';
+import { DisciplineArtwork, EmptyState, FilterChips, KickboxingStylePicker, LevelSelector, PageHead, Segmented, Sheet, useKbStyle } from '../components';
+import { filterExercises } from '../../domain/kickboxingStyles';
 import { AppIcon, DisciplineIcon } from '../icons';
 
 export const KIND_LABEL: Record<Exercise['kind'], string> = {
@@ -59,11 +60,12 @@ export function DisciplinePage() {
   const [q, setQ] = useSearchParams();
   const profile = useProfile((s) => s.profile);
   const [kind, setKind] = useState<KindFilter>('tout');
+  const [kbStyle] = useKbStyle();
   const disc = DISCIPLINES.find((d) => d.id === id);
   if (!disc) return <EmptyState title="Discipline introuvable" action={<Link to="/entrainer" className="btn">Retour</Link>} />;
   const level = (q.get('niveau') as LevelId) ?? profile.levels[disc.id];
   const lvl = LEVELS.find((l) => l.id === level) ?? LEVELS[0];
-  const all = exercisesFor(disc.id, lvl.id);
+  const all = filterExercises(exercisesFor(disc.id, lvl.id), kbStyle);
   const kinds = [...new Set(all.map((e) => e.kind))];
   const list = kind === 'tout' ? all : all.filter((e) => e.kind === kind);
   const open = q.get('ex') ? EXERCISE_BY_ID.get(q.get('ex')!) : undefined;
@@ -82,7 +84,7 @@ export function DisciplinePage() {
         <DisciplineIcon id={disc.id} size={56} />
         <span className="bar" />
         <span className="name" style={{ fontSize: '1.1rem' }}>
-          {exercisesFor(disc.id, lvl.id).length} exercices
+          {all.length} exercices
         </span>
         <span className="sub" style={{ fontSize: '0.88rem' }}>
           {disc.tagline}
@@ -92,6 +94,7 @@ export function DisciplinePage() {
         <LevelSelector value={lvl.id} onChange={(l) => (setParam('niveau', l), setKind('tout'))} />
         <p className="small muted">{lvl.goal}</p>
       </section>
+      {disc.id === 'kickboxing' && <KickboxingStylePicker />}
       <FilterChips
         scroll
         label="Type d’exercice"

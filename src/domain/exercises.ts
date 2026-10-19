@@ -125,6 +125,9 @@ const KICK: Record<LevelId, Row[]> = {
     [null, 'combinaison', 'jab middle-kick-arriere'],
     [null, 'combinaison', 'jab direct low-kick-arriere'],
     ['Pas avant et pas arrière', 'deplacement', 'pas-avant pas-arriere'],
+    // added in v0.21.0 (K1: knees allowed); appended so the ids of the exercises above do not change
+    ['Genou direct (K1)', 'technique', 'genou-direct-arriere'],
+    [null, 'combinaison', 'jab direct genou-direct-arriere'],
   ],
   intermediaire: [
     [null, 'combinaison', 'direct crochet-avant low-kick-arriere'],
@@ -138,6 +141,8 @@ const KICK: Record<LevelId, Row[]> = {
     ['Changement de distance', 'deplacement', 'pas-avant jab direct pas-arriere front-kick-avant'],
     ['Crochet et low kick', 'combinaison', 'jab crochet-avant low-kick-arriere'],
     [null, 'combinaison', 'uppercut-arriere crochet-avant high-kick-arriere'],
+    ['Genou circulaire (K1)', 'technique', 'genou-circulaire-arriere'],
+    ['Poings et genou', 'combinaison', 'jab crochet-avant genou-direct-arriere'],
   ],
   avance: [
     ['Poings-pieds en 5', 'combinaison', 'jab direct crochet-avant direct low-kick-arriere'],
@@ -151,6 +156,8 @@ const KICK: Record<LevelId, Row[]> = {
     ['Corps et jambes', 'combinaison', 'jab-corps direct crochet-avant-corps middle-kick-arriere'],
     ['Feinte et pied', 'combinaison', 'feinte-jab direct high-kick-arriere'],
     ['Cardio poings-pieds', 'cardio', 'jab direct low-kick-arriere jab direct middle-kick-arriere'],
+    ['Genou après le middle', 'combinaison', 'jab direct middle-kick-arriere genou-direct-arriere'],
+    ['Au-dessus de la ceinture', 'combinaison', 'jab direct crochet-avant-corps high-kick-avant'],
   ],
   expert: [
     ['Enchaînement de 6', 'combinaison', 'jab direct crochet-avant uppercut-arriere crochet-avant low-kick-arriere'],
@@ -164,6 +171,10 @@ const KICK: Record<LevelId, Row[]> = {
     ['Round cardio', 'round', 'jab direct middle-kick-arriere jab direct low-kick-arriere front-kick-avant direct'],
     ['Angles et pieds', 'deplacement', 'jab sortie-angle direct low-kick-arriere pivot-droite crochet-avant middle-kick-arriere'],
     ['Finition', 'combinaison', 'uppercut-arriere crochet-avant direct high-kick-arriere direct crochet-avant'],
+    ['K1 complet', 'combinaison', 'jab direct genou-direct-arriere crochet-avant low-kick-arriere'],
+    ['Poings et pieds hauts', 'combinaison', 'jab direct crochet-avant uppercut-arriere crochet-avant middle-kick-arriere'],
+    ['Round au-dessus de la ceinture', 'round', 'jab direct roundhouse-arriere blocage-haut direct crochet-avant high-kick-arriere front-kick-avant'],
+    ['Défense et pieds hauts', 'defense', 'blocage-haut esquive-droite crochet-avant direct high-kick-arriere direct'],
   ],
 };
 

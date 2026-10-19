@@ -13,3 +13,4 @@ export * from './Sheet';
 export * from './Tabs';
 export * from './Timer';
 export * from './Toast';
+export * from './KickboxingStyle';

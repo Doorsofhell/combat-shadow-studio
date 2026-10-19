@@ -221,21 +221,21 @@ export const TECHNIQUES: Technique[] = [
   },
   // ------------------------------------------------------------------ genoux & coudes
   {
-    id: 'genou-direct-arriere', name: 'Genou direct', call: 'Genou', category: 'genou', disciplines: ['muaythai', 'mma'], motion: 'genou-direct-arriere',
+    id: 'genou-direct-arriere', name: 'Genou direct', call: 'Genou', category: 'genou', disciplines: ['muaythai', 'mma', 'kickboxing'], motion: 'genou-direct-arriere',
     description: 'Le genou arrière monte vers l’avant, la hanche pousse, le pied d’appui est sur la pointe.',
     cues: ['Hanche en avant', 'Sur la pointe du pied'], keyPoints: ['Pointe du pied tendue vers le bas', 'Mains en cadre devant'],
   },
   {
-    id: 'genou-direct-avant', name: 'Genou direct avant', call: 'Genou avant', category: 'genou', disciplines: ['muaythai'], motion: 'genou-direct-avant',
+    id: 'genou-direct-avant', name: 'Genou direct avant', call: 'Genou avant', category: 'genou', disciplines: ['muaythai', 'kickboxing'], motion: 'genou-direct-avant',
     description: 'Genou de la jambe avant, court et rapide.', cues: ['Hanche'], keyPoints: ['Équilibre sur la jambe arrière'],
   },
   {
-    id: 'genou-circulaire-arriere', name: 'Genou circulaire', call: 'Genou circulaire', category: 'genou', disciplines: ['muaythai'], motion: 'genou-circulaire-arriere',
+    id: 'genou-circulaire-arriere', name: 'Genou circulaire', call: 'Genou circulaire', category: 'genou', disciplines: ['muaythai', 'kickboxing'], motion: 'genou-circulaire-arriere',
     description: 'Le genou arrive par le côté vers les côtes, avec rotation de la hanche.',
     cues: ['Ouvre la hanche', 'Le genou vient de côté'], keyPoints: ['Pivot du pied d’appui'],
   },
   {
-    id: 'genou-circulaire-avant', name: 'Genou circulaire avant', call: 'Genou circulaire avant', category: 'genou', disciplines: ['muaythai'], motion: 'genou-circulaire-avant',
+    id: 'genou-circulaire-avant', name: 'Genou circulaire avant', call: 'Genou circulaire avant', category: 'genou', disciplines: ['muaythai', 'kickboxing'], motion: 'genou-circulaire-avant',
     description: 'Genou circulaire de la jambe avant.', cues: ['Hanche'], keyPoints: ['Garde l’équilibre'],
   },
   {

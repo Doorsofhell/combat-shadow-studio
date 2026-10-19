@@ -53,10 +53,10 @@ Bilan : 75 techniques solo, 10 fiches avec partenaire. Fiches : 82 à documenter
 | High kick gauche (`high-kick-avant`) | kickboxing, mma, muaythai | pied | À documenter | [kickboxing-muaythai](recherche/kickboxing-muaythai.md) | Contrôlée automatiquement |
 | Roundhouse kick (`roundhouse-arriere`) | kickboxing, mma | pied | À documenter | [kickboxing-muaythai](recherche/kickboxing-muaythai.md) | Contrôlée automatiquement |
 | Roundhouse jambe avant (`roundhouse-avant`) | kickboxing | pied | À documenter | [kickboxing-muaythai](recherche/kickboxing-muaythai.md) | Contrôlée automatiquement |
-| Genou direct (`genou-direct-arriere`) | muaythai, mma | genou | À documenter | [kickboxing-muaythai](recherche/kickboxing-muaythai.md), [mma](recherche/mma.md) | Contrôlée automatiquement |
-| Genou direct avant (`genou-direct-avant`) | muaythai | genou | À documenter | [kickboxing-muaythai](recherche/kickboxing-muaythai.md) | Contrôlée automatiquement |
-| Genou circulaire (`genou-circulaire-arriere`) | muaythai | genou | À documenter | [kickboxing-muaythai](recherche/kickboxing-muaythai.md) | Contrôlée automatiquement |
-| Genou circulaire avant (`genou-circulaire-avant`) | muaythai | genou | À documenter | [kickboxing-muaythai](recherche/kickboxing-muaythai.md) | Contrôlée automatiquement |
+| Genou direct (`genou-direct-arriere`) | muaythai, mma, kickboxing | genou | À documenter | [kickboxing-muaythai](recherche/kickboxing-muaythai.md), [mma](recherche/mma.md) | Contrôlée automatiquement |
+| Genou direct avant (`genou-direct-avant`) | muaythai, kickboxing | genou | À documenter | [kickboxing-muaythai](recherche/kickboxing-muaythai.md) | Contrôlée automatiquement |
+| Genou circulaire (`genou-circulaire-arriere`) | muaythai, kickboxing | genou | À documenter | [kickboxing-muaythai](recherche/kickboxing-muaythai.md) | Contrôlée automatiquement |
+| Genou circulaire avant (`genou-circulaire-avant`) | muaythai, kickboxing | genou | À documenter | [kickboxing-muaythai](recherche/kickboxing-muaythai.md) | Contrôlée automatiquement |
 | Coude horizontal gauche (`coude-horizontal-avant`) | muaythai | coude | À documenter | [kickboxing-muaythai](recherche/kickboxing-muaythai.md) | Contrôlée automatiquement |
 | Coude horizontal droit (`coude-horizontal-arriere`) | muaythai | coude | À documenter | [kickboxing-muaythai](recherche/kickboxing-muaythai.md) | Contrôlée automatiquement |
 | Coude diagonal descendant (`coude-diagonal-arriere`) | muaythai | coude | À documenter | [kickboxing-muaythai](recherche/kickboxing-muaythai.md) | Contrôlée automatiquement |
