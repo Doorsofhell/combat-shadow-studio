@@ -13,6 +13,11 @@ import { FootPose, Pose, deg, v3 } from '../pose';
 type LegSide = 'lead' | 'rear';
 const stand = { startState: 'stand' as const, endState: 'stand' as const };
 
+/** ankle and toes relative to the shin, in degrees (see AnkleJoint): the striking surface of each kick */
+function joint(f: FootPose, plantar: number, toes = 0, inversion = 0, rotation = 0): FootPose {
+  return f.mode === 'air' ? { ...f, joint: { plantar: deg(plantar), toes: deg(toes), inversion: deg(inversion), rotation: deg(rotation) } } : f;
+}
+
 function legKeys(side: LegSide) {
   return side === 'lead'
     ? ({ kick: 'footL', support: 'footR', kickHand: 'handL', guardHand: 'handR', sg: 1 } as const)
@@ -60,13 +65,10 @@ function roundKick(a: Author, side: LegSide, height: 'thigh' | 'liver' | 'head',
   });
   const hipC = a.hipJoint(chamber, side === 'lead' ? 'L' : 'R');
   const kneeH = Math.min(T.y + 0.05 * s, hipC.y - 0.02 * s);
-  chamber[k.kick] = a.air(
-    v3(hipC.x - turn * 0.1 * s, Math.max(0.25 * s, kneeH - 0.32 * s), hipC.z + 0.12 * s),
-    turn * deg(45),
-    deg(40),
-    0,
-    v3(-turn * 0.4, 0.5, 1),
-    deg(20),
+  // foot tucked, already pointed: the instep or the shin will strike
+  chamber[k.kick] = joint(
+    a.air(v3(hipC.x - turn * 0.1 * s, Math.max(0.25 * s, kneeH - 0.32 * s), hipC.z + 0.12 * s), turn * deg(45), deg(40), 0, v3(-turn * 0.4, 0.5, 1), deg(20)),
+    35,
   );
   // 3. extension / impact
   const hit = edit(g, (d) => {
@@ -88,15 +90,12 @@ function roundKick(a: Author, side: LegSide, height: 'thigh' | 'liver' | 'head',
   const hipH = a.hipJoint(hit, side === 'lead' ? 'L' : 'R');
   // the striking point (shin/instep) sweeps across the target: the ankle ends past it
   const through = v3(T.x + turn * (style === 'thai' ? 0.3 : 0.2) * s, T.y + (height === 'thigh' ? -0.02 : 0.02) * s, T.z);
-  hit[k.kick] = a.airFoot(
-    hipH,
-    through,
-    style === 'thai' ? 0.97 : 0.99,
-    turn * deg(height === 'head' ? 115 : 100),
-    deg(style === 'thai' ? 55 : 70),
-    -turn * deg(height === 'thigh' ? 20 : 60),
-    v3(turn * 0.9, 0.55, 0.2),
-    deg(30),
+  // instep (kick): ankle extended, foot in line with the shin; shin (thai): ankle extended, relaxed
+  hit[k.kick] = joint(
+    a.airFoot(hipH, through, style === 'thai' ? 0.97 : 0.99, turn * deg(height === 'head' ? 115 : 100), deg(style === 'thai' ? 55 : 70), -turn * deg(height === 'thigh' ? 20 : 60), v3(turn * 0.9, 0.55, 0.2), deg(30)),
+    style === 'thai' ? 35 : 45,
+    0,
+    5,
   );
   // 4. retraction (kick-boxing re-chambers; thai lets the leg swing back down)
   const back = edit(chamber, (d) => {
@@ -140,7 +139,8 @@ function straightKick(a: Author, side: LegSide, kind: 'teep' | 'front'): Motion 
     d[k.support] = supportPivot(d[k.support], (g[k.support] as { yaw: number }).yaw + deg(side === 'rear' ? 25 : 10), deg(12));
   });
   const hipC = a.hipJoint(chamber, side === 'lead' ? 'L' : 'R');
-  chamber[k.kick] = a.air(v3(hipC.x, hipC.y - 0.28 * s, hipC.z + 0.22 * s), 0, deg(-20), 0, v3(0.1 * k.sg, 0.6, 1), 0);
+  // chamber: foot under the knee, ankle already set for the striking surface
+  chamber[k.kick] = joint(a.air(v3(hipC.x, hipC.y - 0.28 * s, hipC.z + 0.22 * s), 0, deg(-20), 0, v3(0.1 * k.sg, 0.6, 1), 0), kind === 'teep' ? 0 : 25, kind === 'teep' ? 15 : 35);
   const hit = edit(chamber, (d) => {
     d.pelvis.pitch = g.pelvis.pitch + deg(kind === 'teep' ? -18 : -10);
     d.chest.pitch = g.chest.pitch + deg(kind === 'teep' ? -14 : -8);
@@ -149,7 +149,9 @@ function straightKick(a: Author, side: LegSide, kind: 'teep' | 'front'): Motion 
   });
   const hipH = a.hipJoint(hit, side === 'lead' ? 'L' : 'R');
   // teep: foot flexed (sole forward); front kick: toes pulled back, ball of the foot forward
-  hit[k.kick] = a.airFoot(hipH, add(T, { x: hipH.x * 0.6 }), 0.985, 0, deg(kind === 'teep' ? -45 : -10), 0, v3(0.1 * k.sg, 1, 0.2), kind === 'front' ? deg(30) : 0);
+  // front kick: ankle extended and toes pulled up, the ball of the foot hits; teep: ankle flexed, the
+  // sole and heel push (toes up, out of the way)
+  hit[k.kick] = joint(a.airFoot(hipH, add(T, { x: hipH.x * 0.6 }), 0.985, 0, deg(kind === 'teep' ? -45 : -10), 0, v3(0.1 * k.sg, 1, 0.2), kind === 'front' ? deg(30) : 0), kind === 'teep' ? -12 : 45, kind === 'teep' ? 25 : 65);
   const land = edit(g, (d) => {
     d.hips.y -= 0.015 * s;
   });
@@ -222,7 +224,8 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
   // knee point in front at body height, foot hanging under and behind it (toes pointed down)
   const kneePt = new Vector3(kind === 'round' ? turn * 0.1 * s : hipH.x * 0.3, a.target('body').y + 0.04 * s, hipH.z + a.m.thigh * 0.85);
   const ankle = kneePt.clone().add(new Vector3(0, -a.m.shin * 0.85, -a.m.shin * 0.5));
-  hit[k.kick] = a.air(v3(ankle.x, ankle.y, ankle.z), kind === 'round' ? turn * deg(70) : 0, deg(65), kind === 'round' ? -turn * deg(40) : 0, kind === 'round' ? v3(turn * 0.6, 0.4, 1) : v3(0, 0.3, 1), deg(25));
+  // knee strike: foot pointed down and back, toes pointed
+  hit[k.kick] = joint(a.air(v3(ankle.x, ankle.y, ankle.z), kind === 'round' ? turn * deg(70) : 0, deg(65), kind === 'round' ? -turn * deg(40) : 0, kind === 'round' ? v3(turn * 0.6, 0.4, 1) : v3(0, 0.3, 1), deg(25)), 40, -10);
   const land = edit(g, (d) => {
     d.hips.y -= 0.01 * s;
   });
@@ -262,7 +265,8 @@ function check(a: Author, side: LegSide): Motion {
   const hip = a.hipJoint(up, side === 'lead' ? 'L' : 'R');
   const kneePt = hip.clone().add(new Vector3(k.sg * 0.12 * s, -0.12 * s, a.m.thigh * 0.85));
   const ankle = kneePt.clone().add(new Vector3(k.sg * 0.04 * s, -a.m.shin * 0.95, -0.02 * s));
-  up[k.kick] = a.air(v3(ankle.x, ankle.y, ankle.z), k.sg * deg(30), deg(-10), 0, v3(k.sg * 0.8, 0.2, 1), 0);
+  // check: shin turned out, ankle slightly flexed (foot firm, toes up)
+  up[k.kick] = joint(a.air(v3(ankle.x, ankle.y, ankle.z), k.sg * deg(30), deg(-10), 0, v3(k.sg * 0.8, 0.2, 1), 0), -5, 10);
   return {
     id: `check-${side === 'lead' ? 'avant' : 'arriere'}`,
     keys: [

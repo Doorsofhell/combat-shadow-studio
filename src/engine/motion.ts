@@ -2,7 +2,7 @@
  * Keyframed motions built on the pose model, and their sampling.
  */
 import { Quaternion, Vector3 } from 'three';
-import { Pose, ResolvedFoot, ResolvedHand, ResolvedPose, mirrorPose, quatFromRot, toVec } from './pose';
+import { Pose, ResolvedFoot, ResolvedHand, ResolvedPose, blendJoint, mirrorPose, quatFromRot, toVec } from './pose';
 import type { CoachRig } from './rig';
 
 export type Ease = 'linear' | 'inOut' | 'out' | 'in' | 'snap' | 'strike' | 'load';
@@ -296,6 +296,8 @@ export class MotionSampler {
         heel: lerp(fa.heel, fb.heel, u),
         pole: fa.pole.clone().lerp(fb.pole, u).normalize(),
         point: lerp(fa.point, fb.point, u),
+        joint: blendJoint(fa.joint, fb.joint, u),
+        jointW: lerp(fa.jointW, fb.jointW, u),
       };
     };
     const footL = foot('footL');

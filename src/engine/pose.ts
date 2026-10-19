@@ -37,9 +37,22 @@ export interface HandPose {
   wrist?: number;
 }
 
+/**
+ * Ankle and toe angles relative to the shin (radians), the way a coach describes a kick: plantar
+ * flexion (+ toes down), inversion (+ sole toward the midline), rotation (+ toes out) and toe
+ * extension (+ toes pulled up, ball of the foot forward). Same values for both sides.
+ */
+export interface AnkleJoint {
+  plantar: number;
+  inversion: number;
+  rotation: number;
+  toes?: number;
+}
+
 export type FootPose =
   | { mode: 'ground'; ball: V3; yaw: number; heel: number; pole?: V3 }
-  | { mode: 'air'; ankle: V3; yaw: number; pitch: number; roll: number; pole: V3; point?: number };
+  /** joint: the foot is set relative to the shin (anatomical angles) instead of yaw/pitch/roll in ground space */
+  | { mode: 'air'; ankle: V3; yaw: number; pitch: number; roll: number; pole: V3; point?: number; joint?: AnkleJoint };
 
 export interface Pose {
   hips: V3;
@@ -73,6 +86,20 @@ export interface ResolvedFoot {
   heel: number;
   pole: Vector3;
   point: number;
+  /** anatomical ankle angles and how much they decide the foot (0: yaw/pitch/roll in ground space, 1: the joint) */
+  joint: Required<AnkleJoint>;
+  jointW: number;
+}
+
+export const NEUTRAL_JOINT: Required<AnkleJoint> = { plantar: 0, inversion: 0, rotation: 0, toes: 0 };
+
+export function blendJoint(a: Required<AnkleJoint>, b: Required<AnkleJoint>, t: number): Required<AnkleJoint> {
+  return {
+    plantar: a.plantar + (b.plantar - a.plantar) * t,
+    inversion: a.inversion + (b.inversion - a.inversion) * t,
+    rotation: a.rotation + (b.rotation - a.rotation) * t,
+    toes: a.toes + (b.toes - a.toes) * t,
+  };
 }
 
 export interface ResolvedPose {
@@ -147,6 +174,8 @@ function blendFoot(a: ResolvedFoot, b: ResolvedFoot, t: number): ResolvedFoot {
     heel: a.heel + (b.heel - a.heel) * t,
     pole: a.pole.clone().lerp(b.pole, t).normalize(),
     point: a.point + (b.point - a.point) * t,
+    joint: blendJoint(a.joint, b.joint, t),
+    jointW: a.jointW + (b.jointW - a.jointW) * t,
   };
 }
 

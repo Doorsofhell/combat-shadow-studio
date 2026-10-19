@@ -9,11 +9,13 @@ import {
   HandPose,
   Pose,
   ResolvedFoot,
+  NEUTRAL_JOINT,
   ResolvedHand,
   ResolvedPose,
   quatFromRot,
   toVec,
 } from './pose';
+import { PLANTED_LIMIT, TOE_LIMIT, ankleAngles as ankleAnglesOf, ankleQuat, limitAnkle, softLimit } from './limits';
 
 export type Side = 'L' | 'R';
 const SIDES: Side[] = ['L', 'R'];
@@ -129,15 +131,18 @@ export class CoachRig {
       return r;
     };
     this.spine = ['Spine', 'Spine1', 'Spine2'].map(need);
-    const limb = (u: string, l: string, e: string, tipFallback: Vector3): Limb => {
+    const limb = (u: string, l: string, e: string, tipFallback: Vector3, tipFixed?: Vector3): Limb => {
       const upper = need(u);
       const lower = need(l);
       const end = need(e);
       const p0Upper = lower.worldPos.clone().sub(upper.worldPos).normalize();
       const p0Lower = end.worldPos.clone().sub(lower.worldPos).normalize();
-      // joint tip directions (olecranon / knee cap), in the hinge plane, away from the bend
-      const u0Upper = orthoTo(p0Lower.clone().negate(), p0Upper, tipFallback);
-      const u0Lower = orthoTo(p0Upper.clone(), p0Lower, tipFallback);
+      // joint tip directions (olecranon / knee cap), in the hinge plane, away from the bend. For the
+      // legs the rest bend is only a few degrees and its plane differs from model to model (16° toward
+      // the midline on the man, 11° outward on the woman): the knee cap is taken from the foot instead,
+      // which points straight ahead at rest, so that the shin never twists against the foot.
+      const u0Upper = tipFixed ? orthoTo(tipFixed.clone(), p0Upper, tipFallback) : orthoTo(p0Lower.clone().negate(), p0Upper, tipFallback);
+      const u0Lower = tipFixed ? orthoTo(tipFixed.clone(), p0Lower, tipFallback) : orthoTo(p0Upper.clone(), p0Lower, tipFallback);
       return {
         upper, lower, end,
         lenA: upper.worldPos.distanceTo(lower.worldPos),
@@ -149,9 +154,14 @@ export class CoachRig {
       L: limb('LeftArm', 'LeftForeArm', 'LeftHand', new Vector3(0, 0, -1)),
       R: limb('RightArm', 'RightForeArm', 'RightHand', new Vector3(0, 0, -1)),
     };
+    const restFootForward = (s: Side) => {
+      const f = need(`${sideName(s)}ToeBase`).worldPos.clone().sub(need(`${sideName(s)}Foot`).worldPos);
+      f.y = 0;
+      return f.lengthSq() > 1e-8 ? f.normalize() : new Vector3(0, 0, 1);
+    };
     this.legs = {
-      L: limb('LeftUpLeg', 'LeftLeg', 'LeftFoot', new Vector3(0, 0, 1)),
-      R: limb('RightUpLeg', 'RightLeg', 'RightFoot', new Vector3(0, 0, 1)),
+      L: limb('LeftUpLeg', 'LeftLeg', 'LeftFoot', new Vector3(0, 0, 1), restFootForward('L')),
+      R: limb('RightUpLeg', 'RightLeg', 'RightFoot', new Vector3(0, 0, 1), restFootForward('R')),
     };
 
     // finger flexion axes, expressed in each bone's own rest frame
@@ -267,8 +277,9 @@ export class CoachRig {
       const qFoot = qHeel.clone().multiply(qYaw);
       const ball = new Vector3(f.ball.x, f.ball.y + m.ballRestY, f.ball.z);
       const ankle = ball.clone().add(m.ankleFromBall.clone().applyQuaternion(qFoot));
-      const pole = f.pole ? toVec(f.pole).normalize() : new Vector3(0.4 * sgn, 0, 1).applyQuaternion(qYaw).normalize();
-      return { ankle, rot: qFoot.multiply(unsplay), toeFlat: 1, heel: f.heel, pole, point: 0 };
+      // knee over the toes (slightly outside the second toe), so the shin does not twist against the foot
+      const pole = f.pole ? toVec(f.pole).normalize() : new Vector3(0.1 * sgn, 0, 1).applyQuaternion(qYaw).normalize();
+      return { ankle, rot: qFoot.multiply(unsplay), toeFlat: 1, heel: f.heel, pole, point: 0, joint: NEUTRAL_JOINT, jointW: 0 };
     }
     const q = quatFromRot({ yaw: f.yaw, pitch: f.pitch, roll: f.roll });
     return {
@@ -278,6 +289,8 @@ export class CoachRig {
       heel: 0,
       pole: toVec(f.pole).normalize(),
       point: f.point ?? 0,
+      joint: f.joint ? { toes: 0, ...f.joint } : NEUTRAL_JOINT,
+      jointW: f.joint ? 1 : 0,
     };
   }
 
@@ -435,24 +448,92 @@ export class CoachRig {
     }
   }
 
+  /**
+   * A planted foot is set by the floor, so the leg adapts instead, the way a body does: the knee turns
+   * over the foot when the shin would twist against it, the heel lifts (about the ball, which does not
+   * move) when the ankle would bend up past its weight-bearing range, and the foot rolls onto its
+   * edge (about the line from the ankle to the ball) when the shin leans sideways past the ankle's range.
+   */
+  private settlePlanted(s: Side, f: ResolvedFoot): ResolvedFoot {
+    const limb = this.legs[s];
+    const angles = (ff: ResolvedFoot) => ankleAnglesOf(this.solveTwoBone(limb, ff.ankle, ff.pole, KNEE_MAX_FLEX).qLower.invert().multiply(ff.rot), s);
+    let a = angles(f);
+    // 1. knee over the foot (two passes: the twist does not follow the pole exactly when the knee is straight)
+    for (let pass = 0; pass < 4 && Math.abs(a.rotation) > PLANTED_LIMIT.rotation; pass++) {
+      const axis = f.ankle.clone().sub(this.bonePos(limb.upper)).normalize();
+      const excess = Math.abs(a.rotation) - PLANTED_LIMIT.rotation;
+      let best = f;
+      let bestA = a;
+      for (const sign of [1, -1]) {
+        const ff = { ...f, pole: f.pole.clone().applyAxisAngle(axis, sign * excess) };
+        const fa = angles(ff);
+        if (Math.abs(fa.rotation) < Math.abs(bestA.rotation)) [best, bestA] = [ff, fa];
+      }
+      f = best;
+      a = bestA;
+    }
+    // 2. heel lift past the weight-bearing dorsiflexion
+    if (a.plantar < -PLANTED_LIMIT.dorsi) {
+      const lift = -PLANTED_LIMIT.dorsi - a.plantar;
+      const unsplay = new Quaternion().setFromAxisAngle(UP, -this.metrics.footYaw[s]);
+      const qFoot = f.rot.clone().multiply(unsplay.clone().invert());
+      const ball = f.ankle.clone().sub(this.metrics.ankleFromBall.clone().applyQuaternion(qFoot));
+      const lateral = new Vector3(1, 0, 0).applyQuaternion(qFoot);
+      const q2 = new Quaternion().setFromAxisAngle(lateral, lift).multiply(qFoot);
+      f = { ...f, ankle: ball.add(this.metrics.ankleFromBall.clone().applyQuaternion(q2)), rot: q2.multiply(unsplay), heel: f.heel + lift };
+      this.heelLift[s] = { ankle: f.ankle.clone(), lift };
+      a = angles(f);
+    }
+    // 3. foot on its edge past inversion or eversion
+    const inv = softLimit(a.inversion, -PLANTED_LIMIT.eversion, PLANTED_LIMIT.inversion);
+    if (Math.abs(inv - a.inversion) > 1e-4) {
+      const unsplay = new Quaternion().setFromAxisAngle(UP, -this.metrics.footYaw[s]);
+      const qFoot = f.rot.clone().multiply(unsplay.clone().invert());
+      const along = this.metrics.ankleFromBall.clone().applyQuaternion(qFoot).negate().normalize();
+      let best = f;
+      let bestErr = Infinity;
+      for (const sign of [1, -1]) {
+        const ff = { ...f, rot: new Quaternion().setFromAxisAngle(along, sign * (a.inversion - inv)).multiply(f.rot) };
+        const err = Math.abs(angles(ff).inversion - inv);
+        if (err < bestErr) [best, bestErr] = [ff, err];
+      }
+      f = best;
+    }
+    return f;
+  }
+
   private solveLeg(s: Side, f: ResolvedFoot) {
+    this.heelLift[s] = null;
+    if (f.toeFlat > 0.5) f = this.settlePlanted(s, f);
     const limb = this.legs[s];
     const { qUpper, qLower } = this.solveTwoBone(limb, f.ankle, f.pole, KNEE_MAX_FLEX);
     this.setWorldQ(limb.upper, qUpper.multiply(limb.upper.worldQ));
+    // turn of the shin since rest: the ankle angles are read and limited against it
+    const shin = qLower.clone();
     this.setWorldQ(limb.lower, qLower.multiply(limb.lower.worldQ));
     const footQ = f.rot.clone();
     if (f.point) {
       const lateral = new Vector3(1, 0, 0).applyQuaternion(f.rot);
       footQ.premultiply(new Quaternion().setFromAxisAngle(lateral, f.point));
     }
-    this.setWorldQ(limb.end, footQ.multiply(limb.end.worldQ));
+    const air = 1 - f.toeFlat;
+    if (f.jointW > 0) footQ.slerp(shin.clone().multiply(ankleQuat(f.joint, s)), f.jointW);
+    // a foot in the air never goes past the ankle's range relative to the shin; a planted foot is
+    // set by the floor, its angles are measured by the tests instead
+    if (air > 0) footQ.slerp(shin.clone().multiply(limitAnkle(shin.clone().invert().multiply(footQ), s)), air);
+    this.setWorldQ(limb.end, footQ.clone().multiply(limb.end.worldQ));
     const toe = this.bones.get(`${sideName(s)}ToeBase`);
     if (toe) {
       // planted: toes stay flat while the heel lifts (counter-rotation about the ball)
       const lateral = new Vector3(1, 0, 0).applyQuaternion(f.rot);
       const flat = new Quaternion().setFromAxisAngle(lateral, -f.heel * f.toeFlat);
       const toeQ = flat.multiply(f.rot.clone()).multiply(toe.worldQ);
-      if (f.point && f.toeFlat < 1) toeQ.premultiply(new Quaternion().setFromAxisAngle(lateral, f.point * 0.4));
+      if (air > 0) {
+        // in the air the toes follow the final foot, bent up by the authored amount (+ = ball forward)
+        const ext = clamp(f.jointW * f.joint.toes + (1 - f.jointW) * 0.6 * f.point, -TOE_LIMIT.flex, TOE_LIMIT.ext);
+        const rel = footQ.clone().multiply(new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), -ext)).multiply(toe.worldQ);
+        toeQ.slerp(rel, air);
+      }
       this.setWorldQ(toe, toeQ);
     }
   }
@@ -465,6 +546,21 @@ export class CoachRig {
 
   restOf(name: string) {
     return this.bones.get(name)?.worldPos.clone();
+  }
+
+  /**
+   * The heel lifted by the floor rule on the last pose (ankle moved about the fixed ball), or null:
+   * the ankle then sits higher than the pose asked, on purpose.
+   */
+  readonly heelLift: Record<Side, { ankle: Vector3; lift: number } | null> = { L: null, R: null } as Record<Side, { ankle: Vector3; lift: number } | null>;
+
+  /** rotation of a bone since the rest pose, in ground space (identity at rest) */
+  turnOf(name: string) {
+    const r = this.bones.get(name);
+    if (!r) return undefined;
+    r.bone.updateWorldMatrix(true, false);
+    const rootQInv = worldQuat(this.root, new Quaternion()).invert();
+    return rootQInv.multiply(worldQuat(r.bone, new Quaternion())).multiply(r.worldQ.clone().invert());
   }
 }
 

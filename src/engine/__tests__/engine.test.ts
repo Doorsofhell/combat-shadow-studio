@@ -60,7 +60,10 @@ describe('bibliothèque d’animations', () => {
               const b = hand ? m.foreArm : m.shin;
               const flex = hand ? ELBOW_MAX_FLEX : KNEE_MAX_FLEX;
               if (root.distanceTo(target) < Math.sqrt(a * a + b * b + 2 * a * b * Math.cos(flex)) * 1.05) continue;
-              const err = rig.worldOf(bone)!.distanceTo(target);
+              // a planted heel lifted by the floor rule (dorsiflexion past its range): the ankle rises about
+              // the ball on purpose, the lift is checked against the range in ankle-range.test.ts
+              const lifted = bone.includes('Foot') ? rig.heelLift[bone.startsWith('Left') ? 'L' : 'R'] : null;
+              const err = rig.worldOf(bone)!.distanceTo(lifted ? lifted.ankle : target);
               expect(err, `${c} ${style} ${motion.id} t${i} ${bone}`).toBeLessThan(0.02);
             }
           }

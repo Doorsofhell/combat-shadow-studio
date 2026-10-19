@@ -10,12 +10,12 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 
 ## Total, 6 styles de garde
 
-432 animations, 1266 poses clés intérieures. Arrêts parasites : **941 avant, 320 après**.
+432 animations, 1266 poses clés intérieures. Arrêts parasites : **939 avant, 318 après**.
 
 | Style | Animations | Arrêts avant | Arrêts après |
 |---|---|---|---|
-| boxing | 72 | 149 | 50 |
-| kickboxing | 72 | 150 | 49 |
+| boxing | 72 | 148 | 49 |
+| kickboxing | 72 | 149 | 48 |
 | mma | 72 | 151 | 47 |
 | muaythai | 72 | 153 | 56 |
 | bjj | 72 | 164 | 53 |
@@ -54,20 +54,20 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `pivot-droite` | 1 | 5 | 2 | 0,0 | 0,0 | 5,2 | 5,2 | – | – |
 | `pivot-gauche` | 1 | 5 | 2 | 0,0 | 0,0 | 5,2 | 5,2 | – | – |
 | `sortie-angle` | 2 | 3 | 2 | 0,0 | 0,0 | 6,5 | 6,5 | – | – |
-| `low-kick-arriere` | 4 | 6 | 3 | 5,8 | 5,8 | 10,6 | 10,6 | 6,3 | 6,3 |
+| `low-kick-arriere` | 4 | 6 | 3 | 5,8 | 5,8 | 10,6 | 10,6 | 6,2 | 6,2 |
 | `low-kick-avant` | 4 | 6 | 1 | 5,3 | 5,3 | 9,5 | 9,5 | 5,7 | 5,7 |
-| `middle-kick-arriere` | 4 | 6 | 3 | 7,5 | 7,5 | 13,6 | 13,6 | 8,0 | 8,0 |
-| `middle-kick-avant` | 4 | 7 | 2 | 7,1 | 7,1 | 12,9 | 12,9 | 7,6 | 7,6 |
+| `middle-kick-arriere` | 4 | 6 | 3 | 7,5 | 7,5 | 13,5 | 13,5 | 8,0 | 8,0 |
+| `middle-kick-avant` | 4 | 6 | 1 | 7,1 | 7,1 | 12,9 | 12,9 | 7,6 | 7,6 |
 | `high-kick-arriere` | 4 | 4 | 3 | 8,1 | 8,1 | 14,8 | 14,8 | 8,7 | 8,7 |
 | `high-kick-avant` | 4 | 10 | 3 | 9,6 | 9,6 | 20,1 | 20,1 | 10,4 | 10,4 |
-| `roundhouse-arriere` | 4 | 6 | 3 | 8,7 | 8,7 | 18,3 | 18,3 | 9,5 | 9,5 |
+| `roundhouse-arriere` | 4 | 6 | 3 | 8,7 | 8,7 | 18,3 | 18,3 | 9,4 | 9,4 |
 | `roundhouse-avant` | 4 | 8 | 1 | 8,3 | 8,3 | 17,2 | 17,2 | 8,9 | 8,9 |
-| `teep-avant` | 4 | 4 | 0 | 6,3 | 6,3 | 17,6 | 17,6 | 6,7 | 6,7 |
+| `teep-avant` | 4 | 4 | 0 | 6,3 | 6,3 | 17,6 | 17,6 | 6,8 | 6,8 |
 | `teep-arriere` | 4 | 2 | 2 | 6,3 | 6,3 | 17,7 | 17,7 | 6,8 | 6,8 |
 | `front-kick-avant` | 4 | 4 | 0 | 6,0 | 6,0 | 12,9 | 12,9 | 6,4 | 6,4 |
-| `front-kick-arriere` | 4 | 2 | 2 | 6,0 | 6,0 | 13,0 | 13,0 | 6,5 | 6,5 |
+| `front-kick-arriere` | 4 | 2 | 2 | 6,0 | 6,0 | 13,0 | 13,0 | 6,4 | 6,4 |
 | `genou-direct-arriere` | 4 | 1 | 0 | 5,0 | 5,0 | 13,3 | 13,3 | 5,3 | 5,3 |
-| `genou-direct-avant` | 4 | 2 | 1 | 4,0 | 4,0 | 11,2 | 11,2 | 4,2 | 4,2 |
+| `genou-direct-avant` | 4 | 2 | 1 | 4,0 | 4,0 | 11,3 | 11,3 | 4,3 | 4,3 |
 | `genou-circulaire-arriere` | 4 | 1 | 0 | 5,5 | 5,5 | 14,5 | 14,5 | 5,8 | 5,8 |
 | `genou-circulaire-avant` | 4 | 3 | 2 | 4,2 | 4,2 | 15,1 | 15,1 | 4,4 | 4,4 |
 | `genou-direct-arriere-clinch` | 4 | 1 | 0 | 5,0 | 5,0 | 13,3 | 13,3 | 5,3 | 5,3 |
