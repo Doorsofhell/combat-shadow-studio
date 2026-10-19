@@ -67,10 +67,48 @@ const INK_FRAGMENT = /* glsl */ `
   #include <opaque_fragment>
 `;
 
-export type InkStyle = 'manga' | 'encre';
+/**
+ * Encre, premium render (v0.23): cel shading in three tones with anti-aliased edges, the baked
+ * anatomical relief (normal map) carving the tones, cool shadows, a warm rim light and the ink
+ * outline. No screen-space hatching: on a phone screen the hatching read as torn, striped skin.
+ */
+const CEL_FRAGMENT = /* glsl */ `
+  {
+    vec3 albedo = diffuseColor.rgb;
+    float la = max(dot(albedo, vec3(0.299, 0.587, 0.114)), 1e-3);
+    float scene = dot(outgoingLight, vec3(0.299, 0.587, 0.114)) / la;
+    vec3 n = normalize(normal);
+    // studio key light from the upper left (view space); the stage lights still darken its shadows
+    float key = dot(n, normalize(vec3(-0.45, 0.6, 0.66)));
+    float light = min(0.22 + 0.92 * smoothstep(-0.35, 0.9, key), scene * 1.15);
+    // three tones, edges smoothed over about a pixel so they never flicker or alias
+    float aa = fwidth(light) * 1.2 + 0.004;
+    float lit = smoothstep(0.4 - aa, 0.4 + aa, light);
+    float high = smoothstep(0.8 - aa, 0.8 + aa, light);
+    float tone = mix(0.6, mix(0.88, 1.06, high), lit);
+    // shadows slightly cool, lit planes slightly warm (painted look, never black)
+    vec3 tint = mix(vec3(0.9, 0.92, 1.04), vec3(1.02, 1.0, 0.97), lit);
+    vec3 col = albedo * tone * tint;
+    // rim light on the silhouette, on the lit side of the shading only
+    float rim = smoothstep(0.62, 0.92, 1.0 - abs(n.z)) * smoothstep(0.2, 0.6, light);
+    col += vec3(1.0, 0.93, 0.85) * rim * 0.14 * smoothstep(0.08, 0.3, la);
+    outgoingLight = col;
+  }
+  #include <opaque_fragment>
+`;
+
+export type InkStyle = 'manga' | 'encre' | 'cel';
 
 export function toonMaterial(name: string, map: Texture | null, color?: Color, style: InkStyle = 'manga', normalMap: Texture | null = null) {
   if (style === 'encre') return inkMaterial(name, map, color, normalMap);
+  if (style === 'cel') {
+    const m = new MeshLambertMaterial({ name, map, normalMap, color: color ?? new Color(1, 1, 1) });
+    m.onBeforeCompile = (shader) => {
+      shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>', CEL_FRAGMENT);
+    };
+    m.customProgramCacheKey = () => 'cel-toon';
+    return m;
+  }
   const m = new MeshLambertMaterial({ name, map, normalMap, color: color ?? new Color(1, 1, 1) });
   m.onBeforeCompile = (shader) => {
     shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>', TOON_FRAGMENT);
@@ -110,7 +148,7 @@ export function outlineMaterial(width: number, color = '#141212') {
 
 /** Replaces the materials of a coach with the manga look and adds the ink outlines. */
 export function applyManga(root: Object3D, style: InkStyle = 'manga') {
-  const ink = style === 'encre';
+  const ink = style !== 'manga';
   const outlines: [Object3D, SkinnedMesh][] = [];
   root.traverse((o) => {
     const mesh = o as Mesh;

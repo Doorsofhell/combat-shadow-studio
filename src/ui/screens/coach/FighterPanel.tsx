@@ -3,6 +3,7 @@ import type { CoachId } from '../../../domain/types';
 import { Button, Sheet } from '../../components';
 import { AppIcon } from '../../icons';
 import { Group } from './controls';
+import { CoachLookPicker } from '../../components/CoachLookPicker';
 
 export function FighterPanel({
   fighters,
@@ -72,6 +73,11 @@ export function FighterPanel({
           </Button>
         </div>
         {fighters.length <= 1 && <p className="cs-hint">Ton seul combattant ne peut pas être supprimé.</p>}
+      </Group>
+
+      <Group title="Rendu">
+        <CoachLookPicker testId="studio-coach-look" />
+        <p className="cs-hint">Même corps, mêmes vêtements et mêmes mouvements dans les deux rendus. Le choix vaut pour tous tes combattants.</p>
       </Group>
 
       <Group

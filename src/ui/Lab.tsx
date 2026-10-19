@@ -2,6 +2,7 @@ import { Suspense, useCallback, useMemo, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { CoachModel } from '../three/CoachModel';
 import { StudioStage } from '../three/StudioStage';
+import { StudioEnvironment } from '../three/StudioEnvironment';
 import type { CoachRig } from '../engine/rig';
 import { getLibrary, getMotion } from '../engine/library';
 import { MotionSampler } from '../engine/motion';
@@ -50,6 +51,9 @@ export function Lab() {
       gear: { ...l.gear, hands: g.hands, shins: g.shins, feet: g.feet, handsPaint: { color: red, color2: gold, pattern: 'uni' }, shinsPaint: { color: '#f2efe6', color2: red, pattern: 'uni' }, feetPaint: { color: '#f2efe6', color2: red, pattern: 'uni' } },
     };
   }, [q, coach, disc]);
+  // look=realiste|manga|encre, render=precedent: the v0.22 render (fallback), for before/after captures
+  const labStyle = q.get('look') === 'realiste' ? 'realiste' : q.get('look') === 'manga' ? 'manga' : 'encre';
+  const render = q.get('render') === 'precedent' ? 'precedent' : 'premium';
   const sampler = useRef<MotionSampler | null>(null);
   const onRig = useCallback(
     (rig: CoachRig) => {
@@ -80,7 +84,8 @@ export function Lab() {
       <Canvas shadows dpr={[1, 2]} gl={{ alpha: true, antialias: true, preserveDrawingBuffer: true }}>
         <Suspense fallback={null}>
           <StudioStage view={view} envelope={tech ? envelope : undefined} origin={tech ? origin : undefined} cameraAngle={cam} quality="haute" zoom={Number(q.get('zoom') ?? '1')} focusY={q.get('fy') ? Number(q.get('fy')) : undefined}>
-            <CoachModel coach={coach} style={q.get('look') === 'realiste' ? 'realiste' : q.get('look') === 'manga' ? 'manga' : 'encre'} quality="haute" look={look} onRig={onRig} onFrame={onFrame} />
+            <CoachModel coach={coach} style={labStyle} render={render} quality="haute" look={look} onRig={onRig} onFrame={onFrame} />
+            {labStyle === 'realiste' && render === 'premium' && <StudioEnvironment />}
           </StudioStage>
         </Suspense>
       </Canvas>

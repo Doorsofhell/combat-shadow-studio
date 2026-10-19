@@ -11,6 +11,7 @@ import { bell, unlockAudio } from '../../audio/sound';
 import { hasFrenchVoice, say, voiceAvailable } from '../../audio/voice';
 import { saveTextFile } from '../../platform/native';
 import { ConfirmDialog, LinkRow, PageHead, Panel, PanelRow, Segmented, SliderRow, Toggle, toast } from '../components';
+import { CoachLookPicker } from '../components/CoachLookPicker';
 import { defaultFighterName } from '../components/fighter';
 import { AppIcon } from '../icons';
 
@@ -145,16 +146,19 @@ export function SettingsPage() {
           />
         </PanelRow>
         <PanelRow label="Rendu des combattants" column>
+          <CoachLookPicker testId="settings-coach-look" />
+        </PanelRow>
+        <PanelRow label="Version du rendu 3D" column>
           <Segmented
-            label="Rendu des combattants"
-            value={settings.coachStyle}
-            onChange={(v) => set({ coachStyle: v })}
+            label="Version du rendu 3D"
+            value={settings.coachRender}
+            onChange={(v) => set({ coachRender: v })}
             options={[
-              { id: 'encre', label: 'Encre' },
-              { id: 'manga', label: 'Manga' },
-              { id: 'realiste', label: 'Réaliste' },
+              { id: 'premium', label: 'Nouvelle (0.23)' },
+              { id: 'precedent', label: 'Précédente (secours)' },
             ]}
           />
+          <p className="small muted">La version précédente reste disponible tant que la nouvelle n’est pas validée sur ton téléphone.</p>
         </PanelRow>
         <PanelRow label="Caméra par défaut" column>
           <Segmented

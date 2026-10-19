@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { PerformanceMonitor } from '@react-three/drei';
 import { Group, Vector3 } from 'three';
 import { CoachModel } from './CoachModel';
+import { StudioEnvironment } from './StudioEnvironment';
 import { useSettings } from '../store/settings';
 import { StageView, StudioStage } from './StudioStage';
 import { ArScene } from './ArScene';
@@ -107,6 +108,7 @@ export function CoachStage(props: CoachStageProps) {
   lookRef.current = look;
   const [degraded, setDegraded] = useState(false);
   const style = useSettings((s) => s.settings.coachStyle);
+  const render = useSettings((s) => s.settings.coachRender);
   const q: 'haute' | 'basse' = quality === 'auto' ? (degraded ? 'basse' : 'haute') : quality;
   const player = useRef<ComboPlayer | null>(null);
   const rigRef = useRef<{ rig: CoachRig; lib: MotionLibrary } | null>(null);
@@ -224,10 +226,11 @@ export function CoachStage(props: CoachStageProps) {
             dark={backdrop === 'dark' && menuTheme === 'dark'}
           />
         )}
+        {style === 'realiste' && render === 'premium' && q === 'haute' && <StudioEnvironment />}
         {ar && <ArScene bridge={ar} active={arActive} coachGroup={coachGroup} follow={follow} />}
         {/* the coach stays mounted when switching to AR: same model, same player, same animation */}
         <group ref={coachGroup}>
-          <CoachModel key={`${shownCoach}-${discipline}-${style}`} coach={shownCoach} style={style} quality={q} look={look} ghostGear={ghostGear} onRig={onRig} onFrame={onFrame} />
+          <CoachModel key={`${shownCoach}-${discipline}-${render}${render === 'precedent' ? `-${style}` : ''}`} coach={shownCoach} style={style} render={render} quality={q} look={look} ghostGear={ghostGear} onRig={onRig} onFrame={onFrame} />
           {studyActive && rigState && study && <StudyCues rig={rigState} study={study} />}
           {!studyActive && !arActive && rigState && <GroundMarks rig={rigState} player={player} southpaw={southpaw} />}
         </group>

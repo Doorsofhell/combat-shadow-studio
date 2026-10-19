@@ -38,6 +38,11 @@ export interface Settings {
   quality: 'auto' | 'haute' | 'basse';
   /** look of the coaches: ink drawing in colour (default since v0.14), cel-shaded manga, or realistic */
   coachStyle: 'encre' | 'manga' | 'realiste';
+  /**
+   * v0.23 render of the coaches (one model for both looks, clean cel shading) or the previous render,
+   * kept as a fallback until the new one is validated on the devices
+   */
+  coachRender: 'premium' | 'precedent';
   cameraAngle: number;
   /** teaching camera mode; auto picks the best angle for each technique */
   cameraMode: import('../domain/camera').CameraMode;
@@ -62,6 +67,7 @@ export const DEFAULT_SETTINGS: Settings = {
   impactSounds: false,
   quality: 'auto',
   coachStyle: 'encre',
+  coachRender: 'premium',
   cameraAngle: 35,
   cameraMode: 'auto',
   cues: { trajectoire: true, hanches: true, pivot: true, articulations: true, pieds: true, garde: false, comparaison: false },

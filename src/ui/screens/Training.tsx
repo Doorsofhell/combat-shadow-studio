@@ -22,6 +22,7 @@ import { CAMERA_MODES, CameraMode, manualView, stageAzimuth, stepViews, techniqu
 import type { StageView } from '../../three/StudioStage';
 import { StudyPanel, useStudy } from '../training/Study';
 import { ArBridge } from '../../ar/ArBridge';
+import { CoachLookPicker } from '../components/CoachLookPicker';
 import { ArControls, ArIntroSheet, useArView } from '../training/ArMode';
 import { AppIcon } from '../icons';
 
@@ -656,6 +657,10 @@ function TrainingView({ plan }: { plan: Plan }) {
                   Coach femme
                 </button>
               </div>
+            </div>
+            <div className="stack">
+              <span className="label">Rendu</span>
+              <CoachLookPicker testId="training-coach-look" />
             </div>
             <div className="stack">
               <span className="label">Garde</span>

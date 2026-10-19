@@ -251,9 +251,9 @@ export function CoachStudio() {
           <Tabs items={TABS} value={tab} onChange={onTab} label="Catégories" variant="underline" />
         </div>
         <div className="cs-scroll" role="tabpanel" aria-label={TABS.find((t) => t.id === tab)?.label} data-testid="editor-panel">
-          {settings.coachStyle === 'realiste' && (
+          {settings.coachStyle === 'realiste' && settings.coachRender === 'precedent' && (
             <div className="note warn cs-note">
-              Ton apparence personnalisée s’affiche avec les styles « Encre » et « Manga ».
+              Avec la version précédente du rendu, ton apparence personnalisée s’affiche avec les styles « Encre » et « Manga ».
               <Button variant="secondary" onClick={() => setSettings({ coachStyle: 'encre' })}>
                 Passer au style Encre
               </Button>
