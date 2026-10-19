@@ -39,7 +39,7 @@ export const PARTNER_CATEGORY_LABEL: Record<PartnerCategory, string> = {
 };
 
 const DOJO = 'À travailler uniquement au club, sur tatami, avec un partenaire volontaire et sous la surveillance d’un enseignant qualifié.';
-const TAP = 'Le partenaire tape (main ou pied) dès qu’il le souhaite : tu relâches immédiatement, sans discuter.';
+const TAP = 'Le partenaire abandonne en tapant deux fois ou plus (main, ou pied s’il n’a pas les bras libres) ou en le disant : tu relâches immédiatement, sans discuter. S’il ne peut ni taper ni parler, tu relâches aussi.';
 
 export const PARTNER_TECHNIQUES: PartnerTechnique[] = [
   // judo
@@ -68,12 +68,12 @@ export const PARTNER_TECHNIQUES: PartnerTechnique[] = [
     description: 'Tu déséquilibres le partenaire vers son arrière, puis ta jambe droite fauche sa jambe droite par l’extérieur.',
     phases: [
       { label: 'Déplacement', text: 'Le pied gauche avance à côté du pied droit du partenaire, en dehors.' },
-      { label: 'Kuzushi', text: 'Les deux mains poussent le partenaire vers son arrière droit : son poids passe sur son talon droit.' },
+      { label: 'Kuzushi', text: 'Les mains déséquilibrent le partenaire vers son arrière droit : son poids passe sur son talon droit.' },
       { label: 'Tsukuri', text: 'La poitrine vient contre la sienne, la jambe droite passe derrière sa jambe droite.' },
       { label: 'Kake', text: 'La jambe droite fauche vers l’arrière pendant que le buste descend vers l’avant. Le partenaire chute en ushiro-ukemi.' },
     ],
     keyPoints: ['Déséquilibre d’abord, fauchage ensuite', 'Ta jambe d’appui reste fléchie', 'Tu gardes la manche pour retenir sa chute'],
-    safety: ['Le partenaire doit maîtriser la chute arrière (ushiro-ukemi) avant d’être projeté.', 'Garder la manche du partenaire pour accompagner sa chute : sa tête ne doit pas heurter le sol.', DOJO],
+    safety: ['Le partenaire doit maîtriser la chute arrière (ushiro-ukemi) avant d’être projeté.', 'Dans les études consultées, c’est la projection liée au plus grand nombre de blessures graves à la tête (choc de l’arrière du crâne) : jamais sans enseignant.', 'Garder la manche du partenaire pour accompagner sa chute : sa tête ne doit pas heurter le sol.', DOJO],
   },
   {
     id: 'o-goshi',
@@ -108,7 +108,7 @@ export const PARTNER_TECHNIQUES: PartnerTechnique[] = [
       { label: 'Kake', text: 'Tu tends les jambes en tirant vers le bas et l’avant : il passe par-dessus ton épaule.' },
     ],
     keyPoints: ['Les genoux fléchis pour passer sous son centre de gravité', 'Le coude droit reste sous son aisselle', 'Ne pas tomber à genoux sans l’accord de l’enseignant'],
-    safety: ['Projection avec une forte hauteur de chute : partenaire expérimenté en ukemi uniquement.', DOJO],
+    safety: ['Dans les études consultées, c’est la projection la plus souvent liée aux blessures graves du cou (le haut du crâne de celui qui chute heurte le sol) : partenaire expérimenté en ukemi uniquement.', 'Tomber sur les deux genoux en projetant augmente ce risque : ne le faire qu’avec l’accord de l’enseignant.', DOJO],
     prep: 'uchikomi-seoi',
   },
   {
@@ -210,7 +210,7 @@ export const PARTNER_TECHNIQUES: PartnerTechnique[] = [
     phases: [
       { label: 'Position', text: 'Garde fermée, le bras du partenaire est isolé contre ta poitrine.' },
       { label: 'Transition', text: 'Tu pivotes les hanches de côté pour placer ta jambe sur sa tête.' },
-      { label: 'Contrôle', text: 'Ses épaules restent au sol, son bras tenu le pouce vers le haut.' },
+      { label: 'Contrôle', text: 'Son bras est tenu le pouce vers le haut, ses épaules contrôlées par tes jambes.' },
       { label: 'Sortie', text: 'Au club, la pression monte lentement et s’arrête au premier tapement.' },
     ],
     keyPoints: ['Contrôle d’abord, pression ensuite', 'La pression est lente et progressive'],

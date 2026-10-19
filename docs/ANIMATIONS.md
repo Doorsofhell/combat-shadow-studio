@@ -54,8 +54,8 @@ Contrôles : 1. Présente dans chaque discipline, dans les deux gardes ; 2. Coud
 | High kick gauche (`high-kick-avant`) | kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
 | Roundhouse kick (`roundhouse-arriere`) | kickboxing, mma | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
 | Roundhouse jambe avant (`roundhouse-avant`) | kickboxing | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
-| Genou direct (`genou-direct-arriere`) | muaythai, mma | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
-| Genou direct avant (`genou-direct-avant`) | muaythai | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
+| Genou direct (`genou-direct-arriere`) | muaythai, mma | Contrôlée automatiquement | oui | oui | oui | oui | – | oui | oui |  |
+| Genou direct avant (`genou-direct-avant`) | muaythai | Contrôlée automatiquement | oui | oui | oui | oui | – | oui | oui |  |
 | Genou circulaire (`genou-circulaire-arriere`) | muaythai | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
 | Genou circulaire avant (`genou-circulaire-avant`) | muaythai | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
 | Coude horizontal gauche (`coude-horizontal-avant`) | muaythai | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |

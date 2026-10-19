@@ -27,6 +27,8 @@ export interface Motion {
   travel?: { x: number; z: number; yaw: number };
   startState: BodyState;
   endState: BodyState;
+  /** held on one foot (kicks, knees, checks): key poses are balanced over the supporting foot (see balance.ts) */
+  balance?: boolean;
 }
 
 export const duration = (m: Motion) => m.keys[m.keys.length - 1].t;

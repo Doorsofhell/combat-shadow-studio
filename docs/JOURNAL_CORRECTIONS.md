@@ -445,3 +445,52 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
   - contrôle visuel des 300 vignettes régénérées (échantillon jab, crochet, middle-kick, coude) : TEST RÉUSSI ;
   - validation par un entraîneur : NON EXÉCUTÉ ; vrai téléphone Android : NON EXÉCUTÉ.
 - **Restauration** : `restauration/lot-6c`
+
+## 2026-10-19 · v0.17.0 · Audit technique et biomécanique (mission prioritaire)
+
+- **Demande** : « Audit technique et biomécanique exhaustif » des 6 disciplines : recherche documentaire classée,
+  registre des vidéos réellement consultées, fiches biomécaniques, audit du moteur, anomalies priorisées, plan de
+  correction, animations pilotes corrigées et testées, méthode reproductible, sur une branche dédiée.
+- **Constat après vérification** :
+  - recherche : 142 lignes de sources dans 4 rapports (`docs/audit-biomecanique/recherche/`), dont des pages
+    inaccessibles listées à part (PDF Kodokan, règlement IBJJF, UWW, FFJDA). **Aucune vidéo visionnée** : les outils
+    lisent du texte seulement. Les pages passent par un lecteur qui résume : citations à revérifier ;
+  - mesures sur le squelette réel (`src/engine/audit.ts`, centre de masse de Leva 1996) : sur les coups de pied,
+    genoux et checks, le centre de masse restait 15 à 27 cm hors du pied d'appui pendant 72 à 90 % du mouvement
+    (poids jamais transféré) ; sprawl : genou 1,9 cm sous le sol, pieds qui glissaient de 21,6 cm par image au
+    retour ; techniques au sol : orteils 1,4 cm sous le sol ; relevé technique et changement de base : pied qui
+    glisse de 11 à 14 cm par image ; transitions : glissement ajouté faible (≤ 3 cm par image) ;
+  - textes contredits par les sources : middle kick « buste incliné en arrière », sprawl « mains au sol », shrimp
+    « poussée des bras », clé de bras « épaules au sol », abandon incomplet (taper deux fois ou dire « maitta »),
+    risques graves non signalés pour o-soto-gari (tête) et seoi-nage (cou), aucun poignet ni surface de contact sur
+    les coups de poing, aucune limite de hauteur de tête sur les rolls, pas de sécurité du genou d'appui sur les kicks.
+- **Correction** :
+  - **équilibre sur un pied** (`src/engine/balance.ts`) pour 20 animations (coups de pied, genoux, checks) : les
+    hanches placent le centre de masse au-dessus du pied d'appui, la jambe en l'air et les mains suivent ; la pose
+    d'avant transfère déjà la moitié du poids. Temps hors appui : 72 à 90 % → 7 à 28 % (il ne reste que la pose de la
+    jambe au retour) ;
+  - **sprawl** refait : mains qui appuient sur une tête imaginaire puis finissent au sol, hanches au sol, retour en
+    sautant. Point le plus bas 2,0 cm, glissement 3,3 cm par image ;
+  - 17 corrections de texte sourcées (boxe, kick, MMA, judo, BJJ) ;
+  - modèle de fiche biomécanique (`src/domain/biomech/`), registre des sources, 3 fiches pilotes (direct, middle kick
+    droit, sprawl) au statut « Validation technique nécessaire » ; un test refuse « Validée » sans revue d'expert ;
+  - documents : `docs/audit-biomecanique/` (README, INVENTAIRE et MESURES_MOTEUR générés par des tests,
+    BIBLIOGRAPHIE, REGISTRE_VIDEOS, AUDIT_MOTEUR, ANOMALIES, PLAN_CORRECTION, METHODE).
+- **Limites** : aucune technique validée par un entraîneur ; 82 fiches restent « À documenter » (notes de recherche
+  disponibles) ; pas de système à deux corps, pas d'outil de comparaison vidéo, collisions et Android non mesurés ;
+  techniques au sol et sens du roll à corriger dans les lots suivants (voir PLAN_CORRECTION).
+- **Fichiers** : `src/engine/balance.ts`, `audit.ts` (nouveaux), `motion.ts`, `library/index.ts`, `library/legs.ts`,
+  `library/mma.ts`, `src/domain/techniques.ts`, `partner.ts`, `src/domain/biomech/` (nouveau),
+  `animationStatus.json`, tests `audit.test.ts` et `biomech.test.ts` (nouveaux), `docs/ANIMATIONS.md`,
+  `docs/audit-biomecanique/`, `public/thumbs/`.
+- **Tests** :
+  - compilation TypeScript : TEST RÉUSSI ;
+  - unitaires (292 réussis, 1 ignoré), dont longueur des jambes aux deux limites (appuis et angles inchangés après
+    l'équilibrage), registre des animations à jour (75 contrôlées, 0 à corriger), mesures et inventaire à jour,
+    fiches (sources connues, « Validée » refusée sans revue) : TEST RÉUSSI ;
+  - navigateur (58 réussis, 2 ignorés : Firebase) : TEST RÉUSSI ;
+  - contrôle visuel des 42 vignettes régénérées (sprawl, middle kick, high kick, genou, check, teep ; homme et
+    femme) : TEST RÉUSSI ;
+  - revue par un entraîneur : NON EXÉCUTÉ ; vrai téléphone Android : NON EXÉCUTÉ ; vidéos : NON EXÉCUTÉ (aucune
+    visionnée).
+- **Restauration** : `restauration/lot-7`

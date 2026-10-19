@@ -91,14 +91,21 @@ function shot(a: Author): Motion {
   };
 }
 
-/** Sprawl: hands down, legs shoot back, hips heavy on the floor, then back to stance. */
+/**
+ * Sprawl: hips and legs shoot straight back, hips to the mat, hands forward pressing down on the
+ * attacker's head and shoulders (imaginary in solo), then the feet hop back under and back to stance.
+ * Sources: Evolve MMA "What is sprawling", Fanatic Wrestling / Ben Askren "Fixing the sprawl"
+ * (docs/audit-biomecanique/BIBLIOGRAPHIE.md): hands on head/neck/shoulders, never on the hips; legs
+ * straight back; hips to the mat. The legs leave the floor on the way back and on the way in, so the
+ * feet do not slide.
+ */
 function sprawl(a: Author): Motion {
   const g = a.guard();
   const s = a.s;
-  const wristH = 0.045 * s;
-  const handsDown = (d: Pose, z: number) => {
-    d.handL = a.hand('world', v3(0.2 * s, wristH, z), v3(0.7, 0.2, -0.6), 1, 0, deg(-75));
-    d.handR = a.hand('world', v3(-0.2 * s, wristH, z), v3(-0.7, 0.2, -0.6), 1, 0, deg(-75));
+  /** hands on the attacker's head and shoulders (imaginary), pressing down and away */
+  const press = (d: Pose, y: number, z: number) => {
+    d.handL = a.hand('world', v3(0.17 * s, y, z), v3(0.6, 0.1, -0.8), 1, 0, deg(-70));
+    d.handR = a.hand('world', v3(-0.17 * s, y, z), v3(-0.6, 0.1, -0.8), 1, 0, deg(-70));
   };
   const drop = edit(g, (d) => {
     d.hips.y -= 0.3 * s;
@@ -106,51 +113,61 @@ function sprawl(a: Author): Motion {
     d.pelvis.pitch += deg(40);
     d.chest.pitch += deg(20);
     d.head.pitch += deg(-35);
-    handsDown(d, 0.42 * s);
-    d.handL.pos.y += 0.12 * s;
-    d.handR.pos.y += 0.12 * s;
+    press(d, 0.5 * s, 0.42 * s);
   });
   const kick = edit(drop, (d) => {
-    handsDown(d, 0.36 * s);
-    d.hips = v3(0, 0.36 * s, -0.42 * s);
+    press(d, 0.06 * s, 0.4 * s);
+    d.hips = v3(0, 0.42 * s, -0.42 * s);
     d.pelvis = { yaw: 0, pitch: deg(72), roll: 0 };
     d.chest = { yaw: 0, pitch: deg(-10), roll: 0 };
-    d.footL = a.air(v3(0.26 * s, 0.25 * s, -1.05 * s), deg(10), deg(30), 0, v3(0.3, -1, 0), deg(20));
-    d.footR = a.air(v3(-0.26 * s, 0.25 * s, -1.05 * s), deg(-10), deg(30), 0, v3(-0.3, -1, 0), deg(20));
+    d.footL = a.air(v3(0.26 * s, 0.3 * s, -1.05 * s), deg(10), deg(30), 0, v3(0.3, -1, 0), deg(20));
+    d.footR = a.air(v3(-0.26 * s, 0.3 * s, -1.05 * s), deg(-10), deg(30), 0, v3(-0.3, -1, 0), deg(20));
   });
   const flat = edit(kick, (d) => {
-    d.hips = v3(0, 0.24 * s, -0.5 * s);
-    d.pelvis = { yaw: 0, pitch: deg(80), roll: 0 };
-    d.chest = { yaw: 0, pitch: deg(-22), roll: 0 };
+    press(d, 0.05 * s, 0.38 * s); // the head is pushed down to the mat: in solo the hands end on the floor and break the fall
+    d.hips = v3(0, 0.16 * s, -0.5 * s);
+    d.pelvis = { yaw: 0, pitch: deg(82), roll: 0 };
+    d.chest = { yaw: 0, pitch: deg(-24), roll: 0 };
     d.head = { yaw: 0, pitch: deg(-45), roll: 0 };
     d.footL = a.ground(v3(0.3 * s, 0, -1.18 * s), deg(15), deg(78));
     d.footR = a.ground(v3(-0.3 * s, 0, -1.18 * s), deg(-15), deg(78));
   });
-  const tuck = edit(drop, (d) => {
-    d.hips = v3(-0.02 * s, a.m.hipsRest.y * 0.62, -0.12 * s);
-    d.pelvis = { yaw: deg(-20), pitch: deg(35), roll: 0 };
-    d.footL = a.air(v3(0.14 * s, 0.14 * s, 0.1 * s), deg(-15), deg(10), 0, v3(0.4, 0, 1), 0);
-    d.footR = a.ground(v3(-0.2 * s, 0, -0.3 * s), deg(-40), deg(30));
+  // the feet leave the floor to come back under the hips (a hop), they never drag on the mat
+  const hop = edit(flat, (d) => {
+    press(d, 0.05 * s, 0.36 * s); // the hands push off the floor to lift the hips
+    d.hips = v3(0, 0.52 * s, -0.3 * s);
+    d.pelvis = { yaw: 0, pitch: deg(55), roll: 0 };
+    d.chest = { yaw: 0, pitch: deg(5), roll: 0 };
+    d.footL = a.air(v3(0.22 * s, 0.26 * s, -0.62 * s), deg(5), deg(40), 0, v3(0.3, -1, 0.3), deg(10));
+    d.footR = a.air(v3(-0.22 * s, 0.22 * s, -0.66 * s), deg(-10), deg(35), 0, v3(-0.3, -1, 0.3), deg(10));
+  });
+  // both feet land in stance, hips low, then the coach stands back up into guard
+  const crouch = edit(g, (d) => {
+    d.hips.y -= 0.24 * s;
+    d.hips.z -= 0.04 * s;
+    d.pelvis.pitch += deg(30);
+    d.chest.pitch += deg(12);
+    d.head.pitch += deg(-25);
   });
   return {
     id: 'sprawl',
     keys: [
       { t: 0, pose: g },
-      { t: 0.16, pose: drop, ease: 'in' },
-      { t: 0.32, pose: kick, ease: 'linear' },
-      { t: 0.44, pose: flat, ease: 'out' },
-      { t: 0.8, pose: flat, ease: 'linear' },
-      { t: 1.1, pose: tuck, ease: 'inOut' },
-      { t: 1.4, pose: g, ease: 'inOut' },
+      { t: 0.24, pose: drop, ease: 'inOut' },
+      { t: 0.4, pose: kick, ease: 'linear' },
+      { t: 0.52, pose: flat, ease: 'out' },
+      { t: 0.86, pose: flat, ease: 'linear' },
+      { t: 1.04, pose: hop, ease: 'inOut' },
+      { t: 1.22, pose: crouch, ease: 'inOut' },
+      { t: 1.52, pose: g, ease: 'inOut' },
     ],
-    chainAt: 1.32,
-    impacts: [0.44],
+    chainAt: 1.44,
+    impacts: [0.52],
     startState: 'stand',
     endState: 'stand',
   };
 }
 
-/** defence against a takedown attempt, standing: hips back, hands frame down on imaginary shoulders */
 function takedownDefence(a: Author): Motion {
   const g = a.guard();
   const s = a.s;

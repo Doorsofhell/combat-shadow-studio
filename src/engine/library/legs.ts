@@ -121,6 +121,7 @@ function roundKick(a: Author, side: LegSide, height: 'thigh' | 'liver' | 'head',
     chainAt: t[4] - 0.1,
     impacts: [t[2]],
     ...stand,
+    balance: true,
   };
 }
 
@@ -165,6 +166,7 @@ function straightKick(a: Author, side: LegSide, kind: 'teep' | 'front'): Motion 
     chainAt: 0.64,
     impacts: [0.32],
     ...stand,
+    balance: true,
   };
 }
 
@@ -242,6 +244,7 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
     chainAt: 0.58,
     impacts: [0.34],
     ...stand,
+    balance: true,
   };
 }
 
@@ -271,6 +274,7 @@ function check(a: Author, side: LegSide): Motion {
     chainAt: 0.44,
     impacts: [0.16],
     ...stand,
+    balance: true,
   };
 }
 

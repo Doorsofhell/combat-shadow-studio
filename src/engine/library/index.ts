@@ -1,6 +1,7 @@
 import { Author, StanceStyle } from '../author';
 import { Motion, mirrorMotion } from '../motion';
 import type { CoachRig } from '../rig';
+import { balanceKeys } from '../balance';
 import { boxingMotions } from './boxing';
 import { legMotions } from './legs';
 import { mmaMotions } from './mma';
@@ -22,6 +23,7 @@ export function getLibrary(rig: CoachRig, style: StanceStyle): MotionLibrary {
     for (const m of buildAll(a)) {
       // joint safety on every key pose: no elbow folded beyond its natural range
       for (const k of m.keys) a.openElbows(k.pose);
+      if (m.balance) balanceKeys(rig, m);
       lib.set(m.id, m);
     }
     perRig.set(style, lib);

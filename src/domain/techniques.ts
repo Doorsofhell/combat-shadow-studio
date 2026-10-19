@@ -58,13 +58,13 @@ export const TECHNIQUES: Technique[] = [
     id: 'jab', name: 'Jab', call: 'Jab', category: 'poing', disciplines: ALL, motion: 'jab',
     description: 'Direct du bras avant, rapide, en ligne droite vers le menton, retour par le même chemin.',
     cues: ['Tends et ramène', 'Épaule contre le menton', 'Main arrière à la joue'],
-    keyPoints: ['Le poing tourne en fin de trajectoire', 'Léger transfert sur la jambe avant', 'Retour immédiat en garde'],
+    keyPoints: ['Le poing tourne en fin de trajectoire', 'Poignet droit, on touche avec les phalanges', 'Léger transfert sur la jambe avant', 'Retour immédiat en garde'],
   },
   {
     id: 'direct', name: 'Direct arrière', call: 'Direct', category: 'poing', disciplines: ALL, motion: 'direct',
-    description: 'Direct du bras arrière : pivot du pied arrière, rotation des hanches puis des épaules, bras tendu vers le menton.',
+    description: 'Direct du bras arrière : la jambe arrière pousse, le pied arrière pivote, les hanches puis les épaules tournent, le poids passe vers la jambe avant, bras tendu vers le menton.',
     cues: ['Tourne la hanche', 'Pivote le pied arrière', 'Ramène les mains en garde'],
-    keyPoints: ['Talon arrière vers l’extérieur', 'Main avant protège le visage', 'Ne pas se pencher au-delà du genou avant'],
+    keyPoints: ['Talon arrière vers l’extérieur', 'Poignet droit, on touche avec les phalanges', 'Main avant protège le visage', 'Ne pas se pencher au-delà du genou avant'],
   },
   {
     id: 'jab-corps', name: 'Jab au corps', call: 'Jab au corps', category: 'poing', disciplines: ALL, motion: 'jab-corps',
@@ -80,12 +80,12 @@ export const TECHNIQUES: Technique[] = [
     id: 'crochet-avant', name: 'Crochet gauche', call: 'Crochet gauche', category: 'poing', disciplines: ALL, motion: 'crochet-avant',
     description: 'Crochet du bras avant : coude à hauteur du poing, avant-bras horizontal, rotation des hanches et pivot du pied avant.',
     cues: ['Coude haut', 'Pivote le pied avant', 'Tourne tout le corps'],
-    keyPoints: ['Angle d’environ 90° au coude', 'Le poing ne part pas en arrière avant de frapper', 'Main droite collée à la joue'],
+    keyPoints: ['Angle d’environ 90° au coude', 'Poignet droit, on touche avec les phalanges', 'Le poing ne part pas en arrière avant de frapper', 'Main droite collée à la joue'],
   },
   {
     id: 'crochet-arriere', name: 'Crochet droit', call: 'Crochet droit', category: 'poing', disciplines: ALL, motion: 'crochet-arriere',
     description: 'Crochet du bras arrière, porté par la rotation des hanches et le pivot du pied arrière.',
-    cues: ['Tourne la hanche', 'Coude à hauteur du poing'], keyPoints: ['Ne pas armer en arrière', 'Main gauche protège le menton'],
+    cues: ['Tourne la hanche', 'Coude à hauteur du poing'], keyPoints: ['Ne pas armer en arrière', 'Poignet droit, on touche avec les phalanges', 'Main gauche protège le menton'],
   },
   {
     id: 'crochet-avant-corps', name: 'Crochet gauche au corps', call: 'Crochet au corps', category: 'poing', disciplines: ALL, motion: 'crochet-avant-corps',
@@ -126,11 +126,11 @@ export const TECHNIQUES: Technique[] = [
   {
     id: 'roll-droite', name: 'Rotation sous le crochet (roll)', call: 'Roll', category: 'defense', disciplines: ALL, motion: 'roll-droite',
     description: 'Passage sous un crochet en U : descente sur les jambes, déplacement latéral, remontée de l’autre côté.',
-    cues: ['Descends avec les jambes', 'Dessine un U'], keyPoints: ['Ne pas regarder le sol', 'Garde haute pendant la rotation'],
+    cues: ['Descends avec les jambes', 'Dessine un U'], keyPoints: ['Ne pas regarder le sol', 'Garde haute pendant la rotation', 'La tête ne descend jamais sous la ceinture de l’adversaire'],
   },
   {
     id: 'roll-gauche', name: 'Roll de l’autre côté', call: 'Roll gauche', category: 'defense', disciplines: ALL, motion: 'roll-gauche',
-    description: 'Même rotation en U dans l’autre sens.', cues: ['Descends, passe, remonte'], keyPoints: ['Les genoux font le travail'],
+    description: 'Même rotation en U dans l’autre sens.', cues: ['Descends, passe, remonte'], keyPoints: ['Les genoux font le travail', 'La tête ne descend jamais sous la ceinture de l’adversaire'],
   },
   {
     id: 'blocage-haut', name: 'Blocage haut', call: 'Bloque', category: 'defense', disciplines: ALL, motion: 'blocage-haut',
@@ -186,7 +186,7 @@ export const TECHNIQUES: Technique[] = [
     id: 'low-kick-arriere', name: 'Low kick droit', call: 'Low kick droit', category: 'pied', disciplines: KICK, motion: 'low-kick-arriere',
     description: 'Coup de pied circulaire bas avec le tibia vers la cuisse : pivot du pied d’appui, rotation de la hanche.',
     cues: ['Pivote le pied d’appui', 'Tourne la hanche', 'Frappe avec le tibia'],
-    keyPoints: ['Le talon d’appui pointe vers la cible', 'Trajectoire légèrement descendante', 'Main du côté qui frappe protège ou équilibre'],
+    keyPoints: ['On touche avec le milieu du tibia, jamais avec le pied ou la cheville', 'Le talon d’appui pointe vers la cible', 'Trajectoire légèrement descendante', 'La main opposée protège le visage'],
   },
   {
     id: 'low-kick-avant', name: 'Low kick gauche', call: 'Low kick gauche', category: 'pied', disciplines: KICK, motion: 'low-kick-avant',
@@ -195,7 +195,7 @@ export const TECHNIQUES: Technique[] = [
   {
     id: 'middle-kick-arriere', name: 'Middle kick droit', call: 'Middle kick', category: 'pied', disciplines: KICK, motion: 'middle-kick-arriere',
     description: 'Coup de pied circulaire au corps avec le tibia : pivot complet, hanche qui passe, jambe qui traverse la cible.',
-    cues: ['Pivote', 'Tourne la hanche', 'Traverse la cible'], keyPoints: ['Pied d’appui sur l’avant', 'Le buste s’incline légèrement en arrière'],
+    cues: ['Pivote', 'Tourne la hanche', 'Traverse la cible'], keyPoints: ['Pied d’appui sur l’avant', 'Le buste ne part pas en arrière : la puissance vient de la hanche', 'Genou d’appui légèrement fléchi, jamais verrouillé'],
   },
   {
     id: 'middle-kick-avant', name: 'Middle kick gauche', call: 'Middle kick gauche', category: 'pied', disciplines: KICK, motion: 'middle-kick-avant',
@@ -204,7 +204,7 @@ export const TECHNIQUES: Technique[] = [
   {
     id: 'high-kick-arriere', name: 'High kick droit', call: 'High kick', category: 'pied', disciplines: KICK, motion: 'high-kick-arriere',
     description: 'Coup de pied circulaire à la tête : pivot maximal, hanche ouverte, buste incliné pour monter la jambe.',
-    cues: ['Pivote fort', 'Ouvre la hanche', 'Garde haute'], keyPoints: ['Ne pas monter plus haut que sa souplesse', 'Équilibre sur l’avant du pied'],
+    cues: ['Pivote fort', 'Ouvre la hanche', 'Garde haute'], keyPoints: ['Ne pas monter plus haut que sa souplesse', 'Équilibre sur l’avant du pied', 'Genou d’appui légèrement fléchi, jamais verrouillé'],
   },
   {
     id: 'high-kick-avant', name: 'High kick gauche', call: 'High kick gauche', category: 'pied', disciplines: KICK, motion: 'high-kick-avant',
@@ -310,9 +310,10 @@ export const TECHNIQUES: Technique[] = [
   },
   {
     id: 'sprawl', name: 'Sprawl', call: 'Sprawl', category: 'lutte', disciplines: ['mma'], motion: 'sprawl',
-    description: 'Défense contre l’entrée en lutte : mains au sol, jambes projetées en arrière, hanches lourdes vers le sol, puis retour en garde.',
+    description: 'Défense contre l’entrée en lutte : les hanches et les jambes partent droit en arrière, les hanches vont au sol, les mains appuient vers le bas sur la tête et les épaules de l’attaquant. Seul, les mains finissent au sol et amortissent la chute ; les pieds reviennent sous les hanches en sautant, puis retour en garde.',
     cues: ['Jambes en arrière', 'Hanches au sol', 'Remonte en garde'],
-    keyPoints: ['Les jambes s’écartent', 'La tête reste haute', 'Retour rapide sur les pieds'],
+    keyPoints: ['Les jambes partent droit en arrière', 'Mains sur la tête ou les épaules, jamais sur les hanches de l’attaquant', 'Ne pas lancer les jambes au point de lever le bas du corps'],
+    soloNote: 'Seul, on travaille le geste des hanches et des jambes. Le contrôle de la tête et le poids mis sur l’attaquant demandent un partenaire.',
   },
   {
     id: 'defense-lutte', name: 'Défense d’entrée en lutte', call: 'Défends', category: 'lutte', disciplines: ['mma'], motion: 'defense-lutte',
@@ -326,8 +327,8 @@ export const TECHNIQUES: Technique[] = [
   },
   {
     id: 'sortie-hanche', name: 'Sortie de hanche (shrimp)', call: 'Sortie de hanche', category: 'sol', disciplines: GROUND, motion: 'sortie-hanche',
-    description: 'Au sol, les hanches glissent en arrière en poussant sur le pied et la main pour créer de l’espace.',
-    cues: ['Pousse avec le pied', 'Hanches en arrière'], keyPoints: ['Le coude reste près du corps'],
+    description: 'Au sol, on passe sur le côté et les hanches partent en arrière en diagonale, poussées par le pied, pour créer de l’espace. La force vient des hanches, pas des bras.',
+    cues: ['Pousse avec le pied', 'Hanches en arrière'], keyPoints: ['Le coude reste près du corps', 'Passer sur le côté, ne pas rester à plat sur le dos'],
     soloNote: 'Mouvement de mobilité au sol réalisé seul.',
   },
   {
