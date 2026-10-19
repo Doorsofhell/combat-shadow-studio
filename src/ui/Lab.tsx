@@ -15,11 +15,14 @@ import { sequenceEnvelope, type Envelope } from '../engine/envelope';
 import { STYLE_OF } from '../three/CoachStage';
 import { defaultLook, recommendedGear, type FighterLook } from '../editor/look';
 import type { StageView } from '../three/StudioStage';
+import { COACH_LOOKS } from '../domain/coaches/looks';
 
 /** Developer view: freezes a motion at a given time, used for visual checks and screenshots. */
 export function Lab() {
   const q = useMemo(() => new URLSearchParams(location.hash.split('?')[1] ?? ''), []);
-  const coach = (q.get('coach') ?? 'homme') as CoachId;
+  // champion=<coach id>: a champion-inspired coach, its own model and its fixed look
+  const champion = q.get('champion') && COACH_LOOKS[q.get('champion')!] ? q.get('champion')! : null;
+  const coach = (champion ? COACH_LOOKS[champion].sex : (q.get('coach') ?? 'homme')) as CoachId;
   // tech=<technique id>&d=<discipline>: the technique at its key moment, from its teaching angle
   const tech = q.get('tech') ? TECHNIQUE_BY_ID.get(q.get('tech')!) : undefined;
   const disc = (q.get('d') ?? tech?.disciplines[0] ?? 'boxe') as DisciplineId;
@@ -29,7 +32,12 @@ export function Lab() {
   const envelope = useRef<Envelope | null>(null);
   const origin = useRef({ x: 0, z: 0, yaw: 0 });
   const view = useMemo<StageView | undefined>(() => {
-    if (!tech) return q.get('az') ? { az: Number(q.get('az')), el: Number(q.get('el') ?? '12'), zoom: 1, focus: 0.5 } : undefined;
+    if (!tech) {
+      if (!q.get('az')) return undefined;
+      // span=<part of the body height>&fy=<metres>: close-up of a body part (face 0.16, bust 0.45…)
+      const span = q.get('span') ? Number(q.get('span')) : undefined;
+      return { az: Number(q.get('az')), el: Number(q.get('el') ?? '12'), zoom: 1, focus: q.get('fy') ? Number(q.get('fy')) / 1.85 : 0.5, closeUp: !!span, span };
+    }
     const v = techniqueView(tech.id);
     // thumbnails (thumb=1): punches and elbows read better from the lead side than nearly face-on
     if (q.get('thumb') && ['poing', 'coude', 'feinte'].includes(tech.category)) return { az: 65, el: 8, zoom: 1, focus: v.focus };
@@ -39,6 +47,7 @@ export function Lab() {
   const southpaw = q.get('garde') === 'gaucher';
   // art=1: official discipline artwork (discipline gear, collection palette: anthracite, red, gold)
   const look = useMemo<FighterLook | null>(() => {
+    if (champion) return COACH_LOOKS[champion];
     if (!q.get('art')) {
       // top=<garment>&bottom=<garment>: clothing checks on the default look
       if (!q.get('top') && !q.get('bottom')) return null;
@@ -63,7 +72,7 @@ export function Lab() {
         feetPaint: { color: '#f2efe6', color2: red, pattern: 'uni' },
       },
     };
-  }, [q, coach, disc]);
+  }, [q, coach, disc, champion]);
   // look=realiste|manga|encre, render=precedent: the v0.22 render (fallback), for before/after captures
   const labStyle = q.get('look') === 'realiste' ? 'realiste' : q.get('look') === 'manga' ? 'manga' : 'encre';
   const render = q.get('render') === 'precedent' ? 'precedent' : 'premium';
@@ -109,7 +118,7 @@ export function Lab() {
             zoom={Number(q.get('zoom') ?? '1')}
             focusY={q.get('fy') ? Number(q.get('fy')) : undefined}
           >
-            <CoachModel coach={coach} style={labStyle} render={render} quality="haute" look={look} onRig={onRig} onFrame={onFrame} />
+            <CoachModel coach={coach} style={labStyle} render={render} quality="haute" look={look} model={champion ? `./coaches/${champion}/model` : undefined} onRig={onRig} onFrame={onFrame} />
             {labStyle === 'realiste' && render === 'premium' && <StudioEnvironment />}
           </StudioStage>
         </Suspense>

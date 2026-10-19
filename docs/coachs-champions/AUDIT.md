@@ -91,7 +91,7 @@ Un personnage clairement reconnaissable, avec un nom et un surnom proches de ceu
 à l'image, au nom ou à la personnalité, même avec un visage modifié, surtout dans une application commerciale.
 Recommandations, à valider par un juriste avant toute diffusion commerciale :
 
-- le nom du champion de référence reste dans les documents de conception et **n'apparaît pas dans l'application** ;
+- le nom du champion de référence reste dans les documents de conception et **n'apparaît pas dans l'application** (décision de Youssef du 2026-10-19) ;
 - noms et surnoms fictifs volontairement éloignés de l'original (pas une lettre changée) ;
 - aucun tatouage, cicatrice, logo, sponsor ou couleur de tenue distinctive reproduits ;
 - visage original : seules la catégorie morphologique et l'expression sont évoquées.

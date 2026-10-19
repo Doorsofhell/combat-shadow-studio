@@ -21,8 +21,14 @@ MALE = WHO == "male"
 STYLE = os.environ.get("CSS_STYLE", "realiste")
 MANGA = STYLE == "manga"
 SUFFIX = "_manga" if MANGA else ""
+# one fixed coach (tools/generator/coaches/recipes/<id>.json): its own body and face targets
+RECIPE = None
+if os.environ.get("CSS_RECIPE"):
+    import json
+    RECIPE = json.load(open(os.environ["CSS_RECIPE"]))
+    SUFFIX += "_" + RECIPE["id"]
 os.makedirs(OUT, exist_ok=True)
-rng = np.random.default_rng(7 if MALE else 11)
+rng = np.random.default_rng(RECIPE.get("seed", 7) if RECIPE else 7 if MALE else 11)
 
 import addon_utils
 addon_utils.enable("bl_ext.user_default.mpfb", default_set=True)
@@ -48,6 +54,9 @@ if MANGA:
         macro.update(dict(muscle=0.6, weight=0.5, height=0.72, proportions=1.0))
     else:
         macro.update(dict(muscle=0.52, weight=0.48, height=0.62, proportions=1.0))
+if RECIPE:
+    macro.update(RECIPE["macro"])
+    macro["race"] = RECIPE["race"]
 h = HumanService.create_human(macro_detail_dict=macro)
 
 
@@ -101,6 +110,9 @@ elif MANGA:
               ("arms/X-upperarm-fat-decr", .4), ("arms/X-lowerarm-muscle-incr", .1),
               ("legs/X-upperleg-muscle-incr", .2), ("legs/X-lowerleg-muscle-incr", .15),
               ("cheek/X-cheek-bones-incr", .5), ("cheek/X-cheek-volume-decr", .4)]
+if RECIPE:
+    single = [tuple(x) for x in RECIPE["single"]]
+    paired = [tuple(x) for x in RECIPE["paired"]]
 for p, w in single:
     tgt(p, w)
 for p, w in paired:

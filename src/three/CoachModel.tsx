@@ -159,17 +159,20 @@ export interface CoachModelProps {
   look?: FighterLook | null;
   /** gear drawn see-through ("Décomposer" mode) */
   ghostGear?: boolean;
+  /** a champion-inspired coach's own model (path without extension, e.g. ./coaches/mma-kadir/model) */
+  model?: string;
   onRig: (rig: CoachRig) => void;
   /** called every frame before rendering; returns nothing, drives the rig */
   onFrame: (rig: CoachRig, dt: number) => void;
 }
 
-export function CoachModel({ coach, style, quality, look, render = 'premium', ghostGear = false, onRig, onFrame }: CoachModelProps) {
-  const gltf = useGLTF(coachUrl(coach, style, render), DRACO, true, patchJsonModels);
+export function CoachModel({ coach, style, quality, look, render = 'premium', ghostGear = false, model, onRig, onFrame }: CoachModelProps) {
+  const own = model && render === 'premium' ? model : null;
+  const gltf = useGLTF(own ? `${own}.${EXT}` : coachUrl(coach, style, render), DRACO, true, patchJsonModels);
   const premium = render === 'premium';
   const custom = style !== 'realiste' || premium;
-  const meta = useMeta(`./models/coach_${who(coach)}_manga.meta.json`);
-  const masks = useLoader(TextureLoader, `./models/coach_${who(coach)}_manga_masks.png`);
+  const meta = useMeta(own ? `${own}.meta.json` : `./models/coach_${who(coach)}_manga.meta.json`);
+  const masks = useLoader(TextureLoader, own ? `${own}_masks.png` : `./models/coach_${who(coach)}_manga_masks.png`);
   // one skeleton per model: changing the look swaps the materials only, so the rig, the player and the
   // animation in progress are kept (no remount, the session goes on)
   const base = useMemo(() => {
