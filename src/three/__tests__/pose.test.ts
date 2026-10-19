@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { Vector3 } from 'three';
 import { loadSkeleton } from '../../test/skeleton';
-import { CoachRig } from '../../engine/rig';
+import { CoachRig, KNEE_MAX_FLEX } from '../../engine/rig';
 import { getLibrary } from '../../engine/library';
 import { MotionSampler, duration } from '../../engine/motion';
 import type { StanceStyle } from '../../engine/author';
@@ -97,7 +97,12 @@ describe('longueur des jambes aux limites du curseur', () => {
               expect(ok(a.elbow, b.elbow, ELBOW_MAX), `${at} coude ${side} ${a.elbow.toFixed(0)}° (référence ${b.elbow.toFixed(0)}°)`).toBe(true);
               const target = side === 'Left' ? pose.footL.ankle : pose.footR.ankle;
               const hip = rig.worldOf(`${side}UpLeg`)!;
-              if (hip.distanceTo(target) <= (m.thigh + m.shin) * 0.985) expect(foot.distanceTo(target), `${at} appui ${side}`).toBeLessThan(0.02);
+              // a heel lifted by the floor rule (dorsiflexion past the weight-bearing range) moves the ankle on
+              // purpose, about the ball of the foot: compare with the lifted ankle (src/engine/rig.ts settlePlanted)
+              const aim = rig.heelLift[side === 'Left' ? 'L' : 'R']?.ankle ?? target;
+              // closer than the knee allows (deep crouch on a lifted heel): the knee limit holds the foot short on purpose
+              const minReach = Math.sqrt(m.thigh ** 2 + m.shin ** 2 + 2 * m.thigh * m.shin * Math.cos(KNEE_MAX_FLEX));
+              if (hip.distanceTo(aim) <= (m.thigh + m.shin) * 0.985 && hip.distanceTo(aim) >= minReach * 1.05) expect(foot.distanceTo(aim), `${at} appui ${side}`).toBeLessThan(0.02);
             }
           }
         }

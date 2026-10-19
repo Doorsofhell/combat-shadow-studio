@@ -52,18 +52,19 @@ describe('bibliothèque d’animations', () => {
               ['RightFoot', pose.footR.ankle, m.thigh + m.shin],
             ] as const) {
               const root = bone.includes('Hand') ? rig.worldOf(bone.startsWith('Left') ? 'LeftArm' : 'RightArm')! : rig.worldOf(bone.startsWith('Left') ? 'LeftUpLeg' : 'RightUpLeg')!;
-              if (root.distanceTo(target) > reach * 0.985) continue; // out of reach: the limb is straightened
+              // a planted heel lifted by the floor rule (dorsiflexion past its range): the ankle rises about
+              // the ball on purpose, the lift is checked against the range in ankle-range.test.ts
+              const lifted = bone.includes('Foot') ? rig.heelLift[bone.startsWith('Left') ? 'L' : 'R'] : null;
+              const aim = lifted ? lifted.ankle : target;
+              if (root.distanceTo(aim) > reach * 0.985) continue; // out of reach: the limb is straightened
               // closer than the joint allows: the elbow / knee limit holds the hand or foot short of
               // its target on purpose (anatomical limit, see the test below)
               const hand = bone.includes('Hand');
               const a = hand ? m.upperArm : m.thigh;
               const b = hand ? m.foreArm : m.shin;
               const flex = hand ? ELBOW_MAX_FLEX : KNEE_MAX_FLEX;
-              if (root.distanceTo(target) < Math.sqrt(a * a + b * b + 2 * a * b * Math.cos(flex)) * 1.05) continue;
-              // a planted heel lifted by the floor rule (dorsiflexion past its range): the ankle rises about
-              // the ball on purpose, the lift is checked against the range in ankle-range.test.ts
-              const lifted = bone.includes('Foot') ? rig.heelLift[bone.startsWith('Left') ? 'L' : 'R'] : null;
-              const err = rig.worldOf(bone)!.distanceTo(lifted ? lifted.ankle : target);
+              if (root.distanceTo(aim) < Math.sqrt(a * a + b * b + 2 * a * b * Math.cos(flex)) * 1.05) continue;
+              const err = rig.worldOf(bone)!.distanceTo(aim);
               expect(err, `${c} ${style} ${motion.id} t${i} ${bone}`).toBeLessThan(0.02);
             }
           }
