@@ -72,7 +72,7 @@ export function CoachStudio() {
   const [newSheet, setNewSheet] = useState(false);
   const [pv, setPv] = useState<PreviewState>({
     mode: 'trois-quarts',
-    faceZoom: false,
+    part: 'corps',
     anim: 'garde',
     playing: true,
   });
@@ -152,7 +152,7 @@ export function CoachStudio() {
     setTab(t);
     setPv((p) => ({
       ...p,
-      faceZoom: FACE_TABS.includes(t),
+      part: FACE_TABS.includes(t) ? 'visage' : p.part === 'visage' ? 'corps' : p.part,
       mode: FACE_TABS.includes(t) && p.mode !== 'face' && p.mode !== 'trois-quarts' ? 'face' : p.mode,
     }));
   };
@@ -222,7 +222,7 @@ export function CoachStudio() {
       case 'cheveux':
         return <HairPanel {...p} />;
       case 'tatouages':
-        return <TattooPanel key={fighter.id} {...p} onZone={(z) => setPv((s) => ({ ...s, faceZoom: false, mode: zoneView(z) }))} />;
+        return <TattooPanel key={fighter.id} {...p} onZone={(z) => setPv((s) => ({ ...s, part: 'corps', mode: zoneView(z) }))} />;
       case 'tenue':
         return <OutfitPanel {...p} />;
       case 'equipement':

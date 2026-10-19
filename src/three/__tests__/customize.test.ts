@@ -271,3 +271,18 @@ describe('vêtements en volume (rendu 0.23)', () => {
     expect(legacy.hiddenCount()).toBe(0);
   });
 });
+
+describe('rendu Encre 0.23', () => {
+  test('le dessin ne dépend pas de la position à l’écran (pas de hachures plaquées sur l’écran)', () => {
+    const shaderOf = (style: 'encre' | 'cel') => {
+      const m = toonMaterial('x', null, new Color(1, 1, 1), style);
+      const sh = { fragmentShader: '#include <opaque_fragment>', vertexShader: '', uniforms: {} };
+      m.onBeforeCompile(sh as never, null as never);
+      return sh.fragmentShader;
+    };
+    // the previous Encre drew its hatching from the pixel position: it read as torn, striped skin on a phone
+    expect(shaderOf('encre')).toContain('gl_FragCoord');
+    expect(shaderOf('cel')).not.toContain('gl_FragCoord');
+    expect(shaderOf('cel')).not.toMatch(/fract\(/);
+  });
+});

@@ -16,7 +16,8 @@
 .cs-preview {
   position: relative;
   flex: 0 0 auto;
-  height: clamp(200px, 38dvh, 560px);
+  /* taller than before (38dvh): the fighter was too small on a phone */
+  height: clamp(220px, 46dvh, 620px);
   background: var(--scene);
   overflow: hidden;
 }
@@ -98,10 +99,41 @@
   color: var(--ink);
 }
 
+.cs-parts {
+  position: absolute;
+  top: 8px;
+  left: max(8px, env(safe-area-inset-left));
+  display: flex;
+  gap: 4px;
+  z-index: 1;
+}
+
+.cs-part-btn {
+  min-height: 40px;
+  min-width: 0;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--overlay);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.cs-part-btn[aria-checked='true'] {
+  border-color: var(--red);
+  background: var(--red);
+  color: var(--on-red);
+}
+
 .cs-free-tag {
   position: absolute;
   left: max(10px, env(safe-area-inset-left));
-  top: 10px;
+  bottom: calc(var(--tap) + 16px);
   padding: 4px 10px;
   border-radius: 999px;
   background: var(--overlay);

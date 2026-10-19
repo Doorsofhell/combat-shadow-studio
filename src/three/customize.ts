@@ -485,7 +485,7 @@ vec3 cssPaint(vec3 p, vec3 n) {
 const PAINT_FRAGMENT = /* glsl */ `
 #include <color_fragment>
 if (vCover < 0.0) discard;
-diffuseColor.rgb = cssPaint(vRest, vRestN) * mix(1.0, 0.55, vHem);
+diffuseColor.rgb = cssPaint(vRest, vRestN) * mix(1.0, 0.7, vHem);
 diffuseColor.a *= uGhost;
 `;
 
@@ -632,15 +632,11 @@ export function buildShell(body: BufferGeometry, map: BodyMap, spec: GarmentSpec
       const nl = Math.hypot(nn[0], nn[1], nn[2]) || 1;
       // the inner edge sits just under the skin, so no gap shows between the hem and the body
       const inner = outer.map((x, k) => x - (nn[k] / nl) * (depth + 0.0015));
-      // the strip faces away from the covered side
-      const cj = cov[used[c.j0]] > 0 ? c.j0 : c.j1;
-      const uj = cj === c.j0 ? c.j1 : c.j0;
-      const away = [0, 1, 2].map((k) => P[uj * 3 + k] - P[cj * 3 + k]);
-      return { outer, inner, away, src: c.f < 0.5 ? c.j0 : c.j1 };
+      return { outer, inner, nrm: nn.map((x) => x / nl), src: c.f < 0.5 ? c.j0 : c.j1 };
     });
-    const away = ends[0].away.map((x, k) => x + ends[1].away[k]);
-    const al = Math.hypot(away[0], away[1], away[2]) || 1;
-    for (const e of ends) hem.push({ p: e.outer, q: e.inner, nrm: away.map((x) => x / al), src: e.src });
+    // the strip keeps the normal of the cloth: lit like the fabric next to it (a normal along the cut
+    // caught the rim light and drew a pale sawtooth along every hem)
+    for (const e of ends) hem.push({ p: e.outer, q: e.inner, nrm: e.nrm, src: e.src });
   }
 
   const extra = hem.length * 2;
@@ -821,10 +817,13 @@ export function garmentSpecs(m: BodyMap) {
     (waistTop: number, tMax: number): CoverFn =>
     (i) =>
       isTorso(i) ? Math.min(waistTop - y(i), 0.2) : isLeg(i) ? Math.min((tMax - legT[i]) * legLen, waistTop - y(i)) : -1;
+  const neckZ = meta.neck[2];
   const top =
     (sleeve: number | null, low = pelvisY + 0.04): CoverFn =>
     (i) => {
-      const front = Math.max(0, nz(i));
+      // the neckline dips in front: from the position around the neck (a normal-based dip followed
+      // every bump of the mesh and gave a jagged collar)
+      const front = Math.min(1, Math.max(0, (z(i) - neckZ) / 0.07));
       const collar = neckY - 0.035 - 0.04 * front;
       if (isTorso(i)) {
         let c = Math.min(y(i) - low, collar - y(i));

@@ -17,6 +17,13 @@ export interface StageView {
   /** height of the point looked at, as a fraction of the body height (used for close-ups) */
   focus: number;
   closeUp?: boolean;
+  /** close-up: part of the body height shown (0.25 = a quarter, around `focus`) instead of `zoom` */
+  span?: number;
+  /**
+   * parts of the canvas covered by buttons (fractions of its width and height): the coach is framed
+   * in the free part and centred in it, so the controls never hide a hand or a foot
+   */
+  inset?: { top: number; right: number; bottom: number; left: number };
 }
 
 export interface StudioStageProps {
@@ -110,7 +117,24 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
     const el = vv.el * deg;
     if (vv.closeUp) target.y = vv.focus * height;
     else if (env?.pts.length) centerOnSpheres(env.pts, o, target, az, el);
-    let dist = (env?.pts.length ? fitSpheres(env.pts, o, target, az, el, aspect) : fitDistance(tmpBox, target, az, el, aspect)) / Math.max(0.3, vv.zoom);
+    // free part of the canvas: framed with a narrower field, then shifted to its centre
+    const ins = vv.inset;
+    const fw = ins ? Math.max(0.4, 1 - ins.left - ins.right) : 1;
+    const fh = ins ? Math.max(0.4, 1 - ins.top - ins.bottom) : 1;
+    const fov = (2 * Math.atan(Math.tan((FOV * deg) / 2) * fh)) / deg;
+    const fAspect = (aspect * fw) / fh;
+    let dist =
+      vv.closeUp && vv.span
+        ? // the asked part of the body fills the free height (the body is about 0.3 m deep in front of the target)
+          (vv.span * height) / 2 / Math.tan((fov * deg) / 2) + 0.15
+        : (env?.pts.length ? fitSpheres(env.pts, o, target, az, el, fAspect, fov) : fitDistance(tmpBox, target, az, el, fAspect, fov)) / Math.max(0.3, vv.zoom);
+    const W = size.width;
+    const H = size.height;
+    const offX = ins ? Math.round(W / 2 - (ins.left + fw / 2) * W) : 0;
+    const offY = ins ? Math.round(H / 2 - (ins.top + fh / 2) * H) : 0;
+    if (offX || offY) {
+      if (!cam.view || cam.view.offsetX !== offX || cam.view.offsetY !== offY || cam.view.fullWidth !== W || cam.view.fullHeight !== H) cam.setViewOffset(W, H, offX, offY, W, H);
+    } else if (cam.view?.enabled) cam.clearViewOffset();
     dist = Math.min(14, Math.max(1.2, dist));
 
     if (!cur.current) cur.current = { az, el, dist, target: target.clone() };
