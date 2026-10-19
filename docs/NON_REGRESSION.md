@@ -25,6 +25,7 @@ chaque lot, point de restauration, rapport (TEST RÉUSSI / ÉCHOUÉ / NON EXÉCU
 | `restauration/lot-10` | v0.20.0 | Mouvements plus fluides : vitesses conservées à travers les poses clés (941 → 320 arrêts parasites), sprawl sans à-coup des mains, mesures `MESURES_FLUIDITE.md` |
 | `restauration/lot-11` | v0.21.0 | Kick-boxing en trois styles (K1, low kick, full contact) : choix enregistré, techniques et exercices filtrés, règles sourcées sur les fiches, genoux en K1 |
 | `restauration/lot-12` | v0.22.0 | Menu Progrès refondu : périodes 7 j / 30 j / 90 j / 12 mois / personnalisée comparées à la période précédente de même durée, jauge du parcours, onglets Activité, Niveaux, Catégories, Exercices, Historique, page Objectifs, sans défilement vertical |
+| `restauration/lot-13` | v0.23.0 | Refonte des coachs 3D : chevilles dans les amplitudes humaines, rendu Encre sans hachures et Ultra-réaliste sur le même modèle personnalisé (ancien rendu en secours), vêtements en volume, studio cadré hors des boutons avec gros plans |
 | `restauration/lot-4e` | v0.11.0 | Images des techniques sur les cartes (coach 3D choisi), changement de coach femme depuis l’entraînement |
 | `restauration/lot-4d` | v0.10.0 | Repères au sol optionnels (pieds, orientation, avant/arrière, pivot, trajectoires) |
 | `restauration/lot-4c` | v0.9.0 | Commandes hiérarchisées, zone Caméra regroupée (angle, rotation, zoom, recentrer), progression |
@@ -106,6 +107,7 @@ Captures de référence : `/mnt/project-files/combat-shadow-studio/reference/<da
 | Données utilisateur | Aucune perte | `migration*.test`, `store.test`, `account.spec` | – |
 | Performances | Pas de dégradation non justifiée | taille des fichiers du build | – |
 | Coach IA | Réponses hors ligne, pause, ralenti | `coach.test`, `training-layout.spec` | – |
+| Coachs 3D | Chevilles dans les amplitudes, style choisi mémorisé, séance conservée au changement de style, combattant jamais sous les boutons, ancien rendu disponible | `ankle-range.test`, `customize.test`, `coach-render.spec`, `coach-studio.spec` | planches `docs/captures-coachs/` |
 | Réalité augmentée | Démarrage, refus, arrêt caméra | `ar.test` | non applicable sans appareil |
 
 Commandes : `npx tsc -b`, `npx vitest run`, `npx vite build` puis

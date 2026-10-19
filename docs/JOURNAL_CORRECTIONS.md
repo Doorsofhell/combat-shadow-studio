@@ -693,3 +693,52 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
     3/3 réussis en relance ;
   - vrai téléphone Android : NON EXÉCUTÉ.
 - **Restauration** : `restauration/lot-12`
+
+## 2026-10-19 · v0.23.0 · Lot 13 : refonte des coachs 3D (chevilles, rendu, vêtements, studio)
+
+- **Constat** (vérifié par mesures et captures, rapport complet dans `docs/COACHS_3D_REFONTE.md`) :
+  - chevilles hors de toute amplitude humaine : jusqu'à 109° de torsion pied/tibia au sol, 172° d'inversion en
+    l'air, pied retourné de 145 à 175° sur le front kick avant ;
+  - style Encre : hachures et lignes de pli sur la peau et le short (captures de Youssef) ;
+  - style Réaliste : modèle séparé, sans la personnalisation du combattant ;
+  - vêtements collés à la peau, sans épaisseur aux bords, peau ou short qui traversent le t-shirt, dents dans le
+    bas du dos du t-shirt ;
+  - studio : combattant petit, pieds cachés par la barre d'animation, zoom visage seulement.
+- **Correction** :
+  - limites des chevilles en convention vérifiée sur le rig (`src/engine/limits.ts`, `joints.ts`), angles du pied
+    par phase pour les coups de pied, talon qui se lève au lieu d'une dorsiflexion impossible, correction de la
+    torsion du genou ; test permanent `ankle-range.test` et mesures `docs/audit-biomecanique/MESURES_CHEVILLES.md` ;
+  - nouveau rendu (réglage « Version du rendu 3D », Nouvelle par défaut, Précédente en secours) : Encre en ombrage
+    net sans hachures ; Ultra-réaliste sur le même modèle, le même squelette, les mêmes animations et la même
+    personnalisation, avec des matériaux physiques et un éclairage d'ambiance hors ligne ; changement de style sans
+    recharger le coach ni interrompre la séance ;
+  - choix du style dans les Réglages, le studio du coach et les options d'entraînement, mémorisé ;
+  - vêtements : tissu lissé qui ne colle plus à chaque muscle, bords épais, peau et short cachés sous le haut,
+    épaisseurs en couches, dents du dos supprimées ; l'ancien rendu garde les vêtements d'avant ;
+  - studio : cadrage dans la zone libre (jamais sous les boutons), combattant plus grand, gros plans Visage, Buste,
+    Jambes ;
+  - aucune structure enregistrée modifiée : le nouveau réglage est complété par défaut sur les anciennes sauvegardes.
+- **Limites** : volumes du corps toujours MakeHuman (relief en carte de normales) ; pas de plis modélisés ni de
+  coutures ; bord de l'encolure encore irrégulier ; six techniques au sol hors amplitude du pied à plat (bornées
+  par le test) ; amplitudes de référence citées de mémoire ; capture du front kick non reçue ; performances et
+  rendu non vérifiés sur un vrai téléphone.
+- **Fichiers** : `src/engine/rig.ts`, `src/engine/limits.ts`, `src/engine/joints.ts`, `src/engine/pose.ts`,
+  `src/engine/motion.ts`, `src/engine/library/legs.ts`, `src/three/manga.ts`, `src/three/CoachModel.tsx`,
+  `src/three/customize.ts`, `src/three/StudioEnvironment.tsx`, `src/three/StudioStage.tsx`,
+  `src/three/CoachStage.tsx`, `src/store/settings.ts`, `src/ui/components/CoachLookPicker.tsx`,
+  `src/ui/screens/coach/Preview.tsx`, `src/ui/Lab.tsx`, `tests/e2e/coach-render.spec.ts`,
+  `docs/COACHS_3D_REFONTE.md`, `docs/captures-coachs/`.
+- **Tests** :
+  - `tsc` : TEST RÉUSSI ; tests unitaires : TEST RÉUSSI (348 réussis, 1 ignoré), dont `ankle-range.test` (amplitude
+    des chevilles sur toutes les animations, front kick) et les nouveaux cas de `customize.test` (drapé borné, bords
+    épais, peau et short cachés sous le haut, ancien rendu inchangé, aucune hachure dans le shader Encre) ;
+  - nouveaux tests de bout en bout `coach-render.spec` (4) : choix du style dans les 3 écrans et mémorisé ;
+    changement de style en pleine séance sans perte du chrono ni du mouvement ; studio : combattant entier dans la
+    zone libre, au moins 80 % de sa hauteur, gros plans plus proches d'au moins 25 % ; détail fin de l'Encre
+    inférieur à l'ancien rendu : TEST RÉUSSI ;
+  - Playwright complet : 81 réussis, 1 échoué, 2 ignorés. L'échec est `training-layout` « demander au coach » en
+    360×640 (panneau mesuré par-dessus les consignes) ; ce lot ne touche ni ce panneau ni sa mise en page ; relancé
+    seul 3 fois : 3/3 réussis. Classé instable, à traiter avec le lot des tests instables du coach IA ;
+  - comparaison visuelle : 30 planches avant/après sur 15 techniques et 2 coachs, regardées une à une ;
+  - vrai téléphone Android (rendu, fluidité, mémoire) : NON EXÉCUTÉ.
+- **Restauration** : `restauration/lot-13`
