@@ -739,6 +739,7 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
   - Playwright complet : 81 réussis, 1 échoué, 2 ignorés. L'échec est `training-layout` « demander au coach » en
     360×640 (panneau mesuré par-dessus les consignes) ; ce lot ne touche ni ce panneau ni sa mise en page ; relancé
     seul 3 fois : 3/3 réussis. Classé instable, à traiter avec le lot des tests instables du coach IA ;
+  - intégration : validée par Youssef le 2026-10-19 (« Intégra la version principale »), `feature/combat-shadow-v2` avancée sur ce lot et appli principale publiée en v0.23.0 ;
   - comparaison visuelle : 30 planches avant/après sur 15 techniques et 2 coachs, regardées une à une ;
   - vrai téléphone Android (rendu, fluidité, mémoire) : NON EXÉCUTÉ.
 - **Restauration** : `restauration/lot-13`
