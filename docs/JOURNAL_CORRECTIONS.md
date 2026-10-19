@@ -494,3 +494,33 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
   - revue par un entraîneur : NON EXÉCUTÉ ; vrai téléphone Android : NON EXÉCUTÉ ; vidéos : NON EXÉCUTÉ (aucune
     visionnée).
 - **Restauration** : `restauration/lot-7`
+
+## 2026-10-19 · v0.18.0 · Silhouettes naturelles des coachs
+
+- **Demande** : « Garde three. Mais améliore les silhouettes pour plus de réalisme. Pas de musculature proéminente,
+  une musculature harmonieuse et naturelle », puis « des personnages les plus réalistes possible ».
+- **Constat après vérification** : le générateur (`tools/generator/build.py`) poussait les cibles musculaires de
+  MakeHuman près du maximum (masse musculaire 1,0 pour l'homme, pectoraux, dorsaux, épaules, bras, cuisses et
+  mollets entre 0,6 et 1,0, cou épaissi, forme en V), et les styles Encre et Manga utilisaient une variante encore plus
+  marquée. Le relief cuit (sillons entre les muscles) et l'ombrage de « définition » accentuaient abdominaux et dos.
+- **Correction** :
+  - mêmes squelettes et mêmes tailles (animations inchangées), volumes réduits pour les 4 modèles : masse musculaire
+    0,58 (homme) et 0,52 (femme) en Réaliste, 0,60 et 0,52 en Encre/Manga ; cibles par muscle ramenées entre 0,1 et
+    0,25 ; cou, épaules et forme en V nettement réduits ;
+  - relief des sillons moins profond (0,004 → 0,002) et ombrage de définition divisé par deux environ ;
+  - captures avant / après : `docs/comparatif/silhouette-homme-v018.png`, `silhouette-femme-v018.png`.
+- **Limites** : les corps restent issus de MakeHuman (CC0) générés par nos scripts ; le réalisme est limité par ces
+  maillages et textures gratuits (pas de scan, pas de peau photographique). Les mouvements plus fluides et naturels
+  sont le prochain lot.
+- **Fichiers** : `tools/generator/build.py`, `public/models/` (4 GLB, 2 meta, 2 masques), `public/thumbs/` (150),
+  `docs/audit-biomecanique/MESURES_MOTEUR.md` (régénéré, écarts < 0,5 cm), `docs/comparatif/`.
+- **Tests** :
+  - `tsc` : TEST RÉUSSI ; tests unitaires : TEST RÉUSSI (292 réussis, 1 ignoré) ;
+  - Playwright complet : 56 réussis, 2 ignorés, 2 échoués au premier passage. « Demander au coach » à 360×640 :
+    réussi en relance isolée (machine chargée par la génération des vignettes). « Caméra Auto » : constat, la caméra
+    revient bien à sa distance (4,102 m mesurés), mais le test lisait sa référence pendant une pause du chargement ;
+    l'attente demande désormais 4 lectures stables d'affilée (critère plus strict, pas affaibli) ; 3 relances sur 3
+    réussies, puis le fichier `training-layout.spec.ts` complet : TEST RÉUSSI (12/12) ;
+  - contrôle visuel des 4 modèles et des vignettes (homme, femme) : TEST RÉUSSI ;
+  - vrai téléphone Android : NON EXÉCUTÉ.
+- **Restauration** : `restauration/lot-8`

@@ -16,7 +16,8 @@ argv = sys.argv[sys.argv.index("--") + 1:]
 WHO, OUT, EYES, EYETEX = argv[0], argv[1], argv[2], argv[3]
 TEX = int(argv[4]) if len(argv) > 4 else 2048
 MALE = WHO == "male"
-# "manga": exaggerated, hyper-muscular fighter proportions for the cel-shaded style
+# "manga": taller fighter proportions for the drawn styles. Since v0.18.0 both styles keep a natural,
+# harmonious musculature (Youssef, 19/10: "pas de musculature proéminente")
 STYLE = os.environ.get("CSS_STYLE", "realiste")
 MANGA = STYLE == "manga"
 SUFFIX = "_manga" if MANGA else ""
@@ -36,17 +37,17 @@ for o in list(bpy.data.objects):
 T = LocationService.get_mpfb_data("targets")
 macro = TargetService.get_default_macro_info_dict()
 if MALE:
-    macro.update(dict(gender=1.0, age=0.5, muscle=1.0, weight=0.56, height=0.55, proportions=1.0))
+    macro.update(dict(gender=1.0, age=0.5, muscle=0.58, weight=0.5, height=0.55, proportions=1.0))
     macro["race"] = dict(african=0.15, asian=0.15, caucasian=0.7)
 else:
-    macro.update(dict(gender=0.0, age=0.48, muscle=0.85, weight=0.45, height=0.66, proportions=0.8,
+    macro.update(dict(gender=0.0, age=0.48, muscle=0.52, weight=0.45, height=0.66, proportions=0.8,
                       cupsize=0.42, firmness=0.75))
     macro["race"] = dict(african=0.1, asian=0.2, caucasian=0.7)
 if MANGA:
     if MALE:
-        macro.update(dict(muscle=1.0, weight=0.64, height=0.72, proportions=1.0))
+        macro.update(dict(muscle=0.6, weight=0.5, height=0.72, proportions=1.0))
     else:
-        macro.update(dict(muscle=1.0, weight=0.5, height=0.62, proportions=1.0))
+        macro.update(dict(muscle=0.52, weight=0.48, height=0.62, proportions=1.0))
 h = HumanService.create_human(macro_detail_dict=macro)
 
 
@@ -60,45 +61,45 @@ def both(p, w):
 
 
 if MALE:
-    single = [("torso/torso-muscle-pectoral-incr", .8), ("torso/torso-muscle-dorsi-incr", .8),
-              ("torso/torso-vshape-incr", .55), ("stomach/stomach-tone-incr", 1.0),
-              ("neck/measure-neck-circ-incr", .6), ("neck/measure-neck-height-decr", .5),
+    single = [("torso/torso-muscle-pectoral-incr", .2), ("torso/torso-muscle-dorsi-incr", .15),
+              ("torso/torso-vshape-incr", .1), ("stomach/stomach-tone-incr", .4),
+              ("neck/measure-neck-circ-incr", .15), ("neck/measure-neck-height-decr", .5),
               ("eyebrows/eyebrows-trans-down", .35), ("eyebrows/eyebrows-angle-down", .25),
               ("chin/chin-prominent-incr", .4), ("chin/chin-width-incr", .35), ("head/head-square", .35),
               ("mouth/mouth-angles-down", .12), ("forehead/forehead-trans-forward", .2)]
-    paired = [("arms/X-upperarm-muscle-incr", .7), ("arms/X-upperarm-shoulder-muscle-incr", .75),
-              ("arms/X-lowerarm-muscle-incr", .6), ("legs/X-upperleg-muscle-incr", .6),
-              ("legs/X-lowerleg-muscle-incr", .6), ("cheek/X-cheek-bones-incr", .35),
+    paired = [("arms/X-upperarm-muscle-incr", .15), ("arms/X-upperarm-shoulder-muscle-incr", .1),
+              ("arms/X-lowerarm-muscle-incr", .1), ("legs/X-upperleg-muscle-incr", .15),
+              ("legs/X-lowerleg-muscle-incr", .1), ("cheek/X-cheek-bones-incr", .35),
               ("eyes/X-eye-height2-decr", .25), ("cheek/X-cheek-volume-decr", .3)]
 else:
-    single = [("stomach/stomach-tone-incr", .9), ("torso/torso-vshape-incr", .2),
+    single = [("stomach/stomach-tone-incr", .5), ("torso/torso-vshape-incr", .15),
               ("torso/torso-muscle-dorsi-incr", .3), ("neck/measure-neck-height-decr", .3),
               ("eyebrows/eyebrows-trans-down", .15), ("eyebrows/eyebrows-angle-down", .1),
               ("head/head-oval", .35), ("mouth/mouth-upperlip-volume-incr", .2)]
-    paired = [("arms/X-upperarm-muscle-incr", .4), ("arms/X-upperarm-shoulder-muscle-incr", .45),
-              ("arms/X-upperarm-fat-decr", .5), ("legs/X-upperleg-muscle-incr", .45),
-              ("legs/X-lowerleg-muscle-incr", .4), ("cheek/X-cheek-bones-incr", .3),
+    paired = [("arms/X-upperarm-muscle-incr", .2), ("arms/X-upperarm-shoulder-muscle-incr", .2),
+              ("arms/X-upperarm-fat-decr", .4), ("legs/X-upperleg-muscle-incr", .3),
+              ("legs/X-lowerleg-muscle-incr", .3), ("cheek/X-cheek-bones-incr", .3),
               ("cheek/X-cheek-volume-decr", .25)]
 if MANGA and MALE:
-    single = [("torso/torso-muscle-pectoral-incr", 1.0), ("torso/torso-muscle-dorsi-incr", 1.0),
-              ("torso/torso-vshape-incr", 1.0), ("stomach/stomach-tone-incr", 1.0),
-              ("torso/measure-shoulder-dist-incr", .6), ("torso/measure-waist-circ-decr", .45),
-              ("neck/measure-neck-circ-incr", 1.0), ("neck/measure-neck-height-decr", .8),
+    single = [("torso/torso-muscle-pectoral-incr", .25), ("torso/torso-muscle-dorsi-incr", .2),
+              ("torso/torso-vshape-incr", .2), ("stomach/stomach-tone-incr", .45),
+              ("torso/measure-shoulder-dist-incr", .15), ("torso/measure-waist-circ-decr", .15),
+              ("neck/measure-neck-circ-incr", .2), ("neck/measure-neck-height-decr", .35),
               ("eyebrows/eyebrows-trans-down", .6), ("eyebrows/eyebrows-angle-down", .45),
               ("chin/chin-prominent-incr", .7), ("chin/chin-width-incr", .6), ("head/head-square", .7),
               ("mouth/mouth-angles-down", .2), ("forehead/forehead-trans-forward", .3)]
-    paired = [("arms/X-upperarm-muscle-incr", 1.0), ("arms/X-upperarm-shoulder-muscle-incr", 1.0),
-              ("arms/X-lowerarm-muscle-incr", 1.0), ("legs/X-upperleg-muscle-incr", .9),
-              ("legs/X-lowerleg-muscle-incr", .9), ("cheek/X-cheek-bones-incr", .6),
+    paired = [("arms/X-upperarm-muscle-incr", .2), ("arms/X-upperarm-shoulder-muscle-incr", .15),
+              ("arms/X-lowerarm-muscle-incr", .15), ("legs/X-upperleg-muscle-incr", .2),
+              ("legs/X-lowerleg-muscle-incr", .15), ("cheek/X-cheek-bones-incr", .6),
               ("eyes/X-eye-height2-decr", .3), ("cheek/X-cheek-volume-decr", .5)]
 elif MANGA:
-    single = [("stomach/stomach-tone-incr", 1.0), ("torso/torso-vshape-incr", .45),
-              ("torso/torso-muscle-dorsi-incr", .55), ("neck/measure-neck-height-decr", .3),
+    single = [("stomach/stomach-tone-incr", .55), ("torso/torso-vshape-incr", .25),
+              ("torso/torso-muscle-dorsi-incr", .3), ("neck/measure-neck-height-decr", .3),
               ("eyebrows/eyebrows-trans-down", .2), ("eyebrows/eyebrows-angle-down", .25),
               ("head/head-oval", .35), ("torso/measure-waist-circ-decr", .3)]
-    paired = [("arms/X-upperarm-muscle-incr", .75), ("arms/X-upperarm-shoulder-muscle-incr", .75),
-              ("arms/X-upperarm-fat-decr", .7), ("arms/X-lowerarm-muscle-incr", .5),
-              ("legs/X-upperleg-muscle-incr", .75), ("legs/X-lowerleg-muscle-incr", .7),
+    paired = [("arms/X-upperarm-muscle-incr", .15), ("arms/X-upperarm-shoulder-muscle-incr", .15),
+              ("arms/X-upperarm-fat-decr", .4), ("arms/X-lowerarm-muscle-incr", .1),
+              ("legs/X-upperleg-muscle-incr", .2), ("legs/X-lowerleg-muscle-incr", .15),
               ("cheek/X-cheek-bones-incr", .5), ("cheek/X-cheek-volume-decr", .4)]
 for p, w in single:
     tgt(p, w)
@@ -577,10 +578,10 @@ else:
                open(os.path.join(OUT, f"coach_{WHO}{SUFFIX}.meta.json"), "w"), indent=1)
 
 # light from AO: broad occlusion for volume, fine occlusion for muscle separation ("definition")
-shade = (0.55 + 0.45 * np.clip(AO, 0, 1) ** 1.2) * (0.62 + 0.38 * np.clip(AO_FINE, 0, 1) ** 1.5)
+shade = (0.55 + 0.45 * np.clip(AO, 0, 1) ** 1.2) * (0.8 + 0.2 * np.clip(AO_FINE, 0, 1) ** 1.5)
 col = col * shade[..., None]
 if RELIEF:
-    col = col * (1 + 0.16 * HGT)[..., None]  # a touch of shadow in the furrows
+    col = col * (1 + 0.08 * HGT)[..., None]  # a touch of shadow in the furrows
 col = np.where(cover[..., None], col, SKIN * 0.9)
 
 # linear -> sRGB, write
@@ -609,7 +610,7 @@ if RELIEF:
     ht.image = himg
     bump = N.new("ShaderNodeBump")
     bump.inputs["Strength"].default_value = 1.0
-    bump.inputs["Distance"].default_value = float(os.environ.get("CSS_RELIEF_DEPTH", "0.004")) * K
+    bump.inputs["Distance"].default_value = float(os.environ.get("CSS_RELIEF_DEPTH", "0.002")) * K
     L.new(ht.outputs["Color"], bump.inputs["Height"])
     L.new(bump.outputs["Normal"], bs.inputs["Normal"])
     L.new(bs.outputs[0], out.inputs["Surface"])

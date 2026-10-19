@@ -250,12 +250,15 @@ const settle = (page: Page) => page.waitForTimeout(3500);
 /** waits until the camera has stopped gliding, then reads it */
 async function steady(page: Page) {
   await expect.poll(() => camera(page), { timeout: 30_000 }).toBeTruthy();
+  // four calm readings in a row: one calm half-second can be a pause while the coach is still loading
   let prev = await camera(page);
-  for (let i = 0; i < 40; i++) {
+  let calm = 0;
+  for (let i = 0; i < 60; i++) {
     await page.waitForTimeout(500);
     const c = await camera(page);
-    if (Math.abs(c.az - prev.az) < 0.2 && Math.abs(c.dist - prev.dist) < 0.005 && Math.abs(c.el - prev.el) < 0.2) return c;
+    calm = Math.abs(c.az - prev.az) < 0.2 && Math.abs(c.dist - prev.dist) < 0.005 && Math.abs(c.el - prev.el) < 0.2 ? calm + 1 : 0;
     prev = c;
+    if (calm >= 4) return c;
   }
   return prev;
 }
