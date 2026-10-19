@@ -40,10 +40,7 @@ function build() {
     '',
     '| Exercice | Enchaînement | Saut max entre deux images (cm) | Glissement max (cm / image) | Ajouté par la transition (cm / image) |',
     '|---|---|---|---|---|',
-    ...[...tr]
-      .sort((a, b) => b.added - a.added || b.jumpMax - a.jumpMax)
-      .filter((t) => t.added > 0.5 || t.jumpMax > 15)
-      .map((t) => `| \`${t.exercise}\` | ${t.sequence.join(' → ')} | ${f(t.jumpMax)} | ${f(t.slideMax, 2)} | ${f(Math.max(0, t.added), 2)} |`),
+    ...[...tr].sort((a, b) => b.added - a.added || b.jumpMax - a.jumpMax).filter((t) => t.added > 0.5 || t.jumpMax > 15).map((t) => `| \`${t.exercise}\` | ${t.sequence.join(' → ')} | ${f(t.jumpMax)} | ${f(t.slideMax, 2)} | ${f(Math.max(0, t.added), 2)} |`),
     '',
     `Exercices sans glissement ajouté de plus de 0,5 cm par image ni saut de plus de 15 cm : ${tr.filter((t) => !(t.added > 0.5 || t.jumpMax > 15)).length} sur ${tr.length}.`,
     '',

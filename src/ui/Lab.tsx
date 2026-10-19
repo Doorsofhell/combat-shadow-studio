@@ -74,12 +74,13 @@ export function Lab() {
       const m = getMotion(lib, motionId, southpaw) ?? lib.get('garde')!;
       sampler.current = new MotionSampler(rig, m);
       if (tech) {
-        tRef.current = analyseMotion(rig, m).peak;
+        // at=<fraction>: an instant before the key moment (0.5 = half way to it), for sequences of captures
+        tRef.current = analyseMotion(rig, m).peak * Number(q.get('at') ?? '1');
         envelope.current = sequenceEnvelope(rig, lib, [m.id], southpaw);
       }
       (window as unknown as { __labReady: boolean }).__labReady = true;
     },
-    [style, motionId, southpaw, tech],
+    [style, motionId, southpaw, tech, q],
   );
   const onFrame = useCallback(
     (rig: CoachRig) => {

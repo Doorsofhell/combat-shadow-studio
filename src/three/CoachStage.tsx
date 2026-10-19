@@ -99,26 +99,7 @@ export interface CoachStageProps {
  */
 export function CoachStage(props: CoachStageProps) {
   const menuTheme = useResolvedTheme();
-  const {
-    coach,
-    discipline,
-    southpaw,
-    cameraAngle,
-    view,
-    free,
-    onUserOrbit,
-    frameIds,
-    quality,
-    events,
-    onPlayer,
-    onRigReady,
-    study,
-    studyActive = false,
-    zoom,
-    ar,
-    arActive = false,
-    backdrop = 'studio',
-  } = props;
+  const { coach, discipline, southpaw, cameraAngle, view, free, onUserOrbit, frameIds, quality, events, onPlayer, onRigReady, study, studyActive = false, zoom, ar, arActive = false, backdrop = 'studio' } = props;
   const fighter = useActiveFighter();
   const look = props.look ?? fighter?.look ?? null;
   const shownCoach = look?.sex ?? coach;
@@ -249,17 +230,7 @@ export function CoachStage(props: CoachStageProps) {
         {ar && <ArScene bridge={ar} active={arActive} coachGroup={coachGroup} follow={follow} />}
         {/* the coach stays mounted when switching to AR: same model, same player, same animation */}
         <group ref={coachGroup}>
-          <CoachModel
-            key={`${shownCoach}-${discipline}-${render}${render === 'precedent' ? `-${style}` : ''}`}
-            coach={shownCoach}
-            style={style}
-            render={render}
-            quality={q}
-            look={look}
-            ghostGear={ghostGear}
-            onRig={onRig}
-            onFrame={onFrame}
-          />
+          <CoachModel key={`${shownCoach}-${discipline}-${render}${render === 'precedent' ? `-${style}` : ''}`} coach={shownCoach} style={style} render={render} quality={q} look={look} ghostGear={ghostGear} onRig={onRig} onFrame={onFrame} />
           {studyActive && rigState && study && <StudyCues rig={rigState} study={study} />}
           {!studyActive && !arActive && rigState && <GroundMarks rig={rigState} player={player} southpaw={southpaw} />}
         </group>

@@ -190,14 +190,7 @@ export function techniquePhases(rig: CoachRig, m: Motion, category: TechniqueCat
           const max = Math.max(...v);
           const t0 = times[v.findIndex((x) => x >= max * 0.1)];
           const t1 = times[v.indexOf(max)];
-          return {
-            kind: 'arme' as const,
-            label: 'Armé',
-            text: 'Le corps se charge en tournant un peu dans l’autre sens : c’est l’élan du coup.',
-            t0,
-            t1: Math.max(t0, t1),
-            focus: ['hips', effector] as BodyFocus[],
-          };
+          return { kind: 'arme' as const, label: 'Armé', text: 'Le corps se charge en tournant un peu dans l’autre sens : c’est l’élan du coup.', t0, t1: Math.max(t0, t1), focus: ['hips', effector] as BodyFocus[] };
         })()
       : null;
 
