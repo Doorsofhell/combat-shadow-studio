@@ -5,7 +5,7 @@ import { suggestedQuestions } from '../../coach/suggest';
 import { getSpeechInput, speakReply, stopReply, type SpeechInput } from '../../coach/speech';
 import { useCatalog } from '../../store/catalog';
 import { useCoachAi } from '../../store/coachAi';
-import { IconClose } from '../icons';
+import { AppIcon } from '../icons';
 import { SuggestRail } from './SuggestRail';
 import { useKeyboardInset } from './useKeyboardInset';
 import './coachAi.css';
@@ -21,18 +21,6 @@ export interface CoachAskPanelProps {
   /** lien vers l’historique et les réglages (par défaut /coach-ia) */
   historyHref?: string;
 }
-
-const IconSend = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <path d="M4 12h14M13 6l6 6-6 6" />
-  </svg>
-);
-const IconMic = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <rect x="9" y="3" width="6" height="11" rx="3" />
-    <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
-  </svg>
-);
 
 /**
  * Panneau compact « Demande au coach » pour l’écran d’entraînement (thème clair). Répond en local
@@ -154,7 +142,7 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
             <h2>Coach IA</h2>
           </div>
           <button type="button" className="btn icon ghost" onClick={onClose} aria-label="Fermer">
-            <IconClose />
+            <AppIcon id="close" />
           </button>
         </div>
         <p className="small muted">Le coach IA est désactivé.</p>
@@ -193,7 +181,7 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
           Historique
         </Link>
         <button type="button" className="btn icon ghost" onClick={onClose} aria-label="Fermer le coach">
-          <IconClose />
+          <AppIcon id="close" />
         </button>
       </div>
 
@@ -238,11 +226,11 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
         />
         {speech && (
           <button type="button" className={`btn icon ${listening ? 'listening' : ''}`} onClick={mic} aria-pressed={listening} aria-label={listening ? 'Arrêter l’écoute' : 'Poser la question à voix haute (en ligne)'} title={speech.label}>
-            <IconMic />
+            <AppIcon id="mic" size={20} />
           </button>
         )}
         <button type="submit" className="btn icon send" aria-label="Envoyer" disabled={!q.trim()} data-testid="coach-send">
-          <IconSend />
+          <AppIcon id="send" size={20} />
         </button>
       </form>
       {micError && (

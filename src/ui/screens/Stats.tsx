@@ -6,8 +6,8 @@ import { TECHNIQUE_BY_ID } from '../../domain/techniques';
 import { SessionRecord, byKey, formatDuration, localDay, monthKey, sessionCount, sum, useStats, weekKey } from '../../store/stats';
 import { useGoals } from '../../store/goals';
 import { MODE_LABEL } from '../training/plan';
-import { DisciplineArtwork, DisciplineLabel, BarChart, EmptyState, FilterChips, GoalRing, HBarList, PageHead, ProgressBar, SectionHead, Segmented, Sheet, StatTile, Tabs, TechniqueCard, toast } from '../components';
-import { IconTarget } from '../icons';
+import { DisciplineLabel, BarChart, EmptyState, FilterChips, GoalRing, HBarList, PageHead, ProgressBar, SectionHead, Segmented, Sheet, StatTile, Tabs, TechniqueCard, toast } from '../components';
+import { AppIcon, DisciplineIcon } from '../icons';
 
 const MONTHS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 
@@ -87,7 +87,7 @@ function GoalsCard({ sessions }: { sessions: SessionRecord[] }) {
           text="Fixe-toi un temps actif ou un nombre de jours d’entraînement par semaine."
           action={
             <button type="button" className="btn secondary" onClick={() => setEdit(true)}>
-              <IconTarget width={18} /> Définir un objectif
+              <AppIcon id="target" size={18} /> Définir un objectif
             </button>
           }
         />
@@ -162,7 +162,7 @@ export function Stats() {
         back={false}
         right={
           <Link to="/historique" className="btn secondary sm">
-            Historique
+            <AppIcon id="history" size={18} /> Historique
           </Link>
         }
       />
@@ -170,7 +170,7 @@ export function Stats() {
         label="Discipline"
         value={disc}
         onChange={setDisc}
-        items={[{ id: 'toutes' as const, label: 'Toutes' }, ...DISCIPLINES.map((d) => ({ id: d.id, label: d.short }))]}
+        items={[{ id: 'toutes' as const, label: 'Toutes' }, ...DISCIPLINES.map((d) => ({ id: d.id, label: d.short, icon: <DisciplineIcon id={d.id} size={24} /> }))]}
       />
       <div className="stat-tiles four" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
         <StatTile value={formatDuration(sum(filtered))} label="Temps actif total" testId="total-time" />
@@ -199,7 +199,7 @@ export function Stats() {
           {disc === 'toutes' && (
             <div className="card stack">
               <h3>Par discipline</h3>
-              <HBarList format={formatDuration} rows={DISCIPLINES.map((d) => ({ label: d.name, value: byDisc[d.id] ?? 0, icon: <DisciplineArtwork id={d.id} format="avatar" size="xs" /> }))} />
+              <HBarList format={formatDuration} rows={DISCIPLINES.map((d) => ({ label: d.name, value: byDisc[d.id] ?? 0, icon: <DisciplineIcon id={d.id} size={24} /> }))} />
             </div>
           )}
           <div className="card stack">

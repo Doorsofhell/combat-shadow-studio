@@ -25,7 +25,7 @@ import { buildFullExport } from '../../../account/export';
 import { passwordProblem, emailLooksValid } from '../../../account/auth/types';
 import type { SignInMethod } from '../../../account/auth/types';
 import { DisciplineLabel, Chip, ConfirmDialog, LinkRow, PageHead, Panel, PanelRow, Segmented, Sheet, StatTile, Toggle, toast } from '../../components';
-import { IconDownload, IconFighter, IconShield, IconTrash, IconUser } from '../../icons';
+import { AppIcon, type GlyphId } from '../../icons';
 import { PasswordField } from './SignIn';
 import './account.css';
 
@@ -75,7 +75,7 @@ export function Avatar({ profile, size = 72 }: { profile: Profile; size?: number
     <span className="acc-avatar" style={{ width: size, height: size }} aria-hidden>
       {useFighter ? (
         <>
-          <IconFighter />
+          <AppIcon id="fighter" />
           <span className="skin" style={{ background: fighter.look.skin }} />
         </>
       ) : (
@@ -85,9 +85,9 @@ export function Avatar({ profile, size = 72 }: { profile: Profile; size?: number
   );
 }
 
-function Section({ title, id, children }: { title: string; id: string; children: ReactNode }) {
+function Section({ title, id, icon, children }: { title: string; id: string; icon?: GlyphId; children: ReactNode }) {
   return (
-    <Panel title={title} id={id}>
+    <Panel title={title} id={id} icon={icon}>
       {children}
     </Panel>
   );
@@ -170,9 +170,9 @@ export function ProfilePage() {
       )}
 
       {/* ---------------------------------------------------------------- account */}
-      <Section title="Compte" id="pr-compte">
+      <Section title="Compte" icon="profile" id="pr-compte">
         {status !== 'signedIn' && caps.email && (
-          <LinkRow to="/connexion" icon={<IconUser className="muted" />} label="Créer un compte ou se connecter" hint="Tes données d’invité peuvent être gardées dans le compte" />
+          <LinkRow to="/connexion" icon={<AppIcon id="profile" className="muted" />} label="Créer un compte ou se connecter" hint="Tes données d’invité peuvent être gardées dans le compte" />
         )}
         {status !== 'signedIn' && !caps.email && <PanelRow label="Mode invité" hint="Les comptes en ligne ne sont pas activés dans cette version. Tout reste sur cet appareil." />}
         {status === 'signedIn' && user && (
@@ -221,7 +221,7 @@ export function ProfilePage() {
             </div>
             <div className="panel-row">
               <button type="button" className="btn secondary block" onClick={() => setDialog('signout')} data-testid="sign-out">
-                Se déconnecter
+                <AppIcon id="signOut" size={18} /> Se déconnecter
               </button>
             </div>
           </>
@@ -229,7 +229,7 @@ export function ProfilePage() {
       </Section>
 
       {/* ---------------------------------------------------------------- personal info */}
-      <Section title="Informations personnelles" id="pr-perso">
+      <Section title="Informations personnelles" icon="details" id="pr-perso">
         <div className="acc-fields">
           <TextField id="pf-pseudo" label="Pseudo" value={profile.pseudo} onChange={(v) => update({ pseudo: v })} placeholder="Comment le coach t’appelle" hint="Utilisé par le coach pour s’adresser à toi." maxLength={24} testId="pseudo-input" autoComplete="nickname" />
           <div className="grid2">
@@ -269,12 +269,12 @@ export function ProfilePage() {
             ]}
           />
         </PanelRow>
-        <LinkRow to="/combattant" icon={<IconFighter className="muted" />} label="Personnaliser mon combattant" hint="Apparence, tenue, tatouages, équipement" />
+        <LinkRow to="/combattant" icon={<AppIcon id="fighter" className="muted" />} label="Personnaliser mon combattant" hint="Apparence, tenue, tatouages, équipement" />
         <PanelRow label="Langue" hint="Français (seule langue disponible pour l’instant)" />
       </Section>
 
       {/* ---------------------------------------------------------------- sport profile */}
-      <Section title="Profil sportif" id="pr-sport">
+      <Section title="Profil sportif" icon="train" id="pr-sport">
         <PanelRow label="Disciplines pratiquées" column>
           <div className="row" style={{ gap: 8 }} role="group" aria-label="Disciplines pratiquées">
             {DISCIPLINES.map((d) => (
@@ -371,7 +371,7 @@ export function ProfilePage() {
       </section>
 
       {/* ---------------------------------------------------------------- limitations */}
-      <Section title="Limitations physiques" id="pr-lim">
+      <Section title="Limitations physiques" icon="shield" id="pr-lim">
         <div className="panel-row col">
           <span className="small muted">
             Facultatif. Chiffré sur cet appareil, jamais synchronisé ni envoyé. Sert uniquement à te rappeler de ménager une zone ; ce n’est ni un avis ni un diagnostic médical.
@@ -403,7 +403,7 @@ export function ProfilePage() {
       </Section>
 
       {/* ---------------------------------------------------------------- display */}
-      <Section title="Affichage" id="pr-affichage">
+      <Section title="Affichage" icon="accessibility" id="pr-affichage">
         <PanelRow label="Taille du texte" column>
           <Segmented
             label="Taille du texte"
@@ -419,14 +419,14 @@ export function ProfilePage() {
       </Section>
 
       {/* ---------------------------------------------------------------- AI coach */}
-      <Section title="Coach IA" id="pr-ia">
+      <Section title="Coach IA" icon="coachAi" id="pr-ia">
         <Toggle label="M’appeler par mon pseudo" hint={profile.pseudo ? `Le coach t’appelle « ${profile.pseudo} »` : 'Renseigne un pseudo plus haut'} on={profile.coachAi.usePseudo} onChange={(v) => update({ coachAi: { ...profile.coachAi, usePseudo: v } })} />
         <PanelRow label="Tes questions restent sur cet appareil" hint="Le coach IA répond sur l’appareil : aucune question n’est envoyée sur internet." />
         <LinkRow to="/coach-ia" label="Réglages et historique du coach IA" hint="Historique local désactivé par défaut, effaçable à tout moment" />
       </Section>
 
       {/* ---------------------------------------------------------------- privacy & data */}
-      <Section title="Confidentialité et données" id="pr-data">
+      <Section title="Confidentialité et données" icon="privacy" id="pr-data">
         {providerId === 'firebase' && status === 'signedIn' && user ? (
           <>
             <Toggle label="Synchronisation en ligne" hint="Sauvegarde ton profil, tes combattants, séances, enchaînements et favoris dans ton compte (sauf les limitations physiques)" on={syncOn} onChange={setSync} />
@@ -440,7 +440,7 @@ export function ProfilePage() {
                 </span>
                 {sync.phase !== 'syncing' && user.emailVerified && (
                   <button type="button" className="btn secondary sm" onClick={() => void syncNow()}>
-                    Synchroniser maintenant
+                    <AppIcon id="sync" size={18} /> Synchroniser maintenant
                   </button>
                 )}
               </div>
@@ -449,16 +449,16 @@ export function ProfilePage() {
         ) : (
           <PanelRow label="Synchronisation en ligne" hint={caps.email ? 'Disponible avec un compte. Désactivée par défaut.' : 'Non disponible dans cette version : tout reste sur cet appareil.'} />
         )}
-        <LinkRow to="/confidentialite" icon={<IconShield className="muted" />} label="Politique de confidentialité" />
+        <LinkRow to="/confidentialite" icon={<AppIcon id="privacy" className="muted" />} label="Politique de confidentialité" />
         <div className="panel-row col">
           <span className="small muted">Un fichier JSON avec tout ton profil, tes combattants, séances, enchaînements, favoris et réglages. Les limitations y figurent en clair : garde-le en lieu sûr.</span>
           <button type="button" className="btn secondary block" onClick={doExport} disabled={busy} data-testid="export-my-data">
-            <IconDownload width={18} /> Exporter mes données
+            <AppIcon id="download" size={18} /> Exporter mes données
           </button>
         </div>
         <div className="panel-row col">
           <button type="button" className="btn danger block" onClick={() => setDialog('erase')} data-testid="delete-my-data">
-            <IconTrash width={18} /> Supprimer mes données
+            <AppIcon id="delete" size={18} /> Supprimer mes données
           </button>
           {status === 'signedIn' && (
             <button type="button" className="btn danger block" onClick={() => setDialog('delete')} data-testid="delete-account">

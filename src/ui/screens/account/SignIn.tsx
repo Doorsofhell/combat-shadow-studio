@@ -5,7 +5,7 @@ import { emailLooksValid, passwordProblem } from '../../../account/auth/types';
 import { useProfile } from '../../../store/profile';
 import { useStats } from '../../../store/stats';
 import { PageHead, Tabs, toast } from '../../components';
-import { IconShield, IconUser } from '../../icons';
+import { AppIcon } from '../../icons';
 import './account.css';
 
 type Mode = 'connexion' | 'inscription' | 'oubli';
@@ -191,7 +191,7 @@ export function SignIn() {
       <div className="card stack">
         <div className="row nowrap" style={{ gap: 12 }}>
           <span className="icon-tile" aria-hidden>
-            <IconUser />
+            <AppIcon id="profile" />
           </span>
           <div className="grow">
             <h3>Mode invité</h3>
@@ -205,7 +205,7 @@ export function SignIn() {
 
       {!online && (
         <p className="small muted row nowrap" style={{ gap: 8 }} data-testid="accounts-off">
-          <IconShield width={18} /> Les comptes en ligne ne sont pas activés dans cette version.
+          <AppIcon id="privacy" size={18} /> Les comptes en ligne ne sont pas activés dans cette version.
         </p>
       )}
     </div>

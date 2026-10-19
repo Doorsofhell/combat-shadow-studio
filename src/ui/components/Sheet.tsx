@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { IconClose } from '../icons';
+import { AppIcon } from '../icons';
 
 /**
  * Bottom sheet (or centred modal): Escape and backdrop close it, focus moves inside on open and
@@ -46,7 +46,7 @@ export function Sheet({ title, eyebrow, onClose, children, footer, center = fals
               {title && <h2 id={id}>{title}</h2>}
             </div>
             <button type="button" className="btn icon ghost" onClick={onClose} aria-label="Fermer" style={{ marginRight: -10, marginTop: -6 }}>
-              <IconClose />
+              <AppIcon id="close" />
             </button>
           </div>
         )}

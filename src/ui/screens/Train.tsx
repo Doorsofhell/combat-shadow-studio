@@ -9,7 +9,7 @@ import { PROGRAMS } from '../../domain/programs';
 import { recommend } from '../../domain/recommend';
 import { DisciplineLabel, DisciplineCard, EmptyState, FilterChips, PageHead, SectionHead } from '../components';
 import { ExerciseSheet } from './Discipline';
-import { IconChevron, IconPlus } from '../icons';
+import { AppIcon, DisciplineIcon } from '../icons';
 
 type ProgFilter = DisciplineId | 'mixte' | 'tous';
 
@@ -39,7 +39,7 @@ export function Train() {
                   <span className="eyebrow">{i === 0 ? 'Recommandé' : DISCIPLINES.find((d) => d.id === e.discipline)!.short}</span>
                   <span className="title">{e.name}</span>
                 </span>
-                <IconChevron />
+                <AppIcon id="chevron" />
               </button>
             ))}
           </div>
@@ -62,7 +62,7 @@ export function Train() {
           label="Filtrer les programmes"
           value={pf}
           onChange={setPf}
-          options={[{ id: 'tous' as ProgFilter, label: 'Tous' }, ...DISCIPLINES.map((d) => ({ id: d.id as ProgFilter, label: d.short })), { id: 'mixte' as ProgFilter, label: 'Multi' }]}
+          options={[{ id: 'tous' as ProgFilter, label: 'Tous' }, ...DISCIPLINES.map((d) => ({ id: d.id as ProgFilter, label: d.short, icon: <DisciplineIcon id={d.id} size={20} /> })), { id: 'mixte' as ProgFilter, label: 'Multi' }]}
         />
         {progs.length === 0 ? (
           <EmptyState title="Aucun programme pour ce filtre" />
@@ -76,7 +76,7 @@ export function Train() {
                   <span className="title">{p.name}</span>
                   <span className="small muted">{p.frequency}</span>
                 </span>
-                <IconChevron />
+                <AppIcon id="chevron" />
               </Link>
             ))}
           </div>
@@ -91,7 +91,7 @@ export function Train() {
             text="Compose ta propre combinaison, le coach l’exécute."
             action={
               <Link to="/createur" className="btn secondary">
-                <IconPlus width={18} /> Créer un enchaînement
+                <AppIcon id="add" size={18} /> Créer un enchaînement
               </Link>
             }
           />
@@ -106,7 +106,7 @@ export function Train() {
                     <DisciplineLabel id={c.discipline} name={DISCIPLINES.find((x) => x.id === c.discipline)?.name ?? ''} /> · {c.sequence.length} mouvements
                   </span>
                 </span>
-                <IconChevron />
+                <AppIcon id="chevron" />
               </Link>
             ))}
           </div>

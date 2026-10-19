@@ -1,3 +1,4 @@
+import { AppIcon } from '../icons';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 
 export interface SuggestRailProps {
@@ -10,11 +11,6 @@ export interface SuggestRailProps {
 const TAP_SLOP = 8;
 const SCROLL_QUIET_MS = 150;
 
-const Chevron = ({ dir }: { dir: 'left' | 'right' }) => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <path d={dir === 'left' ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7'} />
-  </svg>
-);
 
 /**
  * Horizontal rail of suggested questions: native finger scrolling (pan-x, snapped on each card),
@@ -91,7 +87,7 @@ export function SuggestRail({ questions, onPick, label = 'Suggestions' }: Sugges
       </div>
       <div className="cai-rail-row">
       <button type="button" className="cai-rail-arrow" onClick={() => page(-1)} disabled={ends.start} aria-label="Questions précédentes" data-testid="suggest-prev">
-        <Chevron dir="left" />
+        <AppIcon id="back" size={18} />
       </button>
       <div
         ref={rail}
@@ -109,7 +105,7 @@ export function SuggestRail({ questions, onPick, label = 'Suggestions' }: Sugges
         ))}
       </div>
       <button type="button" className="cai-rail-arrow" onClick={() => page(1)} disabled={ends.end} aria-label="Questions suivantes" data-testid="suggest-next">
-        <Chevron dir="right" />
+        <AppIcon id="chevron" size={18} />
       </button>
       </div>
     </div>

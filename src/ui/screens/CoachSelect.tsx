@@ -3,7 +3,7 @@ import { useProfile } from '../../store/profile';
 import type { CoachId } from '../../domain/types';
 import { PageHead } from '../components';
 import { chooseCoach } from '../components/fighter';
-import { IconCheck } from '../icons';
+import { AppIcon } from '../icons';
 
 export const COACHES: { id: CoachId; name: string; desc: string; img: string }[] = [
   { id: 'homme', name: 'Coach homme', desc: 'Athlétique, torse nu, short de combat', img: './coaches/homme.jpg' },
@@ -27,7 +27,7 @@ export function CoachPicker({ value, onChange }: { value: CoachId | null; onChan
           <img src={c.img} alt="" loading="eager" />
           {value === c.id && (
             <span className="tick" aria-hidden>
-              <IconCheck width={18} height={18} />
+              <AppIcon id="check" size={18} />
             </span>
           )}
           <span className="lbl">

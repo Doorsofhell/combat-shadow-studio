@@ -6,9 +6,9 @@ import { isPlayable, validateSequence } from '../../domain/transitions';
 import { useCustom } from '../../store/custom';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { DisciplineArtwork, DisciplineLabel, PageHead, Segmented, Tabs, toast } from '../components';
+import { DisciplineLabel, PageHead, Segmented, Tabs, toast } from '../components';
 import { RoundOptions } from './Discipline';
-import { IconPlay, IconTrash } from '../icons';
+import { AppIcon, DisciplineIcon } from '../icons';
 
 export function Builder() {
   const [q] = useSearchParams();
@@ -51,7 +51,7 @@ export function Builder() {
   return (
     <div className="page">
       <PageHead title="Créateur d’enchaînements" eyebrow="Personnalisé" fallback="/techniques?tab=createur" />
-      <Tabs label="Discipline" items={DISCIPLINES.map((x) => ({ id: x.id, label: x.short, icon: <DisciplineArtwork id={x.id} format="avatar" size="xs" /> }))} value={d} onChange={setD} />
+      <Tabs label="Discipline" items={DISCIPLINES.map((x) => ({ id: x.id, label: x.short, icon: <DisciplineIcon id={x.id} size={24} /> }))} value={d} onChange={setD} />
 
       <div className="stack">
         <span className="label">
@@ -61,7 +61,7 @@ export function Builder() {
           {seq.length === 0 && <span className="small muted">Touche les mouvements ci-dessous pour les ajouter. Touche un mouvement ajouté pour le retirer.</span>}
           {seq.map((id, i) => (
             <button key={i} className={`chip ${bad.has(i) ? 'bad' : ''}`} onClick={() => setSeq(seq.filter((_, j) => j !== i))} aria-label={`Retirer ${TECHNIQUE_BY_ID.get(id)?.name}`}>
-              {i + 1}. {TECHNIQUE_BY_ID.get(id)?.name ?? id} <span aria-hidden>✕</span>
+              {i + 1}. {TECHNIQUE_BY_ID.get(id)?.name ?? id} <AppIcon id="close" size={14} />
             </button>
           ))}
         </div>
@@ -111,10 +111,10 @@ export function Builder() {
         {mode === 'rounds' && <RoundOptions round={round} rest={rest} rounds={rounds} setRound={setRound} setRest={setRest} setRounds={setRounds} />}
         <div className="row nowrap">
           <button type="button" className="btn secondary" disabled={!playable} onClick={() => (store(), toast('Enchaînement enregistré'))}>
-            Enregistrer
+            <AppIcon id="save" size={18} /> Enregistrer
           </button>
           <button type="button" className="btn primary" style={{ flex: 1 }} disabled={!playable} onClick={run} data-testid="run-custom">
-            <IconPlay /> Lancer
+            <AppIcon id="play" /> Lancer
           </button>
         </div>
       </div>
@@ -133,13 +133,13 @@ export function Builder() {
                   </span>
                 </span>
                 <button type="button" className="btn sm ghost" onClick={() => (setD(c.discipline), setSeq(c.sequence), setName(c.name), setEditId(c.id))}>
-                  Modifier
+                  <AppIcon id="edit" size={16} /> Modifier
                 </button>
                 <button type="button" className="btn icon ghost" onClick={() => nav(`/entrainement?perso=${c.id}&mode=libre`)} aria-label={`Lancer ${c.name}`}>
-                  <IconPlay width={18} />
+                  <AppIcon id="play" size={18} />
                 </button>
                 <button type="button" className="btn icon ghost" onClick={() => remove(c.id)} aria-label={`Supprimer ${c.name}`}>
-                  <IconTrash width={18} />
+                  <AppIcon id="delete" size={18} />
                 </button>
               </div>
             ))}

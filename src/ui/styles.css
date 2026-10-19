@@ -1,3 +1,4 @@
+@import "./icons/icons.css";
 /* ==========================================================================
    Combat Shadow Studio — DARK COMBAT PREMIUM design tokens and components.
    The tokens below are the single source of truth for colours, type and spacing.
@@ -6,33 +7,36 @@
    re-theme them by redefining those aliases in `.training, .light-scope`.
    ========================================================================== */
 :root {
-  /* ---- brand palette, dark theme (default) */
+  /* ---- brand palette, dark theme (default): official charter of 19 Oct 2026 */
   color-scheme: dark;
-  --c-bg: #101116;
-  --c-surface: #20232c;
-  --c-surface-2: #2a2e39;
-  --c-accent: #d6363c; /* primary actions, selection, attention only (white text 4.7:1) */
-  --c-accent-ink: #ff7378; /* accent used as text (5.9:1 on surface) */
-  --c-text: #f5f5f5;
-  --c-text-2: #a6a8b3;
-  --c-gold: #c8a96b; /* distinctions, mastery, premium only */
+  --c-bg: #0b0f14; /* fond principal */
+  --c-surface: #1f2937; /* surfaces */
+  --c-surface-2: #283445;
+  --c-accent: #e11d2f; /* accent principal: primary actions, active selection, brand only (white text 4.8:1) */
+  --c-accent-ink: #ff6b77; /* accent used as text (5.4:1 on surface) */
+  --c-text: #f4f4f5; /* texte principal */
+  --c-text-2: #9ca3af; /* texte secondaire (5.8:1 on surface) */
+  --c-gold: #d4af37; /* accent secondaire: distinctions, mastery, premium only */
   --c-studio: #ffffff; /* training screen only */
-  --c-ink-2: #d6d7dd;
+  --c-ink-2: #d1d5db;
   --c-line: rgba(255, 255, 255, 0.09);
   --c-line-strong: rgba(255, 255, 255, 0.18);
-  --c-red-soft: rgba(229, 72, 77, 0.16);
-  --c-gold-soft: rgba(200, 169, 107, 0.14);
+  --c-red-soft: rgba(225, 29, 47, 0.18);
+  --c-gold-soft: rgba(212, 175, 55, 0.14);
   --c-ok: #4cc38a;
   --c-warn: #f0b45a;
   /* surfaces drawn by components */
-  --scene: radial-gradient(ellipse at 50% 38%, #2a2d38 0%, #16171d 55%, #101116 100%);
-  --raised: linear-gradient(160deg, #262a35, #1c1f27);
-  --sheet: #191b22;
-  --toast-bg: #2c303c;
-  --overlay: rgba(16, 17, 22, 0.86);
-  --backdrop: rgba(5, 6, 9, 0.62);
-  --nav-bg: rgba(16, 17, 22, 0.94);
+  --scene: radial-gradient(ellipse at 50% 38%, #263244 0%, #121924 55%, #0b0f14 100%);
+  --raised: linear-gradient(160deg, #253142, #1a2230);
+  --sheet: #141b25;
+  --toast-bg: #273344;
+  --overlay: rgba(11, 15, 20, 0.86);
+  --backdrop: rgba(3, 5, 8, 0.62);
+  --nav-bg: rgba(11, 15, 20, 0.94);
   --track: rgba(255, 255, 255, 0.1);
+  /* icon tiles of the charter: soft relief, never a strong shadow */
+  --tile: linear-gradient(160deg, #2a3546 0%, #1c2431 100%);
+  --tile-edge: rgba(255, 255, 255, 0.08);
 }
 
 /* light menus: chosen in Réglages, or automatic when the system is light (data-theme set by
@@ -42,7 +46,7 @@
   --c-bg: #f4f5f7;
   --c-surface: #ffffff;
   --c-surface-2: #eceef2;
-  --c-accent: #d6363c;
+  --c-accent: #e11d2f;
   --c-accent-ink: #c41f35;
   --c-text: #111214;
   --c-text-2: #5a5f69;
@@ -50,7 +54,7 @@
   --c-ink-2: #33363d;
   --c-line: rgba(17, 18, 20, 0.12);
   --c-line-strong: rgba(17, 18, 20, 0.24);
-  --c-red-soft: rgba(214, 54, 60, 0.1);
+  --c-red-soft: rgba(225, 29, 47, 0.1);
   --c-gold-soft: rgba(125, 95, 34, 0.1);
   --c-ok: #1e7a4f;
   --c-warn: #9a5b00;
@@ -62,20 +66,24 @@
   --backdrop: rgba(17, 18, 20, 0.42);
   --nav-bg: rgba(255, 255, 255, 0.95);
   --track: rgba(17, 18, 20, 0.1);
+  --tile: linear-gradient(160deg, #ffffff 0%, #eceef2 100%);
+  --tile-edge: rgba(17, 18, 20, 0.1);
 }
 
 /* media cards (renders on a dark backdrop) keep the dark palette in both themes */
 .dark-scope {
   color-scheme: dark;
-  --c-bg: #101116;
-  --c-surface: #20232c;
-  --c-surface-2: #2a2e39;
-  --c-accent-ink: #ff7378;
-  --c-text: #f5f5f5;
-  --c-text-2: #a6a8b3;
-  --c-gold: #c8a96b;
-  --c-ink-2: #d6d7dd;
+  --c-bg: #0b0f14;
+  --c-surface: #1f2937;
+  --c-surface-2: #283445;
+  --c-accent-ink: #ff6b77;
+  --c-text: #f4f4f5;
+  --c-text-2: #9ca3af;
+  --c-gold: #d4af37;
+  --c-ink-2: #d1d5db;
   --c-line: rgba(255, 255, 255, 0.09);
+  --tile: linear-gradient(160deg, #2a3546 0%, #1c2431 100%);
+  --tile-edge: rgba(255, 255, 255, 0.08);
 }
 
 /* aliases used by every shared component (re-themed by the light training scope); declared on
@@ -765,6 +773,9 @@ img {
 
 .utab {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   min-height: var(--tap);
   padding: 0 12px;
   border: 0;
@@ -1094,8 +1105,8 @@ input[type='range'] {
 }
 
 .nav a svg {
-  width: 23px;
-  height: 23px;
+  width: 24px;
+  height: 24px;
 }
 
 .nav a:hover {
@@ -1112,7 +1123,7 @@ input[type='range'] {
 }
 
 .nav a.active svg {
-  color: var(--red-ink);
+  color: var(--red);
 }
 
 .nav a:focus-visible {
@@ -1291,8 +1302,8 @@ input[type='range'] {
   text-decoration: none;
   color: var(--c-text);
   background:
-    radial-gradient(ellipse at 70% 30%, rgba(229, 72, 77, 0.12), transparent 60%),
-    linear-gradient(165deg, #262a35 0%, #1a1c24 60%, #14151b 100%);
+    radial-gradient(ellipse at 74% 28%, rgba(225, 29, 47, 0.14), transparent 58%),
+    linear-gradient(165deg, #263244 0%, #19212d 60%, #11171f 100%);
   isolation: isolate;
   transition: transform var(--t-fast) var(--ease);
   border: 0;
@@ -1316,7 +1327,7 @@ input[type='range'] {
   position: relative;
   overflow: hidden;
   flex: none;
-  background: linear-gradient(165deg, #262a35 0%, #14151b 100%);
+  background: linear-gradient(165deg, #263244 0%, #11171f 100%);
 }
 
 .disc-art img {
@@ -1333,7 +1344,7 @@ input[type='range'] {
 
 .disc-art.avatar {
   border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(201, 162, 39, 0.55);
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.55);
 }
 
 .disc-card::before {
@@ -1341,7 +1352,7 @@ input[type='range'] {
   position: absolute;
   inset: 0;
   /* text sits on an almost opaque base: the render never shows through the words */
-  background: linear-gradient(to bottom, rgba(16, 17, 22, 0) 22%, rgba(16, 17, 22, 0.88) 46%, rgba(16, 17, 22, 0.97) 62%);
+  background: linear-gradient(to bottom, rgba(17, 23, 31, 0) 30%, rgba(17, 23, 31, 0.6) 56%, rgba(17, 23, 31, 0.92) 74%);
   z-index: -1;
 }
 
@@ -1387,7 +1398,7 @@ input[type='range'] {
 }
 
 .disc-card.banner::before {
-  background: linear-gradient(to right, #1d2029 46%, rgba(29, 32, 41, 0) 70%);
+  background: linear-gradient(to right, #1a2230 46%, rgba(26, 34, 48, 0) 70%);
 }
 
 .disc-card.on {
@@ -1445,7 +1456,7 @@ input[type='range'] {
 }
 
 .tech-card .fav {
-  color: var(--gold);
+  color: var(--red);
 }
 
 .champ-card {
@@ -1473,22 +1484,29 @@ input[type='range'] {
 }
 
 .icon-tile {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--ink), transparent 92%);
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--tile);
+  box-shadow:
+    inset 0 1px 0 var(--tile-edge),
+    0 1px 2px rgba(0, 0, 0, 0.25);
+  color: var(--ink);
   display: grid;
   place-items: center;
   flex: none;
 }
 
+.icon-tile .app-icon {
+  width: 26px;
+  height: 26px;
+}
+
 .icon-tile.red {
-  background: var(--red-soft);
-  color: var(--red-ink);
+  color: var(--red);
 }
 
 .icon-tile.gold {
-  background: var(--gold-soft);
   color: var(--gold);
 }
 
@@ -1699,6 +1717,9 @@ input[type='range'] {
 }
 
 .panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-display);
   font-size: 0.86rem;
   font-weight: 600;
@@ -2247,8 +2268,22 @@ button.panel-row {
   vertical-align: middle;
 }
 
-.tab:has(.disc-art) {
+.tab:has(.disc-art, .discipline-icon) {
   padding: 0 10px 0 6px;
+  gap: 6px;
+}
+
+/* official discipline icon on discipline cards (top right) and on the discipline banner */
+.disc-emblem {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: -1;
+  line-height: 0;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+}
+.disc-card.banner > .discipline-icon {
+  margin-bottom: 6px;
 }
 
 /* compact discipline cards: first level of navigation (Légendes, Accueil) */
@@ -2261,4 +2296,10 @@ button.panel-row {
 }
 .disc-card.compact .bar {
   margin-bottom: 6px;
+}
+
+/* icons of section tabs: neutral, red on the selected tab (the underline and the bold text also mark it) */
+.utab[aria-selected='true'] .app-icon,
+.tab[aria-selected='true'] .app-icon {
+  color: var(--red);
 }

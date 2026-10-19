@@ -12,7 +12,7 @@ import { hasFrenchVoice, say, voiceAvailable } from '../../audio/voice';
 import { saveTextFile } from '../../platform/native';
 import { ConfirmDialog, LinkRow, PageHead, Panel, PanelRow, Segmented, SliderRow, Toggle, toast } from '../components';
 import { defaultFighterName } from '../components/fighter';
-import { IconDownload, IconFighter, IconShield, IconTrash, IconUpload, IconUser } from '../icons';
+import { AppIcon } from '../icons';
 
 const pct = (v: number) => `${Math.round(v * 100)} %`;
 
@@ -71,7 +71,7 @@ export function SettingsPage() {
     <div className="page">
       <PageHead title="Réglages" />
 
-      <Panel title="Apparence" id="p-apparence">
+      <Panel title="Apparence" icon="theme" id="p-apparence">
         <PanelRow label="Thème des menus" hint="Automatique suit le réglage clair ou sombre de ton téléphone. Le studio d’entraînement reste blanc." column>
           <Segmented
             label="Thème des menus"
@@ -86,9 +86,9 @@ export function SettingsPage() {
         </PanelRow>
       </Panel>
 
-      <Panel title="Profil" id="p-profil">
-        <LinkRow to="/profil" icon={<IconUser className="muted" />} label="Mon profil et mon compte" hint="Informations, profil sportif, export et suppression de tes données" />
-        <LinkRow to="/combattant" icon={<IconFighter className="muted" />} label={fighter?.name ?? defaultFighterName(profile.coach)} hint="Personnaliser ton combattant" />
+      <Panel title="Profil" icon="profile" id="p-profil">
+        <LinkRow to="/profil" icon={<AppIcon id="profile" className="muted" />} label="Mon profil et mon compte" hint="Informations, profil sportif, export et suppression de tes données" />
+        <LinkRow to="/combattant" icon={<AppIcon id="fighter" className="muted" />} label={fighter?.name ?? defaultFighterName(profile.coach)} hint="Personnaliser ton combattant" />
         <LinkRow to="/coach" label="Coach" hint={profile.coach === 'femme' ? 'Coach femme' : 'Coach homme'} />
         <PanelRow label="Garde">
           <Segmented
@@ -110,7 +110,7 @@ export function SettingsPage() {
         </button>
       </Panel>
 
-      <Panel title="Voix et sons" id="p-voix">
+      <Panel title="Voix et sons" icon="audio" id="p-voix">
         <Toggle label="Voix du coach" on={settings.voice} onChange={(v) => set({ voice: v })} />
         <Toggle label="Annoncer chaque mouvement" on={settings.announceMoves} onChange={(v) => set({ announceMoves: v })} />
         <Toggle label="Conseils techniques" hint="En mode technique" on={settings.techniqueTips} onChange={(v) => set({ techniqueTips: v })} />
@@ -131,7 +131,7 @@ export function SettingsPage() {
         {!voiceAvailable() && <p className="small muted" style={{ padding: '0 0 12px' }}>La synthèse vocale n’est pas disponible dans ce navigateur.</p>}
       </Panel>
 
-      <Panel title="Affichage 3D" id="p-3d">
+      <Panel title="Affichage 3D" icon="display" id="p-3d">
         <PanelRow label="Qualité" hint="En mode Auto, la qualité baisse d’elle-même si l’appareil n’arrive pas à suivre." column>
           <Segmented
             label="Qualité"
@@ -170,7 +170,7 @@ export function SettingsPage() {
         </PanelRow>
       </Panel>
 
-      <Panel title="Rounds par défaut" id="p-rounds">
+      <Panel title="Rounds par défaut" icon="repeat" id="p-rounds">
         <PanelRow label="Durée du round" column>
           <Segmented label="Durée du round" value={settings.defaultRoundSec} onChange={(v) => set({ defaultRoundSec: v })} options={[60, 120, 180, 300].map((s) => ({ id: s, label: `${s / 60} min` }))} />
         </PanelRow>
@@ -179,16 +179,16 @@ export function SettingsPage() {
         </PanelRow>
       </Panel>
 
-      <Panel title="Données et confidentialité" id="p-data">
-        <LinkRow to="/confidentialite" icon={<IconShield className="muted" />} label="Confidentialité" hint="Aucune mesure d’audience, aucune publicité ; synchronisation seulement si tu l’actives" />
+      <Panel title="Données et confidentialité" icon="privacy" id="p-data">
+        <LinkRow to="/confidentialite" icon={<AppIcon id="privacy" className="muted" />} label="Confidentialité" hint="Aucune mesure d’audience, aucune publicité ; synchronisation seulement si tu l’actives" />
         <div className="panel-row col">
           <span className="small muted">L’export crée un fichier que tu peux garder ou réimporter sur un autre appareil.</span>
           <div className="grid2">
             <button type="button" className="btn secondary" onClick={doExport}>
-              <IconDownload width={18} /> Exporter
+              <AppIcon id="download" size={18} /> Exporter
             </button>
             <button type="button" className="btn secondary" onClick={() => file.current?.click()}>
-              <IconUpload width={18} /> Importer
+              <AppIcon id="upload" size={18} /> Importer
             </button>
           </div>
           <input ref={file} type="file" accept="application/json,.json" hidden onChange={(e) => e.target.files?.[0] && doImport(e.target.files[0])} />
@@ -200,12 +200,12 @@ export function SettingsPage() {
         </div>
         <div className="panel-row">
           <button type="button" className="btn danger block" onClick={() => setConfirmErase(true)}>
-            <IconTrash width={18} /> Tout effacer
+            <AppIcon id="delete" size={18} /> Tout effacer
           </button>
         </div>
       </Panel>
 
-      <Panel title="À propos" id="p-about">
+      <Panel title="À propos" icon="info" id="p-about">
         <p className="small muted" style={{ padding: '12px 0' }}>
           Combat Shadow Studio, version {import.meta.env.VITE_APP_VERSION} (développement). Combattants 3D générés à partir de MakeHuman (licence CC0), animations produites par le moteur de l’application. Cette application ne
           remplace pas un entraîneur ni un avis médical.

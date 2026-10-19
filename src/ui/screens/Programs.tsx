@@ -4,7 +4,7 @@ import { PROGRAMS, PROGRAM_BY_ID, programSeconds } from '../../domain/programs';
 import { EXERCISE_BY_ID } from '../../domain/exercises';
 import { DISCIPLINES, ProgramBlock } from '../../domain/types';
 import { DisciplineLabel, EmptyState, PageHead } from '../components';
-import { IconChevron, IconPlay, IconPlus } from '../icons';
+import { AppIcon } from '../icons';
 
 const PHASE_LABEL: Record<ProgramBlock['phase'], string> = {
   echauffement: 'Échauffement',
@@ -34,12 +34,12 @@ export function Programs() {
               </span>
               <span className="small muted">{p.frequency}</span>
             </span>
-            <IconChevron />
+            <AppIcon id="chevron" />
           </Link>
         ))}
       </div>
       <Link to="/createur" className="btn secondary block">
-        <IconPlus width={18} /> Créer mon propre enchaînement
+        <AppIcon id="add" size={18} /> Créer mon propre enchaînement
       </Link>
     </div>
   );
@@ -107,7 +107,7 @@ export function ProgramPage() {
         })}
       </div>
       <button type="button" className="btn primary block lg" onClick={() => nav(`/entrainement?prog=${p.id}`)} data-testid="start-program">
-        <IconPlay /> Lancer le programme
+        <AppIcon id="play" /> Lancer le programme
       </button>
     </div>
   );

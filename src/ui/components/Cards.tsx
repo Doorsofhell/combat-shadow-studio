@@ -4,19 +4,25 @@ import { Link } from 'react-router-dom';
 import { DISCIPLINES, DisciplineId, LEVELS, LevelId, TechniqueMode } from '../../domain/types';
 import { MODE_LABEL } from '../../domain/partner';
 import { STATUS_HELP, STATUS_LABEL, animationStatusOf } from '../../domain/animationStatus';
-import { IconChevron, IconStarFilled } from '../icons';
-import { DisciplineArtwork } from './DisciplineArtwork';
+import { AppIcon, DisciplineIcon, LevelIcon } from '../icons';
 
-/** Premium discipline card: render of the coach, name in Rajdhani, current level. */
+/** Premium discipline card: the official discipline icon, name in Rajdhani, current level. */
 export function DisciplineCard({ id, level, to, onClick, selected, testId, tall, compact }: { id: DisciplineId; level?: LevelId; to?: string; onClick?: () => void; selected?: boolean; testId?: string; tall?: boolean; compact?: boolean }) {
   const d = DISCIPLINES.find((x) => x.id === id)!;
   const inner = (
     <>
-      <DisciplineArtwork id={id} format="cover" />
+      <span className="disc-emblem" aria-hidden>
+        <DisciplineIcon id={id} size={compact ? 76 : 104} />
+      </span>
       <span className="bar" aria-hidden />
       <span className="name">{d.name}</span>
       {!compact && <span className="sub">{d.tagline}</span>}
-      {level && <span className="lvl">Niveau : {LEVELS.find((l) => l.id === level)!.name}</span>}
+      {level && (
+        <span className="lvl">
+          <LevelIcon level={level} />
+          Niveau : {LEVELS.find((l) => l.id === level)!.name}
+        </span>
+      )}
     </>
   );
   const style = tall ? { minHeight: 240 } : undefined;
@@ -67,12 +73,12 @@ export function TechniqueCard({ to, title, description, glyph, thumb, favorite, 
       <span className="body">
         <span className="title" style={{ display: 'block' }}>
           {title}
-          {favorite && <IconStarFilled className="fav" width={14} height={14} style={{ marginLeft: 6, verticalAlign: -1 }} aria-label="Favori" />}
+          {favorite && <AppIcon id="favorite" size={14} className="fav" label="Favori" style={{ marginLeft: 6, verticalAlign: -1 }} />}
         </span>
         {description && <span className="desc">{description}</span>}
         {meta}
       </span>
-      <IconChevron className="muted" />
+      <AppIcon id="chevron" className="muted" />
     </Link>
   );
 }
@@ -104,7 +110,7 @@ export function EntryCard({ to, icon, thumb, title, text, tone, testId }: { to: 
         <span className="title">{title}</span>
         {text && <span className="small muted">{text}</span>}
       </span>
-      <IconChevron />
+      <AppIcon id="chevron" />
     </Link>
   );
 }

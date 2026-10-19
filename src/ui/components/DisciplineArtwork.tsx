@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { disciplineArt } from '../../domain/disciplineArt';
+import { DisciplineIcon } from '../icons';
 
 export type ArtFormat = 'cover' | 'tile' | 'avatar';
 export type ArtSize = 'xs' | 'sm' | 'md' | 'lg';
@@ -68,11 +69,11 @@ export function DisciplineArtwork({ id, format = 'tile', size = 'md', crop, deco
   );
 }
 
-/** discipline name preceded by its official badge, for lists and metadata lines */
+/** discipline name preceded by its official icon, for lists and metadata lines */
 export function DisciplineLabel({ id, name }: { id: string; name: string }) {
   return (
     <span className="disc-label">
-      <DisciplineArtwork id={id} format="avatar" size="xs" />
+      <DisciplineIcon id={id} size={24} />
       <span className="t">{name}</span>
     </span>
   );

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { TechThumb, keyTechnique, programTechnique } from '../components/TechThumb';
 import { Suspense, lazy, useCallback, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
@@ -15,22 +16,22 @@ import type { ComboPlayer, PlayerEvents } from '../../engine/player';
 import { playerSteps } from '../training/plan';
 import { say } from '../../audio/voice';
 import { GuideCard } from '../GuideCard';
-import { AnimationBadge, DisciplineArtwork, DisciplineLabel, ModeBadge, CameraControls, EmptyState, EntryCard, FilterChips, LevelSelector, PageHead, PlaybackControls, SectionHead, Tabs, TechniqueCard } from '../components';
+import { AnimationBadge, DisciplineLabel, ModeBadge, CameraControls, EmptyState, EntryCard, FilterChips, LevelSelector, PageHead, PlaybackControls, SectionHead, Tabs, TechniqueCard } from '../components';
 import { ExerciseList, ExerciseSheet } from './Discipline';
-import { IconChevron, IconLayers, IconPlus, IconStar, IconStarFilled, IconTrend, IconTrophy } from '../icons';
+import { AppIcon, DisciplineIcon } from '../icons';
 import { CHAMPIONS_AVAILABLE } from './features';
 
 const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
 
 type HubTab = 'techniques' | 'combinaisons' | 'legendes' | 'createur' | 'favoris' | 'programmes';
 
-const HUB_TABS: { id: HubTab; label: string }[] = [
-  { id: 'techniques', label: 'Techniques' },
-  { id: 'combinaisons', label: 'Combinaisons' },
-  { id: 'legendes', label: 'Légendes' },
-  { id: 'createur', label: 'Créateur' },
-  { id: 'favoris', label: 'Favoris' },
-  { id: 'programmes', label: 'Programmes' },
+const HUB_TABS: { id: HubTab; label: string; icon: ReactNode }[] = [
+  { id: 'techniques', label: 'Techniques', icon: <AppIcon id="techniques" size={18} /> },
+  { id: 'combinaisons', label: 'Combinaisons', icon: <AppIcon id="combos" size={18} /> },
+  { id: 'legendes', label: 'Légendes', icon: <AppIcon id="legends" size={18} /> },
+  { id: 'createur', label: 'Créateur', icon: <AppIcon id="compose" size={18} /> },
+  { id: 'favoris', label: 'Favoris', icon: <AppIcon id="favorite" size={18} /> },
+  { id: 'programmes', label: 'Programmes', icon: <AppIcon id="programs" size={18} /> },
 ];
 
 /** "Techniques" tab: individual techniques, combinations, legends, creator, favourites, programmes. */
@@ -61,7 +62,7 @@ export function Library() {
 }
 
 function DisciplineFilter({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) => void }) {
-  return <Tabs label="Discipline" items={DISCIPLINES.map((x) => ({ id: x.id, label: x.short, icon: <DisciplineArtwork id={x.id} format="avatar" size="xs" /> }))} value={d} onChange={setD} />;
+  return <Tabs label="Discipline" items={DISCIPLINES.map((x) => ({ id: x.id, label: x.short, icon: <DisciplineIcon id={x.id} size={24} /> }))} value={d} onChange={setD} />;
 }
 
 function TechniquesTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) => void }) {
@@ -123,7 +124,7 @@ function LegendsTab() {
     return (
       <>
         <p className="muted">Des enchaînements inspirés du style de grands champions, exécutés par ton combattant.</p>
-        <EntryCard to="/champions" icon={<IconTrophy />} tone="gold" title="Combinaisons des légendes" text="Parcourir les champions et leurs combinaisons" testId="open-champions" />
+        <EntryCard to="/champions" icon={<AppIcon id="legends" />} tone="gold" title="Combinaisons des légendes" text="Parcourir les champions et leurs combinaisons" testId="open-champions" />
       </>
     );
   return <EmptyState title="Combinaisons des légendes" text="Cette bibliothèque arrive bientôt : des enchaînements inspirés du style de grands champions." />;
@@ -133,7 +134,7 @@ function CreatorTab() {
   const combos = useCustom((s) => s.combos);
   return (
     <>
-      <EntryCard to="/createur" icon={<IconPlus />} tone="red" title="Créer un enchaînement" text="Compose ta combinaison, l’application vérifie qu’elle est réalisable." />
+      <EntryCard to="/createur" icon={<AppIcon id="compose" />} tone="red" title="Créer un enchaînement" text="Compose ta combinaison, l’application vérifie qu’elle est réalisable." />
       <SectionHead title="Mes enchaînements" />
       {combos.length === 0 ? (
         <EmptyState title="Aucun enchaînement enregistré" text="Tes créations apparaîtront ici." />
@@ -148,7 +149,7 @@ function CreatorTab() {
                   <DisciplineLabel id={c.discipline} name={DISCIPLINES.find((x) => x.id === c.discipline)?.name ?? ''} /> · {c.sequence.length} mouvements
                 </span>
               </span>
-              <IconChevron />
+              <AppIcon id="chevron" />
             </Link>
           ))}
         </div>
@@ -192,8 +193,8 @@ function FavoritesTab() {
 function ProgramsTab() {
   return (
     <>
-      <EntryCard to="/programmes" icon={<IconTrend />} tone="red" title="Programmes guidés" text="Séances complètes, de l’échauffement au retour au calme." />
-      <EntryCard to="/createur" icon={<IconLayers />} title="Programme personnalisé" text="Crée ton enchaînement et lance-le en boucle ou en rounds." />
+      <EntryCard to="/programmes" icon={<AppIcon id="programs" />} tone="red" title="Programmes guidés" text="Séances complètes, de l’échauffement au retour au calme." />
+      <EntryCard to="/createur" icon={<AppIcon id="compose" />} title="Programme personnalisé" text="Crée ton enchaînement et lance-le en boucle ou en rounds." />
       <div className="stack" style={{ gap: 8 }}>
         {PROGRAMS.slice(0, 4).map((p) => (
           <Link key={p.id} to={`/programmes/${p.id}`} className="card link ex-card">
@@ -202,7 +203,7 @@ function ProgramsTab() {
               <span className="eyebrow">{p.durationMin} min</span>
               <span className="title">{p.name}</span>
             </span>
-            <IconChevron />
+            <AppIcon id="chevron" />
           </Link>
         ))}
       </div>
@@ -255,7 +256,7 @@ export function TechniquePage() {
         fallback="/techniques"
         right={
           <button type="button" className="btn icon ghost" aria-pressed={fav} aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'} onClick={() => toggleFav(t.id)} style={{ marginRight: -10 }}>
-            {fav ? <IconStarFilled style={{ color: 'var(--gold)' }} /> : <IconStar />}
+            {fav ? <AppIcon id="favorite" tone="accent" /> : <AppIcon id="favoriteOutline" />}
           </button>
         }
       />
@@ -351,7 +352,7 @@ export function PartnerPage() {
       </div>
       <p className="small muted">Pas d’animation à deux pour cette technique pour l’instant : elle demande une démonstration avec un partenaire virtuel, en préparation.</p>
       {prep && (
-        <EntryCard to={`/techniques/${prep.id}?d=${p.discipline}`} icon={<IconLayers />} title={`Préparation en solo : ${prep.name}`} text="Le seul travail que tu peux faire seul, animé sur ton combattant." testId="partner-prep" />
+        <EntryCard to={`/techniques/${prep.id}?d=${p.discipline}`} icon={<AppIcon id="techniques" />} title={`Préparation en solo : ${prep.name}`} text="Le seul travail que tu peux faire seul, animé sur ton combattant." testId="partner-prep" />
       )}
     </div>
   );

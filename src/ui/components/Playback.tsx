@@ -1,4 +1,4 @@
-import { IconPause, IconPlay } from '../icons';
+import { AppIcon } from '../icons';
 import { Segmented } from './Chips';
 
 /** Play / pause and speed slider of a 3D preview. */
@@ -6,7 +6,7 @@ export function PlaybackControls({ playing, onToggle, speed, onSpeed, min = 0.2,
   return (
     <div className="playback">
       <button type="button" className="btn icon" onClick={onToggle} aria-label={playing ? 'Pause' : 'Lecture'}>
-        {playing ? <IconPause /> : <IconPlay />}
+        {playing ? <AppIcon id="pause" /> : <AppIcon id="play" />}
       </button>
       <label className="speed-ctl">
         <span>Vitesse</span>

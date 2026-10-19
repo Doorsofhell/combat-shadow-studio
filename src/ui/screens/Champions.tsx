@@ -17,12 +17,13 @@ import { useSettings } from '../../store/settings';
 import { MODE_HELP, MODE_LABEL } from '../training/plan';
 import { PageHead } from '../App';
 import { DisciplineCard, DisciplineLabel } from '../components';
-import { IconChevron, IconPlay, IconPlus, IconTrash } from '../icons';
+import { AppIcon, DisciplineIcon, LevelIcon, type GlyphId } from '../icons';
 
 const DISC_NAME = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.name])) as Record<DisciplineId, string>;
 const DISC_SHORT = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.short])) as Record<DisciplineId, string>;
 const LEVEL_NAME = Object.fromEntries(LEVELS.map((l) => [l.id, l.name])) as Record<LevelId, string>;
 const STATUS_CLASS: Record<CatalogStatus, string> = { verifiee: 'badge gold', adaptee: 'badge red', inspiree: 'badge' };
+const STATUS_ICON: Record<CatalogStatus, 'verified' | 'adapted' | 'inspired'> = { verifiee: 'verified', adaptee: 'adapted', inspiree: 'inspired' };
 const PAGE = 40;
 
 // ------------------------------------------------------------------ chargement
@@ -47,6 +48,7 @@ const useRetry = () => useCatalog();
 function StatusBadge({ status }: { status: CatalogStatus }) {
   return (
     <span className={STATUS_CLASS[status]} title={STATUS_HELP[status]}>
+      <AppIcon id={STATUS_ICON[status]} size={14} />
       {STATUS_LABEL[status]}
     </span>
   );
@@ -65,9 +67,8 @@ function FavButton({ id, name }: { id: string; name: string }) {
         e.stopPropagation();
         toggle(id);
       }}
-      style={{ fontSize: '1.35rem', color: fav ? 'var(--gold)' : 'var(--muted)' }}
     >
-      {fav ? '★' : '☆'}
+      <AppIcon id={fav ? 'favorite' : 'favoriteOutline'} tone={fav ? 'accent' : 'muted'} />
     </button>
   );
 }
@@ -157,14 +158,14 @@ function StatusExplainer() {
 // ------------------------------------------------------------------ page principale
 
 type View = 'explorer' | 'favoris' | 'historique' | 'recents' | 'collections' | 'champions' | 'importer';
-const VIEWS: { id: View; label: string }[] = [
-  { id: 'explorer', label: 'Explorer' },
-  { id: 'favoris', label: 'Favoris' },
-  { id: 'historique', label: 'Historique' },
-  { id: 'recents', label: 'Récents' },
-  { id: 'collections', label: 'Collections' },
-  { id: 'champions', label: 'Champions' },
-  { id: 'importer', label: 'Importer' },
+const VIEWS: { id: View; label: string; icon: GlyphId }[] = [
+  { id: 'explorer', label: 'Explorer', icon: 'search' },
+  { id: 'favoris', label: 'Favoris', icon: 'favorite' },
+  { id: 'historique', label: 'Historique', icon: 'history' },
+  { id: 'recents', label: 'Récents', icon: 'details' },
+  { id: 'collections', label: 'Collections', icon: 'collection' },
+  { id: 'champions', label: 'Champions', icon: 'legends' },
+  { id: 'importer', label: 'Importer', icon: 'upload' },
 ];
 
 export function Champions() {
@@ -194,6 +195,7 @@ export function Champions() {
           <div className="utabs" role="tablist" aria-label="Sections de la bibliothèque">
             {VIEWS.map((v) => (
               <button key={v.id} role="tab" className="utab" aria-selected={view === v.id} onClick={() => setView(v.id)}>
+                <AppIcon id={v.icon} size={18} />
                 {v.label}
               </button>
             ))}
@@ -272,7 +274,7 @@ function Explorer({ catalog }: { catalog: Catalog }) {
       </div>
       <div className="row">
         <button className="btn sm secondary" onClick={() => setShowFilters(!showFilters)} aria-expanded={showFilters}>
-          Filtres{active ? ` (${active})` : ''}
+          <AppIcon id="filters" size={18} /> Filtres{active ? ` (${active})` : ''}
         </button>
         {active > 0 && (
           <button
@@ -465,7 +467,7 @@ function Collections({ catalog }: { catalog: Catalog }) {
       >
         <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom de la nouvelle collection" aria-label="Nom de la nouvelle collection" />
         <button className="btn" type="submit" disabled={!name.trim()}>
-          <IconPlus width={18} /> Créer
+          <AppIcon id="add" size={18} /> Créer
         </button>
       </form>
       {!collections.length && (
@@ -504,7 +506,7 @@ function Collections({ catalog }: { catalog: Catalog }) {
                   Renommer
                 </button>
                 <button className="btn sm icon" style={{ width: 38 }} onClick={() => window.confirm(`Supprimer la collection « ${col.name} » ?`) && deleteCollection(col.id)} aria-label={`Supprimer ${col.name}`}>
-                  <IconTrash width={18} />
+                  <AppIcon id="delete" size={18} />
                 </button>
               </div>
             )}
@@ -515,7 +517,7 @@ function Collections({ catalog }: { catalog: Catalog }) {
                 empty="Collection vide : ouvre une fiche et touche « Ajouter à une collection »."
                 extra={(c) => (
                   <button className="btn sm icon" style={{ width: 38 }} onClick={() => removeFromCollection(col.id, c.id)} aria-label={`Retirer ${c.name} de la collection`}>
-                    <IconTrash width={16} />
+                    <AppIcon id="minus" size={16} />
                   </button>
                 )}
               />
@@ -637,7 +639,7 @@ function ImportView({ catalog }: { catalog: Catalog }) {
         empty="Aucune fiche importée."
         extra={(c) => (
           <button className="btn sm icon" style={{ width: 38 }} onClick={() => removeImported(c.id)} aria-label={`Supprimer la fiche importée ${c.name}`}>
-            <IconTrash width={16} />
+            <AppIcon id="delete" size={16} />
           </button>
         )}
       />
@@ -724,7 +726,10 @@ export function ComboPage() {
 
       <div className="row" style={{ gap: 6 }}>
         <StatusBadge status={c.status} />
-        <span className="badge">{LEVEL_NAME[c.level]}</span>
+        <span className="badge">
+          <LevelIcon level={c.level} size={14} />
+          {LEVEL_NAME[c.level]}
+        </span>
         <span className="badge">{GUARD_LABEL[c.guard]}</span>
         <span className="badge">Distance {DISTANCE_LABEL[c.distance].toLowerCase()}</span>
         <span className="badge">{c.sequence.length} mouvements</span>
@@ -816,7 +821,7 @@ export function ComboPage() {
                     ))}
                   </div>
                   <button className="btn sm secondary" style={{ alignSelf: 'flex-start' }} onClick={() => duplicate(v.sequence!, `${c.name} – variante`)}>
-                    Dupliquer cette variante dans le créateur
+                    <AppIcon id="duplicate" size={18} /> Dupliquer cette variante dans le créateur
                   </button>
                 </>
               )}
@@ -837,18 +842,18 @@ export function ComboPage() {
         <p className="small muted">{MODE_HELP[mode]}</p>
         {mode === 'rounds' && <RoundPicker round={round} rest={rest} rounds={rounds} setRound={setRound} setRest={setRest} setRounds={setRounds} />}
         <button className="btn primary block" disabled={!playable} onClick={() => train(mode)} data-testid="cat-train">
-          <IconPlay /> S’entraîner
+          <AppIcon id="play" /> S’entraîner
         </button>
         <div className="grid2">
           <button className="btn" disabled={!playable} onClick={() => train('technique', true)} data-testid="cat-study">
-            Décomposer
+            <AppIcon id="decompose" size={18} /> Décomposer
           </button>
           <button className="btn" onClick={() => duplicate(c.sequence)} data-testid="cat-duplicate">
-            Dupliquer dans le créateur
+            <AppIcon id="duplicate" size={18} /> Dupliquer dans le créateur
           </button>
         </div>
         <button className="btn secondary" onClick={() => setCollect(true)}>
-          <IconPlus width={18} /> Ajouter à une collection
+          <AppIcon id="add" size={18} /> Ajouter à une collection
         </button>
       </section>
 
@@ -857,7 +862,7 @@ export function ComboPage() {
           <span className="eyebrow">Profil de style</span>
           <span className="row between nowrap">
             <b>{ch.name}</b>
-            <IconChevron />
+            <AppIcon id="chevron" />
           </span>
           <span className="small">{ch.style}</span>
           <span className="small muted">{ch.source}</span>
@@ -991,6 +996,7 @@ export function ChampionPage() {
         <div className="tabs" role="tablist" aria-label="Discipline">
           {ch.disciplines.map((x) => (
             <button key={x} role="tab" className="tab" aria-selected={x === disc} onClick={() => setD(x)}>
+              <DisciplineIcon id={x} size={20} />
               {DISC_NAME[x]} ({all.filter((c) => c.discipline === x).length})
             </button>
           ))}

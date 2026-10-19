@@ -10,7 +10,7 @@ import { formatDuration, useStats } from '../../store/stats';
 import { useGoals } from '../../store/goals';
 import { MODE_HELP, MODE_LABEL } from '../training/plan';
 import { DisciplineArtwork, EmptyState, FilterChips, LevelSelector, PageHead, Segmented, Sheet } from '../components';
-import { IconPlay, IconPlus, IconStar, IconStarFilled } from '../icons';
+import { AppIcon, DisciplineIcon } from '../icons';
 
 export const KIND_LABEL: Record<Exercise['kind'], string> = {
   technique: 'Technique',
@@ -38,7 +38,7 @@ export function ExerciseList({ list, onOpen }: { list: Exercise[]; onOpen: (id: 
           <span className="body">
             <span className="title">
               {e.name}
-              {fav.includes(e.id) && <IconStarFilled width={14} height={14} style={{ color: 'var(--gold)', marginLeft: 6, verticalAlign: -1 }} aria-label="Favori" />}
+              {fav.includes(e.id) && <AppIcon id="favorite" size={14} tone="accent" label="Favori" style={{ marginLeft: 6, verticalAlign: -1 }} />}
             </span>
             <span className="row" style={{ gap: 6 }}>
               <span className="badge">{KIND_LABEL[e.kind]}</span>
@@ -79,6 +79,7 @@ export function DisciplinePage() {
       <PageHead title={disc.name} eyebrow="Discipline" fallback="/entrainer" />
       <div className="disc-card dark-scope banner" style={{ pointerEvents: 'none' }} aria-hidden>
         <DisciplineArtwork id={disc.id} format="cover" eager />
+        <DisciplineIcon id={disc.id} size={56} />
         <span className="bar" />
         <span className="name" style={{ fontSize: '1.1rem' }}>
           {exercisesFor(disc.id, lvl.id).length} exercices
@@ -101,7 +102,7 @@ export function DisciplinePage() {
       <ExerciseList list={list} onOpen={(x) => setParam('ex', x)} />
       <div className="grid2">
         <Link className="btn secondary" to={`/createur?d=${disc.id}`}>
-          <IconPlus width={18} /> Créer
+          <AppIcon id="add" size={18} /> Créer
         </Link>
         <Link className="btn secondary" to={`/techniques?d=${disc.id}`}>
           Techniques
@@ -139,7 +140,7 @@ export function ExerciseSheet({ ex, onClose }: { ex: Exercise; onClose: () => vo
       onClose={onClose}
       footer={
         <button type="button" className="btn primary block lg" onClick={go} data-testid="go-training">
-          <IconPlay /> S’entraîner
+          <AppIcon id="play" /> S’entraîner
         </button>
       }
     >
@@ -160,7 +161,7 @@ export function ExerciseSheet({ ex, onClose }: { ex: Exercise; onClose: () => vo
       )}
       {ex.soloNote && <div className="note">{ex.soloNote}</div>}
       <button type="button" className="btn ghost" style={{ alignSelf: 'flex-start', marginLeft: -12 }} aria-pressed={fav} onClick={() => toggleFav(ex.id)}>
-        {fav ? <IconStarFilled style={{ color: 'var(--gold)' }} /> : <IconStar />}
+        {fav ? <AppIcon id="favorite" tone="accent" /> : <AppIcon id="favoriteOutline" />}
         {fav ? 'Dans tes favoris' : 'Ajouter aux favoris'}
       </button>
       <div className="stack">

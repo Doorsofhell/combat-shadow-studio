@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { create } from 'zustand';
-import { IconCheck } from '../icons';
+import { AppIcon } from '../icons';
 
 interface ToastState {
   items: { id: number; text: string }[];
@@ -25,7 +25,7 @@ function ToastItem({ id, text }: { id: number; text: string }) {
   }, [id, drop]);
   return (
     <div className="toast" onClick={() => drop(id)}>
-      <IconCheck width={18} height={18} />
+      <AppIcon id="check" size={18} />
       {text}
     </div>
   );

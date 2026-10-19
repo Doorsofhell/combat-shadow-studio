@@ -9,7 +9,7 @@ import { recommend } from '../../domain/recommend';
 import { CoachPicker } from './CoachSelect';
 import { DisciplineLabel, DisciplineCard, LevelSelector, OptionGrid } from '../components';
 import { chooseCoach } from '../components/fighter';
-import { IconFighter, IconGlove, IconShield, IconTrend } from '../icons';
+import { AppIcon } from '../icons';
 
 export const GOALS = SPORT_GOALS;
 
@@ -126,19 +126,19 @@ export function Onboarding() {
             <ul className="feature-list">
               <li>
                 <span className="icon-tile red" aria-hidden>
-                  <IconGlove />
+                  <AppIcon id="train" />
                 </span>
                 <span>Plus de 60 techniques animées et des centaines d’exercices</span>
               </li>
               <li>
                 <span className="icon-tile" aria-hidden>
-                  <IconTrend />
+                  <AppIcon id="progress" />
                 </span>
                 <span>Programmes, rounds chronométrés et suivi de ta progression</span>
               </li>
               <li>
                 <span className="icon-tile" aria-hidden>
-                  <IconShield />
+                  <AppIcon id="privacy" />
                 </span>
                 <span>
                   Tes réponses restent sur cet appareil. <Link to="/confidentialite">Confidentialité</Link>
@@ -354,7 +354,7 @@ export function Onboarding() {
               </div>
             ))}
             <p className="small muted row nowrap" style={{ gap: 8 }}>
-              <IconFighter width={18} /> Tu pourras tout personnaliser plus tard dans l’onglet Coach.
+              <AppIcon id="fighter" size={18} /> Tu pourras tout personnaliser plus tard dans l’onglet Coach.
             </p>
           </>
         )}

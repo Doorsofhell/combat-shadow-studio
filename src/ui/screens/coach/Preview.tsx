@@ -5,7 +5,7 @@ import type { DisciplineId } from '../../../domain/types';
 import type { FighterLook } from '../../../editor/look';
 import { TECHNIQUE_BY_ID } from '../../../domain/techniques';
 import { oriented } from '../../../domain/camera';
-import { IconPause, IconPlay } from '../../icons';
+import { AppIcon } from '../../icons';
 
 const CoachStage = lazy(() => import('../../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
 
@@ -192,7 +192,7 @@ export function Preview({
           aria-label={state.playing ? 'Mettre l’animation en pause' : 'Lancer l’animation'}
           data-testid="anim-play"
         >
-          {state.playing ? <IconPause /> : <IconPlay />}
+          {state.playing ? <AppIcon id="pause" /> : <AppIcon id="play" />}
         </button>
         <label className="sr-only" htmlFor="cs-anim-select">
           Animation

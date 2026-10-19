@@ -8,7 +8,7 @@ export type ResolvedTheme = 'light' | 'dark';
 
 export const THEME_KEY = 'css-theme';
 /** status bar colour of each theme; must match --c-bg in styles.css */
-export const THEME_BG: Record<ResolvedTheme, string> = { dark: '#101116', light: '#f4f5f7' };
+export const THEME_BG: Record<ResolvedTheme, string> = { dark: '#0b0f14', light: '#f4f5f7' };
 export const STUDIO_BG = '#ffffff';
 
 const mq = () => (typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: light)') : null);

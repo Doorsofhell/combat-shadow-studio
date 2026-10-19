@@ -1,7 +1,7 @@
 import type { Fighter } from '../../../store/fighters';
 import type { CoachId } from '../../../domain/types';
 import { Button, Sheet } from '../../components';
-import { IconCheck, IconPlus, IconTrash } from '../../icons';
+import { AppIcon } from '../../icons';
 import { Group } from './controls';
 
 export function FighterPanel({
@@ -43,7 +43,7 @@ export function FighterPanel({
         </div>
         {isActive ? (
           <p className="cs-active-note" data-testid="active-badge">
-            <IconCheck width={18} height={18} /> C’est ton combattant actif : il te coache dans toutes les disciplines.
+            <AppIcon id="check" size={18} /> C’est ton combattant actif : il te coache dans toutes les disciplines.
           </p>
         ) : (
           <Button variant="secondary" block onClick={onActivate} data-testid="set-active">
@@ -55,14 +55,14 @@ export function FighterPanel({
             Aléatoire
           </Button>
           <Button variant="secondary" onClick={onDuplicate} data-testid="duplicate-fighter">
-            Dupliquer
+            <AppIcon id="duplicate" size={18} /> Dupliquer
           </Button>
           <Button variant="secondary" onClick={onReset} data-testid="reset-look">
             Réinitialiser l’apparence
           </Button>
           <Button
             variant="danger"
-            icon={<IconTrash />}
+            icon={<AppIcon id="delete" />}
             onClick={onDelete}
             disabled={fighters.length <= 1}
             data-testid="delete-fighter"
@@ -77,7 +77,7 @@ export function FighterPanel({
       <Group
         title={`Mes combattants (${fighters.length})`}
         action={
-          <Button variant="secondary" icon={<IconPlus />} onClick={onNew} data-testid="new-fighter">
+          <Button variant="secondary" icon={<AppIcon id="add" />} onClick={onNew} data-testid="new-fighter">
             Nouveau
           </Button>
         }

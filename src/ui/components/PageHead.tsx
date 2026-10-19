@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IconBack } from '../icons';
+import { AppIcon } from '../icons';
 
 /** Screen header: back button (history, or `fallback` when the screen was opened directly), eyebrow and title. */
 export function PageHead({ title, eyebrow, back = true, right, fallback = '/' }: { title: string; eyebrow?: string; back?: boolean; right?: ReactNode; fallback?: string }) {
@@ -14,7 +14,7 @@ export function PageHead({ title, eyebrow, back = true, right, fallback = '/' }:
     <header className="page-head">
       {back && (
         <button type="button" className="btn icon ghost" onClick={goBack} aria-label="Retour" style={{ marginLeft: -12 }}>
-          <IconBack />
+          <AppIcon id="back" />
         </button>
       )}
       <div className="grow">

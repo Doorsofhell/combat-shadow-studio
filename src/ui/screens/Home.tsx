@@ -12,9 +12,9 @@ import { EXERCISE_BY_ID } from '../../domain/exercises';
 import { recommend } from '../../domain/recommend';
 import type { ComboPlayer, PlayerEvents } from '../../engine/player';
 import { MODE_LABEL } from '../training/plan';
-import { DisciplineArtwork, DisciplineCard, DisciplineLabel, EmptyState, EntryCard, ProgressBar, SectionHead, StatTile } from '../components';
+import { DisciplineCard, DisciplineLabel, EmptyState, EntryCard, ProgressBar, SectionHead, StatTile } from '../components';
 import { defaultFighterName } from '../components/fighter';
-import { IconChevron, IconClock, IconGear, IconPlay, IconRestart, IconTrend, IconUser } from '../icons';
+import { AppIcon, DisciplineIcon } from '../icons';
 
 /** the 3D bundle (three.js, R3F) stays out of the main chunk */
 const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
@@ -90,10 +90,10 @@ export function Home() {
           </div>
         </div>
         <Link to="/combattant" className="btn icon ghost" aria-label="Mon profil et mon combattant" title="Profil">
-          <IconUser />
+          <AppIcon id="profile" />
         </Link>
         <Link to="/reglages" className="btn icon ghost" aria-label="Réglages" title="Réglages" style={{ marginRight: -10 }} data-testid="open-settings">
-          <IconGear />
+          <AppIcon id="settings" />
         </Link>
       </header>
 
@@ -118,7 +118,7 @@ export function Home() {
         <div className="hero-info">
           <div>
             <div className="eyebrow disc-label">
-              <DisciplineArtwork id={disc.id} format="avatar" size="xs" />
+              <DisciplineIcon id={disc.id} size={24} />
               <span>
                 {disc.name} · {level.name}
               </span>
@@ -137,7 +137,7 @@ export function Home() {
 
       <div className="stack" style={{ gap: 10, marginTop: -6 }}>
         <button type="button" className="btn primary block lg" onClick={start} data-testid="home-cta">
-          <IconPlay /> Commencer l’entraînement
+          <AppIcon id="play" /> Commencer l’entraînement
         </button>
         {recEx && (
           <p className="small muted" style={{ textAlign: 'center' }}>
@@ -149,7 +149,7 @@ export function Home() {
       {resume && last && (
         <Link to={resume} className="card link ex-card" data-testid="resume-last">
           <span className="icon-tile red" aria-hidden>
-            <IconRestart />
+            <AppIcon id="play" />
           </span>
           <span className="body">
             <span className="eyebrow">Reprendre</span>
@@ -158,7 +158,7 @@ export function Home() {
               <DisciplineLabel id={last.discipline} name={DISCIPLINES.find((d) => d.id === last.discipline)?.name ?? ''} /> · {MODE_LABEL[last.mode]}
             </span>
           </span>
-          <IconChevron />
+          <AppIcon id="chevron" />
         </Link>
       )}
 
@@ -187,7 +187,7 @@ export function Home() {
             {last && (
               <div className="card row nowrap" style={{ gap: 14 }}>
                 <span className="icon-tile" aria-hidden>
-                  <IconClock />
+                  <AppIcon id="history" />
                 </span>
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span className="eyebrow" style={{ display: 'block' }}>
@@ -215,7 +215,7 @@ export function Home() {
                   <span className="title">{c!.name}</span>
                   <span className="small muted">{catalog?.championById.get(c!.champion)?.name ?? 'Combinaison des légendes'}</span>
                 </span>
-                <IconChevron />
+                <AppIcon id="chevron" />
               </Link>
             ))}
           </div>
@@ -237,7 +237,7 @@ export function Home() {
                     <span className="title">{e!.name}</span>
                     <span className="small muted"><DisciplineLabel id={e!.discipline} name={DISCIPLINES.find((d) => d.id === e!.discipline)?.name ?? ''} /></span>
                   </span>
-                  <IconChevron />
+                  <AppIcon id="chevron" />
                 </Link>
               ))}
           </div>
@@ -247,7 +247,7 @@ export function Home() {
       {recProg && (
         <section className="section" aria-labelledby="h-prog">
           <SectionHead id="h-prog" title="Programme recommandé" action={<Link to="/programmes">Programmes</Link>} />
-          <EntryCard to={`/programmes/${recProg.id}`} icon={<IconTrend />} thumb={programTechnique(recProg)} tone="red" title={recProg.name} text={`${recProg.durationMin} min · ${recProg.frequency}`} />
+          <EntryCard to={`/programmes/${recProg.id}`} icon={<AppIcon id="programs" />} thumb={programTechnique(recProg)} tone="red" title={recProg.name} text={`${recProg.durationMin} min · ${recProg.frequency}`} />
         </section>
       )}
 
@@ -271,7 +271,7 @@ export function Home() {
                   <span className="eyebrow">{LEVELS.find((l) => l.id === e.level)!.name}</span>
                   <span className="title">{e.name}</span>
                 </span>
-                <IconChevron />
+                <AppIcon id="chevron" />
               </Link>
             ))}
           </div>

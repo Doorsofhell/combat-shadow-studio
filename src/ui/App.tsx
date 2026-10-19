@@ -5,7 +5,7 @@ import { useSettings } from '../store/settings';
 import { setEffectsVolume } from '../audio/sound';
 import { setVoiceEnabled, setVoiceVolume } from '../audio/voice';
 import { installNativeHandlers } from '../platform/native';
-import { IconChart, IconFighter, IconGlove, IconHome, IconLayers } from './icons';
+import { AppIcon } from './icons';
 import { Toaster } from './components/Toast';
 import { Home } from './screens/Home';
 import { Onboarding } from './screens/Onboarding';
@@ -93,11 +93,11 @@ function ThemeColor() {
 }
 
 const NAV = [
-  { to: '/', label: 'Accueil', icon: <IconHome />, end: true, match: ['/'] },
-  { to: '/entrainer', label: 'Entraîner', icon: <IconGlove />, match: ['/entrainer', '/discipline', '/programmes'] },
-  { to: '/techniques', label: 'Techniques', icon: <IconLayers />, match: ['/techniques', '/createur', '/champions'] },
-  { to: '/combattant', label: 'Coach', icon: <IconFighter />, match: ['/combattant', '/coach', '/coach-ia'] },
-  { to: '/stats', label: 'Progrès', icon: <IconChart />, match: ['/stats', '/historique'] },
+  { to: '/', label: 'Accueil', icon: <AppIcon id="home" />, end: true, match: ['/'] },
+  { to: '/entrainer', label: 'Entraîner', icon: <AppIcon id="train" />, match: ['/entrainer', '/discipline', '/programmes'] },
+  { to: '/techniques', label: 'Techniques', icon: <AppIcon id="techniques" />, match: ['/techniques', '/createur', '/champions'] },
+  { to: '/combattant', label: 'Coach', icon: <AppIcon id="coach" />, match: ['/combattant', '/coach', '/coach-ia'] },
+  { to: '/stats', label: 'Progrès', icon: <AppIcon id="progress" />, match: ['/stats', '/historique'] },
 ];
 
 function Nav() {

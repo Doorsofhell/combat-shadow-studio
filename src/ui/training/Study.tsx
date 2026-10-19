@@ -5,7 +5,7 @@ import { STUDY_PHASE_LABEL, StudyPlayer } from '../../engine/study';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
 import { instructionOf } from '../../domain/instructions';
 import { CUE_LABEL, CueId, useSettings } from '../../store/settings';
-import { IconNext, IconPause, IconPlay, IconPrev } from '../icons';
+import { AppIcon } from '../icons';
 import { say } from '../../audio/voice';
 
 /**
@@ -175,7 +175,7 @@ export function StudyPanel({
       />
       <div className="controls study-controls">
         <button className="btn icon" onClick={() => study.stepKey(-1)} aria-label="Étape clé précédente" data-testid="study-prev">
-          <IconPrev />
+          <AppIcon id="stepBack" />
         </button>
         <button
           className={`btn ${study.playing ? 'dark' : 'primary'}`}
@@ -187,16 +187,16 @@ export function StudyPanel({
         >
           {study.playing ? (
             <>
-              <IconPause /> Pause
+              <AppIcon id="pause" /> Pause
             </>
           ) : (
             <>
-              <IconPlay /> Lecture
+              <AppIcon id="play" /> Lecture
             </>
           )}
         </button>
         <button className="btn icon" onClick={() => study.stepKey(1)} aria-label="Étape clé suivante" data-testid="study-next">
-          <IconNext />
+          <AppIcon id="stepForward" />
         </button>
       </div>
       <div className="study-speeds">

@@ -524,3 +524,49 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
   - contrôle visuel des 4 modèles et des vignettes (homme, femme) : TEST RÉUSSI ;
   - vrai téléphone Android : NON EXÉCUTÉ.
 - **Restauration** : `restauration/lot-8`
+
+## 2026-10-19 · v0.19.0 · Bibliothèque d’icônes premium
+
+- **Demande** : intégrer la nouvelle bibliothèque d’icônes (planche de référence) dans toute l’application : audit
+  du dépôt, design system centralisé, six icônes de discipline, palette officielle, sans régression ni plagiat de la
+  planche.
+- **Constat après vérification** (audit complet dans `docs/icones/`) : 44 icônes au trait dans un seul fichier, dont 9
+  inutilisées ; deux icônes locales en double dans le panneau du coach ; favori dessiné de deux façons (étoile SVG et
+  caractère ★) ; même flèche pour 3 sens (exercice, angle de caméra, étape clé) ; horloge pour « Ralenti » ; couches
+  pour « Décomposer » ; deux icônes différentes pour les réglages ; aucune icône de discipline (médaillons de
+  combattants pour 4 disciplines sur 6, rien pour le BJJ et le judo). Absents de l’application : défis, notifications,
+  abonnement, partage, statuts d’accès.
+- **Correction** :
+  - `src/ui/icons/` : composant unique `AppIcon` (pochoir + lumière douce identique pour toutes les icônes),
+    familles `NavigationIcon`, `ActionIcon`, `TrainingControlIcon`, `StatusIcon`, `DisciplineIcon`, `LevelIcon`,
+    registre de 98 identifiants stables ; l’ancien `src/ui/icons.tsx` est supprimé ;
+  - 6 icônes de discipline dessinées (gant, protège-tibia, gant MMA, mongkol, ceinture noire BJJ, judogi), en
+    version détaillée et compacte ; utilisées sur les cartes, onglets, filtres, étiquettes, Progrès et Légendes ;
+  - toutes les icônes des écrans passent par le composant central ; sens corrigés (Ralenti, Décomposer, Zoomer,
+    angle précédent / suivant, Paramètres, Reprendre) ; favoris en cœur partout ; ★ et ✕ texte remplacés ;
+    bouton « Stop » du mode RA renommé « Pause » (il met en pause) ;
+  - icônes dans les titres de Réglages et Profil, les onglets de Techniques et des Légendes, les badges de statut
+    (Vérifiée, Adaptée, Inspirée) et de niveau (barres 1 à 4) ;
+  - palette officielle : fond `#0B0F14`, surfaces `#1F2937`, rouge `#E11D2F`, or `#D4AF37`, textes `#F4F4F5` et
+    `#9CA3AF` (barre d’état Android et manifeste compris).
+- **Limites** : icônes dessinées en SVG dans ce dépôt (pas de rendu 3D photoréaliste comme sur la planche) ; défis,
+  notifications, abonnement, premium, partage : icônes prêtes mais non affichées, la fonction n’existe pas.
+  Vérification sur un vrai téléphone Android : non faite.
+- **Fichiers** : `src/ui/icons/` (nouveau), `src/ui/styles.css`, `src/ui/training/training.css`, 30 écrans et
+  composants, `src/ui/theme/theme.ts`, `index.html`, `vite.config.ts`, `docs/icones/`, `tools/icon-lab/`,
+  `scripts/icon-inventory.mjs`.
+- **Tests** :
+  - `tsc` : TEST RÉUSSI ; tests unitaires : TEST RÉUSSI (308 réussis, 1 ignoré), dont 16 nouveaux pour les icônes
+    (registre complet, accessibilité, identifiants uniques, 6 disciplines en 2 détails, aucune ressource externe,
+    plus d’ancien composant ni de symbole texte, navigation réelle conservée, palette et contrastes AA) ;
+  - Playwright complet : 47 réussis, 2 ignorés, 11 échoués au premier passage. 9 venaient du test « illustrations
+    officielles », qui exigeait les médaillons de combattants désormais remplacés à la demande par les icônes : il
+    exige maintenant les icônes officielles, les 6 disciplines sur les écrans qui les listent, sans déformation, et
+    l’illustration en bannière (critère plus large, pas affaibli) : 11/11 réussis. 1 venait du test du thème (ancienne
+    couleur de fond `#101116`, remplacée par `#0B0F14`) : 6/6 réussis. 1 était le panneau du coach à 360×640, échec
+    intermittent déjà vu en v0.18.0 : 12/12 réussis en relance. Les fichiers exécutés avant les derniers ajouts
+    d’icônes ont été relancés : 23 réussis, 2 ignorés (contraste AA compris) ;
+  - captures avant / après de 17 écrans en 3 tailles, aucune erreur de page : TEST RÉUSSI (8 planches dans
+    `docs/icones/captures/`) ;
+  - vrai téléphone Android : NON EXÉCUTÉ.
+- **Restauration** : `restauration/lot-9`

@@ -1,0 +1,24 @@
+/* Icon charter: colours of the glyph roles. The colour is never the only carrier of meaning. */
+.app-icon,
+.discipline-icon {
+  display: inline-block;
+  flex: none;
+  vertical-align: middle;
+}
+.app-icon.tone-neutral { color: var(--ink); }
+.app-icon.tone-muted { color: var(--muted); }
+.app-icon.tone-accent { color: var(--red); }
+.app-icon.tone-gold { color: var(--gold); }
+.app-icon.tone-success { color: var(--c-ok); }
+.app-icon.tone-danger { color: var(--red); }
+/* light backgrounds: a little less shade so dark glyphs keep their edges */
+:root[data-theme='light'] .app-icon,
+.training .app-icon,
+.light-scope .app-icon {
+  --icon-light: 0.24;
+  --icon-shade: 0.12;
+}
+/* level bars: filled = rank, empty = remaining (count + label carry the meaning) */
+.level-icon { flex: none; vertical-align: -2px; }
+.level-icon .on { fill: currentColor; }
+.level-icon .off { fill: currentColor; opacity: 0.22; }

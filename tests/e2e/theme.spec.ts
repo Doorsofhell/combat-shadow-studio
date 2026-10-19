@@ -26,7 +26,7 @@ test('Automatique par défaut, suit le système en direct sans redémarrer', asy
   await page.goto('/#/reglages');
   await expect(page.getByRole('radio', { name: 'Automatique' })).toHaveAttribute('aria-checked', 'true');
   expect(await theme(page)).toBe('dark');
-  expect(await bodyBg(page)).toBe('rgb(16, 17, 22)');
+  expect(await bodyBg(page)).toBe('rgb(11, 15, 20)');
   await page.emulateMedia({ colorScheme: 'light' });
   await expect.poll(() => theme(page)).toBe('light');
   expect(await bodyBg(page)).toBe('rgb(244, 245, 247)');

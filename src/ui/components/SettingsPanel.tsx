@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { IconChevron } from '../icons';
+import { AppIcon, type GlyphId } from '../icons';
 
 /** Titled group of settings rows. */
-export function Panel({ title, children, id }: { title?: string; children: ReactNode; id?: string }) {
+export function Panel({ title, children, id, icon }: { title?: string; children: ReactNode; id?: string; icon?: GlyphId }) {
   return (
     <section className="stack" style={{ gap: 8 }} aria-labelledby={title ? id : undefined}>
       {title && (
         <h2 className="panel-title" id={id}>
+          {icon && <AppIcon id={icon} size={18} />}
           {title}
         </h2>
       )}
@@ -36,7 +37,7 @@ export function LinkRow({ to, label, hint, icon }: { to: string; label: ReactNod
         {label}
         {hint && <span className="hint">{hint}</span>}
       </span>
-      <IconChevron className="muted" />
+      <AppIcon id="chevron" className="muted" />
     </Link>
   );
 }

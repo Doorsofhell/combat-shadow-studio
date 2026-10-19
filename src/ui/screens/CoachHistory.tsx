@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ConfirmDialog, EmptyState, PageHead, Panel, PanelRow, Segmented, Toggle } from '../components';
 import { detectSpeechCapabilities } from '../../coach/speech';
 import { useCoachAi } from '../../store/coachAi';
-import { IconTrash } from '../icons';
+import { AppIcon } from '../icons';
 import '../coach-ai/coachAi.css';
 
 const fmt = (iso: string) => {
@@ -28,7 +28,7 @@ export function CoachHistory() {
         propose des exercices, mais ne corrige pas tes mouvements. En cas de douleur, arrête et consulte un professionnel de santé.
       </div>
 
-      <Panel title="Réglages" id="cai-settings">
+      <Panel title="Réglages" icon="settings" id="cai-settings">
         <Toggle on={ai.enabled} onChange={(v) => ai.set({ enabled: v })} label="Coach IA" hint="Affiche le bouton « Demande au coach » pendant l’entraînement." />
         <PanelRow label="Longueur des réponses" column>
           <Segmented
@@ -71,7 +71,7 @@ export function CoachHistory() {
           </h2>
           {ai.history.length > 0 && (
             <button type="button" className="btn ghost sm" onClick={() => setConfirm(true)} data-testid="coach-clear-history">
-              <IconTrash width={18} height={18} /> Effacer
+              <AppIcon id="delete" size={18} /> Effacer
             </button>
           )}
         </div>

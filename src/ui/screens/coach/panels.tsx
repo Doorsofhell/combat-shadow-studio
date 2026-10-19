@@ -6,7 +6,7 @@ import { EYE_COLORS, HAIR_COLORS, SKIN_TONES } from '../../../editor/random';
 import { TATTOO_DESIGNS, tattooPreview } from '../../../editor/tattoos';
 import { DISCIPLINES } from '../../../domain/types';
 import { Button, OptionGrid, Sheet, Toggle, toast } from '../../components';
-import { IconPlus, IconTrash } from '../../icons';
+import { AppIcon } from '../../icons';
 import { ColorField, Group, PaintEditor, Slider, fmt } from './controls';
 import { BEARD_OPTS, BOTTOM_OPTS, FEET_OPTS, HAIR_OPTS, HANDS_OPTS, HEAD_OPTS, SHINS_OPTS, SHOES_OPTS, TOP_OPTS, ZONE_LABEL, ZONE_OPTS } from './options';
 
@@ -213,7 +213,7 @@ export function TattooPanel({ look, onChange, onZone }: PanelProps & { onZone?: 
       <Group
         title={`Tatouages (${look.tattoos.length}/${MAX_TATTOOS})`}
         action={
-          <Button variant="secondary" icon={<IconPlus />} onClick={() => setPicker('add')} disabled={full} data-testid="tattoo-add">
+          <Button variant="secondary" icon={<AppIcon id="add" />} onClick={() => setPicker('add')} disabled={full} data-testid="tattoo-add">
             Ajouter
           </Button>
         }
@@ -248,7 +248,7 @@ export function TattooPanel({ look, onChange, onZone }: PanelProps & { onZone?: 
                   onClick={() => remove(t.id)}
                   data-testid="tattoo-remove"
                 >
-                  <IconTrash />
+                  <AppIcon id="delete" />
                 </button>
               </li>
             ))}
@@ -293,7 +293,7 @@ export function TattooPanel({ look, onChange, onZone }: PanelProps & { onZone?: 
           <Slider id="tattoo-rotation" label="Rotation" value={sel.rotation} range={TATTOO_RANGES.rotation} step={1} format={fmt.deg} onChange={(rotation) => patch(sel.id, { rotation })} />
           <Slider id="tattoo-intensity" label="Intensité de l’encre" value={sel.intensity} range={TATTOO_RANGES.intensity} format={fmt.pct} onChange={(intensity) => patch(sel.id, { intensity })} />
           <ColorField label="Couleur de l’encre" value={sel.color} swatches={INKS} onChange={(color) => patch(sel.id, { color })} testId="tattoo-color" />
-          <Button variant="danger" icon={<IconTrash />} onClick={() => remove(sel.id)}>
+          <Button variant="danger" icon={<AppIcon id="delete" />} onClick={() => remove(sel.id)}>
             Retirer ce tatouage
           </Button>
         </Group>

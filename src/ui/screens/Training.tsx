@@ -23,7 +23,7 @@ import type { StageView } from '../../three/StudioStage';
 import { StudyPanel, useStudy } from '../training/Study';
 import { ArBridge } from '../../ar/ArBridge';
 import { ArControls, ArIntroSheet, useArView } from '../training/ArMode';
-import { IconAr, IconBack, IconCamera, IconChat, IconClock, IconClose, IconExpand, IconInfo, IconLayers, IconMinus, IconNext, IconPlus, IconPause, IconPlay, IconPrev, IconRestart, IconRotateLeft, IconRotateRight, IconSliders, IconTarget } from '../icons';
+import { AppIcon } from '../icons';
 
 export function Training() {
   const [q] = useSearchParams();
@@ -291,7 +291,7 @@ function TrainingView({ plan }: { plan: Plan }) {
     <div className={`training ${immersive ? 'immersive' : ''} ${overflow ? 'overflow' : ''} ${asking ? 'asking' : ''}`} ref={root} data-testid="training">
       <header className="tr-top">
         <button className="btn icon ghost" onClick={() => nav(-1)} aria-label="Quitter l’entraînement">
-          <IconBack />
+          <AppIcon id="back" />
         </button>
         <div className="tr-titles">
           <div className="eyebrow">
@@ -303,7 +303,7 @@ function TrainingView({ plan }: { plan: Plan }) {
           </div>
         </div>
         <button className={`ar-state ${arView.state !== 'off' ? 'on' : ''}`} onClick={() => setArIntro(true)} data-testid="ar-button" aria-label="Réalité augmentée">
-          <IconAr width={18} height={18} />
+          <AppIcon id="ar" size={18} />
           <span>{arView.state === 'off' ? 'AR désactivée' : arView.state === 'starting' ? 'AR…' : 'AR active'}</span>
         </button>
       </header>
@@ -341,7 +341,7 @@ function TrainingView({ plan }: { plan: Plan }) {
         {view.phase === 'decompte' && !view.paused && !st.tech && view.remaining !== null && view.remaining <= 3.05 && <div className="countdown">{Math.max(1, Math.ceil(view.remaining))}</div>}
         <div className="stage-tools">
           <button className={`btn cam-btn ${camOpen ? 'on' : ''}`} onClick={() => setCamOpen(!camOpen)} aria-label={`Caméra : ${camLabel}. Ouvrir les réglages de caméra`} aria-expanded={camOpen} data-testid="cam-mode">
-            <IconCamera />
+            <AppIcon id="camera" />
             <span>{isAuto ? 'Auto' : camLabel}</span>
           </button>
           {teach.closeUp && !free && (
@@ -360,7 +360,7 @@ function TrainingView({ plan }: { plan: Plan }) {
             aria-pressed={immersive}
             data-testid="fullscreen"
           >
-            <IconExpand />
+            <AppIcon id="fullscreen" />
           </button>
         </div>
         {!st.tech && !arActive && (settings.groundMarks.avantArriere || settings.groundMarks.pivot || settings.groundMarks.trajectoire) && (
@@ -474,42 +474,42 @@ function TrainingView({ plan }: { plan: Plan }) {
                   </button>
                   <div className="cam-angle">
                     <button className="btn icon sm" onClick={() => stepAngle(-1)} aria-label="Angle précédent">
-                      <IconPrev width={18} />
+                      <AppIcon id="back" size={18} />
                     </button>
                     <span aria-live="polite" data-testid="cam-angle">
                       {isAuto ? viewName(teach) : camLabel}
                     </span>
                     <button className="btn icon sm" onClick={() => stepAngle(1)} aria-label="Angle suivant" data-testid="cam-next">
-                      <IconNext width={18} />
+                      <AppIcon id="chevron" size={18} />
                     </button>
                   </div>
                 </div>
                 <div className="cam-row">
                   <button className="btn icon sm" onClick={() => turnCam(-30)} aria-label="Tourner la caméra vers la gauche" data-testid="cam-left">
-                    <IconRotateLeft width={20} />
+                    <AppIcon id="rotateLeft" size={20} />
                   </button>
                   <button className="btn icon sm" onClick={() => turnCam(30)} aria-label="Tourner la caméra vers la droite" data-testid="cam-right">
-                    <IconRotateRight width={20} />
+                    <AppIcon id="rotateRight" size={20} />
                   </button>
                   <button className="btn icon sm" onClick={() => zoomCam(1 / 1.15)} disabled={camZoom <= 0.7} aria-label="Dézoomer" data-testid="zoom-out">
-                    <IconMinus width={20} />
+                    <AppIcon id="zoomOut" size={20} />
                   </button>
                   <button className="btn icon sm" onClick={() => zoomCam(1.15)} disabled={camZoom >= 1.8} aria-label="Zoomer" data-testid="zoom-in">
-                    <IconPlus width={20} />
+                    <AppIcon id="zoomIn" size={20} />
                   </button>
                   <button className="btn sm" onClick={resetCam} aria-label="Recentrer la caméra" data-testid="cam-reset">
-                    <IconTarget width={18} />
+                    <AppIcon id="target" size={18} />
                     <span className="cam-reset-label">Recentrer</span>
                   </button>
                   <button className="btn icon sm" onClick={() => setCamOpen(false)} aria-label="Fermer les réglages de caméra" data-testid="cam-close">
-                    <IconClose width={20} />
+                    <AppIcon id="close" size={20} />
                   </button>
                 </div>
               </div>
             ) : (
               <div className="tr-secondary">
                 <button className="btn sm" data-testid="decompose" aria-label="Décomposer le mouvement" onClick={() => openStudy(curId ?? seq[0])}>
-                  <IconLayers width={18} />
+                  <AppIcon id="decompose" size={18} />
                   <span className="sec-label">Décomposer</span>
                 </button>
                 <button
@@ -521,44 +521,44 @@ function TrainingView({ plan }: { plan: Plan }) {
                     setGuideId(curId ?? seq[0]);
                   }}
                 >
-                  <IconInfo width={18} />
+                  <AppIcon id="info" size={18} />
                   <span className="sec-label">Comment faire ?</span>
                 </button>
                 <button className={`btn sm ${slow ? 'on' : ''}`} data-testid="slow" aria-label="Ralenti" aria-pressed={slow} onClick={() => setSpeed(slow ? item.speed : SLOW)}>
-                  <IconClock width={18} />
+                  <AppIcon id="slow" size={18} />
                   <span className="sec-label">Ralenti</span>
                 </button>
                 <button className="btn sm icon-only" onClick={() => setSheet(true)} aria-label="Paramètres" data-testid="options">
-                  <IconSliders width={18} />
+                  <AppIcon id="settings" size={18} />
                 </button>
               </div>
             )}
             <div className={`controls ${coachAiOn ? 'with-coach' : ''}`}>
               <button className="btn icon ghost" onClick={restart} aria-label="Recommencer">
-                <IconRestart width={20} />
+                <AppIcon id="replay" size={20} />
               </button>
               <button className="btn icon" onClick={() => goto(view.itemIndex - 1)} disabled={view.itemIndex === 0} aria-label="Exercice précédent">
-                <IconPrev />
+                <AppIcon id="stepBack" />
               </button>
               {!running ? (
                 <button className="btn primary main" onClick={start} data-testid="start">
-                  <IconPlay /> {view.phase === 'termine' ? 'Recommencer' : 'Démarrer'}
+                  <AppIcon id="play" /> {view.phase === 'termine' ? 'Recommencer' : 'Démarrer'}
                 </button>
               ) : view.paused ? (
                 <button className="btn primary main" onClick={resume} data-testid="resume">
-                  <IconPlay /> Reprendre
+                  <AppIcon id="play" /> Reprendre
                 </button>
               ) : (
                 <button className="btn dark main" onClick={pause} data-testid="pause">
-                  <IconPause /> Pause
+                  <AppIcon id="pause" /> Pause
                 </button>
               )}
               <button className="btn icon" onClick={() => goto(view.itemIndex + 1)} disabled={view.itemIndex >= plan.items.length - 1} aria-label="Exercice suivant">
-                <IconNext />
+                <AppIcon id="stepForward" />
               </button>
               {coachAiOn && (
                 <button className={`btn coach-btn ${asking ? 'on' : ''}`} data-testid="ask-coach" aria-label="Demander au coach" aria-pressed={asking} onClick={() => (asking ? setAsking(false) : askCoach())}>
-                  <IconChat width={20} />
+                  <AppIcon id="coachAi" size={20} />
                   <span>Coach</span>
                 </button>
               )}
@@ -595,25 +595,25 @@ function TrainingView({ plan }: { plan: Plan }) {
               <div className="row nowrap" style={{ gap: 6, justifyContent: 'center' }}>
                 {!arCompact && (
                   <button className="btn icon" onClick={() => goto(view.itemIndex - 1)} disabled={view.itemIndex === 0} aria-label="Exercice précédent">
-                    <IconPrev />
+                    <AppIcon id="stepBack" />
                   </button>
                 )}
                 {!running ? (
                   <button className="btn primary" onClick={start}>
-                    <IconPlay /> Démarrer
+                    <AppIcon id="play" /> Démarrer
                   </button>
                 ) : view.paused ? (
                   <button className="btn primary" onClick={resume}>
-                    <IconPlay /> Reprendre
+                    <AppIcon id="play" /> Reprendre
                   </button>
                 ) : (
                   <button className="btn dark" onClick={pause}>
-                    <IconPause /> Stop
+                    <AppIcon id="pause" /> Pause
                   </button>
                 )}
                 {!arCompact && (
                   <button className="btn icon" onClick={() => goto(view.itemIndex + 1)} disabled={view.itemIndex >= plan.items.length - 1} aria-label="Exercice suivant">
-                    <IconNext />
+                    <AppIcon id="stepForward" />
                   </button>
                 )}
               </div>
