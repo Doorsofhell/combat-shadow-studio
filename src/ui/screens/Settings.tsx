@@ -128,8 +128,16 @@ export function SettingsPage() {
             </button>
           </div>
         </div>
-        {voiceAvailable() && !hasFrenchVoice() && <p className="small muted" style={{ padding: '0 0 12px' }}>Aucune voix française n’est installée sur cet appareil : la voix par défaut sera utilisée.</p>}
-        {!voiceAvailable() && <p className="small muted" style={{ padding: '0 0 12px' }}>La synthèse vocale n’est pas disponible dans ce navigateur.</p>}
+        {voiceAvailable() && !hasFrenchVoice() && (
+          <p className="small muted" style={{ padding: '0 0 12px' }}>
+            Aucune voix française n’est installée sur cet appareil : la voix par défaut sera utilisée.
+          </p>
+        )}
+        {!voiceAvailable() && (
+          <p className="small muted" style={{ padding: '0 0 12px' }}>
+            La synthèse vocale n’est pas disponible dans ce navigateur.
+          </p>
+        )}
       </Panel>
 
       <Panel title="Affichage 3D" icon="display" id="p-3d">
@@ -176,7 +184,12 @@ export function SettingsPage() {
 
       <Panel title="Rounds par défaut" icon="repeat" id="p-rounds">
         <PanelRow label="Durée du round" column>
-          <Segmented label="Durée du round" value={settings.defaultRoundSec} onChange={(v) => set({ defaultRoundSec: v })} options={[60, 120, 180, 300].map((s) => ({ id: s, label: `${s / 60} min` }))} />
+          <Segmented
+            label="Durée du round"
+            value={settings.defaultRoundSec}
+            onChange={(v) => set({ defaultRoundSec: v })}
+            options={[60, 120, 180, 300].map((s) => ({ id: s, label: `${s / 60} min` }))}
+          />
         </PanelRow>
         <PanelRow label="Repos" column>
           <Segmented label="Repos" value={settings.defaultRestSec} onChange={(v) => set({ defaultRestSec: v })} options={[30, 45, 60, 90].map((s) => ({ id: s, label: `${s} s` }))} />
@@ -184,7 +197,12 @@ export function SettingsPage() {
       </Panel>
 
       <Panel title="Données et confidentialité" icon="privacy" id="p-data">
-        <LinkRow to="/confidentialite" icon={<AppIcon id="privacy" className="muted" />} label="Confidentialité" hint="Aucune mesure d’audience, aucune publicité ; synchronisation seulement si tu l’actives" />
+        <LinkRow
+          to="/confidentialite"
+          icon={<AppIcon id="privacy" className="muted" />}
+          label="Confidentialité"
+          hint="Aucune mesure d’audience, aucune publicité ; synchronisation seulement si tu l’actives"
+        />
         <div className="panel-row col">
           <span className="small muted">L’export crée un fichier que tu peux garder ou réimporter sur un autre appareil.</span>
           <div className="grid2">
@@ -211,8 +229,8 @@ export function SettingsPage() {
 
       <Panel title="À propos" icon="info" id="p-about">
         <p className="small muted" style={{ padding: '12px 0' }}>
-          Combat Shadow Studio, version {import.meta.env.VITE_APP_VERSION} (développement). Combattants 3D générés à partir de MakeHuman (licence CC0), animations produites par le moteur de l’application. Cette application ne
-          remplace pas un entraîneur ni un avis médical.
+          Combat Shadow Studio, version {import.meta.env.VITE_APP_VERSION} (développement). Combattants 3D générés à partir de MakeHuman (licence CC0), animations produites par le moteur de
+          l’application. Cette application ne remplace pas un entraîneur ni un avis médical.
         </p>
       </Panel>
 

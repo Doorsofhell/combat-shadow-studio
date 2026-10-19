@@ -31,7 +31,12 @@ export function measureFluidity(rig: CoachRig, m: Motion, flow = true): Fluidity
   const vel = (t0: number, t1: number) => {
     const a = at(t0);
     const b = at(t1);
-    return a.map((p, i) => b[i].clone().sub(p).divideScalar(t1 - t0));
+    return a.map((p, i) =>
+      b[i]
+        .clone()
+        .sub(p)
+        .divideScalar(t1 - t0),
+    );
   };
   let stops = 0;
   let kinkMax = 0;
@@ -52,7 +57,19 @@ export function measureFluidity(rig: CoachRig, m: Motion, flow = true): Fluidity
     }
   }
   let limbPeak = 0;
-  for (let t = 0; t + EPS <= s.duration; t += EPS) limbPeak = Math.max(limbPeak, ...vel(t, t + EPS).slice(1).map((v) => v.length()));
-  const impactSpeeds = m.impacts.map((t) => Math.max(...vel(t - 1 / 60, t).slice(1).map((v) => v.length())));
+  for (let t = 0; t + EPS <= s.duration; t += EPS)
+    limbPeak = Math.max(
+      limbPeak,
+      ...vel(t, t + EPS)
+        .slice(1)
+        .map((v) => v.length()),
+    );
+  const impactSpeeds = m.impacts.map((t) =>
+    Math.max(
+      ...vel(t - 1 / 60, t)
+        .slice(1)
+        .map((v) => v.length()),
+    ),
+  );
   return { id: m.id, keys: Math.max(0, ks.length - 2), stops, kinkMax, limbPeak, impactSpeeds };
 }

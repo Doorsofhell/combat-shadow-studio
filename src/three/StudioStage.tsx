@@ -137,11 +137,7 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
     // grow fast (never crop a limb), shrink slowly (no pumping)
     s.dist += (dist - s.dist) * (dist > s.dist ? Math.min(1, k * 3) : k * 0.5);
     s.target.lerp(target, k);
-    cam.position.set(
-      s.target.x + Math.sin(s.az) * Math.cos(s.el) * s.dist,
-      s.target.y + Math.sin(s.el) * s.dist,
-      s.target.z + Math.cos(s.az) * Math.cos(s.el) * s.dist,
-    );
+    cam.position.set(s.target.x + Math.sin(s.az) * Math.cos(s.el) * s.dist, s.target.y + Math.sin(s.el) * s.dist, s.target.z + Math.cos(s.az) * Math.cos(s.el) * s.dist);
     cam.lookAt(s.target);
     if (controls.current) controls.current.target.copy(s.target);
     probe(s, o, false);

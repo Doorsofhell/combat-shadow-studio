@@ -43,7 +43,10 @@ function arc(center: Vector3, radius: number, from: number, to: number) {
 function head(pts: Vector3[], size: number): Vector3[][] {
   if (pts.length < 2) return [];
   const a = pts[pts.length - 1];
-  const dir = a.clone().sub(pts[Math.max(0, pts.length - 4)]).normalize();
+  const dir = a
+    .clone()
+    .sub(pts[Math.max(0, pts.length - 4)])
+    .normalize();
   const side = new Vector3().crossVectors(dir, new Vector3(0, 1, 0));
   if (side.lengthSq() < 1e-4) side.set(1, 0, 0);
   side.normalize();

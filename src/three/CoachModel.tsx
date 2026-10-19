@@ -36,7 +36,7 @@ export function coachUrl(coach: CoachId, style: CoachStyle, render: CoachRender 
 
 /** fabric and gear of the realistic look: matte, physically based, with a soft sheen for the cloth */
 function fabricMaterial(name: string, color: Color) {
-  const gear = /glove|bar|mouth|hairpiece/.test(name);
+  const gear = /^css-(glove|bar|mouth|hairpiece)/.test(name);
   const m = new MeshPhysicalMaterial({
     name,
     color,
@@ -213,7 +213,7 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
           style === 'realiste'
             ? { toon: (n: string, col: Color) => (quality === 'haute' ? fabricMaterial(n, col) : new MeshStandardMaterial({ name: n, color: col, roughness: 0.8, metalness: 0 })), outline: noOutline }
             : { toon: (n: string, col: Color) => toonMaterial(n, null, col, ink), outline: (w: number) => (ink !== 'manga' ? outlineMaterial(w * 1.25, '#1b1d22') : outlineMaterial(w)) };
-        c = new Customizer(s, meta, masks, opts);
+        c = new Customizer(s, meta, masks, { ...opts, legacy: !premium });
         // development hook for the screenshot scripts
         if (import.meta.env.DEV) ((window as unknown as { __cssCustomizers?: Customizer[] }).__cssCustomizers ??= []).push(c);
       } catch (e) {

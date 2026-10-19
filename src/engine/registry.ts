@@ -22,7 +22,6 @@ export type { AnimationStatus };
 export { STATUS_LABEL };
 export type CheckResult = 'reussi' | 'echoue' | 'non-applicable';
 
-
 export const CHECK_LABEL = {
   disponible: 'Présente dans chaque discipline, dans les deux gardes',
   amplitude: 'Coudes et genoux dans leur amplitude naturelle',
@@ -150,7 +149,15 @@ export function checkTechnique(rig: CoachRig, t: Technique): RegistryRow {
 export function buildRegistry(rig: CoachRig): RegistryRow[] {
   const rows = TECHNIQUES.filter((t) => t.mode !== 'partenaire').map((t) => checkTechnique(rig, t));
   // partner techniques: a sheet exists, the two-person animation does not yet
-  for (const p of PARTNER_TECHNIQUES) rows.push({ id: p.id, name: p.name, disciplines: [p.discipline], status: 'non-implementee', checks: {}, notes: ['fiche avec partenaire réel ; démonstration à deux personnages pas encore animée'] });
+  for (const p of PARTNER_TECHNIQUES)
+    rows.push({
+      id: p.id,
+      name: p.name,
+      disciplines: [p.discipline],
+      status: 'non-implementee',
+      checks: {},
+      notes: ['fiche avec partenaire réel ; démonstration à deux personnages pas encore animée'],
+    });
   return rows;
 }
 
@@ -175,7 +182,10 @@ export function registryMarkdown(rows: RegistryRow[]): string {
     '',
     `| Technique | Disciplines | Statut | ${ids.map((_, i) => `C${i + 1}`).join(' | ')} | Notes |`,
     `|---|---|---|${ids.map(() => '---').join('|')}|---|`,
-    ...rows.map((r) => `| ${r.name} (\`${r.id}\`) | ${r.disciplines.join(', ')} | ${STATUS_LABEL[r.status]} | ${ids.map((c) => (r.checks[c] ? RESULT_MARK[r.checks[c]!] : '–')).join(' | ')} | ${r.notes.join(' ; ')} |`),
+    ...rows.map(
+      (r) =>
+        `| ${r.name} (\`${r.id}\`) | ${r.disciplines.join(', ')} | ${STATUS_LABEL[r.status]} | ${ids.map((c) => (r.checks[c] ? RESULT_MARK[r.checks[c]!] : '–')).join(' | ')} | ${r.notes.join(' ; ')} |`,
+    ),
     '',
   ];
   return lines.join('\n');

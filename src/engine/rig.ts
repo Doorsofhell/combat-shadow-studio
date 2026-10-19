@@ -4,17 +4,7 @@
  * distribution, head look-at, clavicle protraction and finger curl.
  */
 import { Bone, Matrix4, Object3D, Quaternion, Vector3 } from 'three';
-import {
-  FootPose,
-  HandPose,
-  Pose,
-  ResolvedFoot,
-  NEUTRAL_JOINT,
-  ResolvedHand,
-  ResolvedPose,
-  quatFromRot,
-  toVec,
-} from './pose';
+import { FootPose, HandPose, Pose, ResolvedFoot, NEUTRAL_JOINT, ResolvedHand, ResolvedPose, quatFromRot, toVec } from './pose';
 import { PLANTED_LIMIT, TOE_LIMIT, ankleAngles as ankleAnglesOf, ankleQuat, limitAnkle, softLimit } from './limits';
 
 export type Side = 'L' | 'R';
@@ -144,10 +134,15 @@ export class CoachRig {
       const u0Upper = tipFixed ? orthoTo(tipFixed.clone(), p0Upper, tipFallback) : orthoTo(p0Lower.clone().negate(), p0Upper, tipFallback);
       const u0Lower = tipFixed ? orthoTo(tipFixed.clone(), p0Lower, tipFallback) : orthoTo(p0Upper.clone(), p0Lower, tipFallback);
       return {
-        upper, lower, end,
+        upper,
+        lower,
+        end,
         lenA: upper.worldPos.distanceTo(lower.worldPos),
         lenB: lower.worldPos.distanceTo(end.worldPos),
-        p0Upper, p0Lower, u0Upper, u0Lower,
+        p0Upper,
+        p0Lower,
+        u0Upper,
+        u0Lower,
       };
     };
     this.arms = {
@@ -155,7 +150,9 @@ export class CoachRig {
       R: limb('RightArm', 'RightForeArm', 'RightHand', new Vector3(0, 0, -1)),
     };
     const restFootForward = (s: Side) => {
-      const f = need(`${sideName(s)}ToeBase`).worldPos.clone().sub(need(`${sideName(s)}Foot`).worldPos);
+      const f = need(`${sideName(s)}ToeBase`)
+        .worldPos.clone()
+        .sub(need(`${sideName(s)}Foot`).worldPos);
       f.y = 0;
       return f.lengthSq() > 1e-8 ? f.normalize() : new Vector3(0, 0, 1);
     };
@@ -196,7 +193,10 @@ export class CoachRig {
           const child = this.bones.get(`${sideName(s)}Hand${f}${i + 1}`);
           const dir = child
             ? child.worldPos.clone().sub(fb.worldPos).normalize()
-            : fb.worldPos.clone().sub(this.bones.get(`${sideName(s)}Hand${f}${i - 1}`)?.worldPos ?? hand.worldPos).normalize();
+            : fb.worldPos
+                .clone()
+                .sub(this.bones.get(`${sideName(s)}Hand${f}${i - 1}`)?.worldPos ?? hand.worldPos)
+                .normalize();
           let axisW: Vector3;
           let weight: number;
           if (f === 'Thumb') {
@@ -235,7 +235,7 @@ export class CoachRig {
         top = Math.max(top, m.geometry.boundingBox!.max.y);
       }
     });
-    const headTop = head.worldPos.y + 0.2 * (head.worldPos.y - hips.y) / 0.6;
+    const headTop = head.worldPos.y + (0.2 * (head.worldPos.y - hips.y)) / 0.6;
     return {
       height: top > 1 ? top : headTop,
       hipsRest: hips,
@@ -259,10 +259,7 @@ export class CoachRig {
   chestFrame(hips: Vector3, pelvis: Quaternion, chest: Quaternion) {
     const m = this.metrics;
     const q = pelvis.clone().multiply(chest);
-    const origin = hips
-      .clone()
-      .add(m.spineBaseRest.clone().sub(m.hipsRest).applyQuaternion(pelvis))
-      .add(m.shoulderCenterRest.clone().sub(m.spineBaseRest).applyQuaternion(q));
+    const origin = hips.clone().add(m.spineBaseRest.clone().sub(m.hipsRest).applyQuaternion(pelvis)).add(m.shoulderCenterRest.clone().sub(m.spineBaseRest).applyQuaternion(q));
     return { origin, q };
   }
 
@@ -395,14 +392,20 @@ export class CoachRig {
     const poleOrth = orthoTo(pole.clone(), dir, new Vector3(0, 0, -1));
     const cosA = clamp((a * a + dist * dist - b * b) / (2 * a * dist), -1, 1);
     const sinA = Math.sqrt(1 - cosA * cosA);
-    const E = S.clone().addScaledVector(dir, a * cosA).addScaledVector(poleOrth, a * sinA);
+    const E = S.clone()
+      .addScaledVector(dir, a * cosA)
+      .addScaledVector(poleOrth, a * sinA);
     const T = S.clone().addScaledVector(dir, dist);
     const p1Upper = E.clone().sub(S).normalize();
     const p1Lower = T.clone().sub(E).normalize();
     // same definition as at rest; when the limb is almost straight the hinge plane comes from the pole
     const straightness = clamp(1 - new Vector3().crossVectors(p1Upper, p1Lower).length() / 0.17, 0, 1);
-    const u1Upper = orthoTo(p1Lower.clone().negate(), p1Upper, poleOrth).lerp(orthoTo(poleOrth.clone(), p1Upper, poleOrth), straightness).normalize();
-    const u1Lower = orthoTo(p1Upper.clone(), p1Lower, poleOrth).lerp(orthoTo(poleOrth.clone(), p1Lower, poleOrth), straightness).normalize();
+    const u1Upper = orthoTo(p1Lower.clone().negate(), p1Upper, poleOrth)
+      .lerp(orthoTo(poleOrth.clone(), p1Upper, poleOrth), straightness)
+      .normalize();
+    const u1Lower = orthoTo(p1Upper.clone(), p1Lower, poleOrth)
+      .lerp(orthoTo(poleOrth.clone(), p1Lower, poleOrth), straightness)
+      .normalize();
     const qUpper = frameRotation(limb.p0Upper, limb.u0Upper, p1Upper, u1Upper, new Quaternion());
     const qLower = frameRotation(limb.p0Lower, limb.u0Lower, p1Lower, u1Lower, new Quaternion());
     return { qUpper, qLower, p1Lower, E, T };
@@ -531,7 +534,10 @@ export class CoachRig {
       if (air > 0) {
         // in the air the toes follow the final foot, bent up by the authored amount (+ = ball forward)
         const ext = clamp(f.jointW * f.joint.toes + (1 - f.jointW) * 0.6 * f.point, -TOE_LIMIT.flex, TOE_LIMIT.ext);
-        const rel = footQ.clone().multiply(new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), -ext)).multiply(toe.worldQ);
+        const rel = footQ
+          .clone()
+          .multiply(new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), -ext))
+          .multiply(toe.worldQ);
         toeQ.slerp(rel, air);
       }
       this.setWorldQ(toe, toeQ);

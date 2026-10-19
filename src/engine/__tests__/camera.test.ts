@@ -56,8 +56,7 @@ describe('caméra pédagogique', () => {
     ['paysage', 1.8],
   ])('le corps entier reste dans le cadre pendant tout le mouvement (%s)', (_n, aspect) => {
     for (const c of ['homme', 'femme'] as const)
-      for (const t of TECHNIQUES)
-        for (const southpaw of [false, true]) expect(worstNdc(c, t.id, southpaw, aspect), `${c} ${t.id} ${southpaw ? 'gaucher' : ''}`).toBeLessThan(0.97);
+      for (const t of TECHNIQUES) for (const southpaw of [false, true]) expect(worstNdc(c, t.id, southpaw, aspect), `${c} ${t.id} ${southpaw ? 'gaucher' : ''}`).toBeLessThan(0.97);
   });
 
   test.each([

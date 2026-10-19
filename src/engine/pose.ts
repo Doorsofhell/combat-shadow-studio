@@ -135,9 +135,7 @@ const mv = (p: V3): V3 => ({ x: -p.x, y: p.y, z: p.z });
 const mr = (r: Rot): Rot => ({ yaw: -r.yaw, pitch: r.pitch, roll: -r.roll });
 const mh = (h: HandPose): HandPose => ({ ...h, pos: mv(h.pos), pole: mv(h.pole) });
 const mf = (f: FootPose): FootPose =>
-  f.mode === 'ground'
-    ? { ...f, ball: mv(f.ball), yaw: -f.yaw, pole: f.pole ? mv(f.pole) : undefined }
-    : { ...f, ankle: mv(f.ankle), yaw: -f.yaw, roll: -f.roll, pole: mv(f.pole) };
+  f.mode === 'ground' ? { ...f, ball: mv(f.ball), yaw: -f.yaw, pole: f.pole ? mv(f.pole) : undefined } : { ...f, ankle: mv(f.ankle), yaw: -f.yaw, roll: -f.roll, pole: mv(f.pole) };
 
 /** Mirror a pose left/right: an orthodox technique becomes its southpaw version. */
 export function mirrorPose(p: Pose): Pose {

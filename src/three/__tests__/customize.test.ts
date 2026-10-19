@@ -182,3 +182,92 @@ describe('créateur de combattant : application complète', () => {
     expect(cz.u.uTatN.value).toBe(0);
   });
 });
+
+describe('vêtements en volume (rendu 0.23)', () => {
+  const prep = (c: CoachId) => {
+    const { body, meta } = setup(c);
+    const m = mapBody(body, meta);
+    const g = body.geometry;
+    const reg = regionWeights(m);
+    for (const [k, v] of Object.entries({ aRegA: reg.A, aRegB: reg.B, aRegC: reg.C, aRegD: reg.D })) g.setAttribute(k, new BufferAttribute(v, 4));
+    return { m, g, specs: garmentSpecs(m) };
+  };
+
+  test.each(coaches)('%s : le tissu drapé reste entre 0,75 et 1,6 fois son épaisseur au-dessus de la peau', (c) => {
+    const { m, g, specs } = prep(c);
+    for (const [id, spec] of Object.entries({ ...specs.bottom, ...specs.top })) {
+      if (!spec.drape) continue;
+      const s = buildShell(g, m, spec)!;
+      const P = s.getAttribute('position');
+      const hem = s.getAttribute('aHem');
+      const src = s.userData.src as Int32Array;
+      let checked = 0;
+      for (let j = 0; j < P.count; j++) {
+        if (hem.getX(j) > 0) continue;
+        const v = src[j];
+        const th = spec.thickness(v);
+        const d = (P.getX(j) - m.pos[v * 3]) * m.nrm[v * 3] + (P.getY(j) - m.pos[v * 3 + 1]) * m.nrm[v * 3 + 1] + (P.getZ(j) - m.pos[v * 3 + 2]) * m.nrm[v * 3 + 2];
+        expect(d, `${id} sommet ${j}`).toBeGreaterThan(th * 0.74);
+        expect(d, `${id} sommet ${j}`).toBeLessThan(th * 1.61);
+        checked++;
+      }
+      expect(checked, id).toBeGreaterThan(300);
+    }
+  });
+
+  test.each(coaches)('%s : chaque coupe a un bord épais qui descend jusqu’à la peau', (c) => {
+    const { m, g, specs } = prep(c);
+    for (const id of ['short-boxe', 'short-thai', 'short-mma', 'tshirt', 'debardeur', 'rashguard-court']) {
+      const spec = (specs.bottom[id] ?? specs.top[id])!;
+      const s = buildShell(g, m, spec)!;
+      const hem = s.getAttribute('aHem');
+      const P = s.getAttribute('position');
+      const src = s.userData.src as Int32Array;
+      let n = 0;
+      let first = -1;
+      for (let j = 0; j < hem.count; j++) {
+        if (!hem.getX(j)) continue;
+        if (first < 0) first = j;
+        n++;
+        // inner edge of the strip (every second vertex of the strip): at or just under the skin
+        if ((j - first) % 2 === 1) {
+          const v = src[j];
+          const d = (P.getX(j) - m.pos[v * 3]) * m.nrm[v * 3] + (P.getY(j) - m.pos[v * 3 + 1]) * m.nrm[v * 3 + 1] + (P.getZ(j) - m.pos[v * 3 + 2]) * m.nrm[v * 3 + 2];
+          expect(d, `${id} bord intérieur ${j}`).toBeLessThan(0.008);
+        }
+      }
+      expect(n, `${id} : bord`).toBeGreaterThan(40);
+    }
+  });
+
+  test.each(coaches)('%s : la peau sous les vêtements et le short sous le t-shirt ne sont pas dessinés', (c) => {
+    const { root, meta } = setup(c);
+    applyManga(root, 'cel');
+    const cz = new Customizer(root, meta, new Texture(), { toon: (n, col: Color) => toonMaterial(n, null, col, 'cel'), outline: outlineMaterial });
+    const l = defaultLook(c);
+    cz.apply({ ...l, outfit: { ...l.outfit, top: 'aucun', bottom: 'aucun' } });
+    expect(cz.hiddenCount()).toBe(0);
+    cz.apply({ ...l, outfit: { ...l.outfit, top: 'aucun', bottom: 'short-boxe' } });
+    const shortsOnly = cz.hiddenCount();
+    expect(shortsOnly).toBeGreaterThan(500);
+    cz.apply({ ...l, outfit: { ...l.outfit, top: 'tshirt', bottom: 'short-boxe' } });
+    expect(cz.hiddenCount()).toBeGreaterThan(shortsOnly + 500);
+    // the waistband under the t-shirt is hidden too, its visible part stays
+    let shorts: SkinnedMesh | null = null;
+    root.traverse((o) => {
+      if (((o as Mesh).material as { name?: string })?.name === 'css-short-boxe') shorts = o as SkinnedMesh;
+    });
+    const h = (shorts as unknown as SkinnedMesh).geometry.getAttribute('aHide');
+    let hid = 0;
+    let shown = 0;
+    for (let i = 0; i < h.count; i++) h.getX(i) > 0 ? hid++ : shown++;
+    expect(hid).toBeGreaterThan(50);
+    expect(shown).toBeGreaterThan(hid);
+    // fallback render: v0.22 clothes, skin drawn under them
+    const { root: r2, meta: m2 } = setup(c);
+    applyManga(r2);
+    const legacy = new Customizer(r2, m2, new Texture(), { toon: (n, col: Color) => toonMaterial(n, null, col), outline: outlineMaterial, legacy: true });
+    legacy.apply({ ...l, outfit: { ...l.outfit, top: 'tshirt', bottom: 'short-boxe' } });
+    expect(legacy.hiddenCount()).toBe(0);
+  });
+});

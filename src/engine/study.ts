@@ -69,7 +69,7 @@ export function analyseMotion(rig: CoachRig, m: Motion): StudyAnalysis {
       }
     }
   }
-  const peak = m.impacts.length ? m.impacts[0] : (keys.reduce((a, k) => (Math.abs(k - peakByMotion) < Math.abs(a - peakByMotion) ? k : a), keys[0]) || peakByMotion);
+  const peak = m.impacts.length ? m.impacts[0] : keys.reduce((a, k) => (Math.abs(k - peakByMotion) < Math.abs(a - peakByMotion) ? k : a), keys[0]) || peakByMotion;
   const before = keys.filter((k) => k > 0.02 && k < peak - 0.02);
   const prep = before.length ? before[before.length - 1] : peak * 0.45;
   const atPeak = s.sample(peak);
@@ -176,7 +176,7 @@ export class StudyPlayer {
     if (!a) return;
     const marks = [...new Set([0, ...a.keys, a.prep, a.peak, ...this.phases.map((p) => p.t1)])].sort((x, y) => x - y);
     const eps = 1e-3;
-    const target = dir > 0 ? marks.find((k) => k > this.t + eps) ?? marks[marks.length - 1] : [...marks].reverse().find((k) => k < this.t - eps) ?? 0;
+    const target = dir > 0 ? (marks.find((k) => k > this.t + eps) ?? marks[marks.length - 1]) : ([...marks].reverse().find((k) => k < this.t - eps) ?? 0);
     this.seek(target);
     this.playing = false;
     this.onChange?.();

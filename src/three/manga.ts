@@ -130,17 +130,15 @@ export function outlineMaterial(width: number, color = '#141212') {
   const m = new MeshBasicMaterial({ color, side: BackSide });
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uOutline = { value: width };
-    shader.vertexShader = shader.vertexShader
-      .replace('void main() {', 'uniform float uOutline;\nvoid main() {')
-      .replace(
-        '#include <project_vertex>',
-        `#include <project_vertex>
+    shader.vertexShader = shader.vertexShader.replace('void main() {', 'uniform float uOutline;\nvoid main() {').replace(
+      '#include <project_vertex>',
+      `#include <project_vertex>
         #ifdef USE_SKINNING
           vec4 nClip = projectionMatrix * modelViewMatrix * vec4(objectNormal, 0.0);
           vec2 dir = nClip.xy + vec2(1e-6);
           gl_Position.xy += normalize(dir) * uOutline * gl_Position.w;
         #endif`,
-      );
+    );
   };
   m.customProgramCacheKey = () => `manga-outline-${width}-${color}`;
   return m;

@@ -136,8 +136,7 @@ function monotone(p0: number, p1: number, p2: number, h0: number, h1: number) {
   return Math.max(-lim, Math.min(lim, m));
 }
 
-const monoVec = (a: Vector3, b: Vector3, c: Vector3, h0: number, h1: number) =>
-  new Vector3(monotone(a.x, b.x, c.x, h0, h1), monotone(a.y, b.y, c.y, h0, h1), monotone(a.z, b.z, c.z, h0, h1));
+const monoVec = (a: Vector3, b: Vector3, c: Vector3, h0: number, h1: number) => new Vector3(monotone(a.x, b.x, c.x, h0, h1), monotone(a.y, b.y, c.y, h0, h1), monotone(a.z, b.z, c.z, h0, h1));
 
 /** rotation from q0 to q1 as a rotation vector (axis times angle), in ground space */
 function rotationVector(q0: Quaternion, q1: Quaternion) {
@@ -216,12 +215,10 @@ export class MotionSampler {
         const f = this.rig.chestFrame(r.hips, r.pelvis, r.chest);
         return r[side].pos.clone().sub(f.origin).applyQuaternion(f.q.clone().invert());
       };
-      const hand = (side: 'handL' | 'handR') =>
-        k.pose[side].space === 'world' ? ZERO.clone() : monoVec(local(ra, side), local(rk, side), local(rb, side), h0, h1);
+      const hand = (side: 'handL' | 'handR') => (k.pose[side].space === 'world' ? ZERO.clone() : monoVec(local(ra, side), local(rk, side), local(rb, side), h0, h1));
       // a foot keeps its flow only in the air, away from a take-off or a landing: near the floor the
       // flow would make the toes graze the mat
-      const foot = (side: 'footL' | 'footR') =>
-        [a, k, b].some((x) => x.pose[side].mode === 'ground') ? ZERO.clone() : monoVec(ra[side].ankle, rk[side].ankle, rb[side].ankle, h0, h1);
+      const foot = (side: 'footL' | 'footR') => ([a, k, b].some((x) => x.pose[side].mode === 'ground') ? ZERO.clone() : monoVec(ra[side].ankle, rk[side].ankle, rb[side].ankle, h0, h1));
       k.flow = {
         hips: monoVec(a.hips, k.hips, b.hips, h0, h1),
         pelvis: rot(a.pelvis, k.pelvis, b.pelvis),

@@ -78,8 +78,17 @@ export interface BalanceSample {
  * mat): joint centre within this height of the floor, metres (joint centres sit inside the body)
  */
 const CONTACTS: [string, number][] = [
-  ['LeftHand', 0.07], ['RightHand', 0.07], ['LeftForeArm', 0.08], ['RightForeArm', 0.08],
-  ['LeftLeg', 0.1], ['RightLeg', 0.1], ['Hips', 0.16], ['Spine2', 0.16], ['LeftArm', 0.12], ['RightArm', 0.12], ['Head', 0.14],
+  ['LeftHand', 0.07],
+  ['RightHand', 0.07],
+  ['LeftForeArm', 0.08],
+  ['RightForeArm', 0.08],
+  ['LeftLeg', 0.1],
+  ['RightLeg', 0.1],
+  ['Hips', 0.16],
+  ['Spine2', 0.16],
+  ['LeftArm', 0.12],
+  ['RightArm', 0.12],
+  ['Head', 0.14],
 ];
 
 export function balanceAt(rig: CoachRig): BalanceSample {
@@ -135,7 +144,23 @@ function groundedSlide(rig: CoachRig, a: Vector3[], b: Vector3[]) {
   return m;
 }
 
-const FLOOR_BONES = ['LeftToeBase', 'RightToeBase', 'LeftFoot', 'RightFoot', 'LeftLeg', 'RightLeg', 'LeftHand', 'RightHand', 'LeftForeArm', 'RightForeArm', 'Hips', 'Spine2', 'Head', 'LeftArm', 'RightArm'];
+const FLOOR_BONES = [
+  'LeftToeBase',
+  'RightToeBase',
+  'LeftFoot',
+  'RightFoot',
+  'LeftLeg',
+  'RightLeg',
+  'LeftHand',
+  'RightHand',
+  'LeftForeArm',
+  'RightForeArm',
+  'Hips',
+  'Spine2',
+  'Head',
+  'LeftArm',
+  'RightArm',
+];
 
 export function styleOf(d: DisciplineId): StanceStyle {
   return d === 'boxe' ? 'boxing' : d === 'kickboxing' ? 'kickboxing' : d === 'muaythai' ? 'muaythai' : d === 'mma' ? 'mma' : d === 'bjj' ? 'bjj' : 'judo';

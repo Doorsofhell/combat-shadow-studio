@@ -70,7 +70,6 @@ export function Training() {
   return <TrainingView key={key} plan={plan} />;
 }
 
-
 /** m:ss; countdowns round up, elapsed times round down */
 function clock(sec: number, up = true) {
   const s = Math.max(0, up ? Math.ceil(sec) : Math.floor(sec));
@@ -131,7 +130,7 @@ function TrainingView({ plan }: { plan: Plan }) {
 
   // teaching camera: the best angle for the technique being played (close angles are shared)
   const autoViews = useMemo(() => stepViews(seq, item.discipline), [seq, item.discipline]);
-  const teach = st.tech ? techniqueView(st.tech) : autoViews[Math.max(0, view.step)] ?? autoViews[0];
+  const teach = st.tech ? techniqueView(st.tech) : (autoViews[Math.max(0, view.step)] ?? autoViews[0]);
   const manual = manualView(camMode);
   const free = camMode === 'libre';
   const lastView = useRef<StageView | null>(null);
@@ -218,16 +217,26 @@ function TrainingView({ plan }: { plan: Plan }) {
 
   const running = view.phase !== 'pret' && view.phase !== 'termine';
   const phaseLabel =
-    view.phase === 'decompte' ? 'Prépare-toi' : view.phase === 'repos' ? 'Repos' : view.phase === 'travail' ? (item.work ? `Round ${view.round}/${item.rounds}` : MODE_LABEL[plan.mode]) : view.phase === 'termine' ? 'Terminé' : 'Prêt';
+    view.phase === 'decompte'
+      ? 'Prépare-toi'
+      : view.phase === 'repos'
+        ? 'Repos'
+        : view.phase === 'travail'
+          ? item.work
+            ? `Round ${view.round}/${item.rounds}`
+            : MODE_LABEL[plan.mode]
+          : view.phase === 'termine'
+            ? 'Terminé'
+            : 'Prêt';
 
   // the technique taught right now: the one studied, the one played, else the first of the sequence
   // between two repetitions the last move stays on screen, so the panel does not jump
   const lastFocus = useRef<string | null>(null);
-  const focusId = st.tech ?? curId ?? (view.phase === 'travail' || view.phase === 'decompte' ? lastFocus.current ?? seq[0] : seq[0]);
+  const focusId = st.tech ?? curId ?? (view.phase === 'travail' || view.phase === 'decompte' ? (lastFocus.current ?? seq[0]) : seq[0]);
   lastFocus.current = focusId;
   const focus = focusId ? TECHNIQUE_BY_ID.get(focusId) : undefined;
   const instr = focus ? instructionOf(focus) : null;
-  let moveName = cur?.name ?? (view.phase === 'travail' ? focus?.name ?? 'Garde' : phaseLabel);
+  let moveName = cur?.name ?? (view.phase === 'travail' ? (focus?.name ?? 'Garde') : phaseLabel);
   let cue = instr?.main ?? cur?.cues[0] ?? '';
   if (view.phase === 'pret') {
     moveName = focus?.name ?? 'En garde';
@@ -266,11 +275,16 @@ function TrainingView({ plan }: { plan: Plan }) {
     : livePhase && livePhase.techniqueId === focusId
       ? livePhase.phase
       : null;
-  const points = (view.phase === 'termine' ? [] : instr?.points ?? []).map((pt, i) => ({ id: `${focusId}#${i}`, ...pt, now: !!pt.phase && pt.phase === phaseNow }));
+  const points = (view.phase === 'termine' ? [] : (instr?.points ?? [])).map((pt, i) => ({ id: `${focusId}#${i}`, ...pt, now: !!pt.phase && pt.phase === phaseNow }));
   const SLOW = 0.25;
   const slow = view.speed <= SLOW + 1e-3 && item.speed > SLOW;
   // progression of the session: rounds of timed work, else exercises of the plan
-  const itemFrac = item.work && view.remaining !== null && view.phase === 'travail' ? Math.min(1, ((view.round - 1) * item.work + (item.work - view.remaining)) / (item.rounds * item.work)) : view.phase === 'termine' ? 1 : 0;
+  const itemFrac =
+    item.work && view.remaining !== null && view.phase === 'travail'
+      ? Math.min(1, ((view.round - 1) * item.work + (item.work - view.remaining)) / (item.rounds * item.work))
+      : view.phase === 'termine'
+        ? 1
+        : 0;
   const progress = plan.items.length > 1 || item.work ? Math.min(1, (view.itemIndex + itemFrac) / plan.items.length) : null;
 
   // if the text is enlarged so much that everything cannot fit, switch to an explicit scrolling layout
@@ -341,7 +355,13 @@ function TrainingView({ plan }: { plan: Plan }) {
         </div>
         {view.phase === 'decompte' && !view.paused && !st.tech && view.remaining !== null && view.remaining <= 3.05 && <div className="countdown">{Math.max(1, Math.ceil(view.remaining))}</div>}
         <div className="stage-tools">
-          <button className={`btn cam-btn ${camOpen ? 'on' : ''}`} onClick={() => setCamOpen(!camOpen)} aria-label={`Caméra : ${camLabel}. Ouvrir les réglages de caméra`} aria-expanded={camOpen} data-testid="cam-mode">
+          <button
+            className={`btn cam-btn ${camOpen ? 'on' : ''}`}
+            onClick={() => setCamOpen(!camOpen)}
+            aria-label={`Caméra : ${camLabel}. Ouvrir les réglages de caméra`}
+            aria-expanded={camOpen}
+            data-testid="cam-mode"
+          >
             <AppIcon id="camera" />
             <span>{isAuto ? 'Auto' : camLabel}</span>
           </button>
@@ -368,12 +388,24 @@ function TrainingView({ plan }: { plan: Plan }) {
           <div className="mark-legend" aria-label="Légende des repères" data-testid="mark-legend">
             {settings.groundMarks.avantArriere && (
               <>
-                <span><i className="dot red" /> Pied avant</span>
-                <span><i className="dot blue" /> Pied arrière</span>
+                <span>
+                  <i className="dot red" /> Pied avant
+                </span>
+                <span>
+                  <i className="dot blue" /> Pied arrière
+                </span>
               </>
             )}
-            {settings.groundMarks.trajectoire && <span><i className="bar red" /> Trajectoire</span>}
-            {settings.groundMarks.pivot && <span><i className="bar blue" /> Pivot</span>}
+            {settings.groundMarks.trajectoire && (
+              <span>
+                <i className="bar red" /> Trajectoire
+              </span>
+            )}
+            {settings.groundMarks.pivot && (
+              <span>
+                <i className="bar blue" /> Pivot
+              </span>
+            )}
           </div>
         )}
         {item.soloNote && !immersive && !asking && <div className="solo-note">{item.soloNote}</div>}
@@ -444,7 +476,15 @@ function TrainingView({ plan }: { plan: Plan }) {
               </span>
             )}
             {progress !== null && (
-              <span className="tr-progress" role="progressbar" aria-label="Progression de la séance" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} data-testid="progress">
+              <span
+                className="tr-progress"
+                role="progressbar"
+                aria-label="Progression de la séance"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(progress * 100)}
+                data-testid="progress"
+              >
                 <i style={{ width: `${Math.round(progress * 100)}%` }} />
               </span>
             )}
@@ -558,7 +598,13 @@ function TrainingView({ plan }: { plan: Plan }) {
                 <AppIcon id="stepForward" />
               </button>
               {coachAiOn && (
-                <button className={`btn coach-btn ${asking ? 'on' : ''}`} data-testid="ask-coach" aria-label="Demander au coach" aria-pressed={asking} onClick={() => (asking ? setAsking(false) : askCoach())}>
+                <button
+                  className={`btn coach-btn ${asking ? 'on' : ''}`}
+                  data-testid="ask-coach"
+                  aria-label="Demander au coach"
+                  aria-pressed={asking}
+                  onClick={() => (asking ? setAsking(false) : askCoach())}
+                >
                   <AppIcon id="coachAi" size={20} />
                   <span>Coach</span>
                 </button>
@@ -677,19 +723,35 @@ function TrainingView({ plan }: { plan: Plan }) {
               <span className="label">Caméra</span>
               <div className="row">
                 {CAMERA_MODES.map((c) => (
-                  <button key={c.id} className={`chip ${(c.id === 'auto' ? isAuto : camMode === c.id) ? 'on' : ''}`} aria-pressed={c.id === 'auto' ? isAuto : camMode === c.id} onClick={() => (c.id === 'auto' ? resetCam() : chooseAngle(c.id))} data-testid={`cam-chip-${c.id}`}>
+                  <button
+                    key={c.id}
+                    className={`chip ${(c.id === 'auto' ? isAuto : camMode === c.id) ? 'on' : ''}`}
+                    aria-pressed={c.id === 'auto' ? isAuto : camMode === c.id}
+                    onClick={() => (c.id === 'auto' ? resetCam() : chooseAngle(c.id))}
+                    data-testid={`cam-chip-${c.id}`}
+                  >
                     {c.label}
                   </button>
                 ))}
               </div>
-              {isAuto && <p className="cam-why" data-testid="cam-why">{teach.why}</p>}
+              {isAuto && (
+                <p className="cam-why" data-testid="cam-why">
+                  {teach.why}
+                </p>
+              )}
               <p className="small muted">Glisse le doigt sur le coach pour passer en caméra libre à 360°.</p>
             </div>
             <div className="stack">
               <span className="label">Repères au sol</span>
               <div className="row" data-testid="ground-marks">
                 {(Object.keys(GROUND_MARK_LABEL) as GroundMarkId[]).map((k) => (
-                  <button key={k} className={`chip ${settings.groundMarks[k] ? 'on' : ''}`} aria-pressed={settings.groundMarks[k]} onClick={() => setSettings({ groundMarks: { ...settings.groundMarks, [k]: !settings.groundMarks[k] } })} data-testid={`mark-${k}`}>
+                  <button
+                    key={k}
+                    className={`chip ${settings.groundMarks[k] ? 'on' : ''}`}
+                    aria-pressed={settings.groundMarks[k]}
+                    onClick={() => setSettings({ groundMarks: { ...settings.groundMarks, [k]: !settings.groundMarks[k] } })}
+                    data-testid={`mark-${k}`}
+                  >
                     {GROUND_MARK_LABEL[k]}
                   </button>
                 ))}

@@ -39,7 +39,12 @@ export function Lab() {
   const southpaw = q.get('garde') === 'gaucher';
   // art=1: official discipline artwork (discipline gear, collection palette: anthracite, red, gold)
   const look = useMemo<FighterLook | null>(() => {
-    if (!q.get('art')) return null;
+    if (!q.get('art')) {
+      // top=<garment>&bottom=<garment>: clothing checks on the default look
+      if (!q.get('top') && !q.get('bottom')) return null;
+      const l = defaultLook(coach);
+      return { ...l, outfit: { ...l.outfit, top: (q.get('top') ?? l.outfit.top) as never, bottom: (q.get('bottom') ?? l.outfit.bottom) as never } };
+    }
     const l = defaultLook(coach);
     const g = recommendedGear(disc);
     const red = '#a3121f';
@@ -48,7 +53,15 @@ export function Lab() {
     return {
       ...l,
       outfit: { ...l.outfit, bottom: g.bottom, shoes: g.shoes, bottomPaint: { color: disc === 'muaythai' ? red : ink, color2: gold, pattern: 'bande' } },
-      gear: { ...l.gear, hands: g.hands, shins: g.shins, feet: g.feet, handsPaint: { color: red, color2: gold, pattern: 'uni' }, shinsPaint: { color: '#f2efe6', color2: red, pattern: 'uni' }, feetPaint: { color: '#f2efe6', color2: red, pattern: 'uni' } },
+      gear: {
+        ...l.gear,
+        hands: g.hands,
+        shins: g.shins,
+        feet: g.feet,
+        handsPaint: { color: red, color2: gold, pattern: 'uni' },
+        shinsPaint: { color: '#f2efe6', color2: red, pattern: 'uni' },
+        feetPaint: { color: '#f2efe6', color2: red, pattern: 'uni' },
+      },
     };
   }, [q, coach, disc]);
   // look=realiste|manga|encre, render=precedent: the v0.22 render (fallback), for before/after captures
@@ -74,7 +87,10 @@ export function Lab() {
       const pose = sampler.current.sample(tRef.current);
       if (q.get('fist')) pose.handL.fist = pose.handR.fist = Number(q.get('fist'));
       if (q.get('pron')) pose.handL.pron = pose.handR.pron = Number(q.get('pron'));
-      if (q.get('rest')) { rig.reset(); return; }
+      if (q.get('rest')) {
+        rig.reset();
+        return;
+      }
       rig.apply(pose);
     },
     [q],
@@ -83,7 +99,15 @@ export function Lab() {
     <div style={{ position: 'fixed', inset: 0, background: q.get('alpha') ? 'transparent' : '#fff' }}>
       <Canvas shadows dpr={[1, 2]} gl={{ alpha: true, antialias: true, preserveDrawingBuffer: true }}>
         <Suspense fallback={null}>
-          <StudioStage view={view} envelope={tech ? envelope : undefined} origin={tech ? origin : undefined} cameraAngle={cam} quality="haute" zoom={Number(q.get('zoom') ?? '1')} focusY={q.get('fy') ? Number(q.get('fy')) : undefined}>
+          <StudioStage
+            view={view}
+            envelope={tech ? envelope : undefined}
+            origin={tech ? origin : undefined}
+            cameraAngle={cam}
+            quality="haute"
+            zoom={Number(q.get('zoom') ?? '1')}
+            focusY={q.get('fy') ? Number(q.get('fy')) : undefined}
+          >
             <CoachModel coach={coach} style={labStyle} render={render} quality="haute" look={look} onRig={onRig} onFrame={onFrame} />
             {labStyle === 'realiste' && render === 'premium' && <StudioEnvironment />}
           </StudioStage>
