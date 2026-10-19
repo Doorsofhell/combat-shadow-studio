@@ -34,7 +34,7 @@ Priorité : **P1** = contredit une source ou risque de sécurité non signalé ;
 | 19 | Crochets, uppercuts | Transfert du poids absent | boxe-S1, S2, S7 | À faire |
 | 20 | `garde` | « Épaules relâchées » contredit une source (ceinture scapulaire légèrement relevée) | boxe-S3 | À faire |
 | 21 | Pont, relevé technique, changement de base | Orteils 1,4 cm sous le sol ; pied qui glisse de 11 à 14 cm par image | mesure | À faire (lot suivant) |
-| 22 | `sprawl` | Mains encore rapides (18 cm par image) | mesure | À faire |
+| 22 | `sprawl` | Mains encore rapides (18 cm par image) | mesure | Corrigé v0.20.0 : descente des mains en un seul geste continu, 11,5 cm par image au plus (mesure) |
 | 23 | `seoi-nage` | Identifiant, nom et saisies mélangent Seoi-nage et Ippon-seoi-nage | jb-S1, S4 | À faire |
 | 24 | `tai-sabaki` | Le geste montré est un mae-mawari-sabaki | jb-S12 | À faire |
 | 25 | `kuzushi` | Une seule direction présentée comme « le » kuzushi | jb-S12 | À faire |

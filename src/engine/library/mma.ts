@@ -153,12 +153,16 @@ function sprawl(a: Author): Motion {
     id: 'sprawl',
     keys: [
       { t: 0, pose: g },
-      { t: 0.24, pose: drop, ease: 'inOut' },
+      // gentle easing (half the peak speed of 'inOut') and no stop at the drop: the hands travel
+      // from the guard to the floor in one continuous move instead of two bursts (anomaly 22)
+      { t: 0.24, pose: drop, ease: 'load' },
       { t: 0.4, pose: kick, ease: 'linear' },
       { t: 0.52, pose: flat, ease: 'out' },
       { t: 0.86, pose: flat, ease: 'linear' },
-      { t: 1.04, pose: hop, ease: 'inOut' },
-      { t: 1.22, pose: crouch, ease: 'inOut' },
+      // the hips rise in two pushes: flowing through the hop would lower them mid-way and bring the
+      // knees through the mat
+      { t: 1.04, pose: hop, ease: 'inOut', hold: true },
+      { t: 1.22, pose: crouch, ease: 'load' },
       { t: 1.52, pose: g, ease: 'inOut' },
     ],
     chainAt: 1.44,

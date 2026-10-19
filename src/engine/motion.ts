@@ -14,6 +14,8 @@ export interface Key {
   pose: Pose;
   /** easing of the segment that ENDS at this key */
   ease?: Ease;
+  /** the body stops at this key instead of flowing through it (see MotionSampler) */
+  hold?: boolean;
 }
 
 export interface Motion {
@@ -72,18 +74,93 @@ export function mirrorMotion(m: Motion): Motion {
   };
 }
 
+/** slope of an ease at the start and at the end of its segment: 0 when the motion is at rest there */
+function easeSlopes(e: Ease | undefined): [number, number] {
+  switch (e) {
+    case 'linear':
+      return [1, 1];
+    case 'out':
+      return [3, 0];
+    case 'in':
+      return [0, 3];
+    case 'snap':
+      return [4, 0];
+    case 'strike':
+      return [0, 1];
+    default: // 'inOut', 'load'
+      return [0, 0];
+  }
+}
+
+/**
+ * Velocities kept through a key pose (per second), so that a body part that goes on in the same
+ * direction does not stop at every key like a robot. Zero where the key is a turning point.
+ */
+interface KeyFlow {
+  hips: Vector3;
+  pelvis: Vector3;
+  chest: Vector3;
+  head: Vector3;
+  handL: Vector3;
+  handR: Vector3;
+  footL: Vector3;
+  footR: Vector3;
+}
+
 interface CachedKey {
   t: number;
   ease?: Ease;
+  hold?: boolean;
   pose: Pose;
   hips: Vector3;
   pelvis: Quaternion;
   chest: Quaternion;
   footL: ResolvedFoot;
   footR: ResolvedFoot;
+  flow?: KeyFlow;
 }
 
 const lerp = (a: number, b: number, u: number) => a + (b - a) * u;
+
+/**
+ * Monotone cubic tangent at a key (Fritsch and Butland): zero when the key is a turning point,
+ * otherwise a weighted harmonic mean of the neighbouring slopes, never steeper than the gentler one,
+ * so the curve never overshoots a key pose.
+ */
+function monotone(p0: number, p1: number, p2: number, h0: number, h1: number) {
+  const d0 = (p1 - p0) / h0;
+  const d1 = (p2 - p1) / h1;
+  if (d0 * d1 <= 0) return 0;
+  const m = (3 * (h0 + h1)) / ((2 * h1 + h0) / d0 + (h1 + 2 * h0) / d1);
+  const lim = Math.min(Math.abs(d0), Math.abs(d1));
+  return Math.max(-lim, Math.min(lim, m));
+}
+
+const monoVec = (a: Vector3, b: Vector3, c: Vector3, h0: number, h1: number) =>
+  new Vector3(monotone(a.x, b.x, c.x, h0, h1), monotone(a.y, b.y, c.y, h0, h1), monotone(a.z, b.z, c.z, h0, h1));
+
+/** rotation from q0 to q1 as a rotation vector (axis times angle), in ground space */
+function rotationVector(q0: Quaternion, q1: Quaternion) {
+  const d = q1.clone().multiply(q0.clone().invert());
+  if (d.w < 0) d.set(-d.x, -d.y, -d.z, -d.w);
+  const s = Math.sqrt(1 - Math.min(1, d.w * d.w));
+  const angle = 2 * Math.acos(Math.min(1, d.w));
+  return s < 1e-6 ? new Vector3() : new Vector3(d.x, d.y, d.z).multiplyScalar(angle / s);
+}
+
+const ZERO = new Vector3();
+const _q = new Quaternion();
+const _v = new Vector3();
+
+/** adds the flow of both ends of a segment to a value (cubic Hermite terms, zero at the keys) */
+function flowOffset(fa: Vector3 | undefined, fb: Vector3 | undefined, h: number, s: number, out: Vector3) {
+  const h10 = s * (1 - s) * (1 - s);
+  const h11 = s * s * (s - 1);
+  out.set(0, 0, 0);
+  if (fa) out.addScaledVector(fa, h * h10);
+  if (fb) out.addScaledVector(fb, h * h11);
+  return out;
+}
 
 /** Samples a motion for one rig. Feet and trunk rotations are resolved once per key. */
 export class MotionSampler {
@@ -91,10 +168,16 @@ export class MotionSampler {
   private hipOffset: Record<'L' | 'R', Vector3>;
   readonly duration: number;
 
-  constructor(private rig: CoachRig, readonly motion: Motion) {
+  /** flow: keep velocities through the key poses (off only to measure the difference) */
+  constructor(
+    private rig: CoachRig,
+    readonly motion: Motion,
+    flow = true,
+  ) {
     this.keys = motion.keys.map((k) => ({
       t: k.t,
       ease: k.ease,
+      hold: k.hold,
       pose: k.pose,
       hips: toVec(k.pose.hips),
       pelvis: quatFromRot(k.pose.pelvis),
@@ -108,6 +191,48 @@ export class MotionSampler {
       L: (rig.restOf('LeftUpLeg') ?? hipsRest).clone().sub(hipsRest),
       R: (rig.restOf('RightUpLeg') ?? hipsRest).clone().sub(hipsRest),
     };
+    if (flow) this.computeFlow();
+  }
+
+  /**
+   * Velocities through the inner keys where both eases come to rest (the segment before arrives
+   * with a zero slope, the one after leaves with a zero slope): the eases still shape the segments,
+   * the flow only removes the stop at the key. Keys that end a blow or start an explosive move keep
+   * their own timing, and so do keys marked `hold`.
+   */
+  private computeFlow() {
+    const ks = this.keys;
+    const res = ks.map((k) => this.at(k, k, 0));
+    const head = (p: Pose) => new Vector3(p.head.yaw, p.head.pitch, p.head.roll);
+    for (let i = 1; i < ks.length - 1; i++) {
+      const [a, k, b] = [ks[i - 1], ks[i], ks[i + 1]];
+      const h0 = k.t - a.t;
+      const h1 = b.t - k.t;
+      if (k.hold || h0 < 1e-3 || h1 < 1e-3 || easeSlopes(k.ease)[1] !== 0 || easeSlopes(b.ease)[0] !== 0) continue;
+      const [ra, rk, rb] = [res[i - 1], res[i], res[i + 1]];
+      const rot = (q0: Quaternion, q1: Quaternion, q2: Quaternion) => monoVec(new Vector3(), rotationVector(q0, q1), rotationVector(q0, q1).add(rotationVector(q1, q2)), h0, h1);
+      // hands in the chest frame: the trunk already carries its own flow to them
+      const local = (r: ResolvedPose, side: 'handL' | 'handR') => {
+        const f = this.rig.chestFrame(r.hips, r.pelvis, r.chest);
+        return r[side].pos.clone().sub(f.origin).applyQuaternion(f.q.clone().invert());
+      };
+      const hand = (side: 'handL' | 'handR') =>
+        k.pose[side].space === 'world' ? ZERO.clone() : monoVec(local(ra, side), local(rk, side), local(rb, side), h0, h1);
+      // a foot keeps its flow only in the air, away from a take-off or a landing: near the floor the
+      // flow would make the toes graze the mat
+      const foot = (side: 'footL' | 'footR') =>
+        [a, k, b].some((x) => x.pose[side].mode === 'ground') ? ZERO.clone() : monoVec(ra[side].ankle, rk[side].ankle, rb[side].ankle, h0, h1);
+      k.flow = {
+        hips: monoVec(a.hips, k.hips, b.hips, h0, h1),
+        pelvis: rot(a.pelvis, k.pelvis, b.pelvis),
+        chest: rot(a.chest, k.chest, b.chest),
+        head: monoVec(head(a.pose), head(k.pose), head(b.pose), h0, h1),
+        handL: hand('handL'),
+        handR: hand('handR'),
+        footL: foot('footL'),
+        footR: foot('footR'),
+      };
+    }
   }
 
   sample(t: number): ResolvedPose {
@@ -117,18 +242,32 @@ export class MotionSampler {
       if (t <= ks[i].t) {
         const a = ks[i - 1];
         const b = ks[i];
-        const u = ease(b.ease, (t - a.t) / Math.max(1e-6, b.t - a.t));
-        return this.at(a, b, u);
+        const s = (t - a.t) / Math.max(1e-6, b.t - a.t);
+        return this.at(a, b, ease(b.ease, s), s);
       }
     }
     const last = ks[ks.length - 1];
     return this.at(last, last, 0);
   }
 
-  private at(a: CachedKey, b: CachedKey, u: number): ResolvedPose {
-    const hips = a.hips.clone().lerp(b.hips, u);
+  /** u: eased progress of the segment a→b; s: raw progress, for the flow through the keys */
+  private at(a: CachedKey, b: CachedKey, u: number, s = 0): ResolvedPose {
+    const h = b.t - a.t;
+    const flowing = s > 0 && s < 1 && (a.flow || b.flow);
+    const off = (key: keyof KeyFlow) => (flowing ? flowOffset(a.flow?.[key], b.flow?.[key], h, s, _v) : _v.set(0, 0, 0));
+    const hips = a.hips.clone().lerp(b.hips, u).add(off('hips'));
     const pelvis = a.pelvis.clone().slerp(b.pelvis, u);
     const chest = a.chest.clone().slerp(b.chest, u);
+    if (flowing) {
+      for (const [q, key] of [
+        [pelvis, 'pelvis'],
+        [chest, 'chest'],
+      ] as const) {
+        const r = off(key);
+        const angle = r.length();
+        if (angle > 1e-9) q.premultiply(_q.setFromAxisAngle(r.divideScalar(angle), angle));
+      }
+    }
     const foot = (side: 'footL' | 'footR'): ResolvedFoot => {
       if (u === 0) return a[side];
       const pa = a.pose[side];
@@ -151,7 +290,7 @@ export class MotionSampler {
       const fa = a[side];
       const fb = b[side];
       return {
-        ankle: fa.ankle.clone().lerp(fb.ankle, u),
+        ankle: fa.ankle.clone().lerp(fb.ankle, u).add(off(side)),
         rot: fa.rot.clone().slerp(fb.rot, u),
         toeFlat: lerp(fa.toeFlat, fb.toeFlat, u),
         heel: lerp(fa.heel, fb.heel, u),
@@ -168,21 +307,22 @@ export class MotionSampler {
       if (u === 0) return ha;
       const hb = this.rig.resolveHand(b.pose[side], frame);
       return {
-        pos: ha.pos.lerp(hb.pos, u),
+        pos: ha.pos.lerp(hb.pos, u).add(off(side).applyQuaternion(frame.q)),
         pole: ha.pole.lerp(hb.pole, u).normalize(),
         pron: lerp(ha.pron, hb.pron, u),
         fist: lerp(ha.fist, hb.fist, u),
         wrist: lerp(ha.wrist, hb.wrist, u),
       };
     };
+    const hd = off('head');
     return {
       hips,
       pelvis,
       chest,
       head: {
-        yaw: lerp(a.pose.head.yaw, b.pose.head.yaw, u),
-        pitch: lerp(a.pose.head.pitch, b.pose.head.pitch, u),
-        roll: lerp(a.pose.head.roll, b.pose.head.roll, u),
+        yaw: lerp(a.pose.head.yaw, b.pose.head.yaw, u) + hd.x,
+        pitch: lerp(a.pose.head.pitch, b.pose.head.pitch, u) + hd.y,
+        roll: lerp(a.pose.head.roll, b.pose.head.roll, u) + hd.z,
       },
       handL: hand('handL'),
       handR: hand('handR'),

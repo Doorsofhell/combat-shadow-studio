@@ -570,3 +570,37 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
     `docs/icones/captures/`) ;
   - vrai téléphone Android : NON EXÉCUTÉ.
 - **Restauration** : `restauration/lot-9`
+
+## 2026-10-19 · v0.20.0 · Lot 10 : mouvements plus fluides et naturels
+
+- **Demande** : « Je veux des mouvements les plus fluides et naturels et humains ».
+- **Constat après mesure** : chaque animation passait de pose clé en pose clé avec une accélération puis un freinage
+  complet sur chaque segment. Une main, le bassin ou une cheville qui continue dans la même direction s’arrêtait donc
+  à chaque pose clé, comme un robot : 941 arrêts de ce type sur les 432 animations des 6 gardes (mesure
+  `src/engine/fluidity.ts`). Les mains du sprawl descendaient en deux poussées, jusqu’à 18 cm par image
+  (anomalie 22 de l’audit).
+- **Correction** :
+  - le moteur garde la vitesse à travers une pose clé quand le mouvement continue dans la même direction (courbe
+    cubique monotone de Fritsch et Butland, sans dépassement des poses clés) ; vitesse nulle aux points de retour
+    (fin d’un coup, changement de direction) ; les impacts et les départs explosifs gardent leur rythme ; les mains
+    sont lissées dans le repère du buste, les pieds seulement en l’air, loin du décollage et de l’atterrissage, pour
+    ne pas frotter le tapis ;
+  - une pose clé peut être marquée « arrêt voulu » (`hold`) : utilisé au saut du sprawl, où le lissage faisait passer
+    les genoux sous le tapis ;
+  - sprawl : descente des mains en un seul geste continu et plus progressif, 11,5 cm par image au plus.
+- **Résultat mesuré** : 941 → 320 arrêts parasites ; vitesse des mains et des pieds à l’impact conservée à 3 % près
+  sur tous les coups ; moyennes de l’audit du moteur sur les 75 techniques inchangées (centre de masse hors appuis
+  10,5 cm, point le plus bas 2,6 cm, glissement 1,3 cm par image). Les 320 arrêts restants sont surtout des pieds qui
+  se posent ou décollent et des mains en appui au sol : arrêts voulus.
+- **Limites** : lissage mathématique des poses existantes, pas de capture de mouvement ; aucune animation n’est
+  « validée » techniquement (revue d’expert toujours nécessaire) ; vérification sur un vrai téléphone : non faite.
+- **Fichiers** : `src/engine/motion.ts`, `src/engine/fluidity.ts` (nouveau), `src/engine/library/mma.ts`,
+  `src/engine/__tests__/fluidity.test.ts` (nouveau), `docs/audit-biomecanique/MESURES_FLUIDITE.md` (nouveau),
+  `MESURES_MOTEUR.md` régénéré, `ANOMALIES.md`.
+- **Tests** :
+  - `tsc` : TEST RÉUSSI ; tests unitaires : TEST RÉUSSI (312 réussis, 1 ignoré), dont 4 nouveaux (document de mesures
+    à jour, au moins 60 % des arrêts supprimés, aucune animation avec plus d’arrêts, vitesse à l’impact conservée) ;
+    registre des animations, équilibre, audit du moteur et phases : TEST RÉUSSI ;
+  - Playwright complet : TEST RÉUSSI (59 réussis, 2 ignorés, aucun échec au premier passage) ;
+  - vrai téléphone Android : NON EXÉCUTÉ.
+- **Restauration** : `restauration/lot-10`

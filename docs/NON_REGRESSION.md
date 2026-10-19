@@ -22,6 +22,7 @@ chaque lot, point de restauration, rapport (TEST RÉUSSI / ÉCHOUÉ / NON EXÉCU
 | `restauration/lot-7` | v0.17.0 | Audit biomécanique : équilibre sur un pied (20 animations), sprawl refait, 17 textes corrigés selon les sources, fiches pilotes, documents `docs/audit-biomecanique/` |
 | `restauration/lot-8` | v0.18.0 | Silhouettes naturelles : musculature réduite et harmonieuse sur les 4 modèles, relief adouci, 150 vignettes régénérées, attente de caméra stable renforcée dans le test |
 | `restauration/lot-9` | v0.19.0 | Bibliothèque d’icônes premium : composant central AppIcon, 6 icônes de discipline, palette officielle, favoris en cœur |
+| `restauration/lot-10` | v0.20.0 | Mouvements plus fluides : vitesses conservées à travers les poses clés (941 → 320 arrêts parasites), sprawl sans à-coup des mains, mesures `MESURES_FLUIDITE.md` |
 | `restauration/lot-4e` | v0.11.0 | Images des techniques sur les cartes (coach 3D choisi), changement de coach femme depuis l’entraînement |
 | `restauration/lot-4d` | v0.10.0 | Repères au sol optionnels (pieds, orientation, avant/arrière, pivot, trajectoires) |
 | `restauration/lot-4c` | v0.9.0 | Commandes hiérarchisées, zone Caméra regroupée (angle, rotation, zoom, recentrer), progression |
