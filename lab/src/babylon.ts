@@ -124,10 +124,17 @@ function upgradeMaterials(meshes: AbstractMesh[]) {
 
 async function main() {
   const url = modelUrl(P.coach);
-  const [buf, res] = await Promise.all([
-    fetch(url).then((r) => r.arrayBuffer()),
-    ImportMeshAsync(url, scene),
-  ]);
+  let buf: ArrayBuffer;
+  let res: Awaited<ReturnType<typeof ImportMeshAsync>>;
+  if (import.meta.env.VITE_COACH_FORMAT === 'json') {
+    // hosts that do not serve .glb: the GLB is wrapped in JSON as base64 (scripts/glb-to-json.mjs)
+    const { glb } = await fetch(url.replace(/\.glb$/, '.json')).then((r) => r.json());
+    const bytes = Uint8Array.from(atob(glb), (c) => c.charCodeAt(0));
+    buf = bytes.buffer;
+    res = await ImportMeshAsync(URL.createObjectURL(new Blob([bytes])), scene, { pluginExtension: '.glb' });
+  } else {
+    [buf, res] = await Promise.all([fetch(url).then((r) => r.arrayBuffer()), ImportMeshAsync(url, scene)]);
+  }
   timings.modelLoaded = performance.now();
   upgradeMaterials(res.meshes);
   for (const m of res.meshes) if (m.getTotalVertices() > 0) shadows.addShadowCaster(m);
