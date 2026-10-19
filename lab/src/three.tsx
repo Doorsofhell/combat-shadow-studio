@@ -63,7 +63,7 @@ function App() {
   return (
     <div style={{ width: P.width, height: P.height }}>
       <Canvas
-        dpr={1}
+        dpr={P.dpr}
         shadows={false}
         gl={{ antialias: hi, alpha: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' }}
         camera={{ fov: CAMERA.fov, near: CAMERA.near, far: CAMERA.far, position: cameraPosition() }}

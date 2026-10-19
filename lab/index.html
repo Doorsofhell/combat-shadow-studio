@@ -27,7 +27,7 @@
 <body>
 <header>
   <h1>Même coach, même animation, deux moteurs</h1>
-  <p>Gauche : Three.js (moteur actuel de l’application). Droite : Babylon 9.31. Les deux pages calculent exactement les mêmes positions d’os ; seul le rendu change. Rendu « réaliste » de comparaison, pas le style Encre de l’application.</p>
+  <p>Gauche : Three.js (moteur actuel de l’application). Droite : Babylon 9.31. Les deux pages calculent exactement les mêmes positions d’os ; seul le rendu change. En boucle, les deux côtés ne démarrent pas au même instant : pour comparer la même pose, choisissez « Figée sur l’impact ». Rendu « réaliste » de comparaison, pas le style Encre de l’application.</p>
 </header>
 <form id="f">
   <label>Coach <select name="coach"><option value="homme">Homme</option><option value="femme">Femme</option></select></label>
@@ -36,6 +36,7 @@
     <option value="crochet-avant">Crochet gauche</option><option value="uppercut-arriere">Uppercut droit</option>
     <option value="pivot-droite">Pivot</option><option value="combo" selected>Enchaînement jab, direct, crochet</option>
   </select></label>
+  <label>Lecture <select name="t"><option value="">En boucle</option><option value="key">Figée sur l’impact</option></select></label>
   <label>Qualité <select name="q"><option value="haute">Haute</option><option value="basse">Basse</option></select></label>
 </form>
 <main>
@@ -44,13 +45,27 @@
 </main>
 <script>
   const f = document.getElementById('f');
+  const a = document.getElementById('a');
+  const b = document.getElementById('b');
+  // the render size follows the frame actually shown (phone or computer), so the coach always fits
   function load() {
     const q = new URLSearchParams(new FormData(f));
-    q.set('w', '450'); q.set('h', '700');
-    document.getElementById('a').src = './three.html?' + q;
-    document.getElementById('b').src = './babylon.html?' + q;
+    if (!q.get('t')) q.delete('t'); // empty = plays in a loop
+    q.set('w', String(Math.floor(a.clientWidth)));
+    q.set('h', String(Math.floor(a.clientHeight)));
+    q.set('zoom', '1.45');
+    q.set('dpr', String(Math.min(2, devicePixelRatio || 1)));
+    a.src = './three.html?' + q;
+    b.src = './babylon.html?' + q;
   }
   f.addEventListener('change', load);
+  let lastW = 0, timer = 0;
+  addEventListener('resize', () => {
+    if (Math.abs(a.clientWidth - lastW) < 8) return;
+    clearTimeout(timer);
+    timer = setTimeout(() => { lastW = a.clientWidth; load(); }, 300);
+  });
+  lastW = a.clientWidth;
   load();
 </script>
 </body>

@@ -40,8 +40,8 @@ const timings: Record<string, number> = { start: performance.now() };
 const hi = P.quality === 'haute';
 
 const canvas = document.getElementById('c') as HTMLCanvasElement;
-canvas.width = P.width;
-canvas.height = P.height;
+canvas.width = Math.round(P.width * P.dpr);
+canvas.height = Math.round(P.height * P.dpr);
 canvas.style.width = `${P.width}px`;
 canvas.style.height = `${P.height}px`;
 const engine = new Engine(canvas, hi, { preserveDrawingBuffer: true, stencil: true, alpha: true, powerPreference: 'high-performance' }, false);

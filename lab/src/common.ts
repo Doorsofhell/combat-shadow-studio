@@ -26,6 +26,8 @@ export interface LabParams {
   look: 'realiste' | 'encre';
   width: number;
   height: number;
+  /** pixel ratio of the render (1 for measurements; the viewer passes the screen's, at most 2) */
+  dpr: number;
 }
 
 export function params(): LabParams {
@@ -39,6 +41,7 @@ export function params(): LabParams {
     look: q.get('look') === 'encre' ? 'encre' : 'realiste',
     width: Number(q.get('w') ?? 720),
     height: Number(q.get('h') ?? 1280),
+    dpr: Math.min(2, Math.max(1, Number(q.get('dpr') ?? 1))),
   };
 }
 
@@ -46,11 +49,14 @@ export const modelUrl = (c: Coach) => `./models/coach_${c === 'homme' ? 'male' :
 
 /** same fixed camera in both versions: 3/4 front, lead side, whole body and the space of the moves */
 export const CAMERA = { fov: 30, near: 0.05, far: 50, target: [0, 0.98, 0.2] as const, az: 35, el: 7, dist: 5.4 };
+/** viewer only: closer camera (zoom > 1); measurements keep the reference distance */
+const ZOOM = Math.min(2, Math.max(1, Number(new URLSearchParams(location.search).get('zoom') ?? 1)));
 export function cameraPosition(): [number, number, number] {
+  const d = CAMERA.dist / ZOOM;
   const a = (CAMERA.az * Math.PI) / 180;
   const e = (CAMERA.el * Math.PI) / 180;
   const [x, y, z] = CAMERA.target;
-  return [x + Math.sin(a) * Math.cos(e) * CAMERA.dist, y + Math.sin(e) * CAMERA.dist, z + Math.cos(a) * Math.cos(e) * CAMERA.dist];
+  return [x + Math.sin(a) * Math.cos(e) * d, y + Math.sin(e) * d, z + Math.cos(a) * Math.cos(e) * d];
 }
 
 /** the app's studio lights (src/three/StudioStage.tsx), in three.js units */
