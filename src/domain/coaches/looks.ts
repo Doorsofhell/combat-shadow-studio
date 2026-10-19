@@ -15,7 +15,7 @@ function look(sex: 'homme' | 'femme', f: (l: FighterLook) => void): FighterLook 
 
 export const COACH_LOOKS: Record<string, FighterLook> = {
   'mma-kadir': look('homme', (l) => {
-    l.skin = '#d0a184';
+    l.skin = '#c4906f';
     l.eyes = '#3a281c';
     l.hair = { style: 'court', color: '#17110d', length: 0.12 };
     l.beard = { style: 'pleine', color: '#17110d' };

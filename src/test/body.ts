@@ -11,9 +11,11 @@ const SIZE = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4, MAT4: 16 } as const;
  * Loads the manga coach GLB in Node (no WebGL, no images): skeleton, and every skinned mesh with
  * positions, normals, uvs, skinning and a plain material carrying the GLB material name.
  */
-export function loadCoach(coach: CoachId) {
+/** model: optional path under public/ without extension (a champion coach's own model) */
+export function loadCoach(coach: CoachId, model?: string) {
   const who = coach === 'homme' ? 'male' : 'female';
-  const file = resolve(__dirname, '../../public/models', `coach_${who}_manga.glb`);
+  const base = model ? resolve(__dirname, '../../public', model) : resolve(__dirname, '../../public/models', `coach_${who}_manga`);
+  const file = `${base}.glb`;
   const buf = readFileSync(file);
   const jlen = buf.readUInt32LE(12);
   const json = JSON.parse(buf.subarray(20, 20 + jlen).toString('utf8'));
@@ -65,6 +67,6 @@ export function loadCoach(coach: CoachId) {
     m.bind(skeleton, new Matrix4());
   });
   root.updateMatrixWorld(true);
-  const meta = JSON.parse(readFileSync(resolve(__dirname, '../../public/models', `coach_${who}_manga.meta.json`), 'utf8')) as CoachMeta;
+  const meta = JSON.parse(readFileSync(`${base}.meta.json`, 'utf8')) as CoachMeta;
   return { root, meta, skeleton };
 }

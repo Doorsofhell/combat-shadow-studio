@@ -17,8 +17,9 @@ interface GNode {
  * so the animation engine can be tested in Node without WebGL. A box stands in for the body mesh to
  * give the real height.
  */
-export function loadSkeleton(coach: CoachId): Object3D {
-  const file = resolve(__dirname, '../../public/models', coach === 'homme' ? 'coach_male.glb' : 'coach_female.glb');
+export function loadSkeleton(coach: CoachId, model?: string): Object3D {
+  // model: a champion-inspired coach's own GLB, relative to public/ (e.g. coaches/mma-kadir/model.glb)
+  const file = model ? resolve(__dirname, '../../public', model) : resolve(__dirname, '../../public/models', coach === 'homme' ? 'coach_male.glb' : 'coach_female.glb');
   const buf = readFileSync(file);
   const len = buf.readUInt32LE(12);
   const json = JSON.parse(buf.subarray(20, 20 + len).toString('utf8'));

@@ -16,6 +16,7 @@ import { STYLE_OF } from '../three/CoachStage';
 import { defaultLook, recommendedGear, type FighterLook } from '../editor/look';
 import type { StageView } from '../three/StudioStage';
 import { COACH_LOOKS } from '../domain/coaches/looks';
+import { coachProfile } from '../domain/coaches/motion';
 
 /** Developer view: freezes a motion at a given time, used for visual checks and screenshots. */
 export function Lab() {
@@ -79,7 +80,7 @@ export function Lab() {
   const sampler = useRef<MotionSampler | null>(null);
   const onRig = useCallback(
     (rig: CoachRig) => {
-      const lib = getLibrary(rig, style);
+      const lib = getLibrary(rig, style, coachProfile(champion));
       const m = getMotion(lib, motionId, southpaw) ?? lib.get('garde')!;
       sampler.current = new MotionSampler(rig, m);
       if (tech) {

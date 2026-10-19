@@ -2,7 +2,7 @@
  * Manga rendering: cel shading in three flat tones with hatching in the shadows, flattened skin
  * tones so muscle creases read as ink areas, and an ink outline drawn with an inverted hull.
  */
-import { BackSide, Color, Material, Mesh, MeshBasicMaterial, MeshLambertMaterial, MeshStandardMaterial, Object3D, SkinnedMesh, Texture } from 'three';
+import { BackSide, BufferAttribute, Color, Material, Mesh, MeshBasicMaterial, MeshLambertMaterial, MeshStandardMaterial, Object3D, SkinnedMesh, Texture } from 'three';
 
 const TOON_FRAGMENT = /* glsl */ `
   {
@@ -126,22 +126,49 @@ function inkMaterial(name: string, map: Texture | null, color?: Color, normalMap
   return m;
 }
 
-export function outlineMaterial(width: number, color = '#141212') {
+/** perVertex: the geometry carries an aInk width factor (see inkWidths) */
+export function outlineMaterial(width: number, color = '#141212', perVertex = false) {
   const m = new MeshBasicMaterial({ color, side: BackSide });
+  if (perVertex) m.defines = { CSS_INK_WIDTH: '' };
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uOutline = { value: width };
-    shader.vertexShader = shader.vertexShader.replace('void main() {', 'uniform float uOutline;\nvoid main() {').replace(
+    shader.vertexShader = shader.vertexShader.replace('void main() {', 'uniform float uOutline;\n#ifdef CSS_INK_WIDTH\nattribute float aInk;\n#else\nconst float aInk = 1.0;\n#endif\nvoid main() {').replace(
       '#include <project_vertex>',
       `#include <project_vertex>
         #ifdef USE_SKINNING
           vec4 nClip = projectionMatrix * modelViewMatrix * vec4(objectNormal, 0.0);
           vec2 dir = nClip.xy + vec2(1e-6);
-          gl_Position.xy += normalize(dir) * uOutline * gl_Position.w;
+          gl_Position.xy += normalize(dir) * uOutline * aInk * gl_Position.w;
         #endif`,
     );
   };
-  m.customProgramCacheKey = () => `manga-outline-${width}-${color}`;
+  m.customProgramCacheKey = () => `manga-outline-${width}-${color}-${perVertex}`;
   return m;
+}
+
+/** bones of the toes and fingers: small, close together, concave between them */
+const SMALL = /(ToeBase|Toe_End|HandThumb|HandIndex|HandMiddle|HandRing|HandPinky)/;
+
+/**
+ * Per-vertex width of the ink outline: thin on the toes and fingers. At full width, the hull of one toe
+ * pokes out between its neighbours and reads as a black blot on the foot.
+ */
+function inkWidths(sk: SkinnedMesh) {
+  const g = sk.geometry;
+  if (g.getAttribute('aInk')) return;
+  const n = g.getAttribute('position').count;
+  const ink = new Float32Array(n).fill(1);
+  const si = g.getAttribute('skinIndex');
+  const sw = g.getAttribute('skinWeight');
+  if (si && sw && sk.skeleton) {
+    const small = sk.skeleton.bones.map((b) => SMALL.test(b.name));
+    for (let i = 0; i < n; i++) {
+      let w = 0;
+      for (let k = 0; k < 4; k++) if (small[si.getComponent(i, k)]) w += sw.getComponent(i, k);
+      ink[i] = 1 - 0.8 * Math.min(1, w);
+    }
+  }
+  g.setAttribute('aInk', new BufferAttribute(ink, 1));
 }
 
 /** Replaces the materials of a coach with the manga look and adds the ink outlines. */
@@ -158,7 +185,8 @@ export function applyManga(root: Object3D, style: InkStyle = 'manga') {
     (old as Material).dispose();
     const sk = mesh as SkinnedMesh;
     if (!isEyes && sk.isSkinnedMesh) {
-      const line = new SkinnedMesh(sk.geometry, ink ? outlineMaterial(name.startsWith('hair') ? 0.0042 : 0.0058, '#1b1d22') : outlineMaterial(name.startsWith('hair') ? 0.0035 : 0.0045));
+      inkWidths(sk);
+      const line = new SkinnedMesh(sk.geometry, ink ? outlineMaterial(name.startsWith('hair') ? 0.0042 : 0.0058, '#1b1d22', true) : outlineMaterial(name.startsWith('hair') ? 0.0035 : 0.0045, '#141212', true));
       line.bind(sk.skeleton, sk.bindMatrix);
       line.frustumCulled = false;
       line.position.copy(sk.position);

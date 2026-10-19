@@ -444,6 +444,11 @@ for side, sgn in (("Left", 1), ("Right", -1)):
     fb.rotation_quaternion = mathutils.Quaternion((rest_f.inverted() @ mathutils.Vector((0, 0, 1))).normalized(), sgn * math.radians(25))
 bpy.context.view_layer.update()
 
+# fixed coaches wear their outfit as a runtime layer: occlusion of the generator's own clothes and hair
+# would leave dark bands on the skin where the coach's garments differ (a strap, the back of a top)
+baked_hidden = [o for o in bpy.data.objects if RECIPE and o.type == "MESH" and o.name in ("Hair", "Shorts", "Top", "Bun")]
+for o in baked_hidden:
+    o.hide_render = True
 img_ao = bpy.data.images.new("ao", TEX, TEX, float_buffer=True, alpha=False)
 img_ao.colorspace_settings.name = "Non-Color"
 img_node.image = img_ao
@@ -457,6 +462,8 @@ AO = np.array(img_ao.pixels[:], dtype=np.float32).reshape(TEX, TEX, 4)[..., 0]
 sc.world.light_settings.distance = 0.025 * K
 bpy.ops.object.bake(type="AO")
 AO_FINE = np.array(img_ao.pixels[:], dtype=np.float32).reshape(TEX, TEX, 4)[..., 0]
+for o in baked_hidden:
+    o.hide_render = False
 
 for pb in rig.pose.bones:
     pb.rotation_quaternion = (1, 0, 0, 0)

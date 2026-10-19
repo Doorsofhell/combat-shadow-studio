@@ -23,6 +23,8 @@ export class Author {
     readonly m: Metrics,
     readonly chestFrame: ChestFrameFn,
     readonly style: StanceStyle,
+    /** a coach's own guard: small offsets added to the discipline guard (see src/domain/coaches/motion.ts) */
+    readonly profile?: StanceOffsets,
   ) {
     this.s = m.height / 1.8;
     this.L = m.thigh + m.shin;
@@ -32,7 +34,7 @@ export class Author {
   /** Orthodox guard (left side forward). Southpaw is obtained by mirroring. */
   guard(): Pose {
     const { s, m } = this;
-    const st = STANCES[this.style];
+    const st = withOffsets(STANCES[this.style], this.profile);
     const hipsY = m.hipsRest.y - st.knee * s;
     const p: Pose = {
       hips: v3(st.hipsX * s, hipsY, st.hipsZ * s),
@@ -202,7 +204,7 @@ export function edit(p: Pose, f: (d: Pose) => void): Pose {
 
 export const add = (a: V3, b: Partial<V3>): V3 => ({ x: a.x + (b.x ?? 0), y: a.y + (b.y ?? 0), z: a.z + (b.z ?? 0) });
 
-interface StanceDef {
+export interface StanceDef {
   knee: number;
   hipsX: number;
   hipsZ: number;
@@ -222,6 +224,19 @@ interface StanceDef {
   rearYaw: number;
   leadHeel: number;
   rearHeel: number;
+}
+
+/** offsets of a coach's guard, added to the discipline guard (angles in radians, distances in metres for a 1.8 m body) */
+export type StanceOffsets = { [K in keyof StanceDef]?: StanceDef[K] };
+
+export function withOffsets(base: StanceDef, o?: StanceOffsets): StanceDef {
+  if (!o) return base;
+  const r = { ...base } as Record<string, unknown>;
+  for (const [k, v] of Object.entries(o)) {
+    const b = r[k];
+    r[k] = Array.isArray(v) ? (b as number[]).map((x, i) => x + ((v as number[])[i] ?? 0)) : (b as number) + (v as number);
+  }
+  return r as unknown as StanceDef;
 }
 
 /**

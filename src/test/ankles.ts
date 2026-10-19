@@ -7,7 +7,7 @@ import type { CoachRig } from '../engine/rig';
 import { getLibrary, getMotion } from '../engine/library';
 import { MotionSampler, duration } from '../engine/motion';
 import { ankleAngles } from '../engine/joints';
-import type { StanceStyle } from '../engine/author';
+import type { StanceOffsets, StanceStyle } from '../engine/author';
 
 export const ANKLE_STYLES = ['boxing', 'kickboxing', 'mma', 'muaythai'] as const;
 
@@ -22,10 +22,10 @@ export interface AnkleWorst {
 
 const blank = () => ({ dorsi: 0, plantar: 0, inversion: 0, eversion: 0, rotation: 0 });
 
-export function measureAnkles(rig: CoachRig, steps = 48): AnkleWorst[] {
+export function measureAnkles(rig: CoachRig, steps = 48, styles: readonly StanceStyle[] = ANKLE_STYLES, profile?: { id: string; offsets: StanceOffsets }): AnkleWorst[] {
   const out: AnkleWorst[] = [];
-  for (const style of ANKLE_STYLES) {
-    const lib = getLibrary(rig, style as StanceStyle);
+  for (const style of styles) {
+    const lib = getLibrary(rig, style as StanceStyle, profile);
     for (const id of lib.keys()) {
       if (id.includes('@')) continue;
       const m = getMotion(lib, id, false)!;

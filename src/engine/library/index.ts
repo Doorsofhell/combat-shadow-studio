@@ -1,4 +1,4 @@
-import { Author, StanceStyle } from '../author';
+import { Author, StanceOffsets, StanceStyle } from '../author';
 import { Motion, mirrorMotion } from '../motion';
 import type { CoachRig } from '../rig';
 import { balanceKeys } from '../balance';
@@ -10,15 +10,16 @@ import { upperMotions } from './upper';
 
 export type MotionLibrary = Map<string, Motion>;
 
-const cache = new WeakMap<CoachRig, Map<StanceStyle, MotionLibrary>>();
+const cache = new WeakMap<CoachRig, Map<string, MotionLibrary>>();
 
 /** All motions of a stance style for one coach (orthodox ids, plus "ids@gaucher" mirrored on demand). */
-export function getLibrary(rig: CoachRig, style: StanceStyle): MotionLibrary {
+export function getLibrary(rig: CoachRig, style: StanceStyle, profile?: { id: string; offsets: StanceOffsets }): MotionLibrary {
   let perRig = cache.get(rig);
   if (!perRig) cache.set(rig, (perRig = new Map()));
-  let lib = perRig.get(style);
+  const key = profile ? `${style}:${profile.id}` : style;
+  let lib = perRig.get(key);
   if (!lib) {
-    const a = new Author(rig.metrics, rig.chestFrame.bind(rig), style);
+    const a = new Author(rig.metrics, rig.chestFrame.bind(rig), style, profile?.offsets);
     lib = new Map();
     for (const m of buildAll(a)) {
       // joint safety on every key pose: no elbow folded beyond its natural range
@@ -26,7 +27,7 @@ export function getLibrary(rig: CoachRig, style: StanceStyle): MotionLibrary {
       if (m.balance) balanceKeys(rig, m);
       lib.set(m.id, m);
     }
-    perRig.set(style, lib);
+    perRig.set(key, lib);
   }
   return lib;
 }

@@ -112,6 +112,25 @@ export function bindBonePositions(mesh: SkinnedMesh) {
   return out;
 }
 
+/**
+ * The eyelids fold sharply around the eye: at full width the ink hull pokes through the lids and reads
+ * as stray strokes on the face. The outline fades out within a few centimetres of each eye.
+ */
+function thinInkNearEyes(body: SkinnedMesh, meta: CoachMeta) {
+  const ink = body.geometry.getAttribute('aInk');
+  if (!ink || body.geometry.userData.eyeInk) return;
+  const pos = body.geometry.getAttribute('position');
+  const eyes = [v3(meta.eyeL), v3(meta.eyeR)];
+  const p = new Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    p.fromBufferAttribute(pos, i);
+    const d = Math.min(p.distanceTo(eyes[0]), p.distanceTo(eyes[1]));
+    if (d < 0.045) ink.setX(i, ink.getX(i) * (0.15 + 0.85 * Math.max(0, (d - 0.025) / 0.02)));
+  }
+  ink.needsUpdate = true;
+  body.geometry.userData.eyeInk = true;
+}
+
 export function mapBody(mesh: SkinnedMesh, meta: CoachMeta): BodyMap {
   const g = mesh.geometry;
   const pos = g.getAttribute('position').array as Float32Array;
@@ -561,6 +580,8 @@ export interface GarmentSpec {
   drape?: number;
   /** hides the skin it covers (opaque clothes): the body cannot show through when a joint bends */
   hidesBody?: boolean;
+  /** distance inside the cut from which the skin is hidden (default HIDE_MARGIN); thin straps need less */
+  hideMargin?: number;
   /** strip of fabric thickness along the cut (default true) */
   hem?: boolean;
 }
@@ -838,10 +859,18 @@ export function garmentSpecs(m: BodyMap) {
       return -1;
     };
   const sportsBra: CoverFn = (i) => {
-    if (!isTorso(i)) return -1;
-    const band = Math.min(y(i) - (nipY - 0.1), nipY + (nz(i) > 0 ? 0.1 : 0.02) - y(i));
+    if (!isTorso(i) && !isArm(i) && chain[i] !== 'neck') return -1;
     const ax = Math.abs(x(i));
-    const strap = Math.min(ax - 0.045, 0.11 - ax, neckY - 0.02 - y(i), y(i) - nipY);
+    // one formula for the torso, the base of the neck and the top of the arm, cut by position only: a cut that changes with the
+    // skinning boundary leaves a ragged edge on the shoulder. Racer back: the straps run over the
+    // trapezius close to the neck (the shoulder blades move a lot in guard) and meet between the shoulder
+    // blades; the blend follows the normal so the front and the back join without a step.
+    const back = Math.min(1, Math.max(0, -nz(i) * 3));
+    const t = Math.min(1, Math.max(0, (y(i) - nipY) / (neckY - 0.06 - nipY)));
+    const c = 0.062 * (1 - back * (1 - t));
+    const strap = Math.min(0.022 - Math.abs(ax - c), neckY + 0.02 - y(i), y(i) - nipY + 0.02);
+    // the front panel rises to a scoop under the collarbones; above the chest it stays inside the armpits
+    const band = Math.min(y(i) - (nipY - 0.1), nipY + (nz(i) > 0 ? 0.075 : 0.02) - y(i), meta.shoulderX * 0.8 - ax + Math.max(0, nipY - y(i)) * 2);
     return Math.max(band, strap);
   };
   const wraps =
@@ -884,7 +913,7 @@ export function garmentSpecs(m: BodyMap) {
       compression: { cover: top(0.97), thickness: () => 0.003, hidesBody: true },
       tshirt: { cover: top(0.3, pelvisY - 0.02), thickness: (i: number) => (isArm(i) ? 0.012 : 0.009), drape: 0.5, hidesBody: true },
       debardeur: { cover: top(null, pelvisY - 0.0), thickness: () => 0.007, drape: 0.35, hidesBody: true },
-      brassiere: { cover: sportsBra, thickness: () => 0.004, hidesBody: true },
+      brassiere: { cover: sportsBra, thickness: () => 0.005, hidesBody: true, hideMargin: 0.004 },
     } as Record<string, GarmentSpec>,
     shoes: {
       'chaussures-boxe': { cover: (i: number) => (isFoot(i) ? 0.05 : isLeg(i) ? (legT[i] - 0.8) * legLen : -1), thickness: () => 0.007, bandY: 0 },
@@ -1073,6 +1102,7 @@ export class Customizer {
     this.hair = hair;
     this.bun = bun;
     this.map = mapBody(body, meta);
+    if (!this.opt.legacy) thinInkNearEyes(body, meta);
     this.specs = garmentSpecs(this.map);
     this.u = makeUniforms(meta);
     this.u.uMasks.value = masks;
@@ -1108,8 +1138,14 @@ export class Customizer {
         chainPatch(mat, 'css-hair', (sh) => {
           addShape(sh, u);
           sh.vertexShader =
-            'uniform sampler2D uMasks;\nuniform vec4 uHairStyle;\nuniform float uHairLen;\nuniform vec3 uHeadC;\n' +
-            sh.vertexShader.replace('vRest = transformed;', 'vRest = transformed;').replace('#include <begin_vertex>', HAIR_VERTEX);
+            'uniform sampler2D uMasks;\nuniform vec4 uHairStyle;\nuniform float uHairLen;\nuniform vec3 uHeadC;\nvarying vec2 vHairUv;\n' +
+            sh.vertexShader.replace('vRest = transformed;', 'vRest = transformed;').replace('#include <begin_vertex>', HAIR_VERTEX + '\nvHairUv = uv;');
+          // the hairline follows the painted mask per pixel, not the edge of the shell's triangles
+          // (otherwise a saw-tooth edge shows on the forehead and the temples)
+          if (!this.opt.legacy)
+            sh.fragmentShader =
+              'uniform sampler2D uMasks;\nvarying vec2 vHairUv;\n' +
+              sh.fragmentShader.replace('void main() {', 'void main() {\n  if (texture2D(uMasks, vHairUv).r < 0.5) discard;');
         });
       patchHair(hm);
       root.traverse((o) => {
@@ -1228,7 +1264,7 @@ export class Customizer {
     const spec = specs[type];
     if (spec.hidesBody && !this.opt.legacy) {
       const h = new Float32Array(this.map.count);
-      for (let i = 0; i < h.length; i++) h[i] = spec.cover(i) - HIDE_MARGIN;
+      for (let i = 0; i < h.length; i++) h[i] = spec.cover(i) - (spec.hideMargin ?? HIDE_MARGIN);
       this.hidden.set(slot, h);
       this.updateHidden();
     }
