@@ -276,7 +276,7 @@ describe('vêtements en volume (rendu 0.23)', () => {
 
 describe('rendu Encre 0.23', () => {
   test('le dessin ne dépend pas de la position à l’écran (pas de hachures plaquées sur l’écran)', () => {
-    const shaderOf = (style: 'encre' | 'cel') => {
+    const shaderOf = (style: 'encre' | 'cel' | 'anime') => {
       const m = toonMaterial('x', null, new Color(1, 1, 1), style);
       const sh = { fragmentShader: '#include <opaque_fragment>', vertexShader: '', uniforms: {} };
       m.onBeforeCompile(sh as never, null as never);
@@ -286,5 +286,8 @@ describe('rendu Encre 0.23', () => {
     expect(shaderOf('encre')).toContain('gl_FragCoord');
     expect(shaderOf('cel')).not.toContain('gl_FragCoord');
     expect(shaderOf('cel')).not.toMatch(/fract\(/);
+    // 0.24: the premium mode, shown as "Anime", draws with its own cel shading, also screen-free
+    expect(shaderOf('anime')).not.toContain('gl_FragCoord');
+    expect(shaderOf('anime')).not.toMatch(/fract\(/);
   });
 });

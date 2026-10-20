@@ -208,8 +208,8 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
     });
     upgradeMaterials(s, quality);
     // premium: Encre and the older Manga choice are both drawn with the clean cel shading
-    // the champion coaches (own model) take the soft variant
-    const ink = premium ? (own ? 'cel-doux' : 'cel') : style === 'encre' ? 'encre' : 'manga';
+    // premium: Encre (labelled Anime) and the older Manga choice are both drawn in the anime look
+    const ink = premium ? 'anime' : style === 'encre' ? 'encre' : 'manga';
     if (style !== 'realiste') applyManga(s, ink);
     let c: Customizer | null = null;
     if (custom) {
@@ -222,7 +222,7 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
           style === 'realiste'
             ? { toon: (n: string, col: Color) => (quality === 'haute' ? fabricMaterial(n, col) : new MeshStandardMaterial({ name: n, color: col, roughness: 0.8, metalness: 0 })), outline: noOutline }
             : { toon: (n: string, col: Color) => toonMaterial(n, null, col, ink), outline: (w: number) => (ink !== 'manga' ? outlineMaterial(w * 1.25, '#1b1d22') : outlineMaterial(w)) };
-        c = new Customizer(s, meta, masks, { ...opts, legacy: !premium, face: own ? face : null });
+        c = new Customizer(s, meta, masks, { ...opts, legacy: !premium, face: own ? face : null, flat: ink === 'anime' ? 0.9 : 0 });
         // development hook for the screenshot scripts
         if (import.meta.env.DEV) ((window as unknown as { __cssCustomizers?: Customizer[] }).__cssCustomizers ??= []).push(c);
       } catch (e) {

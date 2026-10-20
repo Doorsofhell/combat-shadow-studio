@@ -290,6 +290,7 @@ export interface CustomUniforms {
   /** face paint of a champion coach (see tools/generator/coaches/face_paint.py), uFaceOn = 0 without one */
   uFace: { value: Texture | null };
   uFaceOn: { value: number };
+  uFlat: { value: number };
   uTatN: { value: number };
   uTatA: { value: Vector3[] };
   uTatU: { value: Vector3[] };
@@ -326,6 +327,7 @@ export function makeUniforms(meta: CoachMeta): CustomUniforms {
     uMasks: { value: null },
     uFace: { value: null },
     uFaceOn: { value: 0 },
+    uFlat: { value: 0 },
     uTatN: { value: 0 },
     uTatA: { value: arr(() => new Vector3()) },
     uTatU: { value: arr(() => new Vector3()) },
@@ -382,6 +384,7 @@ uniform float uK;
 uniform sampler2D uMasks;
 uniform sampler2D uFace;
 uniform float uFaceOn;
+uniform float uFlat;
 uniform int uTatN;
 uniform vec3 uTatA[${MAX_TATTOOS}];
 uniform vec3 uTatU[${MAX_TATTOOS}];
@@ -410,13 +413,17 @@ const SKIN_FRAGMENT_BODY = /* glsl */ `
   // muscle definition: deepen the baked occlusion where the user asks for it
   float lum = dot(base, W) / max(dot(uSkinRef, W), 0.01);
   c *= max(0.35, 1.0 + (lum - 1.0) * vDef * 1.4);
+  // Anime: flat skin tone, the light and shade come from the cel shading (the texture's baked
+  // occlusion is what showed as stains); a trace of it keeps the lips and the creases
+  c = mix(c, uSkinTone * mix(1.0, lum, 0.2) * mix(vec3(1.0), base / max(dot(base, W), 0.01) * dot(uSkinRef, W) / max(uSkinRef, vec3(0.01)), 0.35), uFlat);
   vec4 mk = texture2D(uMasks, vMapUv);
   float n = cssHash(floor(vMapUv * 2048.0));
   float hair = clamp(mk.r * uHairCover * (0.75 + 0.25 * n), 0.0, 1.0);
   c = mix(c, uHairColor * (0.7 + 0.6 * n), hair);
   float beard = mk.b * uBeard.x * beardRegion(vRest);
   c = mix(c, uBeardColor * (0.7 + 0.6 * n), clamp(beard * (0.55 + 0.45 * n), 0.0, 1.0));
-  c = mix(c, uHairColor, mk.a * uBodyHair * step(0.6, n) * 0.8);
+  // Anime: body hair as a light flat shade, not a speckle (it read as stains on the chest)
+  c = mix(c, uHairColor, mk.a * uBodyHair * mix(step(0.6, n), 0.22, uFlat) * 0.8);
   if (uFaceOn > 0.5) {
     // face paint: g shadow, b warm tint, a eyebrow (hair colour, hair-like grain), r ink lines
     vec4 fc = texture2D(uFace, vMapUv);
@@ -881,11 +888,20 @@ export function garmentSpecs(m: BodyMap) {
     // skinning boundary leaves a ragged edge on the shoulder. Racer back: the straps run over the
     // trapezius close to the neck (the shoulder blades move a lot in guard) and meet between the shoulder
     // blades; the blend follows the normal so the front and the back join without a step.
-    const back = Math.min(1, Math.max(0, -nz(i) * 3));
+    // front/back from the position against the neck, not the normal: over the trapezius the normal
+    // turns from front to back within a few millimetres and tore the strap into jagged patches
+    const zb = Math.min(1, Math.max(0, (neckZ + 0.01 - z(i)) / 0.06));
+    const back = zb * zb * (3 - 2 * zb);
     const t = Math.min(1, Math.max(0, (y(i) - nipY) / (neckY - 0.06 - nipY)));
-    const c = 0.062 * (1 - back * (1 - t));
+    // over the top the strap lies out on the shoulder (0.085), clear of the base of the neck where the
+    // trapezius folds when the shoulders rise in guard and tore a strap lying there into jagged patches
+    const top = Math.min(1, Math.max(0, (y(i) - (neckY - 0.1)) / 0.06));
+    const c = (0.062 + 0.023 * top) * (1 - back * (1 - t));
     const strap = Math.min(0.022 - Math.abs(ax - c), neckY + 0.02 - y(i), y(i) - nipY + 0.02);
     // the front panel rises to a scoop under the collarbones; above the chest it stays inside the armpits
+    // the band is on the torso only: on the arm it left a ragged patch at the front of the shoulder
+    // once the arm is raised in guard
+    if (!isTorso(i)) return strap;
     const band = Math.min(y(i) - (nipY - 0.1), nipY + (nz(i) > 0 ? 0.075 : 0.02) - y(i), meta.shoulderX * 0.8 - ax + Math.max(0, nipY - y(i)) * 2);
     return Math.max(band, strap);
   };
@@ -931,7 +947,12 @@ export function garmentSpecs(m: BodyMap) {
       compression: { cover: top(0.97), thickness: () => 0.003, hidesBody: true },
       tshirt: { cover: top(0.3, pelvisY - 0.02), thickness: (i: number) => (isArm(i) ? 0.012 : 0.009), drape: 0.5, hidesBody: true },
       debardeur: { cover: top(null, pelvisY - 0.0), thickness: () => 0.007, drape: 0.35, hidesBody: true },
-      brassiere: { cover: sportsBra, thickness: () => 0.005, hidesBody: true, hideMargin: 0.004 },
+      brassiere: {
+      cover: sportsBra,
+      thickness: () => 0.005,
+      hidesBody: true,
+      hideMargin: 0.004,
+    },
     } as Record<string, GarmentSpec>,
     shoes: {
       'chaussures-boxe': { cover: (i: number) => (isFoot(i) ? 0.05 : isLeg(i) ? (legT[i] - 0.8) * legLen : -1), thickness: () => 0.007, bandY: 0 },
@@ -1105,6 +1126,8 @@ export interface CustomizerOptions {
   legacy?: boolean;
   /** face paint of a champion coach (same UV layout as the skin) */
   face?: Texture | null;
+  /** 0-1: how much the skin texture's light and shade is flattened to the plain skin tone (Anime) */
+  flat?: number;
 }
 
 interface Layer {
@@ -1165,6 +1188,7 @@ export class Customizer {
     this.specs = garmentSpecs(this.map);
     this.u = makeUniforms(meta);
     this.u.uMasks.value = masks;
+    this.u.uFlat.value = opt.flat ?? 0;
     if (opt.face) {
       this.u.uFace.value = opt.face;
       this.u.uFaceOn.value = 1;
@@ -1339,6 +1363,11 @@ export class Customizer {
     for (let i = 0; i < P.count; i++) minY = Math.min(minY, P.getY(i));
     uniforms.uHemY.value = minY;
     const mat = this.opt.toon(`css-${type}`, new Color(1, 1, 1));
+    // both faces on the bottoms: where the hip folds (front of the hip in guard) a few shell triangles
+    // turn their back to the camera; drawn one-sided they left a hole onto the background, since the
+    // skin under the garment is not drawn. Not on the tops: the inner face of the thin straps showed
+    // as jagged black patches over the shoulders
+    if (!this.opt.legacy && slot === 'bottom') mat.side = DoubleSide;
     mat.polygonOffset = true;
     mat.polygonOffsetFactor = -1;
     mat.polygonOffsetUnits = -2;

@@ -743,3 +743,40 @@ correction, les fichiers principaux touchés et les tests. Les résultats des te
   - comparaison visuelle : 30 planches avant/après sur 15 techniques et 2 coachs, regardées une à une ;
   - vrai téléphone Android (rendu, fluidité, mémoire) : NON EXÉCUTÉ.
 - **Restauration** : `restauration/lot-13`
+
+## 2026-10-20 · branche `feature/coachs-champions` (non publiée) · Vêtements en mouvement et rendu « Anime »
+
+Demande de Youssef (08:00) : vêtements incorrects dans certaines positions, taches sur le corps en mode Encre,
+renommer « Encre » en « Anime » et viser un anime japonais adulte de type Baki.
+
+- **Constat 1, short (avant de la hanche, de profil, en garde)** : un trou laissait voir le fond. Cause : au pli de
+  la hanche, quelques triangles du short se retournent ; le short n'était dessiné que sur sa face avant et la peau
+  dessous est masquée. **Correction** : bas (shorts) dessinés sur les deux faces dans le rendu premium.
+- **Constat 2, taches sur le corps (Encre/Anime)** : plaques sombres irrégulières sur le dos, les épaules, le
+  ventre et pointillés sur le torse. Cause : l'ombrage et les reliefs cuits dans la texture de peau MakeHuman
+  étaient découpés en aplats par l'ombrage cel ; les poils du torse étaient un semis de points. **Correction** :
+  en mode Anime la couleur de peau est ramenée à un ton uni (`uFlat`), l'ombre franche est décidée par la forme du
+  corps (normale géométrique) et non par le relief cuit, les muscles modèlent la lumière sans bord de ton, et les
+  poils du corps deviennent un léger aplat.
+- **Renommage** : l'option premium s'affiche « Anime » (sélecteur des réglages, studio, options d'entraînement).
+  L'identifiant enregistré reste `encre` : aucune migration, aucun réglage utilisateur perdu.
+- **Style Anime (nouveau shader `anime`)** : lumière latérale, ombre franche en deux tons froids/chauds, zone
+  éclairée plus chaude, traits d'encre sur les plis marqués des muscles côté ombre, liseré de lumière, contour
+  noir conservé. Utilisé pour tous les coachs en rendu premium (Encre affiché « Anime »).
+- **Constat 3, brassière d'Amara en garde** : bretelles déchirées en plaques sur le haut des épaules et une
+  plaque noire sur l'avant de l'épaule. Causes : la bande était aussi appliquée sur le haut du bras ; le passage
+  avant/dos suivait la normale (qui bascule sur le trapèze) ; la bretelle passait au pied du cou, où le trapèze
+  se plie quand les épaules montent. **Correction** : bande limitée au torse, avant/dos calculé par la position,
+  bretelle décalée vers l'épaule sur le dessus. Dos et 3/4 avant nets ; un petit bord irrégulier reste visible de
+  profil arrière.
+- **Vérifié sur** : garde (0°, 40°, 90°, 180°), front kick, high kick, genou, sprawl, entrée en lutte, middle kick,
+  Kadir et Amara, Anime et Ultra-réaliste. Essai écarté : ceinture du short remontée devant (créait une marche sur
+  la ceinture en garde, sans gain en high kick).
+- **Limites** : au high kick, l'intérieur de la jambe du short reste visible par l'ouverture (pas de tissu tendu
+  simulé) ; bord de bretelle encore irrégulier de profil arrière ; non vérifié sur un vrai téléphone.
+- **Fichiers** : `src/three/manga.ts`, `src/three/customize.ts`, `src/three/CoachModel.tsx`,
+  `src/ui/components/CoachLookPicker.tsx`, `src/three/__tests__/customize.test.ts`, `tests/e2e/coach-render.spec.ts`.
+- **Tests** : `tsc` : TEST RÉUSSI ; tests unitaires : TEST RÉUSSI (354 réussis, 1 ignoré), dont le shader `anime`
+  sans dessin lié à l'écran (ni `gl_FragCoord` ni `fract`) ; Playwright complet : TEST RÉUSSI (82 réussis,
+  2 ignorés), dont `coach-render.spec` adapté au libellé « Anime » ; comparaison visuelle : planches avant/après
+  regardées une à une ; vrai téléphone : NON EXÉCUTÉ.

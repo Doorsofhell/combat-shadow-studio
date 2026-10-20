@@ -98,21 +98,57 @@ const CEL_FRAGMENT = /* glsl */ `
 `;
 
 /**
- * Encre for the champion coaches: the same cel shading with soft tone edges and less contrast. Their
- * sculpted faces carry many small planes; hard edges cut them into flat, dirty-looking patches.
+ * Anime (0.24, the premium "Encre" look renamed): adult Japanese anime, in the manner of fighting series.
+ * The shadow is one clean, hard-edged flat area decided by the shape of the body (geometry normal),
+ * only nudged by the muscles, so the baked relief can no longer break the skin into blotches. The
+ * muscles are drawn instead: an ink stroke where the relief turns away from the light, on the shadow
+ * side of each bulge. Cool shadows, warm lit planes, a rim light, and the ink outline.
  */
-const CEL_SOFT_FRAGMENT = CEL_FRAGMENT.replace('float aa = fwidth(light) * 1.2 + 0.004;', 'float aa = fwidth(light) * 1.2 + 0.09;').replace(
-  'float tone = mix(0.6, mix(0.88, 1.06, high), lit);',
-  'float tone = mix(0.7, mix(0.9, 1.04, high), lit);',
-);
+const ANIME_FRAGMENT = /* glsl */ `
+  {
+    vec3 albedo = diffuseColor.rgb;
+    float la = max(dot(albedo, vec3(0.299, 0.587, 0.114)), 1e-3);
+    vec3 n = normalize(normal);
+    #ifdef FLAT_SHADED
+      vec3 gN = n;
+    #else
+      vec3 gN = normalize(vNormal) * (gl_FrontFacing ? 1.0 : -1.0);
+    #endif
+    // a side key light: the dramatic half-shadow of fighting anime
+    vec3 L = normalize(vec3(-0.72, 0.52, 0.46));
+    // the body shape alone decides where the flat shadow falls: thresholding the baked relief is what
+    // broke the skin into blotches
+    float k = dot(gN, L);
+    // the scene's per-pixel shade is not used: it carries the baked relief
+    float light = 0.24 + 0.92 * smoothstep(-0.3, 0.9, k);
+    float aa = fwidth(light) * 0.8 + 0.002;
+    float lit = smoothstep(0.44 - aa, 0.44 + aa, light);
+    float high = smoothstep(0.9 - aa, 0.9 + aa, light);
+    float tone = mix(0.56, mix(0.95, 1.05, high), lit);
+    vec3 tint = mix(vec3(0.8, 0.85, 1.03), vec3(1.03, 1.0, 0.96), lit);
+    // the muscles model the planes softly, without a tone edge
+    float relief = clamp(dot(n, L) - k, -0.5, 0.5);
+    vec3 col = albedo * tone * tint * (1.0 + 0.4 * relief);
+    // muscle strokes: only where the relief bends sharply away from the body shape and the light
+    float bend = length(n - gN);
+    float away = smoothstep(-0.08, -0.25, relief);
+    float stroke = smoothstep(0.24, 0.4, bend) * away * smoothstep(0.08, 0.3, la);
+    col = mix(col, albedo * 0.35 + vec3(0.035, 0.03, 0.035), stroke * 0.6);
+    // rim light on the lit side of the silhouette
+    float rim = smoothstep(0.6, 0.92, 1.0 - abs(gN.z)) * smoothstep(0.2, 0.6, light);
+    col += vec3(1.0, 0.94, 0.86) * rim * 0.16 * smoothstep(0.08, 0.3, la);
+    outgoingLight = col;
+  }
+  #include <opaque_fragment>
+`;
 
-export type InkStyle = 'manga' | 'encre' | 'cel' | 'cel-doux';
+export type InkStyle = 'manga' | 'encre' | 'cel' | 'anime';
 
 export function toonMaterial(name: string, map: Texture | null, color?: Color, style: InkStyle = 'manga', normalMap: Texture | null = null) {
   if (style === 'encre') return inkMaterial(name, map, color, normalMap);
-  if (style === 'cel' || style === 'cel-doux') {
+  if (style === 'cel' || style === 'anime') {
     const m = new MeshLambertMaterial({ name, map, normalMap, color: color ?? new Color(1, 1, 1) });
-    const frag = style === 'cel' ? CEL_FRAGMENT : CEL_SOFT_FRAGMENT;
+    const frag = style === 'cel' ? CEL_FRAGMENT : ANIME_FRAGMENT;
     m.onBeforeCompile = (shader) => {
       shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>', frag);
     };

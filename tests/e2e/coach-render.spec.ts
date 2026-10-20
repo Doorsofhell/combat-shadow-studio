@@ -62,7 +62,8 @@ const checked = (page: Page, testId: string) => page.getByTestId(testId).locator
 test('the look is chosen in the settings, the studio and the training options, and remembered', async ({ page }) => {
   await seed(page);
   await open(page, '/#/reglages');
-  await expect(checked(page, 'settings-coach-look')).toHaveText('Encre');
+  // the premium Encre look is labelled "Anime" since 0.24 (same saved id 'encre')
+  await expect(checked(page, 'settings-coach-look')).toHaveText('Anime');
   await page.getByTestId('settings-coach-look').getByRole('radio', { name: 'Ultra-réaliste' }).click();
   await expect.poll(async () => (await savedSettings(page)).coachStyle).toBe('realiste');
   expect((await savedSettings(page)).coachRender).toBe('premium');
@@ -71,15 +72,15 @@ test('the look is chosen in the settings, the studio and the training options, a
   await expect(checked(page, 'studio-coach-look')).toHaveText('Ultra-réaliste');
   // the customised look shows in both looks: no "switch to Encre" warning any more
   await expect(page.getByText('Passer au style Encre')).toHaveCount(0);
-  await page.getByTestId('studio-coach-look').getByRole('radio', { name: 'Encre' }).click();
+  await page.getByTestId('studio-coach-look').getByRole('radio', { name: 'Anime' }).click();
   await expect.poll(async () => (await savedSettings(page)).coachStyle).toBe('encre');
 
   await open(page, '/#/entrainement?ex=boxe-debutant-01&mode=technique');
   await page.getByTestId('options').click();
-  await expect(checked(page, 'training-coach-look')).toHaveText('Encre');
+  await expect(checked(page, 'training-coach-look')).toHaveText('Anime');
   await page.reload();
   await page.getByTestId('options').click();
-  await expect(checked(page, 'training-coach-look')).toHaveText('Encre');
+  await expect(checked(page, 'training-coach-look')).toHaveText('Anime');
 });
 
 test('switching the look during a session keeps the session, the move and the timer', async ({ page }) => {

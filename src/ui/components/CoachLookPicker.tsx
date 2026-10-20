@@ -10,12 +10,13 @@ export function CoachLookPicker({ testId = 'coach-look' }: { testId?: string }) 
   const settings = useSettings((s) => s.settings);
   const set = useSettings((s) => s.set);
   const premium = settings.coachRender === 'premium';
-  // the older "Manga" choice is drawn as Encre by the premium render (the saved value is kept for the fallback)
+  // the older "Manga" choice is drawn as Anime by the premium render (the saved value is kept for the fallback)
   const value = premium && settings.coachStyle === 'manga' ? 'encre' : settings.coachStyle;
   const options = premium
     ? [
         { id: 'realiste' as const, label: 'Ultra-réaliste' },
-        { id: 'encre' as const, label: 'Encre' },
+        // shown as "Anime" since 0.24 (adult Japanese anime look); the saved id stays 'encre'
+        { id: 'encre' as const, label: 'Anime' },
       ]
     : [
         { id: 'encre' as const, label: 'Encre' },
