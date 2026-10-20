@@ -958,3 +958,8 @@ contexte de l’écran ; icône claire »). Maquette C « Pilule d’actions » 
   choix du jour parmi les techniques existantes (pas une recommandation pédagogique) ; sur l’accueil et la fiche
   combinaison, l’action rouge de la pilule existe aussi en grand dans la page ; la recherche du catalogue n’existe pas,
   donc pas de bouton « Rechercher ».
+- **Vérification finale avant publication** : test unitaire du store Coach IA (« historique plafonné ») corrigé — il
+  lit maintenant les réglages enregistrés avant d’écrire, comme l’appli au démarrage depuis la 0.25 ; Vitest 412
+  réussis, 1 non exécuté, sur 3 passages — TEST RÉUSSI. Playwright complet après le correctif de contraste : 113
+  réussis, 2 non exécutés (Firebase), 1 échec — training-layout « demander au coach » (instable connu depuis la
+  0.23) ; relancé seul 5 fois : 4 réussis, 1 échec — instabilité à traiter dans un lot dédié.
