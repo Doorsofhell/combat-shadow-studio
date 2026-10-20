@@ -2,7 +2,7 @@
  "id": "mma-amara",
  "sex": "female",
  "seed": 116,
- "note": "poids plume puissante : épaules larges, dos et bras musclés, jambes fortes, taille peu marquée ; visage arrondi, mâchoire marquée, sourcils épais",
+ "note": "poids plume puissante : épaules larges, dos et bras musclés, jambes fortes, taille peu marquée ; visage arrondi, mâchoire marquée, sourcils épais ; v4 : yeux agrandis et traits marqués",
  "macro": {
   "gender": 0.0,
   "age": 0.5,
@@ -90,6 +90,10 @@
   [
    "torso/measure-waist-circ-incr",
    0.15
+  ],
+  [
+   "chin/chin-prominent-incr",
+   0.2
   ]
  ],
  "paired": [
@@ -118,16 +122,32 @@
    0.35
   ],
   [
-   "cheek/X-cheek-bones-incr",
-   0.35
-  ],
-  [
    "cheek/X-cheek-volume-decr",
    0.2
   ],
   [
    "arms/X-lowerarm-scale-horiz-incr",
    0.15
+  ],
+  [
+   "eyes/X-eye-corner2-up",
+   0.35
+  ],
+  [
+   "cheek/X-cheek-bones-incr",
+   0.5
+  ],
+  [
+   "eyes/X-eye-scale-incr",
+   1.0
+  ],
+  [
+   "eyes/X-eye-height2-incr",
+   0.8
+  ],
+  [
+   "eyes/X-eye-height1-incr",
+   0.4
   ]
  ]
 }

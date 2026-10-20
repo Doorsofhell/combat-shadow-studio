@@ -2,7 +2,7 @@
  "id": "mma-kadir",
  "sex": "male",
  "seed": 101,
- "note": "poids léger trapu de lutteur : cou épais, dos large, cuisses puissantes, ventre plat sans abdominaux saillants ; visage large, pommettes hautes, nez un peu épaté, sourcils bas",
+ "note": "poids léger trapu de lutteur : cou épais, dos large, cuisses puissantes, ventre plat sans abdominaux saillants ; visage large, pommettes hautes, nez un peu épaté, sourcils bas ; v4 : yeux agrandis et traits marqués",
  "macro": {
   "gender": 1.0,
   "age": 0.55,
@@ -78,10 +78,6 @@
    0.6
   ],
   [
-   "chin/chin-prominent-incr",
-   0.3
-  ],
-  [
    "chin/chin-height-decr",
    0.2
   ],
@@ -110,10 +106,6 @@
    0.2
   ],
   [
-   "eyebrows/eyebrows-trans-down",
-   0.7
-  ],
-  [
    "eyebrows/eyebrows-angle-down",
    0.2
   ],
@@ -131,6 +123,18 @@
   ],
   [
    "mouth/mouth-scale-horiz-incr",
+   0.2
+  ],
+  [
+   "forehead/forehead-nubian-incr",
+   0.3
+  ],
+  [
+   "chin/chin-prominent-incr",
+   0.3
+  ],
+  [
+   "eyebrows/eyebrows-trans-down",
    0.2
   ]
  ],
@@ -172,20 +176,28 @@
    0.1
   ],
   [
-   "eyes/X-eye-height2-decr",
-   0.35
-  ],
-  [
-   "eyes/X-eye-scale-decr",
-   0.1
-  ],
-  [
    "ears/X-ear-flap-incr",
    0.25
   ],
   [
    "ears/X-ear-scale-depth-incr",
    0.2
+  ],
+  [
+   "eyes/X-eye-corner2-up",
+   0.1
+  ],
+  [
+   "eyes/X-eye-scale-incr",
+   0.8
+  ],
+  [
+   "eyes/X-eye-height2-incr",
+   0.7
+  ],
+  [
+   "eyes/X-eye-height1-incr",
+   0.4
   ]
  ]
 }
