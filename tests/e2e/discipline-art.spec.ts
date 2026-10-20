@@ -48,7 +48,9 @@ async function seed(page: Page) {
 }
 
 const SCREENS: [string, string, number][] = [
-  ['Accueil', '/#/', 6],
+  // 0.24 (épuration demandée par Youssef le 2026-10-20) : la grille des disciplines n’est plus répétée sur
+  // l’accueil, elle reste dans Entraîner ; l’accueil montre l’icône de la discipline principale
+  ['Accueil', '/#/', 1],
   ['Entraîner', '/#/entrainer', 6],
   ['Page discipline', '/#/discipline/mma', 1],
   ['Techniques', '/#/techniques', 6],

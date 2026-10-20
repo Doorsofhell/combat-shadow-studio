@@ -58,6 +58,8 @@ export const APP_GUIDE: GuideEntry[] = [
       'comment fonctionne l application', 'comment marche l application', 'comment fonctionne l appli', 'comment marche l appli', 'fonctionnement de l application',
       'explique moi l application', 'explique l application', 'presente l application', 'mode d emploi', 'tutoriel', 'guide de l application',
       'a quoi sert l application', 'application', 'appli', 'app',
+      // 0.24: the first question of a beginner
+      'par ou commencer', 'par ou je commence', 'je commence par quoi', 'comment commencer', 'je debute', 'premiere fois',
     ],
     answer:
       'Combat Shadow Studio t’aide à t’entraîner seul, en shadow : ton coach en 3D (Kadir ou Amara) montre chaque mouvement et tu le fais en même temps, face à l’écran.\n' +
@@ -618,7 +620,7 @@ export function matchGuide(text: string, screen?: CoachScreen): GuideMatch | und
 /** noms qui désignent l’interface : une question qui les contient parle de l’application */
 const APP_NOUNS = ['application', 'appli', 'app', 'ecran', 'cet ecran', 'cette page', 'page', 'onglet', 'onglets', 'bouton', 'boutons', 'icone', 'icones', 'menu', 'barre du bas', 'reglages', 'parametres', 'fonctionnalite', 'fonctionnalites'];
 /** fonctions de l’application assez précises pour l’emporter même si une technique est citée */
-const STRONG = ['reperes au sol', 'marques au sol', 'marquer', 'je marque', 'marque une technique', 'assimilee', 'assimile', 'encore du mal', 'a revoir', 'favori', 'favoris', 'favorite', 'maitrise', 'fiche', 'cette fiche', 'createur', 'onglet maitrise', 'legendes'];
+const STRONG = ['par ou commencer', 'par ou je commence', 'je commence par quoi', 'comment commencer', 'je debute', 'premiere fois', 'reperes au sol', 'marques au sol', 'marquer', 'je marque', 'marque une technique', 'assimilee', 'assimile', 'encore du mal', 'a revoir', 'favori', 'favoris', 'favorite', 'maitrise', 'fiche', 'cette fiche', 'createur', 'onglet maitrise', 'legendes'];
 /** mots d’une question sur l’usage */
 const HOW = [
   'comment', 'ou est', 'ou sont', 'ou trouver', 'ou se trouve', 'ou je trouve', 'ou puis je', 'ou on', 'ou je peux', 'a quoi sert', 'a quoi servent', 'sert a quoi', 'servent a quoi', 'ca sert a quoi',

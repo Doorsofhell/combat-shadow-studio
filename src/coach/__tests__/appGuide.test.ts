@@ -44,7 +44,7 @@ function expectValidNavigate(a: CoachAnswer) {
 
 /** one question per guide entry, asked the way a learner would (screen where it is asked) */
 const ENTRY_QUESTIONS: Record<string, [string, CoachScreen?]> = {
-  'app-overview': ['Comment fonctionne l’application ?'],
+  'app-overview': ['Comment fonctionne l’application ?', 'Par où commencer ?', 'Je débute, je commence par quoi ?'],
   'nav-tabs': ['À quoi servent les onglets de la barre du bas ?'],
   'screen-accueil': ['À quoi sert cet écran ?', 'accueil'],
   'start-session': ['Comment lancer une séance ?'],

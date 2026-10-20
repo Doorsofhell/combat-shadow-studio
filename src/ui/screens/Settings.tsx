@@ -214,7 +214,7 @@ export function SettingsPage() {
             <strong>{championFor(profile.coach).name}</strong>
           </div>
         </div>
-        <LinkRow to="/profil" icon={<AppIcon id="edit" />} label="Modifier mon profil et mon compte" />
+        <LinkRow to="/profil" icon={<AppIcon id="edit" />} label="Mon profil et mon compte" />
       </Panel>
 
       <Panel title="Apparence" icon="theme" id="p-apparence">
