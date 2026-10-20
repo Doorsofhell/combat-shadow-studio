@@ -14,19 +14,19 @@ export const KB_STYLES: { id: KbStyle; name: string; summary: string; sources: s
   {
     id: 'k1',
     name: 'K1',
-    summary: 'Poings, pieds et genoux. Coups de pied et genoux sur toute la jambe. Coudes interdits.',
+    summary: 'Poings, pieds et genoux. Coups de pied et genoux permis sur toute la jambe. Les coudes, non.',
     sources: ['kbmt-S16', 'kbmt-S45'],
   },
   {
     id: 'low-kick',
     name: 'Low kick',
-    summary: 'Poings et pieds, coups de pied aux cuisses. Genoux et coudes interdits.',
+    summary: 'Poings et pieds, avec des coups de pied dans les cuisses. Pas de genoux ni de coudes.',
     sources: ['kbmt-S15', 'kbmt-S45'],
   },
   {
     id: 'full-contact',
     name: 'Full contact',
-    summary: 'Poings et pieds au-dessus de la ceinture. Pas de coup de pied aux jambes, ni genou, ni coude.',
+    summary: 'Poings et pieds au-dessus de la ceinture. Pas de coup de pied dans les jambes, ni genou, ni coude.',
     sources: ['kbmt-S45'],
   },
 ];
@@ -58,15 +58,15 @@ const RULES: Rule[] = [
     styles: {
       k1: {
         status: 'autorise',
-        note: 'Toute la jambe, articulations comprises, selon la WAKO (art. 1). Le règlement de l’Ontario exclut les articulations (4.3, 6.3.1).',
+        note: 'Toute la jambe, articulations comprises, selon la WAKO (art. 1). L’Ontario, lui, exclut les articulations (4.3, 6.3.1).',
         sources: ['kbmt-S16', 'kbmt-S45'],
       },
       'low-kick': {
         status: 'autorise',
-        note: 'Cuisse seulement (intérieur, extérieur, arrière), au moins 3 cm au-dessus du genou. Bas de jambe interdit.',
+        note: 'La cuisse seulement (intérieur, extérieur, arrière), au moins 3 cm au-dessus du genou. Bas de jambe interdit.',
         sources: ['kbmt-S15', 'kbmt-S45'],
       },
-      'full-contact': { status: 'interdit', note: 'Coups de pied sous la ceinture interdits (7.1.1).', sources: ['kbmt-S45'] },
+      'full-contact': { status: 'interdit', note: 'Rien sous la ceinture : les coups de pied aux jambes sont interdits (7.1.1).', sources: ['kbmt-S45'] },
     },
   },
   {
@@ -74,7 +74,7 @@ const RULES: Rule[] = [
     styles: {
       k1: { status: 'autorise', sources: ['kbmt-S16'] },
       'low-kick': { status: 'autorise', sources: ['kbmt-S15'] },
-      'full-contact': { status: 'sans-objet', note: 'Parade contre les coups de pied aux jambes, interdits en full contact : non proposée dans ce style.', sources: ['kbmt-S45'] },
+      'full-contact': { status: 'sans-objet', note: 'Parade contre les coups de pied aux jambes, interdits en full contact : pas proposée ici.', sources: ['kbmt-S45'] },
     },
   },
   {
@@ -82,11 +82,11 @@ const RULES: Rule[] = [
     styles: {
       k1: {
         status: 'autorise',
-        note: 'Genoux au corps et aux jambes ; à la tête seulement chez les seniors (Ontario 3.3.3, 3.3.4). Saisir pour frapper est interdit (WAKO art. 4.3).',
+        note: 'Genoux au corps et aux jambes, à la tête seulement chez les seniors (Ontario 3.3.3, 3.3.4). Attraper pour frapper est interdit (WAKO art. 4.3).',
         sources: ['kbmt-S16', 'kbmt-S45'],
       },
-      'low-kick': { status: 'interdit', note: 'Genoux interdits (WAKO §7).', sources: ['kbmt-S15', 'kbmt-S45'] },
-      'full-contact': { status: 'interdit', note: 'Genoux interdits (7.1.4).', sources: ['kbmt-S45'] },
+      'low-kick': { status: 'interdit', note: 'Pas de genoux dans ce style (WAKO §7).', sources: ['kbmt-S15', 'kbmt-S45'] },
+      'full-contact': { status: 'interdit', note: 'Pas de genoux dans ce style (7.1.4).', sources: ['kbmt-S45'] },
     },
   },
   {
@@ -94,19 +94,19 @@ const RULES: Rule[] = [
     styles: {
       k1: {
         status: 'autorise',
-        note: 'Surface citée : pied protégé ou plante du pied (Ontario 3.3.2, 3.3.5). Le tibia n’y est pas cité.',
+        note: 'Surface de frappe citée : pied protégé ou plante du pied (Ontario 3.3.2, 3.3.5). Le tibia n’y est pas cité.',
         sources: ['kbmt-S45'],
       },
-      'low-kick': { status: 'autorise', note: 'Le tibia est une surface autorisée vers la tête, le corps et les cuisses (WAKO §6.2).', sources: ['kbmt-S15'] },
-      'full-contact': { status: 'autorise', note: 'Touche avec le bas de la jambe : pied, cou-de-pied ou tibia (3.1.2). Cible au-dessus de la ceinture.', sources: ['kbmt-S45'] },
+      'low-kick': { status: 'autorise', note: 'Le tibia est autorisé pour frapper la tête, le corps et les cuisses (WAKO §6.2).', sources: ['kbmt-S15'] },
+      'full-contact': { status: 'autorise', note: 'Tu touches avec le bas de la jambe : pied, cou-de-pied ou tibia (3.1.2). Cible au-dessus de la ceinture.', sources: ['kbmt-S45'] },
     },
   },
   {
     techniques: FRONT_KICKS,
     styles: {
       k1: { status: 'autorise', note: 'Vers le corps : un front kick sur la cuisse, le genou ou le tibia est interdit (WAKO art. 5).', sources: ['kbmt-S16'] },
-      'low-kick': { status: 'autorise', note: 'Vers le corps : coup de pied poussé vers les jambes interdit (Ontario 5.2.1).', sources: ['kbmt-S45'] },
-      'full-contact': { status: 'autorise', note: 'Vers le corps : coup de pied poussé vers les jambes interdit (5.1.1).', sources: ['kbmt-S45'] },
+      'low-kick': { status: 'autorise', note: 'Vers le corps uniquement : pousser du pied dans les jambes est interdit (Ontario 5.2.1).', sources: ['kbmt-S45'] },
+      'full-contact': { status: 'autorise', note: 'Vers le corps uniquement : pousser du pied dans les jambes est interdit (5.1.1).', sources: ['kbmt-S45'] },
     },
   },
 ];

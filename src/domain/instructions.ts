@@ -25,16 +25,16 @@ const RETOUR = P('garde', 'Retour immédiat en garde', 'retour');
 export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
   // ------------------------------------------------------------------ garde & déplacements
   garde: {
-    main: 'Pieds décalés à largeur d’épaules, genoux souples, mains hautes et menton rentré.',
+    main: 'Ta position de base : pieds décalés, genoux souples, mains hautes, menton rentré.',
     points: [P('pieds', 'Pied avant rentré, talon arrière levé'), P('bassin', 'Poids réparti sur les deux jambes'), P('bras', 'Main arrière contre la joue, coudes serrés'), P('tete', 'Menton rentré, épaules relâchées')],
   },
   'pas-avant': {
-    main: 'Le pied avant glisse en premier, le pied arrière suit de la même distance.',
+    main: 'Le pied avant glisse en premier, le pied arrière le rattrape de la même distance.',
     points: [P('pieds', 'Pied avant d’abord, pas courts et rasants', 'execution'), P('bassin', 'Le buste reste au-dessus des appuis'), P('pieds', 'Même écartement à l’arrivée', 'retour'), P('garde', 'Les mains ne bougent pas')],
   },
   'pas-arriere': {
     main: 'Le pied arrière recule en premier, le pied avant suit de la même distance.',
-    points: [P('pieds', 'Pied arrière d’abord, sur l’avant des pieds', 'execution'), P('bassin', 'Ne pas se redresser en reculant'), P('pieds', 'Même écartement à l’arrivée', 'retour'), P('garde', 'Mains hautes, menton rentré')],
+    points: [P('pieds', 'Pied arrière d’abord, sur l’avant des pieds', 'execution'), P('bassin', 'Ne te redresse pas en reculant'), P('pieds', 'Même écartement à l’arrivée', 'retour'), P('garde', 'Mains hautes, menton rentré')],
   },
   'pas-gauche': {
     main: 'Le pied gauche ouvre vers la gauche, le pied droit suit sans croiser.',
@@ -45,15 +45,15 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Le pied droit part en premier', 'execution'), P('pieds', 'Les pieds ne se rapprochent pas'), P('bassin', 'Le poids reste centré, épaules fixes'), P('garde', 'Garde intacte à l’arrivée', 'retour')],
   },
   'pivot-droite': {
-    main: 'Tourne sur l’avant du pied avant, le pied arrière décrit un arc.',
+    main: 'Tourne sur l’avant du pied avant, le pied arrière fait un arc.',
     points: [P('pieds', 'Axe sur l’avant du pied avant, sans glisser', 'execution'), P('bassin', 'Les hanches tournent avec le buste', 'execution'), P('garde', 'Mains hautes pendant la rotation'), P('garde', 'Fin du pivot face à la cible', 'retour')],
   },
   'pivot-gauche': {
     main: 'Tourne sur l’avant du pied avant dans l’autre sens pour reprendre l’angle.',
-    points: [P('pieds', 'Axe sur l’avant du pied avant, sans glisser', 'execution'), P('bassin', 'Les hanches tournent avec le buste', 'execution'), P('garde', 'Rester en garde pendant la rotation'), P('garde', 'Fin du pivot face à la cible', 'retour')],
+    points: [P('pieds', 'Axe sur l’avant du pied avant, sans glisser', 'execution'), P('bassin', 'Les hanches tournent avec le buste', 'execution'), P('garde', 'Reste en garde pendant la rotation'), P('garde', 'Fin du pivot face à la cible', 'retour')],
   },
   'sortie-angle': {
-    main: 'Sors en diagonale avec le pied avant, puis pivote pour retrouver la cible.',
+    main: 'Sors en diagonale du pied avant, puis pivote vers la cible.',
     points: [P('pieds', 'Pas du pied avant en diagonale avant', 'preparation'), P('pieds', 'Les pieds ne se croisent pas'), P('bassin', 'Pivot des hanches vers la cible', 'execution'), P('garde', 'Garde haute pendant la sortie', 'retour')],
   },
 
@@ -67,15 +67,15 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Talon arrière tourne vers l’extérieur', 'preparation'), P('bassin', 'La hanche arrière pousse vers l’avant', 'execution'), P('bras', 'Poing dans l’axe, poignet aligné', 'execution'), P('garde', 'Main avant devant le visage'), RETOUR],
   },
   'jab-corps': {
-    main: 'Baisse ton niveau en pliant les genoux et lance le poing avant vers le plexus.',
+    main: 'Descends en pliant les genoux, pas le dos, et lance le poing avant vers le plexus.',
     points: [P('pieds', 'Genoux fléchis, la tête descend', 'preparation'), P('bassin', 'Buste droit, sans se pencher'), P('bras', 'Poing en ligne droite vers le plexus', 'execution'), P('garde', 'Main arrière haute contre la joue'), P('garde', 'Remonte en garde en poussant', 'retour')],
   },
   'direct-corps': {
-    main: 'Baisse ton niveau, pivote le pied arrière et frappe en ligne droite au plexus.',
+    main: 'Descends sur les jambes, pivote le pied arrière et frappe tout droit au plexus.',
     points: [P('pieds', 'Genoux fléchis, talon arrière qui pivote', 'preparation'), P('bassin', 'La hanche arrière tourne vers l’avant', 'execution'), P('bras', 'Poing un peu plus bas que l’épaule', 'execution'), P('garde', 'Main avant devant le visage'), P('garde', 'Remonte en garde après l’impact', 'retour')],
   },
   'crochet-avant': {
-    main: 'Bras avant plié à 90°, pivote pied et hanches pour lancer un arc court.',
+    main: 'Bras avant plié à 90°, pivote le pied et les hanches : le poing part en arc court.',
     points: [P('pieds', 'Pivot sur l’avant du pied avant', 'execution'), P('bassin', 'Hanches et épaules tournent ensemble', 'execution'), P('bras', 'Coude à hauteur du poing, bras à 90°', 'execution'), P('garde', 'Main arrière collée à la joue'), RETOUR],
   },
   'crochet-arriere': {
@@ -91,7 +91,7 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Genoux fléchis, talon arrière qui pivote', 'preparation'), P('bassin', 'La hanche arrière tourne vers l’avant', 'execution'), P('bras', 'Coude bas, arc court', 'execution'), P('tete', 'Tête décalée hors de la ligne centrale'), P('garde', 'Remonte en garde', 'retour')],
   },
   'uppercut-avant': {
-    main: 'Fléchis le genou avant et fais monter le poing avant verticalement sous le menton.',
+    main: 'Fléchis le genou avant et fais monter le poing avant à la verticale, sous le menton.',
     points: [P('pieds', 'Poids sur la jambe avant, genou fléchi', 'preparation'), P('bras', 'Le poing descend à peine, paume vers toi', 'preparation'), P('bassin', 'Poussée de la jambe, hanche qui tourne', 'execution'), P('bras', 'Coude près du corps, bras plié', 'execution'), RETOUR],
   },
   'uppercut-arriere': {
@@ -99,7 +99,7 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Genoux fléchis, pied arrière qui pivote', 'preparation'), P('bassin', 'La hanche arrière tourne vers l’avant', 'execution'), P('bras', 'Avant-bras vertical, coude vers le bas', 'execution'), P('garde', 'Main avant contre le visage'), RETOUR],
   },
   overhand: {
-    main: 'Change de niveau, tête décalée, et fais passer le poing arrière en arc par-dessus.',
+    main: 'Descends un peu, tête décalée, et fais passer le poing arrière en arc par-dessus.',
     points: [P('pieds', 'Genoux fléchis, pied arrière qui pivote', 'preparation'), P('bassin', 'Le poids passe sur la jambe avant', 'execution'), P('bras', 'Arc de haut en bas, par-dessus', 'execution'), P('tete', 'Menton derrière l’épaule arrière'), P('garde', 'Retour en garde sans rester penché', 'retour')],
   },
 
@@ -113,7 +113,7 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Les pieds restent en place'), P('bassin', 'Genou fléchi, épaules qui tournent', 'execution'), P('tete', 'Yeux sur l’adversaire', 'execution'), P('garde', 'Mains hautes, retour au centre', 'retour')],
   },
   'roll-droite': {
-    main: 'Plie les genoux et trace un U avec la tête pour passer sous le crochet.',
+    main: 'Plie les genoux et dessine un U avec la tête pour passer sous le crochet.',
     points: [P('pieds', 'Les genoux plient, les pieds restent', 'preparation'), P('bassin', 'Dos droit pendant le U', 'execution'), P('tete', 'La tête passe sous la trajectoire', 'execution'), P('garde', 'Mains contre le visage'), P('garde', 'Remonte en garde, prêt à contrer', 'retour')],
   },
   'roll-gauche': {
@@ -121,7 +121,7 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Les genoux plient, les pieds restent', 'preparation'), P('bassin', 'Dos droit pendant le U', 'execution'), P('tete', 'La tête passe sous la trajectoire', 'execution'), P('garde', 'Mains contre le visage'), P('garde', 'Remonte en garde, prêt à contrer', 'retour')],
   },
   'blocage-haut': {
-    main: 'Monte l’avant-bras contre la tête, coude vers l’avant, puis redescends en garde.',
+    main: 'Monte l’avant-bras contre la tête comme un casque, coude devant, puis redescends.',
     points: [P('pieds', 'Appuis stables, genoux souples'), P('bassin', 'Buste légèrement gainé', 'execution'), P('bras', 'Poing au-dessus du front, coude devant', 'execution'), P('tete', 'Menton rentré'), RETOUR],
   },
   'blocage-corps-avant': {
@@ -129,7 +129,7 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Genoux légèrement fléchis'), P('bassin', 'Le buste tourne vers le côté attaqué', 'execution'), P('bras', 'Coude collé aux côtes', 'execution'), P('garde', 'La main reste près du visage'), RETOUR],
   },
   parade: {
-    main: 'Dévie le jab de quelques centimètres avec la paume arrière, geste court.',
+    main: 'Dévie le jab de quelques centimètres avec la paume arrière. Une tape, pas une gifle.',
     points: [P('pieds', 'Appuis fixes, poids centré'), P('bassin', 'Le buste ne tourne pas'), P('bras', 'La main ne dépasse pas l’épaule avant', 'execution'), P('garde', 'Main ramenée aussitôt à la joue', 'retour')],
   },
   retrait: {
@@ -137,7 +137,7 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Les pieds ne bougent pas'), P('bassin', 'Poids sur la jambe arrière', 'execution'), P('tete', 'La tête sort juste de portée', 'execution'), P('garde', 'Mains hautes, retour en avant', 'retour')],
   },
   'check-avant': {
-    main: 'Lève le genou avant vers le coude, tibia vertical, puis repose le pied.',
+    main: 'Genou avant vers le coude, tibia vertical en bouclier, puis repose le pied.',
     points: [P('pieds', 'Pied d’appui planté, genou fléchi'), P('bassin', 'Poids sur la jambe arrière', 'preparation'), P('jambe', 'Genou vers le coude, tibia vertical', 'execution'), P('garde', 'Mains hautes'), P('garde', 'Pied reposé à sa place de garde', 'retour')],
   },
   'check-arriere': {
@@ -155,7 +155,7 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Poids sur la jambe avant', 'preparation'), P('jambe', 'Genou haut près de la jambe d’appui', 'preparation'), P('bassin', 'La hanche arrière pousse vers l’avant', 'execution'), P('garde', 'Mains hautes'), P('garde', 'Réarme le genou, puis repose en garde', 'retour')],
   },
   'teep-avant': {
-    main: 'Monte le genou avant et repousse avec la plante du pied en poussant la hanche.',
+    main: 'Genou avant levé, repousse de la plante du pied, comme pour fermer une porte.',
     points: [P('pieds', 'Poids sur la jambe arrière', 'preparation'), P('jambe', 'Genou vers la poitrine, pied fléchi', 'preparation'), P('bassin', 'Hanche vers l’avant, buste un peu en arrière', 'execution'), P('garde', 'Mains hautes'), P('garde', 'Genou ramené, pied reposé devant', 'retour')],
   },
   'teep-arriere': {
@@ -171,7 +171,7 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Pivot sur l’avant du pied arrière', 'preparation'), P('bassin', 'Les hanches tournent avec la jambe', 'execution'), P('jambe', 'Frappe avec le tibia, en arc', 'execution'), P('garde', 'Mains hautes'), P('garde', 'Jambe ramenée en garde', 'retour')],
   },
   'middle-kick-arriere': {
-    main: 'Pivote sur le pied avant et monte le tibia arrière en arc jusqu’aux côtes.',
+    main: 'Pivote sur le pied avant et fais traverser le tibia arrière aux côtes.',
     points: [P('pieds', 'Pivot du pied d’appui, talon vers la cible', 'preparation'), P('bassin', 'Rotation complète des hanches', 'execution'), P('jambe', 'Jambe presque tendue, frappe du tibia', 'execution'), P('garde', 'Main avant protège le visage'), P('garde', 'Jambe reposée en garde', 'retour')],
   },
   'middle-kick-avant': {
@@ -187,7 +187,7 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Pivot sur l’avant du pied arrière', 'preparation'), P('bassin', 'Hanches tournées', 'execution'), P('jambe', 'Monte sans dépasser ta souplesse', 'execution'), P('garde', 'Mains hautes'), P('garde', 'Jambe ramenée, retour en garde', 'retour')],
   },
   'roundhouse-arriere': {
-    main: 'Arme le genou arrière sur le côté, puis fouette et frappe avec le cou-de-pied.',
+    main: 'Arme le genou arrière sur le côté, puis fouette avec le dessus du pied.',
     points: [P('pieds', 'Pivot sur l’avant du pied avant', 'preparation'), P('jambe', 'Genou armé sur le côté, pied pointé', 'preparation'), P('bassin', 'La hanche tourne pour fouetter', 'execution'), P('garde', 'Mains hautes'), P('garde', 'Réarme, puis repose derrière en garde', 'retour')],
   },
   'roundhouse-avant': {
@@ -215,15 +215,15 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
 
   // ------------------------------------------------------------------ coudes
   'coude-horizontal-avant': {
-    main: 'Coude avant à hauteur d’épaule, pivote et fais-le passer à l’horizontale.',
+    main: 'Coude avant à hauteur d’épaule, pivote et balaie à l’horizontale.',
     points: [P('pieds', 'Pivot sur l’avant du pied avant', 'execution'), P('bassin', 'Hanches et épaules tournent ensemble', 'execution'), P('bras', 'Coude à hauteur de la mâchoire', 'execution'), P('garde', 'Main arrière protège le visage'), RETOUR],
   },
   'coude-horizontal-arriere': {
-    main: 'Coude arrière à hauteur d’épaule, pivote et fais-le traverser à l’horizontale.',
+    main: 'Coude arrière à hauteur d’épaule, pivote, et le coude traverse à l’horizontale.',
     points: [P('pieds', 'Pivot du pied arrière', 'preparation'), P('bassin', 'La hanche arrière tourne vers l’avant', 'execution'), P('bras', 'Coude à hauteur de la mâchoire', 'execution'), P('garde', 'Main avant protège le visage'), RETOUR],
   },
   'coude-diagonal-arriere': {
-    main: 'Lève le coude arrière plus haut que la tête et descends-le en diagonale.',
+    main: 'Coude arrière plus haut que la tête, puis redescends en diagonale, comme une hache.',
     points: [P('pieds', 'Pivot du pied arrière', 'preparation'), P('bras', 'Coude plus haut que la tête', 'preparation'), P('bassin', 'Le poids passe sur la jambe avant', 'execution'), P('garde', 'Main avant devant le visage'), RETOUR],
   },
   'coude-diagonal-avant': {
@@ -255,15 +255,15 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
 
   // ------------------------------------------------------------------ feintes
   'feinte-jab': {
-    main: 'Avance l’épaule et la main avant de quelques centimètres, sans aller au bout.',
+    main: 'Avance l’épaule et la main avant de quelques centimètres, sans finir. Du bluff.',
     points: [P('pieds', 'Petit appui ou petit pas avant', 'execution'), P('bassin', 'Léger transfert vers l’avant', 'execution'), P('bras', 'Arrêt avant l’extension', 'execution'), P('garde', 'Retour en garde, vrai coup aussitôt', 'retour')],
   },
   'feinte-epaule': {
-    main: 'Donne un petit mouvement sec de l’épaule arrière vers l’avant, sans lancer le poing.',
+    main: 'Donne un petit coup sec de l’épaule arrière vers l’avant, sans lancer le poing.',
     points: [P('pieds', 'Appuis fixes'), P('bassin', 'Amorce de rotation de la hanche', 'execution'), P('bras', 'Les poings ne partent pas', 'execution'), P('garde', 'Mains hautes, coup prévu aussitôt', 'retour')],
   },
   'feinte-lutte': {
-    main: 'Baisse brièvement ton niveau comme pour entrer en lutte, puis remonte et frappe.',
+    main: 'Descends brièvement comme pour entrer en lutte, puis remonte et frappe.',
     points: [P('pieds', 'Genoux pliés, pieds en place', 'execution'), P('bassin', 'Dos droit pendant la descente', 'execution'), P('bras', 'Mains hautes, coudes serrés'), P('garde', 'Remonte aussitôt en garde', 'retour')],
   },
 
@@ -273,7 +273,7 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Pied avant qui avance un peu', 'execution'), P('bassin', 'Les hanches descendent, dos droit', 'execution'), P('bras', 'Mains à la poitrine, coudes serrés'), P('tete', 'Tête haute'), P('garde', 'Remonte en poussant sur les jambes', 'retour')],
   },
   'entree-lutte': {
-    main: 'Change de niveau, pas pénétrant du pied avant, bras autour des cuisses imaginaires.',
+    main: 'Descends, fais un grand pas du pied avant et entoure des cuisses imaginaires.',
     points: [P('pieds', 'Grand pas pénétrant du pied avant', 'execution'), P('bassin', 'Genou arrière vers le sol, dos droit', 'execution'), P('bras', 'Les bras entourent les cuisses', 'execution'), P('tete', 'Tête haute, sur le côté'), P('garde', 'En solo, retour en garde', 'retour')],
   },
   sprawl: {
@@ -281,7 +281,7 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Jambes lancées loin derrière', 'execution'), P('bassin', 'Hanches écrasées vers le sol', 'execution'), P('bras', 'Mains vers le sol devant toi', 'execution'), P('tete', 'Tête haute'), P('garde', 'Pieds ramenés, remonte vite en garde', 'retour')],
   },
   'defense-lutte': {
-    main: 'Baisse les hanches, avant-bras en cadre devant toi, recule le pied arrière.',
+    main: 'Baisse les hanches, avant-bras en barrière devant toi, et recule le pied arrière.',
     points: [P('pieds', 'Le pied arrière recule', 'execution'), P('bassin', 'Hanches un peu plus basses', 'execution'), P('bras', 'Avant-bras devant, coudes vers l’intérieur', 'execution'), P('garde', 'Retour en garde', 'retour')],
   },
   'descente-sol': {
@@ -289,11 +289,11 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Le pied arrière recule', 'preparation'), P('bras', 'Main arrière au sol derrière toi', 'execution'), P('bassin', 'Descente contrôlée sur la hanche', 'execution'), P('jambe', 'Jambes entre toi et l’adversaire'), P('garde', 'Main libre devant le visage')],
   },
   'sortie-hanche': {
-    main: 'Pousse sur un pied, soulève les hanches et décale-les en arrière sur le côté.',
+    main: 'Pousse sur un pied et décale les hanches en arrière sur le côté, comme une crevette.',
     points: [P('pieds', 'Pieds posés, genoux pliés', 'preparation'), P('bassin', 'Hanches soulevées puis décalées', 'execution'), P('bras', 'Mains en cadre devant toi', 'execution'), P('garde', 'Retour en position de départ', 'retour')],
   },
   'releve-technique': {
-    main: 'Appui main arrière et pied avant, soulève les hanches et passe la jambe derrière.',
+    main: 'Main arrière et pied avant au sol, lève les hanches et passe la jambe derrière.',
     points: [P('pieds', 'Pied avant à plat devant toi', 'preparation'), P('bassin', 'Hanches soulevées sur la main', 'execution'), P('jambe', 'Jambe libre loin derrière', 'execution'), P('garde', 'Main libre devant le visage'), P('garde', 'Garde debout, en reculant si besoin', 'retour')],
   },
 
@@ -317,11 +317,11 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
 
   // ------------------------------------------------------------------ judo
   'shizen-tai': {
-    main: 'Debout, droit, pieds à largeur d’épaules, genoux souples, mains devant.',
+    main: 'Debout et droit, pieds à largeur d’épaules, genoux souples, mains devant.',
     points: [P('pieds', 'Pieds à largeur d’épaules'), P('bassin', 'Poids réparti, genoux souples'), P('tete', 'Dos droit, regard devant'), P('garde', 'Mains devant comme sur manche et revers')],
   },
   'tsugi-ashi-avant': {
-    main: 'Le pied avant glisse, le pied arrière le rejoint sans le dépasser.',
+    main: 'Le pied avant glisse, le pied arrière le rejoint sans jamais le doubler.',
     points: [P('pieds', 'Pied avant d’abord, pieds rasants', 'execution'), P('pieds', 'Le pied arrière ne dépasse jamais'), P('bassin', 'Buste droit, même hauteur'), P('garde', 'Mains devant pendant le pas')],
   },
   'tsugi-ashi-arriere': {
@@ -341,7 +341,7 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Petit pas en arrière', 'execution'), P('bras', 'Main avant tirée vers la hanche', 'execution'), P('bassin', 'Le tirage vient de tout le corps'), P('garde', 'Retour en shizen-tai', 'retour')],
   },
   'uchikomi-seoi': {
-    main: 'Entre, pivote dos au partenaire, genoux fléchis, mains qui tirent.',
+    main: 'Entre, pivote dos au partenaire, plie les genoux et tire avec les mains.',
     points: [P('pieds', 'Pieds parallèles, à l’intérieur', 'execution'), P('bassin', 'Genoux fléchis, hanches basses', 'execution'), P('bras', 'Mains qui tirent vers l’avant'), P('garde', 'Retour en shizen-tai, sans projeter', 'retour')],
   },
 };

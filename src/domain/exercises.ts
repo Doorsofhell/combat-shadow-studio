@@ -40,24 +40,24 @@ function build(discipline: DisciplineId, level: LevelId, rows: Row[]): Exercise[
 function describe(kind: ExerciseKind, n: number) {
   switch (kind) {
     case 'technique':
-      return 'Répétition d’une technique isolée, lentement puis plus vite, avec retour en garde.';
+      return 'Une technique, lentement puis plus vite, avec retour en garde à chaque fois.';
     case 'combinaison':
-      return `Enchaînement de ${n} mouvements, sans revenir à une pose neutre entre les coups.`;
+      return `${n} mouvements à enchaîner, sans t’arrêter en pose neutre entre les coups.`;
     case 'defense':
-      return 'Travail défensif : esquiver, bloquer ou sortir de la ligne puis répondre.';
+      return 'Défense : tu esquives, tu bloques ou tu sors de la ligne, puis tu réponds.';
     case 'deplacement':
-      return 'Travail des appuis : pas courts, garde stable, pieds qui ne se croisent jamais.';
+      return 'Jeu de jambes : petits pas, garde stable, et des pieds qui ne se croisent jamais.';
     case 'cardio':
-      return 'Enchaînement rythmé à répéter sans pause pour le travail cardio.';
+      return 'Un enchaînement rythmé à répéter sans pause. Le cardio va chauffer.';
     case 'round':
-      return 'Séquence longue à répéter pendant un round complet.';
+      return 'Une longue séquence à répéter pendant tout un round.';
   }
 }
 
 // ---------------------------------------------------------------------------------- BOXE
 const BOXE: Record<LevelId, Row[]> = {
   debutant: [
-    ['Garde orthodoxe et respiration', 'technique', 'garde', { description: 'Tenir la garde, souple sur les jambes, mains hautes, menton rentré.' }],
+    ['Garde orthodoxe et respiration', 'technique', 'garde', { description: 'Tiens ta garde, souple sur les jambes, mains hautes, menton rentré. Et respire.' }],
     [null, 'technique', 'jab'],
     [null, 'technique', 'direct'],
     [null, 'technique', 'crochet-avant'],
