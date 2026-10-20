@@ -1,28 +1,29 @@
+import { championFor } from '../../domain/coaches/catalog';
+import { DISCIPLINES, LEVELS } from '../../domain/types';
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useSettings } from '../../store/settings';
 import { useProfile } from '../../store/profile';
 import { exportData, useStats } from '../../store/stats';
 import { useCustom } from '../../store/custom';
 import { useGoals } from '../../store/goals';
-import { useActiveFighter, useFighters } from '../../store/fighters';
+import { useFighters } from '../../store/fighters';
 import { DEFAULT_CATALOG_USER, useCatalogUser } from '../../store/catalog';
 import { bell, unlockAudio } from '../../audio/sound';
 import { hasFrenchVoice, say, voiceAvailable } from '../../audio/voice';
 import { saveTextFile } from '../../platform/native';
 import { ConfirmDialog, LinkRow, PageHead, Panel, PanelRow, Segmented, SliderRow, Toggle, toast } from '../components';
 import { CoachLookPicker } from '../components/CoachLookPicker';
-import { defaultFighterName } from '../components/fighter';
 import { AppIcon } from '../icons';
 
 const pct = (v: number) => `${Math.round(v * 100)} %`;
 
 export function SettingsPage() {
+  const { section } = useParams();
   const { settings, set } = useSettings();
   const profile = useProfile((s) => s.profile);
   const updateProfile = useProfile((s) => s.update);
   const resetProfile = useProfile((s) => s.reset);
-  const fighter = useActiveFighter();
   const stats = useStats();
   const custom = useCustom();
   const clearGoals = useGoals((s) => s.clear);
@@ -68,50 +69,13 @@ export function SettingsPage() {
     nav('/bienvenue');
   };
 
-  return (
-    <div className="page">
-      <PageHead title="Réglages" />
-
-      <Panel title="Apparence" icon="theme" id="p-apparence">
-        <PanelRow label="Thème des menus" hint="Automatique suit le réglage clair ou sombre de ton téléphone. Le studio d’entraînement reste blanc." column>
-          <Segmented
-            label="Thème des menus"
-            value={settings.theme}
-            onChange={(v) => set({ theme: v })}
-            options={[
-              { id: 'clair', label: 'Clair' },
-              { id: 'sombre', label: 'Sombre' },
-              { id: 'auto', label: 'Automatique' },
-            ]}
-          />
-        </PanelRow>
-      </Panel>
-
-      <Panel title="Profil" icon="profile" id="p-profil">
-        <LinkRow to="/profil" icon={<AppIcon id="profile" className="muted" />} label="Mon profil et mon compte" hint="Informations, profil sportif, export et suppression de tes données" />
-        <LinkRow to="/combattant" icon={<AppIcon id="fighter" className="muted" />} label={fighter?.name ?? defaultFighterName(profile.coach)} hint="Personnaliser ton combattant" />
-        <LinkRow to="/coach" label="Coach" hint={profile.coach === 'femme' ? 'Coach femme' : 'Coach homme'} />
-        <PanelRow label="Garde">
-          <Segmented
-            label="Garde"
-            value={profile.guard}
-            onChange={(g) => updateProfile({ guard: g })}
-            options={[
-              { id: 'orthodoxe', label: 'Orthodoxe' },
-              { id: 'gaucher', label: 'Gaucher' },
-            ]}
-          />
-        </PanelRow>
-        <button type="button" className="panel-row" onClick={() => (updateProfile({ completed: false }), nav('/bienvenue'))}>
-          <span className="grow">
-            Questionnaire et niveaux
-            <span className="hint">Refaire l’évaluation de départ</span>
-          </span>
-          <span className="small muted">Modifier</span>
-        </button>
-      </Panel>
-
-      <Panel title="Voix et sons" icon="audio" id="p-voix">
+  // 0.24 (épuration, captures de référence de Youssef): l’écran principal ne montre que l’essentiel ;
+  // les réglages détaillés sont rangés dans des sous-pages, comme dans les applications natives
+  if (section === 'voix')
+    return (
+      <div className="page">
+        <PageHead title="Voix et sons" fallback="/reglages" />
+        <Panel>
         <Toggle label="Voix du coach" on={settings.voice} onChange={(v) => set({ voice: v })} />
         <Toggle label="Annoncer chaque mouvement" on={settings.announceMoves} onChange={(v) => set({ announceMoves: v })} />
         <Toggle label="Conseils techniques" hint="En mode technique" on={settings.techniqueTips} onChange={(v) => set({ techniqueTips: v })} />
@@ -131,50 +95,60 @@ export function SettingsPage() {
         {voiceAvailable() && !hasFrenchVoice() && <p className="small muted" style={{ padding: '0 0 12px' }}>Aucune voix française n’est installée sur cet appareil : la voix par défaut sera utilisée.</p>}
         {!voiceAvailable() && <p className="small muted" style={{ padding: '0 0 12px' }}>La synthèse vocale n’est pas disponible dans ce navigateur.</p>}
       </Panel>
-
-      <Panel title="Affichage 3D" icon="display" id="p-3d">
-        <PanelRow label="Qualité" hint="En mode Auto, la qualité baisse d’elle-même si l’appareil n’arrive pas à suivre." column>
-          <Segmented
-            label="Qualité"
-            value={settings.quality}
-            onChange={(q) => set({ quality: q })}
-            options={[
-              { id: 'auto', label: 'Auto' },
-              { id: 'haute', label: 'Haute' },
-              { id: 'basse', label: 'Économie' },
-            ]}
-          />
-        </PanelRow>
-        <PanelRow label="Rendu des combattants" column>
-          <CoachLookPicker testId="settings-coach-look" />
-        </PanelRow>
-        <PanelRow label="Version du rendu 3D" column>
-          <Segmented
-            label="Version du rendu 3D"
-            value={settings.coachRender}
-            onChange={(v) => set({ coachRender: v })}
-            options={[
-              { id: 'premium', label: 'Nouvelle (0.23)' },
-              { id: 'precedent', label: 'Précédente (secours)' },
-            ]}
-          />
-          <p className="small muted">La version précédente reste disponible tant que la nouvelle n’est pas validée sur ton téléphone.</p>
-        </PanelRow>
-        <PanelRow label="Caméra par défaut" column>
-          <Segmented
-            label="Caméra par défaut"
-            value={settings.cameraAngle}
-            onChange={(a) => set({ cameraAngle: a })}
-            options={[
-              { id: 35, label: '3/4' },
-              { id: 0, label: 'Face' },
-              { id: 90, label: 'Profil' },
-            ]}
-          />
-        </PanelRow>
-      </Panel>
-
-      <Panel title="Rounds par défaut" icon="repeat" id="p-rounds">
+      </div>
+    );
+  if (section === 'affichage')
+    return (
+      <div className="page">
+        <PageHead title="Affichage 3D" fallback="/reglages" />
+        <Panel>
+          <PanelRow label="Rendu des combattants" column>
+            <CoachLookPicker />
+          </PanelRow>
+          <PanelRow label="Qualité" hint="En mode Auto, la qualité baisse d’elle-même si l’appareil n’arrive pas à suivre." column>
+            <Segmented
+              label="Qualité"
+              value={settings.quality}
+              onChange={(q) => set({ quality: q })}
+              options={[
+                { id: 'auto', label: 'Auto' },
+                { id: 'haute', label: 'Haute' },
+                { id: 'basse', label: 'Économie' },
+              ]}
+            />
+          </PanelRow>
+          <PanelRow label="Version du rendu 3D" column>
+            <Segmented
+              label="Version du rendu 3D"
+              value={settings.coachRender}
+              onChange={(v) => set({ coachRender: v })}
+              options={[
+                { id: 'premium', label: 'Nouvelle (0.24)' },
+                { id: 'precedent', label: 'Précédente (secours)' },
+              ]}
+            />
+            <p className="small muted">La version précédente reste disponible tant que la nouvelle n’est pas validée sur ton téléphone.</p>
+          </PanelRow>
+          <PanelRow label="Caméra par défaut" column>
+            <Segmented
+              label="Caméra par défaut"
+              value={settings.cameraAngle}
+              onChange={(a) => set({ cameraAngle: a })}
+              options={[
+                { id: 35, label: '3/4' },
+                { id: 0, label: 'Face' },
+                { id: 90, label: 'Profil' },
+              ]}
+            />
+          </PanelRow>
+        </Panel>
+      </div>
+    );
+  if (section === 'rounds')
+    return (
+      <div className="page">
+        <PageHead title="Rounds par défaut" fallback="/reglages" />
+        <Panel>
         <PanelRow label="Durée du round" column>
           <Segmented label="Durée du round" value={settings.defaultRoundSec} onChange={(v) => set({ defaultRoundSec: v })} options={[60, 120, 180, 300].map((s) => ({ id: s, label: `${s / 60} min` }))} />
         </PanelRow>
@@ -182,8 +156,13 @@ export function SettingsPage() {
           <Segmented label="Repos" value={settings.defaultRestSec} onChange={(v) => set({ defaultRestSec: v })} options={[30, 45, 60, 90].map((s) => ({ id: s, label: `${s} s` }))} />
         </PanelRow>
       </Panel>
-
-      <Panel title="Données et confidentialité" icon="privacy" id="p-data">
+      </div>
+    );
+  if (section === 'donnees')
+    return (
+      <div className="page">
+        <PageHead title="Données" fallback="/reglages" />
+        <Panel>
         <LinkRow to="/confidentialite" icon={<AppIcon id="privacy" className="muted" />} label="Confidentialité" hint="Aucune mesure d’audience, aucune publicité ; synchronisation seulement si tu l’actives" />
         <div className="panel-row col">
           <span className="small muted">L’export crée un fichier que tu peux garder ou réimporter sur un autre appareil.</span>
@@ -208,14 +187,79 @@ export function SettingsPage() {
           </button>
         </div>
       </Panel>
+        </div>
+    );
 
-      <Panel title="À propos" icon="info" id="p-about">
-        <p className="small muted" style={{ padding: '12px 0' }}>
-          Combat Shadow Studio, version {import.meta.env.VITE_APP_VERSION} (développement). Combattants 3D générés à partir de MakeHuman (licence CC0), animations produites par le moteur de l’application. Cette application ne
-          remplace pas un entraîneur ni un avis médical.
-        </p>
+  const d = profile.mainDiscipline;
+  return (
+    <div className="page">
+      <PageHead title="Réglages" />
+
+      <Panel title="Ton profil" icon="profile" id="p-profil">
+        <div className="profile-summary" data-testid="settings-profile-summary">
+          <div>
+            <span className="muted small">Discipline</span>
+            <strong>{DISCIPLINES.find((x) => x.id === d)?.name ?? '—'}</strong>
+          </div>
+          <div>
+            <span className="muted small">Niveau</span>
+            <strong>{LEVELS.find((l) => l.id === profile.levels[d])?.name ?? '—'}</strong>
+          </div>
+          <div>
+            <span className="muted small">Garde</span>
+            <strong>{profile.guard === 'gaucher' ? 'Gaucher' : 'Orthodoxe'}</strong>
+          </div>
+          <div>
+            <span className="muted small">Coach</span>
+            <strong>{championFor(profile.coach).name}</strong>
+          </div>
+        </div>
+        <LinkRow to="/profil" icon={<AppIcon id="edit" />} label="Modifier mon profil et mon compte" />
       </Panel>
 
+      <Panel title="Apparence" icon="theme" id="p-apparence">
+        <PanelRow label="Thème des menus" hint="Automatique suit ton téléphone. Le studio d’entraînement reste blanc." column>
+          <Segmented
+            label="Thème des menus"
+            value={settings.theme}
+            onChange={(v) => set({ theme: v })}
+            options={[
+              { id: 'clair', label: 'Clair' },
+              { id: 'sombre', label: 'Sombre' },
+              { id: 'auto', label: 'Automatique' },
+            ]}
+          />
+        </PanelRow>
+        <PanelRow label="Rendu des combattants" column>
+          <CoachLookPicker testId="settings-coach-look" />
+        </PanelRow>
+      </Panel>
+
+      <Panel title="Personnalisation" icon="settings" id="p-perso">
+        <LinkRow to="/coach" icon={<AppIcon id="fighter" />} label="Mon coach" hint={championFor(profile.coach).name} />
+        <LinkRow to="/reglages/voix" icon={<AppIcon id="audio" />} label="Voix et sons" />
+        <LinkRow to="/reglages/rounds" icon={<AppIcon id="repeat" />} label="Rounds par défaut" hint={`${settings.defaultRoundSec / 60} min, repos ${settings.defaultRestSec} s`} />
+        <LinkRow to="/reglages/affichage" icon={<AppIcon id="display" />} label="Affichage 3D" hint="Qualité, caméra" />
+        <button type="button" className="panel-row" onClick={() => (updateProfile({ completed: false }), nav('/bienvenue'))}>
+          <AppIcon id="details" />
+          <span className="grow">
+            Questionnaire et niveaux
+            <span className="hint">Refaire l’évaluation de départ</span>
+          </span>
+          <AppIcon id="chevron" className="muted" />
+        </button>
+      </Panel>
+
+      <Panel title="Données" icon="privacy" id="p-data">
+        <LinkRow to="/reglages/donnees" icon={<AppIcon id="download" />} label="Exporter, importer, effacer" />
+        <LinkRow to="/confidentialite" icon={<AppIcon id="privacy" />} label="Confidentialité" />
+      </Panel>
+
+      <p className="small muted settings-version">
+        Version {import.meta.env.VITE_APP_VERSION}
+        <br />
+        Combattants 3D générés à partir de MakeHuman (licence CC0), animations produites par le moteur de l’application. Cette application ne remplace pas un entraîneur ni un avis médical.
+      </p>
       {confirmErase && (
         <ConfirmDialog
           title="Tout effacer ?"

@@ -1,3 +1,4 @@
+import { CHAMPIONS } from '../../domain/coaches/catalog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import type { CoachId } from '../../domain/types';
@@ -5,10 +6,13 @@ import { PageHead } from '../components';
 import { chooseCoach } from '../components/fighter';
 import { AppIcon } from '../icons';
 
-export const COACHES: { id: CoachId; name: string; desc: string; img: string }[] = [
-  { id: 'homme', name: 'Coach homme', desc: 'Athlétique, torse nu, short de combat', img: './coaches/homme.jpg' },
-  { id: 'femme', name: 'Coach femme', desc: 'Athlétique, brassière et short de sport', img: './coaches/femme.jpg' },
-];
+// 0.24: Kadir and Amara (the stored choice stays 'homme' / 'femme')
+export const COACHES: { id: CoachId; name: string; desc: string; img: string }[] = (['homme', 'femme'] as const).map((id) => ({
+  id,
+  name: `${CHAMPIONS[id].name} « ${CHAMPIONS[id].nickname} »`,
+  desc: CHAMPIONS[id].style,
+  img: CHAMPIONS[id].portrait,
+}));
 
 /** The two coaches side by side; nothing is selected until the user taps one. */
 export function CoachPicker({ value, onChange }: { value: CoachId | null; onChange: (c: CoachId) => void }) {
@@ -51,7 +55,7 @@ export function CoachSelect() {
   return (
     <div className="page">
       <PageHead title="Choisis ton coach" eyebrow="Coach" back={!first} />
-      <p className="muted">Ton combattant montre chaque mouvement en 3D. Tu peux en changer à tout moment, tes statistiques sont conservées.</p>
+      <p className="muted">Ton coach montre chaque mouvement en 3D. Tu peux en changer à tout moment, tes statistiques sont conservées.</p>
       <CoachPicker value={coach} onChange={(c) => chooseCoach(c)} />
       <button type="button" className="btn primary block lg" disabled={!coach} onClick={() => (first ? nav('/', { replace: true }) : nav(-1))}>
         {coach ? 'Valider' : 'Choisis un coach pour continuer'}

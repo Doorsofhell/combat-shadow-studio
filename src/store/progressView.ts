@@ -4,7 +4,7 @@ import { idbStorage } from './storage';
 import type { DisciplineId, ExerciseKind, LevelId } from '../domain/types';
 import type { PeriodPreset } from '../domain/progress';
 
-export type ProgressTab = 'activite' | 'niveaux' | 'categories' | 'exercices' | 'historique';
+export type ProgressTab = 'activite' | 'niveaux' | 'categories' | 'exercices' | 'historique' | 'maitrise';
 
 /** the size of a course seen on a previous visit, to explain a change of percentage */
 export interface SeenCourse {

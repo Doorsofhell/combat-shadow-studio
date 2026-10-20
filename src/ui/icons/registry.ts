@@ -105,6 +105,8 @@ export const ICON_REGISTRY = {
   locked: { family: 'statut', name: 'Verrouillé (réservé)' },
   downloaded: { family: 'statut', name: 'Téléchargé (réservé)' },
   check: { family: 'statut', name: 'Fait, sélectionné' },
+  mastered: { family: 'statut', name: 'Technique assimilée' },
+  struggling: { family: 'statut', name: 'Encore du mal, à revoir' },
   star: { family: 'statut', name: 'Étoile vide' },
   starFilled: { family: 'statut', name: 'Étoile pleine' },
   flame: { family: 'statut', name: 'Série' },
@@ -119,3 +121,53 @@ export type NavigationIconId = Of<'navigation'> | Of<'acces'>;
 export type ActionIconId = Of<'action'> | Of<'compte'> | Of<'acces'>;
 export type TrainingControlIconId = Of<'entrainement'> | 'back' | 'close' | 'info' | 'minus' | 'add' | 'chevron' | 'settings' | 'filters';
 export type StatusIconId = Of<'statut'> | 'favorite' | 'history' | 'offline';
+
+/**
+ * Colour role of each icon, after Youssef's icon sheet v2 (2026-10-20): red for training and the
+ * actions that start or remove something, gold for distinctions and saved things, green for what is
+ * done or added, blue for adapted or synchronised, orange for what waits. An icon not listed is
+ * neutral (white on dark, ink on light). The role colours an icon in menus, tiles, panel titles and
+ * the navigation; buttons keep the colour of the button (tone `current`). The colour never carries
+ * the meaning alone: the label next to the icon does.
+ */
+export type IconRole = 'accent' | 'gold' | 'success' | 'info' | 'orange' | 'purple';
+
+export const ICON_ROLE: Partial<Record<GlyphId, IconRole>> = {
+  train: 'accent',
+  progress: 'accent',
+  programs: 'accent',
+  combos: 'accent',
+  favorite: 'accent',
+  calendar: 'accent',
+  compose: 'accent',
+  notifications: 'accent',
+  delete: 'accent',
+  close: 'accent',
+  cancel: 'accent',
+  locked: 'accent',
+  play: 'accent',
+  signOut: 'accent',
+  legends: 'gold',
+  challenges: 'gold',
+  trophy: 'gold',
+  collection: 'gold',
+  save: 'gold',
+  premium: 'gold',
+  subscription: 'gold',
+  starFilled: 'gold',
+  inspired: 'gold',
+  add: 'success',
+  confirm: 'success',
+  verified: 'success',
+  downloaded: 'success',
+  check: 'success',
+  mastered: 'success',
+  struggling: 'orange',
+  adapted: 'info',
+  sync: 'info',
+  trend: 'info',
+  pending: 'orange',
+  flame: 'orange',
+};
+
+export const iconRole = (id: GlyphId): IconRole | 'neutral' => ICON_ROLE[id] ?? 'neutral';

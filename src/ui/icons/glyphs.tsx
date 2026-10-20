@@ -519,6 +519,21 @@ export const GLYPHS = {
       <path d="M12 6.2v8.4M8.4 11.2 12 14.8l3.6-3.6M7.6 17.6h8.8" {...cut} strokeWidth={2} />
     </>
   ),
+  /** Assimilée: a filled disc with the tick cut out */
+  mastered: (
+    <>
+      <circle cx="12" cy="12" r="10" fill={W} />
+      <path d="m7.4 12.4 3.2 3.2 6-6.4" {...cut} strokeWidth={2.4} />
+    </>
+  ),
+  /** Encore du mal: a filled disc with a "go again" arrow cut out */
+  struggling: (
+    <>
+      <circle cx="12" cy="12" r="10" fill={W} />
+      <path d="M16.6 9.2A5.2 5.2 0 1 0 17.2 13" {...cut} strokeWidth={2.2} />
+      <path d="m17.6 5.8-.1 4-3.9-.4z" fill={K} />
+    </>
+  ),
   check: <path d="m3.6 12.6 5.4 5.4L20.4 6.6" {...line} strokeWidth={3} />,
   star: <path d="m12 2.6 2.8 5.8 6.4.8-4.7 4.4 1.2 6.3L12 16.8l-5.7 3.1 1.2-6.3L2.8 9.2l6.4-.8z" {...line} strokeWidth={2} />,
   starFilled: <path d="m12 1.9 2.95 6.2 6.8.84-5 4.68 1.3 6.73L12 17.06l-6.05 3.29 1.3-6.73-5-4.68 6.8-.84z" fill={W} strokeLinejoin="round" stroke={W} strokeWidth="1.2" />,

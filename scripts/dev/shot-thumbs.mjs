@@ -1,7 +1,8 @@
 import { chromium } from '@playwright/test';
 import { mkdirSync, readFileSync } from 'node:fs';
 // Renders each technique at its key moment from its teaching angle with our own 3D coaches
-// (dev server on :5173). Usage: node scripts/dev/shot-thumbs.mjs <outDir> <coach> [id,id,...]
+// (dev server on :5173, or PORT). Usage: node scripts/dev/shot-thumbs.mjs <outDir> <coach> [id,id,...]
+// CHAMPION=mma-kadir: the app's coach (0.24), on its own model, dressed for the technique's discipline
 const [OUT, COACH = 'homme', ONLY] = process.argv.slice(2);
 mkdirSync(OUT, { recursive: true });
 const ids = ONLY ? ONLY.split(',') : [...readFileSync('src/domain/techniques.ts', 'utf8').matchAll(/id: '([^']+)', name:/g)].map((m) => m[1]);
@@ -10,7 +11,7 @@ const p = await b.newPage({ viewport: { width: 240, height: 300 }, deviceScaleFa
 p.on('pageerror', (e) => console.log('ERR', e.message));
 for (const id of ids) {
   await p.goto('about:blank');
-  await p.goto(`http://localhost:5173/#/lab?coach=${COACH}&thumb=1&tech=${id}${process.env.AZ ? '&az=' + process.env.AZ : ''}`);
+  await p.goto(`http://localhost:${process.env.PORT ?? 5173}/#/lab?coach=${COACH}${process.env.CHAMPION ? '&champion=' + process.env.CHAMPION : ''}&thumb=1&tech=${id}${process.env.AZ ? '&az=' + process.env.AZ : ''}`);
   await p.waitForFunction(() => window.__labReady, null, { timeout: 60000 });
   await p.waitForTimeout(3500);
   await p.screenshot({ path: `${OUT}/${id}.png` });

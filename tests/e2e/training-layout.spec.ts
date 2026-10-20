@@ -377,8 +377,9 @@ test('changer de coach pendant l’entraînement : la coach femme s’affiche', 
   await open(page, `/#/entrainement?ex=boxe-debutant-02&mode=technique`);
   await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'homme');
   await page.getByTestId('options').click();
-  await page.getByRole('button', { name: 'Coach femme' }).click();
+  // 0.24: the two coaches are named Kadir and Amara
+  await page.getByRole('button', { name: 'Amara' }).click();
   await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'femme');
-  await page.getByRole('button', { name: 'Coach homme' }).click();
+  await page.getByRole('button', { name: 'Kadir' }).click();
   await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'homme');
 });

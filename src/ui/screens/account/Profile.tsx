@@ -264,12 +264,12 @@ export function ProfilePage() {
             value={profile.avatar}
             onChange={(a) => update({ avatar: a })}
             options={[
-              { id: 'fighter', label: 'Mon combattant' },
+              { id: 'fighter', label: 'Mon coach' },
               { id: 'initiales', label: 'Initiales' },
             ]}
           />
         </PanelRow>
-        <LinkRow to="/combattant" icon={<AppIcon id="fighter" className="muted" />} label="Personnaliser mon combattant" hint="Apparence, tenue, tatouages, équipement" />
+        <LinkRow to="/coach" icon={<AppIcon id="fighter" className="muted" />} label="Mon coach" hint="Kadir ou Amara" />
         <PanelRow label="Langue" hint="Français (seule langue disponible pour l’instant)" />
       </Section>
 

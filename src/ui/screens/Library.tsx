@@ -16,6 +16,7 @@ import type { ComboPlayer, PlayerEvents } from '../../engine/player';
 import { playerSteps } from '../training/plan';
 import { say } from '../../audio/voice';
 import { GuideCard } from '../GuideCard';
+import { MasterySwitch } from '../components/Playback';
 import { AnimationBadge, DisciplineLabel, ModeBadge, CameraControls, EmptyState, EntryCard, FilterChips, KbOnlyBadge, KickboxingRulesCard, KickboxingStylePicker, LevelSelector, PageHead, PlaybackControls, SectionHead, Tabs, TechniqueCard, useKbStyle } from '../components';
 import { filterExercises, filterTechniques } from '../../domain/kickboxingStyles';
 import { ExerciseList, ExerciseSheet } from './Discipline';
@@ -67,12 +68,14 @@ function DisciplineFilter({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId
 }
 
 function TechniquesTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) => void }) {
-  const [cat, setCat] = useState<Technique['category'] | 'tout'>('tout');
+  const [cat, setCat] = useState<Technique['category'] | 'tout' | 'a-revoir'>('tout');
   const fav = useGoals((s) => s.favTechniques);
+  const mastery = useGoals((s) => s.mastery);
   const [kbStyle] = useKbStyle();
   const list = filterTechniques(techniquesFor(d), d, kbStyle);
   const cats = [...new Set(list.map((t) => t.category))];
-  const shown = cat === 'tout' ? list : list.filter((t) => t.category === cat);
+  const toReview = list.filter((t) => mastery[t.id] === 'a-revoir');
+  const shown = cat === 'tout' ? list : cat === 'a-revoir' ? toReview : list.filter((t) => t.category === cat);
   const partner = partnerFor(d);
   return (
     <>
@@ -83,22 +86,29 @@ function TechniquesTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) =
         label="Catégorie"
         value={cat}
         onChange={setCat}
-        options={[{ id: 'tout' as const, label: `Tout (${list.length})` }, ...cats.map((c) => ({ id: c, label: CATEGORY_LABEL[c] }))]}
+        options={[
+          { id: 'tout' as const, label: `Tout (${list.length})` },
+          // 0.24: the techniques the user still finds hard, in one tap
+          ...(toReview.length > 0 ? [{ id: 'a-revoir' as const, label: `À revoir (${toReview.length})` }] : []),
+          ...cats.map((c) => ({ id: c, label: CATEGORY_LABEL[c] })),
+        ]}
       />
-      <div className="stack" style={{ gap: 8 }}>
+      <div className="tech-grid">
         {shown.map((t) => (
           <TechniqueCard
+            tile
             key={t.id}
             to={`/techniques/${t.id}?d=${d}`}
             title={t.name}
             description={t.description}
             thumb={t.id}
             favorite={fav.includes(t.id)}
+            mastery={mastery[t.id]}
             meta={d === 'kickboxing' ? <KbOnlyBadge id={t.id} /> : undefined}
           />
         ))}
       </div>
-      <p className="small muted">{TECHNIQUES.length} techniques au total, chacune animée sur ton combattant 3D.</p>
+      <p className="small muted">{TECHNIQUES.length} techniques au total, chacune animée sur ton coach 3D.</p>
       {partner.length > 0 && (
         <section className="section" data-testid="partner-section">
           <SectionHead title="Avec un partenaire réel" />
@@ -136,7 +146,7 @@ function LegendsTab() {
   if (CHAMPIONS_AVAILABLE)
     return (
       <>
-        <p className="muted">Des enchaînements inspirés du style de grands champions, exécutés par ton combattant.</p>
+        <p className="muted">Des enchaînements inspirés du style de grands champions, exécutés par ton coach.</p>
         <EntryCard to="/champions" icon={<AppIcon id="legends" />} tone="gold" title="Combinaisons des légendes" text="Parcourir les champions et leurs combinaisons" testId="open-champions" />
       </>
     );
@@ -231,6 +241,7 @@ export function TechniquePage() {
   const profile = useProfile((s) => s.profile);
   const settings = useSettings((s) => s.settings);
   const fighter = useActiveFighter();
+  const render = useSettings((st) => st.settings.coachRender);
   const fav = useGoals((s) => (t ? s.favTechniques.includes(t.id) : false));
   const toggleFav = useGoals((s) => s.toggleTechnique);
   const d = ((q.get('d') as DisciplineId) && t?.disciplines.includes(q.get('d') as DisciplineId) ? q.get('d') : t?.disciplines[0]) as DisciplineId;
@@ -277,7 +288,7 @@ export function TechniquePage() {
         <Suspense fallback={<div className="hero-loading"><div className="stage-skeleton" /></div>}>
           <CoachStage
             backdrop="dark"
-            coach={fighter?.look.sex ?? profile.coach ?? 'homme'}
+            coach={(render === 'premium' ? null : fighter?.look.sex) ?? profile.coach ?? 'homme'}
             discipline={d}
             southpaw={profile.guard === 'gaucher'}
             cameraAngle={cam}
@@ -299,6 +310,7 @@ export function TechniquePage() {
           setSpeed(v);
           if (player.current) player.current.speed = v;
         }}
+        extra={<MasterySwitch id={t.id} />}
       />
       <CameraControls value={cam} onChange={setCam} />
       <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
@@ -366,7 +378,7 @@ export function PartnerPage() {
       </div>
       <p className="small muted">Pas d’animation à deux pour cette technique pour l’instant : elle demande une démonstration avec un partenaire virtuel, en préparation.</p>
       {prep && (
-        <EntryCard to={`/techniques/${prep.id}?d=${p.discipline}`} icon={<AppIcon id="techniques" />} title={`Préparation en solo : ${prep.name}`} text="Le seul travail que tu peux faire seul, animé sur ton combattant." testId="partner-prep" />
+        <EntryCard to={`/techniques/${prep.id}?d=${p.discipline}`} icon={<AppIcon id="techniques" />} title={`Préparation en solo : ${prep.name}`} text="Le seul travail que tu peux faire seul, animé sur ton coach." testId="partner-prep" />
       )}
     </div>
   );

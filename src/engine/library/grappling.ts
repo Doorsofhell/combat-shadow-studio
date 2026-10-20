@@ -9,11 +9,8 @@ import type { Motion } from '../motion';
 import { Pose, deg, v3 } from '../pose';
 import { seated as mmaSeated } from './mma';
 
-/** seated base of the MMA library, with the knee directions written out so they blend smoothly into lying positions */
-const seated = (a: Author) =>
-  edit(mmaSeated(a), (d) => {
-    if (d.footR.mode === 'ground') d.footR.pole = v3(-0.35, 0.25, 1);
-  });
+/** seated base of the MMA library (its planted knee points up, which blends smoothly into lying positions) */
+const seated = (a: Author) => mmaSeated(a);
 
 /** foot flat on the floor with the knee pointing up (lying on the back) */
 const flat = (ball: Pose['hips'], yaw: number, side: 1 | -1, heel = 0) => ({ mode: 'ground' as const, ball, yaw, heel, pole: v3(side * 0.25, 1, 0.2) });
@@ -128,6 +125,8 @@ function baseSwitch(a: Author): Motion {
     d.chest = { yaw: deg(-5), pitch: deg(20), roll: 0 };
     d.head = { yaw: 0, pitch: deg(-10), roll: 0 };
     d.handR = a.hand('world', v3(0.05 * s, 0.045 * s, 0.1 * s), v3(-0.4, 0.6, 0.6), 1, 0.1, deg(-70));
+    // the planted foot turns with the hips (on a fixed foot the right hip would twist inward past its range)
+    if (d.footR.mode === 'ground') d.footR.yaw += deg(-20);
   });
   const fours = {
     hips: v3(0, 0.5 * s, -0.25 * s),
@@ -233,7 +232,10 @@ function uchikomiSeoi(a: Author): Motion {
     d.hips = v3(-0.02 * s, d.hips.y - 0.05 * s, 0.12 * s);
     // right seoi-nage: the right hip leads the turn (turning the other way would cross the legs)
     d.pelvis.yaw += deg(80);
-    d.footR = a.ground(v3(0.02 * s, 0, 0.3 * s), deg(120), 0);
+    d.footR = a.ground(v3(0.02 * s, 0, 0.3 * s), deg(105), 0);
+    // the left foot pivots on its ball with the hips (a planted foot would twist the left hip inward
+    // far past its range)
+    if (d.footL.mode === 'ground') d.footL = a.ground(d.footL.ball, d.footL.yaw + deg(45), deg(20));
   });
   const fit = edit(g, (d) => {
     d.hips = v3(-0.04 * s, a.m.hipsRest.y - 0.2 * s, 0.32 * s);
@@ -245,8 +247,10 @@ function uchikomiSeoi(a: Author): Motion {
     d.footL = a.ground(v3(-0.18 * s, 0, 0.3 * s), deg(180), 0);
     // hands pulled down and forward (the partner's sleeve and lapel), elbow under the armpit
     const y = a.m.hipsRest.y + 0.12 * s;
-    d.handL = a.hand('world', v3(-0.08 * s, y, 0.0), v3(0.6, -1, 0.2), 0.3, 0.85);
-    d.handR = a.hand('world', v3(0.0, y + 0.2 * s, 0.12 * s), v3(-0.9, -0.6, 0.3), 0.6, 0.85);
+    // (back turned: the coach's front is −z, so an elbow pointing forward is −z here) left elbow down
+    // and out, pulling the sleeve; right elbow down and forward, under the partner's armpit
+    d.handL = a.hand('world', v3(-0.08 * s, y, 0.0), v3(-0.4, -1, 0), 0.3, 0.85);
+    d.handR = a.hand('world', v3(0.1 * s, y + 0.04 * s, -0.04 * s), v3(0.1, -0.7, -0.7), 0.6, 0.85);
   });
   return {
     id: 'uchikomi-seoi',

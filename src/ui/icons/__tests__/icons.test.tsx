@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { DISCIPLINES } from '../../../domain/types';
 import { THEME_BG } from '../../theme/theme';
-import { AppIcon, DisciplineIcon, DISCIPLINE_ICON_ALT, GLYPHS, ICON_REGISTRY, type GlyphId } from '..';
+import { AppIcon, DisciplineIcon, DISCIPLINE_ICON_ALT, GLYPHS, ICON_REGISTRY, ICON_ROLE, iconRole, type GlyphId } from '..';
 
 const ids = Object.keys(GLYPHS) as GlyphId[];
 
@@ -91,12 +91,14 @@ describe('bibliothèque d’icônes : intégration dans les écrans', () => {
     for (const f of files) expect(readFileSync(f, 'utf8'), f).not.toMatch(symbols);
   });
 
-  it('la navigation principale garde ses 5 entrées réelles (Coach n’est pas remplacé par Légendes)', () => {
+  // 0.24: the Coach tab (coach choice and creator) is removed (Youssef, 2026-10-19); Légendes gets its own tab and
+  // the AI coach becomes a floating bubble on every screen (Youssef, 2026-10-20)
+  it('la navigation principale a ses 5 entrées réelles : Légendes à la place de l’ancien onglet Coach', () => {
     const app = readFileSync('src/ui/App.tsx', 'utf8');
     const nav = app.slice(app.indexOf('const NAV = ['), app.indexOf('];', app.indexOf('const NAV = [')));
     const labels = [...nav.matchAll(/label: '([^']+)'/g)].map((m) => m[1]);
-    expect(labels).toEqual(['Accueil', 'Entraîner', 'Techniques', 'Coach', 'Progrès']);
-    expect([...nav.matchAll(/<AppIcon id="(\w+)"/g)].map((m) => m[1])).toEqual(['home', 'train', 'techniques', 'coach', 'progress']);
+    expect(labels).toEqual(['Accueil', 'Entraîner', 'Techniques', 'Progrès', 'Légendes']);
+    expect([...nav.matchAll(/<AppIcon id="(\w+)"/g)].map((m) => m[1])).toEqual(['home', 'train', 'techniques', 'progress', 'legends']);
   });
 });
 
@@ -132,5 +134,32 @@ describe('palette officielle', () => {
     expect(ratio('#9ca3af', '#0b0f14')).toBeGreaterThanOrEqual(4.5);
     expect(ratio('#ff6b77', '#1f2937')).toBeGreaterThanOrEqual(4.5);
     expect(ratio('#d4af37', '#1f2937')).toBeGreaterThanOrEqual(4.5);
+  });
+
+  // 0.24, icon sheet v2: role colours stay readable as icons (non-text contrast ≥ 3:1) on both themes
+  it.each([
+    ['#4f8ff7', '#1f2937'],
+    ['#f2783a', '#1f2937'],
+    ['#a66cf2', '#1f2937'],
+    ['#4cc38a', '#1f2937'],
+    ['#1d5fc9', '#ffffff'],
+    ['#b9480f', '#ffffff'],
+    ['#7a3fc4', '#ffffff'],
+  ])('couleur de rôle %s lisible sur %s', (c, bg) => {
+    expect(ratio(c, bg)).toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe('rôles de couleur (planche v2)', () => {
+  it('chaque rôle désigne une icône existante', () => {
+    for (const id of Object.keys(ICON_ROLE)) expect(GLYPHS).toHaveProperty(id);
+  });
+  it('navigation comme sur la planche : Entraîner et Progrès rouges, Légendes or, le reste neutre', () => {
+    expect(['home', 'train', 'techniques', 'progress', 'legends'].map((id) => iconRole(id as GlyphId))).toEqual(['neutral', 'accent', 'neutral', 'accent', 'gold']);
+  });
+  it('chaque icône porte son rôle en attribut data-role', () => {
+    const html = renderToStaticMarkup(<AppIcon id="verified" tone="auto" />);
+    expect(html).toContain('data-role="success"');
+    expect(html).toContain('tone-auto');
   });
 });

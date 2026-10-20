@@ -94,6 +94,21 @@ function orthoTo(v: Vector3, axis: Vector3, fallback: Vector3) {
 export const ELBOW_MAX_FLEX = (150 * Math.PI) / 180;
 export const KNEE_MAX_FLEX = (155 * Math.PI) / 180;
 
+const DEG = Math.PI / 180;
+const DOWN = new Vector3(0, -1, 0);
+/**
+ * Axial rotation ranges of a healthy adult (American Academy of Orthopaedic Surgeons norms, as
+ * reported by Norkin & White, "Measurement of Joint Motion"), radians; measured in
+ * src/test/torsions.ts and docs/audit-biomecanique/MESURES_TORSIONS.md.
+ */
+export const SHOULDER_ROTATION = { internal: 70 * DEG, external: 90 * DEG };
+export const HIP_ROTATION = { internal: 45 * DEG, external: 45 * DEG };
+export const FOREARM_ROTATION = { pronation: 80 * DEG, supination: 80 * DEG };
+export const WRIST_RANGE = { flexion: 80 * DEG, extension: 70 * DEG };
+/** past this elevation from hanging (arm) or standing (thigh) the axial rotation is not defined */
+const TWIST_UNDEFINED_ELEVATION = 150 * DEG;
+const wrapAngle = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
+
 export class CoachRig {
   readonly metrics: Metrics;
   private bones = new Map<string, BoneRest>();
@@ -102,6 +117,12 @@ export class CoachRig {
   private spine: BoneRest[] = [];
   private fingerAxes = new Map<BoneRest, { axis: Vector3; weight: number }>();
   private twistOffset: Record<Side, number> = { L: 0, R: 0 };
+  /** wrist flexion axis (across the hand, toward the thumb side or away), ground space at rest */
+  private wristAxis: Record<Side, Vector3 | null> = { L: null, R: null };
+  /** turn that brings the upper arm from rest to hanging, elbow bending forward (shoulder rotation 0) */
+  private armNeutral!: Record<Side, Quaternion>;
+  /** rest axis of the spine (pelvis toward the neck): the trunk twists about it */
+  private spineAxis = new Vector3(0, 1, 0);
 
   constructor(readonly root: Object3D) {
     root.updateMatrixWorld(true);
@@ -160,6 +181,14 @@ export class CoachRig {
       L: limb('LeftUpLeg', 'LeftLeg', 'LeftFoot', new Vector3(0, 0, 1), restFootForward('L')),
       R: limb('RightUpLeg', 'RightLeg', 'RightFoot', new Vector3(0, 0, 1), restFootForward('R')),
     };
+    const down = new Vector3(0, -1, 0);
+    const back = new Vector3(0, 0, -1);
+    this.armNeutral = {
+      L: frameRotation(this.arms.L.p0Upper, this.arms.L.u0Upper, down, back, new Quaternion()),
+      R: frameRotation(this.arms.R.p0Upper, this.arms.R.u0Upper, down, back, new Quaternion()),
+    };
+    const neckRest = this.bones.get('Neck')?.worldPos ?? this.spine[2].worldPos;
+    this.spineAxis = neckRest.clone().sub(this.spine[0].worldPos).normalize();
 
     // finger flexion axes, expressed in each bone's own rest frame
     for (const s of SIDES) {
@@ -186,6 +215,11 @@ export class CoachRig {
       const pp = orthoTo(palm.clone(), arm.p0Lower, neutral);
       const ang = Math.atan2(new Vector3().crossVectors(pp, neutral).dot(arm.p0Lower), pp.dot(neutral));
       this.twistOffset[s] = ang;
+      // wrist flexion axis: across the hand, so that a positive angle bends the hand toward the palm
+      // (the hand bone's own axes are not anatomical: its local X mixes flexion and deviation)
+      const mid = this.bones.get(`${sideName(s)}HandMiddle1`)?.worldPos ?? idx.worldPos;
+      const along = mid.clone().sub(hand.worldPos).normalize();
+      this.wristAxis[s] = new Vector3().crossVectors(along, orthoTo(palm.clone(), along, palm)).normalize();
       for (const f of FINGERS) {
         for (let i = 1; i <= 3; i++) {
           const fb = this.bones.get(`${sideName(s)}Hand${f}${i}`);
@@ -353,11 +387,15 @@ export class CoachRig {
     hipsR.bone.position.copy(p.hips).applyMatrix4(toParent);
     this.setWorldQ(hipsR, p.pelvis.clone().multiply(hipsR.worldQ));
 
-    // spine: cumulative share of the chest rotation
-    const shares = [0.3, 0.65, 1.0];
+    // spine: cumulative share of the chest rotation. Bending (swing) is spread over the three bones;
+    // the axial twist goes mostly to the thoracic bones, as in the body: the lumbar spine turns only
+    // about 2° per level (White & Panjabi), the thoracic spine carries most of the trunk rotation
+    const { swing, twist } = splitTwist(p.chest, this.spineAxis);
+    const bendShares = [0.3, 0.65, 1.0];
+    const twistShares = [0.15, 0.55, 1.0];
     const ident = new Quaternion();
     this.spine.forEach((r, i) => {
-      const part = ident.clone().slerp(p.chest, shares[i]);
+      const part = ident.clone().slerp(swing, bendShares[i]).multiply(ident.clone().slerp(twist, twistShares[i]));
       this.setWorldQ(r, p.pelvis.clone().multiply(part).multiply(r.worldQ));
     });
     const trunk = p.pelvis.clone().multiply(p.chest);
@@ -376,7 +414,7 @@ export class CoachRig {
     if (head) this.setWorldQ(head, headQ.clone().multiply(head.worldQ));
 
     for (const s of SIDES) this.solveArm(s, s === 'L' ? p.handL : p.handR, trunk);
-    for (const s of SIDES) this.solveLeg(s, s === 'L' ? p.footL : p.footR);
+    for (const s of SIDES) this.solveLeg(s, s === 'L' ? p.footL : p.footR, p.pelvis);
   }
 
   private solveTwoBone(limb: Limb, target: Vector3, pole: Vector3, maxFlex: number) {
@@ -424,17 +462,35 @@ export class CoachRig {
       const shrug = new Quaternion().setFromAxisAngle(new Vector3(0, 0, 1), sgn * (0.06 * fwd + 0.08 * up));
       this.setWorldQ(sh, trunk.clone().multiply(prot).multiply(shrug).multiply(sh.worldQ));
     }
-    const { qUpper, qLower, p1Lower } = this.solveTwoBone(limb, h.pos, h.pole, ELBOW_MAX_FLEX);
+    // the elbow turns about the shoulder → hand line (the hand stays on its target) when the upper arm
+    // would twist past the shoulder's rotation range
+    const armAxis = h.pos.clone().sub(this.bonePos(limb.upper)).normalize();
+    const armTurn = this.settleTwist(
+      h.pole,
+      armAxis,
+      (pl) => this.shoulderRotation(s, this.solveTwoBone(limb, h.pos, pl, ELBOW_MAX_FLEX).qUpper, trunk),
+      -SHOULDER_ROTATION.internal,
+      SHOULDER_ROTATION.external,
+      1,
+    );
+    const pole = armTurn ? h.pole.clone().applyAxisAngle(armAxis, armTurn) : h.pole;
+    const { qUpper, qLower, p1Lower } = this.solveTwoBone(limb, h.pos, pole, ELBOW_MAX_FLEX);
     const sgn = s === 'L' ? 1 : -1;
-    const pronAngle = (h.pron - 0.35) * (Math.PI / 2) * sgn + this.twistOffset[s];
+    // pronation (+) / supination (−) from the thumb-up neutral, held within the forearm's range; it is
+    // shared between the forearm bone and the hand bone so that the skin of the forearm turns along
+    const anat = softLimit((h.pron - 0.35) * (Math.PI / 2), -FOREARM_ROTATION.supination, FOREARM_ROTATION.pronation);
+    const pronAngle = anat * sgn + this.twistOffset[s];
     const twistFore = new Quaternion().setFromAxisAngle(p1Lower, pronAngle * 0.55);
     const twistHand = new Quaternion().setFromAxisAngle(p1Lower, pronAngle);
     this.setWorldQ(limb.upper, qUpper.clone().multiply(limb.upper.worldQ));
     this.setWorldQ(limb.lower, twistFore.multiply(qLower).multiply(limb.lower.worldQ));
-    const handQ = twistHand.multiply(qLower).multiply(limb.end.worldQ);
-    if (h.wrist) {
-      const axis = new Vector3(1, 0, 0).applyQuaternion(handQ);
-      handQ.premultiply(new Quaternion().setFromAxisAngle(axis, h.wrist));
+    const handTurn = twistHand.multiply(qLower);
+    const handQ = handTurn.clone().multiply(limb.end.worldQ);
+    const wa = this.wristAxis[s];
+    if (h.wrist && wa) {
+      // flexion (+, toward the palm) or extension (−) about the wrist's own flexion axis
+      const axis = wa.clone().applyQuaternion(handTurn);
+      handQ.premultiply(new Quaternion().setFromAxisAngle(axis, softLimit(h.wrist, -WRIST_RANGE.extension, WRIST_RANGE.flexion)));
     }
     this.setWorldQ(limb.end, handQ);
     // fingers
@@ -451,13 +507,96 @@ export class CoachRig {
     }
   }
 
+  /** shoulder rotation of an upper-arm turn relative to the chest: + external, − internal (radians), and the arm's elevation */
+  private shoulderRotation(s: Side, qUpper: Quaternion, trunk: Quaternion) {
+    const q = trunk.clone().invert().multiply(qUpper).multiply(this.armNeutral[s].clone().invert());
+    const st = splitTwist(q, DOWN);
+    return { rot: st.angle * (s === 'L' ? -1 : 1), elev: 2 * Math.acos(Math.min(1, Math.abs(st.swing.w))) };
+  }
+
+  /** hip rotation of a thigh turn relative to the pelvis: + external, − internal (radians), and the thigh's elevation */
+  private hipRotation(s: Side, qUpper: Quaternion, pelvis: Quaternion) {
+    const q = pelvis.clone().invert().multiply(qUpper);
+    const st = splitTwist(q, this.legs[s].p0Upper);
+    return { rot: st.angle * (s === 'L' ? -1 : 1), elev: 2 * Math.acos(Math.min(1, Math.abs(st.swing.w))) };
+  }
+
+  /**
+   * Angle by which to turn a limb's pole (where the elbow or knee points) about the line from the root
+   * joint to the end effector so that the root joint's axial rotation is back inside [lo, hi] (soft
+   * stop, so the motion stays smooth). The hand or foot does not move. The rotation is not defined when the limb
+   * points almost straight up from its neutral (elevation past 135°), so the correction fades out there.
+   */
+  private settleTwist(pole: Vector3, axis: Vector3, read: (pole: Vector3) => { rot: number; elev: number }, lo: number, hi: number, weight: number): number {
+    if (weight <= 0) return 0;
+    const r0 = read(pole);
+    const w = weight * clamp((TWIST_UNDEFINED_ELEVATION - r0.elev) / (15 * DEG), 0, 1);
+    if (w <= 0) return 0;
+    const target = softLimit(r0.rot, lo, hi);
+    if (Math.abs(target - r0.rot) < 1e-4) return 0;
+    // NaN where the rotation is not defined (limb pointing almost straight up)
+    const err = (phi: number) => {
+      const r = read(pole.clone().applyAxisAngle(axis, phi));
+      return r.elev > TWIST_UNDEFINED_ELEVATION ? NaN : wrapAngle(r.rot - target);
+    };
+    const f0 = wrapAngle(r0.rot - target);
+    // fast path: secant from the authored pole (the twist follows the pole almost one to one)
+    {
+      let [xa, fa] = [0, f0];
+      let xb = -f0;
+      let fb = err(xb);
+      if (!(Math.abs(fb) < Math.abs(fa))) {
+        xb = f0;
+        fb = err(xb);
+      }
+      for (let i = 0; i < 6 && Math.abs(fb) > 1e-3 && Math.abs(fb - fa) > 1e-9; i++) {
+        const xc = xb - (fb * (xb - xa)) / (fb - fa);
+        [xa, fa] = [xb, fb];
+        xb = xc;
+        fb = err(xb);
+      }
+      if (Math.abs(fb) <= 1e-3 && Math.abs(xb) <= Math.abs(f0) * 2 + 0.2) return xb * w;
+    }
+    // otherwise the smallest turn of the pole that reaches the target: scan both ways, refine the first bracket
+    const STEP = 15 * DEG;
+    let best = 0;
+    let bestF = Math.abs(f0);
+    let found = Infinity;
+    for (const dir of [1, -1]) {
+      let xa = 0;
+      let fa = f0;
+      for (let k = 1; k * STEP <= Math.PI && k * STEP < Math.abs(found); k++) {
+        const xb = dir * k * STEP;
+        const fb = err(xb);
+        if (Math.abs(fb) < bestF) [best, bestF] = [xb, Math.abs(fb)];
+        if (Math.sign(fa) !== Math.sign(fb) && Math.abs(fa) < Math.PI / 2 && Math.abs(fb) < Math.PI / 2) {
+          // bracket: a few false-position steps
+          let [lo2, flo, hi2, fhi] = [xa, fa, xb, fb];
+          let x = xb;
+          for (let i = 0; i < 8; i++) {
+            x = hi2 - (fhi * (hi2 - lo2)) / (fhi - flo);
+            const fx = err(x);
+            if (Number.isNaN(fx) || Math.abs(fx) < 1e-3) break;
+            if (Math.sign(fx) === Math.sign(flo)) [lo2, flo] = [x, fx];
+            else [hi2, fhi] = [x, fx];
+          }
+          if (Math.abs(x) < Math.abs(found)) found = x;
+          break;
+        }
+        [xa, fa] = [xb, fb];
+      }
+    }
+    if (Number.isFinite(found)) best = found;
+    return best * w;
+  }
+
   /**
    * A planted foot is set by the floor, so the leg adapts instead, the way a body does: the knee turns
    * over the foot when the shin would twist against it, the heel lifts (about the ball, which does not
    * move) when the ankle would bend up past its weight-bearing range, and the foot rolls onto its
    * edge (about the line from the ankle to the ball) when the shin leans sideways past the ankle's range.
    */
-  private settlePlanted(s: Side, f: ResolvedFoot): ResolvedFoot {
+  private settlePlanted(s: Side, f: ResolvedFoot, pelvis: Quaternion): ResolvedFoot {
     const limb = this.legs[s];
     const angles = (ff: ResolvedFoot) => ankleAnglesOf(this.solveTwoBone(limb, ff.ankle, ff.pole, KNEE_MAX_FLEX).qLower.invert().multiply(ff.rot), s);
     let a = angles(f);
@@ -474,6 +613,37 @@ export class CoachRig {
       }
       f = best;
       a = bestA;
+    }
+    // 1b. the thigh within the hip's rotation range, as far as the knee can turn without twisting the
+    // shin against the foot past the planted range
+    {
+      const axis = f.ankle.clone().sub(this.bonePos(limb.upper)).normalize();
+      const turn = this.settleTwist(
+        f.pole,
+        axis,
+        (pl) => this.hipRotation(s, this.solveTwoBone(limb, f.ankle, pl, KNEE_MAX_FLEX).qUpper, pelvis),
+        -HIP_ROTATION.internal,
+        HIP_ROTATION.external,
+        1,
+      );
+      if (turn) {
+        const allowed = Math.max(PLANTED_LIMIT.rotation, Math.abs(a.rotation));
+        const at = (phi: number) => ({ ...f, pole: f.pole.clone().applyAxisAngle(axis, phi) });
+        let phi = turn;
+        if (Math.abs(angles(at(phi)).rotation) > allowed) {
+          let [ok, bad] = [0, turn];
+          for (let i = 0; i < 8; i++) {
+            const mid = (ok + bad) / 2;
+            if (Math.abs(angles(at(mid)).rotation) > allowed) bad = mid;
+            else ok = mid;
+          }
+          phi = ok;
+        }
+        if (phi) {
+          f = at(phi);
+          a = angles(f);
+        }
+      }
     }
     // 2. heel lift past the weight-bearing dorsiflexion
     if (a.plantar < -PLANTED_LIMIT.dorsi) {
@@ -505,11 +675,24 @@ export class CoachRig {
     return f;
   }
 
-  private solveLeg(s: Side, f: ResolvedFoot) {
+  private solveLeg(s: Side, f: ResolvedFoot, pelvis: Quaternion) {
     this.heelLift[s] = null;
-    if (f.toeFlat > 0.5) f = this.settlePlanted(s, f);
+    if (f.toeFlat > 0.5) f = this.settlePlanted(s, f, pelvis);
     const limb = this.legs[s];
-    const { qUpper, qLower } = this.solveTwoBone(limb, f.ankle, f.pole, KNEE_MAX_FLEX);
+    // a foot off the floor: the knee turns about the hip → ankle line (the foot stays on its target)
+    // when the thigh would twist past the hip's rotation range. A planted foot sets the knee itself.
+    const legAxis = f.ankle.clone().sub(this.bonePos(limb.upper)).normalize();
+    const legTurn = this.settleTwist(
+      f.pole,
+      legAxis,
+      (pl) => this.hipRotation(s, this.solveTwoBone(limb, f.ankle, pl, KNEE_MAX_FLEX).qUpper, pelvis),
+      -HIP_ROTATION.internal,
+      HIP_ROTATION.external,
+      // full from the moment the foot is half off the floor (below, the knee is set over the foot)
+      clamp(2 * (1 - f.toeFlat), 0, 1),
+    );
+    const pole = legTurn ? f.pole.clone().applyAxisAngle(legAxis, legTurn) : f.pole;
+    const { qUpper, qLower } = this.solveTwoBone(limb, f.ankle, pole, KNEE_MAX_FLEX);
     this.setWorldQ(limb.upper, qUpper.multiply(limb.upper.worldQ));
     // turn of the shin since rest: the ankle angles are read and limited against it
     const shin = qLower.clone();
@@ -568,6 +751,19 @@ export class CoachRig {
     const rootQInv = worldQuat(this.root, new Quaternion()).invert();
     return rootQInv.multiply(worldQuat(r.bone, new Quaternion())).multiply(r.worldQ.clone().invert());
   }
+}
+
+/** q = swing · twist, the twist being a rotation about the unit axis (applied first) */
+export function splitTwist(q: Quaternion, axis: Vector3) {
+  const d = q.x * axis.x + q.y * axis.y + q.z * axis.z;
+  const twist = new Quaternion(axis.x * d, axis.y * d, axis.z * d, q.w);
+  if (twist.lengthSq() < 1e-12) twist.set(0, 0, 0, 1);
+  twist.normalize();
+  const swing = q.clone().multiply(twist.clone().invert());
+  let angle = 2 * Math.atan2(d, q.w);
+  if (angle > Math.PI) angle -= 2 * Math.PI;
+  if (angle < -Math.PI) angle += 2 * Math.PI;
+  return { swing, twist, angle };
 }
 
 export function clamp(v: number, lo: number, hi: number) {

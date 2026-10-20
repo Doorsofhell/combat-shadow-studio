@@ -22,3 +22,27 @@
 .level-icon { flex: none; vertical-align: -2px; }
 .level-icon .on { fill: currentColor; }
 .level-icon .off { fill: currentColor; opacity: 0.22; }
+.app-icon.tone-info { color: var(--c-info); }
+.app-icon.tone-orange { color: var(--c-orange); }
+.app-icon.tone-purple { color: var(--c-purple); }
+
+/*
+ * Icon sheet v2 (0.24): in menus the icon wears its own role colour (data-role, registry ICON_ROLE):
+ * explicit tone="auto", tiles without a set tone, panel titles, setting rows and the navigation.
+ * Buttons, chips and the training controls keep the colour of their component.
+ */
+:is(.tone-auto, .icon-tile:not(.red):not(.gold) .app-icon, .panel-title .app-icon, .panel-row > .app-icon:first-child, .nav .app-icon)[data-role='accent'] { color: var(--red); }
+:is(.tone-auto, .icon-tile:not(.red):not(.gold) .app-icon, .panel-title .app-icon, .panel-row > .app-icon:first-child, .nav .app-icon)[data-role='gold'] { color: var(--gold); }
+:is(.tone-auto, .icon-tile:not(.red):not(.gold) .app-icon, .panel-title .app-icon, .panel-row > .app-icon:first-child, .nav .app-icon)[data-role='success'] { color: var(--c-ok); }
+:is(.tone-auto, .icon-tile:not(.red):not(.gold) .app-icon, .panel-title .app-icon, .panel-row > .app-icon:first-child, .nav .app-icon)[data-role='info'] { color: var(--c-info); }
+:is(.tone-auto, .icon-tile:not(.red):not(.gold) .app-icon, .panel-title .app-icon, .panel-row > .app-icon:first-child, .nav .app-icon)[data-role='orange'] { color: var(--c-orange); }
+:is(.tone-auto, .icon-tile:not(.red):not(.gold) .app-icon, .panel-title .app-icon, .panel-row > .app-icon:first-child, .nav .app-icon)[data-role='purple'] { color: var(--c-purple); }
+.tone-auto[data-role='neutral'], .panel-row > .app-icon.muted:first-child { color: var(--ink); }
+/* navigation: inactive icons are a little dimmed, the active one at full colour on its pill */
+.nav a:not(.active) .app-icon { opacity: 0.72; }
+
+/* levels, as on the sheet: beginner grey, intermediate gold, advanced red, expert purple */
+.level-icon[data-level='debutant'] { color: var(--muted); }
+.level-icon[data-level='intermediaire'] { color: var(--gold); }
+.level-icon[data-level='avance'] { color: var(--red); }
+.level-icon[data-level='expert'] { color: var(--c-purple); }

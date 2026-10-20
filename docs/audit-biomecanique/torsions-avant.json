@@ -1,0 +1,593 @@
+{
+ "runs": 1512,
+ "frames": 58256,
+ "measures": {
+  "trunk": {
+   "limit": 45,
+   "worst": 31,
+   "where": "mma-kadir genou-circulaire-arriere (kickboxing, garde du coach) t=0.40 s",
+   "excess": -14,
+   "techniques": []
+  },
+  "lumbar": {
+   "limit": 10,
+   "worst": 9.3,
+   "where": "mma-amara genou-circulaire-arriere (kickboxing, gaucher) t=0.36 s",
+   "excess": -0.7,
+   "techniques": []
+  },
+  "cervical": {
+   "limit": 80,
+   "worst": 66.5,
+   "where": "mma-kadir sprawl (mma, garde du coach) t=0.23 s",
+   "excess": -13.5,
+   "techniques": []
+  },
+  "shoulderInt": {
+   "limit": 70,
+   "worst": 178.9,
+   "where": "mma-kadir middle-kick-avant (mma, gaucher, garde du coach) t=0.48 s côté R",
+   "excess": 108.9,
+   "techniques": [
+    {
+     "technique": "middle-kick-avant",
+     "excess": 108.9
+    },
+    {
+     "technique": "defense-lutte",
+     "excess": 104.9
+    },
+    {
+     "technique": "pont",
+     "excess": 97.3
+    },
+    {
+     "technique": "retention-garde",
+     "excess": 97.2
+    },
+    {
+     "technique": "changement-base",
+     "excess": 92.3
+    },
+    {
+     "technique": "genou-circulaire-avant",
+     "excess": 75.8
+    },
+    {
+     "technique": "sortie-hanche",
+     "excess": 73
+    },
+    {
+     "technique": "releve-technique",
+     "excess": 61.1
+    },
+    {
+     "technique": "descente-sol",
+     "excess": 61
+    },
+    {
+     "technique": "uchikomi-seoi",
+     "excess": 53.4
+    },
+    {
+     "technique": "genou-direct-avant",
+     "excess": 50.5
+    },
+    {
+     "technique": "high-kick-arriere",
+     "excess": 36.9
+    },
+    {
+     "technique": "overhand",
+     "excess": 36.6
+    },
+    {
+     "technique": "kuzushi",
+     "excess": 33.6
+    },
+    {
+     "technique": "direct",
+     "excess": 32
+    },
+    {
+     "technique": "direct-corps",
+     "excess": 29.8
+    },
+    {
+     "technique": "sprawl",
+     "excess": 26.7
+    },
+    {
+     "technique": "clinch-tirage",
+     "excess": 17.1
+    },
+    {
+     "technique": "crochet-arriere",
+     "excess": 16.1
+    },
+    {
+     "technique": "uppercut-arriere",
+     "excess": 15.7
+    },
+    {
+     "technique": "middle-kick-arriere",
+     "excess": 13.4
+    },
+    {
+     "technique": "low-kick-avant",
+     "excess": 12.1
+    },
+    {
+     "technique": "parade",
+     "excess": 9.9
+    },
+    {
+     "technique": "genou-direct-arriere",
+     "excess": 6
+    },
+    {
+     "technique": "crochet-arriere-corps",
+     "excess": 4.8
+    },
+    {
+     "technique": "retrait",
+     "excess": 3.2
+    },
+    {
+     "technique": "esquive-droite",
+     "excess": 2.5
+    },
+    {
+     "technique": "blocage-corps-avant",
+     "excess": 2
+    },
+    {
+     "technique": "crochet-avant-corps",
+     "excess": 1.6
+    },
+    {
+     "technique": "crochet-avant",
+     "excess": 1.5
+    },
+    {
+     "technique": "genou-circulaire-arriere",
+     "excess": 1
+    },
+    {
+     "technique": "jab",
+     "excess": 1
+    },
+    {
+     "technique": "roll-droite",
+     "excess": 0.8
+    },
+    {
+     "technique": "roll-gauche",
+     "excess": 0.4
+    },
+    {
+     "technique": "feinte-jab",
+     "excess": 0.2
+    }
+   ]
+  },
+  "shoulderExt": {
+   "limit": 90,
+   "worst": 179.5,
+   "where": "mma-kadir middle-kick-avant (mma, gaucher, garde du coach) t=0.38 s côté R",
+   "excess": 89.5,
+   "techniques": [
+    {
+     "technique": "middle-kick-avant",
+     "excess": 89.5
+    },
+    {
+     "technique": "changement-base",
+     "excess": 83.8
+    },
+    {
+     "technique": "overhand",
+     "excess": 33
+    },
+    {
+     "technique": "crochet-avant",
+     "excess": 22.8
+    },
+    {
+     "technique": "genou-circulaire-avant",
+     "excess": 18.8
+    },
+    {
+     "technique": "crochet-avant-corps",
+     "excess": 10.7
+    }
+   ]
+  },
+  "hipElev": {
+   "limit": null,
+   "worst": 169.2,
+   "where": "mma-amara high-kick-avant (kickboxing, gaucher, garde du coach) t=0.35 s côté R",
+   "excess": -999,
+   "techniques": []
+  },
+  "pronation": {
+   "limit": 85,
+   "worst": 92.7,
+   "where": "mma-kadir changement-base (bjj) t=0.80 s côté L",
+   "excess": 7.7,
+   "techniques": [
+    {
+     "technique": "changement-base",
+     "excess": 7.7
+    },
+    {
+     "technique": "sprawl",
+     "excess": 3.6
+    },
+    {
+     "technique": "sortie-hanche",
+     "excess": 3.6
+    },
+    {
+     "technique": "retention-garde",
+     "excess": 3.6
+    },
+    {
+     "technique": "pont",
+     "excess": 3.6
+    },
+    {
+     "technique": "releve-technique",
+     "excess": 3.6
+    },
+    {
+     "technique": "descente-sol",
+     "excess": 3.6
+    }
+   ]
+  },
+  "supination": {
+   "limit": 85,
+   "worst": 117.3,
+   "where": "mma-amara uppercut-avant (mma) t=0.26 s côté L",
+   "excess": 32.3,
+   "techniques": [
+    {
+     "technique": "uppercut-avant",
+     "excess": 32.3
+    },
+    {
+     "technique": "uppercut-arriere",
+     "excess": 32.3
+    }
+   ]
+  },
+  "wristFlex": {
+   "limit": 80,
+   "worst": 26.8,
+   "where": "mma-kadir clinch-tirage (muaythai, garde du coach) t=0.50 s côté L",
+   "excess": -53.2,
+   "techniques": []
+  },
+  "wristExt": {
+   "limit": 70,
+   "worst": 66.2,
+   "where": "mma-kadir changement-base (bjj) t=0.93 s côté L",
+   "excess": -3.8,
+   "techniques": []
+  },
+  "wristRadial": {
+   "limit": 20,
+   "worst": 31.4,
+   "where": "mma-amara clinch-tirage (muaythai) t=0.38 s côté R",
+   "excess": 11.4,
+   "techniques": [
+    {
+     "technique": "clinch-tirage",
+     "excess": 11.4
+    },
+    {
+     "technique": "genou-circulaire-clinch",
+     "excess": 6.8
+    },
+    {
+     "technique": "genou-clinch",
+     "excess": 6.8
+    }
+   ]
+  },
+  "wristUlnar": {
+   "limit": 30,
+   "worst": 73.3,
+   "where": "mma-amara changement-base (bjj) t=0.82 s côté R",
+   "excess": 43.3,
+   "techniques": [
+    {
+     "technique": "changement-base",
+     "excess": 43.3
+    },
+    {
+     "technique": "sprawl",
+     "excess": 38
+    },
+    {
+     "technique": "sortie-hanche",
+     "excess": 38
+    },
+    {
+     "technique": "retention-garde",
+     "excess": 38
+    },
+    {
+     "technique": "pont",
+     "excess": 38
+    },
+    {
+     "technique": "releve-technique",
+     "excess": 38
+    },
+    {
+     "technique": "descente-sol",
+     "excess": 38
+    }
+   ]
+  },
+  "elbowHyper": {
+   "limit": 10,
+   "worst": -2.3,
+   "where": "mma-kadir direct-corps (boxing, gaucher) t=0.13 s côté L",
+   "excess": -12.3,
+   "techniques": []
+  },
+  "kneeHyper": {
+   "limit": 5,
+   "worst": -1.8,
+   "where": "mma-amara high-kick-avant (muaythai) t=0.35 s côté L",
+   "excess": -6.8,
+   "techniques": []
+  },
+  "hipInt": {
+   "limit": 45,
+   "worst": 179.9,
+   "where": "mma-amara high-kick-arriere (mma, gaucher) t=0.36 s côté L",
+   "excess": 134.9,
+   "techniques": [
+    {
+     "technique": "high-kick-arriere",
+     "excess": 134.9
+    },
+    {
+     "technique": "high-kick-avant",
+     "excess": 94
+    },
+    {
+     "technique": "middle-kick-arriere",
+     "excess": 54.3
+    },
+    {
+     "technique": "roundhouse-arriere",
+     "excess": 53.2
+    },
+    {
+     "technique": "uchikomi-seoi",
+     "excess": 32.3
+    },
+    {
+     "technique": "middle-kick-avant",
+     "excess": 16.8
+    },
+    {
+     "technique": "changement-base",
+     "excess": 10.3
+    },
+    {
+     "technique": "low-kick-arriere",
+     "excess": 0.3
+    }
+   ]
+  },
+  "hipExt": {
+   "limit": 45,
+   "worst": 180,
+   "where": "mma-amara high-kick-arriere (mma, gaucher, garde du coach) t=0.50 s côté L",
+   "excess": 135,
+   "techniques": [
+    {
+     "technique": "high-kick-arriere",
+     "excess": 135
+    },
+    {
+     "technique": "changement-base",
+     "excess": 94.6
+    },
+    {
+     "technique": "high-kick-avant",
+     "excess": 84.4
+    },
+    {
+     "technique": "middle-kick-avant",
+     "excess": 83.4
+    },
+    {
+     "technique": "descente-sol",
+     "excess": 74.7
+    },
+    {
+     "technique": "releve-technique",
+     "excess": 72.7
+    },
+    {
+     "technique": "sortie-hanche",
+     "excess": 72.5
+    },
+    {
+     "technique": "roundhouse-avant",
+     "excess": 67.6
+    },
+    {
+     "technique": "low-kick-avant",
+     "excess": 56.9
+    },
+    {
+     "technique": "check-avant",
+     "excess": 38
+    },
+    {
+     "technique": "pont",
+     "excess": 36.2
+    },
+    {
+     "technique": "retention-garde",
+     "excess": 36.2
+    },
+    {
+     "technique": "middle-kick-arriere",
+     "excess": 30.1
+    },
+    {
+     "technique": "roundhouse-arriere",
+     "excess": 30
+    },
+    {
+     "technique": "low-kick-arriere",
+     "excess": 17.6
+    },
+    {
+     "technique": "front-kick-avant",
+     "excess": 7.5
+    },
+    {
+     "technique": "uppercut-avant",
+     "excess": 7.1
+    },
+    {
+     "technique": "sprawl",
+     "excess": 6.4
+    },
+    {
+     "technique": "teep-avant",
+     "excess": 5.5
+    },
+    {
+     "technique": "genou-circulaire-avant",
+     "excess": 3.3
+    },
+    {
+     "technique": "front-kick-arriere",
+     "excess": 2
+    }
+   ]
+  },
+  "kneeRot": {
+   "limit": null,
+   "worst": 5.7,
+   "where": "mma-amara genou-circulaire-avant (muaythai, garde du coach) t=0.51 s côté L",
+   "excess": -5.5,
+   "techniques": []
+  },
+  "handTwist": {
+   "limit": null,
+   "worst": 53.6,
+   "where": "mma-kadir uppercut-arriere (muaythai, gaucher) t=0.26 s côté L",
+   "excess": -999,
+   "techniques": []
+  }
+ },
+ "bones": {
+  "Spine": {
+   "twist": 9.3,
+   "twistWhere": "mma-amara genou-circulaire-arriere (kickboxing, gaucher) t=0.36 s",
+   "swing": 10.8
+  },
+  "Spine1": {
+   "twist": 11,
+   "twistWhere": "mma-kadir sortie-hanche (mma, gaucher) t=0.30 s",
+   "swing": 12.6
+  },
+  "Spine2": {
+   "twist": 10.8,
+   "twistWhere": "mma-amara genou-circulaire-arriere (kickboxing) t=0.38 s",
+   "swing": 12.7
+  },
+  "Neck": {
+   "twist": 29.8,
+   "twistWhere": "mma-amara genou-circulaire-avant (kickboxing, garde du coach) t=0.35 s",
+   "swing": 45.7
+  },
+  "Head": {
+   "twist": 35.4,
+   "twistWhere": "mma-amara genou-circulaire-avant (kickboxing, garde du coach) t=0.35 s",
+   "swing": 55.9
+  },
+  "LeftShoulder": {
+   "twist": 4.4,
+   "twistWhere": "mma-amara sprawl (mma, garde du coach) t=1.09 s",
+   "swing": 8.9
+  },
+  "LeftArm": {
+   "twist": 179.6,
+   "twistWhere": "mma-kadir middle-kick-avant (mma, garde du coach) t=0.38 s",
+   "swing": 152.7
+  },
+  "LeftForeArm": {
+   "twist": 65.8,
+   "twistWhere": "mma-kadir uppercut-avant (boxing, garde du coach) t=0.28 s",
+   "swing": 110.6
+  },
+  "LeftHand": {
+   "twist": 53.6,
+   "twistWhere": "mma-kadir uppercut-arriere (muaythai, gaucher) t=0.26 s",
+   "swing": 73
+  },
+  "LeftUpLeg": {
+   "twist": 180,
+   "twistWhere": "mma-amara high-kick-arriere (mma, gaucher, garde du coach) t=0.50 s",
+   "swing": 169.1
+  },
+  "LeftLeg": {
+   "twist": 5.7,
+   "twistWhere": "mma-amara genou-circulaire-avant (muaythai, garde du coach) t=0.51 s",
+   "swing": 148.6
+  },
+  "LeftFoot": {
+   "twist": 30.1,
+   "twistWhere": "mma-kadir releve-technique (mma) t=0.52 s",
+   "swing": 56.6
+  },
+  "RightShoulder": {
+   "twist": 4.2,
+   "twistWhere": "mma-amara sprawl (mma, gaucher) t=1.10 s",
+   "swing": 9.2
+  },
+  "RightArm": {
+   "twist": 179.2,
+   "twistWhere": "mma-amara middle-kick-avant (mma, gaucher) t=0.50 s",
+   "swing": 152.1
+  },
+  "RightForeArm": {
+   "twist": 65.8,
+   "twistWhere": "mma-kadir uppercut-avant (mma, gaucher) t=0.26 s",
+   "swing": 110.6
+  },
+  "RightHand": {
+   "twist": 53.6,
+   "twistWhere": "mma-kadir uppercut-arriere (muaythai) t=0.26 s",
+   "swing": 73.5
+  },
+  "RightUpLeg": {
+   "twist": 179.7,
+   "twistWhere": "mma-kadir high-kick-arriere (kickboxing, garde du coach) t=0.36 s",
+   "swing": 169.2
+  },
+  "RightLeg": {
+   "twist": 5.7,
+   "twistWhere": "mma-amara descente-sol (mma) t=0.47 s",
+   "swing": 148.6
+  },
+  "RightFoot": {
+   "twist": 30,
+   "twistWhere": "mma-kadir releve-technique (mma, gaucher) t=0.52 s",
+   "swing": 56.5
+  }
+ }
+}

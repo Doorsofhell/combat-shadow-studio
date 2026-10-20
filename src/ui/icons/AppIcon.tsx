@@ -2,7 +2,7 @@ import { useId, type CSSProperties } from 'react';
 import type { DisciplineId } from '../../domain/types';
 import { DISCIPLINE_DRAWINGS, DISCIPLINE_ICON_ALT } from './disciplines';
 import { GLYPHS, type GlyphId } from './glyphs';
-import type { ActionIconId, NavigationIconId, StatusIconId, TrainingControlIconId } from './registry';
+import { iconRole, type ActionIconId, type NavigationIconId, type StatusIconId, type TrainingControlIconId } from './registry';
 
 /**
  * Size scale of the charter (px): 24 navigation and compact actions, 32 quick access,
@@ -14,9 +14,10 @@ export type IconSize = 16 | 18 | 20 | 24 | 28 | 32 | 40 | 48 | 64 | 96 | 128 | n
 /**
  * Colour of a glyph. `current` follows the text colour (buttons, links: the states of the
  * component carry the colour), the others are fixed roles of the palette.
+ * `auto` takes the icon's own role colour (registry ICON_ROLE, after the icon sheet v2).
  * The colour never carries a meaning alone: every icon has a label next to it or an aria-label.
  */
-export type IconTone = 'current' | 'neutral' | 'muted' | 'accent' | 'gold' | 'success' | 'danger';
+export type IconTone = 'current' | 'auto' | 'neutral' | 'muted' | 'accent' | 'gold' | 'success' | 'danger' | 'info' | 'orange' | 'purple';
 
 export interface AppIconProps {
   id: GlyphId;
@@ -39,6 +40,7 @@ export function AppIcon({ id, size = 24, tone = 'current', label, className, sty
     <svg
       className={`app-icon tone-${tone}${className ? ` ${className}` : ''}`}
       data-icon={id}
+      data-role={iconRole(id)}
       viewBox="0 0 24 24"
       width={size}
       height={size}

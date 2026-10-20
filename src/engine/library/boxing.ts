@@ -172,7 +172,11 @@ function uppercut(a: Author, side: 'L' | 'R'): Motion {
     if (side === 'L') {
       d.pelvis.yaw += deg(-22);
       d.chest.yaw += deg(-8);
-      if (d.footL.mode === 'ground') d.footL.heel = deg(14);
+      // the lead heel turns out a little with the hips, so the lead hip does not twist outward
+      if (d.footL.mode === 'ground') {
+        d.footL.heel = deg(14);
+        d.footL.yaw += deg(-10);
+      }
     } else {
       d.pelvis.yaw += deg(36);
       d.chest.yaw += deg(12);

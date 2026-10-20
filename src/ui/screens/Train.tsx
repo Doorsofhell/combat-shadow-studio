@@ -68,7 +68,8 @@ export function Train() {
           <EmptyState title="Aucun programme pour ce filtre" />
         ) : (
           <div className="stack" style={{ gap: 8 }}>
-            {progs.map((p) => (
+            {/* 0.24 (épuration) : trois programmes ici, la liste complète est sur la page Programmes */}
+            {progs.slice(0, 3).map((p) => (
               <Link key={p.id} to={`/programmes/${p.id}`} className="card link ex-card">
                 <TechThumb id={programTechnique(p)} />
                 <span className="body">
@@ -79,6 +80,11 @@ export function Train() {
                 <AppIcon id="chevron" />
               </Link>
             ))}
+            {progs.length > 3 && (
+              <Link to="/programmes" className="btn secondary block" data-testid="all-programs">
+                Voir les {progs.length} programmes
+              </Link>
+            )}
           </div>
         )}
       </section>

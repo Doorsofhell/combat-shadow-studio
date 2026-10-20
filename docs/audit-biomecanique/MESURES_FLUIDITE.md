@@ -10,16 +10,16 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 
 ## Total, 6 styles de garde
 
-432 animations, 1266 poses clés intérieures. Arrêts parasites : **939 avant, 318 après**.
+432 animations, 1266 poses clés intérieures. Arrêts parasites : **1066 avant, 210 après**.
 
 | Style | Animations | Arrêts avant | Arrêts après |
 |---|---|---|---|
-| boxing | 72 | 148 | 49 |
-| kickboxing | 72 | 149 | 48 |
-| mma | 72 | 151 | 47 |
-| muaythai | 72 | 153 | 56 |
-| bjj | 72 | 164 | 53 |
-| judo | 72 | 174 | 65 |
+| boxing | 72 | 171 | 32 |
+| kickboxing | 72 | 173 | 32 |
+| mma | 72 | 171 | 29 |
+| muaythai | 72 | 178 | 31 |
+| bjj | 72 | 184 | 36 |
+| judo | 72 | 189 | 50 |
 
 ## Détail, garde de boxe
 
@@ -47,21 +47,21 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `blocage-corps-arriere` | 2 | 0 | 0 | 0,0 | 0,0 | 2,6 | 2,6 | 0,0 | 0,0 |
 | `parade` | 1 | 0 | 0 | 0,0 | 0,0 | 5,2 | 5,2 | 0,0 | 0,0 |
 | `retrait` | 2 | 0 | 0 | 0,0 | 0,0 | 4,1 | 4,1 | – | – |
-| `pas-avant` | 2 | 7 | 1 | 0,0 | 0,0 | 3,3 | 3,3 | – | – |
-| `pas-arriere` | 2 | 7 | 1 | 0,0 | 0,0 | 3,1 | 3,1 | – | – |
-| `pas-gauche` | 2 | 7 | 1 | 0,0 | 0,0 | 3,2 | 3,2 | – | – |
-| `pas-droite` | 2 | 7 | 1 | 0,0 | 0,0 | 3,5 | 3,5 | – | – |
-| `pivot-droite` | 1 | 5 | 2 | 0,0 | 0,0 | 5,2 | 5,2 | – | – |
-| `pivot-gauche` | 1 | 5 | 2 | 0,0 | 0,0 | 5,2 | 5,2 | – | – |
-| `sortie-angle` | 2 | 3 | 2 | 0,0 | 0,0 | 6,5 | 6,5 | – | – |
-| `low-kick-arriere` | 4 | 6 | 3 | 5,8 | 5,8 | 10,6 | 10,6 | 6,2 | 6,2 |
-| `low-kick-avant` | 4 | 6 | 1 | 5,3 | 5,3 | 9,5 | 9,5 | 5,7 | 5,7 |
-| `middle-kick-arriere` | 4 | 6 | 3 | 7,5 | 7,5 | 13,5 | 13,5 | 8,0 | 8,0 |
-| `middle-kick-avant` | 4 | 6 | 1 | 7,1 | 7,1 | 12,9 | 12,9 | 7,6 | 7,6 |
-| `high-kick-arriere` | 4 | 4 | 3 | 8,1 | 8,1 | 14,8 | 14,8 | 8,7 | 8,7 |
-| `high-kick-avant` | 4 | 10 | 3 | 9,6 | 9,6 | 20,1 | 20,1 | 10,4 | 10,4 |
-| `roundhouse-arriere` | 4 | 6 | 3 | 8,7 | 8,7 | 18,3 | 18,3 | 9,4 | 9,4 |
-| `roundhouse-avant` | 4 | 8 | 1 | 8,3 | 8,3 | 17,2 | 17,2 | 8,9 | 8,9 |
+| `pas-avant` | 2 | 7 | 0 | 0,0 | 0,0 | 3,3 | 3,1 | – | – |
+| `pas-arriere` | 2 | 7 | 0 | 0,0 | 0,0 | 3,1 | 3,0 | – | – |
+| `pas-gauche` | 2 | 7 | 0 | 0,0 | 0,0 | 3,2 | 3,1 | – | – |
+| `pas-droite` | 2 | 7 | 0 | 0,0 | 0,0 | 3,5 | 3,4 | – | – |
+| `pivot-droite` | 1 | 5 | 0 | 0,0 | 0,0 | 5,2 | 4,8 | – | – |
+| `pivot-gauche` | 1 | 5 | 0 | 0,0 | 0,0 | 5,2 | 4,9 | – | – |
+| `sortie-angle` | 2 | 3 | 0 | 0,0 | 0,0 | 6,5 | 6,0 | – | – |
+| `low-kick-arriere` | 4 | 8 | 2 | 5,7 | 5,7 | 10,2 | 10,2 | 6,1 | 6,1 |
+| `low-kick-avant` | 4 | 8 | 0 | 5,4 | 5,4 | 10,2 | 10,2 | 5,8 | 5,8 |
+| `middle-kick-arriere` | 4 | 10 | 2 | 8,2 | 8,2 | 15,0 | 15,0 | 8,8 | 8,8 |
+| `middle-kick-avant` | 4 | 6 | 1 | 7,6 | 7,6 | 14,0 | 14,0 | 8,1 | 8,1 |
+| `high-kick-arriere` | 4 | 10 | 2 | 9,7 | 9,7 | 17,7 | 17,7 | 10,4 | 10,4 |
+| `high-kick-avant` | 4 | 12 | 3 | 10,8 | 10,8 | 23,0 | 23,0 | 11,7 | 11,7 |
+| `roundhouse-arriere` | 4 | 10 | 2 | 9,5 | 9,5 | 20,3 | 20,3 | 10,3 | 10,3 |
+| `roundhouse-avant` | 4 | 9 | 1 | 8,7 | 8,7 | 18,7 | 18,7 | 9,4 | 9,4 |
 | `teep-avant` | 4 | 4 | 0 | 6,3 | 6,3 | 17,6 | 17,6 | 6,8 | 6,8 |
 | `teep-arriere` | 4 | 2 | 2 | 6,3 | 6,3 | 17,7 | 17,7 | 6,8 | 6,8 |
 | `front-kick-avant` | 4 | 4 | 0 | 6,0 | 6,0 | 12,9 | 12,9 | 6,4 | 6,4 |
@@ -69,10 +69,10 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `genou-direct-arriere` | 4 | 1 | 0 | 5,0 | 5,0 | 13,3 | 13,3 | 5,3 | 5,3 |
 | `genou-direct-avant` | 4 | 2 | 1 | 4,0 | 4,0 | 11,3 | 11,3 | 4,3 | 4,3 |
 | `genou-circulaire-arriere` | 4 | 1 | 0 | 5,5 | 5,5 | 14,5 | 14,5 | 5,8 | 5,8 |
-| `genou-circulaire-avant` | 4 | 3 | 2 | 4,2 | 4,2 | 15,1 | 15,1 | 4,4 | 4,4 |
+| `genou-circulaire-avant` | 4 | 3 | 2 | 4,2 | 4,2 | 15,0 | 15,0 | 4,4 | 4,4 |
 | `genou-direct-arriere-clinch` | 4 | 1 | 0 | 5,0 | 5,0 | 13,3 | 13,3 | 5,3 | 5,3 |
 | `genou-circulaire-arriere-clinch` | 4 | 1 | 0 | 5,5 | 5,5 | 14,5 | 14,5 | 5,8 | 5,8 |
-| `check-avant` | 2 | 0 | 0 | 0,0 | 0,0 | 9,0 | 9,0 | 0,0 | 0,0 |
+| `check-avant` | 2 | 0 | 0 | 0,0 | 0,0 | 9,1 | 9,1 | 0,0 | 0,0 |
 | `check-arriere` | 2 | 0 | 0 | 0,0 | 0,0 | 17,9 | 17,9 | 0,0 | 0,0 |
 | `coude-horizontal-avant` | 3 | 0 | 0 | 2,2 | 2,2 | 2,8 | 2,8 | 2,3 | 2,3 |
 | `coude-horizontal-arriere` | 3 | 0 | 0 | 4,1 | 4,1 | 5,8 | 5,8 | 4,4 | 4,4 |
@@ -94,6 +94,6 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `pont` | 6 | 4 | 4 | 4,5 | 4,5 | 4,5 | 4,5 | 0,0 | 0,0 |
 | `retention-garde` | 7 | 0 | 0 | 0,0 | 0,0 | 4,1 | 3,9 | – | – |
 | `changement-base` | 4 | 2 | 0 | 0,0 | 0,0 | 9,3 | 9,3 | – | – |
-| `tai-sabaki` | 4 | 4 | 2 | 0,0 | 0,0 | 5,2 | 5,2 | 0,0 | 0,1 |
+| `tai-sabaki` | 4 | 4 | 0 | 0,0 | 0,0 | 5,2 | 5,1 | 0,0 | 0,1 |
 | `kuzushi` | 2 | 0 | 0 | 0,0 | 0,0 | 7,2 | 7,2 | 0,0 | 0,0 |
-| `uchikomi-seoi` | 4 | 1 | 0 | 13,5 | 13,5 | 13,5 | 13,5 | 0,0 | 0,0 |
+| `uchikomi-seoi` | 4 | 3 | 0 | 13,5 | 13,5 | 13,5 | 13,5 | 0,0 | 0,0 |

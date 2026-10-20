@@ -1,3 +1,4 @@
+import { championFor, championLook, championStance } from '../domain/coaches/catalog';
 import { Suspense, useCallback, useMemo, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { CoachModel } from '../three/CoachModel';
@@ -48,7 +49,8 @@ export function Lab() {
   const southpaw = q.get('garde') === 'gaucher';
   // art=1: official discipline artwork (discipline gear, collection palette: anthracite, red, gold)
   const look = useMemo<FighterLook | null>(() => {
-    if (champion) return COACH_LOOKS[champion];
+    // with d=<discipline> or a technique: the coach dressed for that discipline, as in the app
+    if (champion) return q.get('d') || tech ? championLook(championFor(coach), disc) : COACH_LOOKS[champion];
     if (!q.get('art')) {
       // top=<garment>&bottom=<garment>: clothing checks on the default look
       if (!q.get('top') && !q.get('bottom')) return null;
@@ -80,7 +82,7 @@ export function Lab() {
   const sampler = useRef<MotionSampler | null>(null);
   const onRig = useCallback(
     (rig: CoachRig) => {
-      const lib = getLibrary(rig, style, coachProfile(champion));
+      const lib = getLibrary(rig, style, champion && (q.get('d') || tech) ? championStance(championFor(coach), disc) : coachProfile(champion));
       const m = getMotion(lib, motionId, southpaw) ?? lib.get('garde')!;
       sampler.current = new MotionSampler(rig, m);
       if (tech) {

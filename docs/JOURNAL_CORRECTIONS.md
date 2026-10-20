@@ -780,3 +780,58 @@ renommer « Encre » en « Anime » et viser un anime japonais adulte de type Ba
   sans dessin lié à l'écran (ni `gl_FragCoord` ni `fract`) ; Playwright complet : TEST RÉUSSI (82 réussis,
   2 ignorés), dont `coach-render.spec` adapté au libellé « Anime » ; comparaison visuelle : planches avant/après
   regardées une à une ; vrai téléphone : NON EXÉCUTÉ.
+
+## 2026-10-20 · v0.24.0 · Kadir et Amara deviennent les coachs, écrans épurés
+
+Demande de Youssef (10:08) : rester sur la technologie actuelle, se concentrer sur Kadir et Amara, appliquer toutes
+les améliorations et générer la version suivante ; coachs premium, mouvements naturels, fluides et humains, sans
+torsion non naturelle. Puis (10:09) : épurer les interfaces, expérience fluide, options qui ne surchargent pas les
+écrans. Les autres coachs viendront en mises à jour après sa validation à 100 %.
+
+- **Coachs** : le choix enregistré reste `homme` / `femme` (aucune migration, aucune donnée touchée) ; `homme`
+  affiche Kadir « L’Aigle », `femme` affiche Amara « La Lionne » (`src/domain/coaches/catalog.ts`). Chacun garde son
+  modèle, son visage, sa coiffure et ses couleurs, avec l’équipement de la discipline : gants de boxe et chaussures
+  (boxe), gants et protège-tibias (kick-boxing), bandes et chevillères (muay-thaï), gants MMA (MMA), mains nues
+  (BJJ, judo ; pas encore de kimono). Leur garde personnelle (mains ouvertes de Kadir, garde de face d’Amara)
+  ne s’applique qu’en MMA ; les autres disciplines gardent la garde de leurs règles.
+- **Écrans** : accueil (nom du coach, « Changer de coach »), choix du coach (portraits rendus depuis nos modèles),
+  options d’entraînement (Kadir / Amara), Réglages (« Mon coach »), Profil (« Mon coach »).
+- **Retiré de l’interface (décision de Youssef du 2026-10-19)** : l’onglet Coach de la barre du bas et l’étape
+  « Apparence » du premier lancement. Le
+  créateur de combattant reste dans le code et à son adresse, les combattants enregistrés ne sont ni modifiés ni
+  effacés, et le rendu « Précédente (secours) » les affiche toujours.
+- **Épuration** : la grille des disciplines n’est plus répétée sur l’accueil (elle est dans Entraîner) ; Entraîner
+  montre 3 programmes et un bouton « Voir les N programmes » ; Réglages : voir plus bas ; fiche d’une technique : « Erreurs fréquentes » et « Points clés »
+  repliables ; bouton de réalité augmentée raccourci en « AR ».
+- **Vignettes** : les 75 techniques sont refaites avec Kadir et Amara dans l’équipement de la discipline.
+- **Navigation et Coach IA (10:52)** : barre du bas Accueil, Entraîner, Techniques, Progrès, Légendes (les Légendes
+  ont leur onglet). Le Coach IA devient une bulle en bas à droite (`src/ui/coach-ai/CoachBubble.tsx`) : un appui
+  l’ouvre, un autre (ou Échap) la masque ; absente de l’écran d’entraînement, qui a son propre bouton Coach.
+- **Icônes de la planche v2 (10:33, 10:53)** : chaque icône porte un rôle de couleur (`ICON_ROLE` dans
+  `src/ui/icons/registry.ts` : rouge entraînement, or distinctions, vert fait, bleu adapté, orange à revoir), appliqué
+  dans la navigation, les tuiles, les titres de panneaux et les lignes de réglages ; les boutons gardent leur couleur.
+  Niveaux colorés comme la planche (débutant gris, intermédiaire or, avancé rouge, expert violet). Contraste des
+  couleurs de rôle vérifié par test (≥ 3:1 sur les deux thèmes).
+- **Réglages (captures de référence de Youssef, 10:57)** : résumé du profil en quatre informations, puis des listes
+  groupées ; Voix et sons, Rounds, Affichage 3D et Données passent dans des sous-pages (`/reglages/:section`). Rien
+  n’est supprimé : tous les réglages existants y sont.
+- **Catalogue des techniques** : grandes vignettes sur deux colonnes (trois sur grand écran), nom seul ; la
+  description reste sur la fiche.
+- **Assimilée / Encore du mal (10:59, option F choisie à 11:05)** : petit interrupteur ✓ | ↻ à côté de la barre de
+  lecture d’une fiche ; un nouvel appui annule, les deux états ne sont jamais actifs ensemble ; liseré vert ou orange
+  sous la vignette ; filtre « À revoir (n) » ; onglet « Maîtrise » dans Progrès (assimilées, à revoir, non évaluées,
+  liste des techniques à revoir). Stocké sur l’appareil dans `css-goals.mastery` (nouveau champ, valeur par défaut
+  vide, aucune donnée existante modifiée) ; « Tout effacer » le vide aussi.
+- **Séance : coach plus visible (11:09)** : pendant le travail, seul le point clé du moment reste sous le coach ; la
+  liste complète revient avant le départ, en pause et dans « Comment faire ? ». Le coach gagne environ 60 px de haut
+  sur un écran de 400 × 860.
+- **Torsions non naturelles (demande de 10:08)** : rotations mesurées sur les deux squelettes, pour 1512 animations
+  (toutes les techniques solo, chaque style, orthodoxe et gaucher) ; avant : jusqu’à 135° de rotation de hanche en trop
+  (cuisse retournée sur les coups de pied circulaires), 109° de rotation interne d’épaule, 32° de supination, 43°
+  d’inclinaison du poignet. Corrigé à la source dans `src/engine/rig.ts` (limites de rotation d’épaule et de hanche,
+  pronation partagée avant-bras / main, poignet plié autour de son axe anatomique, rotation du tronc répartie sur
+  trois vertèbres), `motion.ts`, `pose.ts` (signe de l’inclinaison latérale inversé dans le commentaire, d’où des
+  coups de pied circulaires penchés du mauvais côté) et la bibliothèque. Après : tout dans les amplitudes humaines à
+  3° près. Nouveau test bloquant `src/engine/__tests__/torsion-range.test.ts`, rapport
+  `docs/audit-biomecanique/MESURES_TORSIONS.md` (amplitudes de référence citées de mémoire, à revérifier dans les
+  ouvrages). Arrêts « robotiques » : 318 → 210. Les vignettes sont refaites avec ces mouvements.

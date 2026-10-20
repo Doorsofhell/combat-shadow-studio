@@ -39,13 +39,20 @@ function roundKick(a: Author, side: LegSide, height: 'thigh' | 'liver' | 'head',
   const k = legKeys(side);
   const turn = side === 'rear' ? 1 : -1; // rear-leg kicks rotate the hips to the left (positive yaw)
   const T = a.target(height, height === 'thigh' ? 0.5 : 0.58);
-  const hipTurn = deg(height === 'thigh' ? 70 : height === 'liver' ? 88 : 95);
-  const lean = deg(height === 'head' ? 30 : height === 'liver' ? 18 : 8);
-  const supYaw = (g[k.support] as { yaw: number }).yaw + turn * deg(height === 'thigh' ? 70 : 95);
+  // the hips turn over: at impact the kicking hip faces the target (pelvis about a quarter turn from
+  // square, whatever the guard), so the thigh comes up sideways (abduction) and the knee points along
+  // the swing, instead of a thigh lifted in front and twisted on itself. The trunk leans away from the
+  // kick so a high kick needs no more hip abduction than a trained fighter has (≈ 80–90°).
+  const finalYaw = turn * deg(height === 'liver' ? 95 : 100);
+  const hipTurn = height === 'thigh' ? deg(70) : turn * (finalYaw - g.pelvis.yaw);
+  // (positive roll leans the body to its left: away from a right-leg kick)
+  const lean = deg(height === 'head' ? 45 : height === 'liver' ? 25 : 8);
+  // the support foot pivots with the hips (heel toward the target), so the support hip does not twist
+  const supYaw = (g[k.support] as { yaw: number }).yaw + turn * (height === 'thigh' ? deg(70) : hipTurn * 0.9);
 
   // 1. step/pivot: support foot turns out, hips start to open, kicking foot pushes off
   const load = edit(g, (d) => {
-    d[k.support] = supportPivot(d[k.support], supYaw * 0.55 + (g[k.support] as { yaw: number }).yaw * 0.45, deg(18));
+    d[k.support] = supportPivot(d[k.support], supYaw * 0.28 + (g[k.support] as { yaw: number }).yaw * 0.72, deg(18));
     d.pelvis.yaw += turn * hipTurn * 0.25;
     d.hips.x += (side === 'rear' ? 0.06 : -0.03) * s;
     d.hips.z += (side === 'rear' ? 0.02 : 0.0) * s;
@@ -54,14 +61,15 @@ function roundKick(a: Author, side: LegSide, height: 'thigh' | 'liver' | 'head',
   });
   // 2. chamber: knee lifts toward the target line, foot tucked under the thigh
   const chamber = edit(g, (d) => {
-    d[k.support] = supportPivot(d[k.support], supYaw * 0.85 + (g[k.support] as { yaw: number }).yaw * 0.15, deg(22));
+    d[k.support] = supportPivot(d[k.support], supYaw * 0.7 + (g[k.support] as { yaw: number }).yaw * 0.3, deg(22));
     d.pelvis.yaw += turn * hipTurn * 0.6;
-    d.pelvis.roll += -turn * lean * 0.5;
+    d.pelvis.roll += turn * lean * 0.5;
     d.chest.yaw += -turn * deg(10);
-    d.chest.roll += -turn * lean * 0.3;
+    d.chest.roll += -turn * lean * 0.1;
     d.hips.x += (side === 'rear' ? 0.08 : -0.02) * s;
     d.hips.z += 0.03 * s;
-    d.hips.y += 0.01 * s;
+    // the pelvis tilts about the support hip, not about its centre: the support leg keeps its length
+    d.hips.y += 0.01 * s + a.m.hipHalf * Math.sin(lean * 0.5);
   });
   const hipC = a.hipJoint(chamber, side === 'lead' ? 'L' : 'R');
   const kneeH = Math.min(T.y + 0.05 * s, hipC.y - 0.02 * s);
@@ -74,14 +82,15 @@ function roundKick(a: Author, side: LegSide, height: 'thigh' | 'liver' | 'head',
   const hit = edit(g, (d) => {
     d[k.support] = supportPivot(d[k.support], supYaw, deg(26));
     d.pelvis.yaw += turn * hipTurn;
-    d.pelvis.roll += -turn * lean;
+    d.pelvis.roll += turn * lean;
     d.pelvis.pitch += deg(-6);
     d.chest.yaw += -turn * deg(16);
-    d.chest.roll += -turn * lean * 0.4;
+    // the chest straightens a little over the leaning pelvis: the eyes stay on the target
+    d.chest.roll += -turn * lean * 0.2;
     d.chest.pitch += deg(4);
     d.hips.x += (side === 'rear' ? 0.08 : -0.03) * s;
     d.hips.z += 0.04 * s;
-    d.hips.y += 0.02 * s;
+    d.hips.y += 0.02 * s + a.m.hipHalf * Math.sin(lean);
     // counterbalance: kicking-side arm swings down and back (thai) or stays close (kick)
     if (style === 'thai') {
       d[k.kickHand] = a.hand('world', v3(-turn * 0.26 * s, d.hips.y + 0.12 * s, 0.12 * s), v3(-turn * 0.8, -0.3, -0.4), 0.2, 1);
@@ -99,8 +108,10 @@ function roundKick(a: Author, side: LegSide, height: 'thigh' | 'liver' | 'head',
   );
   // 4. retraction (kick-boxing re-chambers; thai lets the leg swing back down)
   const back = edit(chamber, (d) => {
+    // the support foot turns back with the hips
+    d[k.support] = supportPivot(d[k.support], supYaw * 0.5 + (g[k.support] as { yaw: number }).yaw * 0.5, deg(18));
     d.pelvis.yaw = g.pelvis.yaw + turn * hipTurn * 0.5;
-    d.pelvis.roll = g.pelvis.roll - turn * lean * 0.3;
+    d.pelvis.roll = g.pelvis.roll + turn * lean * 0.3;
   });
   const land = edit(g, (d) => {
     d.hips.y -= 0.02 * s;

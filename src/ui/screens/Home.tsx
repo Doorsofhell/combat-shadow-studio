@@ -10,9 +10,10 @@ import { useCatalog, useCatalogUser } from '../../store/catalog';
 import { DISCIPLINES, LEVELS, TrainingMode } from '../../domain/types';
 import { EXERCISE_BY_ID } from '../../domain/exercises';
 import { recommend } from '../../domain/recommend';
+import { championFor } from '../../domain/coaches/catalog';
 import type { ComboPlayer, PlayerEvents } from '../../engine/player';
 import { MODE_LABEL } from '../training/plan';
-import { DisciplineCard, DisciplineLabel, EmptyState, EntryCard, ProgressBar, SectionHead, StatTile } from '../components';
+import { DisciplineLabel, EmptyState, EntryCard, ProgressBar, SectionHead, StatTile } from '../components';
 import { defaultFighterName } from '../components/fighter';
 import { AppIcon, DisciplineIcon } from '../icons';
 
@@ -36,7 +37,7 @@ class StageBoundary extends Component<{ children: ReactNode }, { failed: boolean
 
 function StageFallback() {
   return (
-    <div className="hero-loading" role="status" aria-label="Chargement du combattant">
+    <div className="hero-loading" role="status" aria-label="Chargement du coach">
       <div className="stage-skeleton" />
     </div>
   );
@@ -57,8 +58,10 @@ export function Home() {
   const rec = useMemo(() => recommend(profile), [profile]);
   const disc = DISCIPLINES.find((d) => d.id === profile.mainDiscipline)!;
   const level = LEVELS.find((l) => l.id === profile.levels[disc.id])!;
-  const coach = fighter?.look.sex ?? profile.coach ?? 'homme';
-  const name = fighter?.name ?? defaultFighterName(profile.coach);
+  const premium = settings.coachRender === 'premium';
+  // 0.24: the coach on stage is Kadir or Amara; the fallback render keeps the custom fighter
+  const coach = premium ? (profile.coach ?? 'homme') : (fighter?.look.sex ?? profile.coach ?? 'homme');
+  const name = premium ? championFor(profile.coach).name : (fighter?.name ?? defaultFighterName(profile.coach));
 
   const thisWeek = weekKey(new Date().toISOString());
   const week = sessions.filter((s) => weekKey(s.start) === thisWeek);
@@ -89,7 +92,7 @@ export function Home() {
             Combat <b>Shadow</b> Studio
           </div>
         </div>
-        <Link to="/combattant" className="btn icon ghost" aria-label="Mon profil et mon combattant" title="Profil">
+        <Link to="/profil" className="btn icon ghost" aria-label="Mon profil" title="Profil">
           <AppIcon id="profile" />
         </Link>
         <Link to="/reglages" className="btn icon ghost" aria-label="Réglages" title="Réglages" style={{ marginRight: -10 }} data-testid="open-settings">
@@ -129,8 +132,8 @@ export function Home() {
           </div>
         </div>
         <div className="hero-top">
-          <Link to="/combattant" className="chip" aria-label={`Personnaliser ${name}`}>
-            Personnaliser
+          <Link to="/coach" className="chip" aria-label={`Changer de coach (${name})`}>
+            Changer de coach
           </Link>
         </div>
       </section>
@@ -251,15 +254,7 @@ export function Home() {
         </section>
       )}
 
-      <section className="section" aria-labelledby="h-disc">
-        <SectionHead id="h-disc" title="Disciplines" action={<Link to="/entrainer">Entraîner</Link>} />
-        <div className="disc-grid compact" data-testid="home-disciplines">
-          {DISCIPLINES.map((d) => (
-            <DisciplineCard key={d.id} id={d.id} to={`/discipline/${d.id}`} level={profile.levels[d.id]} compact testId={`home-disc-${d.id}`} />
-          ))}
-        </div>
-      </section>
-
+      {/* 0.24 (épuration) : la grille des disciplines n'est plus répétée ici, elle est dans l'onglet Entraîner */}
       {rec.exercises.length > 1 && (
         <section className="section" aria-labelledby="h-rec">
           <SectionHead id="h-rec" title="Pour toi aujourd’hui" action={<Link to={`/discipline/${disc.id}`}>{disc.short}</Link>} />

@@ -9,8 +9,8 @@ async function onboard(page: Page, coach: 'homme' | 'femme') {
   await page.getByTestId(`coach-${coach}`).click();
   await expect(page.getByTestId('next')).toBeEnabled();
   await page.getByTestId('next').click();
-  // simplified customisation, guard, discipline, level, goals
-  for (let i = 0; i < 5; i++) await page.getByTestId('next').click();
+  // guard, discipline, level, goals (0.24: the "Apparence" step is gone, the coach is Kadir or Amara)
+  for (let i = 0; i < 4; i++) await page.getByTestId('next').click();
   await page.getByTestId('finish').click();
   await expect(page.getByTestId('home-cta')).toBeVisible();
 }
@@ -19,8 +19,9 @@ test('premier lancement : questionnaire, choix obligatoire du coach, données co
   await onboard(page, 'femme');
   await page.reload();
   await expect(page.getByTestId('home-cta')).toBeVisible();
-  await expect(page.getByTestId('fighter-name')).toHaveText('Ma combattante');
-  // bottom navigation: five destinations
+  // 0.24: the coach chosen is Amara (stored choice 'femme')
+  await expect(page.getByTestId('fighter-name')).toHaveText('Amara');
+  // bottom navigation: five destinations (0.24: Légendes replaces the Coach tab, Youssef's decisions of 2026-10-19/20)
   await expect(page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link')).toHaveCount(5);
   await page.getByTestId('nav-entrainer').click();
   await expect(page.getByTestId('disc-boxe')).toBeVisible();

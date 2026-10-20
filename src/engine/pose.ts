@@ -3,7 +3,7 @@
  *
  * Ground space: the coach stands on the plane y = 0 and faces +Z; +X is the coach's LEFT side.
  * Angles are radians. Yaw turns the body to the left when positive (seen from above, +Z toward +X),
- * pitch leans forward when positive, roll leans to the coach's right when positive.
+ * pitch leans forward when positive, roll leans to the coach's left (+X) when positive.
  *
  * Hands are positioned either in "chest" space (they follow the trunk: guards, returns) or in
  * "world" (ground) space (targets on an imaginary opponent, hands posted on the floor).

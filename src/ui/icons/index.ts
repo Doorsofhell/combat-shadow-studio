@@ -2,6 +2,6 @@ export { AppIcon, ActionIcon, DisciplineIcon, LevelIcon, NavigationIcon, StatusI
 export type { AppIconProps, DisciplineIconProps, IconSize, IconTone } from './AppIcon';
 export { GLYPHS } from './glyphs';
 export type { GlyphId } from './glyphs';
-export { ICON_REGISTRY } from './registry';
-export type { ActionIconId, IconFamily, NavigationIconId, StatusIconId, TrainingControlIconId } from './registry';
+export { ICON_REGISTRY, ICON_ROLE, iconRole } from './registry';
+export type { ActionIconId, IconFamily, IconRole, NavigationIconId, StatusIconId, TrainingControlIconId } from './registry';
 export { DISCIPLINE_ICON_ALT } from './disciplines';

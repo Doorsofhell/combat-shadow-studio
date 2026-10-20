@@ -19,6 +19,7 @@ import type { StanceStyle } from '../engine/author';
 import type { CoachId, DisciplineId } from '../domain/types';
 import { TECHNIQUE_BY_ID } from '../domain/techniques';
 import { useActiveFighter } from '../store/fighters';
+import { championFor, championLook, championModel, championStance } from '../domain/coaches/catalog';
 import { useResolvedTheme } from '../ui/theme/useTheme';
 import type { FighterLook } from '../editor/look';
 
@@ -101,14 +102,22 @@ export function CoachStage(props: CoachStageProps) {
   const menuTheme = useResolvedTheme();
   const { coach, discipline, southpaw, cameraAngle, view, free, onUserOrbit, frameIds, quality, events, onPlayer, onRigReady, study, studyActive = false, zoom, ar, arActive = false, backdrop = 'studio' } = props;
   const fighter = useActiveFighter();
-  const look = props.look ?? fighter?.look ?? null;
-  const shownCoach = look?.sex ?? coach;
+  const render = useSettings((s) => s.settings.coachRender);
+  // 0.24: the coach is Kadir or Amara, on their own model, dressed for the discipline; the fallback
+  // render ("précédent") keeps the generic coach and the custom fighter
+  const champion = render === 'premium' && !props.look ? championFor(coach) : null;
+  const championId = champion?.coach;
+  // one look object per coach and discipline: a new object on each render would re-dress the model
+  const dressed = useMemo(() => (championId ? championLook(championFor(championId), discipline) : null), [championId, discipline]);
+  const look = props.look ?? dressed ?? fighter?.look ?? null;
+  const shownCoach = champion ? champion.coach : (look?.sex ?? coach);
+  const championRef = useRef(champion);
+  championRef.current = champion;
   const ghostGear = useSettings((s) => s.settings.seeThroughGear) && studyActive;
   const lookRef = useRef<FighterLook | null | undefined>(null);
   lookRef.current = look;
   const [degraded, setDegraded] = useState(false);
   const style = useSettings((s) => s.settings.coachStyle);
-  const render = useSettings((s) => s.settings.coachRender);
   const q: 'haute' | 'basse' = quality === 'auto' ? (degraded ? 'basse' : 'haute') : quality;
   const player = useRef<ComboPlayer | null>(null);
   const rigRef = useRef<{ rig: CoachRig; lib: MotionLibrary } | null>(null);
@@ -162,7 +171,8 @@ export function CoachStage(props: CoachStageProps) {
 
   const onRig = useCallback(
     (rig: CoachRig) => {
-      const lib = getLibrary(rig, STYLE_OF[discipline]);
+      const c = championRef.current;
+      const lib = getLibrary(rig, STYLE_OF[discipline], c ? championStance(c, discipline) : undefined);
       rigRef.current = { rig, lib };
       setRigState(rig);
       updateEnvelope();
@@ -230,7 +240,18 @@ export function CoachStage(props: CoachStageProps) {
         {ar && <ArScene bridge={ar} active={arActive} coachGroup={coachGroup} follow={follow} />}
         {/* the coach stays mounted when switching to AR: same model, same player, same animation */}
         <group ref={coachGroup}>
-          <CoachModel key={`${shownCoach}-${discipline}-${render}${render === 'precedent' ? `-${style}` : ''}`} coach={shownCoach} style={style} render={render} quality={q} look={look} ghostGear={ghostGear} onRig={onRig} onFrame={onFrame} />
+          <CoachModel
+            key={`${champion?.id ?? shownCoach}-${discipline}-${render}${render === 'precedent' ? `-${style}` : ''}`}
+            coach={shownCoach}
+            style={style}
+            render={render}
+            quality={q}
+            look={look}
+            model={champion ? championModel(champion) : undefined}
+            ghostGear={ghostGear}
+            onRig={onRig}
+            onFrame={onFrame}
+          />
           {studyActive && rigState && study && <StudyCues rig={rigState} study={study} />}
           {!studyActive && !arActive && rigState && <GroundMarks rig={rigState} player={player} southpaw={southpaw} />}
         </group>

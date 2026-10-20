@@ -31,7 +31,8 @@ async function onboard(page: Page, pseudo: string) {
   await page.getByTestId('next').click();
   await page.getByTestId('coach-homme').click();
   await page.getByTestId('next').click();
-  for (let i = 0; i < 5; i++) await page.getByTestId('next').click();
+  // 0.24: no "Apparence" step any more (the coach is Kadir or Amara)
+  for (let i = 0; i < 4; i++) await page.getByTestId('next').click();
   await page.getByTestId('finish').click();
   await expect(page.getByTestId('home-cta')).toBeVisible();
 }

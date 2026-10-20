@@ -187,8 +187,10 @@ function takedownDefence(a: Author): Motion {
       d.footR.heel = deg(45);
     }
     const y = a.target('body').y - 0.12 * s;
-    d.handL = a.hand('world', v3(0.16 * s, y, 0.42 * s), v3(0.9, 0.1, -0.4), 1, 0.3, deg(-30));
-    d.handR = a.hand('world', v3(-0.16 * s, y, 0.4 * s), v3(-0.9, 0.1, -0.4), 1, 0.3, deg(-30));
+    // elbows back and close to the body, not flared to the side: the hands frame the opponent's
+    // shoulders without the upper arm turning in on itself
+    d.handL = a.hand('world', v3(0.16 * s, y, 0.42 * s), v3(0.4, -0.45, -0.8), 1, 0.3, deg(-30));
+    d.handR = a.hand('world', v3(-0.16 * s, y, 0.4 * s), v3(-0.4, -0.45, -0.8), 1, 0.3, deg(-30));
   });
   return {
     id: 'defense-lutte',
@@ -216,7 +218,9 @@ export function seated(a: Author): Pose {
     handL: a.hand('world', v3(0.3 * s, 0.045 * s, -0.42 * s), v3(0.4, 0.6, 0.6), 1, 0.1, deg(-70)),
     handR: a.hand('chest', v3(-0.06 * s, 0.1 * s, 0.24 * s), v3(-0.5, -1, 0), 0.1, 1),
     footL: a.air(v3(0.14 * s, 0.1 * s, 0.62 * s), deg(10), deg(20), 0, v3(0.3, 1, 0.3), deg(10)),
-    footR: a.ground(v3(-0.18 * s, 0, 0.32 * s), deg(-20), 0),
+    // planted foot in front, knee up (not fallen out to the side: that would twist the hip outward
+    // far past its range)
+    footR: { ...a.ground(v3(-0.18 * s, 0, 0.32 * s), deg(-8), 0), pole: v3(-0.12, 1, 0.3) },
   };
 }
 

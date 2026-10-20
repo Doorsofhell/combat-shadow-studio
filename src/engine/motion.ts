@@ -105,6 +105,11 @@ interface KeyFlow {
   handR: Vector3;
   footL: Vector3;
   footR: Vector3;
+  /** planted foot pivoting on its ball: (yaw, heel lift, 0) per second, and the ball's own velocity */
+  pivotL: Vector3;
+  pivotR: Vector3;
+  ballL: Vector3;
+  ballR: Vector3;
 }
 
 interface CachedKey {
@@ -219,7 +224,21 @@ export class MotionSampler {
       // a foot keeps its flow only in the air, away from a take-off or a landing: near the floor the
       // flow would make the toes graze the mat
       const foot = (side: 'footL' | 'footR') => ([a, k, b].some((x) => x.pose[side].mode === 'ground') ? ZERO.clone() : monoVec(ra[side].ankle, rk[side].ankle, rb[side].ankle, h0, h1));
+      // a foot planted on all three keys keeps turning on its ball (and lifting its heel) through the
+      // key instead of stopping there
+      const planted = (side: 'footL' | 'footR') => [a, k, b].every((x) => x.pose[side].mode === 'ground');
+      const pv = (x: CachedKey, side: 'footL' | 'footR') => {
+        const f = x.pose[side] as Extract<Pose['footL'], { mode: 'ground' }>;
+        return new Vector3(f.yaw, f.heel, 0);
+      };
+      const ball = (x: CachedKey, side: 'footL' | 'footR') => toVec((x.pose[side] as Extract<Pose['footL'], { mode: 'ground' }>).ball);
+      const pivot = (side: 'footL' | 'footR') => (planted(side) ? monoVec(pv(a, side), pv(k, side), pv(b, side), h0, h1) : ZERO.clone());
+      const ballFlow = (side: 'footL' | 'footR') => (planted(side) ? monoVec(ball(a, side), ball(k, side), ball(b, side), h0, h1) : ZERO.clone());
       k.flow = {
+        pivotL: pivot('footL'),
+        pivotR: pivot('footR'),
+        ballL: ballFlow('footL'),
+        ballR: ballFlow('footR'),
         hips: monoVec(a.hips, k.hips, b.hips, h0, h1),
         pelvis: rot(a.pelvis, k.pelvis, b.pelvis),
         chest: rot(a.chest, k.chest, b.chest),
@@ -272,13 +291,18 @@ export class MotionSampler {
       if (pa.mode === 'ground' && pb.mode === 'ground') {
         // planted foot: interpolate ball position, rotation and heel lift, then resolve, so the ball
         // stays exactly in place while the foot pivots (a linear blend of ankle positions would slide)
-        const pole = pa.pole && pb.pole ? { x: lerp(pa.pole.x, pb.pole.x, u), y: lerp(pa.pole.y, pb.pole.y, u), z: lerp(pa.pole.z, pb.pole.z, u) } : undefined;
+        // knee direction: blended from both keys as resolved (a key without one has the default, knee
+        // over the toes), so a knee written on one key only turns smoothly instead of jumping there
+        const pr = pa.pole || pb.pole ? a[side].pole.clone().lerp(b[side].pole, u) : null;
+        const pole = pr ? { x: pr.x, y: pr.y, z: pr.z } : undefined;
+        const pv = off(side === 'footL' ? 'pivotL' : 'pivotR').clone();
+        const bv = off(side === 'footL' ? 'ballL' : 'ballR');
         return this.rig.resolveFoot(
           {
             mode: 'ground',
-            ball: { x: lerp(pa.ball.x, pb.ball.x, u), y: lerp(pa.ball.y, pb.ball.y, u), z: lerp(pa.ball.z, pb.ball.z, u) },
-            yaw: lerp(pa.yaw, pb.yaw, u),
-            heel: lerp(pa.heel, pb.heel, u),
+            ball: { x: lerp(pa.ball.x, pb.ball.x, u) + bv.x, y: lerp(pa.ball.y, pb.ball.y, u) + bv.y, z: lerp(pa.ball.z, pb.ball.z, u) + bv.z },
+            yaw: lerp(pa.yaw, pb.yaw, u) + pv.x,
+            heel: Math.max(0, lerp(pa.heel, pb.heel, u) + pv.y),
             pole,
           },
           side === 'footL' ? 'L' : 'R',

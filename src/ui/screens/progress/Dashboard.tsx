@@ -6,10 +6,12 @@
 import { ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DISCIPLINES, LEVELS } from '../../../domain/types';
-import type { ExerciseKind, LevelId } from '../../../domain/types';
+import type { DisciplineId, ExerciseKind, LevelId } from '../../../domain/types';
 import { EXERCISES, EXERCISE_BY_ID } from '../../../domain/exercises';
-import { TECHNIQUE_BY_ID } from '../../../domain/techniques';
-import { filterExercises } from '../../../domain/kickboxingStyles';
+import { TECHNIQUES, TECHNIQUE_BY_ID, techniquesFor } from '../../../domain/techniques';
+import { masteryCount } from '../../../domain/mastery';
+import { useGoals } from '../../../store/goals';
+import { filterExercises, filterTechniques, type KbStyleChoice } from '../../../domain/kickboxingStyles';
 import {
   Bucket,
   KIND_LABEL,
@@ -74,6 +76,8 @@ const TABS: { id: ProgressTab; label: string }[] = [
   { id: 'categories', label: 'Catégories' },
   { id: 'exercices', label: 'Exercices' },
   { id: 'historique', label: 'Historique' },
+  // 0.24: the techniques the user marked as assimilated or still hard
+  { id: 'maitrise', label: 'Maîtrise' },
 ];
 
 export function Stats() {
@@ -228,7 +232,9 @@ export function Stats() {
       <div className="dash-chart card">
         <Tabs label="Statistiques détaillées" variant="underline" value={v.tab} onChange={(tab) => v.set({ tab })} items={TABS.map((t) => ({ ...t, testId: `ptab-${t.id}` }))} />
         <div className="dash-body" role="tabpanel" aria-label={TABS.find((t) => t.id === v.tab)!.label} data-testid={`ppanel-${v.tab}`}>
-          {sessions.length === 0 ? (
+          {v.tab === 'maitrise' ? (
+            <MasteryPanel discipline={v.discipline} kb={kb} />
+          ) : sessions.length === 0 ? (
             <EmptyState
               title="Pas encore de données"
               text="Le temps est compté uniquement pendant l’entraînement actif, sur cet appareil."
@@ -706,5 +712,58 @@ function PeriodSheet({ today, initial, onClose, onApply }: { today: string; init
         Appliquer
       </button>
     </Sheet>
+  );
+}
+
+/**
+ * Maîtrise tab: what the user marked on the technique sheets (assimilated / still hard), for the
+ * chosen discipline. It does not depend on the period: a mark has no date.
+ */
+function MasteryPanel({ discipline, kb }: { discipline: DisciplineId | 'toutes'; kb: KbStyleChoice }) {
+  const mastery = useGoals((s) => s.mastery);
+  const list = discipline === 'toutes' ? TECHNIQUES : filterTechniques(techniquesFor(discipline), discipline, kb);
+  const c = masteryCount(list, mastery);
+  const pct = (n: number) => (c.total ? (n / c.total) * 100 : 0);
+  const shown = c.aRevoirList.slice(0, 4);
+  return (
+    <div className="mastery-panel stack" style={{ gap: 12 }} data-testid="mastery-panel">
+      <div className="mastery-bar" role="img" aria-label={`${c.acquises} assimilées, ${c.aRevoir} à revoir, ${c.autres} non évaluées sur ${c.total} techniques`}>
+        <span className="ok" style={{ width: `${pct(c.acquises)}%` }} />
+        <span className="again" style={{ width: `${pct(c.aRevoir)}%` }} />
+      </div>
+      <div className="mastery-figures">
+        <span data-testid="mastery-ok">
+          <AppIcon id="mastered" tone="success" size={18} />
+          <b className="num-figure">{c.acquises}</b> assimilées
+        </span>
+        <span data-testid="mastery-again">
+          <AppIcon id="struggling" tone="orange" size={18} />
+          <b className="num-figure">{c.aRevoir}</b> à revoir
+        </span>
+        <span className="muted">
+          <b className="num-figure">{c.autres}</b> non évaluées
+        </span>
+      </div>
+      {c.acquises + c.aRevoir === 0 ? (
+        <p className="small muted">Sur la fiche d’une technique, touche l’icône verte quand tu l’as assimilée, ou l’orange quand tu as encore du mal : elle apparaîtra ici.</p>
+      ) : shown.length > 0 ? (
+        <ul className="plain-list mastery-list">
+          {shown.map((t) => (
+            <li key={t.id}>
+              <Link to={`/techniques/${t.id}${discipline === 'toutes' ? '' : `?d=${discipline}`}`}>
+                <AppIcon id="struggling" tone="orange" size={16} /> {t.name}
+              </Link>
+            </li>
+          ))}
+          {c.aRevoir > shown.length && (
+            <li>
+              <Link to={`/techniques${discipline === 'toutes' ? '' : `?d=${discipline}`}`}>Voir les {c.aRevoir} techniques à revoir</Link>
+            </li>
+          )}
+        </ul>
+      ) : (
+        <p className="small muted">Aucune technique à revoir pour l’instant.</p>
+      )}
+    </div>
   );
 }

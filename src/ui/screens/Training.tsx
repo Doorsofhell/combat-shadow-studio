@@ -1,3 +1,4 @@
+import { CHAMPIONS } from '../../domain/coaches/catalog';
 import '../training/training.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -267,6 +268,10 @@ function TrainingView({ plan }: { plan: Plan }) {
       ? livePhase.phase
       : null;
   const points = (view.phase === 'termine' ? [] : instr?.points ?? []).map((pt, i) => ({ id: `${focusId}#${i}`, ...pt, now: !!pt.phase && pt.phase === phaseNow }));
+  // 0.24 (Youssef: « que le coach soit bien visible »): while the session runs, only the point of the
+  // moment stays under the coach; the full list is shown before starting, on pause and in "Comment faire ?"
+  const focusOnly = view.phase === 'travail' && !view.paused && !st.tech;
+  const shownPoints = focusOnly ? points.filter((pt) => pt.now).slice(0, 1).concat(points.some((pt) => pt.now) ? [] : points.slice(0, 1)) : points;
   const SLOW = 0.25;
   const slow = view.speed <= SLOW + 1e-3 && item.speed > SLOW;
   // progression of the session: rounds of timed work, else exercises of the plan
@@ -305,7 +310,8 @@ function TrainingView({ plan }: { plan: Plan }) {
         </div>
         <button className={`ar-state ${arView.state !== 'off' ? 'on' : ''}`} onClick={() => setArIntro(true)} data-testid="ar-button" aria-label="Réalité augmentée">
           <AppIcon id="ar" size={18} />
-          <span>{arView.state === 'off' ? 'AR désactivée' : arView.state === 'starting' ? 'AR…' : 'AR active'}</span>
+          {/* 0.24 (épuration) : « AR » seul quand elle est éteinte */}
+          <span>{arView.state === 'off' ? 'AR' : arView.state === 'starting' ? 'AR…' : 'AR active'}</span>
         </button>
       </header>
 
@@ -396,7 +402,7 @@ function TrainingView({ plan }: { plan: Plan }) {
         )}
       </div>
 
-      <section className="tr-info" aria-live="polite">
+      <section className={`tr-info ${focusOnly ? 'focus' : ''}`} aria-live="polite">
         <div className="tr-now">
           <span className="name" data-testid="current-move">
             {st.tech ? TECHNIQUE_BY_ID.get(st.tech)?.name : moveName}
@@ -413,9 +419,9 @@ function TrainingView({ plan }: { plan: Plan }) {
             {cue}
           </p>
         )}
-        {points.length > 0 && (
-          <ul className={`tr-points ${points.length > 3 ? 'cols' : ''}`} aria-label="Points clés" data-testid="key-points">
-            {points.map((pt) => (
+        {shownPoints.length > 0 && (
+          <ul className={`tr-points ${shownPoints.length > 3 ? 'cols' : ''}`} aria-label="Points clés" data-testid="key-points">
+            {shownPoints.map((pt) => (
               <li key={pt.id} className={pt.now ? 'now' : ''} data-zone={pt.zone} aria-current={pt.now ? 'step' : undefined}>
                 {pt.text}
               </li>
@@ -651,10 +657,10 @@ function TrainingView({ plan }: { plan: Plan }) {
               <span className="label">Coach</span>
               <div className="row">
                 <button className={`chip ${coach === 'homme' ? 'on' : ''}`} onClick={() => chooseCoach('homme')}>
-                  Coach homme
+                  {CHAMPIONS.homme.name}
                 </button>
                 <button className={`chip ${coach === 'femme' ? 'on' : ''}`} onClick={() => chooseCoach('femme')}>
-                  Coach femme
+                  {CHAMPIONS.femme.name}
                 </button>
               </div>
             </div>

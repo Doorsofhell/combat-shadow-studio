@@ -1,3 +1,4 @@
+import { CoachBubble } from './coach-ai/CoachBubble';
 import { Suspense, lazy, useEffect } from 'react';
 import { HashRouter, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useProfile } from '../store/profile';
@@ -96,9 +97,10 @@ function ThemeColor() {
 const NAV = [
   { to: '/', label: 'Accueil', icon: <AppIcon id="home" />, end: true, match: ['/'] },
   { to: '/entrainer', label: 'Entraîner', icon: <AppIcon id="train" />, match: ['/entrainer', '/discipline', '/programmes'] },
-  { to: '/techniques', label: 'Techniques', icon: <AppIcon id="techniques" />, match: ['/techniques', '/createur', '/champions'] },
-  { to: '/combattant', label: 'Coach', icon: <AppIcon id="coach" />, match: ['/combattant', '/coach', '/coach-ia'] },
+  { to: '/techniques', label: 'Techniques', icon: <AppIcon id="techniques" />, match: ['/techniques', '/createur'] },
   { to: '/stats', label: 'Progrès', icon: <AppIcon id="progress" />, match: ['/stats', '/historique', '/objectifs'] },
+  // 0.24 (Youssef, 2026-10-20): the legends get their own tab; the AI coach is a floating bubble on every screen
+  { to: '/champions', label: 'Légendes', icon: <AppIcon id="legends" />, match: ['/champions'] },
 ];
 
 function Nav() {
@@ -171,6 +173,7 @@ export function App() {
             <Route path="/historique" element={<History />} />
             <Route path="/objectifs" element={<Goals />} />
             <Route path="/reglages" element={<SettingsPage />} />
+            <Route path="/reglages/:section" element={<SettingsPage />} />
             <Route path="/confidentialite" element={<Privacy />} />
             <Route path="/connexion" element={<SignIn />} />
             <Route path="/profil" element={<ProfilePage />} />
@@ -181,6 +184,7 @@ export function App() {
         </Suspense>
       </Gate>
       <Nav />
+      <CoachBubble />
       <Toaster />
     </HashRouter>
   );
