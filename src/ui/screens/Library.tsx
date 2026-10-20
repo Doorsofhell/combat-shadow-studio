@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { TechThumb, keyTechnique, programTechnique } from '../components/TechThumb';
-import { Suspense, lazy, useCallback, useMemo, useRef, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { CATEGORY_LABEL, TECHNIQUE_BY_ID, TECHNIQUES, techniquesFor } from '../../domain/techniques';
 import { EXERCISES, EXERCISE_BY_ID } from '../../domain/exercises';
 import { PARTNER_BY_ID, PARTNER_CATEGORY_LABEL, partnerFor } from '../../domain/partner';
@@ -22,6 +22,7 @@ import { filterExercises, filterTechniques } from '../../domain/kickboxingStyles
 import { ExerciseList, ExerciseSheet } from './Discipline';
 import { AppIcon, DisciplineIcon } from '../icons';
 import { CHAMPIONS_AVAILABLE } from './features';
+import { TechniqueFilter, neighbours, parseTechniqueFilter, sheetQuery, techniqueCatalogue } from './techniqueOrder';
 
 const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
 
@@ -45,14 +46,19 @@ export function Library() {
   const set = (k: string, v: string) => {
     const n = new URLSearchParams(q);
     n.set(k, v);
+    // a new discipline starts on its whole list
+    if (k === 'd') n.delete('cat');
+    if (k === 'cat' && v === 'tout') n.delete('cat');
     setQ(n, { replace: true });
   };
+  // 0.25: the category filter is in the URL, so the technique sheets follow that list and Back finds it again
+  const cat = parseTechniqueFilter(q.get('cat'), Object.keys(CATEGORY_LABEL));
   return (
     <div className="page">
       <PageHead title="Techniques" eyebrow="Bibliothèque" back={false} />
       <Tabs variant="underline" label="Sections" items={HUB_TABS} value={tab} onChange={(t) => set('tab', t)} />
       <div role="tabpanel" className="stack" style={{ gap: 16 }}>
-        {tab === 'techniques' && <TechniquesTab d={d} setD={(x) => set('d', x)} />}
+        {tab === 'techniques' && <TechniquesTab d={d} setD={(x) => set('d', x)} cat={cat} setCat={(c) => set('cat', c)} />}
         {tab === 'combinaisons' && <CombosTab d={d} setD={(x) => set('d', x)} />}
         {tab === 'legendes' && <LegendsTab />}
         {tab === 'createur' && <CreatorTab />}
@@ -67,8 +73,7 @@ function DisciplineFilter({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId
   return <Tabs label="Discipline" items={DISCIPLINES.map((x) => ({ id: x.id, label: x.short, icon: <DisciplineIcon id={x.id} size={24} /> }))} value={d} onChange={setD} />;
 }
 
-function TechniquesTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) => void }) {
-  const [cat, setCat] = useState<Technique['category'] | 'tout' | 'a-revoir'>('tout');
+function TechniquesTab({ d, setD, cat, setCat }: { d: DisciplineId; setD: (d: DisciplineId) => void; cat: TechniqueFilter; setCat: (c: TechniqueFilter) => void }) {
   const fav = useGoals((s) => s.favTechniques);
   const mastery = useGoals((s) => s.mastery);
   const [kbStyle] = useKbStyle();
@@ -79,7 +84,7 @@ function TechniquesTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) =
   const partner = partnerFor(d);
   return (
     <>
-      <DisciplineFilter d={d} setD={(x) => (setD(x), setCat('tout'))} />
+      <DisciplineFilter d={d} setD={setD} />
       {d === 'kickboxing' && <KickboxingStylePicker />}
       <FilterChips
         scroll
@@ -98,7 +103,7 @@ function TechniquesTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) =
           <TechniqueCard
             tile
             key={t.id}
-            to={`/techniques/${t.id}?d=${d}`}
+            to={`/techniques/${t.id}${sheetQuery(d, cat)}`}
             title={t.name}
             description={t.description}
             thumb={t.id}
@@ -251,17 +256,66 @@ export function TechniquePage() {
   const [cam, setCam] = useState(settings.cameraAngle);
   const speedRef = useRef(speed);
   speedRef.current = speed;
+  const nav = useNavigate();
+  const [kbStyle] = useKbStyle();
+  const mastery = useGoals((s) => s.mastery);
 
+  // the technique played by the coach; previous / next keep the same stage and change only the move
+  const tId = t?.id;
+  const shown = useRef<string | undefined>(undefined);
+  const play = useCallback((p: ComboPlayer, id: string) => {
+    shown.current = id;
+    p.speed = speedRef.current;
+    p.setSequence(playerSteps([id]), 1.2);
+    p.play();
+  }, []);
+  const tRef = useRef(tId);
+  tRef.current = tId;
   const onPlayer = useCallback(
     (p: ComboPlayer) => {
       player.current = p;
-      if (!t) return;
-      p.speed = speedRef.current;
-      p.setSequence(playerSteps([t.id]), 1.2);
-      p.play();
+      if (tRef.current) play(p, tRef.current);
     },
-    [t],
+    [play],
   );
+  useEffect(() => {
+    const p = player.current;
+    if (!p || !tId || shown.current === tId) return;
+    play(p, tId);
+    setPlaying(true);
+  }, [tId, play]);
+
+  // 0.25 (Youssef, 2026-10-20 12:30): previous / next technique without leaving the sheet, in the order of
+  // the catalogue list the user came from (discipline, kick-boxing style, category or « À revoir »)
+  const cat = parseTechniqueFilter(q.get('cat'), Object.keys(CATEGORY_LABEL));
+  const list = useMemo(() => (d ? techniqueCatalogue(d, kbStyle, cat, mastery).map((x) => x.id) : []), [d, kbStyle, cat, mastery]);
+  // a technique marked « acquise » leaves the « À revoir » list: the sheet keeps the list it was opened in
+  const kept = useRef<string[]>([]);
+  if (tId && list.includes(tId)) kept.current = list;
+  const order = tId ? (list.includes(tId) ? list : kept.current.includes(tId) ? kept.current : null) : null;
+  const near = order && tId ? neighbours(order, tId) : null;
+  // replace: Back returns to the catalogue, not through every technique seen
+  const go = (to?: string) => to && nav(`/techniques/${to}${sheetQuery(d, cat)}`, { replace: true });
+  const swipe = useRef<{ x: number; y: number } | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    const el = e.target as HTMLElement;
+    // the 3D stage turns with the finger, sliders and scrolling rows keep their own gesture
+    if (e.touches.length !== 1 || el.closest('.preview-stage, input, textarea, select, [data-no-swipe]') || scrollsSideways(el)) {
+      swipe.current = null;
+      return;
+    }
+    swipe.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const s0 = swipe.current;
+    swipe.current = null;
+    if (!s0 || !near) return;
+    const dx = e.changedTouches[0].clientX - s0.x;
+    const dy = e.changedTouches[0].clientY - s0.y;
+    if (Math.abs(dx) < 70 || Math.abs(dy) > Math.abs(dx) * 0.6) return;
+    go(dx < 0 ? near.next : near.prev);
+  };
+  const nameOf = (id: string) => TECHNIQUE_BY_ID.get(id)?.name ?? id;
   const events = useMemo<PlayerEvents>(
     () => ({
       onStep: () => {
@@ -273,7 +327,7 @@ export function TechniquePage() {
 
   if (!t) return <EmptyState title="Technique introuvable" action={<Link to="/techniques" className="btn">Retour aux techniques</Link>} />;
   return (
-    <div className="page" style={{ gap: 16 }}>
+    <div className="page" style={{ gap: 16 }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} data-testid="technique-page">
       <PageHead
         title={t.name}
         eyebrow={CATEGORY_LABEL[t.category]}
@@ -298,6 +352,33 @@ export function TechniquePage() {
           />
         </Suspense>
       </div>
+      {near && near.total > 1 && (
+        <nav className="tech-step" aria-label="Techniques de la liste" data-testid="technique-step">
+          <button
+            type="button"
+            className="btn icon ghost"
+            disabled={!near.prev}
+            aria-label={near.prev ? `Technique précédente : ${nameOf(near.prev)}` : 'Technique précédente'}
+            onClick={() => go(near.prev)}
+            data-testid="technique-prev"
+          >
+            <AppIcon id="stepBack" size={20} />
+          </button>
+          <span className="tech-step-pos" aria-live="polite" data-testid="technique-position">
+            {near.index + 1} / {near.total}
+          </span>
+          <button
+            type="button"
+            className="btn icon ghost"
+            disabled={!near.next}
+            aria-label={near.next ? `Technique suivante : ${nameOf(near.next)}` : 'Technique suivante'}
+            onClick={() => go(near.next)}
+            data-testid="technique-next"
+          >
+            <AppIcon id="stepForward" size={20} />
+          </button>
+        </nav>
+      )}
       <PlaybackControls
         playing={playing}
         onToggle={() => {
@@ -332,6 +413,15 @@ export function TechniquePage() {
       <p className="small muted">Disciplines : {t.disciplines.map((x) => DISCIPLINES.find((y) => y.id === x)!.name).join(', ')}</p>
     </div>
   );
+}
+
+/** true when the touch starts in a row that scrolls sideways (chips, steps): its swipe is its own */
+function scrollsSideways(el: HTMLElement | null): boolean {
+  for (let e = el; e && !e.classList.contains('page'); e = e.parentElement) {
+    const ox = getComputedStyle(e).overflowX;
+    if ((ox === 'auto' || ox === 'scroll') && e.scrollWidth > e.clientWidth + 1) return true;
+  }
+  return false;
 }
 
 /** Fiche of a technique that needs a real partner: explanation and safety only, no animation, no solo drill. */

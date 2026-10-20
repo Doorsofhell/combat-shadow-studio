@@ -321,25 +321,10 @@
   gap: 8px;
 }
 
-/* main controls: previous, play / pause, next, ask the coach; « recommencer » stays discreet */
-.controls.with-coach {
-  grid-template-columns: 44px 48px minmax(0, 1fr) 48px 60px;
-}
-
 .controls .btn.icon.ghost {
   width: 44px;
 }
 
-.coach-btn {
-  flex-direction: column;
-  gap: 1px !important;
-  padding: 0 4px;
-  font-size: 0.72em;
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-.coach-btn.on,
 .tr-secondary .btn.on,
 .tr-camera .btn.on {
   background: var(--ink);
@@ -469,7 +454,6 @@
 .training.immersive .tr-meta,
 .training.immersive .tr-secondary,
 .training.immersive .tr-camera,
-.training.immersive .coach-btn,
 .training.immersive .controls .btn.icon {
   display: none;
 }
@@ -626,6 +610,18 @@
     clip: rect(0 0 0 0);
     white-space: nowrap;
   }
+}
+
+/* -------------------------------------------------- the coach bubble (0.25: the app's one bubble, hosted by the stage) */
+.tr-coach-slot {
+  display: contents;
+}
+/* lower right corner of the stage: never over the controls under it, nor over the stage tools above */
+.coach-bubble.in-host {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 3;
 }
 
 /* -------------------------------------------------- "Demander au coach" (compact, over the lower part of the stage) */

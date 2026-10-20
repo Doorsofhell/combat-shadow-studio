@@ -40,6 +40,7 @@ async function open(page: Page, path: string) {
 const SIZES = [
   { name: 'petit 360x640', width: 360, height: 640 },
   { name: 'standard 393x851', width: 393, height: 851 },
+  { name: 'android 412x915', width: 412, height: 915 },
   { name: 'grand 430x932', width: 430, height: 932 },
   { name: 'paysage 740x360', width: 740, height: 360 },
   { name: 'paysage 915x412', width: 915, height: 412 },
@@ -80,6 +81,19 @@ async function checkFits(page: Page, label: string) {
       play: inView('[data-testid=start], [data-testid=pause], [data-testid=resume]'),
       ar: inView('[data-testid=ar-button]'),
       decompose: inView('[data-testid=decompose]'),
+      // 0.25: the app's coach bubble sits in the stage corner, over none of the screen's controls
+      bubble: inView('[data-testid=coach-bubble]'),
+      bubbleOver: (() => {
+        const b = document.querySelector('[data-testid=coach-bubble]')?.getBoundingClientRect();
+        if (!b) return 'absente';
+        return [...document.querySelectorAll('.tr-bottom button, .stage-tools button, .tr-top button, .tr-info *')]
+          .filter((e) => {
+            const r = e.getBoundingClientRect();
+            return r.width > 0 && !(r.right <= b.left || r.left >= b.right || r.bottom <= b.top || r.top >= b.bottom);
+          })
+          .map((e) => e.getAttribute('aria-label') || e.textContent)
+          .join(' / ');
+      })(),
       clipped,
       stageH: stage.height,
     };
@@ -88,7 +102,8 @@ async function checkFits(page: Page, label: string) {
   expect(r.scrollX, `${label} défilement horizontal`).toBeLessThanOrEqual(0);
   expect(r.rootScroll, `${label} débordement`).toBeLessThanOrEqual(1);
   expect(r.overflowMode, label).toBe(false);
-  for (const k of ['points', 'cue', 'name', 'title', 'time', 'play', 'ar', 'decompose'] as const) expect(r[k], `${label} ${k} visible`).toBe(true);
+  expect(r.bubbleOver, `${label} la bulle du coach masque une commande`).toBe('');
+  for (const k of ['points', 'cue', 'name', 'title', 'time', 'play', 'ar', 'decompose', 'bubble'] as const) expect(r[k], `${label} ${k} visible`).toBe(true);
   expect(r.clipped, `${label} textes coupés`).toBe('');
   expect(r.stageH, `${label} hauteur du coach`).toBeGreaterThan(150);
 }
@@ -178,7 +193,8 @@ test('demander au coach : pause, réponse hors ligne, ralenti, sans défilement 
     await page.setViewportSize({ width: w, height: h });
     await open(page, `/#/entrainement?ex=boxe-debutant-01&mode=technique`);
     await page.getByTestId('start').click();
-    await page.getByTestId('ask-coach').click();
+    // 0.25 (Youssef, 2026-10-20 12:30: « le coach IA doit être identique sur tous les écrans, une bulle flottante en bas à droite »): the training screen's own « Coach » button is replaced by the app's bubble
+    await page.getByTestId('coach-bubble').click();
     await expect(page.getByTestId('phase')).toHaveText('Pause');
     await page.getByTestId('coach-input').fill('Pourquoi dois-je pivoter le pied arrière ?');
     await page.getByTestId('coach-send').click();
@@ -212,7 +228,8 @@ test('zone Caméra : angle, rotation, zoom, recentrer, sans masquer le coach ni 
     const r = await page.evaluate(() => {
       const vw = innerWidth;
       const vh = innerHeight;
-      const ids = ['cam-auto', 'cam-next', 'cam-left', 'cam-right', 'zoom-in', 'zoom-out', 'cam-reset', 'cam-close', 'start', 'ask-coach'];
+      // 0.25 (Youssef, 2026-10-20 12:30: « le coach IA doit être identique sur tous les écrans, une bulle flottante en bas à droite »): the training screen's own « Coach » button is replaced by the app's bubble
+      const ids = ['cam-auto', 'cam-next', 'cam-left', 'cam-right', 'zoom-in', 'zoom-out', 'cam-reset', 'cam-close', 'start', 'coach-bubble'];
       const hidden = ids.filter((id) => {
         const b = document.querySelector(`[data-testid=${id}]`)?.getBoundingClientRect();
         return !b || b.width < 40 || b.height < 40 || b.left < -1 || b.right > vw + 1 || b.top < -1 || b.bottom > vh + 1;

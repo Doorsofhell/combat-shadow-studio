@@ -40,7 +40,8 @@ const exerciseOn = (d: string, tech: string) => EXERCISES.find((e) => e.discipli
 async function openCoach(page: Page, ex: string) {
   await page.goto('about:blank');
   await page.goto(`/#/entrainement?ex=${ex}&mode=technique`);
-  await page.getByTestId('ask-coach').tap();
+  // 0.25 (Youssef, 2026-10-20 12:30: « le coach IA doit être identique sur tous les écrans, une bulle flottante en bas à droite »): the training screen's own « Coach » button is replaced by the app's bubble
+  await page.getByTestId('coach-bubble').tap();
   await expect(page.getByTestId('coach-suggestion').first()).toBeVisible();
 }
 

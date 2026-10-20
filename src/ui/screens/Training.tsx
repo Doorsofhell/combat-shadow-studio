@@ -14,9 +14,8 @@ import { MODE_LABEL, Plan, customPlan, exercisePlan, programPlan } from '../trai
 import { useSession } from '../training/useSession';
 import { useCatalog } from '../../store/catalog';
 import { catalogPlan } from '../../domain/catalog/plan';
-import { CoachAskPanel } from '../coach-ai/CoachAskPanel';
+import { useCoachBubble } from '../coach-ai/coachHost';
 import type { CoachAction } from '../../coach/engine';
-import { useCoachAi } from '../../store/coachAi';
 import { GuideCard } from '../GuideCard';
 import { chooseCoach } from '../components/fighter';
 import { CAMERA_MODES, CameraMode, manualView, stageAzimuth, stepViews, techniqueView, viewName } from '../../domain/camera';
@@ -95,8 +94,11 @@ function TrainingView({ plan }: { plan: Plan }) {
   const [immersive, setImmersive] = useState(false);
   const [sheet, setSheet] = useState(false);
   const [guideId, setGuideId] = useState<string | null>(null);
-  const [asking, setAsking] = useState(false);
-  const coachAiOn = useCoachAi((s) => s.enabled);
+  // 0.25 (Youssef, 2026-10-20 12:30): the coach is the app's one floating bubble; this screen is its
+  // host (see coachHost.ts), « asking » is the bubble's panel being open
+  const asking = useCoachBubble((s) => s.open);
+  const setAsking = useCoachBubble((s) => s.setOpen);
+  const [coachSlot, setCoachSlot] = useState<HTMLDivElement | null>(null);
   const pendingStudySpeed = useRef<number | null>(null);
   const root = useRef<HTMLDivElement>(null);
   const arRoot = useRef<HTMLDivElement>(null);
@@ -167,10 +169,11 @@ function TrainingView({ plan }: { plan: Plan }) {
       st.bump();
     }
   });
-  const askCoach = () => {
-    pause();
-    setAsking(true);
-  };
+  // opening the coach pauses the session, as the former « Coach » button did
+  useEffect(() => {
+    if (asking) pause();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asking]);
   const onCoachAction = (a: CoachAction) => {
     if (a.type === 'demo' || a.type === 'repeat' || a.type === 'slow') {
       setAsking(false);
@@ -186,6 +189,29 @@ function TrainingView({ plan }: { plan: Plan }) {
       nav(a.to);
     }
   };
+  // the session is the bubble's host: its context (the move on screen) and its actions on the player
+  const coachTech = st.tech ?? curId ?? seq[0];
+  const usePseudo = profile.coachAi.usePseudo;
+  const coachContext = useMemo(
+    () => ({
+      pseudo: usePseudo ? profile.pseudo : undefined,
+      discipline: item.discipline,
+      level: item.level,
+      guard: profile.guard,
+      techniqueId: coachTech,
+      exerciseId: item.key,
+      screen: 'entrainement' as const,
+      goals: profile.goals,
+    }),
+    [usePseudo, profile.pseudo, item.discipline, item.level, profile.guard, coachTech, item.key, profile.goals],
+  );
+  const coachAction = useRef(onCoachAction);
+  coachAction.current = onCoachAction;
+  useEffect(() => {
+    if (coachSlot) useCoachBubble.getState().setHost({ slot: coachSlot, context: coachContext, onAction: (a) => coachAction.current(a) });
+  }, [coachSlot, coachContext]);
+  // leaving the session (or starting another one) closes the coach, as the former inline panel did
+  useEffect(() => () => useCoachBubble.setState({ host: null, open: false }), []);
   const ANGLES = CAMERA_MODES.filter((c) => c.id !== 'auto');
   // a chosen angle is exact: any earlier rotation is dropped
   const chooseAngle = (m: CameraMode) => {
@@ -387,24 +413,8 @@ function TrainingView({ plan }: { plan: Plan }) {
           </div>
         )}
         {item.soloNote && !immersive && !asking && <div className="solo-note">{item.soloNote}</div>}
-        {asking && (
-          <div className="tr-ask" data-testid="coach-panel">
-            <CoachAskPanel
-              context={{
-                pseudo: profile.coachAi.usePseudo ? profile.pseudo : undefined,
-                discipline: item.discipline,
-                level: item.level,
-                guard: profile.guard,
-                techniqueId: st.tech ?? curId ?? seq[0],
-                exerciseId: item.key,
-                screen: 'entrainement',
-                goals: profile.goals,
-              }}
-              onAction={onCoachAction}
-              onClose={() => setAsking(false)}
-            />
-          </div>
-        )}
+        {/* the app's coach bubble and its panel are shown here (lower right corner of the stage) */}
+        <div className="tr-coach-slot" ref={setCoachSlot} />
       </div>
 
       <section className={`tr-info ${focusOnly ? 'focus' : ''}`} aria-live="polite">
@@ -545,7 +555,7 @@ function TrainingView({ plan }: { plan: Plan }) {
                 </button>
               </div>
             )}
-            <div className={`controls ${coachAiOn ? 'with-coach' : ''}`}>
+            <div className="controls">
               <button className="btn icon ghost" onClick={restart} aria-label="Recommencer">
                 <AppIcon id="replay" size={20} />
               </button>
@@ -568,12 +578,6 @@ function TrainingView({ plan }: { plan: Plan }) {
               <button className="btn icon" onClick={() => goto(view.itemIndex + 1)} disabled={view.itemIndex >= plan.items.length - 1} aria-label="Exercice suivant">
                 <AppIcon id="stepForward" />
               </button>
-              {coachAiOn && (
-                <button className={`btn coach-btn ${asking ? 'on' : ''}`} data-testid="ask-coach" aria-label="Demander au coach" aria-pressed={asking} onClick={() => (asking ? setAsking(false) : askCoach())}>
-                  <AppIcon id="coachAi" size={20} />
-                  <span>Coach</span>
-                </button>
-              )}
             </div>
           </>
         )}

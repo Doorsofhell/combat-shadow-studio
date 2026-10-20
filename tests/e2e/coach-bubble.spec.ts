@@ -32,10 +32,82 @@ test('bulle Coach IA : un appui ouvre, un autre masque, Échap masque aussi', as
   await bubble.click();
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('coach-bubble-panel')).toHaveCount(0);
-  // no bubble on the training screen: it has its own Coach button
+  // 0.25 (Youssef, 2026-10-20 12:30: « le coach IA doit être identique sur tous les écrans »): the training
+  // screen no longer has its own Coach button, the same bubble is there
   await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
   await expect(page.getByTestId('exercise-name')).toBeVisible();
+  await expect(page.getByTestId('coach-bubble')).toBeVisible();
+  await expect(page.getByTestId('ask-coach')).toHaveCount(0);
+});
+
+/** what makes the bubble look the same, and where it is */
+async function bubbleLook(page: Page) {
+  const b = page.getByTestId('coach-bubble');
+  await expect(b).toBeVisible();
+  return b.evaluate((e) => {
+    const cs = getComputedStyle(e);
+    const r = e.getBoundingClientRect();
+    return {
+      look: { w: Math.round(r.width), h: Math.round(r.height), bg: cs.backgroundColor, color: cs.color, radius: cs.borderRadius, shadow: cs.boxShadow, icon: (e.querySelector('svg')?.innerHTML ?? '').replace(/_r_\w+?_/g, 'id') },
+      fromRight: innerWidth - r.right,
+      top: r.top,
+      bottom: r.bottom,
+      vh: innerHeight,
+    };
+  });
+}
+
+test('bulle Coach IA identique sur tous les écrans, en bas à droite, entraînement compris', async ({ page }) => {
+  await seed(page);
+  const screens = ['/#/', '/#/techniques', '/#/techniques/jab?d=boxe', '/#/stats', '/#/reglages', '/#/coach', '/#/connexion', '/#/entrainement?ex=boxe-debutant-01&mode=technique'];
+  let ref: Awaited<ReturnType<typeof bubbleLook>>['look'] | null = null;
+  for (const s of screens) {
+    await page.goto('about:blank');
+    await page.goto(s);
+    const b = await bubbleLook(page);
+    if (!ref) ref = b.look;
+    expect(b.look, s).toEqual(ref);
+    // bottom right: at the right edge, in the lower part of the screen
+    expect(b.fromRight, s).toBeLessThanOrEqual(20);
+    expect(b.top, s).toBeGreaterThan(b.vh / 3);
+    expect(b.bottom, s).toBeLessThanOrEqual(b.vh);
+  }
+  // hidden where the whole coach page is open, and during onboarding (its buttons are at the bottom)
+  await page.goto('/#/coach-ia');
+  await expect(page.getByRole('heading').first()).toBeVisible();
   await expect(page.getByTestId('coach-bubble')).toHaveCount(0);
+});
+
+test('bulle Coach IA à l’entraînement : pause, démo sur le lecteur, ralenti, sans quitter la séance', async ({ page }) => {
+  await seed(page);
+  await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
+  await page.getByTestId('start').click();
+  await page.getByTestId('coach-bubble').click();
+  // opening the coach pauses the session, as the former Coach button did
+  await expect(page.getByTestId('phase')).toHaveText('Pause');
+  await expect(page.getByTestId('coach-bubble-panel')).toBeVisible();
+  // the panel knows the session: questions about the move on screen
+  await expect(page.getByTestId('coach-suggestion').first()).toBeVisible();
+  // a suggested demo plays on the session's coach (Décomposer), the screen stays the training one
+  const demo = page.getByTestId('coach-suggestion').filter({ hasText: /^Montre-moi/ }).first();
+  await demo.scrollIntoViewIfNeeded();
+  await demo.click();
+  await expect(page.getByTestId('study-panel')).toBeVisible();
+  await expect(page.getByTestId('coach-bubble-panel')).toHaveCount(0);
+  await expect(page).toHaveURL(/#\/entrainement\?/);
+  await page.getByTestId('study-close').click();
+  // slow motion of another move, asked in words
+  await page.getByTestId('coach-bubble').click();
+  await page.getByTestId('coach-input').fill('Montre-moi le crochet gauche au ralenti');
+  await page.getByTestId('coach-send').click();
+  await expect(page.getByTestId('study-panel')).toBeVisible();
+  await expect(page.getByTestId('current-move')).toHaveText('Crochet gauche');
+  // Échap closes it like everywhere else
+  await page.getByTestId('coach-bubble').click();
+  await expect(page.getByTestId('coach-bubble-panel')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('coach-bubble-panel')).toHaveCount(0);
+  await expect(page.getByTestId('coach-bubble')).toBeVisible();
 });
 
 test('onglet Légendes dans la barre du bas', async ({ page }) => {
