@@ -422,8 +422,9 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['legendes', 'legende-fiche', 'champion'],
     answer:
       'Les Légendes, ce sont des combinaisons inspirées du style de grands champions, exécutées par ton coach.\n' +
-      'En haut, choisis une discipline pour voir ses champions. Les sections Explorer, Favoris, Historique, Récents, Collections, Champions et Importer t’aident à t’y retrouver.\n' +
-      'Sur la fiche d’une combinaison : la séquence, le choix du mode, « S’entraîner », « Décomposer », « Dupliquer dans le créateur » et « Ajouter à une collection ».',
+      'Tout en haut, ton combo du jour se lance d’un appui sur « S’entraîner » ; chaque fiche de la liste a aussi son bouton lecture rouge.\n' +
+      'Juste dessous, choisis une discipline pour voir ses champions. Les sections Explorer, Favoris, Historique, Récents, Collections, Champions et Importer t’aident à t’y retrouver.\n' +
+      'Sur la fiche d’une combinaison : « S’entraîner » tout en haut (mode Libre, touche « Changer » pour un autre mode), la séquence, « Décomposer », « Dupliquer dans le créateur » et « Ajouter à une collection ».',
     action: { to: '/champions', label: 'Ouvrir Légendes' },
   },
   {

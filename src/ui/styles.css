@@ -2944,3 +2944,49 @@ details.fold > summary h3 { margin: 0; }
 .mastery-figures span { display: inline-flex; align-items: center; gap: 6px; }
 .mastery-figures b { font-family: var(--font-display); font-size: 1.2rem; }
 .mastery-list li a { display: inline-flex; align-items: center; gap: 6px; padding: 4px 0; }
+
+/* -------------------------------------------------- 0.25 Légendes: training one tap away (Youssef, 2026-10-20 12:32) */
+.quick-start {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid color-mix(in srgb, var(--red), transparent 70%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--red), var(--soft) 92%), var(--soft) 60%);
+}
+.quick-start .eyebrow { display: inline-flex; align-items: center; gap: 6px; }
+.quick-start .qs-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+  line-height: 1.2;
+  color: var(--ink);
+  text-decoration: none;
+}
+.quick-start .qs-actions { display: flex; gap: 8px; align-items: center; }
+.quick-start .qs-actions > .btn.primary { flex: 1; }
+.quick-start .qs-actions.two { display: grid; grid-template-columns: 1fr auto; }
+.quick-start .qs-actions.two > * { min-width: 0; padding: 0 10px; white-space: nowrap; }
+.quick-start .qs-mode { justify-content: space-between; gap: 6px; min-height: var(--tap); }
+.quick-start .qs-change { display: inline-flex; align-items: center; gap: 4px; color: var(--red-ink); font-weight: 700; }
+/* the round play button at the end of every sheet row */
+.btn.play-dot {
+  width: 40px;
+  min-height: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--red);
+  color: var(--on-red);
+}
+.btn.play-dot:hover:not(:disabled) { background: color-mix(in srgb, var(--red), #000 8%); }
+/* sticky start above the bottom nav, left of the coach bubble */
+.train-bar {
+  position: fixed;
+  left: max(16px, env(safe-area-inset-left));
+  right: calc(max(16px, env(safe-area-inset-right)) + 64px);
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 14px);
+  max-width: 480px;
+  z-index: 29;
+  animation: fade-in var(--t-med) var(--ease) both;
+}
+.train-bar .btn { min-height: 52px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); }
+@media (prefers-reduced-motion: reduce) { .train-bar { animation: none; } }

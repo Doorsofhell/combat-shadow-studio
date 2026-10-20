@@ -73,6 +73,74 @@ function FavButton({ id, name }: { id: string; name: string }) {
   );
 }
 
+/** route of a training session on a sheet; « libre » is the friendly default for beginners */
+function trainHref(id: string, mode: TrainingMode = 'libre') {
+  return `/entrainement?${new URLSearchParams({ cat: id, mode })}`;
+}
+
+/** one tap from a list to the training screen (0.25: no scrolling, no detour through the sheet) */
+function useQuickTrain() {
+  const nav = useNavigate();
+  const pushHistory = useCatalogUser((s) => s.pushHistory);
+  return (c: CatalogCombo) => {
+    pushHistory(c.id, 'entraine');
+    nav(trainHref(c.id));
+  };
+}
+
+function PlayButton({ c }: { c: CatalogCombo }) {
+  const start = useQuickTrain();
+  const playable = isPlayable3D(c);
+  return (
+    <button
+      className="btn icon play-dot"
+      disabled={!playable}
+      aria-label={playable ? `S’entraîner : ${c.name}` : `${c.name} : animation indisponible`}
+      title="S’entraîner"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        start(c);
+      }}
+      data-testid={`cat-play-${c.id}`}
+    >
+      <AppIcon id="play" size={18} />
+    </button>
+  );
+}
+
+/** the quick-start card at the top of a list: a ready pick, one big button, and a way to change it */
+function QuickStart({ eyebrow, combo, catalog, onOther, testId = 'cat-quick' }: { eyebrow: string; combo: CatalogCombo; catalog: Catalog; onOther?: () => void; testId?: string }) {
+  const start = useQuickTrain();
+  const ch = catalog.championById.get(combo.champion);
+  return (
+    <section className="card quick-start" data-testid={testId} aria-label="Démarrage rapide">
+      <span className="eyebrow">
+        <AppIcon id="bolt" size={14} /> {eyebrow}
+      </span>
+      <Link to={`/champions/${combo.id}`} className="qs-title" data-testid={`${testId}-sheet`}>
+        {combo.name}
+      </Link>
+      <span className="small muted">
+        {ch?.name ?? combo.champion} · {DISC_SHORT[combo.discipline]} · {combo.sequence.length} mouvements · {LEVEL_NAME[combo.level]}
+      </span>
+      <div className="qs-actions">
+        <button className="btn primary" onClick={() => start(combo)} disabled={!isPlayable3D(combo)} data-testid={`${testId}-train`}>
+          <AppIcon id="play" /> S’entraîner
+        </button>
+        {onOther && (
+          <button className="btn icon secondary" onClick={onOther} aria-label="Une autre au hasard" title="Une autre" data-testid={`${testId}-other`}>
+            <AppIcon id="replay" size={20} />
+          </button>
+        )}
+        <Link className="btn icon secondary" to={`/champions/${combo.id}`} aria-label="Voir la fiche (modes, décomposer…)" title="Voir la fiche">
+          <AppIcon id="details" size={20} />
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 function ComboRow({ c, catalog, extra }: { c: CatalogCombo; catalog: Catalog; extra?: React.ReactNode }) {
   const ch = catalog.championById.get(c.champion);
   return (
@@ -91,6 +159,7 @@ function ComboRow({ c, catalog, extra }: { c: CatalogCombo; catalog: Catalog; ex
       </Link>
       {extra}
       <FavButton id={c.id} name={c.name} />
+      <PlayButton c={c} />
     </div>
   );
 }
@@ -184,6 +253,7 @@ export function Champions() {
         <Loading catalogError={error} retry={retry} />
       ) : (
         <>
+          <DailyStart catalog={catalog} />
           {/* first level: the legends of each discipline */}
           <div className="disc-grid compact" role="group" aria-label="Légendes par discipline" data-testid="legend-disciplines">
             {DISCIPLINES.map((d) => (
@@ -210,6 +280,26 @@ export function Champions() {
         </>
       )}
     </div>
+  );
+}
+
+/** 0.25 (Youssef, 2026-10-20): the combo of the day, ready to launch in one tap, above everything else */
+function DailyStart({ catalog }: { catalog: Catalog }) {
+  const [q] = useSearchParams();
+  const d = q.get('d') as DisciplineId | null;
+  const pool = useMemo(() => catalog.combos.filter((c) => isPlayable3D(c) && (!d || c.discipline === d)), [catalog, d]);
+  const today = useMemo(() => dailyPick(pool), [pool]);
+  const [other, setOther] = useState<CatalogCombo | null>(null);
+  useEffect(() => setOther(null), [pool]);
+  const combo = other ?? today;
+  if (!combo) return null;
+  return (
+    <QuickStart
+      eyebrow={other ? 'Tirée au sort pour toi' : 'Ton combo du jour'}
+      combo={combo}
+      catalog={catalog}
+      onOther={pool.length > 1 ? () => setOther(randomPick(pool.filter((c) => c.id !== combo.id)) ?? null) : undefined}
+    />
   );
 }
 
@@ -243,21 +333,11 @@ function Explorer({ catalog }: { catalog: Catalog }) {
   const results = useMemo(() => searchCombos(catalog, query), [catalog, q.toString()]); // eslint-disable-line react-hooks/exhaustive-deps
   const tags = useMemo(() => allTags(catalog.combos), [catalog]);
   const techs = query.discipline ? techniquesFor(query.discipline) : [...TECHNIQUE_BY_ID.values()];
-  const today = useMemo(() => dailyPick(catalog.combos), [catalog]);
   const active = ['champion', 'tech', 'niveau', 'garde', 'long', 'tag', 'but', 'statut'].filter((k) => q.get(k)).length;
   const champs = catalog.champions.filter((c) => !query.discipline || c.disciplines.includes(query.discipline)).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 
   return (
     <div className="stack">
-      {today && (
-        <Link to={`/champions/${today.id}`} className="card link stack" style={{ display: 'flex', flexDirection: 'column', gap: 6 }} data-testid="cat-daily">
-          <span className="eyebrow">Fiche du jour</span>
-          <b>{today.name}</b>
-          <span className="small muted">
-            {catalog.championById.get(today.champion)?.name} · {DISC_NAME[today.discipline]} · {today.sequence.length} mouvements
-          </span>
-        </Link>
-      )}
       <div className="field">
         <label htmlFor="cat-q">Rechercher</label>
         <input id="cat-q" className="input" type="search" value={query.text ?? ''} onChange={(e) => set('q', e.target.value)} placeholder="Champion, technique, objectif… (ex. Tyson, crochet, teep)" />
@@ -675,7 +755,18 @@ export function ComboPage() {
   const [rest, setRest] = useState(settings.defaultRestSec);
   const [rounds, setRounds] = useState(3);
   const [collect, setCollect] = useState(false);
+  const [showModes, setShowModes] = useState(false);
   const c = id ? catalog?.comboById.get(id) : undefined;
+  // the sticky bar shows up once the big start button has scrolled out of sight
+  const startRef = useRef<HTMLElement>(null);
+  const [startHidden, setStartHidden] = useState(false);
+  useEffect(() => {
+    const el = startRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([e]) => setStartHidden(!e.isIntersecting && e.boundingClientRect.top < 0));
+    io.observe(el);
+    return () => io.disconnect();
+  }, [c?.id, !!catalog]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (c) pushHistory(c.id, 'ouvert');
   }, [c?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -723,6 +814,47 @@ export function ComboPage() {
   return (
     <div className="page">
       <PageHead title={c.name} eyebrow={`${ch?.name ?? c.champion} · ${DISC_NAME[c.discipline]}`} right={<FavButton id={c.id} name={c.name} />} />
+
+      {/* 0.25 (Youssef, 2026-10-20): training first, no scrolling. Default mode « libre », « Changer » opens the others. */}
+      <section ref={startRef} className="card quick-start" data-testid="cat-start" aria-label="S’entraîner sur cette fiche">
+        <button className="btn primary block lg" disabled={!playable} onClick={() => train(mode)} data-testid="cat-train">
+          <AppIcon id="play" /> S’entraîner
+        </button>
+        <div className="qs-actions two">
+          <button
+            className="chip qs-mode"
+            aria-expanded={showModes}
+            aria-controls="cat-modes"
+            aria-label={`Mode ${MODE_LABEL[mode].toLowerCase()} : changer de mode`}
+            onClick={() => setShowModes(!showModes)}
+            data-testid="cat-mode-toggle"
+          >
+            {MODE_LABEL[mode]}
+            <span className="qs-change">
+              Changer <AppIcon id={showModes ? 'chevron' : 'chevronDown'} size={14} />
+            </span>
+          </button>
+          <button className="btn sm secondary" disabled={!playable} onClick={() => train('technique', true)} data-testid="cat-study">
+            <AppIcon id="decompose" size={18} /> Décomposer
+          </button>
+        </div>
+        {showModes && (
+          <div className="stack" id="cat-modes">
+            <div className="seg" role="radiogroup" aria-label="Mode d’entraînement">
+              {MODES.map((m) => (
+                <button key={m} role="radio" aria-checked={mode === m} onClick={() => setMode(m)} data-testid={`cat-mode-${m}`}>
+                  {MODE_LABEL[m]}
+                </button>
+              ))}
+            </div>
+            <p className="small muted" style={{ margin: 0 }}>
+              {MODE_HELP[mode]}
+            </p>
+            {mode === 'rounds' && <RoundPicker round={round} rest={rest} rounds={rounds} setRound={setRound} setRest={setRest} setRounds={setRounds} />}
+          </div>
+        )}
+        {!playable && <span className="small muted">Animation indisponible pour cette fiche : tu peux la dupliquer dans le créateur.</span>}
+      </section>
 
       <div className="row" style={{ gap: 6 }}>
         <StatusBadge status={c.status} />
@@ -831,27 +963,12 @@ export function ComboPage() {
       </section>
 
       <section className="card stack">
-        <span className="label">Mode</span>
-        <div className="seg" role="radiogroup" aria-label="Mode d’entraînement">
-          {MODES.map((m) => (
-            <button key={m} role="radio" aria-checked={mode === m} onClick={() => setMode(m)} data-testid={`cat-mode-${m}`}>
-              {MODE_LABEL[m]}
-            </button>
-          ))}
-        </div>
-        <p className="small muted">{MODE_HELP[mode]}</p>
-        {mode === 'rounds' && <RoundPicker round={round} rest={rest} rounds={rounds} setRound={setRound} setRest={setRest} setRounds={setRounds} />}
-        <button className="btn primary block" disabled={!playable} onClick={() => train(mode)} data-testid="cat-train">
-          <AppIcon id="play" /> S’entraîner
+        <span className="panel-title" style={{ margin: 0 }}>
+          Garder cette fiche
+        </span>
+        <button className="btn secondary" onClick={() => duplicate(c.sequence)} data-testid="cat-duplicate">
+          <AppIcon id="duplicate" size={18} /> Dupliquer dans le créateur
         </button>
-        <div className="grid2">
-          <button className="btn" disabled={!playable} onClick={() => train('technique', true)} data-testid="cat-study">
-            <AppIcon id="decompose" size={18} /> Décomposer
-          </button>
-          <button className="btn" onClick={() => duplicate(c.sequence)} data-testid="cat-duplicate">
-            <AppIcon id="duplicate" size={18} /> Dupliquer dans le créateur
-          </button>
-        </div>
         <button className="btn secondary" onClick={() => setCollect(true)}>
           <AppIcon id="add" size={18} /> Ajouter à une collection
         </button>
@@ -874,6 +991,13 @@ export function ComboPage() {
       </p>
 
       {collect && <CollectionSheet comboId={c.id} onClose={() => setCollect(false)} />}
+      {startHidden && playable && !collect && (
+        <div className="train-bar" data-testid="cat-train-bar">
+          <button className="btn primary block" onClick={() => train(mode)} data-testid="cat-sticky-train">
+            <AppIcon id="play" /> S’entraîner
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -956,6 +1080,7 @@ export function ChampionPage() {
   const { catalog, error, retry } = useRetry();
   const ch = championId ? catalog?.championById.get(championId) : undefined;
   const [d, setD] = useState<DisciplineId | null>(null);
+  const [other, setOther] = useState<string | null>(null);
   if (!catalog)
     return (
       <div className="page">
@@ -975,9 +1100,22 @@ export function ChampionPage() {
   const disc = d && ch.disciplines.includes(d) ? d : ch.disciplines[0];
   const all = catalog.combos.filter((c) => c.champion === ch.id);
   const list = all.filter((c) => c.discipline === disc).sort((a, b) => LEVELS.findIndex((l) => l.id === a.level) - LEVELS.findIndex((l) => l.id === b.level) || a.sequence.length - b.sequence.length);
+  // the easiest playable sheet of the shown discipline, unless the user asked for another one
+  const playableList = list.filter(isPlayable3D);
+  const first = playableList[0];
+  const pick = playableList.find((c) => c.id === other) ?? first;
   return (
     <div className="page">
       <PageHead title={ch.name} eyebrow={`Profil de style · ${ch.disciplines.map((x) => DISC_SHORT[x]).join(' · ')}`} />
+      {first && (
+        <QuickStart
+          eyebrow={pick === first ? `Pour commencer comme ${ch.name}` : 'Tirée au sort pour toi'}
+          combo={pick}
+          catalog={catalog}
+          testId="champ-quick"
+          onOther={playableList.length > 1 ? () => setOther(randomPick(playableList.filter((c) => c.id !== pick.id))?.id ?? null) : undefined}
+        />
+      )}
       <section className="card stack">
         <span>{ch.style}</span>
         <div className="row" style={{ gap: 6 }}>
@@ -995,7 +1133,16 @@ export function ChampionPage() {
       {ch.disciplines.length > 1 && (
         <div className="tabs" role="tablist" aria-label="Discipline">
           {ch.disciplines.map((x) => (
-            <button key={x} role="tab" className="tab" aria-selected={x === disc} onClick={() => setD(x)}>
+            <button
+              key={x}
+              role="tab"
+              className="tab"
+              aria-selected={x === disc}
+              onClick={() => {
+                setD(x);
+                setOther(null);
+              }}
+            >
               <DisciplineIcon id={x} size={20} />
               {DISC_NAME[x]} ({all.filter((c) => c.discipline === x).length})
             </button>
