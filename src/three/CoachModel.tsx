@@ -172,7 +172,10 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
   const premium = render === 'premium';
   const custom = style !== 'realiste' || premium;
   const meta = useMeta(own ? `${own}.meta.json` : `./models/coach_${who(coach)}_manga.meta.json`);
-  const masks = useLoader(TextureLoader, own ? `${own}_masks.png` : `./models/coach_${who(coach)}_manga_masks.png`);
+  const maskUrl = own ? `${own}_masks.png` : `./models/coach_${who(coach)}_manga_masks.png`;
+  const masks = useLoader(TextureLoader, maskUrl);
+  // face paint: champion coaches only (the hook always loads something; the masks are already cached)
+  const face = useLoader(TextureLoader, own ? `${own}_face.png` : maskUrl);
   // one skeleton per model: changing the look swaps the materials only, so the rig, the player and the
   // animation in progress are kept (no remount, the session goes on)
   const base = useMemo(() => {
@@ -212,12 +215,14 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
     if (custom) {
       masks.flipY = false;
       masks.colorSpace = NoColorSpace;
+      face.flipY = false;
+      face.colorSpace = NoColorSpace;
       try {
         const opts =
           style === 'realiste'
             ? { toon: (n: string, col: Color) => (quality === 'haute' ? fabricMaterial(n, col) : new MeshStandardMaterial({ name: n, color: col, roughness: 0.8, metalness: 0 })), outline: noOutline }
             : { toon: (n: string, col: Color) => toonMaterial(n, null, col, ink), outline: (w: number) => (ink !== 'manga' ? outlineMaterial(w * 1.25, '#1b1d22') : outlineMaterial(w)) };
-        c = new Customizer(s, meta, masks, { ...opts, legacy: !premium });
+        c = new Customizer(s, meta, masks, { ...opts, legacy: !premium, face: own ? face : null });
         // development hook for the screenshot scripts
         if (import.meta.env.DEV) ((window as unknown as { __cssCustomizers?: Customizer[] }).__cssCustomizers ??= []).push(c);
       } catch (e) {
@@ -225,7 +230,7 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
       }
     }
     return c;
-  }, [base, quality, style, custom, premium, meta, masks]);
+  }, [base, quality, style, custom, premium, meta, masks, face, own]);
   const legLength = look?.body.legLength ?? 1;
   const rig = useMemo(() => {
     restoreReferencePose(scene);

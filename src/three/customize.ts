@@ -287,6 +287,9 @@ export interface CustomUniforms {
   uMouth: { value: Vector3 };
   uK: { value: number };
   uMasks: { value: Texture | null };
+  /** face paint of a champion coach (see tools/generator/coaches/face_paint.py), uFaceOn = 0 without one */
+  uFace: { value: Texture | null };
+  uFaceOn: { value: number };
   uTatN: { value: number };
   uTatA: { value: Vector3[] };
   uTatU: { value: Vector3[] };
@@ -321,6 +324,8 @@ export function makeUniforms(meta: CoachMeta): CustomUniforms {
     uMouth: { value: mouthOf(meta) },
     uK: { value: meta.K },
     uMasks: { value: null },
+    uFace: { value: null },
+    uFaceOn: { value: 0 },
     uTatN: { value: 0 },
     uTatA: { value: arr(() => new Vector3()) },
     uTatU: { value: arr(() => new Vector3()) },
@@ -375,6 +380,8 @@ uniform float uBodyHair;
 uniform vec3 uMouth;
 uniform float uK;
 uniform sampler2D uMasks;
+uniform sampler2D uFace;
+uniform float uFaceOn;
 uniform int uTatN;
 uniform vec3 uTatA[${MAX_TATTOOS}];
 uniform vec3 uTatU[${MAX_TATTOOS}];
@@ -410,6 +417,14 @@ const SKIN_FRAGMENT_BODY = /* glsl */ `
   float beard = mk.b * uBeard.x * beardRegion(vRest);
   c = mix(c, uBeardColor * (0.7 + 0.6 * n), clamp(beard * (0.55 + 0.45 * n), 0.0, 1.0));
   c = mix(c, uHairColor, mk.a * uBodyHair * step(0.6, n) * 0.8);
+  if (uFaceOn > 0.5) {
+    // face paint: g shadow, b warm tint, a eyebrow (hair colour, hair-like grain), r ink lines
+    vec4 fc = texture2D(uFace, vMapUv);
+    c *= 1.0 - 0.38 * fc.g;
+    c = mix(c, c * vec3(1.12, 0.78, 0.76), fc.b);
+    c = mix(c, uHairColor * (0.75 + 0.5 * n), fc.a * 0.95);
+    c = mix(c, vec3(0.055, 0.045, 0.05), fc.r);
+  }
   for (int i = 0; i < ${MAX_TATTOOS}; i++) {
     if (i >= uTatN) break;
     vec3 q = vRest - uTatA[i];
@@ -1088,6 +1103,8 @@ export interface CustomizerOptions {
   outline: (width: number) => Material;
   /** v0.22 clothes (fallback render): no drape, no hem strip, skin drawn under the clothes */
   legacy?: boolean;
+  /** face paint of a champion coach (same UV layout as the skin) */
+  face?: Texture | null;
 }
 
 interface Layer {
@@ -1148,6 +1165,10 @@ export class Customizer {
     this.specs = garmentSpecs(this.map);
     this.u = makeUniforms(meta);
     this.u.uMasks.value = masks;
+    if (opt.face) {
+      this.u.uFace.value = opt.face;
+      this.u.uFaceOn.value = 1;
+    }
     this.u.uGhost = this.ghost;
     setRegions(body.geometry, regionWeights(this.map));
     // the built-in clothes of the generated model are replaced by the creator's layers
