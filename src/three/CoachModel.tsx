@@ -34,23 +34,32 @@ export function coachUrl(coach: CoachId, style: CoachStyle, render: CoachRender 
   return `./models/coach_${who}${style !== 'realiste' || render === 'premium' ? '_manga' : ''}.${EXT}`;
 }
 
-/** fabric and gear of the realistic look: matte, physically based, with a soft sheen for the cloth */
+/** knitted or woven clothes (the rest is padded gear: gloves, shin guards, helmets...) */
+const CLOTH = /^css-(short|legging|rashguard|compression|tshirt|debardeur|brassiere|bandes|sous-gants)/;
+
+/**
+ * fabric and gear of the realistic look: matte, physically based, with a soft sheen for the cloth; the
+ * clothes get the fabric detail of the paint shader (CSS_FABRIC: folds, knit, seams, topstitching)
+ */
 function fabricMaterial(name: string, color: Color) {
   const gear = /^css-(glove|bar|mouth|hairpiece)/.test(name);
+  const cloth = CLOTH.test(name);
   const m = new MeshPhysicalMaterial({
     name,
     color,
-    roughness: gear ? 0.42 : 0.9,
+    roughness: gear ? 0.42 : cloth ? 0.82 : 0.9,
     metalness: 0,
-    // the fabric sheen follows the paint colour (patterns are painted in the shader): a white sheen
-    // turned black shorts grey
-    sheen: gear ? 0 : 0.35,
-    sheenRoughness: 0.8,
+    // the fabric sheen follows the paint colour (patterns are painted in the shader, see FABRIC_LIGHT):
+    // a white sheen turned black shorts grey
+    sheen: gear ? 0 : cloth ? 1 : 0.35,
+    sheenRoughness: cloth ? 0.7 : 0.8,
     sheenColor: new Color(0.25, 0.25, 0.25),
     clearcoat: gear ? 0.3 : 0,
     clearcoatRoughness: 0.4,
-    specularIntensity: gear ? 0.6 : 0.25,
+    // cloth: a weak, broad reflection; the broad highlight of a stronger one read as plastic
+    specularIntensity: gear ? 0.6 : cloth ? 0.14 : 0.25,
   });
+  if (cloth) m.defines = { ...m.defines, CSS_FABRIC: '' };
   return m;
 }
 

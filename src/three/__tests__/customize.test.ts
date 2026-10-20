@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import { BufferAttribute, Color, Mesh, Object3D, SkinnedMesh, Texture, Vector3 } from 'three';
+import { BufferAttribute, BufferGeometry, Color, Mesh, Object3D, SkinnedMesh, Texture, Vector3 } from 'three';
 import { loadCoach } from '../../test/body';
 import { Customizer, buildShell, garmentSpecs, gloveGeometry, mapBody, regionWeights, zoneFrame, type GarmentSpec } from '../customize';
-import { applyManga, outlineMaterial, toonMaterial } from '../manga';
+import { applyManga, outlineMaterial, shadeNormals, toonMaterial } from '../manga';
 import { defaultLook, recommendedGear, type FighterLook, type TattooZone } from '../../editor/look';
 import type { CoachId } from '../../domain/types';
 
@@ -289,5 +289,143 @@ describe('rendu Encre 0.23', () => {
     // 0.24: the premium mode, shown as "Anime", draws with its own cel shading, also screen-free
     expect(shaderOf('anime')).not.toContain('gl_FragCoord');
     expect(shaderOf('anime')).not.toMatch(/fract\(/);
+  });
+});
+
+describe('rendu Anime 0.25 : peau sans taches', () => {
+  // bumpiness of a normal field in the torso (where the stains were): mean angle between each normal and
+  // the average of its neighbours (zero on a smooth curve, large on every little bump)
+  const bumpiness = (g: BufferGeometry, name: string, keep: (i: number) => boolean) => {
+    const n = g.getAttribute(name);
+    const idx = g.getIndex()!.array;
+    const acc = new Float32Array(n.count * 3);
+    for (let t = 0; t < idx.length; t += 3)
+      for (let e = 0; e < 3; e++) {
+        const a = idx[t + e];
+        const b = idx[t + ((e + 1) % 3)];
+        for (const [x, y] of [
+          [a, b],
+          [b, a],
+        ]) {
+          acc[x * 3] += n.getX(y);
+          acc[x * 3 + 1] += n.getY(y);
+          acc[x * 3 + 2] += n.getZ(y);
+        }
+      }
+    let sum = 0;
+    let cnt = 0;
+    for (let i = 0; i < n.count; i++) {
+      const l = Math.hypot(acc[i * 3], acc[i * 3 + 1], acc[i * 3 + 2]);
+      if (!keep(i) || !l) continue;
+      const d = (acc[i * 3] * n.getX(i) + acc[i * 3 + 1] * n.getY(i) + acc[i * 3 + 2] * n.getZ(i)) / (l * Math.hypot(n.getX(i), n.getY(i), n.getZ(i)));
+      sum += Math.acos(Math.min(1, d));
+      cnt++;
+    }
+    return sum / cnt;
+  };
+
+  test.each([
+    ['homme', undefined],
+    ['femme', 'coaches/mma-amara/model'],
+    ['homme', 'coaches/mma-kadir/model'],
+  ] as const)('%s %s : l’ombre suit les volumes du corps, pas chaque bosse du maillage', (c, model) => {
+    const { root, meta } = loadCoach(c, model);
+    let body: SkinnedMesh | null = null;
+    root.traverse((o) => {
+      if ((o as SkinnedMesh).isSkinnedMesh && ((o as Mesh).material as { name: string }).name === 'Skin') body = o as SkinnedMesh;
+    });
+    const g = (body as unknown as SkinnedMesh).geometry;
+    shadeNormals(g);
+    const S = g.getAttribute('aShadeN');
+    const N = g.getAttribute('normal');
+    const P = g.getAttribute('position');
+    expect(S.count).toBe(N.count);
+    // unit length, and never turned away from the surface
+    for (let i = 0; i < S.count; i += 7) {
+      expect(Math.hypot(S.getX(i), S.getY(i), S.getZ(i))).toBeCloseTo(1, 3);
+      expect(S.getX(i) * N.getX(i) + S.getY(i) * N.getY(i) + S.getZ(i) * N.getZ(i), `sommet ${i}`).toBeGreaterThan(0);
+    }
+    const torso = (i: number) => P.getY(i) > meta.pelvis[1] + 0.05 && P.getY(i) < meta.neck[1] - 0.05 && Math.abs(P.getX(i)) < meta.shoulderX * 0.8;
+    // the shading normals turn several times more slowly from one vertex to the next
+    expect(bumpiness(g, 'aShadeN', torso)).toBeLessThan(bumpiness(g, 'normal', torso) * 0.45);
+    // the same on both sides of the texture seams (no visible line in the shadow)
+    const seen = new Map<string, number>();
+    let seams = 0;
+    for (let i = 0; i < P.count; i++) {
+      const k = `${Math.round(P.getX(i) * 2e4)},${Math.round(P.getY(i) * 2e4)},${Math.round(P.getZ(i) * 2e4)}`;
+      const j = seen.get(k);
+      if (j === undefined) {
+        seen.set(k, i);
+        continue;
+      }
+      seams++;
+      expect(S.getX(i) * S.getX(j) + S.getY(i) * S.getY(j) + S.getZ(i) * S.getZ(j)).toBeGreaterThan(0.999);
+    }
+    expect(seams).toBeGreaterThan(50);
+  });
+
+  test('le corps et les cheveux du rendu Anime sont ombrés avec ces normales, pas les yeux', () => {
+    const { root } = loadCoach('femme', 'coaches/mma-amara/model');
+    applyManga(root, 'anime');
+    const used: Record<string, boolean> = {};
+    root.traverse((o) => {
+      const m = o as Mesh;
+      if (!m.isMesh) return;
+      const mat = m.material as { name?: string; defines?: Record<string, unknown>; side?: number };
+      if (mat.side === 1) return; // ink outline
+      used[mat.name!] = !!mat.defines && 'CSS_SHADE_N' in mat.defines && !!m.geometry.getAttribute('aShadeN');
+    });
+    expect(used.Skin).toBe(true);
+    expect(used.Hair).toBe(true);
+    expect(used.Eyes).toBeFalsy();
+  });
+});
+
+describe('vêtements réalistes 0.25', () => {
+  test.each(coaches)('%s : le tissu drapé ne glisse pas le long de la peau (bords nets à la taille et aux cuisses)', (c) => {
+    const { body, meta } = setup(c);
+    const m = mapBody(body, meta);
+    const g = body.geometry;
+    const reg = regionWeights(m);
+    for (const [k, v] of Object.entries({ aRegA: reg.A, aRegB: reg.B, aRegC: reg.C, aRegD: reg.D })) g.setAttribute(k, new BufferAttribute(v, 4));
+    const specs = garmentSpecs(m);
+    for (const id of ['short-boxe', 'short-mma-court', 'short-thai', 'tshirt', 'brassiere']) {
+      const spec = (specs.bottom[id] ?? specs.top[id])!;
+      expect(spec.drape, id).toBeGreaterThan(0);
+      const s = buildShell(g, m, spec)!;
+      const P = s.getAttribute('position');
+      const hem = s.getAttribute('aHem');
+      const src = s.userData.src as Int32Array;
+      let worst = 0;
+      for (let j = 0; j < P.count; j++) {
+        if (hem.getX(j) > 0) continue;
+        const v = src[j];
+        const d = [P.getX(j) - m.pos[v * 3], P.getY(j) - m.pos[v * 3 + 1], P.getZ(j) - m.pos[v * 3 + 2]];
+        const along = d[0] * m.nrm[v * 3] + d[1] * m.nrm[v * 3 + 1] + d[2] * m.nrm[v * 3 + 2];
+        const side = Math.hypot(d[0] - along * m.nrm[v * 3], d[1] - along * m.nrm[v * 3 + 1], d[2] - along * m.nrm[v * 3 + 2]);
+        worst = Math.max(worst, side);
+      }
+      // each point of the cloth stands right above its point of skin
+      expect(worst, id).toBeLessThan(1e-5);
+    }
+  });
+
+  test('le détail du tissu (plis, maille, coutures, surpiqûres) ne concerne que les vêtements réalistes', () => {
+    const { root, meta } = setup('femme');
+    applyManga(root, 'anime');
+    const cz = new Customizer(root, meta, new Texture(), { toon: (n, col: Color) => toonMaterial(n, null, col, 'anime'), outline: outlineMaterial });
+    const l = defaultLook('femme');
+    cz.apply({ ...l, outfit: { ...l.outfit, top: 'brassiere', bottom: 'short-mma-court' } });
+    let shorts: SkinnedMesh | null = null;
+    root.traverse((o) => {
+      if (((o as Mesh).material as { name?: string })?.name === 'css-short-mma-court') shorts = o as SkinnedMesh;
+    });
+    const mat = (shorts as unknown as SkinnedMesh).material as unknown as { defines?: Record<string, unknown>; onBeforeCompile: (s: unknown, r: unknown) => void };
+    expect(mat.defines?.CSS_FABRIC).toBeUndefined();
+    // the paint shader carries the fabric code, compiled only under CSS_FABRIC
+    const sh = { vertexShader: '#include <common>\n#include <begin_vertex>\nvoid main() {}', fragmentShader: 'void main() {\n#include <color_fragment>\n#include <normal_fragment_maps>\n#include <lights_physical_fragment>\n#include <opaque_fragment>\n}', uniforms: {} };
+    mat.onBeforeCompile(sh, null);
+    expect(sh.fragmentShader).toContain('#ifdef CSS_FABRIC');
+    expect(sh.fragmentShader).toContain('cssFabric(cssShade)');
   });
 });

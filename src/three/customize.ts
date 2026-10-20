@@ -529,6 +529,120 @@ const PAINT_FRAGMENT = /* glsl */ `
 if (vCover < 0.0) discard;
 diffuseColor.rgb = cssPaint(vRest, vRestN) * mix(1.0, 0.7, vHem);
 diffuseColor.a *= uGhost;
+#ifdef CSS_FABRIC
+  cssH = cssFabric(cssShade);
+  diffuseColor.rgb *= cssShade;
+#endif
+`;
+
+/**
+ * Fabric of the realistic look (CSS_FABRIC, set by the realistic cloth material): the cloth is drawn
+ * from its rest position on the body, so every detail stays on the garment as the coach moves.
+ * - soft folds (relief and a little shade in the creases), stretched around the limbs and the waist;
+ * - the knit (fine ribs) and the slight colour variation of the yarn, faded out before they get close
+ *   to the size of a pixel (no shimmer on a full-body view);
+ * - the elastic ribs of the waistband and the seam under it, the panel seams of the side stripes, and a
+ *   double topstitch along every edge (vCover is the distance to the cut, in metres).
+ * The details are a height (metres) turned into a normal from its screen derivatives, like a bump map.
+ */
+const FABRIC_HEAD = /* glsl */ `
+#ifdef CSS_FABRIC
+float cssH = 0.0;
+float cssShade = 1.0;
+float cssHash3(vec3 p) {
+  p = fract(p * 0.3183099 + 0.1);
+  p *= 17.0;
+  return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+float cssNoise(vec3 x) {
+  vec3 i = floor(x);
+  vec3 f = fract(x);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(mix(cssHash3(i), cssHash3(i + vec3(1.0, 0.0, 0.0)), f.x), mix(cssHash3(i + vec3(0.0, 1.0, 0.0)), cssHash3(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
+    mix(mix(cssHash3(i + vec3(0.0, 0.0, 1.0)), cssHash3(i + vec3(1.0, 0.0, 1.0)), f.x), mix(cssHash3(i + vec3(0.0, 1.0, 1.0)), cssHash3(i + vec3(1.0, 1.0, 1.0)), f.x), f.y),
+    f.z);
+}
+// 1 on a line of half-width w around d = 0, anti-aliased
+float cssLine(float d, float w) {
+  float aa = fwidth(d) + 1e-6;
+  return 1.0 - smoothstep(w - aa, w + aa, abs(d));
+}
+float cssFabric(out float shade) {
+  vec3 p = vRest;
+  // metres per pixel: details are faded out before they reach the pixel size
+  float px = length(fwidth(p)) + 1e-6;
+  float knit = (1.0 - smoothstep(0.3, 0.75, px / 0.0016)) * (1.0 - vHem);
+  float fine = (1.0 - smoothstep(0.3, 0.75, px / 0.004)) * (1.0 - vHem);
+  shade = 1.0;
+  // folds: soft creases, closer along the height than around the body
+  float f = cssNoise(p * vec3(16.0, 42.0, 16.0)) * 0.67 + cssNoise(p * vec3(34.0, 85.0, 34.0)) * 0.33;
+  float h = (f - 0.5) * 0.0022;
+  shade *= 1.0 - 0.09 * smoothstep(0.5, 0.15, f);
+  // knit
+  float k = 6.2832 / 0.0016;
+  h += sin((p.x + p.z) * k) * sin(p.y * k) * 0.00008 * knit;
+  // yarn colour
+  shade *= 1.0 + 0.06 * (cssNoise(p * 520.0) - 0.5) * fine + 0.035 * (cssNoise(p * 55.0) - 0.5);
+  // waistband: elastic ribs, a seam under it
+  if (uBandY > 0.0) {
+    float band = smoothstep(uBandY - 0.0015, uBandY + 0.0015, p.y);
+    h += band * sin(atan(p.z, p.x) * 280.0) * 0.00016 * fine;
+    float seam = cssLine(p.y - uBandY, 0.001);
+    h -= seam * 0.0006;
+    shade *= 1.0 - 0.22 * seam;
+  }
+  // panel seams along the side stripes
+  if (int(uPattern + 0.5) == 1) {
+    float seam = cssLine(abs(normalize(vRestN).x) - 0.82, 0.01);
+    h -= seam * 0.0005;
+    shade *= 1.0 - 0.18 * seam;
+  }
+  // double topstitch along the edges, in dashes
+  float st = max(cssLine(vCover - 0.007, 0.00045), cssLine(vCover - 0.013, 0.00045));
+  float dash = mix(1.0, smoothstep(0.25, 0.4, abs(fract(dot(p, vec3(1.0, 0.8, 1.2)) / 0.0035) - 0.5)), fine);
+  h -= st * 0.00035;
+  shade *= 1.0 - 0.2 * st * dash;
+  // the rolled hem: a slight ridge along the cut
+  h += smoothstep(0.004, 0.0, vCover) * 0.0006;
+  return h;
+}
+#endif
+`;
+
+/** the fabric height turned into a normal (see FABRIC_HEAD) */
+const FABRIC_NORMAL = /* glsl */ `
+#include <normal_fragment_maps>
+#ifdef CSS_FABRIC
+{
+  vec3 sp = -vViewPosition;
+  vec3 dpx = dFdx(sp);
+  vec3 dpy = dFdy(sp);
+  vec2 dh = vec2(dFdx(cssH), dFdy(cssH));
+  vec3 r1 = cross(dpy, normal);
+  vec3 r2 = cross(normal, dpx);
+  float det = dot(dpx, r1) * faceDirection;
+  vec3 grad = sign(det) * (dh.x * r1 + dh.y * r2);
+  normal = normalize(abs(det) * normal - grad);
+}
+#endif
+`;
+
+/** fabric: the sheen takes the colour of the yarn (a grey sheen turned black shorts grey), the roughness varies a little */
+const FABRIC_LIGHT = /* glsl */ `
+#include <lights_physical_fragment>
+#ifdef CSS_FABRIC
+  // the hem strip (the thickness of the cloth along the cut) is seen edge-on: lit with the normal of the
+  // cloth, its sheen and reflection peaked there and drew a white sawtooth along every edge
+  float cssOut = 1.0 - vHem;
+  #ifdef USE_SHEEN
+    material.sheenColor = (vec3(0.07) + 0.42 * sqrt(max(diffuseColor.rgb, vec3(0.0)))) * cssShade * cssOut;
+  #endif
+  material.specularColor *= cssOut;
+  material.specularColorBlended *= cssOut;
+  material.specularF90 *= cssOut;
+  material.roughness = clamp(material.roughness + 0.08 * (cssNoise(vRest * 90.0) - 0.5), 0.3, 1.0);
+#endif
 `;
 
 /** composes a material's onBeforeCompile with another patch */
@@ -740,8 +854,9 @@ export function buildShell(body: BufferGeometry, map: BodyMap, spec: GarmentSpec
 
 /**
  * Smooths a garment that stands off the body: a few passes of neighbour averaging over the welded
- * surface (vertices split along texture seams move together), then every point is pushed back out
- * to at least `minFrac` of its thickness above the skin, so the cloth never sinks into the body.
+ * surface (vertices split along texture seams move together); each point keeps the smoothed height
+ * above the skin (along the skin normal, kept between 0.75 and 1.6 times its thickness), so the cloth
+ * bridges the hollows, never sinks into the body, and its edges stay on the cut.
  */
 function drapeShell(P: Float32Array, N: Float32Array, TH: Float32Array, used: number[], faces: number[], map: BodyMap, strength: number) {
   const m = used.length;
@@ -794,8 +909,10 @@ function drapeShell(P: Float32Array, N: Float32Array, TH: Float32Array, used: nu
     // never sinks into the body and never floats away from it (a top worn over it stays above it)
     const min = TH[j] * 0.75;
     const max = TH[j] * 1.6;
-    const push = d < min ? min - d : d > max ? max - d : 0;
-    for (let k = 0; k < 3; k++) P[j * 3 + k] = pos[w * 3 + k] + push * N[j * 3 + k];
+    // only the height above the skin is taken from the smoothing: the slide along the surface pulled the
+    // open edges of the shell (waistband, leg openings) in and out, and the cut read as a ruffled frill
+    const h = Math.min(max, Math.max(min, d));
+    for (let k = 0; k < 3; k++) P[j * 3 + k] = map.pos[v * 3 + k] + h * N[j * 3 + k];
   }
   // normals of the draped cloth, shared across the texture seams: the side stripes and the light
   // follow the cloth, not the muscles underneath
@@ -950,8 +1067,12 @@ export function garmentSpecs(m: BodyMap) {
       brassiere: {
       cover: sportsBra,
       thickness: () => 0.005,
+      // a compression top bridges the small reliefs of the chest instead of moulding them
+      drape: 0.3,
       hidesBody: true,
-      hideMargin: 0.004,
+      // the skin is hidden 9 mm inside the cut: at 4 mm the cloth, 5 mm above the skin, no longer covered
+      // the hole along the edges seen at a grazing angle (white specks along the straps and on the neck)
+      hideMargin: 0.009,
     },
     } as Record<string, GarmentSpec>,
     shoes: {
@@ -1379,7 +1500,13 @@ export class Customizer {
       sh.vertexShader =
         'attribute float aCover;\nvarying float vCover;\nattribute float aHem;\nvarying float vHem;\n' +
         sh.vertexShader.replace('vRest = transformed;', 'vRest = transformed;\nvCover = aCover;\nvHem = aHem;');
-      sh.fragmentShader = PAINT_HEAD + sh.fragmentShader.replace('#include <color_fragment>', PAINT_FRAGMENT);
+      sh.fragmentShader =
+        PAINT_HEAD +
+        FABRIC_HEAD +
+        sh.fragmentShader
+          .replace('#include <color_fragment>', PAINT_FRAGMENT)
+          .replace('#include <normal_fragment_maps>', FABRIC_NORMAL)
+          .replace('#include <lights_physical_fragment>', FABRIC_LIGHT);
       addHide(sh);
     });
     const mesh = new SkinnedMesh(geo, mat);
