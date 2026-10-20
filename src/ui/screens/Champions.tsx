@@ -18,6 +18,7 @@ import { MODE_HELP, MODE_LABEL } from '../training/plan';
 import { PageHead } from '../App';
 import { DisciplineCard, DisciplineLabel } from '../components';
 import { AppIcon, DisciplineIcon, LevelIcon, type GlyphId } from '../icons';
+import { useActionPill } from '../components/ActionPill';
 
 const DISC_NAME = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.name])) as Record<DisciplineId, string>;
 const DISC_SHORT = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.short])) as Record<DisciplineId, string>;
@@ -109,9 +110,12 @@ function PlayButton({ c }: { c: CatalogCombo }) {
   );
 }
 
-/** the quick-start card at the top of a list: a ready pick, one big button, and a way to change it */
-function QuickStart({ eyebrow, combo, catalog, onOther, testId = 'cat-quick' }: { eyebrow: string; combo: CatalogCombo; catalog: Catalog; onOther?: () => void; testId?: string }) {
-  const start = useQuickTrain();
+/**
+ * The quick-start card at the top of a list: a ready pick and the way to its sheet.
+ * 0.26 (Youssef, mockup C): its « S'entraîner » and « Une autre au hasard » buttons moved to the action pill
+ * (same actions, same test ids), so no button is shown twice on the screen.
+ */
+function QuickStart({ eyebrow, combo, catalog, testId = 'cat-quick' }: { eyebrow: string; combo: CatalogCombo; catalog: Catalog; testId?: string }) {
   const ch = catalog.championById.get(combo.champion);
   return (
     <section className="card quick-start" data-testid={testId} aria-label="Démarrage rapide">
@@ -125,16 +129,8 @@ function QuickStart({ eyebrow, combo, catalog, onOther, testId = 'cat-quick' }: 
         {ch?.name ?? combo.champion} · {DISC_SHORT[combo.discipline]} · {combo.sequence.length} mouvements · {LEVEL_NAME[combo.level]}
       </span>
       <div className="qs-actions">
-        <button className="btn primary" onClick={() => start(combo)} disabled={!isPlayable3D(combo)} data-testid={`${testId}-train`}>
-          <AppIcon id="play" /> S’entraîner
-        </button>
-        {onOther && (
-          <button className="btn icon secondary" onClick={onOther} aria-label="Une autre au hasard" title="Une autre" data-testid={`${testId}-other`}>
-            <AppIcon id="replay" size={20} />
-          </button>
-        )}
-        <Link className="btn icon secondary" to={`/champions/${combo.id}`} aria-label="Voir la fiche (modes, décomposer…)" title="Voir la fiche">
-          <AppIcon id="details" size={20} />
+        <Link className="btn sm" to={`/champions/${combo.id}`} aria-label="Voir la fiche (modes, décomposer…)">
+          Voir la fiche
         </Link>
       </div>
     </section>
@@ -292,15 +288,21 @@ function DailyStart({ catalog }: { catalog: Catalog }) {
   const [other, setOther] = useState<CatalogCombo | null>(null);
   useEffect(() => setOther(null), [pool]);
   const combo = other ?? today;
-  if (!combo) return null;
-  return (
-    <QuickStart
-      eyebrow={other ? 'Tirée au sort pour toi' : 'Ton combo du jour'}
-      combo={combo}
-      catalog={catalog}
-      onOther={pool.length > 1 ? () => setOther(randomPick(pool.filter((c) => c.id !== combo.id)) ?? null) : undefined}
-    />
+  const start = useQuickTrain();
+  const drawOther = pool.length > 1 && combo ? () => setOther(randomPick(pool.filter((c) => c.id !== combo.id)) ?? null) : undefined;
+  // 0.26 action pill (Youssef, mockup C): train the pick of the card, back to the combo of the day, draw another.
+  // The test ids of the card's former buttons are kept on the pill's.
+  useActionPill(
+    combo
+      ? [
+          { id: 'entrainer', label: 'S’entraîner', icon: 'play', primary: true, ariaLabel: `S’entraîner : ${combo.name}`, testId: 'cat-quick-train', onSelect: () => start(combo) },
+          today && { id: 'combo-du-jour', label: 'Combo du jour', icon: 'bolt', ariaLabel: `Combo du jour : ${today.name}`, pressed: !other, onSelect: () => setOther(null) },
+          drawOther && { id: 'au-hasard', label: 'Au hasard', icon: 'random', ariaLabel: 'Au hasard : tirer une autre combinaison', testId: 'cat-quick-other', onSelect: drawOther },
+        ]
+      : null,
   );
+  if (!combo) return null;
+  return <QuickStart eyebrow={other ? 'Tirée au sort pour toi' : 'Ton combo du jour'} combo={combo} catalog={catalog} />;
 }
 
 function Explorer({ catalog }: { catalog: Catalog }) {
@@ -757,16 +759,6 @@ export function ComboPage() {
   const [collect, setCollect] = useState(false);
   const [showModes, setShowModes] = useState(false);
   const c = id ? catalog?.comboById.get(id) : undefined;
-  // the sticky bar shows up once the big start button has scrolled out of sight
-  const startRef = useRef<HTMLElement>(null);
-  const [startHidden, setStartHidden] = useState(false);
-  useEffect(() => {
-    const el = startRef.current;
-    if (!el || typeof IntersectionObserver === 'undefined') return;
-    const io = new IntersectionObserver(([e]) => setStartHidden(!e.isIntersecting && e.boundingClientRect.top < 0));
-    io.observe(el);
-    return () => io.disconnect();
-  }, [c?.id, !!catalog]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (c) pushHistory(c.id, 'ouvert');
   }, [c?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -816,7 +808,7 @@ export function ComboPage() {
       <PageHead title={c.name} eyebrow={`${ch?.name ?? c.champion} · ${DISC_NAME[c.discipline]}`} right={<FavButton id={c.id} name={c.name} />} />
 
       {/* 0.25 (Youssef, 2026-10-20): training first, no scrolling. Default mode « libre », « Changer » opens the others. */}
-      <section ref={startRef} className="card quick-start" data-testid="cat-start" aria-label="S’entraîner sur cette fiche">
+      <section className="card quick-start" data-testid="cat-start" aria-label="S’entraîner sur cette fiche">
         <button className="btn primary block lg" disabled={!playable} onClick={() => train(mode)} data-testid="cat-train">
           <AppIcon id="play" /> S’entraîner
         </button>
@@ -991,15 +983,27 @@ export function ComboPage() {
       </p>
 
       {collect && <CollectionSheet comboId={c.id} onClose={() => setCollect(false)} />}
-      {startHidden && playable && !collect && (
-        <div className="train-bar" data-testid="cat-train-bar">
-          <button className="btn primary block" onClick={() => train(mode)} data-testid="cat-sticky-train">
-            <AppIcon id="play" /> S’entraîner
-          </button>
-        </div>
-      )}
+      {/* 0.26: the former sticky « S’entraîner » bar is replaced by the action pill (ComboPill) */}
+      <ComboPill train={train} mode={mode} playable={playable} hidden={collect} />
     </div>
   );
+}
+
+/**
+ * 0.26 action pill of a combination sheet (replaces the 0.25 sticky bar): « S'entraîner » in the chosen mode,
+ * always one tap away while scrolling, and « Décomposer » (study of the moves). Nothing when the sheet has
+ * no 3D animation (the sheet then says so) or while the collection sheet is open.
+ */
+function ComboPill({ train, mode, playable, hidden }: { train: (m: TrainingMode, study?: boolean) => void; mode: TrainingMode; playable: boolean; hidden: boolean }) {
+  useActionPill(
+    playable && !hidden
+      ? [
+          { id: 'entrainer', label: 'S’entraîner', icon: 'play', primary: true, ariaLabel: `S’entraîner en mode ${MODE_LABEL[mode].toLowerCase()}`, onSelect: () => train(mode) },
+          { id: 'decomposer', label: 'Décomposer', icon: 'decompose', ariaLabel: 'Décomposer le mouvement', onSelect: () => train('technique', true) },
+        ]
+      : null,
+  );
+  return null;
 }
 
 function RoundPicker(p: { round: number; rest: number; rounds: number; setRound: (n: number) => void; setRest: (n: number) => void; setRounds: (n: number) => void }) {
@@ -1075,6 +1079,16 @@ function CollectionSheet({ comboId, onClose }: { comboId: string; onClose: () =>
 
 // ------------------------------------------------------------------ page d’un champion
 
+/** the quick start of a champion's page, its « S'entraîner » and « Au hasard » in the action pill (0.26) */
+function ChampionQuickStart({ eyebrow, combo, catalog, onOther }: { eyebrow: string; combo: CatalogCombo; catalog: Catalog; onOther?: () => void }) {
+  const start = useQuickTrain();
+  useActionPill([
+    { id: 'entrainer', label: 'S’entraîner', icon: 'play', primary: true, ariaLabel: `S’entraîner : ${combo.name}`, testId: 'champ-quick-train', onSelect: () => start(combo) },
+    onOther && { id: 'au-hasard', label: 'Au hasard', icon: 'random', ariaLabel: 'Au hasard : tirer une autre combinaison', testId: 'champ-quick-other', onSelect: onOther },
+  ]);
+  return <QuickStart eyebrow={eyebrow} combo={combo} catalog={catalog} testId="champ-quick" />;
+}
+
 export function ChampionPage() {
   const { championId } = useParams();
   const { catalog, error, retry } = useRetry();
@@ -1108,11 +1122,10 @@ export function ChampionPage() {
     <div className="page">
       <PageHead title={ch.name} eyebrow={`Profil de style · ${ch.disciplines.map((x) => DISC_SHORT[x]).join(' · ')}`} />
       {first && (
-        <QuickStart
+        <ChampionQuickStart
           eyebrow={pick === first ? `Pour commencer comme ${ch.name}` : 'Tirée au sort pour toi'}
           combo={pick}
           catalog={catalog}
-          testId="champ-quick"
           onOther={playableList.length > 1 ? () => setOther(randomPick(playableList.filter((c) => c.id !== pick.id))?.id ?? null) : undefined}
         />
       )}

@@ -86,7 +86,7 @@ export function allTags(list: CatalogCombo[]): string[] {
   return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t);
 }
 
-function hash(str: string) {
+export function hash(str: string) {
   let h = 2166136261;
   for (let i = 0; i < str.length; i++) {
     h ^= str.charCodeAt(i);

@@ -40,6 +40,10 @@
   /* icon tiles of the charter: soft relief, never a strong shadow */
   --tile: linear-gradient(160deg, #2a3546 0%, #1c2431 100%);
   --tile-edge: rgba(255, 255, 255, 0.08);
+  /* 0.26 action pill (mockup C): dark surface, grey edge */
+  --pill-bg: #1f2937;
+  --pill-edge: #374151;
+  --pill-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 /* light menus: chosen in Réglages, or automatic when the system is light (data-theme set by
@@ -74,6 +78,9 @@
   --track: rgba(17, 18, 20, 0.1);
   --tile: linear-gradient(160deg, #ffffff 0%, #eceef2 100%);
   --tile-edge: rgba(17, 18, 20, 0.1);
+  --pill-bg: #ffffff;
+  --pill-edge: rgba(17, 18, 20, 0.16);
+  --pill-shadow: 0 8px 24px rgba(17, 18, 20, 0.18);
 }
 
 /* media cards (renders on a dark backdrop) keep the dark palette in both themes */
@@ -2336,6 +2343,11 @@ button.panel-row {
   padding-bottom: 8px;
   gap: 8px;
 }
+/* 0.26: the action pill sits under the dashboard, never over its chart (pill 64px + 8px gap + 8px air) */
+.page.dash.with-pill {
+  height: calc(100dvh - var(--nav-h) - env(safe-area-inset-bottom) - 80px);
+  min-height: 460px;
+}
 .dash .page-head {
   min-height: 52px;
 }
@@ -2995,15 +3007,59 @@ details.fold > summary h3 { margin: 0; }
   color: var(--on-red);
 }
 .btn.play-dot:hover:not(:disabled) { background: color-mix(in srgb, var(--red), #000 8%); }
-/* sticky start above the bottom nav, left of the coach bubble */
-.train-bar {
+
+/* -------------------------------------------------- 0.26: action pill (mockup C, Youssef 2026-10-20 17:45)
+   bottom left above the navigation, centred on the Coach IA bubble's line, never under it */
+.action-pill {
   position: fixed;
   left: max(16px, env(safe-area-inset-left));
-  right: calc(max(16px, env(safe-area-inset-right)) + 64px);
-  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 14px);
-  max-width: 480px;
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px);
+  /* stops 12px before the bubble (16px margin + 52px bubble) */
+  max-width: calc(100vw - max(16px, env(safe-area-inset-left)) - max(16px, env(safe-area-inset-right)) - 52px - 12px);
+  height: 64px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 32px;
+  background: var(--pill-bg);
+  border: 1px solid var(--pill-edge);
+  box-shadow: var(--pill-shadow);
   z-index: 29;
-  animation: fade-in var(--t-med) var(--ease) both;
+  animation: pill-in var(--t-med) var(--ease) both;
 }
-.train-bar .btn { min-height: 52px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); }
-@media (prefers-reduced-motion: reduce) { .train-bar { animation: none; } }
+@keyframes pill-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .action-pill { animation: none; } }
+.ap-btn {
+  min-width: 56px;
+  height: 54px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 27px;
+  background: transparent;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+.ap-btn .ap-label { white-space: nowrap; }
+.ap-btn:hover { background: var(--surface-2); }
+.ap-btn:active { transform: scale(0.95); }
+.ap-btn.primary { background: var(--red); color: var(--on-red); }
+.ap-btn.primary:hover { background: color-mix(in srgb, var(--red), #000 8%); }
+/* an on / off action that is on (a filter, a state): ring in the accent colour, the text keeps its contrast */
+.ap-btn.on:not(.primary) { background: var(--surface-2); box-shadow: inset 0 0 0 2px var(--red); }
+.ap-btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 1px; }
+@media (max-height: 520px) {
+  .action-pill { height: 54px; }
+  .ap-btn { height: 46px; }
+}

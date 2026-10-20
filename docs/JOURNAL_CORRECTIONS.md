@@ -889,3 +889,72 @@ Demandes de Youssef (12:30 et 12:32). APK de test 0.24.0 publié avant ce lot (p
   NON EXÉCUTÉ.
 - **Limites** : bretelles de brassière qui se déchirent sur le trapèze en garde (connu) ; vignettes des techniques
   non régénérées (léger écart de rendu Anime) ; icônes flottantes en attente du choix de Youssef.
+
+## 2026-10-20 · v0.26.0 · Pilule d’actions (icônes flottantes selon l’écran)
+
+Demande de Youssef (12:32 « toute l’appli doit être ludique et facile à manipuler », 12:34 « un système d’icônes
+flottantes […] qui permettrait de lancer les actions les plus courantes ; les icônes changent en fonction du
+contexte de l’écran ; icône claire »). Maquette C « Pilule d’actions » choisie à 17:45.
+
+- **Pilule d’actions** — Constat : les actions courantes étaient dispersées (bouton en haut de page, barre collante
+  sur les fiches Légendes, filtres dans les puces). Correction : une pilule sombre (#1F2937, bord #374151, 64 px de
+  haut) en bas à gauche, au-dessus de la navigation et centrée sur la ligne de la bulle Coach IA, qui reste seule en
+  bas à droite (aspect et position inchangés). 2 à 3 boutons ronds (4 au plus), icône + mot, l’action la plus utile
+  en rouge (#E11D2F, texte blanc) et toujours en premier. Vrais boutons, nom accessible qui commence par le mot
+  affiché, état « appuyé » annoncé pour les actions on/off, focus visible, cibles ≥ 44 px. Thème clair : pilule
+  blanche. Elle passe sous les feuilles (z-index 29) et se cache tant que le panneau du Coach IA est ouvert. Un seul
+  composant et un petit store : chaque écran déclare ses actions (`useActionPill`, comme `coachHost` pour la bulle) ;
+  un écran qui ne déclare rien n’a pas de pilule. Enregistrement en effet de mise en page : la pilule d’un écran
+  disparaît dès qu’il est masqué par le chargement de l’écran suivant (constaté pendant les tests : la pilule de la
+  fiche restait affichée pendant « Chargement… »). Fichiers : components/ActionPill.tsx, components/actionPill.ts,
+  App.tsx, styles.css.
+- **Actions par écran** (aucune fonction inventée, aucune donnée inventée) :
+  - Accueil : « Séance rapide » (rouge, même action que « Commencer l’entraînement »), « Reprendre » (seulement s’il
+    y a une dernière séance reprenable, même lien que la carte « Reprendre »), « Technique du jour » (une technique
+    de la discipline principale, la même toute la journée, jamais une technique réservée au travail avec partenaire ;
+    `src/domain/quickPicks.ts`).
+  - Techniques (onglet Techniques) : « Au hasard » (rouge, ouvre une technique de la liste affichée, dans l’ordre de
+    cette liste pour les flèches de la fiche) et « À revoir » (filtre, seulement s’il y a des techniques à revoir).
+    Pas de « Rechercher » : le catalogue n’a pas de recherche texte. Autres onglets : pas de pilule.
+  - Fiche technique : « S’entraîner » (rouge, l’exercice du programme qui travaille le plus directement cette
+    technique, mode Technique ; absent si aucun exercice ne la contient), « Ralenti » (×0,25 sur la fiche, un nouvel
+    appui rend la vitesse d’avant), « Je la maîtrise » (la coche « Assimilée » de l’interrupteur, même état).
+  - Légendes (liste) : « S’entraîner » (rouge), « Combo du jour » (remet le combo du jour dans la carte), « Au
+    hasard » (en tire un autre). Page d’un champion : « S’entraîner », « Au hasard ». Fiche d’une combinaison :
+    « S’entraîner » (mode choisi) et « Décomposer ».
+  - Progrès : « Nouvelle séance » (rouge, onglet Entraîner ; « Nouvelle activité » de la maquette est dans
+    l’application une étiquette de comparaison, pas une action), « Objectifs », « Période » (feuille des dates
+    personnalisées, comme la puce « Perso »). Le tableau de bord garde son écran sans défilement, au-dessus de la
+    pilule (hauteur − 80 px, minimum 460 px).
+  - Entraînement : pas de pilule. Raison : les commandes du studio sont 9 (Démarrer/Pause/Reprendre, Recommencer,
+    exercice précédent et suivant, Décomposer, Comment faire ?, Ralenti, Paramètres, Caméra) ; une pilule de 4
+    boutons ne peut pas les remplacer sans en perdre, et ajoutée par-dessus elle couvrirait la scène ou les
+    commandes de l’écran sans défilement (training-layout.spec). L’écran reste tel quel.
+  - Réglages, profil, accueil de bienvenue, page Coach IA, labo, Entraîner : pas de pilule.
+- **Boutons remplacés** — Légendes : la barre collante « S’entraîner » de la fiche combinaison (0.25) est remplacée
+  par la pilule ; dans la carte de démarrage rapide (liste et page champion), « S’entraîner » et « Une autre au
+  hasard » passent dans la pilule (mêmes actions, mêmes identifiants de test), la carte garde le nom et « Voir la
+  fiche ». Aucune fonction supprimée. Gardés volontairement malgré le doublon : « Commencer l’entraînement » et la
+  carte « Reprendre » de l’accueil, la puce « À revoir », l’interrupteur de maîtrise (il a aussi « Encore du mal »),
+  le bouton Objectifs de l’en-tête de Progrès, le grand « S’entraîner » en haut d’une fiche combinaison (il montre le
+  mode).
+- **Icône** : nouvelle icône originale `random` (dé), registre et inventaire (`docs/icones/INVENTAIRE.md`) à jour.
+- **Coach IA** : nouvelle entrée du guide « La pilule d’actions en bas à gauche » (écran par écran, ton débutant) ;
+  réponses Légendes mises à jour. Fichiers : src/coach/appGuide.ts (+ test).
+- **Tests** : tsc OK — TEST RÉUSSI. Vitest : 411 réussis, 1 non exécuté (existant), 1 échec
+  `coach.test.ts › store coachAi › historique plafonné` — ÉCHOUÉ, existant : il échoue aussi seul sur la v0.25.0
+  sans ce lot (test synchrone face à la relecture asynchrone des réglages ajoutée en 0.25) ; non modifié ici.
+  Nouveaux tests unitaires : actionPill (règles de la liste), quickPicks (technique du jour, exercice d’une
+  technique), guide (chaque mot de la pilule est un vrai bouton) — TEST RÉUSSI. Playwright complet (116) : 113
+  réussis, 2 non exécutés (émulateurs Firebase, NON EXÉCUTÉ), 1 échec — contraste du bouton « Voir la fiche » de la
+  carte Légendes (bordure claire mesurée sur fond en dégradé, 1,43:1) ; corrigé (bouton plein, sans icône), puis
+  contrast + legendes-quick-start + action-pill relancés : 27 réussis — TEST RÉUSSI. training-layout (y compris
+  « demander au coach ») et coach-suggest réussis au premier passage. Nouveau : tests/e2e/action-pill.spec.ts
+  (16 tests : actions par écran, rouge en premier, chaque action, absence sur réglages/profil/coach IA/entraînement/
+  bienvenue, placement 360×640, 393×851, 412×915, paysage 851×393, contenu atteignable, clair/sombre, clavier).
+  legendes-quick-start : le test de la barre collante vise maintenant le « S’entraîner » de la pilule (raison écrite
+  dans le test). Captures 393×851 : accueil, catalogue, fiche, entraînement, Légendes, Progrès (sombre et clair).
+- **Limites** : pas de validation sur téléphone (NON EXÉCUTÉ, à faire par Youssef) ; « Technique du jour » est un
+  choix du jour parmi les techniques existantes (pas une recommandation pédagogique) ; sur l’accueil et la fiche
+  combinaison, l’action rouge de la pilule existe aussi en grand dans la page ; la recherche du catalogue n’existe pas,
+  donc pas de bouton « Rechercher ».

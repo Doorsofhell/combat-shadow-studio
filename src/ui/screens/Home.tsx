@@ -16,6 +16,11 @@ import { MODE_LABEL } from '../training/plan';
 import { DisciplineLabel, EmptyState, EntryCard, ProgressBar, SectionHead, StatTile } from '../components';
 import { defaultFighterName } from '../components/fighter';
 import { AppIcon, DisciplineIcon } from '../icons';
+import { useActionPill } from '../components/ActionPill';
+import { useKbStyle } from '../components/KickboxingStyle';
+import { techniquesFor } from '../../domain/techniques';
+import { filterTechniques } from '../../domain/kickboxingStyles';
+import { techniqueOfTheDay } from '../../domain/quickPicks';
 
 /** the 3D bundle (three.js, R3F) stays out of the main chunk */
 const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
@@ -83,6 +88,16 @@ export function Home() {
     if (recEx) nav(`/discipline/${recEx.discipline}?niveau=${recEx.level}&ex=${recEx.id}`);
     else nav('/entrainer');
   };
+
+  // 0.26 action pill (Youssef, mockup C): quick session, resume the last one, technique of the day
+  const [kbStyle] = useKbStyle();
+  const main = profile.mainDiscipline;
+  const daily = useMemo(() => techniqueOfTheDay(filterTechniques(techniquesFor(main), main, kbStyle)), [main, kbStyle]);
+  useActionPill([
+    { id: 'seance-rapide', label: 'Séance rapide', icon: 'play', primary: true, ariaLabel: recEx ? `Séance rapide : ${recEx.name}` : undefined, onSelect: start },
+    resume && last ? { id: 'reprendre', label: 'Reprendre', icon: 'history', ariaLabel: `Reprendre : ${last.exerciseName}`, onSelect: () => nav(resume) } : null,
+    daily && { id: 'technique-du-jour', label: 'Technique du jour', icon: 'bolt', ariaLabel: `Technique du jour : ${daily.name}`, onSelect: () => nav(`/techniques/${daily.id}?d=${main}`) },
+  ]);
 
   return (
     <div className="page" style={{ gap: 22 }}>

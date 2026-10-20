@@ -46,6 +46,8 @@ function expectValidNavigate(a: CoachAnswer) {
 const ENTRY_QUESTIONS: Record<string, [string, CoachScreen?]> = {
   'app-overview': ['Comment fonctionne l’application ?', 'Par où commencer ?', 'Je débute, je commence par quoi ?'],
   'nav-tabs': ['À quoi servent les onglets de la barre du bas ?'],
+  // 0.26: the action pill (Youssef, mockup C, 2026-10-20 17:45)
+  'pilule-actions': ['À quoi servent les boutons en bas à gauche ?', 'accueil'],
   'screen-accueil': ['À quoi sert cet écran ?', 'accueil'],
   'start-session': ['Comment lancer une séance ?'],
   modes: ['Quelle est la différence entre les modes ?'],
@@ -137,6 +139,14 @@ describe('guide de l’application : contenu', () => {
     // the study panel's speeds and the period presets
     expect(by('decomposer')).toMatch(/×0,25, ×0,5 et ×1/);
     for (const p of ['7 jours', '30 jours', '90 jours', '12 mois', 'Perso']) expect(by('screen-progres')).toContain(p);
+    // 0.26 action pill: every word of the guide answer is a real pill button (labels read from the screens)
+    const pillSrc = ['src/ui/screens/Home.tsx', 'src/ui/screens/Library.tsx', 'src/ui/screens/Champions.tsx', 'src/ui/screens/progress/Dashboard.tsx'].map((f) => readFileSync(resolve(process.cwd(), f), 'utf8')).join('\n');
+    const pillLabels = [...pillSrc.matchAll(/label: '([^']+)',\s+icon: '/g)].map((m) => m[1]);
+    for (const w of ['Séance rapide', 'Reprendre', 'Technique du jour', 'Au hasard', 'À revoir', 'S’entraîner', 'Ralenti', 'Je la maîtrise', 'Combo du jour', 'Décomposer', 'Nouvelle séance', 'Objectifs', 'Période']) {
+      expect(pillLabels, w).toContain(w);
+      expect(by('pilule-actions'), w).toContain(`« ${w} »`);
+    }
+    expect(askCoach('C’est quoi la pilule en bas ?', ctx('techniques')).sources[0]?.id).toBe('app:pilule-actions');
   });
 
   test('chaque écran a sa page d’aide', () => {

@@ -81,6 +81,24 @@ export const APP_GUIDE: GuideEntry[] = [
       'Ton profil et les réglages sont en haut à droite de l’accueil.',
   },
   {
+    // 0.26 (Youssef, 2026-10-20, mockup C « Pilule d'actions »)
+    id: 'pilule-actions',
+    title: 'La pilule d’actions en bas à gauche',
+    keywords: [
+      'pilule', 'pilule d actions', 'la pilule', 'actions rapides', 'icones flottantes', 'boutons flottants', 'icones en bas a gauche', 'boutons en bas a gauche',
+      'bouton en bas a gauche', 'en bas a gauche', 'bouton rouge en bas', 'raccourcis', 'seance rapide', 'technique du jour', 'je la maitrise',
+    ],
+    answer:
+      'En bas à gauche, juste au-dessus de la barre du bas, la pilule d’actions te donne les gestes les plus courants de l’écran où tu es. Chaque bouton a une icône et un mot, et le rouge, toujours en premier, est le plus utile.\n' +
+      'Les boutons changent selon l’écran :\n' +
+      '• Accueil : « Séance rapide » lance la séance recommandée, « Reprendre » ta dernière séance, « Technique du jour » ouvre une technique différente chaque jour.\n' +
+      '• Techniques : « Au hasard » ouvre une technique de la liste affichée, « À revoir » ne garde que celles où tu as encore du mal.\n' +
+      '• Fiche d’une technique : « S’entraîner » lance l’exercice de cette technique, « Ralenti » la montre au quart de sa vitesse, « Je la maîtrise » la marque comme assimilée (touche encore pour retirer la marque).\n' +
+      '• Légendes : « S’entraîner » lance la combinaison de la carte du haut, « Combo du jour » y remet celle du jour, « Au hasard » en tire une autre ; sur la fiche d’une combinaison, « S’entraîner » et « Décomposer ».\n' +
+      '• Progrès : « Nouvelle séance », « Objectifs » et « Période » (choisir tes propres dates).\n' +
+      'Pendant une séance, dans les réglages et sur ton profil, il n’y a pas de pilule : ces écrans ont leurs propres boutons. Et moi, je reste dans la bulle en bas à droite.',
+  },
+  {
     id: 'screen-accueil',
     title: 'L’écran d’accueil',
     keywords: ['accueil', 'ecran d accueil', 'page d accueil', 'bouton reprendre', 'reprendre ma seance', 'reprendre ma derniere seance', 'derniere seance', 'pour toi aujourd hui'],
@@ -422,9 +440,9 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['legendes', 'legende-fiche', 'champion'],
     answer:
       'Les Légendes, ce sont des combinaisons inspirées du style de grands champions, exécutées par ton coach.\n' +
-      'Tout en haut, ton combo du jour se lance d’un appui sur « S’entraîner » ; chaque fiche de la liste a aussi son bouton lecture rouge.\n' +
+      'Tout en haut, la carte montre ton combo du jour : « S’entraîner », dans la pilule en bas à gauche, le lance d’un appui, et « Au hasard » en tire un autre. Chaque fiche de la liste a aussi son bouton lecture rouge.\n' +
       'Juste dessous, choisis une discipline pour voir ses champions. Les sections Explorer, Favoris, Historique, Récents, Collections, Champions et Importer t’aident à t’y retrouver.\n' +
-      'Sur la fiche d’une combinaison : « S’entraîner » tout en haut (mode Libre, touche « Changer » pour un autre mode), la séquence, « Décomposer », « Dupliquer dans le créateur » et « Ajouter à une collection ».',
+      'Sur la fiche d’une combinaison : « S’entraîner » tout en haut (mode Libre, touche « Changer » pour un autre mode) et toujours dans la pilule en bas à gauche, la séquence, « Décomposer », « Dupliquer dans le créateur » et « Ajouter à une collection ».',
     action: { to: '/champions', label: 'Ouvrir Légendes' },
   },
   {

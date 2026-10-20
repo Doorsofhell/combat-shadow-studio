@@ -8,6 +8,7 @@ import { setVoiceEnabled, setVoiceVolume } from '../audio/voice';
 import { installNativeHandlers } from '../platform/native';
 import { AppIcon } from './icons';
 import { Toaster } from './components/Toast';
+import { ActionPill } from './components/ActionPill';
 import { Home } from './screens/Home';
 import { Onboarding } from './screens/Onboarding';
 import { CoachSelect } from './screens/CoachSelect';
@@ -184,6 +185,8 @@ export function App() {
         </Suspense>
       </Gate>
       <Nav />
+      {/* 0.26: the actions of the screen at the bottom left, the Coach IA bubble alone at the bottom right */}
+      <ActionPill />
       <CoachBubble />
       <Toaster />
     </HashRouter>

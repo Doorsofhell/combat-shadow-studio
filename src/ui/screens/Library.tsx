@@ -22,6 +22,8 @@ import { filterExercises, filterTechniques } from '../../domain/kickboxingStyles
 import { ExerciseList, ExerciseSheet } from './Discipline';
 import { AppIcon, DisciplineIcon } from '../icons';
 import { CHAMPIONS_AVAILABLE } from './features';
+import { useActionPill } from '../components/ActionPill';
+import { exerciseForTechnique } from '../../domain/quickPicks';
 import { TechniqueFilter, neighbours, parseTechniqueFilter, sheetQuery, techniqueCatalogue } from './techniqueOrder';
 
 const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
@@ -82,6 +84,29 @@ function TechniquesTab({ d, setD, cat, setCat }: { d: DisciplineId; setD: (d: Di
   const toReview = list.filter((t) => mastery[t.id] === 'a-revoir');
   const shown = cat === 'tout' ? list : cat === 'a-revoir' ? toReview : list.filter((t) => t.category === cat);
   const partner = partnerFor(d);
+  const nav = useNavigate();
+  // 0.26 action pill: a random technique of the list on screen, and the « À revoir » filter in one tap
+  // (the catalogue has no text search, so no « Rechercher » button)
+  useActionPill([
+    shown.length > 0 && {
+      id: 'au-hasard',
+      label: 'Au hasard',
+      icon: 'random',
+      ariaLabel: 'Au hasard : ouvrir une technique de la liste',
+      onSelect: () => {
+        const t = shown[Math.floor(Math.random() * shown.length) % shown.length];
+        nav(`/techniques/${t.id}${sheetQuery(d, cat)}`);
+      },
+    },
+    toReview.length > 0 && {
+      id: 'a-revoir',
+      label: 'À revoir',
+      icon: 'struggling',
+      ariaLabel: `À revoir : ${toReview.length} technique${toReview.length > 1 ? 's' : ''}`,
+      pressed: cat === 'a-revoir',
+      onSelect: () => setCat(cat === 'a-revoir' ? 'tout' : 'a-revoir'),
+    },
+  ]);
   return (
     <>
       <DisciplineFilter d={d} setD={setD} />
@@ -316,6 +341,56 @@ export function TechniquePage() {
     go(dx < 0 ? near.next : near.prev);
   };
   const nameOf = (id: string) => TECHNIQUE_BY_ID.get(id)?.name ?? id;
+
+  // 0.26 action pill: train this technique (the programme's exercise that works it the most directly),
+  // slow motion on the sheet, « Je la maîtrise » (the tick of the mastery switch)
+  const toggleMastery = useGoals((s) => s.toggleMastery);
+  const drill = useMemo(() => (t && d ? exerciseForTechnique(filterExercises(EXERCISES.filter((e) => e.discipline === d), kbStyle), t.id, profile.levels[d]) : undefined), [t, d, kbStyle, profile.levels]);
+  const SLOW = 0.25;
+  const slowOn = speed <= SLOW + 1e-3;
+  const setPlayerSpeed = (v: number) => {
+    setSpeed(v);
+    if (player.current) player.current.speed = v;
+  };
+  const normalSpeed = useRef(0.6);
+  useActionPill(
+    t
+      ? [
+          drill && {
+            id: 'entrainer',
+            label: 'S’entraîner',
+            icon: 'play',
+            primary: true,
+            ariaLabel: `S’entraîner : ${drill.name}`,
+            onSelect: () => nav(`/entrainement?ex=${encodeURIComponent(drill.id)}&mode=technique`),
+          },
+          {
+            id: 'ralenti',
+            label: 'Ralenti',
+            icon: 'slow',
+            pressed: slowOn,
+            onSelect: () => {
+              if (slowOn) setPlayerSpeed(normalSpeed.current > SLOW ? normalSpeed.current : 0.6);
+              else {
+                normalSpeed.current = speed;
+                setPlayerSpeed(SLOW);
+              }
+              if (!playing) {
+                player.current?.play();
+                setPlaying(true);
+              }
+            },
+          },
+          {
+            id: 'maitrise',
+            label: 'Je la maîtrise',
+            icon: 'mastered',
+            pressed: mastery[t.id] === 'acquise',
+            onSelect: () => toggleMastery(t.id, 'acquise'),
+          },
+        ]
+      : null,
+  );
   const events = useMemo<PlayerEvents>(
     () => ({
       onStep: () => {

@@ -59,6 +59,7 @@ export const ICON_REGISTRY = {
   slow: { family: 'entrainement', name: 'Ralenti' },
   speed: { family: 'entrainement', name: 'Vitesse normale' },
   forward: { family: 'entrainement', name: 'Avance' },
+  random: { family: 'action', name: 'Au hasard' },
   stepBack: { family: 'entrainement', name: 'Précédent' },
   stepForward: { family: 'entrainement', name: 'Suivant' },
   decompose: { family: 'entrainement', name: 'Décomposer le mouvement' },

@@ -85,14 +85,18 @@ for (const vp of [
   });
 }
 
-test('fiche longue : la barre « S’entraîner » reste au-dessus de la navigation en défilant', async ({ page }) => {
+// 0.26 (Youssef's choice of the action pill, mockup C, 2026-10-20 17:45): the sticky « S'entraîner » bar of 0.25 is
+// replaced by the pill's « S'entraîner », which is always there (also before scrolling, so the former « absent at
+// the top » check no longer applies). What this test guards is kept: while scrolling a long sheet, « S'entraîner »
+// stays above the navigation, never under the coach bubble, and launches the sheet in its chosen mode.
+test('fiche longue : « S’entraîner » (pilule d’actions) reste au-dessus de la navigation en défilant', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 851 });
   await seed(page);
   await page.goto(`/#/champions/${COMBO}`);
   await expect(page.getByTestId('cat-train')).toBeVisible();
-  await expect(page.getByTestId('cat-sticky-train')).toHaveCount(0);
+  await expect(page.getByTestId('cat-train-bar')).toHaveCount(0);
   await page.getByText('Garder cette fiche').scrollIntoViewIfNeeded();
-  const bar = page.getByTestId('cat-sticky-train');
+  const bar = page.getByTestId('pill-entrainer');
   await expect(bar).toBeVisible();
   const box = (await bar.boundingBox())!;
   const r = await page.evaluate(() => ({

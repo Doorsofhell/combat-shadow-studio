@@ -282,6 +282,17 @@ export const GLYPHS = {
       <circle cx="12" cy="15.4" r="1.6" fill={K} />
     </>
   ),
+  /** Au hasard (0.26 action pill): a die showing five */
+  random: (
+    <>
+      <rect x="2.6" y="2.6" width="18.8" height="18.8" rx="4.4" fill={W} />
+      <circle cx="7.9" cy="7.9" r="1.8" fill={K} />
+      <circle cx="16.1" cy="7.9" r="1.8" fill={K} />
+      <circle cx="12" cy="12" r="1.8" fill={K} />
+      <circle cx="7.9" cy="16.1" r="1.8" fill={K} />
+      <circle cx="16.1" cy="16.1" r="1.8" fill={K} />
+    </>
+  ),
   /** Avance: one frame forward */
   forward: (
     <>

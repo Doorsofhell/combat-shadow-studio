@@ -4,7 +4,7 @@
  * from the sessions recorded on this device (src/store/stats.ts) through src/domain/progress.ts.
  */
 import { ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { DISCIPLINES, LEVELS } from '../../../domain/types';
 import type { DisciplineId, ExerciseKind, LevelId } from '../../../domain/types';
 import { EXERCISES, EXERCISE_BY_ID } from '../../../domain/exercises';
@@ -44,6 +44,7 @@ import { MODE_LABEL } from '../../training/plan';
 import { EmptyState, FilterChips, PageHead, Sheet, Tabs, useKbStyle } from '../../components';
 import { AppIcon, DisciplineIcon } from '../../icons';
 import { CompareColumns, Legend, PairRows, TrendMark, useBox } from './charts';
+import { useActionPill } from '../../components/ActionPill';
 
 const dur = (sec: number) => formatDuration(sec);
 const count = (n: number) => String(n);
@@ -131,9 +132,17 @@ export function Stats() {
   const discName = v.discipline === 'toutes' ? 'Toutes disciplines' : DISCIPLINES.find((d) => d.id === v.discipline)!.name;
   const filterCount = (v.level ? 1 : 0) + (v.kind ? 1 : 0);
   const presetLabel = v.preset === 'perso' ? 'Perso' : PERIOD_PRESETS.find((x) => x.id === v.preset)!.label;
+  const nav = useNavigate();
+  // 0.26 action pill (Youssef, mockup C): a new session (the Entraîner tab), the goals, and a period of your
+  // own (the « Perso » chip's sheet). The dashboard keeps its no-scroll layout above the pill (.with-pill).
+  useActionPill([
+    { id: 'nouvelle-seance', label: 'Nouvelle séance', icon: 'play', primary: true, ariaLabel: 'Nouvelle séance : choisir un entraînement', onSelect: () => nav('/entrainer') },
+    { id: 'objectifs', label: 'Objectifs', icon: 'target', ariaLabel: 'Objectifs personnels', onSelect: () => nav('/objectifs') },
+    { id: 'periode', label: 'Période', icon: 'calendar', ariaLabel: 'Période personnalisée', pressed: v.preset === 'perso', onSelect: () => setSheet('periode') },
+  ]);
 
   return (
-    <div className="page dash" data-testid="progress-dashboard">
+    <div className="page dash with-pill" data-testid="progress-dashboard">
       <PageHead
         title="Progrès"
         back={false}
