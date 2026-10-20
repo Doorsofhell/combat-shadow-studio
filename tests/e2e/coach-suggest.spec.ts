@@ -140,6 +140,24 @@ test('questions suggérées : un double tap n’envoie qu’une question', async
   await page.goto('/#/coach-ia');
   await page.getByRole('switch', { name: /Garder l’historique/ }).check({ force: true });
   await expect(page.getByRole('switch', { name: /Garder l’historique/ })).toBeChecked();
+  // the setting is written to IndexedDB asynchronously: wait until it is saved before reloading the app
+  // (openCoach reloads), otherwise the reload can read the old value and nothing is recorded
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          new Promise<string>((res) => {
+            const r = indexedDB.open('keyval-store');
+            r.onsuccess = () => {
+              const g = r.result.transaction('keyval').objectStore('keyval').get('u:local:css-coach-ai');
+              g.onsuccess = () => res(String(g.result ?? ''));
+              g.onerror = () => res('');
+            };
+            r.onerror = () => res('');
+          }),
+      ),
+    )
+    .toContain('"keepHistory":true');
   await openCoach(page, exerciseOn('boxe', 'jab'));
   const card = page.getByTestId('coach-suggestion').first();
   const q = (await card.textContent())!;

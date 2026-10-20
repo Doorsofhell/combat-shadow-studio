@@ -44,9 +44,22 @@ export const useCoachAi = create<CoachAiState>()(
       // désactiver l’historique l’efface aussitôt
       set: (p) => setState((s) => ({ ...p, history: p.keepHistory === false ? [] : s.history })),
       push: (e) => {
-        if (!getState().keepHistory) return;
-        const item: CoachExchange = { ...e, id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, at: new Date().toISOString() };
-        setState((s) => ({ history: [item, ...s.history].slice(0, COACH_HISTORY_MAX) }));
+        const add = () => {
+          if (!getState().keepHistory) return;
+          const item: CoachExchange = { ...e, id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, at: new Date().toISOString() };
+          setState((s) => ({ history: [item, ...s.history].slice(0, COACH_HISTORY_MAX) }));
+        };
+        // 0.25: a question asked right after the app opens, before the saved settings are read back,
+        // was dropped (keepHistory still at its default): wait for them instead
+        const p = useCoachAi.persist;
+        if (p && !p.hasHydrated()) {
+          const stop = p.onFinishHydration(() => {
+            stop();
+            add();
+          });
+          return;
+        }
+        add();
       },
       clearHistory: () => setState({ history: [] }),
     }),

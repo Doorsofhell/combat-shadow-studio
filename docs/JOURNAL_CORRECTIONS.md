@@ -852,3 +852,40 @@ torsion non naturelle. Puis (10:09) : épurer les interfaces, expérience fluide
   Nouveaux tests : torsion-range (moteur), mastery (store, domaine, e2e), coach-bubble (e2e), appGuide (coach),
   rôles de couleur des icônes. Validation sur téléphone : NON EXÉCUTÉ (à faire par Youssef).
 - **Publication** : directement comme version principale (demande de Youssef, 11:01).
+
+## 2026-10-20 · v0.25.0 · Coach IA partout, navigation entre techniques, rendu des coachs, démarrage
+
+Demandes de Youssef (12:30 et 12:32). APK de test 0.24.0 publié avant ce lot (pré-version GitHub v0.24.0).
+
+- **Bulle Coach IA identique partout** — Constat : l’écran d’entraînement avait son propre bouton « Coach » et son
+  panneau, la bulle était cachée sur 6 écrans. Correction : une seule bulle (store `src/ui/coach-ai/coachHost.ts`) ;
+  l’entraînement s’enregistre comme « hôte » (contexte + actions démo/ralenti/répéter sur le lecteur, pause à
+  l’ouverture). Cachée seulement sur l’accueil de bienvenue, la page Coach IA et le labo. Fichiers : CoachBubble.tsx,
+  coachHost.ts, Training.tsx, training.css.
+- **Technique précédente / suivante** — Correction : flèches + « 3 / 28 » sous la scène 3D, balayage horizontal hors
+  scène 3D, ordre de la liste d’origine (discipline, style, catégorie, « À revoir » via `?cat=`), Retour revient au
+  catalogue. Fichiers : Library.tsx, techniqueOrder.ts (+ test unitaire).
+- **Légendes : s’entraîner sans défiler** — Constat (393×851) : bouton à 1777 px sur une fiche combo, absent de la
+  liste et des pages champion. Correction : carte « Ton combo du jour » en haut de la liste, bouton lecture sur chaque
+  ligne, carte de départ sous le titre (mode Libre par défaut, « Changer »), barre collante au défilement. Rien
+  supprimé. Fichiers : Champions.tsx, styles.css, appGuide.ts.
+- **Taches sur le corps en mode Anime (Amara)** — Constat vérifié : l’ombre franche suivait les normales de chaque
+  bosse musculaire et formait des îlots sombres (texture, peinture du visage, carte de relief écartées par mesure).
+  Correction : normales lissées sur ~4,5 cm pour l’ombrage anime (`shadeNormals`, src/three/manga.ts).
+- **Vêtements du mode Ultra-réaliste** — Constat : shorts plats et « plastique », taille froissée, liseré blanc sur
+  les bords, points clairs le long des bretelles. Correction : tissu (plis, maille, côtes de ceinture, coutures,
+  surpiqûres, ourlet), brillance de tissu, bords nets, peau cachée plus large sous la brassière. Fichiers :
+  customize.ts, CoachModel.tsx (+ 6 tests).
+- **Image au démarrage** — Constat : l’APK montrait l’écran de démarrage et l’icône Capacitor par défaut (croix bleue
+  sur blanc) ; le web montrait une silhouette grise. Correction : logo CS sur fond sombre (splash Android toutes
+  densités, Android 12+, icônes de l’appli), logo affiché dans la page avant le chargement, anneau de chargement
+  à la place de la silhouette.
+- **Test instable de l’historique du Coach IA** — Constat : le réglage « Garder l’historique » est écrit de façon
+  asynchrone ; le test rechargeait l’appli avant l’écriture. Correction : le test attend l’écriture ; l’appli
+  attend aussi la relecture des réglages avant d’enregistrer une question posée dès l’ouverture.
+- **Tests** : tsc OK ; Vitest 401 réussis, 1 non exécuté — TEST RÉUSSI. Playwright complet : 97 réussis, 1 échec
+  (double tap historique, corrigé puis 5/5), 2 non exécutés (Firebase) ; relance coach-suggest + coach-bubble +
+  theme : 18 réussis — TEST RÉUSSI. Nouveaux : technique-nav, legendes-quick-start. Validation sur téléphone :
+  NON EXÉCUTÉ.
+- **Limites** : bretelles de brassière qui se déchirent sur le trapèze en garde (connu) ; vignettes des techniques
+  non régénérées (léger écart de rendu Anime) ; icônes flottantes en attente du choix de Youssef.
