@@ -358,7 +358,7 @@ export const GUIDES: Record<string, TechniqueGuide> = {
       'Pars de la garde. Option : petit pas du pied gauche vers l’extérieur pour ouvrir l’angle.',
       'Pivote sur l’avant du pied gauche, talon vers la cible, de 70 à 90° environ.',
       'Tourne les hanches et laisse la jambe droite partir en arc, genou légèrement fléchi.',
-      'Frappe la cuisse imaginaire avec le bas du tibia, à mi-hauteur de cuisse.',
+      'Frappe la cuisse imaginaire avec le milieu du tibia, à mi-hauteur de cuisse.',
       'Bras droit le long du corps pour l’équilibre, main gauche devant le visage.',
       'Ramène la jambe par le même chemin et repose-la en garde.',
     ],

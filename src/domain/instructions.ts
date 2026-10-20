@@ -163,7 +163,7 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     points: [P('pieds', 'Poids sur la jambe avant', 'preparation'), P('jambe', 'Genou vers la poitrine', 'preparation'), P('bassin', 'La hanche arrière pousse vers l’avant', 'execution'), P('garde', 'Mains hautes'), P('garde', 'Genou ramené, pied reposé derrière', 'retour')],
   },
   'low-kick-arriere': {
-    main: 'Pivote sur le pied avant et frappe la cuisse avec le bas du tibia arrière.',
+    main: 'Pivote sur le pied avant et frappe la cuisse avec le milieu du tibia arrière.',
     points: [P('pieds', 'Pivot du pied d’appui, talon vers la cible', 'preparation'), P('bassin', 'Les hanches tournent avec la jambe', 'execution'), P('jambe', 'Frappe avec le tibia, mi-cuisse', 'execution'), P('garde', 'Main avant devant le visage'), P('garde', 'Retour par le même chemin, en garde', 'retour')],
   },
   'low-kick-avant': {
