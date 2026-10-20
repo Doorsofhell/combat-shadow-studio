@@ -835,3 +835,20 @@ torsion non naturelle. Puis (10:09) : épurer les interfaces, expérience fluide
   3° près. Nouveau test bloquant `src/engine/__tests__/torsion-range.test.ts`, rapport
   `docs/audit-biomecanique/MESURES_TORSIONS.md` (amplitudes de référence citées de mémoire, à revérifier dans les
   ouvrages). Arrêts « robotiques » : 318 → 210. Les vignettes sont refaites avec ces mouvements.
+- **Textes pour débutants (11:08)** : 527 textes explicatifs réécrits sur un ton léger et pédagogique (fiches,
+  guides pas à pas, consignes d’entraînement, techniques avec partenaire, programmes, styles de kick-boxing) ;
+  identifiants, noms, annonces vocales, chiffres et sources inchangés ; consignes de sécurité et corrections sourcées
+  de l’audit conservées. Low kick : la surface de contact est maintenant la même partout (milieu du tibia, comme le
+  point clé sourcé ; le guide et la consigne disaient « bas du tibia »).
+- **Coach IA selon l’écran (11:26)** : le coach sait sur quel écran il est ouvert (27 écrans) et propose d’abord des
+  questions sur cet écran ; nouveau guide local de l’application (`src/coach/appGuide.ts`, 44 sujets écrits à partir
+  du code des écrans) avec un bouton pour y aller ; « À quoi sert cet écran ? », « Par où commencer ? » et
+  « Comment marquer une technique ? » ont une réponse. Tout reste calculé sur l’appareil.
+- **Tests** : unitaires (vitest) 391 réussis, 1 ignoré (existant), 0 échec — TEST RÉUSSI. Playwright complet :
+  83 réussis, 2 non exécutés (émulateurs Firebase absents, NON EXÉCUTÉ), 2 échecs corrigés (libellé « Mon profil et
+  mon compte » remis dans les Réglages ; test Accueil des icônes de discipline ramené à 1, la grille ayant été retirée
+  de l’accueil sur décision du 2026-10-20, raison écrite dans le test) ; 2e passage sur les 10 fichiers touchés par les
+  textes et le Coach IA après ces corrections : 53 réussis, 2 non exécutés (Firebase), 0 échec — TEST RÉUSSI.
+  Nouveaux tests : torsion-range (moteur), mastery (store, domaine, e2e), coach-bubble (e2e), appGuide (coach),
+  rôles de couleur des icônes. Validation sur téléphone : NON EXÉCUTÉ (à faire par Youssef).
+- **Publication** : directement comme version principale (demande de Youssef, 11:01).
