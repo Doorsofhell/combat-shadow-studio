@@ -1230,12 +1230,15 @@ input[type='range'] {
   font-size: 0.9rem;
 }
 
+/* 0.25 (Youssef: « une image pas terrible s'affiche puis le coach »): the grey body-shaped placeholder
+   is replaced by a light ring that turns while the coach loads */
 .stage-skeleton {
-  width: 92px;
-  height: 200px;
-  border-radius: 46px 46px 20px 20px;
-  background: var(--track);
-  animation: pulse 1.6s ease-in-out infinite;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid var(--track);
+  border-top-color: var(--red);
+  animation: spin 0.9s linear infinite;
 }
 
 @keyframes pulse {
