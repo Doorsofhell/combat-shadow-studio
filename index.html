@@ -15,8 +15,6 @@
         var t = light ? 'light' : 'dark';
         document.documentElement.dataset.theme = t;
         document.documentElement.style.colorScheme = t;
-        // 0.25: paint the theme background at once so the start never flashes white
-        document.documentElement.style.background = light ? '#f4f5f7' : '#0b0f14';
         var m = document.querySelector('meta[name="theme-color"]');
         if (m) m.content = location.hash.indexOf('#/entrainement') === 0 ? '#ffffff' : light ? '#f4f5f7' : '#0b0f14';
       })();
@@ -26,7 +24,7 @@
   <body>
     <div id="root">
       <!-- 0.25: start screen shown until React mounts (replaced by the app), same logo as the Android splash -->
-      <div class="boot" role="status" aria-label="Chargement" style="position: fixed; inset: 0; display: grid; place-items: center">
+      <div class="boot" id="boot" role="status" aria-label="Chargement" style="position: fixed; inset: 0; display: grid; place-items: center; background: #0b0f14">
         <img src="./icons/icon.svg" width="96" height="96" alt="" style="border-radius: 22px; opacity: 0.95" />
       </div>
     </div>
