@@ -15,7 +15,7 @@ export const COACH_HISTORY_ROUTE = '/coach-ia';
 export interface CoachAskPanelProps {
   /** profil + séance en cours ; `preferences` et `catalog` sont complétés par le panneau */
   context: Omit<CoachContext, 'preferences' | 'catalog' | 'lastTechniqueId' | 'seed'>;
-  /** action à exécuter par l’écran d’entraînement (démo, ralenti, répéter, lancer un exercice / une fiche) */
+  /** action à exécuter par l’écran hôte (démo, ralenti, répéter, lancer un exercice / une fiche, ouvrir un écran) */
   onAction: (action: CoachAction) => void;
   onClose: () => void;
   /** lien vers l’historique et les réglages (par défaut /coach-ia) */
@@ -46,11 +46,15 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
   const lastSend = useRef({ q: '', at: 0 });
   const keyboard = useKeyboardInset();
 
-  // questions about the movement being worked on, each one checked against the local engine
+  // questions about the screen, then about the movement being worked on, each one checked against the local engine;
+  // without a technique on screen, the general examples follow the screen questions
   const forTechnique = useMemo(
-    () => suggestedQuestions({ ...context, preferences: { detail: ai.detail }, catalog }, 8),
+    () => {
+      const qs = suggestedQuestions({ ...context, preferences: { detail: ai.detail }, catalog }, 8);
+      return qs.length && !context.techniqueId ? [...qs, ...examples.filter((e) => !qs.includes(e))] : qs;
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [context.techniqueId, context.discipline, context.level, context.guard, ai.detail, catalog],
+    [context.screen, context.techniqueId, context.discipline, context.level, context.guard, ai.detail, catalog, examples],
   );
   const suggestions = useMemo(() => {
     if (!forTechnique.length) return answer?.suggestions?.length ? answer.suggestions : examples;

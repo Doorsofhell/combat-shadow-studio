@@ -180,6 +180,10 @@ function TrainingView({ plan }: { plan: Plan }) {
       nav(`/entrainement?ex=${encodeURIComponent(a.exerciseId)}&mode=technique`);
     } else if (a.type === 'start-combo') {
       nav(`/entrainement?cat=${encodeURIComponent(a.comboId)}&mode=technique`);
+    } else if (a.type === 'navigate') {
+      // the coach does not offer it during a session; if it ever comes, the session is left on purpose
+      setAsking(false);
+      nav(a.to);
     }
   };
   const ANGLES = CAMERA_MODES.filter((c) => c.id !== 'auto');
@@ -393,6 +397,7 @@ function TrainingView({ plan }: { plan: Plan }) {
                 guard: profile.guard,
                 techniqueId: st.tech ?? curId ?? seq[0],
                 exerciseId: item.key,
+                screen: 'entrainement',
                 goals: profile.goals,
               }}
               onAction={onCoachAction}

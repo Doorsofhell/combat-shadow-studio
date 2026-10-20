@@ -44,3 +44,28 @@ test('onglet Légendes dans la barre du bas', async ({ page }) => {
   await page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link', { name: 'Légendes' }).click();
   await expect(page).toHaveURL(/#\/champions/);
 });
+
+/** 0.25 (Youssef, 2026-10-20): the coach answers for the screen it is opened from, and explains the app. */
+test('bulle Coach IA : questions sur l’écran courant et lien vers un autre écran', async ({ page }) => {
+  await seed(page);
+  await page.goto('/#/stats');
+  await page.getByTestId('coach-bubble').click();
+  await expect(page.getByTestId('coach-suggestion').first()).toHaveText('Comment lire mes statistiques ?');
+  await page.getByTestId('coach-suggestion').first().click();
+  await expect(page.getByTestId('coach-answer')).toContainText('Parcours');
+  // on the home screen, how the app works, with a link to the Train tab
+  await page.goto('/#/');
+  await page.getByTestId('coach-bubble').click();
+  await page.getByTestId('coach-suggestion').filter({ hasText: 'Comment fonctionne l’application ?' }).click();
+  await expect(page.getByTestId('coach-answer')).toContainText('cinq onglets');
+  await page.getByTestId('coach-actions').getByRole('button', { name: 'Aller à Entraîner' }).click();
+  await expect(page).toHaveURL(/#\/entrainer$/);
+  await expect(page.getByTestId('coach-bubble-panel')).toHaveCount(0);
+  // on a technique sheet, marking it is the first question
+  await page.goto('/#/techniques/jab?d=boxe');
+  await page.getByTestId('coach-bubble').click();
+  await expect(page.getByTestId('coach-suggestion').first()).toHaveText('Comment marquer cette technique comme assimilée ?');
+  await page.getByTestId('coach-input').fill('À quoi sert cet écran ?');
+  await page.getByTestId('coach-send').click();
+  await expect(page.getByTestId('coach-answer')).toContainText('barre de lecture');
+});

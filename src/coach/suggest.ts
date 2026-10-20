@@ -1,5 +1,6 @@
 import { TECHNIQUE_BY_ID } from '../domain/techniques';
 import type { Technique } from '../domain/types';
+import type { CoachScreen } from './appGuide';
 import { askCoach, theName, type CoachAnswer, type CoachContext } from './engine';
 import { knowledgeBase } from './knowledge';
 import { family } from './nlu';
@@ -130,20 +131,102 @@ export function answersWell(a: CoachAnswer, expect: string): boolean {
   return a.sources.some((s) => s.id === expect);
 }
 
+/**
+ * 1 or 2 questions about the screen the coach is opened from, each answered by its guide entry
+ * (app:…). They come first: the learner may not know what the screen does.
+ */
+export const SCREEN_QUESTIONS: Record<CoachScreen, Candidate[]> = {
+  accueil: [
+    { q: 'Comment fonctionne l’application ?', expect: 'app:app-overview' },
+    { q: 'Comment commencer une séance ?', expect: 'app:start-session' },
+  ],
+  entrainer: [
+    { q: 'À quoi sert cet écran ?', expect: 'app:screen-entrainer' },
+    { q: 'Quelle est la différence entre les modes ?', expect: 'app:modes' },
+  ],
+  discipline: [
+    { q: 'Comment lancer un exercice ?', expect: 'app:start-session' },
+    { q: 'Quelle est la différence entre les modes ?', expect: 'app:modes' },
+  ],
+  programmes: [{ q: 'Comment fonctionnent les programmes ?', expect: 'app:programmes' }],
+  programme: [{ q: 'Comment fonctionnent les programmes ?', expect: 'app:programmes' }],
+  techniques: [
+    { q: 'Comment trouver une technique ?', expect: 'app:screen-techniques' },
+    { q: 'Comment marquer une technique comme assimilée ?', expect: 'app:mastery' },
+  ],
+  technique: [
+    { q: 'Comment marquer cette technique comme assimilée ?', expect: 'app:mastery' },
+    { q: 'Comment ajouter cette technique aux favoris ?', expect: 'app:favoris' },
+  ],
+  partenaire: [{ q: 'Pourquoi travailler avec un partenaire ?', expect: 'app:partner' }],
+  combinaisons: [{ q: 'Comment lancer une combinaison ?', expect: 'app:screen-combinaisons' }],
+  createur: [{ q: 'Comment créer mon propre enchaînement ?', expect: 'app:createur' }],
+  favoris: [{ q: 'Comment ajouter une technique aux favoris ?', expect: 'app:favoris' }],
+  progres: [
+    { q: 'Comment lire mes statistiques ?', expect: 'app:screen-progres' },
+    { q: 'C’est quoi l’onglet Maîtrise ?', expect: 'app:maitrise' },
+  ],
+  historique: [{ q: 'Que montre l’historique des séances ?', expect: 'app:historique' }],
+  objectifs: [{ q: 'Comment fixer mes objectifs personnels ?', expect: 'app:objectifs' }],
+  legendes: [
+    { q: 'Comment fonctionne l’onglet Légendes ?', expect: 'app:legendes' },
+    { q: 'Que signifient les statuts Vérifiée, Adaptée et Inspirée ?', expect: 'app:legendes-statuts' },
+  ],
+  'legende-fiche': [{ q: 'Que signifient les statuts Vérifiée, Adaptée et Inspirée ?', expect: 'app:legendes-statuts' }],
+  champion: [{ q: 'Comment fonctionne l’onglet Légendes ?', expect: 'app:legendes' }],
+  reglages: [
+    { q: 'Comment passer en mode sombre ?', expect: 'app:theme' },
+    { q: 'Comment changer le rendu des combattants ?', expect: 'app:render' },
+  ],
+  'reglages-voix': [{ q: 'Comment couper la voix du coach ?', expect: 'app:voix' }],
+  'reglages-rounds': [{ q: 'Comment régler la durée des rounds ?', expect: 'app:rounds' }],
+  'reglages-affichage': [{ q: 'Que faire si l’affichage saccade ?', expect: 'app:affichage' }],
+  'reglages-donnees': [{ q: 'Comment exporter mes données ?', expect: 'app:donnees' }],
+  profil: [{ q: 'Comment changer mon pseudo ?', expect: 'app:profil' }],
+  'coach-choix': [{ q: 'Quelle différence entre Kadir et Amara ?', expect: 'app:choose-coach' }],
+  'coach-ia': [{ q: 'Comment tu fonctionnes, coach IA ?', expect: 'app:coach-ia' }],
+  confidentialite: [{ q: 'Mes données sont-elles envoyées sur internet ?', expect: 'app:confidentialite' }],
+  entrainement: [{ q: 'À quoi sert le bouton Décomposer ?', expect: 'app:decomposer' }],
+};
+
 const cache = new Map<string, string[]>();
 
-/** up to `max` questions about the technique on screen, each one checked against the engine */
-export function suggestedQuestions(ctx: Omit<CoachContext, 'lastTechniqueId' | 'seed'>, max = 6): string[] {
+/** questions about the screen, each one checked against the engine */
+export function screenQuestions(ctx: Omit<CoachContext, 'lastTechniqueId' | 'seed'>): string[] {
+  const list = ctx.screen ? SCREEN_QUESTIONS[ctx.screen] : undefined;
+  if (!list) return [];
+  const key = `screen|${ctx.screen}|${ctx.discipline}|${ctx.level}|${ctx.guard}`;
+  const hit = cache.get(key);
+  if (hit) return hit;
+  const kept = list.filter((c) => answersWell(askCoach(c.q, { ...ctx, techniqueId: undefined, preferences: { detail: 'court' } }), c.expect)).map((c) => c.q);
+  cache.set(key, kept);
+  return kept;
+}
+
+/** questions about the technique on screen, each one checked against the engine */
+function techniqueQuestions(ctx: Omit<CoachContext, 'lastTechniqueId' | 'seed'>): string[] {
   const t = ctx.techniqueId ? TECHNIQUE_BY_ID.get(ctx.techniqueId) : undefined;
   if (!t) return [];
   const key = `${t.id}|${ctx.discipline}|${ctx.level}|${ctx.guard}`;
   const hit = cache.get(key);
-  if (hit) return hit.slice(0, max);
+  if (hit) return hit;
   const kept = candidates(t)
     // judo: the chin FAQ is about punches, it does not fit a standing grip posture
     .filter((c, i, all) => !(ctx.discipline === 'judo' && c.expect === 'faq:menton') && all.findIndex((x) => x.q === c.q) === i)
-    .filter((c) => answersWell(askCoach(c.q, { ...ctx, preferences: { detail: 'court' } }), c.expect))
+    .filter((c) => answersWell(askCoach(c.q, { ...ctx, screen: undefined, preferences: { detail: 'court' } }), c.expect))
     .map((c) => c.q);
   cache.set(key, kept);
-  return kept.slice(0, max);
+  return kept;
+}
+
+/**
+ * Up to `max` suggested questions: first 1 or 2 about the screen the coach is opened from (when it is
+ * known), then the questions about the technique on screen. Each one is checked against the engine.
+ */
+export function suggestedQuestions(ctx: Omit<CoachContext, 'lastTechniqueId' | 'seed'>, max = 6): string[] {
+  const screen = screenQuestions(ctx);
+  const tech = techniqueQuestions(ctx);
+  // with a technique to talk about, one screen question is enough
+  const head = tech.length ? screen.slice(0, 1) : screen;
+  return [...head, ...tech.filter((q) => !head.includes(q))].slice(0, max);
 }

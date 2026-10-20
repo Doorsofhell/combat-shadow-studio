@@ -9,6 +9,7 @@
  */
 import { EXERCISE_BY_ID } from '../domain/exercises';
 import { TECHNIQUES, TECHNIQUE_BY_ID } from '../domain/techniques';
+import { isAppQuestion } from './appGuide';
 import { hasAny, hasPhrase, hasPrefix, normalize } from './text';
 
 export type CoachIntent =
@@ -26,6 +27,8 @@ export type CoachIntent =
   | 'safety'
   | 'off_topic'
   | 'unknown_technique'
+  /** question sur l’utilisation de l’application (écrans, boutons, réglages) */
+  | 'app_help'
   | 'unknown';
 
 export interface ParsedQuestion {
@@ -270,6 +273,8 @@ export function parseQuestion(raw: string, opts: { exerciseId?: string } = {}): 
   if (hasAny(text, SAFETY)) return r('safety');
   if (hasAny(text, CANT_SEE) || hasPrefix(text, ['corrig'])) return r('cant_see');
   if (unknownMoves.length && !techniques.length) return r('unknown_technique');
+  // « comment ça marche ? », « où je trouve mes favoris ? », « à quoi sert ce bouton ? »
+  if (isAppQuestion(text, techniques.length > 0)) return r('app_help');
   const actionWords = hasAny(text, SLOW) || hasAny(text, REPEAT) || hasAny(text, DEMO);
   if (hasAny(text, GREET) && !techniques.length && !actionWords && text.split(' ').length <= 6 && !hasAny(text, COMBO)) return r('smalltalk');
   const asksWhy = hasAny(text, WHY);

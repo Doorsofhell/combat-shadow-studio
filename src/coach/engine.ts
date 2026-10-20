@@ -11,12 +11,14 @@ import { TECHNIQUES, TECHNIQUE_BY_ID } from '../domain/techniques';
 import type { CatalogChampion, CatalogCombo } from '../domain/catalog/types';
 import { LEVELS } from '../domain/types';
 import type { DisciplineId, Exercise, Guard, LevelId, Technique } from '../domain/types';
+import { guideEntry, matchGuide, screenEntry, screenOfTarget, type CoachScreen } from './appGuide';
 import { CATEGORY_NUANCE, knowledgeBase, techniqueSide, type KnowledgeEntry } from './knowledge';
 import { family, parseQuestion, type CoachIntent, type ParsedQuestion } from './nlu';
 import { retrieve, type RetrievalHit } from './retrieval';
 import { hash } from './text';
 
 export type DetailLevel = 'court' | 'detaille';
+export type { CoachScreen } from './appGuide';
 
 export interface CoachContext {
   pseudo?: string;
@@ -27,6 +29,12 @@ export interface CoachContext {
   techniqueId?: string;
   /** exercice en cours */
   exerciseId?: string;
+  /** écran d’où le coach est appelé (accueil, fiche technique, progrès, entraînement…) */
+  screen?: CoachScreen;
+  /** programme affiché (page d’un programme) */
+  programId?: string;
+  /** combinaison des Légendes affichée (fiche du catalogue) */
+  comboId?: string;
   /** objectifs du profil (technique, cardio, coordination, defense, competition, forme) */
   goals?: string[];
   preferences?: { detail?: DetailLevel };
@@ -43,12 +51,14 @@ export type CoachAction =
   | { type: 'slow'; techniqueId: string; speed: number; label: string }
   | { type: 'repeat'; techniqueId: string; label: string }
   | { type: 'start-exercise'; exerciseId: string; label: string }
-  | { type: 'start-combo'; comboId: string; label: string };
+  | { type: 'start-combo'; comboId: string; label: string }
+  /** ouvrir un écran de l’application (route du HashRouter, ex. « /stats ») */
+  | { type: 'navigate'; to: string; label: string };
 
 export interface CoachSource {
   id: string;
   title: string;
-  /** identifiant de technique, 'faq', 'exercice' ou 'catalogue' */
+  /** identifiant de technique, 'faq', 'exercice', 'catalogue' ou 'application' (guide de l’application) */
   source: string;
 }
 
@@ -516,7 +526,7 @@ function smalltalk(p: ParsedQuestion, ctx: CoachContext): CoachAnswer {
   else if (/au revoir|a plus/.test(p.text)) text = `À bientôt${name ? `, ${name}` : ''} ! Pense à t’hydrater et à récupérer.`;
   else
     text =
-      `Salut${name ? ` ${name}` : ''} ! Je suis ton coach : je réponds à tes questions sur les techniques, la garde, l’équilibre, la respiration et je peux te montrer un mouvement en démo ou au ralenti. ` +
+      `Salut${name ? ` ${name}` : ''} ! Je suis ton coach : je réponds à tes questions sur les techniques, la garde, l’équilibre, la respiration, je peux te montrer un mouvement en démo ou au ralenti, et je t’explique comment marche l’application. ` +
       `Je ne te vois pas, donc je ne corrige pas ton geste.\nEssaie : « ${ex[0]} » ou « ${ex[2]} »`;
   return { text, actions: [], sources: [], intent: 'smalltalk', confidence: 0.9, engine: 'base-locale', suggestions: ex.slice(0, 3) };
 }
@@ -547,6 +557,19 @@ function unknownTechnique(p: ParsedQuestion, ctx: CoachContext): CoachAnswer {
     `${name ? `${name}, le` : 'Le'} « ${move} » ne fait pas partie de ma bibliothèque validée. Je préfère ne pas t’expliquer un geste que je n’ai pas en fiche plutôt que de risquer un conseil faux.` +
     (list.length ? `\nDans la même famille, je peux te parler de : ${list.join(', ')}.` : '');
   return { text, actions: [], sources: [], intent: 'unknown_technique', confidence: 0.9, engine: 'base-locale' };
+}
+
+/** question sur l’application : le guide local, l’écran courant départageant les questions vagues */
+function appHelp(p: ParsedQuestion, ctx: CoachContext): CoachAnswer {
+  // sans fonction nommée (« à quoi ça sert ? »), la page d’aide de l’écran, sinon la vue d’ensemble
+  const m = matchGuide(p.text, ctx.screen) ?? { entry: screenEntry(ctx.screen) ?? guideEntry('app-overview')!, score: 0, byScreen: true };
+  const e = m.entry;
+  const actions: CoachAction[] = [];
+  // pas de lien vers l’écran où l’on est déjà, ni pendant une séance (elle serait interrompue)
+  const here = ctx.screen && (screenOfTarget(e.action?.to ?? '') === ctx.screen || e.screens?.includes(ctx.screen));
+  if (e.action && ctx.screen !== 'entrainement' && !here) actions.push({ type: 'navigate', to: e.action.to, label: e.action.label });
+  const text = opener(ctx, p.text) + e.answer;
+  return { text, actions, sources: [{ id: `app:${e.id}`, title: e.title, source: 'application' }], intent: 'app_help', confidence: m.byScreen ? 0.8 : 0.9, engine: 'base-locale' };
 }
 
 function unknown(p: ParsedQuestion, ctx: CoachContext): CoachAnswer {
@@ -588,6 +611,8 @@ export function askCoach(question: string, context: CoachContext): CoachAnswer {
       return offTopic(p, context);
     case 'unknown_technique':
       return unknownTechnique(p, context);
+    case 'app_help':
+      return appHelp(p, context);
     default:
       return unknown(p, context);
   }
