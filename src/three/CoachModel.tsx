@@ -205,7 +205,8 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
     });
     upgradeMaterials(s, quality);
     // premium: Encre and the older Manga choice are both drawn with the clean cel shading
-    const ink = premium ? 'cel' : style === 'encre' ? 'encre' : 'manga';
+    // the champion coaches (own model) take the soft variant
+    const ink = premium ? (own ? 'cel-doux' : 'cel') : style === 'encre' ? 'encre' : 'manga';
     if (style !== 'realiste') applyManga(s, ink);
     let c: Customizer | null = null;
     if (custom) {

@@ -97,16 +97,26 @@ const CEL_FRAGMENT = /* glsl */ `
   #include <opaque_fragment>
 `;
 
-export type InkStyle = 'manga' | 'encre' | 'cel';
+/**
+ * Encre for the champion coaches: the same cel shading with soft tone edges and less contrast. Their
+ * sculpted faces carry many small planes; hard edges cut them into flat, dirty-looking patches.
+ */
+const CEL_SOFT_FRAGMENT = CEL_FRAGMENT.replace('float aa = fwidth(light) * 1.2 + 0.004;', 'float aa = fwidth(light) * 1.2 + 0.09;').replace(
+  'float tone = mix(0.6, mix(0.88, 1.06, high), lit);',
+  'float tone = mix(0.7, mix(0.9, 1.04, high), lit);',
+);
+
+export type InkStyle = 'manga' | 'encre' | 'cel' | 'cel-doux';
 
 export function toonMaterial(name: string, map: Texture | null, color?: Color, style: InkStyle = 'manga', normalMap: Texture | null = null) {
   if (style === 'encre') return inkMaterial(name, map, color, normalMap);
-  if (style === 'cel') {
+  if (style === 'cel' || style === 'cel-doux') {
     const m = new MeshLambertMaterial({ name, map, normalMap, color: color ?? new Color(1, 1, 1) });
+    const frag = style === 'cel' ? CEL_FRAGMENT : CEL_SOFT_FRAGMENT;
     m.onBeforeCompile = (shader) => {
-      shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>', CEL_FRAGMENT);
+      shader.fragmentShader = shader.fragmentShader.replace('#include <opaque_fragment>', frag);
     };
-    m.customProgramCacheKey = () => 'cel-toon';
+    m.customProgramCacheKey = () => `${style}-toon`;
     return m;
   }
   const m = new MeshLambertMaterial({ name, map, normalMap, color: color ?? new Color(1, 1, 1) });

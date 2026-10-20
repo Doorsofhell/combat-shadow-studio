@@ -17,6 +17,7 @@ import {
   BufferGeometry,
   CatmullRomCurve3,
   Color,
+  DoubleSide,
   LatheGeometry,
   Material,
   Matrix4,
@@ -902,6 +903,8 @@ export function garmentSpecs(m: BodyMap) {
   return {
     bottom: {
       'short-boxe': { cover: shorts(pelvisY + 0.12, 0.42), thickness: (i: number) => 0.01 + 0.012 * Math.max(0, legT[i]) * (isLeg(i) ? 1 : 0), bandY: pelvisY + 0.07, drape: 0.6, hidesBody: true },
+      // mid-thigh fight shorts (the champion coaches)
+      'short-mma-court': { cover: shorts(pelvisY + 0.07, 0.36), thickness: (i: number) => 0.008 + 0.008 * Math.max(0, legT[i]) * (isLeg(i) ? 1 : 0), bandY: pelvisY + 0.04, drape: 0.45, hidesBody: true },
       'short-mma': { cover: shorts(pelvisY + 0.07, 0.52), thickness: (i: number) => 0.009 + 0.01 * Math.max(0, legT[i]) * (isLeg(i) ? 1 : 0), bandY: pelvisY + 0.04, drape: 0.5, hidesBody: true },
       'short-thai': { cover: shorts(pelvisY + 0.13, 0.3), thickness: (i: number) => 0.009 + 0.035 * Math.max(0, legT[i]) * (isLeg(i) ? 1 : 0), bandY: pelvisY + 0.06, drape: 0.7, hidesBody: true },
       'short-compression': { cover: shorts(pelvisY + 0.06, 0.38), thickness: () => 0.0035, bandY: pelvisY + 0.035, hidesBody: true },
@@ -1037,6 +1040,45 @@ function rigidOutline(mesh: Mesh, width = 0.004) {
   o.frustumCulled = false;
   mesh.add(o);
   return o;
+}
+
+/**
+ * reads the red channel (hair cover) of the painted masks on the CPU; null outside a browser. Through
+ * WebGL, not a 2D canvas: the masks keep data in the alpha channel and a 2D canvas premultiplies it,
+ * which wipes the colour channels wherever alpha is 0.
+ */
+function maskReader(tex: Texture | null): ((u: number, v: number) => number) | null {
+  const img = tex?.image as (TexImageSource & { width: number; height: number }) | undefined;
+  if (!img || typeof document === 'undefined' || !img.width) return null;
+  const S = 512;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = S;
+  const gl = cv.getContext('webgl', { premultipliedAlpha: false, preserveDrawingBuffer: true });
+  if (!gl) return null;
+  try {
+    const t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    const W = img.width;
+    const H = img.height;
+    const fb = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+    const px = new Uint8Array(W * H * 4);
+    gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+    // rows come back in upload order: row 0 is the top row of the image, as glTF uv v = 0
+    return (u, v) => {
+      const x = Math.min(W - 1, Math.max(0, Math.floor(u * W)));
+      const y = Math.min(H - 1, Math.max(0, Math.floor(v * H)));
+      return px[(y * W + x) * 4] / 255;
+    };
+  } catch {
+    return null;
+  }
 }
 
 // ----------------------------------------------------------------------------- customiser
@@ -1414,13 +1456,79 @@ export class Customizer {
     if (this.hair) this.setVisible(this.hair, st !== 'rase');
     if (this.bun) this.setVisible(this.bun, st === 'chignon' && look.sex === 'femme');
     if (this.bun) ((this.bun as Mesh).material as MeshLambertMaterial).color?.copy(u.uHairColor.value);
-    const key = `${st}:${L.toFixed(2)}:${look.sex}`;
+    const key = `${st}:${L.toFixed(2)}:${look.sex}:${look.hair.meches ?? 0}:${look.hair.flow ?? 0}`;
     if (key !== this.hairPieceKey) {
       this.hairPieces.forEach((o) => o.removeFromParent());
       this.hairPieces = this.buildHairPieces(st, L, look.sex);
+      if (look.hair.meches && st !== 'rase') this.hairPieces.push(...this.buildLocks(s, look.hair.meches, look.hair.flow ?? 0.3));
       this.hairPieceKey = key;
     }
     this.hairPieces.forEach((o) => ((o as Mesh).material as MeshLambertMaterial).color?.copy(u.uHairColor.value));
+  }
+
+  /**
+   * Modelled locks: tapered blades laid on the hair shell, combed back from the hairline and lifted
+   * by `flow`. They give the haircut a volume and a drawn silhouette (Encre) that a painted shell has
+   * not. Only on the scalp the mask covers, and where the style keeps hair (top, sides, back).
+   */
+  private buildLocks(s: number[], density: number, flow: number): Object3D[] {
+    if (!this.hair) return [];
+    const scalp = maskReader(this.u.uMasks.value);
+    if (!scalp) return [];
+    const g = this.hair.geometry;
+    const P = g.getAttribute('position');
+    const N = g.getAttribute('normal');
+    const UV = g.getAttribute('uv');
+    const meta = this.map.meta;
+    const c = v3(meta.headLow).lerp(v3(meta.headTop), 0.5);
+    const len = s[4];
+    // short hair: short dense locks; longer hair: fewer, longer ones
+    const lockLen = 0.012 + len * 2.4;
+    const width = 0.006 + len * 0.45;
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const pos: number[] = [];
+    const p = new Vector3();
+    const n = new Vector3();
+    const d = new Vector3();
+    const side = new Vector3();
+    const comb = new Vector3();
+    const seen = new Set<string>();
+    for (let i = 0; i < P.count; i++) {
+      p.fromBufferAttribute(P, i);
+      // the shell has seams (duplicated vertices): one lock per position
+      const k = `${p.x.toFixed(3)}:${p.y.toFixed(3)}:${p.z.toFixed(3)}`;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      if (scalp(UV.getX(i), UV.getY(i)) < 0.6 || rnd() > density) continue;
+      const h = p.clone().sub(c);
+      const top = smooth(-0.01, 0.07, h.y);
+      const sd = smooth(0.035, 0.075, Math.abs(h.x));
+      const bk = smooth(0.0, 0.07, -h.z);
+      const prof = Math.max(top * s[0], sd * s[1], bk * s[2]);
+      if (prof < 0.5) continue;
+      n.fromBufferAttribute(N, i).normalize();
+      p.addScaledVector(n, len * prof);
+      // combed back and down from the forehead, outward over the sides
+      comb.set(h.x * 0.6, -0.15, -1).normalize();
+      d.copy(comb).addScaledVector(n, -comb.dot(n)).normalize();
+      side.crossVectors(n, d).normalize();
+      const l = lockLen * prof * (0.75 + 0.5 * rnd());
+      const w = width * (0.8 + 0.4 * rnd());
+      const tip = p.clone().addScaledVector(d, l).addScaledVector(n, l * flow * 0.5 + 0.001);
+      const b1 = p.clone().addScaledVector(side, -w).addScaledVector(n, -0.002);
+      const b2 = p.clone().addScaledVector(side, w).addScaledVector(n, -0.002);
+      const ridge = p.clone().addScaledVector(n, 0.0025 + l * 0.08).addScaledVector(d, l * 0.25);
+      for (const t of [b1, ridge, tip, ridge, b2, tip]) pos.push(t.x, t.y, t.z);
+    }
+    if (!pos.length) return [];
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(new Float32Array(pos), 3));
+    geo.computeVertexNormals();
+    const m = attachToBone(this.body, 'Head', geo, this.opt.toon('css-hairlock', new Color(1, 1, 1)));
+    if (!m) return [];
+    (m.material as MeshLambertMaterial).side = DoubleSide;
+    return [m];
   }
 
   private buildHairPieces(st: string, L: number, sex: string): Object3D[] {

@@ -33,6 +33,7 @@ export const TATTOO_ZONES = keys<TattooZone>({
 export const BOTTOMS = keys<BottomType>({
   'short-boxe': true,
   'short-mma': true,
+  'short-mma-court': true,
   'short-thai': true,
   'short-compression': true,
   legging: true,

@@ -82,6 +82,8 @@ describe('créateur de combattant : vêtements et protections', () => {
     const zone: Record<string, [number, number]> = {
       'short-boxe': [meta.knee[1] - 0.08, meta.pelvis[1] + 0.2],
       'short-thai': [meta.knee[1] - 0.02, meta.pelvis[1] + 0.2],
+      // mid-thigh: clearly above the knee
+      'short-mma-court': [meta.knee[1] + 0.08, meta.pelvis[1] + 0.2],
       legging: [-0.05, meta.pelvis[1] + 0.2],
       'rashguard-long': [meta.pelvis[1] - 0.1, meta.neck[1] + 0.03],
       brassiere: [meta.nippleY - 0.2, meta.neck[1] + 0.03],

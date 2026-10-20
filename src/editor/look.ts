@@ -44,7 +44,7 @@ export interface Tattoo {
   intensity: number;
 }
 
-export type BottomType = 'short-boxe' | 'short-mma' | 'short-thai' | 'short-compression' | 'legging' | 'aucun';
+export type BottomType = 'short-boxe' | 'short-mma' | 'short-mma-court' | 'short-thai' | 'short-compression' | 'legging' | 'aucun';
 export type TopType = 'aucun' | 'rashguard-court' | 'rashguard-long' | 'tshirt' | 'debardeur' | 'brassiere' | 'compression';
 export type ShoesType = 'pieds-nus' | 'chaussures-boxe' | 'chaussons-mma';
 export type HandsType = 'aucun' | 'bandes' | 'sous-gants' | 'gants-boxe' | 'gants-mma';
@@ -80,7 +80,11 @@ export interface FighterLook {
   face: { jaw: number; cheeks: number; brow: number; nose: number };
   skin: string;
   eyes: string;
-  hair: { style: HairStyle; color: string; length: number };
+  /**
+   * meches: modelled locks on the scalp, 0 (painted shell only, the editor's fighters) to 1 (dense);
+   * flow: how much the locks rise off the head (0 lying flat, 1 standing up)
+   */
+  hair: { style: HairStyle; color: string; length: number; meches?: number; flow?: number };
   beard: { style: BeardStyle; color: string };
   bodyHair: number;
   tattoos: Tattoo[];
