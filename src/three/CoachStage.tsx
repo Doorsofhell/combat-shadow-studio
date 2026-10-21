@@ -87,8 +87,12 @@ export interface CoachStageProps {
   /** augmented reality session holder; the AR layer replaces the studio while a session runs */
   ar?: ArBridge;
   arActive?: boolean;
-  /** white training studio (default) or the dark premium stage of the menus */
-  backdrop?: 'studio' | 'dark';
+  /**
+   * white studio (default), the dark premium stage of the menus, or (0.27, Youssef 2026-10-20 21:48 « Suit le
+   * thème ») the training studio: the canvas is see-through over the stage's own background, dark in the dark
+   * theme and pearl grey in the light one, with the dark lighting in the dark theme
+   */
+  backdrop?: 'studio' | 'dark' | 'theme';
   /** look to show instead of the active fighter (fighter creator preview) */
   look?: FighterLook;
 }
@@ -101,6 +105,7 @@ export interface CoachStageProps {
 export function CoachStage(props: CoachStageProps) {
   const menuTheme = useResolvedTheme();
   const { coach, discipline, southpaw, cameraAngle, view, free, onUserOrbit, frameIds, quality, events, onPlayer, onRigReady, study, studyActive = false, zoom, ar, arActive = false, backdrop = 'studio' } = props;
+  const stageDark = backdrop !== 'studio' && menuTheme === 'dark';
   const fighter = useActiveFighter();
   const render = useSettings((s) => s.settings.coachRender);
   // 0.24: the coach is Kadir or Amara, on their own model, dressed for the discipline; the fallback
@@ -217,7 +222,7 @@ export function CoachStage(props: CoachStageProps) {
       dpr={q === 'haute' ? [1, 2] : 1}
       gl={{ antialias: q === 'haute', alpha: true, powerPreference: 'high-performance' }}
       camera={{ position: [0, 1.1, 5], fov: 30 }}
-      style={{ background: arActive ? 'transparent' : backdrop === 'dark' ? 'var(--scene)' : '#fff', touchAction: 'none' }}
+      style={{ background: arActive || backdrop === 'theme' ? 'transparent' : backdrop === 'dark' ? 'var(--scene)' : '#fff', touchAction: 'none' }}
     >
       {quality === 'auto' && <PerformanceMonitor onDecline={() => setDegraded(true)} flipflops={1} />}
       <Suspense fallback={null}>
@@ -233,7 +238,7 @@ export function CoachStage(props: CoachStageProps) {
             envelope={studyActive ? studyEnvelope : envelope}
             orbit
             zoom={zoom}
-            dark={backdrop === 'dark' && menuTheme === 'dark'}
+            dark={stageDark}
           />
         )}
         {style === 'realiste' && render === 'premium' && q === 'haute' && <StudioEnvironment />}
@@ -253,7 +258,7 @@ export function CoachStage(props: CoachStageProps) {
             onFrame={onFrame}
           />
           {studyActive && rigState && study && <StudyCues rig={rigState} study={study} />}
-          {!studyActive && !arActive && rigState && <GroundMarks rig={rigState} player={player} southpaw={southpaw} />}
+          {!studyActive && !arActive && rigState && <GroundMarks rig={rigState} player={player} southpaw={southpaw} dark={stageDark} />}
         </group>
       </Suspense>
     </Canvas>

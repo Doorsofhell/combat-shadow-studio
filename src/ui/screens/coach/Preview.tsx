@@ -1,4 +1,6 @@
 import { Component, ReactNode, Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FsExit } from '../../fullscreen/FullscreenStage';
+import { useStageFullscreen } from '../../fullscreen/useStageFullscreen';
 import type { ComboPlayer, PlayerEvents } from '../../../engine/player';
 import type { StageView } from '../../../three/StudioStage';
 import type { DisciplineId } from '../../../domain/types';
@@ -175,6 +177,7 @@ export function Preview({
   const animRef = useRef<HTMLDivElement>(null);
   // the fighter is framed in the part of the stage the buttons leave free (top row, right column, bottom bar)
   const inset = useInset(stageRef, [partsRef, viewsRef, animRef]);
+  const fs = useStageFullscreen(stageRef);
   const view = useMemo<StageView>(() => {
     const base = VIEW_BUTTONS.find((b) => b.id === state.mode) ?? VIEW_BUTTONS[3];
     const az = oriented({ az: base.az }, southpaw);
@@ -191,7 +194,9 @@ export function Preview({
 
   return (
     <div className="cs-preview">
-      <div className="cs-stage" ref={stageRef} role="img" aria-label="Aperçu 3D de ton combattant. Fais glisser pour tourner autour, pince ou utilise la molette pour zoomer.">
+      {/* 0.27: a double tap shows the fighter on the whole screen (Youssef, 2026-10-20 22:09) */}
+      <div className={`cs-stage${fs.active ? ' stage-fs' : ''}${fs.idle ? ' fs-idle' : ''}`} ref={stageRef} data-testid="studio-stage" data-fullscreen={fs.active}>
+        <div className="cs-stage-3d" role="img" aria-label="Aperçu 3D de ton combattant. Fais glisser pour tourner autour, pince ou utilise la molette pour zoomer. Touche deux fois pour le plein écran.">
         <StageBoundary>
           <Suspense
             fallback={
@@ -216,6 +221,8 @@ export function Preview({
             />
           </Suspense>
         </StageBoundary>
+        </div>
+        {fs.active && <FsExit onExit={fs.exit} />}
       </div>
 
       <div className="cs-parts" role="radiogroup" aria-label="Cadrage" ref={partsRef}>

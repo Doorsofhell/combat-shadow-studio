@@ -27,6 +27,11 @@
   inset: 0;
 }
 
+.cs-stage-3d {
+  position: absolute;
+  inset: 0;
+}
+
 .cs-stage canvas {
   touch-action: none;
 }

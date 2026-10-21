@@ -7,6 +7,8 @@ import { EXERCISE_BY_ID } from '../../domain/exercises';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
 import { DISCIPLINES, LEVELS, type DisciplineId, type LevelId } from '../../domain/types';
 import { useProfile } from '../../store/profile';
+import { useSettings } from '../../store/settings';
+import { useActionPillStore } from '../components/ActionPill';
 import { AppIcon } from '../icons';
 import { CoachAskPanel } from './CoachAskPanel';
 import { useCoachBubble } from './coachHost';
@@ -39,6 +41,11 @@ export function CoachBubble() {
   const open = useCoachBubble((s) => s.open);
   const setOpen = useCoachBubble((s) => s.setOpen);
   const host = useCoachBubble((s) => s.host);
+  // 0.27 (Youssef, 2026-10-20 21:45: « intégrer le coach IA dans la barre d'icône dynamique »): where a screen
+  // has an action pill, the Coach IA is its last button and opens this same panel; no second entry point
+  const inPill = useActionPillStore((s) => s.items.length > 0);
+  // 0.27 (Youssef, 2026-10-20 21:59): réduit / normal / agrandi, chosen in the panel and remembered
+  const size = useSettings((s) => s.settings.coachPanelSize);
   const hidden = HIDDEN.some((p) => under(loc.pathname, p));
   const hosted = HOSTED.some((p) => under(loc.pathname, p));
 
@@ -96,7 +103,7 @@ export function CoachBubble() {
   };
 
   const panel = open && (
-    <div className={inHost ? 'tr-ask' : 'coach-bubble-panel'} role="dialog" aria-label="Coach IA" data-testid="coach-bubble-panel">
+    <div className={inHost ? `tr-ask size-${size}` : `coach-bubble-panel size-${size}${inPill ? ' from-pill' : ''}`} role="dialog" aria-label="Coach IA" data-testid="coach-bubble-panel">
       <CoachAskPanel context={context} onAction={onAction} onClose={() => setOpen(false)} />
     </div>
   );
@@ -119,7 +126,7 @@ export function CoachBubble() {
   return (
     <>
       {panel}
-      {bubble}
+      {!inPill && bubble}
     </>
   );
 }

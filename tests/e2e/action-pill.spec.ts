@@ -8,6 +8,9 @@ import { sessions } from './progress-seed';
  * plus courantes. Les icônes changent en fonction du contexte de l'écran. Icône claire. » Mockup C « Pilule
  * d'actions » chosen at 17:45): a pill at the bottom left, above the navigation, three actions at most per screen
  * (icon + word), the most useful one first and red; the Coach IA bubble stays alone at the bottom right.
+ * 0.27 (Youssef, 2026-10-20 21:45: « Il faut intégrer le coach ia dans la barre d'icône dynamique. Il faut prévoir une
+ * option pour enrouler dérouler »): where there is a pill, the Coach IA is its last button (gold) and the bubble is
+ * not drawn; a chevron at the right end folds the pill into a round handle, remembered after a reload.
  */
 const SHOTS = process.env.PILL_SHOTS;
 
@@ -46,11 +49,14 @@ const action = (page: Page, id: string) => pill(page).locator(`[data-pill-action
 /** the actions of the pill, in order, and the first one is the only red (primary) one */
 async function expectActions(page: Page, ids: string[]) {
   await expect(pill(page)).toBeVisible();
-  await expect.poll(() => pill(page).locator('button').evaluateAll((bs) => bs.map((b) => b.getAttribute('data-pill-action')))).toEqual(ids);
-  const prim = await pill(page).locator('button').evaluateAll((bs) => bs.map((b) => b.classList.contains('primary')));
+  // 0.27: the screen's actions, then the Coach IA, then the fold chevron (only the screen's actions carry data-pill-action)
+  await expect.poll(() => pill(page).locator('button[data-pill-action]').evaluateAll((bs) => bs.map((b) => b.getAttribute('data-pill-action')))).toEqual(ids);
+  const prim = await pill(page).locator('button[data-pill-action]').evaluateAll((bs) => bs.map((b) => b.classList.contains('primary')));
   expect(prim).toEqual(ids.map((_, i) => i === 0));
+  await expect(pill(page).locator('button.primary')).toHaveCount(1);
+  expect(await pill(page).locator('button').evaluateAll((bs) => bs.map((b) => b.getAttribute('data-testid')).slice(-2))).toEqual(['pill-coach', 'pill-fold']);
   // every button has its icon and its visible word
-  for (const b of await pill(page).locator('button').all()) {
+  for (const b of await pill(page).locator('button.ap-btn').all()) {
     await expect(b.locator('svg[data-icon]')).toHaveCount(1);
     expect(((await b.locator('.ap-label').textContent()) ?? '').trim().length).toBeGreaterThan(2);
   }
@@ -58,18 +64,27 @@ async function expectActions(page: Page, ids: string[]) {
   expect(red).toBe('rgb(225, 29, 47)');
 }
 
-/** the pill is above the navigation, left of the Coach IA bubble, with touch targets of 44 px or more */
+/**
+ * the pill is above the navigation, inside the screen, with touch targets of 44 px or more; 0.27 (Youssef,
+ * 2026-10-20 21:45): the Coach IA is inside it, so there is no bubble beside it any more
+ */
 async function expectPlacement(page: Page) {
   const r = await page.evaluate(() => {
     const p = document.querySelector('[data-testid="action-pill"]')!.getBoundingClientRect();
     const nav = document.querySelector('.nav')!.getBoundingClientRect();
-    const bubble = document.querySelector('[data-testid="coach-bubble"]')!.getBoundingClientRect();
+    const bubbles = document.querySelectorAll('[data-testid="coach-bubble"]').length;
     const btns = [...document.querySelectorAll('[data-testid="action-pill"] button')].map((b) => b.getBoundingClientRect()).map((b) => [b.width, b.height]);
-    return { p: { l: p.left, r: p.right, t: p.top, b: p.bottom }, navTop: nav.top, bubble: { l: bubble.left, t: bubble.top, b: bubble.bottom }, btns, vw: innerWidth };
+    const pillEl = document.querySelector('[data-testid="action-pill"]')!;
+    // no word spills out of its button
+    const spill = [...pillEl.querySelectorAll('.ap-label')].filter((l) => l.scrollWidth > l.clientWidth + 1 || l.getBoundingClientRect().right > l.parentElement!.getBoundingClientRect().right + 1).length;
+    return { p: { l: p.left, r: p.right, t: p.top, b: p.bottom }, navTop: nav.top, bubbles, btns, vw: innerWidth, spill, overflow: pillEl.scrollWidth - pillEl.clientWidth };
   });
   expect(r.p.b).toBeLessThanOrEqual(r.navTop);
   expect(r.p.l).toBeGreaterThanOrEqual(0);
-  expect(r.p.r, 'never under the Coach IA bubble').toBeLessThanOrEqual(r.bubble.l - 4);
+  expect(r.p.r, 'inside the screen').toBeLessThanOrEqual(r.vw - 12);
+  expect(r.bubbles, 'one Coach IA entry: in the pill, no bubble').toBe(0);
+  expect(r.spill, 'no word out of its button').toBe(0);
+  expect(r.overflow).toBeLessThanOrEqual(0);
   for (const [w, h] of r.btns) {
     expect(w).toBeGreaterThanOrEqual(44);
     expect(h).toBeGreaterThanOrEqual(44);
@@ -240,11 +255,106 @@ test.describe('393×851', () => {
     await seed(page);
     await page.goto('/#/');
     await expect(pill(page)).toBeVisible();
-    await page.getByTestId('coach-bubble').click();
+    // 0.27 (Youssef, 2026-10-20 21:45): opened from the pill's Coach button (no bubble where the pill is)
+    await page.getByTestId('pill-coach').click();
     await expect(page.getByTestId('coach-bubble-panel')).toBeVisible();
     await expect(pill(page)).toHaveCount(0);
-    await page.getByTestId('coach-bubble').click();
+    await page.getByTestId('coach-ask-panel').getByRole('button', { name: 'Fermer le coach' }).click();
     await expect(pill(page)).toBeVisible();
+    // Échap closes it too, and the focus comes back to the pill's Coach button
+    await page.getByTestId('pill-coach').click();
+    await expect(page.getByTestId('coach-bubble-panel')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('coach-bubble-panel')).toHaveCount(0);
+    await expect(page.getByTestId('pill-coach')).toBeFocused();
+  });
+
+  test('Coach IA dans la pilule : même panneau, mêmes suggestions selon l’écran, pas de bulle en double', async ({ page }) => {
+    await seed(page, { sessions: true });
+    for (const r of ['/#/', '/#/techniques?d=boxe', '/#/techniques/jab?d=boxe', '/#/champions', '/#/stats']) {
+      await page.goto(r);
+      await expect(pill(page), r).toBeVisible();
+      await expect(page.getByTestId('coach-bubble'), r).toHaveCount(0);
+      const c = page.getByTestId('pill-coach');
+      await expect(c.locator('.ap-label')).toHaveText('Coach');
+      await expect(c.locator('svg[data-icon="coach"]')).toHaveCount(1);
+      await expect(c).toHaveAttribute('aria-label', 'Coach IA');
+    }
+    // the screen's context goes with it: questions about the screen it is opened from
+    await page.goto('/#/stats');
+    await page.getByTestId('pill-coach').click();
+    await expect(page.getByTestId('coach-suggestion').first()).toHaveText('Comment lire mes statistiques ?');
+    await page.goto('/#/techniques/jab?d=boxe');
+    await page.getByTestId('pill-coach').click();
+    await expect(page.getByTestId('coach-suggestion').first()).toHaveText('Comment marquer cette technique comme assimilée ?');
+    // and its actions: a link to another screen
+    await page.goto('/#/');
+    await page.getByTestId('pill-coach').click();
+    await page.getByTestId('coach-suggestion').filter({ hasText: 'Comment fonctionne l’application ?' }).click();
+    await expect(page.getByTestId('coach-answer')).toContainText('cinq onglets');
+    await page.getByTestId('coach-actions').getByRole('button', { name: 'Aller à Entraîner' }).click();
+    await expect(page).toHaveURL(/#\/entrainer$/);
+    await expect(page.getByTestId('coach-bubble-panel')).toHaveCount(0);
+  });
+
+  test('sans pilule, la bulle reste : réglages, profil, connexion, entraînement', async ({ page }) => {
+    await seed(page);
+    for (const r of ['/#/reglages', '/#/profil', '/#/connexion', '/#/entrainement?ex=boxe-debutant-02&mode=libre']) {
+      await page.goto('about:blank');
+      await page.goto(r);
+      await expect(page.getByTestId('coach-bubble'), r).toBeVisible();
+      await expect(pill(page), r).toHaveCount(0);
+      await expect(page.getByTestId('pill-coach'), r).toHaveCount(0);
+    }
+  });
+
+  test('replier / déplier la pilule : poignée ronde, mémorisé après rechargement, au clavier', async ({ page }) => {
+    await seed(page, { sessions: true });
+    await page.goto('/#/');
+    const fold = page.getByTestId('pill-fold');
+    await expect(fold).toHaveAttribute('aria-expanded', 'true');
+    await expect(fold).toHaveAttribute('aria-label', 'Replier les actions');
+    await fold.click();
+    await expect(pill(page)).toHaveAttribute('data-collapsed', 'true');
+    await expect(fold).toHaveAttribute('aria-expanded', 'false');
+    await expect(fold).toHaveAttribute('aria-label', 'Déplier les actions');
+    await expect(pill(page).locator('button')).toHaveCount(1);
+    await expect(fold.locator('svg[data-icon="quickActions"]')).toHaveCount(1);
+    // a compact round handle above the navigation, bottom left, 44 px or more
+    // (measured once the short folding animation has ended: the slow test renderer can catch it midway)
+    await expect.poll(() => page.evaluate(() => document.querySelector('[data-testid="pill-fold"]')!.getBoundingClientRect().width), { timeout: 10_000 }).toBeGreaterThanOrEqual(44);
+    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))));
+    const h = await page.evaluate(() => {
+      const b = document.querySelector('[data-testid="pill-fold"]')!.getBoundingClientRect();
+      const p = document.querySelector('[data-testid="action-pill"]')!.getBoundingClientRect();
+      return { w: b.width, h: b.height, pw: p.width, ph: p.height, l: p.left, bottom: p.bottom, navTop: document.querySelector('.nav')!.getBoundingClientRect().top, radius: getComputedStyle(document.querySelector('[data-testid="action-pill"]')!).borderRadius };
+    });
+    expect(h.w).toBeGreaterThanOrEqual(44);
+    expect(h.h).toBeGreaterThanOrEqual(44);
+    expect(Math.abs(h.pw - h.ph)).toBeLessThanOrEqual(1);
+    expect(h.l).toBeLessThanOrEqual(24);
+    expect(h.bottom).toBeLessThanOrEqual(h.navTop);
+    // remembered: after a reload and on another screen
+    await page.waitForTimeout(500);
+    await page.reload();
+    await expect(pill(page)).toHaveAttribute('data-collapsed', 'true');
+    await page.goto('/#/stats');
+    await expect(pill(page)).toHaveAttribute('data-collapsed', 'true');
+    // keyboard: the same button, focus kept, Entrée unfolds
+    await page.getByTestId('pill-fold').focus();
+    await page.keyboard.press('Enter');
+    await expect(pill(page)).toHaveAttribute('data-collapsed', 'false');
+    await expect(page.getByTestId('pill-fold')).toBeFocused();
+    await expect(page.getByTestId('pill-coach')).toBeVisible();
+    await page.keyboard.press('Space');
+    await expect(pill(page)).toHaveAttribute('data-collapsed', 'true');
+    await page.keyboard.press('Enter');
+    // unfolded again and saved before the reload (the save to the browser database is asynchronous)
+    await expect(pill(page)).toHaveAttribute('data-collapsed', 'false');
+    await page.waitForTimeout(500);
+    await page.reload();
+    await expect(pill(page)).toHaveAttribute('data-collapsed', 'false');
+    await expectActions(page, ['nouvelle-seance', 'objectifs', 'periode']);
   });
 
   test('au clavier : vrais boutons, focus visible, Entrée lance l’action', async ({ page }) => {
@@ -258,7 +368,7 @@ test.describe('393×851', () => {
     await page.keyboard.press('Enter');
     await expect(b).toHaveAttribute('aria-pressed', 'true');
     // the accessible name contains the visible word
-    for (const x of await pill(page).locator('button').all()) {
+    for (const x of await pill(page).locator('button.ap-btn').all()) {
       const label = ((await x.locator('.ap-label').textContent()) ?? '').trim();
       const name = (await x.getAttribute('aria-label')) ?? label;
       expect(name.startsWith(label)).toBe(true);
@@ -272,7 +382,7 @@ for (const vp of [
   { width: 412, height: 915 },
   { width: 851, height: 393 },
 ]) {
-  test(`placement ${vp.width}×${vp.height} : au-dessus de la navigation, à gauche de la bulle, rien de caché`, async ({ page }) => {
+  test(`placement ${vp.width}×${vp.height} : au-dessus de la navigation, coach dans la pilule, rien de caché`, async ({ page }) => {
     await page.setViewportSize(vp);
     await seed(page, { sessions: true, mastery: { jab: 'a-revoir' } });
     for (const r of ['/#/', '/#/techniques?d=boxe', '/#/techniques/jab?d=boxe', '/#/champions']) {
@@ -315,13 +425,16 @@ for (const scheme of ['dark', 'light'] as const)
       await expect(pill(page)).toBeVisible();
       const c = await pill(page).evaluate((p) => {
         const s = getComputedStyle(p);
-        const sec = p.querySelector('button:not(.primary)');
-        return { bg: s.backgroundColor, border: s.borderTopColor, ink: sec ? getComputedStyle(sec).color : null, prim: getComputedStyle(p.querySelector('button.primary')!).color };
+        const sec = p.querySelector('button[data-pill-action]:not(.primary)');
+        const coach = p.querySelector('[data-testid="pill-coach"]')!;
+        return { bg: s.backgroundColor, border: s.borderTopColor, ink: sec ? getComputedStyle(sec).color : null, prim: getComputedStyle(p.querySelector('button.primary')!).color, coach: getComputedStyle(coach.querySelector('.ap-label')!).color };
       });
       expect(c.bg).toBe(scheme === 'dark' ? 'rgb(31, 41, 55)' : 'rgb(255, 255, 255)');
       if (scheme === 'dark') expect(c.border).toBe('rgb(55, 65, 81)');
       expect(c.prim).toBe('rgb(255, 255, 255)');
       if (c.ink) expect(c.ink).toBe(scheme === 'dark' ? 'rgb(244, 244, 245)' : 'rgb(17, 18, 20)');
+      // 0.27: the Coach IA in gold, as the coach's identity
+      expect(c.coach).toBe(scheme === 'dark' ? 'rgb(212, 175, 55)' : 'rgb(125, 95, 34)');
       const axe = await new AxeBuilder({ page }).include('[data-testid="action-pill"]').withRules(['color-contrast', 'button-name', 'aria-allowed-attr', 'label-content-name-mismatch']).analyze();
       expect(axe.violations.map((v) => `${r} ${v.id}`)).toEqual([]);
       if (SHOTS) {

@@ -55,7 +55,22 @@ export interface Settings {
   defaultRestSec: number;
   /** kick-boxing rule set shown in the lists (K1, low kick, full contact) or every technique */
   kickboxingStyle: import('../domain/kickboxingStyles').KbStyleChoice;
+  /**
+   * 0.27 (Youssef, 2026-10-20 21:45: « prévoir une option pour enrouler / dérouler »): the action pill folded
+   * into its round handle. Unfolded by default; settings saved before 0.27 get the default through `merge`.
+   */
+  actionPillCollapsed: boolean;
+  /**
+   * 0.27 (Youssef, 2026-10-20 21:59: « Permet d'agrandir la fenêtre ia et de la réduire »): size of the Coach IA
+   * panel, the last one chosen. Normal by default; older saves get it through `merge`.
+   */
+  coachPanelSize: CoachPanelSize;
+  /** 0.27: the one-time tip « touche deux fois le coach pour le plein écran » was shown and dismissed (or used) */
+  stageFsHintSeen: boolean;
 }
+
+export type CoachPanelSize = 'reduit' | 'normal' | 'agrandi';
+export const COACH_PANEL_SIZES: readonly CoachPanelSize[] = ['reduit', 'normal', 'agrandi'];
 
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'auto',
@@ -76,6 +91,9 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultRoundSec: 180,
   defaultRestSec: 60,
   kickboxingStyle: 'tous',
+  actionPillCollapsed: false,
+  coachPanelSize: 'normal',
+  stageFsHintSeen: false,
 };
 
 interface SettingsState {
@@ -104,7 +122,8 @@ export const useSettings = create<SettingsState>()(
       // settings saved by an older version get the new fields with their default value
       merge: (saved, current) => {
         const s = (saved as { settings?: Partial<Settings> })?.settings ?? {};
-        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) } } };
+        const size = COACH_PANEL_SIZES.includes(s.coachPanelSize as CoachPanelSize) ? s.coachPanelSize : DEFAULT_SETTINGS.coachPanelSize;
+        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) } } };
       },
     },
   ),

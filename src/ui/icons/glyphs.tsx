@@ -448,6 +448,33 @@ export const GLYPHS = {
     </>
   ),
   back: <path d="M15 4.6 7.6 12l7.4 7.4" {...line} strokeWidth={2.8} />,
+  /** 0.27 Replier (action pill): a chevron pushed back against the edge it folds to */
+  fold: <path d="M4.2 4.6v14.8M18.4 4.6 11 12l7.4 7.4" {...line} strokeWidth={2.8} />,
+  /** 0.27 Agrandir la fenêtre (Coach IA panel): two arrows going out to the corners */
+  panelExpand: (
+    <>
+      <path d="M13.8 10.2 20 4M10.2 13.8 4 20" {...line} strokeWidth={2.4} />
+      <path d="M14.2 3.4h6.4v6.4M3.4 14.2v6.4h6.4" {...line} strokeWidth={2.4} />
+    </>
+  ),
+  /** 0.27 Réduire la fenêtre (Coach IA panel): two arrows coming in from the corners */
+  panelShrink: (
+    <>
+      <path d="M20.6 3.4l-6.2 6.2M3.4 20.6l6.2-6.2" {...line} strokeWidth={2.4} />
+      <path d="M14.4 4.2v5.4h5.4M9.6 19.8v-5.4H4.2" {...line} strokeWidth={2.4} />
+    </>
+  ),
+  /** 0.27 Quitter le plein écran: the four corners turned inwards */
+  exitFullscreen: <path d="M9 3v4.4A1.6 1.6 0 0 1 7.4 9H3M21 9h-4.4A1.6 1.6 0 0 1 15 7.4V3M15 21v-4.4a1.6 1.6 0 0 1 1.6-1.6H21M3 15h4.4A1.6 1.6 0 0 1 9 16.6V21" {...line} strokeWidth={2.6} />,
+  /** 0.27 Actions rapides (folded action pill): the pill itself, three actions punched in it */
+  quickActions: (
+    <>
+      <rect x="1.6" y="6.4" width="20.8" height="11.2" rx="5.6" fill={W} />
+      <circle cx="7.2" cy="12" r="1.9" fill={K} />
+      <circle cx="12" cy="12" r="1.9" fill={K} />
+      <circle cx="16.8" cy="12" r="1.9" fill={K} />
+    </>
+  ),
   chevron: <path d="m9 4.6 7.4 7.4L9 19.4" {...line} strokeWidth={2.8} />,
   chevronDown: <path d="M4.6 9 12 16.4 19.4 9" {...line} strokeWidth={2.8} />,
   close: <path d="M5.4 5.4l13.2 13.2M18.6 5.4 5.4 18.6" {...line} strokeWidth={2.8} />,

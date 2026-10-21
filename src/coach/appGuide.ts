@@ -64,7 +64,7 @@ export const APP_GUIDE: GuideEntry[] = [
     answer:
       'Combat Shadow Studio t’aide à t’entraîner seul, en shadow : ton coach en 3D (Kadir ou Amara) montre chaque mouvement et tu le fais en même temps, face à l’écran.\n' +
       'La barre du bas a cinq onglets : Accueil (ton coach, la séance recommandée et ta semaine), Entraîner (disciplines, programmes et tes enchaînements), Techniques (les fiches de chaque mouvement), Progrès (tes statistiques) et Légendes (des combinaisons inspirées de grands champions).\n' +
-      'Pour te lancer, touche « Commencer l’entraînement » sur l’accueil. Et si tu as une question, technique ou sur l’application, ouvre-moi avec la bulle en bas à droite.',
+      'Pour te lancer, touche « Commencer l’entraînement » sur l’accueil. Et si tu as une question, technique ou sur l’application, ouvre-moi avec le bouton « Coach » de la pilule en bas à gauche (ou la bulle en bas à droite sur les écrans sans pilule).',
     action: { to: '/entrainer', label: 'Aller à Entraîner' },
   },
   {
@@ -87,6 +87,8 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: [
       'pilule', 'pilule d actions', 'la pilule', 'actions rapides', 'icones flottantes', 'boutons flottants', 'icones en bas a gauche', 'boutons en bas a gauche',
       'bouton en bas a gauche', 'en bas a gauche', 'bouton rouge en bas', 'raccourcis', 'seance rapide', 'technique du jour', 'je la maitrise',
+      // 0.27: the Coach IA inside the pill, and folding it (Youssef, 2026-10-20 21:45)
+      'replier la pilule', 'deplier la pilule', 'enrouler la pilule', 'derouler la pilule', 'cacher la pilule', 'masquer la pilule', 'reduire la pilule', 'bouton rond en bas a gauche',
     ],
     answer:
       'En bas à gauche, juste au-dessus de la barre du bas, la pilule d’actions te donne les gestes les plus courants de l’écran où tu es. Chaque bouton a une icône et un mot, et le rouge, toujours en premier, est le plus utile.\n' +
@@ -96,7 +98,9 @@ export const APP_GUIDE: GuideEntry[] = [
       '• Fiche d’une technique : « S’entraîner » lance l’exercice de cette technique, « Ralenti » la montre au quart de sa vitesse, « Je la maîtrise » la marque comme assimilée (touche encore pour retirer la marque).\n' +
       '• Légendes : « S’entraîner » lance la combinaison de la carte du haut, « Combo du jour » y remet celle du jour, « Au hasard » en tire une autre ; sur la fiche d’une combinaison, « S’entraîner » et « Décomposer ».\n' +
       '• Progrès : « Nouvelle séance », « Objectifs » et « Période » (choisir tes propres dates).\n' +
-      'Pendant une séance, dans les réglages et sur ton profil, il n’y a pas de pilule : ces écrans ont leurs propres boutons. Et moi, je reste dans la bulle en bas à droite.',
+      'Le dernier bouton, « Coach », en doré, m’ouvre : je te réponds en sachant sur quel écran tu es.\n' +
+      'La petite flèche au bout de la pilule la replie en un bouton rond, pour libérer l’écran ; touche ce bouton rond pour la déplier. L’application se souvient de ton choix.\n' +
+      'Pendant une séance, dans les réglages et sur ton profil, il n’y a pas de pilule : ces écrans ont leurs propres boutons, et tu me trouves dans la bulle en bas à droite.',
   },
   {
     id: 'screen-accueil',
@@ -218,11 +222,13 @@ export const APP_GUIDE: GuideEntry[] = [
   {
     id: 'plein-ecran',
     title: 'Le plein écran',
-    keywords: ['plein ecran', 'fullscreen', 'mode immersif', 'masquer les commandes', 'agrandir le coach'],
+    keywords: ['plein ecran', 'fullscreen', 'mode immersif', 'masquer les commandes', 'agrandir le coach', 'double tap', 'double clic', 'toucher deux fois', 'touche deux fois', 'tout l ecran'],
     screens: ['entrainement'],
     answer:
-      'Dans le studio, le bouton plein écran (sous « Caméra », à droite du coach) passe en plein écran et masque les commandes secondaires : il ne reste que le coach et l’essentiel.\n' +
-      'Touche-le de nouveau quand tu veux revenir à l’affichage normal.',
+      'Touche deux fois le coach en 3D, rapidement : il passe en plein écran total, seul sur tout l’écran. Ça marche à l’entraînement, sur l’accueil, sur la fiche d’une technique et dans l’atelier de ton combattant. Dans le studio, le bouton plein écran (sous « Caméra », à droite du coach) fait la même chose.\n' +
+      'Pendant la séance, elle continue : le bouton principal reste en bas, et les commandes s’effacent au bout de quelques secondes ; touche l’écran une fois pour les faire revenir.\n' +
+      'Pour sortir : touche deux fois de nouveau, le bouton « Quitter le plein écran » en haut à droite, Échap sur un clavier, ou le bouton retour d’Android.\n' +
+      'Glisser pour tourner autour du coach ou pincer pour zoomer ne déclenche jamais le plein écran.',
   },
   {
     id: 'ar',
@@ -277,7 +283,7 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['catalogue', 'bibliotheque', 'liste des techniques', 'trouver une technique', 'chercher une technique', 'onglet techniques', 'categories', 'filtre par categorie', 'vignette', 'vignettes', 'tuile', 'tuiles'],
     screens: ['techniques'],
     answer:
-      'L’onglet Techniques est ta bibliothèque. En haut, six sections : Techniques, Combinaisons, Légendes, Créateur, Favoris et Programmes.\n' +
+      'L’onglet Techniques est ta bibliothèque. En haut, cinq sections : Techniques, Combinaisons, Créateur, Favoris et Programmes. Les Légendes ont leur propre onglet dans la barre du bas.\n' +
       'Dans Techniques, choisis la discipline, puis une catégorie si tu veux (poings, pieds, défenses…). Touche une vignette pour ouvrir la fiche.\n' +
       'L’étoile signale un favori, et un liseré coloré en bas de la vignette montre ta marque : vert pour « Assimilée », orange pour « Encore du mal ». Le filtre « À revoir » les regroupe.\n' +
       'Dans certaines disciplines, une section « Avec un partenaire réel » explique des techniques à faire au club.',
@@ -561,6 +567,17 @@ export const APP_GUIDE: GuideEntry[] = [
     action: { to: '/profil', label: 'Ouvrir mon profil' },
   },
   {
+    // 0.27 (Youssef, 2026-10-20 21:45: « un calcul imc auto avec recommandation et jauge dans le profil »)
+    id: 'imc',
+    title: 'Ton IMC dans le profil',
+    keywords: ['imc', 'mon imc', 'l imc', 'indice de masse corporelle', 'masse corporelle', 'calcul imc', 'calculer mon imc', 'calcul de l imc', 'corpulence', 'surpoids', 'obesite', 'jauge imc', 'jauge', 'taille et poids', 'ma taille et mon poids'],
+    answer:
+      'Dans ton profil, section Informations personnelles, la carte « Ton IMC » se calcule toute seule dès que tu indiques ta taille et ton poids : le poids en kilos divisé par la taille en mètres au carré, arrondi à une décimale.\n' +
+      'Une jauge de 15 à 40 montre où tu te situes sur l’échelle adulte de l’OMS (insuffisance pondérale, corpulence normale, surpoids, obésité), avec le chiffre et le nom de la zone, et un conseil d’entraînement adapté.\n' +
+      'C’est un simple repère : l’IMC ne fait pas la différence entre le muscle et la graisse (beaucoup de combattants musclés sont classés « surpoids »), il ne s’applique pas avant 18 ans ni pendant une grossesse, et il ne remplace pas l’avis d’un médecin. Tes mesures restent sur ton appareil.',
+    action: { to: '/profil', label: 'Ouvrir mon profil' },
+  },
+  {
     id: 'offline',
     title: 'Utiliser l’application hors ligne',
     keywords: ['hors ligne', 'hors connexion', 'sans internet', 'sans connexion', 'sans reseau', 'offline', 'mode avion', 'wifi', '4g', 'installer l application', 'installer'],
@@ -572,15 +589,16 @@ export const APP_GUIDE: GuideEntry[] = [
     id: 'coach-ia',
     title: 'Le coach IA',
     keywords: [
-      'coach ia', 'l ia', 'ia', 'intelligence artificielle', 'assistant', 'la bulle', 'bulle', 'historique du coach', 'reponses courtes', 'reponses detaillees', 'longueur des reponses',
+      'coach ia', 'l ia', 'ia', 'intelligence artificielle', 'assistant', 'la bulle', 'bulle', 'historique du coach', 'reduire le coach', 'agrandir la fenetre', 'reduire la fenetre', 'taille de la fenetre', 'reponses courtes', 'reponses detaillees', 'longueur des reponses',
       'voix haute', 'lire les reponses', 'saisie vocale', 'micro', 'dicter', 'reglages du coach', 'comment tu marches', 'comment tu fonctionnes', 'tu fonctionnes comment',
     ],
     screens: ['coach-ia'],
     answer:
       'Je suis le coach IA de l’application. Je réponds directement sur ton appareil, à partir de la bibliothèque validée, même sans internet.\n' +
       'Je ne te vois pas : je ne corrige pas ton geste, mais j’explique, je montre une démo ou un ralenti, je propose des exercices et je t’explique l’application. Je sais aussi sur quel écran tu m’appelles.\n' +
-      'Tu me trouves dans la bulle en bas à droite, et avec le bouton « Coach » pendant une séance (elle se met en pause).\n' +
-      'Mes réglages (lien « Historique » de mon panneau) : réponses courtes ou détaillées, lecture à voix haute, historique (désactivé par défaut) et saisie vocale du navigateur, qui passe en ligne et reste désactivée tant que tu ne l’actives pas.',
+      'Tu me trouves avec le bouton « Coach » de la pilule en bas à gauche sur les écrans qui en ont une, sinon dans la bulle en bas à droite ; pendant une séance, la bulle est dans le coin de la scène et m’ouvrir met la séance en pause.\n' +
+      'Les deux boutons en haut de mon panneau le réduisent (la première ligne de ma réponse et ta question) ou l’agrandissent (presque tout l’écran, pour lire confortablement) ; tu peux aussi glisser la petite barre du haut. Je garde la taille que tu as choisie.\n' +
+      'Mes réglages (icône Historique, l’horloge en haut de mon panneau) : réponses courtes ou détaillées, lecture à voix haute, historique (désactivé par défaut) et saisie vocale du navigateur, qui passe en ligne et reste désactivée tant que tu ne l’actives pas.',
     action: { to: '/coach-ia', label: 'Réglages du coach' },
   },
 ];

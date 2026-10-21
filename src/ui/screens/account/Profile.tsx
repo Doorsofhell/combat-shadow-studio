@@ -27,6 +27,7 @@ import type { SignInMethod } from '../../../account/auth/types';
 import { DisciplineLabel, Chip, ConfirmDialog, LinkRow, PageHead, Panel, PanelRow, Segmented, Sheet, StatTile, Toggle, toast } from '../../components';
 import { AppIcon, type GlyphId } from '../../icons';
 import { PasswordField } from './SignIn';
+import { BmiCard } from './BmiCard';
 import './account.css';
 
 const METHOD_LABEL: Record<SignInMethod, string> = { password: 'E-mail et mot de passe', 'google.com': 'Google' };
@@ -257,6 +258,7 @@ export function ProfilePage() {
             <NumField id="pf-poids" label="Poids" unit="kg" value={profile.weightKg} min={20} max={300} onChange={(v) => update({ weightKg: v })} />
           </div>
           <p className="small muted">Facultatif. Ces mesures servent seulement à ton suivi : l’application n’en tire aucune conclusion sur ta santé ni ton aptitude.</p>
+          <BmiCard heightCm={profile.heightCm} weightKg={profile.weightKg} age={birthAge ?? profile.age} />
         </div>
         <PanelRow label="Avatar" column>
           <Segmented

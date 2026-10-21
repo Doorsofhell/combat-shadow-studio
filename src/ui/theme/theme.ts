@@ -1,6 +1,6 @@
 /**
- * Menu theme: light, dark or automatic (follows the system, live). The training studio stays white
- * whatever the choice. The choice is saved with the device settings and mirrored in localStorage so
+ * Menu theme: light, dark or automatic (follows the system, live). Since 0.27 the training studio follows
+ * it too (dark or pearl grey). The choice is saved with the device settings and mirrored in localStorage so
  * the inline script of index.html applies it before the first paint (no flash).
  */
 export type ThemePref = 'auto' | 'clair' | 'sombre';
@@ -9,7 +9,11 @@ export type ResolvedTheme = 'light' | 'dark';
 export const THEME_KEY = 'css-theme';
 /** status bar colour of each theme; must match --c-bg in styles.css */
 export const THEME_BG: Record<ResolvedTheme, string> = { dark: '#0b0f14', light: '#f4f5f7' };
-export const STUDIO_BG = '#ffffff';
+/**
+ * status bar colour of the training studio; 0.27 (Youssef, 2026-10-20 21:48, « Suit le thème »): it follows the
+ * menu theme, anthracite or pearl grey; must match --bg of .training in training.css and index.html
+ */
+export const STUDIO_BG: Record<ResolvedTheme, string> = { dark: '#0b0f14', light: '#eef0f3' };
 
 const mq = () => (typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: light)') : null);
 

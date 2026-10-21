@@ -963,3 +963,111 @@ contexte de l’écran ; icône claire »). Maquette C « Pilule d’actions » 
   réussis, 1 non exécuté, sur 3 passages — TEST RÉUSSI. Playwright complet après le correctif de contraste : 113
   réussis, 2 non exécutés (Firebase), 1 échec — training-layout « demander au coach » (instable connu depuis la
   0.23) ; relancé seul 5 fois : 4 réussis, 1 échec — instabilité à traiter dans un lot dédié.
+
+
+## 2026-10-21 · v0.27.0 · Coach IA dans la pilule, IMC du profil, studio qui suit le thème, fenêtre du coach, plein écran au double tap
+
+Demandes de Youssef du 2026-10-20 : 21:45 « Il faut intégrer le coach ia dans la barre d'icône dynamique. Il faut
+prévoir une option pour enrôuler dérouler. … Intègre aussi un calcul imc auto avec recommandation et jauge dans le
+profil » ; 21:48, choix « Suit le thème » pour le fond du studio d’entraînement ; 21:56 « Retire légendes des
+techniques vu qu'ils ont leur menu » ; 21:59 « Permet d'agrandir la fenêtre ia et de la réduire. Rends la stylé » ;
+22:09 « Un double clique sur la fenêtre du coach permet un plein écran total, étudie et fait le intelligemment et de
+manière user friendly ».
+
+- **Coach IA dans la pilule** — Constat : deux points d’entrée flottants (pilule à gauche, bulle à droite) sur les
+  écrans à pilule. Correction : sur l’accueil, les Techniques, la fiche technique, les Légendes et Progrès, le
+  dernier bouton de la pilule est « Coach » (icône coach + mot, doré comme l’identité du coach, séparé des actions
+  de l’écran par un filet) ; il ouvre exactement le même panneau Coach IA avec le même contexte d’écran (questions de
+  l’écran, technique, discipline, actions). La bulle n’est alors pas dessinée (un seul point d’entrée). Ouvert depuis
+  la pilule, le panneau descend à la place de la pilule (cachée pendant ce temps, règle de la 0.26) ; à la
+  fermeture (bouton ou Échap), le focus revient sur « Coach ». Sans pilule (réglages, profil, connexion, page Coach,
+  Entraîner, entraînement…), la bulle reste inchangée, y compris l’hôte de l’entraînement (pause à l’ouverture,
+  actions sur le lecteur). Sans bulle à côté, la pilule peut prendre toute la largeur ; sur petit écran un mot long
+  passe sur deux lignes au lieu de déborder. Fichiers : components/ActionPill.tsx, coach-ai/CoachBubble.tsx,
+  styles.css.
+- **Replier / déplier la pilule** — Un petit chevron (icône originale `fold`) au bout droit replie la pilule en une
+  poignée ronde (58 px, icône originale `quickActions`, en bas à gauche au-dessus de la navigation) ; la poignée la
+  déplie. Même bouton dans les deux états (le focus reste dessus), `aria-expanded`, « Replier les actions » /
+  « Déplier les actions », animation courte, rien sous `prefers-reduced-motion`. Le choix est un réglage de
+  l’utilisateur (`actionPillCollapsed`, défaut déplié, ajouté par `merge` aux réglages déjà enregistrés, aucune clé
+  supprimée). Fichiers : store/settings.ts (+ test), icons/glyphs.tsx, icons/registry.ts.
+- **IMC dans le profil** — Fonction pure `src/domain/bmi.ts` : IMC = poids (kg) / taille (m)², arrondi à une
+  décimale ; catégories adultes de l’OMS lues sur la valeur affichée (< 18,5 insuffisance pondérale ; 18,5 à 24,9
+  corpulence normale ; 25 à 29,9 surpoids ; 30 à 34,9 / 35 à 39,9 / ≥ 40 obésité classes I, II, III), un conseil
+  d’entraînement bienveillant par catégorie (progressivité, hydratation, avis d’un médecin pour les valeurs basses ou
+  hautes), aucun chiffre inventé. Toujours affiché : l’IMC ne distingue pas muscle et graisse (les combattants
+  musclés sont souvent « surpoids »), ne vaut ni avant 18 ans ni pendant une grossesse. Âge < 18 (date de naissance
+  ou âge du profil) : la valeur, sans catégorie ni jauge, avec « l’échelle adulte ne s’applique pas ». Mesure
+  manquante : une indication ; hors plage plausible (taille 100 à 250 cm, poids 25 à 300 kg) : « Vérifie ta taille et
+  ton poids ». Carte « Ton IMC » sous la taille et le poids (mise à jour à la saisie) : valeur, badge de catégorie,
+  jauge 15 → 40 à zones colorées (jetons existants info/ok/warn/orange) et nommées dans une légende, repère avec le
+  nombre, `role="meter"` avec `aria-valuetext` (« IMC 23,1 : corpulence normale »). Les mesures restent dans le profil
+  local. Guide du Coach IA : nouvelle entrée « Ton IMC dans le profil ». Fichiers : domain/bmi.ts (+ test),
+  screens/account/BmiCard.tsx, Profile.tsx, account.css, coach/appGuide.ts (+ test).
+- **Studio d’entraînement qui suit le thème** — Constat : studio toujours blanc. Correction (choix de Youssef
+  21:48) : thème sombre anthracite (#0B0F14, halo discret au sol), thème clair gris perle (#EEF0F3 → #E3E6EA), unis
+  et sobres. Les alias de couleur du studio sont redéfinis par thème ; les surfaces propres au studio (boutons sur la
+  scène, étiquette de phase, feuilles, légende des repères) passent par des jetons `--tr-*`. Le canvas 3D est
+  transparent au-dessus du fond de la scène (backdrop `theme` de CoachStage), avec l’éclairage sombre du héros de
+  l’accueil en thème sombre ; repères au sol neutres éclaircis sur sol sombre. Barre d’état : #0B0F14 / #EEF0F3
+  (index.html avant le premier affichage et App.tsx). Corrigé au passage : la règle de la puce chronomètre de la RA
+  s’appliquait à tout le studio (texte clair sur blanc en sombre) ; elle est limitée au calque RA. Fichiers :
+  training/training.css, three/CoachStage.tsx, three/GroundMarks.tsx, theme/theme.ts, App.tsx, index.html,
+  screens/Training.tsx.
+- **Légendes retirées de Techniques** — La section « Légendes » de l’onglet Techniques est supprimée (cinq sections :
+  Techniques, Combinaisons, Créateur, Favoris, Programmes) ; l’ancien lien `/techniques?tab=legendes` redirige
+  (remplacement) vers l’onglet Légendes. Guide du Coach IA mis à jour. Fichiers : screens/Library.tsx,
+  coach/appGuide.ts.
+- **Fenêtre du Coach IA : trois tailles, nouveau style** — Réduit (première ligne de la réponse et le champ, le coach
+  reste visible), normal, agrandi (presque tout l’écran au-dessus de la navigation ; à l’entraînement, toute la
+  scène, séance en pause). Boutons de l’en-tête avec icônes originales `panelShrink` / `panelExpand`, « Réduire la
+  fenêtre du coach » / « Agrandir la fenêtre du coach », `aria-expanded`, `aria-disabled` aux extrémités (le focus
+  ne se perd pas) ; glisser la poignée vers le haut / le bas ; double tap sur l’en-tête : normal ↔ agrandi. Taille
+  mémorisée (`coachPanelSize`, défaut normal, valeur inconnue ramenée à normal). Style : verre sombre (#111720 à
+  94 %, flou si disponible, opaque sinon) en thème sombre, blanc givré en thème clair ; liseré doré en haut, pastille
+  coach dorée, coins 20 px, réponse sur fond plein avec filet doré, cartes de suggestions arrondies, petit ressort
+  court à chaque changement de taille, rien sous `prefers-reduced-motion`. « Historique » devient une icône (même
+  lien, nom accessible « Historique et réglages du coach »). Tous les identifiants de test sont gardés
+  (`coach-expand` est le bouton Agrandir). Fichiers : coach-ai/CoachAskPanel.tsx, coachAi.css, CoachBubble.tsx,
+  styles.css, training.css.
+- **Plein écran total au double tap** (interprétation par défaut, à confirmer par Youssef) — Un double tap rapide
+  (2 appuis < 300 ms d’écart, < 10 px de mouvement, appui < 280 ms, jamais à deux doigts, jamais sur un bouton ou le
+  panneau du coach) sur une vue 3D du coach (entraînement, fiche technique, héros de l’accueil, atelier du
+  combattant) affiche cette vue seule sur tout l’écran : API plein écran (repli webkit), et sinon (iPhone Safari) un
+  calque fixe qui couvre navigation et pilule. Le canvas se redimensionne et le cadrage suit. Les commandes posées
+  sur la vue s’effacent après 2,5 s et reviennent d’un tap ; sortie par le bouton « Quitter le plein écran » (icône
+  originale `exitFullscreen`), Échap, un nouveau double tap, ou le bouton retour d’Android (traité avant de quitter
+  la page). À l’entraînement, c’est le mode immersif existant qui devient ce plein écran total (un seul mode, même
+  bouton) : la séance continue, le bouton principal flotte en bas de la scène. Le glisser pour tourner, le pincer
+  pour zoomer et le balayage entre fiches ne déclenchent rien. Astuce unique « Astuce : touche deux fois le coach
+  pour le plein écran », fermable, mémorisée (`stageFsHintSeen`), aussi marquée vue au premier double tap.
+  Fichiers : fullscreen/doubleTap.ts (+ test), fullscreen/useStageFullscreen.ts, fullscreen/FullscreenStage.tsx,
+  platform/native.ts, screens/Home.tsx, screens/Library.tsx, screens/coach/Preview.tsx, coach-studio.css,
+  screens/Training.tsx, training.css, styles.css, coach/appGuide.ts.
+- **Tests** : tsc -b OK — TEST RÉUSSI. Vitest : 430 réussis, 1 non exécuté (existant) — TEST RÉUSSI ; nouveaux :
+  domain/bmi (8 : calcul, catégories OMS, limites, mineurs, données manquantes ou hors limites), fullscreen/doubleTap
+  (8 : double tap, appuis lents, glisser, appui long, second doigt), réglages (pilule repliée, taille du coach,
+  astuce, valeurs anciennes ou inconnues), guide (IMC, pilule, plein écran, plus de « Légendes » dans Techniques).
+  Playwright complet (134) : 130 réussis, 2 non exécutés (émulateurs Firebase, NON EXÉCUTÉ), 2 échecs liés aux
+  tests eux-mêmes — action-pill « replier / déplier » (poignée mesurée en pleine animation, puis rechargement avant
+  la fin de l’enregistrement) et coach-panel-size « à l’entraînement » (rechargement avant l’enregistrement de la
+  taille) ; corrigés en attendant la fin de l’animation et l’enregistrement (aucune vérification retirée), puis
+  action-pill + coach-panel-size relancés : 22 réussis + « replier » 3 fois sur 3 — TEST RÉUSSI. training-layout (y
+  compris « demander au coach ») réussi au premier passage. Nouveaux ou étendus : action-pill (Coach dans la
+  pilule, bulle absente des écrans à pilule, replier/déplier mémorisé et au clavier), coach-bubble (commentaires
+  Youssef 2026-10-20 21:45 et 21:56 : bulle remplacée par « Coach » sur les écrans à pilule, onglet Légendes retiré
+  de Techniques et redirection), theme (studio clair #eef0f3 / sombre #0b0f14, balise theme-color, canvas
+  transparent), profile-imc (nouveau), coach-panel-size (nouveau), fullscreen-dbltap (nouveau, 7 tests : accueil,
+  fiche, entraînement 360×640 et paysage 740×360, glisser, appuis lents, astuce mémorisée). Captures 393×851 sombre
+  et clair : accueil (pilule, pilule repliée, astuce, coach ouvert, réduit, agrandi, plein écran), profil (IMC),
+  entraînement avant/après, coach réduit/normal/agrandi à l’entraînement, plein écran avec et sans commandes.
+- **Limites** : pas de validation sur téléphone (NON EXÉCUTÉ, à faire par Youssef), en particulier le plein écran
+  natif sur Android et le calque de repli sur iPhone (l’API plein écran n’y existe pas pour un élément) ; le double
+  tap est mon interprétation de « double clique sur la fenêtre du coach » (vue 3D du coach = plein écran ; en-tête de
+  la fenêtre Coach IA = normal ↔ agrandi) — à confirmer ; dans les tests (rendu logiciel lent), la sortie par le
+  bouton se fait au clavier car les commandes s’effacent avant le clic ; l’IMC reste un repère pour adultes, sans
+  avis médical, et le texte « Facultatif… aucune conclusion sur ta santé » du profil est conservé tel quel ; les
+  catégories d’IMC des moins de 18 ans (courbes de croissance) ne sont pas calculées.
+- **Vérification finale** : en plein écran à l’entraînement, la bulle du coach chevauchait le bouton « Reprendre » ;
+  elle est remontée juste au-dessus. fullscreen-dbltap + training-layout + coach-bubble relancés : 24 réussis —
+  TEST RÉUSSI ; tsc et Vitest repassés après ce lot.

@@ -1,7 +1,7 @@
 import { expect, Page, test } from '@playwright/test';
 import { DEFAULT_PROFILE } from '../../src/store/profile';
 
-/** Menu themes: Clair / Sombre / Automatique, remembered, live system switching, no flash, white studio. */
+/** Menu themes: Clair / Sombre / Automatique, remembered, live system switching, no flash, a training studio that follows the theme (0.27). */
 async function seed(page: Page) {
   await page.goto('/icons/icon.svg');
   await page.evaluate(async (profile) => {
@@ -55,8 +55,11 @@ test('choix manuel mémorisé, prioritaire sur le système, appliqué avant le p
   expect(await theme(page)).toBe('dark');
 });
 
+// 0.27: Youssef chose « Suit le thème » for the training studio (2026-10-20 21:48): it is no longer always white,
+// it is anthracite in the dark theme and soft pearl grey in the light theme (status bar included)
+const STUDIO = { Clair: { bg: 'rgb(238, 240, 243)', meta: '#eef0f3' }, Sombre: { bg: 'rgb(11, 15, 20)', meta: '#0b0f14' } } as const;
 for (const pref of ['Clair', 'Sombre'] as const) {
-  test(`le studio d’entraînement reste blanc en thème ${pref}`, async ({ page }) => {
+  test(`le studio d’entraînement suit le thème ${pref}`, async ({ page }) => {
     await seed(page);
     await page.goto('/#/reglages');
     await page.getByRole('radio', { name: pref }).click();
@@ -64,8 +67,22 @@ for (const pref of ['Clair', 'Sombre'] as const) {
     await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
     const tr = page.locator('.training');
     await expect(tr).toBeVisible();
-    expect(await tr.evaluate((e) => getComputedStyle(e).backgroundColor)).toBe('rgb(255, 255, 255)');
-    expect(await page.locator('meta[name="theme-color"]').getAttribute('content')).toBe('#ffffff');
+    expect(await tr.evaluate((e) => getComputedStyle(e).backgroundColor)).toBe(STUDIO[pref].bg);
+    expect(await page.locator('meta[name="theme-color"]').getAttribute('content')).toBe(STUDIO[pref].meta);
+    // the 3D canvas is see-through over the stage's own background, so both match
+    await expect(page.locator('.tr-stage canvas')).toBeVisible();
+    const layers = await page.locator('.tr-stage canvas').evaluate((c) => {
+      const out: string[] = [];
+      for (let e: Element | null = c; e && !e.classList.contains('tr-stage'); e = e.parentElement) out.push(getComputedStyle(e).backgroundColor);
+      return out;
+    });
+    for (const b of layers) expect(b).toBe('rgba(0, 0, 0, 0)');
+    const stageBg = await page.locator('.tr-stage').evaluate((e) => getComputedStyle(e).backgroundImage);
+    expect(stageBg).toContain(pref === 'Sombre' ? 'rgb(11, 15, 20)' : 'rgb(227, 230, 234)');
+    // a reload on the training screen starts with the right status bar colour (index.html, before the first paint)
+    await page.reload();
+    await expect(tr).toBeVisible();
+    expect(await page.locator('meta[name="theme-color"]').getAttribute('content')).toBe(STUDIO[pref].meta);
   });
 }
 

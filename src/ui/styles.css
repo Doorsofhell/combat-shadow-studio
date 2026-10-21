@@ -1181,6 +1181,10 @@ input[type='range'] {
   position: absolute;
   inset: 0;
 }
+.hero-stage-3d {
+  position: absolute;
+  inset: 0;
+}
 
 .hero-fade {
   position: absolute;
@@ -2813,13 +2817,26 @@ details.fold > summary h3 { margin: 0; }
   max-width: 420px;
   max-height: min(70vh, 560px);
   overflow-y: auto;
-  border-radius: 18px;
+  border-radius: 20px;
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
   z-index: 31;
   animation: bubble-in 0.18s ease-out;
 }
 @keyframes bubble-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .coach-bubble-panel { animation: none; } }
+/* 0.27: opened from the action pill, the panel comes down to where the pill was (the pill hides meanwhile) */
+.coach-bubble-panel.from-pill { bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 10px); }
+/* 0.27 sizes (Youssef, 2026-10-20 21:59): agrandi takes nearly the whole screen above the navigation */
+.coach-bubble-panel.size-agrandi {
+  top: calc(max(12px, env(safe-area-inset-top)) + 6px);
+  max-height: none;
+  max-width: 640px;
+  margin-right: auto;
+  display: flex;
+  overflow: visible;
+}
+.coach-bubble-panel.size-agrandi .cai-panel { max-width: none; }
+.coach-bubble-panel.size-reduit { max-height: none; overflow: visible; }
 /* 0.25 technique sheet: previous / next technique of the list, right under the 3D stage */
 .tech-step {
   display: flex;
@@ -3014,8 +3031,8 @@ details.fold > summary h3 { margin: 0; }
   position: fixed;
   left: max(16px, env(safe-area-inset-left));
   bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px);
-  /* stops 12px before the bubble (16px margin + 52px bubble) */
-  max-width: calc(100vw - max(16px, env(safe-area-inset-left)) - max(16px, env(safe-area-inset-right)) - 52px - 12px);
+  /* 0.27: the Coach IA is inside the pill, there is no bubble beside it any more */
+  max-width: calc(100vw - max(16px, env(safe-area-inset-left)) - max(16px, env(safe-area-inset-right)));
   height: 64px;
   padding: 0 5px;
   display: flex;
@@ -3051,7 +3068,9 @@ details.fold > summary h3 { margin: 0; }
   -webkit-tap-highlight-color: transparent;
   transition: background-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
-.ap-btn .ap-label { white-space: nowrap; }
+/* 0.27: with the Coach IA in the pill, a long word may go on two lines on small phones (never cut, never over the next button) */
+.ap-btn { min-width: max(52px, min-content); flex: 0 1 auto; }
+.ap-btn .ap-label { white-space: normal; text-align: center; max-width: 9em; }
 .ap-btn:hover { background: var(--surface-2); }
 .ap-btn:active { transform: scale(0.95); }
 .ap-btn.primary { background: var(--red); color: var(--on-red); }
@@ -3059,7 +3078,141 @@ details.fold > summary h3 { margin: 0; }
 /* an on / off action that is on (a filter, a state): ring in the accent colour, the text keeps its contrast */
 .ap-btn.on:not(.primary) { background: var(--surface-2); box-shadow: inset 0 0 0 2px var(--red); }
 .ap-btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 1px; }
+/* 0.27 the Coach IA in the pill (Youssef, 2026-10-20 21:45): last action, gold accent like the coach's
+   distinctions, a thin line apart from the screen's own actions */
+.ap-btn.coach { color: var(--gold); position: relative; margin-left: 3px; }
+.ap-btn.coach::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 12px;
+  bottom: 12px;
+  width: 1px;
+  background: var(--pill-edge);
+}
+.ap-btn.coach .ap-label { color: var(--gold); }
+/* fold / unfold: a small chevron at the right end; folded, the pill is one round handle (same place) */
+.ap-fold {
+  flex: none;
+  width: 44px;
+  height: 46px;
+  border: 0;
+  border-radius: 23px;
+  background: transparent;
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.ap-fold:hover { background: var(--surface-2); color: var(--ink); }
+.ap-fold:focus-visible { outline: 3px solid var(--ink); outline-offset: 1px; }
+.action-pill.folded { width: 58px; height: 58px; padding: 0; justify-content: center; animation: pill-fold-in var(--t-med) var(--ease) both; }
+.action-pill.folded .ap-fold { width: 48px; height: 48px; border-radius: 50%; color: var(--ink); }
+.action-pill:not(.folded) > .ap-btn { animation: pill-item-in var(--t-med) var(--ease) both; }
+@keyframes pill-fold-in { from { opacity: 0.4; transform: scale(0.8); } to { opacity: 1; transform: none; } }
+@keyframes pill-item-in { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .action-pill.folded, .action-pill:not(.folded) > .ap-btn { animation: none; }
+}
 @media (max-height: 520px) {
   .action-pill { height: 54px; }
   .ap-btn { height: 46px; }
+  .action-pill.folded { width: 54px; height: 54px; }
+  .action-pill.folded .ap-fold { width: 44px; height: 44px; }
+}
+
+/* -------------------------------------------------- 0.27 total fullscreen of a 3D coach view (double tap)
+   (Youssef, 2026-10-20 22:09). Fullscreen API where it exists; elsewhere a fixed layer over the whole page,
+   above the navigation and the pill. Controls marked .fs-ui fade out after 2.5 s, a tap brings them back. */
+.stage-fs {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  z-index: 1000;
+  background: var(--scene);
+}
+html.stage-fs-open,
+html.stage-fs-open body {
+  overflow: hidden;
+}
+.fs-ui {
+  transition: opacity 0.25s ease;
+}
+.stage-fs.fs-idle .fs-ui {
+  opacity: 0;
+  pointer-events: none;
+}
+.fs-exit {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 6;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(11, 15, 20, 0.78);
+  color: #f4f4f5;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.fs-exit:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+/* the one-time tip: small, solid, at the top of the view between its corner tools */
+.fs-hint {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  width: max-content;
+  max-width: min(270px, calc(100% - 172px));
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 4px 4px 10px;
+  border-radius: 12px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-line-strong);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+  color: var(--c-text);
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.25;
+  animation: fade-in var(--t-med) var(--ease) both;
+}
+.fs-hint-close {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--c-text-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.fs-hint-close:hover { color: var(--c-text); }
+/* home hero: its « Changer de coach » chip is top right, the tip goes top left */
+.hero-stage .fs-hint {
+  left: max(16px, var(--gutter, 16px));
+  transform: none;
+  top: 12px;
+  max-width: calc(100% - 210px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fs-ui { transition: none; }
+  .fs-hint { animation: none; }
 }

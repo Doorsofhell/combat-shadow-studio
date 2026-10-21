@@ -1,39 +1,123 @@
-/* Coach IA : panneau compact de l’écran d’entraînement (clair, via .light-scope) et écran d’historique. */
+/* Coach IA : panneau (bulle, pilule d’actions, écran d’entraînement) et écran d’historique. */
 
+/*
+ * 0.27 (Youssef, 2026-10-20 21:59: « Rends la stylé »): premium glass panel. Dark theme: anthracite glass over
+ * the screen (blur where supported, opaque otherwise), light theme: frosted white. Every text sits on a solid
+ * backing (answer box, cards, field) or on the panel itself, which is nearly opaque. The gold line on top and the
+ * gold avatar chip are the coach's identity. Its tokens are its own, so it reads the same over the menus and
+ * over the training studio.
+ */
 .cai-panel {
+  --bg: #0b0f14;
+  --ink: #f4f4f5;
+  --ink-2: #d1d5db;
+  --muted: #9ca3af;
+  --line: rgba(255, 255, 255, 0.12);
+  --soft: #1f2937;
+  --red: #e11d2f;
+  --red-ink: #ff6b77;
+  --red-soft: rgba(225, 29, 47, 0.2);
+  --gold: #d4af37;
+  --gold-soft: rgba(212, 175, 55, 0.16);
+  --cai-glass: rgba(17, 23, 32, 0.94);
+  --cai-card: #1f2937;
+  --cai-card-hover: #283445;
+  --cai-shadow: 0 18px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  color-scheme: dark;
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 8px;
   width: 100%;
   max-width: 560px;
   max-height: min(52dvh, 420px);
-  padding: 10px 12px 12px;
-  border-radius: var(--radius);
-  background: var(--bg);
+  padding: 14px 12px 12px;
+  border-radius: 20px;
+  background: var(--cai-glass);
   border: 1px solid var(--line);
-  box-shadow: 0 8px 28px rgba(17, 18, 20, 0.14);
+  box-shadow: var(--cai-shadow);
   color: var(--ink);
   font-size: 0.95rem;
-  animation: cai-in var(--t-med) var(--ease) both;
+  overflow: hidden;
+  animation: cai-in-normal 240ms cubic-bezier(0.2, 1.25, 0.4, 1) both;
 }
-
-@keyframes cai-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
+:root[data-theme='light'] .cai-panel {
+  --bg: #ffffff;
+  --ink: #111214;
+  --ink-2: #3d4046;
+  --muted: #5f646c;
+  --line: rgba(17, 18, 20, 0.12);
+  --soft: #f3f4f6;
+  --red-ink: #c41f35;
+  --red-soft: #fdecef;
+  --gold: #7d5f22;
+  --gold-soft: rgba(125, 95, 34, 0.12);
+  --cai-glass: rgba(255, 255, 255, 0.95);
+  --cai-card: #f3f4f6;
+  --cai-card-hover: #eceef2;
+  --cai-shadow: 0 18px 44px rgba(17, 18, 20, 0.18), 0 0 0 1px rgba(17, 18, 20, 0.04);
+  color-scheme: light;
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .cai-panel {
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: blur(18px) saturate(140%);
   }
 }
+/* gold line of the coach, along the top edge */
+.cai-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 18px;
+  right: 18px;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(90deg, transparent, var(--gold) 20%, var(--gold) 80%, transparent);
+  pointer-events: none;
+}
+
+/* the size change replays a short spring (a new animation name restarts it) */
+.cai-panel.size-reduit { animation-name: cai-in-reduit; }
+.cai-panel.size-agrandi { animation-name: cai-in-agrandi; }
+@keyframes cai-in-normal { from { opacity: 0.6; transform: translateY(10px) scale(0.985); } }
+@keyframes cai-in-reduit { from { opacity: 0.6; transform: translateY(-6px) scale(0.99); } }
+@keyframes cai-in-agrandi { from { opacity: 0.6; transform: translateY(14px) scale(0.98); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .cai-panel {
+  .cai-panel,
+  .cai-panel.size-reduit,
+  .cai-panel.size-agrandi {
     animation: none;
   }
+}
+
+/* grab handle: drag up to enlarge, down to reduce (the header buttons do the same) */
+.cai-grab {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 72px;
+  height: 16px;
+  margin-left: -36px;
+  display: grid;
+  place-items: center;
+  cursor: ns-resize;
+  touch-action: none;
+  z-index: 1;
+}
+.cai-grab i {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--muted);
+  opacity: 0.55;
 }
 
 .cai-head {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
   min-height: 40px;
 }
 
@@ -41,8 +125,9 @@
   font-family: var(--font-display);
   font-size: 1.05rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
   margin: 0;
 }
 
@@ -52,6 +137,20 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
+  overflow: hidden;
+}
+
+/* the coach's chip: gold ring, the coach glyph */
+.cai-avatar {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--gold);
+  background: var(--gold-soft);
+  box-shadow: inset 0 0 0 1.5px var(--gold);
 }
 
 .cai-badge {
@@ -65,10 +164,12 @@
   background: var(--soft);
   color: var(--ink-2);
   white-space: nowrap;
+  min-width: 0;
 }
 
 .cai-badge::before {
   content: '';
+  flex: none;
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -79,10 +180,35 @@
   background: #c27c0e;
 }
 
+/* narrow panels: the badges keep their dot, their words stay for screen readers and the tooltip */
+@media (max-width: 420px) {
+  .cai-badge {
+    font-size: 0;
+    gap: 0;
+    padding: 4px;
+  }
+}
+
 .cai-head .btn.icon {
-  width: 40px;
-  min-height: 40px;
-  margin-right: -6px;
+  flex: none;
+  width: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  border-radius: 12px;
+  color: var(--ink-2);
+}
+.cai-head .btn.icon:hover {
+  background: var(--soft);
+  color: var(--ink);
+}
+.cai-head .btn.icon[aria-disabled='true'] {
+  opacity: 0.38;
+  cursor: default;
+}
+.cai-head .btn.icon:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
 }
 
 /* the answer keeps a few lines; longer answers scroll inside the panel */
@@ -94,9 +220,38 @@
   overscroll-behavior: contain;
   white-space: pre-line;
   line-height: 1.45;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: var(--soft);
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--cai-card, var(--soft));
+  border-left: 3px solid var(--gold);
+}
+
+/* réduit: the first line of the answer only, next to the field */
+.cai-panel.size-reduit {
+  gap: 6px;
+  padding-top: 12px;
+}
+.cai-panel.size-reduit .cai-answer {
+  max-height: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 6px 10px;
+  flex: none;
+}
+.cai-panel.size-reduit .cai-answer .q {
+  display: none;
+}
+/* agrandi: the answer reads like a page */
+.cai-panel.size-agrandi {
+  max-height: none;
+  height: 100%;
+}
+.cai-panel.size-agrandi .cai-answer {
+  flex: 1 1 auto;
+  max-height: none;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 .cai-answer .q {
@@ -233,10 +388,10 @@
   scroll-snap-align: start;
   display: flex;
   align-items: center;
-  padding: 6px 10px;
-  border-radius: 12px;
+  padding: 6px 12px;
+  border-radius: 14px;
   border: 1px solid var(--line);
-  background: var(--bg);
+  background: var(--cai-card, var(--bg));
   color: var(--ink);
   font: inherit;
   font-size: 0.84rem;
@@ -252,12 +407,13 @@
 }
 
 .cai-q:hover {
-  border-color: var(--ink-2);
+  border-color: var(--gold);
+  background: var(--cai-card-hover, var(--soft));
 }
 
 .cai-q:active {
   transform: scale(0.97);
-  background: var(--soft);
+  background: var(--cai-card-hover, var(--soft));
 }
 
 .cai-q:focus-visible,
@@ -287,7 +443,17 @@
   flex: 1;
   min-width: 0;
   min-height: 44px;
+  border-radius: 14px;
   background: var(--bg);
+  color: var(--ink);
+  border-color: var(--line);
+}
+.cai-form .input::placeholder {
+  color: var(--muted);
+}
+.cai-form .input:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
 }
 
 .cai-form .btn.icon {
@@ -361,12 +527,7 @@
 }
 
 .cai-hist {
-  font-size: 0.78rem;
-  color: var(--ink-2);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  min-height: 40px;
-  display: inline-flex;
-  align-items: center;
-  padding: 0 4px;
+  display: inline-grid;
+  place-items: center;
+  text-decoration: none;
 }

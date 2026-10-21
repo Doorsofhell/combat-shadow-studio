@@ -1,8 +1,7 @@
-/* Training screen (white studio), augmented reality overlay and "Décomposer" mode. */
+/* Training screen (studio that follows the menu theme), augmented reality overlay and "Décomposer" mode. */
 /* -------------------------------------------------- training */
-.training,
+/* light scope (the Coach IA panel and other always-light cards): white, whatever the menus' theme */
 .light-scope {
-  /* WHITE TRAINING STUDIO: the one light screen of the app, whatever the menus' theme */
   --bg: #ffffff;
   --ink: #111214;
   --ink-2: #3d4046;
@@ -13,6 +12,48 @@
   --red-ink: #c41f35;
   --red-soft: #fdecef;
   color: var(--ink);
+  color-scheme: light;
+}
+
+/*
+ * 0.27 (Youssef, 2026-10-20 21:48, « Suit le thème »): the training studio is no longer always white. Dark theme:
+ * anthracite like the home hero, a soft halo on the floor so the coach stands out; light theme: soft pearl grey.
+ * Both plain and sober. The aliases below re-theme the shared components (.btn, .chip…) inside the studio; the
+ * --tr-* tokens are the studio's own surfaces (glass buttons over the stage, phase label, sheets).
+ */
+.training {
+  --bg: #0b0f14;
+  --ink: #f4f4f5;
+  --ink-2: #d1d5db;
+  --muted: #9ca3af;
+  --line: #2b3443;
+  --soft: #1f2937;
+  --red: #e11d2f;
+  --red-ink: #ff6b77;
+  --red-soft: rgba(225, 29, 47, 0.18);
+  --tr-stage: radial-gradient(ellipse 70% 42% at 50% 86%, #1d2634 0%, #121923 55%, #0b0f14 100%);
+  --tr-glass: rgba(31, 41, 55, 0.92);
+  --tr-phase: #374151;
+  --tr-sheet: #141b25;
+  --tr-glow: rgba(11, 15, 20, 0.9);
+  color: var(--ink);
+  color-scheme: dark;
+}
+:root[data-theme='light'] .training {
+  --bg: #eef0f3;
+  --ink: #111214;
+  --ink-2: #3d4046;
+  --muted: #565b63;
+  --line: #d6d9df;
+  --soft: #ffffff;
+  --red: #e11d2f;
+  --red-ink: #c41f35;
+  --red-soft: #fdecef;
+  --tr-stage: radial-gradient(ellipse 70% 42% at 50% 86%, #f8f9fb 0%, #eef0f3 55%, #e3e6ea 100%);
+  --tr-glass: rgba(255, 255, 255, 0.94);
+  --tr-phase: #111214;
+  --tr-sheet: #ffffff;
+  --tr-glow: #ffffff;
   color-scheme: light;
 }
 
@@ -93,7 +134,7 @@
   grid-area: stage;
   position: relative;
   min-height: 0;
-  background: radial-gradient(ellipse at 50% 92%, #eceef1 0%, #fff 60%);
+  background: var(--tr-stage);
 }
 
 .tr-stage canvas {
@@ -115,13 +156,13 @@
   min-width: 44px;
   padding: 0 8px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--tr-glass);
   font-size: 0.75em;
 }
 
 .stage-tools .btn.on {
   background: var(--ink);
-  color: #fff;
+  color: var(--bg);
 }
 
 .cam-btn {
@@ -146,14 +187,14 @@
   font-size: 0.8rem;
   padding: 5px 10px;
   border-radius: 8px;
-  background: var(--ink);
+  background: var(--tr-phase);
   color: #fff;
   letter-spacing: 0.03em;
   font-variant-numeric: tabular-nums;
 }
 
 .phase.light {
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--tr-glass);
   color: var(--ink);
   border: 1px solid var(--line);
 }
@@ -177,7 +218,7 @@
   color: var(--red-ink);
   pointer-events: none;
   z-index: 3;
-  text-shadow: 0 2px 20px #fff;
+  text-shadow: 0 2px 20px var(--tr-glow);
 }
 
 .solo-note {
@@ -187,7 +228,7 @@
   bottom: 8px;
   z-index: 2;
   font-size: 0.75em;
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--tr-glass);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 5px 9px;
@@ -462,6 +503,69 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
+/* 0.27 total fullscreen (Youssef, 2026-10-20 22:09, double tap on the coach): the stage takes the whole screen, the
+   title and the instructions step aside, the main control floats over the bottom of the stage; every control over
+   the coach fades after 2.5 s without a tap (fs-idle) and comes back with a tap. The session keeps running. */
+.training.immersive {
+  display: block;
+  max-width: none;
+  overflow: hidden;
+}
+.training.immersive .tr-stage {
+  position: absolute;
+  inset: 0;
+}
+.training.immersive .tr-top,
+.training.immersive .tr-info {
+  display: none;
+}
+.training.immersive .tr-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  background: transparent;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+.training.immersive .tr-bottom .controls {
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+}
+.training.immersive .tr-bottom,
+.training.immersive .stage-tools,
+.training.immersive .stage-badge,
+.training.immersive .mark-legend,
+.training.immersive .coach-bubble.in-host {
+  transition: opacity 0.25s ease;
+}
+.training.immersive.fs-idle .tr-bottom,
+.training.immersive.fs-idle .stage-tools,
+.training.immersive.fs-idle .stage-badge,
+.training.immersive.fs-idle .mark-legend,
+.training.immersive.fs-idle .coach-bubble.in-host {
+  opacity: 0;
+  pointer-events: none;
+}
+.training.immersive .stage-tools {
+  top: max(8px, env(safe-area-inset-top));
+}
+/* the stage now runs under the floating main control: the coach bubble sits just above it */
+.training.immersive .coach-bubble.in-host {
+  bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+}
+@media (prefers-reduced-motion: reduce) {
+  .training.immersive .tr-bottom,
+  .training.immersive .stage-tools,
+  .training.immersive .stage-badge,
+  .training.immersive .mark-legend,
+  .training.immersive .coach-bubble.in-host {
+    transition: none;
+  }
+}
+
 /* small phones: tighter spacing, same content */
 @media (max-height: 680px) {
   .tr-info {
@@ -566,7 +670,7 @@
   max-width: 760px;
   max-height: 85vh;
   overflow: auto;
-  background: #fff;
+  background: var(--tr-sheet, #fff);
   border-radius: 18px 18px 0 0;
   padding: 16px 16px max(16px, env(safe-area-inset-bottom));
   display: flex;
@@ -583,7 +687,8 @@
 }
 .ar-overlay:xr-overlay > * { pointer-events: auto; }
 .ar-top { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
-.phase.light { background: rgba(255,255,255,.9); color: var(--ink); }
+/* 0.27: scoped to the AR overlay (it used to override the studio chip, white on white once the studio is dark) */
+.ar-overlay .phase.light { background: rgba(255,255,255,.9); color: #111214; }
 .ar-move { align-self: center; background: rgba(17,18,20,.6); padding: 6px 12px; border-radius: 999px; font-size: 15px; }
 .ar-bottom { display: flex; flex-direction: column; gap: 8px; background: rgba(17,18,20,.45); border-radius: 18px; padding: 10px; }
 .ar-bottom .speed { color: #fff; }
@@ -651,11 +756,23 @@
   max-height: 5.8em;
   overflow-y: auto;
 }
-/* "Agrandir": a long answer takes the whole stage, still scrolling inside the panel */
-.tr-ask .cai-panel.expanded {
-  flex: 1;
+/* 0.27 « Agrandir » (Youssef, 2026-10-20 21:59): the panel takes the whole stage (the session is paused), the
+   answer scrolls inside it; the controls and instructions under the stage stay visible */
+.tr-ask.size-agrandi {
+  top: 8px;
+  max-height: none;
+  align-items: stretch;
 }
-.tr-ask .cai-panel.expanded .cai-answer {
+.tr-ask .cai-panel.size-agrandi {
+  flex: 1;
+  height: auto;
+}
+.tr-ask .cai-panel.size-agrandi .cai-answer {
+  max-height: none;
+}
+/* « Réduire »: a thin bar at the bottom of the stage, the coach stays fully visible above it */
+.tr-ask .cai-panel.size-reduit .cai-answer {
+  min-height: 0;
   max-height: none;
 }
 /* Android keyboard open: the panel sits right above it, the field and "Envoyer" stay visible */
@@ -732,7 +849,7 @@
   max-width: calc(100% - 80px);
   padding: 3px 8px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--tr-glass);
   font-size: 0.72em;
   font-weight: 600;
   color: var(--ink);

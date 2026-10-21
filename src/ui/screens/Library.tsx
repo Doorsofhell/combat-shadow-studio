@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { TechThumb, keyTechnique, programTechnique } from '../components/TechThumb';
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { CATEGORY_LABEL, TECHNIQUE_BY_ID, TECHNIQUES, techniquesFor } from '../../domain/techniques';
 import { EXERCISES, EXERCISE_BY_ID } from '../../domain/exercises';
 import { PARTNER_BY_ID, PARTNER_CATEGORY_LABEL, partnerFor } from '../../domain/partner';
@@ -21,25 +21,26 @@ import { AnimationBadge, DisciplineLabel, ModeBadge, CameraControls, EmptyState,
 import { filterExercises, filterTechniques } from '../../domain/kickboxingStyles';
 import { ExerciseList, ExerciseSheet } from './Discipline';
 import { AppIcon, DisciplineIcon } from '../icons';
-import { CHAMPIONS_AVAILABLE } from './features';
 import { useActionPill } from '../components/ActionPill';
+import { FullscreenStage } from '../fullscreen/FullscreenStage';
 import { exerciseForTechnique } from '../../domain/quickPicks';
 import { TechniqueFilter, neighbours, parseTechniqueFilter, sheetQuery, techniqueCatalogue } from './techniqueOrder';
 
 const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
 
-type HubTab = 'techniques' | 'combinaisons' | 'legendes' | 'createur' | 'favoris' | 'programmes';
+// 0.27 (Youssef, 2026-10-20 21:56: « Retire légendes des techniques vu qu'ils ont leur menu »): no Légendes section
+// here any more, the Légendes tab of the bottom bar is the one way in; old links are sent there (see Library)
+type HubTab = 'techniques' | 'combinaisons' | 'createur' | 'favoris' | 'programmes';
 
 const HUB_TABS: { id: HubTab; label: string; icon: ReactNode }[] = [
   { id: 'techniques', label: 'Techniques', icon: <AppIcon id="techniques" size={18} /> },
   { id: 'combinaisons', label: 'Combinaisons', icon: <AppIcon id="combos" size={18} /> },
-  { id: 'legendes', label: 'Légendes', icon: <AppIcon id="legends" size={18} /> },
   { id: 'createur', label: 'Créateur', icon: <AppIcon id="compose" size={18} /> },
   { id: 'favoris', label: 'Favoris', icon: <AppIcon id="favorite" size={18} /> },
   { id: 'programmes', label: 'Programmes', icon: <AppIcon id="programs" size={18} /> },
 ];
 
-/** "Techniques" tab: individual techniques, combinations, legends, creator, favourites, programmes. */
+/** "Techniques" tab: individual techniques, combinations, creator, favourites, programmes. */
 export function Library() {
   const [q, setQ] = useSearchParams();
   const main = useProfile((s) => s.profile.mainDiscipline);
@@ -55,6 +56,8 @@ export function Library() {
   };
   // 0.25: the category filter is in the URL, so the technique sheets follow that list and Back finds it again
   const cat = parseTechniqueFilter(q.get('cat'), Object.keys(CATEGORY_LABEL));
+  // the former Légendes section (bookmarks, history, older answers of the coach): straight to the Légendes tab
+  if (q.get('tab') === 'legendes') return <Navigate to="/champions" replace />;
   return (
     <div className="page">
       <PageHead title="Techniques" eyebrow="Bibliothèque" back={false} />
@@ -62,7 +65,6 @@ export function Library() {
       <div role="tabpanel" className="stack" style={{ gap: 16 }}>
         {tab === 'techniques' && <TechniquesTab d={d} setD={(x) => set('d', x)} cat={cat} setCat={(c) => set('cat', c)} />}
         {tab === 'combinaisons' && <CombosTab d={d} setD={(x) => set('d', x)} />}
-        {tab === 'legendes' && <LegendsTab />}
         {tab === 'createur' && <CreatorTab />}
         {tab === 'favoris' && <FavoritesTab />}
         {tab === 'programmes' && <ProgramsTab />}
@@ -170,17 +172,6 @@ function CombosTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) => vo
       {ex && <ExerciseSheet ex={ex} onClose={() => setOpen(null)} />}
     </>
   );
-}
-
-function LegendsTab() {
-  if (CHAMPIONS_AVAILABLE)
-    return (
-      <>
-        <p className="muted">Des enchaînements inspirés du style de grands champions, exécutés par ton coach.</p>
-        <EntryCard to="/champions" icon={<AppIcon id="legends" />} tone="gold" title="Combinaisons des légendes" text="Parcourir les champions et leurs combinaisons" testId="open-champions" />
-      </>
-    );
-  return <EmptyState title="Combinaisons des légendes" text="Cette bibliothèque arrive bientôt : des enchaînements inspirés du style de grands champions." />;
 }
 
 function CreatorTab() {
@@ -413,7 +404,8 @@ export function TechniquePage() {
           </button>
         }
       />
-      <div className="preview-stage">
+      {/* 0.27: a double tap shows the coach on the whole screen (Youssef, 2026-10-20 22:09) */}
+      <FullscreenStage className="preview-stage" testId="technique-stage">
         <Suspense fallback={<div className="hero-loading"><div className="stage-skeleton" /></div>}>
           <CoachStage
             backdrop="dark"
@@ -426,7 +418,7 @@ export function TechniquePage() {
             onPlayer={onPlayer}
           />
         </Suspense>
-      </div>
+      </FullscreenStage>
       {near && near.total > 1 && (
         <nav className="tech-step" aria-label="Techniques de la liste" data-testid="technique-step">
           <button

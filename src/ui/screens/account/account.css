@@ -101,3 +101,119 @@
   margin: 0;
   padding: 0;
 }
+
+/* -------------------------------------------------- 0.27: IMC card (Youssef, 2026-10-20 21:45) */
+.bmi-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--ink), transparent 96%);
+}
+.bmi-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+.bmi-head h3 { margin: 0; font-size: 1rem; }
+.bmi-value {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+}
+/* zone colours: existing tokens; the colour never carries the meaning alone (labels, legend, number) */
+.z-insuffisance { --zone: var(--c-info); }
+.z-normale { --zone: var(--ok); }
+.z-surpoids { --zone: var(--warn); }
+.z-obesite { --zone: var(--c-orange); }
+.bmi-badge {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--zone), transparent 82%);
+  box-shadow: inset 3px 0 0 var(--zone);
+}
+.bmi-gauge {
+  position: relative;
+  padding: 30px 0 20px;
+  margin: 0 10px;
+}
+.bmi-bar {
+  position: relative;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--track);
+}
+.bmi-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--zone);
+}
+.bmi-zone + .bmi-zone { box-shadow: inset 2px 0 0 var(--soft); }
+.bmi-marker {
+  position: absolute;
+  top: 4px;
+  bottom: 14px;
+  width: 0;
+  transition: left var(--t-med, 0.2s) var(--ease, ease);
+}
+.bmi-marker::after {
+  content: '';
+  position: absolute;
+  top: 22px;
+  bottom: 0;
+  left: -2px;
+  width: 4px;
+  border-radius: 2px;
+  background: var(--ink);
+  box-shadow: 0 0 0 2px var(--soft);
+}
+.bmi-marker b {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateX(-50%);
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) { .bmi-marker { transition: none; } }
+.bmi-ticks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 16px;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.bmi-ticks span { position: absolute; transform: translateX(-50%); }
+.bmi-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.bmi-legend li { display: flex; align-items: center; gap: 8px; }
+.bmi-legend li.on { color: var(--ink); }
+.bmi-swatch {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--zone);
+}
+.bmi-legend li.on .bmi-swatch { box-shadow: 0 0 0 2px var(--soft), 0 0 0 4px var(--ink); }
+.bmi-advice { margin: 0; font-size: 0.92rem; line-height: 1.45; color: var(--ink); }
+.bmi-card p.small { margin: 0; }

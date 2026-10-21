@@ -17,6 +17,7 @@ import { DisciplineLabel, EmptyState, EntryCard, ProgressBar, SectionHead, StatT
 import { defaultFighterName } from '../components/fighter';
 import { AppIcon, DisciplineIcon } from '../icons';
 import { useActionPill } from '../components/ActionPill';
+import { FullscreenStage } from '../fullscreen/FullscreenStage';
 import { useKbStyle } from '../components/KickboxingStyle';
 import { techniquesFor } from '../../domain/techniques';
 import { filterTechniques } from '../../domain/kickboxingStyles';
@@ -116,7 +117,9 @@ export function Home() {
       </header>
 
       <section className="hero" aria-label={`${name}, ${disc.name}`}>
-        <div className="hero-stage" aria-hidden>
+        {/* 0.27: a double tap shows the coach on the whole screen (Youssef, 2026-10-20 22:09) */}
+        <FullscreenStage className="hero-stage" testId="hero-stage">
+          <div className="hero-stage-3d" aria-hidden>
           <StageBoundary>
             <Suspense fallback={<StageFallback />}>
               <CoachStage
@@ -131,7 +134,8 @@ export function Home() {
               />
             </Suspense>
           </StageBoundary>
-        </div>
+          </div>
+        </FullscreenStage>
         <div className="hero-fade" />
         <div className="hero-info">
           <div>

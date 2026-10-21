@@ -22,7 +22,10 @@ async function seed(page: Page) {
 
 test('bulle Coach IA : un appui ouvre, un autre masque, Échap masque aussi', async ({ page }) => {
   await seed(page);
-  await page.goto('/#/techniques');
+  // 0.27 (Youssef, 2026-10-20 21:45: « intégrer le coach ia dans la barre d'icône dynamique »): the technique
+  // catalogue has an action pill, so its Coach IA is in the pill (action-pill.spec); the bubble is checked on the
+  // settings, which have no pill
+  await page.goto('/#/reglages');
   const bubble = page.getByTestId('coach-bubble');
   await expect(bubble).toHaveAttribute('aria-expanded', 'false');
   await bubble.click();
@@ -59,7 +62,10 @@ async function bubbleLook(page: Page) {
 
 test('bulle Coach IA identique sur tous les écrans, en bas à droite, entraînement compris', async ({ page }) => {
   await seed(page);
-  const screens = ['/#/', '/#/techniques', '/#/techniques/jab?d=boxe', '/#/stats', '/#/reglages', '/#/coach', '/#/connexion', '/#/entrainement?ex=boxe-debutant-01&mode=technique'];
+  // 0.27 (Youssef, 2026-10-20 21:45): on the screens with an action pill (accueil, techniques, fiche, progrès,
+  // légendes) the Coach IA is the pill's last button and the bubble is not drawn (one entry point); the bubble is
+  // the same on every other screen
+  const screens = ['/#/reglages', '/#/reglages/voix', '/#/profil', '/#/coach', '/#/connexion', '/#/entrainer', '/#/entrainement?ex=boxe-debutant-01&mode=technique'];
   let ref: Awaited<ReturnType<typeof bubbleLook>>['look'] | null = null;
   for (const s of screens) {
     await page.goto('about:blank');
@@ -76,6 +82,12 @@ test('bulle Coach IA identique sur tous les écrans, en bas à droite, entraîne
   await page.goto('/#/coach-ia');
   await expect(page.getByRole('heading').first()).toBeVisible();
   await expect(page.getByTestId('coach-bubble')).toHaveCount(0);
+  // where the pill is, the Coach IA is in it and the bubble is absent
+  for (const s of ['/#/', '/#/techniques', '/#/techniques/jab?d=boxe', '/#/stats', '/#/champions']) {
+    await page.goto(s);
+    await expect(page.getByTestId('pill-coach'), s).toBeVisible();
+    await expect(page.getByTestId('coach-bubble'), s).toHaveCount(0);
+  }
 });
 
 test('bulle Coach IA à l’entraînement : pause, démo sur le lecteur, ralenti, sans quitter la séance', async ({ page }) => {
@@ -115,19 +127,30 @@ test('onglet Légendes dans la barre du bas', async ({ page }) => {
   await page.goto('/#/');
   await page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link', { name: 'Légendes' }).click();
   await expect(page).toHaveURL(/#\/champions/);
+  // 0.27 (Youssef, 2026-10-20 21:56: « Retire légendes des techniques vu qu'ils ont leur menu »): the Techniques
+  // tab has no Légendes section any more, and its old link goes to the Légendes tab
+  await page.goto('/#/techniques');
+  const sections = page.getByRole('tablist', { name: 'Sections' }).getByRole('tab');
+  await expect(sections).toHaveText(['Techniques', 'Combinaisons', 'Créateur', 'Favoris', 'Programmes']);
+  await page.goto('about:blank');
+  await page.goto('/#/techniques?tab=legendes');
+  await expect(page).toHaveURL(/#\/champions$/);
+  await page.goBack();
+  await expect(page).not.toHaveURL(/tab=legendes/);
 });
 
 /** 0.25 (Youssef, 2026-10-20): the coach answers for the screen it is opened from, and explains the app. */
 test('bulle Coach IA : questions sur l’écran courant et lien vers un autre écran', async ({ page }) => {
   await seed(page);
+  // 0.27 (Youssef, 2026-10-20 21:45): on these screens the Coach IA opens from the action pill (no bubble there)
   await page.goto('/#/stats');
-  await page.getByTestId('coach-bubble').click();
+  await page.getByTestId('pill-coach').click();
   await expect(page.getByTestId('coach-suggestion').first()).toHaveText('Comment lire mes statistiques ?');
   await page.getByTestId('coach-suggestion').first().click();
   await expect(page.getByTestId('coach-answer')).toContainText('Parcours');
   // on the home screen, how the app works, with a link to the Train tab
   await page.goto('/#/');
-  await page.getByTestId('coach-bubble').click();
+  await page.getByTestId('pill-coach').click();
   await page.getByTestId('coach-suggestion').filter({ hasText: 'Comment fonctionne l’application ?' }).click();
   await expect(page.getByTestId('coach-answer')).toContainText('cinq onglets');
   await page.getByTestId('coach-actions').getByRole('button', { name: 'Aller à Entraîner' }).click();
@@ -135,7 +158,7 @@ test('bulle Coach IA : questions sur l’écran courant et lien vers un autre é
   await expect(page.getByTestId('coach-bubble-panel')).toHaveCount(0);
   // on a technique sheet, marking it is the first question
   await page.goto('/#/techniques/jab?d=boxe');
-  await page.getByTestId('coach-bubble').click();
+  await page.getByTestId('pill-coach').click();
   await expect(page.getByTestId('coach-suggestion').first()).toHaveText('Comment marquer cette technique comme assimilée ?');
   await page.getByTestId('coach-input').fill('À quoi sert cet écran ?');
   await page.getByTestId('coach-send').click();

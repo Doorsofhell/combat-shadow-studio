@@ -15,6 +15,8 @@ import { useSession } from '../training/useSession';
 import { useCatalog } from '../../store/catalog';
 import { catalogPlan } from '../../domain/catalog/plan';
 import { useCoachBubble } from '../coach-ai/coachHost';
+import { FsHint } from '../fullscreen/FullscreenStage';
+import { useStageFullscreen } from '../fullscreen/useStageFullscreen';
 import type { CoachAction } from '../../coach/engine';
 import { GuideCard } from '../GuideCard';
 import { chooseCoach } from '../components/fighter';
@@ -91,7 +93,6 @@ function TrainingView({ plan }: { plan: Plan }) {
   const [camOpen, setCamOpen] = useState(false);
   const [camRot, setCamRot] = useState(0);
   const [camZoom, setCamZoom] = useState(1);
-  const [immersive, setImmersive] = useState(false);
   const [sheet, setSheet] = useState(false);
   const [guideId, setGuideId] = useState<string | null>(null);
   // 0.25 (Youssef, 2026-10-20 12:30): the coach is the app's one floating bubble; this screen is its
@@ -101,6 +102,13 @@ function TrainingView({ plan }: { plan: Plan }) {
   const [coachSlot, setCoachSlot] = useState<HTMLDivElement | null>(null);
   const pendingStudySpeed = useRef<number | null>(null);
   const root = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  // 0.27 (Youssef, 2026-10-20 22:09: « Un double clique sur la fenêtre du coach permet un plein écran total »): the
+  // immersive mode becomes the total fullscreen: a double tap on the stage or the button turns it on; only the coach
+  // is left, with the main control over it, and the controls fade after 2.5 s (a tap brings them back). The
+  // session keeps running.
+  const fs = useStageFullscreen(root, { tapRef: stageRef });
+  const immersive = fs.active;
   const arRoot = useRef<HTMLDivElement>(null);
   const ar = useMemo(() => new ArBridge(), []);
   const arView = useArView(ar);
@@ -240,13 +248,6 @@ function TrainingView({ plan }: { plan: Plan }) {
   const autoName = `Auto · ${viewName(teach)}`;
   const camLabel = camMode === 'auto' ? (isAuto ? autoName : 'Auto ajusté') : (CAMERA_MODES.find((c) => c.id === camMode)?.label ?? 'Auto');
 
-  const fullscreen = () => {
-    const el = root.current;
-    if (!el) return;
-    if (document.fullscreenElement) void document.exitFullscreen();
-    else void el.requestFullscreen?.().catch(() => undefined);
-  };
-
   const running = view.phase !== 'pret' && view.phase !== 'termine';
   const phaseLabel =
     view.phase === 'decompte' ? 'Prépare-toi' : view.phase === 'repos' ? 'Repos' : view.phase === 'travail' ? (item.work ? `Round ${view.round}/${item.rounds}` : MODE_LABEL[plan.mode]) : view.phase === 'termine' ? 'Terminé' : 'Prêt';
@@ -324,7 +325,7 @@ function TrainingView({ plan }: { plan: Plan }) {
   }, []);
 
   return (
-    <div className={`training ${immersive ? 'immersive' : ''} ${overflow ? 'overflow' : ''} ${asking ? 'asking' : ''}`} ref={root} data-testid="training">
+    <div className={`training ${immersive ? 'immersive' : ''} ${fs.idle ? 'fs-idle' : ''} ${overflow ? 'overflow' : ''} ${asking ? 'asking' : ''}`} ref={root} data-testid="training">
       <header className="tr-top">
         <button className="btn icon ghost" onClick={() => nav(-1)} aria-label="Quitter l’entraînement">
           <AppIcon id="back" />
@@ -345,8 +346,9 @@ function TrainingView({ plan }: { plan: Plan }) {
         </button>
       </header>
 
-      <div className="tr-stage">
+      <div className="tr-stage" ref={stageRef} data-testid="training-stage">
         <CoachStage
+          backdrop="theme"
           coach={coach}
           discipline={item.discipline}
           southpaw={stageSouthpaw}
@@ -386,19 +388,15 @@ function TrainingView({ plan }: { plan: Plan }) {
               Zoom
             </button>
           )}
-          <button
-            className={`btn ${immersive ? 'on' : ''}`}
-            onClick={() => {
-              if (!immersive) fullscreen();
-              else if (document.fullscreenElement) void document.exitFullscreen();
-              setImmersive(!immersive);
-            }}
-            aria-label="Plein écran : masquer les commandes secondaires"
-            aria-pressed={immersive}
-            data-testid="fullscreen"
-          >
-            <AppIcon id="fullscreen" />
-          </button>
+          {immersive ? (
+            <button className="btn on" onClick={fs.exit} aria-label="Quitter le plein écran" data-testid="fs-exit">
+              <AppIcon id="exitFullscreen" />
+            </button>
+          ) : (
+            <button className="btn" onClick={fs.enter} aria-label="Plein écran : le coach seul, sur tout l’écran" aria-pressed={false} data-testid="fullscreen">
+              <AppIcon id="fullscreen" />
+            </button>
+          )}
         </div>
         {!st.tech && !arActive && (settings.groundMarks.avantArriere || settings.groundMarks.pivot || settings.groundMarks.trajectoire) && (
           <div className="mark-legend" aria-label="Légende des repères" data-testid="mark-legend">
@@ -413,6 +411,7 @@ function TrainingView({ plan }: { plan: Plan }) {
           </div>
         )}
         {item.soloNote && !immersive && !asking && <div className="solo-note">{item.soloNote}</div>}
+        {!immersive && !asking && !arActive && !st.tech && <FsHint />}
         {/* the app's coach bubble and its panel are shown here (lower right corner of the stage) */}
         <div className="tr-coach-slot" ref={setCoachSlot} />
       </div>

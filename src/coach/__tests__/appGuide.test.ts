@@ -88,6 +88,8 @@ const ENTRY_QUESTIONS: Record<string, [string, CoachScreen?]> = {
   confidentialite: ['Mes données sont-elles envoyées sur internet ?', 'confidentialite'],
   compte: ['Est-ce que je dois créer un compte ?', 'profil'],
   profil: ['Comment changer mon pseudo ?', 'profil'],
+  // 0.27: the IMC card of the profile (Youssef, 2026-10-20 21:45)
+  imc: ['Comment est calculé mon IMC ?', 'profil'],
   offline: ['Est-ce que l’application marche sans internet ?', 'accueil'],
   'coach-ia': ['Comment tu fonctionnes, coach IA ?', 'accueil'],
 };
@@ -147,6 +149,17 @@ describe('guide de l’application : contenu', () => {
       expect(by('pilule-actions'), w).toContain(`« ${w} »`);
     }
     expect(askCoach('C’est quoi la pilule en bas ?', ctx('techniques')).sources[0]?.id).toBe('app:pilule-actions');
+    // 0.27: the Coach IA is the last button of the pill, which folds into a round handle (Youssef, 2026-10-20 21:45)
+    expect(by('pilule-actions')).toContain('« Coach »');
+    expect(by('pilule-actions')).toMatch(/replie/);
+    expect(askCoach('Comment replier la pilule ?', ctx('accueil')).sources[0]?.id).toBe('app:pilule-actions');
+    // the IMC card: formula, adult WHO scale, its limits, nothing leaves the device
+    for (const w of ['taille', 'poids', 'au carré', 'OMS', 'muscle', '18 ans', 'grossesse', 'médecin', 'sur ton appareil']) expect(by('imc'), w).toContain(w);
+    // 0.27 (Youssef, 2026-10-20 22:09): double tap on the 3D coach for a total fullscreen, and the ways out
+    for (const w of ['Touche deux fois', 'Quitter le plein écran', 'Échap', 'retour d’Android', 'continue']) expect(by('plein-ecran'), w).toContain(w);
+    expect(askCoach('Comment mettre le coach en plein écran avec un double tap ?', ctx('accueil')).sources[0]?.id).toBe('app:plein-ecran');
+    // 0.27 (Youssef, 2026-10-20 21:56): no Légendes section in Techniques any more, it has its own tab
+    expect(by('screen-techniques')).not.toMatch(/Combinaisons, Légendes/);
   });
 
   test('chaque écran a sa page d’aide', () => {

@@ -72,7 +72,7 @@ function DisplaySync() {
 
 const isTraining = (p: string) => p.startsWith('/entrainement');
 
-/** menu theme (light, dark, automatic) and status bar colour; the training studio stays white */
+/** menu theme (light, dark, automatic) and status bar colour; the training studio follows the theme (0.27) */
 function ThemeColor() {
   const loc = useLocation();
   const pref = useSettings((x) => x.settings.theme);
@@ -86,8 +86,8 @@ function ThemeColor() {
       m.name = 'theme-color';
       document.head.appendChild(m);
     }
-    m.content = studio ? STUDIO_BG : THEME_BG[t];
-    document.documentElement.style.colorScheme = studio ? 'light' : t;
+    m.content = studio ? STUDIO_BG[t] : THEME_BG[t];
+    document.documentElement.style.colorScheme = t;
   }, [loc.pathname, pref, resolved]);
   useEffect(() => {
     window.scrollTo(0, 0);

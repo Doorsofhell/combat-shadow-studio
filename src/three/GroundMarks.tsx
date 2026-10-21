@@ -82,7 +82,12 @@ function stepGeometry(rig: CoachRig, m: Motion): StepGeo {
  * are, which way they point, which one is the front foot, the pivot of the supporting foot and the
  * path of the striking fist or foot. Everything is read from the animation really played.
  */
-export function GroundMarks({ rig, player, southpaw }: { rig: CoachRig; player: { current: ComboPlayer | null }; southpaw: boolean }) {
+/** 0.27: on the dark studio floor, the neutral marks are drawn light (the dark ones would vanish) */
+const GREY_ON_DARK = '#9ca3af';
+const ARROW_ON_LIGHT = '#111318';
+const ARROW_ON_DARK = '#e5e7eb';
+
+export function GroundMarks({ rig, player, southpaw, dark = false }: { rig: CoachRig; player: { current: ComboPlayer | null }; southpaw: boolean; dark?: boolean }) {
   const marks = useSettings((s) => s.settings.groundMarks);
   const feet = useRef<Group>(null);
   const [step, setStep] = useState<{ motion: Motion; origin: { x: number; z: number; yaw: number } } | null>(null);
@@ -138,7 +143,7 @@ export function GroundMarks({ rig, player, southpaw }: { rig: CoachRig; player: 
       {live && (
         <group ref={feet}>
           {[0, 1].map((i) => {
-            const color = marks.avantArriere ? (i === front ? RED : BLUE) : GREY;
+            const color = marks.avantArriere ? (i === front ? RED : BLUE) : dark ? GREY_ON_DARK : GREY;
             return (
               <group key={i}>
                 <mesh rotation-x={-Math.PI / 2} position-y={0.004} renderOrder={8} visible={marks.pieds || marks.avantArriere}>
@@ -147,7 +152,7 @@ export function GroundMarks({ rig, player, southpaw }: { rig: CoachRig; player: 
                 </mesh>
                 <mesh rotation-x={-Math.PI / 2} position-y={0.006} renderOrder={9} visible={marks.orientation}>
                   <shapeGeometry args={[arrowShape]} />
-                  <meshBasicMaterial color={marks.avantArriere ? color : '#111318'} transparent opacity={0.85} depthWrite={false} depthTest={false} side={DoubleSide} />
+                  <meshBasicMaterial color={marks.avantArriere ? color : dark ? ARROW_ON_DARK : ARROW_ON_LIGHT} transparent opacity={0.85} depthWrite={false} depthTest={false} side={DoubleSide} />
                 </mesh>
               </group>
             );

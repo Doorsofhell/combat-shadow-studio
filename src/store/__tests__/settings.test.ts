@@ -17,3 +17,31 @@ describe('réglages : repères au sol', () => {
     expect(partial.settings.groundMarks).toEqual({ ...DEFAULT_SETTINGS.groundMarks, pivot: true });
   });
 });
+
+// 0.27 (Youssef, 2026-10-20 21:45): the action pill can be folded; the choice is a setting of the user
+describe('réglages : pilule d’actions repliée', () => {
+  const merge = useSettings.persist.getOptions().merge!;
+  it('dépliée par défaut, y compris pour une sauvegarde d’avant 0.27, dont les autres clés sont gardées', () => {
+    expect(DEFAULT_SETTINGS.actionPillCollapsed).toBe(false);
+    const old = merge({ settings: { voice: false, kickboxingStyle: 'k1' } }, useSettings.getState()) as ReturnType<typeof useSettings.getState>;
+    expect(old.settings.actionPillCollapsed).toBe(false);
+    expect(old.settings.voice).toBe(false);
+    expect(old.settings.kickboxingStyle).toBe('k1');
+    const folded = merge({ settings: { actionPillCollapsed: true } }, useSettings.getState()) as ReturnType<typeof useSettings.getState>;
+    expect(folded.settings.actionPillCollapsed).toBe(true);
+  });
+});
+
+// 0.27 (Youssef, 2026-10-20 21:59): the Coach IA panel has three sizes, the last one is remembered
+describe('réglages : taille de la fenêtre du coach IA', () => {
+  const merge = useSettings.persist.getOptions().merge!;
+  it('normale par défaut et pour une sauvegarde ancienne ; une valeur inconnue revient à normale', () => {
+    expect(DEFAULT_SETTINGS.coachPanelSize).toBe('normal');
+    const old = merge({ settings: { voice: false } }, useSettings.getState()) as ReturnType<typeof useSettings.getState>;
+    expect(old.settings.coachPanelSize).toBe('normal');
+    const big = merge({ settings: { coachPanelSize: 'agrandi' } }, useSettings.getState()) as ReturnType<typeof useSettings.getState>;
+    expect(big.settings.coachPanelSize).toBe('agrandi');
+    const bad = merge({ settings: { coachPanelSize: 'geant' } }, useSettings.getState()) as ReturnType<typeof useSettings.getState>;
+    expect(bad.settings.coachPanelSize).toBe('normal');
+  });
+});
