@@ -1071,3 +1071,78 @@ manière user friendly ».
 - **Vérification finale** : en plein écran à l’entraînement, la bulle du coach chevauchait le bouton « Reprendre » ;
   elle est remontée juste au-dessus. fullscreen-dbltap + training-layout + coach-bubble relancés : 24 réussis —
   TEST RÉUSSI ; tsc et Vitest repassés après ce lot.
+
+## 2026-10-21 · v0.27.0 (en préparation) · Questions du Coach IA variées
+
+Demande (Youssef, 2026-10-20 22:00) : « Les questions pre programme ia doivent êtres diverses et variés pour que le
+user n'ai pas une impression de répétition ».
+
+- **Constat (mesuré sur la v0.26.0)** — les questions suggérées étaient fixes : le même contexte donnait toujours la
+  même liste. Sur 10 ouvertures de suite du panneau sur le direct arrière en MMA : 8 questions différentes sur 80
+  affichées (10 %). Sur les 189 couples technique × discipline de l’écran d’entraînement : 1 386 questions affichées,
+  248 différentes (17,9 %) ; « À quoi sert le bouton Décomposer ? » dans 189 séries sur 189, « Comment revenir
+  rapidement en garde ? » dans 140, « Où placer ma main avant ? » dans 131, « Comment éviter de perdre l’équilibre ? »
+  dans 94. Sur les 27 écrans sans technique : 1 ou 2 questions d’écran, suivies des 4 mêmes exemples généraux partout.
+  Même gabarit pour toutes les techniques (« Quelles erreurs éviter sur… », « Explique-moi… », « Montre-moi… au
+  ralenti »).
+- **Correction**
+  - Banque de questions (src/coach/questionBank.ts) : 19 catégories (forme, erreurs, pourquoi, respiration, garde,
+    déplacements, puissance, vitesse, équilibre, combinaisons, démo, comparaison, sécurité/échauffement,
+    récupération, mental, progrès/objectifs, règlements, Légendes, application), environ 190 gabarits et
+    formulations au ton léger et varié (pas seulement « Comment… ? »), plus des questions construites selon le
+    contexte : technique « à revoir », style de kick-boxing choisi, garde gaucher, niveau, heure (« Que travailler
+    ce soir ? »), dernière séance (récupération le jour même, reprise après plusieurs jours), objectifs du profil.
+    Chaque écran a 1 à 5 questions d’application (guide existant).
+  - Choix (src/coach/suggest.ts) : la plus pertinente devant (sur la technique à l’écran, ou sur l’écran ; sur une
+    fiche technique, la question « assimilée » reste en tête), puis une question d’écran non vue récemment, puis un
+    mélange : 2 questions au plus par catégorie, une seule question par réponse (deux formulations d’une même
+    entrée ne se suivent jamais), toujours un « Montre-moi… » avec une technique. Les questions montrées récemment
+    sont reculées (liste « vues » de 60 questions, par utilisateur, nouveau champ `recentSuggestions` du store du
+    coach, vide par défaut pour les anciennes sauvegardes, jamais écrit avant la relecture des réglages) ; une
+    graine du jour et de l’ouverture départage les questions de même poids. Les questions déjà posées restent
+    retirées comme avant. Au tout premier affichage, l’ordre reste celui des questions du pratiquant (les six du
+    direct en MMA, le sprawl…).
+  - Toujours une vraie réponse : chaque question n’est proposée que si le moteur local y répond depuis la source
+    promise (fiche, FAQ, guide, exercice contenant la technique, règlements, bibliothèque des champions), vérifiée
+    à la demande et mise en cache. Nouvelles réponses du moteur, sans rien inventer : « Le low kick, c’est permis en
+    full contact ? » répond d’après src/domain/kickboxingStyles.ts (statut et note de chaque style) ; « Quelle
+    légende utilise souvent le jab ? » répond d’après la bibliothèque des champions (style, traits, nombre de fiches,
+    avec le rappel « inspirées du style »), et renvoie au guide Légendes si la bibliothèque n’est pas chargée.
+    Quatre entrées générales prudentes ajoutées à la FAQ (src/coach/faqMore.ts) : rester motivé, régularité, quand
+    on stagne, un objectif par séance.
+  - Panneau : un crochet `useSuggestionMemory` (nouveau fichier) fournit la mémoire et le contexte ; dans
+    CoachAskPanel.tsx, l’appel à suggestedQuestions est remplacé par `memo.pick(...)` (import, une ligne de
+    crochet, corps du useMemo, dépendance) ; les 4 exemples généraux ne sont plus ajoutés après les questions
+    d’écran (ils se répétaient partout).
+- **Après (mesuré)** — 10 ouvertures de suite : direct MMA, jab boxe, middle kick, genou muay-thaï, sprawl : 67
+  questions différentes sur 80 (84 %) ; accueil 80 %, réglages 80 %, progrès 75 %, profil 75 % ; jiu-jitsu (shrimp)
+  60 %, judo (tai-sabaki) 59 %. Deuxième ouverture de suite : 8 questions nouvelles sur 8 (7 sur 8 sur le profil).
+  Parcours des 189 techniques avec la mémoire : 712 questions différentes sur 1 512 (47,1 %, contre 17,9 %), la
+  plus fréquente 21 fois (contre 189). Réservoir vérifié pour le direct en MMA : 86 questions répondues dans 18
+  catégories.
+- **Fichiers** : src/coach/questionBank.ts (nouveau), src/coach/faqMore.ts (nouveau), src/coach/suggest.ts,
+  src/coach/engine.ts (réponses règlements et Légendes), src/coach/nlu.ts (intentions `rules` et `legend`),
+  src/coach/knowledge.ts (inclut faqMore), src/store/coachAi.ts (`recentSuggestions`, `noteSuggestions`),
+  src/ui/coach-ai/useSuggestionMemory.ts (nouveau), src/ui/coach-ai/CoachAskPanel.tsx (quelques lignes),
+  src/coach/__tests__/suggest.test.ts, tests/e2e/coach-suggest.spec.ts.
+- **Tests** : `npx tsc -b` — TEST RÉUSSI. Vitest complet : 424 réussis, 1 non exécuté (existant), sur 2 passages —
+  TEST RÉUSSI (un premier passage avec un test de suggestions plus lourd faisait dépasser les 5 s à deux tests
+  d’animation lancés en parallèle ; test allégé, la couverture reste tous écrans × toutes techniques). Nouveaux tests
+  (src/coach/__tests__/suggest.test.ts, 23) : chaque question suggérée, pour tous les écrans × toutes les techniques
+  (et sans technique) × 3 variantes de graine et de contexte, reçoit une réponse non générique de la source promise,
+  qui nomme la technique ; 10 ouvertures ≥ 60 % de questions différentes (≥ 50 % jiu-jitsu/judo) ; 2 ouvertures de
+  suite ≥ moitié nouvelles ; 2 au plus par catégorie, pas de doublon de formulation ni de réponse, toujours un
+  « Montre-moi » ; première question sur la technique, même après rotation ; six questions du pratiquant (direct
+  MMA) et mots du sprawl présents au premier affichage quelle que soit la graine ; règlements et Légendes ; mémoire
+  « vues » (plafond, migration). Playwright coach-suggest + coach-bubble + training-layout (port 4299) : 24 réussis
+  — TEST RÉUSSI (un passage lancé en même temps que Vitest a échoué par saturation de la machine, relancé seul).
+  coach-suggest : le test « chaque question répond » vide la mémoire des questions vues avant chaque réouverture
+  (comme au premier usage) ; il vérifie toujours chaque question du premier affichage. Correctifs trouvés par
+  l’e2e : une liste n’est comptée « vue » qu’après 1,5 s à l’écran (pas pendant un changement d’écran ou une
+  fermeture), et la graine ne fait jamais passer une autre question devant celles du pratiquant.
+- **Limites** : jiu-jitsu et judo ont moins de questions (pas de conseils de frappe) : environ 60 % de questions
+  différentes sur 10 ouvertures ; un écran à une seule question d’application (profil, voix…) la garde en tête à
+  chaque ouverture ; les règlements détaillés n’existent que pour les styles de kick-boxing (aucune règle inventée
+  pour la boxe, le muay-thaï ou le MMA) ; les questions Légendes n’apparaissent qu’une fois la bibliothèque des
+  champions chargée ; le crochet relit la mémoire à l’ouverture, si le panneau s’ouvre avant la relecture des
+  réglages, la liste peut changer une fois ; pas de validation sur téléphone (NON EXÉCUTÉ).

@@ -45,6 +45,35 @@ async function openCoach(page: Page, ex: string) {
   await expect(page.getByTestId('coach-suggestion').first()).toBeVisible();
 }
 
+/**
+ * 0.27: the panel remembers the questions it showed and offers others at the next opening. To ask each
+ * question of a first display in turn, the memory is emptied before reopening (as on a first use).
+ */
+async function forgetShownQuestions(page: Page) {
+  // a list counts as seen after 1.5 s on screen: let the pending one be written first
+  await page.waitForTimeout(1600);
+  await page.evaluate(
+    () =>
+      new Promise<void>((res, rej) => {
+        const r = indexedDB.open('keyval-store');
+        r.onsuccess = () => {
+          const store = r.result.transaction('keyval', 'readwrite').objectStore('keyval');
+          const g = store.get('u:local:css-coach-ai');
+          g.onsuccess = () => {
+            if (!g.result) return res();
+            const v = JSON.parse(g.result as string);
+            v.state.recentSuggestions = [];
+            const w = store.put(JSON.stringify(v), 'u:local:css-coach-ai');
+            w.onsuccess = () => res();
+            w.onerror = () => rej(w.error);
+          };
+          g.onerror = () => rej(g.error);
+        };
+        r.onerror = () => rej(r.error);
+      }),
+  );
+}
+
 const rail = (page: Page) => page.getByTestId('coach-suggest-rail');
 const scrollLeft = (page: Page) => rail(page).evaluate((e) => e.scrollLeft);
 
@@ -118,6 +147,7 @@ test('questions suggérées : chaque question répond, une seule fois, et propos
   for (const q of ['Comment bien pivoter mon pied arrière ?', 'Comment utiliser ma hanche pour frapper ?', 'Où placer ma main avant ?', 'Comment éviter de perdre l’équilibre ?', 'Comment revenir rapidement en garde ?', 'Quelle est la différence entre jab et direct ?'])
     expect(qs).toContain(q);
   for (const q of qs.filter((x) => !x.startsWith('Montre-moi'))) {
+    await forgetShownQuestions(page);
     await openCoach(page, exerciseOn('mma', 'direct'));
     const card = page.getByTestId('coach-suggestion').filter({ hasText: q });
     await card.scrollIntoViewIfNeeded();

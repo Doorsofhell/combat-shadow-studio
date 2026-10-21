@@ -1,7 +1,6 @@
 import { FormEvent, PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { askCoach, exampleQuestions, type CoachAction, type CoachAnswer, type CoachContext } from '../../coach/engine';
-import { suggestedQuestions } from '../../coach/suggest';
 import { getSpeechInput, speakReply, stopReply, type SpeechInput } from '../../coach/speech';
 import { useCatalog } from '../../store/catalog';
 import { useCoachAi } from '../../store/coachAi';
@@ -10,6 +9,7 @@ import { AppIcon } from '../icons';
 import { createDoubleTap, TAP_CONTROLS } from '../fullscreen/doubleTap';
 import { SuggestRail } from './SuggestRail';
 import { useKeyboardInset } from './useKeyboardInset';
+import { useSuggestionMemory } from './useSuggestionMemory';
 import './coachAi.css';
 
 export const COACH_HISTORY_ROUTE = '/coach-ia';
@@ -87,14 +87,12 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
   const keyboard = useKeyboardInset();
 
   // questions about the screen, then about the movement being worked on, each one checked against the local engine;
-  // without a technique on screen, the general examples follow the screen questions
+  // 0.27: varied from one opening to the next (useSuggestionMemory, coach/suggest.ts)
+  const memo = useSuggestionMemory();
   const forTechnique = useMemo(
-    () => {
-      const qs = suggestedQuestions({ ...context, preferences: { detail: ai.detail }, catalog }, 8);
-      return qs.length && !context.techniqueId ? [...qs, ...examples.filter((e) => !qs.includes(e))] : qs;
-    },
+    () => memo.pick({ ...context, preferences: { detail: ai.detail }, catalog }, 8),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [context.screen, context.techniqueId, context.discipline, context.level, context.guard, ai.detail, catalog, examples],
+    [context.screen, context.techniqueId, context.discipline, context.level, context.guard, ai.detail, catalog, examples, memo.key],
   );
   const suggestions = useMemo(() => {
     if (!forTechnique.length) return answer?.suggestions?.length ? answer.suggestions : examples;

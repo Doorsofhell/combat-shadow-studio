@@ -12,6 +12,7 @@
 import { GUIDES } from '../domain/guide';
 import { CATEGORY_LABEL, TECHNIQUES, TECHNIQUE_BY_ID } from '../domain/techniques';
 import type { DisciplineId, LevelId, TechniqueCategory } from '../domain/types';
+import { MORE_FAQ } from './faqMore';
 
 export interface KnowledgeEntry {
   id: string;
@@ -90,7 +91,7 @@ function techniqueEntries(): KnowledgeEntry[] {
   });
 }
 
-type Faq = Omit<KnowledgeEntry, 'source' | 'disciplines' | 'levels'> & { disciplines?: DisciplineId[]; levels?: LevelId[] };
+export type Faq = Omit<KnowledgeEntry, 'source' | 'disciplines' | 'levels'> & { disciplines?: DisciplineId[]; levels?: LevelId[] };
 
 /** FAQ générale : principes standard, aucune technique en dehors de la bibliothèque */
 const FAQ: Faq[] = [
@@ -307,6 +308,8 @@ const FAQ: Faq[] = [
     tags: ['distance', 'portée', 'loin', 'près', 'allonge'],
     related: ['jab', 'crochet-avant', 'teep-avant'],
   },
+  // 0.27: mental, régularité, objectifs (faqMore.ts)
+  ...MORE_FAQ,
 ];
 
 let cache: KnowledgeEntry[] | null = null;
