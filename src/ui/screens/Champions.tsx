@@ -1,17 +1,17 @@
 import { TechThumb, keyTechnique } from '../components/TechThumb';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { DISCIPLINES, LEVELS } from '../../domain/types';
 import type { DisciplineId, LevelId, TrainingMode } from '../../domain/types';
 import { TECHNIQUE_BY_ID, techniquesFor } from '../../domain/techniques';
 import { sequenceView, stageAzimuth } from '../../domain/camera';
-import type { Catalog, CatalogCombo, CatalogGoal, CatalogStatus } from '../../domain/catalog/types';
+import type { Catalog, CatalogChampion, CatalogCombo, CatalogGoal, CatalogStatus } from '../../domain/catalog/types';
 import { DISTANCE_LABEL, GOAL_LABEL, GUARD_LABEL, STANCE_LABEL, STATUS_HELP, STATUS_LABEL, tagLabel } from '../../domain/catalog/types';
 import { LENGTH_BANDS, allTags, catalogCounts, dailyPick, randomPick, recentCombos, searchCombos } from '../../domain/catalog/search';
 import type { CatalogQuery, LengthBand } from '../../domain/catalog/search';
 import { isPlayable3D } from '../../domain/catalog/validate';
-import type { ImportResult } from '../../domain/catalog/import';
-import { useCatalog, useCatalogData, useCatalogUser } from '../../store/catalog';
+import { comboDna, focusTechniques } from '../../domain/catalog/dna';
+import { useCatalog, useCatalogUser } from '../../store/catalog';
 import { useCustom } from '../../store/custom';
 import { useSettings } from '../../store/settings';
 import { MODE_HELP, MODE_LABEL } from '../training/plan';
@@ -19,6 +19,7 @@ import { PageHead } from '../App';
 import { DisciplineCard, DisciplineLabel } from '../components';
 import { AppIcon, DisciplineIcon, LevelIcon, type GlyphId } from '../icons';
 import { useActionPill } from '../components/ActionPill';
+import { DnaBar, DnaFlower, DnaLegend } from '../components/LegendDna';
 
 const DISC_NAME = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.name])) as Record<DisciplineId, string>;
 const DISC_SHORT = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.short])) as Record<DisciplineId, string>;
@@ -180,24 +181,47 @@ function ComboList({ list, catalog, empty, extra }: { list: CatalogCombo[]; cata
   );
 }
 
-function Counters({ list }: { list: CatalogCombo[] }) {
+/**
+ * v0.28 (Youssef, 2026-10-20 21:52 : « retire les rectangles sur le nombre de techniques, sois
+ * créatif ») : les cinq cases de compteurs sont remplacées par la fleur de style (ADN de combat
+ * calculé sur les séquences, nombre de fiches au cœur) et une ligne de texte : statuts présents
+ * seulement, et fiches jouables en 3D.
+ */
+function StatusLine({ list }: { list: CatalogCombo[] }) {
   const n = useMemo(() => catalogCounts(list), [list]);
-  const tiles: [string, number, boolean?][] = [
-    ['Fiches', n.total],
-    ['Vérifiées', n.verifiee, true],
-    ['Adaptées', n.adaptee],
-    ['Inspirées', n.inspiree],
-    ['Jouables en 3D', n.playable],
-  ];
+  const statuses = (['verifiee', 'adaptee', 'inspiree'] as CatalogStatus[]).filter((x) => n[x] > 0);
   return (
-    <div className="stat-tiles" data-testid="cat-counters">
-      {tiles.map(([k, v, gold]) => (
-        <div key={k} className={`stat-tile ${gold ? 'gold' : ''}`}>
-          <span className="v">{v}</span>
-          <span className="k">{k}</span>
-        </div>
+    <span className="dna-status small">
+      {statuses.map((x) => (
+        <span key={x} className="dna-chip">
+          <AppIcon id={STATUS_ICON[x]} size={14} />
+          {n[x].toLocaleString('fr-FR')} {STATUS_LABEL[x].toLowerCase()}
+          {n[x] > 1 ? 's' : ''}
+        </span>
       ))}
-    </div>
+      <span className="dna-chip">
+        <AppIcon id="fighter" size={14} />
+        {n.playable === n.total ? (n.total > 1 ? 'Toutes jouables en 3D' : 'Jouable en 3D') : `${n.playable} jouable${n.playable > 1 ? 's' : ''} en 3D`}
+      </span>
+    </span>
+  );
+}
+
+function DnaCard({ list, title, sub, testId }: { list: CatalogCombo[]; title: string; sub?: React.ReactNode; testId: string }) {
+  const dna = useMemo(() => comboDna(list), [list]);
+  return (
+    <section className="card dna-card" data-testid={testId}>
+      <DnaFlower dna={dna} count={list.length} label={title} size={84} />
+      <div className="dna-body">
+        <span className="eyebrow gold">{title}</span>
+        <span className="dna-total">
+          {list.length.toLocaleString('fr-FR')} fiche{list.length > 1 ? 's' : ''}
+          {sub}
+        </span>
+        <DnaLegend dna={dna} max={4} />
+        <StatusLine list={list} />
+      </div>
+    </section>
   );
 }
 
@@ -213,7 +237,7 @@ function StatusExplainer() {
         ))}
       </ul>
       <p className="small" style={{ margin: '8px 0 0' }}>
-        Les fiches livrées avec l’application sont toutes « inspirées » : aucune séquence n’est attribuée à un champion sans source vérifiable. Des fiches vérifiées ou adaptées peuvent être ajoutées par import, avec leur
+        Les fiches livrées avec l’application sont toutes « inspirées » : aucune séquence n’est attribuée à un champion sans source vérifiable. Une fiche vérifiée ou adaptée cite toujours sa
         référence.
       </p>
     </details>
@@ -222,7 +246,9 @@ function StatusExplainer() {
 
 // ------------------------------------------------------------------ page principale
 
-type View = 'explorer' | 'favoris' | 'historique' | 'recents' | 'collections' | 'champions' | 'importer';
+// 0.28 : la vue « Importer » est retirée de l’interface (Youssef, 2026-10-20 22:02 : « Retire importer. C'est trop
+// technique ») ; les fiches déjà importées restent stockées et visibles (recherche, favoris, collections, historique).
+type View = 'explorer' | 'favoris' | 'historique' | 'recents' | 'collections' | 'champions';
 const VIEWS: { id: View; label: string; icon: GlyphId }[] = [
   { id: 'explorer', label: 'Explorer', icon: 'search' },
   { id: 'favoris', label: 'Favoris', icon: 'favorite' },
@@ -230,18 +256,20 @@ const VIEWS: { id: View; label: string; icon: GlyphId }[] = [
   { id: 'recents', label: 'Récents', icon: 'details' },
   { id: 'collections', label: 'Collections', icon: 'collection' },
   { id: 'champions', label: 'Champions', icon: 'legends' },
-  { id: 'importer', label: 'Importer', icon: 'upload' },
 ];
 
 export function Champions() {
   const { catalog, error, retry } = useRetry();
   const [q, setQ] = useSearchParams();
-  const view = (q.get('vue') as View) ?? 'explorer';
+  const raw = q.get('vue');
+  const view = (VIEWS.some((v) => v.id === raw) ? raw : 'explorer') as View;
   const setView = (v: View) => {
     const n = new URLSearchParams(q);
     n.set('vue', v);
     setQ(n, { replace: true });
   };
+  // old links to the removed import view land on the Légendes home (0.28)
+  if (raw === 'importer') return <Navigate to="/champions" replace />;
   return (
     <div className="page">
       <PageHead title="Champions" eyebrow="Bibliothèque des combinaisons" />
@@ -256,7 +284,7 @@ export function Champions() {
               <DisciplineCard key={d.id} id={d.id} to={`/champions?vue=champions&d=${d.id}`} testId={`legend-disc-${d.id}`} compact selected={view === 'champions' && q.get('d') === d.id} />
             ))}
           </div>
-          <Counters list={catalog.combos} />
+          <DnaCard list={catalog.combos} title="ADN de la bibliothèque" sub={<span className="muted"> · {catalog.champions.length} légendes</span>} testId="cat-summary" />
           <StatusExplainer />
           <div className="utabs" role="tablist" aria-label="Sections de la bibliothèque">
             {VIEWS.map((v) => (
@@ -272,7 +300,6 @@ export function Champions() {
           {view === 'recents' && <ComboList list={recentCombos(catalog.combos, 60)} catalog={catalog} empty="Aucune fiche." />}
           {view === 'collections' && <Collections catalog={catalog} />}
           {view === 'champions' && <ChampionGrid catalog={catalog} />}
-          {view === 'importer' && <ImportView catalog={catalog} />}
         </>
       )}
     </div>
@@ -611,6 +638,31 @@ function Collections({ catalog }: { catalog: Catalog }) {
   );
 }
 
+/**
+ * 0.28: a livelier legend card (Youssef, 2026-10-20 21:52): discipline icons, stance, the traits, a tiny
+ * combat DNA bar computed from the champion's sheets; the count is plain text, no more gold box.
+ */
+function ChampionCardLive({ champion: c, combos }: { champion: CatalogChampion; combos: CatalogCombo[] }) {
+  const dna = useMemo(() => comboDna(combos), [combos]);
+  return (
+    <Link to={`/champions/c/${c.id}`} className="champ-card live" data-testid={`champ-${c.id}`}>
+      <span className="champ-discs" role="img" aria-label={c.disciplines.map((x) => DISC_NAME[x]).join(', ')}>
+        {c.disciplines.map((x) => (
+          <DisciplineIcon key={x} id={x} size={22} />
+        ))}
+      </span>
+      <span className="name">{c.name}</span>
+      <span className="small">{c.traits.slice(0, 3).join(', ')}</span>
+      <DnaBar dna={dna} name={c.name} />
+      <span className="small muted">
+        {combos.length} fiche{combos.length > 1 ? 's' : ''}
+        {c.stance ? ` · ${STANCE_LABEL[c.stance]}` : ''}
+        {c.country ? ` · ${c.country}` : ''}
+      </span>
+    </Link>
+  );
+}
+
 function ChampionGrid({ catalog }: { catalog: Catalog }) {
   const [q, setQ] = useSearchParams();
   const d = (DISCIPLINES.some((x) => x.id === q.get('d')) ? q.get('d') : null) as DisciplineId | null;
@@ -620,9 +672,9 @@ function ChampionGrid({ catalog }: { catalog: Catalog }) {
     else n.delete('d');
     setQ(n, { replace: true });
   };
-  const count = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const c of catalog.combos) if (!d || c.discipline === d) m.set(c.champion, (m.get(c.champion) ?? 0) + 1);
+  const byChampion = useMemo(() => {
+    const m = new Map<string, CatalogCombo[]>();
+    for (const c of catalog.combos) if (!d || c.discipline === d) m.set(c.champion, [...(m.get(c.champion) ?? []), c]);
     return m;
   }, [catalog, d]);
   const list = catalog.champions.filter((c) => !d || c.disciplines.includes(d)).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
@@ -640,96 +692,9 @@ function ChampionGrid({ catalog }: { catalog: Catalog }) {
       </div>
       <div className="grid2">
         {list.map((c) => (
-          <Link key={c.id} to={`/champions/c/${c.id}`} className="champ-card" data-testid={`champ-${c.id}`}>
-            <span className="name">{c.name}</span>
-            <span className="small muted row" style={{ gap: 8, flexWrap: 'wrap' }}>
-              {c.disciplines.map((x) => (
-                <DisciplineLabel key={x} id={x} name={DISC_SHORT[x]} />
-              ))}
-            </span>
-            <span className="small">{c.traits.slice(0, 3).join(', ')}</span>
-            <span className="badge gold" style={{ alignSelf: 'flex-start' }}>
-              {count.get(c.id) ?? 0} fiches
-            </span>
-          </Link>
+          <ChampionCardLive key={c.id} champion={c} combos={byChampion.get(c.id) ?? []} />
         ))}
       </div>
-    </div>
-  );
-}
-
-function ImportView({ catalog }: { catalog: Catalog }) {
-  const file = useCatalogData((s) => s.file);
-  const importFile = useCatalogUser((s) => s.importFile);
-  const clearImported = useCatalogUser((s) => s.clearImported);
-  const removeImported = useCatalogUser((s) => s.removeImported);
-  const imported = useCatalogUser((s) => s.imported);
-  const [report, setReport] = useState<ImportResult | null>(null);
-  const [readError, setReadError] = useState<string | null>(null);
-  const input = useRef<HTMLInputElement>(null);
-  const onFile = async (f: File | undefined) => {
-    setReport(null);
-    setReadError(null);
-    if (!f || !file) return;
-    let data: unknown;
-    try {
-      data = JSON.parse(await f.text());
-    } catch {
-      setReadError('Ce fichier n’est pas un JSON valide.');
-      return;
-    }
-    setReport(importFile(file, data));
-    if (input.current) input.current.value = '';
-  };
-  const list = imported.combos.map((c) => catalog.comboById.get(c.id) ?? c);
-  return (
-    <div className="stack">
-      <p className="muted">
-        Ajoute des fiches sans mise à jour de l’application : choisis un fichier JSON au même format que le catalogue (<code>schema: 1</code>). Chaque fiche est vérifiée : techniques connues et autorisées dans la discipline,
-        champs complets, statut justifié (une fiche vérifiée doit citer le combat et le moment exact), séquence non déjà présente.
-      </p>
-      <label className="btn primary block" style={{ cursor: 'pointer' }}>
-        Choisir un fichier JSON
-        <input ref={input} type="file" accept="application/json,.json" className="sr-only" onChange={(e) => void onFile(e.target.files?.[0])} data-testid="cat-import" />
-      </label>
-      {readError && <div className="note err">{readError}</div>}
-      {report?.error && <div className="note err">{report.error}</div>}
-      {report && !report.error && (
-        <div className={`note ${report.rejected.length ? 'warn' : ''}`} role="status">
-          <b>
-            {report.added.length} fiche{report.added.length > 1 ? 's' : ''} ajoutée{report.added.length > 1 ? 's' : ''}, {report.updated.length} mise{report.updated.length > 1 ? 's' : ''} à jour, {report.rejected.length} refusée
-            {report.rejected.length > 1 ? 's' : ''}.
-          </b>
-          {report.championsAdded.length > 0 && <div>Nouveaux champions : {report.championsAdded.join(', ')}.</div>}
-          {report.superseded.length > 0 && <div>{report.superseded.length} fiche(s) inspirée(s) remplacée(s) par une version au statut plus fort.</div>}
-          {report.rejected.length > 0 && (
-            <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
-              {report.rejected.slice(0, 30).map((r) => (
-                <li key={r.id}>
-                  <b>{r.id}</b> : {r.reasons.join(' ; ')}
-                </li>
-              ))}
-              {report.rejected.length > 30 && <li>… et {report.rejected.length - 30} autres.</li>}
-            </ul>
-          )}
-        </div>
-      )}
-      <h2>Fiches importées ({list.length})</h2>
-      <ComboList
-        list={list}
-        catalog={catalog}
-        empty="Aucune fiche importée."
-        extra={(c) => (
-          <button className="btn sm icon" style={{ width: 38 }} onClick={() => removeImported(c.id)} aria-label={`Supprimer la fiche importée ${c.name}`}>
-            <AppIcon id="delete" size={16} />
-          </button>
-        )}
-      />
-      {list.length > 0 && (
-        <button className="btn secondary" onClick={() => window.confirm('Supprimer toutes les fiches importées ?') && clearImported()}>
-          Supprimer toutes les fiches importées
-        </button>
-      )}
     </div>
   );
 }
@@ -1089,6 +1054,33 @@ function ChampionQuickStart({ eyebrow, combo, catalog, onOther }: { eyebrow: str
   return <QuickStart eyebrow={eyebrow} combo={combo} catalog={catalog} testId="champ-quick" />;
 }
 
+/** « Ce que tu vas travailler » : the 3 techniques most present in the shown sheets (0.28, computed) */
+function WorkFocus({ list, disc }: { list: CatalogCombo[]; disc: DisciplineId }) {
+  const focus = useMemo(() => focusTechniques(list, 3), [list]);
+  if (!focus.length) return null;
+  return (
+    <section className="card work-focus" data-testid="champ-focus">
+      <span className="eyebrow">Ce que tu vas travailler</span>
+      <ul>
+        {focus.map((f) => (
+          <li key={f.id}>
+            <Link to={`/techniques/${f.id}?d=${disc}`}>
+              <TechThumb id={f.id} size="sm" />
+              <span className="body">
+                <span className="title">{f.name}</span>
+                <span className="small muted">
+                  dans {f.combos} fiche{f.combos > 1 ? 's' : ''} sur {list.length}
+                </span>
+              </span>
+              <AppIcon id="chevron" className="muted" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export function ChampionPage() {
   const { championId } = useParams();
   const { catalog, error, retry } = useRetry();
@@ -1138,10 +1130,24 @@ export function ChampionPage() {
             </span>
           ))}
           {ch.stance && <span className="badge">Garde : {STANCE_LABEL[ch.stance]}</span>}
+          {ch.country && <span className="badge">{ch.country}</span>}
+          {ch.era && <span className="badge">{ch.era}</span>}
         </div>
         <span className="small muted">{ch.source}</span>
       </section>
-      <Counters list={all} />
+      <DnaCard list={list} title={ch.disciplines.length > 1 ? `ADN de combat · ${DISC_SHORT[disc]}` : 'ADN de combat'} testId="champ-dna" />
+      <WorkFocus list={list} disc={disc} />
+      {ch.funFact && (
+        <section className="card fun-fact" data-testid="champ-fact">
+          <span className="eyebrow gold">
+            <AppIcon id="info" size={16} /> Le savais-tu ?
+          </span>
+          <p>{ch.funFact.text}</p>
+          <a className="small muted" href={ch.funFact.url} target="_blank" rel="noreferrer noopener">
+            Source : Wikipédia (en anglais)
+          </a>
+        </section>
+      )}
       <div className="note small">Les fiches ci-dessous reprennent des traits généraux de ce style. Sauf mention « Vérifiée » ou « Adaptée » avec sa référence, ce ne sont pas des séquences exécutées par le champion en combat.</div>
       {ch.disciplines.length > 1 && (
         <div className="tabs" role="tablist" aria-label="Discipline">

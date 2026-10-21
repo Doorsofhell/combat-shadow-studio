@@ -1189,3 +1189,65 @@ traitée dans un lot séparé). Audit complet et sources : `docs/ENRICHISSEMENT_
 - **Limites** — aucune revue d’expert ; sources en ligne lues par un lecteur de synthèse ; le sens du pivot du
   check hook est notre lecture des sources ; miniatures o-uchi-gari et ko-uchi-gari peu parlantes ; validation
   sur téléphone NON EXÉCUTÉE.
+
+## 2026-10-20 · v0.28.0 (en préparation) · Enrichissement des Légendes
+
+Demandes de Youssef : 21:52 « Je voudrais aussi que tu enrichisse toutes les disciplines et les légendes. Pour les
+légendes, retire les rectangles sur le nombre de techniques, Soit créatif » (partie Légendes de ce lot ; les
+techniques sont traitées dans un autre lot) ; 22:02 « Retire importer. C'est trop technique ».
+
+- **Catalogue 1.1.0** (schéma 1 inchangé, `scripts/build-catalog.mjs` + `scripts/catalog-legends.mjs`) — Constat :
+  aucune légende en judo ni en jiu-jitsu brésilien (les cartes de ces disciplines menaient à une liste vide), aucune
+  femme en boxe, kick-boxing et muay-thaï. Correction : 27 nouveaux profils — judo 8 (Teddy Riner, Clarisse
+  Agbegnenou, Kosei Inoue, Ryoko Tani, David Douillet, Yasuhiro Yamashita, Majlinda Kelmendi, Uta Abe) + Ronda Rousey
+  (MMA et judo) ; jiu-jitsu 8 (Roger Gracie, Marcelo Garcia, Rickson Gracie, Marcus « Buchecha » Almeida, Gabi
+  Garcia, Mackenzie Dern, Bia Mesquita, Ffion Davies) ; boxe 4 (Claressa Shields, Katie Taylor, Estelle Mossely,
+  Amanda Serrano) ; kick-boxing et muay-thaï 3 (Anissa Meksen, Tiffany van Soest, Stamp Fairtex) ; MMA 3 (Cris
+  Cyborg, Rose Namajunas, Zhang Weili). Shevchenko et Jędrzejczyk reçoivent aussi le muay-thaï. 12 fiches par
+  nouveau profil ou nouvelle discipline : boxe 300 → 348, kick-boxing 250 → 286, MMA 300 → 348, muay-thaï 250 → 310,
+  judo 0 → 108, jiu-jitsu 0 → 96 (1100 → 1496). Judo et jiu-jitsu : exercices solo de bases construits uniquement
+  avec les techniques existantes (déplacements, kuzushi, uchikomi à vide ; descente, pont, rétention de garde,
+  changement de base, sortie de hanche, relevé), tous jouables en 3D, source « Exercice solo inspiré du profil… ;
+  séquence originale de bases, non relevée en combat ». Aucune projection ni soumission simulée.
+- **Profils enrichis** (107) : pays, époque quand la page source donne les années, et une anecdote « Le savais-tu ? »
+  avec son lien. Chaque fait a été relu le 2026-10-20 sur la page Wikipedia (anglais) citée ; aucun fait ajouté sans
+  cette lecture. Gardes existantes conservées. Liste et sources : `docs/LEGENDES.md`.
+- **Migration** : les 1100 fiches v1.0.0 gardent identifiants, ordre, noms et séquences (empreinte testée) ; favoris,
+  collections, historique et fiches importées continuent de fonctionner. Champs ajoutés facultatifs (`country`,
+  `era`, `funFact`), validés s’ils sont présents. Les points clés et erreurs de ces fiches sont régénérés depuis les
+  textes actuels des techniques (592 et 273 fiches concernées, sans changement de séquence). Le générateur ne
+  s’arrête plus sur une technique sans nom court (il prend son nom complet).
+- **Plus de rectangles** — Constat : 5 cases (« Fiches, Vérifiées, Adaptées, Inspirées, Jouables en 3D ») sur la page
+  Légendes et sur chaque champion, 160 px de haut à 393 px, dont deux toujours à 0. Correction : la **fleur de
+  style** (« ADN de combat ») : un pétale par famille de mouvements (poings, pieds, genoux et coudes, lutte et sol,
+  défense et feintes, déplacements), surface proportionnelle à sa part dans toutes les séquences des fiches (calcul
+  `src/domain/catalog/dna.ts`, postures exclues), le nombre de fiches au cœur ; à côté, les 4 familles principales en
+  pourcentage, puis une ligne de statut qui ne montre que les statuts présents (« 1 496 inspirées ») et « Toutes
+  jouables en 3D ». 139 px au lieu de 160. Accessibilité : `role="img"` avec un aria-label qui donne tous les
+  pourcentages. Sur la page d’un champion : « Ce que tu vas travailler » (les 3 techniques les plus présentes dans ses
+  fiches, familles variées, avec le nombre de fiches et un lien vers la technique) et « Le savais-tu ? ». Liste des
+  légendes : icônes de discipline, barre d’ADN miniature, « 12 fiches · garde · pays » en texte (plus de case dorée).
+  Fichiers : components/LegendDna.tsx, screens/Champions.tsx, styles.css.
+- **Importer retiré** (22:02) : l’onglet « Importer » disparaît des Légendes ; un ancien lien `?vue=importer` revient
+  à l’accueil des Légendes. Le code et les données d’import restent : les fiches déjà importées sont conservées et
+  affichées (recherche, favoris, collections, historique, badge « Importée »). Guide du Coach IA : mention et
+  mot-clé « importer des fiches » retirés de la réponse Légendes. Aucun test ne couvrait l’écran d’import ; les tests
+  unitaires de la couche de données (import, store) sont gardés.
+- **Tests** : tsc -b — TEST RÉUSSI. Vitest : 424 réussis, 1 non exécuté (existant) au premier passage
+  complet — TEST RÉUSSI ; sur deux autres passages, un échec par délai dépassé dans un test moteur (`camera.test.ts`
+  « corps dans le cadre », 5 s) — instabilité existante : elle se produit aussi sur la v0.26.0 sans ce lot, et le test
+  réussit seul (13/13). Nouveaux tests : `dna.test.ts` (axes, parts, vide, « Ce que tu vas travailler », chaque
+  champion) ; `catalog.test.ts` (empreinte des 1100 fiches v1.0.0, fiches par discipline avant/après, pays et anecdote
+  sourcée pour chaque champion, championnes par discipline, exercices judo/jiu-jitsu honnêtes et jouables, fichier
+  sans les nouveaux champs toujours valide) ; le test « nombre de champions par discipline » passe de [20, 20, 24, 20]
+  à [24, 23, 28, 25, 9, 8] (raison écrite dans le test). Playwright (build de cette branche, port dédié) : app,
+  coach-bubble, contrast (+ liste des légendes de jiu-jitsu et page Teddy Riner ajoutées), discipline-art, theme,
+  legendes-quick-start, action-pill, bjj-judo et le nouveau `legendes-adn.spec.ts` (fleur plus basse que l’ancienne
+  grille, résumé accessible, axe sur fleur/focus/anecdote/cartes, judo et jiu-jitsu, Importer retiré et redirigé) :
+  67 réussis — TEST RÉUSSI. Au premier passage, le contraste a relevé le nombre écrit en SVG au cœur de la fleur
+  (mesure 1,09:1) : le nombre est maintenant du texte HTML posé sur le cœur, relance réussie
+- **Captures** 393×851 sombre et clair (avant/après) : liste Légendes, cartes des légendes, page Mike Tyson, Teddy
+  Riner (judo), Marcelo Garcia (jiu-jitsu).
+- **Limites** : pas de validation sur téléphone (NON EXÉCUTÉ) ; sources secondaires (Wikipedia en anglais), pas de
+  page de fédération ; les fiches judo et jiu-jitsu ne travaillent que les bases solo disponibles (pas de technique
+  propre à chaque champion) ; l’ADN décrit les fiches générées (un style « inspiré »), pas des statistiques de combat.

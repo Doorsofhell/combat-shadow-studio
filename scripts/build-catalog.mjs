@@ -18,11 +18,18 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { TECHNIQUES } from '../src/domain/techniques.ts';
 import { GUIDES } from '../src/domain/guide.ts';
+import { EXTRA_DISCIPLINES, INFO, NEW_CHAMPIONS } from './catalog-legends.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = resolve(ROOT, 'public/catalog/catalog-v1.json');
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
+/** date des 1100 premières fiches (v1.0.0) : elles ne changent pas d’identifiant ni de séquence */
 const ADDED_AT = '2026-10-17';
+/** v1.1.0 (v0.28 de l’application) : nouveaux profils, judo et jiu-jitsu brésilien */
+const ADDED_AT_V11 = '2026-10-20';
+let currentAddedAt = ADDED_AT;
+/** fiches par nouveau profil (ou par discipline ajoutée à un profil existant) */
+const PER_NEW = 12;
 const TARGET = { boxe: 300, kickboxing: 250, mma: 300, muaythai: 250 };
 const DISCS = ['boxe', 'kickboxing', 'mma', 'muaythai'];
 
@@ -72,7 +79,14 @@ const SN = {
   'changement-niveau': 'changement de niveau', 'entree-lutte': 'entrée en double-leg', sprawl: 'sprawl', 'defense-lutte': 'défense de lutte',
   'descente-sol': 'descente au sol', 'sortie-hanche': 'sortie de hanche', 'releve-technique': 'relevé technique',
 };
-for (const t of TECHNIQUES) if (t.id !== 'garde' && !SN[t.id]) throw new Error(`nom court manquant : ${t.id}`);
+// v0.28 : jiu-jitsu brésilien et judo (techniques solo, discipline par discipline)
+Object.assign(SN, {
+  'garde-bjj': 'posture de grappling', pont: 'pont', 'retention-garde': 'rétention de garde', 'changement-base': 'changement de base',
+  'shizen-tai': 'shizen-tai', 'tsugi-ashi-avant': 'tsugi-ashi avant', 'tsugi-ashi-arriere': 'tsugi-ashi arrière', 'tsugi-ashi-lateral': 'tsugi-ashi latéral',
+  'tai-sabaki': 'tai-sabaki', kuzushi: 'kuzushi', 'uchikomi-seoi': 'uchikomi de seoi-nage',
+});
+// une technique ajoutée plus tard sans nom court garde son nom complet (le générateur ne s’arrête pas)
+for (const t of TECHNIQUES) if (t.id !== 'garde' && !SN[t.id]) SN[t.id] = t.name.charAt(0).toLowerCase() + t.name.slice(1);
 
 const STRIKE = new Set(['poing', 'pied', 'genou', 'coude']);
 const isStrike = (id) => STRIKE.has(cat(id)) || id === 'genou-clinch' || id === 'genou-circulaire-clinch';
@@ -773,7 +787,7 @@ function makeEntry(champ, d, arch, seq, rng, n) {
       variants: variants.slice(0, 3),
       goal,
       tags: [...tags],
-      addedAt: ADDED_AT,
+      addedAt: currentAddedAt,
     },
     objective,
     name,
@@ -781,17 +795,21 @@ function makeEntry(champ, d, arch, seq, rng, n) {
 }
 const PRIO = { sol: 9, lutte: 8, clinch: 7, pied: 6, genou: 6, coude: 5, defense: 4, feinte: 3, poing: 2, deplacement: 1, garde: 0 };
 
-for (const d of DISCS) {
-  const champs = CHAMPIONS.filter((c) => c.d.includes(d));
+/**
+ * Génère les fiches d’une liste de champions dans une discipline de frappe. `cap` limite le nombre de
+ * fiches par champion (phase 2) ; en phase 1 (cap infini), l’ordre des tirages est exactement celui de
+ * la v1.0.0, ce qui garde les 1100 premières fiches identiques (identifiants et séquences).
+ */
+function generateStriking(d, champs, target, cap = Infinity) {
   const state = new Map(champs.map((c) => [c.id, { rng: rngFrom(`${d}:${c.id}`), n: 0, used: {}, dead: false }]));
   let count = 0;
   let stalled = 0;
-  while (count < TARGET[d] && stalled < champs.length) {
+  while (count < target && stalled < champs.length) {
     stalled = 0;
     for (const champ of champs) {
-      if (count >= TARGET[d]) break;
+      if (count >= target) break;
       const st = state.get(champ.id);
-      if (st.dead) {
+      if (st.dead || st.n >= cap) {
         stalled++;
         continue;
       }
@@ -839,25 +857,265 @@ for (const d of DISCS) {
       }
     }
   }
+  stats.perDisc[d] = (stats.perDisc[d] ?? 0) + count;
+}
+
+// ------------------------------------------------------------------ phase 1 : catalogue v1.0.0 (inchangé)
+for (const d of DISCS) generateStriking(d, CHAMPIONS.filter((c) => c.d.includes(d)), TARGET[d]);
+
+// ------------------------------------------------------------------ phase 2 : nouveaux profils (v1.1.0)
+currentAddedAt = ADDED_AT_V11;
+const STRIKING_NEW = NEW_CHAMPIONS.filter((c) => c.d.some((d) => DISCS.includes(d)));
+for (const d of DISCS) {
+  const champs = [
+    ...CHAMPIONS.filter((c) => EXTRA_DISCIPLINES[c.id]?.includes(d)),
+    ...STRIKING_NEW.filter((c) => c.d.includes(d)),
+  ];
+  generateStriking(d, champs, champs.length * PER_NEW, PER_NEW);
+}
+
+// ------------------------------------------------------------------ phase 3 : judo et jiu-jitsu (exercices solo)
+const GRAPPLING = ['judo', 'bjj'];
+const J_MOVES = ['tsugi-ashi-avant', 'tsugi-ashi-arriere', 'tsugi-ashi-lateral'];
+const B_GROUND = ['pont', 'retention-garde', 'changement-base', 'sortie-hanche'];
+const G_STATES = { ...STATES, pont: ['ground', 'ground'], 'retention-garde': ['ground', 'ground'], 'changement-base': ['ground', 'ground'] };
+const G_DOUBLE_OK = new Set([...J_MOVES, 'uchikomi-seoi', 'pont', 'sortie-hanche']);
+
+const GRAPPLING_ARCH = {
+  judo: {
+    entree: { title: 'Entrée', verb: 'Se placer, déséquilibrer et entrer avec', why: 'l’entrée part au moment où le déséquilibre est créé, pas avant', kp: 'Le kuzushi (déséquilibre) prépare toujours l’entrée', err: 'Entrer en se penchant, sans avoir déséquilibré', goal: 'technique', tag: 'projection', w: 3 },
+    kuzushi: { title: 'Déséquilibre', verb: 'Travailler le kuzushi avec', why: 'sans déséquilibre, aucune projection ne marche, même pour un poids lourd', kp: 'Le tirage vient du pas et des hanches, pas seulement des bras', err: 'Tirer avec les bras seuls, le corps immobile', goal: 'technique', tag: 'kuzushi', w: 2 },
+    sabaki: { title: 'Rotation', verb: 'Tourner autour du pied avant et enchaîner avec', why: 'la rotation du corps place les hanches sans perdre l’équilibre', kp: 'Pivoter sur l’avant du pied, à hauteur constante', err: 'Se relever pendant la rotation', goal: 'deplacement', tag: 'deplacement', w: 1.5 },
+    uchikomi: { title: 'Série d’uchikomi', verb: 'Répéter les entrées à vide avec', why: 'la répétition rend l’entrée automatique et rapide', kp: 'Revenir en shizen-tai, bien droit, entre deux entrées', err: 'Raccourcir l’entrée en fin de série, par fatigue', goal: 'cardio', tag: 'uchikomi', w: 1.5 },
+    deplacement: { title: 'Déplacements', verb: 'Se déplacer en tsugi-ashi et conclure avec', why: 'des pieds qui glissent sans se croiser gardent l’équilibre', kp: 'Les pieds rasent le tapis et ne se croisent jamais', err: 'Sauter ou croiser les pieds', goal: 'deplacement', tag: 'deplacement', w: 1.5 },
+  },
+  bjj: {
+    sortie: { title: 'Sortie de dessous', verb: 'Descendre, se dégager puis se relever avec', why: 'le pont et la sortie de hanche créent l’espace pour se dégager', kp: 'La force vient des pieds et des hanches, pas de la nuque', err: 'Pousser avec les bras tendus au lieu des hanches', goal: 'defense', tag: 'sortie-dessous', w: 2 },
+    garde: { title: 'Garde au sol', verb: 'Garder sa garde puis se relever avec', why: 'les hanches qui pivotent gardent les jambes entre toi et le partenaire', kp: 'Les épaules restent au sol, ce sont les hanches qui tournent', err: 'Laisser tomber les jambes et ouvrir la garde', goal: 'defense', tag: 'garde-sol', w: 2 },
+    base: { title: 'Base et retour debout', verb: 'Changer de base et revenir debout avec', why: 'passer à quatre appuis permet de se relever ou de reprendre le dessus', kp: 'Les mains restent sous les épaules à quatre appuis', err: 'Se relever droit, sans protéger le visage', goal: 'technique', tag: 'base', w: 2 },
+    mobilite: { title: 'Mobilité au sol', verb: 'Enchaîner sans pause au sol', why: 'enchaîner les mouvements développe la mobilité des hanches', kp: 'Respirer pendant tout l’enchaînement', err: 'Bloquer la respiration', goal: 'cardio', tag: 'mobilite', w: 1.5 },
+    cycle: { title: 'Descendre et se relever', verb: 'Descendre et se relever plusieurs fois avec', why: 'savoir descendre et remonter en contrôle est la base du travail au sol', kp: 'Descente contrôlée, main posée derrière', err: 'Tomber sur le coccyx', goal: 'technique', tag: 'sol', w: 1.2 },
+  },
+};
+const G_LEN_W = { judo: [0, 0, 6, 12, 14, 14, 12, 10, 8, 6, 5], bjj: [0, 0, 0, 10, 14, 14, 12, 10, 8, 6, 5] };
+const G_TIP = {
+  judo: 'Uchikomi à vide : la projection se fait seulement avec un partenaire, sur tatami, encadré par un professeur.',
+  bjj: 'Sur un tapis ou une surface souple. Le travail avec un partenaire se fait encadré par un professeur.',
+};
+const G_SWAP = { 'tsugi-ashi-avant': 'tsugi-ashi-arriere', 'tsugi-ashi-arriere': 'tsugi-ashi-avant', 'tsugi-ashi-lateral': 'tsugi-ashi-avant', kuzushi: 'uchikomi-seoi', pont: 'sortie-hanche', 'sortie-hanche': 'pont', 'retention-garde': 'changement-base', 'changement-base': 'retention-garde' };
+const G_PRIO = { projection: 6, sol: 5, deplacement: 1, garde: 0 };
+
+/** null si l’exercice est correct, sinon la règle violée */
+function gQuality(seq, d) {
+  if (seq.length < 2 || seq.length > 10) return 'longueur';
+  let state = 'stand';
+  let run = 1;
+  let moves = 0;
+  let hips = 0;
+  for (let i = 0; i < seq.length; i++) {
+    const id = seq[i];
+    const prev = seq[i - 1];
+    if (!allowed(id, d)) return 'discipline';
+    if (prev === id) {
+      if (!G_DOUBLE_OK.has(id) || ++run > 2) return 'repetition';
+    } else run = 1;
+    const [from, to] = G_STATES[id] ?? ['stand', 'stand'];
+    if (from !== state) return 'etat-sol';
+    state = to;
+    moves = cat(id) === 'deplacement' ? moves + 1 : 0;
+    if (moves > 3) return 'deplacements';
+    if (id === 'sortie-hanche' && ++hips > 3) return 'sol-long';
+    if ((id === 'shizen-tai' || id === 'garde-bjj') && i > 0) {
+      if (i === seq.length - 1 || prev === id) return 'posture';
+      if (id === 'garde-bjj') return 'posture';
+    }
+  }
+  if (state !== 'stand') return 'fin-au-sol';
+  if (seq[0] === 'shizen-tai') return 'posture';
+  if (d === 'judo' && !seq.some((id) => cat(id) === 'projection')) return 'sans-entree';
+  if (d === 'bjj' && !seq.some((id) => B_GROUND.includes(id))) return 'sans-sol';
+  if (validateIssues(seq, d)) return 'avertissement';
+  return null;
+}
+/** mêmes règles que validateSequence() : aucun avertissement toléré */
+function validateIssues(seq) {
+  for (let i = 1; i < seq.length; i++) if (cat(seq[i]) === 'pied' && cat(seq[i - 1]) === 'pied') return true;
+  return false;
+}
+
+function gBuild(c, d, arch, L) {
+  const move = () => c.pick(J_MOVES);
+  if (d === 'judo') {
+    const unit = (a) => {
+      if (a === 'entree') return [...(c.chance(0.7) ? [move()] : []), ...(c.chance(0.6) ? ['kuzushi'] : []), 'uchikomi-seoi'];
+      if (a === 'kuzushi') return [c.chance(0.5) ? 'tsugi-ashi-arriere' : move(), 'kuzushi'];
+      if (a === 'sabaki') return ['tai-sabaki', c.pick(['kuzushi', 'uchikomi-seoi'])];
+      if (a === 'uchikomi') return c.chance(0.5) ? ['uchikomi-seoi', 'shizen-tai'] : ['kuzushi', 'uchikomi-seoi'];
+      return [move(), ...(c.chance(0.5) ? [move()] : []), c.chance(0.5) ? 'shizen-tai' : c.pick(['kuzushi', 'uchikomi-seoi'])];
+    };
+    const seq = [];
+    let a = arch;
+    while (seq.length < L) {
+      seq.push(...unit(a));
+      a = c.chance(0.7) ? arch : c.pick(Object.keys(GRAPPLING_ARCH.judo));
+    }
+    seq.length = L;
+    return seq;
+  }
+  const pool = { sortie: ['pont', 'sortie-hanche'], garde: ['retention-garde', 'sortie-hanche'], base: ['changement-base', 'sortie-hanche', 'pont'], mobilite: B_GROUND, cycle: B_GROUND }[arch];
+  const start = c.chance(0.3) ? ['garde-bjj'] : [];
+  const cycles = arch === 'cycle' || (L >= 7 && c.chance(0.3)) ? 2 : 1;
+  const slots = L - start.length - 2 * cycles;
+  if (slots < cycles) return null;
+  const first = cycles === 2 ? c.int(1, slots - 1) : slots;
+  const ground = (n) => Array.from({ length: n }, () => c.pick(pool));
+  const seq = [...start, 'descente-sol', ...ground(first), 'releve-technique'];
+  if (cycles === 2) seq.push('descente-sol', ...ground(slots - first), 'releve-technique');
+  return seq;
+}
+
+const nameOf = (id) => SN[id];
+function rle(seq) {
+  const out = [];
+  for (let i = 0; i < seq.length; i++) {
+    if (seq[i + 1] === seq[i]) {
+      out.push(`${nameOf(seq[i])} (deux fois)`);
+      i++;
+    } else out.push(nameOf(seq[i]));
+  }
+  return out;
+}
+
+function gEntry(champ, d, arch, seq, rng, n) {
+  const A = GRAPPLING_ARCH[d][arch];
+  const objective = `${A.verb} ${joinFr(rle(seq))} : ${A.why}.`;
+  if (usedObjectives.has(objective)) return { reject: 'objectif-doublon' };
+  const distinct = seq.filter((id, i) => seq.indexOf(id) === i && cat(id) !== 'garde');
+  const base = `${A.title} : ${distinct.slice(0, 4).map(nameOf).join(' – ')}`;
+  let name = base;
+  for (let k = 1; usedNames.has(name); k++) name = k === 1 ? `${base} (${seq.length} temps)` : `${base} (${seq.length} temps, n° ${k})`;
+  const focus = [...seq].sort((a, b) => (G_PRIO[cat(b)] ?? 0) - (G_PRIO[cat(a)] ?? 0))[0];
+  const kp = [A.kp];
+  for (const id of distinct.sort((a, b) => (G_PRIO[cat(b)] ?? 0) - (G_PRIO[cat(a)] ?? 0)).slice(0, 2)) {
+    const t = T.get(id).keyPoints?.[0];
+    if (t && kp.length < 4) kp.push(`${T.get(id).name} : ${lc(t)}`);
+  }
+  if (kp.length < 2) kp.push('Garder le dos droit et le regard devant');
+  const errors = [A.err];
+  const gErr = GUIDES[focus]?.errors?.[0];
+  errors.push(gErr ? `${T.get(focus).name} : ${lc(gErr)}` : 'Accélérer au détriment de la qualité du mouvement');
+  const variants = [];
+  for (let i = seq.length - 1; i >= 0; i--) {
+    const alt = G_SWAP[seq[i]];
+    if (!alt) continue;
+    const v = [...seq];
+    v[i] = alt;
+    if (!gQuality(v, d) && !usedKeys.has(`${d}|${v.join(',')}`)) {
+      variants.push({ label: `Varier : ${nameOf(alt)} à la place de ${nameOf(seq[i])}`, sequence: v });
+      break;
+    }
+  }
+  variants.push({ label: G_TIP[d] });
+  const tags = new Set([A.tag]);
+  if (seq.some((id) => cat(id) === 'deplacement')) tags.add('deplacement');
+  if (seq.includes('uchikomi-seoi')) tags.add('projection');
+  if (seq.includes('kuzushi')) tags.add('kuzushi');
+  if (d === 'bjj') tags.add('sol');
+  if (seq.includes('retention-garde')) tags.add('garde-sol');
+  if (arch === 'uchikomi' || arch === 'mobilite' || seq.length >= 8) tags.add('cardio');
+  let guard = 'les-deux';
+  if (champ.stance === 'gaucher') guard = rng() < 0.6 ? 'gaucher' : 'les-deux';
+  const L = seq.length;
+  return {
+    entry: {
+      id: `${d}-${champ.id}-${String(n).padStart(4, '0')}`,
+      name,
+      discipline: d,
+      champion: champ.id,
+      status: 'inspiree',
+      source: {
+        kind: 'profil-style',
+        note: `Exercice solo inspiré du profil de style de ${champ.name} (${champ.traits.slice(0, 2).join(', ')}) ; séquence originale de bases, non relevée en combat.`,
+      },
+      guard,
+      level: L <= 3 ? 'debutant' : L <= 5 ? 'intermediaire' : L <= 7 ? 'avance' : 'expert',
+      distance: d === 'bjj' ? 'sol' : 'corps-a-corps',
+      sequence: seq,
+      objective,
+      keyPoints: kp.slice(0, 4),
+      errors: errors.slice(0, 3),
+      estimatedSec: Math.round((seq.reduce((s, id) => s + ({ projection: 1.2 }[cat(id)] ?? DUR[cat(id)]), 0) + 1) * 2) / 2,
+      variants: variants.slice(0, 3),
+      goal: A.goal,
+      tags: [...tags],
+      addedAt: currentAddedAt,
+    },
+    objective,
+    name,
+  };
+}
+
+for (const d of GRAPPLING) {
+  let count = 0;
+  for (const champ of NEW_CHAMPIONS.filter((c) => c.d.includes(d))) {
+    const rng = rngFrom(`${d}:${champ.id}`);
+    const c = makeCtx(rng, champ, d);
+    const used = {};
+    let n = 0;
+    for (let attempt = 0; attempt < 4000 && n < PER_NEW; attempt++) {
+      const weights = {};
+      for (const [k, A] of Object.entries(GRAPPLING_ARCH[d])) weights[k] = (A.w * (champ.a[k] ?? 1)) / (1 + 0.6 * (used[k] ?? 0));
+      const arch = weightedPick(rng, weights);
+      const L = Number(weightedPick(rng, Object.fromEntries(G_LEN_W[d].map((w, i) => [i, w]))));
+      const seq = gBuild(c, d, arch, L);
+      if (!seq || seq.length !== L) continue;
+      const bad = gQuality(seq, d);
+      if (bad) {
+        stats.rejected[`${d}-${bad}`] = (stats.rejected[`${d}-${bad}`] ?? 0) + 1;
+        continue;
+      }
+      const key = `${d}|${seq.join(',')}`;
+      if (usedKeys.has(key)) continue;
+      const r = gEntry(champ, d, arch, seq, rng, n + 1);
+      if (r.reject) continue;
+      usedKeys.add(key);
+      usedObjectives.add(r.objective);
+      usedNames.add(r.name);
+      used[arch] = (used[arch] ?? 0) + 1;
+      n++;
+      count++;
+      combos.push(r.entry);
+    }
+    if (n < PER_NEW) throw new Error(`${champ.id} : ${n} fiches en ${d}`);
+  }
   stats.perDisc[d] = count;
 }
 
-const champions = CHAMPIONS.map((c) => ({
-  id: c.id,
-  name: c.name,
-  disciplines: c.d,
-  ...(c.stance ? { stance: c.stance } : {}),
-  style: c.style,
-  traits: c.traits,
-  source: SOURCE_NOTE,
-}));
+// ------------------------------------------------------------------ profils
+const ALL_CHAMPIONS = [...CHAMPIONS, ...NEW_CHAMPIONS];
+for (const c of ALL_CHAMPIONS) if (!INFO[c.id]) throw new Error(`anecdote manquante : ${c.id}`);
+const champions = ALL_CHAMPIONS.map((c) => {
+  const info = INFO[c.id];
+  return {
+    id: c.id,
+    name: c.name,
+    disciplines: [...c.d, ...(EXTRA_DISCIPLINES[c.id] ?? [])],
+    ...(c.stance ? { stance: c.stance } : {}),
+    style: c.style,
+    traits: c.traits,
+    source: SOURCE_NOTE,
+    country: info.country,
+    ...(info.era ? { era: info.era } : {}),
+    funFact: { text: info.fact, url: info.ref },
+  };
+});
 
-const catalog = { schema: 1, version: VERSION, updatedAt: ADDED_AT, champions, combos };
+const catalog = { schema: 1, version: VERSION, updatedAt: ADDED_AT_V11, champions, combos };
 mkdirSync(dirname(OUT), { recursive: true });
 // une fiche par ligne : diff lisibles lors des mises à jour
 const body = [
   '{',
-  `"schema":1,"version":${JSON.stringify(VERSION)},"updatedAt":${JSON.stringify(ADDED_AT)},`,
+  `"schema":1,"version":${JSON.stringify(VERSION)},"updatedAt":${JSON.stringify(ADDED_AT_V11)},`,
   `"champions":[\n${champions.map((c) => JSON.stringify(c)).join(',\n')}\n],`,
   `"combos":[\n${combos.map((c) => JSON.stringify(c)).join(',\n')}\n]`,
   '}',
