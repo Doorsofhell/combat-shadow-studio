@@ -222,7 +222,9 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
   const face = useLoader(TextureLoader, own ? `${own}_face.png` : maskUrl);
   // hair cards of the realistic look (v0.29): champion coaches only. Loaded on the side: until it is
   // there (or if it cannot be loaded) the coach keeps the painted hair
-  const hairAtlas = useHairAtlas(!!own && style === 'realiste');
+  // (?groom=0 in development: the painted hair of v0.28, for before/after captures)
+  const noGroom = import.meta.env.DEV && typeof location !== 'undefined' && new URLSearchParams(location.search).get('groom') === '0';
+  const hairAtlas = useHairAtlas(!!own && style === 'realiste' && !noGroom);
   // one skeleton per model: changing the look swaps the materials only, so the rig, the player and the
   // animation in progress are kept (no remount, the session goes on)
   const base = useMemo(() => {

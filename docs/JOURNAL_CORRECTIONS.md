@@ -1292,3 +1292,8 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Secours** — Si la texture de mèches ne charge pas, la coiffure peinte précédente reste affichée. Le style Anime
   n'est pas modifié. Qualité basse : 55 % des cartes.
 - **Tests** — `src/three/__tests__/groom.test.ts` (mèches jamais dans le crâne, volume borné, forme de barbe).
+- **Tests lot 1** — Vitest : TEST RÉUSSI (474 réussis, 1 ignoré). Playwright complet : 135 réussis, 2 ignorés, 2 ÉCHOUÉS
+  puis corrigés : `action-pill.spec` (axe lisait la couleur de la pilule pendant son apparition, rouge #e32d3e à
+  mi-fondu) et `training-layout.spec:187` (chevauchement mesuré pendant que le panneau du coach glissait encore ;
+  échoue aussi 2 fois sur 3 sur la v0.28.0). Les deux tests attendent maintenant la fin des animations, aucune
+  assertion affaiblie : 3/3 et 4/4 réussis. Validation sur téléphone : NON EXÉCUTÉ.
