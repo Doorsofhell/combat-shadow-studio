@@ -1266,3 +1266,12 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   le rechargement partait avant l’enregistrement de la taille (le test attend maintenant l’écriture IndexedDB),
   et la poignée était mesurée pendant l’animation du panneau (le test attend qu’elle soit immobile).
   Aucune assertion affaiblie. Validation sur téléphone : NON EXÉCUTÉ.
+
+## 2026-10-21 · v0.29.0 (en préparation) · Audit ultra-réalisme
+
+- **Constat** — Barbe, cheveux, sourcils et poils sont peints dans le shader de peau avec un bruit par pixel
+  (d'où les points et l'effet casque) ; peau sans pores ni rugosité ; ombres désactivées ; une seule tenue ;
+  aucun environnement ; style Anime par défaut. Détail et causes ligne par ligne : `docs/v029/AUDIT_REALISME.md`.
+- **Méthode** — Hair cards générées dans Blender depuis de vraies mèches + shader anisotrope ; peau avec
+  micro-relief et rugosité ; tenues et environnements modélisés ; options A/B ; 5 lots publiés un par un.
+- Branche `feature/combat-shadow-v029` créée depuis v0.28.0 (`95d704d`, tag `restauration/avant-v029`).
