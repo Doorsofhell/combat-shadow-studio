@@ -31,17 +31,28 @@ const RESUMABLE: TrainingMode[] = ['libre', 'technique', 'cardio', 'rounds'];
 const NO_EVENTS: PlayerEvents = {};
 
 /** keeps the home screen usable when WebGL is unavailable */
-class StageBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
+class StageBoundary extends Component<{ children: ReactNode }, { failed: boolean; retry: number }> {
+  state = { failed: false, retry: 0 };
   static getDerivedStateFromError() {
     return { failed: true };
   }
-  componentDidCatch() {
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    // Record the real cause: a React/asset error is not necessarily GPU memory exhaustion.
+    console.error('[CoachStage] 3D render failed', error, info.componentStack);
     writeSafe3d();
   }
+  retry = () => {
+    writeSafe3d();
+    this.setState((s) => ({ failed: false, retry: s.retry + 1 }));
+  };
   render() {
-    if (this.state.failed) return <div className="hero-loading small">Affichage 3D indisponible pour le moment. Ferme puis rouvre l’application : le coach reviendra en qualité légère.</div>;
-    return this.props.children;
+    if (this.state.failed) return (
+      <div className="hero-loading small" role="alert">
+        <p>Le coach 3D n’a pas pu être affiché.</p>
+        <button type="button" className="btn secondary" onClick={this.retry}>Réessayer en qualité légère</button>
+      </div>
+    );
+    return <div key={this.state.retry} style={{ width: '100%', height: '100%' }}>{this.props.children}</div>;
   }
 }
 
