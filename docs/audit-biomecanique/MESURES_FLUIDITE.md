@@ -10,16 +10,16 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 
 ## Total, 6 styles de garde
 
-528 animations, 1824 poses clés intérieures. Arrêts parasites : **1379 avant, 286 après**.
+528 animations, 1860 poses clés intérieures. Arrêts parasites : **1396 avant, 310 après**.
 
 | Style | Animations | Arrêts avant | Arrêts après |
 |---|---|---|---|
-| boxing | 88 | 223 | 45 |
-| kickboxing | 88 | 227 | 45 |
-| mma | 88 | 221 | 40 |
-| muaythai | 88 | 229 | 43 |
-| bjj | 88 | 236 | 48 |
-| judo | 88 | 243 | 65 |
+| boxing | 88 | 225 | 49 |
+| kickboxing | 88 | 228 | 48 |
+| mma | 88 | 222 | 43 |
+| muaythai | 88 | 235 | 47 |
+| bjj | 88 | 240 | 54 |
+| judo | 88 | 246 | 69 |
 
 ## Détail, garde de boxe
 
@@ -28,13 +28,13 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `garde` | 1 | 0 | 0 | 0,0 | 0,0 | 0,2 | 0,2 | – | – |
 | `neutre` | 1 | 0 | 0 | 0,0 | 0,0 | 0,0 | 0,0 | – | – |
 | `jab` | 2 | 0 | 0 | 3,2 | 3,2 | 8,1 | 8,1 | 3,5 | 3,5 |
-| `direct` | 2 | 0 | 0 | 2,4 | 2,4 | 6,8 | 6,8 | 2,4 | 2,4 |
+| `direct` | 2 | 0 | 0 | 2,3 | 2,3 | 6,6 | 6,6 | 2,4 | 2,4 |
 | `jab-corps` | 2 | 0 | 0 | 3,6 | 3,6 | 10,7 | 10,7 | 3,9 | 3,9 |
-| `direct-corps` | 2 | 0 | 0 | 2,5 | 2,5 | 9,1 | 9,1 | 2,6 | 2,6 |
-| `crochet-avant` | 3 | 1 | 0 | 1,8 | 1,8 | 4,7 | 4,5 | 2,0 | 2,0 |
-| `crochet-arriere` | 3 | 1 | 0 | 3,8 | 3,8 | 7,0 | 7,0 | 4,1 | 4,1 |
-| `crochet-avant-corps` | 3 | 2 | 0 | 1,8 | 1,8 | 6,1 | 6,1 | 2,0 | 2,0 |
-| `crochet-arriere-corps` | 3 | 2 | 0 | 3,8 | 3,8 | 6,6 | 6,6 | 4,1 | 4,1 |
+| `direct-corps` | 2 | 0 | 0 | 2,4 | 2,4 | 9,0 | 9,0 | 2,5 | 2,5 |
+| `crochet-avant` | 3 | 1 | 0 | 2,4 | 2,4 | 5,1 | 5,0 | 2,6 | 2,6 |
+| `crochet-arriere` | 3 | 1 | 0 | 4,7 | 4,7 | 7,0 | 7,0 | 5,1 | 5,1 |
+| `crochet-avant-corps` | 3 | 2 | 0 | 2,5 | 2,5 | 6,4 | 6,4 | 2,8 | 2,8 |
+| `crochet-arriere-corps` | 3 | 2 | 0 | 4,6 | 4,6 | 6,8 | 6,8 | 4,9 | 4,9 |
 | `uppercut-avant` | 3 | 0 | 0 | 2,3 | 2,3 | 4,7 | 4,7 | 2,5 | 2,5 |
 | `uppercut-arriere` | 3 | 0 | 0 | 3,9 | 3,9 | 5,8 | 5,8 | 4,2 | 4,2 |
 | `overhand` | 3 | 0 | 0 | 5,0 | 5,0 | 6,7 | 6,7 | 5,3 | 5,3 |
@@ -64,23 +64,23 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `high-kick-avant` | 4 | 12 | 3 | 10,8 | 10,8 | 23,0 | 23,0 | 11,7 | 11,7 |
 | `roundhouse-arriere` | 4 | 10 | 2 | 9,5 | 9,5 | 20,3 | 20,3 | 10,3 | 10,3 |
 | `roundhouse-avant` | 4 | 9 | 1 | 8,7 | 8,7 | 18,7 | 18,7 | 9,4 | 9,4 |
-| `teep-avant` | 4 | 4 | 0 | 6,3 | 6,3 | 17,6 | 17,6 | 6,8 | 6,8 |
-| `teep-arriere` | 4 | 2 | 2 | 6,3 | 6,3 | 17,7 | 17,7 | 6,8 | 6,8 |
+| `teep-avant` | 4 | 2 | 0 | 6,2 | 6,2 | 17,5 | 17,5 | 6,7 | 6,7 |
+| `teep-arriere` | 4 | 2 | 2 | 6,2 | 6,2 | 17,5 | 17,5 | 6,7 | 6,7 |
 | `front-kick-avant` | 4 | 4 | 0 | 6,0 | 6,0 | 12,9 | 12,9 | 6,4 | 6,4 |
 | `front-kick-arriere` | 4 | 2 | 2 | 6,0 | 6,0 | 13,0 | 13,0 | 6,4 | 6,4 |
-| `genou-direct-arriere` | 4 | 1 | 0 | 5,0 | 5,0 | 13,3 | 13,3 | 5,3 | 5,3 |
-| `genou-direct-avant` | 4 | 2 | 1 | 4,0 | 4,0 | 11,3 | 11,3 | 4,3 | 4,3 |
-| `genou-circulaire-arriere` | 4 | 1 | 0 | 5,5 | 5,5 | 14,5 | 14,5 | 5,8 | 5,8 |
-| `genou-circulaire-avant` | 4 | 3 | 2 | 4,2 | 4,2 | 15,0 | 15,0 | 4,4 | 4,4 |
-| `genou-direct-arriere-clinch` | 4 | 1 | 0 | 5,0 | 5,0 | 13,3 | 13,3 | 5,3 | 5,3 |
-| `genou-circulaire-arriere-clinch` | 4 | 1 | 0 | 5,5 | 5,5 | 14,5 | 14,5 | 5,8 | 5,8 |
+| `genou-direct-arriere` | 5 | 2 | 1 | 4,7 | 4,7 | 14,8 | 14,8 | 5,0 | 5,0 |
+| `genou-direct-avant` | 5 | 2 | 1 | 3,6 | 3,6 | 14,2 | 14,2 | 3,8 | 3,8 |
+| `genou-circulaire-arriere` | 5 | 2 | 1 | 5,5 | 5,5 | 17,5 | 17,5 | 5,8 | 5,8 |
+| `genou-circulaire-avant` | 5 | 3 | 2 | 4,2 | 4,2 | 15,4 | 15,3 | 4,4 | 4,4 |
+| `genou-direct-arriere-clinch` | 5 | 2 | 1 | 4,7 | 4,7 | 14,8 | 14,8 | 5,0 | 5,0 |
+| `genou-circulaire-arriere-clinch` | 5 | 2 | 1 | 5,5 | 5,5 | 17,5 | 17,5 | 5,8 | 5,8 |
 | `check-avant` | 2 | 0 | 0 | 0,0 | 0,0 | 9,1 | 9,1 | 0,0 | 0,0 |
 | `check-arriere` | 2 | 0 | 0 | 0,0 | 0,0 | 17,9 | 17,9 | 0,0 | 0,0 |
 | `switch-kick` | 7 | 12 | 2 | 8,2 | 8,2 | 14,9 | 14,9 | 8,8 | 8,8 |
 | `garde-longue` | 2 | 0 | 0 | 0,0 | 0,0 | 4,3 | 4,3 | – | – |
 | `rattrapage-middle` | 6 | 1 | 1 | 0,1 | 0,1 | 7,2 | 7,2 | 0,0 | 0,2 |
-| `coude-horizontal-avant` | 3 | 0 | 0 | 2,2 | 2,2 | 2,8 | 2,8 | 2,3 | 2,3 |
-| `coude-horizontal-arriere` | 3 | 0 | 0 | 4,1 | 4,1 | 5,8 | 5,8 | 4,4 | 4,4 |
+| `coude-horizontal-avant` | 3 | 0 | 0 | 1,6 | 1,6 | 2,4 | 2,4 | 1,7 | 1,7 |
+| `coude-horizontal-arriere` | 3 | 0 | 0 | 3,4 | 3,4 | 5,8 | 5,8 | 3,6 | 3,6 |
 | `coude-diagonal-arriere` | 3 | 0 | 0 | 4,7 | 4,7 | 6,9 | 6,9 | 5,1 | 5,1 |
 | `coude-diagonal-avant` | 3 | 0 | 0 | 2,8 | 2,8 | 4,0 | 4,0 | 3,0 | 3,0 |
 | `coude-montant-arriere` | 3 | 0 | 0 | 4,0 | 4,0 | 6,6 | 6,6 | 4,3 | 4,3 |

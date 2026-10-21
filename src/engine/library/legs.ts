@@ -153,8 +153,12 @@ function straightKick(a: Author, side: LegSide, kind: 'teep' | 'front'): Motion 
   // chamber: foot under the knee, ankle already set for the striking surface
   chamber[k.kick] = joint(a.air(v3(hipC.x, hipC.y - 0.28 * s, hipC.z + 0.22 * s), 0, deg(-20), 0, v3(0.1 * k.sg, 0.6, 1), 0), kind === 'teep' ? 0 : 25, kind === 'teep' ? 15 : 35);
   const hit = edit(chamber, (d) => {
+    // teep: the hips push (pelvis tucked under), the chest stays back but upright enough: leaning far back on
+    // every teep means the leg pushes instead of the hip [S43]
     d.pelvis.pitch = g.pelvis.pitch + deg(kind === 'teep' ? -18 : -10);
-    d.chest.pitch = g.chest.pitch + deg(kind === 'teep' ? -14 : -8);
+    d.chest.pitch = g.chest.pitch + deg(kind === 'teep' ? -5 : -8);
+    // the arm on the kicking side comes down for balance and power, the other stays high [S24, S29, S36]
+    if (kind === 'teep') d[k.kickHand] = a.hand('world', v3(-k.sg * -0.2 * s, d.hips.y + 0.1 * s, d.hips.z + 0.18 * s), v3(k.sg * 0.8, -0.2, -0.4), 0.1, 1);
     d.hips.z += (kind === 'teep' ? 0.08 : 0.04) * s;
     d[k.support] = supportPivot(d[k.support], (g[k.support] as { yaw: number }).yaw + deg(side === 'rear' ? 35 : 15), deg(kind === 'teep' ? 8 : 18));
   });
@@ -194,6 +198,15 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
   const hands = (d: Pose, pull: number) => {
     const y = head.y - 0.02 * s - pull * 0.12 * s;
     const z = head.z - pull * 0.08 * s;
+    if (!clinch && kind === 'straight') {
+      // v0.29: the arm on the kicking side frames in a long guard, the other hand stays at the head [S35]
+      // (both arms stretched in front read as a mannequin)
+      const kh = side === 'rear' ? 'handR' : 'handL';
+      const gh = side === 'rear' ? 'handL' : 'handR';
+      d[gh] = structuredClone(g[gh]);
+      d[kh] = a.hand('world', v3(-turn * 0.03 * s, y + 0.03 * s, z), v3(-turn * 0.6, -0.6, -0.3), 0.2, 1);
+      return;
+    }
     d.handL = a.hand('world', v3(0.07 * s, y, z), v3(0.6, -0.6, -0.3), clinch ? -0.4 : 0.2, clinch ? 0.55 : 1, clinch ? deg(30) : 0);
     d.handR = a.hand('world', v3(-0.07 * s, y, z - 0.02 * s), v3(-0.6, -0.6, -0.3), clinch ? -0.4 : 0.2, clinch ? 0.55 : 1, clinch ? deg(30) : 0);
   };
@@ -214,7 +227,8 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
     d.pelvis.roll += -turn * deg(kind === 'round' ? 12 : 4);
     d.chest.pitch += deg(-6);
     d.chest.yaw += -turn * deg(kind === 'round' ? 25 : 8);
-    d[k.support] = supportPivot(d[k.support], (g[k.support] as { yaw: number }).yaw + turn * deg(kind === 'round' ? 60 : 20), deg(40));
+    // on the ball of the support foot (« pousser sur la plante du pied » [S35]) without standing on tiptoe
+    d[k.support] = supportPivot(d[k.support], (g[k.support] as { yaw: number }).yaw + turn * deg(kind === 'round' ? 60 : 20), deg(kind === 'round' ? 40 : 25));
     hands(d, 1);
   });
   // the trunk turns a lot in the round knee: keep both framing hands far enough from their
@@ -233,7 +247,12 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
   }
   const hipH = a.hipJoint(hit, side === 'lead' ? 'L' : 'R');
   // knee point in front at body height, foot hanging under and behind it (toes pointed down)
-  const kneePt = new Vector3(kind === 'round' ? turn * 0.1 * s : hipH.x * 0.3, a.target('body').y + 0.04 * s, hipH.z + a.m.thigh * 0.85);
+  // v0.29: the straight knee drives forward like a spear at the stomach, « don't knee upward » [S35] (it rose to
+  // the opponent's chest, 34 cm above the hip)
+  const kneePt =
+    kind === 'round'
+      ? new Vector3(turn * 0.1 * s, a.target('body').y + 0.04 * s, hipH.z + a.m.thigh * 0.85)
+      : new Vector3(hipH.x * 0.3, a.target('liver').y + 0.02 * s, hipH.z + a.m.thigh * 0.92);
   const ankle = kneePt.clone().add(new Vector3(0, -a.m.shin * 0.85, -a.m.shin * 0.5));
   // knee strike: foot pointed down and back, toes pointed
   hit[k.kick] = joint(a.air(v3(ankle.x, ankle.y, ankle.z), kind === 'round' ? turn * deg(70) : 0, deg(65), kind === 'round' ? -turn * deg(40) : 0, kind === 'round' ? v3(turn * 0.6, 0.4, 1) : v3(0, 0.3, 1), deg(25)), 40, -10);
@@ -244,6 +263,17 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
     d.handL = structuredClone(g.handL);
     d.handR = structuredClone(g.handR);
   });
+  // v0.29: the knee comes back down the way it went up, foot under the knee, before the foot goes back to its
+  // place: going straight from the knee up to the stance swung the foot behind the support leg (legs crossed)
+  const retract = edit(g, (d) => {
+    d.hips.z += 0.04 * s;
+    d.hips.y += 0.01 * s;
+    d.pelvis.yaw += turn * deg(kind === 'round' ? 20 : 6);
+  });
+  {
+    const hipR = a.hipJoint(retract, side === 'lead' ? 'L' : 'R');
+    retract[k.kick] = joint(a.air(v3(hipR.x * 0.8, hipR.y - (a.m.thigh + a.m.shin) * 0.66, hipR.z - 0.08 * s), kind === 'round' ? turn * deg(30) : 0, deg(30), 0, v3(0, 0.3, 1), deg(10)), 30, -5);
+  }
   return {
     id: `genou-${kind === 'round' ? 'circulaire' : 'direct'}-${side === 'lead' ? 'avant' : 'arriere'}${clinch ? '-clinch' : ''}`,
     keys: [
@@ -253,9 +283,10 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
       { t: 0.4, pose: hit, ease: 'linear' },
       // hands back in guard first, while the knee is still up: the return never squeezes an elbow
       { t: 0.48, pose: guardHands, ease: 'inOut' },
-      { t: 0.68, pose: land, ease: 'inOut' },
+      { t: 0.58, pose: retract, ease: 'inOut' },
+      { t: 0.72, pose: land, ease: 'inOut' },
     ],
-    chainAt: 0.58,
+    chainAt: 0.62,
     impacts: [0.34],
     ...stand,
     balance: true,

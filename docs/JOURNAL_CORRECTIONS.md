@@ -1395,3 +1395,44 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Panne graphique rejouée : le coach revient seul : TEST RÉUSSI.
   - Android réel : NON EXÉCUTÉ.
 - **Restauration** : `fix/3d-context-recovery-v029` avant ce lot = `e716944`.
+
+## 2026-10-21 · v0.29.0-proto4 · Morphologie athlétique et biomécanique des 5 techniques de « Combinaison 8 armes »
+
+- **Constat (Youssef, 21:00, 5 captures muay-thaï)** — Vérifié sur le squelette des deux coachs Ultra-réalistes
+  (`src/test/probe.ts`) :
+  - crochet gauche : coude 11 cm au-dessus de l'épaule ; Amara bras presque tendu (46° de flexion) ;
+  - direct : coude verrouillé à l'impact (2°) ;
+  - genou direct : genou monté vers la poitrine ; deux bras tendus devant ; au retour, le pied passait derrière la
+    jambe d'appui ;
+  - teep : main restée en garde, buste très renversé ;
+  - coude horizontal : la main reculait à l'armé ;
+  - poings : pouce écarté (« griffes »).
+  Musculature trop fine pour des combattants.
+- **Recherche** : sources écrites seulement (boxe-S1 à S9, kbmt-S24 à S44). YouTube et Wikimedia sont bloqués par
+  le réseau : **aucune vidéo visionnée**, aucune animation ni donnée de mouvement de tiers réutilisée.
+- **Correction** (détail et références par technique dans `docs/v029/BIOMECA_LOT1.md`) :
+  - crochet : poing placé pour un coude à 90° selon la longueur de bras de chaque coach, coude à hauteur d'épaule,
+    armé plus ouvert (vitesse à l'impact 2,0 → 2,6 m/s) ;
+  - direct : bras allongé sans verrouiller le coude ;
+  - genou direct : genou poussé vers l'avant à hauteur du foie, garde longue d'un bras, talon d'appui 25°, nouvelle
+    pose de retrait ;
+  - teep : main du côté du teep abaissée, bascule du buste réduite ;
+  - coude horizontal : armé sans recul ;
+  - pouce orienté vers l'index et le majeur dans le poing (`rig.ts`) ;
+  - musculature par régions anatomiques (`convert.py`, Kadir `SHAPE_SCALE=1.6`, Amara `1.0`), visages et poils
+    inchangés.
+- **Tests** :
+  - `tsc` : TEST RÉUSSI.
+  - Vitest : 501 réussis, 1 échec déjà connu (Amara au sol, hanche 53,9° pour 45°, sans rapport). Dont 14
+    nouveaux (`muaythai-biomeca.test.ts`), 9 d'entre eux échouent sur l'ancien code : TEST RÉUSSI.
+  - Documents de mesures régénérés (`AUDIT_UPDATE=1`) : arrêts parasites de fluidité 286 → 310 sur
+    528 animations : la pose de retrait des genoux ajoute 36 poses clés. Le seuil (moins de 40 % des arrêts
+    d'origine) reste tenu (22 %), et aucune vitesse à l'impact n'est réduite.
+  - Playwright complet : 143 réussis, 2 ignorés (Firebase), 1 échec : `training-layout:286` (caméra « Auto »).
+    Relancé seul : 4 réussites sur 4. L'échec apparaît quand la machine est chargée (captures en parallèle), comme
+    `training-layout:323` dans la PR #1 : TEST RÉUSSI seul, instable sous charge.
+  - Captures avant/après, 3 angles × 7 instants, 5 techniques (Kadir) et crochet (Amara) : vérifiées à
+    l'œil.
+  - Validation par un entraîneur : NON EXÉCUTÉ.
+  - Android réel : NON EXÉCUTÉ.
+- **Restauration** : `fix/3d-context-recovery-v029` = `0f6657d` (base de la branche `feature/biomeca-v029`).
