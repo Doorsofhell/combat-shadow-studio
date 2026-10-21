@@ -1322,3 +1322,48 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `settings-style.test.ts` : défaut Ultra-réaliste et conservation du style enregistré (RÉUSSI). Playwright complet
   (18,3 min) : 136 réussis, 2 échoués : `coach-render.spec:62` (mon test relisait le réglage avant son
   enregistrement ; attente ajoutée, RÉUSSI ensuite) et `coach-bubble.spec:93` (en analyse). Téléphone : NON EXÉCUTÉ.
+
+## 2026-10-21 · v0.29.0-proto2 · Mouvement en chaîne, garde vivante, corps plus athlétique (coachs Ultra-réalistes)
+
+- **Constat (Youssef, 17:50)** — « Il faut revoir tout le mouvement. Il y a rien de naturel. Il faut aussi revoir
+  le corps. Il n'est pas harmonieux et humain. » Vérifié en filmant Kadir image par image (direct, middle kick,
+  garde de face, de profil et de dos) : chaque technique est faite de 3 à 5 poses écrites et, entre deux poses,
+  tout le corps bouge et arrive en même temps (effet robot) ; la garde répète le même petit rebond toutes les
+  0,9 s ; corps Rocketbox mince et facetté (environ 3 700 sommets). Captures : page de comparaison du prototype.
+- **Correction** —
+  - `src/engine/motion.ts` : mouvement en chaîne. Le bassin et les pieds au sol ont jusqu'à 50 ms d'avance sur le
+    buste et les bras (10° d'avance au plus, pour rester dans l'amplitude de la colonne), la tête suit avec 35 ms
+    de retard. Les poings et les pieds qui frappent gardent leur trajet et leur heure d'impact ; le bassin atteint
+    la pose du coup au plus tard à l'impact ; rien ne change au début et à la fin d'un mouvement (enchaînements),
+    ni pendant les coups de pied (pied en l'air) et au sol.
+  - `src/engine/player.ts` : garde vivante. Le poids passe lentement d'un pied à l'autre, le buste et la tête
+    tournent un peu, les gants bougent de quelques millimètres, sans jamais se répéter ; les pieds restent posés.
+  - `tools/generator/rocketbox/convert.py` : corps plus athlétique sans grosse musculature (épaules, bras,
+    avant-bras, pectoraux, dos, trapèzes, fessiers, cuisses, mollets : 12,5 mm au plus chez Kadir, 7,6 mm chez
+    Amara) et une subdivision qui arrondit la silhouette (22 000 et 25 000 sommets ; fichiers 2,7 et 3,0 Mo).
+  - `src/engine/phases.ts` : le check hook est reconnu comme un coup du bras avant (mesure de la chaîne).
+- **Tests** — Nouveau `chain.test.ts` (hanche avant les épaules sur le direct, poing sur son trajet, début et fin
+  identiques, garde vivante avec pieds posés) : RÉUSSI. Vitest complet : 481 réussis, 1 échec déjà connu
+  (`photo-coach.test.ts`, Amara au sol, inchangé). Mesures régénérées : `MESURES_FLUIDITE.md`,
+  `MESURES_MOTEUR.md`, `MESURES_TORSIONS.md`.
+- **Limites** — Le changement reste discret sur les captures : les poses écrites décident encore de l'essentiel.
+  Un rendu vraiment naturel demande de vrais mouvements capturés (choix proposé à Youssef : Mixamo). Genoux en
+  garde vérifiés : même position que sur les modèles générés (au-dessus des orteils) ; le pouce du poing fermé
+  reste mal placé sur les avatars Rocketbox. Téléphone : NON EXÉCUTÉ.
+
+## 2026-10-21 · v0.29.0-proto2 · Coach 3D qui disparaît sur téléphone puis « Affichage 3D indisponible »
+
+- **Constat (Youssef, 20:58, capture)** — Sur son téléphone, en v0.29.0-proto1, le coach a disparu après quelques
+  mouvements, l'écran est devenu noir, puis l'accueil affiche « Affichage 3D indisponible sur cet appareil » à
+  chaque ouverture. Vérifié dans le code : aucune gestion de la perte du contexte 3D (le navigateur retire la 3D
+  quand la mémoire graphique est épuisée) ; en qualité automatique le téléphone démarrait en qualité haute avec
+  ombres portées douces (carte d'ombre 2048), image en double résolution et quatre textures photo de 2048 pixels
+  (environ 85 Mo de mémoire graphique). Après une perte, le navigateur peut refuser la 3D au site jusqu'à sa
+  fermeture complète, d'où le message à chaque ouverture (déduit, non reproduit : pas de téléphone ici).
+- **Correction** — `CoachStage` : à la perte du contexte, la scène repart d'elle-même en qualité légère, et ce
+  téléphone reste en qualité légère en mode automatique (`css-3d-safe`, nouvelle clé, aucune clé supprimée) ;
+  écrans tactiles en qualité automatique : pas d'ombres portées, résolution limitée à 1,5. Textures des coachs
+  photo : seule la couleur du visage garde 2048 pixels, les autres passent à 1024 (environ 38 Mo au lieu de 85).
+  Message d'erreur : « Ferme puis rouvre l'application : le coach reviendra en qualité légère. »
+- **Tests** — Vitest : 481 réussis, 1 échec déjà connu (Amara au sol). Playwright complet : 138 réussis, 2 ignorés
+  (Firebase), 18,6 min. Téléphone : NON EXÉCUTÉ (à vérifier par Youssef).

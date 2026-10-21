@@ -6,7 +6,7 @@ import { StudioStage } from '../three/StudioStage';
 import { StudioEnvironment } from '../three/StudioEnvironment';
 import type { CoachRig } from '../engine/rig';
 import { getLibrary, getMotion } from '../engine/library';
-import { MotionSampler } from '../engine/motion';
+import { MotionSampler, duration } from '../engine/motion';
 import type { StanceStyle } from '../engine/author';
 import type { CoachId, DisciplineId } from '../domain/types';
 import { TECHNIQUE_BY_ID } from '../domain/techniques';
@@ -90,6 +90,8 @@ export function Lab() {
         tRef.current = analyseMotion(rig, m).peak * Number(q.get('at') ?? '1');
         envelope.current = sequenceEnvelope(rig, lib, [m.id], southpaw);
       }
+      // strips of a whole motion in one page load (scripts/dev/shot-strip.mjs)
+      Object.assign(window, { __labDur: duration(m), __labPeak: m.impacts[0] ?? duration(m) / 2, __labT: (t: number) => (tRef.current = t) });
       (window as unknown as { __labReady: boolean }).__labReady = true;
     },
     [style, motionId, southpaw, tech, q],

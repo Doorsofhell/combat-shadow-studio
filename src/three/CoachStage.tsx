@@ -21,6 +21,7 @@ import { TECHNIQUE_BY_ID } from '../domain/techniques';
 import { useActiveFighter } from '../store/fighters';
 import { championFor, championLook, championModel, championStance } from '../domain/coaches/catalog';
 import { useResolvedTheme } from '../ui/theme/useTheme';
+import { readSafe3d, writeSafe3d } from './safe3d';
 import type { FighterLook } from '../editor/look';
 
 export const STYLE_OF: Record<DisciplineId, StanceStyle> = {
@@ -121,7 +122,20 @@ export function CoachStage(props: CoachStageProps) {
   const ghostGear = useSettings((s) => s.settings.seeThroughGear) && studyActive;
   const lookRef = useRef<FighterLook | null | undefined>(null);
   lookRef.current = look;
-  const [degraded, setDegraded] = useState(false);
+  // v0.29 (Youssef's phone, 2026-10-21: the coach vanished, black screen, then « Affichage 3D indisponible »):
+  // the graphics memory ran out. After a loss the stage starts again in light quality, on this device for good
+  // in automatic quality (the choice can still be changed in Réglages)
+  const [degraded, setDegraded] = useState(readSafe3d);
+  const [canvasKey, setCanvasKey] = useState(0);
+  const onCreated = useCallback(({ gl }: { gl: { domElement: HTMLCanvasElement } }) => {
+    gl.domElement.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault();
+      writeSafe3d();
+      setDegraded(true);
+      // a fresh canvas, once the browser has freed the old one
+      setTimeout(() => setCanvasKey((k) => k + 1), 300);
+    });
+  }, []);
   const style = useSettings((s) => s.settings.coachStyle);
   const q: 'haute' | 'basse' = quality === 'auto' ? (degraded ? 'basse' : 'haute') : quality;
   const player = useRef<ComboPlayer | null>(null);
@@ -216,12 +230,15 @@ export function CoachStage(props: CoachStageProps) {
   });
 
   // v0.29: soft self-shadows in the realistic look, high quality only (cost on phones)
-  const realShadows = style === 'realiste' && render === 'premium' && q === 'haute' && !arActive;
+  // (not on touch screens in automatic quality: phones have the least graphics memory)
+  const realShadows = style === 'realiste' && render === 'premium' && q === 'haute' && !arActive && !(quality === 'auto' && TOUCH);
   return (
     <Canvas
+      key={canvasKey}
+      onCreated={onCreated}
       shadows={realShadows ? 'soft' : false}
       data-coach={shownCoach}
-      dpr={q === 'haute' ? [1, 2] : 1}
+      dpr={q === 'haute' ? [1, quality === 'auto' && TOUCH ? 1.5 : 2] : 1}
       gl={{ antialias: q === 'haute', alpha: true, powerPreference: 'high-performance' }}
       camera={{ position: [0, 1.1, 5], fov: 30 }}
       style={{ background: arActive || backdrop === 'theme' ? 'transparent' : backdrop === 'dark' ? 'var(--scene)' : '#fff', touchAction: 'none' }}
@@ -268,3 +285,5 @@ export function CoachStage(props: CoachStageProps) {
     </Canvas>
   );
 }
+
+const TOUCH = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;

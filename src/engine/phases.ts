@@ -92,7 +92,7 @@ function limbPhase(category: TechniqueCategory, e: Effector, leadSide: 'L' | 'R'
  */
 function workingLimb(category: TechniqueCategory, id: string, leadSide: 'L' | 'R', fallback: Effector): Effector {
   const rear = leadSide === 'L' ? 'R' : 'L';
-  const side = /-avant\b|^jab/.test(id) ? leadSide : /-arriere\b|^direct|^overhand/.test(id) ? rear : null;
+  const side = /-avant\b|^jab|^check-hook/.test(id) ? leadSide : /-arriere\b|^direct|^overhand/.test(id) ? rear : null;
   if (!side) return fallback;
   if (category === 'poing' || category === 'coude') return `hand${side}`;
   if (category === 'pied' || category === 'genou') return `foot${side}`;

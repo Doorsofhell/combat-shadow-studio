@@ -172,11 +172,15 @@ export class MotionSampler {
   private hipOffset: Record<'L' | 'R', Vector3>;
   readonly duration: number;
 
-  /** flow: keep velocities through the key poses (off only to measure the difference) */
+  /**
+   * flow: keep velocities through the key poses (off only to measure the difference);
+   * chain: body parts in sequence instead of all at once (off only to measure the difference)
+   */
   constructor(
     private rig: CoachRig,
     readonly motion: Motion,
     flow = true,
+    private chain = true,
   ) {
     this.keys = motion.keys.map((k) => ({
       t: k.t,
@@ -196,6 +200,7 @@ export class MotionSampler {
       R: (rig.restOf('RightUpLeg') ?? hipsRest).clone().sub(hipsRest),
     };
     if (flow) this.computeFlow();
+    this.findAirborne();
   }
 
   /**
@@ -251,7 +256,66 @@ export class MotionSampler {
     }
   }
 
+  /**
+   * Pose at time t. The body moves as a chain, not as a block (v0.29, Youssef 2026-10-21: « il y a rien
+   * de naturel »): the feet and the pelvis are a little ahead of the written timing, the trunk and the arms
+   * keep it exactly (same path, impacts stay on time) and the head follows a little behind. So a blow
+   * starts in the hips and the trunk follows them (they no longer turn as a block), and the head settles
+   * last. The shift fades in and out at both ends of the motion, so chained motions still meet at the
+   * same pose.
+   */
   sample(t: number): ResolvedPose {
+    if (!this.chain) return this.atTime(t);
+    const w = this.chainWeight(t);
+    if (w <= 0) return this.atTime(t);
+    // the hips reach the pose of a blow at the latest when it lands, and leave it only after
+    const lead = this.motion.impacts.reduce((l, ti) => Math.min(l, Math.abs(t - ti)), CHAIN_LEGS * w);
+    const legs = this.atTime(t + lead);
+    const body = this.atTime(t);
+    const head = this.atTime(t - CHAIN_HEAD * w).head;
+    // the pelvis turns ahead, by a few degrees at most so that the spine stays in its range; the hips
+    // stay where they are written (the shoulders and the arms keep their path)
+    const turn = 2 * Math.acos(Math.min(1, Math.abs(body.pelvis.dot(legs.pelvis))));
+    let feet = legs;
+    let pelvis = legs.pelvis;
+    if (turn > CHAIN_MAX_TURN) {
+      // a big fast turn (a judo entry): a shorter lead, the feet with it so the hips stay in their range
+      feet = this.atTime(t + (lead * CHAIN_MAX_TURN) / turn);
+      pelvis = feet.pelvis;
+    }
+    const hips = body.hips.clone();
+    hips.y -= this.supportDrop(hips, pelvis, feet.footL, feet.footR);
+    // the chest is written relative to the pelvis: keep it where the written pose puts it in space, the
+    // spine takes the difference (the hips turn first, the shoulders follow)
+    const chest = pelvis.clone().invert().multiply(body.pelvis).multiply(body.chest);
+    return { ...body, hips, pelvis, chest, head, footL: feet.footL, footR: feet.footR };
+  }
+
+  /**
+   * How much of the chain shift applies at time t: full while both feet are on the floor, fading to
+   * none near the start and the end of the motion and around any moment with a foot in the air (the
+   * kicking leg hangs from the pelvis and keeps its written timing) or with the body on the ground.
+   */
+  private chainWeight(t: number) {
+    if (this.motion.balance || this.motion.startState === 'ground' || this.motion.endState === 'ground') return 0;
+    let d = Math.min(t, this.duration - t);
+    for (const [a, b] of this.airborne) d = Math.min(d, t < a ? a - t : t > b ? t - b : 0);
+    return smooth(d / CHAIN_FADE);
+  }
+
+  /** time spans with a foot off the floor (see chainWeight) */
+  private airborne: [number, number][] = [];
+
+  private findAirborne() {
+    const ks = this.keys;
+    for (let i = 1; i < ks.length; i++) {
+      const up = (['footL', 'footR'] as const).some((f) => ks[i - 1].pose[f].mode !== 'ground' || ks[i].pose[f].mode !== 'ground');
+      if (up) this.airborne.push([ks[i - 1].t - CHAIN_LEGS, ks[i].t]);
+    }
+  }
+
+  /** the written pose at time t */
+  private atTime(t: number): ResolvedPose {
     const ks = this.keys;
     if (t <= ks[0].t) return this.at(ks[0], ks[0], 0);
     for (let i = 1; i < ks.length; i++) {
@@ -378,6 +442,15 @@ export class MotionSampler {
     return drop;
   }
 }
+
+/** seconds the legs and hips are ahead of the trunk and the arms, and the head behind */
+const CHAIN_LEGS = 0.05;
+const CHAIN_HEAD = 0.035;
+/** largest angle the pelvis turns ahead of the shoulders (radians) */
+const CHAIN_MAX_TURN = (10 * Math.PI) / 180;
+/** seconds over which the shift grows at the start of a motion and fades at its end */
+const CHAIN_FADE = 0.15;
+const smooth = (x: number) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
 
 /** fraction of the full leg length a planted leg may reach */
 const MAX_SUPPORT_EXTENSION = 0.975;

@@ -21,6 +21,7 @@ import { FullscreenStage } from '../fullscreen/FullscreenStage';
 import { useKbStyle } from '../components/KickboxingStyle';
 import { techniquesFor } from '../../domain/techniques';
 import { filterTechniques } from '../../domain/kickboxingStyles';
+import { writeSafe3d } from '../../three/safe3d';
 import { techniqueOfTheDay } from '../../domain/quickPicks';
 
 /** the 3D bundle (three.js, R3F) stays out of the main chunk */
@@ -35,8 +36,11 @@ class StageBoundary extends Component<{ children: ReactNode }, { failed: boolean
   static getDerivedStateFromError() {
     return { failed: true };
   }
+  componentDidCatch() {
+    writeSafe3d();
+  }
   render() {
-    if (this.state.failed) return <div className="hero-loading small">Affichage 3D indisponible sur cet appareil.</div>;
+    if (this.state.failed) return <div className="hero-loading small">Affichage 3D indisponible pour le moment. Ferme puis rouvre l’application : le coach reviendra en qualité légère.</div>;
     return this.props.children;
   }
 }

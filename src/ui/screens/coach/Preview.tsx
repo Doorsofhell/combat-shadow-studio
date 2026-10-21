@@ -7,6 +7,7 @@ import type { DisciplineId } from '../../../domain/types';
 import type { FighterLook } from '../../../editor/look';
 import { TECHNIQUE_BY_ID } from '../../../domain/techniques';
 import { oriented } from '../../../domain/camera';
+import { writeSafe3d } from '../../../three/safe3d';
 import { AppIcon } from '../../icons';
 
 const CoachStage = lazy(() => import('../../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
@@ -60,8 +61,11 @@ class StageBoundary extends Component<{ children: ReactNode }, { failed: boolean
   static getDerivedStateFromError() {
     return { failed: true };
   }
+  componentDidCatch() {
+    writeSafe3d();
+  }
   render() {
-    if (this.state.failed) return <div className="hero-loading small">Affichage 3D indisponible sur cet appareil. Tes réglages sont quand même enregistrés.</div>;
+    if (this.state.failed) return <div className="hero-loading small">Affichage 3D indisponible pour le moment. Tes réglages sont quand même enregistrés.</div>;
     return this.props.children;
   }
 }
