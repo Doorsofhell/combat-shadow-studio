@@ -1,5 +1,5 @@
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { PerformanceMonitor } from '@react-three/drei';
 import { Group, Vector3 } from 'three';
 import { CoachModel } from './CoachModel';
@@ -21,7 +21,9 @@ import { TECHNIQUE_BY_ID } from '../domain/techniques';
 import { useActiveFighter } from '../store/fighters';
 import { championFor, championLook, championModel, championStance } from '../domain/coaches/catalog';
 import { useResolvedTheme } from '../ui/theme/useTheme';
-import { readSafe3d, writeSafe3d } from './safe3d';
+import { stabilityLevel, stepDown, stepUp, type StabilityLevel } from './safe3d';
+import { log3d } from './diag3d';
+import { StageGuardContext } from '../ui/components/StageGuard';
 import type { FighterLook } from '../editor/look';
 
 export const STYLE_OF: Record<DisciplineId, StanceStyle> = {
@@ -122,36 +124,71 @@ export function CoachStage(props: CoachStageProps) {
   const ghostGear = useSettings((s) => s.settings.seeThroughGear) && studyActive;
   const lookRef = useRef<FighterLook | null | undefined>(null);
   lookRef.current = look;
-  // v0.29 (Youssef's phone, 2026-10-21: the coach vanished, black screen, then « Affichage 3D indisponible »):
-  // the graphics memory ran out. After a loss the stage starts again in light quality, on this device for good
-  // in automatic quality (the choice can still be changed in Réglages)
-  const [degraded, setDegraded] = useState(readSafe3d);
-  const [canvasKey, setCanvasKey] = useState(0);
-  const recoveryAttempts = useRef(0);
-  const onCreated = useCallback(({ gl }: { gl: { domElement: HTMLCanvasElement } }) => {
-    const canvas = gl.domElement;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    let recovered = false;
-    const retry = () => {
-      if (recovered || recoveryAttempts.current >= 2) return;
-      recovered = true;
-      if (timer) clearTimeout(timer);
-      recoveryAttempts.current += 1;
-      setCanvasKey((k) => k + 1);
+  // v0.29 (Youssef's phone, 2026-10-21: the coach vanished, then « Affichage 3D indisponible » at every launch).
+  // Reproduced with scripts/dev/gpucrash.mjs: after graphics resets Chrome refuses 3D to the site for a while,
+  // and the former recovery created a new canvas during that time, which threw. Now three.js restores the same
+  // canvas by itself; if the context does not come back, the guard (StageGuard) waits until the browser allows
+  // 3D again and creates a new stage. Each incident lowers the quality one step, a calm period raises it back.
+  const guard = useContext(StageGuardContext);
+  const [level, setLevel] = useState<StabilityLevel>(stabilityLevel);
+  // the automatic quality may also go down for this visit when the device cannot keep up (PerformanceMonitor)
+  const [slow, setSlow] = useState(false);
+  const [hidden, setHidden] = useState(() => typeof document !== 'undefined' && document.visibilityState === 'hidden');
+  const animAt = useRef(0);
+  const onCreated = useCallback(
+    ({ gl }: { gl: { domElement: HTMLCanvasElement; getContext: () => WebGLRenderingContext | WebGL2RenderingContext } }) => {
+      const canvas = gl.domElement;
+      const ctx = gl.getContext();
+      const dbg = ctx.getExtension('WEBGL_debug_renderer_info');
+      const gpu = dbg ? `${ctx.getParameter(dbg.UNMASKED_VENDOR_WEBGL)} / ${ctx.getParameter(dbg.UNMASKED_RENDERER_WEBGL)}` : 'carte graphique non communiquée';
+      log3d('gpu', `${gpu} · ${typeof WebGL2RenderingContext !== 'undefined' && ctx instanceof WebGL2RenderingContext ? 'WebGL 2' : 'WebGL 1'} · textures max ${ctx.getParameter(ctx.MAX_TEXTURE_SIZE)} · ${canvas.width}×${canvas.height} px`);
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      canvas.addEventListener('webglcontextlost', (e) => {
+        e.preventDefault(); // lets the browser give the context back
+        const l = stepDown();
+        log3d('contexte-perdu', `qualité abaissée au niveau ${l}`);
+        setLevel(l);
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => guard?.lost('pas de retour après 8 s'), 8000);
+      });
+      canvas.addEventListener('webglcontextrestored', () => {
+        if (timer) clearTimeout(timer);
+        timer = undefined;
+        log3d('contexte-restaure', 'même écran, le coach repart');
+      });
+    },
+    [guard],
+  );
+  // a quiet period raises the quality one step (checked every minute while the coach is shown)
+  useEffect(() => {
+    if (level === 0) return;
+    const id = setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
+      const l = stepUp();
+      if (l !== level) {
+        log3d('qualite', `${CALM_MIN} min sans incident : niveau ${l}`);
+        setLevel(l);
+      }
+    }, 60_000);
+    return () => clearInterval(id);
+  }, [level]);
+  // no drawing while the app is in the background (screen locked, other app): nothing to show, and phones
+  // reclaim the graphics memory of hidden pages first
+  useEffect(() => {
+    const on = () => {
+      const h = document.visibilityState === 'hidden';
+      setHidden(h);
+      log3d('arriere-plan', h ? 'application cachée : rendu en pause' : 'application visible : rendu repris');
     };
-    canvas.addEventListener('webglcontextlost', (e) => {
-      e.preventDefault(); // allow WebGL to restore the context
-      console.warn('[CoachStage] WebGL context lost; switching to light quality');
-      writeSafe3d();
-      setDegraded(true);
-      // Do not immediately allocate a second GPU context: give the browser time to restore.
-      timer = setTimeout(retry, 2500);
-    }, { once: true });
-    canvas.addEventListener('webglcontextrestored', retry, { once: true });
+    document.addEventListener('visibilitychange', on);
+    return () => document.removeEventListener('visibilitychange', on);
   }, []);
   const style = useSettings((s) => s.settings.coachStyle);
-  // After a graphics failure, safety takes precedence even if the user selected high quality.
-  const q: 'haute' | 'basse' = degraded ? 'basse' : quality === 'auto' ? 'haute' : quality;
+  // after a graphics incident, stability comes first even when the high quality was chosen (for a while)
+  const q: 'haute' | 'basse' = level > 0 || slow ? 'basse' : quality === 'auto' ? 'haute' : quality;
+  useEffect(() => {
+    log3d('demarrage', `coach ${shownCoach} · ${discipline} · rendu ${render}/${style} · qualité ${quality} → ${q}${level ? ` (niveau de stabilité ${level})` : ''}${slow ? ' (appareil lent)' : ''}`);
+  }, [shownCoach, discipline, render, style, quality, q, level, slow]);
   const player = useRef<ComboPlayer | null>(null);
   const rigRef = useRef<{ rig: CoachRig; lib: MotionLibrary } | null>(null);
   const [rigState, setRigState] = useState<CoachRig | null>(null);
@@ -207,6 +244,7 @@ export function CoachStage(props: CoachStageProps) {
       const c = championRef.current;
       const lib = getLibrary(rig, STYLE_OF[discipline], c ? championStance(c, discipline) : undefined);
       rigRef.current = { rig, lib };
+      log3d('modele', `${championRef.current?.id ?? 'coach généré'} prêt`);
       setRigState(rig);
       updateEnvelope();
       const p = new ComboPlayer(rig, lib, southpawRef.current, proxy);
@@ -217,20 +255,29 @@ export function CoachStage(props: CoachStageProps) {
     [discipline, proxy, onPlayer, updateEnvelope],
   );
 
+  // an error in one frame of animation is written down and the next frame goes on (it used to stop the coach)
+  const animErr = useRef(0);
   const onFrame = useCallback(
     (rig: CoachRig, dt: number) => {
-      const st = study?.current;
-      if (studyActiveRef.current && st?.motion) {
-        rig.apply(st.update(dt));
-        follow.current.set(0, 0, 0);
-        origin.current = { x: 0, z: 0, yaw: 0 };
-        return;
+      try {
+        const st = study?.current;
+        if (studyActiveRef.current && st?.motion) {
+          rig.apply(st.update(dt));
+          follow.current.set(0, 0, 0);
+          origin.current = { x: 0, z: 0, yaw: 0 };
+        } else {
+          const p = player.current;
+          if (!p) return;
+          rig.apply(p.update(dt));
+          follow.current.set(p.origin.x, 0, p.origin.z);
+          origin.current = p.origin;
+        }
+        animAt.current = performance.now();
+      } catch (e) {
+        const now = performance.now();
+        if (now - animErr.current > 60_000) log3d('animation', `erreur pendant l'animation : ${(e as Error)?.message ?? e}`);
+        animErr.current = now;
       }
-      const p = player.current;
-      if (!p) return;
-      rig.apply(p.update(dt));
-      follow.current.set(p.origin.x, 0, p.origin.z);
-      origin.current = p.origin;
     },
     [study],
   );
@@ -248,16 +295,25 @@ export function CoachStage(props: CoachStageProps) {
   const realShadows = style === 'realiste' && render === 'premium' && q === 'haute' && !arActive && !(quality === 'auto' && TOUCH);
   return (
     <Canvas
-      key={canvasKey}
       onCreated={onCreated}
       shadows={realShadows ? 'soft' : false}
       data-coach={shownCoach}
-      dpr={q === 'haute' ? [1, quality === 'auto' && TOUCH ? 1.5 : 2] : 1}
+      dpr={level >= 2 ? 0.75 : q === 'haute' ? [1, quality === 'auto' && TOUCH ? 1.5 : 2] : 1}
+      frameloop={hidden ? 'never' : 'always'}
       gl={{ antialias: q === 'haute', alpha: true, powerPreference: 'high-performance' }}
       camera={{ position: [0, 1.1, 5], fov: 30 }}
       style={{ background: arActive || backdrop === 'theme' ? 'transparent' : backdrop === 'dark' ? 'var(--scene)' : '#fff', touchAction: 'none' }}
     >
-      {quality === 'auto' && <PerformanceMonitor onDecline={() => setDegraded(true)} flipflops={1} />}
+      {quality === 'auto' && (
+        <PerformanceMonitor
+          onDecline={() => {
+            log3d('qualite', 'images par seconde trop basses : qualité légère pour cette visite');
+            setSlow(true);
+          }}
+          flipflops={1}
+        />
+      )}
+      <DiagProbe animAt={animAt} />
       <Suspense fallback={null}>
         {!arActive && (
           <StudioStage
@@ -298,6 +354,29 @@ export function CoachStage(props: CoachStageProps) {
       </Suspense>
     </Canvas>
   );
+}
+
+const CALM_MIN = 10;
+
+/** every minute in the journal: images per second and what the graphics memory holds; and a stopped animation */
+function DiagProbe({ animAt }: { animAt: { current: number } }) {
+  const gl = useThree((s) => s.gl);
+  const st = useRef({ frames: 0, since: performance.now(), stalled: false });
+  useFrame(() => {
+    const s = st.current;
+    s.frames++;
+    const now = performance.now();
+    if (animAt.current && now - animAt.current > 3000 && !s.stalled) {
+      s.stalled = true;
+      log3d('animation', `l'image est dessinée mais l'animation n'avance plus depuis ${Math.round((now - animAt.current) / 1000)} s`);
+    } else if (now - animAt.current < 3000) s.stalled = false;
+    if (now - s.since < 60_000) return;
+    const i = gl.info;
+    log3d('mesure', `${Math.round((s.frames * 1000) / (now - s.since))} img/s · ${i.memory.geometries} géométries · ${i.memory.textures} textures · ${i.programs?.length ?? '?'} shaders · ${i.render.calls} appels`);
+    s.frames = 0;
+    s.since = now;
+  });
+  return null;
 }
 
 const TOUCH = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;

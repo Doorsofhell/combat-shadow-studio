@@ -15,6 +15,73 @@ import { saveTextFile } from '../../platform/native';
 import { ConfirmDialog, LinkRow, PageHead, Panel, PanelRow, Segmented, SliderRow, Toggle, toast } from '../components';
 import { CoachLookPicker } from '../components/CoachLookPicker';
 import { AppIcon } from '../icons';
+import { clearDiag, diagText, readDiag } from '../../three/diag3d';
+import { resetStability, stabilityLevel } from '../../three/safe3d';
+
+/**
+ * v0.29 (coach that vanished on Youssef's phone): what the 3D did on this device, to copy and send.
+ * The journal stays on the phone (src/three/diag3d.ts).
+ */
+function Diag3dPanel() {
+  const [level, setLevel] = useState(stabilityLevel);
+  const [entries, setEntries] = useState(readDiag);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(diagText(entries));
+      toast('Journal 3D copié');
+    } catch {
+      toast('Copie impossible : sélectionne le texte du journal');
+    }
+  };
+  return (
+    <Panel>
+      <PanelRow
+        label="Stabilité de la 3D"
+        hint={
+          level === 0
+            ? 'Qualité choisie appliquée, aucun incident graphique récent.'
+            : `Qualité allégée (niveau ${level}) après un incident graphique. Elle remonte d’elle-même après 10 minutes sans incident.`
+        }
+        column
+      >
+        {level > 0 && (
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() => {
+              resetStability();
+              setLevel(0);
+              toast('Qualité choisie rétablie');
+            }}
+          >
+            Rétablir la qualité choisie
+          </button>
+        )}
+      </PanelRow>
+      <PanelRow label="Journal 3D" hint={`${entries.length} évènement(s) enregistré(s) sur cet appareil, rien n’est envoyé.`} column>
+        <details data-testid="diag3d">
+          <summary>Voir le journal</summary>
+          <pre className="diag3d-log">{diagText(entries)}</pre>
+        </details>
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+          <button type="button" className="btn secondary" onClick={copy}>
+            Copier le journal
+          </button>
+          <button
+            type="button"
+            className="btn ghost"
+            onClick={() => {
+              clearDiag();
+              setEntries([]);
+            }}
+          >
+            Effacer
+          </button>
+        </div>
+      </PanelRow>
+    </Panel>
+  );
+}
 
 const pct = (v: number) => `${Math.round(v * 100)} %`;
 
@@ -142,6 +209,7 @@ export function SettingsPage() {
             />
           </PanelRow>
         </Panel>
+        <Diag3dPanel />
       </div>
     );
   if (section === 'rounds')

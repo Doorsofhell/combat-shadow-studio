@@ -1,5 +1,5 @@
 import { TechThumb, keyTechnique, programTechnique } from '../components/TechThumb';
-import { Component, ReactNode, Suspense, lazy, useCallback, useMemo } from 'react';
+import { Suspense, lazy, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
@@ -21,7 +21,7 @@ import { FullscreenStage } from '../fullscreen/FullscreenStage';
 import { useKbStyle } from '../components/KickboxingStyle';
 import { techniquesFor } from '../../domain/techniques';
 import { filterTechniques } from '../../domain/kickboxingStyles';
-import { writeSafe3d } from '../../three/safe3d';
+import { StageGuard } from '../components/StageGuard';
 import { techniqueOfTheDay } from '../../domain/quickPicks';
 
 /** the 3D bundle (three.js, R3F) stays out of the main chunk */
@@ -29,32 +29,6 @@ const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ de
 
 const RESUMABLE: TrainingMode[] = ['libre', 'technique', 'cardio', 'rounds'];
 const NO_EVENTS: PlayerEvents = {};
-
-/** keeps the home screen usable when WebGL is unavailable */
-class StageBoundary extends Component<{ children: ReactNode }, { failed: boolean; retry: number }> {
-  state = { failed: false, retry: 0 };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
-    // Record the real cause: a React/asset error is not necessarily GPU memory exhaustion.
-    console.error('[CoachStage] 3D render failed', error, info.componentStack);
-    writeSafe3d();
-  }
-  retry = () => {
-    writeSafe3d();
-    this.setState((s) => ({ failed: false, retry: s.retry + 1 }));
-  };
-  render() {
-    if (this.state.failed) return (
-      <div className="hero-loading small" role="alert">
-        <p>Le coach 3D n’a pas pu être affiché.</p>
-        <button type="button" className="btn secondary" onClick={this.retry}>Réessayer en qualité légère</button>
-      </div>
-    );
-    return <div key={this.state.retry} style={{ width: '100%', height: '100%' }}>{this.props.children}</div>;
-  }
-}
 
 function StageFallback() {
   return (
@@ -134,8 +108,9 @@ export function Home() {
       <section className="hero" aria-label={`${name}, ${disc.name}`}>
         {/* 0.27: a double tap shows the coach on the whole screen (Youssef, 2026-10-20 22:09) */}
         <FullscreenStage className="hero-stage" testId="hero-stage">
+          {/* v0.29: the guard sits outside the hidden layer, so its message and button can be read and used */}
+          <StageGuard place="accueil">
           <div className="hero-stage-3d" aria-hidden>
-          <StageBoundary>
             <Suspense fallback={<StageFallback />}>
               <CoachStage
                 backdrop="dark"
@@ -148,8 +123,8 @@ export function Home() {
                 onPlayer={onPlayer}
               />
             </Suspense>
-          </StageBoundary>
           </div>
+          </StageGuard>
         </FullscreenStage>
         <div className="hero-fade" />
         <div className="hero-info">

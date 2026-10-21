@@ -1,4 +1,4 @@
-import { Component, ReactNode, Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FsExit } from '../../fullscreen/FullscreenStage';
 import { useStageFullscreen } from '../../fullscreen/useStageFullscreen';
 import type { ComboPlayer, PlayerEvents } from '../../../engine/player';
@@ -7,7 +7,7 @@ import type { DisciplineId } from '../../../domain/types';
 import type { FighterLook } from '../../../editor/look';
 import { TECHNIQUE_BY_ID } from '../../../domain/techniques';
 import { oriented } from '../../../domain/camera';
-import { writeSafe3d } from '../../../three/safe3d';
+import { StageGuard } from '../../components/StageGuard';
 import { AppIcon } from '../../icons';
 
 const CoachStage = lazy(() => import('../../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
@@ -55,20 +55,6 @@ const steps = (seq: string[]) =>
     motionId: TECHNIQUE_BY_ID.get(id)?.motion ?? 'garde',
   }));
 const NO_EVENTS: PlayerEvents = {};
-
-class StageBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  componentDidCatch() {
-    writeSafe3d();
-  }
-  render() {
-    if (this.state.failed) return <div className="hero-loading small">Affichage 3D indisponible pour le moment. Tes réglages sont quand même enregistrés.</div>;
-    return this.props.children;
-  }
-}
 
 /** what the camera frames: the whole body, or a close-up */
 export type PreviewPart = 'corps' | 'visage' | 'buste' | 'jambes';
@@ -201,7 +187,7 @@ export function Preview({
       {/* 0.27: a double tap shows the fighter on the whole screen (Youssef, 2026-10-20 22:09) */}
       <div className={`cs-stage${fs.active ? ' stage-fs' : ''}${fs.idle ? ' fs-idle' : ''}`} ref={stageRef} data-testid="studio-stage" data-fullscreen={fs.active}>
         <div className="cs-stage-3d" role="img" aria-label="Aperçu 3D de ton combattant. Fais glisser pour tourner autour, pince ou utilise la molette pour zoomer. Touche deux fois pour le plein écran.">
-        <StageBoundary>
+        <StageGuard place="aperçu">
           <Suspense
             fallback={
               <div className="hero-loading" role="status" aria-label="Chargement du combattant">
@@ -224,7 +210,7 @@ export function Preview({
               onPlayer={onPlayer}
             />
           </Suspense>
-        </StageBoundary>
+        </StageGuard>
         </div>
         {fs.active && <FsExit onExit={fs.exit} />}
       </div>

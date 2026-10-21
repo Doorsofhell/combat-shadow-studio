@@ -24,6 +24,7 @@ import { ExerciseList, ExerciseSheet } from './Discipline';
 import { AppIcon, DisciplineIcon } from '../icons';
 import { useActionPill } from '../components/ActionPill';
 import { FullscreenStage } from '../fullscreen/FullscreenStage';
+import { StageGuard } from '../components/StageGuard';
 import { exerciseForTechnique } from '../../domain/quickPicks';
 import { TechniqueFilter, neighbours, parseTechniqueFilter, sheetQuery, techniqueCatalogue } from './techniqueOrder';
 
@@ -407,6 +408,7 @@ export function TechniquePage() {
       />
       {/* 0.27: a double tap shows the coach on the whole screen (Youssef, 2026-10-20 22:09) */}
       <FullscreenStage className="preview-stage" testId="technique-stage">
+        <StageGuard place="fiche technique">
         <Suspense fallback={<div className="hero-loading"><div className="stage-skeleton" /></div>}>
           <CoachStage
             backdrop="dark"
@@ -419,6 +421,7 @@ export function TechniquePage() {
             onPlayer={onPlayer}
           />
         </Suspense>
+        </StageGuard>
       </FullscreenStage>
       {near && near.total > 1 && (
         <nav className="tech-step" aria-label="Techniques de la liste" data-testid="technique-step">

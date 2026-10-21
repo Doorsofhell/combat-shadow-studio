@@ -3,6 +3,7 @@ import '../training/training.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { CoachStage } from '../../three/CoachStage';
+import { StageGuard } from '../components/StageGuard';
 import { useProfile } from '../../store/profile';
 import { GROUND_MARK_LABEL, GroundMarkId, useSettings } from '../../store/settings';
 import { useCustom } from '../../store/custom';
@@ -347,6 +348,7 @@ function TrainingView({ plan }: { plan: Plan }) {
       </header>
 
       <div className="tr-stage" ref={stageRef} data-testid="training-stage">
+        <StageGuard place="entraînement">
         <CoachStage
           backdrop="theme"
           coach={coach}
@@ -371,6 +373,7 @@ function TrainingView({ plan }: { plan: Plan }) {
           ar={ar}
           arActive={arActive}
         />
+        </StageGuard>
         <div className="stage-badge">
           <span className={`phase ${view.phase}`} data-testid="phase">
             {view.paused ? 'Pause' : phaseLabel}

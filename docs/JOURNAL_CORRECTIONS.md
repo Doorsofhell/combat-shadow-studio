@@ -1367,3 +1367,31 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   Message d'erreur : « Ferme puis rouvre l'application : le coach reviendra en qualité légère. »
 - **Tests** — Vitest : 481 réussis, 1 échec déjà connu (Amara au sol). Playwright complet : 138 réussis, 2 ignorés
   (Firebase), 18,6 min. Téléphone : NON EXÉCUTÉ (à vérifier par Youssef).
+
+## 2026-10-21 · v0.29.0-proto3 · Correctif prioritaire : coach 3D qui disparaît et ne revient pas (Android)
+
+- **Constat (Youssef, 19:33, capture proto2)** — Le coach s'anime puis disparaît. Le message d'indisponibilité
+  revient à chaque ouverture. Reproduit avec `scripts/dev/gpucrash.mjs` (plantage du processus graphique de
+  Chromium, Pixel 7 émulé). Après deux réinitialisations, Chrome refuse la 3D au site (« Web page caused context
+  loss and was blocked »), même après rechargement, pendant environ 2 minutes ici. L'appli ne réessayait jamais.
+  La reprise de la PR #1 recréait un canvas sur un contexte perdu (`reading 'precision'`), d'où l'erreur
+  affichée. Ce qui déclenche la réinitialisation sur le téléphone n'est pas prouvé : pas de fuite mesurée, pas de
+  téléphone ici. Le nouveau journal 3D le dira.
+- **Correction** :
+  - restauration dans le même canvas ;
+  - garde commune aux 4 écrans 3D (`StageGuard`) : elle attend que le navigateur accepte la 3D puis remet le
+    coach sans recharger, avec des reprises bornées et des boutons qui marchent ;
+  - qualité qui baisse d'une marche par incident et remonte après 10 min calmes (`css-3d-level`). L'ancien
+    `css-3d-safe` est converti ;
+  - rendu en pause en arrière-plan ;
+  - erreurs d'animation isolées ;
+  - matériaux du coach photo libérés ;
+  - journal 3D sur l'appareil (`css-3d-diag`), visible et copiable dans Réglages › Affichage 3D.
+  - Détail dans `docs/v029/CORRECTIF_3D.md`.
+- **Tests** :
+  - Vitest : 487 réussis, 1 échec déjà connu (Amara au sol, hanche 53,6° pour 45°, sans rapport), dont 6 nouveaux
+    (`stability.test.ts`) : TEST RÉUSSI.
+  - Scènes de reprise (`coach-3d-recovery.spec.ts`, 6) : TEST RÉUSSI.
+  - Panne graphique rejouée : le coach revient seul : TEST RÉUSSI.
+  - Android réel : NON EXÉCUTÉ.
+- **Restauration** : `fix/3d-context-recovery-v029` avant ce lot = `e716944`.
