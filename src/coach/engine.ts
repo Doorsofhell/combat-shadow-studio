@@ -9,6 +9,7 @@
 import { EXERCISES, EXERCISE_BY_ID } from '../domain/exercises';
 import { TECHNIQUES, TECHNIQUE_BY_ID } from '../domain/techniques';
 import type { CatalogChampion, CatalogCombo } from '../domain/catalog/types';
+import { KB_STYLES, kbRuling, type KbStyle } from '../domain/kickboxingStyles';
 import { LEVELS } from '../domain/types';
 import type { DisciplineId, Exercise, Guard, LevelId, Technique } from '../domain/types';
 import { guideEntry, matchGuide, screenEntry, screenOfTarget, type CoachScreen } from './appGuide';
@@ -279,7 +280,7 @@ function answerEntry(p: ParsedQuestion, ctx: CoachContext, hit: RetrievalHit, in
 }
 
 /** entrées générales : pas de démo associée (échauffement, repos…) */
-const GENERAL_FAQ = new Set(['faq:echauffement', 'faq:repos', 'faq:douleur', 'faq:shadow', 'faq:debuter', 'faq:gaucher', 'faq:articulations-shadow']);
+const GENERAL_FAQ = new Set(['faq:echauffement', 'faq:repos', 'faq:douleur', 'faq:shadow', 'faq:debuter', 'faq:gaucher', 'faq:articulations-shadow', 'faq:motivation', 'faq:regularite', 'faq:plateau', 'faq:objectif-seance']);
 
 function confidenceOf(score: number) {
   return Math.round(Math.min(0.95, score / (score + 4)) * 100) / 100;
@@ -572,6 +573,73 @@ function appHelp(p: ParsedQuestion, ctx: CoachContext): CoachAnswer {
   return { text, actions, sources: [{ id: `app:${e.id}`, title: e.title, source: 'application' }], intent: 'app_help', confidence: m.byScreen ? 0.8 : 0.9, engine: 'base-locale' };
 }
 
+const KB_STYLE_WORDS: Record<KbStyle, string[]> = { k1: ['k1', 'k 1'], 'low-kick': ['style low kick', 'en style low kick'], 'full-contact': ['full contact'] };
+const KB_STATUS = { autorise: 'permis', interdit: 'interdit', 'sans-objet': 'sans objet' } as const;
+
+/** ce que disent les trois règlements de kick-boxing sur une technique (src/domain/kickboxingStyles.ts) */
+function rules(p: ParsedQuestion, ctx: CoachContext): CoachAnswer {
+  const t = tech(p.primary) ?? tech(ctx.techniqueId);
+  if (!t) return appHelp(p, ctx);
+  const padded = ` ${p.text} `;
+  const named = KB_STYLES.filter((s) => KB_STYLE_WORDS[s.id].some((w) => padded.includes(` ${w} `)));
+  const lines: string[] = [];
+  if (t.disciplines.includes('kickboxing')) {
+    lines.push(opener(ctx, p.text) + `Ce que disent les règlements du kick-boxing sur ${theName(t)} :`);
+    for (const s of named.length ? named : KB_STYLES) {
+      const r = kbRuling(t.id, s.id);
+      lines.push(`• ${s.name} : ${KB_STATUS[r.status]}${r.note ? ` — ${lc(strip(r.note))}.` : '.'}`);
+    }
+    if (named.length && named.length < KB_STYLES.length) lines.push(`Les autres styles : ${KB_STYLES.filter((s) => !named.includes(s)).map((s) => `${s.name} (${KB_STATUS[kbRuling(t.id, s.id).status]})`).join(', ')}.`);
+  } else {
+    lines.push(opener(ctx, p.text) + `${uc(theName(t))} ne fait pas partie du kick-boxing dans ma bibliothèque ; on le retrouve ${t.disciplines.map((x) => DISC_IN[x]).join(', ')}.`);
+    lines.push('Je n’ai le détail des règlements que pour les trois styles du kick-boxing (K1, low kick, full contact).');
+  }
+  lines.push('Vérifie toujours le règlement de ta fédération.');
+  return { text: lines.join('\n'), actions: [demo(t), slow(t)], sources: [techSource(t)], intent: 'rules', confidence: t.disciplines.includes('kickboxing') ? 0.9 : 0.6, engine: 'base-locale', techniqueId: t.id };
+}
+
+/**
+ * Style d’un champion de l’onglet Légendes : d’après la bibliothèque des champions (style, traits et
+ * fiches), le champion de la discipline dont les fiches utilisent le plus la technique citée.
+ */
+function legend(p: ParsedQuestion, ctx: CoachContext): CoachAnswer {
+  const cat = ctx.catalog;
+  const champs = cat?.championById ? [...cat.championById.values()] : [];
+  if (!cat || !champs.length) return appHelp(p, ctx);
+  const t = tech(p.primary);
+  const inD = champs.filter((c) => c.disciplines.includes(ctx.discipline));
+  const pool = inD.length ? inD : champs;
+  const combosOf = (id: string) => cat.combos.filter((c) => c.champion === id && (!t || c.sequence.some((s) => s === t.id || family(s) === family(t.id))));
+  const named = pool.find((c) => hasNamed(p.text, c.name));
+  let champ = named;
+  if (!champ && t) {
+    const scored = pool.map((c) => ({ c, n: combosOf(c.id).length })).filter((x) => x.n > 0);
+    const top = Math.max(0, ...scored.map((x) => x.n));
+    const best = scored.filter((x) => x.n === top).map((x) => x.c);
+    champ = best.length ? best[hash(p.text) % best.length] : undefined;
+  }
+  champ ??= pool[(hash(p.text) + (ctx.seed ?? 0)) % pool.length];
+  const mine = combosOf(champ.id);
+  const lines: string[] = [];
+  lines.push(opener(ctx, p.text) + `Dans les Légendes, ${champ.name} : ${lc(strip(champ.style))}.`);
+  if (champ.traits.length) lines.push(`Ses traits : ${champ.traits.join(', ')}.`);
+  if (t && mine.length) lines.push(`${uc(theName(t))} revient dans ${mine.length} de ses fiches, par exemple « ${mine[0].name} ».`);
+  else if (t) lines.push(`Aucune de ses fiches n’utilise ${theName(t)} : c’est le champion le plus proche que j’ai trouvé.`);
+  const statuses = new Set(mine.map((c) => c.status));
+  if (mine.length && statuses.size === 1 && statuses.has('inspiree')) lines.push('Ces fiches sont inspirées de son style : ce ne sont pas des séquences relevées en combat.');
+  const actions: CoachAction[] = mine[0] ? [{ type: 'start-combo', comboId: mine[0].id, label: 'Lancer la fiche' }] : [];
+  const sources: CoachSource[] = [{ id: `champ:${champ.id}`, title: champ.name, source: 'catalogue' }];
+  if (t) sources.push(techSource(t));
+  return { text: lines.join('\n'), actions, sources, intent: 'legend', confidence: 0.85, engine: 'base-locale', techniqueId: t?.id };
+}
+
+/** le texte cite le champion (nom complet ou nom de famille) */
+function hasNamed(text: string, name: string) {
+  const n = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+  const last = n.split(' ').pop() ?? n;
+  return ` ${text} `.includes(` ${n} `) || (last.length >= 4 && ` ${text} `.includes(` ${last} `));
+}
+
 function unknown(p: ParsedQuestion, ctx: CoachContext): CoachAnswer {
   const hits = retrieve(p.raw, { discipline: ctx.discipline, currentTechnique: ctx.techniqueId, mentioned: p.techniques });
   if (hits[0] && hits[0].score >= MIN_SCORE) return answerEntry(p, ctx, hits[0], 'explain');
@@ -613,6 +681,10 @@ export function askCoach(question: string, context: CoachContext): CoachAnswer {
       return unknownTechnique(p, context);
     case 'app_help':
       return appHelp(p, context);
+    case 'rules':
+      return rules(p, context);
+    case 'legend':
+      return legend(p, context);
     default:
       return unknown(p, context);
   }

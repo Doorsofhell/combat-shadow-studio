@@ -29,6 +29,10 @@ export type CoachIntent =
   | 'unknown_technique'
   /** question sur l’utilisation de l’application (écrans, boutons, réglages) */
   | 'app_help'
+  /** ce que disent les règlements (styles de kick-boxing) sur une technique */
+  | 'rules'
+  /** style d’un champion de l’onglet Légendes (bibliothèque des champions) */
+  | 'legend'
   | 'unknown';
 
 export interface ParsedQuestion {
@@ -251,6 +255,11 @@ const DIFF = ['difference', 'differences', 'differencier', 'different', 'differe
 const BALANCE = ['equilibre', 'desequilibre', 'stabilite', 'stable', 'tomber', 'je tombe', 'tenir sur une jambe', 'vaciller', 'perdre l equilibre'];
 const IMPROVE = ['ameliorer', 'ameliore', 'progresser', 'perfectionner', 'plus fort', 'plus vite', 'plus rapide', 'plus puissant', 'conseil', 'conseils', 'astuce', 'astuces', 'mieux', 'travailler mon', 'travailler ma', 'erreur', 'erreurs', 'optimiser', 'renforcer', 'gagner en', 'devenir meilleur'];
 const WHY = ['pourquoi', 'a quoi sert', 'ca sert a quoi', 'sert a quoi', 'interet', 'utilite', 'quel est le but', 'pour quelle raison', 'a quoi ca sert'];
+/** « est-il autorisé en K1 ? », « interdit en full contact ? » (avec une technique citée) */
+const RULES = ['autorise', 'autorisee', 'autorises', 'autorisees', 'permis', 'permise', 'permises', 'interdit', 'interdite', 'interdits', 'interdites', 'reglement', 'reglements', 'regle', 'regles', 'a le droit', 'on a le droit'];
+/** « quelle légende… », « le style de quel champion… » ; l’onglet lui-même reste une question sur l’application */
+const LEGEND = ['legende', 'legendes', 'champion', 'champions', 'championne'];
+const LEGEND_APP = ['onglet', 'statut', 'statuts', 'verifiee', 'adaptee', 'inspiree', 'fiche', 'fiches', 'favori', 'favoris', 'collection', 'collections', 'importer'];
 const EXPLAIN = ['comment', 'explique', 'expliquer', 'c est quoi', 'qu est ce', 'decris', 'decrire', 'que faut il', 'comment faire', 'comment on fait', 'qu est ce que', 'definition', 'details', 'detaille', 'ou placer', 'ou mettre', 'comment placer', 'comment utiliser'];
 
 /** analyse complète d’une question */
@@ -273,8 +282,10 @@ export function parseQuestion(raw: string, opts: { exerciseId?: string } = {}): 
   if (hasAny(text, SAFETY)) return r('safety');
   if (hasAny(text, CANT_SEE) || hasPrefix(text, ['corrig'])) return r('cant_see');
   if (unknownMoves.length && !techniques.length) return r('unknown_technique');
+  if (hasAny(text, LEGEND) && (techniques.length || hasAny(text, ['style', 'styles'])) && !hasAny(text, LEGEND_APP)) return r('legend');
   // « comment ça marche ? », « où je trouve mes favoris ? », « à quoi sert ce bouton ? »
   if (isAppQuestion(text, techniques.length > 0)) return r('app_help');
+  if (techniques.length && hasAny(text, RULES)) return r('rules');
   const actionWords = hasAny(text, SLOW) || hasAny(text, REPEAT) || hasAny(text, DEMO);
   if (hasAny(text, GREET) && !techniques.length && !actionWords && text.split(' ').length <= 6 && !hasAny(text, COMBO)) return r('smalltalk');
   const asksWhy = hasAny(text, WHY);

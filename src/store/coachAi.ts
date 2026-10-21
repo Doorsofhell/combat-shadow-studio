@@ -28,8 +28,15 @@ export interface CoachAiSettings {
 export const DEFAULT_COACH_AI: CoachAiSettings = { enabled: true, voiceReplies: false, detail: 'court', keepHistory: false, onlineSpeechOptIn: false };
 export const COACH_HISTORY_MAX = 100;
 
+/** questions suggérées montrées récemment (0.27) : le panneau en propose d’autres à l’ouverture suivante */
+export const COACH_SEEN_MAX = 60;
+
 interface CoachAiState extends CoachAiSettings {
   history: CoachExchange[];
+  /** questions suggérées déjà montrées, la plus récente d’abord (textes de l’application, rien de saisi) */
+  recentSuggestions: string[];
+  /** retient les questions qui viennent d’être montrées (après le chargement des réglages) */
+  noteSuggestions: (shown: string[]) => void;
   set: (p: Partial<CoachAiSettings>) => void;
   /** ajoute un échange (ignoré si keepHistory est désactivé) */
   push: (e: Omit<CoachExchange, 'id' | 'at'>) => void;
@@ -41,6 +48,26 @@ export const useCoachAi = create<CoachAiState>()(
     (setState, getState) => ({
       ...DEFAULT_COACH_AI,
       history: [],
+      recentSuggestions: [],
+      noteSuggestions: (shown) => {
+        const add = () => {
+          const prev = getState().recentSuggestions;
+          const fresh = shown.filter((q, i) => typeof q === 'string' && q && shown.indexOf(q) === i);
+          const next = [...fresh, ...prev.filter((q) => !fresh.includes(q))].slice(0, COACH_SEEN_MAX);
+          if (next.length === prev.length && next.every((q, i) => q === prev[i])) return;
+          setState({ recentSuggestions: next });
+        };
+        // never write before the saved settings are read back (it would overwrite them)
+        const p = useCoachAi.persist;
+        if (p && !p.hasHydrated()) {
+          const stop = p.onFinishHydration(() => {
+            stop();
+            add();
+          });
+          return;
+        }
+        add();
+      },
       // désactiver l’historique l’efface aussitôt
       set: (p) => setState((s) => ({ ...p, history: p.keepHistory === false ? [] : s.history })),
       push: (e) => {
@@ -66,9 +93,9 @@ export const useCoachAi = create<CoachAiState>()(
     {
       name: 'css-coach-ai',
       storage: createJSONStorage(() => idbStorage),
-      partialize: (s) => ({ enabled: s.enabled, voiceReplies: s.voiceReplies, detail: s.detail, keepHistory: s.keepHistory, onlineSpeechOptIn: s.onlineSpeechOptIn, history: s.history }),
+      partialize: (s) => ({ enabled: s.enabled, voiceReplies: s.voiceReplies, detail: s.detail, keepHistory: s.keepHistory, onlineSpeechOptIn: s.onlineSpeechOptIn, history: s.history, recentSuggestions: s.recentSuggestions }),
       merge: (saved, current) => {
-        const p = (saved ?? {}) as Partial<CoachAiSettings & { history: CoachExchange[] }>;
+        const p = (saved ?? {}) as Partial<CoachAiSettings & { history: CoachExchange[]; recentSuggestions: unknown }>;
         const keep = typeof p.keepHistory === 'boolean' ? p.keepHistory : DEFAULT_COACH_AI.keepHistory;
         return {
           ...current,
@@ -78,6 +105,8 @@ export const useCoachAi = create<CoachAiState>()(
           keepHistory: keep,
           onlineSpeechOptIn: p.onlineSpeechOptIn === true,
           history: keep && Array.isArray(p.history) ? p.history.slice(0, COACH_HISTORY_MAX) : [],
+          // 0.27: absent from older saves
+          recentSuggestions: Array.isArray(p.recentSuggestions) ? p.recentSuggestions.filter((q): q is string => typeof q === 'string').slice(0, COACH_SEEN_MAX) : [],
         };
       },
     },
