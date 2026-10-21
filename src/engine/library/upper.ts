@@ -60,8 +60,10 @@ function elbow(a: Author, side: 'L' | 'R', kind: 'horizontal' | 'diagonal' | 'mo
       h.pole = v3(sg * 0.2, -1, 0.3);
       h.pron = -0.2;
     } else {
-      h.pos = v3(sh0.x + sg * 0.12 * s, sh0.y + 0.1 * s, sh0.z + 0.16 * s);
-      h.pole = v3(sg, 0.4, -0.3);
+      // v0.29: the elbow rises to the height of the shoulder in place (no pull back, which would announce it),
+      // then crosses « from one shoulder to the other » [S27]
+      h.pos = v3(sh0.x + sg * 0.03 * s, sh0.y + 0.08 * s, sh0.z + 0.2 * s);
+      h.pole = v3(sg, 0.25, -0.2);
       h.pron = 0.8;
     }
     d.pelvis.yaw += -turn * deg(6);

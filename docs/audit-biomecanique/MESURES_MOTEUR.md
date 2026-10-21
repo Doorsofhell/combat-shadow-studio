@@ -40,9 +40,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Rattrapage du middle kick (`rattrapage-middle`) | defense | 18,2 | 28 % | 0,37 | 3,0 (LeftToeBase) | 14° | 0,16 |
 | High kick droit (`high-kick-arriere`) | pied | 17,3 | 15 % | 0,67 | 3,0 (LeftToeBase) | 23° | 0,47 |
 | Middle kick droit (`middle-kick-arriere`) | pied | 17,2 | 13 % | 0,67 | 3,0 (LeftToeBase) | 23° | 0,46 |
-| Genou circulaire avant (`genou-circulaire-avant`) | genou | 17,0 | 28 % | 0,45 | 3,0 (LeftToeBase) | 21° | 0,39 |
 | Switch kick (`switch-kick`) | pied | 16,9 | 23 % | 0,86 | 3,0 (LeftToeBase) | 20° | 0,33 |
-| Genou direct avant (`genou-direct-avant`) | genou | 16,8 | 26 % | 0,45 | 3,0 (LeftToeBase) | 4° | 0,25 |
 | Roundhouse kick (`roundhouse-arriere`) | pied | 16,6 | 13 % | 0,55 | 3,0 (LeftToeBase) | 23° | 0,42 |
 | Front kick arrière (`front-kick-arriere`) | pied | 16,5 | 23 % | 0,68 | 3,0 (LeftToeBase) | 6° | 0,09 |
 | Teep (`teep-avant`) | pied | 16,5 | 23 % | 0,68 | 3,0 (LeftToeBase) | 4° | 0,03 |
@@ -51,17 +49,19 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Check jambe arrière (`check-arriere`) | defense | 15,2 | 21 % | 0,46 | 3,0 (LeftToeBase) | 6° | 0,86 |
 | Uchikomi d’o-uchi-gari (solo) (`uchikomi-o-uchi-gari`) | projection | 15,0 | 31 % | 0,67 | -4,4 (RightToeBase) | 2° | 5,69 |
 | Ushiro-ukemi (chute arrière, version basse) (`ukemi-ushiro`) | chute | 14,9 | 43 % | 0,00 | -3,9 (RightToeBase) | 4° | 1,07 |
+| Genou circulaire avant (`genou-circulaire-avant`) | genou | 14,4 | 21 % | 0,49 | 3,0 (LeftToeBase) | 21° | 1,24 |
+| Genou direct avant (`genou-direct-avant`) | genou | 14,3 | 18 % | 0,49 | 3,0 (LeftToeBase) | 4° | 1,21 |
 | Low kick droit (`low-kick-arriere`) | pied | 13,9 | 8 % | 0,63 | 3,0 (LeftToeBase) | 22° | 1,10 |
 | Ayumi-ashi (pas marchés) (`ayumi-ashi`) | deplacement | 13,8 | 43 % | 0,37 | 3,0 (LeftToeBase) | 4° | 1,31 |
 | Descente contrôlée au sol (`descente-sol`) | sol | 13,7 | 7 % | 0,00 | -2,4 (RightToeBase) | 11° | 8,31 |
 | Teep arrière (`teep-arriere`) | pied | 12,1 | 21 % | 0,68 | 3,0 (LeftToeBase) | 4° | 0,09 |
-| Genou direct (`genou-direct-arriere`) | genou | 12,1 | 20 % | 0,45 | 3,0 (LeftToeBase) | 12° | 0,51 |
-| Genou dans le clinch (`genou-clinch`) | clinch | 12,1 | 20 % | 0,45 | 3,0 (LeftToeBase) | 12° | 0,51 |
-| Genou circulaire dans le clinch (`genou-circulaire-clinch`) | clinch | 11,6 | 13 % | 0,45 | 3,0 (LeftToeBase) | 29° | 0,65 |
-| Genou circulaire (`genou-circulaire-arriere`) | genou | 11,6 | 13 % | 0,45 | 3,0 (LeftToeBase) | 29° | 0,65 |
 | Entrée en double-leg (solo) (`entree-lutte`) | lutte | 8,2 | 44 % | 0,00 | 3,0 (LeftToeBase) | 9° | 6,94 |
 | Uchikomi de seoi-nage (solo) (`uchikomi-seoi`) | projection | 8,2 | 43 % | 0,00 | 3,0 (LeftToeBase) | 15° | 7,76 |
 | Entrée en single-leg (solo) (`single-leg`) | lutte | 8,0 | 44 % | 0,00 | 3,0 (LeftToeBase) | 9° | 6,48 |
+| Genou circulaire (`genou-circulaire-arriere`) | genou | 7,9 | 10 % | 0,48 | 3,0 (LeftToeBase) | 29° | 1,08 |
+| Genou circulaire dans le clinch (`genou-circulaire-clinch`) | clinch | 7,9 | 10 % | 0,48 | 3,0 (LeftToeBase) | 29° | 1,08 |
+| Genou direct (`genou-direct-arriere`) | genou | 7,8 | 13 % | 0,48 | 3,0 (LeftToeBase) | 12° | 0,89 |
+| Genou dans le clinch (`genou-clinch`) | clinch | 7,8 | 13 % | 0,48 | 3,0 (LeftToeBase) | 12° | 0,89 |
 | Changement de niveau (`changement-niveau`) | lutte | 7,3 | 87 % | 0,00 | 3,0 (LeftToeBase) | 5° | 0,00 |
 | Défense d’entrée en lutte (`defense-lutte`) | lutte | 6,7 | 82 % | 0,00 | 3,0 (LeftToeBase) | 4° | 5,79 |
 | Feinte de lutte (`feinte-lutte`) | feinte | 6,3 | 82 % | 0,00 | 3,0 (LeftToeBase) | 4° | 0,00 |
@@ -178,6 +178,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `boxe-intermediaire-11` | jab-corps → jab → direct | 15,9 | 0,06 | 0,06 |
 | `boxe-avance-04` | jab-corps → direct-corps → crochet-avant → uppercut-arriere | 15,9 | 0,06 | 0,06 |
 | `boxe-expert-07` | jab-corps → direct → crochet-avant-corps → crochet-avant → direct-corps → uppercut-arriere → crochet-avant | 15,9 | 0,06 | 0,06 |
+| `mma-intermediaire-10` | teep-avant → jab → direct | 15,7 | 0,08 | 0,05 |
 | `mma-intermediaire-07` | front-kick-avant → jab → changement-niveau | 16,7 | 0,05 | 0,02 |
 | `mma-debutant-05` | changement-niveau | 16,7 | 0,00 | 0,00 |
 | `bjj-debutant-02` | descente-sol → releve-technique | 17,3 | 11,09 | 0,00 |
@@ -190,24 +191,6 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `bjj-avance-03` | descente-sol → retention-garde → sortie-hanche → releve-technique | 17,3 | 11,09 | 0,00 |
 | `bjj-avance-04` | descente-sol → pont → pont → sortie-hanche → sortie-hanche → releve-technique | 17,3 | 11,09 | 0,00 |
 | `bjj-expert-03` | descente-sol → retention-garde → pont → sortie-hanche → retention-garde → releve-technique | 17,3 | 11,09 | 0,00 |
-| `muaythai-expert-11` | jab → direct → crochet-avant → uppercut-arriere → coude-horizontal-avant → genou-direct-arriere → high-kick-arriere | 19,9 | 0,24 | 0,00 |
-| `muaythai-intermediaire-09` | clinch-tirage → genou-clinch → genou-clinch | 19,9 | 0,22 | 0,00 |
-| `muaythai-expert-10` | coude-horizontal-avant → coude-horizontal-arriere → genou-direct-arriere → genou-circulaire-avant → coude-diagonal-arriere → coude-montant-arriere | 19,9 | 0,22 | 0,00 |
-| `muaythai-expert-09` | direct → crochet-avant → middle-kick-arriere → direct → genou-direct-arriere → coude-horizontal-arriere → high-kick-arriere | 19,9 | 0,22 | 0,00 |
-| `muaythai-expert-03` | check-avant → blocage-haut → esquive-droite → direct → coude-horizontal-avant → genou-direct-arriere | 19,9 | 0,22 | 0,00 |
-| `muaythai-debutant-11` | jab → direct → genou-direct-arriere | 19,9 | 0,22 | 0,00 |
-| `muaythai-avance-01` | jab → direct → crochet-avant → genou-direct-arriere | 19,9 | 0,22 | 0,00 |
-| `muaythai-intermediaire-04` | direct → genou-direct-arriere → coude-horizontal-avant | 19,9 | 0,22 | 0,00 |
-| `muaythai-debutant-07` | genou-direct-arriere | 19,9 | 0,22 | 0,00 |
-| `muaythai-avance-11` | jab → direct → middle-kick-arriere → jab → direct → genou-direct-arriere | 19,9 | 0,22 | 0,00 |
-| `muaythai-expert-02` | teep-avant → jab → direct → crochet-avant → coude-horizontal-arriere → genou-direct-arriere → coude-montant-avant → middle-kick-arriere | 19,9 | 0,22 | 0,00 |
-| `kickboxing-avance-12` | jab → direct → middle-kick-arriere → genou-direct-arriere | 16,5 | 0,22 | 0,00 |
-| `kickboxing-debutant-13` | jab → direct → genou-direct-arriere | 16,5 | 0,22 | 0,00 |
-| `kickboxing-debutant-12` | genou-direct-arriere | 16,5 | 0,22 | 0,00 |
-| `kickboxing-intermediaire-13` | jab → crochet-avant → genou-direct-arriere | 16,5 | 0,22 | 0,00 |
-| `mma-avance-07` | jab → direct → genou-direct-arriere | 15,2 | 0,21 | 0,00 |
-| `mma-expert-10` | jab → direct → genou-direct-arriere → crochet-avant → uppercut-arriere | 15,2 | 0,21 | 0,00 |
-| `muaythai-expert-07` | pas-avant → jab → direct → pas-avant → genou-direct-arriere → coude-horizontal-avant → pas-arriere → teep-avant | 19,9 | 0,32 | 0,00 |
 | `kickboxing-avance-09` | jab-corps → direct → crochet-avant-corps → middle-kick-arriere | 15,8 | 0,13 | 0,00 |
 | `kickboxing-intermediaire-02` | jab → direct → high-kick-arriere | 15,1 | 0,14 | 0,00 |
 | `kickboxing-avance-10` | feinte-jab → direct → high-kick-arriere | 15,1 | 0,14 | 0,00 |
@@ -217,15 +200,31 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `kickboxing-intermediaire-11` | uppercut-arriere → crochet-avant → high-kick-arriere | 15,1 | 0,14 | 0,00 |
 | `kickboxing-avance-04` | jab → direct → crochet-avant → high-kick-arriere | 15,1 | 0,14 | 0,00 |
 | `mma-expert-11` | overhand → crochet-avant → uppercut-arriere → crochet-avant → direct → high-kick-arriere | 16,9 | 0,13 | 0,00 |
-| `kickboxing-intermediaire-12` | genou-circulaire-arriere | 15,2 | 0,28 | 0,00 |
-| `muaythai-intermediaire-08` | genou-circulaire-arriere | 18,4 | 0,28 | 0,00 |
-| `muaythai-avance-04` | clinch-tirage → genou-clinch → genou-circulaire-clinch → genou-clinch | 19,9 | 0,28 | 0,00 |
-| `muaythai-expert-04` | clinch-tirage → genou-clinch → genou-circulaire-clinch → genou-clinch → coude-diagonal-arriere → coude-montant-arriere | 19,9 | 0,28 | 0,00 |
-| `muaythai-expert-08` | teep-avant → jab → direct → low-kick-arriere → check-avant → middle-kick-arriere → genou-direct-arriere | 19,9 | 0,63 | 0,00 |
-| `muaythai-expert-01` | jab → direct → crochet-avant → coude-horizontal-arriere → genou-direct-arriere → low-kick-arriere | 19,9 | 0,62 | 0,00 |
-| `muaythai-expert-05` | jab → direct → crochet-avant → direct → low-kick-arriere → teep-avant → jab → direct → genou-direct-arriere → coude-horizontal-avant | 19,9 | 0,62 | 0,00 |
-| `kickboxing-expert-12` | jab → direct → genou-direct-arriere → crochet-avant → low-kick-arriere | 16,5 | 0,61 | 0,00 |
+| `muaythai-expert-08` | teep-avant → jab → direct → low-kick-arriere → check-avant → middle-kick-arriere → genou-direct-arriere | 18,8 | 0,63 | 0,00 |
+| `muaythai-expert-01` | jab → direct → crochet-avant → coude-horizontal-arriere → genou-direct-arriere → low-kick-arriere | 18,8 | 0,62 | 0,00 |
+| `muaythai-expert-05` | jab → direct → crochet-avant → direct → low-kick-arriere → teep-avant → jab → direct → genou-direct-arriere → coude-horizontal-avant | 18,8 | 0,62 | 0,00 |
+| `kickboxing-expert-12` | jab → direct → genou-direct-arriere → crochet-avant → low-kick-arriere | 15,8 | 0,61 | 0,00 |
 | `kickboxing-expert-07` | jab → direct → crochet-avant → direct → low-kick-arriere → jab → direct → crochet-avant → uppercut-arriere → high-kick-arriere | 15,1 | 0,61 | 0,00 |
+| `muaythai-expert-07` | pas-avant → jab → direct → pas-avant → genou-direct-arriere → coude-horizontal-avant → pas-arriere → teep-avant | 18,8 | 0,32 | 0,00 |
+| `kickboxing-debutant-12` | genou-direct-arriere | 15,8 | 0,16 | 0,00 |
+| `kickboxing-debutant-13` | jab → direct → genou-direct-arriere | 15,8 | 0,16 | 0,00 |
+| `kickboxing-intermediaire-13` | jab → crochet-avant → genou-direct-arriere | 15,8 | 0,16 | 0,00 |
+| `kickboxing-avance-12` | jab → direct → middle-kick-arriere → genou-direct-arriere | 15,8 | 0,16 | 0,00 |
+| `muaythai-debutant-07` | genou-direct-arriere | 18,8 | 0,16 | 0,00 |
+| `muaythai-debutant-11` | jab → direct → genou-direct-arriere | 18,8 | 0,16 | 0,00 |
+| `muaythai-intermediaire-04` | direct → genou-direct-arriere → coude-horizontal-avant | 18,8 | 0,16 | 0,00 |
+| `muaythai-avance-01` | jab → direct → crochet-avant → genou-direct-arriere | 18,8 | 0,16 | 0,00 |
+| `muaythai-avance-11` | jab → direct → middle-kick-arriere → jab → direct → genou-direct-arriere | 18,8 | 0,16 | 0,00 |
+| `muaythai-expert-02` | teep-avant → jab → direct → crochet-avant → coude-horizontal-arriere → genou-direct-arriere → coude-montant-avant → middle-kick-arriere | 18,8 | 0,16 | 0,00 |
+| `muaythai-expert-03` | check-avant → blocage-haut → esquive-droite → direct → coude-horizontal-avant → genou-direct-arriere | 18,8 | 0,16 | 0,00 |
+| `muaythai-expert-09` | direct → crochet-avant → middle-kick-arriere → direct → genou-direct-arriere → coude-horizontal-arriere → high-kick-arriere | 18,8 | 0,16 | 0,00 |
+| `muaythai-expert-11` | jab → direct → crochet-avant → uppercut-arriere → coude-horizontal-avant → genou-direct-arriere → high-kick-arriere | 18,8 | 0,16 | 0,00 |
+| `muaythai-intermediaire-09` | clinch-tirage → genou-clinch → genou-clinch | 19,9 | 0,16 | 0,00 |
 | `mma-avance-08` | defense-lutte → direct → high-kick-arriere | 16,9 | 4,94 | 0,00 |
+| `kickboxing-intermediaire-12` | genou-circulaire-arriere | 15,2 | 0,21 | 0,00 |
+| `muaythai-avance-04` | clinch-tirage → genou-clinch → genou-circulaire-clinch → genou-clinch | 19,9 | 0,20 | 0,00 |
+| `muaythai-expert-04` | clinch-tirage → genou-clinch → genou-circulaire-clinch → genou-clinch → coude-diagonal-arriere → coude-montant-arriere | 19,9 | 0,20 | 0,00 |
+| `muaythai-intermediaire-08` | genou-circulaire-arriere | 18,4 | 0,20 | 0,00 |
+| `muaythai-expert-10` | coude-horizontal-avant → coude-horizontal-arriere → genou-direct-arriere → genou-circulaire-avant → coude-diagonal-arriere → coude-montant-arriere | 18,8 | 0,16 | 0,00 |
 
-Exercices sans glissement ajouté de plus de 0,5 cm par image ni saut de plus de 15 cm : 138 sur 254.
+Exercices sans glissement ajouté de plus de 0,5 cm par image ni saut de plus de 15 cm : 139 sur 254.

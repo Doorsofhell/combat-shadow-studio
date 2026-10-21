@@ -505,6 +505,41 @@ export class CoachRig {
         fb.bone.quaternion.copy(fb.localQ).multiply(tmpQ.setFromAxisAngle(ax.axis, ang));
       }
     }
+    // v0.29 (Youssef's captures, 2026-10-21: hands that look like claws): in a closed fist the thumb folds over
+    // the middle phalanges of the index and middle fingers. Bending the thumb about a fixed axis left it
+    // sticking out on the photo-textured hands; its base now turns so that the thumb points at those phalanges.
+    const t1 = this.bones.get(`${sideName(s)}HandThumb1`);
+    const t2 = this.bones.get(`${sideName(s)}HandThumb2`);
+    const i2 = this.bones.get(`${sideName(s)}HandIndex2`);
+    const m2 = this.bones.get(`${sideName(s)}HandMiddle2`);
+    const w = clamp((h.fist - 0.3) / 0.7, 0, 1) * 0.85;
+    if (t1 && t2 && i2 && m2 && w > 0) {
+      t1.bone.parent!.updateWorldMatrix(true, true);
+      const p1 = t1.bone.getWorldPosition(new Vector3());
+      const cur = t2.bone.getWorldPosition(new Vector3()).sub(p1).normalize();
+      const goal = i2.bone.getWorldPosition(new Vector3()).add(m2.bone.getWorldPosition(new Vector3())).multiplyScalar(0.5).sub(p1).normalize();
+      const turn = new Quaternion().setFromUnitVectors(cur, goal);
+      const aim = new Quaternion().slerp(turn, w);
+      const pw = worldQuat(t1.bone.parent!, new Quaternion());
+      const tw = worldQuat(t1.bone, new Quaternion());
+      t1.bone.quaternion.copy(pw.invert().multiply(aim.multiply(tw)));
+      t1.bone.updateMatrixWorld(true);
+      // the last two segments lie across the middle phalanx of the middle finger
+      const t3 = this.bones.get(`${sideName(s)}HandThumb3`);
+      const m3 = this.bones.get(`${sideName(s)}HandMiddle3`);
+      if (t3 && m3) {
+        const p2 = t2.bone.getWorldPosition(new Vector3());
+        const cur2 = t3.bone.getWorldPosition(new Vector3()).sub(p2).normalize();
+        const goal2 = m3.bone.getWorldPosition(new Vector3()).sub(p2).normalize();
+        const aim2 = new Quaternion().slerp(new Quaternion().setFromUnitVectors(cur2, goal2), w);
+        const pw2 = worldQuat(t2.bone.parent!, new Quaternion());
+        const tw2 = worldQuat(t2.bone, new Quaternion());
+        t2.bone.quaternion.copy(pw2.invert().multiply(aim2.multiply(tw2)));
+        // the last phalanx in line with the previous one
+        t3.bone.quaternion.copy(t3.localQ);
+        t2.bone.updateMatrixWorld(true);
+      }
+    }
   }
 
   /** shoulder rotation of an upper-arm turn relative to the chest: + external, − internal (radians), and the arm's elevation */

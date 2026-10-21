@@ -80,7 +80,8 @@ bpy.ops.object.mode_set(mode='OBJECT')
 # athletic shape (v0.29, Youssef 2026-10-21: « le corps n'est pas harmonieux et humain »): the Rocketbox
 # sports bodies are thin and untrained. Each region swells along the surface normal where the skin follows
 # the bone (its skin weight), most in the middle of the muscle, without big muscles (SHAPE=0 to skip,
-# SHAPE_SCALE to tune: 1 man, about 0.6 woman).
+# SHAPE_SCALE to tune). v0.29 biomeca lot (Youssef 2026-10-21 21:00, « plus athlétique, pas culturiste »):
+# SHAPE_SCALE=1.6 for Kadir (max 28 mm), 1.0 for Amara (max 18 mm); the shipped GLBs use these values.
 SHAPE_SCALE = float(os.environ.get('SHAPE_SCALE', '1'))
 if os.environ.get('SHAPE', '1') != '0':
     mw = mesh.matrix_world
@@ -90,22 +91,28 @@ if os.environ.get('SHAPE', '1') != '0':
     FWD = Vector((0, -1, 0))
     UP = Vector((0, 0, 1))
     # (group, from bone, to bone, peak along the bone 0..1, width, metres, side filter)
+    # v0.29 (Youssef, 2026-10-21 21:00: « véritables athlètes… musculature naturellement développée, pas de
+    # culturistes »): each muscle group on its own side of the limb (quadriceps in front, hamstrings and calves
+    # behind, upper back behind, pectorals in front), a few millimetres to two centimetres at most
     R = []
     for S in ('Left', 'Right'):
         R += [
-            (f'{S}Arm', f'{S}Arm', f'{S}ForeArm', 0.55, 0.45, 0.013, None),        # biceps, triceps
-            (f'{S}Arm', f'{S}Arm', f'{S}ForeArm', 0.05, 0.3, 0.013, None),        # deltoid
-            (f'{S}Shoulder', f'{S}Arm', f'{S}ForeArm', 0.0, 0.3, 0.009, None),     # deltoid, top
-            (f'{S}ForeArm', f'{S}ForeArm', f'{S}Hand', 0.25, 0.35, 0.009, None),   # forearm, near the elbow
-            (f'{S}UpLeg', f'{S}UpLeg', f'{S}Leg', 0.4, 0.5, 0.015, None),           # thigh
-            (f'{S}Leg', f'{S}Leg', f'{S}Foot', 0.3, 0.3, 0.013, 'back'),           # calf
+            (f'{S}Arm', f'{S}Arm', f'{S}ForeArm', 0.55, 0.45, 0.016, None),        # biceps, triceps
+            (f'{S}Arm', f'{S}Arm', f'{S}ForeArm', 0.05, 0.3, 0.019, None),        # deltoid
+            (f'{S}Shoulder', f'{S}Arm', f'{S}ForeArm', 0.0, 0.3, 0.014, None),     # deltoid, top
+            (f'{S}ForeArm', f'{S}ForeArm', f'{S}Hand', 0.25, 0.35, 0.011, None),   # forearm, near the elbow
+            (f'{S}UpLeg', f'{S}UpLeg', f'{S}Leg', 0.4, 0.5, 0.012, None),           # thigh
+            (f'{S}UpLeg', f'{S}UpLeg', f'{S}Leg', 0.5, 0.45, 0.012, 'front'),      # quadriceps
+            (f'{S}UpLeg', f'{S}UpLeg', f'{S}Leg', 0.45, 0.4, 0.008, 'back'),       # hamstrings
+            (f'{S}Leg', f'{S}Leg', f'{S}Foot', 0.3, 0.3, 0.018, 'back'),           # calf
         ]
     R += [
-        ('Spine2', 'Spine2', 'Neck', 0.45, 0.6, 0.012, 'front'),   # chest
-        ('Spine2', 'Spine2', 'Neck', 0.35, 0.6, 0.013, 'side'),    # lats
-        ('Spine1', 'Spine1', 'Spine2', 0.8, 0.6, 0.008, 'side'),   # lats, lower part
-        ('Neck', 'Neck', 'Head', 0.1, 0.4, 0.009, 'back'),         # trapezius
-        ('Hips', 'Hips', 'Spine', 0.0, 0.8, 0.008, 'back'),        # glutes
+        ('Spine2', 'Spine2', 'Neck', 0.45, 0.6, 0.017, 'front'),   # chest
+        ('Spine2', 'Spine2', 'Neck', 0.35, 0.6, 0.02, 'side'),     # lats
+        ('Spine1', 'Spine1', 'Spine2', 0.8, 0.6, 0.012, 'side'),   # lats, lower part
+        ('Spine2', 'Spine2', 'Neck', 0.55, 0.5, 0.012, 'back'),    # upper back
+        ('Neck', 'Neck', 'Head', 0.1, 0.4, 0.013, 'back'),         # trapezius
+        ('Hips', 'Hips', 'Spine', 0.0, 0.8, 0.014, 'back'),        # glutes
     ]
     import math as _m
     groups = {g.name: g.index for g in mesh.vertex_groups}

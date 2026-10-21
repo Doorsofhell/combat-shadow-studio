@@ -72,7 +72,9 @@ function straight(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
       // lead hand back to the chin while the rear hand fires
       d.handL.pos = add(d.handL.pos, { z: -0.1 * s, y: 0.01 * s, x: -0.02 * s });
     });
-    ext.handR = a.hand('world', a.reach(ext, 'R', T, 0.98), v3(-0.75, -0.3, -0.2), 0.95);
+    // v0.29: the arm reaches without locking the elbow (S8 Cheraghi 2014: elbow 137 ± 12° at impact on a bag;
+    // shadow boxing extends further, but a locked elbow reads as a stick and hurts the joint)
+    ext.handR = a.hand('world', a.reach(ext, 'R', T, 0.96), v3(-0.75, -0.3, -0.2), 0.95);
   }
   const t1 = side === 'L' ? 0.13 : 0.17;
   const t2 = side === 'L' ? 0.32 : 0.4;
@@ -121,15 +123,30 @@ function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
     d.chest.roll += deg(body ? 10 * sg : 4 * sg);
     if (body) d.chest.pitch += deg(6);
   });
-  // hand arrives on the target from the side, elbow up, forearm horizontal
-  const hand = a.hand('world', v3(T.x + 0.04 * sg * s, T.y, T.z), v3(sg, body ? -0.4 : 0.25, -0.1), body ? 0.1 : 0.85);
+  // hand arrives on the target from the side, forearm horizontal; v0.29 (Youssef, 2026-10-21: « déformation
+  // importante du bras »): the elbow stays at the height of the shoulder and of the fist, « bras fléchi à 90° »
+  // with fist, elbow and shoulder level [S3 Swiss Boxing], instead of 11 cm above the shoulder
+  // the fist is placed at the distance that bends the elbow to 90° for this coach's own arm lengths (a fixed
+  // target point left Amara's shorter arm almost straight, 46° of bend)
+  let at = v3(T.x + 0.04 * sg * s, T.y, T.z);
+  if (!body) {
+    const sh = a.shoulder(hit, side);
+    const reach = Math.hypot(a.m.upperArm, a.m.foreArm);
+    const fx = at.x - sh.x;
+    const fz = at.z - sh.z;
+    const r = Math.sqrt(Math.max(reach * reach - (T.y - sh.y) ** 2, 0.01)) / Math.hypot(fx, fz);
+    at = v3(sh.x + fx * r, T.y, sh.z + fz * r);
+  }
+  const hand = a.hand('world', at, v3(sg, body ? -0.4 : -0.3, -0.1), body ? 0.1 : 0.85);
   hit[side === 'L' ? 'handL' : 'handR'] = hand;
   const wind = edit(g, (d) => {
     const h = side === 'L' ? d.handL : d.handR;
     h.space = 'world';
     const sh = a.shoulder(g, side);
-    h.pos = v3(sh.x + 0.16 * sg * s, T.y + 0.02 * s, sh.z + 0.3 * s);
-    h.pole = v3(sg, body ? -0.4 : 0.35, -0.2);
+    // v0.29: the fist opens further to the side, for a wider arc that stays as fast at impact with the shorter,
+    // 90° bent arm of the hit pose
+    h.pos = v3(sh.x + 0.22 * sg * s, T.y + 0.02 * s, sh.z + 0.22 * s);
+    h.pole = v3(sg, body ? -0.4 : 0.05, -0.2);
     h.pron = body ? 0.1 : 0.7;
     d.pelvis.yaw += deg(-10 * sg);
     d.chest.yaw += deg(-6 * sg);
