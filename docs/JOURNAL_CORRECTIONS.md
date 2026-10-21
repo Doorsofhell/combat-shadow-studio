@@ -1261,3 +1261,8 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `src/coach/questionBank.ts`) ; nouvelle catégorie « chute » rattachée à l’axe « Lutte, sol » de l’ADN de combat
   (`src/domain/catalog/dna.ts`, test dna qui le vérifie). Catalogue régénéré avec les nouvelles techniques : aucune
   séquence modifiée (1496 combinaisons).
+- **Tests** — Vitest : TEST RÉUSSI (472 réussis, 1 ignoré). Playwright complet : 135 réussis, 2 ignorés (Firebase),
+  2 ÉCHOUÉS dans `coach-panel-size.spec.ts`, corrigés puis TEST RÉUSSI 5 fois de suite sur ce fichier :
+  le rechargement partait avant l’enregistrement de la taille (le test attend maintenant l’écriture IndexedDB),
+  et la poignée était mesurée pendant l’animation du panneau (le test attend qu’elle soit immobile).
+  Aucune assertion affaiblie. Validation sur téléphone : NON EXÉCUTÉ.

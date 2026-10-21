@@ -32,6 +32,23 @@ test.beforeEach(async ({ page }) => {
 const panel = (page: Page) => page.getByTestId('coach-ask-panel');
 const shrink = (page: Page) => page.getByTestId('coach-shrink');
 const expand = (page: Page) => page.getByTestId('coach-expand');
+/** the settings are written to IndexedDB asynchronously: wait until the size is saved before reloading */
+const savedSize = (page: Page) =>
+  page.evaluate(
+    () =>
+      new Promise<string>((res) => {
+        const r = indexedDB.open('keyval-store');
+        r.onsuccess = () => {
+          // settings may be kept per user or app-wide: read both keys
+          const st = r.result.transaction('keyval').objectStore('keyval');
+          const a = st.get('u:local:css-settings');
+          const b = st.get('css-settings');
+          b.onsuccess = () => res(String(a.result ?? '') + String(b.result ?? ''));
+          b.onerror = () => res(String(a.result ?? ''));
+        };
+        r.onerror = () => res('');
+      }),
+  );
 const box = (page: Page) => panel(page).evaluate((e) => { const r = e.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, h: r.height, left: r.left, right: r.right }; });
 
 test('depuis la pilule : réduit, normal, agrandi ; mémorisé après rechargement', async ({ page }) => {
@@ -80,6 +97,7 @@ test('depuis la pilule : réduit, normal, agrandi ; mémorisé après rechargeme
   await expect(page.getByTestId('coach-suggestions')).toBeVisible();
 
   // remembered after a reload, and on a screen with the bubble
+  await expect.poll(() => savedSize(page)).toContain('"coachPanelSize":"agrandi"');
   await page.reload();
   await page.getByTestId('pill-coach').click();
   await expect(panel(page)).toHaveAttribute('data-size', 'agrandi');
@@ -119,6 +137,16 @@ test('au clavier et à la poignée : boutons focusables, glisser vers le haut ag
   };
   await drag(80);
   await expect(panel(page)).toHaveAttribute('data-size', 'reduit');
+  // the panel animates to its new size: measure the handle once it has stopped moving
+  let last = -1;
+  await expect
+    .poll(async () => {
+      const y = (await page.getByTestId('coach-grab').boundingBox())!.y;
+      const still = Math.abs(y - last) < 0.5;
+      last = y;
+      return still;
+    })
+    .toBe(true);
   const g2 = (await page.getByTestId('coach-grab').boundingBox())!;
   await page.mouse.move(g2.x + g2.width / 2, g2.y + g2.height / 2);
   await page.mouse.down();
