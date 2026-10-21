@@ -14,6 +14,9 @@ const SCREENS = [
   ['techniques', '/#/techniques'],
   ['technique', '/#/techniques/jab'],
   ['champions', '/#/champions'],
+  // 0.28 (Youssef, 2026-10-20 21:52): the style flower, the legend cards and a judo / BJJ champion page
+  ['champions-liste', '/#/champions?vue=champions&d=bjj'],
+  ['champion-judo', '/#/champions/c/riner'],
   ['createur-enchainement', '/#/createur'],
   ['programmes', '/#/programmes'],
   ['coach-editeur', '/#/combattant'],

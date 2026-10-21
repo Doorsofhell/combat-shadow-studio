@@ -13,20 +13,24 @@ La bibliothèque propose des fiches d’entraînement (« combinaisons ») class
 | `src/ui/screens/Champions.tsx` | Écrans : bibliothèque, fiche, profil de champion |
 | `src/domain/__tests__/catalog.test.ts` | Tests sur la totalité du catalogue |
 
-## Contenu actuel (version 1.0.0, 17 octobre 2026)
+## Contenu actuel (version 1.1.0, 20 octobre 2026)
 
-| Discipline | Fiches | Débutant | Intermédiaire | Avancé | Expert |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Boxe anglaise | 300 | 70 | 59 | 90 | 81 |
-| Kick-boxing | 250 | 51 | 58 | 80 | 61 |
-| MMA | 300 | 60 | 83 | 91 | 66 |
-| Muay-thaï | 250 | 42 | 67 | 79 | 62 |
-| **Total** | **1100** | | | | |
+| Discipline | v1.0.0 | v1.1.0 |
+| --- | ---: | ---: |
+| Boxe anglaise | 300 | 348 |
+| Kick-boxing | 250 | 286 |
+| MMA | 300 | 348 |
+| Muay-thaï | 250 | 310 |
+| Judo (exercices solo) | 0 | 108 |
+| Jiu-jitsu brésilien (exercices solo) | 0 | 96 |
+| **Total** | **1100** | **1496** |
 
-- **Statuts : 0 vérifiée, 0 adaptée, 1100 inspirées.** 1100 fiches jouables en 3D.
-- 80 profils de champions (20 en boxe, 20 en kick-boxing, 24 en MMA, 20 en muay-thaï ; Alex Pereira, Superbon, Buakaw Banchamek et Sitthichai Sitsongpeenong ont un profil dans deux disciplines, chaque fiche respecte les règles de sa discipline).
-- Longueurs de 2 à 10 mouvements dans chaque discipline ; gardes : 266 orthodoxe, 135 gaucher, 699 les deux.
+- **Statuts : 0 vérifiée, 0 adaptée, 1496 inspirées.** Toutes jouables en 3D.
+- 107 profils de champions (80 en v1.0.0) ; chaque profil a un pays, une anecdote « Le savais-tu ? » avec sa source
+  et, quand elle est connue, son époque. Liste des ajouts et sources : `docs/LEGENDES.md`.
+- Les 1100 fiches v1.0.0 gardent leurs identifiants et leurs séquences ; les fiches v1.1.0 ont `addedAt: 2026-10-20`.
 - Aucune photo ni représentation des champions : seuls leur nom et une description générale de leur style sont utilisés.
+- Écran : l’« ADN de combat » (fleur de style, `src/domain/catalog/dna.ts`) remplace les cases de compteurs.
 
 ## Statuts : règle d’honnêteté
 
@@ -57,7 +61,7 @@ Champs d’une fiche :
 | --- | --- |
 | `id` | Identifiant stable (`discipline-champion-0001`) : minuscules, chiffres, tirets. Ne jamais réutiliser un identifiant pour une autre séquence. |
 | `name` | Nom français parlant |
-| `discipline` | `boxe`, `kickboxing`, `mma`, `muaythai` |
+| `discipline` | `boxe`, `kickboxing`, `mma`, `muaythai`, `bjj`, `judo` (v1.1.0) |
 | `champion` | Identifiant d’un champion qui a un profil dans cette discipline |
 | `status`, `source` | Voir ci-dessus ; `source` : `{ kind, note, reference?, timestamp?, url? }` |
 | `guard` | `orthodoxe`, `gaucher` ou `les-deux` (le coach inverse automatiquement en gaucher) |
@@ -83,9 +87,9 @@ Une fiche est **jouable en 3D** si toutes ses techniques existent et sont autori
 
 ## Ajouter ou mettre à jour des fiches sans modifier le code
 
-### Par l’application (import)
+### Par import (format de données)
 
-Écran **Champions → Importer** : choisir un fichier JSON au format ci-dessus (`"schema": 1`). Les listes `champions` et `combos` sont facultatives mais au moins l’une doit être présente.
+Depuis la v0.28, l’écran **Importer** n’est plus proposé dans Légendes (Youssef, 2026-10-20 22:02 : « Retire importer. C'est trop technique »). Le format et le code d’import (`src/domain/catalog/import.ts`, store) restent : les fiches déjà importées sur un appareil sont conservées et affichées partout (recherche, favoris, collections, historique). Format d’un fichier d’import (`"schema": 1`). Les listes `champions` et `combos` sont facultatives mais au moins l’une doit être présente.
 
 - Chaque fiche est validée ; le rapport liste les fiches refusées avec la raison.
 - Un champion déjà présent garde son profil officiel ; un nouveau champion peut être ajouté dans le même fichier que ses fiches.

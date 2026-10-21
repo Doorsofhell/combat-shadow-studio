@@ -436,12 +436,12 @@ export const APP_GUIDE: GuideEntry[] = [
   {
     id: 'legendes',
     title: 'L’onglet Légendes',
-    keywords: ['legendes', 'onglet legendes', 'legende', 'champions', 'combinaisons des legendes', 'bibliotheque des champions', 'collections', 'collection', 'dupliquer dans le createur', 'importer des fiches'],
+    keywords: ['legendes', 'onglet legendes', 'legende', 'champions', 'combinaisons des legendes', 'bibliotheque des champions', 'collections', 'collection', 'dupliquer dans le createur'],
     screens: ['legendes', 'legende-fiche', 'champion'],
     answer:
       'Les Légendes, ce sont des combinaisons inspirées du style de grands champions, exécutées par ton coach.\n' +
       'Tout en haut, la carte montre ton combo du jour : « S’entraîner », dans la pilule en bas à gauche, le lance d’un appui, et « Au hasard » en tire un autre. Chaque fiche de la liste a aussi son bouton lecture rouge.\n' +
-      'Juste dessous, choisis une discipline pour voir ses champions. Les sections Explorer, Favoris, Historique, Récents, Collections, Champions et Importer t’aident à t’y retrouver.\n' +
+      'Juste dessous, choisis une discipline pour voir ses champions. Les sections Explorer, Favoris, Historique, Récents, Collections et Champions t’aident à t’y retrouver.\n' +
       'Sur la fiche d’une combinaison : « S’entraîner » tout en haut (mode Libre, touche « Changer » pour un autre mode) et toujours dans la pilule en bas à gauche, la séquence, « Décomposer », « Dupliquer dans le créateur » et « Ajouter à une collection ».',
     action: { to: '/champions', label: 'Ouvrir Légendes' },
   },

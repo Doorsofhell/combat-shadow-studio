@@ -3063,3 +3063,184 @@ details.fold > summary h3 { margin: 0; }
   .action-pill { height: 54px; }
   .ap-btn { height: 46px; }
 }
+
+/* -------------------------------------------------- 0.28 Légendes: style flower instead of count boxes (Youssef, 2026-10-20 21:52) */
+.dna-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+}
+.dna-flower {
+  flex: none;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+}
+.dna-flower svg {
+  position: absolute;
+  inset: 0;
+}
+.dna-guide {
+  fill: none;
+  stroke: var(--c-line-strong);
+  stroke-width: 0.6;
+  stroke-dasharray: 1.5 2;
+}
+.dna-core {
+  fill: var(--c-surface-2);
+}
+.dna-count {
+  position: relative;
+  color: var(--c-text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+.dna-count.xl {
+  font-size: 0.62rem;
+}
+.dna-petal {
+  stroke: var(--c-surface);
+  stroke-width: 0.8;
+}
+.dna-poings {
+  fill: var(--c-accent);
+  background: var(--c-accent);
+}
+.dna-pieds {
+  fill: var(--c-gold);
+  background: var(--c-gold);
+}
+.dna-genoux {
+  fill: var(--c-orange);
+  background: var(--c-orange);
+}
+.dna-sol {
+  fill: var(--c-info);
+  background: var(--c-info);
+}
+.dna-defense {
+  fill: var(--c-ok);
+  background: var(--c-ok);
+}
+.dna-deplacements {
+  fill: var(--c-purple);
+  background: var(--c-purple);
+}
+.dna-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.dna-total {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  line-height: 1.15;
+}
+.dna-total .muted {
+  font-family: var(--font-body, inherit);
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+.dna-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 10px;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--c-text-2);
+}
+.dna-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.dna-legend b {
+  color: var(--c-text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.dna-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.dna-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  color: var(--c-text-2);
+}
+.dna-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.dna-bar {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--track);
+}
+.dna-bar > span {
+  flex-basis: 0;
+  min-width: 3px;
+}
+.champ-card.live {
+  min-height: 0;
+  gap: 5px;
+}
+.champ-discs {
+  display: flex;
+  gap: 4px;
+}
+.fun-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 3px solid var(--c-gold);
+}
+.fun-fact .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.fun-fact p {
+  margin: 0;
+}
+.work-focus ul {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.work-focus a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  color: var(--c-text);
+  text-decoration: none;
+}
+.work-focus .body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.work-focus .title {
+  font-weight: 600;
+}
