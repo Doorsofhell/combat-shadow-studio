@@ -3397,3 +3397,30 @@ html.stage-fs-open body {
 .work-focus .title {
   font-weight: 600;
 }
+
+/* v0.29: the guard around every 3D stage (src/ui/components/StageGuard.tsx) */
+.stage-guard-slot {
+  width: 100%;
+  height: 100%;
+}
+.stage-guard-box {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  text-align: center;
+  max-width: 320px;
+  padding: 16px;
+}
+.stage-guard-box p {
+  margin: 0;
+}
+.diag3d-log {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.75rem;
+  max-height: 40vh;
+  overflow-y: auto;
+  background: var(--surface-2, rgba(127, 127, 127, 0.08));
+  padding: 8px;
+  border-radius: 8px;
+}

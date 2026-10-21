@@ -1,5 +1,5 @@
 import { TechThumb, keyTechnique, programTechnique } from '../components/TechThumb';
-import { Component, ReactNode, Suspense, lazy, useCallback, useMemo } from 'react';
+import { Suspense, lazy, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
@@ -21,7 +21,7 @@ import { FullscreenStage } from '../fullscreen/FullscreenStage';
 import { useKbStyle } from '../components/KickboxingStyle';
 import { techniquesFor } from '../../domain/techniques';
 import { filterTechniques } from '../../domain/kickboxingStyles';
-import { writeSafe3d } from '../../three/safe3d';
+import { StageGuard } from '../components/StageGuard';
 import { techniqueOfTheDay } from '../../domain/quickPicks';
 
 /** the 3D bundle (three.js, R3F) stays out of the main chunk */
@@ -29,21 +29,6 @@ const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ de
 
 const RESUMABLE: TrainingMode[] = ['libre', 'technique', 'cardio', 'rounds'];
 const NO_EVENTS: PlayerEvents = {};
-
-/** keeps the home screen usable when WebGL is unavailable */
-class StageBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  componentDidCatch() {
-    writeSafe3d();
-  }
-  render() {
-    if (this.state.failed) return <div className="hero-loading small">Affichage 3D indisponible pour le moment. Ferme puis rouvre l’application : le coach reviendra en qualité légère.</div>;
-    return this.props.children;
-  }
-}
 
 function StageFallback() {
   return (
@@ -123,8 +108,9 @@ export function Home() {
       <section className="hero" aria-label={`${name}, ${disc.name}`}>
         {/* 0.27: a double tap shows the coach on the whole screen (Youssef, 2026-10-20 22:09) */}
         <FullscreenStage className="hero-stage" testId="hero-stage">
+          {/* v0.29: the guard sits outside the hidden layer, so its message and button can be read and used */}
+          <StageGuard place="accueil">
           <div className="hero-stage-3d" aria-hidden>
-          <StageBoundary>
             <Suspense fallback={<StageFallback />}>
               <CoachStage
                 backdrop="dark"
@@ -137,8 +123,8 @@ export function Home() {
                 onPlayer={onPlayer}
               />
             </Suspense>
-          </StageBoundary>
           </div>
+          </StageGuard>
         </FullscreenStage>
         <div className="hero-fade" />
         <div className="hero-info">

@@ -74,6 +74,16 @@ export function PhotoCoach({
       o.receiveShadow = shadows;
     });
   }, [scene, shadows]);
+  // v0.29: the materials made for this quality are freed when the quality changes or the coach leaves
+  // (they used to stay in graphics memory; the textures belong to the loaded model and stay shared)
+  useEffect(
+    () => () =>
+      scene.traverse((o) => {
+        const m = o as Mesh;
+        if (m.isMesh) (m.material as MeshStandardMaterial).dispose();
+      }),
+    [scene],
+  );
   useEffect(() => onRig(rig), [rig, onRig]);
   if (import.meta.env.DEV) (globalThis as { __photoScene?: Object3D }).__photoScene = scene;
   useFrame((_, dt) => onFrame(rig, Math.min(dt, 0.05)));
