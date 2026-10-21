@@ -23,7 +23,7 @@ export const DNA_AXES: DnaAxisDef[] = [
   { id: 'poings', label: 'Poings', long: 'Poings', categories: ['poing'] },
   { id: 'pieds', label: 'Pieds', long: 'Coups de pied', categories: ['pied'] },
   { id: 'genoux-coudes', label: 'Genoux, coudes', long: 'Genoux, coudes et clinch', categories: ['genou', 'coude', 'clinch'] },
-  { id: 'lutte-sol', label: 'Lutte, sol', long: 'Lutte, sol et projections', categories: ['lutte', 'sol', 'projection'] },
+  { id: 'lutte-sol', label: 'Lutte, sol', long: 'Lutte, sol et projections', categories: ['lutte', 'sol', 'projection', 'chute'] },
   { id: 'defense', label: 'Défense', long: 'Défense et feintes', categories: ['defense', 'feinte'] },
   { id: 'deplacements', label: 'Déplacements', long: 'Déplacements', categories: ['deplacement'] },
 ];

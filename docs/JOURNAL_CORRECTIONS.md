@@ -1251,3 +1251,13 @@ techniques sont traitées dans un autre lot) ; 22:02 « Retire importer. C'est t
 - **Limites** : pas de validation sur téléphone (NON EXÉCUTÉ) ; sources secondaires (Wikipedia en anglais), pas de
   page de fédération ; les fiches judo et jiu-jitsu ne travaillent que les bases solo disponibles (pas de technique
   propre à chaque champion) ; l’ADN décrit les fiches générées (un style « inspiré »), pas des statistiques de combat.
+
+## 2026-10-21 · v0.28.0 · Publication groupée (lots 0.27 et 0.28)
+
+Les entrées « v0.27.0 », « v0.27.0 (en préparation) · Questions du Coach IA variées » et « v0.28.0 (en préparation) »
+ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la 0.27).
+- **Assemblage** — Conflits de fusion résolus : journal (entrées gardées toutes) ; `src/coach/suggest.ts` (version
+  « questions variées » gardée, et les 32 questions des 16 nouvelles techniques reportées dans
+  `src/coach/questionBank.ts`) ; nouvelle catégorie « chute » rattachée à l’axe « Lutte, sol » de l’ADN de combat
+  (`src/domain/catalog/dna.ts`, test dna qui le vérifie). Catalogue régénéré avec les nouvelles techniques : aucune
+  séquence modifiée (1496 combinaisons).
