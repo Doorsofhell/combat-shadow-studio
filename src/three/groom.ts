@@ -64,9 +64,9 @@ export interface GroomStyle {
 
 export const GROOM_STYLES: Record<string, GroomStyle> = {
   // short textured cut, full short beard (Kadir)
-  'court-barbe': { scalpCards: 7000, top: 0.028, sides: 0.014, back: 0.016, volume: 0.007, forward: 0.2, beardCards: 14000, beardLength: 0.0065, browCards: 700, seed: 11 },
+  'court-barbe': { scalpCards: 7000, top: 0.028, sides: 0.014, back: 0.016, volume: 0.007, forward: 0.2, beardCards: 14000, beardLength: 0.0065, browCards: 1300, seed: 11 },
   // fade: very short sides, longer top swept back (Amara)
-  degrade: { scalpCards: 4200, top: 0.07, sides: 0.012, back: 0.028, volume: 0.014, forward: 0.1, beardCards: 0, beardLength: 0, browCards: 600, seed: 23 },
+  degrade: { scalpCards: 4200, top: 0.07, sides: 0.012, back: 0.028, volume: 0.014, forward: 0.1, beardCards: 0, beardLength: 0, browCards: 1100, seed: 23 },
 };
 
 type Rect = [number, number, number, number];
@@ -389,6 +389,8 @@ export function browCards(src: GroomSource, st: GroomStyle, atlas: AtlasRects): 
     dir.addScaledVector(r.n, -dir.dot(r.n)).normalize();
     const L = 0.0045 + 0.003 * rnd();
     const side = r.n.clone().cross(dir).normalize();
+    // single strands drawn along the card (the wide 'brow' tiles drew strands across the card: the
+    // brows looked cross-hatched)
     const rect = atlas.rects.short[Math.floor(rnd() * atlas.rects.short.length)];
     const line: Vector3[] = [];
     const sides: Vector3[] = [];
@@ -396,10 +398,10 @@ export function browCards(src: GroomSource, st: GroomStyle, atlas: AtlasRects): 
     const ws: number[] = [];
     for (let i = 0; i <= 2; i++) {
       const t = i / 2;
-      line.push(r.p.clone().addScaledVector(dir, L * t).addScaledVector(r.n, 0.0003 + 0.0004 * t));
+      line.push(r.p.clone().addScaledVector(dir, L * t).addScaledVector(r.n, 0.0002 + 0.0003 * t));
       sides.push(side);
       nrms.push(r.n);
-      ws.push(0.0016 * (1 - 0.3 * t));
+      ws.push(0.0009 * (1 - 0.3 * t));
     }
     cards.add(line, sides, nrms, ws, rect, rnd(), rnd() < 0.5);
   }
@@ -580,4 +582,100 @@ export function skinnedGroom(body: SkinnedMesh, geo: BufferGeometry, mat: Materi
   m.quaternion.copy(body.quaternion);
   m.scale.copy(body.scale);
   return m;
+}
+
+/**
+ * Eyelashes along the upper lid margin. The eyeballs give the centre and radius of each eye; the margin is
+ * the lowest row of skin vertices hugging the top of the eyeball (one per slice across the eye). A strip
+ * of lash cards follows it, curving out and up.
+ */
+export function lashCards(body: SkinnedMesh, eyes: BufferGeometry, atlas: AtlasRects): BufferGeometry | null {
+  const E = eyes.getAttribute('position');
+  const B = body.geometry.getAttribute('position');
+  const cards = new Cards();
+  const p = new Vector3();
+  for (const sx of [1, -1]) {
+    // the eye mesh is only the front cap of the eyeball (more vertices on the iris): its mean point and
+    // farthest vertex are not the centre and radius; fit a sphere instead
+    const pts3: Vector3[] = [];
+    for (let i = 0; i < E.count; i++) {
+      p.fromBufferAttribute(E, i);
+      if (Math.sign(p.x) === sx) pts3.push(p.clone());
+    }
+    const fit = fitSphere(pts3);
+    if (!fit) continue;
+    const { c, r } = fit;
+    // margin of the upper lid: per slice across the eye, the lowest skin vertex close to the eyeball,
+    // above its centre and on its front half
+    const bins = 16;
+    const best: (Vector3 | null)[] = new Array(bins).fill(null);
+    for (let i = 0; i < B.count; i++) {
+      p.fromBufferAttribute(B, i);
+      const d = p.distanceTo(c);
+      if (d < r * 0.98 || d > r + 0.0035 || p.y < c.y - 0.05 * r || p.z < c.z + 0.35 * r) continue;
+      const k = Math.floor(((p.x - c.x) / (r * 2.1) + 0.5) * bins);
+      if (k < 0 || k >= bins) continue;
+      // lowest point of the lid; among the points of the margin (same height), the front edge, where
+      // the lashes grow
+      const b = best[k];
+      if (!b || p.y < b.y - 0.0008 || (Math.abs(p.y - b.y) <= 0.0008 && p.z > b.z)) best[k] = p.clone();
+    }
+    const pts = best.filter((v): v is Vector3 => !!v).sort((a, b) => a.x - b.x);
+    if (pts.length < 4) continue;
+    const rect = atlas.rects.lash[sx > 0 ? 0 : 1];
+    for (let k = 0; k < pts.length - 1; k++) {
+      const a = pts[k];
+      const b = pts[k + 1];
+      const mid = a.clone().add(b).multiplyScalar(0.5);
+      // outward from the eyeball and up, longer in the middle of the lid
+      const out = mid.clone().sub(c).normalize();
+      // they leave the lid forwards and curl up (seen from the front: a dark fringe on the margin)
+      const dir = out.clone().add(new Vector3(0, 0.45, 0)).normalize();
+      const t = k / (pts.length - 2);
+      const len = 0.0045 + 0.0025 * Math.sin(Math.PI * t);
+      const along = b.clone().sub(a);
+      const w = along.length() * 1.02;
+      const side = along.normalize();
+      const root = mid.clone().addScaledVector(out, 0.0002).add(new Vector3(0, -0.0005, 0));
+      const up = new Vector3(0, 1, 0);
+      const line = [root, root.clone().addScaledVector(dir, len * 0.5).addScaledVector(up, len * 0.05), root.clone().addScaledVector(dir, len * 0.9).addScaledVector(up, len * 0.35)];
+      const u0 = rect[0] + rect[2] * (k / (pts.length - 1));
+      const u1 = rect[0] + rect[2] * ((k + 1) / (pts.length - 1));
+      const sub: Rect = [u0, rect[1], u1 - u0, rect[3]];
+      cards.add(line, [side, side, side], [out, out, out], [w, w * 1.05, w * 1.1], sub, 0.5, false);
+    }
+  }
+  return cards.pos.length ? cards.geometry() : null;
+}
+
+/** least-squares sphere through points (|p|² = 2 c·p + k, r² = k + |c|²) */
+export function fitSphere(pts: Vector3[]): { c: Vector3; r: number } | null {
+  if (pts.length < 4) return null;
+  const M = Array.from({ length: 4 }, () => [0, 0, 0, 0]);
+  const v = [0, 0, 0, 0];
+  for (const q of pts) {
+    const row = [2 * q.x, 2 * q.y, 2 * q.z, 1];
+    const b = q.lengthSq();
+    for (let i = 0; i < 4; i++) {
+      v[i] += row[i] * b;
+      for (let j = 0; j < 4; j++) M[i][j] += row[i] * row[j];
+    }
+  }
+  // Gauss-Jordan with partial pivoting
+  for (let i = 0; i < 4; i++) {
+    let piv = i;
+    for (let k = i + 1; k < 4; k++) if (Math.abs(M[k][i]) > Math.abs(M[piv][i])) piv = k;
+    if (Math.abs(M[piv][i]) < 1e-12) return null;
+    [M[i], M[piv]] = [M[piv], M[i]];
+    [v[i], v[piv]] = [v[piv], v[i]];
+    for (let k = 0; k < 4; k++) {
+      if (k === i) continue;
+      const f = M[k][i] / M[i][i];
+      for (let j = i; j < 4; j++) M[k][j] -= f * M[i][j];
+      v[k] -= f * v[i];
+    }
+  }
+  const x = v.map((vi, i) => vi / M[i][i]);
+  const c = new Vector3(x[0], x[1], x[2]);
+  return { c, r: Math.sqrt(x[3] + c.lengthSq()) };
 }

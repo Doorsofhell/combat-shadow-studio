@@ -6,6 +6,7 @@
 | Yeux « high-poly » et texture d’iris | dépôt makehuman (system assets) | CC0 1.0 | 0 € | yeux |
 | Peau, cheveux, short, brassière | générés par nos scripts (`tools/generator/build.py`, relief `anatomy.py`) | propriété du projet | 0 € | textures et vêtements |
 | Texture de mèches des hair cards (cheveux, barbe, sourcils, poils) | générée par notre script `tools/generator/groom/atlas.py` (mèches tracées une à une) | propriété du projet | 0 € | pilosité réaliste (v0.29) |
+| Avatars « Sports_Male_01 » et « Sports_Female_01 » (maillage, squelette, textures photo de la tête et du corps) | Microsoft Rocketbox Avatar Library, github.com/microsoft/Microsoft-Rocketbox (dossier `Assets/Avatars/Professions`) | MIT, © 2020 Microsoft (texte joint : `public/coaches/LICENSE-ROCKETBOX.txt`) ; usage commercial permis, avis de copyright à conserver | 0 € | coachs Kadir et Amara en Ultra-réaliste (v0.29) ; textures retouchées par `tools/generator/rocketbox/recolor.py` (cheveux, barbe, teint, yeux, tenue), squelette renommé par `convert.py` |
 | Animations | écrites dans `src/engine/library` | propriété du projet | 0 € | toutes les techniques |
 | Décodeur Draco | three.js (`public/draco`) | Apache 2.0 | 0 € | prévu pour compresser les modèles plus tard (non utilisé aujourd’hui) |
 | three.js, React, React Three Fiber, drei, Zustand, idb-keyval, React Router | npm | MIT | 0 € | application |

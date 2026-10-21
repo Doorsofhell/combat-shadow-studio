@@ -103,6 +103,9 @@ test('bulle Coach IA à l’entraînement : pause, démo sur le lecteur, ralenti
   // a suggested demo plays on the session's coach (Décomposer), the screen stays the training one
   const demo = page.getByTestId('coach-suggestion').filter({ hasText: /^Montre-moi/ }).first();
   await demo.scrollIntoViewIfNeeded();
+  // a tap within 150 ms of a scroll of the rail is read as the end of a swipe (SuggestRail); a person never
+  // taps that fast after the list moved, the test waits the same quiet time
+  await page.waitForTimeout(250);
   await demo.click();
   await expect(page.getByTestId('study-panel')).toBeVisible();
   await expect(page.getByTestId('coach-bubble-panel')).toHaveCount(0);

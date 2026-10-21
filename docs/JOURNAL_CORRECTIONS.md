@@ -1297,3 +1297,28 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   mi-fondu) et `training-layout.spec:187` (chevauchement mesuré pendant que le panneau du coach glissait encore ;
   échoue aussi 2 fois sur 3 sur la v0.28.0). Les deux tests attendent maintenant la fin des animations, aucune
   assertion affaiblie : 3/3 et 4/4 réussis. Validation sur téléphone : NON EXÉCUTÉ.
+
+## 2026-10-21 · v0.29.0 (prototype, non publié) · Peau et yeux (lot 2), puis coachs Ultra-réalistes sur base Rocketbox
+
+- **Constat (lot 2)** — Banc de captures : taches grises sur le blanc des yeux, cils absents, sourcils en traits
+  croisés. Cause des taches vérifiée : le recoloriage de l'iris cherchait l'iris par sa couleur et repeignait les
+  veines roses et le bord gris du blanc (sans ce recoloriage le blanc est propre ; ombres et reflets écartés).
+- **Correction (lot 2)** — Iris trouvé par sa place sur la texture (même texture d'yeux dans tous les modèles),
+  couleur choisie appliquée en gardant les fibres de l'iris ; cils posés au bord avant de la paupière (centre et
+  rayon de l'œil par sphère ajustée, `fitSphere`) ; sourcils en poils simples ; Ultra-réaliste par défaut pour une
+  nouvelle installation, style déjà enregistré conservé (réglages version 2). Détails : `docs/v029/LOT2_PEAU.md`.
+- **Constat (Youssef, 13:49, captures)** — Pilosité du lot 1 « pas du tout satisfaisante », personnages « pas du
+  tout humains ». Vérifié : poils des bras et jambes en tirets noirs, barbe en bloc noir, cheveux en brosse,
+  points parasites au cou d'Amara. Cause : visages, peau et poils générés à partir de couleurs unies ; à la
+  distance de l'entraînement un poil fait 1 à 2 pixels. En plus la préparation des poils prend 5 à 8 s sur la
+  machine de test (3 tests échoués, suite à 36 min).
+- **Décision de Youssef (16:49)** — Remplacer la base des coachs Ultra-réalistes par des avatars Rocketbox (MIT).
+- **Correction** — `PhotoCoach` (Ultra-réaliste des coachs champions) sur les avatars Rocketbox `Sports_Male_01`
+  (Kadir) et `Sports_Female_01` (Amara), textures photo retouchées (`tools/generator/rocketbox/recolor.py`),
+  squelette renommé et pieds remis droits au repos (`convert.py`). Le style Anime garde les modèles générés.
+  Licence : `docs/LICENCES.md`, `public/coaches/LICENSE-ROCKETBOX.txt`. Détails : `docs/v029/ROCKETBOX.md`.
+- **Tests** — Vitest : 476 réussis + nouveau `photo-coach.test.ts` (squelette et taille : RÉUSSI ; amplitudes
+  articulaires : Kadir RÉUSSI, Amara ÉCHOUÉ sur 2 techniques au sol, rotation externe de hanche 53,7° pour 45°).
+  `settings-style.test.ts` : défaut Ultra-réaliste et conservation du style enregistré (RÉUSSI). Playwright complet
+  (18,3 min) : 136 réussis, 2 échoués : `coach-render.spec:62` (mon test relisait le réglage avant son
+  enregistrement ; attente ajoutée, RÉUSSI ensuite) et `coach-bubble.spec:93` (en analyse). Téléphone : NON EXÉCUTÉ.

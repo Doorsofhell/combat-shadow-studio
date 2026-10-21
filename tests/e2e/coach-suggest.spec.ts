@@ -151,6 +151,8 @@ test('questions suggérées : chaque question répond, une seule fois, et propos
     await openCoach(page, exerciseOn('mma', 'direct'));
     const card = page.getByTestId('coach-suggestion').filter({ hasText: q });
     await card.scrollIntoViewIfNeeded();
+    // a tap within 150 ms of a scroll of the rail is read as the end of a swipe (SuggestRail)
+    await page.waitForTimeout(250);
     await card.tap();
     const answer = page.getByTestId('coach-answer');
     await expect(answer, q).not.toContainText(PLACEHOLDER);

@@ -62,25 +62,34 @@ const checked = (page: Page, testId: string) => page.getByTestId(testId).locator
 test('the look is chosen in the settings, the studio and the training options, and remembered', async ({ page }) => {
   await seed(page);
   await open(page, '/#/reglages');
+  // 0.29: a new device starts in Ultra-réaliste (it was Encre, labelled "Anime" since 0.24, before)
+  await expect(checked(page, 'settings-coach-look')).toHaveText('Ultra-réaliste');
   // the premium Encre look is labelled "Anime" since 0.24 (same saved id 'encre')
-  await expect(checked(page, 'settings-coach-look')).toHaveText('Anime');
-  await page.getByTestId('settings-coach-look').getByRole('radio', { name: 'Ultra-réaliste' }).click();
-  await expect.poll(async () => (await savedSettings(page)).coachStyle).toBe('realiste');
+  await page.getByTestId('settings-coach-look').getByRole('radio', { name: 'Anime' }).click();
+  await expect.poll(async () => (await savedSettings(page)).coachStyle).toBe('encre');
   expect((await savedSettings(page)).coachRender).toBe('premium');
 
   await open(page, '/#/combattant');
-  await expect(checked(page, 'studio-coach-look')).toHaveText('Ultra-réaliste');
+  await expect(checked(page, 'studio-coach-look')).toHaveText('Anime');
   // the customised look shows in both looks: no "switch to Encre" warning any more
   await expect(page.getByText('Passer au style Encre')).toHaveCount(0);
-  await page.getByTestId('studio-coach-look').getByRole('radio', { name: 'Anime' }).click();
-  await expect.poll(async () => (await savedSettings(page)).coachStyle).toBe('encre');
+  await page.getByTestId('studio-coach-look').getByRole('radio', { name: 'Ultra-réaliste' }).click();
+  await expect.poll(async () => (await savedSettings(page)).coachStyle).toBe('realiste');
 
   await open(page, '/#/entrainement?ex=boxe-debutant-01&mode=technique');
   await page.getByTestId('options').click();
-  await expect(checked(page, 'training-coach-look')).toHaveText('Anime');
+  await expect(checked(page, 'training-coach-look')).toHaveText('Ultra-réaliste');
+  await page.getByTestId('training-coach-look').getByRole('radio', { name: 'Anime' }).click();
+  await expect.poll(async () => (await savedSettings(page)).coachStyle).toBe('encre');
   await page.reload();
   await page.getByTestId('options').click();
   await expect(checked(page, 'training-coach-look')).toHaveText('Anime');
+});
+
+test('0.29: a device that saved the Anime look before keeps it', async ({ page }) => {
+  await seed(page, { coachStyle: 'encre', coachRender: 'premium', voice: false });
+  await open(page, '/#/reglages');
+  await expect(checked(page, 'settings-coach-look')).toHaveText('Anime');
 });
 
 test('switching the look during a session keeps the session, the move and the timer', async ({ page }) => {

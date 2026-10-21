@@ -44,6 +44,8 @@ export function loadSkeleton(coach: CoachId, model?: string): Object3D {
   const root = new Object3D();
   const scene = json.scenes[json.scene ?? 0];
   for (const i of scene.nodes) root.add(objs[i]);
+  // photo avatars (v0.29, Rocketbox) keep their mesh in centimetres under a scaled armature
+  if (top > 3) top /= 100;
   const body = new Mesh(new BoxGeometry(0.1, top, 0.1).translate(0, top / 2, 0));
   root.add(body);
   root.updateMatrixWorld(true);

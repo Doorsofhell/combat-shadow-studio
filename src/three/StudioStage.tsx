@@ -47,6 +47,41 @@ export interface StudioStageProps {
   onUserOrbit?: () => void;
   /** dark menu stage: deeper floor shadow, rim light */
   dark?: boolean;
+  /** realistic look, high quality (v0.29): the key light casts soft shadows on the coach itself */
+  shadows?: boolean;
+  /** realistic look (v0.29): contrasted studio lighting (key, fill, rim) instead of the even light of the drawn looks */
+  realistic?: boolean;
+}
+
+/**
+ * Studio lights. Drawn looks (Anime): even light, the cel shading draws the forms. Realistic look: a
+ * photo studio, warm key light from the front right (with soft shadows in high quality), cool fill
+ * from the left, rim light from behind, little ambient light so the forms read in light and shade.
+ */
+export function StageLights({ dark = false, shadows = false, realistic = false }: { dark?: boolean; shadows?: boolean; realistic?: boolean }) {
+  return (
+    <>
+      <hemisphereLight args={['#ffffff', realistic ? '#b9b1a8' : '#d9d4cf', realistic ? 0.2 : 0.9]} />
+      <directionalLight
+        position={[2.2, 4.2, 3.2]}
+        intensity={realistic ? 2.7 : 2.1}
+        color={realistic ? '#fff6ee' : '#ffffff'}
+        castShadow={shadows}
+        shadow-mapSize={[2048, 2048]}
+        shadow-bias={-0.0004}
+        shadow-normalBias={0.025}
+        shadow-radius={4}
+        shadow-camera-left={-1.6}
+        shadow-camera-right={1.6}
+        shadow-camera-top={2}
+        shadow-camera-bottom={-2}
+        shadow-camera-near={0.5}
+        shadow-camera-far={12}
+      />
+      <directionalLight position={[-3, 2.5, 1.5]} intensity={realistic ? 0.6 : 0.75} color={realistic ? '#e3ebff' : '#f3f6ff'} />
+      <directionalLight position={[0, 3, -4]} intensity={dark ? 2.2 : realistic ? 1.5 : 1.1} color={dark ? '#ffd9c7' : '#ffffff'} />
+    </>
+  );
 }
 
 /** camera state read by the end-to-end tests (degrees): where it looks from, relative to the coach */
@@ -65,7 +100,7 @@ const corner = new Vector3();
  * (computed from the real animation), from the requested angle, and glides to a new angle
  * instead of cutting. In free mode the user turns around the coach with a finger.
  */
-export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 1, focusY, follow, envelope, origin, orbit = false, free = false, onUserOrbit, dark = false }: StudioStageProps) {
+export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 1, focusY, follow, envelope, origin, orbit = false, free = false, onUserOrbit, dark = false, shadows = false, realistic = false }: StudioStageProps) {
   const { camera, size } = useThree();
   const controls = useRef<OrbitControlsImpl>(null);
   const cur = useRef<{ az: number; el: number; dist: number; target: Vector3 } | null>(null);
@@ -170,10 +205,7 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
   const hi = quality === 'haute';
   return (
     <>
-      <hemisphereLight args={['#ffffff', '#d9d4cf', 0.9]} />
-      <directionalLight position={[2.2, 4.2, 3.2]} intensity={2.1} />
-      <directionalLight position={[-3, 2.5, 1.5]} intensity={0.75} color="#f3f6ff" />
-      <directionalLight position={[0, 3, -4]} intensity={dark ? 2.2 : 1.1} color={dark ? '#ffd9c7' : '#ffffff'} />
+      <StageLights dark={dark} shadows={shadows} realistic={realistic} />
       {children}
       <ContactShadows position={[0, 0.001, 0]} opacity={dark ? 0.75 : 0.42} scale={6} blur={2.4} far={1.6} resolution={hi ? 512 : 256} color={dark ? '#000000' : '#3a3530'} />
       {orbit && <OrbitControls ref={controls} enablePan={false} enableDamping={false} minDistance={1.2} maxDistance={12} minPolarAngle={0.15} maxPolarAngle={1.75} />}

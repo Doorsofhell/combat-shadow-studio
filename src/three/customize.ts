@@ -11,7 +11,8 @@
  * - rigid gear (boxing gloves, headgear bar, mouthguard) and hair pieces (bun, ponytail, braids)
  *   are attached to the hand or head bone.
  */
-import { AtlasRects, GROOM_BEARD_GLSL, GROOM_STYLES, bodyHairCards, groomFace, skinnedGroom, GroomSource, attachToHead, beardCards, browCards, hairMaterial, scalpCards } from './groom';
+import { makeSkinUniforms, patchRealSkin, prepareDetail } from './skin';
+import { AtlasRects, GROOM_BEARD_GLSL, GROOM_STYLES, bodyHairCards, groomFace, lashCards, skinnedGroom, GroomSource, attachToHead, beardCards, browCards, hairMaterial, scalpCards } from './groom';
 import {
   BackSide,
   BufferAttribute,
@@ -441,6 +442,7 @@ const SKIN_FRAGMENT_BODY = /* glsl */ `
     c = mix(c, uHairColor * (0.75 + 0.5 * n), fc.a * mix(0.95, 0.5, uGroom));
     c = mix(c, vec3(0.055, 0.045, 0.05), fc.r);
   }
+  // CSS_REAL_SKIN_COLOR
   for (int i = 0; i < ${MAX_TATTOOS}; i++) {
     if (i >= uTatN) break;
     vec3 q = vRest - uTatA[i];
@@ -477,10 +479,15 @@ const EYE_FRAGMENT = /* glsl */ `
 #include <map_fragment>
 {
   vec3 c = diffuseColor.rgb;
-  float mx = max(c.r, max(c.g, c.b));
-  float sat = mx - min(c.r, min(c.g, c.b));
-  float iris = smoothstep(0.02, 0.08, sat) * step(0.02, mx);
-  diffuseColor.rgb = mix(c, uEyeColor * (0.35 + 2.2 * dot(c, vec3(0.3, 0.59, 0.11))), iris);
+  // the iris is found by its place on the texture (the same eye texture in every model: two discs,
+  // measured on the image), not by its colour: the colour test also caught the pink veins and the
+  // grey edge of the whites, drawn as dark blotches (v0.29)
+  float d = min(distance(vMapUv, vec2(0.2885, 0.7093)), distance(vMapUv, vec2(0.7045, 0.2972)));
+  float iris = smoothstep(0.123, 0.113, d);
+  // the chosen colour keeps the drawing of the iris (its fibres): tint by the ratio of brightness
+  vec3 w = vec3(0.3, 0.59, 0.11);
+  vec3 tint = uEyeColor / max(dot(uEyeColor, w), 0.02);
+  diffuseColor.rgb = mix(c, tint * dot(c, w) * 1.25, iris * 0.9);
 }
 `;
 
@@ -1260,6 +1267,8 @@ export interface CustomizerOptions {
   flat?: number;
   /** hair cards (realistic look of the champion coaches, v0.29) */
   groom?: { atlas: Texture; rects: AtlasRects; style: string; density?: number } | null;
+  /** realistic skin (v0.29): micro-relief, mottling, oily T-zone, light through the skin */
+  realSkin?: { detail: Texture; scatter: number } | null;
 }
 
 interface Layer {
@@ -1280,6 +1289,7 @@ export class Customizer {
   readonly map: BodyMap;
   readonly u: CustomUniforms;
   private hair: SkinnedMesh | null;
+  private eyes: Mesh | null = null;
   private bun: Object3D | null;
   private layers = new Map<string, Layer>();
   private specs: ReturnType<typeof garmentSpecs>;
@@ -1315,6 +1325,7 @@ export class Customizer {
     this.body = body;
     this.hair = hair;
     this.bun = bun;
+    this.eyes = eyes;
     this.map = mapBody(body, meta);
     if (!this.opt.legacy) thinInkNearEyes(body, meta);
     this.specs = garmentSpecs(this.map);
@@ -1339,6 +1350,13 @@ export class Customizer {
       addHide(sh);
       sh.fragmentShader = SKIN_FRAGMENT_HEAD + sh.fragmentShader.replace('#include <map_fragment>', SKIN_FRAGMENT_BODY);
     });
+    if (opt.realSkin) {
+      const su = makeSkinUniforms();
+      su.uSkinDetail.value = prepareDetail(opt.realSkin.detail);
+      su.uSkinReal.value.set(26, 0.55, opt.realSkin.scatter, 1);
+      su.uFaceRef.value.set(meta.eyeL[1], meta.faceZ, (meta.eyeL[1] + meta.lipsY) / 2 - 0.004, meta.lipsY);
+      patchRealSkin(body.material as Material, su);
+    }
     // outlines share the body geometry: same shape, same hidden parts
     root.traverse((o) => {
       const m = o as SkinnedMesh;
@@ -1632,6 +1650,7 @@ export class Customizer {
     const f = groomFace({ eyeL: v3(this.map.meta.eyeL), lipsY: this.map.meta.lipsY });
     this.u.uGroomFace.value.set(f.eyeY, f.lipsY, f.earZ);
     if (!this.groomMaterials) {
+      const t0 = performance.now();
       const base = GROOM_STYLES[g.style] ?? GROOM_STYLES['court-barbe'];
       // low quality: fewer cards
       const d = g.density ?? 1;
@@ -1666,8 +1685,14 @@ export class Customizer {
         if (m) this.groomMeshes.push(m);
       }
       // body hair: fine hairs on the forearms, shins and down the chest (male coaches with body hair)
+      if (this.eyes) {
+        const lashes = lashCards(this.body, this.eyes.geometry, g.rects);
+        const m = lashes && attachToHead(this.body, lashes, hair);
+        if (m) this.groomMeshes.push(m);
+      }
       const bh = bodyHairCards(this.body, this.map, maskReader(this.u.uMasks.value, 3), look.bodyHair, g.rects);
       if (bh) this.groomMeshes.push(skinnedGroom(this.body, bh, this.groomMaterials.body));
+      if (import.meta.env.DEV) (globalThis as { __groomMs?: number }).__groomMs = performance.now() - t0;
     }
     this.groomMaterials.hair.color.copy(this.u.uHairColor.value);
     this.groomMaterials.beard.color.copy(this.u.uBeardColor.value);

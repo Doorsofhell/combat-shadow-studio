@@ -94,11 +94,11 @@ for i in range(16):
 # eyebrows: 4 cards 256 x 128, fine short hairs leaning along the card
 for i in range(4):
     add('brow', 1024 + (i % 2) * 256, 1152 + (i // 2) * 128, 256, 128, n=40, length=0.75, width=0.012,
-        curl=0.3, wave=0.02, spread=0.2, lean=0.45, clump=0.0, tipfade=0.5)
+        curl=0.3, wave=0.02, spread=0.2, lean=0.08, clump=0.0, tipfade=0.5)
 # eyelashes: 2 strips 512 x 96, curved hairs
 for i in range(2):
     add('lash', 1024, 1408 + i * 96, 512, 96, n=110, length=0.85, width=0.008, curl=0.15, wave=0.0,
-        spread=0.2, lean=0.25, clump=0.25, tipfade=0.45)
+        spread=0.2, lean=0.06, clump=0.25, tipfade=0.45)
 
 
 def down(img):

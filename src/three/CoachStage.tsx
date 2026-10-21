@@ -215,9 +215,11 @@ export function CoachStage(props: CoachStageProps) {
     studyEnvelope.current = studyActive && r && m ? scaleBox(sequenceEnvelope(r.rig, r.lib, [m.id], southpaw), lookRef.current) : null;
   });
 
+  // v0.29: soft self-shadows in the realistic look, high quality only (cost on phones)
+  const realShadows = style === 'realiste' && render === 'premium' && q === 'haute' && !arActive;
   return (
     <Canvas
-      shadows={false}
+      shadows={realShadows ? 'soft' : false}
       data-coach={shownCoach}
       dpr={q === 'haute' ? [1, 2] : 1}
       gl={{ antialias: q === 'haute', alpha: true, powerPreference: 'high-performance' }}
@@ -239,9 +241,11 @@ export function CoachStage(props: CoachStageProps) {
             orbit
             zoom={zoom}
             dark={stageDark}
+            shadows={realShadows}
+            realistic={style === 'realiste'}
           />
         )}
-        {style === 'realiste' && render === 'premium' && q === 'haute' && <StudioEnvironment />}
+        {style === 'realiste' && render === 'premium' && q === 'haute' && <StudioEnvironment intensity={0.12} />}
         {ar && <ArScene bridge={ar} active={arActive} coachGroup={coachGroup} follow={follow} />}
         {/* the coach stays mounted when switching to AR: same model, same player, same animation */}
         <group ref={coachGroup}>

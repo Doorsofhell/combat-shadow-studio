@@ -12,6 +12,6 @@ for (const v of views) {
   await p.waitForFunction(() => window.__labReady === true, null, { timeout: 600000 });
   await p.waitForTimeout(500);
   await p.screenshot({ path: `${OUT}/${prefix}-${coach}-${shot}-${az}-${style}.png` });
-  console.log('ok', v);
+  console.log('ok', v, JSON.stringify(await p.evaluate(() => window.__labEye)));
 }
 await b.close();

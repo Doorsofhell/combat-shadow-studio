@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SkinnedMesh, SphereGeometry, Vector3 } from 'three';
-import { GROOM_STYLES, beardShape, groomFace, scalpCards } from '../groom';
+import { GROOM_STYLES, beardShape, fitSphere, groomFace, scalpCards } from '../groom';
 import RECTS from '../hair_atlas.json';
 import type { AtlasRects } from '../groom';
 
@@ -55,5 +55,19 @@ describe('cheveux en hair cards (v0.29)', () => {
     expect(at(0, face.eyeL.y + 0.04, 0.12)).toBe(0); // front
     expect(at(0.07, face.lipsY + 0.02, f.earZ - 0.03)).toBe(0); // derrière l'oreille
     expect(at(0, face.lipsY - 0.1, 0.08)).toBe(0); // bas du cou
+  });
+});
+
+describe('fitSphere', () => {
+  it('finds the centre and radius of a cap of a sphere (the eye mesh is only its front)', () => {
+    const pts: Vector3[] = [];
+    for (let i = 0; i < 200; i++) {
+      const a = (i * 2.4) % (Math.PI * 2);
+      const b = 0.1 + 0.9 * ((i * 0.37) % 1);
+      pts.push(new Vector3(0.03 + 0.016 * Math.sin(b) * Math.cos(a), 1.58 + 0.016 * Math.sin(b) * Math.sin(a), 0.12 + 0.016 * Math.cos(b)));
+    }
+    const f = fitSphere(pts)!;
+    expect(f.r).toBeCloseTo(0.016, 5);
+    expect(f.c.z).toBeCloseTo(0.12, 5);
   });
 });

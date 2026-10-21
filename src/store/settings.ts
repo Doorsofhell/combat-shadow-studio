@@ -36,7 +36,10 @@ export interface Settings {
   techniqueTips: boolean;
   impactSounds: boolean;
   quality: 'auto' | 'haute' | 'basse';
-  /** look of the coaches: ink drawing in colour (default since v0.14), cel-shaded manga, or realistic */
+  /**
+   * look of the coaches: realistic (default since v0.29, « Ultra-réaliste »), ink/anime (default from v0.14
+   * to v0.28) or cel-shaded manga (previous render only)
+   */
   coachStyle: 'encre' | 'manga' | 'realiste';
   /**
    * v0.23 render of the coaches (one model for both looks, clean cel shading) or the previous render,
@@ -81,7 +84,8 @@ export const DEFAULT_SETTINGS: Settings = {
   techniqueTips: true,
   impactSounds: false,
   quality: 'auto',
-  coachStyle: 'encre',
+  // v0.29 (Youssef, PROMPT MAÎTRE v0.29.0): Ultra-réaliste for a new installation or a save without a choice
+  coachStyle: 'realiste',
   coachRender: 'premium',
   cameraAngle: 35,
   cameraMode: 'auto',
@@ -113,7 +117,9 @@ export const useSettings = create<SettingsState>()(
       storage: createJSONStorage(() => idbStorage),
       // v1 (0.14.0): the ink style becomes the default; 'manga' was the default before, so it moves to 'encre'
       // (an explicit 'realiste' choice is kept)
-      version: 1,
+      // v2 (0.29.0): Ultra-réaliste becomes the default for new installations; a saved look is kept as it is
+      // (« conserver les préférences déjà choisies par les utilisateurs existants »)
+      version: 2,
       migrate: (saved, version) => {
         const st = (saved ?? {}) as { settings?: Partial<Settings> };
         if (version < 1 && st.settings?.coachStyle === 'manga') st.settings = { ...st.settings, coachStyle: 'encre' };

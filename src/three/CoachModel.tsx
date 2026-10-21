@@ -6,6 +6,7 @@ import { useGLTF } from '@react-three/drei';
 import type { GLTFLoader } from 'three-stdlib';
 import { Color, Material, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, SRGBColorSpace, Texture } from 'three';
 import { restoreReferencePose, setLegLength } from './pose';
+import { PhotoCoach } from './PhotoCoach';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { CoachRig } from '../engine/rig';
 import { applyManga, outlineMaterial, toonMaterial } from './manga';
@@ -99,14 +100,15 @@ export function preloadCoaches() {
 }
 
 /** Upgrade the exported materials: physically based skin with a soft sheen, matte fabrics. */
-function upgradeMaterials(root: Object3D, quality: 'haute' | 'basse') {
+function upgradeMaterials(root: Object3D, quality: 'haute' | 'basse', shadows = false) {
   root.traverse((o) => {
     const mesh = o as Mesh;
     if (!mesh.isMesh) return;
     mesh.frustumCulled = false;
-    mesh.castShadow = false;
-    // self-shadowing from the shadow map draws hard crescents on the torso; the baked AO and the contact shadow look better
-    mesh.receiveShadow = false;
+    // v0.29: soft self-shadows (PCF soft, normal bias) in the realistic look, high quality; before, the
+    // hard shadow map drew crescents on the torso and was turned off
+    mesh.castShadow = shadows;
+    mesh.receiveShadow = shadows;
     const old = mesh.material as MeshStandardMaterial;
     const name = (old.name || '').toLowerCase();
     if (name.startsWith('skin') || name.startsWith('hair')) {
@@ -134,7 +136,11 @@ function upgradeMaterials(root: Object3D, quality: 'haute' | 'basse') {
       mesh.material = mat;
     } else if (old.isMeshStandardMaterial) {
       old.metalness = 0;
-      if (name.startsWith('eyes')) old.roughness = 0.08;
+      // v0.29: wet but not a mirror: at 0.08 the studio room reflected as grey blotches on the whites
+      if (name.startsWith('eyes')) {
+        old.roughness = 0.2;
+        old.envMapIntensity = 0.35;
+      }
     }
   });
 }
@@ -177,40 +183,65 @@ export interface CoachModelProps {
   onFrame: (rig: CoachRig, dt: number) => void;
 }
 
-const atlasCache: { tex: Texture | null; failed: boolean; waiting: ((t: Texture | null) => void)[] } = { tex: null, failed: false, waiting: [] };
+interface TexEntry {
+  tex: Texture | null;
+  failed: boolean;
+  waiting: ((t: Texture | null) => void)[];
+}
+const texCache = new Map<string, TexEntry>();
 
-/** the hair card atlas, loaded once; null while loading and if it fails (painted hair fallback) */
-function useHairAtlas(wanted: boolean) {
-  const [tex, setTex] = useState<Texture | null>(atlasCache.tex);
+/**
+ * an optional texture of the realistic look (hair cards, skin detail), loaded once on the side: null while
+ * loading and if it fails, the coach is drawn without it (painted hair, plain skin) meanwhile
+ */
+function useOptionalTexture(url: string, wanted: boolean, what: string) {
+  const e0 = texCache.get(url);
+  const [tex, setTex] = useState<Texture | null>(e0?.tex ?? null);
   useEffect(() => {
-    if (!wanted || atlasCache.tex || atlasCache.failed) return;
+    let e = texCache.get(url);
+    if (!e) texCache.set(url, (e = { tex: null, failed: false, waiting: [] }));
+    if (!wanted || e.tex || e.failed) {
+      if (e.tex) setTex(e.tex);
+      return;
+    }
     let live = true;
-    const done = (t: Texture | null) => live && setTex(t);
-    atlasCache.waiting.push(done);
-    if (atlasCache.waiting.length === 1)
+    const entry = e;
+    entry.waiting.push((t) => live && setTex(t));
+    if (entry.waiting.length === 1)
       new TextureLoader().load(
-        './groom/hair_atlas.png',
+        url,
         (t) => {
           t.colorSpace = NoColorSpace;
           t.anisotropy = 4;
-          atlasCache.tex = t;
-          atlasCache.waiting.splice(0).forEach((f) => f(t));
+          entry.tex = t;
+          entry.waiting.splice(0).forEach((f) => f(t));
         },
         undefined,
-        (e) => {
-          console.warn('Cheveux réalistes indisponibles, coiffure peinte utilisée', e);
-          atlasCache.failed = true;
-          atlasCache.waiting.splice(0).forEach((f) => f(null));
+        (err) => {
+          console.warn(`${what} indisponible, rendu de secours utilisé`, err);
+          entry.failed = true;
+          entry.waiting.splice(0).forEach((f) => f(null));
         },
       );
     return () => {
       live = false;
     };
-  }, [wanted]);
+  }, [url, wanted, what]);
   return wanted ? tex : null;
 }
 
-export function CoachModel({ coach, style, quality, look, render = 'premium', ghostGear = false, model, onRig, onFrame }: CoachModelProps) {
+export function CoachModel(props: CoachModelProps) {
+  // v0.29: the Ultra-réaliste look of the champion coaches is a photo-textured avatar (PhotoCoach); the
+  // generated model stays for the Anime look and as the fallback (?photo=0 in development)
+  const { model, style, render = 'premium', quality } = props;
+  // VITE_PHOTO_COACH=0 at build time: the generated models everywhere (comparisons, fallback build)
+  const noPhoto = import.meta.env.VITE_PHOTO_COACH === '0' || (import.meta.env.DEV && typeof location !== 'undefined' && /[?&]photo=0/.test(location.search + location.hash));
+  if (model && style === 'realiste' && render === 'premium' && !noPhoto)
+    return <PhotoCoach url={`${model.replace(/model$/, 'photo')}.${EXT}`} quality={quality} legLength={props.look?.body.legLength ?? 1} shadows={quality === 'haute'} onRig={props.onRig} onFrame={props.onFrame} draco={DRACO} extendLoader={patchJsonModels} />;
+  return <GeneratedCoach {...props} />;
+}
+
+function GeneratedCoach({ coach, style, quality, look, render = 'premium', ghostGear = false, model, onRig, onFrame }: CoachModelProps) {
   const own = model && render === 'premium' ? model : null;
   const gltf = useGLTF(own ? `${own}.${EXT}` : coachUrl(coach, style, render), DRACO, true, patchJsonModels);
   const premium = render === 'premium';
@@ -224,7 +255,8 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
   // there (or if it cannot be loaded) the coach keeps the painted hair
   // (?groom=0 in development: the painted hair of v0.28, for before/after captures)
   const noGroom = import.meta.env.DEV && typeof location !== 'undefined' && new URLSearchParams(location.search).get('groom') === '0';
-  const hairAtlas = useHairAtlas(!!own && style === 'realiste' && !noGroom);
+  const hairAtlas = useOptionalTexture('./groom/hair_atlas.png', !!own && style === 'realiste' && !noGroom, 'Cheveux réalistes');
+  const skinDetail = useOptionalTexture('./skin/skin_detail.png', style === 'realiste' && premium, 'Grain de peau');
   // one skeleton per model: changing the look swaps the materials only, so the rig, the player and the
   // animation in progress are kept (no remount, the session goes on)
   const base = useMemo(() => {
@@ -255,7 +287,7 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
       mesh.material = m.clone();
       mesh.visible = true;
     });
-    upgradeMaterials(s, quality);
+    upgradeMaterials(s, quality, style === 'realiste' && premium && quality === 'haute');
     // premium: Encre and the older Manga choice are both drawn with the clean cel shading
     // premium: Encre (labelled Anime) and the older Manga choice are both drawn in the anime look
     const ink = premium ? 'anime' : style === 'encre' ? 'encre' : 'manga';
@@ -275,7 +307,8 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
           own && style === 'realiste' && hairAtlas
             ? { atlas: hairAtlas, rects: HAIR_RECTS as AtlasRects, style: own.includes('amara') ? 'degrade' : 'court-barbe', density: quality === 'basse' ? 0.55 : 1 }
             : null;
-        c = new Customizer(s, meta, masks, { ...opts, legacy: !premium, face: own ? face : null, flat: ink === 'anime' ? 0.9 : 0, groom });
+        const realSkin = style === 'realiste' && skinDetail ? { detail: skinDetail, scatter: quality === 'haute' ? 0.32 : 0.25 } : null;
+        c = new Customizer(s, meta, masks, { ...opts, legacy: !premium, face: own ? face : null, flat: ink === 'anime' ? 0.9 : 0, groom, realSkin });
         // development hook for the screenshot scripts
         if (import.meta.env.DEV) ((window as unknown as { __cssCustomizers?: Customizer[] }).__cssCustomizers ??= []).push(c);
       } catch (e) {
@@ -283,7 +316,7 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
       }
     }
     return c;
-  }, [base, quality, style, custom, premium, meta, masks, face, own, hairAtlas]);
+  }, [base, quality, style, custom, premium, meta, masks, face, own, hairAtlas, skinDetail]);
   const legLength = look?.body.legLength ?? 1;
   const rig = useMemo(() => {
     restoreReferencePose(scene);
@@ -292,9 +325,19 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
     return new CoachRig(scene);
   }, [scene, legLength]);
 
+  const selfShadows = style === 'realiste' && premium && quality === 'haute';
   useEffect(() => {
     customizer?.apply(look ?? defaultLook(coach));
-  }, [customizer, look, coach]);
+    // clothes and gear added by the look cast and receive the soft shadows too; hair cards only receive
+    // them (their cut-out strands would cast solid card shapes)
+    scene.traverse((o) => {
+      const m = o as Mesh;
+      if (!m.isMesh) return;
+      const groom = m.name.startsWith('css-groom');
+      m.castShadow = selfShadows && !groom;
+      m.receiveShadow = selfShadows;
+    });
+  }, [customizer, look, coach, scene, selfShadows]);
   useEffect(() => customizer?.setGhost(ghostGear), [customizer, ghostGear]);
 
   useEffect(() => {
