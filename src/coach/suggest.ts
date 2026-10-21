@@ -50,6 +50,7 @@ const BY_CATEGORY: Partial<Record<Technique['category'], string[]>> = {
   lutte: ['faq:sprawl', 'faq:distance', 'faq:retour-garde'],
   sol: [],
   projection: [],
+  chute: [],
   clinch: ['faq:genoux'],
 };
 
@@ -69,6 +70,23 @@ const BY_TECHNIQUE: Record<string, string[]> = {
   'tai-sabaki': ['Comment pivoter sur le pied avant ?', 'À quoi sert le tai-sabaki ?'],
   kuzushi: ['À quoi sert le kuzushi ?', 'Comment tirer avec tout le corps ?', 'Comment éviter de perdre l’équilibre ?'],
   'uchikomi-seoi': ['Pourquoi fléchir les genoux pendant l’uchikomi ?', 'Où placer mes pieds pendant l’uchikomi ?', 'Comment éviter de perdre l’équilibre ?'],
+  // 0.28
+  'sit-out': ['À quoi sert le sit-out ?', 'Où placer ma main pendant le sit-out ?'],
+  'releve-genoux': ['Comment me relever depuis les genoux ?', 'Comment poser les genoux sans me faire mal ?'],
+  'ukemi-ushiro': ['Comment chuter en arrière sans me faire mal ?', 'Où placer mes bras pendant la chute arrière ?'],
+  'ukemi-yoko': ['Comment chuter sur le côté ?', 'Où placer mon bras pendant la chute de côté ?'],
+  'ayumi-ashi': ['À quoi sert ayumi-ashi ?', 'Comment marcher sans croiser les pieds ?'],
+  kumikata: ['À quoi sert le kumi-kata ?', 'Où placer mes mains pour le kumi-kata ?'],
+  'uchikomi-o-goshi': ['À quoi sert o-goshi ?', 'Où placer mes hanches pour o-goshi ?'],
+  'uchikomi-o-soto-gari': ['À quoi sert o-soto-gari ?', 'Comment garder l’équilibre pendant o-soto-gari ?'],
+  'uchikomi-o-uchi-gari': ['À quoi sert o-uchi-gari ?', 'Comment faucher pendant o-uchi-gari ?'],
+  'uchikomi-ko-uchi-gari': ['À quoi sert ko-uchi-gari ?', 'Avec quelle partie du pied balayer en ko-uchi-gari ?'],
+  'single-leg': ['À quoi sert le single-leg ?', 'Où placer ma tête pendant le single-leg ?'],
+  'check-hook': ['À quoi sert le check hook ?', 'Comment pivoter pendant le check hook ?'],
+  'shoulder-roll': ['À quoi sert le shoulder roll ?', 'Où placer mon menton pendant le shoulder roll ?'],
+  'switch-kick': ['À quoi sert le switch kick ?', 'Comment changer de pied pour le switch kick ?'],
+  'garde-longue': ['À quoi sert la garde longue ?', 'Où placer ma main avant en garde longue ?'],
+  'rattrapage-middle': ['Comment attraper un middle kick ?', 'Comment protéger mes côtes avant d’attraper la jambe ?'],
   sprawl: [
     'Comment lancer mes jambes en arrière pendant le sprawl ?',
     'Où placer mes hanches pendant le sprawl ?',

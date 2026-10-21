@@ -10,16 +10,16 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 
 ## Total, 6 styles de garde
 
-432 animations, 1266 poses clés intérieures. Arrêts parasites : **1066 avant, 210 après**.
+528 animations, 1824 poses clés intérieures. Arrêts parasites : **1476 avant, 286 après**.
 
 | Style | Animations | Arrêts avant | Arrêts après |
 |---|---|---|---|
-| boxing | 72 | 171 | 32 |
-| kickboxing | 72 | 173 | 32 |
-| mma | 72 | 171 | 29 |
-| muaythai | 72 | 178 | 31 |
-| bjj | 72 | 184 | 36 |
-| judo | 72 | 189 | 50 |
+| boxing | 88 | 239 | 45 |
+| kickboxing | 88 | 242 | 45 |
+| mma | 88 | 236 | 40 |
+| muaythai | 88 | 250 | 43 |
+| bjj | 88 | 253 | 48 |
+| judo | 88 | 256 | 65 |
 
 ## Détail, garde de boxe
 
@@ -54,6 +54,8 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `pivot-droite` | 1 | 5 | 0 | 0,0 | 0,0 | 5,2 | 4,8 | – | – |
 | `pivot-gauche` | 1 | 5 | 0 | 0,0 | 0,0 | 5,2 | 4,9 | – | – |
 | `sortie-angle` | 2 | 3 | 0 | 0,0 | 0,0 | 6,5 | 6,0 | – | – |
+| `check-hook` | 4 | 4 | 0 | 2,7 | 2,7 | 6,4 | 6,2 | 2,8 | 2,8 |
+| `shoulder-roll` | 2 | 0 | 0 | 0,0 | 0,0 | 8,9 | 8,9 | – | – |
 | `low-kick-arriere` | 4 | 8 | 2 | 5,7 | 5,7 | 10,2 | 10,2 | 6,1 | 6,1 |
 | `low-kick-avant` | 4 | 8 | 0 | 5,4 | 5,4 | 10,2 | 10,2 | 5,8 | 5,8 |
 | `middle-kick-arriere` | 4 | 10 | 2 | 8,2 | 8,2 | 15,0 | 15,0 | 8,8 | 8,8 |
@@ -74,6 +76,9 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `genou-circulaire-arriere-clinch` | 4 | 1 | 0 | 5,5 | 5,5 | 14,5 | 14,5 | 5,8 | 5,8 |
 | `check-avant` | 2 | 0 | 0 | 0,0 | 0,0 | 9,1 | 9,1 | 0,0 | 0,0 |
 | `check-arriere` | 2 | 0 | 0 | 0,0 | 0,0 | 17,9 | 17,9 | 0,0 | 0,0 |
+| `switch-kick` | 7 | 12 | 2 | 8,2 | 8,2 | 14,9 | 14,9 | 8,8 | 8,8 |
+| `garde-longue` | 2 | 0 | 0 | 0,0 | 0,0 | 4,3 | 4,3 | – | – |
+| `rattrapage-middle` | 6 | 1 | 1 | 0,0 | 0,0 | 7,2 | 7,2 | 0,0 | 0,2 |
 | `coude-horizontal-avant` | 3 | 0 | 0 | 2,2 | 2,2 | 2,8 | 2,8 | 2,3 | 2,3 |
 | `coude-horizontal-arriere` | 3 | 0 | 0 | 4,1 | 4,1 | 5,8 | 5,8 | 4,4 | 4,4 |
 | `coude-diagonal-arriere` | 3 | 0 | 0 | 4,7 | 4,7 | 6,9 | 6,9 | 5,1 | 5,1 |
@@ -91,9 +96,20 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `descente-sol` | 2 | 2 | 1 | 0,0 | 0,0 | 12,1 | 12,3 | – | – |
 | `sortie-hanche` | 3 | 1 | 1 | 4,2 | 4,2 | 4,2 | 4,2 | 0,0 | 0,1 |
 | `releve-technique` | 3 | 7 | 2 | 0,0 | 0,0 | 10,9 | 10,8 | – | – |
+| `single-leg` | 4 | 3 | 2 | 13,0 | 13,0 | 12,7 | 12,7 | 0,0 | 0,0 |
 | `pont` | 6 | 4 | 4 | 4,5 | 4,5 | 4,5 | 4,5 | 0,0 | 0,0 |
 | `retention-garde` | 7 | 0 | 0 | 0,0 | 0,0 | 4,1 | 3,9 | – | – |
 | `changement-base` | 4 | 2 | 0 | 0,0 | 0,0 | 9,3 | 9,3 | – | – |
 | `tai-sabaki` | 4 | 4 | 0 | 0,0 | 0,0 | 5,2 | 5,1 | 0,0 | 0,1 |
 | `kuzushi` | 2 | 0 | 0 | 0,0 | 0,0 | 7,2 | 7,2 | 0,0 | 0,0 |
 | `uchikomi-seoi` | 4 | 3 | 0 | 13,5 | 13,5 | 13,5 | 13,5 | 0,0 | 0,0 |
+| `ayumi-ashi` | 3 | 0 | 0 | 0,5 | 0,5 | 3,7 | 3,7 | – | – |
+| `kumikata` | 4 | 0 | 0 | 2,2 | 2,2 | 2,5 | 2,5 | 0,0 | 0,0 |
+| `uchikomi-o-goshi` | 4 | 3 | 0 | 11,9 | 11,9 | 11,9 | 11,9 | 0,0 | 0,0 |
+| `uchikomi-o-soto-gari` | 6 | 3 | 1 | 10,7 | 10,7 | 10,3 | 10,3 | 0,0 | 0,0 |
+| `uchikomi-o-uchi-gari` | 8 | 5 | 3 | 4,2 | 4,2 | 4,0 | 4,0 | 0,0 | 0,0 |
+| `uchikomi-ko-uchi-gari` | 6 | 2 | 1 | 3,6 | 3,6 | 5,5 | 5,5 | 0,0 | 0,0 |
+| `ukemi-ushiro` | 9 | 12 | 0 | 3,4 | 3,4 | 5,8 | 5,5 | 3,6 | 3,6 |
+| `ukemi-yoko` | 11 | 9 | 0 | 11,3 | 11,3 | 11,3 | 11,3 | 0,0 ; 0,0 | 0,0 ; 0,0 |
+| `sit-out` | 8 | 6 | 2 | 7,1 | 7,1 | 9,3 | 9,3 | 0,0 | 0,0 |
+| `releve-genoux` | 9 | 8 | 1 | 0,0 | 0,0 | 5,7 | 5,5 | 0,0 | 0,0 |

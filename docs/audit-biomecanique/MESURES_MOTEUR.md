@@ -20,6 +20,8 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Pas latéral gauche (`pas-gauche`) | deplacement | 32,0 | 61 % | 0,25 | 3,0 (LeftToeBase) | 6° | 0,64 |
 | Pas arrière (`pas-arriere`) | deplacement | 31,2 | 61 % | 0,25 | 3,0 (LeftToeBase) | 6° | 0,70 |
 | Pas latéral droit (`pas-droite`) | deplacement | 30,0 | 61 % | 0,25 | 3,0 (LeftToeBase) | 6° | 0,64 |
+| Relevé depuis les genoux (`releve-genoux`) | sol | 28,0 | 54 % | 1,01 | -0,1 (LeftToeBase) | 2° | 5,70 |
+| Sit-out (`sit-out`) | sol | 28,0 | 44 % | 0,00 | -0,5 (LeftToeBase) | 12° | 14,51 |
 | Relevé technique (`releve-technique`) | sol | 27,2 | 10 % | 0,00 | 0,1 (LeftToeBase) | 23° | 11,10 |
 | Tsugi-ashi latéral (`tsugi-ashi-lateral`) | deplacement | 23,7 | 61 % | 0,25 | 3,0 (LeftToeBase) | 2° | 0,64 |
 | High kick gauche (`high-kick-avant`) | pied | 22,8 | 23 % | 0,55 | 3,0 (LeftToeBase) | 11° | 0,17 |
@@ -28,7 +30,9 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Check (blocage tibia) (`check-avant`) | defense | 22,1 | 26 % | 0,47 | 3,0 (LeftToeBase) | 6° | 0,09 |
 | Middle kick gauche (`middle-kick-avant`) | pied | 22,1 | 20 % | 0,66 | 3,0 (LeftToeBase) | 11° | 0,20 |
 | Changement de base (`changement-base`) | sol | 21,9 | 43 % | 0,00 | -0,5 (LeftToeBase) | 11° | 14,38 |
+| Uchikomi d’o-soto-gari (solo) (`uchikomi-o-soto-gari`) | projection | 21,4 | 28 % | 1,36 | 3,0 (LeftToeBase) | 2° | 3,19 |
 | Tsugi-ashi avant (`tsugi-ashi-avant`) | deplacement | 21,3 | 61 % | 0,25 | 3,0 (LeftToeBase) | 2° | 0,70 |
+| Check hook (crochet pivot) (`check-hook`) | poing | 21,0 | 52 % | 0,29 | 3,0 (LeftToeBase) | 20° | 1,69 |
 | Pivot extérieur (`pivot-gauche`) | deplacement | 20,5 | 48 % | 0,17 | 3,0 (LeftToeBase) | 6° | 1,52 |
 | Low kick gauche (`low-kick-avant`) | pied | 20,2 | 16 % | 0,63 | 3,0 (LeftToeBase) | 10° | 0,56 |
 | Pivot (`pivot-droite`) | deplacement | 20,0 | 48 % | 0,17 | 3,0 (LeftToeBase) | 6° | 1,33 |
@@ -36,12 +40,19 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | High kick droit (`high-kick-arriere`) | pied | 17,3 | 15 % | 0,67 | 3,0 (LeftToeBase) | 23° | 0,47 |
 | Middle kick droit (`middle-kick-arriere`) | pied | 17,2 | 13 % | 0,67 | 3,0 (LeftToeBase) | 23° | 0,46 |
 | Genou circulaire avant (`genou-circulaire-avant`) | genou | 17,0 | 28 % | 0,45 | 3,0 (LeftToeBase) | 21° | 0,39 |
+| Switch kick (`switch-kick`) | pied | 16,9 | 23 % | 0,86 | 3,0 (LeftToeBase) | 20° | 0,33 |
+| Rattrapage du middle kick (`rattrapage-middle`) | defense | 16,8 | 30 % | 0,39 | 3,0 (LeftToeBase) | 6° | 0,12 |
 | Genou direct avant (`genou-direct-avant`) | genou | 16,8 | 26 % | 0,45 | 3,0 (LeftToeBase) | 4° | 0,25 |
 | Roundhouse kick (`roundhouse-arriere`) | pied | 16,6 | 13 % | 0,55 | 3,0 (LeftToeBase) | 23° | 0,42 |
 | Front kick arrière (`front-kick-arriere`) | pied | 16,5 | 23 % | 0,68 | 3,0 (LeftToeBase) | 6° | 0,09 |
 | Teep (`teep-avant`) | pied | 16,5 | 23 % | 0,68 | 3,0 (LeftToeBase) | 4° | 0,03 |
+| Uchikomi de ko-uchi-gari (solo) (`uchikomi-ko-uchi-gari`) | projection | 15,7 | 26 % | 0,43 | -2,0 (RightToeBase) | 2° | 8,63 |
+| Yoko-ukemi (chute latérale, version basse) (`ukemi-yoko`) | chute | 15,6 | 62 % | 0,00 | -3,9 (RightToeBase) | 4° | 1,09 |
 | Check jambe arrière (`check-arriere`) | defense | 15,2 | 21 % | 0,46 | 3,0 (LeftToeBase) | 6° | 0,86 |
+| Uchikomi d’o-uchi-gari (solo) (`uchikomi-o-uchi-gari`) | projection | 15,0 | 31 % | 0,67 | -4,4 (RightToeBase) | 2° | 5,69 |
+| Ushiro-ukemi (chute arrière, version basse) (`ukemi-ushiro`) | chute | 14,9 | 43 % | 0,00 | -3,9 (RightToeBase) | 2° | 1,07 |
 | Low kick droit (`low-kick-arriere`) | pied | 13,9 | 8 % | 0,63 | 3,0 (LeftToeBase) | 22° | 1,10 |
+| Ayumi-ashi (pas marchés) (`ayumi-ashi`) | deplacement | 13,7 | 43 % | 0,37 | 3,0 (LeftToeBase) | 2° | 1,44 |
 | Descente contrôlée au sol (`descente-sol`) | sol | 13,7 | 7 % | 0,00 | -2,4 (RightToeBase) | 11° | 8,31 |
 | Teep arrière (`teep-arriere`) | pied | 12,1 | 21 % | 0,68 | 3,0 (LeftToeBase) | 4° | 0,09 |
 | Genou direct (`genou-direct-arriere`) | genou | 12,1 | 20 % | 0,45 | 3,0 (LeftToeBase) | 12° | 0,51 |
@@ -50,9 +61,11 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Genou circulaire (`genou-circulaire-arriere`) | genou | 11,6 | 13 % | 0,45 | 3,0 (LeftToeBase) | 29° | 0,65 |
 | Uchikomi de seoi-nage (solo) (`uchikomi-seoi`) | projection | 7,5 | 43 % | 0,00 | 3,0 (LeftToeBase) | 2° | 7,75 |
 | Changement de niveau (`changement-niveau`) | lutte | 7,3 | 87 % | 0,00 | 3,0 (LeftToeBase) | 4° | 0,00 |
+| Entrée en single-leg (solo) (`single-leg`) | lutte | 6,9 | 46 % | 0,00 | 3,0 (LeftToeBase) | 8° | 6,39 |
 | Entrée en double-leg (solo) (`entree-lutte`) | lutte | 6,8 | 44 % | 0,00 | 3,0 (LeftToeBase) | 4° | 7,20 |
 | Défense d’entrée en lutte (`defense-lutte`) | lutte | 6,5 | 89 % | 0,00 | 3,0 (LeftToeBase) | 4° | 5,40 |
 | Feinte de lutte (`feinte-lutte`) | feinte | 6,3 | 84 % | 0,00 | 3,0 (LeftToeBase) | 4° | 0,00 |
+| Uchikomi d’o-goshi (solo) (`uchikomi-o-goshi`) | projection | 5,1 | 44 % | 0,00 | 3,0 (RightToeBase) | 6° | 6,73 |
 | Esquive extérieure (`esquive-droite`) | defense | 5,1 | 75 % | 0,00 | 3,0 (LeftToeBase) | 12° | 0,00 |
 | Rotation sous le crochet (roll) (`roll-droite`) | defense | 4,1 | 54 % | 0,00 | 3,0 (LeftToeBase) | 8° | 0,00 |
 | Roll de l’autre côté (`roll-gauche`) | defense | 4,1 | 46 % | 0,00 | 3,0 (LeftToeBase) | 7° | 0,00 |
@@ -75,6 +88,8 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Blocage au corps (`blocage-corps-avant`) | defense | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 11° | 0,00 |
 | Parade (`parade`) | defense | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 6° | 0,00 |
 | Retrait de buste (`retrait`) | defense | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 12° | 0,00 |
+| Shoulder roll (rouler l’épaule) (`shoulder-roll`) | defense | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 23° | 0,00 |
+| Garde longue (`garde-longue`) | defense | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 12° | 0,00 |
 | Coude horizontal gauche (`coude-horizontal-avant`) | coude | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 18° | 0,00 |
 | Coude horizontal droit (`coude-horizontal-arriere`) | coude | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 10° | 0,00 |
 | Coude diagonal descendant (`coude-diagonal-arriere`) | coude | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 11° | 0,00 |
@@ -88,10 +103,11 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Shizen-tai (posture naturelle) (`shizen-tai`) | garde | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 2° | 0,00 |
 | Tai-sabaki (rotation du corps) (`tai-sabaki`) | deplacement | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 2° | 6,53 |
 | Kuzushi (déséquilibre, solo) (`kuzushi`) | projection | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 2° | 3,16 |
+| Kumi-kata (prise de garde, solo) (`kumikata`) | garde | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 6° | 0,00 |
 
 ## Transitions dans les exercices
 
-218 exercices joués deux fois avec le lecteur d’enchaînements de l’application, à 60 images/s. « Ajouté par la transition » : glissement maximal dans l’enchaînement moins le plus grand glissement des techniques jouées seules.
+254 exercices joués deux fois avec le lecteur d’enchaînements de l’application, à 60 images/s. « Ajouté par la transition » : glissement maximal dans l’enchaînement moins le plus grand glissement des techniques jouées seules.
 
 | Exercice | Enchaînement | Saut max entre deux images (cm) | Glissement max (cm / image) | Ajouté par la transition (cm / image) |
 |---|---|---|---|---|
@@ -113,11 +129,22 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `boxe-avance-03` | jab → direct → sortie-angle → crochet-avant → direct | 12,2 | 3,97 | 2,64 |
 | `kickboxing-expert-10` | jab → sortie-angle → direct → low-kick-arriere → pivot-droite → crochet-avant → middle-kick-arriere | 14,7 | 3,93 | 2,59 |
 | `kickboxing-avance-07` | jab → direct → sortie-angle → crochet-avant → low-kick-arriere | 12,7 | 3,91 | 2,58 |
+| `bjj-debutant-07` | ukemi-ushiro | 9,0 | 3,44 | 2,37 |
+| `judo-avance-05` | uchikomi-o-uchi-gari | 5,3 | 7,33 | 1,64 |
+| `bjj-debutant-08` | releve-genoux | 6,1 | 6,74 | 1,05 |
 | `bjj-debutant-05` | descente-sol → changement-base → releve-technique | 17,3 | 15,33 | 0,95 |
 | `bjj-intermediaire-03` | descente-sol → sortie-hanche → changement-base → releve-technique | 17,3 | 15,33 | 0,95 |
 | `bjj-avance-02` | descente-sol → pont → sortie-hanche → changement-base → releve-technique | 17,3 | 15,33 | 0,95 |
 | `bjj-expert-01` | descente-sol → pont → sortie-hanche → retention-garde → changement-base → releve-technique | 17,3 | 15,33 | 0,95 |
 | `bjj-expert-02` | descente-sol → pont → sortie-hanche → sortie-hanche → changement-base → pont → releve-technique | 17,3 | 15,33 | 0,95 |
+| `judo-debutant-07` | ukemi-ushiro | 9,0 | 1,90 | 0,83 |
+| `mma-intermediaire-13` | descente-sol → sit-out → releve-technique | 19,5 | 15,33 | 0,82 |
+| `bjj-debutant-06` | descente-sol → sit-out → releve-technique | 17,3 | 15,33 | 0,82 |
+| `bjj-intermediaire-07` | descente-sol → changement-base → sit-out → releve-technique | 17,3 | 15,33 | 0,82 |
+| `bjj-avance-06` | releve-genoux → descente-sol → sit-out → releve-technique | 17,3 | 15,33 | 0,82 |
+| `bjj-expert-04` | changement-niveau → entree-lutte → single-leg → descente-sol → sit-out → sortie-hanche → releve-technique | 17,3 | 15,33 | 0,82 |
+| `judo-intermediaire-07` | ukemi-yoko | 17,5 | 1,90 | 0,81 |
+| `judo-expert-05` | ukemi-ushiro → ukemi-yoko → ukemi-ushiro | 17,5 | 1,90 | 0,81 |
 | `mma-debutant-04` | low-kick-arriere | 14,1 | 1,90 | 0,80 |
 | `mma-debutant-08` | jab → direct → low-kick-arriere | 14,1 | 1,90 | 0,80 |
 | `mma-intermediaire-03` | low-kick-arriere → direct → crochet-avant | 14,1 | 1,89 | 0,79 |
@@ -125,6 +152,10 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `mma-intermediaire-08` | descente-sol → sortie-hanche → releve-technique | 19,5 | 11,74 | 0,65 |
 | `mma-avance-06` | descente-sol → sortie-hanche → sortie-hanche → releve-technique → jab → direct | 19,5 | 11,74 | 0,65 |
 | `mma-expert-03` | jab → direct → descente-sol → sortie-hanche → releve-technique → jab → direct → crochet-avant | 19,5 | 11,74 | 0,65 |
+| `judo-intermediaire-05` | uchikomi-o-goshi | 18,0 | 7,30 | 0,56 |
+| `judo-intermediaire-08` | kumikata → uchikomi-o-goshi | 18,0 | 7,30 | 0,56 |
+| `mma-intermediaire-12` | single-leg | 14,1 | 6,92 | 0,53 |
+| `mma-avance-13` | jab → direct → single-leg | 14,1 | 6,92 | 0,53 |
 | `judo-avance-04` | tai-sabaki → tsugi-ashi-avant → uchikomi-seoi | 20,3 | 8,08 | 0,33 |
 | `judo-expert-01` | tsugi-ashi-avant → kuzushi → uchikomi-seoi → tsugi-ashi-arriere → kuzushi → uchikomi-seoi | 20,3 | 8,08 | 0,33 |
 | `judo-expert-02` | tsugi-ashi-lateral → tai-sabaki → kuzushi → uchikomi-seoi → tsugi-ashi-arriere → uchikomi-seoi | 20,3 | 8,08 | 0,33 |
@@ -137,6 +168,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `mma-avance-03` | jab → overhand → changement-niveau → entree-lutte | 16,6 | 7,46 | 0,26 |
 | `mma-expert-06` | pas-avant → jab → direct → pas-avant → crochet-avant → changement-niveau → entree-lutte | 16,6 | 7,46 | 0,26 |
 | `kickboxing-expert-14` | jab → direct → roundhouse-arriere → blocage-haut → direct → crochet-avant → high-kick-arriere → front-kick-avant | 15,1 | 0,56 | 0,09 |
+| `judo-expert-04` | kumikata → uchikomi-o-goshi → uchikomi-o-soto-gari → uchikomi-o-uchi-gari → uchikomi-ko-uchi-gari | 18,0 | 8,71 | 0,08 |
 | `mma-intermediaire-02` | direct → crochet-avant → changement-niveau | 16,6 | 0,03 | 0,03 |
 | `boxe-intermediaire-11` | jab-corps → jab → direct | 15,9 | 0,02 | 0,02 |
 | `boxe-avance-04` | jab-corps → direct-corps → crochet-avant → uppercut-arriere | 15,9 | 0,02 | 0,02 |
@@ -191,4 +223,4 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `kickboxing-expert-07` | jab → direct → crochet-avant → direct → low-kick-arriere → jab → direct → crochet-avant → uppercut-arriere → high-kick-arriere | 15,1 | 0,61 | 0,00 |
 | `mma-avance-08` | defense-lutte → direct → high-kick-arriere | 16,9 | 4,50 | 0,00 |
 
-Exercices sans glissement ajouté de plus de 0,5 cm par image ni saut de plus de 15 cm : 123 sur 218.
+Exercices sans glissement ajouté de plus de 0,5 cm par image ni saut de plus de 15 cm : 143 sur 254.

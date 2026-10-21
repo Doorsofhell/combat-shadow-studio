@@ -530,6 +530,120 @@ function pivot(a: Author, dir: 'gauche' | 'droite', angle = deg(60)): Motion {
   };
 }
 
+/**
+ * check hook: lead hook thrown while pivoting on the lead ball, the rear foot swinging round
+ * (Evolve MMA, "check hook"; Wikipedia: pivot on the lead foot, back foot swings 45 to 90 degrees).
+ * The hook lands early in the pivot; the turn then carries the body off the line of the attack.
+ */
+function checkHook(a: Author): Motion {
+  const g = a.guard();
+  const s = a.s;
+  const yaw = deg(-70);
+  const lead = g.footL.mode === 'ground' ? g.footL.ball : v3(0, 0, 0);
+  const rotP = (p: { x: number; z: number }, t: number) => {
+    const c = Math.cos(yaw * t);
+    const sn = Math.sin(yaw * t);
+    const x = p.x - lead.x;
+    const z = p.z - lead.z;
+    return { x: lead.x + x * c + z * sn, z: lead.z - x * sn + z * c };
+  };
+  // turn the whole stance by a fraction of the pivot (hands in the chest frame follow the chest)
+  const turned = (base: Pose, t: number, lift: number, heel: number) =>
+    edit(base, (d) => {
+      const h = rotP(d.hips, t);
+      d.hips.x = h.x;
+      d.hips.z = h.z;
+      d.pelvis.yaw += yaw * t;
+      if (d.footL.mode === 'ground') {
+        d.footL.yaw += yaw * t;
+        d.footL.heel = heel;
+      }
+      if (d.footR.mode === 'ground') {
+        const b = rotP(d.footR.ball, t);
+        d.footR.ball = v3(b.x, lift, b.z);
+        d.footR.yaw += yaw * t;
+      }
+    });
+  const T = a.target('chin', 0.5);
+  const wind = edit(g, (d) => {
+    const sh = a.shoulder(g, 'L');
+    d.handL.space = 'world';
+    d.handL.pos = v3(sh.x + 0.16 * s, T.y + 0.02 * s, sh.z + 0.3 * s);
+    d.handL.pole = v3(1, 0.35, -0.2);
+    d.handL.pron = 0.7;
+    d.pelvis.yaw += deg(8);
+    d.hips.y -= 0.015 * s;
+  });
+  const hit = edit(turned(g, 0.2, 0.03 * s, deg(18)), (d) => {
+    d.pelvis.yaw += deg(-20);
+    d.chest.yaw += deg(-14);
+    d.chest.roll += deg(4);
+    d.hips.y -= 0.02 * s;
+    d.handL = a.hand('world', v3(T.x + 0.04 * s, T.y, T.z), v3(1, 0.25, -0.1), 0.85);
+  });
+  const mid = edit(turned(g, 0.6, 0.05 * s, deg(14)), (d) => {
+    d.pelvis.yaw += deg(-8);
+    d.hips.y -= 0.02 * s;
+  });
+  const end = turned(g, 1, 0, 0);
+  return {
+    id: 'check-hook',
+    keys: [
+      { t: 0, pose: g },
+      { t: 0.1, pose: wind, ease: 'load' },
+      { t: 0.2, pose: hit, ease: 'strike' },
+      { t: 0.23, pose: hit, ease: 'linear' },
+      { t: 0.38, pose: mid, ease: 'inOut' },
+      { t: 0.54, pose: end, ease: 'inOut' },
+    ],
+    chainAt: 0.5,
+    impacts: [0.2],
+    travel: (() => {
+      const o = rotP({ x: 0, z: 0 }, 1);
+      return { x: o.x, z: o.z, yaw };
+    })(),
+    ...stand,
+  };
+}
+
+/**
+ * shoulder roll (« philly shell » defence): weight onto the rear leg, the trunk turns so the lead
+ * shoulder rises in front of the chin, lead forearm across the ribs, rear glove at the chin, then
+ * the body turns back to guard (Evolve MMA, "how to shoulder roll").
+ */
+function shoulderRoll(a: Author): Motion {
+  const g = a.guard();
+  const s = a.s;
+  const p = edit(g, (d) => {
+    d.hips.z -= 0.05 * s;
+    d.hips.x -= 0.03 * s;
+    d.hips.y -= 0.03 * s;
+    d.pelvis.yaw += deg(-12);
+    d.chest.yaw += deg(-16);
+    d.chest.roll += deg(-6);
+    d.chest.pitch += deg(4);
+    d.head.yaw += deg(12);
+    d.head.pitch += deg(8);
+    // lead forearm drops across the ribs, rear glove stays glued to the chin
+    d.handL.pos = add(g.handL.pos, { x: -0.06 * s, y: -0.24 * s, z: -0.04 * s });
+    d.handL.pole = v3(0.7, -1, 0);
+    d.handR.pos = add(g.handR.pos, { x: 0.02 * s, z: -0.02 * s });
+    if (d.footL.mode === 'ground') d.footL.heel = deg(8);
+  });
+  return {
+    id: 'shoulder-roll',
+    keys: [
+      { t: 0, pose: g },
+      { t: 0.16, pose: p, ease: 'snap' },
+      { t: 0.3, pose: p, ease: 'linear' },
+      { t: 0.52, pose: g, ease: 'inOut' },
+    ],
+    chainAt: 0.44,
+    impacts: [],
+    ...stand,
+  };
+}
+
 /** step off at an angle: lead foot steps out to the left-front while the body turns back toward the target */
 function angleOut(a: Author): Motion {
   const g = a.guard();
@@ -615,5 +729,7 @@ export function boxingMotions(a: Author): Motion[] {
     pivot(a, 'droite'),
     pivot(a, 'gauche'),
     angleOut(a),
+    checkHook(a),
+    shoulderRoll(a),
   ];
 }

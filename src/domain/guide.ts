@@ -788,4 +788,176 @@ export const GUIDES: Record<string, TechniqueGuide> = {
     errors: ['Se pencher en avant au lieu de plier les genoux', 'Pieds qui finissent à l’extérieur', 'Bras qui tirent sans rotation du corps'],
     breath: 'Souffle à chaque entrée.',
   },
+  // ------------------------------------------------------------------ 0.28 : enrichissement des disciplines
+  'check-hook': {
+    steps: [
+      'Pars de la garde, menton rentré.',
+      'Lance le crochet gauche, coude à hauteur du poing, et en même temps pivote sur l’avant du pied gauche.',
+      'Le pied droit tourne en arc derrière toi : le crochet touche au début du pivot, pas à la fin.',
+      'Finis le pivot, le pied droit environ un quart de tour plus loin, face à l’endroit où arrivait l’adversaire.',
+      'Main droite au menton du début à la fin, puis garde complète.',
+    ],
+    errors: ['Pivoter trop (tu te retrouves de dos)', 'Pivoter avant de frapper : le crochet arrive trop tard', 'Le pied avant glisse au lieu de tourner', 'Main droite qui quitte le menton'],
+    breath: EXPIRE_IMPACT,
+  },
+  'shoulder-roll': {
+    steps: [
+      'Pars de la garde.',
+      'Le poids passe sur la jambe arrière, sans bouger les pieds.',
+      'Tourne un peu le buste vers la droite : l’épaule gauche monte devant le menton.',
+      'Avant-bras gauche contre les côtes, gant droit collé au menton.',
+      'Le coup glisse sur l’épaule ; reviens en garde en tournant dans l’autre sens, prêt à riposter.',
+    ],
+    errors: ['Reculer les pieds au lieu de tourner le buste', 'Se pencher trop en arrière', 'Le gant droit quitte le menton', 'Le menton dépasse de l’épaule'],
+    breath: 'Souffle court quand l’épaule monte.',
+  },
+  'garde-longue': {
+    steps: [
+      'Pars de la garde.',
+      'Allonge le bras gauche devant toi, main ouverte, à hauteur du visage de l’adversaire.',
+      'Gant droit collé au menton, coude près du corps.',
+      'Garde cette position un instant, comme pour tenir l’adversaire à distance.',
+      'Ramène la main en garde sans la baisser.',
+    ],
+    errors: ['Bras tendu trop bas, à hauteur de poitrine', 'Main arrière qui descend', 'Se pencher vers l’avant derrière le bras'],
+  },
+  'rattrapage-middle': {
+    steps: [
+      'Pars de la garde. Imagine un coup de pied droit qui arrive sur tes côtes gauches.',
+      'Descends un peu, le coude gauche couvre les côtes et encaisse.',
+      'La main droite passe sous la jambe imaginaire et la plaque contre ton corps ; le bras gauche passe par-dessus.',
+      'Recule le pied droit et tourne vers la droite : la jambe est tirée en travers.',
+      'Ramène le pied droit et reviens en garde.',
+    ],
+    errors: ['Attraper avant d’avoir protégé les côtes', 'Tendre les bras loin du corps pour attraper', 'Baisser la tête vers la jambe'],
+  },
+  'switch-kick': {
+    steps: [
+      'Pars de la garde.',
+      'Petit changement de pieds, court et rapide : le pied gauche recule, le pied droit avance.',
+      'Le pied droit, devenu pied d’appui, s’ouvre vers l’extérieur et les hanches tournent.',
+      'La jambe gauche monte en arc et frappe les côtes avec le bas du tibia ; le bras gauche balance vers l’arrière.',
+      'Repose la jambe gauche devant toi : te revoilà dans ta garde, un pas plus loin.',
+    ],
+    errors: ['Switch trop large ou trop long, qui annonce le coup', 'Pied d’appui pointé vers l’avant (la hanche ne tourne pas)', 'Mains qui tombent pendant le switch'],
+    breath: EXPIRE_IMPACT,
+  },
+  'single-leg': {
+    steps: [
+      'Pars de la garde.',
+      'Change de niveau : descends les hanches en pliant les jambes, dos droit, tête haute.',
+      'Fais un pas vers la jambe avant de l’adversaire (à ta droite s’il est dans la même garde que toi).',
+      'Ta tête passe à l’extérieur de sa jambe, ta poitrine se colle à sa cuisse, tes mains se joignent derrière son genou.',
+      'Ramène le genou contre ta poitrine, puis remonte en garde.',
+    ],
+    errors: ['Tête à l’intérieur de la jambe', 'Se pencher au lieu de plier les jambes', 'Mains qui saisissent trop bas, à la cheville'],
+    breath: 'Souffle pendant le pas.',
+  },
+  'sit-out': {
+    steps: [
+      'Assis au sol, passe à quatre appuis : mains sous les épaules, genoux au sol.',
+      'Garde la main gauche posée et décolle les genoux.',
+      'La jambe gauche file sous ton corps, vers la droite, par l’espace laissé sous le bras droit.',
+      'Tes hanches tournent : tu te retrouves assis de côté, main gauche au sol derrière, bras droit en cadre devant, pied droit à plat.',
+      'Reviens par le même chemin à quatre appuis, puis à l’assise.',
+    ],
+    errors: ['Hanches qui restent à plat au sol', 'Main posée qui glisse', 'Pas de bras en cadre', 'S’arrêter au milieu du mouvement'],
+    breath: 'Souffle quand la jambe passe dessous.',
+  },
+  'releve-genoux': {
+    steps: [
+      'Pars de ta posture debout, sur un tapis.',
+      'Pose le genou droit au sol en douceur, puis le genou gauche : te voilà à genoux, buste droit, mains devant.',
+      'Avance le pied gauche à plat devant toi, genou levé : c’est la base de combat.',
+      'Pousse sur les deux jambes et remonte en posture, sans te redresser tout droit.',
+    ],
+    errors: ['Laisser tomber le genou sur le sol', 'Pencher le buste en avant', 'Se relever en s’aidant des mains au sol'],
+    breath: 'Souffle en te relevant.',
+  },
+  'ukemi-ushiro': {
+    steps: [
+      'Sur un tapis épais, pars debout, puis descends accroupi, bras devant.',
+      'Assieds-toi près des talons et croise les bras devant la poitrine.',
+      'Roule en arrière sur le dos arrondi, menton sur la poitrine, regard vers la ceinture.',
+      'Les deux bras frappent le tapis à environ 45° du corps, paumes à plat, quand le dos arrive au sol.',
+      'Reviens assis en roulant, puis accroupi, puis debout.',
+    ],
+    errors: ['Tête qui part en arrière et touche le tapis', 'Bras trop écartés ou coudes qui frappent en premier', 'Dos plat au lieu d’arrondi', 'Jambes croisées'],
+    breath: 'Souffle fort au moment où les bras frappent.',
+  },
+  'ayumi-ashi': {
+    steps: [
+      'Pars de shizen-tai.',
+      'Le pied arrière passe devant l’autre en rasant le tapis, sans le croiser, et se pose un pas plus loin.',
+      'Puis l’autre pied passe à son tour, de la même manière.',
+      'Garde la même largeur entre les pieds et le buste droit du début à la fin.',
+    ],
+    errors: ['Pieds qui se croisent', 'Marcher sur les talons', 'Se pencher en avant en marchant'],
+  },
+  kumikata: {
+    steps: [
+      'Pars de shizen-tai, mains ouvertes devant toi.',
+      'La main gauche saisit la manche imaginaire du partenaire, à hauteur de son coude (hikite).',
+      'La main droite saisit le revers, à hauteur de sa poitrine (tsurite).',
+      'Petit tirage de la manche, sans bouger les pieds.',
+      'Relâche et reviens en shizen-tai.',
+    ],
+    errors: ['Bras raides tendus vers l’avant', 'Se pencher vers le partenaire', 'Pieds qui bougent pendant la prise'],
+  },
+  'uchikomi-o-goshi': {
+    steps: [
+      'Pars de shizen-tai, mains comme sur la manche et le revers d’un partenaire imaginaire.',
+      'Avance le pied droit devant toi, à l’intérieur, en commençant à tourner.',
+      'Pivote et ramène le pied gauche à côté : dos au partenaire, pieds parallèles.',
+      'Plie les genoux : tes hanches passent sous sa ceinture, bien en travers, le bras droit autour de sa taille.',
+      'La main gauche tire la manche vers l’avant.',
+      'Reviens en shizen-tai et recommence. Jamais de fauchage ni de projection sans partenaire, tatami et professeur.',
+    ],
+    errors: ['Hanches qui restent à côté au lieu de passer en travers', 'Se pencher au lieu de plier les genoux', 'Pieds qui finissent à l’extérieur'],
+    breath: 'Souffle à chaque entrée.',
+  },
+  'uchikomi-o-soto-gari': {
+    steps: [
+      'Pars de shizen-tai, mains comme sur la manche et le revers.',
+      'Pose le pied gauche à côté du pied droit du partenaire imaginaire, genou fléchi.',
+      'Ta poitrine vient vers l’avant, les mains tirent la manche et poussent le revers.',
+      'La jambe droite passe derrière sa jambe droite, puis fauche vers l’arrière.',
+      'Reviens en shizen-tai et recommence. Jamais de fauchage ni de projection sans partenaire, tatami et professeur.',
+    ],
+    errors: ['Le buste part en arrière pendant le fauchage', 'Pied d’appui trop loin du partenaire', 'Jambe d’appui tendue'],
+    breath: 'Souffle pendant le fauchage.',
+  },
+  'uchikomi-o-uchi-gari': {
+    steps: [
+      'Pars de shizen-tai, mains comme sur la manche et le revers.',
+      'Le pied droit entre profondément entre les pieds du partenaire imaginaire, le pied gauche suit derrière.',
+      'La jambe droite accroche sa jambe gauche par l’intérieur.',
+      'Fauche en arc, au ras du tapis, pendant que les mains poussent vers l’arrière.',
+      'Reviens en shizen-tai et recommence. Jamais de fauchage ni de projection sans partenaire, tatami et professeur.',
+    ],
+    errors: ['Entrer trop court : la jambe n’atteint pas', 'Fauchage haut, loin du tapis', 'Buste penché en avant'],
+    breath: 'Souffle pendant le fauchage.',
+  },
+  'uchikomi-ko-uchi-gari': {
+    steps: [
+      'Pars de shizen-tai, mains comme sur la manche et le revers.',
+      'Petit pas du pied gauche, le poids passe dessus.',
+      'La plante du pied droit balaie vers le talon droit du partenaire imaginaire, par l’intérieur, au ras du tapis.',
+      'Les mains poussent vers l’arrière et vers le bas.',
+      'Reviens en shizen-tai et recommence. Jamais de fauchage ni de projection sans partenaire, tatami et professeur.',
+    ],
+    errors: ['Balayer avec la pointe du pied au lieu de la plante', 'Pied qui monte loin du tapis', 'Grand pas qui fait perdre l’équilibre'],
+    breath: 'Souffle pendant le balayage.',
+  },
+  'ukemi-yoko': {
+    steps: [
+      'Sur un tapis épais, pars debout, puis descends accroupi et assieds-toi.',
+      'Roule sur le côté droit, jambes levées, menton rentré.',
+      'Le bras droit frappe le tapis à environ 45° du corps, paume à plat.',
+      'Reviens assis, puis fais le côté gauche de la même manière.',
+      'Reviens accroupi, puis debout.',
+    ],
+    errors: ['Tête qui touche le tapis', 'Frapper avec le coude ou le poing', 'Jambes croisées', 'Toujours le même côté'],
+    breath: 'Souffle fort au moment où le bras frappe.',
+  },
 };

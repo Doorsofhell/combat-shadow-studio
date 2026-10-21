@@ -7,7 +7,7 @@ Généré par `UPDATE_REGISTRY=1 npx vitest run src/engine/__tests__/registry.te
 - **À corriger** : au moins un contrôle échoue (détail dans la colonne Notes).
 - **Non implémentée** : fiche avec partenaire réel, sans animation à deux personnages.
 
-Bilan : 0 validée(s), 75 contrôlée(s), 0 à corriger, 0 manquante(s), 10 non implémentée(s).
+Bilan : 0 validée(s), 91 contrôlée(s), 0 à corriger, 0 manquante(s), 10 non implémentée(s).
 
 Contrôles : 1. Présente dans chaque discipline, dans les deux gardes ; 2. Coudes et genoux dans leur amplitude naturelle ; 3. Pied d’appui fixe (pas de glissement) ; 4. Mouvement continu (pas de saut de pose) ; 5. Le membre arrive en fin de rotation des hanches ; 6. Le coup accélère et touche en vitesse (au moins 25 % de sa vitesse de pointe) ; 7. Vitesse de pointe plausible (poing ≤ 12 m/s, pied ≤ 26 m/s).
 
@@ -32,6 +32,7 @@ Contrôles : 1. Présente dans chaque discipline, dans les deux gardes ; 2. Coud
 | Uppercut gauche (`uppercut-avant`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
 | Uppercut droit (`uppercut-arriere`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
 | Overhand (`overhand`) | mma, kickboxing | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
+| Check hook (crochet pivot) (`check-hook`) | boxe, mma | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
 | Esquive extérieure (`esquive-droite`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
 | Esquive intérieure (`esquive-gauche`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
 | Rotation sous le crochet (roll) (`roll-droite`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
@@ -40,8 +41,11 @@ Contrôles : 1. Présente dans chaque discipline, dans les deux gardes ; 2. Coud
 | Blocage au corps (`blocage-corps-avant`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
 | Parade (`parade`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
 | Retrait de buste (`retrait`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
+| Shoulder roll (rouler l’épaule) (`shoulder-roll`) | boxe | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
 | Check (blocage tibia) (`check-avant`) | kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
 | Check jambe arrière (`check-arriere`) | kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
+| Garde longue (`garde-longue`) | muaythai | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
+| Rattrapage du middle kick (`rattrapage-middle`) | muaythai | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
 | Front kick avant (`front-kick-avant`) | kickboxing, mma | Contrôlée automatiquement | oui | oui | oui | oui | – | oui | oui |  |
 | Front kick arrière (`front-kick-arriere`) | kickboxing, mma | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
 | Teep (`teep-avant`) | muaythai, mma | Contrôlée automatiquement | oui | oui | oui | oui | – | oui | oui |  |
@@ -54,6 +58,7 @@ Contrôles : 1. Présente dans chaque discipline, dans les deux gardes ; 2. Coud
 | High kick gauche (`high-kick-avant`) | kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
 | Roundhouse kick (`roundhouse-arriere`) | kickboxing, mma | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
 | Roundhouse jambe avant (`roundhouse-avant`) | kickboxing | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
+| Switch kick (`switch-kick`) | muaythai, kickboxing | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
 | Genou direct (`genou-direct-arriere`) | muaythai, mma, kickboxing | Contrôlée automatiquement | oui | oui | oui | oui | – | oui | oui |  |
 | Genou direct avant (`genou-direct-avant`) | muaythai, kickboxing | Contrôlée automatiquement | oui | oui | oui | oui | – | oui | oui |  |
 | Genou circulaire (`genou-circulaire-arriere`) | muaythai, kickboxing | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
@@ -70,8 +75,9 @@ Contrôles : 1. Présente dans chaque discipline, dans les deux gardes ; 2. Coud
 | Feinte de jab (`feinte-jab`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
 | Feinte d’épaule (`feinte-epaule`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
 | Feinte de lutte (`feinte-lutte`) | mma | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
-| Changement de niveau (`changement-niveau`) | mma | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
-| Entrée en double-leg (solo) (`entree-lutte`) | mma | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
+| Changement de niveau (`changement-niveau`) | mma, bjj | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
+| Entrée en double-leg (solo) (`entree-lutte`) | mma, bjj | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
+| Entrée en single-leg (solo) (`single-leg`) | mma, bjj | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
 | Sprawl (`sprawl`) | mma | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
 | Défense d’entrée en lutte (`defense-lutte`) | mma | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
 | Descente contrôlée au sol (`descente-sol`) | mma, bjj | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
@@ -81,6 +87,9 @@ Contrôles : 1. Présente dans chaque discipline, dans les deux gardes ; 2. Coud
 | Pont (upa) (`pont`) | bjj, mma | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
 | Rétention de garde (solo) (`retention-garde`) | bjj | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
 | Changement de base (`changement-base`) | bjj | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
+| Sit-out (`sit-out`) | bjj, mma | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
+| Relevé depuis les genoux (`releve-genoux`) | bjj | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
+| Ushiro-ukemi (chute arrière, version basse) (`ukemi-ushiro`) | judo, bjj | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
 | Shizen-tai (posture naturelle) (`shizen-tai`) | judo | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
 | Tsugi-ashi avant (`tsugi-ashi-avant`) | judo | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
 | Tsugi-ashi arrière (`tsugi-ashi-arriere`) | judo | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
@@ -88,6 +97,13 @@ Contrôles : 1. Présente dans chaque discipline, dans les deux gardes ; 2. Coud
 | Tai-sabaki (rotation du corps) (`tai-sabaki`) | judo | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
 | Kuzushi (déséquilibre, solo) (`kuzushi`) | judo | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
 | Uchikomi de seoi-nage (solo) (`uchikomi-seoi`) | judo | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
+| Ayumi-ashi (pas marchés) (`ayumi-ashi`) | judo | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
+| Kumi-kata (prise de garde, solo) (`kumikata`) | judo | Contrôlée automatiquement | oui | oui | oui | oui | – | – | – |  |
+| Uchikomi d’o-goshi (solo) (`uchikomi-o-goshi`) | judo | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
+| Uchikomi d’o-soto-gari (solo) (`uchikomi-o-soto-gari`) | judo | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
+| Uchikomi d’o-uchi-gari (solo) (`uchikomi-o-uchi-gari`) | judo | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
+| Uchikomi de ko-uchi-gari (solo) (`uchikomi-ko-uchi-gari`) | judo | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
+| Yoko-ukemi (chute latérale, version basse) (`ukemi-yoko`) | judo | Contrôlée automatiquement | oui | oui | – | oui | – | – | – |  |
 | Ukemi (brise-chutes) (`ukemi`) | judo | Non implémentée | – | – | – | – | – | – | – | fiche avec partenaire réel ; démonstration à deux personnages pas encore animée |
 | O-soto-gari (grand fauchage extérieur) (`o-soto-gari`) | judo | Non implémentée | – | – | – | – | – | – | – | fiche avec partenaire réel ; démonstration à deux personnages pas encore animée |
 | O-goshi (grande hanche) (`o-goshi`) | judo | Non implémentée | – | – | – | – | – | – | – | fiche avec partenaire réel ; démonstration à deux personnages pas encore animée |

@@ -963,3 +963,46 @@ contexte de l’écran ; icône claire »). Maquette C « Pilule d’actions » 
   réussis, 1 non exécuté, sur 3 passages — TEST RÉUSSI. Playwright complet après le correctif de contraste : 113
   réussis, 2 non exécutés (Firebase), 1 échec — training-layout « demander au coach » (instable connu depuis la
   0.23) ; relancé seul 5 fois : 4 réussis, 1 échec — instabilité à traiter dans un lot dédié.
+
+## 2026-10-21 · v0.28.0 (en préparation) · Enrichissement des disciplines
+
+Demande de Youssef : « Je voudrais aussi que tu enrichisses toutes les disciplines » (la partie Légendes est
+traitée dans un lot séparé). Audit complet et sources : `docs/ENRICHISSEMENT_DISCIPLINES.md`.
+
+- **Une technique commune, une seule fiche** — Constat : une technique partagée entre disciplines n’avait aucun
+  moyen de dire ce qui change d’une discipline à l’autre, et la fiche ne montrait ni ses sources ni d’encadré de
+  sécurité. Correction : trois champs optionnels sur `Technique` (`notes` par discipline, `safety`, `sources`),
+  affichés sur la fiche (« En judo… », encadré « Sécurité », liens vers les sources en bas). Un test vérifie
+  qu’une note ne vise que les disciplines de la technique et que chaque source existe.
+- **Judo** (7 → 15 techniques) — ayumi-ashi, kumi-kata, uchikomi d’o-goshi, d’o-soto-gari, d’o-uchi-gari, de
+  ko-uchi-gari (entrée seulement, jamais de fauchage ni de projection en solo), chutes arrière et latérale en
+  **version basse** (nouvelle catégorie « Chutes (ukemi) »). Sources : IJF/Kodokan (jb-S5), Judo Québec (jb-S11).
+  Les fiches partenaire o-goshi, o-soto-gari et ukemi pointent vers leur préparation solo ; la consigne de
+  sécurité de l’ukemi dit maintenant ce qui est permis à la maison (version basse, tapis épais, jamais depuis
+  debout).
+- **Jiu-jitsu brésilien** (7 → 13) — sit-out et relevé depuis les genoux (Grapplearts jb-S51, Jitsu IQ jb-S52) ;
+  partagés sans copie : chute arrière basse, changement de niveau, double-leg, single-leg (note BJJ sur
+  l’amenée au sol, règlement JJIF jb-S26).
+- **Boxe** (+2) — check hook (aussi MMA) et shoulder roll (Evolve MMA, Wikipédia). **Muay-thaï** (+3) — switch
+  kick (aussi kick-boxing, ajouté à la règle des coups de pied circulaires des trois styles), garde longue,
+  rattrapage du middle kick (muaythai.com, Evolve MMA). **MMA** (+3) — single-leg, check hook, sit-out.
+- **Animations** — 16 nouvelles, toutes « contrôlées automatiquement » (aucune « validée ») : amplitudes, appuis,
+  continuité, chaîne et impact des frappes, équilibre sur une jambe, chevilles, torsions des deux coachs avec
+  leur garde propre, fluidité (arrêts parasites jamais en hausse). Corrections en cours de route : chute arrière
+  (genoux sous le tapis et hanche en rotation à 150° pendant l’assise : clé intermédiaire et pieds décollés),
+  sit-out (rotation interne de hanche à 58° au retour : orientation du pied arrière revue, 45° max respecté),
+  frappe des bras de la chute (saut de 27 cm en une image : accélération adoucie), garde propre d’Amara sur deux
+  uchikomi en style MMA (éversion de cheville +14° : ces entrées de judo partent du shizen-tai simple hors du
+  judo). Sprawl non partagé en BJJ : torsion du cou hors limite dans ce style.
+- **Exercices et programmes** — 36 exercices ajoutés en fin de niveau (identifiants existants inchangés), deux
+  premiers programmes : « Judo - Bases en solo » et « Jiu-jitsu brésilien - Mobilité et relevés en solo ».
+- **Coach IA** — synonymes des nouvelles techniques, « single leg » et « switch kick » ne sont plus des gestes
+  inconnus, deux questions suggérées par nouvelle technique, nuance de la catégorie Chutes, articles corrigés
+  (« la garde longue », « le yoko-ukemi »).
+- **Miniatures** — 32 images (Kadir et Amara), vérifiées à l’œil.
+- **Tests** : voir le rapport du lot. Deux tests qui parcourent toute la bibliothèque (cadrage caméra, amplitudes
+  du moteur) dépassaient la limite de temps par défaut de 5 s sous charge : budget de temps explicite de 60 s,
+  seuils de qualité inchangés.
+- **Limites** — aucune revue d’expert ; sources en ligne lues par un lecteur de synthèse ; le sens du pivot du
+  check hook est notre lecture des sources ; miniatures o-uchi-gari et ko-uchi-gari peu parlantes ; validation
+  sur téléphone NON EXÉCUTÉE.

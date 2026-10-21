@@ -58,7 +58,8 @@ describe('caméra pédagogique', () => {
     for (const c of ['homme', 'femme'] as const)
       for (const t of TECHNIQUES)
         for (const southpaw of [false, true]) expect(worstNdc(c, t.id, southpaw, aspect), `${c} ${t.id} ${southpaw ? 'gaucher' : ''}`).toBeLessThan(0.97);
-  });
+    // the whole library, both coaches and guards: a time budget, not a threshold (0.28: 91 techniques)
+  }, 60_000);
 
   test.each([
     ['portrait', 0.75],

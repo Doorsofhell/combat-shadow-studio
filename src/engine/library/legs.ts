@@ -8,7 +8,7 @@
 import { Vector3 } from 'three';
 import { Author, add, edit } from '../author';
 import type { Motion } from '../motion';
-import { FootPose, Pose, deg, v3 } from '../pose';
+import { FootPose, Pose, deg, mirrorPose, v3 } from '../pose';
 
 type LegSide = 'lead' | 'rear';
 const stand = { startState: 'stand' as const, endState: 'stand' as const };
@@ -293,6 +293,168 @@ function check(a: Author, side: LegSide): Motion {
   };
 }
 
+/** the whole pose moved on the floor (hips, feet, hands placed in world space) */
+function shifted(p: Pose, dx: number, dz: number): Pose {
+  return edit(p, (d) => {
+    d.hips.x += dx;
+    d.hips.z += dz;
+    for (const f of [d.footL, d.footR]) {
+      if (f.mode === 'ground') f.ball = add(f.ball, { x: dx, z: dz });
+      else f.ankle = add(f.ankle, { x: dx, z: dz });
+    }
+    for (const h of [d.handL, d.handR]) if (h.space === 'world') h.pos = add(h.pos, { x: dx, z: dz });
+  });
+}
+
+/**
+ * Switch kick (muay thai): a quick, narrow foot switch (lead foot back, rear foot forward), then the
+ * former lead leg kicks the middle as a rear-leg kick of the other stance, and lands forward, back in
+ * the starting stance (muaythai.com, "Switch Kick"). Built as the mirrored rear middle kick.
+ */
+function switchKick(a: Author): Motion {
+  const g = a.guard();
+  const s = a.s;
+  const gm = mirrorPose(g);
+  const kick = roundKick(a, 'rear', 'liver', 'thai', 'x');
+  const ball = (f: FootPose) => (f.mode === 'ground' ? f.ball : f.ankle);
+  // 1. the lead foot leaves the floor and goes back, close to the rear foot (narrow switch)
+  const up = edit(g, (d) => {
+    if (d.footL.mode === 'ground') {
+      d.footL.ball = v3((ball(g.footL).x + ball(gm.footL).x) / 2, 0.06 * s, (ball(g.footL).z + ball(gm.footL).z) / 2);
+      d.footL.heel = deg(20);
+    }
+    d.hips.z -= 0.04 * s;
+  });
+  // 2. it lands behind while the rear foot lifts to come forward
+  const half = edit(gm, (d) => {
+    d.hips.x = (g.hips.x + gm.hips.x) / 2;
+    d.hips.z = (g.hips.z + gm.hips.z) / 2 - 0.03 * s;
+    d.pelvis = { ...g.pelvis, yaw: (g.pelvis.yaw + gm.pelvis.yaw) / 2 };
+    d.chest = { ...g.chest, yaw: (g.chest.yaw + gm.chest.yaw) / 2 };
+    d.footR = edit(g, (e) => {
+      if (e.footR.mode === 'ground') {
+        e.footR.ball = v3((ball(g.footR).x + ball(gm.footR).x) / 2, 0.06 * s, (ball(g.footR).z + ball(gm.footR).z) / 2);
+        e.footR.heel = deg(20);
+      }
+    }).footR;
+    d.handL = g.handL;
+    d.handR = g.handR;
+  });
+  // 3. the kick of the other stance, the kicking leg landing forward: stance rebuilt one step ahead
+  const keys = kick.keys.map((k) => ({ ...k, pose: mirrorPose(k.pose) }));
+  const sup = ball(gm.footR);
+  const dx = sup.x - ball(g.footR).x;
+  const dz = sup.z - ball(g.footR).z;
+  const t0 = 0.22;
+  const last = keys[keys.length - 1];
+  return {
+    id: 'switch-kick',
+    keys: [
+      { t: 0, pose: g },
+      { t: 0.08, pose: up, ease: 'inOut' },
+      { t: 0.15, pose: half, ease: 'inOut' },
+      { t: t0, pose: gm, ease: 'inOut' },
+      ...keys.slice(1, -1).map((k) => ({ ...k, t: k.t + t0 })),
+      { ...last, t: last.t + t0 + 0.06, pose: shifted(g, dx, dz) },
+    ],
+    chainAt: last.t + t0 - 0.04,
+    impacts: kick.impacts.map((t) => t + t0),
+    travel: { x: dx, z: dz, yaw: 0 },
+    ...stand,
+    balance: true,
+  };
+}
+
+/**
+ * Long guard (muay thai): the lead arm reaches out, open hand in front of the opponent's face to keep
+ * him at a distance and block his view, the rear glove stays at the chin (Evolve MMA, "10 Muay Thai
+ * defense techniques").
+ */
+function longGuard(a: Author): Motion {
+  const g = a.guard();
+  const s = a.s;
+  const T = a.target('chin', 0.66);
+  const p = edit(g, (d) => {
+    d.pelvis.yaw += deg(-4);
+    d.chest.yaw += deg(-8);
+    d.hips.z -= 0.02 * s;
+    d.head.pitch += deg(4);
+  });
+  p.handL = a.hand('world', a.reach(p, 'L', v3(T.x, T.y + 0.02 * s, T.z), 0.9), v3(0.7, -0.5, -0.2), 0.6, 0.15, deg(-25));
+  return {
+    id: 'garde-longue',
+    keys: [
+      { t: 0, pose: g },
+      { t: 0.22, pose: p, ease: 'inOut' },
+      { t: 0.7, pose: p, ease: 'linear' },
+      { t: 0.95, pose: g, ease: 'inOut' },
+    ],
+    chainAt: 0.85,
+    impacts: [],
+    ...stand,
+  };
+}
+
+/**
+ * Catching a middle kick on the lead side (muay thai, shadow version): the lead arm covers the ribs
+ * and absorbs, the rear hand scoops under the imaginary leg and holds it against the body, then the
+ * rear foot steps back and the body turns, pulling the leg across (Evolve MMA, "10 Muay Thai defense
+ * techniques"). The rear foot comes back to the stance at the end.
+ */
+function catchKick(a: Author): Motion {
+  const g = a.guard();
+  const s = a.s;
+  const cover = edit(g, (d) => {
+    d.hips.y -= 0.03 * s;
+    d.pelvis.yaw += deg(6);
+    d.chest.yaw += deg(8);
+    d.chest.roll += deg(8);
+    d.handL.pos = add(g.handL.pos, { y: -0.2 * s, z: -0.05 * s, x: 0.03 * s });
+    d.handL.pole = v3(0.3, -1, 0.05);
+  });
+  const W = a.hipJoint(g, 'L');
+  const scoop = edit(cover, (d) => {
+    // rear hand under the leg at waist height, palm up; lead forearm over it
+    d.handR = a.hand('world', v3(W.x + 0.02 * s, W.y + 0.06 * s, W.z + 0.24 * s), v3(-0.4, -0.8, -0.3), -0.9, 0.5);
+    d.handL = a.hand('world', v3(W.x + 0.06 * s, W.y + 0.2 * s, W.z + 0.2 * s), v3(0.8, -0.3, -0.2), 0.3, 0.6);
+  });
+  const rear = g.footR.mode === 'ground' ? g.footR.ball : v3(0, 0, 0);
+  const stepOut = edit(scoop, (d) => {
+    if (d.footR.mode === 'ground') d.footR.ball = add(rear, { z: -0.07 * s, y: 0.05 * s });
+    d.hips.z -= 0.04 * s;
+  });
+  const pull = edit(scoop, (d) => {
+    if (d.footR.mode === 'ground') d.footR.ball = add(rear, { z: -0.14 * s });
+    d.hips.z -= 0.08 * s;
+    d.hips.x -= 0.02 * s;
+    d.pelvis.yaw += deg(-16);
+    d.chest.yaw += deg(-10);
+    d.chest.roll -= deg(6);
+    d.handR.pos = add(d.handR.pos, { x: -0.12 * s, z: -0.08 * s });
+    d.handL.pos = add(d.handL.pos, { x: -0.12 * s, z: -0.08 * s });
+  });
+  const stepBack = edit(g, (d) => {
+    if (d.footR.mode === 'ground') d.footR.ball = add(rear, { z: -0.07 * s, y: 0.05 * s });
+    d.hips.z -= 0.04 * s;
+  });
+  return {
+    id: 'rattrapage-middle',
+    keys: [
+      { t: 0, pose: g },
+      { t: 0.18, pose: cover, ease: 'snap' },
+      { t: 0.4, pose: scoop, ease: 'inOut' },
+      { t: 0.55, pose: stepOut, ease: 'inOut' },
+      { t: 0.7, pose: pull, ease: 'inOut' },
+      { t: 0.9, pose: pull, ease: 'linear' },
+      { t: 1.12, pose: stepBack, ease: 'inOut' },
+      { t: 1.3, pose: g, ease: 'inOut' },
+    ],
+    chainAt: 1.2,
+    impacts: [0.18],
+    ...stand,
+  };
+}
+
 export function legMotions(a: Author): Motion[] {
   return [
     roundKick(a, 'rear', 'thigh', 'thai', 'low-kick-arriere'),
@@ -315,6 +477,9 @@ export function legMotions(a: Author): Motion[] {
     knee(a, 'rear', 'round', true),
     check(a, 'lead'),
     check(a, 'rear'),
+    switchKick(a),
+    longGuard(a),
+    catchKick(a),
   ];
 }
 

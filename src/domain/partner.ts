@@ -50,13 +50,14 @@ export const PARTNER_TECHNIQUES: PartnerTechnique[] = [
     category: 'chute',
     level: 'debutant',
     mode: 'partenaire',
-    description: 'Au judo, on apprend à tomber avant de faire tomber : en arrière, sur le côté, en roulé avant. Au dojo, jamais seul à la maison.',
+    description: 'Au judo, on apprend à tomber avant de faire tomber : en arrière, sur le côté, en roulé avant. Les chutes depuis debout, le roulé avant et les chutes projetées s’apprennent au dojo. Chez toi, seulement la version basse (accroupi, assis), animée sur ton coach.',
     phases: [
       { label: 'Principe', text: 'Le menton rentré protège la tête, le dos s’arrondit pour rouler, le bras frappe le tapis pour répartir le choc.' },
       { label: 'Progression', text: 'L’enseignant te fait commencer près du sol (assis, accroupi), puis debout, et seulement ensuite projeté par un partenaire.' },
     ],
     keyPoints: ['Menton sur la poitrine, la nuque ne touche jamais le sol', 'Le bras frappe le tapis à environ 45° du corps', 'On expire au contact'],
-    safety: ['Pas de chutes à la maison, ni sur un sol dur ni sur un tapis fin.', DOJO],
+    safety: ['À la maison, seulement la version basse (accroupi ou assis), sur un tapis épais : jamais de chute depuis debout, ni sur un sol dur ou un tapis fin.', DOJO],
+    prep: 'ukemi-ushiro',
   },
   {
     id: 'o-soto-gari',
@@ -74,6 +75,7 @@ export const PARTNER_TECHNIQUES: PartnerTechnique[] = [
     ],
     keyPoints: ['D’abord le déséquilibre, ensuite le fauchage', 'Ta jambe d’appui reste fléchie', 'Tu gardes la manche pour retenir sa chute'],
     safety: ['Ton partenaire doit savoir chuter en arrière (ushiro-ukemi) avant d’être projeté.', 'Dans les études consultées, c’est la projection liée au plus grand nombre de blessures graves à la tête (choc de l’arrière du crâne) : jamais sans enseignant.', 'Garde sa manche en main pour accompagner sa chute : sa tête ne doit jamais heurter le sol.', DOJO],
+    prep: 'uchikomi-o-soto-gari',
   },
   {
     id: 'o-goshi',
@@ -91,7 +93,7 @@ export const PARTNER_TECHNIQUES: PartnerTechnique[] = [
     ],
     keyPoints: ['Tes hanches plus basses que les siennes', 'Tes deux pieds à l’intérieur des siens', 'La rotation vient des épaules et des hanches, pas des bras'],
     safety: ['Ton partenaire doit savoir chuter (ukemi) avant d’être projeté.', DOJO],
-    prep: 'uchikomi-seoi',
+    prep: 'uchikomi-o-goshi',
   },
   {
     id: 'seoi-nage',

@@ -134,7 +134,8 @@ describe('biomécanique', () => {
             }
           }
         }
-  });
+    // the whole library on one skeleton: a time budget, not a threshold (0.28: 91 techniques)
+  }, 60_000);
 });
 
 describe('lecteur d’enchaînements', () => {

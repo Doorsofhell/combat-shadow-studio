@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { CATEGORY_LABEL, TECHNIQUE_BY_ID, TECHNIQUES, techniquesFor } from '../../domain/techniques';
 import { EXERCISES, EXERCISE_BY_ID } from '../../domain/exercises';
 import { PARTNER_BY_ID, PARTNER_CATEGORY_LABEL, partnerFor } from '../../domain/partner';
+import { SOURCE_BY_ID } from '../../domain/biomech/sources';
 import { PROGRAMS } from '../../domain/programs';
 import { DISCIPLINES, DisciplineId, LevelId, Technique } from '../../domain/types';
 import { useProfile } from '../../store/profile';
@@ -475,6 +476,18 @@ export function TechniquePage() {
       </div>
       <p>{t.description}</p>
       {t.soloNote && <div className="note">{t.soloNote}</div>}
+      {t.notes?.[d] && (
+        <div className="card stack" data-testid="technique-discipline-note">
+          <h3>{d === 'mma' ? 'En MMA' : `En ${DISCIPLINES.find((y) => y.id === d)!.name.toLowerCase()}`}</h3>
+          <p>{t.notes[d]}</p>
+        </div>
+      )}
+      {t.safety && (
+        <div className="card stack" style={{ borderLeft: '3px solid var(--red)' }} data-testid="technique-safety">
+          <h3>Sécurité</h3>
+          <p>{t.safety}</p>
+        </div>
+      )}
       <GuideCard id={t.id} southpaw={profile.guard === 'gaucher'} />
       {d === 'kickboxing' && <KickboxingRulesCard id={t.id} />}
       <div className="card stack">
@@ -486,6 +499,26 @@ export function TechniquePage() {
         </ul>
       </div>
       <p className="small muted">Disciplines : {t.disciplines.map((x) => DISCIPLINES.find((y) => y.id === x)!.name).join(', ')}</p>
+      {t.sources && t.sources.length > 0 && (
+        <p className="small muted" data-testid="technique-sources">
+          Sources :{' '}
+          {t.sources.map((id, i) => {
+            const src = SOURCE_BY_ID.get(id);
+            return (
+              <span key={id}>
+                {i > 0 && ' ; '}
+                {src ? (
+                  <a href={src.url} target="_blank" rel="noreferrer">
+                    {src.by}, « {src.title} »
+                  </a>
+                ) : (
+                  id
+                )}
+              </span>
+            );
+          })}
+        </p>
+      )}
     </div>
   );
 }

@@ -57,6 +57,7 @@ export const CATEGORY_NUANCE: Record<TechniqueCategory, string> = {
   feinte: 'Une feinte ne marche que si elle ressemble à ton vrai coup : garde-la courte et enchaîne sans délai.',
   clinch: 'Le clinch se travaille réellement avec un partenaire ; en solo, concentre-toi sur la posture et le placement des hanches.',
   projection: 'En solo, seule l’entrée se travaille : déplacement, déséquilibre et placement. La projection elle-même ne se fait qu’au dojo, avec un partenaire et un professeur.',
+  chute: 'Chez toi, seulement les chutes basses (couché, assis, accroupi) sur un tapis épais : menton rentré, bras qui frappent à environ 45°. Les chutes depuis debout s’apprennent au dojo, avec un professeur.',
 };
 
 /** côté du membre d’après l’identifiant (« -avant » = membre avant, « -arriere » = membre arrière) */
