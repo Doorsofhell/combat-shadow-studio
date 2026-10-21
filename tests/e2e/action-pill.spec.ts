@@ -435,6 +435,9 @@ for (const scheme of ['dark', 'light'] as const)
       if (c.ink) expect(c.ink).toBe(scheme === 'dark' ? 'rgb(244, 244, 245)' : 'rgb(17, 18, 20)');
       // 0.27: the Coach IA in gold, as the coach's identity
       expect(c.coach).toBe(scheme === 'dark' ? 'rgb(212, 175, 55)' : 'rgb(125, 95, 34)');
+      // v0.29: axe read the colours while the pill was still fading in (red #e32d3e half way): measure
+      // the settled pill, as the user reads it
+      await pill(page).evaluate((p) => Promise.all(p.getAnimations({ subtree: true }).map((a) => a.finished)));
       const axe = await new AxeBuilder({ page }).include('[data-testid="action-pill"]').withRules(['color-contrast', 'button-name', 'aria-allowed-attr', 'label-content-name-mismatch']).analyze();
       expect(axe.violations.map((v) => `${r} ${v.id}`)).toEqual([]);
       if (SHOTS) {

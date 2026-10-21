@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLoader } from '@react-three/fiber';
 import { NoColorSpace, TextureLoader } from 'three';
 import { useFrame } from '@react-three/fiber';
@@ -10,6 +10,8 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
 import { CoachRig } from '../engine/rig';
 import { applyManga, outlineMaterial, toonMaterial } from './manga';
 import { CoachMeta, Customizer } from './customize';
+import type { AtlasRects } from './groom';
+import HAIR_RECTS from './hair_atlas.json';
 import { FighterLook, defaultLook } from '../editor/look';
 import type { CoachId } from '../domain/types';
 
@@ -175,6 +177,39 @@ export interface CoachModelProps {
   onFrame: (rig: CoachRig, dt: number) => void;
 }
 
+const atlasCache: { tex: Texture | null; failed: boolean; waiting: ((t: Texture | null) => void)[] } = { tex: null, failed: false, waiting: [] };
+
+/** the hair card atlas, loaded once; null while loading and if it fails (painted hair fallback) */
+function useHairAtlas(wanted: boolean) {
+  const [tex, setTex] = useState<Texture | null>(atlasCache.tex);
+  useEffect(() => {
+    if (!wanted || atlasCache.tex || atlasCache.failed) return;
+    let live = true;
+    const done = (t: Texture | null) => live && setTex(t);
+    atlasCache.waiting.push(done);
+    if (atlasCache.waiting.length === 1)
+      new TextureLoader().load(
+        './groom/hair_atlas.png',
+        (t) => {
+          t.colorSpace = NoColorSpace;
+          t.anisotropy = 4;
+          atlasCache.tex = t;
+          atlasCache.waiting.splice(0).forEach((f) => f(t));
+        },
+        undefined,
+        (e) => {
+          console.warn('Cheveux réalistes indisponibles, coiffure peinte utilisée', e);
+          atlasCache.failed = true;
+          atlasCache.waiting.splice(0).forEach((f) => f(null));
+        },
+      );
+    return () => {
+      live = false;
+    };
+  }, [wanted]);
+  return wanted ? tex : null;
+}
+
 export function CoachModel({ coach, style, quality, look, render = 'premium', ghostGear = false, model, onRig, onFrame }: CoachModelProps) {
   const own = model && render === 'premium' ? model : null;
   const gltf = useGLTF(own ? `${own}.${EXT}` : coachUrl(coach, style, render), DRACO, true, patchJsonModels);
@@ -185,6 +220,9 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
   const masks = useLoader(TextureLoader, maskUrl);
   // face paint: champion coaches only (the hook always loads something; the masks are already cached)
   const face = useLoader(TextureLoader, own ? `${own}_face.png` : maskUrl);
+  // hair cards of the realistic look (v0.29): champion coaches only. Loaded on the side: until it is
+  // there (or if it cannot be loaded) the coach keeps the painted hair
+  const hairAtlas = useHairAtlas(!!own && style === 'realiste');
   // one skeleton per model: changing the look swaps the materials only, so the rig, the player and the
   // animation in progress are kept (no remount, the session goes on)
   const base = useMemo(() => {
@@ -231,7 +269,11 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
           style === 'realiste'
             ? { toon: (n: string, col: Color) => (quality === 'haute' ? fabricMaterial(n, col) : new MeshStandardMaterial({ name: n, color: col, roughness: 0.8, metalness: 0 })), outline: noOutline }
             : { toon: (n: string, col: Color) => toonMaterial(n, null, col, ink), outline: (w: number) => (ink !== 'manga' ? outlineMaterial(w * 1.25, '#1b1d22') : outlineMaterial(w)) };
-        c = new Customizer(s, meta, masks, { ...opts, legacy: !premium, face: own ? face : null, flat: ink === 'anime' ? 0.9 : 0 });
+        const groom =
+          own && style === 'realiste' && hairAtlas
+            ? { atlas: hairAtlas, rects: HAIR_RECTS as AtlasRects, style: own.includes('amara') ? 'degrade' : 'court-barbe', density: quality === 'basse' ? 0.55 : 1 }
+            : null;
+        c = new Customizer(s, meta, masks, { ...opts, legacy: !premium, face: own ? face : null, flat: ink === 'anime' ? 0.9 : 0, groom });
         // development hook for the screenshot scripts
         if (import.meta.env.DEV) ((window as unknown as { __cssCustomizers?: Customizer[] }).__cssCustomizers ??= []).push(c);
       } catch (e) {
@@ -239,7 +281,7 @@ export function CoachModel({ coach, style, quality, look, render = 'premium', gh
       }
     }
     return c;
-  }, [base, quality, style, custom, premium, meta, masks, face, own]);
+  }, [base, quality, style, custom, premium, meta, masks, face, own, hairAtlas]);
   const legLength = look?.body.legLength ?? 1;
   const rig = useMemo(() => {
     restoreReferencePose(scene);

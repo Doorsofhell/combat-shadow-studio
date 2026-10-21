@@ -11,6 +11,7 @@
  * - rigid gear (boxing gloves, headgear bar, mouthguard) and hair pieces (bun, ponytail, braids)
  *   are attached to the hand or head bone.
  */
+import { AtlasRects, GROOM_BEARD_GLSL, GROOM_STYLES, bodyHairCards, groomFace, skinnedGroom, GroomSource, attachToHead, beardCards, browCards, hairMaterial, scalpCards } from './groom';
 import {
   BackSide,
   BufferAttribute,
@@ -290,6 +291,9 @@ export interface CustomUniforms {
   /** face paint of a champion coach (see tools/generator/coaches/face_paint.py), uFaceOn = 0 without one */
   uFace: { value: Texture | null };
   uFaceOn: { value: number };
+  /** 1: hair, beard and brows are hair cards (realistic, v0.29): the skin keeps a smooth shade under them */
+  uGroom: { value: number };
+  uGroomFace: { value: Vector3 };
   uFlat: { value: number };
   uTatN: { value: number };
   uTatA: { value: Vector3[] };
@@ -327,6 +331,8 @@ export function makeUniforms(meta: CoachMeta): CustomUniforms {
     uMasks: { value: null },
     uFace: { value: null },
     uFaceOn: { value: 0 },
+    uGroom: { value: 0 },
+    uGroomFace: { value: new Vector3() },
     uFlat: { value: 0 },
     uTatN: { value: 0 },
     uTatA: { value: arr(() => new Vector3()) },
@@ -368,7 +374,7 @@ vRestN = normal;
 vDef = clamp(dot(aRegA, uDefA) + dot(aRegB, uDefB), 0.0, 1.5);
 `;
 
-const SKIN_FRAGMENT_HEAD = /* glsl */ `
+const SKIN_FRAGMENT_HEAD = GROOM_BEARD_GLSL + /* glsl */ `
 varying vec3 vRest;
 varying vec3 vRestN;
 varying float vDef;
@@ -384,6 +390,7 @@ uniform float uK;
 uniform sampler2D uMasks;
 uniform sampler2D uFace;
 uniform float uFaceOn;
+uniform float uGroom;
 uniform float uFlat;
 uniform int uTatN;
 uniform vec3 uTatA[${MAX_TATTOOS}];
@@ -417,11 +424,13 @@ const SKIN_FRAGMENT_BODY = /* glsl */ `
   // occlusion is what showed as stains); a trace of it keeps the lips and the creases
   c = mix(c, uSkinTone * mix(1.0, lum, 0.2) * mix(vec3(1.0), base / max(dot(base, W), 0.01) * dot(uSkinRef, W) / max(uSkinRef, vec3(0.01)), 0.35), uFlat);
   vec4 mk = texture2D(uMasks, vMapUv);
-  float n = cssHash(floor(vMapUv * 2048.0));
+  // per-texel grain of the painted hair; with hair cards the skin only keeps a smooth shade under them
+  float n = mix(cssHash(floor(vMapUv * 2048.0)), 0.5, uGroom);
   float hair = clamp(mk.r * uHairCover * (0.75 + 0.25 * n), 0.0, 1.0);
   c = mix(c, uHairColor * (0.7 + 0.6 * n), hair);
-  float beard = mk.b * uBeard.x * beardRegion(vRest);
-  c = mix(c, uBeardColor * (0.7 + 0.6 * n), clamp(beard * (0.55 + 0.45 * n), 0.0, 1.0));
+  float beard = uBeard.x * mix(mk.b * beardRegion(vRest), groomBeard(vRest), uGroom);
+  // under the beard cards: a shaving shadow, not a solid paint
+  c = mix(c, uBeardColor * (0.7 + 0.6 * n), clamp(beard * (0.55 + 0.45 * n) * mix(1.0, 0.9, uGroom), 0.0, 1.0));
   // Anime: body hair as a light flat shade, not a speckle (it read as stains on the chest)
   c = mix(c, uHairColor, mk.a * uBodyHair * mix(step(0.6, n), 0.22, uFlat) * 0.8);
   if (uFaceOn > 0.5) {
@@ -429,7 +438,7 @@ const SKIN_FRAGMENT_BODY = /* glsl */ `
     vec4 fc = texture2D(uFace, vMapUv);
     c *= 1.0 - 0.38 * fc.g;
     c = mix(c, c * vec3(1.12, 0.78, 0.76), fc.b);
-    c = mix(c, uHairColor * (0.75 + 0.5 * n), fc.a * 0.95);
+    c = mix(c, uHairColor * (0.75 + 0.5 * n), fc.a * mix(0.95, 0.5, uGroom));
     c = mix(c, vec3(0.055, 0.045, 0.05), fc.r);
   }
   for (int i = 0; i < ${MAX_TATTOOS}; i++) {
@@ -1204,7 +1213,7 @@ function rigidOutline(mesh: Mesh, width = 0.004) {
  * WebGL, not a 2D canvas: the masks keep data in the alpha channel and a 2D canvas premultiplies it,
  * which wipes the colour channels wherever alpha is 0.
  */
-function maskReader(tex: Texture | null): ((u: number, v: number) => number) | null {
+function maskReader(tex: Texture | null, ch = 0): ((u: number, v: number) => number) | null {
   const img = tex?.image as (TexImageSource & { width: number; height: number }) | undefined;
   if (!img || typeof document === 'undefined' || !img.width) return null;
   const S = 512;
@@ -1231,7 +1240,7 @@ function maskReader(tex: Texture | null): ((u: number, v: number) => number) | n
     return (u, v) => {
       const x = Math.min(W - 1, Math.max(0, Math.floor(u * W)));
       const y = Math.min(H - 1, Math.max(0, Math.floor(v * H)));
-      return px[(y * W + x) * 4] / 255;
+      return px[(y * W + x) * 4 + ch] / 255;
     };
   } catch {
     return null;
@@ -1249,6 +1258,8 @@ export interface CustomizerOptions {
   face?: Texture | null;
   /** 0-1: how much the skin texture's light and shade is flattened to the plain skin tone (Anime) */
   flat?: number;
+  /** hair cards (realistic look of the champion coaches, v0.29) */
+  groom?: { atlas: Texture; rects: AtlasRects; style: string; density?: number } | null;
 }
 
 interface Layer {
@@ -1611,6 +1622,58 @@ export class Customizer {
     return m ? [m] : [];
   }
 
+  private groomMeshes: Object3D[] = [];
+  private groomMaterials: { hair: MeshLambertMaterial; beard: MeshLambertMaterial; body: MeshLambertMaterial } | null = null;
+
+  /** realistic hair: cards built once per model (see groom.ts), recoloured with the look */
+  private applyGroom(look: FighterLook) {
+    const g = this.opt.groom!;
+    this.u.uGroom.value = 1;
+    const f = groomFace({ eyeL: v3(this.map.meta.eyeL), lipsY: this.map.meta.lipsY });
+    this.u.uGroomFace.value.set(f.eyeY, f.lipsY, f.earZ);
+    if (!this.groomMaterials) {
+      const base = GROOM_STYLES[g.style] ?? GROOM_STYLES['court-barbe'];
+      // low quality: fewer cards
+      const d = g.density ?? 1;
+      const st = { ...base, scalpCards: Math.round(base.scalpCards * d), beardCards: Math.round(base.beardCards * d) };
+      const meta = this.map.meta;
+      const scalp = maskReader(this.u.uMasks.value);
+      if (!scalp) return;
+      const src: GroomSource = {
+        body: this.body,
+        scalp,
+        beard: maskReader(this.u.uMasks.value, 2),
+        // the eyebrows are painted in the face paint (alpha) of the champion coaches, else in the masks
+        brow: this.opt.face ? maskReader(this.opt.face, 3) : maskReader(this.u.uMasks.value, 1),
+        headLow: v3(meta.headLow),
+        headTop: v3(meta.headTop),
+        eyeL: v3(meta.eyeL),
+        eyeR: v3(meta.eyeR),
+        lipsY: meta.lipsY,
+        faceZ: meta.faceZ,
+      };
+      const hair = hairMaterial('css-groom-hair', g.atlas, new Color());
+      const beard = hairMaterial('css-groom-beard', g.atlas, new Color(), 0.6);
+      // body hair: finer and lighter than the beard
+      this.groomMaterials = { hair, beard, body: hairMaterial('css-groom-body', g.atlas, new Color(), 0.7, 0.6) };
+      const parts: [BufferGeometry | null, MeshLambertMaterial][] = [
+        [scalpCards(src, st, g.rects), hair],
+        [beardCards(src, st, g.rects), beard],
+        [browCards(src, st, g.rects), hair],
+      ];
+      for (const [geo, mat] of parts) {
+        const m = geo && attachToHead(this.body, geo, mat);
+        if (m) this.groomMeshes.push(m);
+      }
+      // body hair: fine hairs on the forearms, shins and down the chest (male coaches with body hair)
+      const bh = bodyHairCards(this.body, this.map, maskReader(this.u.uMasks.value, 3), look.bodyHair, g.rects);
+      if (bh) this.groomMeshes.push(skinnedGroom(this.body, bh, this.groomMaterials.body));
+    }
+    this.groomMaterials.hair.color.copy(this.u.uHairColor.value);
+    this.groomMaterials.beard.color.copy(this.u.uBeardColor.value);
+    this.groomMaterials.body.color.copy(this.u.uHairColor.value);
+  }
+
   private applyHair(look: FighterLook) {
     const u = this.u;
     const st = look.hair.style;
@@ -1630,7 +1693,12 @@ export class Customizer {
     u.uHairStyle.value.set(s[0], s[1], s[2], s[3]);
     u.uHairLen.value = s[4];
     u.uHairCover.value = s[5];
-    if (this.hair) this.setVisible(this.hair, st !== 'rase');
+    if (this.hair) this.setVisible(this.hair, st !== 'rase' && !this.opt.groom);
+    if (this.opt.groom) {
+      if (this.bun) this.setVisible(this.bun, false);
+      this.applyGroom(look);
+      return;
+    }
     if (this.bun) this.setVisible(this.bun, st === 'chignon' && look.sex === 'femme');
     if (this.bun) ((this.bun as Mesh).material as MeshLambertMaterial).color?.copy(u.uHairColor.value);
     const key = `${st}:${L.toFixed(2)}:${look.sex}:${look.hair.meches ?? 0}:${look.hair.flow ?? 0}`;

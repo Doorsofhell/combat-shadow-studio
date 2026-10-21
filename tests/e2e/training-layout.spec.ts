@@ -199,6 +199,9 @@ test('demander au coach : pause, réponse hors ligne, ralenti, sans défilement 
     await page.getByTestId('coach-input').fill('Pourquoi dois-je pivoter le pied arrière ?');
     await page.getByTestId('coach-send').click();
     await expect(page.getByTestId('coach-answer')).toContainText('pied arrière');
+    // v0.29: measure once the panel and the training layout have stopped moving (the overlap was read
+    // while the panel was still sliding in, the known flake of this test, also on v0.28.0)
+    await page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a.effect?.getTiming().iterations !== Infinity).map((a) => a.finished)));
     const r = await page.evaluate(() => {
       const panel = document.querySelector('[data-testid=coach-ask-panel]')!.getBoundingClientRect();
       const info = document.querySelector('.tr-info')!.getBoundingClientRect();

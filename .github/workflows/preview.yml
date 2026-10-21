@@ -6,6 +6,7 @@ on:
     branches:
       - feature/coachs-champions
       - feature/combat-shadow-v025
+      - feature/combat-shadow-v029
   workflow_dispatch:
 
 permissions:

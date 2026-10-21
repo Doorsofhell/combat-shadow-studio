@@ -1275,3 +1275,20 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Méthode** — Hair cards générées dans Blender depuis de vraies mèches + shader anisotrope ; peau avec
   micro-relief et rugosité ; tenues et environnements modélisés ; options A/B ; 5 lots publiés un par un.
 - Branche `feature/combat-shadow-v029` créée depuis v0.28.0 (`95d704d`, tag `restauration/avant-v029`).
+
+## 2026-10-21 · v0.29.0-lot1 · Pilosité réaliste (cheveux, barbe, sourcils, poils)
+
+- **Constat** — Captures de Youssef et banc de captures `lab/groom.html` : barbe en points (bruit par pixel dans le
+  shader de peau), cheveux en coque « casque », sourcils peints, poils du torse en taches.
+- **Correction** — Rendu Ultra-réaliste des coachs Kadir et Amara : pilosité en *hair cards* (`src/three/groom.ts`).
+  Texture de mèches générée par `tools/generator/groom/atlas.py` (mèches tracées une à une, effilées, ondulées,
+  couverture anti-crénelée). Cartes enracinées sur la peau là où les masques disent que les cheveux poussent,
+  orientées (épi à l'arrière du crâne, coiffé en arrière, barbe vers le bas, moustache vers l'extérieur, sourcils
+  vers la tempe), courbées le long du crâne. Forme de barbe calculée sur le visage (joues, menton, dessous de la
+  mâchoire, favoris), la peau garde une ombre de rasage de la même forme. Poils discrets des avant-bras, tibias et
+  torse liés au squelette (ils suivent les mouvements). Matériau sans reflet de Fresnel (le gris parasite venait de
+  là), deux reflets le long des mèches, racines plus sombres. Le bruit par pixel est retiré quand les hair cards
+  sont actives.
+- **Secours** — Si la texture de mèches ne charge pas, la coiffure peinte précédente reste affichée. Le style Anime
+  n'est pas modifié. Qualité basse : 55 % des cartes.
+- **Tests** — `src/three/__tests__/groom.test.ts` (mèches jamais dans le crâne, volume borné, forme de barbe).
