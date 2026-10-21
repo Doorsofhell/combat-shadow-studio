@@ -127,17 +127,31 @@ export function CoachStage(props: CoachStageProps) {
   // in automatic quality (the choice can still be changed in Réglages)
   const [degraded, setDegraded] = useState(readSafe3d);
   const [canvasKey, setCanvasKey] = useState(0);
+  const recoveryAttempts = useRef(0);
   const onCreated = useCallback(({ gl }: { gl: { domElement: HTMLCanvasElement } }) => {
-    gl.domElement.addEventListener('webglcontextlost', (e) => {
-      e.preventDefault();
+    const canvas = gl.domElement;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let recovered = false;
+    const retry = () => {
+      if (recovered || recoveryAttempts.current >= 2) return;
+      recovered = true;
+      if (timer) clearTimeout(timer);
+      recoveryAttempts.current += 1;
+      setCanvasKey((k) => k + 1);
+    };
+    canvas.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault(); // allow WebGL to restore the context
+      console.warn('[CoachStage] WebGL context lost; switching to light quality');
       writeSafe3d();
       setDegraded(true);
-      // a fresh canvas, once the browser has freed the old one
-      setTimeout(() => setCanvasKey((k) => k + 1), 300);
-    });
+      // Do not immediately allocate a second GPU context: give the browser time to restore.
+      timer = setTimeout(retry, 2500);
+    }, { once: true });
+    canvas.addEventListener('webglcontextrestored', retry, { once: true });
   }, []);
   const style = useSettings((s) => s.settings.coachStyle);
-  const q: 'haute' | 'basse' = quality === 'auto' ? (degraded ? 'basse' : 'haute') : quality;
+  // After a graphics failure, safety takes precedence even if the user selected high quality.
+  const q: 'haute' | 'basse' = degraded ? 'basse' : quality === 'auto' ? 'haute' : quality;
   const player = useRef<ComboPlayer | null>(null);
   const rigRef = useRef<{ rig: CoachRig; lib: MotionLibrary } | null>(null);
   const [rigState, setRigState] = useState<CoachRig | null>(null);
