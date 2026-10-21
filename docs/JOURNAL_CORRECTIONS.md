@@ -1431,7 +1431,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet : 143 réussis, 2 ignorés (Firebase), 1 échec : `training-layout:286` (caméra « Auto »).
     Relancé seul : 4 réussites sur 4. L'échec apparaît quand la machine est chargée (captures en parallèle), comme
     `training-layout:323` dans la PR #1 : TEST RÉUSSI seul, instable sous charge.
-  - Captures avant/après, 3 angles × 7 instants, 5 techniques (Kadir) et crochet + teep (Amara) : vérifiées à
+  - Captures avant/après, 3 angles × 7 instants, 5 techniques (Kadir) et crochet (Amara) : vérifiées à
     l'œil.
   - Validation par un entraîneur : NON EXÉCUTÉ.
   - Android réel : NON EXÉCUTÉ.
