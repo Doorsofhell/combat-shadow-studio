@@ -66,13 +66,19 @@ await p.evaluate(async (coach) => {
 }, COACH);
 const t0 = Date.now();
 await p.goto(`${BASE}/#${PATH}`);
+// CLICK=<button name>: e.g. start the training session so the combos play for the whole soak
+if (process.env.CLICK) {
+  await p.getByRole('button', { name: new RegExp(process.env.CLICK, 'i') }).first().click({ timeout: 60000 });
+  log.push(`clicked ${process.env.CLICK}`);
+}
 const end = t0 + Number(SECS) * 1000;
 while (Date.now() < end) {
   await p.waitForTimeout(10000);
   const s = await p.evaluate(() => ({
     gl: { ...window.__gl, texMB: Math.round(window.__gl.texBytes / 1e6) },
     canvases: document.querySelectorAll('canvas').length,
-    failed: /indisponible|pas pu être affiché/.test(document.body.innerText),
+    failed: /indisponible|pas pu être affiché|revient dans un instant/.test(document.body.innerText),
+    session: document.querySelector('[data-testid="phase"]')?.textContent,
     heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1e6) : null,
   }));
   console.log(Math.round((Date.now() - t0) / 1000) + 's', JSON.stringify(s));
