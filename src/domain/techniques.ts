@@ -112,6 +112,17 @@ export const TECHNIQUES: Technique[] = [
     description: 'Un coup arrière en arc, par-dessus la garde adverse : tu descends un peu sur les jambes et ton poids part vers l’avant.',
     cues: ['Tête hors de la ligne', 'Arc par-dessus'], keyPoints: ['Menton caché derrière l’épaule', 'Ne tombe pas vers l’avant'],
   },
+  {
+    id: 'check-hook', name: 'Check hook (crochet pivot)', call: 'Check hook', category: 'poing', disciplines: ['boxe', 'mma'], motion: 'check-hook',
+    description: 'Un crochet du bras avant lancé pendant que tu pivotes sur l’avant du pied avant : le pied arrière tourne en arc, le crochet touche au début du pivot et tu finis hors de la ligne de l’adversaire qui fonçait sur toi.',
+    cues: ['Crochet et pivot ensemble', 'Le pied arrière tourne'],
+    keyPoints: ['Le crochet touche avant la fin du pivot', 'Pivote sur l’avant du pied avant, sans glisser', 'Ne tourne pas trop : tu restes face à lui'],
+    notes: {
+      boxe: 'En boxe, c’est la réponse classique à un adversaire qui avance en pressant : il arrive là où tu étais, et ton crochet l’attend.',
+      mma: 'En MMA aussi, contre un adversaire qui charge : le pivot te remet à angle, prêt à enchaîner.',
+    },
+    sources: ['boxe-S21', 'boxe-S22'],
+  },
   // ------------------------------------------------------------------ défenses
   {
     id: 'esquive-droite', name: 'Esquive extérieure', call: 'Esquive', category: 'defense', disciplines: ALL, motion: 'esquive-droite',
@@ -153,6 +164,14 @@ export const TECHNIQUES: Technique[] = [
     cues: ['Poids sur la jambe arrière', 'Menton rentré'], keyPoints: ['Ne te cambre pas', 'Reviens aussitôt en position'],
   },
   {
+    id: 'shoulder-roll', name: 'Shoulder roll (rouler l’épaule)', call: 'Shoulder roll', category: 'defense', disciplines: ['boxe'], motion: 'shoulder-roll',
+    description: 'Une défense contre le direct : le poids passe sur la jambe arrière, le buste tourne un peu, l’épaule avant monte devant le menton et le coup glisse dessus. L’avant-bras avant protège les côtes, le gant arrière reste collé au menton.',
+    cues: ['Menton derrière l’épaule', 'Poids sur la jambe arrière'],
+    keyPoints: ['L’épaule monte, le menton descend', 'Le gant arrière reste au menton', 'Ne recule pas les pieds et ne te penche pas trop'],
+    notes: { boxe: 'Défense typique de la boxe anglaise (la garde dite « philly shell ») : elle prépare une riposte immédiate, par exemple un direct.' },
+    sources: ['boxe-S20'],
+  },
+  {
     id: 'check-avant', name: 'Check (blocage tibia)', call: 'Check', category: 'defense', disciplines: KICK, motion: 'check-avant',
     description: 'La jambe avant monte, genou vers l’extérieur, et ton tibia (l’os du devant de la jambe) bloque le low kick comme un bouclier.',
     cues: ['Genou vers l’extérieur', 'Garde haute'], keyPoints: ['Le genou et le coude se rapprochent', 'Repose le pied en garde'],
@@ -161,6 +180,24 @@ export const TECHNIQUES: Technique[] = [
     id: 'check-arriere', name: 'Check jambe arrière', call: 'Check arrière', category: 'defense', disciplines: KICK, motion: 'check-arriere',
     description: 'Le même bouclier, avec le tibia de la jambe arrière, pour bloquer un low kick.',
     cues: ['Lève le genou'], keyPoints: ['Reste équilibré sur la jambe d’appui'],
+  },
+  {
+    id: 'garde-longue', name: 'Garde longue', call: 'Garde longue', category: 'defense', disciplines: ['muaythai'], motion: 'garde-longue',
+    description: 'Le bras avant s’allonge, main ouverte devant le visage de l’adversaire : il voit moins bien et ne peut pas avancer sans s’y heurter. Le gant arrière reste collé au menton.',
+    cues: ['Bras avant long', 'Main arrière au menton'],
+    keyPoints: ['Main avant ouverte, à hauteur de son visage', 'Le gant arrière ne quitte pas le menton', 'Reviens en garde sans baisser la main'],
+    notes: { muaythai: 'Défense typique du muay thaï pour tenir la distance et casser l’élan de l’adversaire.' },
+    sources: ['kbmt-S30'],
+  },
+  {
+    id: 'rattrapage-middle', name: 'Rattrapage du middle kick', call: 'Attrape', category: 'defense', disciplines: ['muaythai'], motion: 'rattrapage-middle',
+    description: 'Contre un coup de pied au corps du côté avant : le bras avant protège les côtes et encaisse, la main arrière passe sous la jambe (imaginaire) et la plaque contre toi, puis tu recules le pied arrière en tournant pour tirer la jambe en travers.',
+    cues: ['Encaisse avec le bras', 'Main sous la jambe', 'Recule et tourne'],
+    keyPoints: ['Le bras avant protège d’abord les côtes', 'La jambe reste plaquée contre ton corps', 'Le menton reste rentré pendant tout le geste'],
+    soloNote: 'Seul, tu répètes le placement des bras et le pas. Attraper un vrai coup de pied se travaille avec un partenaire qui frappe doucement, encadré par un entraîneur.',
+    notes: { muaythai: 'En muay thaï, attraper la jambe sert à déséquilibrer l’adversaire en la tirant en travers, puis à riposter.' },
+    safety: 'Avec un partenaire, commence au ralenti : personne ne frappe fort sur un exercice d’attrape.',
+    sources: ['kbmt-S30'],
   },
   // ------------------------------------------------------------------ pieds
   {
@@ -218,6 +255,17 @@ export const TECHNIQUES: Technique[] = [
   {
     id: 'roundhouse-avant', name: 'Roundhouse jambe avant', call: 'Roundhouse avant', category: 'pied', disciplines: ['kickboxing'], motion: 'roundhouse-avant',
     description: 'Le roundhouse de la jambe avant : armé court, puis fouetté.', cues: ['Arme', 'Fouette'], keyPoints: ['Réarme avant de reposer'],
+  },
+  {
+    id: 'switch-kick', name: 'Switch kick', call: 'Switch', category: 'pied', disciplines: ['muaythai', 'kickboxing'], motion: 'switch-kick',
+    description: 'Un petit changement de pieds, rapide et serré (le pied avant recule, le pied arrière avance), puis la jambe qui était devant frappe au corps comme un middle kick, avec le tibia. Tu reposes la jambe devant toi : te revoilà dans ta garde.',
+    cues: ['Petit switch', 'Frappe du tibia'],
+    keyPoints: ['Le changement de pieds reste court et serré', 'Le pied d’appui s’ouvre vers l’extérieur', 'Les mains restent hautes pendant le switch'],
+    notes: {
+      muaythai: 'En muay thaï, le switch donne à la jambe avant l’élan et la puissance d’un coup de pied de la jambe arrière.',
+      kickboxing: 'En kick-boxing, le switch kick vise le corps : la surface de frappe permise dépend du style (voir la carte du règlement).',
+    },
+    sources: ['kbmt-S26'],
   },
   // ------------------------------------------------------------------ genoux & coudes
   {
@@ -297,16 +345,32 @@ export const TECHNIQUES: Technique[] = [
     keyPoints: ['La tête reste haute', 'Le dos reste droit'],
   },
   {
-    id: 'changement-niveau', name: 'Changement de niveau', call: 'Change de niveau', category: 'lutte', disciplines: ['mma'], motion: 'changement-niveau',
+    id: 'changement-niveau', name: 'Changement de niveau', call: 'Change de niveau', category: 'lutte', disciplines: ['mma', 'bjj'], motion: 'changement-niveau',
     description: 'Tu descends les hanches en pliant les jambes, pas le dos : dos droit, tête haute, mains devant prêtes à saisir.',
     cues: ['Fléchis les jambes, pas le dos', 'Tête haute'], keyPoints: ['Les genoux restent au-dessus des pieds', 'Les mains ne tombent pas'],
+    notes: { bjj: 'En JJB, le combat commence debout : le règlement compte l’amenée au sol parmi les actions qui marquent des points.' },
+    sources: ['jb-S26'],
   },
   {
-    id: 'entree-lutte', name: 'Entrée en double-leg (solo)', call: 'Entrée', category: 'lutte', disciplines: ['mma'], motion: 'entree-lutte',
+    id: 'entree-lutte', name: 'Entrée en double-leg (solo)', call: 'Entrée', category: 'lutte', disciplines: ['mma', 'bjj'], motion: 'entree-lutte',
     description: 'Tu changes de niveau, puis pas de pénétration (grand pas profond vers l’adversaire) : le genou arrière descend près du sol, les mains entourent des jambes imaginaires.',
     cues: ['Pas de pénétration', 'Tête haute', 'Pousse avec les jambes'],
     keyPoints: ['Le genou effleure le sol, sans choc', 'Le dos reste droit', 'Démonstration sans partenaire'],
     soloNote: 'Version shadow : sans partenaire, tu travailles le placement et le pas, pas la projection.',
+    notes: { bjj: 'En JJB, le combat commence debout : le règlement compte l’amenée au sol parmi les actions qui marquent des points.' },
+    sources: ['jb-S26'],
+  },
+  {
+    id: 'single-leg', name: 'Entrée en single-leg (solo)', call: 'Single', category: 'lutte', disciplines: ['mma', 'bjj'], motion: 'single-leg',
+    description: 'Tu changes de niveau et tu fais un pas vers la jambe avant de l’adversaire : ta tête passe à l’extérieur de sa jambe, ta poitrine se colle à sa cuisse et tes deux mains se joignent derrière son genou (imaginaire).',
+    cues: ['Change de niveau', 'Tête à l’extérieur', 'Mains derrière le genou'],
+    keyPoints: ['La tête reste à l’extérieur de la jambe', 'Les deux mains se joignent derrière le genou', 'Dos droit : ce sont les jambes qui descendent', 'Démonstration sans partenaire'],
+    soloNote: 'Version shadow : tu travailles le pas et le placement. Finir l’amenée au sol demande un partenaire, un tapis et un professeur.',
+    notes: {
+      mma: 'En MMA, l’entrée se cache souvent derrière une frappe, pour que le changement de niveau surprenne.',
+      bjj: 'En JJB, le combat commence debout : le règlement compte l’amenée au sol parmi les actions qui marquent des points.',
+    },
+    sources: ['mma-S30', 'jb-S26'],
   },
   {
     id: 'sprawl', name: 'Sprawl', call: 'Sprawl', category: 'lutte', disciplines: ['mma'], motion: 'sprawl',
@@ -364,6 +428,37 @@ export const TECHNIQUES: Technique[] = [
     cues: ['Main posée', 'Tourne la hanche', 'Quatre appuis'],
     keyPoints: ['Les mains restent sous les épaules', 'Le dos reste plat', 'Le regard reste devant'],
   },
+  {
+    id: 'sit-out', name: 'Sit-out', call: 'Sit-out', category: 'sol', disciplines: ['bjj', 'mma'], motion: 'sit-out',
+    description: 'Depuis l’assise, tu passes à quatre appuis. Puis une jambe file sous ton corps, de l’autre côté, comme dans un tunnel : tes hanches tournent et tu te retrouves assis de côté, une main au sol, l’autre bras en cadre. Puis tu reviens.',
+    cues: ['Une main posée', 'La jambe passe dessous', 'Tourne les hanches'],
+    keyPoints: ['La main posée reste fixe', 'Les hanches tournent, elles ne restent pas à plat', 'Un bras fait cadre devant toi', 'Le geste reste vif, sans t’arrêter au milieu'],
+    soloNote: 'Mouvement de mobilité au sol, à faire seul sur un tapis. Son usage face à un partenaire s’apprend au club.',
+    notes: { bjj: 'En JJB, c’est un exercice solo classique pour rendre les hanches mobiles et rapides.' },
+    sources: ['jb-S51', 'jb-S52'],
+  },
+  {
+    id: 'releve-genoux', name: 'Relevé depuis les genoux', call: 'Relève-toi', category: 'sol', disciplines: ['bjj'], motion: 'releve-genoux',
+    description: 'Depuis ta posture, un genou puis l’autre se posent au sol : te voilà à genoux, buste droit, mains devant. Le pied avant remonte devant toi, genou levé (la « base de combat »), puis tu te relèves en posture.',
+    cues: ['Un genou puis l’autre', 'Pied avant devant', 'Relève-toi en posture'],
+    keyPoints: ['Les genoux se posent en douceur, sans choc', 'Le buste reste droit', 'Les mains restent devant toi', 'Tu remontes en posture, pas debout tout droit'],
+    notes: { bjj: 'En JJB, passer des genoux à debout, et inversement, fait partie des exercices solo de base.' },
+    safety: 'Sur un tapis ou avec des genouillères : le genou ne tombe jamais sur un sol dur.',
+    sources: ['jb-S51'],
+  },
+  {
+    id: 'ukemi-ushiro', name: 'Ushiro-ukemi (chute arrière, version basse)', call: 'Chute arrière', category: 'chute', disciplines: ['judo', 'bjj'], motion: 'ukemi-ushiro',
+    description: 'Apprendre à tomber, c’est la base. Version basse : tu descends accroupi, tu t’assois près des talons et tu roules sur le dos arrondi, menton rentré. Les deux bras frappent le tapis à environ 45° du corps, paumes à plat, puis tu reviens assis et tu te relèves.',
+    cues: ['Menton sur la poitrine', 'Dos rond', 'Les bras frappent'],
+    keyPoints: ['Regarde ta ceinture : la tête ne touche jamais le tapis', 'Bras à environ 45° du corps, paumes à plat', 'Les jambes ne se croisent jamais', 'Roule sur un dos arrondi, pas à plat'],
+    soloNote: 'Seulement la version basse (depuis l’accroupi ou l’assise), sur un tapis épais. Les chutes depuis la position debout s’apprennent au dojo, avec un professeur.',
+    notes: {
+      judo: 'Au judo, les chutes (ukemi) s’apprennent avant les projections : on progresse couché, puis assis, puis accroupi, et la chute depuis debout vient ensuite, au dojo.',
+      bjj: 'En JJB aussi, la chute arrière depuis l’assise fait partie des exercices solo : elle protège quand tu es balayé ou projeté.',
+    },
+    safety: 'Jamais de chute sur un sol dur, ni depuis la position debout à la maison. Une douleur au cou ou au dos : tu arrêtes.',
+    sources: ['jb-S11', 'jb-S5', 'jb-S51'],
+  },
 
   // ------------------------------------------------------------------ judo (travail solo)
   {
@@ -410,6 +505,69 @@ export const TECHNIQUES: Technique[] = [
     keyPoints: ['Les pieds finissent à l’intérieur, parallèles', 'Plie les genoux, pas le dos', 'Reviens en shizen-tai entre deux entrées'],
     soloNote: 'Uchikomi à vide : l’entrée et le placement (tsukuri) seulement. La projection (kake) se fait uniquement avec un partenaire, sur tatami, encadré par un professeur.',
   },
+  {
+    id: 'ayumi-ashi', name: 'Ayumi-ashi (pas marchés)', call: 'Ayumi-ashi', category: 'deplacement', disciplines: ['judo'], motion: 'ayumi-ashi',
+    description: 'La marche du judo : les pieds se dépassent l’un l’autre, comme quand tu marches, mais en rasant le tapis et sans jamais se croiser. Le pied arrière passe devant, puis l’autre pied passe à son tour.',
+    cues: ['Pieds rasants', 'Un pied passe l’autre'],
+    keyPoints: ['Les pieds gardent leur écartement', 'Le buste reste droit au-dessus des appuis', 'Les mains restent devant'],
+    notes: { judo: 'Au judo, tsugi-ashi (pas chassé) et ayumi-ashi (pas marché) sont les deux façons de se déplacer avec un partenaire.' },
+    sources: ['jb-S5'],
+  },
+  {
+    id: 'kumikata', name: 'Kumi-kata (prise de garde, solo)', call: 'Kumi-kata', category: 'garde', disciplines: ['judo'], motion: 'kumikata',
+    description: 'Kumi-kata, c’est la prise du judogi (la veste) du partenaire. La main avant saisit la manche vers le coude (hikite, la main qui tire), la main arrière saisit le revers à hauteur de poitrine (tsurite, la main du col), puis un petit tirage de la manche.',
+    cues: ['Manche et revers', 'Petit tirage'],
+    keyPoints: ['Les pieds ne bougent pas pendant la prise', 'Le dos reste droit', 'Reviens en shizen-tai après le tirage'],
+    soloNote: 'Geste à vide : la vraie bataille pour la prise se fait au dojo, avec un partenaire.',
+    notes: { judo: 'Au judo, presque toutes les projections partent d’une prise : manche et revers est la prise de base.' },
+    sources: ['jb-S5'],
+  },
+  {
+    id: 'uchikomi-o-goshi', name: 'Uchikomi d’o-goshi (solo)', call: 'O-goshi', category: 'projection', disciplines: ['judo'], motion: 'uchikomi-o-goshi',
+    description: 'L’entrée de la grande projection de hanche : un pied entre devant, tu pivotes, l’autre pied vient à côté et tu te retrouves dos au partenaire imaginaire. Tes hanches descendent sous sa ceinture et passent bien en travers, un bras entoure sa taille, l’autre main tire la manche vers l’avant.',
+    cues: ['Entre et pivote', 'Hanches sous sa ceinture', 'Bras autour de la taille'],
+    keyPoints: ['Plie les genoux, pas le dos', 'Les hanches passent plus en travers qu’en seoi-nage', 'Les pieds finissent parallèles, à l’intérieur', 'Retour en shizen-tai, sans projeter'],
+    soloNote: 'Uchikomi à vide : seulement l’entrée. Le fauchage et la projection se travaillent avec un partenaire, sur tatami, encadré par un professeur.',
+    notes: { judo: 'Technique de hanche (koshi-waza) dans la classification du Kodokan : le partenaire est déséquilibré vers l’avant.' },
+    sources: ['jb-S5'],
+  },
+  {
+    id: 'uchikomi-o-soto-gari', name: 'Uchikomi d’o-soto-gari (solo)', call: 'O-soto-gari', category: 'projection', disciplines: ['judo'], motion: 'uchikomi-o-soto-gari',
+    description: 'L’entrée du grand fauchage extérieur : ton pied avant se pose à côté du pied du partenaire imaginaire, ta poitrine vient vers l’avant, l’autre jambe passe derrière sa jambe puis fauche vers l’arrière, pendant que les mains tirent la manche et poussent le revers.',
+    cues: ['Pied à côté du sien', 'Poitrine en avant', 'Fauche vers l’arrière'],
+    keyPoints: ['Le pied d’appui est planté, genou fléchi', 'La poitrine avance pendant que la jambe fauche', 'Tu restes en équilibre sur la jambe d’appui', 'Retour en shizen-tai, sans projeter'],
+    soloNote: 'Uchikomi à vide : seulement l’entrée. Le fauchage et la projection se travaillent avec un partenaire, sur tatami, encadré par un professeur.',
+    notes: { judo: 'Technique de jambe (ashi-waza) : selon l’IJF, le partenaire est déséquilibré vers l’arrière, son poids sur le talon.' },
+    sources: ['jb-S5'],
+  },
+  {
+    id: 'uchikomi-o-uchi-gari', name: 'Uchikomi d’o-uchi-gari (solo)', call: 'O-uchi-gari', category: 'projection', disciplines: ['judo'], motion: 'uchikomi-o-uchi-gari',
+    description: 'L’entrée du grand fauchage intérieur : ton pied arrière entre profondément entre les pieds du partenaire imaginaire, l’autre pied suit derrière, puis ta jambe accroche sa jambe par l’intérieur et la fauche en arc, au ras du tapis. Les mains le poussent vers l’arrière.',
+    cues: ['Entre profond', 'Accroche par l’intérieur', 'Fauche en arc'],
+    keyPoints: ['Le second pied suit pour garder l’équilibre', 'La jambe fauche au ras du tapis', 'Le buste reste droit', 'Retour en shizen-tai, sans projeter'],
+    soloNote: 'Uchikomi à vide : seulement l’entrée. Le fauchage et la projection se travaillent avec un partenaire, sur tatami, encadré par un professeur.',
+    notes: { judo: 'Selon l’IJF, le déséquilibre se fait vers l’arrière du partenaire, du côté de la jambe que tu fauches : son poids est dessus.' },
+    sources: ['jb-S5'],
+  },
+  {
+    id: 'uchikomi-ko-uchi-gari', name: 'Uchikomi de ko-uchi-gari (solo)', call: 'Ko-uchi-gari', category: 'projection', disciplines: ['judo'], motion: 'uchikomi-ko-uchi-gari',
+    description: 'Le petit fauchage intérieur : un petit pas du pied avant, puis la plante de l’autre pied balaie le talon du partenaire imaginaire, par l’intérieur, en rasant le tapis. Les mains le poussent vers l’arrière et vers le bas.',
+    cues: ['Petit pas', 'Balaie le talon', 'Rase le tapis'],
+    keyPoints: ['Le balayage se fait avec la plante du pied', 'Le pied reste au ras du tapis', 'Le buste reste droit au-dessus de l’appui', 'Retour en shizen-tai, sans projeter'],
+    soloNote: 'Uchikomi à vide : seulement l’entrée. Le fauchage et la projection se travaillent avec un partenaire, sur tatami, encadré par un professeur.',
+    notes: { judo: 'Selon l’IJF, le partenaire est déséquilibré vers l’arrière, et c’est son talon qui est balayé, par l’intérieur.' },
+    sources: ['jb-S5'],
+  },
+  {
+    id: 'ukemi-yoko', name: 'Yoko-ukemi (chute latérale, version basse)', call: 'Chute de côté', category: 'chute', disciplines: ['judo'], motion: 'ukemi-yoko',
+    description: 'La chute sur le côté, en version basse : depuis l’assise, tu roules sur un côté, jambes levées, et le bras de ce côté frappe le tapis à environ 45° du corps. Tu reviens assis, puis tu fais l’autre côté.',
+    cues: ['Menton rentré', 'Un bras frappe', 'Change de côté'],
+    keyPoints: ['Le bras frappe à environ 45°, paume à plat', 'La tête reste décollée du tapis', 'Les jambes ne se croisent pas', 'Alterne les deux côtés'],
+    soloNote: 'Seulement la version basse (depuis l’accroupi ou l’assise), sur un tapis épais. Les chutes depuis la position debout s’apprennent au dojo, avec un professeur.',
+    notes: { judo: 'Au judo, c’est la chute utilisée quand une projection t’envoie sur le côté.' },
+    safety: 'Jamais de chute sur un sol dur, ni depuis la position debout à la maison. Une douleur au cou ou au dos : tu arrêtes.',
+    sources: ['jb-S11', 'jb-S5'],
+  },
 ];
 
 export const TECHNIQUE_BY_ID = new Map(TECHNIQUES.map((t) => [t.id, t]));
@@ -431,4 +589,5 @@ export const CATEGORY_LABEL: Record<Technique['category'], string> = {
   feinte: 'Feintes',
   clinch: 'Clinch',
   projection: 'Entrées de projection',
+  chute: 'Chutes (ukemi)',
 };

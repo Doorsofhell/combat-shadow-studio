@@ -344,6 +344,71 @@ export const INSTRUCTIONS: Record<string, TechniqueInstruction> = {
     main: 'Entre, pivote dos au partenaire, plie les genoux et tire avec les mains.',
     points: [P('pieds', 'Pieds parallèles, à l’intérieur', 'execution'), P('bassin', 'Genoux fléchis, hanches basses', 'execution'), P('bras', 'Mains qui tirent vers l’avant'), P('garde', 'Retour en shizen-tai, sans projeter', 'retour')],
   },
+  // ------------------------------------------------------------------ 0.28 : enrichissement des disciplines
+  'check-hook': {
+    main: 'Crochet du bras avant en pivotant sur le pied avant, le pied arrière tourne.',
+    points: [P('pieds', 'Pivot sur l’avant du pied avant', 'execution'), P('bassin', 'Les hanches tournent avec le pivot', 'execution'), P('bras', 'Le crochet touche au début du pivot', 'execution'), P('garde', 'Main arrière au menton, puis garde', 'retour')],
+  },
+  'shoulder-roll': {
+    main: 'Poids en arrière, le buste tourne, l’épaule avant monte devant le menton.',
+    points: [P('pieds', 'Les pieds ne bougent pas'), P('bassin', 'Poids sur la jambe arrière', 'execution'), P('tete', 'Menton caché derrière l’épaule', 'execution'), P('garde', 'Gant arrière collé au menton')],
+  },
+  'garde-longue': {
+    main: 'Allonge le bras avant, main ouverte devant son visage, gant arrière au menton.',
+    points: [P('pieds', 'Appuis stables, en garde'), P('bassin', 'Le buste reste droit, sans plonger'), P('bras', 'Main avant ouverte, à hauteur du visage', 'execution'), P('garde', 'Gant arrière collé au menton')],
+  },
+  'rattrapage-middle': {
+    main: 'Bras avant sur les côtes, main arrière sous la jambe, puis recule et tourne.',
+    points: [P('bras', 'Le coude avant couvre les côtes', 'preparation'), P('bras', 'Main arrière sous la jambe, plaquée', 'execution'), P('pieds', 'Le pied arrière recule', 'execution'), P('bassin', 'Le buste tourne pour tirer en travers'), P('garde', 'Retour en garde, menton rentré', 'retour')],
+  },
+  'switch-kick': {
+    main: 'Petit switch des pieds, puis la jambe avant frappe au corps avec le tibia.',
+    points: [P('pieds', 'Switch court et serré', 'preparation'), P('bassin', 'Pied d’appui ouvert, hanches qui tournent', 'execution'), P('jambe', 'Frappe avec le bas du tibia', 'execution'), P('garde', 'Mains hautes pendant le switch'), P('garde', 'Jambe reposée devant, en garde', 'retour')],
+  },
+  'single-leg': {
+    main: 'Change de niveau, pas vers sa jambe avant, tête dehors, mains derrière le genou.',
+    points: [P('pieds', 'Pas vers sa jambe avant', 'execution'), P('bassin', 'Hanches basses, dos droit'), P('tete', 'Tête à l’extérieur de sa jambe', 'execution'), P('bras', 'Mains jointes derrière le genou', 'execution'), P('garde', 'Remonte en garde', 'retour')],
+  },
+  'sit-out': {
+    main: 'À quatre appuis, une jambe passe sous le corps, les hanches tournent, puis reviens.',
+    points: [P('bras', 'La main posée reste fixe'), P('jambe', 'La jambe file sous le corps', 'execution'), P('bassin', 'Les hanches tournent, pas à plat', 'execution'), P('pieds', 'Pied à plat, genou levé', 'execution'), P('garde', 'Un bras fait cadre devant toi')],
+  },
+  'releve-genoux': {
+    main: 'Un genou puis l’autre au sol, pied avant devant, puis relève-toi en posture.',
+    points: [P('jambe', 'Les genoux se posent en douceur', 'preparation'), P('bassin', 'Buste droit, à genoux'), P('pieds', 'Pied avant à plat, genou levé', 'execution'), P('garde', 'Mains devant, remonte en posture', 'retour')],
+  },
+  'ukemi-ushiro': {
+    main: 'Accroupi, assis, roule sur le dos arrondi et frappe le tapis des deux bras.',
+    points: [P('tete', 'Menton sur la poitrine, regard ceinture'), P('bassin', 'Dos arrondi, roule sans à-coup', 'execution'), P('bras', 'Bras à environ 45°, paumes à plat', 'execution'), P('pieds', 'Jambes jamais croisées'), P('garde', 'Remonte accroupi puis debout', 'retour')],
+  },
+  'ayumi-ashi': {
+    main: 'Un pied passe devant l’autre en rasant le tapis, puis l’autre passe à son tour.',
+    points: [P('pieds', 'Les pieds se dépassent sans se croiser', 'execution'), P('pieds', 'Pieds rasants, même écartement'), P('bassin', 'Buste droit au-dessus des appuis'), P('garde', 'Les mains restent devant')],
+  },
+  kumikata: {
+    main: 'Main avant sur la manche, main arrière sur le revers, puis un petit tirage.',
+    points: [P('pieds', 'Les pieds ne bougent pas'), P('bassin', 'Dos droit, poids réparti'), P('bras', 'Manche vers le coude, revers à la poitrine', 'execution'), P('garde', 'Retour en shizen-tai', 'retour')],
+  },
+  'uchikomi-o-goshi': {
+    main: 'Entre, pivote dos au partenaire, hanches en travers sous sa ceinture.',
+    points: [P('pieds', 'Pieds parallèles, à l’intérieur', 'execution'), P('bassin', 'Hanches basses et bien en travers', 'execution'), P('bras', 'Un bras autour de la taille'), P('garde', 'Retour en shizen-tai, sans projeter', 'retour')],
+  },
+  'uchikomi-o-soto-gari': {
+    main: 'Pied avant à côté du sien, poitrine en avant, l’autre jambe fauche en arrière.',
+    points: [P('pieds', 'Appui planté, genou fléchi', 'preparation'), P('bassin', 'La poitrine avance pendant le fauchage', 'execution'), P('jambe', 'La jambe fauche vers l’arrière', 'execution'), P('garde', 'Retour en shizen-tai, sans projeter', 'retour')],
+  },
+  'uchikomi-o-uchi-gari': {
+    main: 'Entre profond entre ses pieds, accroche sa jambe par l’intérieur et fauche.',
+    points: [P('pieds', 'Entrée profonde, le second pied suit', 'preparation'), P('bassin', 'Buste droit au-dessus de l’appui'), P('jambe', 'Fauche en arc, au ras du tapis', 'execution'), P('garde', 'Retour en shizen-tai, sans projeter', 'retour')],
+  },
+  'uchikomi-ko-uchi-gari': {
+    main: 'Petit pas, puis la plante du pied balaie son talon par l’intérieur.',
+    points: [P('pieds', 'Petit pas, poids sur l’appui', 'preparation'), P('bassin', 'Buste droit au-dessus de l’appui'), P('jambe', 'Balaie avec la plante, au ras du tapis', 'execution'), P('garde', 'Retour en shizen-tai, sans projeter', 'retour')],
+  },
+  'ukemi-yoko': {
+    main: 'Depuis l’assise, roule sur un côté et frappe le tapis du bras de ce côté.',
+    points: [P('tete', 'Menton rentré, tête décollée'), P('bassin', 'Roule sur le côté, jambes levées', 'execution'), P('bras', 'Bras à environ 45°, paume à plat', 'execution'), P('pieds', 'Jambes jamais croisées'), P('garde', 'Alterne les côtés, puis debout', 'retour')],
+  },
 };
 
 /** the instruction of a technique; falls back on its description and key points if missing */

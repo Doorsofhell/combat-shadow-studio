@@ -75,6 +75,10 @@
   "status": "controlee",
   "notes": []
  },
+ "check-hook": {
+  "status": "controlee",
+  "notes": []
+ },
  "esquive-droite": {
   "status": "controlee",
   "notes": []
@@ -107,11 +111,23 @@
   "status": "controlee",
   "notes": []
  },
+ "shoulder-roll": {
+  "status": "controlee",
+  "notes": []
+ },
  "check-avant": {
   "status": "controlee",
   "notes": []
  },
  "check-arriere": {
+  "status": "controlee",
+  "notes": []
+ },
+ "garde-longue": {
+  "status": "controlee",
+  "notes": []
+ },
+ "rattrapage-middle": {
   "status": "controlee",
   "notes": []
  },
@@ -160,6 +176,10 @@
   "notes": []
  },
  "roundhouse-avant": {
+  "status": "controlee",
+  "notes": []
+ },
+ "switch-kick": {
   "status": "controlee",
   "notes": []
  },
@@ -235,6 +255,10 @@
   "status": "controlee",
   "notes": []
  },
+ "single-leg": {
+  "status": "controlee",
+  "notes": []
+ },
  "sprawl": {
   "status": "controlee",
   "notes": []
@@ -271,6 +295,18 @@
   "status": "controlee",
   "notes": []
  },
+ "sit-out": {
+  "status": "controlee",
+  "notes": []
+ },
+ "releve-genoux": {
+  "status": "controlee",
+  "notes": []
+ },
+ "ukemi-ushiro": {
+  "status": "controlee",
+  "notes": []
+ },
  "shizen-tai": {
   "status": "controlee",
   "notes": []
@@ -296,6 +332,34 @@
   "notes": []
  },
  "uchikomi-seoi": {
+  "status": "controlee",
+  "notes": []
+ },
+ "ayumi-ashi": {
+  "status": "controlee",
+  "notes": []
+ },
+ "kumikata": {
+  "status": "controlee",
+  "notes": []
+ },
+ "uchikomi-o-goshi": {
+  "status": "controlee",
+  "notes": []
+ },
+ "uchikomi-o-soto-gari": {
+  "status": "controlee",
+  "notes": []
+ },
+ "uchikomi-o-uchi-gari": {
+  "status": "controlee",
+  "notes": []
+ },
+ "uchikomi-ko-uchi-gari": {
+  "status": "controlee",
+  "notes": []
+ },
+ "ukemi-yoko": {
   "status": "controlee",
   "notes": []
  },

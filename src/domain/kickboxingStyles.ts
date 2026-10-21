@@ -49,7 +49,7 @@ interface Rule {
 const LOW_KICKS = ['low-kick-arriere', 'low-kick-avant'];
 const CHECKS = ['check-avant', 'check-arriere'];
 const KNEES = ['genou-direct-arriere', 'genou-direct-avant', 'genou-circulaire-arriere', 'genou-circulaire-avant'];
-const ROUND_KICKS = ['roundhouse-arriere', 'roundhouse-avant', 'middle-kick-arriere', 'middle-kick-avant', 'high-kick-arriere', 'high-kick-avant'];
+const ROUND_KICKS = ['roundhouse-arriere', 'roundhouse-avant', 'middle-kick-arriere', 'middle-kick-avant', 'high-kick-arriere', 'high-kick-avant', 'switch-kick'];
 const FRONT_KICKS = ['front-kick-avant', 'front-kick-arriere'];
 
 const RULES: Rule[] = [

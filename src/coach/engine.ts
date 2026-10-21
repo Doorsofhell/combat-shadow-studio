@@ -108,8 +108,9 @@ function opener(ctx: CoachContext, key: string, kind: 'neutral' | 'question' = '
 /** nom avec article : « le jab », « l’uppercut gauche », « la parade », « le high kick » (h aspiré) */
 function article(t: Technique) {
   const n = t.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  if (/^[aeiouy]/.test(n)) return 'l’';
-  if (/^(position|posture|retention|rotation|parade|sortie|feinte|defense|descente)/.test(n)) return 'la ';
+  // « y » suivi d’une voyelle se prononce comme une consonne : « le yoko-ukemi »
+  if (/^(?!y[aeiou])[aeiouy]/.test(n)) return 'l’';
+  if (/^(position|posture|retention|rotation|parade|sortie|feinte|defense|descente|garde)/.test(n)) return 'la ';
   return 'le ';
 }
 const lowName = (t: Technique) => t.name.charAt(0).toLowerCase() + t.name.slice(1);
@@ -397,7 +398,7 @@ function difference(p: ParsedQuestion, ctx: CoachContext): CoachAnswer {
 }
 
 function catLabel(t: Technique) {
-  return { garde: 'Une position de garde', poing: 'Un coup de poing', pied: 'Un coup de pied', genou: 'Un coup de genou', coude: 'Un coup de coude', defense: 'Une défense', deplacement: 'Un déplacement', lutte: 'Une action de lutte', sol: 'Un mouvement au sol', feinte: 'Une feinte', clinch: 'Une action de clinch', projection: 'Une entrée de projection' }[t.category];
+  return { garde: 'Une position de garde', poing: 'Un coup de poing', pied: 'Un coup de pied', genou: 'Un coup de genou', coude: 'Un coup de coude', defense: 'Une défense', deplacement: 'Un déplacement', lutte: 'Une action de lutte', sol: 'Un mouvement au sol', feinte: 'Une feinte', clinch: 'Une action de clinch', projection: 'Une entrée de projection', chute: 'Une chute (ukemi)' }[t.category];
 }
 
 function demoLike(p: ParsedQuestion, ctx: CoachContext, intent: 'demo' | 'slow' | 'repeat'): CoachAnswer {

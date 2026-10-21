@@ -92,6 +92,68 @@ function shot(a: Author): Motion {
 }
 
 /**
+ * Single-leg entry (solo): level change, a step toward the opponent's lead leg, head on the outside
+ * of that leg, both hands locked together behind an imaginary knee, chest close to the thigh, then the
+ * coach comes back up into stance (Evolve MMA, "10 essential wrestling moves": single-leg takedown).
+ * The opponent stands in the same stance: his lead leg is on the coach's right.
+ */
+function singleLeg(a: Author): Motion {
+  const g = a.guard();
+  const s = a.s;
+  const lead = g.footL.mode === 'ground' ? g.footL.ball : v3(0, 0, 0);
+  const rear = g.footR.mode === 'ground' ? g.footR.ball : v3(0, 0, 0);
+  const low = edit(g, (d) => {
+    d.hips.y -= 0.22 * s;
+    d.pelvis.pitch += deg(20);
+    d.chest.pitch += deg(10);
+    d.head.pitch += deg(-20);
+    d.handL = a.hand('chest', v3(0.1 * s, -0.08 * s, 0.3 * s), v3(0.5, -1, -0.2), 0.1, 0.6);
+    d.handR = a.hand('chest', v3(-0.14 * s, -0.06 * s, 0.26 * s), v3(-0.5, -1, -0.2), 0.1, 0.6);
+  });
+  const step = 0.36 * s;
+  const leg = -0.16 * s; // x of the imaginary leg
+  const pen = edit(low, (d) => {
+    d.footL = a.ground(add(lead, { z: step, x: -0.1 * s }), deg(-10), 0);
+    d.footR = a.ground(add(rear, { z: step * 0.5, x: 0.02 * s }), deg(-20), deg(70));
+    d.hips = v3(-0.04 * s, a.m.hipsRest.y * 0.52, rear.z + step * 0.7 + 0.18 * s);
+    d.pelvis = { yaw: deg(-14), pitch: deg(18), roll: 0 };
+    // the head goes to the outside of the leg (the coach's right)
+    d.chest = { yaw: deg(-6), pitch: deg(24), roll: deg(-8) };
+    d.head = { yaw: deg(-10), pitch: deg(-28), roll: deg(-6) };
+    const kneeY = 0.48 * s;
+    const z = d.hips.z + 0.38 * s;
+    // hands joined behind the knee
+    d.handL = a.hand('world', v3(leg + 0.05 * s, kneeY, z), v3(0.6, -0.4, -0.6), -0.4, 0.8, deg(10));
+    d.handR = a.hand('world', v3(leg - 0.03 * s, kneeY - 0.02 * s, z + 0.02 * s), v3(-0.6, -0.4, -0.6), -0.4, 0.8, deg(10));
+  });
+  const lift = edit(pen, (d) => {
+    // the joined hands pull the knee up against the chest
+    d.hips.y += 0.03 * s;
+    d.chest.pitch -= deg(6);
+    d.handL.pos = add(d.handL.pos, { y: 0.1 * s, z: -0.1 * s });
+    d.handR.pos = add(d.handR.pos, { y: 0.1 * s, z: -0.1 * s });
+  });
+  const recover = edit(low, (d) => {
+    d.footR = a.ground(add(rear, { z: 0.03 * s }), (g.footR as { yaw: number }).yaw, deg(40));
+  });
+  return {
+    id: 'single-leg',
+    keys: [
+      { t: 0, pose: g },
+      { t: 0.22, pose: low, ease: 'inOut' },
+      { t: 0.5, pose: pen, ease: 'snap' },
+      { t: 0.75, pose: lift, ease: 'inOut' },
+      { t: 1.12, pose: recover, ease: 'inOut' },
+      { t: 1.42, pose: g, ease: 'inOut' },
+    ],
+    chainAt: 1.32,
+    impacts: [0.5],
+    startState: 'stand',
+    endState: 'stand',
+  };
+}
+
+/**
  * Sprawl: hips and legs shoot straight back, hips to the mat, hands forward pressing down on the
  * attacker's head and shoulders (imaginary in solo), then the feet hop back under and back to stance.
  * Sources: Evolve MMA "What is sprawling", Fanatic Wrestling / Ben Askren "Fixing the sprawl"
@@ -327,5 +389,5 @@ function standUp(a: Author): Motion {
 }
 
 export function mmaMotions(a: Author): Motion[] {
-  return [levelChange(a), shot(a), sprawl(a), takedownDefence(a), sitDown(a), hipEscape(a), standUp(a)];
+  return [levelChange(a), shot(a), sprawl(a), takedownDefence(a), sitDown(a), hipEscape(a), standUp(a), singleLeg(a)];
 }

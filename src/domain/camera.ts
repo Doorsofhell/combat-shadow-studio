@@ -70,6 +70,7 @@ const BY_CATEGORY: Record<TechniqueCategory, CameraView> = {
   feinte: { az: 50, el: 6, ...FULL, ref: 'torse', why: 'Trois quarts léger : on voit l’amorce du geste et le retour immédiat en garde.' },
   clinch: { az: 60, el: 10, ...FULL, why: 'Trois quarts large : on voit la position des mains sur la nuque imaginaire et le genou qui monte.' },
   projection: { az: 70, el: 12, zoom: 1, focus: 0.45, why: 'Trois quarts presque de profil : on voit le pas d’entrée, le pivot, la flexion des genoux et le tirage des mains.' },
+  chute: { az: 80, el: 20, zoom: 1, focus: 0.3, why: 'Presque de profil, un peu au-dessus : on voit le dos qui s’arrondit, le menton rentré et les bras qui frappent le tapis.' },
 };
 
 /** techniques whose best angle differs from their family */
@@ -111,6 +112,17 @@ const BY_TECHNIQUE: Record<string, Partial<CameraView>> = {
   sprawl: { az: 90, el: 12, zoom: 1, focus: 0.3, why: 'De profil, cadrage large : on voit les jambes qui partent en arrière et les hanches plaquées au sol.' },
   'feinte-lutte': { az: 70, el: 8, zoom: 1, focus: 0.45 },
   'changement-niveau': { az: 80, el: 8, zoom: 1, focus: 0.45 },
+  'single-leg': { az: 70, el: 10, zoom: 1, focus: 0.42 },
+  'check-hook': { az: 25, el: 40, zoom: 1, focus: 0.45, why: 'Vue surélevée : on voit le crochet partir pendant que le pied arrière tourne autour du pied avant.' },
+  'shoulder-roll': { az: 20, el: 6, why: 'Presque de face : on voit l’épaule avant qui monte devant le menton et le gant arrière collé au visage.' },
+  'garde-longue': { az: 60, el: 8, why: 'Trois quarts : on voit le bras avant tendu, main ouverte, et le gant arrière au menton.' },
+  'rattrapage-middle': { az: 30, el: 10, why: 'Trois quarts léger : on voit le bras avant qui protège les côtes et la main arrière qui passe dessous.' },
+  'switch-kick': { az: 65, el: 6, zoom: 1, why: 'Trois quarts large : on voit le changement de pieds, puis la rotation des hanches et le tibia qui frappe.' },
+  'ayumi-ashi': { az: 30, el: 38, zoom: 1, focus: 0.45, why: 'Vue surélevée : on voit les pieds qui se dépassent sans jamais se croiser.' },
+  kumikata: { az: 40, el: 10, why: 'Trois quarts : on voit la main avant sur la manche et la main arrière sur le revers.' },
+  'ukemi-yoko': { az: 15, el: 22, why: 'Presque de face, un peu au-dessus : on voit le corps rouler sur le côté et le bras frapper le tapis.' },
+  'sit-out': { az: 45, el: 30, why: 'Trois quarts au-dessus : on suit la jambe qui passe sous le corps et les hanches qui tournent.' },
+  'releve-genoux': { az: 80, el: 10, zoom: 1, focus: 0.4, why: 'De profil : on voit les genoux qui se posent, le pied avant qui remonte et le buste qui reste droit.' },
 };
 
 const MANUAL: Record<Exclude<CameraMode, 'auto' | 'libre'>, Omit<CameraView, 'why'>> = {
@@ -131,7 +143,7 @@ export function techniqueView(id: string): CameraView {
 }
 
 /** priority when one angle must serve a whole combination: the move that needs the widest view wins */
-const PRIORITY: Record<TechniqueCategory, number> = { sol: 9, lutte: 8, projection: 8, pied: 7, deplacement: 6, genou: 5, clinch: 4, coude: 3, poing: 2, defense: 2, feinte: 1, garde: 0 };
+const PRIORITY: Record<TechniqueCategory, number> = { sol: 9, lutte: 8, projection: 8, chute: 8, pied: 7, deplacement: 6, genou: 5, clinch: 4, coude: 3, poing: 2, defense: 2, feinte: 1, garde: 0 };
 
 /**
  * One stable angle for a whole sequence: a single technique keeps its own angle; a combination

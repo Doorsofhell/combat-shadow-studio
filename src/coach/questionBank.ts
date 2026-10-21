@@ -262,6 +262,7 @@ export const BY_CATEGORY: Partial<Record<TechniqueCategory, string[]>> = {
   lutte: ['faq:sprawl', 'faq:distance', 'faq:retour-garde'],
   sol: [],
   projection: [],
+  chute: [],
   clinch: ['faq:genoux'],
 };
 
@@ -294,6 +295,71 @@ export const GENERAL_GRAPPLING = ['faq:echauffement', 'faq:repos', 'faq:motivati
 
 /** questions sur une technique en particulier (réponse : sa fiche), chacune avec sa catégorie */
 export const BY_TECHNIQUE: Record<string, Phrase[]> = {
+  // 0.28 : nouvelles techniques (enrichissement des disciplines)
+  'sit-out': [
+    { q: 'À quoi sert le sit-out ?', cat: 'pourquoi' },
+    { q: 'Où placer ma main pendant le sit-out ?', cat: 'forme' },
+  ],
+  'releve-genoux': [
+    { q: 'Comment me relever depuis les genoux ?', cat: 'forme' },
+    { q: 'Comment poser les genoux sans me faire mal ?', cat: 'securite' },
+  ],
+  'ukemi-ushiro': [
+    { q: 'Comment chuter en arrière sans me faire mal ?', cat: 'securite' },
+    { q: 'Où placer mes bras pendant la chute arrière ?', cat: 'forme' },
+  ],
+  'ukemi-yoko': [
+    { q: 'Comment chuter sur le côté ?', cat: 'securite' },
+    { q: 'Où placer mon bras pendant la chute de côté ?', cat: 'forme' },
+  ],
+  'ayumi-ashi': [
+    { q: 'À quoi sert ayumi-ashi ?', cat: 'pourquoi' },
+    { q: 'Comment marcher sans croiser les pieds ?', cat: 'deplacement' },
+  ],
+  'kumikata': [
+    { q: 'À quoi sert le kumi-kata ?', cat: 'pourquoi' },
+    { q: 'Où placer mes mains pour le kumi-kata ?', cat: 'garde' },
+  ],
+  'uchikomi-o-goshi': [
+    { q: 'À quoi sert o-goshi ?', cat: 'pourquoi' },
+    { q: 'Où placer mes hanches pour o-goshi ?', cat: 'forme' },
+  ],
+  'uchikomi-o-soto-gari': [
+    { q: 'À quoi sert o-soto-gari ?', cat: 'pourquoi' },
+    { q: 'Comment garder l’équilibre pendant o-soto-gari ?', cat: 'equilibre' },
+  ],
+  'uchikomi-o-uchi-gari': [
+    { q: 'À quoi sert o-uchi-gari ?', cat: 'pourquoi' },
+    { q: 'Comment faucher pendant o-uchi-gari ?', cat: 'forme' },
+  ],
+  'uchikomi-ko-uchi-gari': [
+    { q: 'À quoi sert ko-uchi-gari ?', cat: 'pourquoi' },
+    { q: 'Avec quelle partie du pied balayer en ko-uchi-gari ?', cat: 'forme' },
+  ],
+  'single-leg': [
+    { q: 'À quoi sert le single-leg ?', cat: 'pourquoi' },
+    { q: 'Où placer ma tête pendant le single-leg ?', cat: 'forme' },
+  ],
+  'check-hook': [
+    { q: 'À quoi sert le check hook ?', cat: 'pourquoi' },
+    { q: 'Comment pivoter pendant le check hook ?', cat: 'deplacement' },
+  ],
+  'shoulder-roll': [
+    { q: 'À quoi sert le shoulder roll ?', cat: 'pourquoi' },
+    { q: 'Où placer mon menton pendant le shoulder roll ?', cat: 'garde' },
+  ],
+  'switch-kick': [
+    { q: 'À quoi sert le switch kick ?', cat: 'pourquoi' },
+    { q: 'Comment changer de pied pour le switch kick ?', cat: 'deplacement' },
+  ],
+  'garde-longue': [
+    { q: 'À quoi sert la garde longue ?', cat: 'pourquoi' },
+    { q: 'Où placer ma main avant en garde longue ?', cat: 'garde' },
+  ],
+  'rattrapage-middle': [
+    { q: 'Comment attraper un middle kick ?', cat: 'forme' },
+    { q: 'Comment protéger mes côtes avant d’attraper la jambe ?', cat: 'securite' },
+  ],
   'descente-sol': [{ q: 'Comment descendre au sol sans me faire mal ?', cat: 'securite' }],
   'sortie-hanche': [
     { q: 'À quoi sert la sortie de hanche ?', cat: 'pourquoi' },

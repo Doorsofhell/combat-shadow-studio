@@ -19,7 +19,7 @@ export const LEVELS: { id: LevelId; name: string; goal: string }[] = [
   { id: 'expert', name: 'Expert', goal: 'Séquences longues et exigeantes, rounds complets.' },
 ];
 
-export type TechniqueCategory = 'garde' | 'poing' | 'pied' | 'genou' | 'coude' | 'defense' | 'deplacement' | 'lutte' | 'sol' | 'feinte' | 'clinch' | 'projection';
+export type TechniqueCategory = 'garde' | 'poing' | 'pied' | 'genou' | 'coude' | 'defense' | 'deplacement' | 'lutte' | 'sol' | 'feinte' | 'clinch' | 'projection' | 'chute';
 
 /** A technique as shown to the user, linked to an animation (motion id). */
 export interface Technique {
@@ -41,6 +41,15 @@ export interface Technique {
    * partner; 'partenaire' needs a real partner and a qualified coach: consultable, never a solo drill
    */
   mode?: TechniqueMode;
+  /**
+   * what this shared technique means in one discipline (« En judo… »), shown on the sheet when the
+   * user looks at it from that discipline: one definition, a note per discipline, never a copy
+   */
+  notes?: Partial<Record<DisciplineId, string>>;
+  /** safety reminder shown on the sheet (falls, kneeling, partner work) */
+  safety?: string;
+  /** ids of the sources the sheet is written from (biomech/sources.ts) */
+  sources?: string[];
 }
 
 export type TechniqueMode = 'solo' | 'duo' | 'partenaire';

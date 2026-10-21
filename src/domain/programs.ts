@@ -119,6 +119,37 @@ export const PROGRAMS: Program[] = [
       b('Retour au calme', 'recuperation', 'muaythai-debutant-01', 60, 1, 0),
     ],
   },
+  // 0.28 : premiers programmes de grappling, en solo (complément du club ou du dojo, jamais à sa place)
+  {
+    id: 'judo-bases-solo', name: 'Judo - Bases en solo', discipline: 'judo', durationMin: 25,
+    frequency: '2 à 3 séances par semaine, en complément du dojo',
+    goals: ['Te déplacer sans croiser les pieds', 'Des entrées (uchikomi) propres, genoux fléchis', 'Une chute arrière basse, menton rentré'],
+    progression: 'Vitesse lente d’abord. Ajoute les entrées suivantes quand tes pieds finissent bien placés. Les chutes restent en version basse, sur un tapis épais.',
+    blocks: [
+      b('Échauffement : tsugi-ashi', 'echauffement', 'judo-debutant-02', 60, 2, 20),
+      b('Ayumi-ashi', 'technique', 'judo-debutant-05', 60, 2, 20),
+      b('Chute arrière, version basse', 'technique', 'judo-debutant-07', 60, 2, 30),
+      b('Kumi-kata', 'technique', 'judo-debutant-06', 60, 2, 20),
+      b('Uchikomi d’o-goshi', 'technique', 'judo-intermediaire-05', 90, 2, 30),
+      b('Prise de garde puis entrée', 'combinaisons', 'judo-intermediaire-08', 90, 2, 40),
+      b('Retour au calme : shizen-tai', 'recuperation', 'judo-debutant-01', 60, 1, 0),
+    ],
+  },
+  {
+    id: 'bjj-mobilite-solo', name: 'Jiu-jitsu brésilien - Mobilité et relevés en solo', discipline: 'bjj', durationMin: 25,
+    frequency: '2 à 3 séances par semaine, en complément du club',
+    goals: ['Des hanches mobiles au sol', 'Te relever proprement, en posture', 'Une chute arrière sûre'],
+    progression: 'Commence lentement, sur un tapis. Passe aux enchaînements quand chaque mouvement reste fluide.',
+    blocks: [
+      b('Échauffement : posture debout', 'echauffement', 'bjj-debutant-01', 60, 1, 0),
+      b('Chute arrière, version basse', 'technique', 'bjj-debutant-07', 60, 2, 30),
+      b('Sortie de hanche (shrimp)', 'technique', 'bjj-debutant-04', 90, 2, 30),
+      b('Sit-out', 'technique', 'bjj-debutant-06', 90, 2, 30),
+      b('Relevé depuis les genoux', 'technique', 'bjj-debutant-08', 60, 2, 30),
+      b('Changement de base et sit-out', 'combinaisons', 'bjj-intermediaire-07', 120, 2, 45),
+      b('Retour au calme : posture', 'recuperation', 'bjj-debutant-01', 60, 1, 0),
+    ],
+  },
 ];
 
 export const PROGRAM_BY_ID = new Map(PROGRAMS.map((p) => [p.id, p]));
