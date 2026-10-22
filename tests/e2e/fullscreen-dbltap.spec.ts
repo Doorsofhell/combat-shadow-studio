@@ -1,5 +1,6 @@
 import { expect, Locator, Page, test } from '@playwright/test';
 import { DEFAULT_PROFILE } from '../../src/store/profile';
+import { openCoachIA } from './nav-helpers';
 
 /**
  * 0.27 (Youssef, 2026-10-20 22:09: « Un double clique sur la fenêtre du coach permet un plein écran total, étudie et
@@ -65,7 +66,7 @@ test('accueil : double tap = plein écran total ; commandes masquées puis réaf
   await dbl(page, stage);
   await expect(stage).toHaveAttribute('data-fullscreen', 'true');
   expect(await isFull(page, '[data-testid=hero-stage]')).toBe(true);
-  // the whole screen: the navigation and the pill are under it
+  // the whole screen: the bottom bar is under it
   const r = await stage.evaluate((e) => { const b = e.getBoundingClientRect(); return { w: b.width, h: b.height, vw: innerWidth, vh: innerHeight }; });
   expect(r.w).toBeGreaterThanOrEqual(r.vw - 1);
   expect(r.h).toBeGreaterThanOrEqual(r.vh - 1);
@@ -82,7 +83,7 @@ test('accueil : double tap = plein écran total ; commandes masquées puis réaf
   await exitByButton(page);
   await expect(stage).toHaveAttribute('data-fullscreen', 'false');
   expect(await page.evaluate(() => !!document.fullscreenElement)).toBe(false);
-  await expect(page.getByTestId('action-pill')).toBeVisible();
+  await expect(page.getByTestId('bottom-bar')).toBeVisible();
   // Échap
   await dbl(page, stage);
   await expect(stage).toHaveAttribute('data-fullscreen', 'true');
@@ -211,7 +212,7 @@ test('Coach IA : double tap sur l’en-tête, normal ↔ agrandi', async ({ page
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await seed(page);
   await page.goto('/#/reglages');
-  await page.getByTestId('coach-bubble').click();
+  await openCoachIA(page);
   const panel = page.getByTestId('coach-ask-panel');
   await expect(panel).toHaveAttribute('data-size', 'normal');
   await panel.locator('.cai-head h2').dblclick();

@@ -335,11 +335,12 @@ function TrainingView({ plan }: { plan: Plan }) {
   // (Recommencer, Précédent, Suivant, Comment faire ?, Ralenti, Options) are under « Sur cet écran » in Menu
   const smartBack = useSmartBack();
   const [leaving, setLeaving] = useState(false);
-  const live = running && !view.paused;
+  // a session started and not finished, running or paused: leaving it ends it
+  const live = running;
   const askLeave = () => {
     // a session in progress is never left by one tap: it pauses and asks (the time done is already saved)
     if (live) {
-      pause();
+      if (!view.paused) pause();
       setLeaving(true);
     } else smartBack('entrainement');
   };

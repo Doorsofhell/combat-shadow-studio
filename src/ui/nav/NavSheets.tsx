@@ -167,7 +167,7 @@ export function NavSheets() {
   }
 
   return (
-    <NavPanel title="Navigation générale" onClose={() => close()} testId="nav-menu">
+    <NavPanel title="Navigation générale" onClose={() => close()} testId="nav-menu-sheet">
       {allCommands.length > 0 && (
         <div className="nav-commands" role="group" aria-label="Sur cet écran" data-testid="nav-commands">
           <div className="nav-section">Sur cet écran</div>

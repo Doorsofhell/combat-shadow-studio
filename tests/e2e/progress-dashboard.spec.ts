@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { Seed, open, seed, view } from './progress-seed';
+import { menuCommand } from './nav-helpers';
 
 /**
  * Progrès: dashboard over a period compared with the previous one of the same length, one screen
@@ -203,7 +204,8 @@ test('9. existing data, goals and favourites are preserved', async ({ page }) =>
       }),
   );
   expect(JSON.parse(stored).state.sessions).toHaveLength(3);
-  await page.getByTestId('goals-link').click();
+  // v0.32: Objectifs is a command of the Menu (« Sur cet écran »)
+  await menuCommand(page, 'goals-link');
   await expect(page.getByTestId('goals-page')).toContainText('90 min');
   await expect(page.getByTestId('goals-page')).toContainText('Jab');
   await expect(page.getByTestId('edit-goals')).toBeVisible();

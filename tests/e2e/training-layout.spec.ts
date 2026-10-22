@@ -1,6 +1,7 @@
 import { expect, Page, test } from '@playwright/test';
 import { DEFAULT_PROFILE } from '../../src/store/profile';
 import { defaultLook } from '../../src/editor/look';
+import { menuCommand, openCoachIA, openMenu } from './nav-helpers';
 
 /**
  * The training screen must hold on one screen, without any scrolling: coach, move name, current
@@ -81,15 +82,16 @@ async function checkFits(page: Page, label: string) {
       play: inView('[data-testid=start], [data-testid=pause], [data-testid=resume]'),
       ar: inView('[data-testid=ar-button]'),
       decompose: inView('[data-testid=decompose]'),
-      // 0.25: the app's coach bubble sits in the stage corner, over none of the screen's controls
-      bubble: inView('[data-testid=coach-bubble]'),
-      bubbleOver: (() => {
-        const b = document.querySelector('[data-testid=coach-bubble]')?.getBoundingClientRect();
+      // v0.32 (navigation, 2026-10-22): the one bottom bar replaces the coach bubble and the training buttons; it is
+      // on screen and nothing of the session is under it
+      bar: inView('[data-testid=bottom-bar]'),
+      barOver: (() => {
+        const b = document.querySelector('[data-testid=bottom-bar]')?.getBoundingClientRect();
         if (!b) return 'absente';
-        return [...document.querySelectorAll('.tr-bottom button, .stage-tools button, .tr-top button, .tr-info *')]
+        return [...document.querySelectorAll('.training button, .tr-info *, .tr-top *')]
           .filter((e) => {
             const r = e.getBoundingClientRect();
-            return r.width > 0 && !(r.right <= b.left || r.left >= b.right || r.bottom <= b.top || r.top >= b.bottom);
+            return r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== 'hidden' && !(r.right <= b.left || r.left >= b.right || r.bottom <= b.top + 1 || r.top >= b.bottom);
           })
           .map((e) => e.getAttribute('aria-label') || e.textContent)
           .join(' / ');
@@ -102,8 +104,8 @@ async function checkFits(page: Page, label: string) {
   expect(r.scrollX, `${label} défilement horizontal`).toBeLessThanOrEqual(0);
   expect(r.rootScroll, `${label} débordement`).toBeLessThanOrEqual(1);
   expect(r.overflowMode, label).toBe(false);
-  expect(r.bubbleOver, `${label} la bulle du coach masque une commande`).toBe('');
-  for (const k of ['points', 'cue', 'name', 'title', 'time', 'play', 'ar', 'decompose', 'bubble'] as const) expect(r[k], `${label} ${k} visible`).toBe(true);
+  expect(r.barOver, `${label} la barre du bas masque un élément de la séance`).toBe('');
+  for (const k of ['points', 'cue', 'name', 'title', 'time', 'play', 'ar', 'decompose', 'bar'] as const) expect(r[k], `${label} ${k} visible`).toBe(true);
   expect(r.clipped, `${label} textes coupés`).toBe('');
   expect(r.stageH, `${label} hauteur du coach`).toBeGreaterThan(150);
 }
@@ -193,8 +195,8 @@ test('demander au coach : pause, réponse hors ligne, ralenti, sans défilement 
     await page.setViewportSize({ width: w, height: h });
     await open(page, `/#/entrainement?ex=boxe-debutant-01&mode=technique`);
     await page.getByTestId('start').click();
-    // 0.25 (Youssef, 2026-10-20 12:30: « le coach IA doit être identique sur tous les écrans, une bulle flottante en bas à droite »): the training screen's own « Coach » button is replaced by the app's bubble
-    await page.getByTestId('coach-bubble').click();
+    // v0.32 (navigation, 2026-10-22): the Coach IA opens from the Menu of the bottom bar (no floating bubble)
+    await openCoachIA(page);
     await expect(page.getByTestId('phase')).toHaveText('Pause');
     await page.getByTestId('coach-input').fill('Pourquoi dois-je pivoter le pied arrière ?');
     await page.getByTestId('coach-send').click();
@@ -231,8 +233,8 @@ test('zone Caméra : angle, rotation, zoom, recentrer, sans masquer le coach ni 
     const r = await page.evaluate(() => {
       const vw = innerWidth;
       const vh = innerHeight;
-      // 0.25 (Youssef, 2026-10-20 12:30: « le coach IA doit être identique sur tous les écrans, une bulle flottante en bas à droite »): the training screen's own « Coach » button is replaced by the app's bubble
-      const ids = ['cam-auto', 'cam-next', 'cam-left', 'cam-right', 'zoom-in', 'zoom-out', 'cam-reset', 'cam-close', 'start', 'coach-bubble'];
+      // v0.32 (navigation, 2026-10-22): Démarrer and Menu (where the Coach IA is) are places of the bottom bar
+      const ids = ['cam-auto', 'cam-next', 'cam-left', 'cam-right', 'zoom-in', 'zoom-out', 'cam-reset', 'cam-close', 'start', 'nav-menu'];
       const hidden = ids.filter((id) => {
         const b = document.querySelector(`[data-testid=${id}]`)?.getBoundingClientRect();
         return !b || b.width < 40 || b.height < 40 || b.left < -1 || b.right > vw + 1 || b.top < -1 || b.bottom > vh + 1;
@@ -254,11 +256,11 @@ test('zone Caméra : angle, rotation, zoom, recentrer, sans masquer le coach ni 
   // the controls act: angle chosen, then everything back to the advised angle
   await page.getByTestId('cam-next').click();
   await expect(page.getByTestId('cam-angle')).toHaveText('Face');
-  await expect(page.getByTestId('cam-mode')).toContainText('Face');
+  await expect(page.getByTestId('cam-mode')).toHaveAttribute('aria-label', /^Caméra : Face/);
   await page.getByTestId('zoom-in').click();
   await page.getByTestId('cam-left').click();
   await page.getByTestId('cam-reset').click();
-  await expect(page.getByTestId('cam-mode')).toContainText('Auto');
+  await expect(page.getByTestId('cam-mode')).toHaveAttribute('aria-label', /^Caméra : Auto/);
   await expect(page.getByTestId('cam-auto')).toHaveAttribute('aria-pressed', 'true');
   await page.getByTestId('cam-close').click();
   await expect(page.getByTestId('decompose')).toBeVisible();
@@ -293,7 +295,7 @@ test('caméra : « Auto » annule rotation et zoom, un angle manuel est exact', 
   await page.getByTestId('cam-right').click();
   await page.getByTestId('zoom-in').click();
   await expect(page.getByTestId('cam-auto')).toHaveAttribute('aria-pressed', 'false');
-  await expect(page.getByTestId('cam-mode')).toContainText('Auto ajusté');
+  await expect(page.getByTestId('cam-mode')).toHaveAttribute('aria-label', /^Caméra : Auto ajusté/);
   await settle(page);
   expect(Math.abs((await camera(page)).az - auto.az - 30)).toBeLessThan(3);
   // back to Auto: the advised angle and distance, nothing left from the adjustment
@@ -310,7 +312,7 @@ test('caméra : « Auto » annule rotation et zoom, un angle manuel est exact', 
   expect(Math.abs((await camera(page)).az)).toBeLessThan(2);
   // the same choices from the Options sheet
   await page.getByTestId('cam-close').click();
-  await page.getByTestId('options').click();
+  await menuCommand(page, 'options');
   await page.getByTestId('cam-chip-profil-gauche').click();
   await settle(page);
   expect(Math.abs((await camera(page)).az - 90)).toBeLessThan(2);
@@ -347,9 +349,12 @@ test('consigne principale, points clés, ralenti et ligne de temps', async ({ pa
   await expect(page.getByTestId('key-points').locator('li')).toHaveCount(5);
   await expect(page.getByTestId('timer-row')).toContainText('Séance');
   await expect(page.getByTestId('timer-row')).toContainText('rép.');
-  await page.getByTestId('slow').click();
+  // v0.32 (navigation): Ralenti is a command of the Menu (« Sur cet écran »); it stays pressed there
+  await menuCommand(page, 'slow');
+  await openMenu(page);
   await expect(page.getByTestId('slow')).toHaveAttribute('aria-pressed', 'true');
-  await page.getByTestId('options').click();
+  await page.keyboard.press('Escape');
+  await menuCommand(page, 'options');
   await expect(page.getByTestId('speed')).toHaveText('×0.25');
 });
 
@@ -360,7 +365,7 @@ test('repères au sol : chacun s’active seul, légende sans débordement, choi
   await page.setViewportSize({ width: 360, height: 640 });
   await open(page, `/#/entrainement?ex=muaythai-intermediaire-11&mode=technique`);
   await expect(page.getByTestId('mark-legend')).toHaveCount(0);
-  await page.getByTestId('options').click();
+  await menuCommand(page, 'options');
   const ids = ['pieds', 'orientation', 'avantArriere', 'pivot', 'trajectoire'];
   for (const id of ids) await expect(page.getByTestId(`mark-${id}`)).toHaveAttribute('aria-pressed', 'false');
   await page.getByTestId('mark-pivot').click();
@@ -396,7 +401,7 @@ test('changer de coach pendant l’entraînement : la coach femme s’affiche', 
   await page.setViewportSize({ width: 393, height: 851 });
   await open(page, `/#/entrainement?ex=boxe-debutant-02&mode=technique`);
   await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'homme');
-  await page.getByTestId('options').click();
+  await menuCommand(page, 'options');
   // 0.24: the two coaches are named Kadir and Amara
   await page.getByRole('button', { name: 'Amara' }).click();
   await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'femme');

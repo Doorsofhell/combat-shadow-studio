@@ -1,4 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
+import { openMenu } from './nav-helpers';
 
 async function onboard(page: Page, coach: 'homme' | 'femme') {
   await page.goto('/');
@@ -21,8 +22,9 @@ test('premier lancement : questionnaire, choix obligatoire du coach, données co
   await expect(page.getByTestId('home-cta')).toBeVisible();
   // 0.24: the coach chosen is Amara (stored choice 'femme')
   await expect(page.getByTestId('fighter-name')).toHaveText('Amara');
-  // bottom navigation: five destinations (0.24: Légendes replaces the Coach tab, Youssef's decisions of 2026-10-19/20)
-  await expect(page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link')).toHaveCount(5);
+  // bottom navigation (v0.32, mockup of 2026-10-22): one bar of five places, Menu last
+  await expect(page.getByTestId('bottom-bar').locator('button.nav-btn')).toHaveCount(5);
+  await expect(page.getByTestId('bottom-bar').locator('[data-slot="5"]')).toHaveAttribute('data-action', 'menu');
   await page.getByTestId('nav-entrainer').click();
   await expect(page.getByTestId('disc-boxe')).toBeVisible();
 });
@@ -76,7 +78,9 @@ test('programme : les blocs s’enchaînent avec leurs rounds', async ({ page })
 
 test('réglages et confidentialité accessibles depuis l’accueil', async ({ page }) => {
   await onboard(page, 'homme');
-  await page.getByTestId('open-settings').click();
+  // v0.32: Menu › Paramètres (no settings button in the header any more)
+  await openMenu(page);
+  await page.getByTestId('menu-parametres').click();
   await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
   await page.getByRole('link', { name: /Confidentialité/ }).click();
   await expect(page.getByText('Tout reste sur ton appareil.')).toBeVisible();
