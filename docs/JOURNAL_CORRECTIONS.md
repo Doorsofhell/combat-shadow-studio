@@ -1507,3 +1507,29 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Android réel : NON EXÉCUTÉ ; relecture par un entraîneur : NON EXÉCUTÉ.
 - **Restauration** : `feature/combat-shadow-v030` = `04b0b5e` (v0.31.0).
 - **Validation** : en attente de Youssef ; rien n'est fusionné ni déployé.
+
+## 2026-10-22 · v0.32.0-proto2 · Corrections premium des tenues, du chargement et des portraits
+
+- **Demande** : Youssef, 10:33, « CORRECTIONS PREMIUM » ; à 10:35, « par sur v32 » (base v0.32.0-proto1). Rapport :
+  `docs/v032/TENUES_PREMIUM.md`.
+- **Constat** :
+  - le coach apparaissait en sous-vêtements avant sa tenue (3 images mesurées) ;
+  - les gis ressemblaient à du gros tricot : relief de 8 mm, volume gonflé, manches dentelées, col fin, ceinture en
+    tube ;
+  - les shorts avaient un aspect plastique, les ceintures de short ressemblaient à une corde, la fente du MMA était
+    déchirée, les gants étaient sphériques et les protège-tibias incomplets et dentelés ;
+  - l'écran « Choisis ton coach » montrait des dessins cartoon.
+- **Correction** :
+  - coach affiché seulement avec sa tenue portée, après préparation sur la carte graphique, avec un délai de secours
+    de 20 s (`PhotoCoach.tsx`, `outfit.ts`) ;
+  - générateur des tenues refait pour les gis, les shorts, les gants, les protège-tibias et les rashguards
+    (`tools/generator/rocketbox/outfits.py`), 14 tenues régénérées ;
+  - portraits rendus depuis les modèles 3D (`scripts/dev/shot-portraits.mjs`).
+  - Corps, rig, animations et stabilité WebGL non modifiés.
+- **Tests** :
+  - `outfit-loading.spec.ts` (0 image sans tenue ; 3 sans la correction) ;
+  - `outfit-v032.test.ts` (14 tests, dont 12 qui échouent sur les fichiers v0.31) : TEST RÉUSSI ;
+  - suites complètes : PW_RESULT
+  - Android réel : NON EXÉCUTÉ.
+- **Restauration** : `restauration/avant-tenues-premium` (v0.31.0) ou `feature/biomeca-v032` (v0.32.0-proto1).
+- **Validation** : en attente de Youssef ; rien n'est fusionné ni déployé.
