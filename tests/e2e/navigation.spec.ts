@@ -12,7 +12,8 @@ import { bar, barSlots, menuCommand, openCoachIA, openMenu, seedProfile } from '
 const RETOUR = ['back', 'Retour'];
 const MENU = ['grid', 'Menu'];
 const SCREENS: [string, string, string[][]][] = [
-  ['/', 'accueil', [['dumbbell', 'Entraîner'], ['layers', 'Techniques'], ['chart', 'Progrès'], ['user', 'Profil'], MENU]],
+  // 0.34: Progrès right after Entraîner (Youssef, 2026-10-22)
+  ['/', 'accueil', [['dumbbell', 'Entraîner'], ['chart', 'Progrès'], ['layers', 'Techniques'], ['user', 'Profil'], MENU]],
   ['/entrainement?ex=boxe-debutant-01&mode=technique', 'entrainement', [RETOUR, ['play', 'Démarrer'], ['scan', 'Décomposer'], ['camera', 'Caméra'], MENU]],
   ['/techniques?d=boxe', 'techniques', [RETOUR, ['search', 'Rechercher'], ['filter', 'Filtres'], ['play', 'Technique'], MENU]],
   ['/techniques/jab?d=boxe', 'fiche', [RETOUR, ['play', 'S’entraîner'], ['speed', 'Ralenti'], ['check', 'Maîtrise'], MENU]],
@@ -58,8 +59,9 @@ test.describe('393×851', () => {
     expect(items).toEqual([
       ['accueil', 'Accueil'],
       ['entrainer', 'Entraîner'],
-      ['techniques', 'Techniques'],
+      // 0.34: Progrès right after Entraîner (Youssef, 2026-10-22)
       ['progres', 'Progrès'],
+      ['techniques', 'Techniques'],
       ['legendes', 'Légendes'],
       ['profil', 'Profil'],
       ['parametres', 'Paramètres'],
@@ -119,10 +121,11 @@ test.describe('393×851', () => {
     const news = page.getByTestId('news-sheet');
     await expect(news).toBeVisible();
     const versions = await news.locator('[data-version]').evaluateAll((a) => a.map((x) => x.getAttribute('data-version')));
-    expect(versions[0]).toBe('0.33.0');
+    expect(versions[0]).toBe('0.34.0');
+    expect(versions).toContain('0.33.0');
     expect(versions).toContain('0.32.0');
     expect(versions).toContain('0.31.0');
-    await expect(news.locator('[data-version="0.33.0"]')).toContainText('Version 0.33.0 · la plus récente');
+    await expect(news.locator('[data-version="0.34.0"]')).toContainText('Version 0.34.0 · la plus récente');
     await expect(news).not.toContainText('fictive');
     // seen: the dots go away at once
     await expect(page.getByTestId('menu-dot')).toHaveCount(0);
@@ -331,7 +334,8 @@ test.describe('393×851', () => {
     const outline = await btn.evaluate((b) => getComputedStyle(b).outlineStyle + getComputedStyle(b).boxShadow);
     expect(outline).not.toBe('nonenone');
     await page.keyboard.press('Enter');
-    await expect(bar(page)).toHaveAttribute('data-screen', 'techniques');
+    // 0.34: place 2 of the home bar is Progrès
+    await expect(bar(page)).toHaveAttribute('data-screen', 'progres');
   });
 
   test('mouvement réduit : pas d’animation de la barre ni du Menu', async ({ page }) => {

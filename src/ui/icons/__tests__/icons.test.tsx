@@ -99,9 +99,10 @@ describe('bibliothèque d’icônes : intégration dans les écrans', () => {
   // the old Coach tab, and no Coach entry comes back
   it('la navigation principale garde ses 5 destinations réelles : Légendes à la place de l’ancien onglet Coach', () => {
     const main = MENU_ENTRIES.filter((m) => ['accueil', 'entrainer', 'techniques', 'progres', 'legendes'].includes(m.id));
-    expect(main.map((m) => m.label)).toEqual(['Accueil', 'Entraîner', 'Techniques', 'Progrès', 'Légendes']);
+    // 0.34: Progrès right after Entraîner (Youssef, 2026-10-22)
+    expect(main.map((m) => m.label)).toEqual(['Accueil', 'Entraîner', 'Progrès', 'Techniques', 'Légendes']);
     expect(MENU_ENTRIES.map((m) => m.label)).not.toContain('Coach');
-    expect(NAV_CONFIG.accueil.map((s) => s.label)).toEqual(['Entraîner', 'Techniques', 'Progrès', 'Profil', 'Menu']);
+    expect(NAV_CONFIG.accueil.map((s) => s.label)).toEqual(['Entraîner', 'Progrès', 'Techniques', 'Profil', 'Menu']);
   });
 });
 

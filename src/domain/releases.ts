@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.34.0',
+      releaseDate: '2026-10-22',
+      title: 'Progrès plus clair',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Progrès repensé : ton parcours en grand, tes quatre chiffres clés côte à côte, les deux périodes comparées juste au-dessus du graphique.' },
+        { category: 'ameliorations', text: 'Jours actifs et plus longue pause restent visibles sur toutes les vues de Progrès.' },
+        { category: 'ameliorations', text: 'Dans le Menu, Progrès vient juste après Entraîner.' },
+      ],
+      links: [{ label: 'Voir mes progrès', to: '/stats' }],
+    },
+    {
       version: '0.33.0',
       releaseDate: '2026-10-22',
       title: 'Entraîner repensé et emblèmes des disciplines',

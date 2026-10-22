@@ -2326,16 +2326,18 @@ button.panel-row {
 }
 
 /* -------------------------------------------------- Progrès: dashboard without vertical scroll */
-/* series colours: current period = accent red, previous period = muted blue (pair validated with the
-   dataviz palette checks, dark surface #1f2937 and light surface #ffffff); trend states always come
-   with an arrow and words */
+/* series colours (0.34, Athletic Intelligence): current period = deep red, previous period = slate grey, the
+   reference pair of Youssef's brief (2026-10-22); the two series are always named (legend lines of zone 4, sr-only
+   tables), never told apart by colour alone; trend states always come with an arrow and words */
 :root {
-  --c-prev: #4a86c8;
+  --c-cur: #db5265;
+  --c-prev: #777e88;
   --c-up: #4cc38a;
   --c-down: #f08a4b;
 }
 :root[data-theme='light'] {
-  --c-prev: #4a86c8;
+  --c-cur: #b72e42;
+  --c-prev: #a7adb2;
   --c-up: #1e7a4f;
   --c-down: #b4530f;
 }
@@ -2573,7 +2575,7 @@ button.panel-row {
   border-radius: 3px;
 }
 .sw.cur {
-  background: var(--red);
+  background: var(--c-cur);
 }
 .sw.prev {
   background: var(--c-prev);
@@ -2595,10 +2597,10 @@ button.panel-row {
   font-variant-numeric: tabular-nums;
 }
 .cmp-cols svg path.cur {
-  fill: var(--red);
+  fill: var(--c-cur);
 }
 .cmp-cols svg path.cur.partial {
-  fill: var(--red);
+  fill: var(--c-cur);
   opacity: 0.7;
 }
 .cmp-cols svg path.prev {
@@ -2693,7 +2695,7 @@ button.panel-row {
   border-radius: 0 4px 4px 0;
 }
 .pbars i.cur {
-  background: var(--red);
+  background: var(--c-cur);
 }
 .pbars i.prev {
   height: 5px;

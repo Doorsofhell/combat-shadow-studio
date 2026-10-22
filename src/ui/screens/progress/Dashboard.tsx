@@ -45,6 +45,7 @@ import { EmptyState, FilterChips, PageHead, Sheet, Tabs, useKbStyle } from '../.
 import { AppIcon, DisciplineIcon } from '../../icons';
 import { CompareColumns, Legend, PairRows, TrendMark, useBox } from './charts';
 import { useNavActions } from '../../nav/store';
+import './progress.css';
 
 const dur = (sec: number) => formatDuration(sec);
 const count = (n: number) => String(n);
@@ -149,7 +150,7 @@ export function Stats() {
   );
 
   return (
-    <div className="page dash" data-testid="progress-dashboard">
+    <div className="page dash ai" data-testid="progress-dashboard">
       <PageHead
         title="Progrès"
         back={false}
@@ -178,13 +179,14 @@ export function Stats() {
           ...DISCIPLINES.map((d) => ({
             id: d.id,
             label: d.short,
-            icon: <DisciplineIcon id={d.id} size={22} />,
+            icon: <DisciplineIcon id={d.id} size={20} />,
             testId: `disc-${d.id}`,
           })),
         ]}
       />
 
-      <div className="dash-period">
+      {/* zone 2, filters: the six disciplines (and all of them), then the period */}
+      <div className="ai-filters">
         <FilterChips
           label="Période"
           scroll
@@ -203,44 +205,73 @@ export function Stats() {
             },
           ]}
         />
-        <p className="small muted dash-caption" data-testid="period-caption">
-          <span className="sr-only">Période du </span>
-          {fmtShort(p.cur.from, p.cur.to)}
-          {p.inProgress && <span className="tag">en cours</span>} vs {fmtShort(p.prev.from, p.prev.to)}
-          {filterCount > 0 && ` · ${[v.level && LEVELS.find((l) => l.id === v.level)!.name, v.kind && KIND_LABEL[v.kind]].filter(Boolean).join(', ')}`}
-        </p>
       </div>
 
-      <div className="dash-sum">
+      {/* zone 3, summary: the course percentage first, then the four volume figures of the period */}
+      <section className="ai-summary" aria-label="Synthèse de la période">
         <button
           type="button"
-          className="gauge-btn"
+          className="ai-course"
           onClick={() => setSheet('parcours')}
           data-testid="course-gauge"
           aria-label={`Parcours ${discName} : ${cov.studied} techniques étudiées sur ${cov.total}, ${Math.round(cov.ratio * 100)} %. Détails`}
         >
-          <Gauge value={cov.ratio} size={62} />
-          <span className="k">Parcours{changed ? ' *' : ''}</span>
-        </button>
-        <div className="sum-rows">
-          <div className="sum-row" data-testid="course-row">
-            <span className="k">Techniques{v.level ? ` · ${LEVELS.find((l) => l.id === v.level)!.name}` : ''}</span>
-            <span className="mv">
-              <span className="v">
-                {cov.studied}
-                <small>/{cov.total}</small>
-              </span>
-              <span className="trend neutral">{cov.newCur > 0 ? `+${cov.newCur} nouvelle${cov.newCur > 1 ? 's' : ''}` : 'aucune nouvelle'}</span>
+          <span className="ai-pct">
+            {Math.round(cov.ratio * 100)}
+            <small>%</small>
+          </span>
+          <span className="ai-course-txt" data-testid="course-row">
+            <span className="k">Parcours{changed ? ' *' : ''}</span>
+            <span className="ai-course-n">
+              <b>{cov.studied}</b> / {cov.total} techniques{v.level ? ` · ${LEVELS.find((l) => l.id === v.level)!.name}` : ''}
             </span>
-          </div>
+            <span className="trend neutral">{cov.newCur > 0 ? `+${cov.newCur} nouvelle${cov.newCur > 1 ? 's' : ''} sur la période` : 'aucune nouvelle sur la période'}</span>
+            <span className="ai-track" aria-hidden>
+              <i style={{ width: `${Math.max(0, Math.min(1, cov.ratio)) * 100}%` }} className={cov.ratio >= 1 ? 'full' : ''} />
+            </span>
+          </span>
+          <AppIcon id="chevron" size={16} />
+        </button>
+        <div className="ai-kpis">
           <Kpi label="Temps actif" value={dur(tc.activeSec)} d={cmp.activeSec} unit={dur} testId="total-time" />
           <Kpi label="Séances" value={count(tc.sessions)} d={cmp.sessions} unit={count} testId="kpi-sessions" />
           <Kpi label="Répétitions" value={count(tc.reps)} d={cmp.reps} unit={count} testId="kpi-reps" />
+          <Kpi label="Exercices" value={count(tc.exercises)} d={cmp.exercises} unit={count} testId="kpi-exercises" boxTestId="mini-exercises" />
         </div>
-      </div>
+      </section>
 
-      <div className="dash-chart card">
-        <Tabs label="Statistiques détaillées" variant="underline" value={v.tab} onChange={(tab) => v.set({ tab })} items={TABS.map((t) => ({ ...t, testId: `ptab-${t.id}` }))} />
+      {/* zone 4, the two periods compared: they also name the two series of the chart */}
+      <section className="ai-compare" aria-label="Comparaison des périodes">
+        <div className="ai-periods" data-testid="period-caption">
+          <span className="ai-per cur">
+            <i className="sw cur" aria-hidden />
+            <span className="k">
+              <span className="sr-only">Période </span>Actuelle
+            </span>{' '}
+            {fmtShort(p.cur.from, p.cur.to)}
+            {p.inProgress && <span className="tag">en cours</span>}
+          </span>
+          <span className="ai-per prev">
+            <i className="sw prev" aria-hidden />
+            <span className="k">
+              <span className="sr-only">Période </span>Précédente
+            </span>{' '}
+            {fmtShort(p.prev.from, p.prev.to)}
+          </span>
+          {filterCount > 0 && <span className="ai-per small muted">{[v.level && LEVELS.find((l) => l.id === v.level)!.name, v.kind && KIND_LABEL[v.kind]].filter(Boolean).join(', ')}</span>}
+        </div>
+        <div className="ai-regular">
+          <Mini label="Jours actifs" value={count(tc.activeDays)} d={cmp.activeDays} unit={count} testId="mini-days" />
+          <Mini label="Pause max." value={daysU(tc.longestBreak)} d={cmp.longestBreak} unit={daysU} testId="mini-break" />
+        </div>
+        <button type="button" className="ai-cmp-btn" onClick={() => setSheet('comparaison')} data-testid="open-comparison" aria-label="Comparer les deux périodes en détail">
+          <AppIcon id="compare" size={18} />
+          <span>Comparer</span>
+        </button>
+      </section>
+
+      {/* zones 5 and 6: the chart or list of the chosen view, its five views (and Maîtrise) under it, near the thumb */}
+      <div className="dash-chart ai-panel">
         <div className="dash-body" role="tabpanel" aria-label={TABS.find((t) => t.id === v.tab)!.label} data-testid={`ppanel-${v.tab}`}>
           {v.tab === 'maitrise' ? (
             <MasteryPanel discipline={v.discipline} kb={kb} />
@@ -255,20 +286,10 @@ export function Stats() {
               }
             />
           ) : (
-            <Panel
-              key={v.tab}
-              tab={v.tab}
-              p={p}
-              cur={cur}
-              prev={prev}
-              today={today}
-              cmp={cmp}
-              tc={tc}
-              onMore={() => setSheet(v.tab === 'activite' ? 'comparaison' : 'detail')}
-              onSession={setSession}
-            />
+            <Panel key={v.tab} tab={v.tab} p={p} cur={cur} prev={prev} today={today} onMore={() => setSheet('detail')} onSession={setSession} />
           )}
         </div>
+        <Tabs label="Statistiques détaillées" variant="underline" value={v.tab} onChange={(tab) => v.set({ tab })} items={TABS.map((t) => ({ ...t, testId: `ptab-${t.id}` }))} />
       </div>
 
       {sheet === 'periode' && <PeriodSheet today={today} initial={v.custom} onClose={() => setSheet(null)} onApply={(custom) => (v.set({ preset: 'perso', custom }), setSheet(null))} />}
@@ -424,9 +445,9 @@ function Gauge({ value, size = 64 }: { value: number; size?: number }) {
   );
 }
 
-function Kpi({ label, value, d, unit, testId }: { label: string; value: string; d: Parameters<typeof TrendMark>[0]['d']; unit: (n: number) => string; testId: string }) {
+function Kpi({ label, value, d, unit, testId, boxTestId }: { label: string; value: string; d: Parameters<typeof TrendMark>[0]['d']; unit: (n: number) => string; testId: string; boxTestId?: string }) {
   return (
-    <div className="sum-row">
+    <div className="sum-row" data-testid={boxTestId}>
       <span className="k">{label}</span>
       <span className="mv">
         <span className="v" data-testid={testId}>
@@ -444,8 +465,6 @@ type PanelProps = {
   cur: ProgressRecord[];
   prev: ProgressRecord[];
   today: string;
-  cmp: ReturnType<typeof compare>;
-  tc: ReturnType<typeof totals>;
   onMore: () => void;
   onSession: (g: SessionGroup) => void;
 };
@@ -482,7 +501,7 @@ function useFit(total: number) {
   return [ref, n] as const;
 }
 
-function Panel({ tab, p, cur, prev, today, cmp, tc, onMore, onSession }: PanelProps) {
+function Panel({ tab, p, cur, prev, today, onMore, onSession }: PanelProps) {
   const [ref, box] = useBox<HTMLDivElement>();
   const legend = <Legend cur={fmtShort(p.cur.from, p.cur.to)} prev={fmtShort(p.prev.from, p.prev.to)} />;
   const emptyPeriod = <p className="small muted dash-empty">Aucune séance sur ces deux périodes pour ces filtres. Les données des autres périodes sont conservées.</p>;
@@ -499,12 +518,6 @@ function Panel({ tab, p, cur, prev, today, cmp, tc, onMore, onSession }: PanelPr
           : fmtDay(b.cur.from, { month: 'short' });
     return (
       <div className="act">
-        <div className="legend-row">
-          {legend}
-          <button type="button" className="link small" onClick={onMore} data-testid="open-comparison">
-            Détails
-          </button>
-        </div>
         <div className="act-chart" ref={ref}>
           {box.h > 0 && (
             <CompareColumns
@@ -516,11 +529,6 @@ function Panel({ tab, p, cur, prev, today, cmp, tc, onMore, onSession }: PanelPr
               rangeOf={(b, w) => fmtRange(b[w].from, b[w].to) + (w === 'cur' && b.inProgress ? ' (en cours)' : '')}
             />
           )}
-        </div>
-        <div className="mini-stats">
-          <Mini label="Exercices" value={count(tc.exercises)} d={cmp.exercises} unit={count} testId="mini-exercises" />
-          <Mini label="Jours actifs" value={count(tc.activeDays)} d={cmp.activeDays} unit={count} testId="mini-days" />
-          <Mini label="Pause max." value={daysU(tc.longestBreak)} d={cmp.longestBreak} unit={daysU} testId="mini-break" />
         </div>
       </div>
     );

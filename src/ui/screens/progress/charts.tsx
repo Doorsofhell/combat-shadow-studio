@@ -1,5 +1,5 @@
 /**
- * Charts of the Progrès screen. Current period in the accent red, previous period in a muted blue
+ * Charts of the Progrès screen. Current period in deep red, previous period in slate grey (0.34)
  * (pair validated for colour vision deficiencies, dark and light); text stays in the ink tokens and a
  * legend always names both series. Every chart has a text equivalent (sr-only table).
  */

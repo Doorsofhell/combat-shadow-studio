@@ -59,8 +59,9 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
   // 5.1 — the mockup's `home`
   accueil: [
     { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' },
-    { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' },
+    // 0.34 (Youssef, 2026-10-22): Progrès right after Entraîner
     { icon: 'chart', label: 'Progrès', action: 'nav:/stats' },
+    { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' },
     { icon: 'user', label: 'Profil', action: 'nav:/profil' },
     MENU,
   ],
@@ -176,8 +177,9 @@ export interface MenuEntry {
 export const MENU_ENTRIES: readonly MenuEntry[] = [
   { id: 'accueil', icon: 'home', label: 'Accueil', to: '/' },
   { id: 'entrainer', icon: 'dumbbell', label: 'Entraîner', to: '/entrainer' },
-  { id: 'techniques', icon: 'layers', label: 'Techniques', to: '/techniques' },
+  // 0.34 (Youssef, 2026-10-22): Progrès right after Entraîner
   { id: 'progres', icon: 'chart', label: 'Progrès', to: '/stats' },
+  { id: 'techniques', icon: 'layers', label: 'Techniques', to: '/techniques' },
   { id: 'legendes', icon: 'star', label: 'Légendes', to: '/champions' },
   { id: 'profil', icon: 'user', label: 'Profil', to: '/profil' },
   { id: 'parametres', icon: 'settings', label: 'Paramètres', to: '/reglages' },
