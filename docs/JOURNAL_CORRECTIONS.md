@@ -1605,3 +1605,25 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - nouveaux `train-resume.spec` (5) et `emblems.spec` (3, dont hors ligne) : TEST RÉUSSI ;
   - Android réel : NON EXÉCUTÉ.
 - **Restauration** : `restauration/avant-entrainer-v033`.
+
+## 2026-10-22 · v0.34.0 · Progrès, Athletic Intelligence
+
+- **Demande** : refonte ergonomique et graphique de Progrès, option C « Athletic Intelligence » (Youssef, 2026-10-22). Aucune nouvelle fonction, aucun calcul modifié, un seul écran sans défilement, Progrès juste après Entraîner.
+- **Constat avant** :
+  - Exercices, Jours actifs et Pause max. n'étaient visibles que dans l'onglet Activité ;
+  - le parcours était une petite jauge ;
+  - la série précédente était en bleu ;
+  - Progrès était 4e dans le Menu.
+- **Correction** :
+  - six zones (en-tête, filtres, synthèse avec grand pourcentage et quatre chiffres, comparaison des deux périodes servant de légende, vue, onglets sous la vue) ;
+  - séries rouge profond / ardoise ;
+  - Progrès juste après Entraîner dans le Menu et la barre de l'accueil.
+  - Aucun fichier de calcul modifié (`src/domain/progress.ts`, `src/store/stats.ts`, `src/store/progressView.ts`).
+- **Fichiers** : `src/ui/screens/progress/Dashboard.tsx`, `progress.css` (nouveau), `src/ui/styles.css` (tokens de série), `src/ui/nav/config.ts`, `docs/v034/`.
+- **Tests** :
+  - 12 cas (3 disciplines × 4 périodes) sur le même jeu de données : 0 écart sur les chiffres avant/après ;
+  - Vitest : 645 réussis, 1 échec déjà présent (Amara) ;
+  - Playwright : 156 réussis, 3 échoués (coach-render, réussi à la relance ; coach-suggest, intermittent ; training-layout caméra Auto, déjà en échec avant), 2 non exécutés ;
+  - Progrès + navigation : 53/53 ;
+  - Android réel : NON EXÉCUTÉ.
+- **Restauration** : `restauration/avant-progres-v034`.

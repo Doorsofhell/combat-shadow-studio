@@ -1,6 +1,6 @@
 /**
- * Charts of the Progrès screen. Current period in the accent red, previous period in a muted blue
- * (pair validated for colour vision deficiencies, dark and light); text stays in the ink tokens and a
+ * Charts of the Progrès screen. Current period in deep red, previous period in slate grey (0.34)
+ * (the colour pair of the brief; both series are also named in text: zone 4 lines, readout, sr-only table); text stays in the ink tokens and a
  * legend always names both series. Every chart has a text equivalent (sr-only table).
  */
 import { ReactNode, RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';

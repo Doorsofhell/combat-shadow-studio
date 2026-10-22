@@ -50,11 +50,23 @@ describe('barre : cinq places, mêmes icônes, libellés et ordre que la maquett
     ['profile', 'profil'],
     ['default', 'parametres'],
   ];
+  // 0.34 (Youssef, 2026-10-22, refonte Progrès §11): on the home bar, Progrès comes right after Entraîner; the rest
+  // is the mockup as drawn
+  const progresAfterTrain = <T,>(xs: T[], labels: string[]) => {
+    const i = labels.indexOf('Progrès');
+    const j = labels.indexOf('Entraîner');
+    if (i < 0 || j < 0 || i === j + 1) return xs;
+    const out = [...xs];
+    const [m] = out.splice(i, 1);
+    out.splice(j + 1, 0, m);
+    return out;
+  };
   test.each(pairs)('%s → %s', (ref, ours) => {
     const slots = NAV_CONFIG[ours];
     expect(slots).toHaveLength(5);
-    expect(slots.map((s) => s.icon)).toEqual(refCase(ref));
-    expect(slots.map((s) => s.label)).toEqual(refLabels(ref));
+    const labels = refLabels(ref);
+    expect(slots.map((s) => s.icon)).toEqual(progresAfterTrain(refCase(ref), labels));
+    expect(slots.map((s) => s.label)).toEqual(progresAfterTrain(labels, labels));
   });
   test('séance : la place 2 passe de Démarrer à Pause puis Reprendre, même place', () => {
     expect(NAV_CONFIG.entrainement[1].action).toBe('toggle');
@@ -113,11 +125,15 @@ describe('écran d’une route', () => {
 });
 
 describe('Navigation générale', () => {
-  test('huit entrées, dans l’ordre et avec les icônes de la maquette', () => {
+  test('huit entrées, avec les icônes de la maquette, Progrès juste après Entraîner', () => {
     const items = REF.match(/const items=\[(.*?)\];/)![1];
     const ref = [...items.matchAll(/\['([a-z]+)','([^']+)','[a-z]+'\]/g)].map((m) => [m[1], m[2]]);
-    expect(MENU_ENTRIES.map((m) => [m.icon, m.label])).toEqual(ref);
     expect(ref).toHaveLength(8);
+    // 0.34 (Youssef, 2026-10-22, refonte Progrès §11): the order of the mockup, except Progrès placed right after Entraîner
+    const progres = ref.findIndex((r) => r[1] === 'Progrès');
+    const [moved] = ref.splice(progres, 1);
+    ref.splice(ref.findIndex((r) => r[1] === 'Entraîner') + 1, 0, moved);
+    expect(MENU_ENTRIES.map((m) => [m.icon, m.label])).toEqual(ref);
   });
 });
 
