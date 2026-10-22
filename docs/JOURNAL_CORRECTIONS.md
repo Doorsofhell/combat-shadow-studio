@@ -1652,3 +1652,25 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Progrès + navigation : 53/53 ;
   - Android réel : NON EXÉCUTÉ.
 - **Restauration** : `restauration/avant-progres-v034`.
+
+## 2026-10-22 · v0.36.0 · Entraîner et Techniques : rôles clarifiés
+
+- **Demande** : Youssef, 2026-10-22 18:47. Entraîner sert à pratiquer et à personnaliser son entraînement, Techniques à apprendre et à explorer. Il faut une carte premium « Crée tes propres enchaînements » dans Séances, retirer le Créateur et les Programmes de Techniques, et ne pas employer le mot « combat ».
+- **Constat avant** :
+  - dans Séances, Mes enchaînements était en bas, sous Démarrage rapide, avec un grand bouton « Créer un enchaînement » ;
+  - Techniques avait cinq sections (Techniques, Combinaisons, Créateur, Favoris, Programmes) ;
+  - à 360 px, la section choisie pouvait rester cachée à droite de la rangée.
+- **Correction** :
+  - Séances, dans l'ordre : Reprendre (seulement si une séance peut être reprise), la carte du Créateur, Mes enchaînements (avec un état vide compact sur une ligne et un lien « Gérer »), puis Démarrage rapide ;
+  - Techniques : Techniques, Combinaisons, Légendes et Favoris ;
+  - `?tab=createur` redirige vers `/createur` (la discipline est gardée) et `?tab=programmes` vers `/programmes` ;
+  - le Retour du Créateur mène à Entraîner ;
+  - les textes du Coach IA décrivent la nouvelle organisation ;
+  - la rangée de sections montre toujours la section choisie.
+  - La barre, les routes, les données et le Créateur sont inchangés.
+- **Fichiers** : `src/ui/screens/Train.tsx`, `train.css`, `Library.tsx`, `Builder.tsx`, `src/ui/components/Tabs.tsx`, `src/ui/nav/config.ts`, `src/coach/appGuide.ts`, `src/domain/releases.ts`, `docs/v036/`.
+- **Tests** :
+  - nouveau : `tests/e2e/entrainer-techniques.spec.ts` (3) ;
+  - adaptés à la nouvelle demande : `coach-bubble` (section Légendes), `appGuide.test` (quatre sections), `navigation` (0.36.0) ;
+  - Vitest : 662 réussis, 1 échec déjà présent (Amara).
+- **Rapport** : `docs/v036/ENTRAINER_TECHNIQUES.md`.

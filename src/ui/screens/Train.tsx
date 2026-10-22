@@ -116,13 +116,53 @@ export function Train() {
 
 function Sessions({ quick, recommended, onOpen }: { quick: Exercise[]; recommended?: Exercise; onOpen: (id: string) => void }) {
   const combos = useCustom((s) => s.combos);
+  // 0.36 (Youssef, refonte Entraîner / Techniques): 1. the session that can be resumed, 2. the creator, 3. my
+  // combinations, 4. quick start. The card of a first or new session (nothing to resume) opens the quick start.
   return (
     <>
-      <ResumeCard recommended={recommended} onOpen={onOpen} />
+      <ResumeCard recommended={recommended} onOpen={onOpen} only="resume" />
 
-      {quick.length > 0 && (
-        <section className="section" aria-labelledby="h-quick">
-          <SectionHead id="h-quick" title="Démarrage rapide" />
+      <CreatorCard />
+
+      <section className="section" aria-labelledby="h-perso" data-testid="my-combos">
+        <SectionHead
+          id="h-perso"
+          title="Mes enchaînements"
+          action={
+            combos.length > 0 ? (
+              <Link to="/createur" data-testid="manage-combos">
+                Gérer
+              </Link>
+            ) : undefined
+          }
+        />
+        {combos.length === 0 ? (
+          // compact: the creator card just above already holds the one « Créer » button
+          <p className="small muted perso-empty" data-testid="combos-empty">
+            Aucun enchaînement enregistré pour l’instant. Tes créations apparaîtront ici, prêtes à lancer.
+          </p>
+        ) : (
+          <div className="stack" style={{ gap: 8 }}>
+            {combos.map((c) => (
+              <Link key={c.id} to={`/entrainement?perso=${c.id}&mode=libre`} className="card link ex-card" aria-label={`Lancer ${c.name}`} data-testid={`combo-${c.id}`}>
+                <TechThumb id={keyTechnique(c.sequence)} />
+                <span className="body">
+                  <span className="title">{c.name}</span>
+                  <span className="small muted">
+                    <DisciplineLabel id={c.discipline} name={DISCIPLINES.find((x) => x.id === c.discipline)?.name ?? ''} /> · {c.sequence.length} mouvements
+                  </span>
+                </span>
+                <AppIcon id="play" />
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="section" aria-labelledby="h-quick">
+        <SectionHead id="h-quick" title="Démarrage rapide" />
+        <ResumeCard recommended={recommended} onOpen={onOpen} only="start" />
+        {quick.length > 0 && (
           <div className="quick-grid">
             {quick.map((e, i) => (
               <button key={e.id} type="button" className="quick-card" onClick={() => onOpen(e.id)} data-testid={`quick-${e.id}`}>
@@ -142,42 +182,27 @@ function Sessions({ quick, recommended, onOpen }: { quick: Exercise[]; recommend
               </button>
             ))}
           </div>
-        </section>
-      )}
-
-      <section className="section" aria-labelledby="h-perso">
-        <SectionHead id="h-perso" title="Mes enchaînements" action={combos.length > 0 ? <Link to="/createur">Créateur</Link> : undefined} />
-        {combos.length === 0 ? (
-          <EmptyState
-            title="Aucun enchaînement personnel"
-            text="Compose ta propre combinaison, le coach l’exécute."
-            action={
-              <Link to="/createur" className="btn secondary" data-testid="create-combo">
-                <AppIcon id="add" size={18} /> Créer un enchaînement
-              </Link>
-            }
-          />
-        ) : (
-          <div className="stack" style={{ gap: 8 }}>
-            {combos.map((c) => (
-              <Link key={c.id} to={`/entrainement?perso=${c.id}&mode=libre`} className="card link ex-card" aria-label={`Lancer ${c.name}`}>
-                <TechThumb id={keyTechnique(c.sequence)} />
-                <span className="body">
-                  <span className="title">{c.name}</span>
-                  <span className="small muted">
-                    <DisciplineLabel id={c.discipline} name={DISCIPLINES.find((x) => x.id === c.discipline)?.name ?? ''} /> · {c.sequence.length} mouvements
-                  </span>
-                </span>
-                <AppIcon id="chevron" />
-              </Link>
-            ))}
-            <Link to="/createur" className="btn secondary block" data-testid="create-combo">
-              <AppIcon id="add" size={18} /> Créer un enchaînement
-            </Link>
-          </div>
         )}
       </section>
     </>
+  );
+}
+
+/** 0.36: the creator of combinations, put forward in Séances (it opens the existing creator, /createur) */
+function CreatorCard() {
+  return (
+    <article className="creator-card" data-testid="creator-card" aria-labelledby="creator-title">
+      <span className="creator-icon" aria-hidden>
+        <AppIcon id="compose" size={26} />
+      </span>
+      <div className="creator-body">
+        <h2 id="creator-title">Crée tes propres enchaînements</h2>
+        <p>Choisis tes techniques, organise tes mouvements et regarde ton combattant 3D exécuter tes enchaînements.</p>
+      </div>
+      <Link to="/createur" className="btn primary creator-cta" data-testid="create-combo">
+        <AppIcon id="add" size={18} /> Créer un enchaînement
+      </Link>
+    </article>
   );
 }
 
@@ -189,7 +214,11 @@ function historySuggestion(sessions: { discipline: DisciplineId; start: string }
   return list.find((e) => !perExercise[e.id]) ?? list[0];
 }
 
-function ResumeCard({ recommended, onOpen }: { recommended?: Exercise; onOpen: (id: string) => void }) {
+/**
+ * `only` (0.36): « resume » shows the card only when something can be resumed (a session, a programme), at the top of
+ * Séances; « start » shows the first or new session card, at the head of the quick start. Same choice (pickCard).
+ */
+function ResumeCard({ recommended, onOpen, only }: { recommended?: Exercise; onOpen: (id: string) => void; only: 'resume' | 'start' }) {
   const nav = useNavigate();
   const ready = useHydrated(useResume);
   const statsReady = useHydrated(useStats);
@@ -219,7 +248,10 @@ function ResumeCard({ recommended, onOpen }: { recommended?: Exercise; onOpen: (
       }),
     [snapshots, programs, sessions.length, combos],
   );
-  if (!ready || !statsReady) return <div className="resume-card skeleton" aria-hidden data-testid="resume-card-loading" />;
+  // (the stores load in a few milliseconds; no placeholder, which would push the creator down then up again)
+  if (!ready || !statsReady) return null;
+  const resumable = card.kind === 'reprendre' || card.kind === 'programme';
+  if ((only === 'resume') !== resumable) return null;
 
   // one tap only: a second tap while the session opens does nothing
   const go = (to: string) => {

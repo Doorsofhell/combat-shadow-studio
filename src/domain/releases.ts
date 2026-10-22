@@ -49,6 +49,21 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.36.0',
+      releaseDate: '2026-10-22',
+      title: 'Créer tes enchaînements depuis Entraîner',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Entraîner, Séances : une carte « Crée tes propres enchaînements » ouvre le Créateur, et tes enchaînements sont juste en dessous.' },
+        { category: 'ameliorations', text: 'Techniques se concentre sur l’apprentissage : Techniques, Combinaisons, Légendes et Favoris.' },
+        { category: 'ameliorations', text: 'Les anciens liens vers le Créateur et les Programmes mènent toujours au bon endroit.' },
+      ],
+      links: [
+        { label: 'Créer un enchaînement', to: '/createur' },
+        { label: 'Ouvrir Entraîner', to: '/entrainer' },
+      ],
+    },
+    {
       version: '0.35.0',
       releaseDate: '2026-10-22',
       title: 'Coaching 3D plus lisible',

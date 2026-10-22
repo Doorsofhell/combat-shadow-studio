@@ -56,7 +56,7 @@ export function Builder() {
 
   return (
     <div className="page">
-      <PageHead title="Créateur d’enchaînements" eyebrow="Personnalisé" fallback="/techniques?tab=createur" />
+      <PageHead title="Créateur d’enchaînements" eyebrow="Personnalisé" fallback="/entrainer" />
       <Tabs label="Discipline" items={DISCIPLINES.map((x) => ({ id: x.id, label: x.short, icon: <DisciplineIcon id={x.id} size={24} /> }))} value={d} onChange={setD} />
       {d === 'kickboxing' && <KickboxingStylePicker />}
 

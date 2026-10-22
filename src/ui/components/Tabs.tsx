@@ -1,4 +1,4 @@
-import { KeyboardEvent, ReactNode, useRef } from 'react';
+import { KeyboardEvent, ReactNode, useEffect, useRef } from 'react';
 
 export interface TabItem<T extends string> {
   id: T;
@@ -26,6 +26,14 @@ export function Tabs<T extends string>({ items, value, onChange, label, variant 
     onChange(items[n].id);
     ref.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[n]?.focus();
   };
+  // 0.36: on a narrow screen the row scrolls; the selected tab is brought into view (only the row scrolls)
+  useEffect(() => {
+    const row = ref.current;
+    const tab = row?.querySelector<HTMLElement>('[aria-selected="true"]');
+    if (!row || !tab || row.scrollWidth <= row.clientWidth) return;
+    const left = tab.offsetLeft - row.offsetLeft;
+    if (left < row.scrollLeft || left + tab.offsetWidth > row.scrollLeft + row.clientWidth) row.scrollLeft = Math.max(0, left - 16);
+  }, [value]);
   const u = variant === 'underline';
   return (
     <div ref={ref} className={u ? 'utabs' : 'tabs'} role="tablist" aria-label={label} onKeyDown={onKey}>
