@@ -390,9 +390,10 @@ test('exercice précédent et suivant', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 851 });
   await open(page, `/#/entrainement?ex=boxe-debutant-02&mode=technique`);
   const first = await page.getByTestId('exercise-name').textContent();
-  await page.getByRole('button', { name: 'Exercice suivant' }).click();
+  // v0.32: Précédent and Suivant are commands of the Menu (« Sur cet écran »)
+  await menuCommand(page, 'cmd-next');
   await expect(page.getByTestId('exercise-name')).not.toHaveText(first!);
-  await page.getByRole('button', { name: 'Exercice précédent' }).click();
+  await menuCommand(page, 'cmd-prev');
   await expect(page.getByTestId('exercise-name')).toHaveText(first!);
 });
 

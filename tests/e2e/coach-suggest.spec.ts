@@ -229,8 +229,10 @@ test('questions suggérées : changement de technique pendant la séance', async
   await seed(page);
   await openCoach(page, exerciseOn('boxe', 'jab'));
   const first = await page.getByTestId('coach-suggestion').allTextContents();
-  // the panel stays open while the exercise changes: its questions follow
-  await page.getByRole('button', { name: 'Exercice suivant' }).tap();
+  // the panel stays open while the exercise changes: its questions follow (v0.32: « Exercice suivant » is a command
+  // of the Menu, « Sur cet écran »)
+  await page.getByTestId('bottom-bar').locator('[data-action="menu"]').tap();
+  await page.getByTestId('cmd-next').tap();
   await expect(page.getByTestId('coach-ask-panel')).toBeVisible();
   const move = (await page.getByTestId('current-move').textContent())!;
   await expect.poll(async () => (await page.getByTestId('coach-suggestion').allTextContents()).join('|')).not.toBe(first.join('|'));
