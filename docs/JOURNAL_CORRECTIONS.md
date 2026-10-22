@@ -1698,4 +1698,8 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - `src/store/photo.ts`, `src/domain/photo.ts`, `src/store/profile.ts` ;
   - `src/ui/screens/account/{Profile,SignIn,PhotoSheet}.tsx`, `account.css` ;
   - `firestore.rules`, `firebase.json`, `.github/workflows/preview.yml`, `docs/COMPTES.md`, `docs/v037/`.
-- **Tests** : émulateurs RÉUSSI ; nouveaux tests Vitest et Playwright (voir `docs/v037/COMPTES_V037.md`) ; Google et e-mails réels NON EXÉCUTÉ ; Android NON EXÉCUTÉ.
+- **Tests** :
+  - émulateurs Firebase : RÉUSSI ;
+  - Vitest complet : 668 réussis, 1 ÉCHOUÉ connu (Amara, extension de hanche, déjà en échec avant cette version) ;
+  - Playwright complet : 168 réussis, 1 ÉCHOUÉ connu (`training-layout:325`, caméra Auto, déjà en échec en v0.36), 2 ignorés (Firebase) ;
+  - Google et e-mails réels : NON EXÉCUTÉ ; Android : NON EXÉCUTÉ.

@@ -66,6 +66,7 @@ Détail dans `docs/COMPTES.md`.
   - dernière méthode non retirable, suppression des données et du compte.
 - **Vitest** : changement de mot de passe et d'adresse dans la session, cadrage de la photo, robustesse du mot de passe, messages d'erreur de synchronisation.
 - **Playwright** : `profile-photo.spec.ts` (ajout, refus d'un fichier non image, cadrage, conservation après rechargement, suppression ; en mode invité, aucun bouton inactif).
+- **Suites complètes** : Vitest 668 réussis, 1 ÉCHOUÉ connu (Amara, hors de cette version) ; Playwright 168 réussis, 1 ÉCHOUÉ connu (`training-layout:325`, caméra Auto, déjà en échec en v0.36), 2 ignorés (Firebase).
 - **Connexion Google réelle et e-mails réels** : NON EXÉCUTÉ par moi (il faut une vraie boîte mail et un vrai compte Google). C'est à tester sur la page publique.
 - **Android réel** : NON EXÉCUTÉ. Google reste masqué dans l'application Android (module natif à ajouter, plan dans `docs/COMPTES.md`).
 
