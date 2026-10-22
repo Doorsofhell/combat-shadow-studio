@@ -1,5 +1,5 @@
-import { useEffect, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useCallback, useEffect, useMemo } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import type { GLTFLoader } from 'three-stdlib';
 import { Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, SRGBColorSpace } from 'three';
@@ -96,9 +96,44 @@ export function PhotoCoach({
     [scene],
   );
   useEffect(() => onRig(rig), [rig, onRig]);
-  const dressed = useOutfit(scene, outfitUrl, outfit, quality, extendLoader);
+  const gl = useThree((s) => s.gl);
+  const camera = useThree((s) => s.camera);
+  const prepare = useCallback(
+    async (garments: Object3D[]) => {
+      for (const g of garments) {
+        const m = (g as Mesh).material as MeshStandardMaterial;
+        for (const t of [m.map, m.normalMap, m.roughnessMap]) if (t) gl.initTexture(t);
+      }
+      await gl.compileAsync(scene, camera);
+    },
+    [gl, camera, scene],
+  );
+  const dressed = useOutfit(scene, outfitUrl, outfit, quality, extendLoader, prepare);
   useEffect(() => onOutfit?.(dressed), [dressed, onOutfit]);
+  // v0.32 (Youssef, 2026-10-22 10:33: « le combattant apparaît brièvement en sous-vêtements »): the coach is
+  // drawn only once its outfit is worn, or when there is none, or when it failed (the base layer is then said)
+  const expected = outfitUrl && outfit ? outfit : null;
+  const ready = !expected || (dressed.outfit === expected && (dressed.state === 'portee' || dressed.state === 'erreur'));
+  scene.visible = ready;
   if (import.meta.env.DEV) (globalThis as { __photoScene?: Object3D }).__photoScene = scene;
-  useFrame((_, dt) => onFrame(rig, Math.min(dt, 0.05)));
+  useFrame((_, dt) => {
+    onFrame(rig, Math.min(dt, 0.05));
+    // probe of the loading tests (tests/e2e/outfit-loading.spec.ts): images drawn with the coach visible but
+    // the expected outfit not on its body
+    const w = globalThis as { __cssDress?: { shown: number; undressed: number; outfit: string | null } };
+    const d = (w.__cssDress ??= { shown: 0, undressed: 0, outfit: null });
+    d.outfit = expected;
+    if (!scene.visible) return;
+    d.shown++;
+    if (expected && dressed.state !== 'erreur' && !hasGarment(scene)) d.undressed++;
+  });
   return <primitive object={scene} />;
 }
+
+const hasGarment = (scene: Object3D) => {
+  let found = false;
+  scene.traverse((o) => {
+    if (o.name.startsWith('tenue:')) found = true;
+  });
+  return found;
+};

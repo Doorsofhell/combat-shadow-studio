@@ -67,8 +67,18 @@ type Status = { state: 'aucune' | 'chargement' | 'portee' | 'erreur'; outfit: Ou
  * say when an outfit could not be loaded (never a silent fallback: the coach then shows in its training base
  * layer and the message names the missing outfit).
  */
-export function useOutfit(scene: Object3D, url: string | null, outfit: OutfitId | null, quality: 'haute' | 'basse', extendLoader: (l: GLTFLoader) => void): Status {
-  const [status, setStatus] = useState<Status>({ state: 'aucune', outfit: null });
+export function useOutfit(
+  scene: Object3D,
+  url: string | null,
+  outfit: OutfitId | null,
+  quality: 'haute' | 'basse',
+  extendLoader: (l: GLTFLoader) => void,
+  /** v0.32: sends the garments' textures and shaders to the graphics chip before the coach is shown */
+  prepare?: (garments: Object3D[]) => Promise<void>,
+): Status {
+  // v0.32 (Youssef, 2026-10-22 10:33: the coach showed in underwear before the outfit): an outfit to put on
+  // starts as « chargement » from the first image, so the stage keeps the coach hidden until it is worn
+  const [status, setStatus] = useState<Status>(() => (url && outfit ? { state: 'chargement', outfit } : { state: 'aucune', outfit: null }));
   useEffect(() => {
     if (!url || !outfit) {
       setStatus({ state: 'aucune', outfit: null });
@@ -78,6 +88,16 @@ export function useOutfit(scene: Object3D, url: string | null, outfit: OutfitId 
     const added: Object3D[] = [];
     const restore: (() => void)[] = [];
     setStatus({ state: 'chargement', outfit });
+    // a request that never answers must not keep the coach hidden: after 20 s the base layer is shown and said
+    const fail = (err: unknown) => {
+      if (!live) return;
+      live = false;
+      clearTimeout(timer);
+      const message = `La tenue de ${OUTFIT_LABEL[outfit]} n’a pas pu être chargée.`;
+      log3d('modele', `${message} ${String((err as Error)?.message ?? err).slice(0, 120)}`);
+      setStatus({ state: 'erreur', outfit, message });
+    };
+    const timer = setTimeout(() => fail('délai de 20 s dépassé'), 20_000);
     const loader = new GLTFLoader();
     extendLoader(loader);
     const attempt = (tries: number) =>
@@ -92,7 +112,7 @@ export function useOutfit(scene: Object3D, url: string | null, outfit: OutfitId 
             if ((o as SkinnedMesh).isSkinnedMesh && !o.name.startsWith('tenue:')) skins.push(o as SkinnedMesh);
           });
           const body = skins[0] ?? null;
-          if (!body) return;
+          if (!body) return fail('corps du coach introuvable');
           const host = body.parent ?? scene;
           let hide: { keys: string; scale: number } | null = null;
           const meshes: SkinnedMesh[] = [];
@@ -142,21 +162,27 @@ export function useOutfit(scene: Object3D, url: string | null, outfit: OutfitId 
             }
             if (matched < keys.size * 0.9) log3d('modele', `tenue ${OUTFIT_LABEL[outfit]} : ${matched} points de peau masqués sur ${keys.size} attendus`);
           }
-          log3d('modele', `tenue ${OUTFIT_LABEL[outfit]} portée (${meshes.length} pièces)`);
-          setStatus({ state: 'portee', outfit });
+          const worn = () => {
+            if (!live) return;
+            clearTimeout(timer);
+            log3d('modele', `tenue ${OUTFIT_LABEL[outfit]} portée (${meshes.length} pièces)`);
+            setStatus({ state: 'portee', outfit });
+          };
+          // shown only once the graphics chip holds the garments (no half-textured first image); a failed
+          // preparation still shows the outfit, three then uploads it on the first image as before
+          (prepare ? prepare(added) : Promise.resolve()).then(worn, worn);
         },
         undefined,
         (err) => {
           if (!live) return;
           if (tries > 0) return attempt(tries - 1);
-          const message = `La tenue de ${OUTFIT_LABEL[outfit]} n’a pas pu être chargée.`;
-          log3d('modele', `${message} ${String((err as unknown as Error)?.message ?? err).slice(0, 120)}`);
-          setStatus({ state: 'erreur', outfit, message });
+          fail(err);
         },
       );
     attempt(1);
     return () => {
       live = false;
+      clearTimeout(timer);
       for (const o of added) {
         o.removeFromParent();
         const m = o as Mesh;
@@ -164,7 +190,7 @@ export function useOutfit(scene: Object3D, url: string | null, outfit: OutfitId 
       }
       restore.forEach((f) => f());
     };
-  }, [scene, url, outfit, quality, extendLoader]);
+  }, [scene, url, outfit, quality, extendLoader, prepare]);
   return status;
 }
 
