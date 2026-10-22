@@ -1728,3 +1728,24 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet : 173 réussis, 1 ÉCHOUÉ connu (`training-layout:325`, caméra Auto, déjà en échec avant), 2 ignorés (Firebase) ;
   - Android réel : NON EXÉCUTÉ.
 - **Rapport** : `docs/v038/CREATEUR_V2.md`.
+
+## 2026-10-22 · v0.39.0 · Progrès, refonte premium
+
+- **Demande** : « Progrès V2 » (Youssef) avec la plaquette de maquettes (`docs/design/progres/`) ; publication en autonomie pour la soirée (20:39).
+- **Constat avant** :
+  - un tableau de bord dense, sans anneau principal ni vue d'ensemble en un écran ;
+  - pas d'anneau « chronomètre » dans l'application, contrairement à la maquette ;
+  - l'icône centrale de l'anneau était étirée sur tout l'anneau (sélecteur CSS `.p-ring svg` trop large).
+- **Correction** :
+  - vue d'ensemble sans défilement : anneau principal (techniques assimilées / total), temps total, séances, série, objectifs ;
+  - détails en tuiles sur deux colonnes, liens vers Activité (ancien tableau de bord conservé), Techniques, Disciplines, Enchaînements, Historique ;
+  - pas de calories ni de nombre de coups (non mesurés) ; maquette 7 « Condition physique » volontairement omise (aucune donnée mesurée) ;
+  - sélecteur `.p-ring > svg` ;
+  - vocabulaire « assimilée(s) », comme dans le reste de l'application.
+- **Fichiers** : `src/ui/screens/progress/` (`Overview.tsx`, `Details.tsx`, `progress.css`), `src/domain/releases.ts`, `docs/design/progres/`, `docs/v039/`.
+- **Tests** :
+  - Vitest complet : 702 réussis, 1 ÉCHOUÉ connu (Amara, extension de hanche, déjà en échec avant), 1 ignoré ;
+  - Playwright complet : 176 réussis, 2 ÉCHOUÉS, 2 ignorés (Firebase). Échecs : `training-layout:325` (caméra Auto, connu, déjà en échec avant) et `coach-suggest:144` (délai dépassé sous forte charge CPU ; RÉUSSI relancé seul) ;
+  - nouveau `tests/e2e/progres-v2.spec.ts` : 4 RÉUSSIS ;
+  - Android réel : NON EXÉCUTÉ.
+- **Rapport** : `docs/v039/PROGRES_V2.md`.

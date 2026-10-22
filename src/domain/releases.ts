@@ -49,6 +49,22 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.39.0',
+      releaseDate: '2026-10-22',
+      title: 'Progrès, l’essentiel en un coup d’œil',
+      isMajor: true,
+      changes: [
+        { category: 'ameliorations', text: 'Progrès s’ouvre sur un grand anneau (ton objectif de la semaine, ou ton parcours de techniques), ton temps actif, tes séances et ta série en cours.' },
+        { category: 'fonctionnalites', text: 'Un écran par détail : Activité, Techniques, Disciplines et Enchaînements, chacun avec son anneau et son total écrit en clair.' },
+        { category: 'ameliorations', text: '« Reprendre l’entraînement » apparaît dans Progrès seulement quand une séance peut vraiment reprendre.' },
+        { category: 'ameliorations', text: 'La période choisie (7 jours, 30 jours, 90 jours, 12 mois ou Perso) s’applique à tous les écrans de Progrès. Seules tes séances enregistrées sont comptées.' },
+      ],
+      links: [
+        { label: 'Progrès', to: '/stats' },
+        { label: 'Disciplines', to: '/stats/disciplines' },
+      ],
+    },
+    {
       version: '0.38.0',
       releaseDate: '2026-10-22',
       title: 'Créateur d’enchaînements V2',

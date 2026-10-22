@@ -121,12 +121,12 @@ test.describe('393×851', () => {
     const news = page.getByTestId('news-sheet');
     await expect(news).toBeVisible();
     const versions = await news.locator('[data-version]').evaluateAll((a) => a.map((x) => x.getAttribute('data-version')));
-    expect(versions[0]).toBe('0.38.0');
+    expect(versions[0]).toBe('0.39.0');
     expect(versions).toContain('0.34.0');
     expect(versions).toContain('0.33.0');
     expect(versions).toContain('0.32.0');
     expect(versions).toContain('0.31.0');
-    await expect(news.locator('[data-version="0.38.0"]')).toContainText('Version 0.38.0 · la plus récente');
+    await expect(news.locator('[data-version="0.39.0"]')).toContainText('Version 0.39.0 · la plus récente');
     await expect(news).not.toContainText('fictive');
     // seen: the dots go away at once
     await expect(page.getByTestId('menu-dot')).toHaveCount(0);
@@ -283,8 +283,14 @@ test.describe('393×851', () => {
 
   test('Progrès : Statistiques et Historique ; Objectifs dans le Menu', async ({ page }) => {
     await seedProfile(page);
+    // 0.39 (refonte Progrès): on the overview, Statistiques opens Activité and Historique the history
     await page.goto('/#/stats');
-    // Historique and Statistiques switch the dashboard's view (same page, same period)
+    await bar(page).locator('[data-action="history"]').click();
+    await expect(page).toHaveURL(/#\/historique$/);
+    await page.goto('/#/stats');
+    await bar(page).locator('[data-action="stats"]').click();
+    await expect(page).toHaveURL(/#\/stats\/activite$/);
+    // in Activité, Historique and Statistiques switch the view (same page, same period)
     const history = bar(page).locator('[data-action="history"]');
     await history.click();
     await expect(history).toHaveAttribute('aria-pressed', 'true');

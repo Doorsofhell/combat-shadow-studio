@@ -51,8 +51,9 @@ test('assimilée / encore du mal : fiche, catalogue, filtre et Progrès', async 
 
   // kept after a reload, counted in Progrès
   await page.reload();
+  // 0.39 (refonte Progrès): the mastery count is in the Techniques detail screen
   await page.goto('/#/stats');
-  await page.getByTestId('ptab-maitrise').click();
+  await page.getByTestId('go-techniques').click();
   await expect(page.getByTestId('mastery-ok')).toContainText('1');
   await expect(page.getByTestId('mastery-again')).toContainText('1');
   await expect(page.getByTestId('mastery-panel').getByRole('link', { name: /Jab/ })).toBeVisible();

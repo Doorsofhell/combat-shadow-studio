@@ -1,5 +1,7 @@
 import { useState } from 'react';
-export { Stats } from './progress/Dashboard';
+export { Stats } from './progress/Overview';
+export { ActivityDetail } from './progress/Dashboard';
+export { TechniquesDetail, DisciplinesDetail, CombosDetail } from './progress/Details';
 import { DISCIPLINES, LEVELS } from '../../domain/types';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
 import { SessionRecord, formatDuration, localDay, sum, useStats, weekKey } from '../../store/stats';
