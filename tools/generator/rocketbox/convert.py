@@ -81,7 +81,7 @@ bpy.ops.object.mode_set(mode='OBJECT')
 # sports bodies are thin and untrained. Each region swells along the surface normal where the skin follows
 # the bone (its skin weight), most in the middle of the muscle, without big muscles (SHAPE=0 to skip,
 # SHAPE_SCALE to tune). v0.29 biomeca lot (Youssef 2026-10-21 21:00, « plus athlétique, pas culturiste »):
-# SHAPE_SCALE=1.6 for Kadir (max 28 mm), 1.0 for Amara (max 18 mm); the shipped GLBs use these values.
+# SHAPE_SCALE=1.6 for Kadir, 1.0 for Amara; the shipped GLBs use these values (max offset printed by the build).
 SHAPE_SCALE = float(os.environ.get('SHAPE_SCALE', '1'))
 if os.environ.get('SHAPE', '1') != '0':
     mw = mesh.matrix_world
@@ -105,6 +105,14 @@ if os.environ.get('SHAPE', '1') != '0':
             (f'{S}UpLeg', f'{S}UpLeg', f'{S}Leg', 0.5, 0.45, 0.012, 'front'),      # quadriceps
             (f'{S}UpLeg', f'{S}UpLeg', f'{S}Leg', 0.45, 0.4, 0.008, 'back'),       # hamstrings
             (f'{S}Leg', f'{S}Leg', f'{S}Foot', 0.3, 0.3, 0.018, 'back'),           # calf
+            # v0.31 (Youssef 2026-10-22, « CORRECTION MAJEURE », partie II: triceps, ischio-jambiers, avant-bras,
+            # obliques): each muscle gets its own bulge on its own face of the limb, not a bigger limb
+            (f'{S}Arm', f'{S}Arm', f'{S}ForeArm', 0.5, 0.35, 0.009, 'back'),       # triceps (long head)
+            (f'{S}Arm', f'{S}Arm', f'{S}ForeArm', 0.6, 0.3, 0.006, 'front'),       # biceps peak
+            (f'{S}ForeArm', f'{S}ForeArm', f'{S}Hand', 0.2, 0.25, 0.005, 'back'),  # forearm extensors
+            (f'{S}UpLeg', f'{S}UpLeg', f'{S}Leg', 0.55, 0.35, 0.007, 'back'),      # hamstrings, lower belly
+            (f'{S}UpLeg', f'{S}UpLeg', f'{S}Leg', 0.8, 0.2, 0.006, 'front'),       # vastus medialis (teardrop)
+            (f'{S}Leg', f'{S}Leg', f'{S}Foot', 0.22, 0.2, 0.005, 'side'),          # calf heads seen from the side
         ]
     R += [
         ('Spine2', 'Spine2', 'Neck', 0.45, 0.6, 0.017, 'front'),   # chest
@@ -113,6 +121,11 @@ if os.environ.get('SHAPE', '1') != '0':
         ('Spine2', 'Spine2', 'Neck', 0.55, 0.5, 0.012, 'back'),    # upper back
         ('Neck', 'Neck', 'Head', 0.1, 0.4, 0.013, 'back'),         # trapezius
         ('Hips', 'Hips', 'Spine', 0.0, 0.8, 0.014, 'back'),        # glutes
+        # v0.31: obliques and serratus on the flanks, a flatter but firmer abdominal wall in front
+        ('Spine', 'Spine', 'Spine1', 0.6, 0.6, 0.008, 'side'),     # obliques
+        ('Spine1', 'Spine1', 'Spine2', 0.3, 0.45, 0.006, 'side'),  # serratus
+        ('Spine1', 'Spine1', 'Spine2', 0.4, 0.6, 0.004, 'front'),  # rectus abdominis
+        ('Spine2', 'Spine2', 'Neck', 0.85, 0.3, 0.006, 'back'),    # trapezius, lower fibres
     ]
     import math as _m
     groups = {g.name: g.index for g in mesh.vertex_groups}
