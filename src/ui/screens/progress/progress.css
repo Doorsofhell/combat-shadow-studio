@@ -283,3 +283,232 @@
 .ai-kpis .sum-row .trend {
   white-space: normal;
 }
+
+/* ---------------------------------------------------------------- v0.39 Progrès: overview and detail screens */
+/* (Youssef, 2026-10-22, « Refonte premium de l'espace Progrès », docs/design/progres/) */
+
+.p2 {
+  gap: 14px;
+}
+.p-ring {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+}
+.p-ring > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.p-ring-track {
+  fill: none;
+  stroke: var(--track);
+}
+.p-ring-arc {
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke-dasharray 900ms var(--ease, ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .p-ring-arc {
+    transition: none;
+  }
+}
+.p-ring-body {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  text-align: center;
+  line-height: 1.1;
+}
+.p2-hero {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 6px 0 2px;
+  color: inherit;
+  text-decoration: none;
+}
+.p2-big {
+  font-family: var(--font-display);
+  font-size: 2.6rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.p2-big small {
+  font-size: 0.55em;
+  color: var(--muted);
+}
+.p2-cap {
+  font-size: 0.85rem;
+  color: var(--muted);
+  max-width: 9em;
+}
+.p2-sub {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.p2-mini {
+  font-size: 0.8rem;
+}
+.p2-resume {
+  min-height: 52px;
+}
+.p2-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.p2-kpi {
+  display: grid;
+  gap: 2px;
+  padding: 12px 10px;
+  border-radius: var(--radius);
+  background: var(--tile, var(--surface-2));
+  border: 1px solid var(--tile-edge, var(--line));
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+.p2-kpi .k {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.p2-kpi b {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.p2-kpi .s {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.p2-rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+/* each detail is a compact tile: icon, title, and the one figure it opens on */
+.p2-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: 'i t c' 'i v c';
+  align-items: center;
+  column-gap: 8px;
+  min-height: 52px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--tile-edge, var(--line));
+  background: var(--tile, var(--surface-2));
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+.p2-row > svg:first-child {
+  grid-area: i;
+}
+.p2-row > svg:last-child {
+  grid-area: c;
+  color: var(--muted);
+}
+.p2-row .t {
+  grid-area: t;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.p2-row .v {
+  grid-area: v;
+  font-size: 0.74rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.p2-note,
+.p2-empty {
+  margin: 0;
+}
+.p2-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.p2-legend li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+.p2-legend .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.dot.gold {
+  background: var(--gold);
+}
+.dot.orange {
+  background: var(--c-orange, var(--gold));
+}
+.dot.muted {
+  background: var(--track);
+}
+.p2-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--tile, var(--surface-2));
+  border: 1px solid var(--tile-edge, var(--line));
+}
+.p2-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.p2-disc {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--tile, var(--surface-2));
+  border: 1px solid var(--tile-edge, var(--line));
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.p2-disc .grow {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.p2-facts {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 12px;
+  margin: 0;
+}
+.p2-facts dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.p2-top {
+  display: flex;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-s, 10px);
+  background: var(--tile, var(--surface-2));
+}

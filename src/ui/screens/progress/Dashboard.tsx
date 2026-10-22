@@ -1,5 +1,8 @@
 /**
- * Progrès: one screen without vertical scrolling. Discipline, period, course gauge, three key
+ * v0.39: this is now « Activité » (/stats/activite), the detail screen of the Progrès overview (Overview.tsx). It keeps
+ * everything the v0.34 dashboard showed (comparisons, levels, categories, exercises, period history, mastery).
+ *
+ * Progrès v0.34: one screen without vertical scrolling. Discipline, period, course gauge, three key
  * figures compared with the previous period, and a chart area with five tabs. Every figure comes
  * from the sessions recorded on this device (src/store/stats.ts) through src/domain/progress.ts.
  */
@@ -54,7 +57,7 @@ const daysU = (n: number) => `${n} j`;
 const fmtDay = (key: string, o: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }) => new Date(`${key}T12:00:00`).toLocaleDateString('fr-FR', o);
 /** the year is written when the range is not within the current year */
 const withYear = (a: string, b: string) => a.slice(0, 4) !== b.slice(0, 4) || a.slice(0, 4) !== String(new Date().getFullYear());
-const fmtRange = (a: string, b: string) => {
+export const fmtRange = (a: string, b: string) => {
   const o: Intl.DateTimeFormatOptions = withYear(a, b) ? { day: 'numeric', month: 'short', year: 'numeric' } : { day: 'numeric', month: 'short' };
   return a === b ? fmtDay(a, o) : `${fmtDay(a, o)} – ${fmtDay(b, o)}`;
 };
@@ -82,7 +85,7 @@ const TABS: { id: ProgressTab; label: string }[] = [
   { id: 'maitrise', label: 'Maîtrise' },
 ];
 
-export function Stats() {
+export function ActivityDetail() {
   const sessions = useStats((s) => s.sessions);
   const custom = useCustom((s) => s.combos);
   const v = useProgressView();
@@ -152,8 +155,9 @@ export function Stats() {
   return (
     <div className="page dash ai" data-testid="progress-dashboard">
       <PageHead
-        title="Progrès"
-        back={false}
+        title="Activité"
+        eyebrow="Progrès"
+        fallback="/stats"
         right={
           <div className="row" style={{ gap: 4 }}>
             <button
@@ -667,7 +671,7 @@ function DetailSheet({
   );
 }
 
-function SessionSheet({ g, onClose }: { g: SessionGroup; onClose: () => void }) {
+export function SessionSheet({ g, onClose }: { g: SessionGroup; onClose: () => void }) {
   const d = new Date(g.start);
   return (
     <Sheet
@@ -706,7 +710,7 @@ function SessionSheet({ g, onClose }: { g: SessionGroup; onClose: () => void }) 
   );
 }
 
-function PeriodSheet({ today, initial, onClose, onApply }: { today: string; initial: { from: string; to: string } | null; onClose: () => void; onApply: (r: { from: string; to: string }) => void }) {
+export function PeriodSheet({ today, initial, onClose, onApply }: { today: string; initial: { from: string; to: string } | null; onClose: () => void; onApply: (r: { from: string; to: string }) => void }) {
   const [from, setFrom] = useState(initial?.from ?? today.slice(0, 8) + '01');
   const [to, setTo] = useState(initial?.to ?? today);
   const ok = /^\d{4}-\d{2}-\d{2}$/.test(from) && /^\d{4}-\d{2}-\d{2}$/.test(to) && from <= to;
@@ -737,7 +741,7 @@ function PeriodSheet({ today, initial, onClose, onApply }: { today: string; init
  * Maîtrise tab: what the user marked on the technique sheets (assimilated / still hard), for the
  * chosen discipline. It does not depend on the period: a mark has no date.
  */
-function MasteryPanel({ discipline, kb }: { discipline: DisciplineId | 'toutes'; kb: KbStyleChoice }) {
+export function MasteryPanel({ discipline, kb }: { discipline: DisciplineId | 'toutes'; kb: KbStyleChoice }) {
   const mastery = useGoals((s) => s.mastery);
   const list = discipline === 'toutes' ? TECHNIQUES : filterTechniques(techniquesFor(discipline), discipline, kb);
   const c = masteryCount(list, mastery);

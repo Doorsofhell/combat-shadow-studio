@@ -95,8 +95,9 @@ export const view = (o: Record<string, unknown>) => ({
   },
 });
 
+/** 0.39 (refonte Progrès): the v0.34 dashboard is now the « Activité » detail screen */
 export async function open(page: Page) {
   await page.goto('about:blank');
-  await page.goto('/#/stats');
+  await page.goto('/#/stats/activite');
   await expect(page.getByTestId('progress-dashboard')).toBeVisible();
 }

@@ -34,6 +34,10 @@ const CreatorSheet = lazy(() => import('./screens/creator/CreatorSheet').then((m
 const CreatorEditor = lazy(() => import('./screens/creator/CreatorEditor').then((m) => ({ default: m.CreatorEditor })));
 const Stats = lazy(() => import('./screens/Stats').then((m) => ({ default: m.Stats })));
 const Goals = lazy(() => import('./screens/Stats').then((m) => ({ default: m.Goals })));
+const ActivityDetail = lazy(() => import('./screens/Stats').then((m) => ({ default: m.ActivityDetail })));
+const TechniquesDetail = lazy(() => import('./screens/Stats').then((m) => ({ default: m.TechniquesDetail })));
+const DisciplinesDetail = lazy(() => import('./screens/Stats').then((m) => ({ default: m.DisciplinesDetail })));
+const CombosDetail = lazy(() => import('./screens/Stats').then((m) => ({ default: m.CombosDetail })));
 const History = lazy(() => import('./screens/Stats').then((m) => ({ default: m.History })));
 const SettingsPage = lazy(() => import('./screens/Settings').then((m) => ({ default: m.SettingsPage })));
 const Privacy = lazy(() => import('./screens/Privacy').then((m) => ({ default: m.Privacy })));
@@ -186,6 +190,10 @@ export function App() {
             <Route path="/champions/c/:championId" element={<ChampionPage />} />
             <Route path="/champions/:id" element={<ComboPage />} />
             <Route path="/stats" element={<Stats />} />
+            <Route path="/stats/activite" element={<ActivityDetail />} />
+            <Route path="/stats/techniques" element={<TechniquesDetail />} />
+            <Route path="/stats/disciplines" element={<DisciplinesDetail />} />
+            <Route path="/stats/enchainements" element={<CombosDetail />} />
             <Route path="/historique" element={<History />} />
             <Route path="/objectifs" element={<Goals />} />
             <Route path="/reglages" element={<SettingsPage />} />

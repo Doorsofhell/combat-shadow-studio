@@ -35,6 +35,8 @@ export type NavScreen =
   | 'createur-fiche'
   | 'createur-editeur'
   | 'progres'
+  | 'progres-activite'
+  | 'progres-detail'
   | 'historique'
   | 'objectifs'
   | 'legendes'
@@ -75,6 +77,10 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
   fiche: [BACK, { icon: 'play', label: 'S’entraîner', action: 'train' }, { icon: 'speed', label: 'Ralenti', action: 'slow' }, { icon: 'check', label: 'Maîtrise', action: 'mastery' }, MENU],
   // 5.6 — the mockup's `progress`
   progres: [BACK, { icon: 'calendar', label: 'Période', action: 'period' }, { icon: 'chart', label: 'Statistiques', action: 'stats' }, { icon: 'history', label: 'Historique', action: 'history' }, MENU],
+  // 0.39 (refonte Progrès): « Activité » keeps the v0.34 dashboard and its bar; the other detail screens lead back to
+  // the overview and to the history
+  'progres-activite': [BACK, { icon: 'calendar', label: 'Période', action: 'period' }, { icon: 'chart', label: 'Statistiques', action: 'stats' }, { icon: 'history', label: 'Historique', action: 'history' }, MENU],
+  'progres-detail': [BACK, { icon: 'calendar', label: 'Période', action: 'period' }, { icon: 'chart', label: 'Vue d’ensemble', action: 'nav:/stats' }, { icon: 'history', label: 'Historique', action: 'nav:/historique' }, MENU],
   // 5.7 — the mockup's `legends`
   legendes: [BACK, { icon: 'search', label: 'Rechercher', action: 'search' }, { icon: 'filter', label: 'Disciplines', action: 'filters' }, { icon: 'star', label: 'Légende', action: 'open-selected' }, MENU],
   // 5.8 — the mockup's `legenddetail`
@@ -126,6 +132,8 @@ export const NAV_PARENT: Record<NavScreen, string> = {
   'createur-fiche': '/createur',
   'createur-editeur': '/createur',
   progres: '/',
+  'progres-activite': '/stats',
+  'progres-detail': '/stats',
   historique: '/stats',
   objectifs: '/stats',
   legendes: '/',
@@ -162,6 +170,8 @@ export function navScreen(pathname: string, search = ''): NavScreen | null {
   if (p === '/createur/nouveau' || (p.startsWith('/createur/') && p.endsWith('/modifier'))) return 'createur-editeur';
   if (p.startsWith('/createur/')) return 'createur-fiche';
   if (p === '/stats') return 'progres';
+  if (p === '/stats/activite') return 'progres-activite';
+  if (p.startsWith('/stats/')) return 'progres-detail';
   if (p === '/historique') return 'historique';
   if (p === '/objectifs') return 'objectifs';
   if (p === '/champions') return 'legendes';

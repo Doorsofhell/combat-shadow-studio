@@ -380,9 +380,9 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['progres'],
     answer:
       'En haut de Progrès, choisis la discipline (ou Toutes) et la période : 7 jours, 30 jours, 90 jours, 12 mois ou Perso.\n' +
-      'La jauge « Parcours » compte les techniques étudiées sur le total de la discipline : une technique compte dès qu’elle fait partie d’un exercice que tu as pratiqué.\n' +
-      'À côté : ton temps actif, tes séances et tes répétitions. La petite flèche compare avec la période précédente de même durée.\n' +
-      'Dessous, les onglets Activité, Niveaux, Catégories, Exercices, Historique et Maîtrise détaillent tout ça. Seul le temps d’entraînement actif est compté, et la qualité du geste n’est pas mesurée.',
+      'Le grand anneau montre ton objectif de la semaine si tu en as fixé un, sinon ton « Parcours » : les techniques étudiées sur le total de la discipline (une technique compte dès qu’elle fait partie d’un exercice que tu as pratiqué).\n' +
+      'Dessous : ton temps actif, tes séances et ta série de jours d’affilée. Touche une carte ou une ligne pour le détail : Activité, Techniques, Disciplines, Enchaînements, Objectifs, Historique.\n' +
+      'Seul le temps d’entraînement actif est compté, et la qualité du geste n’est pas mesurée.',
     action: { to: '/stats', label: 'Ouvrir Progrès' },
   },
   {
@@ -392,7 +392,7 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['progres'],
     answer:
       'Chaque chiffre de Progrès est comparé à la période précédente de même durée : sur 30 jours, ce sont les 30 jours d’avant.\n' +
-      'Dans l’onglet Activité, le lien de comparaison ouvre un tableau : temps actif, séances, répétitions, exercices distincts, jours actifs et plus longue pause, avec l’évolution.\n' +
+      'Dans Progrès, ouvre Activité : le bouton Comparer ouvre un tableau : temps actif, séances, répétitions, exercices distincts, jours actifs et plus longue pause, avec l’évolution.\n' +
       '« Perso » te laisse choisir une date de début et de fin. Le bouton de filtres ajoute un niveau ou une catégorie d’exercice.',
     action: { to: '/stats', label: 'Ouvrir Progrès' },
   },
@@ -402,7 +402,7 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['onglet maitrise', 'maitrise', 'bilan des techniques', 'techniques assimilees', 'combien de techniques'],
     screens: ['progres'],
     answer:
-      'Dans Progrès, l’onglet Maîtrise fait le bilan de tes marques pour la discipline choisie : combien de techniques sont « Assimilées », combien sont « À revoir » et combien ne sont pas encore évaluées, avec une barre verte et orange.\n' +
+      'Dans Progrès, la ligne Techniques fait le bilan de tes marques pour la discipline choisie : combien de techniques sont « Assimilées », combien sont « À revoir » et combien ne sont pas encore évaluées, avec un anneau et une barre verte et orange.\n' +
       'Les techniques à revoir sont listées, avec un lien vers leur fiche. Cet onglet ne dépend pas de la période : une marque n’a pas de date.\n' +
       'Pour marquer une technique, va sur sa fiche et touche la coche verte ou la flèche orange à côté de la barre de lecture.',
     action: { to: '/stats', label: 'Ouvrir Progrès' },
@@ -414,7 +414,7 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['historique'],
     answer:
       'L’historique liste tes séances jour par jour : l’exercice, la discipline, le niveau, le mode, l’heure, le temps actif et les répétitions.\n' +
-      'Tu l’ouvres avec Menu, « Historique complet », depuis Progrès. Le bouton Historique de la barre de Progrès montre, lui, les séances de la période choisie.\n' +
+      'Tu l’ouvres depuis Progrès : le bouton Historique de la barre, la ligne Historique ou Menu, « Historique complet ». Dans Activité, le bouton Historique montre les séances de la période choisie.\n' +
       'Seul le temps de travail actif est enregistré : les pauses ne comptent pas.',
     action: { to: '/historique', label: 'Voir l’historique' },
   },
