@@ -1503,7 +1503,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Vitest complet : 559 réussis, 1 échec déjà connu (hanche d'Amara au sol, 53,6° pour 45°) : ÉCHOUÉ, non lié ;
   - mesures régénérées : arrêts de fluidité 339 → 595 (27 %, seuil 40 % tenu) ; kicks un peu plus longs
     (impact à 440 ms au lieu de 400) ;
-  - Playwright complet : en cours au moment de ce commit, résultat ajouté à la fin de la suite ;
+  - Playwright complet : 141 réussis, 2 ignorés (Firebase), 3 échecs : `coach-suggest:94` (réussit relancé seul), `training-layout:286` et `:323` (caméra Auto, échouent aussi relancés seuls sur la v0.31 `04b0b5e`). Échecs déjà existants, pas causés par ce lot : ÉCHOUÉ, lot dédié à faire ;
   - Android réel : NON EXÉCUTÉ ; relecture par un entraîneur : NON EXÉCUTÉ.
 - **Restauration** : `feature/combat-shadow-v030` = `04b0b5e` (v0.31.0).
 - **Validation** : en attente de Youssef ; rien n'est fusionné ni déployé.

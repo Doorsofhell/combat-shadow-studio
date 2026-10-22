@@ -62,5 +62,5 @@ Les tableaux complets (10 techniques × 2 coachs) se trouvent dans la page de re
 |---|---|
 | `extension-v032.test.ts` (20 tests, 2 coachs) | TEST RÉUSSI |
 | Vitest complet : 559 réussis, 1 ignoré, 1 échec | ÉCHOUÉ (1) : `photo-coach` hanche d'Amara à 53,6° sur `retention-garde` et `pont`. Échec déjà présent en v0.31, non lié à ce lot. |
-| Playwright complet | voir `docs/JOURNAL_CORRECTIONS.md` |
+| Playwright complet : 141 réussis, 2 ignorés | ÉCHOUÉ (3) : `coach-suggest:94` (réussit seul), `training-layout:286` et `:323` (échouent aussi sur la v0.31). Échecs déjà présents. |
 | Test sur Android | NON EXÉCUTÉ |
