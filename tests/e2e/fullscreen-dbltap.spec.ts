@@ -163,12 +163,13 @@ for (const vp of [
     const after = await page.evaluate(() => {
       const r = (s: string) => document.querySelector(s)!.getBoundingClientRect();
       // v0.32: the session's controls are the bottom bar (below the instructions), .tr-bottom holds nothing any more
-      return { scroll: document.scrollingElement!.scrollHeight - innerHeight, top: r('.tr-top').height, stage: r('.tr-stage'), info: r('.tr-info'), bottom: r('[data-testid=bottom-bar]'), pos: getComputedStyle(document.querySelector('[data-testid=bottom-bar]')!).position, barOpacity: getComputedStyle(document.querySelector('[data-testid=bottom-bar]')!).opacity, land: innerWidth > innerHeight };
+      return { scroll: document.scrollingElement!.scrollHeight - innerHeight, top: r('.tr-top').height, stage: r('.tr-stage'), info: r('.tr-info'), bottom: r('[data-testid=bottom-bar]'), pos: getComputedStyle(document.querySelector('[data-testid=bottom-bar]')!).position, land: innerWidth > innerHeight };
     });
     expect(after.scroll).toBeLessThanOrEqual(0);
     expect(after.top).toBeGreaterThan(20);
     expect(after.pos).toBe('fixed');
-    expect(after.barOpacity).toBe('1');
+    // the bar comes back (its fade back runs over the next frames)
+    await expect.poll(() => page.evaluate(() => getComputedStyle(document.querySelector('[data-testid=bottom-bar]')!).opacity)).toBe('1');
     expect(after.stage.height).toBeGreaterThan(150);
     expect(after.info.height).toBeGreaterThan(20);
     if (!after.land) {
