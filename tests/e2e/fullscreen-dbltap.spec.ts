@@ -160,6 +160,8 @@ for (const vp of [
     await expect(page.getByTestId('training')).not.toHaveClass(/immersive/);
     await expect(page.getByTestId('phase')).not.toHaveText('Pause');
     // the usual layout is back: title, stage, instructions, controls, nothing over another, no scrolling
+    // (the layout settles over the frames after the exit: wait until the instructions are above the bar again)
+    await expect.poll(() => page.evaluate(() => document.querySelector('.tr-info')!.getBoundingClientRect().bottom <= document.querySelector('[data-testid=bottom-bar]')!.getBoundingClientRect().top + 1)).toBe(true);
     const after = await page.evaluate(() => {
       const r = (s: string) => document.querySelector(s)!.getBoundingClientRect();
       // v0.32: the session's controls are the bottom bar (below the instructions), .tr-bottom holds nothing any more
