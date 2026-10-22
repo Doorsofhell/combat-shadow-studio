@@ -1,3 +1,4 @@
+import { useNavActions } from '../nav/store';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CATEGORY_LABEL, TECHNIQUE_BY_ID, techniquesFor } from '../../domain/techniques';
@@ -49,6 +50,9 @@ export function Builder() {
     }
     nav(`/entrainement?${p}`);
   };
+
+  // v0.32 bar: « Lancer » saves and starts the sequence, as the button at the bottom of the page
+  useNavActions({ start: { run, disabled: !playable, ariaLabel: 'Lancer l’enchaînement' } });
 
   return (
     <div className="page">

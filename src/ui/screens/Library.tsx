@@ -22,7 +22,9 @@ import { AnimationBadge, DisciplineLabel, ModeBadge, CameraControls, EmptyState,
 import { filterExercises, filterTechniques } from '../../domain/kickboxingStyles';
 import { ExerciseList, ExerciseSheet } from './Discipline';
 import { AppIcon, DisciplineIcon } from '../icons';
-import { useActionPill } from '../components/ActionPill';
+import { useNavActions } from '../nav/store';
+import { setSelection, useSelection } from '../nav/selection';
+import { LibraryPanels } from './LibraryNav';
 import { FullscreenStage } from '../fullscreen/FullscreenStage';
 import { StageGuard } from '../components/StageGuard';
 import { exerciseForTechnique } from '../../domain/quickPicks';
@@ -63,6 +65,7 @@ export function Library() {
   return (
     <div className="page">
       <PageHead title="Techniques" eyebrow="Bibliothèque" back={false} />
+      <LibraryPanels d={d} setD={(x) => set('d', x)} cat={cat} setCat={(c) => set('cat', c)} tab={tab} />
       <Tabs variant="underline" label="Sections" items={HUB_TABS} value={tab} onChange={(t) => set('tab', t)} />
       <div role="tabpanel" className="stack" style={{ gap: 16 }}>
         {tab === 'techniques' && <TechniquesTab d={d} setD={(x) => set('d', x)} cat={cat} setCat={(c) => set('cat', c)} />}
@@ -89,26 +92,25 @@ function TechniquesTab({ d, setD, cat, setCat }: { d: DisciplineId; setD: (d: Di
   const shown = cat === 'tout' ? list : cat === 'a-revoir' ? toReview : list.filter((t) => t.category === cat);
   const partner = partnerFor(d);
   const nav = useNavigate();
-  // 0.26 action pill: a random technique of the list on screen, and the « À revoir » filter in one tap
-  // (the catalogue has no text search, so no « Rechercher » button)
-  useActionPill([
+  // 0.26 quick actions (a random technique of the list, the « À revoir » filter): v0.32 commands « Sur cet écran »
+  // of the Menu sheet; Rechercher, Filtres and Technique are in the bar (LibraryPanels)
+  const selected = useSelection('technique');
+  useNavActions({}, [
     shown.length > 0 && {
       id: 'au-hasard',
       label: 'Au hasard',
-      icon: 'random',
-      ariaLabel: 'Au hasard : ouvrir une technique de la liste',
-      onSelect: () => {
+      icon: { glyph: 'random' },
+      run: () => {
         const t = shown[Math.floor(Math.random() * shown.length) % shown.length];
         nav(`/techniques/${t.id}${sheetQuery(d, cat)}`);
       },
     },
     toReview.length > 0 && {
       id: 'a-revoir',
-      label: 'À revoir',
-      icon: 'struggling',
-      ariaLabel: `À revoir : ${toReview.length} technique${toReview.length > 1 ? 's' : ''}`,
+      label: `À revoir (${toReview.length})`,
+      icon: { glyph: 'struggling' },
       pressed: cat === 'a-revoir',
-      onSelect: () => setCat(cat === 'a-revoir' ? 'tout' : 'a-revoir'),
+      run: () => setCat(cat === 'a-revoir' ? 'tout' : 'a-revoir'),
     },
   ]);
   return (
@@ -138,6 +140,7 @@ function TechniquesTab({ d, setD, cat, setCat }: { d: DisciplineId; setD: (d: Di
             thumb={t.id}
             favorite={fav.includes(t.id)}
             mastery={mastery[t.id]}
+            selected={selected === t.id}
             meta={d === 'kickboxing' ? <KbOnlyBadge id={t.id} /> : undefined}
           />
         ))}
@@ -346,43 +349,29 @@ export function TechniquePage() {
     if (player.current) player.current.speed = v;
   };
   const normalSpeed = useRef(0.6);
-  useActionPill(
+  // v0.32 bar of the sheet (section 5.5): S'entraîner, Ralenti, Maîtrise; the former floating pill is gone
+  useEffect(() => {
+    if (t) setSelection('technique', t.id);
+  }, [t]);
+  const toggleSlow = () => {
+    if (slowOn) setPlayerSpeed(normalSpeed.current > SLOW ? normalSpeed.current : 0.6);
+    else {
+      normalSpeed.current = speed;
+      setPlayerSpeed(SLOW);
+    }
+    if (!playing) {
+      player.current?.play();
+      setPlaying(true);
+    }
+  };
+  useNavActions(
     t
-      ? [
-          drill && {
-            id: 'entrainer',
-            label: 'S’entraîner',
-            icon: 'play',
-            primary: true,
-            ariaLabel: `S’entraîner : ${drill.name}`,
-            onSelect: () => nav(`/entrainement?ex=${encodeURIComponent(drill.id)}&mode=technique`),
-          },
-          {
-            id: 'ralenti',
-            label: 'Ralenti',
-            icon: 'slow',
-            pressed: slowOn,
-            onSelect: () => {
-              if (slowOn) setPlayerSpeed(normalSpeed.current > SLOW ? normalSpeed.current : 0.6);
-              else {
-                normalSpeed.current = speed;
-                setPlayerSpeed(SLOW);
-              }
-              if (!playing) {
-                player.current?.play();
-                setPlaying(true);
-              }
-            },
-          },
-          {
-            id: 'maitrise',
-            label: 'Je la maîtrise',
-            icon: 'mastered',
-            pressed: mastery[t.id] === 'acquise',
-            onSelect: () => toggleMastery(t.id, 'acquise'),
-          },
-        ]
-      : null,
+      ? {
+          train: drill && { run: () => nav(`/entrainement?ex=${encodeURIComponent(drill.id)}&mode=technique`), ariaLabel: `S’entraîner : ${drill.name}` },
+          slow: { run: toggleSlow, pressed: slowOn, ariaLabel: slowOn ? 'Ralenti, activé' : 'Ralenti' },
+          mastery: { run: () => toggleMastery(t.id, 'acquise'), pressed: mastery[t.id] === 'acquise', ariaLabel: mastery[t.id] === 'acquise' ? 'Maîtrise : je la maîtrise' : 'Maîtrise : marquer comme maîtrisée' },
+        }
+      : {},
   );
   const events = useMemo<PlayerEvents>(
     () => ({
@@ -531,6 +520,8 @@ function scrollsSideways(el: HTMLElement | null): boolean {
 export function PartnerPage() {
   const { id } = useParams();
   const p = id ? PARTNER_BY_ID.get(id) : undefined;
+  const navTo = useNavigate();
+  useNavActions({ techniques: p && { run: () => navTo(`/techniques?d=${p.discipline}`) } });
   if (!p) return <EmptyState title="Fiche introuvable" action={<Link to="/techniques" className="btn">Retour aux techniques</Link>} />;
   const disc = DISCIPLINES.find((x) => x.id === p.discipline)!;
   const prep = p.prep ? TECHNIQUE_BY_ID.get(p.prep) : undefined;

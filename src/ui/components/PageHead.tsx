@@ -1,22 +1,13 @@
 import type { ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AppIcon } from '../icons';
 
-/** Screen header: back button (history, or `fallback` when the screen was opened directly), eyebrow and title. */
-export function PageHead({ title, eyebrow, back = true, right, fallback = '/' }: { title: string; eyebrow?: string; back?: boolean; right?: ReactNode; fallback?: string }) {
-  const nav = useNavigate();
-  const goBack = () => {
-    const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
-    if (idx > 0) nav(-1);
-    else nav(fallback, { replace: true });
-  };
+/**
+ * Screen header: eyebrow and title. v0.32 (navigation dynamique: « aucun bouton de retour applicatif en haut de
+ * l'écran »): Retour is place 1 of the bottom bar, with the same history rules; `back` and `fallback` are kept so
+ * the screens' calls stay as they were (the parent page of each screen is in nav/config.ts, NAV_PARENT).
+ */
+export function PageHead({ title, eyebrow, right }: { title: string; eyebrow?: string; back?: boolean; right?: ReactNode; fallback?: string }) {
   return (
     <header className="page-head">
-      {back && (
-        <button type="button" className="btn icon ghost" onClick={goBack} aria-label="Retour" style={{ marginLeft: -12 }}>
-          <AppIcon id="back" />
-        </button>
-      )}
       <div className="grow">
         {eyebrow && <div className="eyebrow">{eyebrow}</div>}
         <h1>{title}</h1>

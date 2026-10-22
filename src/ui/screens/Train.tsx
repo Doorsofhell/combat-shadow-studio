@@ -1,3 +1,4 @@
+import { useNavActions } from '../nav/store';
 import { TechThumb, keyTechnique, programTechnique } from '../components/TechThumb';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -23,6 +24,8 @@ export function Train() {
   const progs = pf === 'tous' ? PROGRAMS : PROGRAMS.filter((p) => p.discipline === pf);
   const quick = rec.exercises.slice(0, 2);
   const openEx = open ? EXERCISE_BY_ID.get(open) : undefined;
+  // v0.32 bar: « Démarrer » opens the recommended session (first card of « Démarrage rapide »)
+  useNavActions({ start: quick[0] && { run: () => setOpen(quick[0].id), ariaLabel: `Démarrer : ${quick[0].name}` } });
 
   return (
     <div className="page">

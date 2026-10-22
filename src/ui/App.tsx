@@ -1,14 +1,16 @@
 import { CoachBubble } from './coach-ai/CoachBubble';
-import { Suspense, lazy, useEffect } from 'react';
-import { HashRouter, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Suspense, lazy, useEffect, useRef } from 'react';
+import { HashRouter, Navigate, Route, Routes, useLocation, useNavigationType } from 'react-router-dom';
 import { useProfile } from '../store/profile';
 import { useSettings } from '../store/settings';
 import { setEffectsVolume } from '../audio/sound';
 import { setVoiceEnabled, setVoiceVolume } from '../audio/voice';
 import { installNativeHandlers } from '../platform/native';
-import { AppIcon } from './icons';
 import { Toaster } from './components/Toast';
-import { ActionPill } from './components/ActionPill';
+import { BottomBar } from './nav/BottomBar';
+import { NavSheets } from './nav/NavSheets';
+import { forgetLayers } from './nav/layers';
+import { useNavStore } from './nav/store';
 import { Home } from './screens/Home';
 import { Onboarding } from './screens/Onboarding';
 import { CoachSelect } from './screens/CoachSelect';
@@ -89,38 +91,46 @@ function ThemeColor() {
     m.content = studio ? STUDIO_BG[t] : THEME_BG[t];
     document.documentElement.style.colorScheme = t;
   }, [loc.pathname, pref, resolved]);
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [loc.pathname]);
   return null;
 }
 
-const NAV = [
-  { to: '/', label: 'Accueil', icon: <AppIcon id="home" />, end: true, match: ['/'] },
-  { to: '/entrainer', label: 'Entraîner', icon: <AppIcon id="train" />, match: ['/entrainer', '/discipline', '/programmes'] },
-  { to: '/techniques', label: 'Techniques', icon: <AppIcon id="techniques" />, match: ['/techniques', '/createur'] },
-  { to: '/stats', label: 'Progrès', icon: <AppIcon id="progress" />, match: ['/stats', '/historique', '/objectifs'] },
-  // 0.24 (Youssef, 2026-10-20): the legends get their own tab; the AI coach is a floating bubble on every screen
-  { to: '/champions', label: 'Légendes', icon: <AppIcon id="legends" />, match: ['/champions'] },
-];
-
-function Nav() {
+/**
+ * v0.32 smart back (section 11): a page reached with Retour (or the system back) finds its scroll position again;
+ * a new page starts at the top. Positions are kept per history entry for the session.
+ */
+const scrollByKey = new Map<string, number>();
+function ScrollMemory() {
   const loc = useLocation();
-  if (isTraining(loc.pathname) || loc.pathname.startsWith('/bienvenue')) return null;
-  const p = loc.pathname;
-  const activeIdx = NAV.findIndex((i) => (i.end ? p === '/' : i.match.some((m) => p === m || p.startsWith(`${m}/`))));
-  return (
-    <nav className="nav" aria-label="Navigation principale">
-      <div className="nav-inner">
-        {NAV.map((i, k) => (
-          <NavLink key={i.to} to={i.to} end={i.end} className={k === activeIdx ? 'active' : ''} aria-current={k === activeIdx ? 'page' : undefined} data-testid={`nav-${i.to.slice(1) || 'accueil'}`}>
-            <span className="pill">{i.icon}</span>
-            {i.label}
-          </NavLink>
-        ))}
-      </div>
-    </nav>
-  );
+  const type = useNavigationType();
+  const lastPath = useRef<string | null>(null);
+  useEffect(() => {
+    const key = loc.key;
+    const samePage = lastPath.current === loc.pathname;
+    lastPath.current = loc.pathname;
+    const save = () => scrollByKey.set(key, window.scrollY);
+    window.addEventListener('scroll', save, { passive: true });
+    let raf = 0;
+    // a filter or a search written in the URL keeps the page where it is, and its open panel
+    if (!samePage) {
+      const y = type === 'POP' ? scrollByKey.get(key) : undefined;
+      // a page change closes what the bar had open (a link followed from a sheet)
+      if (useNavStore.getState().sheet) useNavStore.getState().setSheet(null);
+      forgetLayers();
+      // the page may still be loading (lazy screens): restore once it is tall enough, else stay at the top
+      let tries = 0;
+      const restore = () => {
+        if (y === undefined) return window.scrollTo(0, 0);
+        if (document.documentElement.scrollHeight - window.innerHeight >= y || tries++ > 30) window.scrollTo(0, y);
+        else raf = requestAnimationFrame(restore);
+      };
+      restore();
+    }
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', save);
+    };
+  }, [loc.key, loc.pathname, type]);
+  return null;
 }
 
 function Loading() {
@@ -184,9 +194,11 @@ export function App() {
           </Routes>
         </Suspense>
       </Gate>
-      <Nav />
-      {/* 0.26: the actions of the screen at the bottom left, the Coach IA bubble alone at the bottom right */}
-      <ActionPill />
+      <ScrollMemory />
+      {/* v0.32 navigation dynamique: one bottom bar, its sheets (Navigation générale, Nouveautés) and the Coach IA
+          panel they open; no floating button any more */}
+      <BottomBar />
+      <NavSheets />
       <CoachBubble />
       <Toaster />
     </HashRouter>

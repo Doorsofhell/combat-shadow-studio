@@ -2,6 +2,7 @@ import { expect, Page, test } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
 import { DEFAULT_PROFILE } from '../../src/store/profile';
 import { defaultLook } from '../../src/editor/look';
+import { menuCommand } from './nav-helpers';
 
 /**
  * Coach render 0.23: two looks (Ultra-réaliste, Encre) on the same model, the choice in three places
@@ -77,12 +78,12 @@ test('the look is chosen in the settings, the studio and the training options, a
   await expect.poll(async () => (await savedSettings(page)).coachStyle).toBe('realiste');
 
   await open(page, '/#/entrainement?ex=boxe-debutant-01&mode=technique');
-  await page.getByTestId('options').click();
+  await menuCommand(page, 'options');
   await expect(checked(page, 'training-coach-look')).toHaveText('Ultra-réaliste');
   await page.getByTestId('training-coach-look').getByRole('radio', { name: 'Anime' }).click();
   await expect.poll(async () => (await savedSettings(page)).coachStyle).toBe('encre');
   await page.reload();
-  await page.getByTestId('options').click();
+  await menuCommand(page, 'options');
   await expect(checked(page, 'training-coach-look')).toHaveText('Anime');
 });
 
@@ -99,7 +100,7 @@ test('switching the look during a session keeps the session, the move and the ti
   await expect.poll(async () => Number((await page.getByTestId('session-time').textContent())!.replace(/\D/g, '')), { timeout: 30000 }).toBeGreaterThan(2);
   const before = Number((await page.getByTestId('session-time').textContent())!.replace(/\D/g, ''));
   const move = await page.getByTestId('current-move').textContent();
-  await page.getByTestId('options').click();
+  await menuCommand(page, 'options');
   await page.getByTestId('training-coach-look').getByRole('radio', { name: 'Ultra-réaliste' }).click();
   await page
     .getByRole('dialog', { name: 'Options d’entraînement' })

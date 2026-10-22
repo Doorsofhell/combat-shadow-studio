@@ -1,10 +1,11 @@
 import { expect, Page, test } from '@playwright/test';
 import { DEFAULT_PROFILE } from '../../src/store/profile';
+import { openCoachIA } from './nav-helpers';
 
 /**
  * 0.27 (Youssef, 2026-10-20 21:59: « Permet d'agrandir la fenêtre ia et de la réduire. Rends la stylé »): the Coach IA
  * panel has three sizes (réduit, normal, agrandi) chosen with its header buttons or its grab handle, remembered
- * after a reload, from the action pill as on the training screen.
+ * after a reload, from the Menu (v0.32: « Sur cet écran » › Coach IA) as on the training screen.
  */
 async function seed(page: Page) {
   await page.goto('/');
@@ -51,11 +52,11 @@ const savedSize = (page: Page) =>
   );
 const box = (page: Page) => panel(page).evaluate((e) => { const r = e.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, h: r.height, left: r.left, right: r.right }; });
 
-test('depuis la pilule : réduit, normal, agrandi ; mémorisé après rechargement', async ({ page }) => {
+test('depuis le Menu : réduit, normal, agrandi ; mémorisé après rechargement', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 851 });
   await seed(page);
   await page.goto('/#/');
-  await page.getByTestId('pill-coach').click();
+  await openCoachIA(page);
   await expect(panel(page)).toHaveAttribute('data-size', 'normal');
   await expect(expand(page)).toHaveAttribute('aria-label', 'Agrandir la fenêtre du coach');
   await expect(shrink(page)).toHaveAttribute('aria-label', 'Réduire la fenêtre du coach');
@@ -63,7 +64,7 @@ test('depuis la pilule : réduit, normal, agrandi ; mémorisé après rechargeme
   await expect(expand(page).locator('svg[data-icon="panelExpand"]')).toHaveCount(1);
   await expect(shrink(page).locator('svg[data-icon="panelShrink"]')).toHaveCount(1);
   await page.getByTestId('coach-suggestion').filter({ hasText: 'Comment fonctionne l’application ?' }).click();
-  await expect(page.getByTestId('coach-answer')).toContainText('cinq onglets');
+  await expect(page.getByTestId('coach-answer')).toContainText('barre du bas');
   const normal = await box(page);
 
   // réduit: the first line of the answer and the field, no suggestions
@@ -90,20 +91,20 @@ test('depuis la pilule : réduit, normal, agrandi ; mémorisé après rechargeme
   await expect(panel(page)).toHaveAttribute('data-size', 'agrandi');
   await expect(expand(page)).toHaveAttribute('aria-expanded', 'true');
   const big = await box(page);
-  const navTop = await page.evaluate(() => document.querySelector('.nav')!.getBoundingClientRect().top);
+  const navTop = await page.evaluate(() => document.querySelector('.nav-bottom')!.getBoundingClientRect().top);
   expect(big.top).toBeLessThan(40);
   expect(big.bottom).toBeLessThanOrEqual(navTop);
   expect(big.h).toBeGreaterThan(851 * 0.7);
   await expect(page.getByTestId('coach-suggestions')).toBeVisible();
 
-  // remembered after a reload, and on a screen with the bubble
+  // remembered after a reload, and on another screen
   await expect.poll(() => savedSize(page)).toContain('"coachPanelSize":"agrandi"');
   await page.reload();
-  await page.getByTestId('pill-coach').click();
+  await openCoachIA(page);
   await expect(panel(page)).toHaveAttribute('data-size', 'agrandi');
   await page.keyboard.press('Escape');
   await page.goto('/#/reglages');
-  await page.getByTestId('coach-bubble').click();
+  await openCoachIA(page);
   await expect(panel(page)).toHaveAttribute('data-size', 'agrandi');
   await shrink(page).click();
   await expect(panel(page)).toHaveAttribute('data-size', 'normal');
@@ -113,7 +114,7 @@ test('au clavier et à la poignée : boutons focusables, glisser vers le haut ag
   await page.setViewportSize({ width: 393, height: 851 });
   await seed(page);
   await page.goto('/#/reglages');
-  await page.getByTestId('coach-bubble').click();
+  await openCoachIA(page);
   await expand(page).focus();
   await page.keyboard.press('Enter');
   await expect(panel(page)).toHaveAttribute('data-size', 'agrandi');
@@ -159,7 +160,7 @@ test('360×640 : aucun débordement, quelle que soit la taille', async ({ page }
   await page.setViewportSize({ width: 360, height: 640 });
   await seed(page);
   await page.goto('/#/');
-  await page.getByTestId('pill-coach').click();
+  await openCoachIA(page);
   await page.getByTestId('coach-suggestion').first().click();
   for (const size of ['normal', 'reduit', 'agrandi'] as const) {
     if (size === 'reduit') await shrink(page).click();
@@ -194,7 +195,7 @@ test('à l’entraînement : réduit et normal ne couvrent ni consignes ni comma
     await seed(page);
     await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
     await page.getByTestId('start').click();
-    await page.getByTestId('coach-bubble').click();
+    await openCoachIA(page);
     await expect(page.getByTestId('phase')).toHaveText('Pause');
     await page.getByTestId('coach-suggestion').first().click();
     for (const size of ['normal', 'reduit', 'agrandi'] as const) {
@@ -208,7 +209,7 @@ test('à l’entraînement : réduit et normal ne couvrent ni consignes ni comma
         const p = document.querySelector('[data-testid=coach-ask-panel]')!.getBoundingClientRect();
         const stage = document.querySelector('.tr-stage')!.getBoundingClientRect();
         const info = document.querySelector('.tr-info')!.getBoundingClientRect();
-        const ctrls = [...document.querySelectorAll('.tr-bottom button, .tr-controls button')].map((b) => b.getBoundingClientRect());
+        const ctrls = [...document.querySelectorAll('.tr-bottom button, .tr-controls button, .nav-bottom button')].map((b) => b.getBoundingClientRect());
         const over = (a: DOMRect) => !(p.bottom <= a.top + 1 || p.top >= a.bottom - 1 || p.right <= a.left + 1 || p.left >= a.right - 1);
         return { p: [p.top, p.bottom], i: [info.top, info.bottom], scroll: document.scrollingElement!.scrollHeight - innerHeight, info: over(info), ctrls: ctrls.filter(over).length, inStage: p.top >= stage.top - 1 && p.bottom <= stage.bottom + 1, h: p.height, stageH: stage.height };
       });

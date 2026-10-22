@@ -44,7 +44,7 @@ import { MODE_LABEL } from '../../training/plan';
 import { EmptyState, FilterChips, PageHead, Sheet, Tabs, useKbStyle } from '../../components';
 import { AppIcon, DisciplineIcon } from '../../icons';
 import { CompareColumns, Legend, PairRows, TrendMark, useBox } from './charts';
-import { useActionPill } from '../../components/ActionPill';
+import { useNavActions } from '../../nav/store';
 
 const dur = (sec: number) => formatDuration(sec);
 const count = (n: number) => String(n);
@@ -133,24 +133,28 @@ export function Stats() {
   const filterCount = (v.level ? 1 : 0) + (v.kind ? 1 : 0);
   const presetLabel = v.preset === 'perso' ? 'Perso' : PERIOD_PRESETS.find((x) => x.id === v.preset)!.label;
   const nav = useNavigate();
-  // 0.26 action pill (Youssef, mockup C): a new session (the Entraîner tab), the goals, and a period of your
-  // own (the « Perso » chip's sheet). The dashboard keeps its no-scroll layout above the pill (.with-pill).
-  useActionPill([
-    { id: 'nouvelle-seance', label: 'Nouvelle séance', icon: 'play', primary: true, ariaLabel: 'Nouvelle séance : choisir un entraînement', onSelect: () => nav('/entrainer') },
-    { id: 'objectifs', label: 'Objectifs', icon: 'target', ariaLabel: 'Objectifs personnels', onSelect: () => nav('/objectifs') },
-    { id: 'periode', label: 'Période', icon: 'calendar', ariaLabel: 'Période personnalisée', pressed: v.preset === 'perso', onSelect: () => setSheet('periode') },
-  ]);
+  // v0.32 bar of Progrès (section 5.6): Période, Statistiques, Historique; the former pill's « Nouvelle séance » and
+  // « Objectifs » and the header links are commands « Sur cet écran » of Menu
+  useNavActions(
+    {
+      period: { run: () => setSheet('periode'), pressed: v.preset === 'perso', ariaLabel: `Période : ${presetLabel}`, testId: 'nav-period' },
+      stats: { run: () => v.set({ tab: v.tab === 'historique' ? 'activite' : v.tab }), pressed: v.tab !== 'historique', ariaLabel: 'Statistiques détaillées', testId: 'nav-stats' },
+      history: { run: () => v.set({ tab: 'historique' }), pressed: v.tab === 'historique', ariaLabel: 'Historique des séances de la période', testId: 'nav-history' },
+    },
+    [
+      { id: 'nouvelle-seance', label: 'Nouvelle séance', icon: 'play', run: () => nav('/entrainer') },
+      { id: 'objectifs', label: 'Objectifs', icon: { glyph: 'target' }, run: () => nav('/objectifs'), testId: 'goals-link' },
+      { id: 'historique-complet', label: 'Historique complet', icon: 'history', run: () => nav('/historique') },
+    ],
+  );
 
   return (
-    <div className="page dash with-pill" data-testid="progress-dashboard">
+    <div className="page dash" data-testid="progress-dashboard">
       <PageHead
         title="Progrès"
         back={false}
         right={
           <div className="row" style={{ gap: 4 }}>
-            <Link to="/objectifs" className="btn icon ghost" aria-label="Objectifs personnels" data-testid="goals-link">
-              <AppIcon id="target" />
-            </Link>
             <button
               type="button"
               className={`btn icon ghost ${filterCount ? 'has-badge' : ''}`}
@@ -161,9 +165,6 @@ export function Stats() {
               <AppIcon id="filters" />
               {filterCount > 0 && <span className="badge-dot">{filterCount}</span>}
             </button>
-            <Link to="/historique" className="btn icon ghost" aria-label="Historique complet">
-              <AppIcon id="history" />
-            </Link>
           </div>
         }
       />

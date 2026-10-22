@@ -8,8 +8,6 @@ import { TECHNIQUE_BY_ID } from '../../domain/techniques';
 import { DISCIPLINES, LEVELS, type DisciplineId, type LevelId } from '../../domain/types';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { useActionPillStore } from '../components/ActionPill';
-import { AppIcon } from '../icons';
 import { CoachAskPanel } from './CoachAskPanel';
 import { useCoachBubble } from './coachHost';
 
@@ -25,9 +23,9 @@ const under = (pathname: string, p: string) => pathname === p || pathname.starts
 const isDiscipline = (d: string | null | undefined): d is DisciplineId => !!d && DISCIPLINES.some((x) => x.id === d);
 
 /**
- * The AI coach as one floating bubble at the bottom right of every screen (0.24, Youssef 2026-10-20;
- * 0.25 « identique sur tous les écrans », training included): a tap opens the question panel, another
- * tap (or Échap, or the panel's close button) hides it again.
+ * The AI coach's question panel, the same on every screen (0.25 « identique sur tous les écrans »). v0.32
+ * (navigation dynamique: « aucun bouton flottant ») the floating bubble is gone: the panel opens from « Coach IA »
+ * in the Menu sheet of the bottom bar, and closes with its own button or Échap.
  * The coach knows the screen it is opened from and what is on it when the route says so: the technique
  * of a sheet, the discipline, the open exercise, the programme or the legend combination. On the
  * training screen, the session registers as host (see coachHost.ts): the bubble sits in the lower right
@@ -41,9 +39,6 @@ export function CoachBubble() {
   const open = useCoachBubble((s) => s.open);
   const setOpen = useCoachBubble((s) => s.setOpen);
   const host = useCoachBubble((s) => s.host);
-  // 0.27 (Youssef, 2026-10-20 21:45: « intégrer le coach IA dans la barre d'icône dynamique »): where a screen
-  // has an action pill, the Coach IA is its last button and opens this same panel; no second entry point
-  const inPill = useActionPillStore((s) => s.items.length > 0);
   // 0.27 (Youssef, 2026-10-20 21:59): réduit / normal / agrandi, chosen in the panel and remembered
   const size = useSettings((s) => s.settings.coachPanelSize);
   const hidden = HIDDEN.some((p) => under(loc.pathname, p));
@@ -102,31 +97,13 @@ export function CoachBubble() {
     else if (a.type === 'navigate') nav(a.to);
   };
 
-  const panel = open && (
-    <div className={inHost ? `tr-ask size-${size}` : `coach-bubble-panel size-${size}${inPill ? ' from-pill' : ''}`} role="dialog" aria-label="Coach IA" data-testid="coach-bubble-panel">
+  if (!open) return null;
+  const panel = (
+    <div className={inHost ? `tr-ask size-${size}` : `coach-bubble-panel size-${size} from-pill`} role="dialog" aria-label="Coach IA" data-testid="coach-bubble-panel">
       <CoachAskPanel context={context} onAction={onAction} onClose={() => setOpen(false)} />
     </div>
   );
-  const bubble = (
-    <button
-      type="button"
-      className={`coach-bubble ${open ? 'on' : ''} ${inHost ? 'in-host' : ''}`}
-      aria-label={open ? 'Masquer le coach IA' : 'Ouvrir le coach IA'}
-      aria-expanded={open}
-      onClick={() => setOpen(!open)}
-      data-testid="coach-bubble"
-    >
-      <AppIcon id={open ? 'close' : 'coach'} size={22} />
-    </button>
-  );
-
-  // in the training stage the open panel takes the lower part of the stage, where the bubble is: it
-  // closes with the panel's own close button (or Échap), and the bubble comes back at the same place
-  if (inHost) return createPortal(open ? panel : bubble, inHost.slot);
-  return (
-    <>
-      {panel}
-      {!inPill && bubble}
-    </>
-  );
+  // in the training stage the open panel takes the lower part of the stage
+  if (inHost) return createPortal(panel, inHost.slot);
+  return panel;
 }

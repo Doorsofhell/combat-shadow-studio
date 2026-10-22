@@ -1,5 +1,6 @@
 import { expect, Page, test } from '@playwright/test';
 import { DEFAULT_PROFILE } from '../../src/store/profile';
+import { menuCommand } from './nav-helpers';
 
 /**
  * v0.32 (Youssef, 2026-10-22 10:33: « le combattant apparaît brièvement en sous-vêtements avant que les vêtements
@@ -52,7 +53,7 @@ test('le coach n’apparaît jamais sans sa tenue : premier chargement, discipli
   await shownDressed(page, 'muaythai', 'changement de discipline (muay-thaï)');
 
   // coach change during the training
-  await page.getByTestId('options').click();
+  await menuCommand(page, 'options');
   await page.getByRole('button', { name: 'Amara' }).click();
   await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'femme');
   await shownDressed(page, 'muaythai', 'changement de coach (Amara)');

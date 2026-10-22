@@ -77,6 +77,11 @@ export interface Settings {
   coachOutfit: boolean;
   /** 0.31: jiu-jitsu brésilien with the kimono (gi) or without (no-gi: rashguard, shorts or leggings) */
   bjjOutfit: 'gi' | 'nogi';
+  /**
+   * v0.32 (PROMPT MAÎTRE navigation, section 7): the last version opened in « Nouveautés » (null: never opened). A
+   * newer version shows the red dots of Menu and Nouveautés; older saves get null through `merge`.
+   */
+  newsSeenVersion: string | null;
 }
 
 export type CoachPanelSize = 'reduit' | 'normal' | 'agrandi';
@@ -107,6 +112,7 @@ export const DEFAULT_SETTINGS: Settings = {
   stageFsHintSeen: false,
   coachOutfit: true,
   bjjOutfit: 'gi',
+  newsSeenVersion: null,
 };
 
 interface SettingsState {

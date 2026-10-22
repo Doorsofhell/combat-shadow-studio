@@ -16,7 +16,7 @@ import { MODE_LABEL } from '../training/plan';
 import { DisciplineLabel, EmptyState, EntryCard, ProgressBar, SectionHead, StatTile } from '../components';
 import { defaultFighterName } from '../components/fighter';
 import { AppIcon, DisciplineIcon } from '../icons';
-import { useActionPill } from '../components/ActionPill';
+import { useNavActions } from '../nav/store';
 import { FullscreenStage } from '../fullscreen/FullscreenStage';
 import { useKbStyle } from '../components/KickboxingStyle';
 import { techniquesFor } from '../../domain/techniques';
@@ -79,14 +79,15 @@ export function Home() {
     else nav('/entrainer');
   };
 
-  // 0.26 action pill (Youssef, mockup C): quick session, resume the last one, technique of the day
+  // 0.26 quick actions (quick session, resume the last one, technique of the day); v0.32 they are the commands
+  // « Sur cet écran » of the Menu sheet, the bar holding the mockup's five places
   const [kbStyle] = useKbStyle();
   const main = profile.mainDiscipline;
   const daily = useMemo(() => techniqueOfTheDay(filterTechniques(techniquesFor(main), main, kbStyle)), [main, kbStyle]);
-  useActionPill([
-    { id: 'seance-rapide', label: 'Séance rapide', icon: 'play', primary: true, ariaLabel: recEx ? `Séance rapide : ${recEx.name}` : undefined, onSelect: start },
-    resume && last ? { id: 'reprendre', label: 'Reprendre', icon: 'history', ariaLabel: `Reprendre : ${last.exerciseName}`, onSelect: () => nav(resume) } : null,
-    daily && { id: 'technique-du-jour', label: 'Technique du jour', icon: 'bolt', ariaLabel: `Technique du jour : ${daily.name}`, onSelect: () => nav(`/techniques/${daily.id}?d=${main}`) },
+  useNavActions({}, [
+    { id: 'seance-rapide', label: 'Séance rapide', icon: 'play', run: start },
+    resume && last ? { id: 'reprendre', label: 'Reprendre', icon: 'history', run: () => nav(resume) } : null,
+    daily && { id: 'technique-du-jour', label: 'Technique du jour', icon: { glyph: 'bolt' }, run: () => nav(`/techniques/${daily.id}?d=${main}`) },
   ]);
 
   return (
@@ -97,12 +98,6 @@ export function Home() {
             Combat <b>Shadow</b> Studio
           </div>
         </div>
-        <Link to="/profil" className="btn icon ghost" aria-label="Mon profil" title="Profil">
-          <AppIcon id="profile" />
-        </Link>
-        <Link to="/reglages" className="btn icon ghost" aria-label="Réglages" title="Réglages" style={{ marginRight: -10 }} data-testid="open-settings">
-          <AppIcon id="settings" />
-        </Link>
       </header>
 
       <section className="hero" aria-label={`${name}, ${disc.name}`}>
