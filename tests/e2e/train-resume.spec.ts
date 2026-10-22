@@ -53,8 +53,13 @@ test.describe('Entraîner : trois espaces', () => {
     await expect(page.getByTestId('prog-count')).toHaveText('10 programmes sur 10');
     await page.getByTestId('pf-d-muaythai').click();
     await expect(page.locator('.prog-card')).toHaveCount(2);
+    // level, duration and objective are under « Filtres »
+    await expect(page.getByTestId('pf-t-moyen')).toBeHidden();
+    await page.getByTestId('pf-more').click();
+    await expect(page.getByTestId('pf-more')).toHaveAttribute('aria-expanded', 'true');
     await page.getByTestId('pf-t-moyen').click();
     await expect(page.locator('.prog-card')).toHaveCount(1);
+    await expect(page.getByTestId('pf-more')).toHaveText(/Filtres \(1\)/);
     await expect(page.getByTestId('prog-muay-fondamentaux')).toBeVisible();
     await page.getByTestId('pf-o-cardio').click();
     await expect(page.locator('.prog-card')).toHaveCount(0);

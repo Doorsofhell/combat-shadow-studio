@@ -1578,3 +1578,30 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     - `coach-suggest:96` (flèches des questions) : déjà en échec avant ce lot ;
   - Android réel : NON EXÉCUTÉ (retour haptique et bouton Retour du téléphone non vérifiés sur un appareil).
 - **Restauration** : `restauration/avant-navigation-v032` (v0.32.0-proto2).
+
+## 2026-10-22 · v0.33.0 · Entraîner premium et emblèmes des six disciplines
+
+- **Demande** : refonte premium de l'écran Entraîner et nouvelle identité graphique des six disciplines (Youssef, 2026-10-22).
+- **Constat avant** :
+  - l'écran empilait quatre sections (démarrage rapide, disciplines en grandes cartes de 240 px, 3 programmes sur 10, enchaînements) ;
+  - aucune reprise de séance après fermeture ;
+  - la barre du bas laissait transparaître le texte (opacité 0,94 / 0,95) ;
+  - les emblèmes vectoriels de la branche design étaient des « propositions simplifiées ».
+- **Correction** :
+  - trois espaces Séances / Disciplines / Programmes, espace retenu, lien `?espace=` ;
+  - carte de reprise réelle (4 états), photo de séance enregistrée (IndexedDB + copie synchrone localStorage), restauration au même exercice, round, phase et chrono, sans double comptage ;
+  - cartes disciplines à 184 px (−23 %) avec niveau et progression réels ;
+  - les 10 programmes avec filtres combinables (discipline, niveau, durée, objectif, ces trois derniers sous « Filtres (n) »), compteur, « Réinitialiser » et statut ;
+  - barre du bas à 0,985 d'opacité ;
+  - emblèmes : 6 rendus 3D procéduraux originaux (Blender), WebP 64/128/256, variante contour monochrome, registre `src/ui/emblems/`, planche https://claude.ai/artifact/8kxM3tUJsHyjRYzoMXpUfm.
+  - Coachs 3D, animations, moteur, navigation v0.32 : non modifiés. Nouvelles clés seulement (`css-resume`, `css-resume-mirror:<utilisateur>`, `settings.trainSpace`).
+- **Fichiers** : `src/ui/screens/Train.tsx`, `train.css`, `src/domain/resume.ts`, `programMeta.ts`, `src/store/resume.ts`, `src/ui/training/useSession.ts`, `src/ui/screens/Training.tsx`, `src/ui/emblems/`, `public/emblems/`, `tools/generator/emblems/`, `docs/v033/`.
+- **Tests** :
+  - Vitest : 646 réussis, 1 échoué (Amara, angle de hanche, `photo-coach.test`, déjà en échec avant ce lot) ;
+  - nouveaux : `resume.test.ts`, `resume-store.test.ts`, `session-resume.test.tsx`, `programMeta.test.ts`, `emblems.test.tsx` : TEST RÉUSSI ;
+  - Playwright, suite complète : 157 réussis, 2 échoués, 2 non exécutés (Firebase) :
+    - `navigation.spec` Nouveautés attendait 0.32.0 comme dernière version : mis à jour pour 0.33.0 (0.32.0 et 0.31.0 toujours vérifiées), relancé : TEST RÉUSSI ;
+    - `training-layout` caméra Auto après pivot : déjà en échec avant ce lot ;
+  - nouveaux `train-resume.spec` (5) et `emblems.spec` (3, dont hors ligne) : TEST RÉUSSI ;
+  - Android réel : NON EXÉCUTÉ.
+- **Restauration** : `restauration/avant-entrainer-v033`.

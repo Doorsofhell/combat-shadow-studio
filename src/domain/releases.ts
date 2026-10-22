@@ -49,6 +49,24 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.33.0',
+      releaseDate: '2026-10-22',
+      title: 'Entraîner repensé et emblèmes des disciplines',
+      isMajor: true,
+      changes: [
+        { category: 'fonctionnalites', text: 'Entraîner en trois espaces : Séances, Disciplines et Programmes. Le dernier espace choisi est retenu.' },
+        { category: 'fonctionnalites', text: 'Reprendre une séance interrompue, même après avoir fermé l’application : même exercice, même round, même chrono.' },
+        { category: 'fonctionnalites', text: 'Les dix programmes avec des filtres par discipline, niveau, durée et objectif, et leur avancement.' },
+        { category: 'disciplines', text: 'Nouveaux emblèmes 3D des six disciplines, avec des versions simplifiées pour les petites tailles.' },
+        { category: 'ameliorations', text: 'Cartes des disciplines plus compactes, avec ton niveau et ta progression réelle.' },
+        { category: 'ameliorations', text: 'Barre du bas plus opaque : le contenu ne transparaît plus.' },
+      ],
+      links: [
+        { label: 'Ouvrir Entraîner', to: '/entrainer' },
+        { label: 'Voir les programmes', to: '/entrainer?espace=programmes' },
+      ],
+    },
+    {
       version: '0.32.0',
       releaseDate: '2026-10-22',
       title: 'Nouvelle navigation et tenues premium',

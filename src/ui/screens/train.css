@@ -283,6 +283,23 @@
   gap: 6px;
 }
 
+.filters-toggle {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.prog-more {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prog-more[hidden] {
+  display: none;
+}
+
 .prog-count {
   display: flex;
   align-items: center;

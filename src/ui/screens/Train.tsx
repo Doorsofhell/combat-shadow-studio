@@ -28,6 +28,7 @@ import { championFor } from '../../domain/coaches/catalog';
 import { DisciplineLabel, EmptyState, FilterChips, PageHead, SectionHead } from '../components';
 import { ExerciseSheet } from './Discipline';
 import { AppIcon, DisciplineIcon, LevelIcon } from '../icons';
+import { DisciplineEmblem } from '../emblems';
 import { useHydrated } from '../../store/useHydrated';
 import './train.css';
 
@@ -336,7 +337,7 @@ function Disciplines() {
         return (
           <Link key={d.id} to={`/discipline/${d.id}`} className="disc-card dark-scope train-disc" data-testid={`disc-${d.id}`}>
             <span className="disc-emblem" aria-hidden>
-              <DisciplineIcon id={d.id} size={72} />
+              <DisciplineEmblem id={d.id} size={72} variant="detaille" />
             </span>
             <span className="bar" aria-hidden />
             <span className="name">{d.name}</span>
@@ -377,11 +378,14 @@ function programStatus(p: Program, snapshots: ResumeSnapshot[], runs: Record<str
 
 function Programmes() {
   const [f, setF] = useState<ProgramFilters>(NO_PROGRAM_FILTER);
+  // level, duration and objective fold under one « Filtres » button, so the list starts high on the screen
+  const [more, setMore] = useState(false);
   const snapshots = useResume((s) => s.snapshots);
   const runs = useResume((s) => s.programs);
   const list = filterPrograms(PROGRAMS, f);
   const set = (p: Partial<ProgramFilters>) => setF((x) => ({ ...x, ...p }));
   const n = activeFilterCount(f);
+  const nMore = n - (f.discipline !== 'tous' ? 1 : 0);
   const disciplines = ['tous', ...new Set(PROGRAMS.map((p) => p.discipline))];
   return (
     <>
@@ -395,9 +399,13 @@ function Programmes() {
           options={disciplines.map((d) => ({
             id: d,
             label: d === 'tous' ? 'Toutes' : d === 'mixte' ? 'Multi' : DISCIPLINES.find((x) => x.id === d)!.short,
-            icon: d !== 'tous' && d !== 'mixte' ? <DisciplineIcon id={d as DisciplineId} size={18} /> : undefined,
+            icon: d !== 'tous' && d !== 'mixte' ? <DisciplineEmblem id={d as DisciplineId} size={18} variant="contour" /> : undefined,
           }))}
         />
+        <button type="button" className={`chip filters-toggle ${more ? 'on' : ''}`} aria-expanded={more} aria-controls="prog-more" onClick={() => setMore((x) => !x)} data-testid="pf-more">
+          <AppIcon id="filters" size={18} /> Filtres{nMore > 0 ? ` (${nMore})` : ''}
+        </button>
+        <div id="prog-more" className="prog-more" hidden={!more}>
         <FilterChips
           scroll
           label="Niveau"
@@ -422,6 +430,7 @@ function Programmes() {
           testPrefix="pf-o-"
           options={[{ id: 'tous' as const, label: 'Tous objectifs' }, ...(Object.keys(OBJECTIVE_LABEL) as ProgramObjective[]).map((k) => ({ id: k, label: OBJECTIVE_LABEL[k] }))]}
         />
+        </div>
         <div className="prog-count">
           <span className="small muted" data-testid="prog-count" aria-live="polite">
             {list.length} programme{list.length > 1 ? 's' : ''} sur {PROGRAMS.length}
