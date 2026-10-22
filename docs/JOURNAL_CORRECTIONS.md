@@ -1606,6 +1606,31 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Android réel : NON EXÉCUTÉ.
 - **Restauration** : `restauration/avant-entrainer-v033`.
 
+## 2026-10-22 · v0.35.0 · Coaching 3D : HUD compact et bandeau du mouvement
+
+- **Demande** (Youssef, 2026-10-22) :
+  - chrono compact en haut ;
+  - plus d'enchaînement complet affiché en permanence ;
+  - le nom du seul coup en cours dans un bandeau sous le coach, synchronisé sur le moteur d'animation.
+- **Constat avant** :
+  - le titre montrait l'enchaînement complet pendant tout l'effort ;
+  - l'état et le temps étaient posés sur le coach ;
+  - le nom du dernier coup restait affiché pendant la garde (`lastFocus`) ;
+  - « Puis : … » montrait un second nom.
+- **Correction** :
+  - `ComboPlayer.moveNow()` et l'événement `onMove`, une simple observation : le coup entrant possède l'affichage dès le début de son animation, le coup courant jusqu'à la fin de la sienne, et rien en garde, au repos ni pendant les déplacements automatiques ;
+  - `moveStore` : seul le bandeau se redessine ;
+  - le HUD sur une ligne ;
+  - `MoveBand` à hauteur fixe, avec le point clé de la phase et un bouton « i » vers « Comment faire ? » ;
+  - l'exercice, la consigne et les points clés restent visibles avant le départ, en pause, au repos, à la fin et en Décomposer.
+  - Animations, modèles, chronos, statistiques et reprise inchangés. Les poses ont été comparées image par image au moteur 0.34 : identiques.
+- **Tests** :
+  - `src/engine/__tests__/player-move.test.ts` (16) ;
+  - `tests/e2e/coaching-hud.spec.ts` (5) ;
+  - `fullscreen-dbltap` adapté : le bandeau s'insère entre la scène et les consignes ;
+  - `navigation` : version 0.35.0.
+- **Rapport** : `docs/v035/COACHING_HUD.md`, captures dans `docs/v035/captures/`.
+
 ## 2026-10-22 · v0.34.0 · Progrès, Athletic Intelligence
 
 - **Demande** : refonte ergonomique et graphique de Progrès, option C « Athletic Intelligence » (Youssef, 2026-10-22). Aucune nouvelle fonction, aucun calcul modifié, un seul écran sans défilement, Progrès juste après Entraîner.

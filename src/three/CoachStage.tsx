@@ -218,6 +218,7 @@ export function CoachStage(props: CoachStageProps) {
       onImpact: (...a) => eventsRef.current.onImpact?.(...a),
       onRep: (...a) => eventsRef.current.onRep?.(...a),
       onRest: (...a) => eventsRef.current.onRest?.(...a),
+      onMove: (...a) => eventsRef.current.onMove?.(...a),
     }),
     [],
   );

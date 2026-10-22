@@ -24,6 +24,7 @@ import { chooseCoach } from '../components/fighter';
 import { CAMERA_MODES, CameraMode, manualView, stageAzimuth, stepViews, techniqueView, viewName } from '../../domain/camera';
 import type { StageView } from '../../three/StudioStage';
 import { StudyPanel, useStudy } from '../training/Study';
+import { MoveBand, MoveName } from '../training/MoveBand';
 import { ArBridge } from '../../ar/ArBridge';
 import { CoachLookPicker } from '../components/CoachLookPicker';
 import { ArControls, ArIntroSheet, useArView } from '../training/ArMode';
@@ -122,6 +123,9 @@ function clock(sec: number, up = true) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
+/** 0.35, the chronometer of the HUD: mm:ss (« 01:42 »), rounded up like every countdown */
+const clockHud = (sec: number) => clock(sec).padStart(5, '0');
+
 function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPersist, 'camera'> }) {
   const nav = useNavigate();
   const profile = useProfile((s) => s.profile);
@@ -134,7 +138,7 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   );
   const camRef = useRef(camMode);
   camRef.current = camMode;
-  const { view, item, events, onPlayer, player, start, pause, resume, restart, goto, setSpeed } = useSession(plan, { ...persist, camera: () => camRef.current });
+  const { view, item, events, onPlayer, player, move, start, pause, resume, restart, goto, setSpeed } = useSession(plan, { ...persist, camera: () => camRef.current });
   const [closeUp, setCloseUp] = useState(false);
   const [studyRot, setStudyRot] = useState(0);
   // « Caméra » zone: manual turn around the coach and zoom, on top of the chosen angle
@@ -183,8 +187,6 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   const seq = item.sequence;
   const curId = view.step >= 0 ? seq[view.step] : null;
   const cur = curId ? TECHNIQUE_BY_ID.get(curId) : null;
-  const nextId = view.step >= 0 ? seq[(view.step + 1) % seq.length] : seq[0];
-  const next = TECHNIQUE_BY_ID.get(nextId);
   const disc = DISCIPLINES.find((d) => d.id === item.discipline)!;
   const lvl = LEVELS.find((l) => l.id === item.level)!;
 
@@ -307,20 +309,18 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   lastFocus.current = focusId;
   const focus = focusId ? TECHNIQUE_BY_ID.get(focusId) : undefined;
   const instr = focus ? instructionOf(focus) : null;
-  let moveName = cur?.name ?? (view.phase === 'travail' ? focus?.name ?? 'Garde' : phaseLabel);
   let cue = instr?.main ?? cur?.cues[0] ?? '';
   if (view.phase === 'pret') {
-    moveName = focus?.name ?? 'En garde';
     if (!instr) cue = 'Appuie sur Démarrer quand tu es prêt.';
   } else if (view.phase === 'repos') {
-    moveName = 'Repos';
     cue = view.banner ?? 'Respire, relâche les épaules, reste en mouvement léger.';
   } else if (view.phase === 'termine') {
-    moveName = 'Séance terminée';
     cue = `${view.reps} répétitions, ${formatDuration(view.sessionSec)} de travail actif.`;
   } else if (view.phase === 'travail' && !cur && !instr) {
     cue = 'Retour en garde, respire.';
   }
+  // the empty band says nothing, except at the end of the session (never a move name)
+  const bandIdle = view.phase === 'termine' ? 'Séance terminée' : '';
 
   // key points of the taught technique (feet, pelvis, limbs, return to guard); the one matching the
   // phase being played is highlighted
@@ -347,10 +347,10 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
       ? livePhase.phase
       : null;
   const points = (view.phase === 'termine' ? [] : instr?.points ?? []).map((pt, i) => ({ id: `${focusId}#${i}`, ...pt, now: !!pt.phase && pt.phase === phaseNow }));
-  // 0.24 (Youssef: « que le coach soit bien visible »): while the session runs, only the point of the
-  // moment stays under the coach; the full list is shown before starting, on pause and in "Comment faire ?"
+  // 0.24 (Youssef: « que le coach soit bien visible »): while the session runs, only the point of the moment is
+  // shown, since 0.35 as the subtitle of the band under the coach; the full list is shown before starting, on
+  // pause, at rest and in "Comment faire ?"
   const focusOnly = view.phase === 'travail' && !view.paused && !st.tech;
-  const shownPoints = focusOnly ? points.filter((pt) => pt.now).slice(0, 1).concat(points.some((pt) => pt.now) ? [] : points.slice(0, 1)) : points;
   const SLOW = 0.25;
   const slow = view.speed <= SLOW + 1e-3 && item.speed > SLOW;
   // progression of the session: rounds of timed work, else exercises of the plan
@@ -435,21 +435,32 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
 
   return (
     <div className={`training ${immersive ? 'immersive' : ''} ${fs.idle ? 'fs-idle' : ''} ${overflow ? 'overflow' : ''} ${asking ? 'asking' : ''}`} ref={root} data-testid="training">
-      <header className="tr-top">
-        <div className="tr-titles">
-          <div className="eyebrow">
-            {disc.name} · {lvl.name} · {MODE_LABEL[plan.mode]}
-          </div>
-          <div className="title" data-testid="exercise-name">
-            {item.label ? `${item.label} : ` : ''}
-            {item.name}
-          </div>
+      {/* 0.35 HUD: discipline and level, the state of the session, the round and its time left, a thin progress bar.
+          The exercise (and so the full combination) is no longer shown here while it runs: see the band and tr-info */}
+      <header className={`tr-top tr-hud ${view.phase} ${view.paused ? 'paused' : ''}`} data-testid="hud">
+        <div className="hud-row">
+          <span className="hud-disc">
+            {disc.name} · {lvl.name}
+          </span>
+          <span className={`phase ${view.phase} ${view.paused ? 'paused' : ''}`} data-testid="phase">
+            {view.paused ? 'Pause' : phaseLabel}
+          </span>
+          {view.remaining !== null && (
+            <span className="hud-time" data-testid="phase-time" aria-label={`Temps restant ${clock(view.remaining)}`}>
+              {clockHud(view.remaining)}
+            </span>
+          )}
+          <button className={`ar-state ${arView.state !== 'off' ? 'on' : ''}`} onClick={() => setArIntro(true)} data-testid="ar-button" aria-label="Réalité augmentée">
+            <AppIcon id="ar" size={18} />
+            {/* 0.24 (épuration) : « AR » seul quand elle est éteinte */}
+            <span>{arView.state === 'off' ? 'AR' : arView.state === 'starting' ? 'AR…' : 'AR active'}</span>
+          </button>
         </div>
-        <button className={`ar-state ${arView.state !== 'off' ? 'on' : ''}`} onClick={() => setArIntro(true)} data-testid="ar-button" aria-label="Réalité augmentée">
-          <AppIcon id="ar" size={18} />
-          {/* 0.24 (épuration) : « AR » seul quand elle est éteinte */}
-          <span>{arView.state === 'off' ? 'AR' : arView.state === 'starting' ? 'AR…' : 'AR active'}</span>
-        </button>
+        {progress !== null && (
+          <span className="tr-progress hud-progress" role="progressbar" aria-label="Progression de la séance" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} data-testid="progress">
+            <i style={{ width: `${Math.round(progress * 100)}%` }} />
+          </span>
+        )}
       </header>
 
       <div className="tr-stage" ref={stageRef} data-testid="training-stage">
@@ -479,12 +490,6 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
           arActive={arActive}
         />
         </StageGuard>
-        <div className="stage-badge">
-          <span className={`phase ${view.phase}`} data-testid="phase">
-            {view.paused ? 'Pause' : phaseLabel}
-          </span>
-          {view.remaining !== null && <span className="phase light" data-testid="phase-time">{clock(view.remaining)}</span>}
-        </div>
         {view.phase === 'decompte' && !view.paused && !st.tech && view.remaining !== null && view.remaining <= 3.05 && <div className="countdown">{Math.max(1, Math.ceil(view.remaining))}</div>}
         <div className="stage-tools">
           {teach.closeUp && !free && (
@@ -520,26 +525,39 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
         <div className="tr-coach-slot" ref={setCoachSlot} />
       </div>
 
-      <section className={`tr-info ${focusOnly ? 'focus' : ''}`} aria-live="polite">
-        <div className="tr-now">
-          <span className="name" data-testid="current-move">
-            {st.tech ? TECHNIQUE_BY_ID.get(st.tech)?.name : moveName}
-          </span>
-          {view.phase === 'travail' && view.step >= 0 && !st.tech && (
-            <span className="badge">
-              {view.step + 1}/{seq.length}
+      <MoveBand
+        store={move}
+        active={view.phase === 'travail'}
+        studied={st.tech}
+        phase={livePhase}
+        total={seq.length}
+        idle={bandIdle}
+        onInfo={(id) => {
+          pause();
+          setGuideId(id);
+        }}
+      />
+
+      <section className={`tr-info ${focusOnly ? 'focus' : ''}`}>
+        {/* the exercise, its main instruction and every key point: before starting, on pause, at the end and in
+            Décomposer; while the coach works, the band under the stage carries the move and its point of the moment */}
+        {!focusOnly && !st.tech && (
+          <div className="tr-now">
+            <span className="name" data-testid="exercise-name">
+              {item.label ? `${item.label} : ` : ''}
+              {item.name}
             </span>
-          )}
-          {view.phase === 'travail' && next && !st.tech && <span className="next">Puis : {next.name}</span>}
-        </div>
-        {!st.tech && (
+            <span className="next">{MODE_LABEL[plan.mode]}</span>
+          </div>
+        )}
+        {!focusOnly && !st.tech && (
           <p className="tr-cue" data-testid="main-instruction">
             {cue}
           </p>
         )}
-        {shownPoints.length > 0 && (
-          <ul className={`tr-points ${shownPoints.length > 3 ? 'cols' : ''}`} aria-label="Points clés" data-testid="key-points">
-            {shownPoints.map((pt) => (
+        {!focusOnly && points.length > 0 && (
+          <ul className={`tr-points ${points.length > 3 ? 'cols' : ''}`} aria-label="Points clés" data-testid="key-points">
+            {points.map((pt) => (
               <li key={pt.id} className={pt.now ? 'now' : ''} data-zone={pt.zone} aria-current={pt.now ? 'step' : undefined}>
                 {pt.text}
               </li>
@@ -557,19 +575,9 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
             <span>
               <b data-testid="reps">{view.reps}</b> rép.
             </span>
-            {item.work ? (
-              <span>
-                Round <b>{view.round}</b>/{item.rounds}
-              </span>
-            ) : null}
             {plan.items.length > 1 && (
               <span>
                 Exercice <b>{view.itemIndex + 1}</b>/{plan.items.length}
-              </span>
-            )}
-            {progress !== null && (
-              <span className="tr-progress" role="progressbar" aria-label="Progression de la séance" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} data-testid="progress">
-                <i style={{ width: `${Math.round(progress * 100)}%` }} />
               </span>
             )}
           </div>
@@ -648,8 +656,7 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
             </div>
             {!arCompact && (
               <div className="ar-move">
-                <b>{moveName}</b>
-                {view.phase === 'travail' && next && <span> · Suivant : {next.name}</span>}
+                <MoveName store={move} active={view.phase === 'travail'} fallback={view.phase === 'travail' ? '' : phaseLabel} />
               </div>
             )}
             <div className="ar-bottom">

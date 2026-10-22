@@ -165,7 +165,7 @@ for (const vp of [
     const after = await page.evaluate(() => {
       const r = (s: string) => document.querySelector(s)!.getBoundingClientRect();
       // v0.32: the session's controls are the bottom bar (below the instructions), .tr-bottom holds nothing any more
-      return { scroll: document.scrollingElement!.scrollHeight - innerHeight, top: r('.tr-top').height, stage: r('.tr-stage'), info: r('.tr-info'), bottom: r('[data-testid=bottom-bar]'), pos: getComputedStyle(document.querySelector('[data-testid=bottom-bar]')!).position, land: innerWidth > innerHeight };
+      return { scroll: document.scrollingElement!.scrollHeight - innerHeight, top: r('.tr-top').height, stage: r('.tr-stage'), band: r('.tr-band'), info: r('.tr-info'), bottom: r('[data-testid=bottom-bar]'), pos: getComputedStyle(document.querySelector('[data-testid=bottom-bar]')!).position, land: innerWidth > innerHeight };
     });
     expect(after.scroll).toBeLessThanOrEqual(0);
     expect(after.top).toBeGreaterThan(20);
@@ -175,7 +175,9 @@ for (const vp of [
     expect(after.stage.height).toBeGreaterThan(150);
     expect(after.info.height).toBeGreaterThan(20);
     if (!after.land) {
-      expect(Math.abs(after.info.top - after.stage.bottom)).toBeLessThanOrEqual(1);
+      // v0.35: the band of the move sits between the stage and the instructions, each right under the other
+      expect(Math.abs(after.band.top - after.stage.bottom)).toBeLessThanOrEqual(1);
+      expect(Math.abs(after.info.top - after.band.bottom)).toBeLessThanOrEqual(1);
       expect(after.bottom.top).toBeGreaterThanOrEqual(after.info.bottom - 1);
     }
     // the button does the same, and its twin exits
