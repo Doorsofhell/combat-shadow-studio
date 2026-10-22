@@ -101,3 +101,23 @@ describe.each(COACHES)('finition des tenues v0.32, %s', (coach) => {
     }
   });
 });
+
+/** width and height of a WebP file (lossy VP8, lossless VP8L or extended VP8X) */
+function webpSize(path: string) {
+  const b = readFileSync(path);
+  const kind = b.toString('ascii', 12, 16);
+  if (kind === 'VP8X') return { w: 1 + b.readUIntLE(24, 3), h: 1 + b.readUIntLE(27, 3) };
+  if (kind === 'VP8L') {
+    const v = b.readUInt32LE(21);
+    return { w: 1 + (v & 0x3fff), h: 1 + ((v >> 14) & 0x3fff) };
+  }
+  return { w: b.readUInt16LE(26) & 0x3fff, h: b.readUInt16LE(28) & 0x3fff };
+}
+
+describe('écran « Choisis ton coach »', () => {
+  // v0.32: the cartoon drawings are replaced by renders of the shipped 3D coaches (scripts/dev/shot-portraits.mjs),
+  // at a resolution sharp on Android screens (450 x 600 points at density 2)
+  test.each(COACHES)('%s : portrait rendu depuis le modèle 3D, 900 x 1200', (coach) => {
+    expect(webpSize(`public/coaches/${coach}/portrait.webp`)).toEqual({ w: 900, h: 1200 });
+  });
+});
