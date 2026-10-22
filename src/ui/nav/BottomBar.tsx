@@ -7,7 +7,7 @@ import { useSettings } from '../../store/settings';
 import { NAV_CONFIG, NAV_PARENT, navScreen, type NavScreen, type NavSlot } from './config';
 import { pushLayer } from './layers';
 import { NavIcon } from './NavIcon';
-import { useNavStore } from './store';
+import { leave, useNavStore } from './store';
 import './nav.css';
 
 /** a short tick where the device can (Android Chrome and WebView); nothing elsewhere */
@@ -87,13 +87,13 @@ export function BottomBar() {
     if (slot.action === 'back') {
       // a screen may take Retour first (a running session asks before leaving)
       if (actions.back) return run('back');
-      return back(screen);
+      return leave(() => back(screen));
     }
     if (slot.action === 'menu') return openMenu();
     if (slot.action.startsWith('nav:')) {
       const to = slot.action.slice(4);
       if (actions[slot.action]) return run(slot.action);
-      return nav(to);
+      return leave(() => nav(to));
     }
     run(slot.action);
   };

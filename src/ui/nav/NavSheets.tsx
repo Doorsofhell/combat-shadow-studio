@@ -8,7 +8,7 @@ import { AppIcon } from '../icons';
 import { MENU_ENTRIES } from './config';
 import { popLayer, pushLayer } from './layers';
 import { NavIcon } from './NavIcon';
-import { useNavStore, type MenuCommand } from './store';
+import { leave, useNavStore, type MenuCommand } from './store';
 import { haptic } from './BottomBar';
 
 /**
@@ -118,7 +118,7 @@ export function NavSheets() {
     setSheet(null);
     popLayer(layer, then);
   };
-  const go = (to: string) => close(() => nav(to));
+  const go = (to: string) => close(() => leave(() => nav(to)));
 
   if (sheet === 'news') {
     return (

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { setLeaveGuard } from '../../nav/store';
 
 /**
  * Unsaved-changes guard for the HashRouter (no data router, so no useBlocker): intercepts clicks
@@ -31,7 +32,10 @@ export function useLeaveGuard(dirty: boolean, onAttempt: (go: () => void) => voi
     };
     document.addEventListener('click', onClick, true);
     window.addEventListener('beforeunload', onUnload);
+    // v0.32: the bottom bar and the Menu are buttons, not links: they ask through the same confirmation
+    setLeaveGuard((go) => (dirtyRef.current ? attemptRef.current(go) : go()));
     return () => {
+      setLeaveGuard(null);
       document.removeEventListener('click', onClick, true);
       window.removeEventListener('beforeunload', onUnload);
     };

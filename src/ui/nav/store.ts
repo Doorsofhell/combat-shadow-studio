@@ -121,3 +121,16 @@ export function useNavActions(actions: Live['actions'], commands: Live['commands
     };
   }, [key]);
 }
+
+/**
+ * A screen with unsaved changes (the fighter studio) asks before the bar or the Menu leaves it, as it already did
+ * for links (useLeaveGuard). `leave(go)` runs `go` at once, or hands it to the screen's confirmation.
+ */
+let leaveGuard: ((go: () => void) => void) | null = null;
+export function setLeaveGuard(guard: ((go: () => void) => void) | null) {
+  leaveGuard = guard;
+}
+export function leave(go: () => void) {
+  if (leaveGuard) leaveGuard(go);
+  else go();
+}
