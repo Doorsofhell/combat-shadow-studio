@@ -1,0 +1,10 @@
+import { chromium } from '@playwright/test';
+const [OUT, PORT] = process.argv.slice(2);
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+const p = await b.newPage({ viewport: { width: 393, height: 851 }, deviceScaleFactor: 2 });
+await p.goto(`http://localhost:${PORT}/#/coach?first=1`);
+await p.waitForSelector('[data-testid=coach-homme] img', { timeout: 120000 });
+await p.waitForFunction(() => [...document.images].every((i) => i.complete), null, { timeout: 60000 });
+await p.waitForTimeout(1000);
+await p.screenshot({ path: OUT });
+await b.close();

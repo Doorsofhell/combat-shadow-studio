@@ -432,13 +432,16 @@ export class MotionSampler {
       [footL, 'L'],
       [footR, 'R'],
     ] as const) {
-      if (f.toeFlat < 0.99) continue;
+      // v0.32: the drop follows the foot as it flattens on landing or leaves on take-off (it used to switch on
+      // and off at once, a 4 to 5 cm jump of the hips in one frame at the end and the start of every kick)
+      const w = smooth(f.toeFlat);
+      if (w <= 0) continue;
       const hj = this.hipOffset[side].clone().applyQuaternion(pelvis).add(hips);
       const dx = hj.x - f.ankle.x;
       const dz = hj.z - f.ankle.z;
       const h2 = R * R - dx * dx - dz * dz;
       if (h2 <= 0) continue;
-      const need = hj.y - f.ankle.y - Math.sqrt(h2);
+      const need = (hj.y - f.ankle.y - Math.sqrt(h2)) * w;
       if (need > drop) drop = need;
     }
     return drop;

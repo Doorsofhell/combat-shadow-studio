@@ -212,6 +212,31 @@ export function edit(p: Pose, f: (d: Pose) => void): Pose {
   return d;
 }
 
+/**
+ * v0.32: the « drive » moment of a strike, between its preparation (`from`) and its impact (`to`): hips and
+ * planted feet well into their turn, shoulders less, the striking limb still where `from` holds it. Placed
+ * between the two keys, it makes the body turn first and the limb finish the movement (hips, then shoulders,
+ * then fist or elbow), as measured on the jab and the straight in v0.31.
+ */
+export function driveToward(from: Pose, to: Pose, k = { pelvis: 0.6, chest: 0.45, hips: 0.55, feet: 0.7 }): Pose {
+  const l = (a: number, b: number, u: number) => a + (b - a) * u;
+  return edit(from, (d) => {
+    d.pelvis.yaw = l(from.pelvis.yaw, to.pelvis.yaw, k.pelvis);
+    d.pelvis.roll = l(from.pelvis.roll, to.pelvis.roll, k.pelvis);
+    d.pelvis.pitch = l(from.pelvis.pitch, to.pelvis.pitch, k.pelvis);
+    d.chest.yaw = l(from.chest.yaw, to.chest.yaw, k.chest);
+    d.chest.roll = l(from.chest.roll, to.chest.roll, k.chest);
+    d.chest.pitch = l(from.chest.pitch, to.chest.pitch, k.chest);
+    d.hips = { x: l(from.hips.x, to.hips.x, k.hips), y: l(from.hips.y, to.hips.y, k.hips), z: l(from.hips.z, to.hips.z, k.hips) };
+    for (const side of ['footL', 'footR'] as const) {
+      const a = from[side];
+      const b = to[side];
+      if (a.mode !== 'ground' || b.mode !== 'ground') continue;
+      d[side] = { ...structuredClone(b), ball: { x: l(a.ball.x, b.ball.x, k.feet), y: l(a.ball.y, b.ball.y, k.feet), z: l(a.ball.z, b.ball.z, k.feet) }, yaw: l(a.yaw, b.yaw, k.feet), heel: l(a.heel, b.heel, k.feet) };
+    }
+  });
+}
+
 export const add = (a: V3, b: Partial<V3>): V3 => ({ x: a.x + (b.x ?? 0), y: a.y + (b.y ?? 0), z: a.z + (b.z ?? 0) });
 
 export interface StanceDef {

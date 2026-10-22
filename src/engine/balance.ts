@@ -110,6 +110,14 @@ export function balanceKeys(rig: CoachRig, m: Motion) {
     // a foot that has just landed: the weight comes back over both feet after the touchdown, not before
     if (!d && k.settling && shifts[i - 1]) d = shifts[i - 1]!.clone().multiplyScalar(0.5);
     if (!d) return;
+    // v0.32: the foot coming down just above its place (pinned, before a landing): the weight already starts
+    // back toward it, so the hips do not cross the whole way in the few hundredths of a second of the touchdown
+    // (measured: 3.9 m/s of hip speed at the end of every round kick)
+    // and the foot that has just left the floor (pinned just above its place): the weight is still on its way
+    // to the support, which it reaches with the chamber (a whole half shift in the take-off moved the hips at
+    // 5 to 8 m/s)
+    const f = k.pose.footL.mode === 'air' ? k.pose.footL : k.pose.footR;
+    if (f.mode === 'air' && f.pinned && (m.keys[i + 1]?.settling || (i > 0 && !shifts[i - 1]))) d = d.clone().multiplyScalar(0.75);
     k.pose = structuredClone(k.pose);
     move(k.pose, d);
   });

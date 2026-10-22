@@ -659,7 +659,7 @@
   position: fixed;
   inset: 0;
   background: rgba(17, 18, 20, 0.35);
-  z-index: 30;
+  z-index: 40;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -783,7 +783,7 @@
   bottom: calc(var(--kb, 0px) + 8px);
   max-height: calc(var(--vvh, 60dvh) - 16px);
   margin: 0 auto;
-  z-index: 30;
+  z-index: 35; /* above the bottom bar */
   animation: none;
 }
 .tr-ask .cai-panel.kbd .cai-answer {
@@ -885,3 +885,39 @@
 /* teaching phases of the studied technique: one row, scrolls sideways when they do not fit */
 .study-steps { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
 .study-steps .chip { flex: none; white-space: nowrap; }
+
+/* v0.32 navigation dynamique: the commands of the session are in the app's bottom bar; the screen ends above it */
+.training {
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  height: auto;
+}
+.training.overflow {
+  min-height: calc(100dvh - var(--nav-h) - env(safe-area-inset-bottom));
+}
+.tr-bottom {
+  padding-bottom: 6px;
+}
+.tr-bottom:empty {
+  display: none;
+}
+/* total fullscreen: the bar is drawn inside the fullscreen stage, over the coach, and fades with the other controls */
+.training.immersive {
+  bottom: 0;
+}
+.training.immersive .nav-bottom,
+body:has(.training.immersive) .nav-bottom {
+  background: var(--tr-glass);
+  transition: opacity 0.25s ease;
+}
+/* (the second selector: a browser without the Fullscreen API keeps the bar outside the stage) */
+.training.immersive.fs-idle .nav-bottom,
+body:has(.training.immersive.fs-idle) .nav-bottom {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* v0.32: the session screen is a fixed layer (its own stacking context), so its modal sheet cannot rise above the
+   bottom bar by z-index: while it is open the bar steps aside, as under any modal */
+body:has(.training .sheet-backdrop) .nav-bottom {
+  visibility: hidden;
+}

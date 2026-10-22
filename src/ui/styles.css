@@ -137,7 +137,8 @@
   --space-5: 24px;
   --space-6: 32px;
   --tap: 48px;
-  --nav-h: 68px;
+  /* v0.32 bottom bar: 10 + 55 + 15 px (mockup .bottom / .navbtn) */
+  --nav-h: 80px;
   --gutter: 16px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --t-fast: 140ms;
@@ -153,7 +154,7 @@
 
 @media (max-height: 520px) {
   :root {
-    --nav-h: 58px;
+    --nav-h: 68px;
   }
 }
 
@@ -2347,7 +2348,7 @@ button.panel-row {
   padding-bottom: 8px;
   gap: 8px;
 }
-/* 0.26: the action pill sits under the dashboard, never over its chart (pill 64px + 8px gap + 8px air) */
+/* 0.26 (pill under the dashboard); v0.32 the pill is gone, the class is no longer set */
 .page.dash.with-pill {
   height: calc(100dvh - var(--nav-h) - env(safe-area-inset-bottom) - 80px);
   min-height: 460px;
@@ -2854,9 +2855,9 @@ details.fold > summary h3 { margin: 0; }
 }
 .tech-step .btn:disabled { opacity: 0.3; }
 
-/* the last item of a page is never hidden under the bubble */
-.page { padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 84px); }
-.page.no-nav { padding-bottom: calc(env(safe-area-inset-bottom) + 84px); }
+/* v0.32: the last item of a page is never hidden under the bottom bar */
+.page { padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 20px); }
+.page.no-nav { padding-bottom: calc(env(safe-area-inset-bottom) + 28px); }
 
 /* 0.24 settings hub: the profile in four facts, then grouped rows (reference captures) */
 .profile-summary {

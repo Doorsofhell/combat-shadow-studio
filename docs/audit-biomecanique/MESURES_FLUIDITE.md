@@ -10,16 +10,16 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 
 ## Total, 6 styles de garde
 
-528 animations, 2046 poses clés intérieures. Arrêts parasites : **1543 avant, 339 après**.
+528 animations, 2202 poses clés intérieures. Arrêts parasites : **2176 avant, 595 après**.
 
 | Style | Animations | Arrêts avant | Arrêts après |
 |---|---|---|---|
-| boxing | 88 | 245 | 54 |
-| kickboxing | 88 | 248 | 53 |
-| mma | 88 | 250 | 49 |
-| muaythai | 88 | 255 | 56 |
-| bjj | 88 | 267 | 58 |
-| judo | 88 | 278 | 69 |
+| boxing | 88 | 359 | 95 |
+| kickboxing | 88 | 361 | 98 |
+| mma | 88 | 362 | 99 |
+| muaythai | 88 | 363 | 97 |
+| bjj | 88 | 363 | 101 |
+| judo | 88 | 368 | 105 |
 
 ## Détail, garde de boxe
 
@@ -35,8 +35,8 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `crochet-arriere` | 3 | 1 | 0 | 4,7 | 4,7 | 7,0 | 7,0 | 5,1 | 5,1 |
 | `crochet-avant-corps` | 3 | 2 | 0 | 2,5 | 2,5 | 6,4 | 6,4 | 2,8 | 2,8 |
 | `crochet-arriere-corps` | 3 | 2 | 0 | 4,6 | 4,6 | 6,8 | 6,8 | 4,9 | 4,9 |
-| `uppercut-avant` | 3 | 0 | 0 | 2,3 | 2,3 | 4,7 | 4,7 | 2,5 | 2,5 |
-| `uppercut-arriere` | 3 | 0 | 0 | 3,9 | 3,9 | 5,8 | 5,8 | 4,2 | 4,2 |
+| `uppercut-avant` | 4 | 3 | 0 | 4,0 | 4,0 | 5,5 | 5,2 | 4,4 | 4,4 |
+| `uppercut-arriere` | 4 | 3 | 0 | 4,5 | 4,5 | 6,5 | 5,8 | 4,8 | 4,8 |
 | `overhand` | 3 | 0 | 0 | 5,0 | 5,0 | 6,7 | 6,7 | 5,3 | 5,3 |
 | `esquive-gauche` | 2 | 0 | 0 | 0,0 | 0,0 | 1,6 | 1,6 | – | – |
 | `esquive-droite` | 2 | 0 | 0 | 0,0 | 0,0 | 4,8 | 4,8 | – | – |
@@ -56,35 +56,35 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `sortie-angle` | 2 | 1 | 0 | 0,6 | 0,6 | 7,3 | 6,8 | – | – |
 | `check-hook` | 4 | 3 | 0 | 2,7 | 2,7 | 9,3 | 8,3 | 2,8 | 2,8 |
 | `shoulder-roll` | 2 | 0 | 0 | 0,0 | 0,0 | 8,9 | 8,9 | – | – |
-| `low-kick-arriere` | 7 | 10 | 3 | 5,7 | 5,7 | 10,2 | 10,2 | 6,1 | 6,1 |
-| `low-kick-avant` | 7 | 8 | 0 | 5,4 | 5,4 | 10,2 | 10,2 | 5,8 | 5,8 |
-| `middle-kick-arriere` | 7 | 10 | 3 | 8,2 | 8,2 | 15,0 | 15,0 | 8,8 | 8,8 |
-| `middle-kick-avant` | 7 | 9 | 1 | 7,6 | 7,6 | 14,0 | 14,0 | 8,1 | 8,1 |
-| `high-kick-arriere` | 7 | 10 | 3 | 9,7 | 9,7 | 17,7 | 17,7 | 10,4 | 10,4 |
-| `high-kick-avant` | 7 | 16 | 3 | 10,8 | 10,8 | 23,0 | 23,0 | 11,7 | 11,7 |
-| `roundhouse-arriere` | 7 | 12 | 3 | 9,5 | 9,5 | 20,3 | 20,3 | 10,3 | 10,3 |
-| `roundhouse-avant` | 7 | 12 | 1 | 8,7 | 8,7 | 18,7 | 18,7 | 9,4 | 9,4 |
+| `low-kick-arriere` | 7 | 17 | 4 | 5,7 | 5,7 | 12,1 | 12,1 | 6,1 | 6,1 |
+| `low-kick-avant` | 7 | 15 | 3 | 5,4 | 5,4 | 10,0 | 10,0 | 5,8 | 5,8 |
+| `middle-kick-arriere` | 7 | 16 | 3 | 8,2 | 8,2 | 17,1 | 17,1 | 8,8 | 8,8 |
+| `middle-kick-avant` | 7 | 15 | 4 | 7,6 | 7,6 | 13,8 | 13,8 | 8,1 | 8,1 |
+| `high-kick-arriere` | 7 | 14 | 3 | 9,7 | 9,7 | 18,3 | 18,3 | 10,4 | 10,4 |
+| `high-kick-avant` | 7 | 15 | 4 | 10,8 | 10,8 | 22,6 | 22,6 | 11,7 | 11,7 |
+| `roundhouse-arriere` | 7 | 14 | 3 | 9,5 | 9,5 | 23,7 | 23,7 | 10,3 | 10,3 |
+| `roundhouse-avant` | 7 | 15 | 2 | 8,7 | 8,7 | 18,4 | 18,4 | 9,4 | 9,4 |
 | `teep-avant` | 4 | 2 | 0 | 6,2 | 6,2 | 17,5 | 17,5 | 6,7 | 6,7 |
 | `teep-arriere` | 4 | 2 | 2 | 6,2 | 6,2 | 17,5 | 17,5 | 6,7 | 6,7 |
 | `front-kick-avant` | 4 | 4 | 0 | 6,0 | 6,0 | 12,9 | 12,9 | 6,4 | 6,4 |
 | `front-kick-arriere` | 4 | 2 | 2 | 6,0 | 6,0 | 13,0 | 13,0 | 6,4 | 6,4 |
-| `genou-direct-arriere` | 5 | 2 | 1 | 4,7 | 4,7 | 14,8 | 14,8 | 5,0 | 5,0 |
-| `genou-direct-avant` | 5 | 2 | 1 | 3,6 | 3,6 | 14,2 | 14,2 | 3,8 | 3,8 |
-| `genou-circulaire-arriere` | 5 | 2 | 1 | 5,5 | 5,5 | 17,5 | 17,5 | 5,8 | 5,8 |
-| `genou-circulaire-avant` | 5 | 3 | 2 | 4,2 | 4,2 | 15,4 | 15,3 | 4,4 | 4,4 |
-| `genou-direct-arriere-clinch` | 5 | 2 | 1 | 4,7 | 4,7 | 14,8 | 14,8 | 5,0 | 5,0 |
-| `genou-circulaire-arriere-clinch` | 5 | 2 | 1 | 5,5 | 5,5 | 17,5 | 17,5 | 5,8 | 5,8 |
+| `genou-direct-arriere` | 8 | 12 | 4 | 7,4 | 7,4 | 14,8 | 14,8 | 8,0 | 8,0 |
+| `genou-direct-avant` | 8 | 12 | 4 | 5,3 | 5,3 | 20,1 | 20,1 | 5,7 | 5,7 |
+| `genou-circulaire-arriere` | 8 | 10 | 4 | 8,6 | 8,6 | 17,5 | 17,5 | 9,4 | 9,4 |
+| `genou-circulaire-avant` | 8 | 13 | 5 | 6,3 | 6,3 | 19,2 | 19,2 | 6,9 | 6,9 |
+| `genou-direct-arriere-clinch` | 8 | 12 | 5 | 7,4 | 7,4 | 14,8 | 14,8 | 8,1 | 8,1 |
+| `genou-circulaire-arriere-clinch` | 8 | 10 | 4 | 8,6 | 8,6 | 17,5 | 17,5 | 9,4 | 9,4 |
 | `check-avant` | 2 | 0 | 0 | 0,0 | 0,0 | 9,1 | 9,1 | 0,0 | 0,0 |
 | `check-arriere` | 2 | 0 | 0 | 0,0 | 0,0 | 17,9 | 17,9 | 0,0 | 0,0 |
-| `switch-kick` | 10 | 11 | 3 | 8,2 | 8,2 | 14,9 | 14,9 | 8,8 | 8,8 |
+| `switch-kick` | 10 | 16 | 3 | 8,2 | 8,2 | 17,1 | 17,1 | 8,8 | 8,8 |
 | `garde-longue` | 2 | 0 | 0 | 0,0 | 0,0 | 4,3 | 4,3 | – | – |
 | `rattrapage-middle` | 6 | 1 | 1 | 0,1 | 0,1 | 7,2 | 7,2 | 0,0 | 0,2 |
-| `coude-horizontal-avant` | 3 | 0 | 0 | 1,6 | 1,6 | 2,4 | 2,4 | 1,7 | 1,7 |
-| `coude-horizontal-arriere` | 3 | 0 | 0 | 3,4 | 3,4 | 5,8 | 5,8 | 3,6 | 3,6 |
-| `coude-diagonal-arriere` | 3 | 0 | 0 | 4,7 | 4,7 | 6,9 | 6,9 | 5,1 | 5,1 |
-| `coude-diagonal-avant` | 3 | 0 | 0 | 2,8 | 2,8 | 4,0 | 4,0 | 3,0 | 3,0 |
-| `coude-montant-arriere` | 3 | 0 | 0 | 4,0 | 4,0 | 6,6 | 6,6 | 4,3 | 4,3 |
-| `coude-montant-avant` | 3 | 0 | 0 | 2,8 | 2,8 | 4,7 | 4,7 | 3,0 | 3,0 |
+| `coude-horizontal-avant` | 4 | 1 | 1 | 2,1 | 2,1 | 2,7 | 2,7 | 2,3 | 2,3 |
+| `coude-horizontal-arriere` | 4 | 2 | 2 | 6,2 | 6,2 | 7,8 | 7,8 | 6,9 | 6,9 |
+| `coude-diagonal-arriere` | 4 | 3 | 3 | 7,5 | 7,5 | 9,5 | 9,5 | 8,4 | 8,4 |
+| `coude-diagonal-avant` | 4 | 2 | 2 | 4,4 | 4,4 | 5,6 | 5,6 | 5,0 | 5,0 |
+| `coude-montant-arriere` | 4 | 2 | 2 | 4,1 | 4,1 | 7,6 | 7,6 | 4,5 | 4,5 |
+| `coude-montant-avant` | 4 | 3 | 3 | 4,4 | 4,4 | 5,6 | 5,6 | 5,0 | 5,0 |
 | `clinch-tirage` | 3 | 0 | 0 | 0,0 | 0,0 | 2,5 | 2,5 | 0,0 | 0,0 |
 | `feinte-jab` | 1 | 0 | 0 | 0,0 | 0,0 | 4,9 | 4,9 | – | – |
 | `feinte-epaule` | 1 | 0 | 0 | 0,0 | 0,0 | 3,7 | 3,7 | – | – |

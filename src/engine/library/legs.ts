@@ -126,21 +126,24 @@ function roundKick(a: Author, side: LegSide, height: 'thigh' | 'liver' | 'head',
       const an = a.groundAnkle({ ...f, heel: f.mode === 'ground' ? deg(35) : 0 } as FootPose);
       d[k.kick] = { ...joint(a.air(v3(an.x, an.y + up * s, an.z), (f as { yaw: number }).yaw, 0, 0, v3(0, 0.2, 1)), plantar), pinned: true } as FootPose;
     });
-  const off = lift(load, 0.06, 35);
+  const off = lift(load, 0.08, 15);
   const down = lift(edit(g, (d) => (d.pelvis.yaw += turn * hipTurn * 0.15)), 0.05, 20);
-  const t = style === 'thai' ? [0.12, 0.26, 0.4, 0.62, 0.86] : [0.1, 0.22, 0.34, 0.5, 0.72];
+  // v0.32: the weight shift onto the support foot takes 0.04 s more (measured: the hips crossed 16 cm in 0.12 s,
+  // up to 4 m/s, at the start of every round kick)
+  const t = style === 'thai' ? [0.16, 0.3, 0.44, 0.66, 0.9] : [0.13, 0.25, 0.37, 0.53, 0.75];
   return {
     id,
     keys: [
       { t: 0, pose: g },
       { t: t[0], pose: load, ease: 'inOut' },
-      { t: t[0] + 0.04, pose: off, ease: 'linear' },
+      // v0.32: eased like its neighbours, so the hips keep moving through the take-off instead of stopping
+      { t: t[0] + 0.07, pose: off, ease: 'inOut' },
       { t: t[1], pose: chamber, ease: 'load' },
       { t: t[2], pose: hit, ease: 'strike' },
       { t: t[3], pose: back, ease: 'inOut' },
       { t: t[4] - 0.08, pose: down, ease: 'inOut' },
       { t: t[4], pose: land, ease: 'inOut', settling: true },
-      { t: t[4] + 0.12, pose: g, ease: 'inOut' },
+      { t: t[4] + 0.16, pose: g, ease: 'inOut' },
     ],
     chainAt: t[4] - 0.1,
     impacts: [t[2]],
@@ -259,6 +262,17 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
       }
     }
   }
+  // v0.32: the framing arm reaches without locking its elbow (measured: 2° of flexion, a stiff stick), as the
+  // jab in v0.31
+  if (!clinch && kind === 'straight') {
+    const kh = side === 'rear' ? 'handR' : 'handL';
+    const hs = side === 'rear' ? 'R' : 'L';
+    for (const p of [load, hit]) {
+      const sh = a.shoulder(p, hs);
+      const h = p[kh].pos;
+      if (new Vector3(h.x, h.y, h.z).distanceTo(sh) > (a.m.upperArm + a.m.foreArm) * 0.97) p[kh].pos = a.reach(p, hs, h, 0.97);
+    }
+  }
   const hipH = a.hipJoint(hit, side === 'lead' ? 'L' : 'R');
   // knee point in front at body height, foot hanging under and behind it (toes pointed down)
   // v0.29: the straight knee drives forward like a spear at the stomach, « don't knee upward » [S35] (it rose to
@@ -288,17 +302,29 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
     const hipR = a.hipJoint(retract, side === 'lead' ? 'L' : 'R');
     retract[k.kick] = joint(a.air(v3(hipR.x * 0.8, hipR.y - (a.m.thigh + a.m.shin) * 0.66, hipR.z - 0.08 * s), kind === 'round' ? turn * deg(30) : 0, deg(30), 0, v3(0, 0.3, 1), deg(10)), 30, -5);
   }
+  // v0.32: measured on both coaches, the toes skimmed the floor for 20 to 29 cm and slid 4 to 6 cm on it when the
+  // knee left and came back. As for the round kicks (v0.31), the foot now leaves the floor upward and comes down
+  // from just above its place.
+  const lift = (from: Pose, up: number, plantar: number) =>
+    edit(from, (d) => {
+      const f = g[k.kick];
+      const an = a.groundAnkle({ ...f, heel: f.mode === 'ground' ? deg(40) : 0 } as FootPose);
+      d[k.kick] = { ...joint(a.air(v3(an.x, an.y + up * s, an.z), (f as { yaw: number }).yaw, 0, 0, v3(0, 0.2, 1)), plantar), pinned: true } as FootPose;
+    });
   return {
     id: `genou-${kind === 'round' ? 'circulaire' : 'direct'}-${side === 'lead' ? 'avant' : 'arriere'}${clinch ? '-clinch' : ''}`,
     keys: [
       { t: 0, pose: g },
       { t: 0.16, pose: load, ease: 'load' },
+      { t: 0.23, pose: lift(load, 0.08, 15), ease: 'inOut' },
       { t: 0.34, pose: hit, ease: 'strike' },
       { t: 0.4, pose: hit, ease: 'linear' },
       // hands back in guard first, while the knee is still up: the return never squeezes an elbow
       { t: 0.48, pose: guardHands, ease: 'inOut' },
       { t: 0.58, pose: retract, ease: 'inOut' },
-      { t: 0.72, pose: land, ease: 'inOut' },
+      { t: 0.66, pose: lift(edit(g, (d) => (d.pelvis.yaw += turn * deg(kind === 'round' ? 8 : 3))), 0.05, 20), ease: 'inOut' },
+      { t: 0.74, pose: land, ease: 'inOut', settling: true },
+      { t: 0.88, pose: g, ease: 'inOut' },
     ],
     chainAt: 0.62,
     impacts: [0.34],

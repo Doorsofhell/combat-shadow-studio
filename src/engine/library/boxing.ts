@@ -2,7 +2,7 @@
  * Punches, defences and footwork (all disciplines use them, with their own stance).
  * Orthodox; southpaw versions are mirrored automatically.
  */
-import { Author, add, edit } from '../author';
+import { Author, add, edit, driveToward } from '../author';
 import type { Motion } from '../motion';
 import { Pose, deg, v3 } from '../pose';
 const lerp = (a: number, b: number, u: number) => a + (b - a) * u;
@@ -233,11 +233,15 @@ function uppercut(a: Author, side: 'L' | 'R'): Motion {
   const t1 = 0.12;
   const t2 = 0.26;
   const t3 = 0.48;
+  // v0.32: measured on both coaches, the fist reached its top speed before the hips (the arm lifted the body).
+  // The legs push and the hips turn first, the fist still low, then it rises: legs, hips, shoulders, fist [S3].
+  const drive = driveToward(dip, hit);
   return {
     id: `uppercut-${side === 'L' ? 'avant' : 'arriere'}`,
     keys: [
       { t: 0, pose: g },
       { t: t1, pose: dip, ease: 'load' },
+      { t: (t1 + t2) / 2, pose: drive, ease: 'load' },
       { t: t2, pose: hit, ease: 'strike' },
       { t: t2 + 0.03, pose: hit, ease: 'linear' },
       { t: t3, pose: g, ease: 'inOut' },

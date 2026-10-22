@@ -28,6 +28,11 @@ import { ArBridge } from '../../ar/ArBridge';
 import { CoachLookPicker } from '../components/CoachLookPicker';
 import { ArControls, ArIntroSheet, useArView } from '../training/ArMode';
 import { AppIcon } from '../icons';
+import { useNavActions } from '../nav/store';
+import { useSmartBack } from '../nav/BottomBar';
+import { openLayers } from '../nav/layers';
+import { ConfirmDialog } from '../components/Sheet';
+import { onBackButton } from '../../platform/native';
 
 export function Training() {
   const [q] = useSearchParams();
@@ -325,12 +330,70 @@ function TrainingView({ plan }: { plan: Plan }) {
     return () => ro.disconnect();
   }, []);
 
+  // v0.32 navigation dynamique (sections 5.2 and 5.3): the bottom bar holds Retour, Démarrer / Pause / Reprendre (one
+  // place, driven by the session's own state), Décomposer and Caméra; the other commands of the former buttons
+  // (Recommencer, Précédent, Suivant, Comment faire ?, Ralenti, Options) are under « Sur cet écran » in Menu
+  const smartBack = useSmartBack();
+  const [leaving, setLeaving] = useState(false);
+  // a session started and not finished, running or paused: leaving it ends it
+  const live = running;
+  const askLeave = () => {
+    // a session in progress is never left by one tap: it pauses and asks (the time done is already saved)
+    if (live) {
+      if (!view.paused) pause();
+      setLeaving(true);
+    } else smartBack('entrainement');
+  };
+  const askLeaveRef = useRef(askLeave);
+  askLeaveRef.current = askLeave;
+  const liveRef = useRef(live);
+  liveRef.current = live;
+  // the Android back button follows the same rule (an open sheet closes first)
+  useEffect(
+    () =>
+      onBackButton(() => {
+        if (openLayers() > 0 || !liveRef.current) return false;
+        askLeaveRef.current();
+        return true;
+      }),
+    [],
+  );
+  const toggleState = !running ? 'start' : view.paused ? 'resume' : 'pause';
+  useNavActions(
+    {
+      back: { run: askLeave, ariaLabel: 'Retour : quitter l’entraînement', testId: 'nav-back' },
+      toggle: {
+        run: () => (toggleState === 'start' ? start() : toggleState === 'resume' ? resume() : pause()),
+        icon: toggleState === 'pause' ? 'pause' : 'play',
+        label: toggleState === 'start' ? 'Démarrer' : toggleState === 'resume' ? 'Reprendre' : 'Pause',
+        pressed: toggleState === 'pause',
+        testId: toggleState,
+      },
+      decompose: { run: () => (st.tech ? st.close() : openStudy(curId ?? seq[0])), pressed: !!st.tech, ariaLabel: st.tech ? 'Décomposer : revenir à la séance' : 'Décomposer le mouvement', testId: 'decompose' },
+      camera: { run: () => setCamOpen(!camOpen), pressed: camOpen, ariaLabel: `Caméra : ${camLabel}. ${camOpen ? 'Fermer' : 'Ouvrir'} les réglages de caméra`, testId: 'cam-mode' },
+    },
+    [
+      { id: 'recommencer', label: 'Recommencer', icon: { glyph: 'replay' }, run: restart, testId: 'cmd-restart' },
+      { id: 'precedent', label: 'Exercice précédent', icon: { glyph: 'stepBack' }, run: () => goto(view.itemIndex - 1), disabled: view.itemIndex === 0, testId: 'cmd-prev' },
+      { id: 'suivant', label: 'Exercice suivant', icon: { glyph: 'stepForward' }, run: () => goto(view.itemIndex + 1), disabled: view.itemIndex >= plan.items.length - 1, testId: 'cmd-next' },
+      {
+        id: 'comment-faire',
+        label: 'Comment faire ?',
+        icon: { glyph: 'info' },
+        run: () => {
+          pause();
+          setGuideId(curId ?? seq[0]);
+        },
+        testId: 'how-to',
+      },
+      { id: 'ralenti', label: 'Ralenti', icon: 'speed', pressed: slow, run: () => setSpeed(slow ? item.speed : SLOW), testId: 'slow' },
+      { id: 'options', label: 'Options', icon: 'options', run: () => setSheet(true), testId: 'options' },
+    ],
+  );
+
   return (
     <div className={`training ${immersive ? 'immersive' : ''} ${fs.idle ? 'fs-idle' : ''} ${overflow ? 'overflow' : ''} ${asking ? 'asking' : ''}`} ref={root} data-testid="training">
       <header className="tr-top">
-        <button className="btn icon ghost" onClick={() => nav(-1)} aria-label="Quitter l’entraînement">
-          <AppIcon id="back" />
-        </button>
         <div className="tr-titles">
           <div className="eyebrow">
             {disc.name} · {lvl.name} · {MODE_LABEL[plan.mode]}
@@ -382,10 +445,6 @@ function TrainingView({ plan }: { plan: Plan }) {
         </div>
         {view.phase === 'decompte' && !view.paused && !st.tech && view.remaining !== null && view.remaining <= 3.05 && <div className="countdown">{Math.max(1, Math.ceil(view.remaining))}</div>}
         <div className="stage-tools">
-          <button className={`btn cam-btn ${camOpen ? 'on' : ''}`} onClick={() => setCamOpen(!camOpen)} aria-label={`Caméra : ${camLabel}. Ouvrir les réglages de caméra`} aria-expanded={camOpen} data-testid="cam-mode">
-            <AppIcon id="camera" />
-            <span>{isAuto ? 'Auto' : camLabel}</span>
-          </button>
           {teach.closeUp && !free && (
             <button className={`btn ${closeUp ? 'on' : ''}`} onClick={() => setCloseUp(!closeUp)} aria-label={teach.closeUp.label} aria-pressed={closeUp}>
               Zoom
@@ -530,57 +589,7 @@ function TrainingView({ plan }: { plan: Plan }) {
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="tr-secondary">
-                <button className="btn sm" data-testid="decompose" aria-label="Décomposer le mouvement" onClick={() => openStudy(curId ?? seq[0])}>
-                  <AppIcon id="decompose" size={18} />
-                  <span className="sec-label">Décomposer</span>
-                </button>
-                <button
-                  className="btn sm"
-                  data-testid="how-to"
-                  aria-label="Comment faire ?"
-                  onClick={() => {
-                    pause();
-                    setGuideId(curId ?? seq[0]);
-                  }}
-                >
-                  <AppIcon id="info" size={18} />
-                  <span className="sec-label">Comment faire ?</span>
-                </button>
-                <button className={`btn sm ${slow ? 'on' : ''}`} data-testid="slow" aria-label="Ralenti" aria-pressed={slow} onClick={() => setSpeed(slow ? item.speed : SLOW)}>
-                  <AppIcon id="slow" size={18} />
-                  <span className="sec-label">Ralenti</span>
-                </button>
-                <button className="btn sm icon-only" onClick={() => setSheet(true)} aria-label="Paramètres" data-testid="options">
-                  <AppIcon id="settings" size={18} />
-                </button>
-              </div>
-            )}
-            <div className="controls">
-              <button className="btn icon ghost" onClick={restart} aria-label="Recommencer">
-                <AppIcon id="replay" size={20} />
-              </button>
-              <button className="btn icon" onClick={() => goto(view.itemIndex - 1)} disabled={view.itemIndex === 0} aria-label="Exercice précédent">
-                <AppIcon id="stepBack" />
-              </button>
-              {!running ? (
-                <button className="btn primary main" onClick={start} data-testid="start">
-                  <AppIcon id="play" /> {view.phase === 'termine' ? 'Recommencer' : 'Démarrer'}
-                </button>
-              ) : view.paused ? (
-                <button className="btn primary main" onClick={resume} data-testid="resume">
-                  <AppIcon id="play" /> Reprendre
-                </button>
-              ) : (
-                <button className="btn dark main" onClick={pause} data-testid="pause">
-                  <AppIcon id="pause" /> Pause
-                </button>
-              )}
-              <button className="btn icon" onClick={() => goto(view.itemIndex + 1)} disabled={view.itemIndex >= plan.items.length - 1} aria-label="Exercice suivant">
-                <AppIcon id="stepForward" />
-              </button>
-            </div>
+            ) : null}
           </>
         )}
       </footer>
@@ -641,6 +650,19 @@ function TrainingView({ plan }: { plan: Plan }) {
       </div>
 
       {arIntro && <ArIntroSheet bridge={ar} overlayRoot={() => arRoot.current} onClose={() => setArIntro(false)} onBeforeStart={pause} />}
+
+      {leaving && (
+        <ConfirmDialog
+          title="Quitter la séance ?"
+          message="La séance est en pause. Le temps déjà fait est enregistré dans tes progrès."
+          confirmLabel="Quitter"
+          onConfirm={() => {
+            setLeaving(false);
+            smartBack('entrainement');
+          }}
+          onCancel={() => setLeaving(false)}
+        />
+      )}
 
       {guideId && (
         <div className="sheet-backdrop" onClick={() => setGuideId(null)}>

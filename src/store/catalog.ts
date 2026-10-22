@@ -24,16 +24,19 @@ export interface CatalogCollection {
 
 export interface CatalogUserData {
   favorites: string[];
+  /** v0.32 (navigation, fiche d'une légende: « Favoris — Ajouter/retirer des favoris »): the legends kept as favourites */
+  favoriteChampions: string[];
   history: CatalogHistoryItem[];
   collections: CatalogCollection[];
   imported: ImportedData;
 }
 
-export const DEFAULT_CATALOG_USER: CatalogUserData = { favorites: [], history: [], collections: [], imported: EMPTY_IMPORT };
+export const DEFAULT_CATALOG_USER: CatalogUserData = { favorites: [], favoriteChampions: [], history: [], collections: [], imported: EMPTY_IMPORT };
 export const HISTORY_MAX = 60;
 
 interface CatalogUserState extends CatalogUserData {
   toggleFavorite: (id: string) => void;
+  toggleFavoriteChampion: (id: string) => void;
   pushHistory: (id: string, kind: CatalogHistoryItem['kind']) => void;
   clearHistory: () => void;
   createCollection: (name: string, ids?: string[]) => string;
@@ -54,6 +57,7 @@ export const useCatalogUser = create<CatalogUserState>()(
     (setState, getState) => ({
       ...DEFAULT_CATALOG_USER,
       toggleFavorite: (id) => setState((s) => ({ favorites: s.favorites.includes(id) ? s.favorites.filter((x) => x !== id) : [id, ...s.favorites] })),
+      toggleFavoriteChampion: (id) => setState((s) => ({ favoriteChampions: s.favoriteChampions.includes(id) ? s.favoriteChampions.filter((x) => x !== id) : [id, ...s.favoriteChampions] })),
       pushHistory: (id, kind) =>
         setState((s) => ({
           history: [{ id, kind, at: new Date().toISOString() }, ...s.history.filter((h) => !(h.id === id && h.kind === kind))].slice(0, HISTORY_MAX),
@@ -80,13 +84,14 @@ export const useCatalogUser = create<CatalogUserState>()(
     {
       name: 'css-catalog',
       storage: createJSONStorage(() => idbStorage),
-      partialize: (s) => ({ favorites: s.favorites, history: s.history, collections: s.collections, imported: s.imported }),
+      partialize: (s) => ({ favorites: s.favorites, favoriteChampions: s.favoriteChampions, history: s.history, collections: s.collections, imported: s.imported }),
       // données d’une ancienne version : les champs manquants prennent leur valeur par défaut
       merge: (saved, current) => {
         const p = (saved ?? {}) as Partial<CatalogUserData>;
         return {
           ...current,
           favorites: Array.isArray(p.favorites) ? p.favorites : [],
+          favoriteChampions: Array.isArray(p.favoriteChampions) ? p.favoriteChampions : [],
           history: Array.isArray(p.history) ? p.history : [],
           collections: Array.isArray(p.collections) ? p.collections : [],
           imported: { champions: p.imported?.champions ?? [], combos: p.imported?.combos ?? [] },

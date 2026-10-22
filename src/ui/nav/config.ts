@@ -1,0 +1,186 @@
+import type { NavIconId } from './icons';
+
+/**
+ * v0.32 (Youssef, 2026-10-22, « PROMPT MAÎTRE — Refonte intégrale de la navigation dynamique premium »): one bottom
+ * bar with five places whose icons and actions follow the screen, as in the validated mockup
+ * docs/design/navigation-dynamique-reference.html (function `actions()`). This file holds the configuration of
+ * every screen; the bar (BottomBar.tsx) draws it and the screens only give the handlers of their own actions.
+ *
+ * Actions:
+ * - `back`: smart back (the real previous page, else the parent of the screen);
+ * - `menu`: the « Navigation générale » sheet;
+ * - `nav:/path`: goes to a page of the app;
+ * - any other id: an action of the screen, given by the screen with useNavActions; while the screen has not
+ *   given it (nothing selected yet, player not ready), the button is shown disabled, never hidden.
+ */
+export type NavAction = 'back' | 'menu' | `nav:${string}` | string;
+
+export interface NavSlot {
+  icon: NavIconId;
+  label: string;
+  action: NavAction;
+}
+
+export type NavScreen =
+  | 'accueil'
+  | 'entrainer'
+  | 'discipline'
+  | 'programmes'
+  | 'programme'
+  | 'entrainement'
+  | 'techniques'
+  | 'fiche'
+  | 'partenaire'
+  | 'createur'
+  | 'progres'
+  | 'historique'
+  | 'objectifs'
+  | 'legendes'
+  | 'fiche-legende'
+  | 'combinaison'
+  | 'profil'
+  | 'connexion'
+  | 'coach'
+  | 'coach-ia'
+  | 'parametres'
+  | 'confidentialite'
+  | 'autre';
+
+const BACK: NavSlot = { icon: 'back', label: 'Retour', action: 'back' };
+const MENU: NavSlot = { icon: 'grid', label: 'Menu', action: 'menu' };
+
+/** settings and the screens that hang from it: the mockup's `default` case */
+const SETTINGS: NavSlot[] = [BACK, { icon: 'user', label: 'Profil', action: 'nav:/profil' }, { icon: 'options', label: 'Affichage', action: 'nav:/reglages/affichage' }, { icon: 'camera', label: 'Caméra', action: 'nav:/reglages/affichage?focus=camera' }, MENU];
+
+/** screens without actions of their own: the three main places of the app between Retour and Menu */
+const PLACES: NavSlot[] = [BACK, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU];
+
+export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
+  // 5.1 — the mockup's `home`
+  accueil: [
+    { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' },
+    { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' },
+    { icon: 'chart', label: 'Progrès', action: 'nav:/stats' },
+    { icon: 'user', label: 'Profil', action: 'nav:/profil' },
+    MENU,
+  ],
+  // 5.2 / 5.3 — the mockup's `train`; place 2 is drawn from the session state (see TOGGLE)
+  entrainement: [BACK, { icon: 'play', label: 'Démarrer', action: 'toggle' }, { icon: 'scan', label: 'Décomposer', action: 'decompose' }, { icon: 'camera', label: 'Caméra', action: 'camera' }, MENU],
+  // 5.4 — the mockup's `tech`
+  techniques: [BACK, { icon: 'search', label: 'Rechercher', action: 'search' }, { icon: 'filter', label: 'Filtres', action: 'filters' }, { icon: 'play', label: 'Technique', action: 'open-selected' }, MENU],
+  // 5.5 — the mockup's `detail`
+  fiche: [BACK, { icon: 'play', label: 'S’entraîner', action: 'train' }, { icon: 'speed', label: 'Ralenti', action: 'slow' }, { icon: 'check', label: 'Maîtrise', action: 'mastery' }, MENU],
+  // 5.6 — the mockup's `progress`
+  progres: [BACK, { icon: 'calendar', label: 'Période', action: 'period' }, { icon: 'chart', label: 'Statistiques', action: 'stats' }, { icon: 'history', label: 'Historique', action: 'history' }, MENU],
+  // 5.7 — the mockup's `legends`
+  legendes: [BACK, { icon: 'search', label: 'Rechercher', action: 'search' }, { icon: 'filter', label: 'Disciplines', action: 'filters' }, { icon: 'star', label: 'Légende', action: 'open-selected' }, MENU],
+  // 5.8 — the mockup's `legenddetail`
+  'fiche-legende': [BACK, { icon: 'history', label: 'Parcours', action: 'career' }, { icon: 'dumbbell', label: 'Techniques', action: 'techniques' }, { icon: 'heart', label: 'Favoris', action: 'favorite' }, MENU],
+  // 5.9 — the mockup's `profile`
+  profil: [BACK, { icon: 'chart', label: 'Activité', action: 'nav:/stats' }, { icon: 'coach', label: 'Coach', action: 'nav:/coach' }, { icon: 'settings', label: 'Réglages', action: 'nav:/reglages' }, MENU],
+  // 5.10 — the mockup's `default` (settings)
+  parametres: SETTINGS,
+  confidentialite: SETTINGS,
+  connexion: SETTINGS,
+  // 5.11 — the other screens, built on the same rules (Retour first, Menu last, the main action second)
+  entrainer: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'calendar', label: 'Programmes', action: 'nav:/programmes' }, { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' }, MENU],
+  discipline: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'layers', label: 'Techniques', action: 'techniques' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
+  programmes: PLACES,
+  programme: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'calendar', label: 'Programmes', action: 'nav:/programmes' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
+  partenaire: [BACK, { icon: 'layers', label: 'Techniques', action: 'techniques' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
+  createur: [BACK, { icon: 'play', label: 'Lancer', action: 'start' }, { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, MENU],
+  historique: [BACK, { icon: 'chart', label: 'Statistiques', action: 'nav:/stats' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, { icon: 'calendar', label: 'Objectifs', action: 'nav:/objectifs' }, MENU],
+  objectifs: [BACK, { icon: 'chart', label: 'Statistiques', action: 'nav:/stats' }, { icon: 'history', label: 'Historique', action: 'nav:/historique' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, MENU],
+  combinaison: [BACK, { icon: 'play', label: 'S’entraîner', action: 'train' }, { icon: 'scan', label: 'Décomposer', action: 'decompose' }, { icon: 'heart', label: 'Favoris', action: 'favorite' }, MENU],
+  coach: [BACK, { icon: 'user', label: 'Profil', action: 'nav:/profil' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, { icon: 'settings', label: 'Réglages', action: 'nav:/reglages' }, MENU],
+  'coach-ia': PLACES,
+  autre: PLACES,
+};
+
+/** place 2 of the session: the same button, its icon and word follow the player (5.3) */
+export type ToggleState = 'start' | 'pause' | 'resume';
+export const TOGGLE: Record<ToggleState, Pick<NavSlot, 'icon' | 'label'>> = {
+  start: { icon: 'play', label: 'Démarrer' },
+  pause: { icon: 'pause', label: 'Pause' },
+  resume: { icon: 'play', label: 'Reprendre' },
+};
+
+/** where Retour goes when the screen was opened directly (no previous page in the app) */
+export const NAV_PARENT: Record<NavScreen, string> = {
+  accueil: '/',
+  entrainer: '/',
+  discipline: '/entrainer',
+  programmes: '/entrainer',
+  programme: '/programmes',
+  entrainement: '/entrainer',
+  techniques: '/',
+  fiche: '/techniques',
+  partenaire: '/techniques',
+  createur: '/techniques?tab=createur',
+  progres: '/',
+  historique: '/stats',
+  objectifs: '/stats',
+  legendes: '/',
+  'fiche-legende': '/champions',
+  combinaison: '/champions',
+  profil: '/',
+  connexion: '/profil',
+  coach: '/profil',
+  'coach-ia': '/',
+  parametres: '/',
+  confidentialite: '/reglages',
+  autre: '/',
+};
+
+/**
+ * The screen shown at a route, or null where the app has no bar: onboarding, the first choice of the coach (the
+ * app is not set up yet), the dev lab.
+ */
+export function navScreen(pathname: string, search = ''): NavScreen | null {
+  const p = pathname.replace(/\/+$/, '') || '/';
+  const q = new URLSearchParams(search);
+  if (p === '/') return 'accueil';
+  if (p.startsWith('/bienvenue') || p.startsWith('/lab')) return null;
+  if (p === '/coach') return q.get('first') === '1' ? null : 'coach';
+  if (p === '/entrainer') return 'entrainer';
+  if (p.startsWith('/discipline/')) return 'discipline';
+  if (p === '/programmes') return 'programmes';
+  if (p.startsWith('/programmes/')) return 'programme';
+  if (p === '/entrainement') return 'entrainement';
+  if (p === '/techniques') return 'techniques';
+  if (p.startsWith('/techniques/')) return 'fiche';
+  if (p.startsWith('/partenaire/')) return 'partenaire';
+  if (p === '/createur') return 'createur';
+  if (p === '/stats') return 'progres';
+  if (p === '/historique') return 'historique';
+  if (p === '/objectifs') return 'objectifs';
+  if (p === '/champions') return 'legendes';
+  if (p.startsWith('/champions/c/')) return 'fiche-legende';
+  if (p.startsWith('/champions/')) return 'combinaison';
+  if (p === '/profil') return 'profil';
+  if (p === '/connexion') return 'connexion';
+  if (p.startsWith('/coach-ia')) return 'coach-ia';
+  if (p === '/reglages' || p.startsWith('/reglages/')) return 'parametres';
+  if (p === '/confidentialite') return 'confidentialite';
+  // a page the bar does not know yet still gets Retour and Menu
+  return 'autre';
+}
+
+/** the eight places of « Navigation générale », in the mockup's order (section 6) */
+export interface MenuEntry {
+  id: string;
+  icon: NavIconId;
+  label: string;
+  to: string;
+}
+export const MENU_ENTRIES: readonly MenuEntry[] = [
+  { id: 'accueil', icon: 'home', label: 'Accueil', to: '/' },
+  { id: 'entrainer', icon: 'dumbbell', label: 'Entraîner', to: '/entrainer' },
+  { id: 'techniques', icon: 'layers', label: 'Techniques', to: '/techniques' },
+  { id: 'progres', icon: 'chart', label: 'Progrès', to: '/stats' },
+  { id: 'legendes', icon: 'star', label: 'Légendes', to: '/champions' },
+  { id: 'profil', icon: 'user', label: 'Profil', to: '/profil' },
+  { id: 'parametres', icon: 'settings', label: 'Paramètres', to: '/reglages' },
+  // as in the mockup, Nouveautés opens in the same sheet (no page change)
+  { id: 'nouveautes', icon: 'sparkle', label: 'Nouveautés', to: '' },
+];

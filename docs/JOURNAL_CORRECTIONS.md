@@ -1485,3 +1485,96 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Restauration** : `feature/combat-shadow-v030` = `16a41f2`.
 - **Validation (Youssef, 09:11)** : « je valide tout ». Version 0.31.0 publiée : PR #3 fusionnée dans
   `feature/combat-shadow-v030`, lien de test public et page principale de l'application mis à jour.
+
+## 2026-10-22 · v0.32.0-proto1 · Uppercut, coude horizontal, middle et high kick, genou direct
+
+- **Constat** (mesures sur Kadir et Amara, rapport `docs/v032/EXTENSION.md`) :
+  - uppercut et coude horizontal : le poing ou le coude atteignait sa vitesse maximale avant la rotation des hanches
+    et des épaules (chaîne inversée) ;
+  - middle et high kick : chute des hanches de 4 à 5 cm en une image à l'arrivée (jusqu'à 6 m/s) ;
+  - genou direct : le pied frottait le sol sur 4 à 6 cm ; le bras de cadrage était verrouillé (2°).
+- **Correction** (moteur procédural, sans capture de mouvement) :
+  - pose de poussée des jambes avant le bras (`driveToward`, `author.ts`), sur l'uppercut (`boxing.ts`) et le coude
+    (`upper.ts`) ;
+  - pose « pied décollé » avant la montée de la jambe et bras de cadrage à 97 % de sa longueur (`legs.ts`) ;
+  - abaissement progressif des hanches sur l'appui (`motion.ts`) et transfert du poids réparti (`balance.ts`).
+- **Tests** :
+  - `extension-v032.test.ts` (20 tests) : TEST RÉUSSI ;
+  - Vitest complet : 559 réussis, 1 échec déjà connu (hanche d'Amara au sol, 53,6° pour 45°) : ÉCHOUÉ, non lié ;
+  - mesures régénérées : arrêts de fluidité 339 → 595 (27 %, seuil 40 % tenu) ; kicks un peu plus longs
+    (impact à 440 ms au lieu de 400) ;
+  - Playwright complet : 141 réussis, 2 ignorés (Firebase), 3 échecs : `coach-suggest:94` (réussit relancé seul), `training-layout:286` et `:323` (caméra Auto, échouent aussi relancés seuls sur la v0.31 `04b0b5e`). Échecs déjà existants, pas causés par ce lot : ÉCHOUÉ, lot dédié à faire ;
+  - Android réel : NON EXÉCUTÉ ; relecture par un entraîneur : NON EXÉCUTÉ.
+- **Restauration** : `feature/combat-shadow-v030` = `04b0b5e` (v0.31.0).
+- **Validation** : en attente de Youssef ; rien n'est fusionné ni déployé.
+
+## 2026-10-22 · v0.32.0-proto2 · Corrections premium des tenues, du chargement et des portraits
+
+- **Demande** : Youssef, 10:33, « CORRECTIONS PREMIUM » ; à 10:35, « par sur v32 » (base v0.32.0-proto1). Rapport :
+  `docs/v032/TENUES_PREMIUM.md`.
+- **Constat** :
+  - le coach apparaissait en sous-vêtements avant sa tenue (3 images mesurées) ;
+  - les gis ressemblaient à du gros tricot : relief de 8 mm, volume gonflé, manches dentelées, col fin, ceinture en
+    tube ;
+  - les shorts avaient un aspect plastique, les ceintures de short ressemblaient à une corde, la fente du MMA était
+    déchirée, les gants étaient sphériques et les protège-tibias incomplets et dentelés ;
+  - l'écran « Choisis ton coach » montrait des dessins cartoon.
+- **Correction** :
+  - coach affiché seulement avec sa tenue portée, après préparation sur la carte graphique, avec un délai de secours
+    de 20 s (`PhotoCoach.tsx`, `outfit.ts`) ;
+  - générateur des tenues refait pour les gis, les shorts, les gants, les protège-tibias et les rashguards
+    (`tools/generator/rocketbox/outfits.py`), 14 tenues régénérées ;
+  - portraits rendus depuis les modèles 3D (`scripts/dev/shot-portraits.mjs`).
+  - Corps, rig, animations et stabilité WebGL non modifiés.
+- **Tests** :
+  - `outfit-loading.spec.ts` (0 image sans tenue ; 3 sans la correction) ;
+  - `outfit-v032.test.ts` (14 tests, dont 12 qui échouent sur les fichiers v0.31) : TEST RÉUSSI ;
+  - suites complètes : Vitest 573 réussis, 1 échoué (Amara, angle de hanche, déjà en échec avant ce lot) ; Playwright 142 réussis, 3 échoués, 2 non exécutés (Firebase). Échecs : chargement des tenues au changement de coach (1 image sans tenue : corrigé, `dc7abf6`, puis 5 passages réussis), caméra Auto après un pivot (`training-layout:323`) et défilement des questions suggérées (`coach-suggest:94`), tous deux également en échec sur la version de départ `18ad838`
+  - Android réel : NON EXÉCUTÉ.
+- **Restauration** : `restauration/avant-tenues-premium` (v0.31.0) ou `feature/biomeca-v032` (v0.32.0-proto1).
+- **Validation** : en attente de Youssef ; rien n'est fusionné ni déployé.
+
+## 2026-10-22 · v0.32.0 · Navigation dynamique : une barre du bas, Menu « Navigation générale », Nouveautés
+
+- **Demande** : Youssef, 12:02, « PROMPT MAÎTRE — Refonte intégrale de la navigation dynamique premium — V0.32 ».
+  Référence : `docs/design/navigation-dynamique-reference.html` (branche `design/navigation-reference-v032`).
+  Publication demandée à 13:59 (« publie d'abord la v32 »). Rapport : `docs/v032/NAVIGATION.md`.
+- **Constat** :
+  - quatre accès se superposaient : la barre d'onglets fixe, la pilule d'actions flottante, la bulle Coach IA
+    flottante et les boutons Profil et Réglages de l'en-tête ;
+  - chaque page avait aussi un retour en haut ;
+  - l'entraînement avait 9 boutons sous le coach.
+- **Correction** :
+  - **Barre et Menu** :
+    - une seule barre de 5 places qui change avec l'écran : Retour en 1 (sauf sur l'accueil), Menu en 5 ;
+    - icônes et libellés copiés de la maquette (`src/ui/nav/`) ;
+    - Menu « Navigation générale » avec 8 entrées, plus « Sur cet écran » pour les actions secondaires et le Coach IA ;
+    - Nouveautés avec pastille, notes réelles depuis la 0.24 (`src/domain/releases.ts`), dernière version vue
+      mémorisée (`settings.newsSeenVersion`) ;
+    - retour intelligent : filtres, défilement, Retour Android ;
+    - confirmation avant de quitter une séance (même en pause) ou des modifications non enregistrées.
+  - **Défauts trouvés par les tests, puis corrigés** :
+    - les panneaux de la séance (Options, Comment faire, AR) étaient sous la barre ;
+    - avec le clavier ouvert, l'appui sur « Envoyer » du Coach IA tombait à côté ;
+    - la barre ne s'effaçait pas en plein écran sans l'API Fullscreen.
+  - **Supprimé** :
+    - pilule flottante et bulle Coach IA (leurs actions sont dans la barre ou le Menu) ;
+    - retour en haut de page ;
+    - boutons de l'en-tête de l'accueil.
+  - Coachs 3D, tenues, animations, moteur et données : non modifiés. Nouvelles clés seulement (`newsSeenVersion`,
+    `favoriteChampions`), aucune clé existante supprimée.
+- **Tests** :
+  - Vitest 614 réussis, 1 échoué : Amara, angle de hanche, déjà en échec avant ce lot ;
+  - `nav.test.ts` : 45 tests qui comparent la configuration au code de la maquette : TEST RÉUSSI ;
+  - Playwright :
+    - nouveau `navigation.spec.ts` (25 cas) : TEST RÉUSSI ;
+    - 11 fichiers de tests adaptés (pilule et bulle remplacées par la barre et le Menu), `action-pill.spec.ts`
+      remplacé ;
+    - suite complète : 148 réussis, 3 échoués, 2 non exécutés (Firebase). Échecs :
+      - les deux premiers étaient corrigés avant la passe finale : `coach-studio:200` (confirmation par la barre) et
+        `fullscreen-dbltap:135` (attente du retour de la mise en page) ;
+      - le troisième, `training-layout:325`, caméra Auto, était déjà en échec avant ce lot ;
+    - passe finale sur la compilation 0.32.0 : 41 réussis sur 41 ;
+    - `coach-suggest:96` (flèches des questions) : déjà en échec avant ce lot ;
+  - Android réel : NON EXÉCUTÉ (retour haptique et bouton Retour du téléphone non vérifiés sur un appareil).
+- **Restauration** : `restauration/avant-navigation-v032` (v0.32.0-proto2).

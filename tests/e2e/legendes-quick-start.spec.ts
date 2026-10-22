@@ -29,7 +29,7 @@ async function expectInFirstScreen(page: Page, el: Locator) {
   await expect(el).toBeVisible();
   const box = (await el.boundingBox())!;
   const r = await page.evaluate(() => ({
-    navTop: document.querySelector('.nav')!.getBoundingClientRect().top,
+    navTop: document.querySelector('.nav-bottom')!.getBoundingClientRect().top,
     scrolled: Math.max(window.scrollY, ...[...document.querySelectorAll('*')].map((e) => e.scrollTop)),
   }));
   expect(r.scrolled).toBe(0);
@@ -86,25 +86,24 @@ for (const vp of [
 }
 
 // 0.26 (Youssef's choice of the action pill, mockup C, 2026-10-20 17:45): the sticky « S'entraîner » bar of 0.25 is
-// replaced by the pill's « S'entraîner », which is always there (also before scrolling, so the former « absent at
-// the top » check no longer applies). What this test guards is kept: while scrolling a long sheet, « S'entraîner »
-// stays above the navigation, never under the coach bubble, and launches the sheet in its chosen mode.
-test('fiche longue : « S’entraîner » (pilule d’actions) reste au-dessus de la navigation en défilant', async ({ page }) => {
+// replaced by the pill's « S'entraîner ». v0.32 (navigation, 2026-10-22): it is place 2 of the bottom bar. What this
+// test guards is kept: while scrolling a long sheet, « S'entraîner » stays on screen, nothing covers it, and it
+// launches the sheet in its chosen mode.
+test('fiche longue : « S’entraîner » (barre du bas) reste à portée en défilant', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 851 });
   await seed(page);
   await page.goto(`/#/champions/${COMBO}`);
   await expect(page.getByTestId('cat-train')).toBeVisible();
   await expect(page.getByTestId('cat-train-bar')).toHaveCount(0);
   await page.getByText('Garder cette fiche').scrollIntoViewIfNeeded();
-  const bar = page.getByTestId('pill-entrainer');
+  const bar = page.getByTestId('bottom-bar').locator('[data-action="train"]');
   await expect(bar).toBeVisible();
+  await expect(bar).toHaveAttribute('data-slot', '2');
   const box = (await bar.boundingBox())!;
-  const r = await page.evaluate(() => ({
-    navTop: document.querySelector('.nav')!.getBoundingClientRect().top,
-    bubbleLeft: document.querySelector('[data-testid="coach-bubble"]')?.getBoundingClientRect().left ?? Infinity,
-  }));
-  expect(box.y + box.height).toBeLessThanOrEqual(r.navTop);
-  expect(box.x + box.width).toBeLessThanOrEqual(r.bubbleLeft); // never under the coach bubble
+  // the top element at its centre is the button itself
+  const top = await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.closest('button')?.getAttribute('data-action'), [box.x + box.width / 2, box.y + box.height / 2]);
+  expect(top).toBe('train');
+  expect(box.y + box.height).toBeLessThanOrEqual(851);
   await bar.click();
   await expect(page).toHaveURL(new RegExp(`#/entrainement\\?cat=${COMBO}&mode=libre`));
 });

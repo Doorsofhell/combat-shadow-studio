@@ -1,5 +1,6 @@
 import { expect, Locator, Page, test } from '@playwright/test';
 import { DEFAULT_PROFILE } from '../../src/store/profile';
+import { openCoachIA } from './nav-helpers';
 
 /**
  * 0.27 (Youssef, 2026-10-20 22:09: « Un double clique sur la fenêtre du coach permet un plein écran total, étudie et
@@ -65,7 +66,7 @@ test('accueil : double tap = plein écran total ; commandes masquées puis réaf
   await dbl(page, stage);
   await expect(stage).toHaveAttribute('data-fullscreen', 'true');
   expect(await isFull(page, '[data-testid=hero-stage]')).toBe(true);
-  // the whole screen: the navigation and the pill are under it
+  // the whole screen: the bottom bar is under it
   const r = await stage.evaluate((e) => { const b = e.getBoundingClientRect(); return { w: b.width, h: b.height, vw: innerWidth, vh: innerHeight }; });
   expect(r.w).toBeGreaterThanOrEqual(r.vw - 1);
   expect(r.h).toBeGreaterThanOrEqual(r.vh - 1);
@@ -82,7 +83,7 @@ test('accueil : double tap = plein écran total ; commandes masquées puis réaf
   await exitByButton(page);
   await expect(stage).toHaveAttribute('data-fullscreen', 'false');
   expect(await page.evaluate(() => !!document.fullscreenElement)).toBe(false);
-  await expect(page.getByTestId('action-pill')).toBeVisible();
+  await expect(page.getByTestId('bottom-bar')).toBeVisible();
   // Échap
   await dbl(page, stage);
   await expect(stage).toHaveAttribute('data-fullscreen', 'true');
@@ -143,11 +144,12 @@ for (const vp of [
     const r = await stage.evaluate((e) => { const b = e.getBoundingClientRect(); return { w: b.width, h: b.height, vw: innerWidth, vh: innerHeight }; });
     expect(r.w).toBeGreaterThanOrEqual(r.vw - 1);
     expect(r.h).toBeGreaterThanOrEqual(r.vh - 1);
-    // the session keeps running, its main control floats over the stage, then fades
+    // the session keeps running, its main control (v0.32: the bottom bar, Pause in place 2) floats over the stage,
+    // then fades
     await expect(page.getByTestId('phase')).not.toHaveText('Pause');
     await expect(page.getByTestId('pause')).toBeVisible();
     await expect.poll(() => page.getByTestId('training').getAttribute('class'), { timeout: 15_000, intervals: [500] }).toMatch(/fs-idle/);
-    expect(await page.getByTestId('pause').evaluate((e) => getComputedStyle(e.closest('.tr-bottom')!).opacity)).toBe('0');
+    await expect.poll(() => page.getByTestId('pause').evaluate((e) => getComputedStyle(e.closest('.nav-bottom')!).opacity)).toBe('0');
     await expect(page.getByTestId('phase')).not.toHaveText('Pause');
     const b = (await stage.boundingBox())!;
     await page.mouse.click(b.x + b.width * 0.4, b.y + b.height * 0.45);
@@ -158,13 +160,18 @@ for (const vp of [
     await expect(page.getByTestId('training')).not.toHaveClass(/immersive/);
     await expect(page.getByTestId('phase')).not.toHaveText('Pause');
     // the usual layout is back: title, stage, instructions, controls, nothing over another, no scrolling
+    // (the layout settles over the frames after the exit: wait until the instructions are above the bar again)
+    await expect.poll(() => page.evaluate(() => document.querySelector('.tr-info')!.getBoundingClientRect().bottom <= document.querySelector('[data-testid=bottom-bar]')!.getBoundingClientRect().top + 1)).toBe(true);
     const after = await page.evaluate(() => {
       const r = (s: string) => document.querySelector(s)!.getBoundingClientRect();
-      return { scroll: document.scrollingElement!.scrollHeight - innerHeight, top: r('.tr-top').height, stage: r('.tr-stage'), info: r('.tr-info'), bottom: r('.tr-bottom'), pos: getComputedStyle(document.querySelector('.tr-bottom')!).position, land: innerWidth > innerHeight };
+      // v0.32: the session's controls are the bottom bar (below the instructions), .tr-bottom holds nothing any more
+      return { scroll: document.scrollingElement!.scrollHeight - innerHeight, top: r('.tr-top').height, stage: r('.tr-stage'), info: r('.tr-info'), bottom: r('[data-testid=bottom-bar]'), pos: getComputedStyle(document.querySelector('[data-testid=bottom-bar]')!).position, land: innerWidth > innerHeight };
     });
     expect(after.scroll).toBeLessThanOrEqual(0);
     expect(after.top).toBeGreaterThan(20);
-    expect(after.pos).toBe('static');
+    expect(after.pos).toBe('fixed');
+    // the bar comes back (its fade back runs over the next frames)
+    await expect.poll(() => page.evaluate(() => getComputedStyle(document.querySelector('[data-testid=bottom-bar]')!).opacity)).toBe('1');
     expect(after.stage.height).toBeGreaterThan(150);
     expect(after.info.height).toBeGreaterThan(20);
     if (!after.land) {
@@ -211,7 +218,7 @@ test('Coach IA : double tap sur l’en-tête, normal ↔ agrandi', async ({ page
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await seed(page);
   await page.goto('/#/reglages');
-  await page.getByTestId('coach-bubble').click();
+  await openCoachIA(page);
   const panel = page.getByTestId('coach-ask-panel');
   await expect(panel).toHaveAttribute('data-size', 'normal');
   await panel.locator('.cai-head h2').dblclick();
