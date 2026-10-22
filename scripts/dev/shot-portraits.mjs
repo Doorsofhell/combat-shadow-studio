@@ -24,10 +24,13 @@ im = Image.open(sys.argv[1]).convert('RGB')
 bg = Image.new('RGB', im.size, im.getpixel((2, 2)))
 box = ImageChops.difference(im, bg).convert('L').point(lambda v: 255 if v > 14 else 0).getbbox()
 if box:
-    dx = im.width // 2 - (box[0] + box[2]) // 2
-    out = Image.new('RGB', im.size, im.getpixel((2, 2)))
-    out.paste(im, (dx, 0))
-    im = out
+    # a 3:4 frame round the body with a 5 % margin: the coach fills the card, feet included
+    h = (box[3] - box[1]) * 1.1
+    w = h * 3 / 4
+    cx, cy = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+    out = Image.new('RGB', (round(w), round(h)), im.getpixel((2, 2)))
+    out.paste(im, (round(w / 2 - cx), round(h / 2 - cy)))
+    im = out.resize((900, 1200), Image.LANCZOS)
 im.save(sys.argv[2], 'WEBP', quality=88, method=6)`, png, `${OUT}/${c}/portrait.webp`]);
   execFileSync('rm', [png]);
   console.log(c);
