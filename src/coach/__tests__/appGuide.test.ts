@@ -165,8 +165,11 @@ describe('guide de l’application : contenu', () => {
     // 0.27 (Youssef, 2026-10-20 22:09): double tap on the 3D coach for a total fullscreen, and the ways out
     for (const w of ['Touche deux fois', 'Quitter le plein écran', 'Échap', 'retour d’Android', 'continue']) expect(by('plein-ecran'), w).toContain(w);
     expect(askCoach('Comment mettre le coach en plein écran avec un double tap ?', ctx('accueil')).sources[0]?.id).toBe('app:plein-ecran');
-    // 0.27 (Youssef, 2026-10-20 21:56): no Légendes section in Techniques any more, it has its own tab
-    expect(by('screen-techniques')).not.toMatch(/Combinaisons, Légendes/);
+    // 0.36 (Youssef, 2026-10-22 18:47, replaces the 0.27 rule): Techniques = Techniques, Combinaisons, Légendes,
+    // Favoris; the Créateur and the Programmes live in Entraîner
+    expect(by('screen-techniques')).toContain('Techniques, Combinaisons, Légendes et Favoris');
+    expect(by('screen-techniques')).not.toMatch(/Créateur, Favoris|Favoris et Programmes/);
+    expect(by('screen-entrainer')).toContain('créer tes propres enchaînements');
   });
 
   test('chaque écran a sa page d’aide', () => {
@@ -177,7 +180,8 @@ describe('guide de l’application : contenu', () => {
 describe('guide de l’application : liens vers les écrans', () => {
   test('les routes de App.tsx sont lues', () => {
     expect(ROUTES).toEqual(expect.arrayContaining(['/', '/stats', '/techniques/:id', '/reglages/:section']));
-    expect(HUB_TABS).toEqual(expect.arrayContaining(['techniques', 'favoris', 'createur']));
+    // 0.36: Créateur and Programmes moved to Entraîner, Légendes is a section of the library again
+    expect(HUB_TABS).toEqual(['techniques', 'combinaisons', 'legendes', 'favoris']);
   });
 
   test('chaque lien du guide mène à une route existante, et à l’écran qu’il annonce', () => {

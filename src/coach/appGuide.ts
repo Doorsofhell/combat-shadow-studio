@@ -140,11 +140,10 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['onglet entrainer', 'ecran entrainer', 'demarrage rapide', 'mes enchainements', 'choisir une discipline', 'disciplines'],
     screens: ['entrainer'],
     answer:
-      'Ici, tu choisis ta séance.\n' +
-      '• Démarrage rapide : deux exercices conseillés pour toi, prêts à lancer.\n' +
+      'Ici, tu pratiques et tu personnalises ton entraînement.\n' +
+      '• Séances : reprendre une séance interrompue, créer tes propres enchaînements, retrouver ceux que tu as créés, et le démarrage rapide (deux exercices conseillés pour toi).\n' +
       '• Disciplines : boxe anglaise, kick-boxing, MMA, muay-thaï, jiu-jitsu brésilien et judo. Touche-en une pour voir ses exercices par niveau.\n' +
-      '• Programmes : des séances complètes, avec un filtre par discipline.\n' +
-      '• Mes enchaînements : ceux que tu as créés dans le Créateur.',
+      '• Programmes : des séances complètes, avec un filtre par discipline.',
     action: { to: '/entrainer', label: 'Ouvrir Entraîner' },
   },
   {
@@ -275,7 +274,7 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['catalogue', 'bibliotheque', 'liste des techniques', 'trouver une technique', 'chercher une technique', 'onglet techniques', 'categories', 'filtre par categorie', 'vignette', 'vignettes', 'tuile', 'tuiles'],
     screens: ['techniques'],
     answer:
-      'L’onglet Techniques est ta bibliothèque. En haut, cinq sections : Techniques, Combinaisons, Créateur, Favoris et Programmes. Les Légendes ont leur propre onglet dans la barre du bas.\n' +
+      'L’onglet Techniques est ta bibliothèque pour apprendre et explorer. En haut, quatre sections : Techniques, Combinaisons, Légendes et Favoris. Pour créer tes enchaînements ou suivre un programme, va dans Entraîner.\n' +
       'Dans Techniques, choisis la discipline, puis une catégorie si tu veux (poings, pieds, défenses…). Touche une vignette pour ouvrir la fiche.\n' +
       'L’étoile signale un favori, et un liseré coloré en bas de la vignette montre ta marque : vert pour « Assimilée », orange pour « Encore du mal ». Le filtre « À revoir » les regroupe.\n' +
       'Dans certaines disciplines, une section « Avec un partenaire réel » explique des techniques à faire au club.',
@@ -342,7 +341,7 @@ export const APP_GUIDE: GuideEntry[] = [
     ],
     screens: ['createur'],
     answer:
-      'Dans le Créateur (Techniques, section Créateur, ou le bouton « Créer ») :\n' +
+      'Dans le Créateur (Entraîner, Séances, carte « Crée tes propres enchaînements ») :\n' +
       '1. Choisis la discipline.\n' +
       '2. Touche les mouvements pour les ajouter dans l’ordre. Touche un mouvement ajouté pour le retirer, ou « Annuler le dernier ».\n' +
       '3. L’application vérifie que l’enchaînement est réalisable et te signale ce qui coince.\n' +

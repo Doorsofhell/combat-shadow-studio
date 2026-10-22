@@ -117,7 +117,7 @@ export const NAV_PARENT: Record<NavScreen, string> = {
   techniques: '/',
   fiche: '/techniques',
   partenaire: '/techniques',
-  createur: '/techniques?tab=createur',
+  createur: '/entrainer',
   progres: '/',
   historique: '/stats',
   objectifs: '/stats',

@@ -1,16 +1,13 @@
 import type { ReactNode } from 'react';
-import { TechThumb, keyTechnique, programTechnique } from '../components/TechThumb';
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { CATEGORY_LABEL, TECHNIQUE_BY_ID, TECHNIQUES, techniquesFor } from '../../domain/techniques';
 import { EXERCISES, EXERCISE_BY_ID } from '../../domain/exercises';
 import { PARTNER_BY_ID, PARTNER_CATEGORY_LABEL, partnerFor } from '../../domain/partner';
 import { SOURCE_BY_ID } from '../../domain/biomech/sources';
-import { PROGRAMS } from '../../domain/programs';
 import { DISCIPLINES, DisciplineId, LevelId, Technique } from '../../domain/types';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { useCustom } from '../../store/custom';
 import { useGoals } from '../../store/goals';
 import { useActiveFighter } from '../../store/fighters';
 import type { ComboPlayer, PlayerEvents } from '../../engine/player';
@@ -32,19 +29,20 @@ import { TechniqueFilter, neighbours, parseTechniqueFilter, sheetQuery, techniqu
 
 const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
 
-// 0.27 (Youssef, 2026-10-20 21:56: « Retire légendes des techniques vu qu'ils ont leur menu »): no Légendes section
-// here any more, the Légendes tab of the bottom bar is the one way in; old links are sent there (see Library)
-type HubTab = 'techniques' | 'combinaisons' | 'createur' | 'favoris' | 'programmes';
+// 0.36 (Youssef, 2026-10-22, « Entraîner = pratiquer et personnaliser, Techniques = apprendre et explorer »): the
+// library keeps Techniques, Combinaisons, Légendes and Favoris. The creator and the programmes live in Entraîner
+// (Séances, Programmes); their old links here are sent to /createur and /programmes. Légendes is back as a section
+// that leads into the legends library (0.27 had removed it while it was a tab of the bar; it is now in the Menu)
+type HubTab = 'techniques' | 'combinaisons' | 'legendes' | 'favoris';
 
 const HUB_TABS: { id: HubTab; label: string; icon: ReactNode }[] = [
   { id: 'techniques', label: 'Techniques', icon: <AppIcon id="techniques" size={18} /> },
   { id: 'combinaisons', label: 'Combinaisons', icon: <AppIcon id="combos" size={18} /> },
-  { id: 'createur', label: 'Créateur', icon: <AppIcon id="compose" size={18} /> },
+  { id: 'legendes', label: 'Légendes', icon: <AppIcon id="legends" size={18} /> },
   { id: 'favoris', label: 'Favoris', icon: <AppIcon id="favorite" size={18} /> },
-  { id: 'programmes', label: 'Programmes', icon: <AppIcon id="programs" size={18} /> },
 ];
 
-/** "Techniques" tab: individual techniques, combinations, creator, favourites, programmes. */
+/** "Techniques" tab: individual techniques, combinations, legends, favourites. */
 export function Library() {
   const [q, setQ] = useSearchParams();
   const main = useProfile((s) => s.profile.mainDiscipline);
@@ -60,8 +58,9 @@ export function Library() {
   };
   // 0.25: the category filter is in the URL, so the technique sheets follow that list and Back finds it again
   const cat = parseTechniqueFilter(q.get('cat'), Object.keys(CATEGORY_LABEL));
-  // the former Légendes section (bookmarks, history, older answers of the coach): straight to the Légendes tab
-  if (q.get('tab') === 'legendes') return <Navigate to="/champions" replace />;
+  // 0.36: the creator and the programmes moved to Entraîner; old links keep working (the discipline goes along)
+  if (q.get('tab') === 'createur') return <Navigate to={`/createur${q.get('d') ? `?d=${q.get('d')}` : ''}`} replace />;
+  if (q.get('tab') === 'programmes') return <Navigate to="/programmes" replace />;
   return (
     <div className="page">
       <PageHead title="Techniques" eyebrow="Bibliothèque" back={false} />
@@ -70,9 +69,8 @@ export function Library() {
       <div role="tabpanel" className="stack" style={{ gap: 16 }}>
         {tab === 'techniques' && <TechniquesTab d={d} setD={(x) => set('d', x)} cat={cat} setCat={(c) => set('cat', c)} />}
         {tab === 'combinaisons' && <CombosTab d={d} setD={(x) => set('d', x)} />}
-        {tab === 'createur' && <CreatorTab />}
+        {tab === 'legendes' && <LegendsTab d={d} />}
         {tab === 'favoris' && <FavoritesTab />}
-        {tab === 'programmes' && <ProgramsTab />}
       </div>
     </div>
   );
@@ -179,30 +177,17 @@ function CombosTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) => vo
   );
 }
 
-function CreatorTab() {
-  const combos = useCustom((s) => s.combos);
+/** 0.36: the way into the legends library (combinations inspired by champions), from the library of techniques */
+function LegendsTab({ d }: { d: DisciplineId }) {
+  const name = DISCIPLINES.find((x) => x.id === d)?.name ?? '';
   return (
     <>
-      <EntryCard to="/createur" icon={<AppIcon id="compose" />} tone="red" title="Créer un enchaînement" text="Compose ta combinaison, l’application vérifie qu’elle est réalisable." />
-      <SectionHead title="Mes enchaînements" />
-      {combos.length === 0 ? (
-        <EmptyState title="Aucun enchaînement enregistré" text="Tes créations apparaîtront ici." />
-      ) : (
-        <div className="stack" style={{ gap: 8 }}>
-          {combos.map((c) => (
-            <Link key={c.id} to={`/entrainement?perso=${c.id}&mode=libre`} className="card link ex-card" aria-label={`Lancer ${c.name}`}>
-              <TechThumb id={keyTechnique(c.sequence)} />
-              <span className="body">
-                <span className="title">{c.name}</span>
-                <span className="small muted">
-                  <DisciplineLabel id={c.discipline} name={DISCIPLINES.find((x) => x.id === c.discipline)?.name ?? ''} /> · {c.sequence.length} mouvements
-                </span>
-              </span>
-              <AppIcon id="chevron" />
-            </Link>
-          ))}
-        </div>
-      )}
+      <p className="small muted" style={{ margin: 0 }}>
+        Des combinaisons inspirées du style des grands champions, avec leur fiche et leur démonstration.
+      </p>
+      <EntryCard to="/champions" icon={<AppIcon id="legends" />} tone="gold" title="Toutes les légendes" text="Combinaison du jour, collections et fiches de chaque légende." testId="legends-all" />
+      <EntryCard to={`/champions?vue=champions&d=${d}`} icon={<DisciplineIcon id={d} size={22} />} title={`Légendes : ${name}`} text="Les légendes de la discipline choisie." testId="legends-discipline" />
+      <EntryCard to="/champions?vue=favoris" icon={<AppIcon id="favorite" />} title="Mes combinaisons favorites" text="Les combinaisons de légendes que tu as gardées." testId="legends-favorites" />
     </>
   );
 }
@@ -235,27 +220,6 @@ function FavoritesTab() {
         </section>
       )}
       {ex && <ExerciseSheet ex={ex} onClose={() => setOpen(null)} />}
-    </>
-  );
-}
-
-function ProgramsTab() {
-  return (
-    <>
-      <EntryCard to="/programmes" icon={<AppIcon id="programs" />} tone="red" title="Programmes guidés" text="Séances complètes, de l’échauffement au retour au calme." />
-      <EntryCard to="/createur" icon={<AppIcon id="compose" />} title="Programme personnalisé" text="Crée ton enchaînement et lance-le en boucle ou en rounds." />
-      <div className="stack" style={{ gap: 8 }}>
-        {PROGRAMS.slice(0, 4).map((p) => (
-          <Link key={p.id} to={`/programmes/${p.id}`} className="card link ex-card">
-            <TechThumb id={programTechnique(p)} />
-            <span className="body">
-              <span className="eyebrow">{p.durationMin} min</span>
-              <span className="title">{p.name}</span>
-            </span>
-            <AppIcon id="chevron" />
-          </Link>
-        ))}
-      </div>
     </>
   );
 }

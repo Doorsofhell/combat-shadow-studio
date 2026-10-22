@@ -101,16 +101,15 @@ test('Légendes dans le Menu « Navigation générale »', async ({ page }) => {
   await openMenu(page);
   await page.getByTestId('menu-legendes').click();
   await expect(page).toHaveURL(/#\/champions/);
-  // 0.27 (Youssef, 2026-10-20 21:56: « Retire légendes des techniques vu qu'ils ont leur menu »): the Techniques
-  // tab has no Légendes section any more, and its old link goes to the Légendes tab
+  // 0.36 (Youssef, 2026-10-22 18:47, replaces the 0.27 rule): Techniques = Techniques, Combinaisons, Légendes,
+  // Favoris; the Légendes section points to the Légendes screen, the Créateur and Programmes left for Entraîner
   await page.goto('/#/techniques');
   const sections = page.getByRole('tablist', { name: 'Sections' }).getByRole('tab');
-  await expect(sections).toHaveText(['Techniques', 'Combinaisons', 'Créateur', 'Favoris', 'Programmes']);
-  await page.goto('about:blank');
+  await expect(sections).toHaveText(['Techniques', 'Combinaisons', 'Légendes', 'Favoris']);
   await page.goto('/#/techniques?tab=legendes');
+  await expect(page.getByRole('tab', { name: 'Légendes' })).toHaveAttribute('aria-selected', 'true');
+  await page.getByTestId('legends-all').click();
   await expect(page).toHaveURL(/#\/champions$/);
-  await page.goBack();
-  await expect(page).not.toHaveURL(/tab=legendes/);
 });
 
 /** 0.25 (Youssef, 2026-10-20): the coach answers for the screen it is opened from, and explains the app. */

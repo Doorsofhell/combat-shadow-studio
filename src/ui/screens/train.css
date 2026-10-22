@@ -373,3 +373,62 @@
 .prog-note {
   margin: 0;
 }
+
+/* ---------------------------------------------------------------- 0.36 creator card (Séances) */
+.creator-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 16px;
+  border-radius: var(--radius-l);
+  background:
+    radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--red), transparent 80%), transparent 65%),
+    linear-gradient(160deg, color-mix(in srgb, var(--soft), var(--ink) 4%), var(--soft));
+  border: 1px solid color-mix(in srgb, var(--red), transparent 60%);
+  box-shadow: inset 3px 0 0 var(--red);
+}
+.creator-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--red), transparent 82%);
+  color: var(--red-ink, var(--red));
+}
+.creator-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.creator-body h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.creator-body p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+/* the button takes the card's full width, on one line even at 360 px */
+.creator-cta {
+  grid-column: 1 / -1;
+  justify-content: center;
+  white-space: nowrap;
+}
+.perso-empty {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+}
+.section .resume-card + .quick-grid {
+  margin-top: 8px;
+}
