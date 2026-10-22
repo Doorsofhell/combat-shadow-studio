@@ -144,11 +144,12 @@ for (const vp of [
     const r = await stage.evaluate((e) => { const b = e.getBoundingClientRect(); return { w: b.width, h: b.height, vw: innerWidth, vh: innerHeight }; });
     expect(r.w).toBeGreaterThanOrEqual(r.vw - 1);
     expect(r.h).toBeGreaterThanOrEqual(r.vh - 1);
-    // the session keeps running, its main control floats over the stage, then fades
+    // the session keeps running, its main control (v0.32: the bottom bar, Pause in place 2) floats over the stage,
+    // then fades
     await expect(page.getByTestId('phase')).not.toHaveText('Pause');
     await expect(page.getByTestId('pause')).toBeVisible();
     await expect.poll(() => page.getByTestId('training').getAttribute('class'), { timeout: 15_000, intervals: [500] }).toMatch(/fs-idle/);
-    expect(await page.getByTestId('pause').evaluate((e) => getComputedStyle(e.closest('.tr-bottom')!).opacity)).toBe('0');
+    await expect.poll(() => page.getByTestId('pause').evaluate((e) => getComputedStyle(e.closest('.nav-bottom')!).opacity)).toBe('0');
     await expect(page.getByTestId('phase')).not.toHaveText('Pause');
     const b = (await stage.boundingBox())!;
     await page.mouse.click(b.x + b.width * 0.4, b.y + b.height * 0.45);
@@ -161,11 +162,13 @@ for (const vp of [
     // the usual layout is back: title, stage, instructions, controls, nothing over another, no scrolling
     const after = await page.evaluate(() => {
       const r = (s: string) => document.querySelector(s)!.getBoundingClientRect();
-      return { scroll: document.scrollingElement!.scrollHeight - innerHeight, top: r('.tr-top').height, stage: r('.tr-stage'), info: r('.tr-info'), bottom: r('.tr-bottom'), pos: getComputedStyle(document.querySelector('.tr-bottom')!).position, land: innerWidth > innerHeight };
+      // v0.32: the session's controls are the bottom bar (below the instructions), .tr-bottom holds nothing any more
+      return { scroll: document.scrollingElement!.scrollHeight - innerHeight, top: r('.tr-top').height, stage: r('.tr-stage'), info: r('.tr-info'), bottom: r('[data-testid=bottom-bar]'), pos: getComputedStyle(document.querySelector('[data-testid=bottom-bar]')!).position, barOpacity: getComputedStyle(document.querySelector('[data-testid=bottom-bar]')!).opacity, land: innerWidth > innerHeight };
     });
     expect(after.scroll).toBeLessThanOrEqual(0);
     expect(after.top).toBeGreaterThan(20);
-    expect(after.pos).toBe('static');
+    expect(after.pos).toBe('fixed');
+    expect(after.barOpacity).toBe('1');
     expect(after.stage.height).toBeGreaterThan(150);
     expect(after.info.height).toBeGreaterThan(20);
     if (!after.land) {

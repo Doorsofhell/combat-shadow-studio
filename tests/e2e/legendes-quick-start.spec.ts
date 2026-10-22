@@ -29,7 +29,7 @@ async function expectInFirstScreen(page: Page, el: Locator) {
   await expect(el).toBeVisible();
   const box = (await el.boundingBox())!;
   const r = await page.evaluate(() => ({
-    navTop: document.querySelector('.nav')!.getBoundingClientRect().top,
+    navTop: document.querySelector('.nav-bottom')!.getBoundingClientRect().top,
     scrolled: Math.max(window.scrollY, ...[...document.querySelectorAll('*')].map((e) => e.scrollTop)),
   }));
   expect(r.scrolled).toBe(0);

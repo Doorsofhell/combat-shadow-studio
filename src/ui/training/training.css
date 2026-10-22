@@ -904,11 +904,14 @@
 .training.immersive {
   bottom: 0;
 }
-.training.immersive .nav-bottom {
+.training.immersive .nav-bottom,
+body:has(.training.immersive) .nav-bottom {
   background: var(--tr-glass);
   transition: opacity 0.25s ease;
 }
-.training.immersive.fs-idle .nav-bottom {
+/* (the second selector: a browser without the Fullscreen API keeps the bar outside the stage) */
+.training.immersive.fs-idle .nav-bottom,
+body:has(.training.immersive.fs-idle) .nav-bottom {
   opacity: 0;
   pointer-events: none;
 }

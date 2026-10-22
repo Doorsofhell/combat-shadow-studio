@@ -246,7 +246,7 @@ for (const scheme of ['dark', 'light'] as const)
         expect(m.sw).toBeLessThanOrEqual(m.iw);
         // the chart area stays above the navigation bar
         const body = await page.getByTestId(`ppanel-${tab}`).boundingBox();
-        const nav = await page.locator('.nav').boundingBox();
+        const nav = await page.locator('.nav-bottom').boundingBox();
         expect(body!.y + body!.height).toBeLessThanOrEqual(nav!.y + 1);
         if (process.env.PROGRESS_SHOTS)
           await page.screenshot({
