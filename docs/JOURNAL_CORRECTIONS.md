@@ -1529,7 +1529,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests** :
   - `outfit-loading.spec.ts` (0 image sans tenue ; 3 sans la correction) ;
   - `outfit-v032.test.ts` (14 tests, dont 12 qui échouent sur les fichiers v0.31) : TEST RÉUSSI ;
-  - suites complètes : PW_RESULT
+  - suites complètes : Vitest 573 réussis, 1 échoué (Amara, angle de hanche, déjà en échec avant ce lot) ; Playwright 142 réussis, 3 échoués, 2 non exécutés (Firebase). Échecs : chargement des tenues au changement de coach (1 image sans tenue : corrigé, `dc7abf6`, puis 5 passages réussis), caméra Auto après un pivot (`training-layout:323`) et défilement des questions suggérées (`coach-suggest:94`), tous deux également en échec sur la version de départ `18ad838`
   - Android réel : NON EXÉCUTÉ.
 - **Restauration** : `restauration/avant-tenues-premium` (v0.31.0) ou `feature/biomeca-v032` (v0.32.0-proto1).
 - **Validation** : en attente de Youssef ; rien n'est fusionné ni déployé.

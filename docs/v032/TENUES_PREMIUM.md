@@ -97,3 +97,14 @@ Les scripts sont `scripts/dev/shot-outfits.mjs`, `shot-gi-closeups.mjs` et `shot
 - Poids des tenues inchangé : 0,4 à 1,1 Mo pour Kadir, 0,9 à 2,2 Mo pour Amara. Une seule tenue est chargée à la
   fois.
 - Aucun test sur un vrai téléphone Android : NON EXÉCUTÉ.
+
+## 7. Résultats des tests
+
+| Suite | Résultat |
+|---|---|
+| Vitest complet | 573 RÉUSSIS, 1 ÉCHOUÉ : angle de hanche d'Amara (`pont`, `retention-garde`), déjà en échec avant ce lot |
+| Playwright complet | 142 RÉUSSIS, 3 ÉCHOUÉS, 2 NON EXÉCUTÉS (Firebase) |
+| Chargement des tenues | ÉCHOUÉ au premier passage complet : 1 image sans tenue au changement de coach. Corrigé (`dc7abf6`), puis RÉUSSI 5 fois sur 5 |
+| `training-layout:323` (caméra Auto après un pivot) | ÉCHOUÉ, également en échec sur la version de départ |
+| `coach-suggest:94` (défilement des questions) | ÉCHOUÉ, également en échec sur la version de départ `18ad838` |
+| Téléphone Android réel | NON EXÉCUTÉ |
