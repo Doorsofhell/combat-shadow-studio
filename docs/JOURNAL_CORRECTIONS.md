@@ -1453,7 +1453,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - Les PR #1 et #2 restent ouvertes, non fusionnées.
 - **Restauration** : `feature/biomeca-v029` = `f489f6f`.
 
-## 2026-10-22 · v0.31.0-proto1 · Correction majeure du moteur 3D et tenues par discipline
+## 2026-10-22 · v0.31.0 · Correction majeure du moteur 3D et tenues par discipline
 
 - **Demande (Youssef, 06:24 et 06:26)** : « CORRECTION MAJEURE DU MOTEUR 3D » et « TENUES ET ACCESSOIRES 3D PREMIUM
   PAR DISCIPLINE ». Méthode des animations choisie à 06:33 : « Moteur amélioré ».
@@ -1483,3 +1483,5 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     corriger dans un lot dédié ;
   - Android réel : NON EXÉCUTÉ ; relecture par un entraîneur : NON EXÉCUTÉ.
 - **Restauration** : `feature/combat-shadow-v030` = `16a41f2`.
+- **Validation (Youssef, 09:11)** : « je valide tout ». Version 0.31.0 publiée : PR #3 fusionnée dans
+  `feature/combat-shadow-v030`, lien de test public et page principale de l'application mis à jour.
