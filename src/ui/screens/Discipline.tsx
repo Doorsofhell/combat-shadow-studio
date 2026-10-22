@@ -1,3 +1,4 @@
+import { useNavActions } from '../nav/store';
 import { TechThumb, keyTechnique } from '../components/TechThumb';
 import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -62,6 +63,21 @@ export function DisciplinePage() {
   const [kind, setKind] = useState<KindFilter>('tout');
   const [kbStyle] = useKbStyle();
   const disc = DISCIPLINES.find((d) => d.id === id);
+  const navTo = useNavigate();
+  // v0.32 bar: « Démarrer » opens the first exercise of the list shown (level and type chosen on the page),
+  // « Techniques » the catalogue of this discipline
+  const firstEx = disc ? filterExercises(exercisesFor(disc.id, ((q.get('niveau') as LevelId) ?? profile.levels[disc.id])), kbStyle).filter((e) => kind === 'tout' || e.kind === kind)[0] : undefined;
+  useNavActions({
+    start: firstEx && {
+      run: () => {
+        const n = new URLSearchParams(q);
+        n.set('ex', firstEx.id);
+        setQ(n, { replace: true });
+      },
+      ariaLabel: `Démarrer : ${firstEx.name}`,
+    },
+    techniques: disc && { run: () => navTo(`/techniques?d=${disc.id}`) },
+  });
   if (!disc) return <EmptyState title="Discipline introuvable" action={<Link to="/entrainer" className="btn">Retour</Link>} />;
   const level = (q.get('niveau') as LevelId) ?? profile.levels[disc.id];
   const lvl = LEVELS.find((l) => l.id === level) ?? LEVELS[0];

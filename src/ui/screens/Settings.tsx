@@ -1,7 +1,7 @@
 import { championFor } from '../../domain/coaches/catalog';
 import { DISCIPLINES, LEVELS } from '../../domain/types';
-import { useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useSettings } from '../../store/settings';
 import { useProfile } from '../../store/profile';
 import { exportData, useStats } from '../../store/stats';
@@ -98,6 +98,13 @@ export function SettingsPage() {
   const file = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [confirmErase, setConfirmErase] = useState(false);
+  // v0.32 bar of the settings: « Caméra » opens the display settings on the camera row
+  const loc = useLocation();
+  useEffect(() => {
+    if (section !== 'affichage' || new URLSearchParams(loc.search).get('focus') !== 'camera') return;
+    const id = requestAnimationFrame(() => document.getElementById('reglage-camera')?.scrollIntoView({ block: 'start' }));
+    return () => cancelAnimationFrame(id);
+  }, [section, loc.search, loc.key]);
 
   const doExport = async () => {
     const json = exportData({ sessions: stats.sessions, perExercise: stats.perExercise }, { profile, settings, custom: custom.combos });
@@ -216,6 +223,7 @@ export function SettingsPage() {
             />
             <p className="small muted">La version précédente reste disponible tant que la nouvelle n’est pas validée sur ton téléphone.</p>
           </PanelRow>
+          <div id="reglage-camera" data-testid="settings-camera" />
           <PanelRow label="Caméra par défaut" column>
             <Segmented
               label="Caméra par défaut"

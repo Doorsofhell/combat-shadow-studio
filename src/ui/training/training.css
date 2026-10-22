@@ -885,3 +885,30 @@
 /* teaching phases of the studied technique: one row, scrolls sideways when they do not fit */
 .study-steps { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
 .study-steps .chip { flex: none; white-space: nowrap; }
+
+/* v0.32 navigation dynamique: the commands of the session are in the app's bottom bar; the screen ends above it */
+.training {
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  height: auto;
+}
+.training.overflow {
+  min-height: calc(100dvh - var(--nav-h) - env(safe-area-inset-bottom));
+}
+.tr-bottom {
+  padding-bottom: 6px;
+}
+.tr-bottom:empty {
+  display: none;
+}
+/* total fullscreen: the bar is drawn inside the fullscreen stage, over the coach, and fades with the other controls */
+.training.immersive {
+  bottom: 0;
+}
+.training.immersive .nav-bottom {
+  background: var(--tr-glass);
+  transition: opacity 0.25s ease;
+}
+.training.immersive.fs-idle .nav-bottom {
+  opacity: 0;
+  pointer-events: none;
+}

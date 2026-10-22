@@ -6,6 +6,7 @@ import { askCoach, type CoachAnswer, type CoachContext } from '../engine';
 import { parseQuestion } from '../nlu';
 import { SCREEN_QUESTIONS } from '../suggest';
 import { normalize } from '../text';
+import { MENU_ENTRIES, NAV_CONFIG, TOGGLE } from '../../ui/nav/config';
 
 /**
  * 0.25 (Youssef, 2026-10-20): « que le coach IA réponde en fonction de la situation où il est appelé,
@@ -46,8 +47,8 @@ function expectValidNavigate(a: CoachAnswer) {
 const ENTRY_QUESTIONS: Record<string, [string, CoachScreen?]> = {
   'app-overview': ['Comment fonctionne l’application ?', 'Par où commencer ?', 'Je débute, je commence par quoi ?'],
   'nav-tabs': ['À quoi servent les onglets de la barre du bas ?'],
-  // 0.26: the action pill (Youssef, mockup C, 2026-10-20 17:45)
-  'pilule-actions': ['À quoi servent les boutons en bas à gauche ?', 'accueil'],
+  // v0.32: the buttons of the bottom bar and the commands « Sur cet écran » (former pill, navigation dynamique)
+  'barre-actions': ['À quoi servent les boutons de la barre ?', 'accueil'],
   'screen-accueil': ['À quoi sert cet écran ?', 'accueil'],
   'start-session': ['Comment lancer une séance ?'],
   modes: ['Quelle est la différence entre les modes ?'],
@@ -137,22 +138,28 @@ describe('guide de l’application : contenu', () => {
     expect(by('render')).toMatch(/Anime/);
     expect(by('render')).toMatch(/Ultra-réaliste/);
     // the five tabs of the bottom bar, as App.tsx names them
-    for (const tab of [...APP_SRC.matchAll(/label: '([^']+)', icon: <AppIcon/g)].map((m) => m[1])) expect(by('nav-tabs'), tab).toContain(tab);
+    // v0.32 navigation dynamique: the places of « Navigation générale » are named in the answer about the bar
+    for (const m of MENU_ENTRIES) expect(by('nav-tabs'), m.label).toContain(m.label);
     // the study panel's speeds and the period presets
     expect(by('decomposer')).toMatch(/×0,25, ×0,5 et ×1/);
     for (const p of ['7 jours', '30 jours', '90 jours', '12 mois', 'Perso']) expect(by('screen-progres')).toContain(p);
-    // 0.26 action pill: every word of the guide answer is a real pill button (labels read from the screens)
-    const pillSrc = ['src/ui/screens/Home.tsx', 'src/ui/screens/Library.tsx', 'src/ui/screens/Champions.tsx', 'src/ui/screens/progress/Dashboard.tsx'].map((f) => readFileSync(resolve(process.cwd(), f), 'utf8')).join('\n');
-    const pillLabels = [...pillSrc.matchAll(/label: '([^']+)',\s+icon: '/g)].map((m) => m[1]);
-    for (const w of ['Séance rapide', 'Reprendre', 'Technique du jour', 'Au hasard', 'À revoir', 'S’entraîner', 'Ralenti', 'Je la maîtrise', 'Combo du jour', 'Décomposer', 'Nouvelle séance', 'Objectifs', 'Période']) {
-      expect(pillLabels, w).toContain(w);
-      expect(by('pilule-actions'), w).toContain(`« ${w} »`);
+    // every button named by the guide is a real word of the bar (NAV_CONFIG, the session's states) or a real command
+    // « Sur cet écran » of a screen (labels read from the screens)
+    const barLabels = [...Object.values(NAV_CONFIG).flat().map((x) => x.label), ...Object.values(TOGGLE).map((x) => x.label)];
+    const screenSrc = ['src/ui/screens/Home.tsx', 'src/ui/screens/Library.tsx', 'src/ui/screens/Training.tsx', 'src/ui/screens/Champions.tsx', 'src/ui/screens/progress/Dashboard.tsx'].map((f) => readFileSync(resolve(process.cwd(), f), 'utf8')).join('\n');
+    const commandLabels = [...screenSrc.matchAll(/label: [`']([^`'(]+?)[\s(]*[`'$]/g)].map((m) => m[1].trim());
+    for (const w of ['Démarrer', 'Pause', 'Reprendre', 'Décomposer', 'Caméra', 'Rechercher', 'Filtres', 'Technique', 'S’entraîner', 'Ralenti', 'Maîtrise', 'Période', 'Statistiques', 'Historique', 'Disciplines', 'Légende', 'Parcours', 'Techniques', 'Favoris']) {
+      expect(barLabels, w).toContain(w);
+      expect(by('barre-actions'), w).toContain(`« ${w} »`);
     }
-    expect(askCoach('C’est quoi la pilule en bas ?', ctx('techniques')).sources[0]?.id).toBe('app:pilule-actions');
-    // 0.27: the Coach IA is the last button of the pill, which folds into a round handle (Youssef, 2026-10-20 21:45)
-    expect(by('pilule-actions')).toContain('« Coach »');
-    expect(by('pilule-actions')).toMatch(/replie/);
-    expect(askCoach('Comment replier la pilule ?', ctx('accueil')).sources[0]?.id).toBe('app:pilule-actions');
+    for (const w of ['Séance rapide', 'Reprendre', 'Technique du jour', 'Au hasard', 'À revoir', 'Exercice suivant', 'Comment faire ?', 'Options']) {
+      expect(commandLabels, w).toContain(w);
+      expect(by('barre-actions'), w).toContain(`« ${w} »`);
+    }
+    expect(askCoach('C’est quoi les boutons du bas ?', ctx('techniques')).sources[0]?.id).toBe('app:barre-actions');
+    // the Coach IA opens from Menu on every screen; the floating pill and bubble are gone
+    expect(by('barre-actions')).toContain('« Coach IA »');
+    expect(askCoach('Où est la pilule ?', ctx('accueil')).sources[0]?.id).toBe('app:barre-actions');
     // the IMC card: formula, adult WHO scale, its limits, nothing leaves the device
     for (const w of ['taille', 'poids', 'au carré', 'OMS', 'muscle', '18 ans', 'grossesse', 'médecin', 'sur ton appareil']) expect(by('imc'), w).toContain(w);
     // 0.27 (Youssef, 2026-10-20 22:09): double tap on the 3D coach for a total fullscreen, and the ways out

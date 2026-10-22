@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { MENU_ENTRIES, NAV_CONFIG } from '../../nav/config';
 import { DISCIPLINES } from '../../../domain/types';
 import { THEME_BG } from '../../theme/theme';
 import { AppIcon, DisciplineIcon, DISCIPLINE_ICON_ALT, GLYPHS, ICON_REGISTRY, ICON_ROLE, iconRole, type GlyphId } from '..';
@@ -93,12 +94,14 @@ describe('bibliothèque d’icônes : intégration dans les écrans', () => {
 
   // 0.24: the Coach tab (coach choice and creator) is removed (Youssef, 2026-10-19); Légendes gets its own tab and
   // the AI coach becomes a floating bubble on every screen (Youssef, 2026-10-20)
-  it('la navigation principale a ses 5 entrées réelles : Légendes à la place de l’ancien onglet Coach', () => {
-    const app = readFileSync('src/ui/App.tsx', 'utf8');
-    const nav = app.slice(app.indexOf('const NAV = ['), app.indexOf('];', app.indexOf('const NAV = [')));
-    const labels = [...nav.matchAll(/label: '([^']+)'/g)].map((m) => m[1]);
-    expect(labels).toEqual(['Accueil', 'Entraîner', 'Techniques', 'Progrès', 'Légendes']);
-    expect([...nav.matchAll(/<AppIcon id="(\w+)"/g)].map((m) => m[1])).toEqual(['home', 'train', 'techniques', 'progress', 'legends']);
+  // v0.32 (PROMPT MAÎTRE navigation): the old fixed tab bar of App.tsx is replaced by the dynamic bar and the Menu
+  // « Navigation générale »; the same five destinations stay reachable from every screen, Légendes still in place of
+  // the old Coach tab, and no Coach entry comes back
+  it('la navigation principale garde ses 5 destinations réelles : Légendes à la place de l’ancien onglet Coach', () => {
+    const main = MENU_ENTRIES.filter((m) => ['accueil', 'entrainer', 'techniques', 'progres', 'legendes'].includes(m.id));
+    expect(main.map((m) => m.label)).toEqual(['Accueil', 'Entraîner', 'Techniques', 'Progrès', 'Légendes']);
+    expect(MENU_ENTRIES.map((m) => m.label)).not.toContain('Coach');
+    expect(NAV_CONFIG.accueil.map((s) => s.label)).toEqual(['Entraîner', 'Techniques', 'Progrès', 'Profil', 'Menu']);
   });
 });
 
