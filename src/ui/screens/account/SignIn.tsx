@@ -1,7 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAccount, sendPasswordReset, signInEmail, signInGoogle, signUpEmail } from '../../../account/session';
-import { emailLooksValid, passwordProblem } from '../../../account/auth/types';
+import { emailLooksValid, passwordProblem, passwordStrength } from '../../../account/auth/types';
 import { useProfile } from '../../../store/profile';
 import { useStats } from '../../../store/stats';
 import { PageHead, Tabs, toast } from '../../components';
@@ -138,7 +138,7 @@ export function SignIn() {
             {mode !== 'oubli' && (
               <PasswordField id="acc-pw" value={password} onChange={setPassword} autoComplete={mode === 'inscription' ? 'new-password' : 'current-password'} />
             )}
-            {mode === 'inscription' && <span className="small muted">Au moins 8 caractères, avec une lettre et un chiffre.</span>}
+            {mode === 'inscription' && <StrengthMeter password={password} />}
             {mode !== 'oubli' && guestHasData && (
               <label className="acc-check">
                 <input type="checkbox" checked={keepGuest} onChange={(e) => setKeepGuest(e.target.checked)} />
@@ -208,6 +208,25 @@ export function SignIn() {
           <AppIcon id="privacy" size={18} /> Les comptes en ligne ne sont pas activés dans cette version.
         </p>
       )}
+    </div>
+  );
+}
+
+const STRENGTH = ['Au moins 8 caractères, avec une lettre et un chiffre.', 'Correct. Plus long, il serait plus sûr.', 'Bon mot de passe.', 'Très bon mot de passe.'];
+
+/** v0.37: how strong the new password is, as advice (Firebase stores only a hash of it) */
+function StrengthMeter({ password }: { password: string }) {
+  const s = passwordStrength(password);
+  return (
+    <div className="pw-strength" data-strength={s} data-testid="pw-strength">
+      <span className="pw-bars" aria-hidden>
+        {[1, 2, 3].map((i) => (
+          <i key={i} className={s >= i ? 'on' : ''} />
+        ))}
+      </span>
+      <span className="small muted" aria-live="polite">
+        {STRENGTH[s]}
+      </span>
     </div>
   );
 }

@@ -126,3 +126,12 @@ describe('moteur de synchronisation', () => {
     b.engine.stop();
   });
 });
+
+describe('messages d’erreur de synchronisation (v0.37)', () => {
+  test('accès refusé et quota gratuit atteint sont nommés, le reste est générique', async () => {
+    const { syncErrorMessage } = await import('../sync/engine');
+    expect(syncErrorMessage({ code: 'permission-denied' })).toContain('refusé');
+    expect(syncErrorMessage({ code: 'resource-exhausted' })).toContain('quota gratuit');
+    expect(syncErrorMessage(new Error('x'))).toContain('retentée');
+  });
+});

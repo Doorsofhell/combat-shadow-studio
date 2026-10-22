@@ -49,6 +49,22 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.37.0',
+      releaseDate: '2026-10-22',
+      title: 'Comptes et sauvegarde en ligne',
+      isMajor: true,
+      changes: [
+        { category: 'fonctionnalites', text: 'Crée ton compte par e-mail ou avec Google pour sauvegarder et retrouver tes données sur un autre appareil. Le compte reste facultatif.' },
+        { category: 'fonctionnalites', text: 'Photo de profil : ta photo Google, ou une photo prise ou choisie dans ta galerie, recadrée et gardée sur ton appareil.' },
+        { category: 'fonctionnalites', text: 'Modifier ton adresse e-mail ou ton mot de passe depuis ton profil.' },
+        { category: 'ameliorations', text: 'État de la sauvegarde clair : synchronisé, en cours, en attente de connexion ou erreur, avec « Réessayer ».' },
+      ],
+      links: [
+        { label: 'Mon profil', to: '/profil' },
+        { label: 'Se connecter', to: '/connexion' },
+      ],
+    },
+    {
       version: '0.36.0',
       releaseDate: '2026-10-22',
       title: 'Créer tes enchaînements depuis Entraîner',

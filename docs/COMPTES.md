@@ -1,29 +1,56 @@
 # Comptes, profils et synchronisation
 
-Dernière mise à jour : 17 octobre 2026.
+Dernière mise à jour : 22 octobre 2026 (v0.37.0).
 
-## Ce qui est actif dans cette version
+## Ce qui est actif dans cette version (v0.37.0, 22 octobre 2026)
+
+Projet Firebase « Combat Shadow Studio » (`combat-shadow-studio`), forfait **Spark** gratuit, créé par le propriétaire.
+La configuration web publique est injectée seulement dans la version publiée sur GitHub Pages
+(`.github/workflows/preview.yml`) ; les tests automatiques et la version Claude restent en mode invité.
 
 | Fonction | État |
 | --- | --- |
-| Mode invité (sans compte, hors ligne) | **Actif**, par défaut |
-| Profil complet par utilisateur (identité, profil sportif, affichage, coach IA) | **Actif** |
-| Isolation des données par utilisateur sur l’appareil + migration des anciennes données | **Actif** |
-| Chiffrement des limitations physiques (AES-GCM) | **Actif** |
-| Export complet de mes données, suppression de mes données | **Actif** |
-| Comptes e-mail + mot de passe, vérification, mot de passe oublié | Codé, **inactif** : aucun projet Firebase configuré |
-| Connexion Google (web) | Codé, **inactif** (idem) |
-| Connexion Google (application Android) | **Non disponible** : module natif à ajouter (plan ci-dessous) |
-| Lier plusieurs méthodes, convertir l’invité en compte, supprimer le compte | Codé, **inactif** (idem) |
-| Synchronisation Firestore (facultative, désactivée par défaut) | Codé, **inactive** (idem) |
+| Mode invité (sans compte, hors ligne) | **Actif**, par défaut, aucune inscription obligatoire |
+| E-mail + mot de passe : inscription, vérification, renvoi du lien, mot de passe oublié | **Actif** sur la page GitHub Pages (fournisseur activé, vérifié le 22/10 avec un compte de test supprimé aussitôt) |
+| Modifier l’adresse e-mail (lien de confirmation envoyé à la nouvelle adresse) et le mot de passe | **Actif** (v0.37), avec confirmation du mot de passe actuel |
+| Indicateur de robustesse du mot de passe | **Actif** (v0.37), à titre de conseil |
+| Connexion Google (web, fenêtre Google) | **Actif** sur `doorsofhell.github.io` (domaine autorisé, fournisseur activé) |
+| Connexion Google dans l’application Android | **Non disponible** : module natif à ajouter (plan ci-dessous), le bouton est masqué |
+| Photo de profil : photo Google, ou photo personnelle (appareil photo, galerie, cadrage, compression, sans métadonnées) | **Actif** (v0.37). La photo personnelle reste **sur l’appareil** (pas de Cloud Storage) et n’est pas restaurée sur un autre appareil |
+| Lier e-mail et Google, retirer une méthode (jamais la dernière), supprimer le compte | **Actif** |
+| Synchronisation Firestore (facultative, désactivée par défaut) | **Codée** ; elle fonctionne dès que les règles `firestore.rules` sont **publiées dans la console** (voir « À faire dans la console »). Avant cela, l’état affiche « Erreur de synchronisation : le serveur a refusé l’accès » et rien n’est perdu |
+| Préparation Premium à vie | Chemin `users/{uid}/entitlements/*` **lisible seulement** par l’application ; seul un futur serveur de vérification des achats pourra l’écrire |
+| Facebook, Instagram, Apple, SMS, téléphone | **Retirés** du périmètre (correctif 0 €, 22/10) : aucun bouton |
 | Clés d’accès (passkeys) | **Non proposé** (Firebase n’a pas de fournisseur passkey) |
-| Facebook | Étude seulement (rien dans l’application) |
-| WhatsApp, Instagram | Exclus |
 
-Règle : **aucun bouton de connexion n’est affiché s’il ne fonctionne pas réellement**. Sans configuration Firebase,
-l’écran `/connexion` ne montre que « Continuer sans compte » et la phrase « Les comptes en ligne ne sont pas activés
-dans cette version. » Dans l’application Android, le bouton Google reste masqué même avec Firebase configuré, tant
-que le module natif n’est pas installé.
+Règle : **aucun bouton de connexion n’est affiché s’il ne fonctionne pas réellement**.
+
+### À faire dans la console Firebase (propriétaire)
+
+1. *Firestore Database* › *Règles* : remplacer `allow read, write: if false;` par le contenu complet du fichier
+   `firestore.rules` du dépôt, puis **Publier**. Sans cette étape, la connexion fonctionne mais la sauvegarde en
+   ligne est refusée.
+2. *Authentication* › *Templates* : choisir le français pour les e-mails (vérification, réinitialisation,
+   changement d’adresse). Facultatif mais conseillé.
+3. Rien d’autre à activer : pas de Cloud Storage, pas de Functions, pas de Blaze.
+
+### Coûts (forfait Spark, d’après https://firebase.google.com/pricing consultée le 22 octobre 2026)
+
+| Service | Forfait | Coût au lancement | Quota gratuit | Limites connues | Risque de facturation | État |
+| --- | --- | --- | --- | --- | --- | --- |
+| Authentication (e-mail, Google) | Spark | 0 € | 50 000 utilisateurs actifs par mois (chiffre de la page tarifs) | Firebase limite le nombre d’e-mails envoyés (vérification, réinitialisation) : voir la page « Limits » d’Authentication | Aucun : sans compte de facturation, Google ne peut rien facturer, le service refuse au-delà | Configuré |
+| Cloud Firestore (default), europe-west9 | Spark | 0 € | 1 Gio stocké, 10 Gio sortants par mois, 50 000 lectures, 20 000 écritures et 20 000 suppressions par jour | Au-delà : erreur « quota » jusqu’au lendemain ; l’application continue en local | Aucun (pas de facturation sur Spark) | Base créée, **règles à publier** |
+| Cloud Storage | Non utilisé | 0 € | — | Absent de la liste des produits Spark sur la page tarifs | — | Non activé : photo personnelle locale |
+| Hébergement | GitHub Pages | 0 € | — | — | Aucun | Actif |
+
+Consommation estimée : un document par collection et par utilisateur (6 au plus) ; une synchronisation lit au
+plus 6 documents et n’écrit que ceux qui ont changé, après 1,5 s sans nouvelle modification. Les clés et quotas
+réels sont ceux de la console ; ne jamais supposer une capacité illimitée.
+
+### Localisation
+
+Firestore : `europe-west9` (Paris). Firebase Authentication et la connexion Google sont des services mondiaux de
+Google : leurs traitements ne sont pas exclusivement hébergés en France ni dans l’EEE.
 
 ## Architecture
 

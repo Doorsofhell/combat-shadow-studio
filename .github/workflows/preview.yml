@@ -41,6 +41,14 @@ jobs:
 
       - name: Build application
         run: npm run build
+        env:
+          # v0.37 comptes : configuration web publique du projet Firebase « Combat Shadow Studio » (forfait Spark).
+          # Ce sont des identifiants publics (présents dans toute application web Firebase), pas des secrets :
+          # l'accès est protégé par Firebase Authentication et les règles Firestore (firestore.rules).
+          VITE_FIREBASE_API_KEY: AIzaSyDBWzZTC4QHV445rRtbrJ-fLJLfUWCujV8
+          VITE_FIREBASE_AUTH_DOMAIN: combat-shadow-studio.firebaseapp.com
+          VITE_FIREBASE_PROJECT_ID: combat-shadow-studio
+          VITE_FIREBASE_APP_ID: 1:48532638871:web:2f135f723753e52b2cedd2
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

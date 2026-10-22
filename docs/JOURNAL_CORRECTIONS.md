@@ -1676,3 +1676,32 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet : 165 réussis, 2 échoués déjà connus (coach-suggest:96, intermittent ; training-layout:325 caméra Auto, déjà en échec avant), 2 non exécutés (Firebase) ;
   - Android réel : NON EXÉCUTÉ.
 - **Rapport** : `docs/v036/ENTRAINER_TECHNIQUES.md`.
+
+## 2026-10-22 · v0.37.0 · Comptes, photo de profil et sauvegarde en ligne (0 €)
+
+- **Demande** : comptes utilisateurs (Youssef, 18:59), correctif gratuit à 0 € limité à l'e-mail et à Google (19:13), projet Firebase prêt (20:01).
+- **Constat avant** :
+  - comptes et synchronisation codés mais inactifs (pas de configuration) ;
+  - pas de photo de profil ;
+  - pas de changement d'adresse e-mail ni de mot de passe ;
+  - états de synchronisation incomplets.
+  - Vérifié sur le vrai projet : e-mail et Google activés, `doorsofhell.github.io` autorisé, Firestore fermé (règles `if false`).
+- **Correction** :
+  - configuration web publique injectée dans le build GitHub Pages ;
+  - photo de profil locale (cadrage, ré-encodage sans métadonnées, non synchronisée) et photo Google ;
+  - modifier l'adresse e-mail (avec lien de confirmation) et le mot de passe ;
+  - indicateur de robustesse ;
+  - quatre états de synchronisation avec « Réessayer » et des erreurs claires ;
+  - règles Firestore resserrées (six collections, Premium en lecture seule) ;
+  - `firebase.json` pour les émulateurs.
+- **Reste à faire par le propriétaire** : publier `firestore.rules` dans la console (sinon la sauvegarde en ligne est refusée, sans perte).
+- **Fichiers** :
+  - `src/account/auth/{types,firebase,guest}.ts`, `src/account/session.ts`, `src/account/sync/engine.ts`, `src/account/scope.ts` ;
+  - `src/store/photo.ts`, `src/domain/photo.ts`, `src/store/profile.ts` ;
+  - `src/ui/screens/account/{Profile,SignIn,PhotoSheet}.tsx`, `account.css` ;
+  - `firestore.rules`, `firebase.json`, `.github/workflows/preview.yml`, `docs/COMPTES.md`, `docs/v037/`.
+- **Tests** :
+  - émulateurs Firebase : RÉUSSI ;
+  - Vitest complet : 668 réussis, 1 ÉCHOUÉ connu (Amara, extension de hanche, déjà en échec avant cette version) ;
+  - Playwright complet : 168 réussis, 1 ÉCHOUÉ connu (`training-layout:325`, caméra Auto, déjà en échec en v0.36), 2 ignorés (Firebase) ;
+  - Google et e-mails réels : NON EXÉCUTÉ ; Android : NON EXÉCUTÉ.

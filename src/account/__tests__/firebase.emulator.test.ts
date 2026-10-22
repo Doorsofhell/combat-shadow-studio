@@ -6,7 +6,7 @@
  * Skipped otherwise.
  */
 import { describe, expect, test } from 'vitest';
-import { createFirebaseProvider } from '../auth/firebase';
+import { createFirebaseProvider, firebaseApp } from '../auth/firebase';
 import { createFirestoreAdapter } from '../sync/firestore';
 import { track } from '../sync/model';
 
@@ -53,6 +53,27 @@ describe.skipIf(!RUN)('Firebase (émulateurs)', () => {
     await expect(db.push('someone-else', 'profile', doc)).rejects.toBeTruthy();
     // malformed document refused
     await expect(db.push(u.uid, 'profile', { foo: 1 } as never)).rejects.toBeTruthy();
+
+    // v0.37: only the six known collections; the future Premium licence is readable, never writable by the app
+    await expect(db.push(u.uid, 'evil', { ...doc, collection: 'evil' })).rejects.toBeTruthy();
+    const fs = await import('firebase/firestore');
+    const store = fs.getFirestore(await firebaseApp(cfg));
+    const premium = fs.doc(store, 'users', u.uid, 'entitlements', 'premium');
+    await expect(fs.setDoc(premium, { lifetime: true })).rejects.toBeTruthy();
+    expect((await fs.getDoc(premium)).exists()).toBe(false);
+
+    // v0.37: change the password (recent sign-in), then ask to change the address (a link goes to the new one)
+    await p.changePassword('nouveau2026');
+    await p.signOut();
+    await expect(p.signInEmail(email, 'motdepasse1')).rejects.toBeTruthy();
+    await p.signInEmail(email, 'nouveau2026');
+    await p.changePassword('motdepasse1');
+    const nextEmail = `neuf-${Date.now()}@example.com`;
+    await p.changeEmail(nextEmail);
+    const r = await fetch(`${AUTH}/emulator/v1/projects/${PROJECT}/oobCodes`);
+    const { oobCodes } = (await r.json()) as { oobCodes: { email: string; requestType: string; newEmail?: string }[] };
+    expect(oobCodes.some((c) => c.requestType === 'VERIFY_AND_CHANGE_EMAIL' && (c.newEmail === nextEmail || c.email === nextEmail))).toBe(true);
+    expect((await p.refresh())?.email).toBe(email); // unchanged until the link is opened
 
     // wrong password, sign-out, sign-in
     await p.signOut();
