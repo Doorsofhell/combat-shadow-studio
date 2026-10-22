@@ -58,13 +58,18 @@ test('entraînement : démarrage, pause qui arrête le chronomètre, reprise, st
 
 test('créateur : un enchaînement impossible est bloqué, un enchaînement valide se lance', async ({ page }) => {
   await onboard(page, 'homme');
-  await page.goto('/#/createur?d=mma');
+  // 0.38 (Créateur V2): the editor of a new sequence, moves added from the picker of pictograms
+  await page.goto('/#/createur/nouveau?d=mma');
+  await page.getByTestId('add-move').click();
   await page.getByTestId('add-jab').click();
   await page.getByTestId('add-releve-technique').click();
+  await page.getByTestId('picker-done').click();
   await expect(page.getByTestId('run-custom')).toBeDisabled();
   await page.getByRole('button', { name: /Retirer Relevé/ }).click();
+  await page.getByTestId('add-move').click();
   await page.getByTestId('add-descente-sol').click();
   await page.getByTestId('add-releve-technique').click();
+  await page.getByTestId('picker-done').click();
   await expect(page.getByTestId('run-custom')).toBeEnabled();
   await page.getByTestId('run-custom').click();
   await expect(page.getByTestId('exercise-name')).toBeVisible();

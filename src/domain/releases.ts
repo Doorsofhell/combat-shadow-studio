@@ -49,6 +49,23 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.38.0',
+      releaseDate: '2026-10-22',
+      title: 'Créateur d’enchaînements V2',
+      isMajor: true,
+      changes: [
+        { category: 'fonctionnalites', text: 'Tes enchaînements en tuiles : mouvements en pictogrammes, dates de création, de modification et de dernière utilisation, nombre d’entraînements et statut Acquis ou Encore du mal.' },
+        { category: 'fonctionnalites', text: 'Une fiche par enchaînement : tous les mouvements dans l’ordre (touche-les pour ouvrir la technique), Exécuter, Modifier, Dupliquer et Supprimer.' },
+        { category: 'fonctionnalites', text: 'Analyse de l’enchaînement calculée sur ton appareil, sans intelligence artificielle générative : note sur 100, cinq critères expliqués, points forts, points faibles, conseils et limites.' },
+        { category: 'ameliorations', text: 'Éditeur : ajouter depuis une grille de pictogrammes, réordonner, retirer, renommer, sans perdre l’historique ni le statut.' },
+        { category: 'ameliorations', text: 'Un pictogramme neutre par technique, le même partout, sans image du coach.' },
+      ],
+      links: [
+        { label: 'Mes enchaînements', to: '/createur' },
+        { label: 'Créer un enchaînement', to: '/createur/nouveau' },
+      ],
+    },
+    {
       version: '0.37.0',
       releaseDate: '2026-10-22',
       title: 'Comptes et sauvegarde en ligne',

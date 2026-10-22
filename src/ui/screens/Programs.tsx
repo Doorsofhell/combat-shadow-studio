@@ -39,7 +39,7 @@ export function Programs() {
           </Link>
         ))}
       </div>
-      <Link to="/createur" className="btn secondary block">
+      <Link to="/createur/nouveau" className="btn secondary block">
         <AppIcon id="add" size={18} /> Créer mon propre enchaînement
       </Link>
     </div>

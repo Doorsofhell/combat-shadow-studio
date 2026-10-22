@@ -341,12 +341,12 @@ export const APP_GUIDE: GuideEntry[] = [
     ],
     screens: ['createur'],
     answer:
-      'Dans le Créateur (Entraîner, Séances, carte « Crée tes propres enchaînements ») :\n' +
-      '1. Choisis la discipline.\n' +
-      '2. Touche les mouvements pour les ajouter dans l’ordre. Touche un mouvement ajouté pour le retirer, ou « Annuler le dernier ».\n' +
-      '3. L’application vérifie que l’enchaînement est réalisable et te signale ce qui coince.\n' +
-      '4. Donne-lui un nom, choisis le mode (En boucle, Lent et commenté ou Rounds), puis « Enregistrer » ou « Lancer ».\n' +
-      'Tes créations apparaissent dans « Mes enchaînements ».',
+      'Dans Entraîner, Séances, carte « Crée tes propres enchaînements » :\n' +
+      '1. Donne un nom et choisis la discipline.\n' +
+      '2. « Ajouter un mouvement » ouvre la grille des pictogrammes : touche les techniques dans l’ordre. Tu peux ensuite les monter, les descendre ou les retirer.\n' +
+      '3. L’application vérifie que l’enchaînement est réalisable et calcule une note sur ton appareil (règles fixes, pas d’IA générative).\n' +
+      '4. « Enregistrer » ouvre sa fiche : Exécuter, Modifier, Dupliquer, Supprimer, l’analyse détaillée et ton statut Acquis ou Encore du mal.\n' +
+      'Tous tes enchaînements sont dans « Mes enchaînements » (Gérer).',
     action: { to: '/createur', label: 'Ouvrir le Créateur' },
   },
   {

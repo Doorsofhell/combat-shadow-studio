@@ -1,7 +1,7 @@
 /**
  * Registre des icônes de la navigation dynamique v0.32, copié tel quel depuis la maquette validée par Youssef
  * (docs/design/navigation-dynamique-reference.html, branche design/navigation-reference-v032, objet `icons`).
- * Source unique de vérité : ne pas redessiner ces chemins. Le test src/ui/nav/__tests__/icons.test.ts vérifie
+ * Source unique de vérité : ne pas redessiner ces chemins. Le test src/ui/nav/__tests__/nav.test.ts vérifie
  * qu'ils sont identiques à ceux de la maquette.
  */
 export const NAV_ICONS = {
@@ -30,4 +30,20 @@ export const NAV_ICONS = {
   coach: '<circle cx="9" cy="7" r="3"/><path d="M3 19v-3a6 6 0 0 1 12 0v3M17 8h5M19.5 5.5v5"/>',
 } as const;
 
-export type NavIconId = keyof typeof NAV_ICONS;
+/**
+ * v0.38 (Créateur d'enchaînements V2): the bars of the list, the sheet and the editor of sequences need actions the
+ * mockup has no icon for (Créer, Ajouter, Modifier, Supprimer, Enregistrer, Annuler). They are drawn here in the same
+ * grammar (24 × 24, plain strokes, no fill) and kept apart, so the registry copied from the mockup stays exact.
+ */
+export const NAV_EXTRA_ICONS = {
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  save: '<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/>',
+  close: '<path d="M6 6l12 12M18 6 6 18"/>',
+} as const;
+
+export type NavIconId = keyof typeof NAV_ICONS | keyof typeof NAV_EXTRA_ICONS;
+
+/** the paths of an icon, from the mockup's registry or the v0.38 additions */
+export const navIconPaths = (id: NavIconId): string => (id in NAV_ICONS ? NAV_ICONS[id as keyof typeof NAV_ICONS] : NAV_EXTRA_ICONS[id as keyof typeof NAV_EXTRA_ICONS]);

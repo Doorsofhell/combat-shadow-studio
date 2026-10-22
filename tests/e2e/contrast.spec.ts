@@ -21,6 +21,8 @@ const SCREENS = [
   ['champions-liste', '/#/champions?vue=champions&d=bjj'],
   ['champion-judo', '/#/champions/c/riner'],
   ['createur-enchainement', '/#/createur'],
+  // 0.38 Créateur V2: the editor of a new sequence
+  ['createur-editeur', '/#/createur/nouveau?d=boxe'],
   ['programmes', '/#/programmes'],
   ['coach-editeur', '/#/combattant'],
   ['progres', '/#/stats'],

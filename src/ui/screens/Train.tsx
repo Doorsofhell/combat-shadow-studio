@@ -4,6 +4,8 @@ import { useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { useCustom } from '../../store/custom';
+import { PictoStrip } from './creator/shared';
+import './creator/creator.css';
 import { useSettings } from '../../store/settings';
 import { useStats, formatDuration } from '../../store/stats';
 import { useResume } from '../../store/resume';
@@ -145,9 +147,10 @@ function Sessions({ quick, recommended, onOpen }: { quick: Exercise[]; recommend
           <div className="stack" style={{ gap: 8 }}>
             {combos.map((c) => (
               <Link key={c.id} to={`/entrainement?perso=${c.id}&mode=libre`} className="card link ex-card" aria-label={`Lancer ${c.name}`} data-testid={`combo-${c.id}`}>
-                <TechThumb id={keyTechnique(c.sequence)} />
+                {/* 0.38: the neutral pictograms of the moves, never a picture of the coach (plaquette Créateur V2) */}
                 <span className="body">
                   <span className="title">{c.name}</span>
+                  <PictoStrip sequence={c.sequence} size={26} />
                   <span className="small muted">
                     <DisciplineLabel id={c.discipline} name={DISCIPLINES.find((x) => x.id === c.discipline)?.name ?? ''} /> · {c.sequence.length} mouvements
                   </span>
@@ -188,7 +191,7 @@ function Sessions({ quick, recommended, onOpen }: { quick: Exercise[]; recommend
   );
 }
 
-/** 0.36: the creator of combinations, put forward in Séances (it opens the existing creator, /createur) */
+/** 0.36: the creator of combinations, put forward in Séances; 0.38: it opens the editor of a new sequence (/createur/nouveau) */
 function CreatorCard() {
   return (
     <article className="creator-card" data-testid="creator-card" aria-labelledby="creator-title">
@@ -199,7 +202,7 @@ function CreatorCard() {
         <h2 id="creator-title">Crée tes propres enchaînements</h2>
         <p>Choisis tes techniques, organise tes mouvements et regarde ton combattant 3D exécuter tes enchaînements.</p>
       </div>
-      <Link to="/createur" className="btn primary creator-cta" data-testid="create-combo">
+      <Link to="/createur/nouveau" className="btn primary creator-cta" data-testid="create-combo">
         <AppIcon id="add" size={18} /> Créer un enchaînement
       </Link>
     </article>

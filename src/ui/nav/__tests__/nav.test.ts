@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 import { LATEST_RELEASE, RELEASES, hasUnseenRelease, releaseDateLabel } from '../../../domain/releases';
 import { MENU_ENTRIES, NAV_CONFIG, NAV_PARENT, TOGGLE, navScreen, type NavScreen } from '../config';
-import { NAV_ICONS } from '../icons';
+import { NAV_EXTRA_ICONS, NAV_ICONS, navIconPaths } from '../icons';
 import { fold } from '../selection';
 
 /**
@@ -26,6 +26,13 @@ describe('icônes : copie exacte du registre de la maquette', () => {
   test('mêmes 23 icônes, mêmes chemins SVG, caractère par caractère', () => {
     expect(Object.keys(NAV_ICONS).sort()).toEqual(Object.keys(REF_ICONS).sort());
     for (const [k, v] of Object.entries(REF_ICONS)) expect(NAV_ICONS[k as keyof typeof NAV_ICONS], k).toBe(v);
+  });
+  test('0.38 : les icônes ajoutées (créateur) ne remplacent aucune icône de la maquette et suivent son dessin', () => {
+    for (const [k, v] of Object.entries(NAV_EXTRA_ICONS)) {
+      expect(REF_ICONS[k], k).toBeUndefined();
+      expect(v, k).toMatch(/^<(path|circle|rect) /);
+      expect(v, k).not.toMatch(/fill=|stroke-width=|style=/);
+    }
   });
   test('rendu : viewBox 0 0 24 24, 21 px, trait 1,8, extrémités et jonctions arrondies (CSS de la maquette)', () => {
     const tsx = readFileSync(resolve(process.cwd(), 'src/ui/nav/NavIcon.tsx'), 'utf8');
@@ -79,7 +86,7 @@ describe('barre : cinq places, mêmes icônes, libellés et ordre que la maquett
       expect(slots, screen).toHaveLength(5);
       expect(slots[4], screen).toEqual({ icon: 'grid', label: 'Menu', action: 'menu' });
       if (screen !== 'accueil') expect(slots[0], screen).toEqual({ icon: 'back', label: 'Retour', action: 'back' });
-      for (const s of slots) expect(NAV_ICONS[s.icon], `${screen} ${s.icon}`).toBeTruthy();
+      for (const s of slots) expect(navIconPaths(s.icon), `${screen} ${s.icon}`).toBeTruthy();
       // a page of the app behind every `nav:` action
       expect(NAV_PARENT[screen as NavScreen], screen).toMatch(/^\//);
     }
@@ -98,6 +105,9 @@ describe('écran d’une route', () => {
     ['/techniques/jab', '?d=boxe', 'fiche'],
     ['/partenaire/x', '', 'partenaire'],
     ['/createur', '', 'createur'],
+    ['/createur/nouveau', '?d=mma', 'createur-editeur'],
+    ['/createur/abc/modifier', '', 'createur-editeur'],
+    ['/createur/abc', '', 'createur-fiche'],
     ['/stats', '', 'progres'],
     ['/historique', '', 'historique'],
     ['/objectifs', '', 'objectifs'],

@@ -29,7 +29,9 @@ const TechniquePage = lazy(() => import('./screens/Library').then((m) => ({ defa
 const PartnerPage = lazy(() => import('./screens/Library').then((m) => ({ default: m.PartnerPage })));
 const Programs = lazy(() => import('./screens/Programs').then((m) => ({ default: m.Programs })));
 const ProgramPage = lazy(() => import('./screens/Programs').then((m) => ({ default: m.ProgramPage })));
-const Builder = lazy(() => import('./screens/Builder').then((m) => ({ default: m.Builder })));
+const CreatorList = lazy(() => import('./screens/creator/CreatorList').then((m) => ({ default: m.CreatorList })));
+const CreatorSheet = lazy(() => import('./screens/creator/CreatorSheet').then((m) => ({ default: m.CreatorSheet })));
+const CreatorEditor = lazy(() => import('./screens/creator/CreatorEditor').then((m) => ({ default: m.CreatorEditor })));
 const Stats = lazy(() => import('./screens/Stats').then((m) => ({ default: m.Stats })));
 const Goals = lazy(() => import('./screens/Stats').then((m) => ({ default: m.Goals })));
 const History = lazy(() => import('./screens/Stats').then((m) => ({ default: m.History })));
@@ -176,7 +178,10 @@ export function App() {
             <Route path="/partenaire/:id" element={<PartnerPage />} />
             <Route path="/programmes" element={<Programs />} />
             <Route path="/programmes/:id" element={<ProgramPage />} />
-            <Route path="/createur" element={<Builder />} />
+            <Route path="/createur" element={<CreatorList />} />
+            <Route path="/createur/nouveau" element={<CreatorEditor key="nouveau" />} />
+            <Route path="/createur/:id/modifier" element={<CreatorEditor />} />
+            <Route path="/createur/:id" element={<CreatorSheet />} />
             <Route path="/champions" element={<Champions />} />
             <Route path="/champions/c/:championId" element={<ChampionPage />} />
             <Route path="/champions/:id" element={<ComboPage />} />
