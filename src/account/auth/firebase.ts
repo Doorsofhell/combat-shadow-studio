@@ -48,6 +48,7 @@ export function toAuthUser(u: User): AuthUser {
     email: u.email,
     emailVerified: u.emailVerified,
     displayName: u.displayName,
+    photoURL: u.photoURL,
     methods: u.providerData.map((p) => p.providerId).filter((p): p is SignInMethod => p === 'password' || p === 'google.com'),
     createdAt: u.metadata.creationTime,
     lastSignInAt: u.metadata.lastSignInTime,
@@ -145,6 +146,8 @@ export async function createFirebaseProvider(cfg: FirebaseWebConfig, opts: { emu
         return toAuthUser(await m.unlink(u, method));
       }),
     updateDisplayName: (name) => wrap(() => m.updateProfile(current(), { displayName: name.trim() || null })),
+    changeEmail: (newEmail) => wrap(() => m.verifyBeforeUpdateEmail(current(), newEmail.trim())),
+    changePassword: (newPassword) => wrap(() => m.updatePassword(current(), newPassword)),
     reauthenticate: (method, password) =>
       wrap(async () => {
         const u = current();

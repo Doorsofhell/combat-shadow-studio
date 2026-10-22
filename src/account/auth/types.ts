@@ -12,6 +12,8 @@ export interface AuthUser {
   email: string | null;
   emailVerified: boolean;
   displayName: string | null;
+  /** photo given by the sign-in provider (Google), shown only if the user did not choose their own */
+  photoURL?: string | null;
   /** sign-in methods linked to this account */
   methods: SignInMethod[];
   createdAt?: string;
@@ -46,6 +48,10 @@ export interface AuthProvider {
   linkGoogle(): Promise<AuthUser>;
   unlink(method: SignInMethod): Promise<AuthUser>;
   updateDisplayName(name: string): Promise<void>;
+  /** sends a link to the new address; the address changes only once that link is opened */
+  changeEmail(newEmail: string): Promise<void>;
+  /** needs a recent sign-in (else code `auth/requires-recent-login`) */
+  changePassword(newPassword: string): Promise<void>;
   /** confirms identity before a sensitive operation (account deletion) */
   reauthenticate(method: SignInMethod, password?: string): Promise<void>;
   deleteAccount(): Promise<void>;
@@ -73,3 +79,12 @@ export function passwordProblem(pw: string): string | null {
 }
 
 export const emailLooksValid = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e.trim());
+
+/** v0.37 strength hint shown while creating a password: 0 too short, 1 weak, 2 good, 3 strong (advice only) */
+export function passwordStrength(pw: string): 0 | 1 | 2 | 3 {
+  if (passwordProblem(pw)) return 0;
+  const classes = [/[a-zà-ÿ]/, /[A-ZÀ-Ý]/, /\d/, /[^A-Za-zÀ-ÿ\d]/].filter((r) => r.test(pw)).length;
+  if (pw.length >= 14 || (pw.length >= 12 && classes >= 3)) return 3;
+  if (pw.length >= 10 || classes >= 3) return 2;
+  return 1;
+}

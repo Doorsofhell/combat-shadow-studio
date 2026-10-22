@@ -10,6 +10,7 @@ import { useSyncPrefs } from './syncPrefs';
 import { useCoachAi } from '../store/coachAi';
 import { useProgressView } from '../store/progressView';
 import { useResume } from '../store/resume';
+import { usePhoto } from '../store/photo';
 
 /** the part of a zustand persisted store the scope switcher needs */
 export interface ScopedStore {
@@ -18,7 +19,7 @@ export interface ScopedStore {
   persist: { rehydrate(): Promise<void> | void; getOptions(): { name?: string } };
 }
 
-const stores = new Set<ScopedStore>([useProfile, useStats, useCustom, useGoals, useFighters, useCatalogUser, useSyncPrefs, useCoachAi, useProgressView, useResume] as unknown as ScopedStore[]);
+const stores = new Set<ScopedStore>([useProfile, useStats, useCustom, useGoals, useFighters, useCatalogUser, useSyncPrefs, useCoachAi, useProgressView, useResume, usePhoto] as unknown as ScopedStore[]);
 
 /**
  * Stores created elsewhere (e.g. the AI coach) can register here to be reloaded in place when the

@@ -33,3 +33,14 @@ describe('fournisseur Firebase (sans réseau)', () => {
     expect(emailLooksValid('yan@example')).toBe(false);
   });
 });
+
+describe('robustesse du mot de passe (v0.37)', () => {
+  test('indication progressive, jamais au-dessus de 0 sans les règles minimales', async () => {
+    const { passwordStrength } = await import('../auth/types');
+    expect(passwordStrength('court1')).toBe(0);
+    expect(passwordStrength('motdepasse')).toBe(0);
+    expect(passwordStrength('boxeur12')).toBe(1);
+    expect(passwordStrength('boxeurfou12')).toBe(2);
+    expect(passwordStrength('Boxeur-Fou-2026')).toBe(3);
+  });
+});

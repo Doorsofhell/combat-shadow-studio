@@ -217,3 +217,90 @@
 .bmi-legend li.on .bmi-swatch { box-shadow: 0 0 0 2px var(--soft), 0 0 0 4px var(--ink); }
 .bmi-advice { margin: 0; font-size: 0.92rem; line-height: 1.45; color: var(--ink); }
 .bmi-card p.small { margin: 0; }
+
+/* ---------------------------------------------------------------- v0.37 photo de profil, état de synchro */
+.acc-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.acc-avatar-btn {
+  position: relative;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.acc-avatar-pen {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+  border: 2px solid var(--surface);
+}
+.photo-preview {
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo-crop {
+  display: grid;
+  gap: 6px;
+}
+.photo-crop label {
+  display: grid;
+  gap: 2px;
+}
+.sync-state.error {
+  color: var(--red-ink, var(--red));
+}
+.sync-state.idle::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--good, #2fbf71);
+}
+.pw-strength {
+  display: grid;
+  gap: 4px;
+}
+.pw-bars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+.pw-bars i {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+}
+.pw-strength[data-strength='1'] .pw-bars i.on {
+  background: var(--warn, #e0a030);
+}
+.pw-strength[data-strength='2'] .pw-bars i.on,
+.pw-strength[data-strength='3'] .pw-bars i.on {
+  background: var(--good, #2fbf71);
+}

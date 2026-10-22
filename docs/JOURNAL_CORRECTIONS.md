@@ -1674,3 +1674,28 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - adaptés à la nouvelle demande : `coach-bubble` (section Légendes), `appGuide.test` (quatre sections), `navigation` (0.36.0) ;
   - Vitest : 662 réussis, 1 échec déjà présent (Amara).
 - **Rapport** : `docs/v036/ENTRAINER_TECHNIQUES.md`.
+
+## 2026-10-22 · v0.37.0 · Comptes, photo de profil et sauvegarde en ligne (0 €)
+
+- **Demande** : comptes utilisateurs (Youssef, 18:59), correctif gratuit à 0 € limité à l'e-mail et à Google (19:13), projet Firebase prêt (20:01).
+- **Constat avant** :
+  - comptes et synchronisation codés mais inactifs (pas de configuration) ;
+  - pas de photo de profil ;
+  - pas de changement d'adresse e-mail ni de mot de passe ;
+  - états de synchronisation incomplets.
+  - Vérifié sur le vrai projet : e-mail et Google activés, `doorsofhell.github.io` autorisé, Firestore fermé (règles `if false`).
+- **Correction** :
+  - configuration web publique injectée dans le build GitHub Pages ;
+  - photo de profil locale (cadrage, ré-encodage sans métadonnées, non synchronisée) et photo Google ;
+  - modifier l'adresse e-mail (avec lien de confirmation) et le mot de passe ;
+  - indicateur de robustesse ;
+  - quatre états de synchronisation avec « Réessayer » et des erreurs claires ;
+  - règles Firestore resserrées (six collections, Premium en lecture seule) ;
+  - `firebase.json` pour les émulateurs.
+- **Reste à faire par le propriétaire** : publier `firestore.rules` dans la console (sinon la sauvegarde en ligne est refusée, sans perte).
+- **Fichiers** :
+  - `src/account/auth/{types,firebase,guest}.ts`, `src/account/session.ts`, `src/account/sync/engine.ts`, `src/account/scope.ts` ;
+  - `src/store/photo.ts`, `src/domain/photo.ts`, `src/store/profile.ts` ;
+  - `src/ui/screens/account/{Profile,SignIn,PhotoSheet}.tsx`, `account.css` ;
+  - `firestore.rules`, `firebase.json`, `.github/workflows/preview.yml`, `docs/COMPTES.md`, `docs/v037/`.
+- **Tests** : émulateurs RÉUSSI ; nouveaux tests Vitest et Playwright (voir `docs/v037/COMPTES_V037.md`) ; Google et e-mails réels NON EXÉCUTÉ ; Android NON EXÉCUTÉ.

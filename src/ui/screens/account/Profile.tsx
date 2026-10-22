@@ -6,8 +6,11 @@ import { formatDuration, sessionCount, sum, useStats, weekKey } from '../../../s
 import { useGoals } from '../../../store/goals';
 import { useCatalogUser } from '../../../store/catalog';
 import { useActiveFighter } from '../../../store/fighters';
+import { usePhoto } from '../../../store/photo';
 import { saveTextFile } from '../../../platform/native';
 import {
+  changeEmail,
+  changePassword,
   deleteAccount,
   deleteMyData,
   linkEmail,
@@ -28,6 +31,7 @@ import { DisciplineLabel, Chip, ConfirmDialog, LinkRow, PageHead, Panel, PanelRo
 import { AppIcon, type GlyphId } from '../../icons';
 import { PasswordField } from './SignIn';
 import { BmiCard } from './BmiCard';
+import { PhotoSheet } from './PhotoSheet';
 import './account.css';
 
 const METHOD_LABEL: Record<SignInMethod, string> = { password: 'E-mail et mot de passe', 'google.com': 'Google' };
@@ -71,10 +75,16 @@ function NumField({ id, label, value, onChange, unit, min, max }: { id: string; 
 
 export function Avatar({ profile, size = 72 }: { profile: Profile; size?: number }) {
   const fighter = useActiveFighter();
-  const useFighter = profile.avatar === 'fighter' && fighter;
+  const photo = usePhoto((s) => s.photo);
+  const googlePhoto = useAccount((s) => (s.status === 'signedIn' ? s.user?.photoURL : null));
+  // the personal photo always wins; a missing picture (other device, signed out) falls back to the coach or initials
+  const src = profile.avatar === 'photo' ? photo : profile.avatar === 'google' ? googlePhoto : null;
+  const useFighter = (profile.avatar === 'fighter' || (profile.avatar !== 'initiales' && !src)) && fighter;
   return (
-    <span className="acc-avatar" style={{ width: size, height: size }} aria-hidden>
-      {useFighter ? (
+    <span className="acc-avatar" style={{ width: size, height: size }} aria-hidden data-avatar={src ? profile.avatar : useFighter ? 'fighter' : 'initiales'}>
+      {src ? (
+        <img src={src} alt="" referrerPolicy="no-referrer" />
+      ) : useFighter ? (
         <>
           <AppIcon id="fighter" />
           <span className="skin" style={{ background: fighter.look.skin }} />
@@ -110,7 +120,8 @@ export function ProfilePage() {
   const nav = useNavigate();
 
   const [showLim, setShowLim] = useState(false);
-  const [dialog, setDialog] = useState<null | 'erase' | 'signout' | 'delete' | 'link-email'>(null);
+  const [dialog, setDialog] = useState<null | 'erase' | 'signout' | 'delete' | 'link-email' | 'photo' | 'email' | 'password'>(null);
+  const hasPhoto = usePhoto((s) => !!s.photo);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -151,7 +162,12 @@ export function ProfilePage() {
       <PageHead title="Profil" eyebrow={status === 'signedIn' ? 'Compte' : 'Mode invité'} fallback="/reglages" />
 
       <div className="card acc-hero">
-        <Avatar profile={profile} />
+        <button type="button" className="acc-avatar-btn" onClick={() => setDialog('photo')} aria-label="Modifier la photo de profil" data-testid="avatar-edit">
+          <Avatar profile={profile} />
+          <span className="acc-avatar-pen" aria-hidden>
+            <AppIcon id="edit" size={14} />
+          </span>
+        </button>
         <div className="grow" style={{ minWidth: 0 }}>
           <div className="acc-name" data-testid="profile-name">
             {name}
@@ -220,6 +236,19 @@ export function ProfilePage() {
                 </div>
               )}
             </div>
+            {user.methods.includes('password') && (
+              <div className="panel-row col">
+                <span>Identifiants</span>
+                <div className="row" style={{ gap: 8 }}>
+                  <button type="button" className="btn secondary sm" onClick={() => setDialog('email')} data-testid="change-email">
+                    Modifier l’adresse e-mail
+                  </button>
+                  <button type="button" className="btn secondary sm" onClick={() => setDialog('password')} data-testid="change-password">
+                    Modifier le mot de passe
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="panel-row">
               <button type="button" className="btn secondary block" onClick={() => setDialog('signout')} data-testid="sign-out">
                 <AppIcon id="signOut" size={18} /> Se déconnecter
@@ -264,12 +293,17 @@ export function ProfilePage() {
           <Segmented
             label="Avatar"
             value={profile.avatar}
-            onChange={(a) => update({ avatar: a })}
+            onChange={(a) => (a === 'photo' && !hasPhoto ? setDialog('photo') : update({ avatar: a }))}
             options={[
               { id: 'fighter', label: 'Mon coach' },
               { id: 'initiales', label: 'Initiales' },
+              { id: 'photo', label: 'Ma photo' },
+              ...(status === 'signedIn' && user?.photoURL ? [{ id: 'google' as const, label: 'Google' }] : []),
             ]}
           />
+          <button type="button" className="btn secondary sm" onClick={() => setDialog('photo')} data-testid="photo-open">
+            <AppIcon id="camera" size={18} /> {hasPhoto ? 'Changer ou supprimer ma photo' : 'Ajouter une photo'}
+          </button>
         </PanelRow>
         <LinkRow to="/coach" icon={<AppIcon id="fighter" className="muted" />} label="Mon coach" hint="Kadir ou Amara" />
         <PanelRow label="Langue" hint="Français (seule langue disponible pour l’instant)" />
@@ -434,15 +468,16 @@ export function ProfilePage() {
             <Toggle label="Synchronisation en ligne" hint="Sauvegarde ton profil, tes combattants, séances, enchaînements et favoris dans ton compte (sauf les limitations physiques)" on={syncOn} onChange={setSync} />
             {syncOn && sync && (
               <div className="panel-row col">
-                <span className="small muted" role="status" data-testid="sync-status">
-                  {sync.phase === 'syncing' && 'Synchronisation…'}
-                  {sync.phase === 'idle' && `À jour${sync.lastSyncAt ? ` (${new Date(sync.lastSyncAt).toLocaleString('fr-FR')})` : ''}.`}
-                  {sync.phase === 'offline' && 'Hors ligne : tes modifications sont gardées et seront envoyées au retour de la connexion.'}
-                  {sync.phase === 'error' && (sync.message ?? 'La synchronisation a échoué.')}
+                <span className={`small sync-state ${sync.phase}`} role="status" data-testid="sync-status" data-phase={sync.phase}>
+                  {!user.emailVerified && 'En attente : vérifie ton adresse e-mail pour activer la sauvegarde en ligne.'}
+                  {user.emailVerified && sync.phase === 'syncing' && 'Synchronisation en cours…'}
+                  {user.emailVerified && sync.phase === 'idle' && `Synchronisé${sync.lastSyncAt ? ` le ${new Date(sync.lastSyncAt).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}` : ''}.`}
+                  {user.emailVerified && sync.phase === 'offline' && 'En attente de connexion : tes modifications sont gardées sur cet appareil et partiront au retour du réseau.'}
+                  {user.emailVerified && sync.phase === 'error' && `Erreur de synchronisation. ${sync.message ?? ''} Tes données restent sur cet appareil.`}
                 </span>
                 {sync.phase !== 'syncing' && user.emailVerified && (
-                  <button type="button" className="btn secondary sm" onClick={() => void syncNow()}>
-                    <AppIcon id="sync" size={18} /> Synchroniser maintenant
+                  <button type="button" className="btn secondary sm" onClick={() => void syncNow()} data-testid="sync-retry">
+                    <AppIcon id="sync" size={18} /> {sync.phase === 'error' ? 'Réessayer' : 'Synchroniser maintenant'}
                   </button>
                 )}
               </div>
@@ -490,6 +525,9 @@ export function ProfilePage() {
       {dialog === 'signout' && <SignOutSheet onClose={() => setDialog(null)} />}
       {dialog === 'delete' && user && <DeleteAccountSheet methods={user.methods} onClose={() => setDialog(null)} />}
       {dialog === 'link-email' && <LinkEmailSheet defaultEmail={user?.email ?? ''} onClose={() => setDialog(null)} />}
+      {dialog === 'photo' && <PhotoSheet onClose={() => setDialog(null)} />}
+      {dialog === 'email' && user && <ChangeEmailSheet email={user.email ?? ''} onClose={() => setDialog(null)} />}
+      {dialog === 'password' && <ChangePasswordSheet onClose={() => setDialog(null)} />}
     </div>
   );
 }
@@ -603,6 +641,96 @@ function LinkEmailSheet({ defaultEmail, onClose }: { defaultEmail: string; onClo
       )}
       <button type="button" className="btn primary block" disabled={busy} onClick={go}>
         Ajouter
+      </button>
+    </Sheet>
+  );
+}
+
+function ChangeEmailSheet({ email, onClose }: { email: string; onClose: () => void }) {
+  const [next, setNext] = useState('');
+  const [pw, setPw] = useState('');
+  const [err, setErr] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const go = async () => {
+    if (!emailLooksValid(next)) return setErr('Adresse e-mail invalide.');
+    if (next.trim().toLowerCase() === email.toLowerCase()) return setErr('C’est déjà ton adresse.');
+    setBusy(true);
+    setErr(null);
+    try {
+      await reauthenticate('password', pw);
+      await changeEmail(next);
+      setDone(true);
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Sheet title="Modifier l’adresse e-mail" onClose={onClose} center>
+      {done ? (
+        <>
+          <p className="small" role="status">
+            Un lien de confirmation a été envoyé à <b>{next.trim()}</b>. Ton adresse changera seulement quand tu l’auras ouvert ; d’ici là, continue à te connecter avec {email}.
+          </p>
+          <button type="button" className="btn primary block" onClick={onClose}>
+            Compris
+          </button>
+        </>
+      ) : (
+        <>
+          <div className="field">
+            <label htmlFor="new-email">Nouvelle adresse e-mail</label>
+            <input id="new-email" className="input" type="email" autoComplete="email" value={next} onChange={(e) => setNext(e.target.value)} />
+          </div>
+          <PasswordField id="ce-pw" label="Confirme avec ton mot de passe actuel" value={pw} onChange={setPw} autoComplete="current-password" />
+          {err && (
+            <div className="note err" role="alert">
+              {err}
+            </div>
+          )}
+          <button type="button" className="btn primary block" disabled={busy || !pw || !next} onClick={go}>
+            Envoyer le lien de confirmation
+          </button>
+        </>
+      )}
+    </Sheet>
+  );
+}
+
+function ChangePasswordSheet({ onClose }: { onClose: () => void }) {
+  const [old, setOld] = useState('');
+  const [pw, setPw] = useState('');
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const go = async () => {
+    const pb = passwordProblem(pw);
+    if (pb) return setErr(pb);
+    setBusy(true);
+    setErr(null);
+    try {
+      await reauthenticate('password', old);
+      await changePassword(pw);
+      toast('Mot de passe modifié.');
+      onClose();
+    } catch (e) {
+      setErr((e as Error).message);
+      setBusy(false);
+    }
+  };
+  return (
+    <Sheet title="Modifier le mot de passe" onClose={onClose} center>
+      <PasswordField id="cp-old" label="Mot de passe actuel" value={old} onChange={setOld} autoComplete="current-password" />
+      <PasswordField id="cp-new" label="Nouveau mot de passe" value={pw} onChange={setPw} autoComplete="new-password" />
+      <span className="small muted">Au moins 8 caractères, avec une lettre et un chiffre.</span>
+      {err && (
+        <div className="note err" role="alert">
+          {err}
+        </div>
+      )}
+      <button type="button" className="btn primary block" disabled={busy || !old || !pw} onClick={go}>
+        Enregistrer
       </button>
     </Sheet>
   );

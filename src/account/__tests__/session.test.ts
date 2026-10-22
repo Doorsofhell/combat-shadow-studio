@@ -7,7 +7,7 @@ import { useGoals } from '../../store/goals';
 import { useCatalogUser } from '../../store/catalog';
 import { useCustom } from '../../store/custom';
 import { currentScope } from '../../store/storage';
-import { configureAccountForTests, deleteAccount, deleteMyData, initAccount, signInEmail, signOut, signUpEmail, syncNow, useAccount } from '../session';
+import { changeEmail, changePassword, configureAccountForTests, deleteAccount, deleteMyData, initAccount, signInEmail, signOut, signUpEmail, syncNow, useAccount } from '../session';
 import { useSyncPrefs } from '../syncPrefs';
 import { memoryAdapter } from '../sync/engine';
 import { COLLECTIONS } from '../sync/collections';
@@ -20,6 +20,7 @@ import { hydrated, tick } from './helpers';
 function fakeProvider() {
   const users = new Map<string, { pw: string; user: AuthUser }>();
   let current: AuthUser | null = null;
+  const pendingEmail = new Map<string, string>();
   const listeners = new Set<(u: AuthUser | null) => void>();
   const emit = () => listeners.forEach((l) => l(current));
   const p: AuthProvider = {
@@ -52,6 +53,16 @@ function fakeProvider() {
     linkGoogle: async () => current!,
     unlink: async () => current!,
     updateDisplayName: async () => undefined,
+    // like Firebase: the address changes only once the link sent to it is opened (not simulated here)
+    changeEmail: async (e) => {
+      if (!current) throw new AuthError('no-user', '');
+      pendingEmail.set(current.uid, e);
+    },
+    changePassword: async (pw) => {
+      const u = [...users.values()].find((v) => v.user.uid === current?.uid);
+      if (!u) throw new AuthError('no-user', '');
+      u.pw = pw;
+    },
     reauthenticate: async () => undefined,
     deleteAccount: async () => {
       users.forEach((v, k) => v.user.uid === current?.uid && users.delete(k));
@@ -64,7 +75,7 @@ function fakeProvider() {
     },
     getIdToken: async () => null,
   };
-  return p;
+  return Object.assign(p, { pendingEmail });
 }
 
 const server = memoryAdapter();
@@ -116,6 +127,18 @@ describe('comptes : invité, création, connexion, synchronisation, suppression'
     expect(JSON.stringify([...server.data.values()])).not.toContain('genou');
     expect(Object.keys(server.data.get('uid-1/stats')!.items)).toEqual(['s1#a']);
     expect(useAccount.getState().sync?.phase).toBe('idle');
+  });
+
+  test('changer le mot de passe et demander le changement d’adresse (v0.37)', async () => {
+    await changePassword('nouveau2026');
+    await signOut(false);
+    await expect(signInEmail('yan@example.com', 'motdepasse1', false)).rejects.toThrow('incorrect');
+    await signInEmail('yan@example.com', 'nouveau2026', false);
+    expect(useProfile.getState().profile.pseudo).toBe('Yan');
+    // the address is not changed until the link sent to the new one is opened
+    await changeEmail('yan.nouveau@example.com');
+    expect(useAccount.getState().user?.email).toBe('yan@example.com');
+    await changePassword('motdepasse1');
   });
 
   test('export complet lisible et réimportable', async () => {

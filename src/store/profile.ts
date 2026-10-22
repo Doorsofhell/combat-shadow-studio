@@ -45,7 +45,8 @@ export interface Profile {
   firstName?: string;
   /** how the coach (and the AI coach) addresses the user */
   pseudo: string;
-  avatar: 'fighter' | 'initiales';
+  /** v0.37: 'photo' = the personal photo kept on this device, 'google' = the photo of the Google account */
+  avatar: 'fighter' | 'initiales' | 'photo' | 'google';
   /** yyyy-mm-dd; when set, `age` is derived from it */
   birthDate?: string;
   age?: number;
