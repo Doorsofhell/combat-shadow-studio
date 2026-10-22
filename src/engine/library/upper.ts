@@ -1,7 +1,7 @@
 /**
  * Elbows (muay-thaï), simulated clinch and feints.
  */
-import { Author, add, edit } from '../author';
+import { Author, add, driveToward, edit } from '../author';
 import type { Motion } from '../motion';
 import { deg, v3 } from '../pose';
 
@@ -68,12 +68,21 @@ function elbow(a: Author, side: 'L' | 'R', kind: 'horizontal' | 'diagonal' | 'mo
     }
     d.pelvis.yaw += -turn * deg(6);
   });
+  // the hand rides with its shoulder while the hips and the chest start to turn, so the elbow never falls behind it
+  const drive = driveToward(wind, hit);
+  {
+    const d0 = a.shoulder(wind, side);
+    const d1 = a.shoulder(drive, side);
+    drive[hk].pos = add(drive[hk].pos, { x: d1.x - d0.x, y: d1.y - d0.y, z: d1.z - d0.z });
+  }
   const names = { horizontal: 'horizontal', diagonal: 'diagonal', montant: 'montant' };
   return {
     id: `coude-${names[kind]}-${side === 'L' ? 'avant' : 'arriere'}`,
     keys: [
       { t: 0, pose: g },
       { t: 0.12, pose: wind, ease: 'load' },
+      // v0.32: the hips turn before the elbow travels (measured: the elbow was fastest before the hips)
+      { t: 0.19, pose: drive, ease: 'load', hold: true },
       { t: 0.26, pose: hit, ease: 'strike' },
       { t: 0.3, pose: hit, ease: 'linear' },
       { t: 0.52, pose: g, ease: 'inOut' },

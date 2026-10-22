@@ -29,7 +29,7 @@ Contrôles : 1. Présente dans chaque discipline, dans les deux gardes ; 2. Coud
 | Crochet droit (`crochet-arriere`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
 | Crochet gauche au corps (`crochet-avant-corps`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
 | Crochet droit au corps (`crochet-arriere-corps`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
-| Uppercut gauche (`uppercut-avant`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
+| Uppercut gauche (`uppercut-avant`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | – | oui | oui |  |
 | Uppercut droit (`uppercut-arriere`) | boxe, kickboxing, mma, muaythai | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
 | Overhand (`overhand`) | mma, kickboxing | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
 | Check hook (crochet pivot) (`check-hook`) | boxe, mma | Contrôlée automatiquement | oui | oui | oui | oui | oui | oui | oui |  |
