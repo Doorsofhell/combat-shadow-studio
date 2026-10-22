@@ -41,8 +41,9 @@ test('Séances : carte du Créateur avant Mes enchaînements, état vide compact
   );
   expect(tops[0]).toBeLessThan(tops[1]);
   expect(tops[1]).toBeLessThan(tops[2]);
+  // 0.38 (Créateur V2): the card opens the editor of a new sequence; the list is « Gérer »
   await page.getByTestId('create-combo').click();
-  await expect(page).toHaveURL(/#\/createur$/);
+  await expect(page).toHaveURL(/#\/createur\/nouveau$/);
 });
 
 test('Mes enchaînements : un enchaînement enregistré se lance et « Gérer » ouvre le Créateur', async ({ page }) => {

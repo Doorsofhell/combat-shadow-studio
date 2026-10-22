@@ -1,0 +1,35 @@
+/* v0.38 neutral technique pictograms: one stroke style, the working limb in red */
+.tpicto {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  color: var(--ink);
+}
+.tpicto-family {
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.tpicto .tp-limb {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tpicto .tp-limb.far {
+  opacity: 0.45;
+}
+.tpicto .tp-limb.work {
+  stroke: var(--red);
+  opacity: 1;
+}
+.tpicto .tp-head {
+  fill: currentColor;
+}
+.tpicto .tp-ground {
+  stroke: currentColor;
+  stroke-width: 1;
+  opacity: 0.25;
+  stroke-linecap: round;
+}

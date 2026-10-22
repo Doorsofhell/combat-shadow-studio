@@ -1,0 +1,457 @@
+/* v0.38 Créateur d'enchaînements V2: list, sheet, editor (plaquette Enchaînements V2, current charter) */
+
+.creator-new {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+}
+.creator-new .body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.creator-new .creator-icon,
+.combo-tile-art {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--red), transparent 84%);
+  color: var(--red-ink, var(--red));
+}
+
+.creator-filter-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.creator-filter-head h2 {
+  margin: 0;
+}
+.creator-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0;
+  scrollbar-width: none;
+}
+.creator-chips .chip {
+  flex: none;
+}
+
+.combo-tiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.combo-tile {
+  position: relative;
+  border: 1px solid var(--tile-edge, var(--line));
+  background: var(--tile, var(--surface-2));
+  border-radius: var(--radius);
+}
+.combo-tile-open {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  border-radius: inherit;
+}
+.combo-tile-open:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+.combo-tile-body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+.combo-tile-title {
+  font-weight: 650;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.combo-tile-moves {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.combo-tile-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+}
+.combo-tile-meta > span {
+  white-space: nowrap;
+}
+.combo-tile-side {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  flex: none;
+  /* the pencil and the trash sit under the ring, never over the text */
+  min-width: 88px;
+  padding-bottom: 44px;
+}
+.combo-tile-actions {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  display: flex;
+  gap: 2px;
+}
+
+.disc-tag {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--red), transparent 80%);
+  color: var(--ink);
+}
+
+.picto-strip {
+  display: inline-flex;
+  gap: 4px;
+}
+.picto-cell {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ink), transparent 94%);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+}
+
+/* the analysis ring: the number is always written, the colour only repeats it */
+.score-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.score-ring svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.score-ring .track {
+  fill: none;
+  stroke: var(--track, var(--line));
+  stroke-width: 9;
+}
+.score-ring .arc {
+  fill: none;
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+.score-ring.good .arc {
+  stroke: var(--ok);
+}
+.score-ring.mid .arc {
+  stroke: var(--warn);
+}
+.score-ring.low .arc {
+  stroke: var(--red);
+}
+.score-ring b {
+  position: relative;
+  font-family: var(--font-display, inherit);
+  font-size: 1.15em;
+  font-variant-numeric: tabular-nums;
+}
+.score-ring.none {
+  border: 2px dashed var(--line-strong, var(--line));
+  border-radius: 50%;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.1;
+  color: var(--muted);
+  padding: 4px;
+}
+
+.mastery-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.mastery-badge.acquise {
+  color: var(--ok);
+  background: color-mix(in srgb, var(--ok), transparent 86%);
+}
+.mastery-badge.a-revoir {
+  color: var(--warn);
+  background: color-mix(in srgb, var(--warn), transparent 86%);
+}
+
+.danger-ink {
+  color: var(--red-ink, var(--red));
+}
+.btn.danger-soft {
+  color: var(--red-ink, var(--red));
+  border-color: color-mix(in srgb, var(--red), transparent 50%);
+  background: color-mix(in srgb, var(--red), transparent 88%);
+}
+.link-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--red-ink, var(--red));
+  text-decoration: underline;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* sheet */
+.combo-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.combo-title {
+  font-size: 1.25rem;
+  margin: 0 0 4px;
+  overflow-wrap: anywhere;
+}
+.combo-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.combo-actions .btn {
+  flex-direction: column;
+  gap: 4px;
+  min-height: 64px;
+  padding: 8px 4px;
+  font-size: 13px;
+}
+.move-strip {
+  list-style: none;
+  margin: 0;
+  padding: 2px 0 6px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+.move-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: 104px;
+  padding: 10px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s, 10px);
+  background: var(--tile, var(--surface-2));
+  color: inherit;
+  text-decoration: none;
+  text-align: center;
+}
+.move-card b {
+  font-size: 13px;
+  line-height: 1.2;
+}
+.move-card.unknown {
+  opacity: 0.8;
+}
+.move-num {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--ink), transparent 88%);
+  font-size: 12px;
+  font-weight: 700;
+}
+.move-card .move-num {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+}
+.tag-local {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.combo-analysis h2,
+.combo-analysis h3 {
+  margin: 0;
+}
+.combo-analysis h3 {
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+.analysis-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.analysis-verdict {
+  font-size: 1.1rem;
+}
+.criteria {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.criteria li {
+  display: grid;
+  gap: 4px;
+}
+.crit-head {
+  display: flex;
+  justify-content: space-between;
+}
+.crit-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--track, var(--line));
+  overflow: hidden;
+}
+.crit-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+.crit-bar .good {
+  background: var(--ok);
+}
+.crit-bar .mid {
+  background: var(--warn);
+}
+.crit-bar .low {
+  background: var(--red);
+}
+.bullets {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+.analysis-how summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.combo-info {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 12px;
+  margin: 0;
+}
+.combo-info dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.status-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.status-switch .chip.on.ok {
+  border-color: var(--ok);
+  background: color-mix(in srgb, var(--ok), transparent 85%);
+}
+.status-switch .chip.on.warn {
+  border-color: var(--warn);
+  background: color-mix(in srgb, var(--warn), transparent 85%);
+}
+
+/* editor */
+.edit-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.edit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s, 10px);
+  background: var(--tile, var(--surface-2));
+}
+.edit-row.bad {
+  border-color: var(--red);
+}
+.edit-row .grow {
+  min-width: 0;
+}
+.edit-row .btn.icon {
+  min-width: 36px;
+  width: 36px;
+  height: 36px;
+}
+.rot-up {
+  transform: rotate(180deg);
+}
+.add-move {
+  width: 100%;
+}
+.picker-group h3 {
+  font-size: 0.9rem;
+  margin: 12px 0 6px;
+}
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 6px;
+}
+.picker-cell {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--tile, var(--surface-2));
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+}
+.picker-cell:active {
+  border-color: var(--red);
+}
+.picker-fams {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+.picker-fams .chip {
+  flex: none;
+}

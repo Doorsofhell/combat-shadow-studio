@@ -1705,3 +1705,26 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Vitest complet : 668 réussis, 1 ÉCHOUÉ connu (Amara, extension de hanche, déjà en échec avant cette version) ;
   - Playwright complet : 168 réussis, 1 ÉCHOUÉ connu (`training-layout:325`, caméra Auto, déjà en échec en v0.36), 2 ignorés (Firebase) ;
   - Google et e-mails réels : NON EXÉCUTÉ ; Android : NON EXÉCUTÉ.
+
+## 2026-10-22 · v0.38.0 · Créateur d'enchaînements V2
+
+- **Demande** : « Créateur d'enchaînements V2 » (Youssef, 20:37) avec la plaquette de 4 écrans ; décision « Entraîner seul » (20:38) ; publication en autonomie pour la soirée (20:39).
+- **Constat avant** :
+  - un seul écran (l'éditeur, avec la liste en dessous) ;
+  - ni dates, ni usage, ni note, ni fiche, ni duplication ;
+  - suppression sans confirmation ;
+  - mouvements en texte seulement.
+- **Correction** :
+  - trois écrans : liste en tuiles (`/createur`), fiche (`/createur/:id`), éditeur (`/createur/nouveau`, `/createur/:id/modifier`) ;
+  - grille de pictogrammes pour ajouter un mouvement ;
+  - analyse locale déterministe sur 100 (5 critères pondérés, explications, limites ; écrit qu'il ne s'agit pas d'une IA générative) ;
+  - statut Acquis / Encore du mal ;
+  - duplication, suppression confirmée (l'historique est gardé) ;
+  - confirmation avant d'abandonner des modifications.
+  - Les enchaînements déjà enregistrés gardent leurs données et s'affichent « Non analysé ».
+- **Fichiers** : `src/domain/comboAnalysis.ts`, `src/store/custom.ts`, `src/ui/screens/creator/`, `src/ui/nav/{config,icons}.ts`, `src/ui/App.tsx`, `Train.tsx`, `Programs.tsx`, `Discipline.tsx`, `src/coach/appGuide.ts`, `src/domain/releases.ts`, `docs/v038/`.
+- **Tests** :
+  - Vitest complet : 694 réussis, 1 ÉCHOUÉ connu (Amara, extension de hanche, déjà en échec avant), 1 ignoré ;
+  - Playwright complet : 173 réussis, 1 ÉCHOUÉ connu (`training-layout:325`, caméra Auto, déjà en échec avant), 2 ignorés (Firebase) ;
+  - Android réel : NON EXÉCUTÉ.
+- **Rapport** : `docs/v038/CREATEUR_V2.md`.

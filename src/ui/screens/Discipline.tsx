@@ -120,7 +120,7 @@ export function DisciplinePage() {
       />
       <ExerciseList list={list} onOpen={(x) => setParam('ex', x)} />
       <div className="grid2">
-        <Link className="btn secondary" to={`/createur?d=${disc.id}`}>
+        <Link className="btn secondary" to={`/createur/nouveau?d=${disc.id}`}>
           <AppIcon id="add" size={18} /> Créer
         </Link>
         <Link className="btn secondary" to={`/techniques?d=${disc.id}`}>

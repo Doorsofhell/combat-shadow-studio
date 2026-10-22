@@ -32,6 +32,8 @@ export type NavScreen =
   | 'fiche'
   | 'partenaire'
   | 'createur'
+  | 'createur-fiche'
+  | 'createur-editeur'
   | 'progres'
   | 'historique'
   | 'objectifs'
@@ -89,7 +91,10 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
   programmes: PLACES,
   programme: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'calendar', label: 'Programmes', action: 'nav:/programmes' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
   partenaire: [BACK, { icon: 'layers', label: 'Techniques', action: 'techniques' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
-  createur: [BACK, { icon: 'play', label: 'Lancer', action: 'start' }, { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, MENU],
+  // 0.38 (Youssef, « Créateur d'enchaînements V2 »): the list, the sheet and the editor of the user's sequences
+  createur: [BACK, { icon: 'search', label: 'Rechercher', action: 'search' }, { icon: 'filter', label: 'Filtrer', action: 'filters' }, { icon: 'plus', label: 'Créer', action: 'nav:/createur/nouveau' }, MENU],
+  'createur-fiche': [BACK, { icon: 'play', label: 'Exécuter', action: 'run' }, { icon: 'edit', label: 'Modifier', action: 'edit' }, { icon: 'trash', label: 'Supprimer', action: 'delete' }, MENU],
+  'createur-editeur': [BACK, { icon: 'plus', label: 'Ajouter', action: 'add' }, { icon: 'save', label: 'Enregistrer', action: 'save' }, { icon: 'close', label: 'Annuler', action: 'cancel' }, MENU],
   historique: [BACK, { icon: 'chart', label: 'Statistiques', action: 'nav:/stats' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, { icon: 'calendar', label: 'Objectifs', action: 'nav:/objectifs' }, MENU],
   objectifs: [BACK, { icon: 'chart', label: 'Statistiques', action: 'nav:/stats' }, { icon: 'history', label: 'Historique', action: 'nav:/historique' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, MENU],
   combinaison: [BACK, { icon: 'play', label: 'S’entraîner', action: 'train' }, { icon: 'scan', label: 'Décomposer', action: 'decompose' }, { icon: 'heart', label: 'Favoris', action: 'favorite' }, MENU],
@@ -118,6 +123,8 @@ export const NAV_PARENT: Record<NavScreen, string> = {
   fiche: '/techniques',
   partenaire: '/techniques',
   createur: '/entrainer',
+  'createur-fiche': '/createur',
+  'createur-editeur': '/createur',
   progres: '/',
   historique: '/stats',
   objectifs: '/stats',
@@ -152,6 +159,8 @@ export function navScreen(pathname: string, search = ''): NavScreen | null {
   if (p.startsWith('/techniques/')) return 'fiche';
   if (p.startsWith('/partenaire/')) return 'partenaire';
   if (p === '/createur') return 'createur';
+  if (p === '/createur/nouveau' || (p.startsWith('/createur/') && p.endsWith('/modifier'))) return 'createur-editeur';
+  if (p.startsWith('/createur/')) return 'createur-fiche';
   if (p === '/stats') return 'progres';
   if (p === '/historique') return 'historique';
   if (p === '/objectifs') return 'objectifs';
