@@ -7,6 +7,7 @@ on:
       - feature/coachs-champions
       - feature/combat-shadow-v025
       - feature/combat-shadow-v029
+      - feature/combat-shadow-v030
   workflow_dispatch:
 
 permissions:

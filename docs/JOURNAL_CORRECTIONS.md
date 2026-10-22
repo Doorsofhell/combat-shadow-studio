@@ -1436,3 +1436,19 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Validation par un entraîneur : NON EXÉCUTÉ.
   - Android réel : NON EXÉCUTÉ.
 - **Restauration** : `fix/3d-context-recovery-v029` = `0f6657d` (base de la branche `feature/biomeca-v029`).
+
+## 2026-10-22 · v0.30.0 · Version réunissant tout le travail v0.29
+
+- **Demande (Youssef, 06:05)** : « Crée-moi une v30 à partir de 2 des 2 v. 29 proto 1 et 2 ».
+- **Contenu** : branche `feature/combat-shadow-v030`, créée depuis `feature/biomeca-v029` (`f489f6f`). Elle
+  contient, dans l'ordre :
+  - v0.29.0-proto1 : coachs photo-réalistes (Rocketbox) ;
+  - v0.29.0-proto2 : reprise 3D sur téléphone, chaîne cinétique ;
+  - v0.29.0-proto3 : correctif de disparition du coach (PR #1) ;
+  - v0.29.0-proto4 : biomécanique des 5 techniques de « Combinaison 8 armes » et morphologie athlétique (PR #2).
+- **Changements propres à cette version** : numéro 0.30.0 ; la branche est ajoutée au déploiement du lien de test
+  public (`.github/workflows/preview.yml`). Aucun code de l'application modifié.
+- **Tests** : ceux des entrées proto3 et proto4 s'appliquent au même code. Vitest et build relancés sur cette
+  branche : 501 réussis, 1 échec déjà connu (hanche d'Amara au sol, 53,9° pour 45°) ; `tsc` réussi.
+- Les PR #1 et #2 restent ouvertes, non fusionnées.
+- **Restauration** : `feature/biomeca-v029` = `f489f6f`.
