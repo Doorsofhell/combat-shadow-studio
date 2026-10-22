@@ -659,7 +659,7 @@
   position: fixed;
   inset: 0;
   background: rgba(17, 18, 20, 0.35);
-  z-index: 40; /* v0.32: a modal sheet is above the bottom bar (z 30) */
+  z-index: 40;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -914,4 +914,10 @@ body:has(.training.immersive) .nav-bottom {
 body:has(.training.immersive.fs-idle) .nav-bottom {
   opacity: 0;
   pointer-events: none;
+}
+
+/* v0.32: the session screen is a fixed layer (its own stacking context), so its modal sheet cannot rise above the
+   bottom bar by z-index: while it is open the bar steps aside, as under any modal */
+body:has(.training .sheet-backdrop) .nav-bottom {
+  visibility: hidden;
 }

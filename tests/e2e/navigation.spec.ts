@@ -183,7 +183,13 @@ test.describe('393×851', () => {
     await openMenu(page);
     for (const id of ['cmd-restart', 'cmd-prev', 'cmd-next', 'how-to', 'slow', 'options', 'cmd-coach-ia']) await expect(page.getByTestId(id)).toHaveCount(1);
     await page.getByTestId('options').click();
-    await expect(page.getByRole('dialog', { name: 'Options d’entraînement' })).toBeVisible();
+    const opts = page.getByRole('dialog', { name: 'Options d’entraînement' });
+    await expect(opts).toBeVisible();
+    // a modal sheet of the session is never under the bar: its last button can be reached, the bar comes back after
+    await expect(bar(page)).toBeHidden();
+    await opts.getByRole('button', { name: 'Fermer' }).click();
+    await expect(opts).toHaveCount(0);
+    await expect(bar(page)).toBeVisible();
   });
 
   test('catalogue : Rechercher, Filtres, Technique (la technique sélectionnée) et retour intelligent', async ({ page }) => {
