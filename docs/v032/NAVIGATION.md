@@ -7,7 +7,7 @@ Mission : « PROMPT MAÎTRE — Refonte intégrale de la navigation dynamique pr
 | Référence | `docs/design/navigation-dynamique-reference.html`, copiée sans modification depuis `design/navigation-reference-v032` |
 | Branche | `feature/navigation-dynamique-v032`, partie de `feature/tenues-premium-v032` (026c92b, PR #5) |
 | Point de restauration | `restauration/avant-navigation-v032` (026c92b) |
-| Version | 0.32.0-proto3 |
+| Version | 0.32.0 |
 
 ## 1. Audit de l'ancienne navigation (026c92b)
 
@@ -106,3 +106,19 @@ Pas de barre : l'accueil de bienvenue (questionnaire), le premier choix du coach
 - Retour haptique : `navigator.vibrate`, disponible sur Chrome Android et dans la WebView. Rien ne se passe sur iOS ou sur ordinateur. **Pas encore testé sur un appareil Android réel.**
 - Le bouton Retour d'Android passe par `@capacitor/app`. Il est testé dans le navigateur avec le retour de l'historique, **pas sur un téléphone**.
 - Les notes de Nouveautés couvrent les versions publiées depuis 0.24. Elles sont écrites à partir du journal des corrections (aucune note fictive).
+
+## 7. Résultats des tests
+
+| Test | Résultat |
+|---|---|
+| Vitest (614 + 1) | RÉUSSI, sauf 1 ÉCHOUÉ déjà connu avant ce lot (Amara, angle de hanche) |
+| `src/ui/nav/__tests__/nav.test.ts` (45) | RÉUSSI |
+| Playwright `navigation.spec.ts` (25) | RÉUSSI |
+| Playwright, suite complète (153) | 148 réussis, 3 échoués, 2 non exécutés (Firebase) : `coach-studio:200` et `fullscreen-dbltap:135` corrigés puis RÉUSSI à la passe finale ; `training-layout:325` (caméra Auto) ÉCHOUÉ, déjà en échec avant ce lot |
+| Passe finale sur la compilation 0.32.0 (41) | RÉUSSI |
+| `coach-suggest:96` (flèches des questions) | ÉCHOUÉ, déjà en échec avant ce lot |
+| Android réel | NON EXÉCUTÉ |
+
+Trois défauts ont été trouvés par ces tests puis corrigés : les panneaux de la séance passaient sous la barre ; avec
+le clavier ouvert, l'appui sur « Envoyer » du Coach IA tombait à côté ; la barre ne s'effaçait pas en plein écran
+sans l'API Fullscreen.
