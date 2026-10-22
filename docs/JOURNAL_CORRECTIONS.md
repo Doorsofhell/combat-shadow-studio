@@ -1477,6 +1477,9 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - échec déjà connu depuis la v0.29-proto1, inchangé : hanche d'Amara au sol (53,9° pour 45°) ;
   - mesures régénérées : arrêts de fluidité 310 → 339 sur 2046 clés (22 %, seuil 40 % tenu), aucune vitesse à
     l'impact réduite ;
-  - Playwright complet : voir la ligne ajoutée à la fin de la validation ;
+  - Playwright complet : 142 réussis, 2 ignorés (Firebase), 2 échecs : `training-layout:323` (caméra Auto après un
+    pivot) et `coach-suggest:94` (flèches des questions). Relancés seuls : ils échouent aussi sur la v0.30
+    (`16a41f2`, 3 échecs sur 4 essais). Ce sont des échecs déjà existants, pas causés par ce lot : ÉCHOUÉ, à
+    corriger dans un lot dédié ;
   - Android réel : NON EXÉCUTÉ ; relecture par un entraîneur : NON EXÉCUTÉ.
 - **Restauration** : `feature/combat-shadow-v030` = `16a41f2`.

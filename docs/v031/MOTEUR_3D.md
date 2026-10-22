@@ -203,5 +203,6 @@ Défauts connus, visibles sur la galerie :
    RÉUSSI (18 tests). Validation par un entraîneur qualifié : NON EXÉCUTÉ.
 4. Une tenue par discipline, de série, désactivable : RÉUSSI (14 configurations). Validation visuelle par Youssef
    en attente.
-5. Aucune régression : voir les résultats des tests dans le journal (`docs/JOURNAL_CORRECTIONS.md`).
+5. Aucune régression : Playwright 142 réussis, 2 ignorés, 2 échecs (`training-layout:323`, `coach-suggest:94`).
+   Ces 2 tests échouent aussi sur la v0.30 : ils ne sont pas causés par ce lot et restent à corriger.
 6. Fréquence d'images sur Android : non annoncée, car non mesurée.
