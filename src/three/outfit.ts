@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BufferAttribute, Material, Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, Skeleton, SkinnedMesh, Bone, SRGBColorSpace } from 'three';
 import { GLTFLoader } from 'three-stdlib';
 import type { DisciplineId } from '../domain/types';
@@ -61,6 +61,8 @@ export function maskedIndex(positions: ArrayLike<number>, index: ArrayLike<numbe
 
 export type OutfitStatus = Status;
 type Status = { state: 'aucune' | 'chargement' | 'portee' | 'erreur'; outfit: OutfitId | null; message?: string };
+/** status of one effect run: the body and the file it was put on */
+type Owned = Status & { scene?: Object3D; url?: string };
 
 /**
  * Puts the outfit on a loaded photo coach (scene from PhotoCoach). Returns the loading state, so the stage can
@@ -78,7 +80,7 @@ export function useOutfit(
 ): Status {
   // v0.32 (Youssef, 2026-10-22 10:33: the coach showed in underwear before the outfit): an outfit to put on
   // starts as « chargement » from the first image, so the stage keeps the coach hidden until it is worn
-  const [status, setStatus] = useState<Status>(() => (url && outfit ? { state: 'chargement', outfit } : { state: 'aucune', outfit: null }));
+  const [status, setStatus] = useState<Owned>(() => (url && outfit ? { state: 'chargement', outfit } : { state: 'aucune', outfit: null }));
   useEffect(() => {
     if (!url || !outfit) {
       setStatus({ state: 'aucune', outfit: null });
@@ -87,7 +89,7 @@ export function useOutfit(
     let live = true;
     const added: Object3D[] = [];
     const restore: (() => void)[] = [];
-    setStatus({ state: 'chargement', outfit });
+    setStatus({ state: 'chargement', outfit, scene, url });
     // a request that never answers must not keep the coach hidden: after 20 s the base layer is shown and said
     const fail = (err: unknown) => {
       if (!live) return;
@@ -95,7 +97,7 @@ export function useOutfit(
       clearTimeout(timer);
       const message = `La tenue de ${OUTFIT_LABEL[outfit]} n’a pas pu être chargée.`;
       log3d('modele', `${message} ${String((err as Error)?.message ?? err).slice(0, 120)}`);
-      setStatus({ state: 'erreur', outfit, message });
+      setStatus({ state: 'erreur', outfit, message, scene, url });
     };
     const timer = setTimeout(() => fail('délai de 20 s dépassé'), 20_000);
     const loader = new GLTFLoader();
@@ -166,7 +168,7 @@ export function useOutfit(
             if (!live) return;
             clearTimeout(timer);
             log3d('modele', `tenue ${OUTFIT_LABEL[outfit]} portée (${meshes.length} pièces)`);
-            setStatus({ state: 'portee', outfit });
+            setStatus({ state: 'portee', outfit, scene, url });
           };
           // shown only once the graphics chip holds the garments (no half-textured first image); a failed
           // preparation still shows the outfit, three then uploads it on the first image as before
@@ -191,7 +193,13 @@ export function useOutfit(
       restore.forEach((f) => f());
     };
   }, [scene, url, outfit, quality, extendLoader, prepare]);
-  return status;
+  // a state left by the previous coach or file never counts for this one: when the coach changes, the new body
+  // was drawn once with the old « portée » state before the effect ran (outfit-loading.spec, coach change)
+  const stale = !!url && !!outfit && (status.scene !== scene || status.url !== url);
+  return useMemo<Status>(
+    () => (stale ? { state: 'chargement', outfit } : { state: status.state, outfit: status.outfit, message: status.message }),
+    [stale, outfit, status],
+  );
 }
 
 /** fabric look: satin and knit get a soft sheen, leather a light clear coat (in high quality only) */

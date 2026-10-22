@@ -118,6 +118,9 @@ export function PhotoCoach({
   if (import.meta.env.DEV) (globalThis as { __photoScene?: Object3D }).__photoScene = scene;
   useFrame((_, dt) => {
     onFrame(rig, Math.min(dt, 0.05));
+    // garments are taken off in an effect cleanup (quality or outfit change) before the new state is rendered:
+    // an image is never drawn with the coach shown without them
+    if (scene.visible && expected && dressed.state === 'portee' && !hasGarment(scene)) scene.visible = false;
     // probe of the loading tests (tests/e2e/outfit-loading.spec.ts): images drawn with the coach visible but
     // the expected outfit not on its body
     const w = globalThis as { __cssDress?: { shown: number; undressed: number; outfit: string | null } };
