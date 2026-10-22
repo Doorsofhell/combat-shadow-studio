@@ -1,0 +1,358 @@
+/* 0.33 — Entraîner: three spaces under one segmented control, resume card, compact cards */
+
+.train-seg {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 4px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--ink), transparent 92%);
+  isolation: isolate;
+}
+
+.train-seg button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 650;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition:
+    color var(--t-med) var(--ease),
+    background-color var(--t-med) var(--ease),
+    box-shadow var(--t-med) var(--ease);
+}
+
+.train-seg button.on {
+  color: var(--ink);
+  background: var(--bg);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.18),
+    inset 0 -2px 0 var(--red);
+}
+
+.train-seg button:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: -2px;
+}
+
+.train-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: train-in var(--t-med) var(--ease) both;
+}
+
+@keyframes train-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .train-seg button {
+    transition: none;
+  }
+  .train-panel {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------- resume card */
+.resume-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+  padding: 16px;
+  border-radius: var(--radius-l);
+  background:
+    radial-gradient(ellipse at 90% 0%, color-mix(in srgb, var(--red), transparent 86%), transparent 60%),
+    var(--soft);
+  border: 1px solid color-mix(in srgb, var(--red), transparent 75%);
+}
+
+.resume-card.skeleton {
+  min-height: 168px;
+  border-color: transparent;
+}
+
+.resume-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.resume-body .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.resume-body h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.resume-name {
+  margin: 0;
+  font-weight: 650;
+}
+
+.resume-meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.resume-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 4px 0 0;
+}
+
+.resume-facts div {
+  display: flex;
+  flex-direction: column;
+}
+
+.resume-facts dt {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.resume-facts dd {
+  margin: 0;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.resume-progress,
+.prog-card .track,
+.disc-progress .track {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ink), transparent 88%);
+  overflow: hidden;
+}
+
+.resume-progress {
+  margin-top: 6px;
+}
+
+.resume-progress span,
+.prog-card .track span,
+.disc-progress .track span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--red);
+}
+
+.resume-body .btn {
+  margin-top: 8px;
+  align-self: flex-start;
+  min-height: 48px;
+}
+
+@media (max-width: 380px) {
+  .resume-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------------------------------------------------------------- quick start */
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px;
+}
+
+.quick-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  min-height: 72px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--soft);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.quick-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.quick-body .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+}
+
+.quick-title {
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.quick-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.quick-go {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------- disciplines (cards ~23 % lower than before) */
+.train-disc-grid {
+  gap: 10px;
+}
+
+.disc-card.train-disc {
+  min-height: 184px;
+  padding: 12px;
+}
+
+.disc-card.train-disc .disc-emblem {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.disc-card.train-disc .name {
+  font-size: 1.15rem;
+}
+
+.disc-progress {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.disc-progress .track {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.disc-progress .n {
+  font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+}
+
+@media (min-width: 720px) {
+  .train-disc-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ---------------------------------------------------------------- programmes */
+.prog-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prog-count {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+}
+
+.card.link.prog-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  color: var(--ink);
+}
+
+.prog-emblem {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: linear-gradient(165deg, #263244 0%, #11171f 100%);
+  color: #f4f4f5;
+}
+
+.prog-card .body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.prog-card .title {
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.prog-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 0.8rem;
+}
+
+.prog-tags span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.prog-status {
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: var(--muted);
+}
+
+.prog-status.en-cours {
+  color: var(--red-ink);
+}
+
+.prog-status.fait {
+  color: var(--ink);
+}
+
+.prog-card .track {
+  height: 4px;
+  margin-top: 2px;
+}
+
+.prog-note {
+  margin: 0;
+}

@@ -122,6 +122,12 @@ export async function scopeKeys(s: string) {
 /** deletes every key of a scope from this device */
 export async function clearScope(s: string) {
   for (const [name] of await scopeKeys(s)) await rawDel(scopedKey(name, s));
+  // 0.33: synchronous copy of the interrupted sessions (src/store/resume.ts)
+  try {
+    localStorage.removeItem(`css-resume-mirror:${s}`);
+  } catch {
+    // no localStorage: nothing to remove
+  }
 }
 
 /** copies a scope into another one (guest -> new account); `overwrite` false keeps the target's values */

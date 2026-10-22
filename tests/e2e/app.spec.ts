@@ -26,12 +26,15 @@ test('premier lancement : questionnaire, choix obligatoire du coach, données co
   await expect(page.getByTestId('bottom-bar').locator('button.nav-btn')).toHaveCount(5);
   await expect(page.getByTestId('bottom-bar').locator('[data-slot="5"]')).toHaveAttribute('data-action', 'menu');
   await page.getByTestId('nav-entrainer').click();
+  // 0.33: the disciplines are the second space of Entraîner
+  await page.getByTestId('space-disciplines').click();
   await expect(page.getByTestId('disc-boxe')).toBeVisible();
 });
 
 test('entraînement : démarrage, pause qui arrête le chronomètre, reprise, statistiques', async ({ page }) => {
   await onboard(page, 'homme');
   await page.getByTestId('nav-entrainer').click();
+  await page.getByTestId('space-disciplines').click();
   await page.getByTestId('disc-boxe').click();
   await page.getByTestId('ex-boxe-debutant-08').click();
   await page.getByTestId('go-training').click();

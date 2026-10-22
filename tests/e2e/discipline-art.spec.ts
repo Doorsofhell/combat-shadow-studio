@@ -51,7 +51,8 @@ const SCREENS: [string, string, number][] = [
   // 0.24 (épuration demandée par Youssef le 2026-10-20) : la grille des disciplines n’est plus répétée sur
   // l’accueil, elle reste dans Entraîner ; l’accueil montre l’icône de la discipline principale
   ['Accueil', '/#/', 1],
-  ['Entraîner', '/#/entrainer', 6],
+  // 0.33: the six disciplines are in the Disciplines space of Entraîner
+  ['Entraîner', '/#/entrainer?espace=disciplines', 6],
   ['Page discipline', '/#/discipline/mma', 1],
   ['Techniques', '/#/techniques', 6],
   ['Créateur d’enchaînements', '/#/createur', 6],
