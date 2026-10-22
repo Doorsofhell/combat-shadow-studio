@@ -1485,3 +1485,25 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Restauration** : `feature/combat-shadow-v030` = `16a41f2`.
 - **Validation (Youssef, 09:11)** : « je valide tout ». Version 0.31.0 publiée : PR #3 fusionnée dans
   `feature/combat-shadow-v030`, lien de test public et page principale de l'application mis à jour.
+
+## 2026-10-22 · v0.32.0-proto1 · Uppercut, coude horizontal, middle et high kick, genou direct
+
+- **Constat** (mesures sur Kadir et Amara, rapport `docs/v032/EXTENSION.md`) :
+  - uppercut et coude horizontal : le poing ou le coude atteignait sa vitesse maximale avant la rotation des hanches
+    et des épaules (chaîne inversée) ;
+  - middle et high kick : chute des hanches de 4 à 5 cm en une image à l'arrivée (jusqu'à 6 m/s) ;
+  - genou direct : le pied frottait le sol sur 4 à 6 cm ; le bras de cadrage était verrouillé (2°).
+- **Correction** (moteur procédural, sans capture de mouvement) :
+  - pose de poussée des jambes avant le bras (`driveToward`, `author.ts`), sur l'uppercut (`boxing.ts`) et le coude
+    (`upper.ts`) ;
+  - pose « pied décollé » avant la montée de la jambe et bras de cadrage à 97 % de sa longueur (`legs.ts`) ;
+  - abaissement progressif des hanches sur l'appui (`motion.ts`) et transfert du poids réparti (`balance.ts`).
+- **Tests** :
+  - `extension-v032.test.ts` (20 tests) : TEST RÉUSSI ;
+  - Vitest complet : 559 réussis, 1 échec déjà connu (hanche d'Amara au sol, 53,6° pour 45°) : ÉCHOUÉ, non lié ;
+  - mesures régénérées : arrêts de fluidité 339 → 595 (27 %, seuil 40 % tenu) ; kicks un peu plus longs
+    (impact à 440 ms au lieu de 400) ;
+  - Playwright complet : en cours au moment de ce commit, résultat ajouté à la fin de la suite ;
+  - Android réel : NON EXÉCUTÉ ; relecture par un entraîneur : NON EXÉCUTÉ.
+- **Restauration** : `feature/combat-shadow-v030` = `04b0b5e` (v0.31.0).
+- **Validation** : en attente de Youssef ; rien n'est fusionné ni déployé.
