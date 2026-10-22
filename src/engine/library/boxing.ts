@@ -5,6 +5,7 @@
 import { Author, add, edit } from '../author';
 import type { Motion } from '../motion';
 import { Pose, deg, v3 } from '../pose';
+const lerp = (a: number, b: number, u: number) => a + (b - a) * u;
 
 const stand = { startState: 'stand' as const, endState: 'stand' as const };
 
@@ -54,7 +55,8 @@ function straight(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
       d.head.roll += deg(3);
       if (d.footR.mode === 'ground') d.footR.heel += deg(5);
     });
-    ext.handL = a.hand('world', a.reach(ext, 'L', T, 0.975), v3(0.7, -0.35, -0.2), 0.95);
+    // v0.31: like the rear straight, the jab no longer locks the elbow (measured 2° of flexion at impact)
+    ext.handL = a.hand('world', a.reach(ext, 'L', T, 0.94), v3(0.7, -0.35, -0.2), 0.95);
   } else {
     ext = edit(g, (d) => {
       d.pelvis.yaw += deg(40);
@@ -78,10 +80,29 @@ function straight(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
   }
   const t1 = side === 'L' ? 0.13 : 0.17;
   const t2 = side === 'L' ? 0.32 : 0.4;
+  // v0.31 (Youssef 2026-10-22, « chaîne cinétique… le bras termine le mouvement »): measured on the skeleton, the
+  // fist reached its top speed before the hips and the shoulders (the arm pulled the body). The body now turns
+  // first, fist still at the chin, and the arm extends last: hips, then shoulders, then fist [S8, S3].
+  const drive = edit(g, (d) => {
+    d.pelvis.yaw = lerp(g.pelvis.yaw, ext.pelvis.yaw, 0.6);
+    d.chest.yaw = lerp(g.chest.yaw, ext.chest.yaw, 0.45);
+    d.chest.roll = lerp(g.chest.roll, ext.chest.roll, 0.5);
+    d.hips = { x: lerp(g.hips.x, ext.hips.x, 0.55), y: lerp(g.hips.y, ext.hips.y, 0.55), z: lerp(g.hips.z, ext.hips.z, 0.55) };
+    d.footL = structuredClone(ext.footL);
+    d.footR = structuredClone(ext.footR);
+    const rear = d.footR;
+    const rg = g.footR;
+    if (rear.mode === 'ground' && rg.mode === 'ground') {
+      rear.heel = lerp(rg.heel, rear.heel, 0.7);
+      rear.yaw = lerp(rg.yaw, rear.yaw, 0.7);
+    }
+    if (side === 'R') d.handL = structuredClone(ext.handL);
+  });
   return {
     id: `${side === 'L' ? 'jab' : 'direct'}${low ? '-corps' : ''}`,
     keys: [
       { t: 0, pose: g },
+      { t: t1 * 0.5, pose: drive, ease: 'load' },
       { t: t1, pose: ext, ease: 'strike' },
       { t: t1 + 0.04, pose: ext, ease: 'linear' },
       { t: t2, pose: g, ease: 'inOut' },

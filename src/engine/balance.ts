@@ -58,7 +58,7 @@ function move(p: Pose, d: Vector3) {
   p.hips.y += d.y;
   p.hips.z += d.z;
   for (const f of [p.footL, p.footR]) {
-    if (f.mode !== 'air') continue;
+    if (f.mode !== 'air' || f.pinned) continue;
     f.ankle.x += d.x;
     f.ankle.y += d.y;
     f.ankle.z += d.z;
@@ -107,6 +107,8 @@ export function balanceKeys(rig: CoachRig, m: Motion) {
     let d = shifts[i];
     // the key before the foot leaves the floor: weight already half transferred
     if (!d && shifts[i + 1] && i > 0) d = shifts[i + 1]!.clone().multiplyScalar(0.5);
+    // a foot that has just landed: the weight comes back over both feet after the touchdown, not before
+    if (!d && k.settling && shifts[i - 1]) d = shifts[i - 1]!.clone().multiplyScalar(0.5);
     if (!d) return;
     k.pose = structuredClone(k.pose);
     move(k.pose, d);

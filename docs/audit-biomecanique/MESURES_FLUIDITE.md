@@ -10,16 +10,16 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 
 ## Total, 6 styles de garde
 
-528 animations, 1860 poses clés intérieures. Arrêts parasites : **1396 avant, 310 après**.
+528 animations, 2046 poses clés intérieures. Arrêts parasites : **1543 avant, 339 après**.
 
 | Style | Animations | Arrêts avant | Arrêts après |
 |---|---|---|---|
-| boxing | 88 | 225 | 49 |
-| kickboxing | 88 | 228 | 48 |
-| mma | 88 | 222 | 43 |
-| muaythai | 88 | 235 | 47 |
-| bjj | 88 | 240 | 54 |
-| judo | 88 | 246 | 69 |
+| boxing | 88 | 245 | 54 |
+| kickboxing | 88 | 248 | 53 |
+| mma | 88 | 250 | 49 |
+| muaythai | 88 | 255 | 56 |
+| bjj | 88 | 267 | 58 |
+| judo | 88 | 278 | 69 |
 
 ## Détail, garde de boxe
 
@@ -27,10 +27,10 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 |---|---|---|---|---|---|---|---|---|---|
 | `garde` | 1 | 0 | 0 | 0,0 | 0,0 | 0,2 | 0,2 | – | – |
 | `neutre` | 1 | 0 | 0 | 0,0 | 0,0 | 0,0 | 0,0 | – | – |
-| `jab` | 2 | 0 | 0 | 3,2 | 3,2 | 8,1 | 8,1 | 3,5 | 3,5 |
-| `direct` | 2 | 0 | 0 | 2,3 | 2,3 | 6,6 | 6,6 | 2,4 | 2,4 |
-| `jab-corps` | 2 | 0 | 0 | 3,6 | 3,6 | 10,7 | 10,7 | 3,9 | 3,9 |
-| `direct-corps` | 2 | 0 | 0 | 2,4 | 2,4 | 9,0 | 9,0 | 2,5 | 2,5 |
+| `jab` | 3 | 1 | 0 | 6,4 | 6,4 | 8,0 | 8,0 | 7,1 | 7,1 |
+| `direct` | 3 | 2 | 0 | 4,7 | 4,7 | 6,6 | 6,6 | 5,0 | 5,1 |
+| `jab-corps` | 3 | 2 | 0 | 7,1 | 7,1 | 10,4 | 10,4 | 8,1 | 8,1 |
+| `direct-corps` | 3 | 2 | 0 | 5,0 | 5,0 | 9,0 | 9,0 | 5,5 | 5,5 |
 | `crochet-avant` | 3 | 1 | 0 | 2,4 | 2,4 | 5,1 | 5,0 | 2,6 | 2,6 |
 | `crochet-arriere` | 3 | 1 | 0 | 4,7 | 4,7 | 7,0 | 7,0 | 5,1 | 5,1 |
 | `crochet-avant-corps` | 3 | 2 | 0 | 2,5 | 2,5 | 6,4 | 6,4 | 2,8 | 2,8 |
@@ -56,14 +56,14 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `sortie-angle` | 2 | 1 | 0 | 0,6 | 0,6 | 7,3 | 6,8 | – | – |
 | `check-hook` | 4 | 3 | 0 | 2,7 | 2,7 | 9,3 | 8,3 | 2,8 | 2,8 |
 | `shoulder-roll` | 2 | 0 | 0 | 0,0 | 0,0 | 8,9 | 8,9 | – | – |
-| `low-kick-arriere` | 4 | 8 | 2 | 5,7 | 5,7 | 10,2 | 10,2 | 6,1 | 6,1 |
-| `low-kick-avant` | 4 | 8 | 0 | 5,4 | 5,4 | 10,2 | 10,2 | 5,8 | 5,8 |
-| `middle-kick-arriere` | 4 | 10 | 2 | 8,2 | 8,2 | 15,0 | 15,0 | 8,8 | 8,8 |
-| `middle-kick-avant` | 4 | 6 | 1 | 7,6 | 7,6 | 14,0 | 14,0 | 8,1 | 8,1 |
-| `high-kick-arriere` | 4 | 10 | 2 | 9,7 | 9,7 | 17,7 | 17,7 | 10,4 | 10,4 |
-| `high-kick-avant` | 4 | 12 | 3 | 10,8 | 10,8 | 23,0 | 23,0 | 11,7 | 11,7 |
-| `roundhouse-arriere` | 4 | 10 | 2 | 9,5 | 9,5 | 20,3 | 20,3 | 10,3 | 10,3 |
-| `roundhouse-avant` | 4 | 9 | 1 | 8,7 | 8,7 | 18,7 | 18,7 | 9,4 | 9,4 |
+| `low-kick-arriere` | 7 | 10 | 3 | 5,7 | 5,7 | 10,2 | 10,2 | 6,1 | 6,1 |
+| `low-kick-avant` | 7 | 8 | 0 | 5,4 | 5,4 | 10,2 | 10,2 | 5,8 | 5,8 |
+| `middle-kick-arriere` | 7 | 10 | 3 | 8,2 | 8,2 | 15,0 | 15,0 | 8,8 | 8,8 |
+| `middle-kick-avant` | 7 | 9 | 1 | 7,6 | 7,6 | 14,0 | 14,0 | 8,1 | 8,1 |
+| `high-kick-arriere` | 7 | 10 | 3 | 9,7 | 9,7 | 17,7 | 17,7 | 10,4 | 10,4 |
+| `high-kick-avant` | 7 | 16 | 3 | 10,8 | 10,8 | 23,0 | 23,0 | 11,7 | 11,7 |
+| `roundhouse-arriere` | 7 | 12 | 3 | 9,5 | 9,5 | 20,3 | 20,3 | 10,3 | 10,3 |
+| `roundhouse-avant` | 7 | 12 | 1 | 8,7 | 8,7 | 18,7 | 18,7 | 9,4 | 9,4 |
 | `teep-avant` | 4 | 2 | 0 | 6,2 | 6,2 | 17,5 | 17,5 | 6,7 | 6,7 |
 | `teep-arriere` | 4 | 2 | 2 | 6,2 | 6,2 | 17,5 | 17,5 | 6,7 | 6,7 |
 | `front-kick-avant` | 4 | 4 | 0 | 6,0 | 6,0 | 12,9 | 12,9 | 6,4 | 6,4 |
@@ -76,7 +76,7 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `genou-circulaire-arriere-clinch` | 5 | 2 | 1 | 5,5 | 5,5 | 17,5 | 17,5 | 5,8 | 5,8 |
 | `check-avant` | 2 | 0 | 0 | 0,0 | 0,0 | 9,1 | 9,1 | 0,0 | 0,0 |
 | `check-arriere` | 2 | 0 | 0 | 0,0 | 0,0 | 17,9 | 17,9 | 0,0 | 0,0 |
-| `switch-kick` | 7 | 12 | 2 | 8,2 | 8,2 | 14,9 | 14,9 | 8,8 | 8,8 |
+| `switch-kick` | 10 | 11 | 3 | 8,2 | 8,2 | 14,9 | 14,9 | 8,8 | 8,8 |
 | `garde-longue` | 2 | 0 | 0 | 0,0 | 0,0 | 4,3 | 4,3 | – | – |
 | `rattrapage-middle` | 6 | 1 | 1 | 0,1 | 0,1 | 7,2 | 7,2 | 0,0 | 0,2 |
 | `coude-horizontal-avant` | 3 | 0 | 0 | 1,6 | 1,6 | 2,4 | 2,4 | 1,7 | 1,7 |

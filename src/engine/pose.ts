@@ -52,7 +52,18 @@ export interface AnkleJoint {
 export type FootPose =
   | { mode: 'ground'; ball: V3; yaw: number; heel: number; pole?: V3 }
   /** joint: the foot is set relative to the shin (anatomical angles) instead of yaw/pitch/roll in ground space */
-  | { mode: 'air'; ankle: V3; yaw: number; pitch: number; roll: number; pole: V3; point?: number; joint?: AnkleJoint };
+  | {
+      mode: 'air';
+      ankle: V3;
+      yaw: number;
+      pitch: number;
+      roll: number;
+      pole: V3;
+      point?: number;
+      joint?: AnkleJoint;
+      /** v0.31: a foot just off the floor stays where it stood when the balance solver moves the hips */
+      pinned?: boolean;
+    };
 
 export interface Pose {
   hips: V3;

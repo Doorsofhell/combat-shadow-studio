@@ -174,6 +174,16 @@ export class Author {
     return { mode: 'ground', ball, yaw, heel };
   }
 
+  /** ankle of a planted foot (same construction as the rig): where an air key must start to leave the floor cleanly */
+  groundAnkle(f: FootPose): Vector3 {
+    if (f.mode !== 'ground') return new Vector3(f.ankle.x, f.ankle.y, f.ankle.z);
+    const UP = new Vector3(0, 1, 0);
+    const qYaw = new Quaternion().setFromAxisAngle(UP, f.yaw);
+    const lateral = new Vector3(1, 0, 0).applyQuaternion(qYaw);
+    const qFoot = new Quaternion().setFromAxisAngle(lateral, f.heel).multiply(qYaw);
+    return new Vector3(f.ball.x, f.ball.y + this.m.ballRestY, f.ball.z).add(this.m.ankleFromBall.clone().applyQuaternion(qFoot));
+  }
+
   /** Air foot whose ankle is placed so that the leg is extended toward a point (kicks). */
   airFoot(hipJoint: Vector3, toward: V3, ext: number, yaw: number, pitch: number, roll: number, pole: V3, point = 0): FootPose {
     const d = new Vector3(toward.x, toward.y, toward.z).sub(hipJoint).normalize();

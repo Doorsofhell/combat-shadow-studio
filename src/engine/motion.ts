@@ -16,6 +16,8 @@ export interface Key {
   ease?: Ease;
   /** the body stops at this key instead of flowing through it (see MotionSampler) */
   hold?: boolean;
+  /** v0.31: the foot has just landed, the weight is still half over the other foot (see balanceKeys) */
+  settling?: boolean;
 }
 
 export interface Motion {
@@ -228,7 +230,7 @@ export class MotionSampler {
       const hand = (side: 'handL' | 'handR') => (k.pose[side].space === 'world' ? ZERO.clone() : monoVec(local(ra, side), local(rk, side), local(rb, side), h0, h1));
       // a foot keeps its flow only in the air, away from a take-off or a landing: near the floor the
       // flow would make the toes graze the mat
-      const foot = (side: 'footL' | 'footR') => ([a, k, b].some((x) => x.pose[side].mode === 'ground') ? ZERO.clone() : monoVec(ra[side].ankle, rk[side].ankle, rb[side].ankle, h0, h1));
+      const foot = (side: 'footL' | 'footR') => ([a, k, b].some((x) => nearFloor(x.pose[side])) ? ZERO.clone() : monoVec(ra[side].ankle, rk[side].ankle, rb[side].ankle, h0, h1));
       // a foot planted on all three keys keeps turning on its ball (and lifting its heel) through the
       // key instead of stopping there
       const planted = (side: 'footL' | 'footR') => [a, k, b].every((x) => x.pose[side].mode === 'ground');
@@ -451,6 +453,9 @@ const CHAIN_MAX_TURN = (10 * Math.PI) / 180;
 /** seconds over which the shift grows at the start of a motion and fades at its end */
 const CHAIN_FADE = 0.15;
 const smooth = (x: number) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
+
+/** a planted foot, or one just off the floor (pinned above its place at a take-off or a landing) */
+const nearFloor = (f: Pose['footL']) => f.mode === 'ground' || !!f.pinned;
 
 /** fraction of the full leg length a planted leg may reach */
 const MAX_SUPPORT_EXTENSION = 0.975;
