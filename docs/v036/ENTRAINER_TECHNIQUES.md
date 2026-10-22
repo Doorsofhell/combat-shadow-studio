@@ -43,3 +43,11 @@ Demande : Youssef, 2026-10-22 18:47 (« Entraîner / Techniques »). Entraîner 
   - `tests/e2e/coach-bubble.spec.ts` : la section Légendes ;
   - `src/coach/__tests__/appGuide.test.ts` : les quatre sections, et l'aide d'Entraîner parle de créer ses enchaînements ;
   - `tests/e2e/navigation.spec.ts` : la version 0.36.0.
+
+## Résultats
+
+- **Vitest** : 662 réussis, 1 échec déjà présent avant (photo-coach : l’amplitude de hanche d’Amara).
+- **Playwright** (suite complète) : 165 réussis, 2 non exécutés (Firebase), 2 échoués déjà connus :
+  - `coach-suggest:96` : intermittent ;
+  - `training-layout:325` : caméra Auto, déjà en échec avant.
+- **Android réel** : NON EXÉCUTÉ.

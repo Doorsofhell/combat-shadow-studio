@@ -1672,5 +1672,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests** :
   - nouveau : `tests/e2e/entrainer-techniques.spec.ts` (3) ;
   - adaptés à la nouvelle demande : `coach-bubble` (section Légendes), `appGuide.test` (quatre sections), `navigation` (0.36.0) ;
-  - Vitest : 662 réussis, 1 échec déjà présent (Amara).
+  - Vitest : 662 réussis, 1 échec déjà présent (Amara) ;
+  - Playwright complet : 165 réussis, 2 échoués déjà connus (coach-suggest:96, intermittent ; training-layout:325 caméra Auto, déjà en échec avant), 2 non exécutés (Firebase) ;
+  - Android réel : NON EXÉCUTÉ.
 - **Rapport** : `docs/v036/ENTRAINER_TECHNIQUES.md`.
