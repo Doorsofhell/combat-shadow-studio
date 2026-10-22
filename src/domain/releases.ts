@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.35.0',
+      releaseDate: '2026-10-22',
+      title: 'Coaching 3D plus lisible',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Pendant la séance, le nom du coup s’affiche sous le coach au moment exact où il le fait, puis disparaît quand le coup est fini.' },
+        { category: 'ameliorations', text: 'Chrono compact en haut : discipline, niveau, round et temps restant sur une seule ligne, avec une barre fine.' },
+        { category: 'ameliorations', text: 'L’enchaînement complet ne reste plus en haut pendant l’effort ; consignes et points clés restent à portée du bouton « i ».' },
+      ],
+      links: [{ label: 'M’entraîner', to: '/entrainer' }],
+    },
+    {
       version: '0.34.0',
       releaseDate: '2026-10-22',
       title: 'Progrès plus clair',

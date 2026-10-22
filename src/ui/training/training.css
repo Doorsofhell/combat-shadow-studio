@@ -68,8 +68,8 @@
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
-  grid-template-areas: 'top' 'stage' 'info' 'bottom';
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+  grid-template-areas: 'top' 'stage' 'band' 'info' 'bottom';
   background: var(--bg);
   overflow: hidden;
   font-size: clamp(0.86rem, 0.8rem + 0.3vw, 1rem);
@@ -78,7 +78,7 @@
 /* explicit alternative when the text is enlarged beyond what one screen can hold */
 .training.overflow {
   overflow-y: auto;
-  grid-template-rows: auto minmax(min(46dvh, 340px), 1fr) auto auto;
+  grid-template-rows: auto minmax(min(46dvh, 340px), 1fr) auto auto auto;
   height: auto;
   min-height: 100dvh;
 }
@@ -516,6 +516,7 @@
   inset: 0;
 }
 .training.immersive .tr-top,
+.training.immersive .tr-band,
 .training.immersive .tr-info {
   display: none;
 }
@@ -584,11 +585,15 @@
 @media (orientation: landscape) and (min-width: 560px) {
   .training {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
     grid-template-areas:
       'top top'
+      'stage band'
       'stage info'
       'bottom bottom';
+  }
+  .tr-band {
+    border-left: 1px solid var(--line);
   }
   .tr-info {
     border-top: 0;
@@ -920,4 +925,169 @@ body:has(.training.immersive.fs-idle) .nav-bottom {
    bottom bar by z-index: while it is open the bar steps aside, as under any modal */
 body:has(.training .sheet-backdrop) .nav-bottom {
   visibility: hidden;
+}
+
+/* ------------------------------------------- 0.35 coaching HUD: one compact line over the stage, and a thin bar */
+.tr-hud {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.hud-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.hud-disc {
+  flex: 1;
+  min-width: 0;
+  /* a long discipline and level wrap on two short lines rather than being cut */
+  line-height: 1.2;
+  font-size: 0.72em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.tr-hud .phase {
+  flex: none;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.74em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.tr-hud .phase.pret,
+.tr-hud .phase.termine,
+.tr-hud .phase.paused {
+  background: var(--soft);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+/* the chronometer: digits that do not move, readable at a glance, no card around them */
+.hud-time {
+  flex: none;
+  font-family: var(--font-display, 'Rajdhani', 'Inter', sans-serif);
+  font-size: 1.45em;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+/* rest: the time left a little more visible (green, the colour of the rest chip) */
+.tr-hud.repos .hud-time {
+  font-size: 1.7em;
+  color: #2e9e64;
+}
+.tr-hud.paused .hud-time {
+  color: var(--muted);
+}
+.tr-hud .ar-state {
+  min-height: 36px;
+  padding: 0 9px;
+}
+.hud-progress {
+  flex: none;
+  height: 3px;
+  width: 100%;
+}
+
+/* ------------------------------------------- 0.35 the band: the move being played, and only it, under the stage */
+.tr-band {
+  grid-area: band;
+  /* a fixed height: a name coming or going never resizes the stage */
+  height: 48px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 max(10px, env(safe-area-inset-right)) 0 max(14px, env(safe-area-inset-left));
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--soft), transparent 40%);
+  overflow: hidden;
+}
+.tr-band.on {
+  box-shadow: inset 3px 0 0 var(--red);
+}
+.band-move {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  animation: band-in 0.12s ease-out;
+}
+.band-move.idle {
+  animation: none;
+}
+.band-name {
+  font-family: var(--font-display, 'Rajdhani', 'Inter', sans-serif);
+  font-size: 1.4em;
+  font-weight: 700;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.band-point {
+  font-size: 0.8em;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.band-idle {
+  font-size: 0.85em;
+  color: var(--muted);
+}
+.band-step {
+  flex: none;
+  font-size: 0.78em;
+  font-weight: 700;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.band-info {
+  flex: none;
+}
+/* the name comes in softly; it leaves at once (no fade-out: a name never outlasts its move) */
+@keyframes band-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .band-move {
+    animation: none;
+  }
+}
+@media (max-height: 700px) {
+  .tr-band {
+    height: 38px;
+  }
+  .band-name {
+    font-size: 1.15em;
+  }
+  .band-point {
+    font-size: 0.74em;
+  }
+  .tr-hud .ar-state {
+    min-height: 30px;
+  }
+  .tr-hud {
+    gap: 3px;
+    padding-top: max(3px, env(safe-area-inset-top));
+    padding-bottom: 2px;
+  }
+}
+@media (orientation: landscape) and (min-width: 560px) {
+  .tr-band {
+    border-top: 0;
+  }
 }

@@ -9,6 +9,7 @@ import { beep, bell, impact, restSignal, unlockAudio } from '../../audio/sound';
 import { Plan, playerSteps } from './plan';
 import { keepScreenOn, onAppPause } from '../../platform/native';
 import { useResume } from '../../store/resume';
+import { createMoveStore } from './moveStore';
 import { RESUME_VERSION, ResumePhase, ResumeSnapshot, workProgress } from '../../domain/resume';
 
 export type Phase = 'pret' | 'decompte' | 'travail' | 'repos' | 'termine';
@@ -183,8 +184,11 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
     [applySequence],
   );
 
+  // 0.35: the move on screen, straight from the player (see moveStore)
+  const move = useMemo(createMoveStore, []);
   const events = useMemo<PlayerEvents>(
     () => ({
+      onMove: (m) => move.set(m),
       onStep: (index, techId, _rep, timeToNext) => {
         const s = st.current;
         if (s.phase !== 'travail') return;
@@ -225,7 +229,7 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
         if (tips.length) say(tips[s.tipIndex++ % tips.length], { rate: 1.05 });
       },
     }),
-    [plan, record, rerender, startIso],
+    [plan, record, rerender, startIso, move],
   );
 
   // --------------------------------------------------------------------- phases
@@ -474,5 +478,5 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
     banner: s.banner,
   };
 
-  return { view, item, events, onPlayer, player, start, pause, resume, restart, goto, setSpeed };
+  return { view, item, events, onPlayer, player, move, start, pause, resume, restart, goto, setSpeed };
 }

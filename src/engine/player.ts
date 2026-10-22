@@ -22,6 +22,17 @@ export interface PlayerEvents {
   onRep?: (rep: number) => void;
   /** idle / rest phase between repetitions begins */
   onRest?: (seconds: number) => void;
+  /**
+   * 0.35: the move shown on screen changes (see moveNow): fired from update(), so it follows the real
+   * motion time (speed, pause, blends), never a timer; null in guard and during automatic moves
+   */
+  onMove?: (move: PlayerMove | null) => void;
+}
+
+/** the technique whose motion is playing: index in the user sequence and technique id */
+export interface PlayerMove {
+  index: number;
+  techniqueId: string;
 }
 
 interface Active {
@@ -32,6 +43,8 @@ interface Active {
   techniqueId: string;
   impactsDone: number;
   auto: boolean;
+  /** a number for each motion started (0.35, onMove: a repeated technique is still a new move) */
+  serial: number;
 }
 
 const IDLE = 'garde';
@@ -56,6 +69,9 @@ export class ComboPlayer {
   private idle = IDLE;
   /** seconds of play, for the slow movements of the guard (see alive) */
   private clock = 0;
+  /** serial of the move last reported by onMove (-2 = nothing reported yet, -1 = none) */
+  private moveKey = -2;
+  private serial = 0;
 
   constructor(
     private rig: CoachRig,
@@ -78,7 +94,7 @@ export class ComboPlayer {
   }
 
   private make(motionId: string, index: number, techniqueId: string, auto: boolean): Active {
-    return { sampler: this.sampler(motionId), t: 0, origin: { ...this.origin }, index, techniqueId, impactsDone: 0, auto };
+    return { sampler: this.sampler(motionId), t: 0, origin: { ...this.origin }, index, techniqueId, impactsDone: 0, auto, serial: ++this.serial };
   }
 
   setSequence(steps: PlayerStep[], rest: number) {
@@ -127,6 +143,32 @@ export class ComboPlayer {
     return { techniqueId: a.techniqueId, phase: motionPhase(a.sampler.motion, a.t) };
   }
 
+  /**
+   * 0.35, the move that owns the display: the incoming technique as soon as its motion starts (at the chain
+   * point of the previous one, the moment its call is announced), else the current technique until its motion
+   * has fully played (its return included), else none. Guard, rest and automatic repositioning are never moves.
+   * One move at most, so two labels can never be shown together. Pausing freezes it with the pose.
+   */
+  moveNow(): PlayerMove | null {
+    const a = this.moveActive();
+    return a ? { index: a.index, techniqueId: a.techniqueId } : null;
+  }
+
+  private moveActive(): Active | null {
+    if (this.next && !this.next.auto) return this.next;
+    if (!this.cur.auto && this.cur.t < this.cur.sampler.duration) return this.cur;
+    return null;
+  }
+
+  /** reports the move when it changes (a pure observation: the pose is computed before and does not depend on it) */
+  private reportMove() {
+    const a = this.moveActive();
+    const key = a ? a.serial : -1;
+    if (key === this.moveKey) return;
+    this.moveKey = key;
+    this.events.onMove?.(a ? { index: a.index, techniqueId: a.techniqueId } : null);
+  }
+
   play() {
     this.playing = true;
   }
@@ -144,6 +186,7 @@ export class ComboPlayer {
     this.rep = 0;
     this.restLeft = 0;
     this.queueAuto = [];
+    this.reportMove();
   }
 
   /** advance by dt real seconds; returns the pose to apply */
@@ -178,6 +221,7 @@ export class ComboPlayer {
     let pose = this.sample(this.cur);
     if (this.next) pose = blendResolved(pose, this.sample(this.next), smooth(this.next.t / this.blendLen));
     this.lastPose = pose;
+    this.reportMove();
     return pose;
   }
 
