@@ -35,7 +35,7 @@
   --toast-bg: #273344;
   --overlay: rgba(11, 15, 20, 0.86);
   --backdrop: rgba(3, 5, 8, 0.62);
-  --nav-bg: rgba(11, 15, 20, 0.94);
+  --nav-bg: rgba(11, 15, 20, 0.985);
   --track: rgba(255, 255, 255, 0.1);
   /* icon tiles of the charter: soft relief, never a strong shadow */
   --tile: linear-gradient(160deg, #2a3546 0%, #1c2431 100%);
@@ -74,7 +74,7 @@
   --toast-bg: #ffffff;
   --overlay: rgba(255, 255, 255, 0.9);
   --backdrop: rgba(17, 18, 20, 0.42);
-  --nav-bg: rgba(255, 255, 255, 0.95);
+  --nav-bg: rgba(255, 255, 255, 0.985);
   --track: rgba(17, 18, 20, 0.1);
   --tile: linear-gradient(160deg, #ffffff 0%, #eceef2 100%);
   --tile-edge: rgba(17, 18, 20, 0.1);

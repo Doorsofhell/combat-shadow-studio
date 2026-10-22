@@ -1,0 +1,30 @@
+import { RESUME_VERSION, ResumeSnapshot } from '../resume';
+
+/** a valid snapshot for the tests */
+export const snap = (p: Partial<ResumeSnapshot> = {}): ResumeSnapshot => ({
+  v: RESUME_VERSION,
+  query: 'mode=libre&ex=boxe-debutant-08',
+  title: 'Jab → Direct',
+  mode: 'libre',
+  discipline: 'boxe',
+  level: 'debutant',
+  itemIndex: 7,
+  itemKey: 'boxe-debutant-08',
+  itemName: 'Jab → Direct',
+  itemCount: 12,
+  thumb: 'jab',
+  round: 1,
+  rounds: 1,
+  reps: 4,
+  phase: 'travail',
+  phaseElapsed: 42,
+  phaseLen: 0,
+  sessionSec: 42,
+  plannedSec: null,
+  doneSec: 0,
+  speed: 0.7,
+  coach: 'homme',
+  startIso: '2026-10-22T11:00:00.000Z',
+  savedAt: '2026-10-22T11:01:00.000Z',
+  ...p,
+});

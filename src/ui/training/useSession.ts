@@ -8,6 +8,8 @@ import { say, stopVoice } from '../../audio/voice';
 import { beep, bell, impact, restSignal, unlockAudio } from '../../audio/sound';
 import { Plan, playerSteps } from './plan';
 import { keepScreenOn, onAppPause } from '../../platform/native';
+import { useResume } from '../../store/resume';
+import { RESUME_VERSION, ResumePhase, ResumeSnapshot, workProgress } from '../../domain/resume';
 
 export type Phase = 'pret' | 'decompte' | 'travail' | 'repos' | 'termine';
 
@@ -30,6 +32,22 @@ export interface SessionView {
   banner: string | null;
 }
 
+/**
+ * 0.33: how the session is saved for the « Reprendre » card. `snapshot` is the session being resumed (already
+ * checked against the plan). Without `persist` (tests, labs), nothing is saved.
+ */
+export interface SessionPersist {
+  query: string;
+  programId?: string;
+  snapshot?: ResumeSnapshot | null;
+  coach: 'homme' | 'femme';
+  /** the camera mode on screen when saving */
+  camera?: () => string | undefined;
+}
+
+/** a running session is also saved every 15 s of activity (never at every frame) */
+const SAVE_EVERY_MS = 15_000;
+
 const COUNTDOWN = 3;
 const BETWEEN_ITEMS = 15;
 
@@ -38,7 +56,7 @@ const BETWEEN_ITEMS = 15;
  * active time (only while working, not paused and visible), voice cues and sounds synced with the
  * animation player events, and saving statistics as the session goes.
  */
-export function useSession(plan: Plan) {
+export function useSession(plan: Plan, persistOpts?: SessionPersist) {
   const settings = useSettings((s) => s.settings);
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
@@ -46,22 +64,37 @@ export function useSession(plan: Plan) {
   const perExercise = useStats((s) => s.perExercise);
 
   const player = useRef<ComboPlayer | null>(null);
-  const startIso = useMemo(() => new Date().toISOString(), []);
-  const phaseT = useRef(new ActiveTimer());
-  const sessionT = useRef(new ActiveTimer());
+  const persistRef = useRef(persistOpts);
+  persistRef.current = persistOpts;
+  const snap = persistOpts?.snapshot ?? null;
+  // a resumed session keeps its start: the statistics go on adding to the same session (no double count)
+  const startIso = useMemo(() => snap?.startIso ?? new Date().toISOString(), []); // eslint-disable-line react-hooks/exhaustive-deps
+  const phaseT = useRef<ActiveTimer>(null as unknown as ActiveTimer);
+  const sessionT = useRef<ActiveTimer>(null as unknown as ActiveTimer);
   const statsT = useRef(new ActiveTimer());
+  if (!phaseT.current) {
+    phaseT.current = new ActiveTimer();
+    sessionT.current = new ActiveTimer();
+    if (snap) {
+      phaseT.current.seed(snap.phaseElapsed * 1000);
+      sessionT.current.seed(snap.sessionSec * 1000);
+    }
+  }
   const st = useRef({
-    phase: 'pret' as Phase,
-    paused: false,
-    itemIndex: Math.max(0, plan.start),
-    round: 1,
+    phase: (snap?.phase ?? 'pret') as Phase,
+    // a resumed session waits, paused, on the exact moment it was left: « Reprendre » goes on from there
+    paused: !!snap && snap.phase !== 'pret',
+    itemIndex: snap ? snap.itemIndex : Math.max(0, plan.start),
+    round: snap?.round ?? 1,
     step: -1,
-    reps: 0,
-    phaseLen: 0,
-    speed: plan.items[Math.max(0, plan.start)]?.speed ?? 0.7,
+    reps: snap?.reps ?? 0,
+    phaseLen: snap?.phaseLen ?? 0,
+    speed: snap?.speed ?? plan.items[Math.max(0, plan.start)]?.speed ?? 0.7,
     banner: null as string | null,
     lastWhole: -1,
     tipIndex: 0,
+    /** the session really started (or was resumed): only then is it offered again */
+    started: !!snap,
   });
   const [, setTick] = useState(0);
   const rerender = useCallback(() => setTick((t) => (t + 1) % 1e9), []);
@@ -81,6 +114,53 @@ export function useSession(plan: Plan) {
       );
     }
   }, [plan, record, startIso]);
+
+  // --------------------------------------------------------------------- resume snapshot
+  const saveResume = useCallback(() => {
+    const o = persistRef.current;
+    const s = st.current;
+    const it = plan.items[s.itemIndex];
+    if (!o || !it || !s.started || s.phase === 'termine') return;
+    const phase = s.phase as ResumePhase;
+    const phaseElapsed = phaseT.current.elapsed / 1000;
+    const prog = workProgress(plan, { itemIndex: s.itemIndex, round: s.round, phase, phaseElapsed });
+    useResume.getState().save({
+      v: RESUME_VERSION,
+      query: o.query,
+      title: plan.title,
+      mode: plan.mode,
+      programId: o.programId,
+      discipline: it.discipline,
+      level: it.level,
+      itemIndex: s.itemIndex,
+      itemKey: it.key,
+      itemName: it.label ?? it.name,
+      itemCount: plan.items.length,
+      thumb: it.sequence.find((id) => id !== 'garde') ?? it.sequence[0] ?? 'garde',
+      round: s.round,
+      rounds: it.rounds,
+      reps: s.reps,
+      phase,
+      phaseElapsed,
+      phaseLen: s.phaseLen,
+      sessionSec: sessionT.current.elapsed / 1000,
+      plannedSec: prog.plannedSec,
+      doneSec: prog.doneSec,
+      speed: s.speed,
+      coach: o.coach,
+      camera: o.camera?.(),
+      startIso,
+      savedAt: new Date().toISOString(),
+    });
+  }, [plan, startIso]);
+
+  /** the session is over: it is not offered again; a programme counts one more session */
+  const endResume = useCallback(() => {
+    const o = persistRef.current;
+    if (!o) return;
+    useResume.getState().drop(o.query);
+    if (plan.mode === 'programme' && o.programId) useResume.getState().programDone(o.programId, new Date().toISOString());
+  }, [plan]);
 
   // --------------------------------------------------------------------- player wiring
   const applySequence = useCallback(() => {
@@ -159,6 +239,7 @@ export function useSession(plan: Plan) {
       s.step = -1;
       phaseT.current.reset();
       if (!s.paused) phaseT.current.start();
+      if (phase !== 'pret') s.started = true;
       if (phase === 'travail') {
         if (!s.paused) {
           sessionT.current.start();
@@ -170,9 +251,12 @@ export function useSession(plan: Plan) {
         flush();
       }
       applySequence();
+      // phase, round or exercise changed: an important moment to save
+      if (phase === 'termine') endResume();
+      else saveResume();
       rerender();
     },
-    [applySequence, flush, rerender],
+    [applySequence, endResume, flush, rerender, saveResume],
   );
 
   const speak = (text: string, interrupt = true) => {
@@ -254,6 +338,22 @@ export function useSession(plan: Plan) {
     };
   }, [flush]);
 
+  // a running session is saved now and then, and when the screen is left
+  useEffect(() => {
+    let last = sessionT.current.elapsed;
+    const id = window.setInterval(() => {
+      const e = sessionT.current.elapsed;
+      if (e - last >= SAVE_EVERY_MS) {
+        last = e;
+        saveResume();
+      }
+    }, 1000);
+    return () => {
+      window.clearInterval(id);
+      saveResume();
+    };
+  }, [saveResume]);
+
   // --------------------------------------------------------------------- actions
   const pause = useCallback(() => {
     const s = st.current;
@@ -265,8 +365,9 @@ export function useSession(plan: Plan) {
     player.current?.pause();
     stopVoice();
     flush();
+    saveResume();
     rerender();
-  }, [flush, rerender]);
+  }, [flush, rerender, saveResume]);
 
   const resume = useCallback(() => {
     const s = st.current;

@@ -82,6 +82,8 @@ export interface Settings {
    * newer version shows the red dots of Menu and Nouveautés; older saves get null through `merge`.
    */
   newsSeenVersion: string | null;
+  /** 0.33: the last space opened on the Entraîner screen (Séances by default; older saves get it through `merge`) */
+  trainSpace: 'seances' | 'disciplines' | 'programmes';
 }
 
 export type CoachPanelSize = 'reduit' | 'normal' | 'agrandi';
@@ -113,6 +115,7 @@ export const DEFAULT_SETTINGS: Settings = {
   coachOutfit: true,
   bjjOutfit: 'gi',
   newsSeenVersion: null,
+  trainSpace: 'seances',
 };
 
 interface SettingsState {

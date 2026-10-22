@@ -12,7 +12,7 @@ import { TECHNIQUE_BY_ID } from '../../domain/techniques';
 import { PointPhase, instructionOf } from '../../domain/instructions';
 import { DISCIPLINES, LEVELS, TrainingMode } from '../../domain/types';
 import { MODE_LABEL, Plan, customPlan, exercisePlan, programPlan } from '../training/plan';
-import { useSession } from '../training/useSession';
+import { SessionPersist, useSession } from '../training/useSession';
 import { useCatalog } from '../../store/catalog';
 import { catalogPlan } from '../../domain/catalog/plan';
 import { useCoachBubble } from '../coach-ai/coachHost';
@@ -33,6 +33,9 @@ import { useSmartBack } from '../nav/BottomBar';
 import { openLayers } from '../nav/layers';
 import { ConfirmDialog } from '../components/Sheet';
 import { onBackButton } from '../../platform/native';
+import { useResume } from '../../store/resume';
+import { ResumeSnapshot, matchesPlan, sessionQuery } from '../../domain/resume';
+import { useHydrated } from '../../store/useHydrated';
 
 export function Training() {
   const [q] = useSearchParams();
@@ -63,7 +66,18 @@ export function Training() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, combos.length, catalog]);
 
-  if (catId && !catalog && !catalogError) return <div className="loading">Chargement…</div>;
+  // 0.33: « Reprendre » opens the session with reprise=1; the snapshot is read once the store is loaded, so a
+  // resume never silently starts the session from zero
+  const reprise = q.get('reprise') === '1';
+  const query = sessionQuery(q);
+  const resumeReady = useHydrated(useResume);
+  const snapshots = useResume((s) => s.snapshots);
+  const [fresh, setFresh] = useState(false);
+  const snapshot = useMemo<ResumeSnapshot | null>(() => (reprise && !fresh ? snapshots.find((x) => x.query === query) ?? null : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [reprise, fresh, query, resumeReady]);
+
+  if ((catId && !catalog && !catalogError) || (reprise && !resumeReady)) return <div className="loading">Chargement…</div>;
 
   if (!plan || !plan.items.length) {
     return (
@@ -75,7 +89,30 @@ export function Training() {
       </div>
     );
   }
-  return <TrainingView key={key} plan={plan} />;
+  const programId = q.get('prog') ?? undefined;
+  if (reprise && !fresh && (!snapshot || !matchesPlan(snapshot, plan))) {
+    // the save is gone or no longer matches the exercise (an exercise changed or a combination was edited):
+    // nothing is restored by guess, the user chooses to start again
+    return (
+      <div className="page">
+        <ConfirmDialog
+          title="Reprise impossible"
+          message={
+            snapshot
+              ? 'Cette séance a changé depuis ta pause : elle ne peut pas reprendre exactement où tu l’avais laissée. Ton temps déjà fait reste dans tes progrès.'
+              : 'Cette séance n’est plus enregistrée (elle est terminée ou a été remplacée). Ton temps déjà fait reste dans tes progrès.'
+          }
+          confirmLabel="Recommencer"
+          onConfirm={() => {
+            useResume.getState().drop(query);
+            setFresh(true);
+          }}
+          onCancel={() => history.back()}
+        />
+      </div>
+    );
+  }
+  return <TrainingView key={`${key}|${fresh}`} plan={plan} persist={{ query, programId, snapshot, coach: profile.coach === 'femme' ? 'femme' : 'homme' }} />;
 }
 
 
@@ -85,14 +122,19 @@ function clock(sec: number, up = true) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-function TrainingView({ plan }: { plan: Plan }) {
+function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPersist, 'camera'> }) {
   const nav = useNavigate();
   const profile = useProfile((s) => s.profile);
   const updateProfile = useProfile((s) => s.update);
   const settings = useSettings((s) => s.settings);
   const setSettings = useSettings((s) => s.set);
-  const { view, item, events, onPlayer, player, start, pause, resume, restart, goto, setSpeed } = useSession(plan);
-  const [camMode, setCamMode] = useState<CameraMode>(settings.cameraMode ?? 'auto');
+  const savedCam = persist.snapshot?.camera;
+  const [camMode, setCamMode] = useState<CameraMode>(
+    savedCam && CAMERA_MODES.some((c) => c.id === savedCam) ? (savedCam as CameraMode) : (settings.cameraMode ?? 'auto'),
+  );
+  const camRef = useRef(camMode);
+  camRef.current = camMode;
+  const { view, item, events, onPlayer, player, start, pause, resume, restart, goto, setSpeed } = useSession(plan, { ...persist, camera: () => camRef.current });
   const [closeUp, setCloseUp] = useState(false);
   const [studyRot, setStudyRot] = useState(0);
   // « Caméra » zone: manual turn around the coach and zoom, on top of the chosen angle
@@ -441,7 +483,7 @@ function TrainingView({ plan }: { plan: Plan }) {
           <span className={`phase ${view.phase}`} data-testid="phase">
             {view.paused ? 'Pause' : phaseLabel}
           </span>
-          {view.remaining !== null && <span className="phase light">{clock(view.remaining)}</span>}
+          {view.remaining !== null && <span className="phase light" data-testid="phase-time">{clock(view.remaining)}</span>}
         </div>
         {view.phase === 'decompte' && !view.paused && !st.tech && view.remaining !== null && view.remaining <= 3.05 && <div className="countdown">{Math.max(1, Math.ceil(view.remaining))}</div>}
         <div className="stage-tools">
@@ -654,7 +696,7 @@ function TrainingView({ plan }: { plan: Plan }) {
       {leaving && (
         <ConfirmDialog
           title="Quitter la séance ?"
-          message="La séance est en pause. Le temps déjà fait est enregistré dans tes progrès."
+          message="La séance est en pause. Le temps déjà fait est enregistré dans tes progrès, et tu pourras la reprendre depuis Entraîner."
           confirmLabel="Quitter"
           onConfirm={() => {
             setLeaving(false);

@@ -51,7 +51,8 @@ const SCREENS: [string, string, number][] = [
   // 0.24 (épuration demandée par Youssef le 2026-10-20) : la grille des disciplines n’est plus répétée sur
   // l’accueil, elle reste dans Entraîner ; l’accueil montre l’icône de la discipline principale
   ['Accueil', '/#/', 1],
-  ['Entraîner', '/#/entrainer', 6],
+  // 0.33: the six disciplines are in the Disciplines space of Entraîner
+  ['Entraîner', '/#/entrainer?espace=disciplines', 6],
   ['Page discipline', '/#/discipline/mma', 1],
   ['Techniques', '/#/techniques', 6],
   ['Créateur d’enchaînements', '/#/createur', 6],
@@ -67,18 +68,36 @@ for (const [name, path, min] of SCREENS)
     await seed(page);
     await page.goto('about:blank');
     await page.goto(path);
-    const icons = page.locator('svg.discipline-icon[data-discipline]');
+    // 0.33: an official discipline picture is the vector icon or the detailed 3D emblem (img, same registry)
+    const icons = page.locator('svg.discipline-icon[data-discipline], img.discipline-emblem[data-emblem]');
     await expect.poll(() => icons.count(), { message: name }).toBeGreaterThanOrEqual(min);
+    await expect
+      .poll(() => page.locator('img.discipline-emblem[data-emblem]').evaluateAll((els) => els.every((e) => (e as HTMLImageElement).complete)), { message: `${name} : emblèmes chargés` })
+      .toBe(true);
     const r = await icons.evaluateAll((els) =>
       els.map((e) => {
         const b = e.getBoundingClientRect();
-        return { id: (e as SVGElement).dataset.discipline!, w: b.width, h: b.height, vb: e.getAttribute('viewBox'), shapes: e.querySelectorAll('path,ellipse,rect').length };
+        const img = e instanceof HTMLImageElement ? e : null;
+        return {
+          id: img ? img.dataset.emblem! : (e as SVGElement).dataset.discipline!,
+          img: img ? { src: new URL(img.currentSrc || img.src).pathname, nw: img.naturalWidth, nh: img.naturalHeight } : null,
+          w: b.width,
+          h: b.height,
+          vb: e.getAttribute('viewBox'),
+          shapes: e.querySelectorAll('path,ellipse,rect').length,
+        };
       }),
     );
     for (const x of r) {
       expect(IDS.has(x.id), `${name} : ${x.id} est une discipline officielle`).toBe(true);
-      expect(x.vb).toBe('0 0 64 64');
       expect(Math.abs(x.w - x.h), `${name} : ${x.id} pas de déformation`).toBeLessThan(0.5);
+      if (x.img) {
+        expect(x.img.src, `${name} : ${x.id} emblème du registre`).toMatch(new RegExp(`/emblems/${x.id}-(64|128|256)\\.webp$`));
+        expect(x.img.nw, `${name} : ${x.id} emblème chargé`).toBeGreaterThan(0);
+        expect(x.img.nw, `${name} : ${x.id} emblème carré`).toBe(x.img.nh);
+        continue;
+      }
+      expect(x.vb).toBe('0 0 64 64');
       expect(x.shapes, `${name} : ${x.id} dessin présent`).toBeGreaterThan(5);
     }
     // the screens that list every discipline show all six, BJJ and judo included

@@ -30,7 +30,7 @@ async function seed(page: Page) {
 
 test('Entraîner : 6 disciplines, dont BJJ et judo', async ({ page }) => {
   await seed(page);
-  await page.goto('/#/entrainer');
+  await page.goto('/#/entrainer?espace=disciplines');
   for (const n of ['Boxe anglaise', 'Kick-boxing', 'MMA', 'Muay-thaï', 'Jiu-jitsu brésilien', 'Judo']) await expect(page.locator('.disc-card .name', { hasText: n }).first()).toBeVisible();
 });
 
