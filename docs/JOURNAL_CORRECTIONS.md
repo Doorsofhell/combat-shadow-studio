@@ -1452,3 +1452,31 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   branche : 501 réussis, 1 échec déjà connu (hanche d'Amara au sol, 53,9° pour 45°) ; `tsc` réussi.
 - Les PR #1 et #2 restent ouvertes, non fusionnées.
 - **Restauration** : `feature/biomeca-v029` = `f489f6f`.
+
+## 2026-10-22 · v0.31.0-proto1 · Correction majeure du moteur 3D et tenues par discipline
+
+- **Demande (Youssef, 06:24 et 06:26)** : « CORRECTION MAJEURE DU MOTEUR 3D » et « TENUES ET ACCESSOIRES 3D PREMIUM
+  PAR DISCIPLINE ». Méthode des animations choisie à 06:33 : « Moteur amélioré ».
+- **Constat après vérification** (détail dans `docs/v031/MOTEUR_3D.md`) :
+  - flou : canvas plafonné à 1,5 px/pt, soit 57 % de la résolution d'un Pixel 7, et sans anticrénelage en mode de
+    secours ;
+  - morphologie : triceps, ischios, avant-bras et obliques trop plats ;
+  - jab : coude verrouillé ; direct : le poing partait avant le bassin ; low kick : le pied frôlait le sol ;
+  - une seule tenue générique pour toutes les disciplines ;
+  - les 4 vidéos YouTube de référence n'ont pas été visionnées (accès bloqué) ; des captures ont été demandées.
+- **Correction** :
+  - résolution selon un budget de pixels, MSAA à tous les niveaux, filtrage anisotrope, alpha-to-coverage
+    (`src/three/resolution.ts`, `CoachStage.tsx`, `PhotoCoach.tsx`) ; stabilité WebGL non modifiée ;
+  - volumes musculaires par région (`tools/generator/rocketbox/convert.py`) ;
+  - jab, direct et low kick refaits au moteur (`boxing.ts`, `legs.ts`, `balance.ts`, `motion.ts`, `author.ts`) ;
+  - 7 tenues par coach (`tools/generator/rocketbox/outfits.py`, `src/three/outfit.ts`), réglages « Tenue de la
+    discipline » et « Kimono / Sans kimono », message si une tenue ne charge pas.
+- **Tests** :
+  - `prototypes-v031.test.ts` (18, dont 8 qui échouent sur l'ancien code), `outfit.test.ts` (16) et
+    `resolution.test.ts` : TEST RÉUSSI ;
+  - échec déjà connu depuis la v0.29-proto1, inchangé : hanche d'Amara au sol (53,9° pour 45°) ;
+  - mesures régénérées : arrêts de fluidité 310 → 339 sur 2046 clés (22 %, seuil 40 % tenu), aucune vitesse à
+    l'impact réduite ;
+  - Playwright complet : voir la ligne ajoutée à la fin de la validation ;
+  - Android réel : NON EXÉCUTÉ ; relecture par un entraîneur : NON EXÉCUTÉ.
+- **Restauration** : `feature/combat-shadow-v030` = `16a41f2`.
