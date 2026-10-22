@@ -6,6 +6,7 @@ import { Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, SRGBColorSp
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { restoreReferencePose, setLegLength } from './pose';
 import { CoachRig } from '../engine/rig';
+import { useOutfit, type OutfitId, type OutfitStatus } from './outfit';
 
 /**
  * v0.29 Ultra-réaliste coach built on a photo-textured avatar of the Microsoft Rocketbox library (MIT,
@@ -16,6 +17,9 @@ import { CoachRig } from '../engine/rig';
  */
 export function PhotoCoach({
   url,
+  outfitUrl = null,
+  outfit = null,
+  onOutfit,
   quality,
   legLength = 1,
   shadows,
@@ -25,6 +29,10 @@ export function PhotoCoach({
   extendLoader,
 }: {
   url: string;
+  /** v0.31: the discipline outfit (src/three/outfit.ts) */
+  outfitUrl?: string | null;
+  outfit?: OutfitId | null;
+  onOutfit?: (s: OutfitStatus) => void;
   /** same loader set-up as the generated models (Draco, the JSON-wrapped models of the claude.ai page) */
   draco: string;
   extendLoader: (loader: GLTFLoader) => void;
@@ -43,6 +51,9 @@ export function PhotoCoach({
       m.frustumCulled = false;
       const old = m.material as MeshStandardMaterial;
       if (old.map) old.map.colorSpace = SRGBColorSpace;
+      // v0.31 (« flou ou halo », Youssef 2026-10-22): skin seen at a grazing angle (arms, flanks) was blurred by
+      // plain mipmapping; anisotropic filtering keeps its detail (4 samples: cheap on phone graphics chips)
+      for (const t of [old.map, old.normalMap]) if (t) t.anisotropy = 4;
       const hair = /opacity/.test(old.name);
       m.material =
         quality === 'haute' && !hair
@@ -57,7 +68,7 @@ export function PhotoCoach({
               sheenColor: '#c98a72',
               specularIntensity: 0.4,
             })
-          : new MeshStandardMaterial({ name: old.name, map: old.map, normalMap: old.normalMap, roughness: 0.6, metalness: 0, alphaTest: hair ? 0.4 : 0, transparent: false });
+          : new MeshStandardMaterial({ name: old.name, map: old.map, normalMap: old.normalMap, roughness: 0.6, metalness: 0, alphaTest: hair ? 0.4 : 0, alphaToCoverage: hair, transparent: false });
     });
     restoreReferencePose(s);
     return s;
@@ -85,6 +96,8 @@ export function PhotoCoach({
     [scene],
   );
   useEffect(() => onRig(rig), [rig, onRig]);
+  const dressed = useOutfit(scene, outfitUrl, outfit, quality, extendLoader);
+  useEffect(() => onOutfit?.(dressed), [dressed, onOutfit]);
   if (import.meta.env.DEV) (globalThis as { __photoScene?: Object3D }).__photoScene = scene;
   useFrame((_, dt) => onFrame(rig, Math.min(dt, 0.05)));
   return <primitive object={scene} />;

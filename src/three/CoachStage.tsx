@@ -1,10 +1,13 @@
 import { Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { PerformanceMonitor } from '@react-three/drei';
+import { StageResolution, budgetFor, stageDpr } from './resolution';
 import { Group, Vector3 } from 'three';
 import { CoachModel } from './CoachModel';
 import { StudioEnvironment } from './StudioEnvironment';
 import { useSettings } from '../store/settings';
+import { outfitFor, type OutfitStatus } from './outfit';
+import { toast } from '../ui/components/Toast';
 import { StageView, StudioStage } from './StudioStage';
 import { ArScene } from './ArScene';
 import { StudyCues } from './StudyCues';
@@ -184,6 +187,13 @@ export function CoachStage(props: CoachStageProps) {
     return () => document.removeEventListener('visibilitychange', on);
   }, []);
   const style = useSettings((s) => s.settings.coachStyle);
+  // v0.31: discipline outfit of the Ultra-réaliste coaches; a failure is said, never silently replaced
+  const outfitOn = useSettings((s) => s.settings.coachOutfit);
+  const bjjOutfit = useSettings((s) => s.settings.bjjOutfit);
+  const outfit = outfitFor(discipline, outfitOn, bjjOutfit);
+  const onOutfit = useCallback((st: OutfitStatus) => {
+    if (st.state === 'erreur' && st.message) toast(`${st.message} Le coach s’affiche sans elle ; réessaie plus tard ou désactive les tenues dans les réglages.`);
+  }, []);
   // after a graphics incident, stability comes first even when the high quality was chosen (for a while)
   const q: 'haute' | 'basse' = level > 0 || slow ? 'basse' : quality === 'auto' ? 'haute' : quality;
   useEffect(() => {
@@ -292,15 +302,21 @@ export function CoachStage(props: CoachStageProps) {
 
   // v0.29: soft self-shadows in the realistic look, high quality only (cost on phones)
   // (not on touch screens in automatic quality: phones have the least graphics memory)
+  // v0.31: internal resolution on a pixel budget (src/three/resolution.ts) instead of fixed ratios
+  const budget = budgetFor(q, level);
+  const [startDpr] = useState(() => stageDpr(typeof innerWidth === 'number' ? innerWidth : 400, typeof innerHeight === 'number' ? innerHeight * 0.6 : 400, typeof devicePixelRatio === 'number' ? devicePixelRatio : 1, budget));
+  const onResolution = useCallback((dpr: number, w: number, h: number) => log3d('qualite', `résolution ${dpr} px par point (${Math.round(w * dpr)}×${Math.round(h * dpr)}, écran ${typeof devicePixelRatio === 'number' ? devicePixelRatio : 1})`), []);
   const realShadows = style === 'realiste' && render === 'premium' && q === 'haute' && !arActive && !(quality === 'auto' && TOUCH);
   return (
     <Canvas
       onCreated={onCreated}
       shadows={realShadows ? 'soft' : false}
       data-coach={shownCoach}
-      dpr={level >= 2 ? 0.75 : q === 'haute' ? [1, quality === 'auto' && TOUCH ? 1.5 : 2] : 1}
+      dpr={startDpr}
       frameloop={hidden ? 'never' : 'always'}
-      gl={{ antialias: q === 'haute', alpha: true, powerPreference: 'high-performance' }}
+      // v0.31: antialiasing stays on in every quality (multisampling costs little on phone graphics chips, and its
+      // absence gave the staircase edges of the light quality)
+      gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       camera={{ position: [0, 1.1, 5], fov: 30 }}
       style={{ background: arActive || backdrop === 'theme' ? 'transparent' : backdrop === 'dark' ? 'var(--scene)' : '#fff', touchAction: 'none' }}
     >
@@ -313,6 +329,7 @@ export function CoachStage(props: CoachStageProps) {
           flipflops={1}
         />
       )}
+      <StageResolution budget={budget} onChange={onResolution} />
       <DiagProbe animAt={animAt} />
       <Suspense fallback={null}>
         {!arActive && (
@@ -347,6 +364,8 @@ export function CoachStage(props: CoachStageProps) {
             ghostGear={ghostGear}
             onRig={onRig}
             onFrame={onFrame}
+            outfit={outfit}
+            onOutfit={onOutfit}
           />
           {studyActive && rigState && study && <StudyCues rig={rigState} study={study} />}
           {!studyActive && !arActive && rigState && <GroundMarks rig={rigState} player={player} southpaw={southpaw} dark={stageDark} />}

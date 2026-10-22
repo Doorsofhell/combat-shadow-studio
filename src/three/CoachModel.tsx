@@ -7,6 +7,7 @@ import type { GLTFLoader } from 'three-stdlib';
 import { Color, Material, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, SRGBColorSpace, Texture } from 'three';
 import { restoreReferencePose, setLegLength } from './pose';
 import { PhotoCoach } from './PhotoCoach';
+import type { OutfitId, OutfitStatus } from './outfit';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { CoachRig } from '../engine/rig';
 import { applyManga, outlineMaterial, toonMaterial } from './manga';
@@ -181,6 +182,9 @@ export interface CoachModelProps {
   onRig: (rig: CoachRig) => void;
   /** called every frame before rendering; returns nothing, drives the rig */
   onFrame: (rig: CoachRig, dt: number) => void;
+  /** v0.31: discipline outfit of the Ultra-réaliste coaches (null: none) and its loading state */
+  outfit?: OutfitId | null;
+  onOutfit?: (s: OutfitStatus) => void;
 }
 
 interface TexEntry {
@@ -237,7 +241,21 @@ export function CoachModel(props: CoachModelProps) {
   // VITE_PHOTO_COACH=0 at build time: the generated models everywhere (comparisons, fallback build)
   const noPhoto = import.meta.env.VITE_PHOTO_COACH === '0' || (import.meta.env.DEV && typeof location !== 'undefined' && /[?&]photo=0/.test(location.search + location.hash));
   if (model && style === 'realiste' && render === 'premium' && !noPhoto)
-    return <PhotoCoach url={`${model.replace(/model$/, 'photo')}.${EXT}`} quality={quality} legLength={props.look?.body.legLength ?? 1} shadows={quality === 'haute'} onRig={props.onRig} onFrame={props.onFrame} draco={DRACO} extendLoader={patchJsonModels} />;
+    return (
+      <PhotoCoach
+        url={`${model.replace(/model$/, 'photo')}.${EXT}`}
+        outfitUrl={props.outfit ? `${model.replace(/model$/, `tenues/${props.outfit}`)}.${EXT}` : null}
+        outfit={props.outfit ?? null}
+        onOutfit={props.onOutfit}
+        quality={quality}
+        legLength={props.look?.body.legLength ?? 1}
+        shadows={quality === 'haute'}
+        onRig={props.onRig}
+        onFrame={props.onFrame}
+        draco={DRACO}
+        extendLoader={patchJsonModels}
+      />
+    );
   return <GeneratedCoach {...props} />;
 }
 

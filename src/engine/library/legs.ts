@@ -117,16 +117,30 @@ function roundKick(a: Author, side: LegSide, height: 'thigh' | 'liver' | 'head',
     d.hips.y -= 0.02 * s;
     d.chest.pitch += deg(3);
   });
+  // v0.31 (Youssef 2026-10-22, « aucun pied qui glisse »): measured on the low kick, the toes of the kicking foot
+  // skimmed the floor for 18 cm on the way out and 20 cm on the way back. The foot now leaves the floor upward
+  // (toes a few centimetres up, above where they stood) before it travels, and comes down from above its place.
+  const lift = (from: Pose, up: number, plantar: number) =>
+    edit(from, (d) => {
+      const f = g[k.kick];
+      const an = a.groundAnkle({ ...f, heel: f.mode === 'ground' ? deg(35) : 0 } as FootPose);
+      d[k.kick] = { ...joint(a.air(v3(an.x, an.y + up * s, an.z), (f as { yaw: number }).yaw, 0, 0, v3(0, 0.2, 1)), plantar), pinned: true } as FootPose;
+    });
+  const off = lift(load, 0.06, 35);
+  const down = lift(edit(g, (d) => (d.pelvis.yaw += turn * hipTurn * 0.15)), 0.05, 20);
   const t = style === 'thai' ? [0.12, 0.26, 0.4, 0.62, 0.86] : [0.1, 0.22, 0.34, 0.5, 0.72];
   return {
     id,
     keys: [
       { t: 0, pose: g },
       { t: t[0], pose: load, ease: 'inOut' },
+      { t: t[0] + 0.04, pose: off, ease: 'linear' },
       { t: t[1], pose: chamber, ease: 'load' },
       { t: t[2], pose: hit, ease: 'strike' },
       { t: t[3], pose: back, ease: 'inOut' },
-      { t: t[4], pose: land, ease: 'inOut' },
+      { t: t[4] - 0.08, pose: down, ease: 'inOut' },
+      { t: t[4], pose: land, ease: 'inOut', settling: true },
+      { t: t[4] + 0.12, pose: g, ease: 'inOut' },
     ],
     chainAt: t[4] - 0.1,
     impacts: [t[2]],
