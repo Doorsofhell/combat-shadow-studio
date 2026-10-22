@@ -292,7 +292,9 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
             <AppIcon id="mic" size={20} />
           </button>
         )}
-        <button type="submit" className="btn icon send" aria-label="Envoyer" disabled={!q.trim()} data-testid="coach-send">
+        {/* the field keeps the focus when « Envoyer » is pressed: otherwise the keyboard starts closing, the panel
+            leaves its place above it and the tap lands beside the button (seen with v0.32's bottom bar) */}
+        <button type="submit" className="btn icon send" aria-label="Envoyer" disabled={!q.trim()} onMouseDown={(e) => e.preventDefault()} data-testid="coach-send">
           <AppIcon id="send" size={20} />
         </button>
       </form>

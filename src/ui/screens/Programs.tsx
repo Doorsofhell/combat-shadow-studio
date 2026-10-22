@@ -1,3 +1,4 @@
+import { useNavActions } from '../nav/store';
 import { TechThumb, programTechnique } from '../components/TechThumb';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PROGRAMS, PROGRAM_BY_ID, programSeconds } from '../../domain/programs';
@@ -49,6 +50,8 @@ export function ProgramPage() {
   const { id } = useParams();
   const nav = useNavigate();
   const p = id ? PROGRAM_BY_ID.get(id) : undefined;
+  // v0.32 bar: « Démarrer » starts the programme, as the button of the page
+  useNavActions({ start: p && { run: () => nav(`/entrainement?prog=${p.id}`), ariaLabel: `Démarrer : ${p.name}` } });
   if (!p) return <EmptyState title="Programme introuvable" action={<Link to="/programmes" className="btn">Voir les programmes</Link>} />;
   const total = Math.round(programSeconds(p) / 60);
   return (

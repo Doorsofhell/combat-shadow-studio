@@ -144,14 +144,60 @@ def grain(size=256):
     return noise(size, 10) * 0.6 + rng.random((size, size)) * 0.08
 
 
+def rice(size=512, cols=80, rows=40, depth=0.7):
+    """v0.32 grain weave of the gis (Youssef, 2026-10-22: « ressemblent à des vêtements en gros tricot »): small
+    staggered grains at the real scale of the cloth (1 texture = 25 cm, so 80 columns = 3 mm grains), a shallow
+    relief. Judogi: double weave, larger and deeper grains; BJJ gi: pearl weave, finer and flatter"""
+    y, x = np.mgrid[0:size, 0:size] / size
+    X, Y = x * cols, y * rows
+    Y = Y + 0.5 * (np.floor(X) % 2)
+    fx, fy = X % 1 - 0.5, Y % 1 - 0.5
+    d = (fx / 0.44) ** 2 + (fy / 0.47) ** 2
+    h = np.clip(1 - d, 0, 1) ** depth
+    return h * 0.9 + noise(size, 6) * 0.1
+
+
+def stitched(size=256, lines=8, base=None):
+    """strip of cloth (belt, collar): u along the strip (one texture every 5 cm), v across it (0 to 1). Parallel
+    rows of stitches sunk into a fine grain, like the stitched rows of a real belt or gi collar"""
+    y, x = np.mgrid[0:size, 0:size] / size
+    h = (base if base is not None else rice(size, 24, 12)) * 0.35 + 0.65
+    for k in range(lines):
+        v = (k + 0.5) / lines
+        groove = np.exp(-(((y - v) / 0.012) ** 2))
+        dash = 0.6 + 0.4 * (np.sin(2 * np.pi * x * 16) > -0.3)
+        h = h - groove * dash * 0.55
+    # the two folded edges of the strip are rounded
+    h = h - (np.exp(-((y / 0.05) ** 2)) + np.exp(-(((1 - y) / 0.05) ** 2))) * 0.3
+    return h
+
+
+def elastic(size=256, ribs=32):
+    """v0.32 ribbed elastic of a waistband (8 mm ribs across the band), instead of the coarse knit that read as rope"""
+    y, x = np.mgrid[0:size, 0:size] / size
+    return 0.5 + 0.5 * np.sin(2 * np.pi * x * ribs) * 0.7 + noise(size, 4) * 0.08
+
+
+def serge(size=512, lines=110):
+    """twill of the gi trousers: fine diagonal ribs (2 mm)"""
+    y, x = np.mgrid[0:size, 0:size] / size
+    return 0.5 + 0.5 * np.sin(2 * np.pi * (x + y) * lines) * 0.8 + noise(size, 5) * 0.1
+
+
 MATS = {}
 
 
-def fabric(name, color, kind, rough=0.7, strength=2.0, sheen=0.0, coat=0.0):
-    """material with a generated relief; colour as sRGB hex"""
+def fabric(name, color, kind, rough=0.7, strength=2.0, sheen=0.0, coat=0.0, tone=0.0):
+    """material with a generated relief; colour as sRGB hex. tone: how much darker the hollows of the relief are
+    (a colour texture, so the weave reads even where the light is flat)"""
     if name in MATS:
         return MATS[name]
-    h = {'weave': weave, 'knit': knit, 'satin': satin, 'grain': grain, 'flat': lambda: noise(256, 3) * 0.2}[kind]()
+    gens = {'weave': weave, 'knit': knit, 'satin': satin, 'grain': grain, 'flat': lambda: noise(256, 3) * 0.2,
+            'judogi': lambda: rice(512, 96, 64, 0.6), 'perle': lambda: rice(512, 128, 80, 0.9),
+            'ceinture': lambda: stitched(256, 9), 'col-judo': lambda: stitched(256, 7, rice(256, 24, 12, 0.6)),
+            'col-bjj': lambda: stitched(256, 4, rice(256, 32, 16, 0.9)), 'serge': serge,
+            'elastique': elastic, 'jersey': lambda: knit(512, 150)}
+    h = gens[kind]()
     nimg = save_png(f'{name}_n', height_to_normal(h, strength))
     nimg.colorspace_settings.name = 'Non-Color'
     m = bpy.data.materials.new(name)
@@ -162,6 +208,12 @@ def fabric(name, color, kind, rough=0.7, strength=2.0, sheen=0.0, coat=0.0):
     lin = [x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
     bsdf.inputs['Base Color'].default_value = (*lin, 1)
     bsdf.inputs['Roughness'].default_value = rough
+    if tone:
+        hn = (h - h.min()) / (np.ptp(h) + 1e-9)
+        cimg = save_png(f'{name}_c', np.dstack([np.full_like(hn, x) * (1 - tone * (1 - hn)) for x in c]))
+        ct = nt.nodes.new('ShaderNodeTexImage')
+        ct.image = cimg
+        nt.links.new(ct.outputs['Color'], bsdf.inputs['Base Color'])
     t = nt.nodes.new('ShaderNodeTexImage')
     t.image = nimg
     nm = nt.nodes.new('ShaderNodeNormalMap')
@@ -232,6 +284,9 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=()):
     bmesh.ops.delete(bm_, geom=[v for v in bm_.verts if not v.link_faces], context='VERTS')
     # the body is split along its texture seams: weld them, or the garment shows a crack there
     bmesh.ops.remove_doubles(bm_, verts=bm_.verts[:], dist=0.0005 / max(MW.to_scale()))
+    # v0.32: small holes left by the body mesh (navel, a seam the weld missed) are closed; the real openings of a
+    # garment (neck, sleeves, legs: dozens of edges) are kept
+    bmesh.ops.holes_fill(bm_, edges=[e for e in bm_.edges if e.is_boundary], sides=10)
     bm_.normal_update()
     # body vertices under the garment: every body vertex of the region, but those near the garment's free edges
     # (the skin stays drawn where the cloth ends)
@@ -256,6 +311,15 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=()):
     for v in bm_.verts:
         if any(e.is_boundary for e in v.link_edges):
             v.co = v.co + (MWI.to_3x3() @ N[v[lay]]) * (hem * 0.25)
+            # v0.32: a hem lies exactly on its cut (the push along the skin's normal used to move each point a little
+            # up or down the limb: a ragged, toothed edge on the sleeves and the waistbands)
+            # the cut the edge comes from is the closest one (another plane can pass a few centimetres away)
+            q = MW @ v.co
+            ds = sorted((abs((q - pt).dot(nr)), k) for k, (pt, nr) in enumerate(cuts))
+            if ds and ds[0][0] < 0.035:
+                pt, nr = cuts[ds[0][1]]
+                q = q - nr * (q - pt).dot(nr)
+            v.co = MWI @ q
     if mats:
         o.data.materials.clear()
         for m in mats:
@@ -324,6 +388,25 @@ def weighted(o, groups):
                 o.vertex_groups[n].add([v.index], x, 'REPLACE')
 
 
+def fold_weights(o, src, dst):
+    """v0.32: the weights of the bones in src move to dst. A sleeve or trouser edge took the hand's or foot's
+    weights from the skin under it: when the wrist or ankle bent, every other point of the hem followed the hand,
+    a toothed edge (Youssef, 2026-10-22: « bordures irrégulières »)"""
+    groups = [o.vertex_groups[n] for n in src if n in o.vertex_groups]
+    if not groups:
+        return
+    d = o.vertex_groups.get(dst) or o.vertex_groups.new(name=dst)
+    idx = {g.index for g in groups}
+    for v in o.data.vertices:
+        moved = sum(x.weight for x in v.groups if x.group in idx)
+        if moved <= 0:
+            continue
+        for g in groups:
+            g.remove([v.index])
+        cur = next((x.weight for x in v.groups if x.group == d.index), 0.0)
+        d.add([v.index], cur + moved, 'REPLACE')
+
+
 def hand_frame(s):
     wr = H[f'{s}Hand']
     kn = H[f'{s}HandMiddle1']
@@ -337,12 +420,16 @@ def hand_frame(s):
     return wr, a, lat, up
 
 
-def ellipsoid(name, centre, axes, radii, seg=28, rings=18):
+def ellipsoid(name, centre, axes, radii, seg=28, rings=18, power=1.0):
+    """power < 1: a rounded box rather than an egg (v0.32 gloves: « gants trop sphériques »)"""
     bm_ = bmesh.new()
     bmesh.ops.create_uvsphere(bm_, u_segments=seg, v_segments=rings, radius=1.0)
     M = Matrix((axes[0] * radii[0], axes[1] * radii[1], axes[2] * radii[2])).transposed()
     for v in bm_.verts:
-        v.co = MWI @ (centre + M @ v.co)
+        c = v.co
+        if power != 1.0:
+            c = Vector([math.copysign(abs(x) ** power, x) for x in c])
+        v.co = MWI @ (centre + M @ c)
     o = new_obj(name, bm_)
     bm_.free()
     o.matrix_world = MW
@@ -386,7 +473,7 @@ def boxing_glove(s, color, accent, thai=False):
     L = 0.16 if not thai else 0.15
     parts = []
     # padded mitt holding the fist: longer than wide, deeper over the knuckles
-    mitt = ellipsoid(f'gant-{s}', wr + a * (L * 0.5), (a, lat, up), (L * 0.55, 0.068 if not thai else 0.064, 0.056 if not thai else 0.058))
+    mitt = ellipsoid(f'gant-{s}', wr + a * (L * 0.5), (a, lat, up), (L * 0.58, 0.064 if not thai else 0.061, 0.054 if not thai else 0.056), power=0.6)
     bm_ = bmesh.new()
     bm_.from_mesh(mitt.data)
     for v in bm_.verts:
@@ -402,22 +489,22 @@ def boxing_glove(s, color, accent, thai=False):
             v.co = MWI @ (c + (p - c) * k)
     bm_.to_mesh(mitt.data)
     bm_.free()
-    mitt.data.materials.append(fabric(f'cuir-{color}', color, 'grain', rough=0.38, strength=1.2, coat=0.6))
+    mitt.data.materials.append(fabric(f'cuir-{color}', color, 'grain', rough=0.5, strength=0.7, coat=0.2))
     parts.append(mitt)
     # thumb along the side of the mitt (attached, as on real gloves)
     th = ellipsoid(f'pouce-{s}', wr + a * (L * 0.45) + lat * 0.06 + up * 0.012, (a, lat, up), (0.045, 0.022, 0.024), 18, 12)
-    th.data.materials.append(fabric(f'cuir-{color}', color, 'grain', rough=0.38, strength=1.2, coat=0.6))
+    th.data.materials.append(fabric(f'cuir-{color}', color, 'grain', rough=0.5, strength=0.7, coat=0.2))
     parts.append(th)
     # cuff up the forearm, then a strap (velcro on boxing gloves, a longer laced-look cuff on Thai gloves)
     fa = H[f'{s}ForeArm']
     cuffLen = 0.1 if not thai else 0.12
     top = wr + (fa - wr).normalized() * cuffLen
     cuff = tube(f'manchette-{s}', wr + a * 0.03, top, 0.05, 0.047, around=up)
-    cuff.data.materials.append(fabric(f'cuir-{color}', color, 'grain', rough=0.38, strength=1.2, coat=0.6))
+    cuff.data.materials.append(fabric(f'cuir-{color}', color, 'grain', rough=0.5, strength=0.7, coat=0.2))
     solid(cuff, 0.008)
     parts.append(cuff)
     strap = tube(f'sangle-{s}', wr + (fa - wr).normalized() * (cuffLen * 0.35), wr + (fa - wr).normalized() * (cuffLen * 0.75), 0.054, 0.053, around=up)
-    strap.data.materials.append(fabric(f'sangle-{accent}', accent, 'knit', rough=0.6, strength=1.5))
+    strap.data.materials.append(fabric(f'sangle-{accent}', accent, 'elastique', rough=0.65, strength=0.8))
     solid(strap, 0.004)
     parts.append(strap)
     for o in parts:
@@ -461,49 +548,71 @@ def ring_profile(z, dz=0.012, pad=0.0, exclude=ARMS):
     return cx, cy, [b + pad for b in bins]
 
 
-def belt(color, z, extra=0.03):
-    cx, cy, rad = ring_profile(z, pad=extra)
+def strip(name, pts, width, fwd, thick, mat, across=2):
+    """v0.32 flat band of cloth along a polyline (belt, its knot and tails, collar): constant width, its face turned
+    towards fwd(point) (a vector or a function), a real thickness, its own UVs (u: one texture every 5 cm along the
+    band, v: 0 to 1 across it) so the stitched rows run along it"""
     bm_ = bmesh.new()
-    seg = 72
-    hgt = 0.042
-    rows = []
-    for k, dzz in enumerate((-hgt / 2, hgt / 2)):
+    uvl = bm_.loops.layers.uv.new()
+    rows, uvs, run = [], {}, 0.0
+    for k, c in enumerate(pts):
+        d = (pts[min(k + 1, len(pts) - 1)] - pts[max(k - 1, 0)]).normalized()
+        f = fwd(c) if callable(fwd) else fwd
+        side = d.cross(f).normalized()
+        if k:
+            run += (pts[k] - pts[k - 1]).length
         row = []
-        for j in range(seg):
-            ang = -math.pi + 2 * math.pi * j / seg
-            f = j / seg * 36
-            r = rad[int(f) % 36] * (1 - f % 1) + rad[(int(f) + 1) % 36] * (f % 1)
-            row.append(bm_.verts.new(MWI @ Vector((cx + r * math.cos(ang), cy + r * math.sin(ang), z + dzz))))
+        for j in range(across + 1):
+            t = j / across
+            # rounded across: the middle stands a little proud, like a folded and stitched band
+            bulge = (1 - (2 * t - 1) ** 2) * width * 0.05
+            v = bm_.verts.new(MWI @ (c + side * (t - 0.5) * width + f.normalized() * bulge))
+            uvs[v] = (run / 0.05, t)
+            row.append(v)
         rows.append(row)
-    for j in range(seg):
-        bm_.faces.new((rows[0][j], rows[0][(j + 1) % seg], rows[1][(j + 1) % seg], rows[1][j]))
-    o = new_obj('ceinture', bm_)
+    for k in range(len(rows) - 1):
+        for j in range(across):
+            f_ = bm_.faces.new((rows[k][j], rows[k][j + 1], rows[k + 1][j + 1], rows[k + 1][j]))
+            for l in f_.loops:
+                l[uvl].uv = uvs[l.vert]
+    o = new_obj(name, bm_)
     bm_.free()
     o.matrix_world = MW
-    solid(o, 0.006)
-    m = fabric(f'ceinture-{color}', color, 'weave', rough=0.8, strength=1.5)
-    o.data.materials.append(m)
+    o['css_uv'] = True
+    solid(o, thick)
+    o.data.materials.append(mat)
+    return o
+
+
+def curve(a, b, bend, n=10):
+    """points from a to b, bowed by the vector bend at the middle"""
+    return [a + (b - a) * (k / n) + bend * (4 * (k / n) * (1 - k / n)) for k in range(n + 1)]
+
+
+def belt(color, z, extra=0.03):
+    """v0.32 flat belt (4 cm, 5 mm thick, rows of stitches) wound round the jacket, square knot at the front and its
+    two ends hanging down (Youssef, 2026-10-22: « ceinture plate, correctement nouée, avec deux extrémités »)"""
+    cx, cy, rad = ring_profile(z, pad=extra)
+    m = fabric(f'ceinture-{color}', color, 'ceinture', rough=0.75, strength=1.6, tone=0.25)
+    seg = 72
+    ring = []
+    for j in range(seg + 1):
+        ang = -math.pi + 2 * math.pi * j / seg
+        f = j / seg * 36
+        r = rad[int(f) % 36] * (1 - f % 1) + rad[(int(f) + 1) % 36] * (f % 1)
+        ring.append(Vector((cx + r * math.cos(ang), cy + r * math.sin(ang), z)))
+    o = strip('ceinture', ring, 0.04, lambda c: Vector((c.x - cx, c.y - cy, 0)), 0.005, m)
     parts = [o]
-    # knot at the front and two tails hanging down (square knot of a judo or jiu-jitsu belt)
-    front = Vector((cx, cy - rad[9] - 0.012, z))
-    knot = ellipsoid('noeud', front + Vector((0, -0.01, 0)), (Vector((1, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1))), (0.035, 0.016, 0.03), 18, 12)
-    knot.data.materials.append(m)
-    parts.append(knot)
-    for sgn in (1, -1):
-        a = front + Vector((0.012 * sgn, -0.012, -0.015))
-        b = a + Vector((0.07 * sgn, -0.02, -0.24))
-        t = tube(f'pan-{sgn}', a, b, 0.02, 0.02, 4, 4, around=Vector((0, 1, 0)))
-        bmt = bmesh.new()
-        bmt.from_mesh(t.data)
-        for v in bmt.verts:  # flatten the 4-sided tube into a strip of belt
-            p = MW @ v.co
-            c = a + (b - a) * max(0.0, min(1.0, (p - a).dot((b - a).normalized()) / (b - a).length))
-            q = p - c
-            v.co = MWI @ (c + Vector((q.x * 1.0, q.y * 0.25, q.z)))
-        bmt.to_mesh(t.data)
-        bmt.free()
-        t.data.materials.append(m)
-        parts.append(t)
+    front = Vector((cx, cy - rad[9], z))
+    out = Vector((0, -1, 0))
+    # knot: a wrap across the belt, the crossing end over it, then the two ends
+    wrap = strip('noeud', curve(front + Vector((-0.034, -0.008, 0)), front + Vector((0.034, -0.008, 0)), Vector((0, -0.006, 0)), 6), 0.046, out, 0.006, m)
+    cross = strip('noeud-croise', curve(front + Vector((-0.022, -0.016, 0.022)), front + Vector((0.02, -0.016, -0.024)), Vector((0, -0.006, 0)), 6), 0.036, out, 0.006, m)
+    parts += [wrap, cross]
+    for sgn, ln in ((1, 0.24), (-1, 0.22)):
+        a = front + Vector((0.012 * sgn, -0.02, -0.018))
+        b = a + Vector((0.055 * sgn, -0.035, -ln))
+        parts.append(strip(f'pan-{sgn}', curve(a, b, Vector((0.012 * sgn, -0.01, 0.0)), 12), 0.04, out, 0.005, m))
     for p_ in parts:
         weighted(p_, {'Hips': 0.8, 'Spine': 0.2})
     return parts
@@ -516,14 +625,18 @@ def skirt(color, kind, top_z, length):
     seg = 48
     rows = []
     n = 6
+    # v0.32: closer to the body (the old 2.5 to 4.5 cm made a padded, inflated skirt)
+    pad0, pad1 = (0.014, 0.016) if kind == 'judo' else (0.011, 0.012)
     for k in range(n + 1):
         z = top_z - length * k / n
-        cx, cy, rad = ring_profile(z, dz=0.015, pad=0.025 + 0.02 * k / n)
+        cx, cy, rad = ring_profile(z, dz=0.015, pad=pad0 + pad1 * k / n)
         row = []
         for j in range(seg + 1):
             ang = -math.pi + 2 * math.pi * j / seg
             f = j / seg * 36
             r = rad[int(f) % 36] * (1 - f % 1) + rad[(int(f) + 1) % 36] * (f % 1)
+            # soft vertical folds of the hanging cloth, deeper towards the hem
+            r += 0.004 * (k / n) * math.sin(ang * 9 + 0.7)
             row.append(bm_.verts.new(MWI @ Vector((cx + r * math.cos(ang), cy + r * math.sin(ang), z))))
         rows.append(row)
     for k in range(n):
@@ -536,8 +649,8 @@ def skirt(color, kind, top_z, length):
     o = new_obj('jupe-veste', bm_)
     bm_.free()
     o.matrix_world = MW
-    solid(o, 0.006)
-    o.data.materials.append(fabric(f'gi-{color}-{kind}', color, 'weave', rough=0.85, strength=2.4 if kind == 'judo' else 1.8))
+    solid(o, 0.004 if kind == 'judo' else 0.003)
+    o.data.materials.append(gi_fabric(color, kind))
 
     def ww(p):
         down = max(0.0, min(1.0, (top_z - p.z) / length))
@@ -550,12 +663,21 @@ def skirt(color, kind, top_z, length):
     return [o]
 
 
+def gi_fabric(color, kind):
+    """judogi: double weave, heavy, larger grains; BJJ gi: pearl weave, lighter and finer. Matt cotton"""
+    if kind == 'judo':
+        return fabric(f'gi-{color}-judo', color, 'judogi', rough=0.92, strength=0.45, tone=0.06)
+    return fabric(f'gi-{color}-bjj', color, 'perle', rough=0.9, strength=0.5, tone=0.14)
+
+
 def collar(color, kind):
     """thick collar and lapels: from the back of the neck, over the shoulders, crossing on the chest (left over
-    right) down to the belt"""
-    m = fabric(f'col-{color}-{kind}', color, 'weave', rough=0.85, strength=3.0)
+    right) down to the belt. v0.32: a stiff stitched band (judogi 5.5 cm wide, 1.2 cm thick, 7 rows; BJJ 4.2 cm,
+    1 cm, 4 rows), no longer a thin ribbon"""
+    m = fabric(f'col-{color}-{kind}', color, 'col-judo' if kind == 'judo' else 'col-bjj', rough=0.9, strength=1.4, tone=0.12)
     parts = []
     nk = H['Neck']
+    wd = 0.055 if kind == 'judo' else 0.042
     for s, sg in (('Left', 1), ('Right', -1)):
         pts = [
             nk + Vector((0.0, 0.07, -0.01)),
@@ -564,41 +686,43 @@ def collar(color, kind):
             nk + Vector((0.05 * sg, -0.11, -0.16)),
             nk + Vector((-0.03 * sg, -0.13, -0.33)),
             nk + Vector((-0.09 * sg, -0.125, nk.z * 0 + (hipZ + 0.06) - nk.z)),
+            # v0.32: down to the hem of the jacket, as on a real gi (it covers the front opening of the skirt)
+            nk + Vector((-0.1 * sg, -0.13, (hipZ - (0.2 if kind == 'judo' else 0.16)) - nk.z)),
         ]
-        # put the path just above the jacket surface (body + jacket offset)
+        # just above the jacket surface (body + jacket offset); the left lapel lies over the right one
         fixed = []
         for p in pts:
             j = min(range(len(P)), key=lambda i: (P[i] - p).length_squared if w(i, *ARMS) < 0.3 else 9)
-            fixed.append(P[j] + N[j] * (0.028 if s == 'Left' else 0.022))
-        bm_ = bmesh.new()
-        prev = None
-        steps = 24
+            # above the skirt below the belt (the skirt stands up to 3 cm off the thigh)
+            off = 0.02 if s == 'Left' else 0.013
+            if p.z < hipZ:
+                off += 0.02 + (hipZ - p.z) * 0.08
+            fixed.append(P[j] + N[j] * off)
+        path = []
+        steps = 30
         for k in range(steps + 1):
             t = k / steps * (len(fixed) - 1)
             i0 = min(int(t), len(fixed) - 2)
             u = t - i0
-            c = fixed[i0] * (1 - u) + fixed[i0 + 1] * u
-            d = (fixed[i0 + 1] - fixed[i0]).normalized()
-            jn = min(range(len(P)), key=lambda i: (P[i] - c).length_squared)
-            nn = N[jn]
-            side = d.cross(nn).normalized()
-            wd = 0.05 if kind == 'judo' else 0.045
-            row = [bm_.verts.new(MWI @ (c - side * wd / 2)), bm_.verts.new(MWI @ (c + side * wd / 2))]
-            if prev:
-                bm_.faces.new((prev[0], prev[1], row[1], row[0]))
-            prev = row
-        o = new_obj(f'revers-{s}', bm_)
-        bm_.free()
-        o.matrix_world = MW
-        solid(o, 0.012 if kind == 'judo' else 0.009)
+            path.append(fixed[i0] * (1 - u) + fixed[i0 + 1] * u)
+        nrm = lambda c: N[min(range(len(P)), key=lambda i: (P[i] - c).length_squared)]
+        o = strip(f'revers-{s}', path, wd, nrm, 0.012 if kind == 'judo' else 0.010, m, across=3)
         smooth(o, 1)
-        o.data.materials.append(m)
-        weighted(o, lambda p: {'Spine2': 0.7, 'Neck': 0.3} if p.z > chestZ else {'Spine2': 0.5, 'Spine1': 0.3, 'Spine': 0.2} if p.z > hipZ + 0.2 else {'Spine': 0.5, 'Hips': 0.5})
+        def lw(p):
+            if p.z > chestZ:
+                return {'Spine2': 0.7, 'Neck': 0.3}
+            if p.z > hipZ + 0.2:
+                return {'Spine2': 0.5, 'Spine1': 0.3, 'Spine': 0.2}
+            if p.z > hipZ:
+                return {'Spine': 0.5, 'Hips': 0.5}
+            # below the belt the lapel follows the thigh it lies on, like the skirt's front panels
+            t = min(0.5, (hipZ - p.z) / 0.2 * 0.5)
+            return {'Hips': 1 - t, ('Left' if p.x > 0 else 'Right') + 'UpLeg': t}
+        weighted(o, lw)
         parts.append(o)
     return parts
 
 
-# ---------------------------------------------------------------- regions
 def shorts(kind, color, band, n_leg=None):
     """kind: boxe (loose, to just above the knee, high waistband), kick (fitted, short), thai (short, very wide,
     high waistband), mma (board short, side slits, to the knee), compression"""
@@ -614,12 +738,8 @@ def shorts(kind, color, band, n_leg=None):
     def keep(i):
         if P[i].z > waist or w(i, *ARMS) > 0.2 or P[i].z < hemz(i):
             return False
-        if kind == 'mma':
-            # side slit: 9 cm up the outside of each leg
-            s = leg_of(i)
-            c, _ = axis_point(i, f'{s}UpLeg', f'{s}Leg')
-            if P[i].z < hemz(i) + 0.09 and abs(P[i].x) > abs(c.x) + 0.04 and abs(P[i].y - c.y) < 0.03:
-                return False
+        # v0.32: the MMA side slit is gone (cut along the skin's triangles, it came out torn, Youssef 2026-10-22:
+        # « bordures irrégulières »); the hem is straight like the other shorts
         return True
 
     def push(i):
@@ -632,8 +752,10 @@ def shorts(kind, color, band, n_leg=None):
         crotch = max(0.0, 1 - abs(P[i].x) / 0.05)
         return loose(i, f'{s}UpLeg', f'{s}Leg', 0.005, lambda u: flare * u ** 1.5 * (1 - 0.7 * crotch) * (0.55 if abs(P[i].x) < abs(axis_point(i, f'{s}UpLeg', f'{s}Leg')[0].x) else 1))
 
-    sheenK = {'boxe': ('satin', 0.32, 0.6), 'thai': ('satin', 0.3, 0.7), 'kick': ('satin', 0.4, 0.4), 'mma': ('flat', 0.6, 0.2), 'compression': ('knit', 0.55, 0.1)}[kind]
-    mats = [fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2]), fabric(f'ceinture-{kind}-{band}', band, 'knit', rough=0.5)]
+    # v0.32 (« matières trop brillantes ou plastifiées »): satin keeps a soft sheen but is no longer wet-looking,
+    # polyester is matt; the satin relief is shallower (it drew wavy lines)
+    sheenK = {'boxe': ('satin', 0.6, 0.35, 0.3), 'thai': ('satin', 0.58, 0.4, 0.3), 'kick': ('serge', 0.62, 0.2, 0.4), 'mma': ('flat', 0.68, 0.1, 1.0), 'compression': ('jersey', 0.6, 0.1, 0.5)}[kind]
+    mats = [fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3]), fabric(f'ceinture-{kind}-{band}', band, 'elastique', rough=0.65, strength=0.5, tone=0.1)]
     hems = {H[f'{s}Leg'].z + hem * (H[f'{s}UpLeg'].z - H[f'{s}Leg'].z) for s in ('Left', 'Right')}
     cuts = [(Vector((0, 0, z)), Vector((0, 0, 1))) for z in (*hems, waist, waist - bandH)]
     o, cov = shell(f'short-{kind}', keep, push, 0.004, mats, lambda c, ids: 1 if c.z > waist - bandH else 0, cuts=cuts)
@@ -647,7 +769,7 @@ def top(kind, color, accent=None):
     sleeve = {'brassiere': 0, 'debardeur': 0, 'rash-court': 0.45, 'rash-long': 0.93}[kind]
 
     def keep(i):
-        if P[i].z < lowZ or w(i, 'Head') > 0.2 or w(i, *HANDS) > 0.1 or P[i].z > H['Neck'].z + 0.01:
+        if P[i].z < lowZ or w(i, 'Head') > 0.2 or w(i, *HANDS) > 0.5 or P[i].z > H['Neck'].z + 0.01:
             return False
         if w(i, 'Neck') > (0.25 if kind != 'brassiere' else 0.15):
             return False
@@ -672,9 +794,9 @@ def top(kind, color, accent=None):
                 return False
         return True
 
-    mats = [fabric(f'haut-{kind}-{color}', color, 'knit', rough=0.55, strength=1.4, sheen=0.2)]
+    mats = [fabric(f'haut-{kind}-{color}', color, 'jersey', rough=0.6, strength=0.5, sheen=0.15)]
     if accent:
-        mats.append(fabric(f'liseré-{accent}', accent, 'knit', rough=0.5, strength=1.0))
+        mats.append(fabric(f'liseré-{accent}', accent, 'elastique', rough=0.6, strength=0.8))
     cuts = [(Vector((0, 0, lowZ)), Vector((0, 0, 1)))]
     for s_ in ('Left', 'Right'):
         if 0 < sleeve <= 0.5:
@@ -685,7 +807,23 @@ def top(kind, color, accent=None):
             cuts.append((a + (b - a) * (sleeve - 0.5) * 2, (b - a).normalized()))
     o, cov = shell(f'haut-{kind}', keep, lambda i: 0.0035 if kind != 'debardeur' else 0.006, 0.003, mats,
                    (lambda c, ids: 1 if w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ else 0) if accent else None, cuts=cuts)
+    for s_ in ('Left', 'Right'):
+        fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
     return [o], cov
+
+
+def folds(i, amp):
+    """v0.32 soft folds of a loose garment: a smooth wave field over the body (wavelength 12 to 20 cm), so the cloth
+    is not a smooth inflated copy of the skin"""
+    p = P[i]
+    return amp * (0.5 * math.sin(p.x * 41 + p.z * 23) + 0.5 * math.sin(p.y * 37 - p.z * 29 + 1.3))
+
+
+def bunch(z, z0, span, amp):
+    """the cloth gathering in rings above a cuff or the ankle (wavelength 4.5 cm), fading over span"""
+    if z < z0 or z > z0 + span:
+        return 0.0
+    return amp * (1 - (z - z0) / span) * (0.5 + 0.5 * math.sin((z - z0) * 2 * math.pi / 0.045))
 
 
 def pants(color, kind, legging=False):
@@ -695,35 +833,49 @@ def pants(color, kind, legging=False):
             return False
         return P[i].z > ankleZ + (0.06 if not legging else 0.05) and w(i, *FEET) < 0.4
 
+    judo = kind == 'judo'
+
     def push(i):
         if legging:
             return 0.0025
         if P[i].z > hipZ:
-            return 0.008
+            return 0.006
         s = leg_of(i)
+        # v0.32: about half the old volume (it read as padded); folds, and the cloth gathers above the ankle
         if P[i].z > H[f'{s}Leg'].z:
-            return loose(i, f'{s}UpLeg', f'{s}Leg', 0.01, lambda u: 0.022 + 0.008 * u)
-        return loose(i, f'{s}Leg', f'{s}Foot', 0.01, lambda u: 0.03 + 0.012 * u)
+            v = loose(i, f'{s}UpLeg', f'{s}Leg', 0.006, lambda u: (0.016 + 0.006 * u) if judo else (0.012 + 0.004 * u))
+        else:
+            v = loose(i, f'{s}Leg', f'{s}Foot', 0.006, lambda u: (0.022 + 0.01 * u) if judo else (0.016 + 0.008 * u))
+        return v + N[i] * (folds(i, 0.004) + bunch(P[i].z, ankleZ + 0.06, 0.14, 0.006))
 
-    mats = [fabric(f'pantalon-{color}-{kind}', color, 'knit' if legging else 'weave', rough=0.6 if legging else 0.85, strength=1.4 if legging else 2.0)]
+    if legging:
+        mats = [fabric(f'pantalon-{color}-{kind}', color, 'jersey', rough=0.6, strength=0.5)]
+    else:
+        # gi trousers: a plainer, twilled cotton than the jacket, matt
+        mats = [fabric(f'pantalon-{color}-{kind}', color, 'serge', rough=0.9, strength=0.5, tone=0.06)]
     cuts = [(Vector((0, 0, ankleZ + (0.06 if not legging else 0.05))), Vector((0, 0, 1))), (Vector((0, 0, hipZ + (0.06 if legging else 0.09))), Vector((0, 0, 1)))]
-    o, cov = shell(f'pantalon-{kind}', keep, push, 0.004, mats, cuts=cuts)
+    o, cov = shell(f'pantalon-{kind}', keep, push, 0.003, mats, cuts=cuts)
+    for s_ in ('Left', 'Right'):
+        fold_weights(o, [f'{s_}Foot', f'{s_}ToeBase'], f'{s_}Leg')
     smooth(o, 2 if not legging else 1)
     return [o], cov
 
 
 def jacket(color, kind):
     """gi / judogi jacket body and sleeves (to just above the wrist, wide); the skirt, collar and belt are added
-    separately"""
+    separately. v0.32: closer to the body, thinner cloth, folds; the judogi is wider and heavier than the BJJ gi"""
     vz = {'judo': 0.25, 'bjj': 0.22}[kind]
+    judo = kind == 'judo'
 
     def keep(i):
-        if P[i].z < hipZ + 0.02 or w(i, 'Head') > 0.2 or w(i, *HANDS) > 0.05 or w(i, 'Neck') > 0.3:
+        # v0.32: the hand's weight no longer decides where the sleeve ends (a skin point with 5 % of it was left
+        # out: the sleeve ended along the skin's triangles, a toothed edge); the straight cut below decides
+        if P[i].z < hipZ + 0.02 or w(i, 'Head') > 0.2 or w(i, *HANDS) > 0.5 or w(i, 'Neck') > 0.3:
             return False
         nk = H['Neck']
         # V opening on the chest where the lapels cross
         if P[i].y < 0.0 and P[i].z > nk.z - vz:
-            half = 0.11 * (P[i].z - (nk.z - vz)) / vz
+            half = 0.085 * (P[i].z - (nk.z - vz)) / vz
             if abs(P[i].x) < half + 0.01:
                 return False
         s = 'Left' if P[i].x > 0 else 'Right'
@@ -735,18 +887,25 @@ def jacket(color, kind):
     def push(i):
         s = 'Left' if P[i].x > 0 else 'Right'
         if w(i, f'{s}ForeArm') > 0.3:
-            return loose(i, f'{s}ForeArm', f'{s}Hand', 0.012, lambda u: 0.02 + 0.015 * u)
+            c, u = axis_point(i, f'{s}ForeArm', f'{s}Hand')
+            v = loose(i, f'{s}ForeArm', f'{s}Hand', 0.006, lambda u: (0.016 + 0.012 * u) if judo else (0.01 + 0.006 * u))
+            return v + N[i] * (folds(i, 0.003) + (0.004 * (0.5 + 0.5 * math.sin(u * 2 * math.pi * 3)) if u < 0.35 else 0))
         if w(i, f'{s}Arm') > 0.4:
-            return loose(i, f'{s}Arm', f'{s}ForeArm', 0.014, lambda u: 0.012)
-        return 0.018 if kind == 'judo' else 0.014
+            return loose(i, f'{s}Arm', f'{s}ForeArm', 0.005, lambda u: 0.007 if judo else 0.004) + N[i] * folds(i, 0.003)
+        # the short rash guard worn under the gi (Amara) stays under the jacket: the folds only push outwards there
+        if female:
+            return (0.011 if judo else 0.009) + abs(folds(i, 0.004 if judo else 0.003))
+        return (0.008 if judo else 0.006) + folds(i, 0.004 if judo else 0.003)
 
-    mats = [fabric(f'gi-{color}-{kind}', color, 'weave', rough=0.85, strength=2.4 if kind == 'judo' else 1.8)]
+    mats = [gi_fabric(color, kind)]
     cuts = [(Vector((0, 0, hipZ + 0.02)), Vector((0, 0, 1)))]
     for s_ in ('Left', 'Right'):
         a, b = H[f'{s_}ForeArm'], H[f'{s_}Hand']
         cuts.append((a + (b - a) * 0.82, (b - a).normalized()))
-    o, cov = shell(f'veste-{kind}', keep, push, 0.006 if kind == 'judo' else 0.005, mats, hem=0.01, cuts=cuts)
-    smooth(o, 3)
+    o, cov = shell(f'veste-{kind}', keep, push, 0.004 if judo else 0.003, mats, hem=0.01, cuts=cuts)
+    for s_ in ('Left', 'Right'):
+        fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
+    smooth(o, 2)
     return [o], cov
 
 
@@ -756,21 +915,35 @@ def shoes(color, accent):
         return P[i].z < ankleZ + 0.2 and w(i, *FEET, 'LeftLeg', 'RightLeg') > 0.5
 
     o, cov = shell('chaussures', keep, lambda i: 0.004 if P[i].z > 0.012 else 0.0015, 0.004,
-                   [fabric(f'chaussure-{color}', color, 'grain', rough=0.45, strength=1.0, coat=0.3), fabric(f'semelle-{accent}', accent, 'flat', rough=0.7)],
+                   [fabric(f'chaussure-{color}', color, 'grain', rough=0.55, strength=0.7, coat=0.15), fabric(f'semelle-{accent}', accent, 'flat', rough=0.7)],
                    lambda c, ids: 1 if c.z < 0.015 or (c.y < -0.04 and c.z < ankleZ + 0.15 and abs(abs(c.x) - 0.11) < 0.012) else 0,
                    cuts=[(Vector((0, 0, ankleZ + 0.2)), Vector((0, 0, 1))), (Vector((0, 0, 0.015)), Vector((0, 0, 1)))])
     return [o], cov
 
 
 def shin_guards(color):
+    """v0.32 shin guard (Youssef, 2026-10-22: « protège-tibias incomplets ou mal ajustés »): a sleeve round the whole
+    shin with straight edges (under the knee, above the ankle), padded in front, thinner behind. Before: only the
+    skin facing forward, with a toothed outline. No instep piece yet (a plate laid on the foot did not sit right)"""
+    top_z = kneeZ - 0.06
+
     def keep(i):
         s = 'Left' if P[i].x > 0 else 'Right'
-        front = N[i].dot(FWD) > 0.15 or (w(i, f'{s}Foot') > 0.5 and N[i].z > 0.3)
-        return front and w(i, f'{s}Leg', f'{s}Foot') > 0.6 and kneeZ - 0.05 > P[i].z > 0.035
+        return w(i, f'{s}Leg', f'{s}Foot') > 0.5 and top_z > P[i].z > ankleZ + 0.02
 
-    o, cov = shell('protege-tibias', keep, lambda i: 0.012, 0.012, [fabric(f'protection-{color}', color, 'grain', rough=0.5, strength=1.5, coat=0.2)])
+    def push(i):
+        front = max(0.0, N[i].dot(FWD))
+        if P[i].z < ankleZ + 0.01:
+            return 0.008
+        return 0.004 + 0.012 * front ** 0.7
+
+    pad = fabric(f'protection-{color}', color, 'grain', rough=0.62, strength=0.8, coat=0.1)
+    cuts = [(Vector((0, 0, top_z)), Vector((0, 0, 1))), (Vector((0, 0, ankleZ + 0.02)), Vector((0, 0, 1)))]
+    o, cov = shell('protege-tibias', keep, push, 0.006, [pad], cuts=cuts)
+    for s_ in ('Left', 'Right'):
+        fold_weights(o, [f'{s_}Foot', f'{s_}ToeBase'], f'{s_}Leg')
     smooth(o, 2)
-    return [o], set()  # partial cover: the skin around stays drawn
+    return [o], cov
 
 
 def mma_gloves(color):
@@ -796,7 +969,7 @@ def mma_gloves(color):
         back = max(0.0, N[i].dot(up))
         return 0.004 + 0.012 * knuckles * back
 
-    o, cov = shell('gants-mma', keep, push, 0.004, [fabric(f'gant-mma-{color}', color, 'grain', rough=0.4, strength=1.2, coat=0.5)])
+    o, cov = shell('gants-mma', keep, push, 0.004, [fabric(f'gant-mma-{color}', color, 'grain', rough=0.55, strength=0.7, coat=0.2)])
     return [o], set()
 
 
@@ -863,7 +1036,7 @@ def outfit(name):
         add(pants(col, name))
         parts.extend(skirt(col, name, hipZ + 0.03, 0.2 if name == 'bjj' else 0.25))
         parts.extend(collar(col, name))
-        parts.extend(belt(C['belt'], hipZ + 0.035, extra=0.035))
+        parts.extend(belt(C['belt'], hipZ + 0.035, extra=0.02))
     return parts, hide
 
 
@@ -906,6 +1079,8 @@ def uv_world(o):
     """box-mapped UVs at a fixed scale (1 UV = 25 cm): the woven or knitted relief keeps the same size on every
     garment, whatever its shape"""
     me_ = o.data
+    if o.get('css_uv'):
+        return
     if not me_.uv_layers:
         me_.uv_layers.new()
     uv = me_.uv_layers.active.data

@@ -61,12 +61,12 @@ export function AnimationBadge({ id }: { id: string }) {
 }
 
 /** One technique / exercise row card (link). */
-export function TechniqueCard({ to, title, description, glyph, thumb, favorite, meta, testId, tile, mastery }: { to: string; title: string; description?: string; glyph?: string; thumb?: string; favorite?: boolean; meta?: ReactNode; testId?: string; tile?: boolean; mastery?: Mastery }) {
+export function TechniqueCard({ to, title, description, glyph, thumb, favorite, meta, testId, tile, mastery, selected }: { to: string; title: string; description?: string; glyph?: string; thumb?: string; favorite?: boolean; meta?: ReactNode; testId?: string; tile?: boolean; mastery?: Mastery; /** v0.32: the technique the bar's « Technique » button opens */ selected?: boolean }) {
   // 0.24 catalogue: a large picture tile (the coach doing the move) with the name only; the
   // description stays on the technique sheet
   if (tile && thumb)
     return (
-      <Link to={to} className="tech-card tile" data-testid={testId} title={description}>
+      <Link to={to} className={`tech-card tile ${selected ? 'selected' : ''}`} data-testid={testId} title={description} aria-current={selected ? 'true' : undefined} data-selected={selected || undefined}>
         <TechThumb id={thumb} size="lg">
           {/* option F: a coloured edge under the picture, named for screen readers */}
           {mastery && <span className={`mastery-edge ${mastery}`} role="img" aria-label={mastery === 'acquise' ? 'Assimilée' : 'Encore du mal'} data-testid="mastery-edge" />}

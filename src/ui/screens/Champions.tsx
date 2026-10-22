@@ -16,9 +16,11 @@ import { useCustom } from '../../store/custom';
 import { useSettings } from '../../store/settings';
 import { MODE_HELP, MODE_LABEL } from '../training/plan';
 import { PageHead } from '../App';
-import { DisciplineCard, DisciplineLabel } from '../components';
+import { DisciplineCard, DisciplineLabel, SectionHead } from '../components';
 import { AppIcon, DisciplineIcon, LevelIcon, type GlyphId } from '../icons';
-import { useActionPill } from '../components/ActionPill';
+import { useNavActions } from '../nav/store';
+import { setSelection } from '../nav/selection';
+import { LegendPanels } from './LegendNav';
 import { DnaBar, DnaFlower, DnaLegend } from '../components/LegendDna';
 
 const DISC_NAME = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.name])) as Record<DisciplineId, string>;
@@ -116,8 +118,9 @@ function PlayButton({ c }: { c: CatalogCombo }) {
  * 0.26 (Youssef, mockup C): its « S'entraîner » and « Une autre au hasard » buttons moved to the action pill
  * (same actions, same test ids), so no button is shown twice on the screen.
  */
-function QuickStart({ eyebrow, combo, catalog, testId = 'cat-quick' }: { eyebrow: string; combo: CatalogCombo; catalog: Catalog; testId?: string }) {
+function QuickStart({ eyebrow, combo, catalog, testId = 'cat-quick', onOther, onToday }: { eyebrow: string; combo: CatalogCombo; catalog: Catalog; testId?: string; onOther?: () => void; onToday?: () => void }) {
   const ch = catalog.championById.get(combo.champion);
+  const start = useQuickTrain();
   return (
     <section className="card quick-start" data-testid={testId} aria-label="Démarrage rapide">
       <span className="eyebrow">
@@ -129,7 +132,21 @@ function QuickStart({ eyebrow, combo, catalog, testId = 'cat-quick' }: { eyebrow
       <span className="small muted">
         {ch?.name ?? combo.champion} · {DISC_SHORT[combo.discipline]} · {combo.sequence.length} mouvements · {LEVEL_NAME[combo.level]}
       </span>
+      {/* v0.32: the card's own actions are back on the card (content actions; the floating pill is gone) */}
       <div className="qs-actions">
+        <button type="button" className="btn primary sm" onClick={() => start(combo)} aria-label={`S’entraîner : ${combo.name}`} data-testid={`${testId}-train`}>
+          <AppIcon id="play" size={16} /> S’entraîner
+        </button>
+        {onToday && (
+          <button type="button" className="btn sm" onClick={onToday} data-testid={`${testId}-today`}>
+            Combo du jour
+          </button>
+        )}
+        {onOther && (
+          <button type="button" className="btn sm" onClick={onOther} aria-label="Au hasard : tirer une autre combinaison" data-testid={`${testId}-other`}>
+            Au hasard
+          </button>
+        )}
         <Link className="btn sm" to={`/champions/${combo.id}`} aria-label="Voir la fiche (modes, décomposer…)">
           Voir la fiche
         </Link>
@@ -273,6 +290,7 @@ export function Champions() {
   return (
     <div className="page">
       <PageHead title="Champions" eyebrow="Bibliothèque des combinaisons" />
+      <LegendPanels catalog={catalog ?? null} />
       {!catalog ? (
         <Loading catalogError={error} retry={retry} />
       ) : (
@@ -315,21 +333,9 @@ function DailyStart({ catalog }: { catalog: Catalog }) {
   const [other, setOther] = useState<CatalogCombo | null>(null);
   useEffect(() => setOther(null), [pool]);
   const combo = other ?? today;
-  const start = useQuickTrain();
   const drawOther = pool.length > 1 && combo ? () => setOther(randomPick(pool.filter((c) => c.id !== combo.id)) ?? null) : undefined;
-  // 0.26 action pill (Youssef, mockup C): train the pick of the card, back to the combo of the day, draw another.
-  // The test ids of the card's former buttons are kept on the pill's.
-  useActionPill(
-    combo
-      ? [
-          { id: 'entrainer', label: 'S’entraîner', icon: 'play', primary: true, ariaLabel: `S’entraîner : ${combo.name}`, testId: 'cat-quick-train', onSelect: () => start(combo) },
-          today && { id: 'combo-du-jour', label: 'Combo du jour', icon: 'bolt', ariaLabel: `Combo du jour : ${today.name}`, pressed: !other, onSelect: () => setOther(null) },
-          drawOther && { id: 'au-hasard', label: 'Au hasard', icon: 'random', ariaLabel: 'Au hasard : tirer une autre combinaison', testId: 'cat-quick-other', onSelect: drawOther },
-        ]
-      : null,
-  );
   if (!combo) return null;
-  return <QuickStart eyebrow={other ? 'Tirée au sort pour toi' : 'Ton combo du jour'} combo={combo} catalog={catalog} />;
+  return <QuickStart eyebrow={other ? 'Tirée au sort pour toi' : 'Ton combo du jour'} combo={combo} catalog={catalog} onOther={drawOther} onToday={other && today ? () => setOther(null) : undefined} />;
 }
 
 function Explorer({ catalog }: { catalog: Catalog }) {
@@ -505,8 +511,21 @@ function Explorer({ catalog }: { catalog: Catalog }) {
 
 function Favorites({ catalog }: { catalog: Catalog }) {
   const ids = useCatalogUser((s) => s.favorites);
+  const champIds = useCatalogUser((s) => s.favoriteChampions);
   const list = ids.map((id) => catalog.comboById.get(id)).filter((c): c is CatalogCombo => !!c);
+  const champs = champIds.map((id) => catalog.championById.get(id)).filter((c): c is NonNullable<typeof c> => !!c);
   return (
+    <>
+    {champs.length > 0 && (
+      <div className="stack" data-testid="fav-legends">
+        <SectionHead title="Légendes favorites" />
+        <div className="grid2">
+          {champs.map((c) => (
+            <ChampionCardLive key={c.id} champion={c} combos={catalog.combos.filter((x) => x.champion === c.id)} />
+          ))}
+        </div>
+      </div>
+    )}
     <ComboList
       list={list}
       catalog={catalog}
@@ -517,6 +536,7 @@ function Favorites({ catalog }: { catalog: Catalog }) {
         </>
       }
     />
+    </>
   );
 }
 
@@ -770,7 +790,7 @@ export function ComboPage() {
 
   return (
     <div className="page">
-      <PageHead title={c.name} eyebrow={`${ch?.name ?? c.champion} · ${DISC_NAME[c.discipline]}`} right={<FavButton id={c.id} name={c.name} />} />
+      <PageHead title={c.name} eyebrow={`${ch?.name ?? c.champion} · ${DISC_NAME[c.discipline]}`} />
 
       {/* 0.25 (Youssef, 2026-10-20): training first, no scrolling. Default mode « libre », « Changer » opens the others. */}
       <section className="card quick-start" data-testid="cat-start" aria-label="S’entraîner sur cette fiche">
@@ -948,26 +968,24 @@ export function ComboPage() {
       </p>
 
       {collect && <CollectionSheet comboId={c.id} onClose={() => setCollect(false)} />}
-      {/* 0.26: the former sticky « S’entraîner » bar is replaced by the action pill (ComboPill) */}
-      <ComboPill train={train} mode={mode} playable={playable} hidden={collect} />
+      {/* v0.32: S'entraîner, Décomposer and Favoris are in the bottom bar (ComboPill) */}
+      <ComboPill train={train} mode={mode} playable={playable} id={c.id} name={c.name} />
     </div>
   );
 }
 
 /**
- * 0.26 action pill of a combination sheet (replaces the 0.25 sticky bar): « S'entraîner » in the chosen mode,
- * always one tap away while scrolling, and « Décomposer » (study of the moves). Nothing when the sheet has
- * no 3D animation (the sheet then says so) or while the collection sheet is open.
+ * v0.32 bar of a combination sheet: S'entraîner in the chosen mode, Décomposer and Favoris (the former pill and the
+ * star of the header). Disabled when the sheet has no 3D animation (the sheet then says so).
  */
-function ComboPill({ train, mode, playable, hidden }: { train: (m: TrainingMode, study?: boolean) => void; mode: TrainingMode; playable: boolean; hidden: boolean }) {
-  useActionPill(
-    playable && !hidden
-      ? [
-          { id: 'entrainer', label: 'S’entraîner', icon: 'play', primary: true, ariaLabel: `S’entraîner en mode ${MODE_LABEL[mode].toLowerCase()}`, onSelect: () => train(mode) },
-          { id: 'decomposer', label: 'Décomposer', icon: 'decompose', ariaLabel: 'Décomposer le mouvement', onSelect: () => train('technique', true) },
-        ]
-      : null,
-  );
+function ComboPill({ train, mode, playable, id, name }: { train: (m: TrainingMode, study?: boolean) => void; mode: TrainingMode; playable: boolean; id: string; name: string }) {
+  const fav = useCatalogUser((s) => s.favorites.includes(id));
+  const toggle = useCatalogUser((s) => s.toggleFavorite);
+  useNavActions({
+    train: { run: () => train(mode), disabled: !playable, ariaLabel: `S’entraîner en mode ${MODE_LABEL[mode].toLowerCase()}` },
+    decompose: { run: () => train('technique', true), disabled: !playable, ariaLabel: 'Décomposer le mouvement' },
+    favorite: { run: () => toggle(id), pressed: fav, ariaLabel: fav ? `Favoris : retirer ${name}` : `Favoris : ajouter ${name}` },
+  });
   return null;
 }
 
@@ -1044,14 +1062,9 @@ function CollectionSheet({ comboId, onClose }: { comboId: string; onClose: () =>
 
 // ------------------------------------------------------------------ page d’un champion
 
-/** the quick start of a champion's page, its « S'entraîner » and « Au hasard » in the action pill (0.26) */
+/** the quick start of a champion's page, with its « S'entraîner » and « Au hasard » on the card (v0.32) */
 function ChampionQuickStart({ eyebrow, combo, catalog, onOther }: { eyebrow: string; combo: CatalogCombo; catalog: Catalog; onOther?: () => void }) {
-  const start = useQuickTrain();
-  useActionPill([
-    { id: 'entrainer', label: 'S’entraîner', icon: 'play', primary: true, ariaLabel: `S’entraîner : ${combo.name}`, testId: 'champ-quick-train', onSelect: () => start(combo) },
-    onOther && { id: 'au-hasard', label: 'Au hasard', icon: 'random', ariaLabel: 'Au hasard : tirer une autre combinaison', testId: 'champ-quick-other', onSelect: onOther },
-  ]);
-  return <QuickStart eyebrow={eyebrow} combo={combo} catalog={catalog} testId="champ-quick" />;
+  return <QuickStart eyebrow={eyebrow} combo={combo} catalog={catalog} testId="champ-quick" onOther={onOther} />;
 }
 
 /** « Ce que tu vas travailler » : the 3 techniques most present in the shown sheets (0.28, computed) */
@@ -1087,6 +1100,23 @@ export function ChampionPage() {
   const ch = championId ? catalog?.championById.get(championId) : undefined;
   const [d, setD] = useState<DisciplineId | null>(null);
   const [other, setOther] = useState<string | null>(null);
+  // v0.32 bar of a legend's page (section 5.8): Parcours (its profile: style, era, country, the fact), Techniques (what
+  // its sheets make you work), Favoris; the legend becomes the one the Légendes bar reopens
+  const favChamp = useCatalogUser((s) => (ch ? s.favoriteChampions.includes(ch.id) : false));
+  const toggleChamp = useCatalogUser((s) => s.toggleFavoriteChampion);
+  useEffect(() => {
+    if (ch) setSelection('legende', ch.id);
+  }, [ch]);
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  useNavActions(
+    ch
+      ? {
+          career: { run: () => scrollTo('legende-parcours'), ariaLabel: `Parcours de ${ch.name}` },
+          techniques: { run: () => scrollTo('legende-techniques'), ariaLabel: `Techniques de ${ch.name}` },
+          favorite: { run: () => toggleChamp(ch.id), pressed: favChamp, ariaLabel: favChamp ? `Favoris : retirer ${ch.name}` : `Favoris : ajouter ${ch.name}`, testId: 'legend-fav' },
+        }
+      : {},
+  );
   if (!catalog)
     return (
       <div className="page">
@@ -1121,7 +1151,7 @@ export function ChampionPage() {
           onOther={playableList.length > 1 ? () => setOther(randomPick(playableList.filter((c) => c.id !== pick.id))?.id ?? null) : undefined}
         />
       )}
-      <section className="card stack">
+      <section className="card stack" id="legende-parcours" data-testid="legend-career">
         <span>{ch.style}</span>
         <div className="row" style={{ gap: 6 }}>
           {ch.traits.map((t) => (
@@ -1136,7 +1166,9 @@ export function ChampionPage() {
         <span className="small muted">{ch.source}</span>
       </section>
       <DnaCard list={list} title={ch.disciplines.length > 1 ? `ADN de combat · ${DISC_SHORT[disc]}` : 'ADN de combat'} testId="champ-dna" />
-      <WorkFocus list={list} disc={disc} />
+      <div id="legende-techniques" data-testid="legend-techniques">
+        <WorkFocus list={list} disc={disc} />
+      </div>
       {ch.funFact && (
         <section className="card fun-fact" data-testid="champ-fact">
           <span className="eyebrow gold">
