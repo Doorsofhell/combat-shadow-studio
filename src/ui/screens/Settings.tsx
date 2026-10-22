@@ -172,6 +172,26 @@ export function SettingsPage() {
           <PanelRow label="Rendu des combattants" column>
             <CoachLookPicker />
           </PanelRow>
+          {/* v0.31: discipline outfits of the Ultra-réaliste coaches (on by default) */}
+          <Toggle
+            on={settings.coachOutfit}
+            onChange={(v) => set({ coachOutfit: v })}
+            label="Tenue de la discipline"
+            hint="En Ultra-réaliste, le coach porte la tenue de la discipline : gants, short, kimono… Désactivée, il s’entraîne en tenue de base."
+          />
+          {settings.coachOutfit && (
+            <PanelRow label="Jiu-jitsu brésilien" column>
+              <Segmented
+                label="Tenue de jiu-jitsu brésilien"
+                value={settings.bjjOutfit}
+                onChange={(v) => set({ bjjOutfit: v })}
+                options={[
+                  { id: 'gi', label: 'Kimono (gi)' },
+                  { id: 'nogi', label: 'Sans kimono (no-gi)' },
+                ]}
+              />
+            </PanelRow>
+          )}
           <PanelRow label="Qualité" hint="En mode Auto, la qualité baisse d’elle-même si l’appareil n’arrive pas à suivre." column>
             <Segmented
               label="Qualité"
@@ -307,7 +327,7 @@ export function SettingsPage() {
         <LinkRow to="/coach" icon={<AppIcon id="fighter" />} label="Mon coach" hint={championFor(profile.coach).name} />
         <LinkRow to="/reglages/voix" icon={<AppIcon id="audio" />} label="Voix et sons" />
         <LinkRow to="/reglages/rounds" icon={<AppIcon id="repeat" />} label="Rounds par défaut" hint={`${settings.defaultRoundSec / 60} min, repos ${settings.defaultRestSec} s`} />
-        <LinkRow to="/reglages/affichage" icon={<AppIcon id="display" />} label="Affichage 3D" hint="Qualité, caméra" />
+        <LinkRow to="/reglages/affichage" icon={<AppIcon id="display" />} label="Affichage 3D" hint="Qualité, caméra, tenues" />
         <button type="button" className="panel-row" onClick={() => (updateProfile({ completed: false }), nav('/bienvenue'))}>
           <AppIcon id="details" />
           <span className="grow">

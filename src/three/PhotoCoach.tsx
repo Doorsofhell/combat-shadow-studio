@@ -6,6 +6,7 @@ import { Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, SRGBColorSp
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { restoreReferencePose, setLegLength } from './pose';
 import { CoachRig } from '../engine/rig';
+import { useOutfit, type OutfitId, type OutfitStatus } from './outfit';
 
 /**
  * v0.29 Ultra-réaliste coach built on a photo-textured avatar of the Microsoft Rocketbox library (MIT,
@@ -16,6 +17,9 @@ import { CoachRig } from '../engine/rig';
  */
 export function PhotoCoach({
   url,
+  outfitUrl = null,
+  outfit = null,
+  onOutfit,
   quality,
   legLength = 1,
   shadows,
@@ -25,6 +29,10 @@ export function PhotoCoach({
   extendLoader,
 }: {
   url: string;
+  /** v0.31: the discipline outfit (src/three/outfit.ts) */
+  outfitUrl?: string | null;
+  outfit?: OutfitId | null;
+  onOutfit?: (s: OutfitStatus) => void;
   /** same loader set-up as the generated models (Draco, the JSON-wrapped models of the claude.ai page) */
   draco: string;
   extendLoader: (loader: GLTFLoader) => void;
@@ -88,6 +96,8 @@ export function PhotoCoach({
     [scene],
   );
   useEffect(() => onRig(rig), [rig, onRig]);
+  const dressed = useOutfit(scene, outfitUrl, outfit, quality, extendLoader);
+  useEffect(() => onOutfit?.(dressed), [dressed, onOutfit]);
   if (import.meta.env.DEV) (globalThis as { __photoScene?: Object3D }).__photoScene = scene;
   useFrame((_, dt) => onFrame(rig, Math.min(dt, 0.05)));
   return <primitive object={scene} />;

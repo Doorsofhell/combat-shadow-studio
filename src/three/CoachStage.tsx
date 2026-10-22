@@ -6,6 +6,8 @@ import { Group, Vector3 } from 'three';
 import { CoachModel } from './CoachModel';
 import { StudioEnvironment } from './StudioEnvironment';
 import { useSettings } from '../store/settings';
+import { outfitFor, type OutfitStatus } from './outfit';
+import { toast } from '../ui/components/Toast';
 import { StageView, StudioStage } from './StudioStage';
 import { ArScene } from './ArScene';
 import { StudyCues } from './StudyCues';
@@ -185,6 +187,13 @@ export function CoachStage(props: CoachStageProps) {
     return () => document.removeEventListener('visibilitychange', on);
   }, []);
   const style = useSettings((s) => s.settings.coachStyle);
+  // v0.31: discipline outfit of the Ultra-réaliste coaches; a failure is said, never silently replaced
+  const outfitOn = useSettings((s) => s.settings.coachOutfit);
+  const bjjOutfit = useSettings((s) => s.settings.bjjOutfit);
+  const outfit = outfitFor(discipline, outfitOn, bjjOutfit);
+  const onOutfit = useCallback((st: OutfitStatus) => {
+    if (st.state === 'erreur' && st.message) toast(`${st.message} Le coach s’affiche sans elle ; réessaie plus tard ou désactive les tenues dans les réglages.`);
+  }, []);
   // after a graphics incident, stability comes first even when the high quality was chosen (for a while)
   const q: 'haute' | 'basse' = level > 0 || slow ? 'basse' : quality === 'auto' ? 'haute' : quality;
   useEffect(() => {
@@ -355,6 +364,8 @@ export function CoachStage(props: CoachStageProps) {
             ghostGear={ghostGear}
             onRig={onRig}
             onFrame={onFrame}
+            outfit={outfit}
+            onOutfit={onOutfit}
           />
           {studyActive && rigState && study && <StudyCues rig={rigState} study={study} />}
           {!studyActive && !arActive && rigState && <GroundMarks rig={rigState} player={player} southpaw={southpaw} dark={stageDark} />}

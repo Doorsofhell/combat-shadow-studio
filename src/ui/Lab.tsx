@@ -2,6 +2,7 @@ import { championFor, championLook, championStance } from '../domain/coaches/cat
 import { Suspense, useCallback, useMemo, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { CoachModel } from '../three/CoachModel';
+import { outfitFor, type OutfitId, type OutfitStatus } from '../three/outfit';
 import { StudioStage } from '../three/StudioStage';
 import { StudioEnvironment } from '../three/StudioEnvironment';
 import type { CoachRig } from '../engine/rig';
@@ -46,6 +47,11 @@ export function Lab() {
     return { az: q.get('az') ? Number(q.get('az')) : stageAzimuth(v, disc, false), el: v.el, zoom: Math.min(1, v.zoom), focus: v.focus };
   }, [tech, disc]);
   const cam = Number(q.get('cam') ?? '35');
+  // v0.31 tenue=<outfit id> or tenue=0: the discipline outfit, as in the app by default
+  const outfit = q.get('tenue') === '0' ? null : ((q.get('tenue') as OutfitId | null) ?? outfitFor(disc, true, 'gi'));
+  const onOutfit = useCallback((st: OutfitStatus) => {
+    (window as unknown as { __labOutfit?: string }).__labOutfit = st.state;
+  }, []);
   const southpaw = q.get('garde') === 'gaucher';
   // art=1: official discipline artwork (discipline gear, collection palette: anthracite, red, gold)
   const look = useMemo<FighterLook | null>(() => {
@@ -123,7 +129,7 @@ export function Lab() {
             zoom={Number(q.get('zoom') ?? '1')}
             focusY={q.get('fy') ? Number(q.get('fy')) : undefined}
           >
-            <CoachModel coach={coach} style={labStyle} render={render} quality="haute" look={look} model={champion ? `./coaches/${champion}/model` : undefined} onRig={onRig} onFrame={onFrame} />
+            <CoachModel coach={coach} style={labStyle} render={render} quality="haute" look={look} model={champion ? `./coaches/${champion}/model` : undefined} onRig={onRig} onFrame={onFrame} outfit={outfit} onOutfit={onOutfit} />
             {labStyle === 'realiste' && render === 'premium' && <StudioEnvironment />}
           </StudioStage>
         </Suspense>
