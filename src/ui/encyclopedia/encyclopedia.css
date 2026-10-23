@@ -153,7 +153,9 @@
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 999px;
+  /* the readable red pulled toward the text colour: ≥ 4.5:1 on the pale red pill at this small size (axe, 360 × 640) */
   color: var(--red-ink);
+  color: color-mix(in srgb, var(--red-ink) 72%, var(--c-text));
   background: var(--c-red-soft);
 }
 

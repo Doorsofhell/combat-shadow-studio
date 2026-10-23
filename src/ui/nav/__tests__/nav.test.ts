@@ -149,7 +149,11 @@ describe('Navigation générale', () => {
     ref.splice(ref.findIndex((r) => r[1] === 'Entraîner') + 1, 0, moved);
     // 0.40 (Youssef, « Préparation Freemium et Premium à vie » §8): « Premium à vie » added after the mockup's eight
     expect(MENU_ENTRIES.slice(0, 8).map((m) => [m.icon, m.label])).toEqual(ref);
-    expect(MENU_ENTRIES.slice(8).map((m) => [m.icon, m.label, m.to])).toEqual([['diamond', 'Premium à vie', '/premium']]);
+    // 0.46 (« Encyclopédie du combat » §3): Encyclopédie added after Premium à vie
+    expect(MENU_ENTRIES.slice(8).map((m) => [m.icon, m.label, m.to])).toEqual([
+      ['diamond', 'Premium à vie', '/premium'],
+      ['book', 'Encyclopédie', '/encyclopedie'],
+    ]);
   });
 });
 

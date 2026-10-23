@@ -539,6 +539,10 @@ export const SCREEN_POOL: Record<CoachScreen, ScreenQ[]> = {
     { q: 'Est-ce que je dois payer pour utiliser l’application ?', expect: 'app:premium' },
     { q: 'Que veut dire le petit diamant doré ?', expect: 'app:premium' },
   ],
+  encyclopedie: [
+    { q: 'Comment trouver la définition d’un mot ?', expect: 'app:encyclopedie' },
+    { q: 'À quoi sert l’Encyclopédie ?', expect: 'app:encyclopedie' },
+  ],
   entrainement: [
     { q: 'À quoi sert le bouton Décomposer ?', expect: 'app:decomposer' },
     { q: 'À quoi sert le bouton Ralenti ?', expect: 'app:ralenti' },

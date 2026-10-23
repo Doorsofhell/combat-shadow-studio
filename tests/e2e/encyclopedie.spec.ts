@@ -46,6 +46,7 @@ test('huit familles distinctes, chacune ouvre sa liste filtrée', async ({ page 
 
 test('filtres combinés : sous-catégorie, discipline et recherche ; aucun résultat dit clairement', async ({ page }) => {
   await page.goto('/#/encyclopedie/liste?f=techniques');
+  await expect(results(page).first()).toBeVisible();
   const all = await results(page).count();
   await page.getByTestId('enc-sub').selectOption('pieds');
   const feet = await results(page).count();
@@ -169,5 +170,7 @@ for (const scheme of ['light', 'dark'] as const) {
 test('« The Octagon » n’est pas un terme générique', async ({ page }) => {
   await page.goto('/#/encyclopedie/terme/cage');
   await expect(page.getByTestId('enc-definition')).toBeVisible();
-  await expect(page.getByTestId('encyclopedia-term')).toContainText('marque déposée de l’UFC');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Cage');
+  await page.getByRole('tab', { name: /Octagon/ }).click();
+  await expect(page.getByTestId('enc-tabpanel')).toContainText('marque déposée de l’UFC');
 });

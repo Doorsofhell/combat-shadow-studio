@@ -36,6 +36,7 @@ export type CoachScreen =
   | 'coach-ia'
   | 'confidentialite'
   | 'premium'
+  | 'encyclopedie'
   | 'entrainement';
 
 export interface GuideEntry {
@@ -75,7 +76,7 @@ export const APP_GUIDE: GuideEntry[] = [
     answer:
       'La barre du bas est la même partout, séance comprise. Elle a toujours cinq boutons, qui changent selon l’écran : Retour à gauche (sauf sur l’accueil), les actions de l’écran au milieu, et Menu à droite.\n' +
       '• Retour revient à l’écran d’avant, avec tes filtres et ta position dans la page. Si un panneau est ouvert, il se ferme d’abord.\n' +
-      '• Menu ouvre la navigation générale : Accueil, Entraîner, Techniques, Progrès, Légendes, Profil, Paramètres, Nouveautés et Premium à vie.\n' +
+      '• Menu ouvre la navigation générale : Accueil, Entraîner, Techniques, Progrès, Légendes, Profil, Paramètres, Nouveautés, Premium à vie et Encyclopédie.\n' +
       'Sur l’accueil, Profil est directement dans la barre ; sur ton profil, Réglages aussi.',
   },
   {
@@ -549,6 +550,19 @@ export const APP_GUIDE: GuideEntry[] = [
     action: { to: '/premium', label: 'Voir Premium à vie' },
   },
   {
+    // v0.46 (« Encyclopédie du combat »)
+    id: 'encyclopedie',
+    title: 'L’Encyclopédie du combat',
+    keywords: ['encyclopedie', 'dictionnaire', 'glossaire', 'definition', 'lexique', 'vocabulaire', 'sens d un mot', 'index alphabetique'],
+    screens: ['encyclopedie'],
+    answer:
+      'L’Encyclopédie explique les mots des 6 disciplines : techniques, positions, équipements, lieux, règles, préparation physique, sécurité et culture.\n' +
+      '• Cherche un mot, même en anglais, en japonais ou en thaï, ou ouvre une famille puis filtre par discipline.\n' +
+      '• La barre du bas donne le classement par familles, l’index alphabétique et tes favoris ; le cœur d’une fiche l’ajoute à tes favoris.\n' +
+      'Chaque fiche cite ses sources. Depuis une fiche technique, « Comprendre ce terme » ouvre la fiche du mot.',
+    action: { to: '/encyclopedie', label: 'Ouvrir l’Encyclopédie' },
+  },
+  {
     id: 'compte',
     title: 'Le compte et la synchronisation',
     keywords: ['un compte', 'le compte', 'creer un compte', 'mon compte', 'se connecter', 'me connecter', 'connexion', 'synchronisation', 'synchroniser', 'sync', 'mot de passe', 'mode invite'],
@@ -728,6 +742,8 @@ export function screenFromPath(pathname: string, search = ''): CoachScreen | und
       return 'confidentialite';
     case 'premium':
       return 'premium';
+    case 'encyclopedie':
+      return 'encyclopedie';
     default:
       return undefined;
   }

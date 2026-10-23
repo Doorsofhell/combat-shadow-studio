@@ -43,6 +43,19 @@ def square_around(im, box, pad=1.08):
     return out.resize((MINI, MINI), Image.LANCZOS)
 
 
+def frame_subject(im, aspect=W / H, pad=1.25):
+    """a close-up: the subject's bounds widened to the picture's ratio (used for stills, framed loosely by the Lab)"""
+    x0, y0, x1, y1 = subject_box(im)
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    hh = max(y1 - y0, (x1 - x0) / aspect) * pad
+    ww = hh * aspect
+    box = (int(cx - ww / 2), int(cy - hh / 2), int(cx + ww / 2), int(cy + hh / 2))
+    out = Image.new('RGB', (box[2] - box[0], box[3] - box[1]), WHITE)
+    src = (max(0, box[0]), max(0, box[1]), min(im.width, box[2]), min(im.height, box[3]))
+    out.paste(im.crop(src), (src[0] - box[0], src[1] - box[1]))
+    return out
+
+
 def save(im, mini, dst, name):
     im.resize((W, H), Image.LANCZOS).save(dst / f'{name}.webp', 'WEBP', quality=82, method=6)
     mini.save(dst / f'{name}-mini.webp', 'WEBP', quality=82, method=6)
@@ -66,7 +79,7 @@ def main():
         still = renders_dir / f'{img_id}.png'
         frames = [renders_dir / f'{img_id}-{i}.png' for i in range(3)]
         if still.exists():
-            im = on_white(Image.open(still))
+            im = frame_subject(on_white(Image.open(still)))
             save(im, square_around(im, subject_box(im)), dst, img_id)
         elif all(f.exists() for f in frames):
             ims = [on_white(Image.open(f)) for f in frames]
