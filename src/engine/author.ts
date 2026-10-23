@@ -18,6 +18,12 @@ export class Author {
   /** scale: 1 for a 1.80 m coach */
   readonly s: number;
   readonly L: number;
+  /**
+   * v0.42: where the coach's rig really puts a shoulder joint for a pose. The trunk's own rotation limits and the
+   * clavicle move it a few centimetres from shoulder(), which changes the bend of a nearly straight arm by up to
+   * 20°. Set by the library for the coach's rig (unset: shoulder()).
+   */
+  solvedShoulder?: (p: Pose, side: Side) => Vector3;
 
   constructor(
     readonly m: Metrics,

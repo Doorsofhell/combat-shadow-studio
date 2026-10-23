@@ -4,6 +4,7 @@
  */
 import { Author, add, edit, driveToward } from '../author';
 import type { Motion } from '../motion';
+import { Vector3 } from 'three';
 import { Pose, deg, v3 } from '../pose';
 const lerp = (a: number, b: number, u: number) => a + (b - a) * u;
 
@@ -113,16 +114,18 @@ function straight(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
   };
 }
 
+/** v0.42: hook geometry (degrees), see hook() */
+export const HOOK = { flexHead: 75, flexBody: 85, liftHead: 3, riseHead: 0.3, liftBody: -35, aheadHead: 12, aheadBody: 20, aheadMin: -8, aheadMax: 40, flexMin: 55, flexMax: 95, leadPelvis: 24, leadChest: 10, rearPelvis: 48, rearChest: 18 };
+
 function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
   const g = a.guard();
   const s = a.s;
   const body = target === 'body';
   const sg = side === 'L' ? 1 : -1;
-  const T = a.target(target, 0.5);
   const hit = edit(g, (d) => {
     if (side === 'L') {
-      d.pelvis.yaw += deg(-34);
-      d.chest.yaw += deg(-14);
+      d.pelvis.yaw += deg(-HOOK.leadPelvis);
+      d.chest.yaw += deg(-HOOK.leadChest);
       d.hips.x += 0.02 * s;
       if (d.footL.mode === 'ground') {
         d.footL.yaw += deg(-40);
@@ -130,8 +133,8 @@ function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
       }
       d.handR.pos = add(d.handR.pos, { y: 0.01 * s });
     } else {
-      d.pelvis.yaw += deg(48);
-      d.chest.yaw += deg(18);
+      d.pelvis.yaw += deg(HOOK.rearPelvis);
+      d.chest.yaw += deg(HOOK.rearChest);
       d.hips.x += 0.05 * s;
       d.hips.z += 0.02 * s;
       if (d.footR.mode === 'ground') {
@@ -144,43 +147,85 @@ function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
     d.chest.roll += deg(body ? 10 * sg : 4 * sg);
     if (body) d.chest.pitch += deg(6);
   });
-  // hand arrives on the target from the side, forearm horizontal; v0.29 (Youssef, 2026-10-21: « déformation
-  // importante du bras »): the elbow stays at the height of the shoulder and of the fist, « bras fléchi à 90° »
-  // with fist, elbow and shoulder level [S3 Swiss Boxing], instead of 11 cm above the shoulder
-  // the fist is placed at the distance that bends the elbow to 90° for this coach's own arm lengths (a fixed
-  // target point left Amara's shorter arm almost straight, 46° of bend)
-  let at = v3(T.x + 0.04 * sg * s, T.y, T.z);
-  if (!body) {
-    const sh = a.shoulder(hit, side);
-    const reach = Math.hypot(a.m.upperArm, a.m.foreArm);
-    const fx = at.x - sh.x;
-    const fz = at.z - sh.z;
-    const r = Math.sqrt(Math.max(reach * reach - (T.y - sh.y) ** 2, 0.01)) / Math.hypot(fx, fz);
-    at = v3(sh.x + fx * r, T.y, sh.z + fz * r);
-  }
-  const hand = a.hand('world', at, v3(sg, body ? -0.4 : -0.3, -0.1), body ? 0.1 : 0.85);
-  hit[side === 'L' ? 'handL' : 'handR'] = hand;
+  // v0.42 (Youssef, 2026-10-23, « Correction biomécanique des crochets »). Measured before: the elbow direction was
+  // fixed in the room (to the coach's side) while the trunk turned 45–50° into the hook; the elbow then ended
+  // 17–26 cm behind the line of the shoulders and the upper arm stopped against its external rotation limit
+  // (90°), which the solver absorbed by swinging the elbow: the « bras tordu ». Now:
+  // - the fist goes from the shoulder toward the target, at the distance that bends the elbow by FLEX for this
+  //   coach's own arm (« elbow bent in close to 90 degrees » [S2 USA Boxing p. 44–47]; elite boxers open it a
+  //   little more, 117° ± 23° between arm and forearm at impact, Dinu & Louis 2020 [S7]);
+  // - the elbow points out to the side of the shoulder → fist line, level with them at the head (« fist, elbow
+  //   and shoulder level » [S3 Swiss Boxing]), lower at the body, where the knees bend until the shoulder is in
+  //   line with the target [S2 p. 46–47];
+  // - both are stored in the chest frame, so that the arm turns with the trunk: the curve of the fist comes from
+  //   the body, not from a swing of the arm.
+  const q = a.frame(hit).q;
+  const fw = new Vector3(0, 0, 1).applyQuaternion(q);
+  const h = Math.atan2(fw.x, fw.z);
+  // axes of the trunk turned by its heading only (the lean of the chest does not tilt the arm)
+  const Z = new Vector3(Math.sin(h), 0, Math.cos(h));
+  const X = new Vector3(Math.cos(h), 0, -Math.sin(h)).multiplyScalar(sg);
+  const Y = new Vector3(0, 1, 0);
+  const lift = deg(body ? HOOK.liftBody : HOOK.liftHead);
+  const toward = Z.clone().addScaledVector(X, -0.1).addScaledVector(Y, body ? 0.6 : HOOK.riseHead).normalize();
+  // the fist stops on the centre line of the coach, where the opponent stands (it does not follow through
+  // across the body): the elbow angle and how far ahead of the shoulder line the elbow points are chosen, within
+  // their ranges, for this coach's own arm and trunk turn
+  const centre = a.frame(g).origin.x - 0.04 * sg * s;
+  const armAt = (sh: Vector3, ahead: number, flex: number) => {
+    const ua = X.clone().multiplyScalar(Math.cos(ahead) * Math.cos(lift)).addScaledVector(Z, Math.sin(ahead) * Math.cos(lift)).addScaledVector(Y, Math.sin(lift)).normalize();
+    const n = new Vector3().crossVectors(ua, toward).normalize();
+    const fore = ua.clone().applyAxisAngle(n, flex);
+    const at = sh.clone().addScaledVector(ua, a.m.upperArm).addScaledVector(fore, a.m.foreArm);
+    // the knuckles, a hand's length beyond the wrist
+    return { ua, at, knuckles: at.clone().addScaledVector(fore, 0.09 * s) };
+  };
+  const flex0 = body ? HOOK.flexBody : HOOK.flexHead;
+  const ahead0 = body ? HOOK.aheadBody : HOOK.aheadHead;
+  const fit = (sh: Vector3) => {
+    let best = { cost: Infinity, ua: Y, at: sh, knuckles: sh };
+    for (let ah = HOOK.aheadMin; ah <= HOOK.aheadMax; ah += 1)
+      for (let fl = HOOK.flexMin; fl <= HOOK.flexMax; fl += 1) {
+        const r = armAt(sh, deg(ah), deg(fl));
+        const cost = ((r.knuckles.x - centre) / 0.01) ** 2 + 0.3 * (ah - ahead0) ** 2 + 0.3 * (fl - flex0) ** 2;
+        if (cost < best.cost) best = { cost, ...r };
+      }
+    return best;
+  };
+  const place = (sh: Vector3) => {
+    const { ua, at } = fit(sh);
+    const hand = a.hand('chest', a.toChest(hit, v3(at.x, at.y, at.z)), a.dirToChest(hit, v3(ua.x, ua.y, ua.z)), body ? 0.1 : 0.85);
+    hit[side === 'L' ? 'handL' : 'handR'] = hand;
+    return hand;
+  };
+  // the shoulder where the rig really puts it for this pose (it moves a little with the arm: twice)
+  let hand = place(a.shoulder(hit, side));
+  if (a.solvedShoulder) for (let i = 0; i < 2; i++) hand = place(a.solvedShoulder(hit, side));
+  // preparation: discreet, so that the hook is not telegraphed (no wind-up, no draw-back [S2 p. 37 errors]):
+  // the fist stays at the guard and opens a few centimetres while the elbow starts to rise to the side, the
+  // hips load a little the other way
   const wind = edit(g, (d) => {
     const h = side === 'L' ? d.handL : d.handR;
-    h.space = 'world';
-    const sh = a.shoulder(g, side);
-    // v0.29: the fist opens further to the side, for a wider arc that stays as fast at impact with the shorter,
-    // 90° bent arm of the hit pose
-    h.pos = v3(sh.x + 0.22 * sg * s, T.y + 0.02 * s, sh.z + 0.22 * s);
-    h.pole = v3(sg, body ? -0.4 : 0.05, -0.2);
-    h.pron = body ? 0.1 : 0.7;
-    d.pelvis.yaw += deg(-10 * sg);
-    d.chest.yaw += deg(-6 * sg);
+    const gh = side === 'L' ? g.handL : g.handR;
+    h.pos = v3(gh.pos.x + 0.04 * sg * s, gh.pos.y + (body ? -0.02 : 0.02) * s, gh.pos.z);
+    const gp = new Vector3(gh.pole.x, gh.pole.y, gh.pole.z).normalize();
+    const mid = gp.add(new Vector3(hand.pole.x, hand.pole.y, hand.pole.z)).normalize();
+    h.pole = v3(mid.x, mid.y, mid.z);
+    h.pron = (gh.pron + hand.pron) / 2;
+    d.pelvis.yaw += deg(-6 * sg);
+    d.chest.yaw += deg(-3 * sg);
     d.hips.y -= (body ? 0.08 : 0.015) * s;
   });
-  const t1 = 0.1;
+  const t1 = 0.07;
   const t2 = side === 'L' ? 0.2 : 0.23;
   const t3 = t2 + 0.22;
   return {
     id: `crochet-${side === 'L' ? 'avant' : 'arriere'}${body ? '-corps' : ''}`,
     keys: [
       { t: 0, pose: g },
-      { t: t1, pose: wind, ease: 'load' },
+      // the fist leaves the guard from rest and keeps accelerating until the impact: no flow through this key,
+      // which would spend its speed early (fluidity.test: speed at impact)
+      { t: t1, pose: wind, ease: 'load', hold: true },
       { t: t2, pose: hit, ease: 'strike' },
       { t: t2 + 0.03, pose: hit, ease: 'linear' },
       { t: t3, pose: g, ease: 'inOut' },

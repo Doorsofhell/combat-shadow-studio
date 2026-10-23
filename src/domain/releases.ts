@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.42.0',
+      releaseDate: '2026-10-23',
+      title: 'Crochets plus naturels',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Crochets : le bras du coach ne se tord plus. Le coude reste sur le côté, à hauteur d’épaule, au lieu de partir derrière l’épaule.' },
+        { category: 'corrections', text: 'Crochets : plus d’armé. Le poing part de la garde par un chemin court et va le plus vite juste avant l’impact ; le corps tourne avec le bras.' },
+      ],
+      links: [{ label: 'Crochet gauche', to: '/techniques/crochet-avant' }],
+    },
+    {
       version: '0.41.0',
       releaseDate: '2026-10-23',
       title: 'Programmes enrichis',
