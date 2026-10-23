@@ -45,3 +45,23 @@ describe('réglages : taille de la fenêtre du coach IA', () => {
     expect(bad.settings.coachPanelSize).toBe('normal');
   });
 });
+
+describe('rendu 3D : troisième moteur expérimental', () => {
+  const merge = useSettings.persist.getOptions().merge!;
+
+  it('ne change pas la version activée par défaut ni une sélection précédente', () => {
+    expect(DEFAULT_SETTINGS.coachRender).toBe('premium');
+    for (const render of ['premium', 'precedent', 'biomeca'] as const) {
+      const saved = merge({ settings: { coachRender: render } }, useSettings.getState()) as ReturnType<typeof useSettings.getState>;
+      expect(saved.settings.coachRender).toBe(render);
+    }
+  });
+
+  it('reste compatible avec les sauvegardes anciennes ou inconnues', () => {
+    const old = merge({ settings: { quality: 'basse' } }, useSettings.getState()) as ReturnType<typeof useSettings.getState>;
+    expect(old.settings.coachRender).toBe('premium');
+    expect(old.settings.quality).toBe('basse');
+    const invalid = merge({ settings: { coachRender: 'absent' } }, useSettings.getState()) as ReturnType<typeof useSettings.getState>;
+    expect(invalid.settings.coachRender).toBe('premium');
+  });
+});
