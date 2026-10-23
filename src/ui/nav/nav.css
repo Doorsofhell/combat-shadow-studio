@@ -198,6 +198,44 @@
   margin-bottom: 12px;
   flex: none;
 }
+/* v0.45 Premium panels: title and close cross on one row; the sheet stops above the bar, which stays usable */
+.nav-overlay.above-bar {
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  z-index: 29;
+}
+.nav-overlay.above-bar .nav-sheet {
+  max-height: calc(100% - 24px);
+  border-radius: 22px 22px 0 0;
+  padding-bottom: 16px;
+}
+.nav-sheet-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex: none;
+}
+.nav-sheet-head .nav-sheet-title {
+  flex: 1;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+}
+.nav-sheet-close {
+  width: 44px;
+  height: 44px;
+  margin: -6px -10px -6px 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.nav-sheet-close:focus-visible {
+  outline: 2px solid var(--nav-accent);
+}
 .nav-sheet-body {
   overflow: auto;
   min-height: 0;

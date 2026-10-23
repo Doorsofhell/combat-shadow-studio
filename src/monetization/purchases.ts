@@ -18,3 +18,30 @@ export interface PurchaseProvider {
 }
 
 export type PurchaseResult = { kind: 'achete'; status: PremiumStatus } | { kind: 'annule' } | { kind: 'en-attente' } | { kind: 'erreur'; message: string };
+
+/**
+ * v0.45 (« Refonte page Premium à vie » §5, Restaurer): the one entry point of the restore, called by the bar's
+ * Restaurer panel. No provider is registered in the app today (MONETIZATION_ENABLED is false, no store is wired),
+ * so the answer is « indisponible »: no payment, no store call, no fake success. When a provider exists, its own
+ * restore() answers and the status it returns is the only proof of a restored purchase.
+ */
+export type RestoreResult = { kind: 'indisponible' } | { kind: 'restaure' } | { kind: 'aucun-achat' } | { kind: 'erreur'; message: string };
+
+let provider: PurchaseProvider | null = null;
+
+/** integration point of the future store (Google Play Billing through Capacitor); only the unit tests call it today */
+export function setPurchaseProvider(next: PurchaseProvider | null) {
+  provider = next;
+}
+
+/** whether a real purchase system is wired: the Offre panel only offers actions that exist */
+export const purchaseAvailable = () => provider !== null;
+
+export async function restorePurchases(): Promise<RestoreResult> {
+  if (!provider) return { kind: 'indisponible' };
+  try {
+    return (await provider.restore()) === 'premium_lifetime' ? { kind: 'restaure' } : { kind: 'aucun-achat' };
+  } catch (e) {
+    return { kind: 'erreur', message: e instanceof Error ? e.message : String(e) };
+  }
+}

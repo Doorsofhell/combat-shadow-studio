@@ -237,3 +237,20 @@ export const PREMIUM_BENEFITS: readonly { label: string; features: EntitlementId
 ];
 
 export const benefitAvailable = (b: { features: EntitlementId[] }) => b.features.every((f) => ENTITLEMENT_BY_ID.get(f)?.implementation === 'implemente');
+
+/**
+ * v0.45 (Youssef, 2026-10-23, « Refonte page Premium à vie » §3D and §5): the six categories of the page's 2 × 3 grid
+ * and of the « Détails des avantages » panel, with his texts. They regroup the available benefits above; the two that
+ * do not exist yet (fighters, advanced settings) are the « à venir » band, never a category.
+ */
+export const PREMIUM_CATEGORIES: readonly { id: string; label: string; detail: string; features: EntitlementId[] }[] = [
+  { id: 'enchainements', label: 'Enchaînements', detail: 'Création et sauvegarde illimitées de combinaisons personnalisées.', features: ['unlimited_combos', 'advanced_combo_builder'] },
+  { id: 'coaching', label: 'Coaching 3D', detail: 'Accès aux séances guidées et aux animations des techniques disponibles.', features: ['advanced_breakdown', 'advanced_voice'] },
+  { id: 'disciplines', label: '6 disciplines', detail: 'Boxe anglaise, kick-boxing, MMA, muay-thaï, jiu-jitsu brésilien et judo.', features: ['all_disciplines', 'advanced_techniques'] },
+  { id: 'programmes', label: 'Programmes', detail: 'Accès à tous les programmes et niveaux disponibles.', features: ['all_programs', 'advanced_techniques'] },
+  { id: 'statistiques', label: 'Statistiques', detail: 'Suivi des performances et comparaisons avancées.', features: ['advanced_statistics'] },
+  { id: 'historique', label: 'Historique', detail: 'Historique et favoris sans limite.', features: ['full_history', 'unlimited_favorites'] },
+];
+
+/** the benefits announced but not built yet, shown in one discreet band */
+export const PREMIUM_COMING_SOON = 'Combattants et réglages avancés';
