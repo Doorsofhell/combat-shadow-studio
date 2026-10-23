@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { AppIcon, type GlyphId } from '../icons';
 
@@ -43,15 +43,19 @@ export function LinkRow({ to, label, hint, icon }: { to: string; label: ReactNod
 }
 
 /** Switch row: the whole row is the touch target, native checkbox for accessibility. */
-export function Toggle({ on, onChange, label, hint }: { on: boolean; onChange: (v: boolean) => void; label: string; hint?: string }) {
+export function Toggle({ on, onChange, label, hint, extra }: { on: boolean; onChange: (v: boolean) => void; label: string; hint?: string; extra?: ReactNode }) {
+  // v0.40: tied to its switch by id, so a tap on the row toggles it even when `extra` holds a button (a <label>
+  // without `for` activates its first labelable child, which would be that button)
+  const id = useId();
   return (
-    <label className="panel-row" style={{ cursor: 'pointer' }}>
+    <label className="panel-row" htmlFor={id} style={{ cursor: 'pointer' }}>
       <span className="grow">
         {label}
+        {extra}
         {hint && <span className="hint">{hint}</span>}
       </span>
       <span className="switch">
-        <input type="checkbox" role="switch" checked={on} onChange={(e) => onChange(e.target.checked)} />
+        <input id={id} type="checkbox" role="switch" checked={on} onChange={(e) => onChange(e.target.checked)} />
         <span className="track" aria-hidden />
       </span>
     </label>

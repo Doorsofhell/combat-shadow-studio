@@ -124,6 +124,7 @@ describe('écran d’une route', () => {
     ['/reglages', '', 'parametres'],
     ['/reglages/affichage', '', 'parametres'],
     ['/confidentialite', '', 'confidentialite'],
+    ['/premium', '', 'premium'],
   ])('%s%s → %s', (p, q, screen) => expect(navScreen(p, q)).toBe(screen));
   test('pas de barre : accueil de bienvenue, premier choix du coach, labo', () => {
     expect(navScreen('/bienvenue')).toBeNull();
@@ -146,7 +147,9 @@ describe('Navigation générale', () => {
     const progres = ref.findIndex((r) => r[1] === 'Progrès');
     const [moved] = ref.splice(progres, 1);
     ref.splice(ref.findIndex((r) => r[1] === 'Entraîner') + 1, 0, moved);
-    expect(MENU_ENTRIES.map((m) => [m.icon, m.label])).toEqual(ref);
+    // 0.40 (Youssef, « Préparation Freemium et Premium à vie » §8): « Premium à vie » added after the mockup's eight
+    expect(MENU_ENTRIES.slice(0, 8).map((m) => [m.icon, m.label])).toEqual(ref);
+    expect(MENU_ENTRIES.slice(8).map((m) => [m.icon, m.label, m.to])).toEqual([['diamond', 'Premium à vie', '/premium']]);
   });
 });
 

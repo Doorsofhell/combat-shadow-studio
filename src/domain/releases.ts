@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.40.0',
+      releaseDate: '2026-10-22',
+      title: 'Premium à vie, présentation',
+      isMajor: true,
+      changes: [
+        { category: 'fonctionnalites', text: 'Une page « Premium à vie » dans le Menu : un achat unique, sans abonnement, au prix indicatif de 39,99 € TTC. Le paiement n’est pas encore disponible.' },
+        { category: 'ameliorations', text: 'Un petit diamant doré signale les fonctions qui feront partie de Premium. Touche-le pour voir l’offre.' },
+        { category: 'ameliorations', text: 'Rien n’est bloqué : tu gardes accès à toutes les fonctions, comme avant.' },
+      ],
+      links: [{ label: 'Premium à vie', to: '/premium' }],
+    },
+    {
       version: '0.39.0',
       releaseDate: '2026-10-22',
       title: 'Progrès, l’essentiel en un coup d’œil',

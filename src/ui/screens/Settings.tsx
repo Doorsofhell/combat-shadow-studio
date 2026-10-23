@@ -17,6 +17,7 @@ import { CoachLookPicker } from '../components/CoachLookPicker';
 import { AppIcon } from '../icons';
 import { clearDiag, diagText, readDiag } from '../../three/diag3d';
 import { resetStability, stabilityLevel } from '../../three/safe3d';
+import { PremiumMarker } from '../premium/PremiumMarker';
 
 /**
  * v0.29 (coach that vanished on Youssef's phone): what the 3D did on this device, to copy and send.
@@ -152,7 +153,7 @@ export function SettingsPage() {
         <Panel>
         <Toggle label="Voix du coach" on={settings.voice} onChange={(v) => set({ voice: v })} />
         <Toggle label="Annoncer chaque mouvement" on={settings.announceMoves} onChange={(v) => set({ announceMoves: v })} />
-        <Toggle label="Conseils techniques" hint="En mode technique" on={settings.techniqueTips} onChange={(v) => set({ techniqueTips: v })} />
+        <Toggle label="Conseils techniques" hint="En mode technique" on={settings.techniqueTips} onChange={(v) => set({ techniqueTips: v })} extra={<PremiumMarker feature="advanced_voice" />} />
         <Toggle label="Sons d’impact" on={settings.impactSounds} onChange={(v) => set({ impactSounds: v })} />
         <SliderRow id="vv" label="Volume de la voix" value={settings.voiceVolume} min={0} max={1} step={0.05} onChange={(v) => set({ voiceVolume: v })} format={pct} />
         <SliderRow id="fx" label="Volume des effets (cloche, bips)" value={settings.effectsVolume} min={0} max={1} step={0.05} onChange={(v) => set({ effectsVolume: v })} format={pct} />

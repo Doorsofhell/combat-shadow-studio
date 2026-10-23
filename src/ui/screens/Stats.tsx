@@ -7,6 +7,7 @@ import { TECHNIQUE_BY_ID } from '../../domain/techniques';
 import { SessionRecord, formatDuration, localDay, sum, useStats, weekKey } from '../../store/stats';
 import { useGoals } from '../../store/goals';
 import { MODE_LABEL } from '../training/plan';
+import { PremiumMarker } from '../premium/PremiumMarker';
 import { DisciplineLabel, EmptyState, FilterChips, GoalRing, PageHead, ProgressBar, SectionHead, Sheet, TechniqueCard, toast } from '../components';
 import { AppIcon } from '../icons';
 
@@ -147,7 +148,7 @@ export function History() {
   }
   return (
     <div className="page">
-      <PageHead title="Historique" eyebrow="Séances" fallback="/stats" />
+      <PageHead title="Historique" eyebrow="Séances" fallback="/stats" badge={<PremiumMarker feature="full_history" />} />
       {days.size === 0 && <EmptyState title="Aucune séance enregistrée" text="Le temps est compté uniquement pendant l’entraînement actif." />}
       {[...days.entries()].map(([day, list]) => (
         <section key={day} className="stack" style={{ gap: 8 }}>

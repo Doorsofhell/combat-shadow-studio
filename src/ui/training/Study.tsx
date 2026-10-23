@@ -7,6 +7,7 @@ import { instructionOf } from '../../domain/instructions';
 import { CUE_LABEL, CueId, useSettings } from '../../store/settings';
 import { AppIcon } from '../icons';
 import { say } from '../../audio/voice';
+import { PremiumMarker } from '../premium/PremiumMarker';
 
 /**
  * State of the "Décomposer" mode: which technique is studied, the study player that drives the
@@ -127,6 +128,7 @@ export function StudyPanel({
           {!study.playing ? 'Pause sur la posture' : real ? STUDY_PHASE_LABEL.reel : step ? `${idx + 1}. ${step.label}` : STUDY_PHASE_LABEL[phase]}
         </span>
         <b style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t?.name}</b>
+        <PremiumMarker feature="advanced_breakdown" />
         <button className="btn sm" onClick={onClose} data-testid="study-close">
           Terminer
         </button>

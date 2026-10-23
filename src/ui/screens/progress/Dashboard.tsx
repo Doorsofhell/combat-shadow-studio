@@ -44,6 +44,7 @@ import { useCustom } from '../../../store/custom';
 import { useCatalog } from '../../../store/catalog';
 import { ProgressTab, useProgressView } from '../../../store/progressView';
 import { MODE_LABEL } from '../../training/plan';
+import { PremiumMarker } from '../../premium/PremiumMarker';
 import { EmptyState, FilterChips, PageHead, Sheet, Tabs, useKbStyle } from '../../components';
 import { AppIcon, DisciplineIcon } from '../../icons';
 import { CompareColumns, Legend, PairRows, TrendMark, useBox } from './charts';
@@ -156,6 +157,7 @@ export function ActivityDetail() {
     <div className="page dash ai" data-testid="progress-dashboard">
       <PageHead
         title="Activité"
+        badge={<PremiumMarker feature="advanced_statistics" />}
         eyebrow="Progrès"
         fallback="/stats"
         right={
