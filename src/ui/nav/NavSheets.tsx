@@ -16,7 +16,25 @@ import { haptic } from './BottomBar';
  * title. A dialog: the focus moves into it, Tab stays inside, Échap and Back close it, and the focus goes back to
  * the button that opened it.
  */
-export function NavPanel({ title, onClose, children, testId, wide }: { title: string; onClose: () => void; children: ReactNode; testId?: string; wide?: boolean }) {
+export function NavPanel({
+  title,
+  onClose,
+  children,
+  testId,
+  wide,
+  closable,
+  aboveBar,
+}: {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+  testId?: string;
+  wide?: boolean;
+  /** v0.45: a close cross beside the title (Premium panels) */
+  closable?: boolean;
+  /** v0.45: the sheet stops above the bottom bar, which stays visible and usable (Premium panels) */
+  aboveBar?: boolean;
+}) {
   const ref = useRef<HTMLElement>(null);
   const opener = useRef<Element | null>(typeof document !== 'undefined' ? document.activeElement : null);
   useEffect(() => {
@@ -49,11 +67,20 @@ export function NavPanel({ title, onClose, children, testId, wide }: { title: st
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return createPortal(
-    <div className="nav-overlay">
+    <div className={`nav-overlay ${aboveBar ? 'above-bar' : ''}`}>
       <div className="nav-scrim" onClick={onClose} data-testid="nav-scrim" />
       <section className={`nav-sheet ${wide ? 'wide' : ''}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={ref} data-testid={testId}>
         <div className="nav-handle" aria-hidden />
-        <div className="nav-sheet-title">{title}</div>
+        {closable ? (
+          <div className="nav-sheet-head">
+            <h2 className="nav-sheet-title">{title}</h2>
+            <button type="button" className="nav-sheet-close" onClick={onClose} aria-label="Fermer" data-testid="panel-close">
+              <NavIcon id="close" />
+            </button>
+          </div>
+        ) : (
+          <div className="nav-sheet-title">{title}</div>
+        )}
         <div className="nav-sheet-body">{children}</div>
       </section>
     </div>,

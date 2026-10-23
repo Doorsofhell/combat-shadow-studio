@@ -43,6 +43,15 @@ export const NAV_EXTRA_ICONS = {
   close: '<path d="M6 6l12 12M18 6 6 18"/>',
   // v0.40: « Premium à vie » in Menu, the same cut gem as the gold marker
   diamond: '<path d="M6.5 4h11l4 5.5L12 20.5 2.5 9.5z"/><path d="M2.5 9.5h19M9 4l-1.5 5.5L12 20.5l4.5-11L15 4"/>',
+  // v0.45 (refonte de la page Premium à vie): the bar Avantages / FAQ / Restaurer and the icons of its cards and panels
+  checklist: '<path d="M11 6h10M11 12h10M11 18h10"/><path d="m3 6 1.6 1.6L7.5 4.7M3 12l1.6 1.6 2.9-2.9M3 18l1.6 1.6 2.9-2.9"/>',
+  help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.3c-.7.4-1.2.9-1.2 1.7v.5M12 16.8v.2"/>',
+  restore: '<path d="M20 12a8 8 0 1 1-2.4-5.7M20 3.5v5h-5"/>',
+  swords: '<path d="M5 5l14 14M19 5 5 19M14.5 21l2.5-2.5M21 14.5l-2.5 2.5M9.5 21 7 18.5M3 14.5 5.5 17"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.6v.2"/>',
+  tag: '<path d="M3 12V3h9l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+  chevron: '<path d="m9 6 6 6-6 6"/>',
 } as const;
 
 export type NavIconId = keyof typeof NAV_ICONS | keyof typeof NAV_EXTRA_ICONS;

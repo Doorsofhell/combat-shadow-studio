@@ -1886,3 +1886,21 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - contrast.spec, thème sombre : les libellés teintés de la barre passent par la mesure « au rendu » du test, qui lisait la couleur du texte après l'avoir rendue transparente (style calculé lu en direct) et comparait donc du noir au fond. Le test lit maintenant la couleur avant, accepte le format `color(srgb …)` de `color-mix()`, et masque l'icône voisine pendant la photo du fond. Après correction : 3/3 RÉUSSIS, clair et sombre, sans seuil abaissé ;
   - Android réel : NON EXÉCUTÉ.
 - **Captures** : `docs/v044-navigation/captures/` (avant, après, planche comparative clair et sombre).
+
+## 2026-10-23 · v0.45.0 · Page Premium à vie sur un seul écran
+
+- **Demande** : « REFONTE PAGE PREMIUM À VIE » et « REPRODUCTION FIDÈLE DE LA MAQUETTE PREMIUM » (Youssef, 2026-10-23 11:08 et 11:11), maquette `maquettes/premium-2026-10-23/maquette-premium-definitive.png`.
+- **Constat** : la page défilait (1 330 px pour un écran de 851 px), répétait 4 fois « achat unique », listait 8 avantages en colonne et n'avait aucune entrée pour restaurer un achat.
+- **Correction** :
+  - page sur un seul écran : en-tête, diamant, une seule phrase de conditions, grille de 6 catégories, carte « Accès Premium à vie » et bouton « Découvrir l'offre » ;
+  - barre du bas Retour | Avantages | FAQ | Restaurer | Menu ;
+  - 4 panneaux au-dessus de la barre (Avantages, FAQ, Restaurer, Offre), un seul ouvert, fermés par la croix, Retour ou Échap ;
+  - `restorePurchases()` répond « indisponible » tant qu'aucune boutique n'est branchée, sans faux succès ; aucun paiement possible, et la page le dit.
+- **Fichiers** : `src/ui/premium/{PremiumPage.tsx,premium.css}`, `src/ui/nav/{config.ts,icons.ts,NavSheets.tsx,nav.css}`, `src/monetization/{entitlements.ts,purchases.ts}`, `src/monetization/__tests__/rights.test.tsx`, `tests/e2e/{premium.spec.ts,premium-panels.spec.ts,navigation.spec.ts}`, `scripts/dev/shot-premium.mjs`, `src/domain/releases.ts`, `package.json`, `docs/v045-premium/`.
+- **Tests** :
+  - `rights.test`, `premium.spec`, `premium-panels.spec` : RÉUSSIS ;
+  - Vitest complet : 774 RÉUSSIS, 1 ÉCHOUÉ connu (photo-coach, hanche d'Amara), 1 ignoré ;
+  - Playwright complet (version compilée) : 189 RÉUSSIS, 2 ignorés (Firebase), 2 ÉCHOUÉS connus (`coaching-hud:60`, `training-layout:325`, déjà en échec avant cette version) ;
+  - Android réel : NON EXÉCUTÉ.
+- **Écarts avec la maquette** : tutoiement partout, prix indicatif gardé dans le panneau Offre seulement, « futures mises à jour » retiré, « Google Play par exemple » au lieu d'« App Store » (détail dans `docs/v045-premium/RAPPORT.md`).
+- **Captures** : `docs/v045-premium/captures/`.

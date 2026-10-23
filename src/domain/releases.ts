@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.45.0',
+      releaseDate: '2026-10-23',
+      title: 'Nouvelle page Premium',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Page Premium à vie sur un seul écran : ce qui est inclus en un coup d’œil ; la barre du bas ouvre les détails des avantages, les questions fréquentes, la restauration d’un achat et l’offre. Aucun paiement n’est encore possible, et la page le dit clairement.' },
+      ],
+      links: [{ label: 'Premium', to: '/premium' }],
+    },
+    {
       version: '0.44.0',
       releaseDate: '2026-10-23',
       title: 'Barre du bas plus lisible',

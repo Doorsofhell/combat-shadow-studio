@@ -2,7 +2,8 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ENTITLEMENTS, PREMIUM_BENEFITS, benefitAvailable, type EntitlementId } from '../entitlements';
+import { ENTITLEMENTS, PREMIUM_BENEFITS, PREMIUM_CATEGORIES, benefitAvailable, type EntitlementId } from '../entitlements';
+import { restorePurchases, setPurchaseProvider, type PurchaseProvider } from '../purchases';
 import { formatPrice, PREMIUM_OFFER } from '../offer';
 import { MONETIZATION_ENABLED, NO_PURCHASE_SOURCE, canAccessFeature, hasPremium, isPremiumFeature, premiumStatus, setRightsSource, shouldShowPremiumMarker } from '../rights';
 import { PremiumMarker } from '../../ui/premium/PremiumMarker';
@@ -88,17 +89,35 @@ describe('statut Free (préparation)', () => {
     expect(cardClicks).toBe(0);
     expect(el.querySelector('[data-testid="on-premium"]')).not.toBeNull();
   });
-  it('page : prix indicatif, bouton désactivé, aucun statut Premium', () => {
+  // v0.45 (Youssef, 2026-10-23, « Refonte page Premium à vie »): one line of terms instead of four cards, the six
+  // categories in a 2 × 3 grid, the price and the purchase only in the « Offre Premium » panel
+  it('page v0.45 : une seule mention commerciale, six catégories, une bande « à venir », un seul bouton', () => {
     const el = mount(<PremiumPage />);
-    expect(el.querySelector('[data-testid="premium-price"]')!.textContent).toContain('39,99 € TTC');
-    expect(el.querySelector('[data-testid="premium-price"]')!.textContent).toContain('Prix de lancement indicatif');
-    const pay = el.querySelector('[data-testid="premium-pay"]') as HTMLButtonElement;
-    expect(pay.disabled).toBe(true);
-    expect(pay.textContent).toBe('Paiement bientôt disponible');
-    act(() => pay.click());
-    expect(premiumStatus()).toBe('free');
+    expect(el.querySelector('[data-testid="premium-terms"]')!.textContent).toBe('Un paiement. À vie. Sans abonnement.');
+    expect([...el.querySelectorAll('.premium-grid li')].map((l) => l.textContent)).toEqual(['Enchaînements', 'Coaching 3D', '6 disciplines', 'Programmes', 'Statistiques', 'Historique']);
+    expect(el.querySelector('[data-testid="premium-soon"]')!.textContent).toBe('Combattants et réglages avancés : à venir');
+    // the band names exactly the benefits that do not exist yet
+    expect(PREMIUM_BENEFITS.filter((b) => !benefitAvailable(b)).map((b) => b.label)).toEqual(['Tous les combattants et rendus', 'Réglages avancés d’entraînement']);
+    // every category is backed by features that exist
+    for (const c of PREMIUM_CATEGORIES) expect(benefitAvailable(c), c.id).toBe(true);
+    expect(el.querySelectorAll('button')).toHaveLength(1);
+    expect(el.querySelector('[data-testid="premium-discover"]')!.textContent).toContain('Découvrir l’offre');
+    // no price on the page itself, no Premium status
+    expect(el.querySelector('[data-testid="premium-price"]')).toBeNull();
+    expect(el.textContent).not.toContain('€');
     expect(el.querySelector('[data-testid="premium-active"]')).toBeNull();
-    expect(el.textContent).toContain('Aucun paiement n’est possible pour le moment.');
+  });
+  it('panneau Offre : prix indicatif seulement, aucune option d’achat, aucun statut Premium', () => {
+    const el = mount(<PremiumPage />);
+    act(() => (el.querySelector('[data-testid="premium-discover"]') as HTMLButtonElement).click());
+    const panel = document.querySelector('[data-testid="premium-panel-offer"]')!;
+    expect(panel.querySelector('[data-testid="premium-price"]')!.textContent).toBe('39,99 € TTC');
+    expect(panel.textContent).toContain('Prix de lancement indicatif');
+    act(() => (panel.querySelector('[data-testid="premium-pay"]') as HTMLButtonElement).click());
+    expect(panel.querySelector('[data-testid="offer-result"]')!.textContent).toContain('Aucune option d’achat n’est disponible pour le moment');
+    expect(premiumStatus()).toBe('free');
+    // the six benefits are not listed again in the offer
+    for (const c of PREMIUM_CATEGORIES) expect(panel.textContent).not.toContain(c.detail);
   });
 });
 
@@ -121,6 +140,7 @@ describe('statut Premium (injecté par le test)', () => {
     setRightsSource(PREMIUM);
     const el = mount(<PremiumPage />);
     expect(el.querySelector('[data-testid="premium-active"]')!.textContent).toContain('Premium à vie activé');
+    expect(el.querySelector('[data-testid="premium-discover"]')).toBeNull();
     expect(el.querySelector('[data-testid="premium-pay"]')).toBeNull();
     expect(el.querySelector('[data-testid="premium-price"]')).toBeNull();
   });
@@ -129,5 +149,41 @@ describe('statut Premium (injecté par le test)', () => {
     expect(el.querySelector('[data-premium="full_history"]')).not.toBeNull();
     act(() => setRightsSource(PREMIUM));
     expect(el.querySelector('[data-premium="full_history"]')).toBeNull();
+  });
+});
+
+// v0.45 « Restaurer »: the real entry point; without a store wired it says so and never reports a success
+describe('restauration des achats', () => {
+  afterEach(() => setPurchaseProvider(null));
+  const fake = (restore: PurchaseProvider['restore']): PurchaseProvider => ({ purchase: async () => ({ kind: 'annule' }), restore, verify: async () => 'free', onRevoked: () => () => {} });
+  it('sans système d’achat : « indisponible », statut inchangé', async () => {
+    expect(await restorePurchases()).toEqual({ kind: 'indisponible' });
+    expect(premiumStatus()).toBe('free');
+  });
+  it('avec un fournisseur (injecté par le test) : restauré, aucun achat ou erreur selon sa réponse', async () => {
+    setPurchaseProvider(fake(async () => 'premium_lifetime'));
+    expect(await restorePurchases()).toEqual({ kind: 'restaure' });
+    setPurchaseProvider(fake(async () => 'free'));
+    expect(await restorePurchases()).toEqual({ kind: 'aucun-achat' });
+    setPurchaseProvider(
+      fake(async () => {
+        throw new Error('réseau');
+      }),
+    );
+    expect(await restorePurchases()).toEqual({ kind: 'erreur', message: 'réseau' });
+  });
+  it('panneau Restaurer : message clair, aucune fausse réussite', async () => {
+    const el = mount(<PremiumPage />);
+    expect(el).toBeTruthy();
+    // the panel is opened from the bar; here through the page's own action
+    const { useNavStore } = await import('../../ui/nav/store');
+    act(() => useNavStore.getState().run('restore'));
+    const panel = document.querySelector('[data-testid="premium-panel-restore"]')!;
+    await act(async () => (panel.querySelector('[data-testid="restore-now"]') as HTMLButtonElement).click());
+    const r = panel.querySelector('[data-testid="restore-result"]')!;
+    expect(r.getAttribute('data-kind')).toBe('indisponible');
+    expect(r.textContent).toContain('pas encore disponible');
+    expect(r.getAttribute('role')).toBe('status');
+    expect(premiumStatus()).toBe('free');
   });
 });

@@ -112,8 +112,9 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
   // 5.10 — the mockup's `default` (settings)
   parametres: SETTINGS,
   confidentialite: SETTINGS,
-  // 0.40 (Youssef, « Préparation Freemium et Premium à vie » §8): reached from Menu and the markers, not from the bar
-  premium: PLACES,
+  // 0.40 (Youssef, « Préparation Freemium et Premium à vie » §8): reached from Menu and the markers, not from the bar.
+  // 0.45 (« Refonte page Premium à vie » §4): its own three panels between Retour and Menu
+  premium: [BACK, { icon: 'checklist', label: 'Avantages', action: 'benefits' }, { icon: 'help', label: 'FAQ', action: 'faq' }, { icon: 'restore', label: 'Restaurer', action: 'restore' }, MENU],
   connexion: SETTINGS,
   // 5.11 — the other screens, built on the same rules (Retour first, Menu last, the main action second)
   entrainer: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'calendar', label: 'Programmes', action: 'nav:/programmes' }, { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' }, MENU],

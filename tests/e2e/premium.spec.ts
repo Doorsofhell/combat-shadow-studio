@@ -26,7 +26,9 @@ test.beforeEach(async ({ page }) => {
   await page.goto('about:blank');
 });
 
-test('Menu « Premium à vie » : la page, le prix indicatif, aucun paiement possible', async ({ page }) => {
+// v0.45 (Youssef, 2026-10-23, « Refonte page Premium à vie » + maquette définitive en 5 écrans): one screen, the bar
+// Retour / Avantages / FAQ / Restaurer / Menu, four panels over the page; still no payment possible
+test('Menu « Premium à vie » : la page v0.45, l’offre et aucun paiement possible', async ({ page }) => {
   const payCalls: string[] = [];
   page.on('request', (r) => {
     if (/stripe|billing|play\.google|paypal|checkout/i.test(r.url())) payCalls.push(r.url());
@@ -36,22 +38,28 @@ test('Menu « Premium à vie » : la page, le prix indicatif, aucun paiement pos
   await page.getByTestId('menu-premium').click();
   await expect(page).toHaveURL(/#\/premium$/);
   const p = page.getByTestId('premium-page');
+  await expect(p.getByRole('heading', { name: 'Premium à vie' })).toBeVisible();
   await expect(p.getByRole('heading', { name: 'Combat Shadow Studio Premium' })).toBeVisible();
-  await expect(p).toContainText('« Tous tes entraînements. Sans limites. »');
-  for (const t of ['Achat unique', 'Accès Premium à vie', 'Aucun abonnement', 'Aucun renouvellement automatique']) await expect(page.getByTestId('premium-terms')).toContainText(t);
-  await expect(page.getByTestId('premium-price')).toContainText('39,99 € TTC');
-  await expect(page.getByTestId('premium-price')).toContainText('Prix de lancement indicatif');
-  await expect(page.getByTestId('premium-benefits').locator('li')).toHaveCount(8);
-  await expect(page.getByTestId('premium-benefits').locator('li[data-available="false"]')).toHaveCount(2);
-  const pay = page.getByTestId('premium-pay');
-  await expect(pay).toBeDisabled();
-  await expect(pay).toHaveText('Paiement bientôt disponible');
-  await pay.click({ force: true });
+  await expect(p).toContainText('Tous tes entraînements. Sans limites.');
+  await expect(page.getByTestId('premium-terms')).toHaveText('Un paiement. À vie. Sans abonnement.');
+  await expect(page.getByTestId('premium-benefits').locator('.premium-grid li')).toHaveCount(6);
+  await expect(page.getByTestId('premium-soon')).toHaveText('Combattants et réglages avancés : à venir');
+  // the bar of the page, in the mockup's order
+  await expect(page.getByTestId('bottom-bar').locator('.nav-btn')).toHaveText(['Retour', 'Avantages', 'FAQ', 'Restaurer', 'Menu']);
+  await page.getByTestId('premium-discover').click();
+  const offer = page.getByTestId('premium-panel-offer');
+  await expect(offer).toBeVisible();
+  await expect(offer.getByTestId('premium-price')).toHaveText('39,99 € TTC');
+  await expect(offer).toContainText('Prix de lancement indicatif');
+  await offer.getByTestId('premium-pay').click();
+  await expect(offer.getByTestId('offer-result')).toContainText('Aucune option d’achat n’est disponible pour le moment');
   await expect(page.getByTestId('premium-active')).toHaveCount(0);
-  await expect(p).toContainText('Aucun paiement n’est possible pour le moment.');
   await expect(page.locator('input[autocomplete^="cc-"], input[name*="card" i]')).toHaveCount(0);
   expect(payCalls).toEqual([]);
-  // Android back: Retour comes back where Menu was opened
+  // Android back: the panel closes first, then Retour comes back where Menu was opened
+  await page.goBack();
+  await expect(offer).toHaveCount(0);
+  await expect(page).toHaveURL(/#\/premium$/);
   await page.goBack();
   await expect(page).toHaveURL(/#\/$/);
 });
