@@ -41,11 +41,8 @@ export interface Settings {
    * to v0.28) or cel-shaded manga (previous render only)
    */
   coachStyle: 'encre' | 'manga' | 'realiste';
-  /**
-   * v0.23 render of the coaches (one model for both looks, clean cel shading) or the previous render,
-   * kept as a fallback until the new one is validated on the devices
-   */
-  coachRender: 'premium' | 'precedent';
+  /** Render v0.24, previous fallback, or isolated experimental biomechanical motion pipeline. */
+  coachRender: 'premium' | 'precedent' | 'biomeca';
   cameraAngle: number;
   /** teaching camera mode; auto picks the best angle for each technique */
   cameraMode: import('../domain/camera').CameraMode;
@@ -147,7 +144,8 @@ export const useSettings = create<SettingsState>()(
       merge: (saved, current) => {
         const s = (saved as { settings?: Partial<Settings> })?.settings ?? {};
         const size = COACH_PANEL_SIZES.includes(s.coachPanelSize as CoachPanelSize) ? s.coachPanelSize : DEFAULT_SETTINGS.coachPanelSize;
-        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) } } };
+        const render = s.coachRender === 'precedent' || s.coachRender === 'biomeca' ? s.coachRender : DEFAULT_SETTINGS.coachRender;
+        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachRender: render, coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) } } };
       },
     },
   ),
