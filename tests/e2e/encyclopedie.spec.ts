@@ -158,6 +158,8 @@ for (const scheme of ['light', 'dark'] as const) {
     for (const path of ['/#/encyclopedie', '/#/encyclopedie/liste?f=regles', '/#/encyclopedie/terme/cage', '/#/encyclopedie/az?l=S']) {
       await page.goto(path);
       await expect(page.locator('.enc-page')).toBeVisible();
+      // the page's entry transition fades its text in: measure the contrast once it has finished
+      await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running'));
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
       expect(overflow, path).toBeLessThanOrEqual(0);
       const axe = await new AxeBuilder({ page }).include('.enc-page').analyze();

@@ -1926,3 +1926,12 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Fichiers** : `src/engine/library/grappling.ts`, documents de mesures régénérés (`docs/audit-biomecanique/MESURES_{CHEVILLES,MOTEUR,TORSIONS}.md`), `src/ui/pictos/techniquePictos.json`.
 - **Tests** : TypeScript RÉUSSI ; Vitest complet 775 RÉUSSIS, 1 ignoré, 0 ÉCHOUÉ (dont `photo-coach`) ; Playwright NON EXÉCUTÉ (aucun écran modifié) ; Android réel NON EXÉCUTÉ.
 - **PR #23 (Biomécanique test)** : fermée sans fusion sur décision de Youssef (2026-10-23 17:25).
+
+## 2026-10-23 · v0.46.0 · Encyclopédie du combat, version 1.0
+
+- **Demande** : « Création de l'Encyclopédie du combat — Version 1.0 » (Youssef, 2026-10-23) et sa maquette (`maquettes/encyclopedie-2026-10-23/`).
+- **Ajout** : 136 fiches en 8 familles (techniques, positions et déplacements, équipements, lieux et surfaces, règles et arbitrage, préparation physique, sécurité, culture), 71 sources datées, 73 illustrations faites dans le dépôt (rendus de Kadir et Amara, scènes Blender), 45 annoncées « à produire » avec leur brief ; recherche (noms internationaux, synonymes, accents), filtres dans l'adresse, A–Z, favoris gardés (`favTerms` dans `css-goals`, ancien enregistrement complété sans rien effacer) ; entrée du Menu ; liens dans les deux sens avec les fiches techniques ; entrée du coach IA.
+- **Fichiers** : `src/domain/encyclopedia/`, `src/ui/encyclopedia/`, `src/ui/nav/`, `src/ui/App.tsx`, `src/ui/screens/Library.tsx`, `src/store/goals.ts`, `src/coach/{appGuide.ts,questionBank.ts}`, `public/encyclopedie/`, `scripts/encyclopedie/`, `scripts/dev/shot-encyclopedie.mjs`, `tests/e2e/{encyclopedie,navigation}.spec.ts`, `src/domain/releases.ts`, `package.json`, `docs/v046-encyclopedie/`.
+- **Tests** : détail dans `docs/v046-encyclopedie/RAPPORT.md` §6. Vitest 792 RÉUSSIS ; Playwright 198 RÉUSSIS au complet puis 3 des 5 échecs corrigés ou réussis au second passage ; 2 ÉCHOUÉS hors de cette version (`training-layout:325`, `coach-suggest:96`, ce dernier aussi en échec sur la v0.45.1) ; Android réel NON EXÉCUTÉ.
+- **Limites** : aucune relecture par un expert ; 45 illustrations à produire.
+

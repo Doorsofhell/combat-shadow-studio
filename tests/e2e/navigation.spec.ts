@@ -68,6 +68,8 @@ test.describe('393×851', () => {
       ['nouveautes', 'Nouveautés'],
       // 0.40 (Youssef, « Préparation Freemium et Premium à vie »): one more entry, after the eight of the mockup
       ['premium', 'Premium à vie'],
+      // 0.46 (« Encyclopédie du combat » §3): a full row with its description
+      ['encyclopedie', 'EncyclopédieDictionnaire illustré des 6 disciplines'],
     ]);
     // a modal sheet: focus inside, the page behind under a scrim
     await expect(page.getByRole('dialog', { name: 'Navigation générale' })).toBeVisible();

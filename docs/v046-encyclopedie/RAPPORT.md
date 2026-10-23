@@ -55,7 +55,15 @@ La base n'est pas exhaustive : elle couvre le vocabulaire courant des 6 discipli
 
 ## 6. Tests
 
-TESTS
+| Vérification | Résultat |
+|---|---|
+| TypeScript (`tsc --noEmit`) | RÉUSSI |
+| Vitest complet | RÉUSSI : 792 réussis, 1 ignoré, 0 échec (dont 17 tests de l'encyclopédie : une notion = une fiche, alias uniques, sources datées, images existantes, recherche, favoris) |
+| Playwright `encyclopedie.spec` (12 tests : Menu, familles, filtres, recherche, Retour, fiche, illustration à produire, A–Z, favoris, 360 × 640 clair et sombre avec axe, Octagon) | RÉUSSI |
+| Playwright complet (version compilée) | 198 réussis, 2 ignorés (Firebase), 5 échecs au premier passage : `navigation.spec:51` (le Menu a désormais l'entrée Encyclopédie : test mis à jour, RÉUSSI) ; `encyclopedie.spec:155` clair (contraste mesuré pendant la transition d'entrée : le test attend maintenant la fin de l'animation, RÉUSSI) ; `training-layout:126` (RÉUSSI au second passage) ; `training-layout:325` (caméra Auto, ÉCHOUÉ, déjà en échec avant cette version) ; `coach-suggest:96` (ÉCHOUÉ, échoue aussi sur la v0.45.1 de référence) |
+| Coach IA | entrée « L'Encyclopédie du combat » dans le guide, écran `encyclopedie`, deux questions proposées sur cet écran : RÉUSSI |
+| Noms réels | l'histoire du JJB ne cite plus le nom de la famille fondatrice (règle : aucun nom des champions de référence dans l'application) : RÉUSSI |
+| Android réel | NON EXÉCUTÉ |
 
 ## 7. Captures
 
