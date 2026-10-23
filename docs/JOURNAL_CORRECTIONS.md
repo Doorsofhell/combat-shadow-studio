@@ -1867,3 +1867,22 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Android réel : NON EXÉCUTÉ.
 - **Captures avant/après** : `docs/v043-equipements/captures/` (16 planches : 2 coachs × 7 tenues + boxe en Anime).
 - **Limites** : kimono absent en Anime (inchangé) ; sangles des protège-tibias visibles de profil ; gant jusqu'à 17 cm de large, pouce compris.
+
+## 2026-10-23 · v0.44.0 · Barre du bas : actions de l'écran reconnaissables
+
+- **Demande** : « AMÉLIORATION DE LA BARRE DE NAVIGATION CONTEXTUELLE » (Youssef, 2026-10-23 11:15) : teinte légère permanente sur les actions propres à l'écran, plus forte quand elles sont actives ; Retour et Menu neutres ; tokens du thème, clair et sombre ; transition 150 à 200 ms ; aucune taille ni ordre changés.
+- **Constat** : toutes les places de la barre avaient la même couleur grise ; seule l'action active (Ralenti, Pause…) changeait.
+- **Correction** :
+  - règle centrale `slotRole(slot)` (`src/ui/nav/config.ts`) : Retour, Menu et les liens vers les grandes rubriques (`GLOBAL_PLACES`) sont « globaux », les autres actions « contextuelles » ;
+  - `BottomBar.tsx` ajoute la classe `ctx` et `data-role` ;
+  - `nav.css` : 4 variables tirées des couleurs du thème (`--nav-ctx`, `--nav-ctx-bg`, `--nav-ctx-active`, `--nav-ctx-active-bg`), transition existante de 0,18 s ;
+  - les emplacements vides ou globaux ne sont jamais teintés.
+- **Fichiers** : `src/ui/nav/{config.ts,BottomBar.tsx,nav.css}`, `src/ui/nav/__tests__/nav.test.ts`, `tests/e2e/nav-contextuelle.spec.ts`, `src/domain/releases.ts`, `package.json`, `tests/e2e/navigation.spec.ts`, `docs/v044-navigation/`.
+- **Tests** :
+  - `nav.test` (rôles par écran) : RÉUSSI (56 dans le dossier) ;
+  - `nav-contextuelle` (couleurs lues sur la vraie barre au repos, active, au changement d'écran ; contraste ≥ 4,5:1 ; axe ; largeurs identiques ; clair et sombre) : 2 RÉUSSIS ;
+  - Vitest complet : 770 RÉUSSIS, 1 ÉCHOUÉ connu (photo-coach, hanche d'Amara, déjà en échec avant), 1 ignoré ;
+  - Playwright complet (version compilée) : 180 RÉUSSIS, 2 ignorés (Firebase), 4 ÉCHOUÉS : coach-suggest:96 et training-layout:325 (échecs connus, déjà présents en 0.42 et 0.43), coaching-hud:60 (instable, déjà en échec 2 fois sur 4 en 0.42), contrast.spec en thème sombre (voir ci-dessous) ;
+  - contrast.spec, thème sombre : les libellés teintés de la barre passent par la mesure « au rendu » du test, qui lisait la couleur du texte après l'avoir rendue transparente (style calculé lu en direct) et comparait donc du noir au fond. Le test lit maintenant la couleur avant, accepte le format `color(srgb …)` de `color-mix()`, et masque l'icône voisine pendant la photo du fond. Après correction : 3/3 RÉUSSIS, clair et sombre, sans seuil abaissé ;
+  - Android réel : NON EXÉCUTÉ.
+- **Captures** : `docs/v044-navigation/captures/` (avant, après, planche comparative clair et sombre).

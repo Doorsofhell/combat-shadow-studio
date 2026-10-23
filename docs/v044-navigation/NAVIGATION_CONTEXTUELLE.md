@@ -43,7 +43,9 @@ Il n'y a ni dégradé, ni ombre, ni contour, ni changement de taille. Pour les n
 |---|---|
 | `src/ui/nav/__tests__/nav.test.ts` : rôles par écran (Retour et Menu toujours neutres, actions des écrans contextuelles, Accueil et pages sans actions jamais teintées) | RÉUSSI (56/56 dans le dossier) |
 | `tests/e2e/nav-contextuelle.spec.ts`, menus clair et sombre : couleurs lues sur la vraie barre au repos, avec une action active et au changement d'écran ; contraste ≥ 4,5:1 sur chaque place ; axe WCAG 2 AA ; largeurs identiques | RÉUSSI (2/2) |
-| Suite complète vitest et Playwright | voir la PR |
+| Vitest complet | 770 RÉUSSIS, 1 ÉCHOUÉ connu (photo-coach Amara), 1 ignoré |
+| Playwright complet (compilé) | 180 RÉUSSIS, 2 ignorés, 3 échecs connus d'avant (coach-suggest:96, training-layout:325, coaching-hud:60 instable) + contrast.spec sombre, corrigé côté mesure puis 3/3 RÉUSSIS |
+| Android réel | NON EXÉCUTÉ |
 
 ## Captures
 
