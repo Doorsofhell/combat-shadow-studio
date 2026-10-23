@@ -3,6 +3,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } fro
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { CATEGORY_LABEL, TECHNIQUE_BY_ID, TECHNIQUES, techniquesFor } from '../../domain/techniques';
 import { EXERCISES, EXERCISE_BY_ID } from '../../domain/exercises';
+import { termForPartner, termForTechnique } from '../../domain/encyclopedia';
 import { PARTNER_BY_ID, PARTNER_CATEGORY_LABEL, partnerFor } from '../../domain/partner';
 import { SOURCE_BY_ID } from '../../domain/biomech/sources';
 import { DISCIPLINES, DisciplineId, LevelId, Technique } from '../../domain/types';
@@ -427,6 +428,7 @@ export function TechniquePage() {
         <AnimationBadge id={t.id} />
       </div>
       <p>{t.description}</p>
+      <UnderstandLink term={termForTechnique(t.id)} />
       {t.soloNote && <div className="note">{t.soloNote}</div>}
       {t.notes?.[d] && (
         <div className="card stack" data-testid="technique-discipline-note">
@@ -475,6 +477,16 @@ export function TechniquePage() {
   );
 }
 
+/** 0.46 (« Encyclopédie du combat » §15): from a technique to the sheet that explains its name, when there is one */
+function UnderstandLink({ term }: { term?: { id: string; name: string } }) {
+  if (!term) return null;
+  return (
+    <Link to={`/encyclopedie/terme/${term.id}`} className="btn ghost small" style={{ alignSelf: 'flex-start' }} data-testid="understand-term">
+      Comprendre ce terme : {term.name}
+    </Link>
+  );
+}
+
 /** true when the touch starts in a row that scrolls sideways (chips, steps): its swipe is its own */
 function scrollsSideways(el: HTMLElement | null): boolean {
   for (let e = el; e && !e.classList.contains('page'); e = e.parentElement) {
@@ -502,6 +514,7 @@ export function PartnerPage() {
         <DisciplineLabel id={p.discipline} name={disc.name} />
       </div>
       <p>{p.description}</p>
+      <UnderstandLink term={termForPartner(p.id)} />
       <div className="card stack" style={{ borderLeft: '3px solid var(--red)' }} data-testid="partner-safety">
         <h3>Sécurité</h3>
         <ul className="plain-list">

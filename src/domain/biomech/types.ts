@@ -7,7 +7,7 @@
 import type { DisciplineId } from '../types';
 
 /** where a statement comes from; a regulation alone never defines how a move looks */
-export type SourceKind = 'reglement' | 'pedagogique' | 'biomecanique' | 'variante' | 'competition';
+export type SourceKind = 'reglement' | 'pedagogique' | 'biomecanique' | 'variante' | 'competition' | 'reference' | 'sante';
 
 export interface Source {
   id: string;

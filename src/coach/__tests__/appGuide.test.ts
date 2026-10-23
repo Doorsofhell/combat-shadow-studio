@@ -88,6 +88,7 @@ const ENTRY_QUESTIONS: Record<string, [string, CoachScreen?]> = {
   donnees: ['Comment exporter mes données ?', 'reglages-donnees'],
   confidentialite: ['Mes données sont-elles envoyées sur internet ?', 'confidentialite'],
   premium: ['C’est quoi Premium à vie ?', 'accueil'],
+  encyclopedie: ['Où trouver la définition d’un mot de boxe ?', 'accueil'],
   compte: ['Est-ce que je dois créer un compte ?', 'profil'],
   profil: ['Comment changer mon pseudo ?', 'profil'],
   // 0.27: the IMC card of the profile (Youssef, 2026-10-20 21:45)

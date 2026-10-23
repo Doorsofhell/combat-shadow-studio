@@ -19,11 +19,14 @@ interface GoalsState {
   favTechniques: string[];
   /** favourite exercise ids (combinations, drills) */
   favExercises: string[];
+  /** 0.46: favourite sheets of the encyclopedia (term ids) */
+  favTerms: string[];
   /** 0.24: how the user rates each technique himself (Youssef, 2026-10-20): assimilated or still hard */
   mastery: Record<string, Mastery>;
   setGoals: (g: Partial<Goals>) => void;
   toggleTechnique: (id: string) => void;
   toggleExercise: (id: string) => void;
+  toggleTerm: (id: string) => void;
   /** sets the state, or clears it when the same state is chosen again */
   toggleMastery: (id: string, m: Mastery) => void;
   clear: () => void;
@@ -41,10 +44,12 @@ export const useGoals = create<GoalsState>()(
       goals: DEFAULT_GOALS,
       favTechniques: [],
       favExercises: [],
+      favTerms: [],
       mastery: {},
       setGoals: (g) => setState((s) => ({ goals: { ...s.goals, ...g } })),
       toggleTechnique: (id) => setState((s) => ({ favTechniques: toggle(s.favTechniques, id) })),
       toggleExercise: (id) => setState((s) => ({ favExercises: toggle(s.favExercises, id) })),
+      toggleTerm: (id) => setState((s) => ({ favTerms: toggle(s.favTerms, id) })),
       toggleMastery: (id, m) =>
         setState((s) => {
           const next = { ...s.mastery };
@@ -52,14 +57,15 @@ export const useGoals = create<GoalsState>()(
           else next[id] = m;
           return { mastery: next };
         }),
-      clear: () => setState({ goals: DEFAULT_GOALS, favTechniques: [], favExercises: [], mastery: {} }),
+      clear: () => setState({ goals: DEFAULT_GOALS, favTechniques: [], favExercises: [], favTerms: [], mastery: {} }),
     }),
     {
       name: 'css-goals',
       storage: createJSONStorage(() => idbStorage),
       merge: (saved, current) => {
         const s = (saved ?? {}) as Partial<GoalsState>;
-        return { ...current, ...s, goals: { ...DEFAULT_GOALS, ...(s.goals ?? {}) }, mastery: { ...(s.mastery ?? {}) } };
+        // 0.46: favTerms is new, older saved states simply have none
+        return { ...current, ...s, goals: { ...DEFAULT_GOALS, ...(s.goals ?? {}) }, mastery: { ...(s.mastery ?? {}) }, favTerms: Array.isArray(s.favTerms) ? s.favTerms : [] };
       },
     },
   ),

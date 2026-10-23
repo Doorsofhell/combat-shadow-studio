@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.46.0',
+      releaseDate: '2026-10-23',
+      title: 'Encyclopédie du combat',
+      isMajor: true,
+      changes: [
+        { category: 'fonctionnalites', text: 'Nouvelle Encyclopédie du combat, dans le Menu : 136 termes des 6 disciplines classés en 8 familles (techniques, positions, équipements, lieux, règles, préparation, sécurité, culture), avec recherche, index A–Z et favoris. Chaque fiche cite ses sources ; la relecture par un expert de chaque discipline est à venir.' },
+        { category: 'ameliorations', text: 'Sur une fiche technique, « Comprendre ce terme » ouvre la définition dans l’Encyclopédie, et l’Encyclopédie renvoie vers la technique.' },
+      ],
+      links: [{ label: 'Encyclopédie', to: '/encyclopedie' }],
+    },
+    {
       version: '0.45.1',
       releaseDate: '2026-10-23',
       title: 'Barre du bas plus sobre',

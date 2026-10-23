@@ -225,7 +225,7 @@ export function NavSheets() {
           <button
             key={m.id}
             type="button"
-            className={`nav-menuitem ${m.id === 'nouveautes' ? 'highlight' : ''}`}
+            className={`nav-menuitem ${m.id === 'nouveautes' ? 'highlight' : ''} ${m.hint ? 'wide' : ''}`}
             data-go={m.id}
             data-testid={`menu-${m.id}`}
             aria-label={m.id === 'nouveautes' && unseen ? 'Nouveautés, nouvelle version' : m.label}
@@ -239,7 +239,14 @@ export function NavSheets() {
             }}
           >
             <NavIcon id={m.icon} />
-            <span>{m.label}</span>
+            {m.hint ? (
+              <span className="nav-menuitem-text">
+                <span>{m.label}</span>
+                <small>{m.hint}</small>
+              </span>
+            ) : (
+              <span>{m.label}</span>
+            )}
             {m.id === 'nouveautes' && unseen && <i className="nav-dot" data-testid="news-dot" aria-hidden />}
           </button>
         ))}

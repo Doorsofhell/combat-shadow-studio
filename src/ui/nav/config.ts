@@ -70,6 +70,8 @@ export type NavScreen =
   | 'parametres'
   | 'confidentialite'
   | 'premium'
+  | 'encyclopedie'
+  | 'encyclopedie-fiche'
   | 'autre';
 
 const BACK: NavSlot = { icon: 'back', label: 'Retour', action: 'back' };
@@ -79,6 +81,9 @@ const MENU: NavSlot = { icon: 'grid', label: 'Menu', action: 'menu' };
 const SETTINGS: NavSlot[] = [BACK, { icon: 'user', label: 'Profil', action: 'nav:/profil' }, { icon: 'options', label: 'Affichage', action: 'nav:/reglages/affichage' }, { icon: 'camera', label: 'Caméra', action: 'nav:/reglages/affichage?focus=camera' }, MENU];
 
 /** screens without actions of their own: the three main places of the app between Retour and Menu */
+/** the encyclopedia: its three ways in (families, A–Z, favourites) between Retour and Menu */
+const ENCYCLOPEDIA: NavSlot[] = [BACK, { icon: 'ranking', label: 'Classement', action: 'ency-classement' }, { icon: 'az', label: 'A–Z', action: 'ency-az' }, { icon: 'heart', label: 'Favoris', action: 'ency-favoris' }, MENU];
+
 const PLACES: NavSlot[] = [BACK, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU];
 
 export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
@@ -116,6 +121,9 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
   // 0.45 (« Refonte page Premium à vie » §4): its own three panels between Retour and Menu
   premium: [BACK, { icon: 'checklist', label: 'Avantages', action: 'benefits' }, { icon: 'help', label: 'FAQ', action: 'faq' }, { icon: 'restore', label: 'Restaurer', action: 'restore' }, MENU],
   connexion: SETTINGS,
+  // 0.46 (« Encyclopédie du combat » §9): Retour | Classement | A–Z | Favoris | Menu, on every screen of the encyclopedia
+  encyclopedie: ENCYCLOPEDIA,
+  'encyclopedie-fiche': ENCYCLOPEDIA,
   // 5.11 — the other screens, built on the same rules (Retour first, Menu last, the main action second)
   entrainer: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'calendar', label: 'Programmes', action: 'nav:/programmes' }, { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' }, MENU],
   discipline: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'layers', label: 'Techniques', action: 'techniques' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
@@ -172,6 +180,8 @@ export const NAV_PARENT: Record<NavScreen, string> = {
   parametres: '/',
   confidentialite: '/reglages',
   premium: '/',
+  encyclopedie: '/',
+  'encyclopedie-fiche': '/encyclopedie',
   autre: '/',
 };
 
@@ -210,6 +220,8 @@ export function navScreen(pathname: string, search = ''): NavScreen | null {
   if (p === '/reglages' || p.startsWith('/reglages/')) return 'parametres';
   if (p === '/confidentialite') return 'confidentialite';
   if (p === '/premium') return 'premium';
+  if (p.startsWith('/encyclopedie/terme/')) return 'encyclopedie-fiche';
+  if (p === '/encyclopedie' || p.startsWith('/encyclopedie/')) return 'encyclopedie';
   // a page the bar does not know yet still gets Retour and Menu
   return 'autre';
 }
@@ -220,6 +232,8 @@ export interface MenuEntry {
   icon: NavIconId;
   label: string;
   to: string;
+  /** a line under the label: the entry then takes a whole row of the grid (0.46, Encyclopédie) */
+  hint?: string;
 }
 export const MENU_ENTRIES: readonly MenuEntry[] = [
   { id: 'accueil', icon: 'home', label: 'Accueil', to: '/' },
@@ -234,4 +248,7 @@ export const MENU_ENTRIES: readonly MenuEntry[] = [
   { id: 'nouveautes', icon: 'sparkle', label: 'Nouveautés', to: '' },
   // 0.40 (Youssef, « Préparation Freemium et Premium à vie » §8): a permanent way in, never a tab of the bar
   { id: 'premium', icon: 'diamond', label: 'Premium à vie', to: '/premium' },
+  // 0.46 (« Encyclopédie du combat » §3): with the general resources, next to Profil and Premium; a full row with
+  // its description keeps the 3 × 3 grid above it intact
+  { id: 'encyclopedie', icon: 'book', label: 'Encyclopédie', to: '/encyclopedie', hint: 'Dictionnaire illustré des 6 disciplines' },
 ];
