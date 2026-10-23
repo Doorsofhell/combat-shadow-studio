@@ -19,6 +19,27 @@ export interface NavSlot {
   icon: NavIconId;
   label: string;
   action: NavAction;
+  /** v0.44: only when the rule of slotRole() does not fit this place */
+  role?: NavRole;
+}
+
+/**
+ * v0.44 (Youssef, 2026-10-23, « AMÉLIORATION DE LA BARRE DE NAVIGATION CONTEXTUELLE »): what a place of the bar is,
+ * which sets its colour (never its word or its position):
+ * - `global`: permanent navigation, neutral (Retour, Menu, the main places of the app);
+ * - `contextual`: an action of the screen shown, lightly tinted with the accent, more strongly when active.
+ */
+export type NavRole = 'global' | 'contextual';
+
+/** the main places of the app: a link to one of them is navigation, not an action of the screen */
+export const GLOBAL_PLACES = ['/', '/entrainer', '/techniques', '/stats', '/profil', '/programmes', '/historique', '/objectifs', '/reglages', '/coach', '/champions', '/createur'];
+
+export function slotRole(slot: NavSlot): NavRole {
+  if (slot.role) return slot.role;
+  if (slot.action === 'back' || slot.action === 'menu') return 'global';
+  // a link to a page of this screen (its editor, one of its sections) is one of its actions
+  if (slot.action.startsWith('nav:')) return GLOBAL_PLACES.includes(slot.action.slice(4)) ? 'global' : 'contextual';
+  return 'contextual';
 }
 
 export type NavScreen =

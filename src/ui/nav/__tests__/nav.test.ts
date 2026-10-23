@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 import { LATEST_RELEASE, RELEASES, hasUnseenRelease, releaseDateLabel } from '../../../domain/releases';
-import { MENU_ENTRIES, NAV_CONFIG, NAV_PARENT, TOGGLE, navScreen, type NavScreen } from '../config';
+import { MENU_ENTRIES, NAV_CONFIG, NAV_PARENT, TOGGLE, navScreen, slotRole, type NavScreen } from '../config';
 import { NAV_EXTRA_ICONS, NAV_ICONS, navIconPaths } from '../icons';
 import { fold } from '../selection';
 
@@ -188,4 +188,27 @@ describe('Nouveautés', () => {
 test('recherche : sans accents ni majuscules', () => {
   expect(fold('Crochet Arrière')).toBe('crochet arriere');
   expect(fold('  ÉCHAUFFEMENT ')).toBe('echauffement');
+});
+
+describe('v0.44 rôles des emplacements (teinte des actions contextuelles)', () => {
+  test('Retour et Menu restent neutres sur tous les écrans', () => {
+    for (const [screen, slots] of Object.entries(NAV_CONFIG)) {
+      for (const s of slots) if (s.action === 'back' || s.action === 'menu') expect(slotRole(s), screen).toBe('global');
+    }
+  });
+  test('les actions propres à l’écran sont contextuelles', () => {
+    const roles = (s: keyof typeof NAV_CONFIG) => NAV_CONFIG[s].map(slotRole);
+    expect(roles('techniques')).toEqual(['global', 'contextual', 'contextual', 'contextual', 'global']);
+    expect(roles('entrainement')).toEqual(['global', 'contextual', 'contextual', 'contextual', 'global']);
+    expect(roles('progres')).toEqual(['global', 'contextual', 'contextual', 'contextual', 'global']);
+    // Créer opens the editor of this screen: one of its actions
+    expect(roles('createur')).toEqual(['global', 'contextual', 'contextual', 'contextual', 'global']);
+  });
+  test('les liens vers les grandes rubriques ne sont jamais teintés (pas de coloration artificielle)', () => {
+    // Accueil: only main places; Premium (until its own actions) and the pages without actions: Entraîner, Techniques, Progrès
+    expect(NAV_CONFIG.accueil.map(slotRole).every((r) => r === 'global')).toBe(true);
+    expect(NAV_CONFIG.autre.map(slotRole).every((r) => r === 'global')).toBe(true);
+    // a screen with one action of its own and two links: only the action is tinted
+    expect(NAV_CONFIG.programmes.map(slotRole)).toEqual(['global', 'contextual', 'global', 'global', 'global']);
+  });
 });

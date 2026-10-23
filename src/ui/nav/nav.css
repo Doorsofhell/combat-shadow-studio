@@ -11,6 +11,12 @@
 :root {
   --nav-accent: #e43d43;
   --nav-panel: var(--soft);
+  /* v0.44 contextual actions: the theme's readable red, softened toward the neutral grey at rest, a faint tint of
+     the accent behind; when active, the full readable red and a stronger tint (light and dark from the same tokens) */
+  --nav-ctx: color-mix(in srgb, var(--red-ink) 68%, var(--muted));
+  --nav-ctx-bg: color-mix(in srgb, var(--red) 7%, transparent);
+  --nav-ctx-active: color-mix(in srgb, var(--red-ink) 86%, var(--c-text));
+  --nav-ctx-active-bg: color-mix(in srgb, var(--red) 12%, transparent);
 }
 
 .nav-bottom {
@@ -62,6 +68,18 @@
 }
 .nav-btn.active .nav-svg {
   color: var(--nav-accent);
+}
+/* v0.44 (Youssef, « AMÉLIORATION DE LA BARRE DE NAVIGATION CONTEXTUELLE »): available action of the screen */
+.nav-btn.ctx {
+  color: #a5404f;
+  color: var(--nav-ctx);
+  background: var(--nav-ctx-bg);
+}
+/* selected: the same family, stronger */
+.nav-btn.ctx.active {
+  color: var(--red-ink);
+  color: var(--nav-ctx-active);
+  background: var(--nav-ctx-active-bg);
 }
 .nav-btn:disabled {
   opacity: 0.38;
