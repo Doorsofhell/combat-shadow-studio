@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.44.0',
+      releaseDate: '2026-10-23',
+      title: 'Barre du bas plus lisible',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Barre du bas : les actions propres à l’écran (Ralenti, Filtres, Période…) gardent une légère teinte rouge, plus soutenue quand elles sont actives. Retour, Menu et les grandes rubriques restent neutres.' },
+      ],
+      links: [{ label: 'Techniques', to: '/techniques' }],
+    },
+    {
       version: '0.43.0',
       releaseDate: '2026-10-23',
       title: 'Équipements plus réalistes',

@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { hasUnseenRelease } from '../../domain/releases';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { NAV_CONFIG, NAV_PARENT, navScreen, type NavScreen, type NavSlot } from './config';
+import { NAV_CONFIG, NAV_PARENT, navScreen, slotRole, type NavScreen, type NavSlot } from './config';
 import { pushLayer } from './layers';
 import { NavIcon } from './NavIcon';
 import { leave, useNavStore } from './store';
@@ -109,11 +109,13 @@ export function BottomBar() {
           const label = a?.label ?? slot.label;
           const pressed = a?.pressed;
           const isMenu = slot.action === 'menu';
+          // v0.44: the actions of the screen keep a light tint of the accent, Retour, Menu and the main places stay neutral
+          const role = slotRole(slot);
           return (
             <button
               key={i}
               type="button"
-              className={`nav-btn ${pressed ? 'active' : ''}`}
+              className={`nav-btn ${role === 'contextual' ? 'ctx' : ''} ${pressed ? 'active' : ''}`}
               onClick={() => press(slot)}
               aria-label={a?.ariaLabel ?? (isMenu && unseen ? 'Menu, nouvelle version à découvrir' : label)}
               aria-disabled={disabled || undefined}
@@ -122,6 +124,7 @@ export function BottomBar() {
               aria-expanded={isMenu ? sheet !== null : undefined}
               disabled={disabled}
               data-slot={i + 1}
+              data-role={role}
               data-icon={icon}
               data-action={slot.action}
               data-testid={a?.testId ?? `nav-${slot.action.replace(/^nav:\//, '').replace(/[/?=&]/g, '-')}`}
