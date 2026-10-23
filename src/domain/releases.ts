@@ -56,6 +56,7 @@ export const RELEASES: readonly Release[] = (
       changes: [
         { category: 'corrections', text: 'Crochets : le bras du coach ne se tord plus. Le coude reste sur le côté, à hauteur d’épaule, au lieu de partir derrière l’épaule.' },
         { category: 'corrections', text: 'Crochets : plus d’armé. Le poing part de la garde par un chemin court et va le plus vite juste avant l’impact ; le corps tourne avec le bras.' },
+        { category: 'ameliorations', text: 'Crochets : chaque discipline a le sien. En boxe, les genoux plient dans le coup ; en kick-boxing, le coach reste plus droit ; en MMA, il reste bas, menton rentré ; en muay-thaï, il reste grand, le poids sur la jambe arrière.' },
       ],
       links: [{ label: 'Crochet gauche', to: '/techniques/crochet-avant' }],
     },

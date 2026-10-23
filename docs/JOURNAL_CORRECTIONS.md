@@ -1823,3 +1823,21 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - validation visuelle par un entraîneur : NON EXÉCUTÉE ; Android réel : NON EXÉCUTÉ.
 - **Constat hors périmètre, non corrigé** : pendant le direct d'Amara, le bras avant atteint 85° de rotation externe d'épaule (déjà le cas avant).
 - **Rapport** : `docs/v042-crochets/RAPPORT.md`, `MESURES_CROCHETS.md`, captures dans `docs/v042-crochets/captures/`.
+
+## 2026-10-23 · v0.42.0 (suite) · Un crochet par discipline
+
+- **Demande** : « beaucoup mieux, mais plus naturel et lié à la discipline, fais-moi une proposition avant/après sur la même image » (Youssef, 09:25), puis « je valide » (09:56).
+- **Constat** : la v0.42.0 réglait le crochet de la même façon dans les 4 disciplines, et les tests ne le mesuraient qu'en boxe. Mesuré dans les 4 disciplines, le crochet gardait deux défauts. En MMA et en muay-thaï, le poing allait le plus vite pendant la préparation (0,03 à 0,04 s pour un impact à 0,20 s). En muay-thaï, l'avant-bras tournait aussi par à-coups (10,7° en 1/120 s).
+- **Correction** (`HOOK_STYLE`, `src/engine/library/boxing.ts`) :
+  - **Boxe** : les genoux s'assoient dans le coup, l'épaule avant couvre le menton et la tête sort un peu de l'axe ;
+  - **Kick-boxing** : le coach reste plus droit et pivote moins ;
+  - **MMA** : il reste bas, le menton rentré, la tête hors de l'axe, avec une préparation plus lente et plus courte ;
+  - **Muay-thaï** : il reste grand, le poids sur la jambe arrière ; les épaules tournent plus que les hanches et le poing est plus vertical ;
+  - **Toutes les disciplines** : le poing finit un peu plus haut.
+  - Sources écrites : Dynamic Striking (gardes de boxe et de muay-thaï), Sting Sports et J. Demmel dans Coach (MMA). Pour le kick-boxing, aucune source ne décrit le crochet : les écarts sont déduits de la garde.
+- **Tests** :
+  - `hooks-biomeca` étendu aux 4 disciplines (6 corps × 4 crochets × 2 gardes × 4 disciplines) : 14 RÉUSSIS ;
+  - `hooks-chains` : 16 RÉUSSIS ;
+  - Vitest complet : 752 réussis, 1 ÉCHOUÉ connu (Amara, extension de hanche), 1 ignoré ;
+  - Playwright : NON EXÉCUTÉ de nouveau. Seules les valeurs du moteur ont changé ; la suite complète a été passée sur la première version de la v0.42.0.
+- **Captures avant/après** : https://claude.ai/artifact/5o55fJa9KNFpnARVX9Bnt6
