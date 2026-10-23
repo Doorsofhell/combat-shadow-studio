@@ -1795,3 +1795,31 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     - `training-layout:325` (caméra Auto) : ÉCHOUÉ connu, déjà en échec avant ;
   - Android réel : NON EXÉCUTÉ.
 - **Rapport** : `docs/v041/PROGRAMMES.md`, `INVENTAIRE_PROGRAMMES.md`, `MATRICE_SOURCES.md`, `NON_EXECUTABLES.md`, captures dans `docs/v041/captures/`.
+
+## 2026-10-23 · v0.42.0 · Crochets plus naturels
+
+- **Demande** : « Correction biomécanique des crochets 3D » (Youssef, 2026-10-23 06:21), avant les nouveaux coachs. Branche dédiée `fix/crochets-biomeca-v042`, PR sans fusion automatique.
+- **Constat avant (rendu réel et mesures, v0.41)** :
+  - crochet avant (tête et corps) : coude 19 à 28 cm derrière la ligne des épaules à l'impact, épaule bloquée à sa limite de rotation externe (90°). Le moteur tournait alors le coude autour de l'axe épaule-main, d'où le bras « vrillé » ;
+  - préparation trop large : le poing s'écartait sur le côté avant de partir, trajet 1,6 à 2,8 fois la ligne droite, armé visible de face ;
+  - vitesse maximale du poing au tout début (0,05 à 0,07 s) au lieu de l'approche de l'impact ;
+  - poignet aligné, pieds sans glissement : déjà corrects ;
+  - PR #17 (`fix/natural-boxing-hooks-20261023`, basée sur v0.14) mesurée : pose d'impact inchangée (coude toujours 24 à 26 cm derrière), sauts de plan du coude plus grands (37°), poing plus lent. Non reprise, non fusionnée.
+- **Correction** (`src/engine/library/boxing.ts`, seule la fonction `hook()`) :
+  - bras d'impact construit dans un repère du tronc limité au cap, avec recherche de l'avancée du coude et de la flexion qui placent les phalanges devant la ligne centrale ;
+  - le bras est recalé sur l'épaule réelle du squelette (`Author.solvedShoulder`, branchée dans `src/engine/library/index.ts`), parce que l'épaule estimée était décalée de 3 à 6 cm ;
+  - préparation compacte : main à la garde, légère charge des hanches, rotation du tronc avant réduite (24°/10° au lieu de 34°/14°) ;
+  - préparation plus courte (0,07 s) marquée `hold` pour garder la vitesse à l'impact ; frappe, maintien et retour inchangés ;
+  - aucune autre technique modifiée ; Kadir et Amara inchangés.
+- **Résultat (6 corps, droitier et gaucher)** : coude derrière 3 à 5 cm au plus, rotation externe 40 à 56°, trajet 1,02 à 1,32 fois la ligne droite, pic de vitesse entre 0,16 et 0,21 s pour un impact à 0,20 ou 0,23 s.
+- **Fichiers** : `src/engine/library/boxing.ts`, `src/engine/author.ts`, `src/engine/library/index.ts`, `src/test/hooks.ts`, `src/engine/__tests__/hooks-biomeca.test.ts`, `src/engine/__tests__/hooks-chains.test.ts`, `scripts/dev/shot-hooks.mjs`, `src/domain/biomech/sources.ts`, `src/domain/releases.ts`, `package.json`, `tests/e2e/navigation.spec.ts`, mesures régénérées (`docs/audit-biomecanique/`, `src/ui/pictos/techniquePictos.json` : seuls les 4 crochets changent), `docs/v042-crochets/`.
+- **Tests** :
+  - `hooks-biomeca` : 14 RÉUSSIS (10 ÉCHOUÉS sur v0.41) ;
+  - `hooks-chains` (8 enchaînements × 3 vitesses, Kadir et Amara, droitier et gaucher) : 16 RÉUSSIS (14 ÉCHOUÉS sur v0.41) ;
+  - Vitest complet : 751 réussis, 1 ÉCHOUÉ connu (Amara, extension de hanche, déjà en échec avant), 1 ignoré ;
+  - Playwright complet : 180 réussis, 2 ÉCHOUÉS, 2 ignorés (Firebase) :
+    - `training-layout:325` (caméra Auto) : ÉCHOUÉ connu, déjà en échec avant ;
+    - `coach-suggest:96` (flèches des questions suggérées) : ÉCHOUÉ, aussi relancé seul. Le même test échoue aussi sur v0.41 (1 essai sur 3). Cause : le test vérifie que la flèche est active pendant que le défilement se termine, puis elle se désactive avant le toucher. Aucun fichier du Coach IA n'est modifié, et la construction des mouvements prend le même temps (81 à 285 ms contre 106 à 251 ms). Correction du test à faire dans un lot séparé ;
+  - validation visuelle par un entraîneur : NON EXÉCUTÉE ; Android réel : NON EXÉCUTÉ.
+- **Constat hors périmètre, non corrigé** : pendant le direct d'Amara, le bras avant atteint 85° de rotation externe d'épaule (déjà le cas avant).
+- **Rapport** : `docs/v042-crochets/RAPPORT.md`, `MESURES_CROCHETS.md`, captures dans `docs/v042-crochets/captures/`.
