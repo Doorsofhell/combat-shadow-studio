@@ -432,3 +432,46 @@
 .section .resume-card + .quick-grid {
   margin-top: 8px;
 }
+
+/* v0.41: the programme sheet */
+.prog-page h2 {
+  font-size: 1.02rem;
+  margin: 0;
+}
+.prog-page .track {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ink), transparent 88%);
+  overflow: hidden;
+}
+.prog-page .track span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--red);
+}
+.prog-week summary .badge {
+  margin-left: 6px;
+}
+.prog-week summary {
+  cursor: pointer;
+}
+.prog-week summary .block {
+  display: block;
+  margin-top: 2px;
+}
+.prog-week .panel {
+  margin-top: 8px;
+}
+.prog-page ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.prog-ex {
+  columns: 2;
+  column-gap: 16px;
+}
+.prog-ex li {
+  break-inside: avoid;
+}

@@ -1,4 +1,6 @@
-import type { Program, ProgramBlock } from './types';
+import type { DisciplineId, Program, ProgramBlock } from './types';
+import { EXERCISE_BY_ID } from './exercises';
+import { PROGRAM_RECIPES, buildProgram, disciplineDefaults } from './programCatalog';
 
 const b = (label: string, phase: ProgramBlock['phase'], exercise: string, work: number, rounds: number, rest: number): ProgramBlock => ({
   label, phase, exercise, work, rounds, rest,
@@ -8,10 +10,10 @@ const b = (label: string, phase: ProgramBlock['phase'], exercise: string, work: 
  * Structured sessions: warm-up, technique, combinations, cardio, recovery.
  * Durations and frequencies are indicative and should be adapted to the declared abilities.
  */
-export const PROGRAMS: Program[] = [
+const FIRST_TEN: Program[] = [
   {
     id: 'boxe-initiation-4-semaines', name: 'Boxe anglaise - Initiation 4 semaines', discipline: 'boxe', durationMin: 25,
-    frequency: '3 séances par semaine pendant 4 semaines',
+    frequency: '3 séances par semaine pendant 4 semaines', weeks: 4, perWeek: 3,
     goals: ['Tenir une garde solide', 'Des jabs et des directs propres', 'Te déplacer sans croiser les pieds'],
     progression: 'Semaines 1-2 en douceur, vitesse lente. Semaines 3-4 : vitesse 0,8 et rounds de 2 minutes.',
     blocks: [
@@ -66,7 +68,7 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
-    id: 'cardio-combat-20', name: 'Cardio combat - 20 minutes', discipline: 'mixte', durationMin: 20,
+    id: 'cardio-combat-20', name: 'Cardio combat express', discipline: 'mixte', durationMin: 20,
     frequency: '2 à 4 séances par semaine, jamais deux jours d’affilée au début',
     goals: ['Gagner en endurance', 'Rester précis même quand tu es fatigué'],
     progression: 'Chaque semaine, retire 15 s de repos, sans descendre sous 30 s.',
@@ -79,7 +81,7 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
-    id: 'coordination-15', name: 'Coordination - 15 minutes', discipline: 'mixte', durationMin: 15,
+    id: 'coordination-15', name: 'Coordination express', discipline: 'mixte', durationMin: 15,
     frequency: '3 séances par semaine, possible en complément',
     goals: ['Bras et jambes qui travaillent ensemble', 'Rester stable pendant les défenses'],
     progression: 'Accélère quand l’enchaînement passe fluide trois fois de suite.',
@@ -92,7 +94,7 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
-    id: 'technique-avancee-30', name: 'Technique avancée - 30 minutes', discipline: 'mixte', durationMin: 30,
+    id: 'technique-avancee-30', name: 'Technique avancée multi-disciplines', discipline: 'mixte', durationMin: 30,
     frequency: '2 séances par semaine',
     goals: ['De longues combinaisons fluides', 'Angles et défenses glissés dedans'],
     progression: 'Passe aux exercices experts quand les combinaisons avancées coulent à vitesse 1.',
@@ -152,6 +154,52 @@ export const PROGRAMS: Program[] = [
   },
 ];
 
+/** the session engine's own timings (src/ui/training/useSession.ts): countdown before the first block, pause between blocks */
+export const SESSION_COUNTDOWN = 3;
+export const BETWEEN_ITEMS = 15;
+
+/**
+ * v0.41: the real length of a session, as the engine plays it: the countdown, each block's rounds and the rests
+ * between them, and the pause before the next block (at least 15 s, longer when the block had a longer rest).
+ */
+export function programSessionSeconds(blocks: readonly ProgramBlock[]) {
+  let t = blocks.length ? SESSION_COUNTDOWN : 0;
+  blocks.forEach((x, i) => {
+    t += x.work * x.rounds + x.rest * Math.max(0, x.rounds - 1);
+    if (i < blocks.length - 1) t += Math.max(BETWEEN_ITEMS, x.rest ? Math.min(x.rest, 30) : 0);
+  });
+  return t;
+}
+const minutesOf = (blocks: readonly ProgramBlock[]) => Math.round(programSessionSeconds(blocks) / 60);
+
+/** the first ten keep their ids and content; their length is now computed, and they get their discipline's sources */
+const firstTen = FIRST_TEN.map((p): Program => {
+  const d = p.discipline === 'mixte' ? null : disciplineDefaults(p.discipline as DisciplineId);
+  return { ...p, durationMin: minutesOf(p.blocks), origin: 'original', ...(d ? { equipment: d.equipment, safety: d.safety, sources: d.sources } : {}) };
+});
+
+export const PROGRAMS: Program[] = [...firstTen, ...PROGRAM_RECIPES.map((r) => buildProgram(r, (id) => EXERCISE_BY_ID.get(id)?.name ?? id, minutesOf))];
+
 export const PROGRAM_BY_ID = new Map(PROGRAMS.map((p) => [p.id, p]));
 
-export const programSeconds = (p: Program) => p.blocks.reduce((a, x) => a + x.work * x.rounds + x.rest * Math.max(0, x.rounds - 1), 0);
+/** the sessions of a programme: its own, or its single session repeated */
+export const programSessions = (p: Program) => p.sessions ?? [{ week: 1, focus: '', blocks: p.blocks }];
+
+/** work, rests and transitions of one session (the first, or the one asked) */
+export const programSeconds = (p: Program, session = 0) => programSessionSeconds(programSessions(p)[Math.min(session, programSessions(p).length - 1)].blocks);
+
+/**
+ * v0.41: where the user stands in a programme, from the sessions really finished (useResume, one per finished
+ * programme session). The total exists only for a programme that states its weeks and sessions per week.
+ */
+export function programProgress(p: Program, finished = 0) {
+  const sessions = programSessions(p);
+  const total = p.weeks && p.perWeek ? p.weeks * p.perWeek : null;
+  const done = total ? Math.min(finished, total) : finished;
+  const week = p.perWeek && p.weeks ? Math.min(p.weeks, Math.floor(done / p.perWeek) + 1) : 1;
+  const next = Math.min(week - 1, sessions.length - 1);
+  return { done, total, remaining: total === null ? null : total - done, week, next, finished: total !== null && done >= total };
+}
+
+/** the query of /entrainement for a session of a programme (week = index + 1); single-session programmes keep `prog=` only */
+export const programQuery = (p: Program, session: number) => (p.sessions && p.sessions.length > 1 ? `prog=${p.id}&s=${session + 1}` : `prog=${p.id}`);

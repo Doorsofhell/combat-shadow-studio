@@ -97,7 +97,8 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
   // 5.11 — the other screens, built on the same rules (Retour first, Menu last, the main action second)
   entrainer: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'calendar', label: 'Programmes', action: 'nav:/programmes' }, { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' }, MENU],
   discipline: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'layers', label: 'Techniques', action: 'techniques' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
-  programmes: PLACES,
+  // 0.41 (Youssef, « Enrichissement des programmes » §6): the programme filters are in the bar, as in the Créateur
+  programmes: [BACK, { icon: 'filter', label: 'Filtrer', action: 'filters' }, { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
   programme: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'calendar', label: 'Programmes', action: 'nav:/programmes' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
   partenaire: [BACK, { icon: 'layers', label: 'Techniques', action: 'techniques' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
   // 0.38 (Youssef, « Créateur d'enchaînements V2 »): the list, the sheet and the editor of the user's sequences

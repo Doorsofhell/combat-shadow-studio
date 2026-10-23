@@ -1,5 +1,5 @@
 import { EXERCISE_BY_ID, exercisesFor } from '../../domain/exercises';
-import { PROGRAM_BY_ID } from '../../domain/programs';
+import { PROGRAM_BY_ID, programSessions } from '../../domain/programs';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
 import type { DisciplineId, Exercise, LevelId, TrainingMode } from '../../domain/types';
 import type { CustomCombo } from '../../store/custom';
@@ -81,10 +81,13 @@ export function exercisePlan(exerciseId: string, mode: TrainingMode, o: ModeOpti
   };
 }
 
-export function programPlan(programId: string): Plan | null {
+export function programPlan(programId: string, session = 0): Plan | null {
   const p = PROGRAM_BY_ID.get(programId);
   if (!p) return null;
-  const items = p.blocks.flatMap((b): PlanItem[] => {
+  // v0.41: each week of an enriched programme plays its own session
+  const sessions = programSessions(p);
+  const s = sessions[Math.max(0, Math.min(session, sessions.length - 1))];
+  const items = s.blocks.flatMap((b): PlanItem[] => {
     const e = EXERCISE_BY_ID.get(b.exercise);
     if (!e) return [];
     const speed = b.phase === 'echauffement' || b.phase === 'recuperation' ? Math.min(e.speed, 0.6) : e.speed;
@@ -105,7 +108,7 @@ export function programPlan(programId: string): Plan | null {
       },
     ];
   });
-  return { mode: 'programme', title: p.name, items, start: 0 };
+  return { mode: 'programme', title: sessions.length > 1 ? `${p.name} · semaine ${s.week}` : p.name, items, start: 0 };
 }
 
 const LEVEL_SPEED: Record<LevelId, { speed: number; rest: number }> = {

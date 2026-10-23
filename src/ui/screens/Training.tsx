@@ -57,7 +57,7 @@ export function Training() {
       const e = catalog?.comboById.get(catId);
       return e ? catalogPlan(e, mode, o) : null;
     }
-    if (q.get('prog')) return programPlan(q.get('prog')!);
+    if (q.get('prog')) return programPlan(q.get('prog')!, Math.max(0, Number(q.get('s') ?? 1) - 1) || 0);
     if (q.get('perso')) {
       const c = combos.find((x) => x.id === q.get('perso'));
       return c ? customPlan(c, profile.levels[c.discipline], mode, o) : null;
