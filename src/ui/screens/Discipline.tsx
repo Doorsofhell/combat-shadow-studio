@@ -1,4 +1,5 @@
 import { useNavActions } from '../nav/store';
+import { CardioOptionsPicker, ChronoOptions, cardioParams } from '../training/TimerOptions';
 import { TechThumb, keyTechnique } from '../components/TechThumb';
 import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -149,6 +150,8 @@ export function ExerciseSheet({ ex, onClose }: { ex: Exercise; onClose: () => vo
   const [rounds, setRounds] = useState(3);
   const go = () => {
     const p = new URLSearchParams({ ex: ex.id, mode });
+    // v0.47: the Cardio intervals chosen (effort, recovery, cycles, intensity) go with the link
+    if (mode === 'cardio') for (const [k, v] of Object.entries(cardioParams(settings.cardio))) p.set(k, v);
     if (mode === 'rounds') {
       p.set('round', String(round));
       p.set('rest', String(rest));
@@ -201,6 +204,8 @@ export function ExerciseSheet({ ex, onClose }: { ex: Exercise; onClose: () => vo
         <p className="small muted">{MODE_HELP[mode]}</p>
       </div>
       {mode === 'rounds' && <RoundOptions round={round} rest={rest} rounds={rounds} setRound={setRound} setRest={setRest} setRounds={setRounds} />}
+      {mode === 'cardio' && <CardioOptionsPicker />}
+      {(mode === 'rounds' || mode === 'cardio') && <ChronoOptions />}
     </Sheet>
   );
 }

@@ -140,7 +140,8 @@ test('HUD : rounds avec leur temps restant, repos plus visible, pas de round en 
   await page.setViewportSize({ width: 360, height: 640 });
   await open(page, '/#/entrainement?ex=kickboxing-debutant-10&mode=rounds&round=6&rest=20&rounds=2');
   await page.getByTestId('start').click();
-  await expect(page.getByTestId('phase')).toHaveText('Round 1/2', { timeout: 10_000 });
+  // 0.47 (« Chronomètre intégré au coach 3D » §4): « COMBAT — ROUND 2/5 — 02:34 »
+  await expect(page.getByTestId('phase')).toHaveText('Combat · Round 1/2', { timeout: 10_000 });
   await expect(page.getByTestId('phase-time')).toHaveText(/^00:0\d$/);
   await expect(page.getByTestId('phase')).toHaveText('Repos', { timeout: 15_000 });
   await expect(page.getByTestId('phase-time')).toHaveText(/^00:[12]\d$/);
@@ -154,5 +155,8 @@ test('HUD : rounds avec leur temps restant, repos plus visible, pas de round en 
   await page.getByTestId('start').click();
   await expect(page.getByTestId('phase')).toHaveText('Libre', { timeout: 10_000 });
   await expect(page.getByTestId('hud')).not.toContainText('Round');
-  await expect(page.getByTestId('phase-time')).toHaveCount(0);
+  // 0.47 §5: Libre shows the time done (counted up), never a countdown
+  await expect(page.getByTestId('phase-time')).toHaveAttribute('aria-label', /^Temps écoulé/);
+  const t1 = await page.getByTestId('phase-time').textContent();
+  await expect(page.getByTestId('phase-time')).not.toHaveText(t1!, { timeout: 4000 });
 });

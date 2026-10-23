@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { CardioOptionsPicker, ChronoOptions, cardioParams } from '../../training/TimerOptions';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CATEGORY_LABEL, TECHNIQUE_BY_ID } from '../../../domain/techniques';
 import { DISCIPLINES, type TrainingMode } from '../../../domain/types';
@@ -44,6 +45,8 @@ export function CreatorSheet() {
   const run = () => {
     if (!combo) return;
     const p = new URLSearchParams({ perso: combo.id, mode });
+    // v0.47: the Cardio intervals chosen (effort, recovery, cycles, intensity) go with the link
+    if (mode === 'cardio') for (const [k, v] of Object.entries(cardioParams(settings.cardio))) p.set(k, v);
     if (mode === 'rounds') {
       p.set('round', String(round));
       p.set('rest', String(rest));
@@ -128,6 +131,8 @@ export function CreatorSheet() {
           options={(['libre', 'technique', 'rounds'] as TrainingMode[]).map((m) => ({ id: m, label: m === 'libre' ? 'En boucle' : m === 'technique' ? 'Lent et commenté' : 'Rounds' }))}
         />
         {mode === 'rounds' && <RoundOptions round={round} rest={rest} rounds={rounds} setRound={setRound} setRest={setRest} setRounds={setRounds} />}
+        {mode === 'cardio' && <CardioOptionsPicker />}
+        {(mode === 'rounds' || mode === 'cardio') && <ChronoOptions />}
       </div>
 
       <section className="stack" aria-labelledby="h-moves">

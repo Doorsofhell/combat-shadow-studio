@@ -1935,3 +1935,25 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests** : détail dans `docs/v046-encyclopedie/RAPPORT.md` §6. Vitest 792 RÉUSSIS ; Playwright 198 RÉUSSIS au complet puis 3 des 5 échecs corrigés ou réussis au second passage ; 2 ÉCHOUÉS hors de cette version (`training-layout:325`, `coach-suggest:96`, ce dernier aussi en échec sur la v0.45.1) ; Android réel NON EXÉCUTÉ.
 - **Limites** : aucune relecture par un expert ; 45 illustrations à produire.
 
+
+## 2026-10-23 · v0.47.0 · Chronomètre intégré au coach 3D
+
+- **Demande** : « Chronomètre intégré au coach 3D » (Youssef, 2026-10-23, 18 sections).
+- **Constat** : le temps de séance était décompté par un minuteur de 100 ms, phase par phase. Un tic en retard perdait du temps, un repos suivait le dernier round, Cardio n'avait aucun réglage, Libre et Technique n'affichaient aucun temps, et un exercice lancé seul en Rounds ou Cardio enchaînait sur les autres exercices du niveau.
+- **Correction** : un moteur temporel unique (`src/domain/session/timeline.ts`) sur une horloge monotone. Il rattrape les tics en retard, met en pause exactement et n'ajoute aucun repos après le dernier round. Il envoie des événements que la séance transforme en gongs, voix, consignes, coach et statistiques, sans jamais toucher aux articulations du coach.
+  - Préparation réglable, en ambre.
+  - Bandeau « Combat · Round n/N », « Effort · Cycle n/N », « Repos », « Récupération ».
+  - Temps écoulé en Libre et Technique.
+  - Barre de la phase en cours.
+  - Cardio : effort, récupération, cycles et intensité. L'intensité règle la cadence, pas la vitesse des mouvements ; la cadence est plus large au sol.
+  - Alerte avant la fin, gongs et voix sans doublon.
+  - Bilan de fin, et historique « terminée » ou « interrompue » sans double comptage.
+- **Fichiers** : `src/domain/session/`, `src/ui/training/{useSession.ts,plan.ts,TimerOptions.tsx,training.css}`, `src/domain/catalog/plan.ts`, `src/ui/screens/{Training.tsx,Discipline.tsx,Champions.tsx,creator/CreatorSheet.tsx}`, `src/store/{settings.ts,stats.ts}`, `src/domain/resume.ts`, `tests/e2e/{chrono,coaching-hud,navigation}.spec.ts`, `scripts/dev/shot-chrono.mjs`, `src/domain/releases.ts`, `package.json`, `docs/v047-chrono/`.
+- **Tests** : détail dans `docs/v047-chrono/RAPPORT.md` §6.
+  - TypeScript : RÉUSSI.
+  - Vitest : 803 RÉUSSIS, 1 ignoré.
+  - `chrono.spec` : 6 RÉUSSIS.
+  - Playwright complet : 207 RÉUSSIS après relance, 2 ignorés, 2 ÉCHOUÉS déjà en échec sur la v0.46.0 (`coach-suggest:96`, `training-layout:325`).
+  - Android réel : NON EXÉCUTÉ.
+- **Captures** : `docs/v047-chrono/captures/`.
+- **Changement de comportement** : un exercice seul en Rounds ou Cardio s'arrête après ses propres rounds. Les programmes enchaînent toujours.

@@ -28,6 +28,8 @@ export interface Plan {
   title: string;
   items: PlanItem[];
   start: number;
+  /** v0.47: the Cardio intensity chosen (kept in the history) */
+  intensity?: CardioIntensity;
 }
 
 export const MODE_LABEL: Record<TrainingMode, string> = {
@@ -42,7 +44,7 @@ export const MODE_LABEL: Record<TrainingMode, string> = {
 export const MODE_HELP: Record<TrainingMode, string> = {
   libre: 'L’enchaînement tourne en boucle, sans limite de temps.',
   technique: 'Vitesse lente, consignes vocales et points clés entre les répétitions.',
-  cardio: 'Rythme soutenu : 5 blocs de 60 s avec 20 s de récupération.',
+  cardio: 'Intervalles : effort, récupération et nombre de cycles à choisir, avec trois intensités.',
   rounds: 'Rounds chronométrés avec cloche et repos configurable.',
   programme: 'Séance structurée : échauffement, technique, combinaisons, retour au calme.',
   personnalise: 'Ton propre enchaînement, créé dans le créateur.',
@@ -52,6 +54,56 @@ export interface ModeOptions {
   roundSec: number;
   restSec: number;
   rounds: number;
+  /** v0.47 Cardio intervals; missing: the former 5 × 60 s with 20 s of recovery, sustained */
+  cardio?: CardioOptions;
+}
+
+/**
+ * v0.47 (« Chronomètre intégré au coach 3D » §7): the intensity changes the programming of the moves (the pause
+ * between two repetitions of the combination), never the playback speed past the natural tempo of the moves.
+ */
+export type CardioIntensity = 'moderee' | 'soutenue' | 'intense';
+
+export interface CardioOptions {
+  work: number;
+  rest: number;
+  cycles: number;
+  intensity: CardioIntensity;
+}
+
+export const DEFAULT_CARDIO: CardioOptions = { work: 60, rest: 20, cycles: 5, intensity: 'soutenue' };
+
+export const INTENSITY_LABEL: Record<CardioIntensity, string> = { moderee: 'Modérée', soutenue: 'Soutenue', intense: 'Intense' };
+
+export const INTENSITY_HELP: Record<CardioIntensity, string> = {
+  moderee: 'Cadence contrôlée, le temps de revenir en garde entre deux enchaînements.',
+  soutenue: 'Enchaînements plus rapprochés, retour en garde rapide.',
+  intense: 'Enchaînements serrés, chaque mouvement gardant sa durée réelle.',
+};
+
+/** pause between two repetitions of the combination (seconds) */
+const CARDIO_GAP: Record<CardioIntensity, number> = { moderee: 0.9, soutenue: 0.45, intense: 0.2 };
+/** a throw, a fall, a sprawl or a move on the ground needs time to come back up: never less than this */
+const CARDIO_GAP_GROUND: Record<CardioIntensity, number> = { moderee: 1.4, soutenue: 1.0, intense: 0.7 };
+const GROUND = new Set(['sol', 'projection', 'chute', 'lutte']);
+
+/**
+ * Cadence of a Cardio combination: the moves keep their natural tempo (speed between 0.85 and 1, never faster
+ * than the authored motion), the intensity only brings the repetitions closer.
+ */
+export function cardioCadence(sequence: string[], base: { speed: number; rest: number }, intensity: CardioIntensity) {
+  const ground = sequence.some((id) => GROUND.has(TECHNIQUE_BY_ID.get(id)?.category ?? ''));
+  const gap = intensity === 'moderee' ? Math.max(base.rest, CARDIO_GAP.moderee) : CARDIO_GAP[intensity];
+  return {
+    speed: Math.min(1, Math.max(base.speed, 0.85)),
+    rest: ground ? Math.max(gap, CARDIO_GAP_GROUND[intensity]) : gap,
+  };
+}
+
+/** Cardio block: `cycles` periods of effort with recovery between them */
+export function cardioTiming(o: ModeOptions) {
+  const c = o.cardio ?? DEFAULT_CARDIO;
+  return { work: c.work, rounds: c.cycles, roundRest: c.rest };
 }
 
 function fromExercise(e: Exercise, mode: TrainingMode, o: ModeOptions): PlanItem {
@@ -60,7 +112,7 @@ function fromExercise(e: Exercise, mode: TrainingMode, o: ModeOptions): PlanItem
     case 'technique':
       return { ...base, speed: Math.min(e.speed, 0.45), rest: Math.max(e.rest, 2.4), work: null, rounds: 1, roundRest: 0 };
     case 'cardio':
-      return { ...base, speed: Math.min(1.15, Math.max(e.speed, 0.85) * 1.1), rest: 0.15, work: 60, rounds: 5, roundRest: 20 };
+      return { ...base, ...cardioCadence(e.sequence, e, (o.cardio ?? DEFAULT_CARDIO).intensity), ...cardioTiming(o) };
     case 'rounds':
       return { ...base, speed: e.speed, rest: Math.min(e.rest, 0.8), work: o.roundSec, rounds: o.rounds, roundRest: o.restSec };
     default:
@@ -78,6 +130,7 @@ export function exercisePlan(exerciseId: string, mode: TrainingMode, o: ModeOpti
     title: e.name,
     items: list.map((x) => fromExercise(x, mode, o)),
     start: list.findIndex((x) => x.id === e.id),
+    intensity: mode === 'cardio' ? (o.cardio ?? DEFAULT_CARDIO).intensity : undefined,
   };
 }
 
@@ -132,7 +185,7 @@ export function customPlan(c: CustomCombo, level: LevelId, mode: TrainingMode, o
     soloNote: c.sequence.map((id) => TECHNIQUE_BY_ID.get(id)?.soloNote).find(Boolean),
   };
   const item = fromExercise(e, mode === 'personnalise' ? 'libre' : mode, o);
-  return { mode: 'personnalise', title: c.name, items: [item], start: 0 };
+  return { mode: 'personnalise', title: c.name, items: [item], start: 0, intensity: mode === 'cardio' ? (o.cardio ?? DEFAULT_CARDIO).intensity : undefined };
 }
 
 /** steps for the animation player */

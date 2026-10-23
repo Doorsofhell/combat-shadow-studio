@@ -49,6 +49,19 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.47.0',
+      releaseDate: '2026-10-23',
+      title: 'Chronomètre intégré au coach',
+      isMajor: true,
+      changes: [
+        { category: 'fonctionnalites', text: 'Cardio devient un vrai entraînement par intervalles : durée d’effort, de récupération, nombre de cycles et trois intensités (Modérée, Soutenue, Intense). L’intensité rapproche les enchaînements sans accélérer les mouvements ; au sol et pour les projections, le coach garde le temps de se relever.' },
+        { category: 'ameliorations', text: 'Un seul chronomètre pour toute la séance : préparation en ambre, combat ou effort en rouge, repos en turquoise, pause en gris, toujours avec le mot. En Libre et Technique, le temps écoulé s’affiche.' },
+        { category: 'ameliorations', text: 'Rounds et Cardio : préparation, alerte avant la fin, gongs et annonces vocales réglables, aucun repos après le dernier round, et un bilan à la fin (rounds ou cycles, effort, repos, durée totale).' },
+        { category: 'ameliorations', text: 'L’historique distingue les séances terminées des séances interrompues, sans compter deux fois le même temps.' },
+      ],
+      links: [{ label: 'Entraîner', to: '/entrainer' }],
+    },
+    {
       version: '0.46.0',
       releaseDate: '2026-10-23',
       title: 'Encyclopédie du combat',

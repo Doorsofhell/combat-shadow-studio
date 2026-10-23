@@ -42,6 +42,8 @@ export interface ResumeSnapshot {
   phaseLen: number;
   /** active training seconds of the whole session */
   sessionSec: number;
+  /** v0.47: rest seconds of the session (pauses excluded); missing in saves of earlier versions */
+  restSec?: number;
   /** planned work seconds (programme: whole session; timed exercise: the block), null when free */
   plannedSec: number | null;
   /** work seconds done, measured the same way as plannedSec */
