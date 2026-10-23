@@ -31,23 +31,32 @@ const BODIES = [
   { id: 'Coach femme générique', sex: 'femme', file: undefined, profile: undefined },
 ] as const;
 const HOOKS = ['crochet-avant', 'crochet-arriere', 'crochet-avant-corps', 'crochet-arriere-corps'];
+// the hook is in the four striking disciplines, each from its own guard and with its own way (HOOK_STYLE)
+const STYLES = [
+  ['boxing', 'boxe'],
+  ['kickboxing', 'kick-boxing'],
+  ['mma', 'MMA'],
+  ['muaythai', 'muay-thaï'],
+] as const;
 
 const runs = BODIES.flatMap((b) => {
   const rig = new CoachRig(loadSkeleton(b.sex, b.file));
-  const lib = getLibrary(rig, 'boxing', b.profile ? { id: b.profile, offsets: COACH_STANCES[b.profile] } : undefined);
+  return STYLES.flatMap(([style, disc]) => {
+  const lib = getLibrary(rig, style, b.profile ? { id: b.profile, offsets: COACH_STANCES[b.profile] } : undefined);
   return HOOKS.flatMap((id) =>
     [false, true].map((southpaw) => {
       const m = getMotion(lib, id, southpaw)!;
       const lead = id.startsWith('crochet-avant');
       const side: Side = lead !== southpaw ? 'L' : 'R';
       const f = sampleHook(rig, m, side);
-      return { body: b.id, id, southpaw, impact: m.impacts[0], s: hookSummary(f, m.impacts[0]), f };
+      return { body: b.id, disc, id, southpaw, impact: m.impacts[0], s: hookSummary(f, m.impacts[0]), f };
     }),
   );
+  });
 });
 if (process.env.HOOKS_DUMP) writeFileSync(process.env.HOOKS_DUMP, JSON.stringify(runs.map(({ f: _f, ...r }) => r), null, 1));
 
-const name = (r: (typeof runs)[number]) => `${r.body} ${r.id}${r.southpaw ? ' gaucher' : ''}`;
+const name = (r: (typeof runs)[number]) => `${r.body} ${r.disc} ${r.id}${r.southpaw ? ' gaucher' : ''}`;
 const fails = (pred: (r: (typeof runs)[number]) => string | false) => runs.flatMap((r) => (pred(r) ? [`${name(r)} : ${pred(r)}`] : []));
 const f1 = (x: number) => x.toFixed(1);
 
@@ -106,7 +115,7 @@ describe('crochets : bras, poignet, trajectoire et corps', () => {
   });
 
   test('gaucher : même crochet, en miroir', () => {
-    const pairs = runs.filter((r) => !r.southpaw).map((r) => [r, runs.find((x) => x.body === r.body && x.id === r.id && x.southpaw)!] as const);
+    const pairs = runs.filter((r) => !r.southpaw).map((r) => [r, runs.find((x) => x.body === r.body && x.disc === r.disc && x.id === r.id && x.southpaw)!] as const);
     expect(pairs.flatMap(([a, b]) => (Math.abs(a.s.impact.elbowFlex - b.s.impact.elbowFlex) > 2 || Math.abs(a.s.elbowBehindMax - b.s.elbowBehindMax) > 0.02 ? [name(a)] : []))).toEqual([]);
   });
 
@@ -122,7 +131,7 @@ function markdown() {
     .filter((r) => !r.southpaw)
     .map((r) => {
       const s = r.s;
-      return `| ${r.body} | ${r.id} | ${f1(s.impact.elbowFlex)}° | ${f1(s.impact.elbowUp * 100)} | ${f1(s.impact.elbowOut * 100)} | ${f1(s.impact.elbowFwd * 100)} | ${f1(s.elbowBehindMax * 100)} | ${f1(s.shoulderExtMax)}° | ${s.path.arcOverChord.toFixed(2)} | ${s.path.peakAt.toFixed(3)} / ${r.impact.toFixed(3)} | ${f1(s.planeJump)}° | ${f1(s.impact.trunk)}° |`;
+      return `| ${r.body} | ${r.disc} | ${r.id} | ${f1(s.impact.elbowFlex)}° | ${f1(s.impact.elbowUp * 100)} | ${f1(s.impact.elbowOut * 100)} | ${f1(s.impact.elbowFwd * 100)} | ${f1(s.elbowBehindMax * 100)} | ${f1(s.shoulderExtMax)}° | ${s.path.arcOverChord.toFixed(2)} | ${s.path.peakAt.toFixed(3)} / ${r.impact.toFixed(3)} | ${f1(s.planeJump)}° | ${f1(s.impact.trunk)}° |`;
     });
   return [
     '# Mesures des crochets (v0.42)',
@@ -138,8 +147,8 @@ function markdown() {
     '- **Plan du coude** : plus grande rotation du plan de flexion du coude en 1/120 s.',
     '- **Tronc** : rotation du buste par rapport au bassin à l’impact.',
     '',
-    '| Corps | Crochet | Flexion | Coude haut | Coude côté | Coude devant | Derrière max | Rot. ext. max | Chemin | Vitesse max / impact | Plan du coude | Tronc |',
-    '|---|---|---|---|---|---|---|---|---|---|---|---|',
+    '| Corps | Discipline | Crochet | Flexion | Coude haut | Coude côté | Coude devant | Derrière max | Rot. ext. max | Chemin | Vitesse max / impact | Plan du coude | Tronc |',
+    '|---|---|---|---|---|---|---|---|---|---|---|---|---|',
     ...rows,
     '',
   ].join('\n');

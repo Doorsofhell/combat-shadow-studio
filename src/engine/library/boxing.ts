@@ -2,7 +2,7 @@
  * Punches, defences and footwork (all disciplines use them, with their own stance).
  * Orthodox; southpaw versions are mirrored automatically.
  */
-import { Author, add, edit, driveToward } from '../author';
+import { Author, StanceStyle, add, edit, driveToward } from '../author';
 import type { Motion } from '../motion';
 import { Vector3 } from 'three';
 import { Pose, deg, v3 } from '../pose';
@@ -115,36 +115,75 @@ function straight(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
 }
 
 /** v0.42: hook geometry (degrees), see hook() */
-export const HOOK = { flexHead: 75, flexBody: 85, liftHead: 3, riseHead: 0.3, liftBody: -35, aheadHead: 12, aheadBody: 20, aheadMin: -8, aheadMax: 40, flexMin: 55, flexMax: 95, leadPelvis: 24, leadChest: 10, rearPelvis: 48, rearChest: 18 };
+export const HOOK = {
+  flexHead: 75, flexBody: 85, liftHead: 5, riseHead: 0.38, liftBody: -35, aheadHead: 12, aheadBody: 20, aheadMin: -8, aheadMax: 40, flexMin: 55, flexMax: 93,
+  leadPelvis: 24, leadChest: 10, rearPelvis: 48, rearChest: 18,
+  // feet (degrees): how far the hitting side's foot turns and its heel rises
+  leadPivot: 40, leadHeel: 22, rearPivot: 42, rearHeel: 45,
+  // knees « sit down » into the punch (m, per coach scale), lead shoulder lift (chest roll), chin tucked (head pitch)
+  dip: 0.02, roll: 4, chin: 0,
+  // fist turn at the head (0 thumb up, 1 palm down) ; preparation: share of the elbow and forearm turn already
+  // done, and how far the fist comes back toward the chin first (m) when the guard holds it far out
+  pronHead: 0.85, windPole: 0.5, windPron: 0.5, windBack: 0, windT: 0.07,
+  // where the hips move (m): lateral (+ = toward the hitting side), forward (+ = toward the opponent)
+  shiftX: 0, shiftZ: 0,
+};
+export type HookStyle = typeof HOOK;
+
+/**
+ * v0.42 proposition (Youssef, 2026-10-23 09:25, « plus naturel et lié à la discipline »): the same hook,
+ * adapted to each discipline's stance and constraints (see docs/v042-crochets/DISCIPLINES.md):
+ * - boxing: low and bladed, full rotation of hips and shoulders, knees sit into the punch, chin behind the lead
+ *   shoulder [S2 p. 44–47; dynamicstriking « knees bent fairly deep… more rotational force »];
+ * - kick-boxing: a little taller and squarer, shorter pivot and less sit-down so the legs stay free to kick
+ *   right after (squarer stance, see STANCES; inference from the stance, no source describes the hook itself);
+ * - MMA: stays low, chin tucked hard (small gloves), head moved off the centre line, short tight arc, no
+ *   leaning over the lead leg (« modified to account for low kicks and takedown attempts », Sting Sports;
+ *   « slight bend in your knees… front foot pivoting inward… chin tucked throughout », J. Demmel, Coach);
+ * - muay-thaï: tall and square, weight on the rear leg, no sit-down, the shoulders turn more than the hips and
+ *   the elbow rides a little higher and wider (« much more upright with little to no bend in the knees… very
+ *   light on their front leg », dynamicstriking).
+ */
+export const HOOK_STYLE: Partial<Record<StanceStyle, Partial<HookStyle>>> = {
+  boxing: { leadPelvis: 25, leadChest: 11, dip: 0.05, roll: 10, chin: 8, shiftX: 0.02 },
+  kickboxing: { leadPelvis: 26, leadChest: 12, leadPivot: 30, leadHeel: 16, rearPivot: 36, rearHeel: 35, dip: 0.02, roll: 7, chin: 5, flexHead: 80 },
+  mma: { leadPelvis: 22, leadChest: 12, leadPivot: 34, leadHeel: 18, rearPelvis: 44, rearPivot: 38, rearHeel: 38, dip: 0.055, roll: 10, chin: 10, flexHead: 85, liftHead: 0, shiftX: 0.04, windPole: 0.25, windPron: 0.3, windBack: 0.04, windT: 0.09 },
+  muaythai: { leadPelvis: 16, leadChest: 20, rearPelvis: 36, rearChest: 22, leadPivot: 14, leadHeel: 12, rearPivot: 28, rearHeel: 28, dip: 0, roll: 5, chin: 3, flexHead: 90, liftHead: 8, shiftZ: -0.035, pronHead: 0.5, windPron: 0.35, windPole: 0.35, windT: 0.09 },
+};
 
 function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
   const g = a.guard();
   const s = a.s;
   const body = target === 'body';
   const sg = side === 'L' ? 1 : -1;
+  const H: HookStyle = { ...HOOK, ...HOOK_STYLE[a.style] };
   const hit = edit(g, (d) => {
     if (side === 'L') {
-      d.pelvis.yaw += deg(-HOOK.leadPelvis);
-      d.chest.yaw += deg(-HOOK.leadChest);
+      d.pelvis.yaw += deg(-H.leadPelvis);
+      d.chest.yaw += deg(-H.leadChest);
       d.hips.x += 0.02 * s;
       if (d.footL.mode === 'ground') {
-        d.footL.yaw += deg(-40);
-        d.footL.heel = deg(22);
+        d.footL.yaw += deg(-H.leadPivot);
+        d.footL.heel = Math.max(d.footL.heel, deg(H.leadHeel));
       }
       d.handR.pos = add(d.handR.pos, { y: 0.01 * s });
     } else {
-      d.pelvis.yaw += deg(HOOK.rearPelvis);
-      d.chest.yaw += deg(HOOK.rearChest);
+      d.pelvis.yaw += deg(H.rearPelvis);
+      d.chest.yaw += deg(H.rearChest);
       d.hips.x += 0.05 * s;
       d.hips.z += 0.02 * s;
       if (d.footR.mode === 'ground') {
-        d.footR.yaw += deg(42);
-        d.footR.heel = deg(45);
+        d.footR.yaw += deg(H.rearPivot);
+        d.footR.heel = Math.max(d.footR.heel, deg(H.rearHeel));
       }
       d.handL.pos = add(d.handL.pos, { z: -0.08 * s });
     }
-    d.hips.y -= (body ? 0.12 : 0.02) * s;
-    d.chest.roll += deg(body ? 10 * sg : 4 * sg);
+    d.hips.x += H.shiftX * sg * s;
+    d.hips.z += H.shiftZ * s;
+    d.hips.y -= (body ? 0.12 : H.dip) * s;
+    // the lead shoulder rises to cover the chin on the lead hook; the rear hook keeps the plain roll
+    d.chest.roll += deg(body ? 10 * sg : (side === 'L' ? H.roll : HOOK.roll) * sg);
+    d.head.pitch += deg(H.chin);
     if (body) d.chest.pitch += deg(6);
   });
   // v0.42 (Youssef, 2026-10-23, « Correction biomécanique des crochets »). Measured before: the elbow direction was
@@ -166,8 +205,8 @@ function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
   const Z = new Vector3(Math.sin(h), 0, Math.cos(h));
   const X = new Vector3(Math.cos(h), 0, -Math.sin(h)).multiplyScalar(sg);
   const Y = new Vector3(0, 1, 0);
-  const lift = deg(body ? HOOK.liftBody : HOOK.liftHead);
-  const toward = Z.clone().addScaledVector(X, -0.1).addScaledVector(Y, body ? 0.6 : HOOK.riseHead).normalize();
+  const lift = deg(body ? H.liftBody : H.liftHead);
+  const toward = Z.clone().addScaledVector(X, -0.1).addScaledVector(Y, body ? 0.6 : H.riseHead).normalize();
   // the fist stops on the centre line of the coach, where the opponent stands (it does not follow through
   // across the body): the elbow angle and how far ahead of the shoulder line the elbow points are chosen, within
   // their ranges, for this coach's own arm and trunk turn
@@ -180,12 +219,12 @@ function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
     // the knuckles, a hand's length beyond the wrist
     return { ua, at, knuckles: at.clone().addScaledVector(fore, 0.09 * s) };
   };
-  const flex0 = body ? HOOK.flexBody : HOOK.flexHead;
-  const ahead0 = body ? HOOK.aheadBody : HOOK.aheadHead;
+  const flex0 = body ? H.flexBody : H.flexHead;
+  const ahead0 = body ? H.aheadBody : H.aheadHead;
   const fit = (sh: Vector3) => {
     let best = { cost: Infinity, ua: Y, at: sh, knuckles: sh };
-    for (let ah = HOOK.aheadMin; ah <= HOOK.aheadMax; ah += 1)
-      for (let fl = HOOK.flexMin; fl <= HOOK.flexMax; fl += 1) {
+    for (let ah = H.aheadMin; ah <= H.aheadMax; ah += 1)
+      for (let fl = H.flexMin; fl <= H.flexMax; fl += 1) {
         const r = armAt(sh, deg(ah), deg(fl));
         const cost = ((r.knuckles.x - centre) / 0.01) ** 2 + 0.3 * (ah - ahead0) ** 2 + 0.3 * (fl - flex0) ** 2;
         if (cost < best.cost) best = { cost, ...r };
@@ -194,7 +233,7 @@ function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
   };
   const place = (sh: Vector3) => {
     const { ua, at } = fit(sh);
-    const hand = a.hand('chest', a.toChest(hit, v3(at.x, at.y, at.z)), a.dirToChest(hit, v3(ua.x, ua.y, ua.z)), body ? 0.1 : 0.85);
+    const hand = a.hand('chest', a.toChest(hit, v3(at.x, at.y, at.z)), a.dirToChest(hit, v3(ua.x, ua.y, ua.z)), body ? 0.1 : H.pronHead);
     hit[side === 'L' ? 'handL' : 'handR'] = hand;
     return hand;
   };
@@ -207,16 +246,16 @@ function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
   const wind = edit(g, (d) => {
     const h = side === 'L' ? d.handL : d.handR;
     const gh = side === 'L' ? g.handL : g.handR;
-    h.pos = v3(gh.pos.x + 0.04 * sg * s, gh.pos.y + (body ? -0.02 : 0.02) * s, gh.pos.z);
+    h.pos = v3(gh.pos.x + 0.04 * sg * s, gh.pos.y + (body ? -0.02 : 0.02) * s, gh.pos.z - (side === 'L' ? H.windBack : 0) * s);
     const gp = new Vector3(gh.pole.x, gh.pole.y, gh.pole.z).normalize();
-    const mid = gp.add(new Vector3(hand.pole.x, hand.pole.y, hand.pole.z)).normalize();
+    const mid = gp.multiplyScalar(1 - H.windPole).addScaledVector(new Vector3(hand.pole.x, hand.pole.y, hand.pole.z).normalize(), H.windPole).normalize();
     h.pole = v3(mid.x, mid.y, mid.z);
-    h.pron = (gh.pron + hand.pron) / 2;
+    h.pron = gh.pron + (hand.pron - gh.pron) * H.windPron;
     d.pelvis.yaw += deg(-6 * sg);
     d.chest.yaw += deg(-3 * sg);
-    d.hips.y -= (body ? 0.08 : 0.015) * s;
+    d.hips.y -= (body ? 0.08 : H.dip * 0.5) * s;
   });
-  const t1 = 0.07;
+  const t1 = H.windT;
   const t2 = side === 'L' ? 0.2 : 0.23;
   const t3 = t2 + 0.22;
   return {

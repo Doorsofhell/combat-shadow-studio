@@ -8,7 +8,7 @@ p.on('pageerror', (e) => console.log('ERR', e.stack?.slice(0, 400)));
 const files = [];
 for (const az of angles.split(',')) {
   await p.goto('about:blank');
-  await p.goto(`http://localhost:${PORT}/#/lab?champion=${champ}&look=realiste&d=boxe&tech=${tech}&az=${az}&el=10${garde === 'gaucher' ? '&garde=gaucher' : ''}`);
+  await p.goto(`http://localhost:${PORT}/#/lab?champion=${champ}&look=realiste&d=${process.env.D || 'boxe'}&tech=${tech}&az=${az}&el=10${garde === 'gaucher' ? '&garde=gaucher' : ''}`);
   await p.waitForFunction(() => window.__labReady === true, null, { timeout: 900000 });
   await p.waitForTimeout(2500);
   for (const t of times.split(',').map(Number)) {

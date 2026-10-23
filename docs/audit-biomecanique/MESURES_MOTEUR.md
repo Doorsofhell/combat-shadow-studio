@@ -67,7 +67,6 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Rotation sous le crochet (roll) (`roll-droite`) | defense | 3,9 | 54 % | 0,00 | 3,0 (LeftToeBase) | 7° | 0,00 |
 | Jab au corps (`jab-corps`) | poing | 3,5 | 54 % | 0,00 | 3,0 (LeftToeBase) | 19° | 0,00 |
 | Rétention de garde (solo) (`retention-garde`) | sol | 3,0 | 15 % | 0,00 | 1,1 (LeftToeBase) | 11° | 4,34 |
-| Crochet gauche au corps (`crochet-avant-corps`) | poing | 2,0 | 39 % | 0,00 | 3,0 (LeftToeBase) | 24° | 0,00 |
 | Posture debout de grappling (`garde-bjj`) | garde | 1,3 | 100 % | 0,00 | 3,0 (LeftToeBase) | 2° | 0,00 |
 | Overhand (`overhand`) | poing | 1,2 | 25 % | 0,00 | 3,0 (LeftToeBase) | 21° | 0,00 |
 | Genou circulaire dans le clinch (`genou-circulaire-clinch`) | clinch | 1,0 | 2 % | 0,50 | 3,0 (LeftToeBase) | 29° | 0,01 |
@@ -75,6 +74,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Genou dans le clinch (`genou-clinch`) | clinch | 0,9 | 2 % | 0,50 | 3,0 (LeftToeBase) | 12° | 0,01 |
 | Genou direct (`genou-direct-arriere`) | genou | 0,7 | 2 % | 0,50 | 3,0 (LeftToeBase) | 12° | 0,01 |
 | Jab (`jab`) | poing | 0,7 | 25 % | 0,00 | 3,0 (LeftToeBase) | 20° | 0,00 |
+| Crochet gauche au corps (`crochet-avant-corps`) | poing | 0,7 | 26 % | 0,00 | 3,0 (LeftToeBase) | 25° | 0,00 |
 | Blocage haut (`blocage-haut`) | defense | 0,7 | 64 % | 0,00 | 3,0 (LeftToeBase) | 6° | 0,00 |
 | Tai-sabaki (rotation du corps) (`tai-sabaki`) | deplacement | 0,1 | 0 % | 0,00 | 3,0 (LeftToeBase) | 14° | 7,21 |
 | Position de garde (`garde`) | garde | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 6° | 0,00 |
@@ -111,8 +111,8 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 
 | Exercice | Enchaînement | Saut max entre deux images (cm) | Glissement max (cm / image) | Ajouté par la transition (cm / image) |
 |---|---|---|---|---|
-| `mma-expert-08` | jab → direct → sprawl → jab → low-kick-arriere → crochet-avant → changement-niveau → direct | 16,6 | 8,14 | 4,66 |
 | `mma-avance-11` | jab → direct → sprawl → jab → direct → changement-niveau | 16,6 | 8,14 | 4,66 |
+| `mma-expert-08` | jab → direct → sprawl → jab → low-kick-arriere → crochet-avant → changement-niveau → direct | 16,6 | 8,14 | 4,66 |
 | `mma-debutant-09` | jab → direct → sprawl | 15,7 | 8,14 | 4,66 |
 | `mma-avance-05` | jab → sprawl → direct → sprawl → crochet-avant | 15,7 | 8,14 | 4,66 |
 | `mma-expert-09` | jab → direct → sprawl → jab → direct → sprawl → crochet-avant → direct | 15,7 | 8,14 | 4,66 |
@@ -189,7 +189,6 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `boxe-intermediaire-11` | jab-corps → jab → direct | 15,9 | 0,16 | 0,16 |
 | `boxe-expert-07` | jab-corps → direct → crochet-avant-corps → crochet-avant → direct-corps → uppercut-arriere → crochet-avant | 15,9 | 0,16 | 0,16 |
 | `boxe-avance-04` | jab-corps → direct-corps → crochet-avant → uppercut-arriere | 15,9 | 0,16 | 0,16 |
-| `kickboxing-expert-12` | jab → direct → genou-direct-arriere → crochet-avant → low-kick-arriere | 15,8 | 0,35 | 0,15 |
 | `muaythai-avance-04` | clinch-tirage → genou-clinch → genou-circulaire-clinch → genou-clinch | 19,9 | 0,11 | 0,09 |
 | `muaythai-intermediaire-09` | clinch-tirage → genou-clinch → genou-clinch | 19,9 | 0,11 | 0,09 |
 | `judo-expert-04` | kumikata → uchikomi-o-goshi → uchikomi-o-soto-gari → uchikomi-o-uchi-gari → uchikomi-ko-uchi-gari | 18,0 | 8,71 | 0,08 |
@@ -206,6 +205,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `muaythai-debutant-07` | genou-direct-arriere | 17,5 | 0,04 | 0,03 |
 | `mma-intermediaire-07` | front-kick-avant → jab → changement-niveau | 16,7 | 0,05 | 0,02 |
 | `mma-debutant-05` | changement-niveau | 16,7 | 0,00 | 0,00 |
+| `kickboxing-expert-12` | jab → direct → genou-direct-arriere → crochet-avant → low-kick-arriere | 15,8 | 0,20 | 0,00 |
 | `mma-expert-11` | overhand → crochet-avant → uppercut-arriere → crochet-avant → direct → high-kick-arriere | 16,1 | 0,20 | 0,00 |
 | `bjj-debutant-02` | descente-sol → releve-technique | 17,3 | 11,09 | 0,00 |
 | `bjj-debutant-03` | descente-sol → pont → releve-technique | 17,3 | 11,09 | 0,00 |
