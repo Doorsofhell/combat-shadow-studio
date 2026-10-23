@@ -16,6 +16,7 @@ import type { ArBridge } from '../ar/ArBridge';
 import type { CoachRig } from '../engine/rig';
 import { ComboPlayer, PlayerEvents } from '../engine/player';
 import { MotionLibrary, getLibrary } from '../engine/library';
+import { getBiomecaLibrary } from '../engine/biomeca';
 import { Envelope, sequenceEnvelope } from '../engine/envelope';
 import type { StudyPlayer } from '../engine/study';
 import type { StanceStyle } from '../engine/author';
@@ -116,7 +117,9 @@ export function CoachStage(props: CoachStageProps) {
   const render = useSettings((s) => s.settings.coachRender);
   // 0.24: the coach is Kadir or Amara, on their own model, dressed for the discipline; the fallback
   // render ("précédent") keeps the generic coach and the custom fighter
-  const champion = render === 'premium' && !props.look ? championFor(coach) : null;
+  const premiumRender = render !== 'precedent';
+  const visualRender = premiumRender ? 'premium' : 'precedent';
+  const champion = premiumRender && !props.look ? championFor(coach) : null;
   const championId = champion?.coach;
   // one look object per coach and discipline: a new object on each render would re-dress the model
   const dressed = useMemo(() => (championId ? championLook(championFor(championId), discipline) : null), [championId, discipline]);
@@ -253,7 +256,8 @@ export function CoachStage(props: CoachStageProps) {
   const onRig = useCallback(
     (rig: CoachRig) => {
       const c = championRef.current;
-      const lib = getLibrary(rig, STYLE_OF[discipline], c ? championStance(c, discipline) : undefined);
+      const baseLibrary = getLibrary(rig, STYLE_OF[discipline], c ? championStance(c, discipline) : undefined);
+      const lib = render === 'biomeca' ? getBiomecaLibrary(rig, baseLibrary) : baseLibrary;
       rigRef.current = { rig, lib };
       log3d('modele', `${championRef.current?.id ?? 'coach généré'} prêt`);
       setRigState(rig);
@@ -263,7 +267,7 @@ export function CoachStage(props: CoachStageProps) {
       onPlayer(p);
       onRigReadyRef.current?.(rig, lib);
     },
-    [discipline, proxy, onPlayer, updateEnvelope],
+    [discipline, proxy, onPlayer, updateEnvelope, render],
   );
 
   // an error in one frame of animation is written down and the next frame goes on (it used to stop the coach)
@@ -307,7 +311,7 @@ export function CoachStage(props: CoachStageProps) {
   const budget = budgetFor(q, level);
   const [startDpr] = useState(() => stageDpr(typeof innerWidth === 'number' ? innerWidth : 400, typeof innerHeight === 'number' ? innerHeight * 0.6 : 400, typeof devicePixelRatio === 'number' ? devicePixelRatio : 1, budget));
   const onResolution = useCallback((dpr: number, w: number, h: number) => log3d('qualite', `résolution ${dpr} px par point (${Math.round(w * dpr)}×${Math.round(h * dpr)}, écran ${typeof devicePixelRatio === 'number' ? devicePixelRatio : 1})`), []);
-  const realShadows = style === 'realiste' && render === 'premium' && q === 'haute' && !arActive && !(quality === 'auto' && TOUCH);
+  const realShadows = style === 'realiste' && premiumRender && q === 'haute' && !arActive && !(quality === 'auto' && TOUCH);
   return (
     <Canvas
       onCreated={onCreated}
@@ -350,7 +354,7 @@ export function CoachStage(props: CoachStageProps) {
             realistic={style === 'realiste'}
           />
         )}
-        {style === 'realiste' && render === 'premium' && q === 'haute' && <StudioEnvironment intensity={0.12} />}
+        {style === 'realiste' && premiumRender && q === 'haute' && <StudioEnvironment intensity={0.12} />}
         {ar && <ArScene bridge={ar} active={arActive} coachGroup={coachGroup} follow={follow} />}
         {/* the coach stays mounted when switching to AR: same model, same player, same animation */}
         <group ref={coachGroup}>
@@ -358,7 +362,7 @@ export function CoachStage(props: CoachStageProps) {
             key={`${champion?.id ?? shownCoach}-${discipline}-${render}${render === 'precedent' ? `-${style}` : ''}`}
             coach={shownCoach}
             style={style}
-            render={render}
+            render={visualRender}
             quality={q}
             look={look}
             model={champion ? championModel(champion) : undefined}
