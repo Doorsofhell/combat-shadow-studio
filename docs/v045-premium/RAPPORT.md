@@ -52,4 +52,12 @@ Demandes de Youssef (2026-10-23 11:08 « REFONTE PAGE PREMIUM À VIE » et 11:11
 
 ## 6. Tests
 
-TESTS
+| Test | Résultat |
+|---|---|
+| `rights.test` (catégories, restauration « indisponible » sans faux succès, aucun droit donné par la page) | RÉUSSI |
+| `premium.spec` (page sans défilement en 360 × 640, 393 × 740, 412 × 915 ; Premium activé) | RÉUSSI |
+| `premium-panels.spec` (un panneau à la fois, croix, Retour, Échap, au-dessus de la barre ; axe clair et sombre) | RÉUSSI |
+| Vitest complet | 774 RÉUSSIS, 1 ÉCHOUÉ connu (photo-coach, hanche d'Amara, déjà en échec avant), 1 ignoré |
+| Playwright complet (version compilée) | 189 RÉUSSIS, 2 ignorés (Firebase), 2 ÉCHOUÉS connus : `coaching-hud:60` (instable, déjà en échec sur la v0.42) et `training-layout:325` (caméra Auto, déjà en échec depuis la v0.42) |
+| Android réel | NON EXÉCUTÉ |
+| Achat ou restauration réels | NON APPLICABLE : aucun système de paiement n'est branché |
