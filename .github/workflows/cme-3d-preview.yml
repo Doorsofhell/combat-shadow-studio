@@ -1,0 +1,29 @@
+name: CME-3D independent Motion Lab
+on:
+  push:
+    branches: ['experiment/cme3d-standalone-motion-lab']
+    paths: ['cme-3d/**', '.github/workflows/cme-3d-preview.yml']
+  pull_request:
+    paths: ['cme-3d/**', '.github/workflows/cme-3d-preview.yml']
+  workflow_dispatch:
+jobs:
+  standalone:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cme-3d
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install independent dependencies
+        run: npm install --no-audit --no-fund
+      - name: Type check
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm run test
+      - name: Web build
+        run: npm run build
+      - name: Publish standalone web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cme3d-motion-lab-preview
+          path: cme-3d/dist
