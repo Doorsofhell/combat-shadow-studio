@@ -3,10 +3,10 @@ import AxeBuilder from '@axe-core/playwright';
 import { bar, seedProfile } from './nav-helpers';
 
 /**
- * v0.44 (Youssef, 2026-10-23, « AMÉLIORATION DE LA BARRE DE NAVIGATION CONTEXTUELLE »): the actions of the screen
- * keep a light tint of the accent, the selected one a stronger tint of the same red; Retour, Menu and the links to
- * the main places stay neutral. Colours read on the real bar, in light and dark menus.
- * CAPTURES=dir writes the comparison captures (docs/v044-navigation/).
+ * v0.44 roles, v0.45.1 colours (Youssef, 2026-10-23, « Correctif mineur de navigation »): a monochrome bar. No place
+ * has a background of its own; Retour and Menu in a neutral grey; the actions of the screen in a graphite slightly more
+ * contrasted; the active one more contrasted still, with a bolder word; never red or pink. Colours read on the real
+ * bar, in light and dark menus. CAPTURES=dir writes the comparison captures (docs/v0451-navigation/).
  */
 const SHOTS = process.env.CAPTURES;
 
@@ -26,7 +26,8 @@ async function look(page: Page) {
       };
       return bs.map((b) => {
         const cs = getComputedStyle(b);
-        return { role: b.getAttribute('data-role'), active: b.classList.contains('active'), color: norm(cs.color), bg: norm(cs.backgroundColor), label: b.querySelector('small')?.textContent };
+        const small = b.querySelector('small');
+        return { role: b.getAttribute('data-role'), active: b.classList.contains('active'), color: norm(cs.color), bg: norm(cs.backgroundColor), label: small?.textContent, weight: Number(small ? getComputedStyle(small).fontWeight : 0) };
       });
     });
 }
@@ -67,11 +68,20 @@ async function contrasts(page: Page) {
   });
 }
 
+/** a grey of the theme (its greys are slightly cool: 90,95,105 by day, 156,163,175 by night): low saturation, and red
+ * never above green or blue, so no red, no pink */
+const grey = (c: string) => {
+  const [r, g, b] = c.split(',').map(Number);
+  return Math.max(r, g, b) - Math.min(r, g, b) <= 24 && r <= Math.min(g, b) + 4;
+};
+/** no background of its own: fully transparent */
+const noBg = (c: string) => c.split(',')[3] === '0';
+
 for (const [theme, scheme] of [['clair', 'light'], ['sombre', 'dark']] as const) {
   test.describe(`menus ${theme}`, () => {
     test.use({ viewport: { width: 360, height: 740 } });
 
-    test('actions de l’écran teintées, sélection accentuée, Retour et Menu neutres, au fil des écrans', async ({ page }) => {
+    test('barre monochrome : aucun fond par bouton, Retour et Menu neutres, actions en graphite, active plus contrastée et plus grasse, jamais de rouge', async ({ page }) => {
       // theme « auto » (default) follows the system
       await page.emulateMedia({ colorScheme: scheme });
       await seedProfile(page);
@@ -83,33 +93,41 @@ for (const [theme, scheme] of [['clair', 'light'], ['sombre', 'dark']] as const)
       expect(l.map((x) => x.role)).toEqual(['global', 'contextual', 'contextual', 'contextual', 'global']);
       const neutral = l[0];
       expect(l[4].color).toBe(neutral.color);
-      expect(l[4].bg).toBe(neutral.bg);
-      for (const x of l.slice(1, 4)) {
-        expect(x.color, x.label!).not.toBe(neutral.color);
-        expect(x.bg, x.label!).not.toBe(neutral.bg);
+      for (const x of l) {
+        expect(noBg(x.bg), `${x.label} fond ${x.bg}`).toBe(true);
+        expect(grey(x.color), `${x.label} couleur ${x.color}`).toBe(true);
       }
+      for (const x of l.slice(1, 4)) expect(x.color, x.label!).not.toBe(neutral.color);
       const rest = l[2];
-      for (const c of await contrasts(page)) expect(c).toBeGreaterThanOrEqual(4.5);
+      let c = await contrasts(page);
+      for (const k of c) expect(k).toBeGreaterThanOrEqual(4.5);
+      // graphite: more contrasted than the neutral grey of Retour and Menu
+      for (const k of [1, 2, 3]) expect(c[k]).toBeGreaterThan(c[0]);
+      const restContrast = c[2];
       if (SHOTS) await bar(page).screenshot({ path: `${SHOTS}/${theme}-1-fiche-repos.png` });
 
-      // Ralenti selected: stronger, the two others keep their light tint
+      // Ralenti selected: stronger and bolder, the two others stay graphite
       await bar(page).locator('[data-action="slow"]').click();
       await expect(bar(page).locator('[data-action="slow"]')).toHaveClass(/active/);
       await page.waitForTimeout(400);
       l = await look(page);
       expect(l[2].active).toBe(true);
       expect(l[2].color).not.toBe(rest.color);
-      expect(l[2].bg).not.toBe(rest.bg);
+      expect(noBg(l[2].bg), `fond actif ${l[2].bg}`).toBe(true);
+      expect(grey(l[2].color), `couleur active ${l[2].color}`).toBe(true);
+      expect(l[2].weight).toBeGreaterThan(rest.weight);
       expect(l[1].color).toBe(rest.color);
       expect(l[3].color).toBe(rest.color);
       expect(l[0].color).toBe(neutral.color);
       expect(l[4].color).toBe(neutral.color);
-      for (const c of await contrasts(page)) expect(c).toBeGreaterThanOrEqual(4.5);
+      c = await contrasts(page);
+      for (const k of c) expect(k).toBeGreaterThanOrEqual(4.5);
+      expect(c[2]).toBeGreaterThan(restContrast);
       const axe = await new AxeBuilder({ page }).include('[data-testid="bottom-bar"]').withTags(['wcag2a', 'wcag2aa']).analyze();
       expect(axe.violations.map((v) => v.id)).toEqual([]);
       if (SHOTS) await bar(page).screenshot({ path: `${SHOTS}/${theme}-2-fiche-ralenti.png` });
 
-      // another screen: its own three actions tinted, nothing left selected from the previous one
+      // another screen: its own three actions in graphite, nothing left selected from the previous one
       await page.goto('/#/stats');
       await expect(bar(page)).toHaveAttribute('data-screen', 'progres');
       await page.waitForTimeout(400);
@@ -119,7 +137,7 @@ for (const [theme, scheme] of [['clair', 'light'], ['sombre', 'dark']] as const)
       expect(l[2].color).toBe(rest.color);
       if (SHOTS) await bar(page).screenshot({ path: `${SHOTS}/${theme}-3-progres.png` });
 
-      // Accueil: only links to the main places, nothing tinted
+      // Accueil: only links to the main places, all neutral
       await page.goto('/#/');
       await expect(bar(page)).toHaveAttribute('data-screen', 'accueil');
       await page.waitForTimeout(400);

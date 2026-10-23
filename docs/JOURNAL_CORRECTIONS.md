@@ -1904,3 +1904,17 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Android réel : NON EXÉCUTÉ.
 - **Écarts avec la maquette** : tutoiement partout, prix indicatif gardé dans le panneau Offre seulement, « futures mises à jour » retiré, « Google Play par exemple » au lieu d'« App Store » (détail dans `docs/v045-premium/RAPPORT.md`).
 - **Captures** : `docs/v045-premium/captures/`.
+
+## 2026-10-23 · v0.45.1 · Barre du bas monochrome
+
+- **Demande** : « Correctif mineur de navigation » (Youssef, 2026-10-23 16:05) : supprimer les fonds individuels des boutons, hiérarchie en gris jour et nuit, pas de rouge ni de rose pour l'état actif, tokens du thème, composant commun seulement.
+- **Constat** : depuis la v0.44, les actions de l'écran avaient un fond rosé et une couleur rouge adoucie, l'action active un fond et un rouge plus marqués ; la rubrique active d'un lien était rouge sur fond gris.
+- **Correction** (`src/ui/nav/nav.css`) : variables `--nav-neutral` (= `--muted`), `--nav-ctx` (graphite, mélange de `--c-text` et `--muted`), `--nav-active` (= `--c-text`) ; plus aucun fond par place ; libellé actif en graisse 750 ; transition sur la couleur seule (0,18 s). Rien d'autre ne change : places, icônes, ordre, tailles, actions, panneaux, thème.
+- **Fichiers** : `src/ui/nav/nav.css`, `tests/e2e/nav-contextuelle.spec.ts`, `scripts/dev/shot-bars.mjs`, `src/domain/releases.ts`, `package.json`, `tests/e2e/navigation.spec.ts`, `docs/v0451-navigation/`.
+- **Tests** :
+  - `nav-contextuelle.spec` réécrit pour la nouvelle règle (aucun fond, gris sans rouge, graphite plus contrasté que Retour et Menu, active plus contrastée et plus grasse, contraste ≥ 4,5:1, axe ; clair et sombre) : 2 RÉUSSIS ;
+  - `contrast.spec`, `navigation.spec`, `premium-panels.spec`, `theme.spec` : 41 RÉUSSIS ;
+  - Vitest `src/ui/nav` et `src/domain` : 207 RÉUSSIS ;
+  - Android réel : NON EXÉCUTÉ.
+- **Captures** : `docs/v0451-navigation/captures/` (dont `planche-ecrans.png` : Premium, Entraîner, Techniques, Progrès en clair et en sombre).
+
