@@ -220,9 +220,14 @@ export function SettingsPage() {
               options={[
                 { id: 'premium', label: 'Nouvelle (0.24)' },
                 { id: 'precedent', label: 'Précédente (secours)' },
+                { id: 'biomeca', label: 'Biomécanique (test)' },
               ]}
             />
-            <p className="small muted">La version précédente reste disponible tant que la nouvelle n’est pas validée sur ton téléphone.</p>
+            <p className="small muted">
+              {settings.coachRender === 'biomeca'
+                ? 'Mode expérimental : les coups de coude diagonaux utilisent une trajectoire de bras affinée. Les autres mouvements et le rendu visuel restent identiques à Nouvelle (0.24). Tu peux revenir aux deux autres versions à tout moment.'
+                : 'Les deux versions actuelles restent disponibles. Biomécanique (test) permet de comparer une première correction isolée, sans remplacer le moteur existant.'}
+            </p>
           </PanelRow>
           <div id="reglage-camera" data-testid="settings-camera" />
           <PanelRow label="Caméra par défaut" column>
