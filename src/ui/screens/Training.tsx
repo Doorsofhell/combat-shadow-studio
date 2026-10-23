@@ -11,7 +11,8 @@ import { formatDuration } from '../../store/stats';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
 import { PointPhase, instructionOf } from '../../domain/instructions';
 import { DISCIPLINES, LEVELS, TrainingMode } from '../../domain/types';
-import { MODE_LABEL, Plan, customPlan, exercisePlan, programPlan } from '../training/plan';
+import { INTENSITY_LABEL, MODE_LABEL, Plan, customPlan, exercisePlan, programPlan } from '../training/plan';
+import { cardioFromQuery } from '../training/TimerOptions';
 import { SessionPersist, useSession } from '../training/useSession';
 import { useCatalog } from '../../store/catalog';
 import { catalogPlan } from '../../domain/catalog/plan';
@@ -52,6 +53,8 @@ export function Training() {
       roundSec: Number(q.get('round') ?? settings.defaultRoundSec),
       restSec: Number(q.get('rest') ?? settings.defaultRestSec),
       rounds: Number(q.get('rounds') ?? 3),
+      // v0.47: the Cardio intervals of the link (else the last ones chosen)
+      cardio: cardioFromQuery(q, settings.cardio),
     };
     if (catId) {
       const e = catalog?.comboById.get(catId);
@@ -123,8 +126,6 @@ function clock(sec: number, up = true) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-/** 0.35, the chronometer of the HUD: mm:ss (« 01:42 »), rounded up like every countdown */
-const clockHud = (sec: number) => clock(sec).padStart(5, '0');
 
 function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPersist, 'camera'> }) {
   const nav = useNavigate();
@@ -299,8 +300,29 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   const camLabel = camMode === 'auto' ? (isAuto ? autoName : 'Auto ajusté') : (CAMERA_MODES.find((c) => c.id === camMode)?.label ?? 'Auto');
 
   const running = view.phase !== 'pret' && view.phase !== 'termine';
+  // v0.47 (« Chronomètre intégré au coach 3D » §4, §7, §8): the phase in words, with its colour (amber preparation,
+  // red work, teal rest, neutral pause); Cardio says Effort / Récupération and counts cycles, Rounds says Combat
+  const cardio = plan.mode === 'cardio';
   const phaseLabel =
-    view.phase === 'decompte' ? 'Prépare-toi' : view.phase === 'repos' ? 'Repos' : view.phase === 'travail' ? (item.work ? `Round ${view.round}/${item.rounds}` : MODE_LABEL[plan.mode]) : view.phase === 'termine' ? 'Terminé' : 'Prêt';
+    view.phase === 'decompte'
+      ? 'Prépare-toi'
+      : view.phase === 'repos'
+        ? cardio
+          ? 'Récupération'
+          : 'Repos'
+        : view.phase === 'travail'
+          ? item.work
+            ? cardio
+              ? `Effort · Cycle ${view.round}/${item.rounds}`
+              : plan.mode === 'rounds'
+                ? `Combat · Round ${view.round}/${item.rounds}`
+                : `Round ${view.round}/${item.rounds}`
+            : MODE_LABEL[plan.mode]
+          : view.phase === 'termine'
+            ? 'Terminé'
+            : 'Prêt';
+  // Libre and Technique have no end: the chronometer shows the time done
+  const hudTime = view.remaining !== null ? { sec: view.remaining, up: true, label: 'Temps restant' } : running ? { sec: view.sessionSec, up: false, label: 'Temps écoulé' } : null;
 
   // the technique taught right now: the one studied, the one played, else the first of the sequence
   // between two repetitions the last move stays on screen, so the panel does not jump
@@ -313,9 +335,10 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   if (view.phase === 'pret') {
     if (!instr) cue = 'Appuie sur Démarrer quand tu es prêt.';
   } else if (view.phase === 'repos') {
-    cue = view.banner ?? 'Respire, relâche les épaules, reste en mouvement léger.';
+    cue = view.banner ?? (cardio ? 'Récupère : respire, relâche les épaules, garde les mains prêtes.' : 'Respire, relâche les épaules, reste en mouvement léger.');
   } else if (view.phase === 'termine') {
     cue = `${view.reps} répétitions, ${formatDuration(view.sessionSec)} de travail actif.`;
+
   } else if (view.phase === 'travail' && !cur && !instr) {
     cue = 'Retour en garde, respire.';
   }
@@ -355,7 +378,9 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   const slow = view.speed <= SLOW + 1e-3 && item.speed > SLOW;
   // progression of the session: rounds of timed work, else exercises of the plan
   const itemFrac = item.work && view.remaining !== null && view.phase === 'travail' ? Math.min(1, ((view.round - 1) * item.work + (item.work - view.remaining)) / (item.rounds * item.work)) : view.phase === 'termine' ? 1 : 0;
-  const progress = plan.items.length > 1 || item.work ? Math.min(1, (view.itemIndex + itemFrac) / plan.items.length) : null;
+  // v0.47 §4: during a timed phase (preparation, round, effort, rest) the bar shows that phase; otherwise the session
+  const timedPhase = running && view.remaining !== null;
+  const progress = timedPhase ? view.phaseProgress : plan.items.length > 1 || item.work ? Math.min(1, (view.itemIndex + itemFrac) / plan.items.length) : null;
 
   // if the text is enlarged so much that everything cannot fit, switch to an explicit scrolling layout
   const [overflow, setOverflow] = useState(false);
@@ -445,9 +470,9 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
           <span className={`phase ${view.phase} ${view.paused ? 'paused' : ''}`} data-testid="phase">
             {view.paused ? 'Pause' : phaseLabel}
           </span>
-          {view.remaining !== null && (
-            <span className="hud-time" data-testid="phase-time" aria-label={`Temps restant ${clock(view.remaining)}`}>
-              {clockHud(view.remaining)}
+          {hudTime && (
+            <span className={`hud-time ${hudTime.up ? '' : 'elapsed'}`} data-testid="phase-time" aria-label={`${hudTime.label} ${clock(hudTime.sec, hudTime.up)}`}>
+              {clock(hudTime.sec, hudTime.up).padStart(5, '0')}
             </span>
           )}
           <button className={`ar-state ${arView.state !== 'off' ? 'on' : ''}`} onClick={() => setArIntro(true)} data-testid="ar-button" aria-label="Réalité augmentée">
@@ -457,7 +482,7 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
           </button>
         </div>
         {progress !== null && (
-          <span className="tr-progress hud-progress" role="progressbar" aria-label="Progression de la séance" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} data-testid="progress">
+          <span className={`tr-progress hud-progress ${timedPhase ? `phase-bar ${view.paused ? 'paused' : view.phase}` : ''}`} role="progressbar" aria-label={timedPhase ? `Progression : ${phaseLabel}` : 'Progression de la séance'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} data-testid="progress">
             <i style={{ width: `${Math.round(progress * 100)}%` }} />
           </span>
         )}
@@ -554,6 +579,39 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
           <p className="tr-cue" data-testid="main-instruction">
             {cue}
           </p>
+        )}
+        {/* v0.47 §7, §8: the summary of a timed session (rounds or cycles, effort, rest, total, intensity) */}
+        {view.phase === 'termine' && !st.tech && view.plannedRounds !== null && (
+          <dl className="tr-summary" data-testid="session-summary">
+            <div>
+              <dt>{cardio ? 'Cycles' : 'Rounds'}</dt>
+              <dd>
+                {view.roundsDone}/{view.plannedRounds}
+              </dd>
+            </div>
+            <div>
+              <dt>{cardio ? 'Effort' : 'Travail'}</dt>
+              <dd>{formatDuration(view.sessionSec)}</dd>
+            </div>
+            <div>
+              <dt>{cardio ? 'Récupération' : 'Repos'}</dt>
+              <dd>{formatDuration(view.restSec)}</dd>
+            </div>
+            <div>
+              <dt>Durée totale</dt>
+              <dd>{formatDuration(view.totalSec)}</dd>
+            </div>
+            {cardio && plan.intensity && (
+              <div>
+                <dt>Intensité</dt>
+                <dd>{INTENSITY_LABEL[plan.intensity]}</dd>
+              </div>
+            )}
+            <div>
+              <dt>Discipline</dt>
+              <dd>{disc.name}</dd>
+            </div>
+          </dl>
         )}
         {!focusOnly && points.length > 0 && (
           <ul className={`tr-points ${points.length > 3 ? 'cols' : ''}`} aria-label="Points clés" data-testid="key-points">

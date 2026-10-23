@@ -56,6 +56,14 @@ export interface Settings {
   groundMarks: Record<GroundMarkId, boolean>;
   defaultRoundSec: number;
   defaultRestSec: number;
+  /** v0.47 chronomètre: preparation before the first period (seconds, the big countdown over the coach) */
+  prepSec: number;
+  /** warning before the end of a round or an effort (seconds, 0: none) */
+  roundWarnSec: number;
+  /** gongs at the start and the end of the rounds and efforts */
+  gongs: boolean;
+  /** last Cardio intervals chosen (effort, recovery, cycles, intensity) */
+  cardio: import('../ui/training/plan').CardioOptions;
   /** kick-boxing rule set shown in the lists (K1, low kick, full contact) or every technique */
   kickboxingStyle: import('../domain/kickboxingStyles').KbStyleChoice;
   /**
@@ -108,6 +116,10 @@ export const DEFAULT_SETTINGS: Settings = {
   groundMarks: { pieds: false, orientation: false, avantArriere: false, pivot: false, trajectoire: false },
   defaultRoundSec: 180,
   defaultRestSec: 60,
+  prepSec: 3,
+  roundWarnSec: 10,
+  gongs: true,
+  cardio: { work: 60, rest: 20, cycles: 5, intensity: 'soutenue' },
   kickboxingStyle: 'tous',
   actionPillCollapsed: false,
   coachPanelSize: 'normal',
@@ -147,7 +159,7 @@ export const useSettings = create<SettingsState>()(
       merge: (saved, current) => {
         const s = (saved as { settings?: Partial<Settings> })?.settings ?? {};
         const size = COACH_PANEL_SIZES.includes(s.coachPanelSize as CoachPanelSize) ? s.coachPanelSize : DEFAULT_SETTINGS.coachPanelSize;
-        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) } } };
+        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) }, cardio: { ...DEFAULT_SETTINGS.cardio, ...(s.cardio ?? {}) } } };
       },
     },
   ),

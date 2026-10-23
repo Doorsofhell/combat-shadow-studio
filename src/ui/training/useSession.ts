@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComboPlayer, PlayerEvents } from '../../engine/player';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
-import { ActiveTimer } from '../../store/timer';
-import { useStats } from '../../store/stats';
+import { SessionTimeline, type Phase, type TimelineEvent } from '../../domain/session/timeline';
+import { useStats, type SessionRecord } from '../../store/stats';
 import { useSettings } from '../../store/settings';
 import { say, stopVoice } from '../../audio/voice';
 import { beep, bell, impact, restSignal, unlockAudio } from '../../audio/sound';
@@ -13,7 +13,7 @@ import { createMoveStore } from './moveStore';
 import { RESUME_VERSION, ResumePhase, ResumeSnapshot, workProgress } from '../../domain/resume';
 import { BETWEEN_ITEMS as PROGRAM_BETWEEN_ITEMS, SESSION_COUNTDOWN } from '../../domain/programs';
 
-export type Phase = 'pret' | 'decompte' | 'travail' | 'repos' | 'termine';
+export type { Phase };
 
 export interface SessionView {
   phase: Phase;
@@ -32,6 +32,14 @@ export interface SessionView {
   speed: number;
   /** message shown during transitions (next exercise...) */
   banner: string | null;
+  /** v0.47: progress of the current phase (0 → 1), for the HUD bar */
+  phaseProgress: number;
+  /** seconds of rest and of the whole session (preparation, work, rest; pauses excluded) */
+  restSec: number;
+  totalSec: number;
+  /** timed periods (rounds, cycles) done and planned; planned is null when the session has no end */
+  roundsDone: number;
+  plannedRounds: number | null;
 }
 
 /**
@@ -50,6 +58,8 @@ export interface SessionPersist {
 /** a running session is also saved every 15 s of activity (never at every frame) */
 const SAVE_EVERY_MS = 15_000;
 
+/** the preparation: the chosen seconds, plus the time to say « Prépare-toi » before the first number */
+const PREP_LEAD = 0.6;
 const COUNTDOWN = SESSION_COUNTDOWN;
 // the same values give programSessionSeconds the real length of a programme session
 const BETWEEN_ITEMS = PROGRAM_BETWEEN_ITEMS;
@@ -72,61 +82,67 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
   const snap = persistOpts?.snapshot ?? null;
   // a resumed session keeps its start: the statistics go on adding to the same session (no double count)
   const startIso = useMemo(() => snap?.startIso ?? new Date().toISOString(), []); // eslint-disable-line react-hooks/exhaustive-deps
-  const phaseT = useRef<ActiveTimer>(null as unknown as ActiveTimer);
-  const sessionT = useRef<ActiveTimer>(null as unknown as ActiveTimer);
-  const statsT = useRef(new ActiveTimer());
-  if (!phaseT.current) {
-    phaseT.current = new ActiveTimer();
-    sessionT.current = new ActiveTimer();
-    if (snap) {
-      phaseT.current.seed(snap.phaseElapsed * 1000);
-      sessionT.current.seed(snap.sessionSec * 1000);
-    }
+  // v0.47: the one clock of the session (preparation, work, rest, rounds, pause), see domain/session/timeline
+  const tlRef = useRef<SessionTimeline>(null as unknown as SessionTimeline);
+  if (!tlRef.current) {
+    tlRef.current = new SessionTimeline(
+      plan.items,
+      { prep: Math.max(COUNTDOWN, settings.prepSec ?? COUNTDOWN) + PREP_LEAD, warnBefore: settings.roundWarnSec ?? 10, betweenItems: BETWEEN_ITEMS, chain: plan.mode === 'programme' },
+      undefined,
+      Math.max(0, plan.start),
+    );
+    if (snap) tlRef.current.seed({ phase: snap.phase, itemIndex: snap.itemIndex, round: snap.round, phaseElapsed: snap.phaseElapsed, phaseLen: snap.phaseLen, workSec: snap.sessionSec, restSec: snap.restSec });
   }
+  const tl = tlRef.current;
   const st = useRef({
-    phase: (snap?.phase ?? 'pret') as Phase,
-    // a resumed session waits, paused, on the exact moment it was left: « Reprendre » goes on from there
-    paused: !!snap && snap.phase !== 'pret',
-    itemIndex: snap ? snap.itemIndex : Math.max(0, plan.start),
-    round: snap?.round ?? 1,
     step: -1,
     reps: snap?.reps ?? 0,
-    phaseLen: snap?.phaseLen ?? 0,
     speed: snap?.speed ?? plan.items[Math.max(0, plan.start)]?.speed ?? 0.7,
     banner: null as string | null,
-    lastWhole: -1,
     tipIndex: 0,
     /** the session really started (or was resumed): only then is it offered again */
     started: !!snap,
+    /** work seconds already written to the statistics */
+    flushedWork: snap?.sessionSec ?? 0,
+    /** when the chronometer last spoke: the move calls give way to it */
+    timerSaidAt: -Infinity,
   });
   const [, setTick] = useState(0);
   const rerender = useCallback(() => setTick((t) => (t + 1) % 1e9), []);
 
-  const item = plan.items[st.current.itemIndex];
+  const item = plan.items[tl.itemIndex];
 
-  const flush = useCallback(() => {
-    const s = st.current;
-    const it = plan.items[s.itemIndex];
-    if (!it) return;
-    const sec = statsT.current.drain() / 1000;
-    if (sec > 0.5) {
-      record(
-        { id: `${startIso}#${it.key}`, start: startIso, discipline: it.discipline, level: it.level, exerciseId: it.key, exerciseName: it.name, mode: plan.mode },
-        sec,
-        0,
-      );
-    }
-  }, [plan, record, startIso]);
+  const recordOf = useCallback(
+    (index: number): Omit<SessionRecord, 'activeSec' | 'reps'> | null => {
+      const it = plan.items[index];
+      return it ? { id: `${startIso}#${it.key}`, start: startIso, discipline: it.discipline, level: it.level, exerciseId: it.key, exerciseName: it.name, mode: plan.mode } : null;
+    },
+    [plan, startIso],
+  );
+
+  /** writes the work done since the last time to the statistics of an item (the current one by default) */
+  const flush = useCallback(
+    (index = tl.itemIndex) => {
+      const s = st.current;
+      const sec = tl.workSec - s.flushedWork;
+      const rec = recordOf(index);
+      if (sec > 0.5 && rec) {
+        record(rec, sec, 0);
+        s.flushedWork = tl.workSec;
+      }
+    },
+    [record, recordOf, tl],
+  );
 
   // --------------------------------------------------------------------- resume snapshot
   const saveResume = useCallback(() => {
     const o = persistRef.current;
     const s = st.current;
-    const it = plan.items[s.itemIndex];
-    if (!o || !it || !s.started || s.phase === 'termine') return;
-    const phase = s.phase as ResumePhase;
-    const phaseElapsed = phaseT.current.elapsed / 1000;
-    const prog = workProgress(plan, { itemIndex: s.itemIndex, round: s.round, phase, phaseElapsed });
+    const it = plan.items[tl.itemIndex];
+    if (!o || !it || !s.started || tl.phase === 'termine') return;
+    const phase = tl.phase as ResumePhase;
+    const phaseElapsed = tl.phaseElapsed;
+    const prog = workProgress(plan, { itemIndex: tl.itemIndex, round: tl.round, phase, phaseElapsed });
     useResume.getState().save({
       v: RESUME_VERSION,
       query: o.query,
@@ -135,18 +151,19 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
       programId: o.programId,
       discipline: it.discipline,
       level: it.level,
-      itemIndex: s.itemIndex,
+      itemIndex: tl.itemIndex,
       itemKey: it.key,
       itemName: it.label ?? it.name,
       itemCount: plan.items.length,
       thumb: it.sequence.find((id) => id !== 'garde') ?? it.sequence[0] ?? 'garde',
-      round: s.round,
+      round: tl.round,
       rounds: it.rounds,
       reps: s.reps,
       phase,
       phaseElapsed,
-      phaseLen: s.phaseLen,
-      sessionSec: sessionT.current.elapsed / 1000,
+      phaseLen: tl.phaseLen,
+      sessionSec: tl.workSec,
+      restSec: tl.restSec,
       plannedSec: prog.plannedSec,
       doneSec: prog.doneSec,
       speed: s.speed,
@@ -155,7 +172,7 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
       startIso,
       savedAt: new Date().toISOString(),
     });
-  }, [plan, startIso]);
+  }, [plan, startIso, tl]);
 
   /** the session is over: it is not offered again; a programme counts one more session */
   const endResume = useCallback(() => {
@@ -168,15 +185,16 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
   // --------------------------------------------------------------------- player wiring
   const applySequence = useCallback(() => {
     const p = player.current;
-    const s = st.current;
-    const it = plan.items[s.itemIndex];
+    const it = plan.items[tl.itemIndex];
     if (!p || !it) return;
-    p.speed = s.speed;
-    if (s.phase === 'travail') p.setSequence(playerSteps(it.sequence), it.rest);
+    p.speed = st.current.speed;
+    // the coach plays only during work; in preparation, rest and at the end it stays in its guard (the player
+    // brings it back from the move under way, never a jump to a new pose)
+    if (tl.phase === 'travail') p.setSequence(playerSteps(it.sequence), it.rest);
     else p.setSequence([], 0);
-    if (s.paused) p.pause();
+    if (tl.paused) p.pause();
     else p.play();
-  }, [plan]);
+  }, [plan, tl]);
 
   const onPlayer = useCallback(
     (p: ComboPlayer) => {
@@ -193,11 +211,12 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
       onMove: (m) => move.set(m),
       onStep: (index, techId, _rep, timeToNext) => {
         const s = st.current;
-        if (s.phase !== 'travail') return;
+        if (tl.phase !== 'travail') return;
         s.step = index;
         const cfg = settingsRef.current;
         const t = TECHNIQUE_BY_ID.get(techId);
-        if (t && cfg.voice && cfg.announceMoves) {
+        // the chronometer's calls come first: a move is not called over « Round 2 » or « Dix secondes »
+        if (t && cfg.voice && cfg.announceMoves && performance.now() - s.timerSaidAt > 1500) {
           // faster speech when the next move follows quickly, so the call stays on the move
           const rate = timeToNext < 0.5 ? 1.45 : timeToNext < 0.9 ? 1.25 : 1.1;
           say(t.call, { interrupt: true, rate });
@@ -209,123 +228,123 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
       },
       onRep: () => {
         const s = st.current;
-        if (s.phase !== 'travail') return;
+        if (tl.phase !== 'travail') return;
         s.reps++;
         s.step = -1;
-        const it = plan.items[s.itemIndex];
-        if (it) {
-          record(
-            { id: `${startIso}#${it.key}`, start: startIso, discipline: it.discipline, level: it.level, exerciseId: it.key, exerciseName: it.name, mode: plan.mode },
-            0,
-            1,
-          );
-        }
+        const rec = recordOf(tl.itemIndex);
+        if (rec) record(rec, 0, 1);
         rerender();
       },
       onRest: () => {
         const s = st.current;
         const cfg = settingsRef.current;
-        if (s.phase !== 'travail' || plan.mode !== 'technique' || !cfg.voice || !cfg.techniqueTips) return;
-        const it = plan.items[s.itemIndex];
+        if (tl.phase !== 'travail' || plan.mode !== 'technique' || !cfg.voice || !cfg.techniqueTips) return;
+        const it = plan.items[tl.itemIndex];
         const tips = it?.sequence.flatMap((id) => TECHNIQUE_BY_ID.get(id)?.keyPoints ?? []) ?? [];
         if (tips.length) say(tips[s.tipIndex++ % tips.length], { rate: 1.05 });
       },
     }),
-    [plan, record, rerender, startIso, move],
+    [plan, record, recordOf, rerender, move, tl],
   );
 
   // --------------------------------------------------------------------- phases
-  const enter = useCallback(
-    (phase: Phase, len: number, banner: string | null = null) => {
+  const speak = useCallback((text: string, interrupt = true) => {
+    const cfg = settingsRef.current;
+    if (!cfg.voice) return;
+    st.current.timerSaidAt = performance.now();
+    say(text, { interrupt });
+  }, []);
+
+  /** the session's state changed: the coach, the saved session and the screen follow */
+  const changed = useCallback(() => {
+    const s = st.current;
+    s.step = -1;
+    if (tl.phase !== 'pret') s.started = true;
+    applySequence();
+    if (tl.phase === 'termine') endResume();
+    else saveResume();
+    rerender();
+  }, [applySequence, endResume, rerender, saveResume, tl]);
+
+  /**
+   * The chronometer's events become sounds, voice and coach moves, each once (§12). Gongs mark the start and the
+   * end of a timed period; the voice says the round, the rest and the time left.
+   */
+  const handle = useCallback(
+    (events: TimelineEvent[]) => {
+      if (!events.length) return;
+      const cfg = settingsRef.current;
       const s = st.current;
-      s.phase = phase;
-      s.phaseLen = len;
-      s.banner = banner;
-      s.lastWhole = -1;
-      s.step = -1;
-      phaseT.current.reset();
-      if (!s.paused) phaseT.current.start();
-      if (phase !== 'pret') s.started = true;
-      if (phase === 'travail') {
-        if (!s.paused) {
-          sessionT.current.start();
-          statsT.current.start();
+      const cardio = plan.mode === 'cardio';
+      let phaseChanged = false;
+      for (const e of events) {
+        switch (e.type) {
+          case 'prep-start':
+            speak('Prépare-toi');
+            phaseChanged = true;
+            break;
+          case 'prep-count':
+            if (e.n <= COUNTDOWN) {
+              beep(false);
+              speak(String(e.n));
+            }
+            break;
+          case 'work-start': {
+            // the start signal, once: the gong (or the bell of the former sessions when gongs are off)
+            bell(1);
+            const it = plan.items[e.itemIndex];
+            speak(e.round === 1 ? 'En garde' : cardio ? `Cycle ${e.round}` : `Round ${e.round}`);
+            if (it && e.round === 1) s.banner = null;
+            phaseChanged = true;
+            break;
+          }
+          case 'warning':
+            if (cfg.voice) speak(e.secondsLeft >= 30 ? 'Trente secondes' : 'Dix secondes', false);
+            else beep(true);
+            break;
+          case 'work-end': {
+            flush(e.itemIndex);
+            if (cfg.gongs) bell(3);
+            const it = plan.items[e.itemIndex];
+            if (e.last) speak('Séance terminée. Bravo');
+            else if (e.nextItem) {
+              const nx = plan.items[e.itemIndex + 1];
+              speak(`Exercice terminé. Prochain exercice : ${nx.label ?? nx.name}`);
+              s.reps = 0;
+              s.speed = nx.speed;
+              player.current?.restart();
+            } else if (cardio) speak('Récupération');
+            else speak(it && it.roundRest > 0 ? 'Fin du round. Repos' : 'Fin du round');
+            phaseChanged = true;
+            break;
+          }
+          case 'rest-start':
+            // without gongs, the rest still has its own signal (never both at once)
+            if (!cfg.gongs && e.len >= 5) restSignal();
+            if (e.reason === 'item' && e.nextItem !== null) {
+              const nx = plan.items[e.nextItem];
+              s.banner = `Prochain : ${nx.label ?? nx.name}`;
+            }
+            phaseChanged = true;
+            break;
+          case 'rest-count':
+            beep(false);
+            break;
+          case 'done':
+            phaseChanged = true;
+            break;
         }
-      } else {
-        sessionT.current.pause();
-        statsT.current.pause();
-        flush();
       }
-      applySequence();
-      // phase, round or exercise changed: an important moment to save
-      if (phase === 'termine') endResume();
-      else saveResume();
-      rerender();
+      if (phaseChanged) changed();
     },
-    [applySequence, endResume, flush, rerender, saveResume],
+    [changed, flush, plan, speak],
   );
 
-  const speak = (text: string, interrupt = true) => {
-    const cfg = settingsRef.current;
-    if (cfg.voice) say(text, { interrupt });
-  };
-
-  const startWork = useCallback(() => {
-    const it = plan.items[st.current.itemIndex];
-    bell(1);
-    speak(st.current.round === 1 && it ? 'En garde' : `Round ${st.current.round}`);
-    enter('travail', it?.work ?? 0);
-  }, [enter, plan]);
-
   const tick = useCallback(() => {
-    const s = st.current;
-    if (s.paused) return;
-    const it = plan.items[s.itemIndex];
-    const el = phaseT.current.elapsed / 1000;
-    const left = s.phaseLen - el;
-    const whole = Math.ceil(left);
-    const newWhole = whole !== s.lastWhole;
-    s.lastWhole = whole;
-
-    if (s.phase === 'decompte') {
-      if (newWhole && whole > 0 && whole <= COUNTDOWN) {
-        beep(false);
-        speak(String(whole));
-      }
-      if (left <= 0) startWork();
-    } else if (s.phase === 'travail' && it && it.work) {
-      if (newWhole && whole === 10 && it.work > 20) speak('Dix secondes', false);
-      if (left <= 0) {
-        flush();
-        if (s.round < it.rounds) {
-          bell(3);
-          speak(it.roundRest > 0 ? 'Fin du round. Repos' : 'Fin du round');
-          s.round++;
-          if (it.roundRest > 0) enter('repos', it.roundRest);
-          else startWork();
-        } else if (s.itemIndex < plan.items.length - 1) {
-          bell(3);
-          const nx = plan.items[s.itemIndex + 1];
-          speak(`Exercice terminé. Prochain exercice : ${nx.label ?? nx.name}`);
-          s.itemIndex++;
-          s.round = 1;
-          s.reps = 0;
-          s.speed = nx.speed;
-          player.current?.restart();
-          enter('repos', Math.max(BETWEEN_ITEMS, it.roundRest ? Math.min(it.roundRest, 30) : 0), `Prochain : ${nx.label ?? nx.name}`);
-        } else {
-          bell(3);
-          speak('Séance terminée. Bravo');
-          enter('termine', 0);
-        }
-      }
-    } else if (s.phase === 'repos') {
-      if (newWhole && whole === Math.floor(s.phaseLen) && s.phaseLen >= 5) restSignal();
-      if (newWhole && whole > 0 && whole <= 3) beep(false);
-      if (left <= 0) startWork();
-    }
-    rerender();
-  }, [enter, flush, plan, rerender, startWork]);
+    if (tl.paused) return;
+    handle(tl.tick());
+    if (tl.phase !== 'pret' && tl.phase !== 'termine') rerender();
+  }, [handle, rerender, tl]);
 
   useEffect(() => {
     const id = window.setInterval(tick, 100);
@@ -335,20 +354,20 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
   // save every 5 s of practice, and when leaving
   useEffect(() => {
     const id = window.setInterval(() => {
-      if (statsT.current.elapsed > 5000) flush();
+      if (tl.workSec - st.current.flushedWork > 5) flush();
     }, 5000);
     return () => {
       window.clearInterval(id);
       flush();
       stopVoice();
     };
-  }, [flush]);
+  }, [flush, tl]);
 
   // a running session is saved now and then, and when the screen is left
   useEffect(() => {
-    let last = sessionT.current.elapsed;
+    let last = tl.workSec * 1000;
     const id = window.setInterval(() => {
-      const e = sessionT.current.elapsed;
+      const e = tl.workSec * 1000;
       if (e - last >= SAVE_EVERY_MS) {
         last = e;
         saveResume();
@@ -358,62 +377,47 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
       window.clearInterval(id);
       saveResume();
     };
-  }, [saveResume]);
+  }, [saveResume, tl]);
 
   // --------------------------------------------------------------------- actions
+  /** Pause freezes the time, the coach, the transitions and every sound to come (they come from tick only) */
   const pause = useCallback(() => {
-    const s = st.current;
-    if (s.paused || s.phase === 'pret' || s.phase === 'termine') return;
-    s.paused = true;
-    phaseT.current.pause();
-    sessionT.current.pause();
-    statsT.current.pause();
+    if (!tl.pause()) return;
     player.current?.pause();
     stopVoice();
     flush();
     saveResume();
     rerender();
-  }, [flush, rerender, saveResume]);
+  }, [flush, rerender, saveResume, tl]);
 
   const resume = useCallback(() => {
-    const s = st.current;
-    if (!s.paused) return;
+    if (!tl.resume()) return;
     unlockAudio();
-    s.paused = false;
-    phaseT.current.start();
-    if (s.phase === 'travail') {
-      sessionT.current.start();
-      statsT.current.start();
-    }
     player.current?.play();
     rerender();
-  }, [rerender]);
+  }, [rerender, tl]);
 
   const start = useCallback(() => {
     unlockAudio();
     const s = st.current;
-    s.paused = false;
-    if (s.phase === 'termine') {
-      s.itemIndex = Math.max(0, plan.start);
-      s.round = 1;
+    if (tl.phase === 'termine') {
+      // the same session again, from its first item
+      tl.goto(Math.max(0, plan.start));
       s.reps = 0;
+      s.speed = plan.items[tl.itemIndex]?.speed ?? s.speed;
     }
-    speak('Prépare-toi');
-    enter('decompte', COUNTDOWN + 0.6);
-  }, [enter, plan]);
+    handle(tl.start());
+  }, [handle, plan, tl]);
 
   /** same exercise from the beginning */
   const restart = useCallback(() => {
-    const s = st.current;
     flush();
-    s.round = 1;
-    s.reps = 0;
-    s.paused = false;
+    st.current.reps = 0;
     player.current?.restart();
     stopVoice();
     unlockAudio();
-    enter('decompte', COUNTDOWN + 0.6);
-  }, [enter, flush]);
+    handle(tl.restart());
+  }, [flush, handle, tl]);
 
   /** change exercise: the counter stops, the new exercise waits for "Démarrer" */
   const goto = useCallback(
@@ -421,16 +425,15 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
       if (i < 0 || i >= plan.items.length) return;
       const s = st.current;
       flush();
-      s.itemIndex = i;
-      s.round = 1;
+      if (!tl.goto(i)) return;
       s.reps = 0;
-      s.paused = false;
       s.speed = plan.items[i].speed;
+      s.banner = null;
       player.current?.restart();
       stopVoice();
-      enter('pret', 0);
+      changed();
     },
-    [enter, flush, plan],
+    [changed, flush, plan, tl],
   );
 
   const setSpeed = useCallback(
@@ -459,26 +462,65 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
 
   const s = st.current;
   // keep the screen on while a session is running, let it sleep when paused or finished
-  const active = !s.paused && s.phase !== 'pret' && s.phase !== 'termine';
+  const active = !tl.paused && tl.phase !== 'pret' && tl.phase !== 'termine';
   useEffect(() => {
     void keepScreenOn(active);
   }, [active]);
   useEffect(() => () => void keepScreenOn(false), []);
 
-  const timed = s.phase === 'decompte' || s.phase === 'repos' || (s.phase === 'travail' && !!item?.work);
+  // v0.47 history (§14): a session left before its end is marked « interrompue », once, on the last exercise played;
+  // a free session (Libre, Technique: no end) ends when it is left
+  useEffect(
+    () => () => {
+      const ss = st.current;
+      if (!ss.started || tl.phase === 'termine') return;
+      flush();
+      const rec = recordOf(tl.itemIndex);
+      if (rec) useStats.getState().annotate(rec.id, summaryOf(tl, plan, tl.plannedRounds === null ? 'terminee' : 'interrompue'));
+    },
+    [], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  // a session that reached its end: « terminée », with its summary
+  const finished = tl.phase === 'termine';
+  useEffect(() => {
+    if (!finished) return;
+    const rec = recordOf(tl.itemIndex);
+    if (rec) useStats.getState().annotate(rec.id, summaryOf(tl, plan, 'terminee'));
+  }, [finished]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const view: SessionView = {
-    phase: s.phase,
-    paused: s.paused,
-    itemIndex: s.itemIndex,
-    round: s.round,
+    phase: tl.phase,
+    paused: tl.paused,
+    itemIndex: tl.itemIndex,
+    round: tl.round,
     step: s.step,
     reps: s.reps,
-    remaining: timed ? Math.max(0, s.phaseLen - phaseT.current.elapsed / 1000) : null,
-    sessionSec: sessionT.current.elapsed / 1000,
-    exerciseSec: (item ? perExercise[item.key] ?? 0 : 0) + statsT.current.elapsed / 1000,
+    remaining: tl.remaining,
+    sessionSec: tl.workSec,
+    exerciseSec: (item ? perExercise[item.key] ?? 0 : 0) + Math.max(0, tl.workSec - s.flushedWork),
     speed: s.speed,
     banner: s.banner,
+    phaseProgress: tl.phaseProgress,
+    restSec: tl.restSec,
+    totalSec: tl.totalSec,
+    roundsDone: tl.roundsDone,
+    plannedRounds: tl.plannedRounds,
   };
 
   return { view, item, events, onPlayer, player, move, start, pause, resume, restart, goto, setSpeed };
+}
+
+/** what the history keeps of a whole session (§14), written on one record so nothing is counted twice */
+function summaryOf(tl: SessionTimeline, plan: Plan, status: 'terminee' | 'interrompue') {
+  const it = plan.items[tl.itemIndex];
+  return {
+    status,
+    workSec: Math.round(tl.workSec),
+    restSec: Math.round(tl.restSec),
+    totalSec: Math.round(tl.totalSec),
+    plannedRounds: tl.plannedRounds,
+    doneRounds: tl.roundsDone,
+    intensity: plan.mode === 'cardio' ? plan.intensity : undefined,
+    work: it?.work ?? null,
+  };
 }

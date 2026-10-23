@@ -36,6 +36,11 @@
   --tr-phase: #374151;
   --tr-sheet: #141b25;
   --tr-glow: rgba(11, 15, 20, 0.9);
+  /* v0.47 phase colours: amber preparation, signature red work, discreet teal rest (text on them stays readable) */
+  --phase-prep: #f5b740;
+  --phase-prep-ink: #1a1306;
+  --phase-rest: #0f766e;
+  --phase-rest-ink: #3fd1bf;
   color: var(--ink);
   color-scheme: dark;
 }
@@ -54,6 +59,10 @@
   --tr-phase: #111214;
   --tr-sheet: #ffffff;
   --tr-glow: #ffffff;
+  --phase-prep: #f2a516;
+  --phase-prep-ink: #1a1306;
+  --phase-rest: #0f766e;
+  --phase-rest-ink: #0f766e;
   color-scheme: light;
 }
 
@@ -1090,4 +1099,58 @@ body:has(.training .sheet-backdrop) .nav-bottom {
   .tr-band {
     border-top: 0;
   }
+}
+
+/* ------------------------------------------- 0.47 chronometer: phase colours (always with their word), bar, summary */
+.phase.decompte,
+.tr-hud .phase.decompte {
+  background: var(--phase-prep);
+  color: var(--phase-prep-ink);
+}
+.phase.repos,
+.tr-hud .phase.repos {
+  background: var(--phase-rest);
+  color: #fff;
+}
+.tr-hud.decompte .hud-time {
+  color: var(--ink);
+}
+.tr-hud.repos .hud-time {
+  color: var(--phase-rest-ink);
+}
+.tr-hud .hud-time.elapsed {
+  color: var(--ink-2);
+}
+.hud-progress.phase-bar.decompte i {
+  background: var(--phase-prep);
+}
+.hud-progress.phase-bar.repos i {
+  background: var(--phase-rest);
+}
+.hud-progress.phase-bar.paused i {
+  background: var(--muted);
+}
+/* a phase bar restarts at each phase: no sliding back from full to empty */
+.hud-progress.phase-bar i {
+  transition: width 0.1s linear;
+}
+.tr-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px 10px;
+  margin: 4px 0 0;
+}
+.tr-summary div {
+  min-width: 0;
+}
+.tr-summary dt {
+  font-size: 0.72em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.tr-summary dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }

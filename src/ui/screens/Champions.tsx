@@ -1,4 +1,5 @@
 import { TechThumb, keyTechnique } from '../components/TechThumb';
+import { CardioOptionsPicker, ChronoOptions, cardioParams } from '../training/TimerOptions';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { DISCIPLINES, LEVELS } from '../../domain/types';
@@ -776,6 +777,8 @@ export function ComboPage() {
   const train = (m: TrainingMode, study = false) => {
     const p = new URLSearchParams({ cat: c.id, mode: m });
     if (study) p.set('study', '1');
+    // v0.47: the Cardio intervals chosen (effort, recovery, cycles, intensity) go with the link
+    if (m === 'cardio') for (const [k, v] of Object.entries(cardioParams(settings.cardio))) p.set(k, v);
     if (m === 'rounds') {
       p.set('round', String(round));
       p.set('rest', String(rest));
@@ -829,6 +832,8 @@ export function ComboPage() {
               {MODE_HELP[mode]}
             </p>
             {mode === 'rounds' && <RoundPicker round={round} rest={rest} rounds={rounds} setRound={setRound} setRest={setRest} setRounds={setRounds} />}
+            {mode === 'cardio' && <CardioOptionsPicker />}
+            {(mode === 'rounds' || mode === 'cardio') && <ChronoOptions />}
           </div>
         )}
         {!playable && <span className="small muted">Animation indisponible pour cette fiche : tu peux la dupliquer dans le créateur.</span>}

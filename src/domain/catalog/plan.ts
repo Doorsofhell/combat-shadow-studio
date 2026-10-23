@@ -1,6 +1,6 @@
 import { TECHNIQUE_BY_ID } from '../techniques';
 import type { LevelId, TrainingMode } from '../types';
-import type { ModeOptions, Plan, PlanItem } from '../../ui/training/plan';
+import { cardioCadence, cardioTiming, DEFAULT_CARDIO, type ModeOptions, type Plan, type PlanItem } from '../../ui/training/plan';
 import type { CatalogCombo } from './types';
 
 /** vitesse de lecture et pause entre deux répétitions selon le niveau de la fiche */
@@ -26,7 +26,7 @@ export function catalogItem(c: CatalogCombo, mode: TrainingMode, o: ModeOptions)
     case 'technique':
       return { ...base, speed: Math.min(speed, 0.45), rest: Math.max(rest, 2.4), work: null, rounds: 1, roundRest: 0 };
     case 'cardio':
-      return { ...base, speed: Math.min(1.15, Math.max(speed, 0.85) * 1.1), rest: 0.15, work: 60, rounds: 5, roundRest: 20 };
+      return { ...base, ...cardioCadence(c.sequence, { speed, rest }, (o.cardio ?? DEFAULT_CARDIO).intensity), ...cardioTiming(o) };
     case 'rounds':
       return { ...base, speed, rest: Math.min(rest, 0.8), work: o.roundSec, rounds: o.rounds, roundRest: o.restSec };
     default:
@@ -51,5 +51,6 @@ export function catalogPlan(entry: CatalogCombo, mode: TrainingMode, options: Ca
     title: entry.name,
     items: list.map((c) => catalogItem(c, m, options)),
     start: Math.max(0, list.findIndex((c) => c.id === entry.id)),
+    intensity: m === 'cardio' ? (options.cardio ?? DEFAULT_CARDIO).intensity : undefined,
   };
 }
