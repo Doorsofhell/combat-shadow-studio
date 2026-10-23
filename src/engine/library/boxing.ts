@@ -128,22 +128,37 @@ function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
     const h = side === 'L' ? d.handL : d.handR;
     h.space = 'world';
     const sh = a.shoulder(g, side);
-    h.pos = v3(sh.x + 0.16 * sg * s, T.y + 0.02 * s, sh.z + 0.3 * s);
-    h.pole = v3(sg, body ? -0.4 : 0.35, -0.2);
+    // Keep the fist close to the guard: a hook must not wind up behind the shoulder.
+    h.pos = v3(sh.x + 0.08 * sg * s, T.y + 0.02 * s, sh.z + 0.18 * s);
+    h.pole = v3(sg, body ? -0.35 : 0.55, 0.1);
     h.pron = body ? 0.1 : 0.7;
-    d.pelvis.yaw += deg(-10 * sg);
-    d.chest.yaw += deg(-6 * sg);
+    d.pelvis.yaw += deg(-4 * sg);
+    d.chest.yaw += deg(-3 * sg);
     d.hips.y -= (body ? 0.08 : 0.015) * s;
   });
-  const t1 = 0.1;
-  const t2 = side === 'L' ? 0.2 : 0.23;
-  const t3 = t2 + 0.22;
+  // An intermediate arc keeps the elbow leading the fist instead of cutting
+  // straight across the chest. The torso rotates progressively into impact.
+  const arc = edit(hit, (d) => {
+    d.pelvis.yaw = g.pelvis.yaw + (hit.pelvis.yaw - g.pelvis.yaw) * 0.55;
+    d.chest.yaw = g.chest.yaw + (hit.chest.yaw - g.chest.yaw) * 0.55;
+    const h = side === 'L' ? d.handL : d.handR;
+    const wh = side === 'L' ? wind.handL : wind.handR;
+    h.pos = v3(
+      wh.pos.x + (h.pos.x - wh.pos.x) * 0.58 + 0.035 * sg * s,
+      wh.pos.y + (h.pos.y - wh.pos.y) * 0.58,
+      wh.pos.z + (h.pos.z - wh.pos.z) * 0.58,
+    );
+  });
+  const t1 = 0.07;
+  const t2 = side === 'L' ? 0.23 : 0.27;
+  const t3 = t2 + 0.19;
   return {
     id: `crochet-${side === 'L' ? 'avant' : 'arriere'}${body ? '-corps' : ''}`,
     keys: [
       { t: 0, pose: g },
       { t: t1, pose: wind, ease: 'inOut' },
-      { t: t2, pose: hit, ease: 'snap' },
+      { t: (t1 + t2) / 2, pose: arc, ease: 'inOut' },
+      { t: t2, pose: hit, ease: 'out' },
       { t: t2 + 0.03, pose: hit, ease: 'linear' },
       { t: t3, pose: g, ease: 'inOut' },
     ],
