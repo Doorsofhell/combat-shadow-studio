@@ -545,7 +545,7 @@ def boxing_glove(s, color, accent, thai=False):
     return parts
 
 
-GLOVE_TRIS = int(os.environ.get('GLOVE_TRIS', '4200'))
+GLOVE_TRIS = int(os.environ.get('GLOVE_TRIS', '2200'))
 _GLOVE = None
 
 
@@ -682,15 +682,15 @@ def prajioud_v2(s, color):
     known = [r_ for r_ in rad if r_]
     rad = [r_ if r_ else sum(known) / len(known) for r_ in rad]
     rad = [(rad[k_ - 1] + 2 * rad[k_] + rad[(k_ + 1) % NA]) / 4 for k_ in range(NA)]
-    cr = 0.0065  # cord radius
+    cr = 0.0075  # cord radius
     bm_ = bmesh.new()
-    SEG, AROUND = 96, 10
+    SEG, AROUND = 72, 8
 
     def ring_pt(t_):
         k_ = t_ / (2 * math.pi) * NA
         i0 = int(k_) % NA
         f_ = k_ - int(k_)
-        r_ = rad[i0] * (1 - f_) + rad[(i0 + 1) % NA] * f_ + cr * 0.75
+        r_ = rad[i0] * (1 - f_) + rad[(i0 + 1) % NA] * f_ + cr * 1.05
         return c + (e1 * math.cos(t_) + e2 * math.sin(t_)) * r_
 
     rows = []
@@ -1369,8 +1369,9 @@ def mma_gloves(color, accent='#B3122A'):
             _, u = axis_point(i, f, f.replace('1', '2'))
             return u < 0.55
         if w(i, f'{s}ForeArm') > 0.3:
-            _, u = axis_point(i, f'{s}ForeArm', f'{s}Hand')
-            return u > 0.80
+            # the strap ends on a straight cut 5 cm up the forearm (cut below): no frayed edge
+            d_ = (H[f'{s}Hand'] - H[f'{s}ForeArm']).normalized()
+            return (P[i] - H[f'{s}Hand']).dot(d_) > -0.05
         return False
 
     def push(i):
@@ -1388,6 +1389,7 @@ def mma_gloves(color, accent='#B3122A'):
         d_ = (H[f'{s}Hand'] - H[f'{s}ForeArm']).normalized()
         wrist[s] = (H[f'{s}Hand'] - d_ * 0.006, d_)
         cuts.append(wrist[s])
+        cuts.append((H[f'{s}Hand'] - d_ * 0.05, d_))
 
     def strap(c, ids):
         pt, d_ = wrist['Left' if c.x > 0 else 'Right']

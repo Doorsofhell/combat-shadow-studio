@@ -75,8 +75,9 @@ describe.each(COACHES)('équipements v0.43, %s', (coach) => {
       expect(m.primitives).toHaveLength(1);
       expect(m.primitives[0].attributes.COLOR_0).toBeDefined();
       const t = g.triangles(m);
-      expect(t).toBeGreaterThan(3000);
-      expect(t).toBeLessThan(6500);
+      // no heavier than the 4 pieces of v0.42 (2 916 triangles per hand): the coach must keep its frame rate
+      expect(t).toBeGreaterThan(2200);
+      expect(t).toBeLessThanOrEqual(3100);
     }
     // the glove follows the hand and the forearm only
     for (const b of g.bones(/^gant-/)) expect(b).toMatch(/(Hand|ForeArm)$/);
@@ -102,15 +103,17 @@ describe.each(COACHES)('équipements v0.43, %s', (coach) => {
     for (const o of Object.keys(before)) expect(f(o).drawCalls, o).toBeLessThanOrEqual(before[o] + extra - 4);
   });
 
-  test('muay-thaï : prajioud tressé posé sur le bras (plus d’anneau flottant)', () => {
+  test('muay-thaï : prajioud tressé avec nœud et deux pans, lié au bras', () => {
     const g = f('muaythai');
     const pr = g.mesh(/^prajioud-/);
     expect(pr).toHaveLength(2);
     for (const m of pr) {
+      // v0.42: a plain ring (320 points); now a twisted cord, a knot and two tails
+      expect(g.json.accessors[m.primitives[0].attributes.POSITION].count).toBeGreaterThan(500);
       const pos = g.json.accessors[m.primitives[0].attributes.POSITION];
-      // the ring round the upper arm, knot and tails included: about 12 cm across (the v0.42 ring was 15 cm)
+      // the cord round the upper arm, knot and tails included, stays within 16 cm
       const size = pos.max!.map((x, i) => x - pos.min![i]);
-      expect(Math.max(...size)).toBeLessThan(0.15);
+      expect(Math.max(...size)).toBeLessThan(0.16);
     }
     for (const b of g.bones(/^prajioud-/)) expect(b).toMatch(/Arm$/);
   });

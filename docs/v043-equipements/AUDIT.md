@@ -82,4 +82,4 @@ Casque, protège-dents en Ultra-réaliste, coquille, protège-pieds en compétit
 ## 4. Fichiers de mesure et captures
 
 - Script de capture : `scripts/dev/shot-gear.mjs` (vues : face, profil, trois quarts, mains, pieds, jab, high kick).
-- Captures avant : `docs/v043-equipements/captures/avant/`.
+- Captures avant et après, une planche par tenue : `docs/v043-equipements/captures/`.
