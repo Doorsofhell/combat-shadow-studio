@@ -16,7 +16,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Sprawl (`sprawl`) | lutte | 50,3 | 52 % | 0,08 | -15,3 (LeftLeg) | 4° | 3,48 |
 | Sortie d’angle (`sortie-angle`) | deplacement | 34,8 | 85 % | 0,27 | 3,0 (LeftToeBase) | 8° | 1,23 |
 | Pas avant (`pas-avant`) | deplacement | 34,5 | 51 % | 0,21 | 3,0 (LeftToeBase) | 6° | 0,64 |
-| Pont (upa) (`pont`) | sol | 33,4 | 46 % | 0,00 | 1,1 (LeftToeBase) | 11° | 4,47 |
+| Pont (upa) (`pont`) | sol | 33,8 | 46 % | 0,00 | 1,1 (LeftToeBase) | 11° | 4,48 |
 | Pas arrière (`pas-arriere`) | deplacement | 33,0 | 51 % | 0,21 | 3,0 (LeftToeBase) | 6° | 0,64 |
 | Pas latéral gauche (`pas-gauche`) | deplacement | 31,4 | 51 % | 0,21 | 3,0 (LeftToeBase) | 6° | 0,58 |
 | Pas latéral droit (`pas-droite`) | deplacement | 30,3 | 51 % | 0,21 | 3,0 (LeftToeBase) | 6° | 0,58 |
@@ -66,7 +66,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Genou direct avant (`genou-direct-avant`) | genou | 4,0 | 15 % | 0,53 | 3,0 (LeftToeBase) | 4° | 0,02 |
 | Rotation sous le crochet (roll) (`roll-droite`) | defense | 3,9 | 54 % | 0,00 | 3,0 (LeftToeBase) | 7° | 0,00 |
 | Jab au corps (`jab-corps`) | poing | 3,5 | 54 % | 0,00 | 3,0 (LeftToeBase) | 19° | 0,00 |
-| Rétention de garde (solo) (`retention-garde`) | sol | 3,0 | 15 % | 0,00 | 1,1 (LeftToeBase) | 11° | 4,34 |
+| Rétention de garde (solo) (`retention-garde`) | sol | 2,7 | 15 % | 0,00 | 1,1 (LeftToeBase) | 11° | 4,34 |
 | Posture debout de grappling (`garde-bjj`) | garde | 1,3 | 100 % | 0,00 | 3,0 (LeftToeBase) | 2° | 0,00 |
 | Overhand (`overhand`) | poing | 1,2 | 25 % | 0,00 | 3,0 (LeftToeBase) | 21° | 0,00 |
 | Genou circulaire dans le clinch (`genou-circulaire-clinch`) | clinch | 1,0 | 2 % | 0,50 | 3,0 (LeftToeBase) | 29° | 0,01 |

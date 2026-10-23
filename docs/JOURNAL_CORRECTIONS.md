@@ -1918,3 +1918,11 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Android réel : NON EXÉCUTÉ.
 - **Captures** : `docs/v0451-navigation/captures/` (dont `planche-ecrans.png` : Premium, Entraîner, Techniques, Progrès en clair et en sombre).
 
+
+## 2026-10-23 · Pont et rétention de garde : pieds tournés vers l'extérieur (sans version)
+
+- **Constat** (audit de la PR #23, 2026-10-23) : le test `photo-coach` échouait depuis la v0.29 (hanche d'Amara 53,9° sur le pont, 53,6° sur la rétention de garde, limite 45°), aussi sur la branche de référence `feature/combat-shadow-v030`. Cause : en position allongée (`supine` et `lieBack`, `src/engine/library/grappling.ts`), les pieds à plat étaient tournés de 8° vers l'intérieur. Le tibia se tordait contre le pied (23 à 30°, limite d'un pied posé 15°), le moteur faisait tourner le genou pour compenser et le genou basculait d'environ 40° d'une image à l'autre (Kadir : hanche +45° à 0,30 s puis −30° à 0,35 s).
+- **Correction** : pieds tournés de 8° vers l'extérieur, comme dans la position assise qui précède. Aucun changement du moteur, des modèles, des limites ni des tests. Rotation de hanche maintenant continue, entre 5° et 32°, pour Kadir et Amara.
+- **Fichiers** : `src/engine/library/grappling.ts`, documents de mesures régénérés (`docs/audit-biomecanique/MESURES_{CHEVILLES,MOTEUR,TORSIONS}.md`), `src/ui/pictos/techniquePictos.json`.
+- **Tests** : TypeScript RÉUSSI ; Vitest complet 775 RÉUSSIS, 1 ignoré, 0 ÉCHOUÉ (dont `photo-coach`) ; Playwright NON EXÉCUTÉ (aucun écran modifié) ; Android réel NON EXÉCUTÉ.
+- **PR #23 (Biomécanique test)** : fermée sans fusion sur décision de Youssef (2026-10-23 17:25).
