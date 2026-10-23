@@ -291,6 +291,25 @@
   width: 21px;
   height: 21px;
 }
+/* 0.46: an entry with a description (Encyclopédie) takes the whole row, icon then text */
+.nav-menuitem.wide {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  justify-content: flex-start;
+  min-height: 52px;
+  padding: 10px 14px;
+  gap: 12px;
+  text-align: left;
+}
+.nav-menuitem-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nav-menuitem-text small {
+  color: var(--muted);
+  font-size: max(10px, 0.6875rem);
+}
 
 .nav-version {
   background: var(--nav-panel);

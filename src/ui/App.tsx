@@ -28,6 +28,11 @@ const Library = lazy(() => import('./screens/Library').then((m) => ({ default: m
 const TechniquePage = lazy(() => import('./screens/Library').then((m) => ({ default: m.TechniquePage })));
 const PartnerPage = lazy(() => import('./screens/Library').then((m) => ({ default: m.PartnerPage })));
 const PremiumPage = lazy(() => import('./premium/PremiumPage').then((m) => ({ default: m.PremiumPage })));
+const EncyclopediaHome = lazy(() => import('./encyclopedia/Encyclopedia').then((m) => ({ default: m.EncyclopediaHome })));
+const EncyclopediaList = lazy(() => import('./encyclopedia/Encyclopedia').then((m) => ({ default: m.EncyclopediaList })));
+const EncyclopediaTerm = lazy(() => import('./encyclopedia/Encyclopedia').then((m) => ({ default: m.EncyclopediaTerm })));
+const EncyclopediaAz = lazy(() => import('./encyclopedia/Encyclopedia').then((m) => ({ default: m.EncyclopediaAz })));
+const EncyclopediaFavorites = lazy(() => import('./encyclopedia/Encyclopedia').then((m) => ({ default: m.EncyclopediaFavorites })));
 const Programs = lazy(() => import('./screens/Programs').then((m) => ({ default: m.Programs })));
 const ProgramPage = lazy(() => import('./screens/Programs').then((m) => ({ default: m.ProgramPage })));
 const CreatorList = lazy(() => import('./screens/creator/CreatorList').then((m) => ({ default: m.CreatorList })));
@@ -200,6 +205,11 @@ export function App() {
             <Route path="/reglages" element={<SettingsPage />} />
             <Route path="/reglages/:section" element={<SettingsPage />} />
             <Route path="/confidentialite" element={<Privacy />} />
+            <Route path="/encyclopedie" element={<EncyclopediaHome />} />
+            <Route path="/encyclopedie/liste" element={<EncyclopediaList />} />
+            <Route path="/encyclopedie/terme/:id" element={<EncyclopediaTerm />} />
+            <Route path="/encyclopedie/az" element={<EncyclopediaAz />} />
+            <Route path="/encyclopedie/favoris" element={<EncyclopediaFavorites />} />
             <Route path="/premium" element={<PremiumPage />} />
             <Route path="/connexion" element={<SignIn />} />
             <Route path="/profil" element={<ProfilePage />} />

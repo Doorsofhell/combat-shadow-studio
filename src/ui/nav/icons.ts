@@ -52,6 +52,10 @@ export const NAV_EXTRA_ICONS = {
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.6v.2"/>',
   tag: '<path d="M3 12V3h9l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
   chevron: '<path d="m9 6 6 6-6 6"/>',
+  // v0.46 (Encyclopédie du combat): the open book of Menu, and the bar Classement / A–Z of the encyclopedia
+  book: '<path d="M12 6.5C10 5 7 4.5 3 5v14c4-.5 7 0 9 1.5 2-1.5 5-2 9-1.5V5c-4-.5-7 0-9 1.5z"/><path d="M12 6.5v14"/>',
+  ranking: '<path d="M4 5h16M4 10h10M4 15h13M4 20h7"/>',
+  az: '<path d="M3 11 6 3l3 8M4.1 8h3.8M13 3h6l-6 8h6"/><path d="M16 14v7m-3-3 3 3 3-3"/>',
 } as const;
 
 export type NavIconId = keyof typeof NAV_ICONS | keyof typeof NAV_EXTRA_ICONS;

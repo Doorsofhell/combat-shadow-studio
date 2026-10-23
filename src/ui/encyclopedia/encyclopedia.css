@@ -1,0 +1,304 @@
+/* v0.46 Encyclopédie du combat: same tokens as the rest of the app (styles.css), light and dark */
+.enc-page {
+  gap: 12px;
+}
+.enc-lead {
+  margin: -6px 0 2px;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.enc-search {
+  position: relative;
+  display: block;
+}
+.enc-search svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+.enc-search .input {
+  width: 100%;
+  padding-left: 38px;
+}
+.enc-select {
+  width: 100%;
+}
+
+/* home: two columns of illustrated family cards */
+.enc-families {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.enc-family {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  height: 100%;
+  padding: 0 0 10px;
+  border-radius: var(--radius);
+  background: var(--soft);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+  overflow: hidden;
+}
+.enc-family .enc-img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 0;
+  margin-bottom: 6px;
+}
+.enc-family-name {
+  font-weight: 700;
+  padding: 0 10px;
+}
+.enc-family-short {
+  font-size: 0.75rem;
+  color: var(--muted);
+  padding: 0 10px;
+  line-height: 1.3;
+}
+.enc-status {
+  margin: 4px 0 0;
+}
+
+/* illustrations: fixed ratio so nothing jumps while they load */
+.enc-img {
+  display: block;
+  background: var(--surface-2);
+  border-radius: var(--radius-s);
+}
+.enc-img.mini {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  flex: none;
+}
+.enc-img.missing {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  color: var(--muted);
+  aspect-ratio: 16 / 9;
+  border: 1px dashed var(--line-strong, var(--line));
+}
+.enc-img.missing.mini {
+  aspect-ratio: 1;
+}
+.enc-img.missing svg {
+  width: 26px;
+  height: 26px;
+  opacity: 0.7;
+}
+.enc-img.missing.mini svg {
+  width: 20px;
+  height: 20px;
+}
+.enc-img.missing small {
+  font-size: 0.7rem;
+}
+
+/* lists */
+.enc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.enc-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px 8px 8px;
+  border-radius: var(--radius);
+  background: var(--soft);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+}
+.enc-row-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.enc-row-name {
+  font-weight: 700;
+}
+.enc-row-sub {
+  font-size: 0.8rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.enc-tag {
+  align-self: flex-start;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--red-ink);
+  background: var(--c-red-soft);
+}
+
+/* sheet */
+.enc-term .page-head h1 {
+  word-break: break-word;
+}
+.enc-fav .on {
+  color: var(--red);
+}
+.enc-figure {
+  margin: 0;
+}
+.enc-figure .enc-img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 720 / 400;
+  object-fit: cover;
+}
+.enc-frames {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.enc-subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+.enc-discs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.enc-tabpanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.enc-tabpanel p {
+  margin: 0;
+  line-height: 1.5;
+}
+.enc-names {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.enc-names dt {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.enc-names dd {
+  margin: 0 0 4px;
+}
+.enc-points {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  line-height: 1.45;
+}
+.enc-points .enc-kind {
+  list-style: none;
+  margin-left: -18px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.enc-links,
+.enc-related {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.enc-links h3,
+.enc-related h3 {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+}
+.enc-link {
+  justify-content: space-between;
+  border-color: var(--red);
+  color: var(--red-ink);
+}
+.enc-related ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.enc-related .chip {
+  text-decoration: none;
+}
+.enc-sources {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.enc-sources a {
+  color: var(--ink);
+}
+
+/* A–Z */
+.enc-letters {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.enc-letter {
+  min-height: 44px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--line);
+  background: var(--soft);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+}
+.enc-letter.on {
+  border-color: var(--red);
+  color: var(--red-ink);
+}
+.enc-letter:disabled {
+  opacity: 0.35;
+}
+.enc-az-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.enc-az-item {
+  display: block;
+  padding: 11px 4px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+}
