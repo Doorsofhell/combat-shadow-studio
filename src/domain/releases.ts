@@ -49,6 +49,20 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.43.0',
+      releaseDate: '2026-10-23',
+      title: 'Équipements plus réalistes',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Gants de boxe refaits : un vrai poing rembourré, un pouce soudé, une manchette ouverte et une sangle, avec un grain de cuir. Même forme en rendu Anime.' },
+        { category: 'ameliorations', text: 'Chaussures de boxe faites sur mesure pour le pied du coach : semelle épaisse, tige montante, col rembourré et bandes nettes.' },
+        { category: 'ameliorations', text: 'Muay-thaï : les prajioud sont maintenant des cordons tressés, noués, avec deux pans. Kick-boxing : protège-tibias matelassés avec deux sangles. MMA : sangle de poignet sur les gants.' },
+        { category: 'corrections', text: 'Ourlets et bandes de couleur bien droits sur toutes les tenues (plus de bords en dents de scie).' },
+        { category: 'ameliorations', text: 'Plus léger pour le téléphone : la tenue de boxe passe de 12 à 6 objets à dessiner.' },
+      ],
+      links: [{ label: 'Voir le coach', to: '/coach' }],
+    },
+    {
       version: '0.42.0',
       releaseDate: '2026-10-23',
       title: 'Crochets plus naturels',

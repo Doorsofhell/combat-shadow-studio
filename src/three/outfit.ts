@@ -218,6 +218,8 @@ function dress(src: Material, quality: 'haute' | 'basse'): Material {
     normalScale: m.normalScale,
     roughness: m.roughness,
     metalness: 0,
+    // v0.43 gloves: leather, strap and lining are vertex colours of one mesh (one draw call per glove)
+    vertexColors: m.vertexColors,
     sheen,
     sheenRoughness: 0.45,
     sheenColor: m.color.clone().lerp(m.color.clone().set('#ffffff'), 0.4),

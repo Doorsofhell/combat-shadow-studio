@@ -1841,3 +1841,29 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Vitest complet : 752 réussis, 1 ÉCHOUÉ connu (Amara, extension de hanche), 1 ignoré ;
   - Playwright : NON EXÉCUTÉ de nouveau. Seules les valeurs du moteur ont changé ; la suite complète a été passée sur la première version de la v0.42.0.
 - **Captures avant/après** : https://claude.ai/artifact/5o55fJa9KNFpnARVX9Bnt6
+
+## 2026-10-23 · v0.43.0 · Équipements 3D réalistes
+
+- **Demande** : « REFONTE RÉALISTE DES ÉQUIPEMENTS 3D » (Youssef, 2026-10-23) : gants de boxe en priorité, puis les autres équipements des 6 disciplines ; sans logo, sans service payant, sans protection ajoutée d'office, géométrie légère et partagée.
+- **Constat** (audit `docs/v043-equipements/AUDIT.md`) :
+  - seuls **2 coachs 3D existent** (Kadir et Amara), pas 36 ;
+  - gant = deux œufs (moufle, pouce), manchette en tube, anneau de sangle flottant, 4 pièces par main ;
+  - chaussures : bande blanche en dents de scie, pas de semelle ;
+  - prajioud : anneau rigide qui flotte ; gants MMA : coque collée ;
+  - le lissage des tenues ondulait les ourlets.
+- **Correction** :
+  - gant sculpté d'un seul tenant (`tools/generator/rocketbox/glove.py`, champ de distance + surface nets) : poing roulé, pouce soudé, manchette ouverte, sangle, passepoil et doublure colorés par sommet, lignes de coupe droites, grain de cuir ; la même forme sert au rendu Anime (`src/three/gloveShape.ts`, `glove_ts.py`) ;
+  - chaussures de boxe mesurées sur le pied du coach (`shoes_v2`) : semelle, tige, col, doublure ;
+  - prajioud tressé posé sur le contour mesuré du bras, nœud et deux pans (`prajioud_v2`) ;
+  - protège-tibias matelassés avec deux sangles ; gants MMA avec sangle de poignet ;
+  - le lissage ne déplace plus les sommets posés sur une ligne de coupe (`smooth(o, n, planes)`) ;
+  - `src/three/outfit.ts` transmet les couleurs par sommet à la matière.
+- **Performance** : tenue de boxe 12 → 6 appels de dessin (Kadir), 14 → 8 (Amara) ; gant limité à 3 100 triangles par main, comme en v0.42 (une première version à 4 100 ralentissait la séance d'environ 10 % dans le navigateur des tests, elle a été allégée) ; fichiers +50 à +230 Ko par tenue à gants. Tableau complet dans `docs/v043-equipements/RAPPORT.md`.
+- **Fichiers** : `tools/generator/rocketbox/{glove.py,glove_ts.py,outfits.py}`, `public/coaches/mma-{kadir,amara}/tenues/{boxe,kickboxing,muaythai,mma}.glb`, `src/three/{gloveShape.ts,customize.ts,outfit.ts}`, `src/three/__tests__/outfit-v043.test.ts`, `scripts/dev/shot-gear.mjs`, `src/domain/releases.ts`, `package.json`, `tests/e2e/navigation.spec.ts`, `docs/v043-equipements/`.
+- **Tests** :
+  - `outfit-v043` (gants d'une pièce et pas plus lourds qu'avant, chaussures, appels de dessin, prajioud, sangle MMA, gant Anime) : 15 RÉUSSIS ;
+  - Vitest complet : 767 réussis, 1 ÉCHOUÉ connu (Amara, extension de hanche, déjà en échec avant), 1 ignoré ;
+  - Playwright complet (version compilée) : 180 réussis, 2 ÉCHOUÉS, 2 ignorés (Firebase). Les 2 échecs sont les mêmes qu'en v0.42 : `coach-suggest:96` (flèches des questions suggérées) et `training-layout:325` (caméra Auto). `coaching-hud:60` (bandeau des coups) est instable dans le navigateur des tests : il échoue aussi 2 fois sur 4 sur la v0.42 ;
+  - Android réel : NON EXÉCUTÉ.
+- **Captures avant/après** : `docs/v043-equipements/captures/` (16 planches : 2 coachs × 7 tenues + boxe en Anime).
+- **Limites** : kimono absent en Anime (inchangé) ; sangles des protège-tibias visibles de profil ; gant jusqu'à 17 cm de large, pouce compris.
