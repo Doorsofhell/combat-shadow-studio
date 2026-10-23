@@ -73,7 +73,7 @@ au-delà de la référence (pour le genou, de la référence à sa flexion du mo
 | Coude : hyperextension (pli à l’envers) | 10° | -2° | non | -2° | non | mma-kadir sit-out (bjj) t=2.10 s côté L |
 | Genou : hyperextension (pli à l’envers) | 5° | -2° | non | -2° | non | mma-amara uchikomi-ko-uchi-gari (judo, gaucher) t=0.73 s côté L |
 | Hanche : rotation interne | 45° | 180° | **+135°** | 48° | **+3°** | mma-amara sit-out (bjj, gaucher) t=1.83 s côté L |
-| Hanche : rotation externe | 45° | 180° | **+135°** | 47° | **+2°** | mma-amara pont (bjj, gaucher) t=0.40 s côté L |
+| Hanche : rotation externe | 45° | 180° | **+135°** | 45° | **+0°** | mma-amara high-kick-arriere (mma, gaucher) t=0.30 s côté L |
 | Genou : rotation axiale | — | 6° | non | 6° | non | mma-amara genou-circulaire-avant (muaythai, garde du coach) t=0.50 s côté L |
 | Torsion portée par l’os de la main seul (peau du poignet) | — | 54° | non | 37° | non | mma-kadir uppercut-arriere (muaythai, gaucher) t=0.26 s côté L |
 | Hanche : élévation de la cuisse (flexion / abduction) | — | 169° | non | 151° | non | mma-kadir changement-base (bjj, gaucher) t=0.57 s côté L |
@@ -89,7 +89,7 @@ au-delà de la référence (pour le genou, de la référence à sa flexion du mo
 | Poignet : inclinaison radiale | clinch-tirage +11°, genou-circulaire-clinch +7°, genou-clinch +7° | — |
 | Poignet : inclinaison cubitale | changement-base +43°, sprawl +38°, sortie-hanche +38°, retention-garde +38°, pont +38°, releve-technique +38°, descente-sol +38° | — |
 | Hanche : rotation interne | high-kick-arriere +135°, high-kick-avant +94°, middle-kick-arriere +54°, roundhouse-arriere +53°, uchikomi-seoi +32°, middle-kick-avant +17°, changement-base +10°, low-kick-arriere +0° | sit-out +3°, uchikomi-o-soto-gari +0° |
-| Hanche : rotation externe | high-kick-arriere +135°, changement-base +95°, high-kick-avant +84°, middle-kick-avant +83°, descente-sol +75°, releve-technique +73°, sortie-hanche +73°, roundhouse-avant +68°, … (21) | retention-garde +2°, pont +2°, high-kick-arriere +0°, high-kick-avant +0°, low-kick-avant +0°, check-avant +0°, middle-kick-arriere +0°, releve-technique +0°, … (15) |
+| Hanche : rotation externe | high-kick-arriere +135°, changement-base +95°, high-kick-avant +84°, middle-kick-avant +83°, descente-sol +75°, releve-technique +73°, sortie-hanche +73°, roundhouse-avant +68°, … (21) | high-kick-arriere +0°, high-kick-avant +0°, low-kick-avant +0°, check-avant +0°, middle-kick-arriere +0°, releve-technique +0°, roundhouse-arriere +0°, middle-kick-avant +0°, … (14) |
 
 ## Torsion os par os (après)
 

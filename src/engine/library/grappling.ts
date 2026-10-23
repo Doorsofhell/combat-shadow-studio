@@ -12,7 +12,11 @@ import { seated as mmaSeated } from './mma';
 /** seated base of the MMA library (its planted knee points up, which blends smoothly into lying positions) */
 const seated = (a: Author) => mmaSeated(a);
 
-/** foot flat on the floor with the knee pointing up (lying on the back) */
+/**
+ * foot flat on the floor with the knee pointing up (lying on the back). The toes turn slightly out
+ * (+yaw left, −yaw right, like the seated base): turned in, the shin twisted against the foot past
+ * the planted range and the knee flipped by about 40° between two frames (pont, rétention de garde).
+ */
 const flat = (ball: Pose['hips'], yaw: number, side: 1 | -1, heel = 0) => ({ mode: 'ground' as const, ball, yaw, heel, pole: v3(side * 0.25, 1, 0.2) });
 
 /** lying on the back, knees bent, feet flat, chin tucked, hands framing above the chest */
@@ -25,8 +29,8 @@ export function supine(a: Author): Pose {
     head: { yaw: 0, pitch: deg(30), roll: 0 },
     handL: a.hand('world', v3(0.14 * s, 0.32 * s, -0.55 * s), v3(0.8, 0, -0.5), 0.2, 0.5),
     handR: a.hand('world', v3(-0.14 * s, 0.32 * s, -0.55 * s), v3(-0.8, 0, -0.5), 0.2, 0.5),
-    footL: flat(v3(0.17 * s, 0, 0.12 * s), deg(-8), 1),
-    footR: flat(v3(-0.17 * s, 0, 0.12 * s), deg(8), -1),
+    footL: flat(v3(0.17 * s, 0, 0.12 * s), deg(8), 1),
+    footR: flat(v3(-0.17 * s, 0, 0.12 * s), deg(-8), -1),
   };
 }
 
@@ -38,8 +42,8 @@ const lieBack = (a: Author) => {
     d.pelvis = { yaw: 0, pitch: deg(-65), roll: 0 };
     d.chest = { yaw: 0, pitch: deg(10), roll: 0 };
     d.head.pitch = deg(25);
-    d.footL = flat(v3(0.17 * s, 0, 0.36 * s), deg(-8), 1);
-    d.footR = flat(v3(-0.17 * s, 0, 0.36 * s), deg(8), -1);
+    d.footL = flat(v3(0.17 * s, 0, 0.36 * s), deg(8), 1);
+    d.footR = flat(v3(-0.17 * s, 0, 0.36 * s), deg(-8), -1);
   });
 };
 
