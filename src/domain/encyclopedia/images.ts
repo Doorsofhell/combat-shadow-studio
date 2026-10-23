@@ -19,6 +19,8 @@ export interface RenderRecipe {
   /** discipline of the outfit and stance, when the technique belongs to several */
   d?: string;
   southpaw?: boolean;
+  /** one close-up picture of the coach at rest in guard instead of three instants (equipment worn) */
+  still?: { az: number; el: number; span: number; fy: number; what: string };
   alt: string;
 }
 
@@ -80,6 +82,8 @@ export const RENDERS: RenderRecipe[] = [
   { id: 'pos-garde-ouverte', tech: 'retention-garde', coach: 'femme', d: 'bjj', alt: 'La coach garde les jambes entre elle et un adversaire imaginaire' },
   // safety, training
   { id: 'secu-ukemi', tech: 'ukemi-ushiro', coach: 'homme', d: 'judo', alt: 'Le judoka chute en arrière, version basse' },
+  // equipment worn: an open glove only reads on a hand
+  { id: 'eq-gants-mma', tech: 'garde', coach: 'homme', d: 'mma', still: { az: 35, el: 6, span: 0.9, fy: 1.45, what: 'Coach Kadir en garde, tenue de MMA, plan rapproché sur les gants' }, alt: 'Gants de MMA ouverts, portés en garde' },
   { id: 'prep-shadow', tech: 'crochet-arriere', coach: 'femme', d: 'kickboxing', alt: 'La coach enchaîne dans le vide, en shadow' },
 ];
 
@@ -141,8 +145,8 @@ const rendered = (r: RenderRecipe): TermImage => ({
   width: 720,
   height: 400,
   alt: r.alt,
-  frames: 3,
-  origin: { kind: 'rendu-3d', what: `Coach ${r.coach === 'homme' ? 'Kadir' : 'Amara'}, technique « ${r.tech} » de l’application, début, mi-chemin et moment clé`, tool: TOOL, date: D },
+  frames: r.still ? undefined : 3,
+  origin: { kind: 'rendu-3d', what: r.still ? r.still.what : `Coach ${r.coach === 'homme' ? 'Kadir' : 'Amara'}, technique « ${r.tech} » de l’application, début, mi-chemin et moment clé`, tool: TOOL, date: D },
 });
 
 /** illustrations of objects and places, rendered with Blender from the outfits of the coaches or from simple scenes */
@@ -156,7 +160,6 @@ export interface SceneRecipe {
 
 export const SCENES: SceneRecipe[] = [
   { id: 'eq-gants-boxe', scene: 'gants-boxe', alt: 'Paire de gants de boxe rouges', what: 'Gants de boxe de la tenue de boxe du coach Kadir' },
-  { id: 'eq-gants-mma', scene: 'gants-mma', alt: 'Paire de gants de MMA ouverts', what: 'Gants de MMA de la tenue MMA du coach Kadir' },
   { id: 'eq-protege-tibias', scene: 'protege-tibias', alt: 'Protège-tibias et pieds', what: 'Protège-tibias de la tenue de kick-boxing du coach Kadir' },
   { id: 'eq-rashguard', scene: 'rashguard', alt: 'Rashguard et short de grappling', what: 'Tenue no-gi du coach Kadir' },
   { id: 'eq-short-combat', scene: 'short-combat', alt: 'Short de MMA', what: 'Short de la tenue MMA du coach Kadir' },

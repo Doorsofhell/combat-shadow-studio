@@ -12,7 +12,7 @@ from pathlib import Path
 
 import bpy  # noqa: I001 (bpy first: it makes bmesh importable)
 import bmesh
-from mathutils import Vector
+from mathutils import Matrix, Quaternion, Vector
 
 ROOT = Path(__file__).resolve().parents[2]
 TENUES = ROOT / 'public/coaches/mma-kadir/tenues'
@@ -108,7 +108,7 @@ def lights(target, scale=1.0):
     for loc, energy, size in (((-2.2, -3.0, 3.2), 900, 2.5), ((2.8, -1.6, 2.0), 380, 2.0), ((0.5, 3.0, 3.0), 600, 2.5)):
         bpy.ops.object.light_add(type='AREA', location=t + Vector(loc) * scale)
         lt = bpy.context.object
-        lt.data.energy = energy * scale * scale
+        lt.data.energy = energy * scale * scale * 0.18
         lt.data.size = size * scale
         lt.rotation_mode = 'QUATERNION'
         lt.rotation_quaternion = (t - lt.location).to_track_quat('-Z', 'Y')
@@ -116,6 +116,7 @@ def lights(target, scale=1.0):
 
 def frame(objs, azimuth=18, elevation=14, lens=60, margin=1.12, shift_z=0.0):
     """perspective camera looking at the objects' bounds from the front (-Y), fitted so the whole bounds show"""
+    bpy.context.view_layer.update()
     pts = [o.matrix_world @ Vector(c) for o in objs for c in o.bound_box]
     lo = Vector([min(p[i] for p in pts) for i in range(3)])
     hi = Vector([max(p[i] for p in pts) for i in range(3)])
@@ -167,28 +168,11 @@ def outfit(tenue, keep):
             bpy.data.objects.remove(o, do_unlink=True)
     for o in out:
         o.rotation_mode = 'XYZ'
-        for m in o.data.materials:
-            linear_vertex_colours(m)
         bpy.context.view_layer.objects.active = o
         o.select_set(True)
         bpy.ops.object.shade_smooth()
         o.select_set(False)
     return out
-
-
-def linear_vertex_colours(m):
-    """the outfit files store leather, strap and lining as linear vertex colours (outfits.py lin()), but the glTF
-    importer reads them back brightened: a 2.2 gamma between the attribute and the base colour gives the app's colours"""
-    if not m or not m.use_nodes:
-        return
-    nt = m.node_tree
-    for link in list(nt.links):
-        if link.from_node.type == 'VERTEX_COLOR' and link.to_socket.name == 'Base Color':
-            g = nt.nodes.new('ShaderNodeGamma')
-            g.inputs['Gamma'].default_value = 2.2
-            nt.links.new(link.from_socket, g.inputs['Color'])
-            nt.links.new(g.outputs['Color'], link.to_socket)
-            nt.links.remove(link)
 
 
 def split_x(o):
@@ -215,15 +199,33 @@ def origin_to_geometry(o):
     o.select_set(False)
 
 
+def long_axis(o):
+    """unit vector along the longest extent of a mesh (power iteration on the covariance), in world space"""
+    pts = [o.matrix_world @ v.co for v in o.data.vertices]
+    c = sum(pts, Vector()) / len(pts)
+    cov = [[sum((p[i] - c[i]) * (p[j] - c[j]) for p in pts) for j in range(3)] for i in range(3)]
+    v = Vector((0.3, 0.2, 1.0))
+    for _ in range(50):
+        v = Vector([sum(cov[i][j] * v[j] for j in range(3)) for i in range(3)]).normalized()
+    return v
+
+
 def pair(a, b, gap, tilt=12, upright=False):
     """puts two side pieces (gloves) next to each other, slightly turned in, resting on the ground; upright = standing
-    on the cuff, as gloves are shown in a shop"""
+    on the cuff, as gloves are shown in a shop (in the bind pose the cuff is the upper end, towards the elbow)"""
     for o, s in ((a, 1), (b, -1)):
         origin_to_geometry(o)
-        o.location = (s * gap / 2, 0, 0)
+        bpy.context.view_layer.update()
+        q = Quaternion()
         if upright:
-            o.rotation_euler.y += math.pi
-        o.rotation_euler.z += math.radians(-s * tilt)
+            ax = long_axis(o)
+            if ax.z < 0:
+                ax = -ax
+            q = ax.rotation_difference(Vector((0, 0, -1)))
+        q = Quaternion((0, 0, 1), math.radians(-s * tilt)) @ q
+        o.rotation_mode = 'QUATERNION'
+        o.rotation_quaternion = q @ o.rotation_quaternion
+        o.location = (s * gap / 2, 0, 0)
     bpy.context.view_layer.update()
     for o in (a, b):
         zmin = min((o.matrix_world @ Vector(c)).z for c in o.bound_box)
@@ -249,16 +251,7 @@ def s_gants_boxe():
     gl = outfit('boxe', {'gant-Left', 'gant-Right'})
     pair(gl[0], gl[1], 0.3, upright=True)
     ground()
-    c, lo, hi = frame(gl, azimuth=10, elevation=18, margin=1.5)
-    lights(c, 0.5)
-
-
-def s_gants_mma():
-    (g,) = outfit('mma', {'gants-mma'})
-    a, b = split_x(g)
-    pair(a, b, 0.24, upright=True)
-    ground()
-    c, *_ = frame([a, b], azimuth=10, elevation=18, margin=1.5)
+    c, lo, hi = frame(gl, azimuth=10, elevation=14, margin=1.3)
     lights(c, 0.5)
 
 
@@ -349,16 +342,17 @@ def s_cage():
         cyl('poteau', 0.08, fence_h + 0.1, (a.x, a.y, h + (fence_h + 0.1) / 2), pad)
         # chain-link side: a grid turned into wires
         mid, d = (a + b) / 2, b - a
-        bpy.ops.mesh.primitive_grid_add(x_subdivisions=int(d.length / 0.09), y_subdivisions=int(fence_h / 0.09), size=1, location=(mid.x, mid.y, h + fence_h / 2 + 0.05))
+        size = max(d.length, fence_h) * 1.5
+        cells = int(size / 0.09)
+        bpy.ops.mesh.primitive_grid_add(x_subdivisions=cells, y_subdivisions=cells, size=size, location=(mid.x, mid.y, h + fence_h / 2 + 0.05))
         g = bpy.context.object
-        g.scale = (d.length, fence_h, 1)
+        # square cells turned 45° in their plane: the diamonds of a chain-link fence
+        bm = bmesh.new()
+        bm.from_mesh(g.data)
+        bmesh.ops.rotate(bm, verts=bm.verts, cent=(0, 0, 0), matrix=Matrix.Rotation(math.radians(45), 3, 'Z'))
+        bm.to_mesh(g.data)
+        bm.free()
         g.rotation_euler = (math.pi / 2, 0, math.atan2(d.y, d.x))
-        bpy.ops.object.transform_apply(scale=True)
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_all(action='SELECT')
-        bpy.ops.mesh.rotate(value=math.radians(45), orient_axis='Y', orient_type='LOCAL')
-        bpy.ops.object.mode_set(mode='OBJECT')
-        g.scale = (1, 1, 1)
         w = g.modifiers.new('w', 'WIREFRAME')
         w.thickness = 0.008
         g.data.materials.append(wire)
@@ -380,8 +374,8 @@ def s_cage():
 
 def s_tatami():
     # 1 m x 2 m mats: an 8 m x 8 m contest area inside a safety area of another colour
-    inner = mat('combat', hexrgb('#2B5DB8'), 0.8)
-    outer = mat('securite', hexrgb('#D9B53B'), 0.8)
+    inner = mat('combat', hexrgb('#3A5F9E'), 0.8)
+    outer = mat('securite', hexrgb('#C9A944'), 0.8)
     gap_m = mat('joint', hexrgb('#1F2937'), 0.8)
     total, inner_half = 14, 4
     box('sous-couche', (total + 0.02, total + 0.02, 0.02), (0, 0, 0.01), gap_m)
@@ -438,13 +432,12 @@ def s_ceintures():
     for k, (n, c, _bar) in enumerate(colours):
         objs.append(belt_roll(n, c, ((k - 2) * 0.11, 0, 0.0445)))
     ground(0)
-    c, *_ = frame(objs, azimuth=0, elevation=16, lens=70, margin=1.25)
+    c, *_ = frame(objs, azimuth=0, elevation=22, lens=70, margin=1.08)
     lights(c, 0.45)
 
 
 SCENES = {
     'gants-boxe': s_gants_boxe,
-    'gants-mma': s_gants_mma,
     'protege-tibias': s_protege_tibias,
     'rashguard': s_rashguard,
     'short-combat': s_short_combat,
