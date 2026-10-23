@@ -20,7 +20,6 @@ import {
   CatmullRomCurve3,
   Color,
   DoubleSide,
-  LatheGeometry,
   Material,
   Matrix4,
   Mesh,
@@ -32,11 +31,10 @@ import {
   Texture,
   TorusGeometry,
   TubeGeometry,
-  Vector2,
   Vector3,
   Vector4,
 } from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { GLOVE_INDEX, GLOVE_POSITIONS } from './gloveShape';
 import type { FighterLook, Paint, Pattern, Tattoo, TattooZone } from '../editor/look';
 import { TATTOO_DESIGNS, tattooAtlas } from '../editor/tattoos';
 
@@ -1135,56 +1133,58 @@ function attachToBone(body: SkinnedMesh, boneName: string, geo: BufferGeometry, 
   return mesh;
 }
 
-/** boxing glove around a hand in the bind pose: padded fist, thumb, cuff */
+/** decoded once: the sculpted glove of the reference hand (gloveShape.ts, made by tools/generator/rocketbox/glove_ts.py) */
+let gloveRef: { pos: Int16Array; index: Uint16Array } | null = null;
+function gloveShape() {
+  if (gloveRef) return gloveRef;
+  const bytes = (b64: string) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer;
+  gloveRef = { pos: new Int16Array(bytes(GLOVE_POSITIONS)), index: new Uint16Array(bytes(GLOVE_INDEX)) };
+  return gloveRef;
+}
+
+/**
+ * boxing glove around a hand in the bind pose. v0.43 (Youssef, 2026-10-23: « les gants ne doivent plus ressembler
+ * à des sphères ou à des blocs rigides »): the sculpted glove of the Ultra-réaliste coaches (padded fist domed over
+ * the back of the hand, finger roll, thumb along the index, cuff with its strap), sized on this hand. Before: two
+ * spheres and a lathe.
+ */
 export function gloveGeometry(b: Record<string, Vector3>, side: 'Left' | 'Right') {
   const wrist = b[`${side}Hand`];
   const mid = b[`${side}HandMiddle1`] ?? wrist;
   const idx = b[`${side}HandIndex1`] ?? mid;
   const pinky = b[`${side}HandPinky1`] ?? mid;
+  const elbow = b[`${side}ForeArm`];
   const axis = mid.clone().sub(wrist).normalize();
   const lateral = idx.clone().sub(pinky);
   lateral.addScaledVector(axis, -lateral.dot(axis)).normalize();
-  // right-handed basis (a mirrored one turns the faces inside out and only the black outline shows)
-  const palm = new Vector3().crossVectors(lateral, axis).normalize();
-  const handLen = wrist.distanceTo(mid) * 2.1;
-  const basis = new Matrix4().makeBasis(lateral, axis, palm);
-  // about 12-14 oz: fist ~17 cm long, 13 cm wide, 12 cm deep on an adult hand
-  const fist = new SphereGeometry(1, 28, 20);
-  fist.scale(handLen * 0.33, handLen * 0.42, handLen * 0.3);
-  fist.applyMatrix4(basis);
-  fist.translate(
-    ...wrist
-      .clone()
-      .addScaledVector(axis, handLen * 0.42)
-      .toArray(),
-  );
-  const thumb = new SphereGeometry(1, 16, 12);
-  thumb.scale(handLen * 0.11, handLen * 0.22, handLen * 0.11);
-  thumb.rotateZ(0.5);
-  thumb.applyMatrix4(basis);
-  thumb.translate(
-    ...wrist
-      .clone()
-      .addScaledVector(axis, handLen * 0.3)
-      .addScaledVector(lateral, handLen * 0.29)
-      .addScaledVector(palm, -handLen * 0.08)
-      .toArray(),
-  );
-  const cuffPts = [new Vector2(handLen * 0.24, 0), new Vector2(handLen * 0.26, handLen * 0.22), new Vector2(handLen * 0.25, handLen * 0.5)];
-  const cuff = new LatheGeometry(cuffPts, 24);
-  cuff.applyMatrix4(basis);
-  cuff.translate(
-    ...wrist
-      .clone()
-      .addScaledVector(axis, -handLen * 0.3)
-      .toArray(),
-  );
-  const parts = [fist, thumb, cuff].map((g) => {
-    const ng = g.toNonIndexed();
-    ng.deleteAttribute('uv');
-    return ng;
-  });
-  return mergeGeometries(parts)!;
+  // back of the hand: away from the body centre line at rest (arms at the sides), as in outfits.py hand_frame
+  const back = new Vector3().crossVectors(axis, lateral).normalize();
+  if (Math.abs(back.x) > 0.3 && back.x * wrist.x < 0) back.negate();
+  // behind the wrist the cuff runs along the forearm
+  const fore = elbow ? wrist.clone().sub(elbow).normalize() : axis.clone();
+  const k = Math.max(0.9, Math.min(1.1, wrist.distanceTo(mid) / 0.095));
+  const { pos, index } = gloveShape();
+  const out = new Float32Array(pos.length);
+  const p = new Vector3();
+  for (let i = 0; i < pos.length; i += 3) {
+    const x = (pos[i] / 10000) * k, y = (pos[i + 1] / 10000) * k, z = (pos[i + 2] / 10000) * k;
+    p.copy(wrist)
+      .addScaledVector(x >= 0 ? axis : fore, x)
+      .addScaledVector(lateral, y)
+      .addScaledVector(back, z);
+    out[i] = p.x;
+    out[i + 1] = p.y;
+    out[i + 2] = p.z;
+  }
+  const g = new BufferGeometry();
+  g.setAttribute('position', new BufferAttribute(out, 3));
+  // one hand's frame is mirrored: its triangles turn the other way round
+  const mirrored = new Vector3().crossVectors(axis, lateral).dot(back) < 0;
+  const ix = Uint32Array.from(index);
+  if (mirrored) for (let t = 0; t < ix.length; t += 3) [ix[t + 1], ix[t + 2]] = [ix[t + 2], ix[t + 1]];
+  g.setIndex(new BufferAttribute(ix, 1));
+  g.computeVertexNormals();
+  return g;
 }
 
 function tubeGeometry(points: Vector3[], radius: number, taper = 0.4) {

@@ -178,6 +178,26 @@ def elastic(size=256, ribs=32):
     return 0.5 + 0.5 * np.sin(2 * np.pi * x * ribs) * 0.7 + noise(size, 4) * 0.08
 
 
+def pebble(size=512, cells=70):
+    """v0.43 pebbled leather of the gloves: small irregular rounded grains (about 3.5 mm at 1 texture = 25 cm),
+    instead of smooth waves"""
+    y, x = np.mgrid[0:size, 0:size] / size
+    # cell distance computed on a coarse grid of jittered points (fast, tileable)
+    g = cells
+    jit = rng.random((g, g, 2))
+    X, Y = x * g, y * g
+    ix, iy = np.floor(X).astype(int), np.floor(Y).astype(int)
+    d = np.full((size, size), 9.0)
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            cx, cy = (ix + dx) % g, (iy + dy) % g
+            px = ix + dx + jit[cx, cy, 0]
+            py = iy + dy + jit[cx, cy, 1]
+            d = np.minimum(d, np.hypot(X - px, Y - py))
+    h = 1 - np.clip(d / 0.75, 0, 1) ** 1.5
+    return h * 0.85 + noise(size, 5) * 0.15
+
+
 def serge(size=512, lines=110):
     """twill of the gi trousers: fine diagonal ribs (2 mm)"""
     y, x = np.mgrid[0:size, 0:size] / size
@@ -196,7 +216,7 @@ def fabric(name, color, kind, rough=0.7, strength=2.0, sheen=0.0, coat=0.0, tone
             'judogi': lambda: rice(512, 96, 64, 0.6), 'perle': lambda: rice(512, 128, 80, 0.9),
             'ceinture': lambda: stitched(256, 9), 'col-judo': lambda: stitched(256, 7, rice(256, 24, 12, 0.6)),
             'col-bjj': lambda: stitched(256, 4, rice(256, 32, 16, 0.9)), 'serge': serge,
-            'elastique': elastic, 'jersey': lambda: knit(512, 150)}
+            'elastique': elastic, 'jersey': lambda: knit(512, 150), 'cuir': pebble}
     h = gens[kind]()
     nimg = save_png(f'{name}_n', height_to_normal(h, strength))
     nimg.colorspace_settings.name = 'Non-Color'
@@ -512,6 +532,103 @@ def boxing_glove(s, color, accent, thai=False):
             p.use_smooth = True
         weighted(o, lambda p_: (lambda t: {f'{s}Hand': 1 - t, f'{s}ForeArm': t})(max(0.0, min(1.0, ((p_ - wr).dot((fa - wr).normalized()) - 0.02) / cuffLen))))
     return parts
+
+
+GLOVE_TRIS = int(os.environ.get('GLOVE_TRIS', '4200'))
+_GLOVE = None
+
+
+def lin(hexc):
+    c = [int(hexc[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+    return [x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+
+
+def boxing_glove_v2(s, color, accent, thai=False):
+    """v0.43 sculpted glove (tools/generator/rocketbox/glove.py): one mesh per hand, vertex-coloured regions"""
+    global _GLOVE
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import glove as GL
+    if _GLOVE is None:
+        _GLOVE = GL.glove_mesh()
+    v, q, _, _ = _GLOVE
+    wr, a, lat, up = hand_frame(s)
+    # the glove follows the size of the hand (wrist to middle knuckle, 9.5 cm on the reference), within limits
+    k = max(0.9, min(1.1, (H[f'{s}HandMiddle1'] - wr).length / 0.095))
+    fa = H[f'{s}ForeArm']
+    # the cuff goes up the forearm: the frame's x axis bends from the hand's axis to the forearm's behind the wrist
+    back = (wr - fa).normalized()
+    bm_ = bmesh.new()
+    vs = []
+    for (x, y, z) in v:
+        # behind the wrist (x < 0) the cuff runs along the forearm, not along the hand
+        pos = wr + (a if x >= 0 else back) * (x * k) + lat * (y * k) + up * (z * k)
+        vs.append(bm_.verts.new(MWI @ pos))
+    for f in q:
+        try:
+            bm_.faces.new([vs[i] for i in f])
+        except ValueError:
+            pass
+    bmesh.ops.recalc_face_normals(bm_, faces=bm_.faces[:])
+    o = new_obj(f'gant-{s}', bm_)
+    bm_.free()
+    o.matrix_world = MW
+    tri = o.modifiers.new('Tri', 'TRIANGULATE')
+    apply(o, tri)
+    dec = o.modifiers.new('Decimate', 'DECIMATE')
+    dec.ratio = min(1.0, GLOVE_TRIS / max(1, len(o.data.polygons)))
+    apply(o, dec)
+    me_ = o.data
+    # exact edges where the strap and the lining start: the decimated triangles are long along the cuff, a colour
+    # change in the middle of one would smear into streaks. Planes of constant x in the cuff frame (normal lat x up)
+    nrm = MWI.to_3x3() @ lat.cross(up).normalized()
+    bm_ = bmesh.new()
+    bm_.from_mesh(me_)
+    for xc in (GL.STRAP_C - GL.STRAP_HALF, GL.STRAP_C + GL.STRAP_HALF, GL.LINING_X):
+        geom = bm_.verts[:] + bm_.edges[:] + bm_.faces[:]
+        bmesh.ops.bisect_plane(bm_, geom=geom, plane_co=MWI @ (wr + back * (xc * k)), plane_no=nrm)
+    bmesh.ops.triangulate(bm_, faces=bm_.faces[:])
+    bm_.to_mesh(me_)
+    bm_.free()
+    for p_ in me_.polygons:
+        p_.use_smooth = True
+    # colour regions read back in the hand frame: strap and lining per face (crisp edges on the cut lines),
+    # leather and its darker piping per point
+    inv_f = Matrix((a, lat, up)).transposed().inverted()
+    inv_b = Matrix((back, lat, up)).transposed().inverted()
+
+    def local(w_):
+        d_ = w_ - wr
+        x_ = inv_f @ d_
+        if x_.x < 0:
+            x_ = inv_b @ d_
+        return tuple(x_ / k)
+
+    vreg, pip = GL.regions(np.array([local(MW @ vv.co) for vv in me_.vertices]))
+    freg, _ = GL.regions(np.array([local(MW @ f_.center) for f_ in me_.polygons]))
+    leather = lin(color)
+    strap = lin(accent)
+    lining = lin('#1A1A1C')
+    pipe = [c * 0.8 for c in leather]
+    col = me_.color_attributes.new('Col', 'FLOAT_COLOR', 'CORNER')
+    for f_ in me_.polygons:
+        r = freg[f_.index]
+        for li in f_.loop_indices:
+            vi = me_.loops[li].vertex_index
+            c = strap if r == 1 else lining if r == 2 else pipe if pip[vi] and vreg[vi] == 0 else leather
+            col.data[li].color = (*c, 1)
+    me_.color_attributes.active_color = col
+    m = fabric(f'cuir-gant-{"thai" if thai else "boxe"}', '#FFFFFF', 'cuir', rough=0.42, strength=0.6, coat=0.25)
+    if not m.get('css_vcol'):
+        nt = m.node_tree
+        vc = nt.nodes.new('ShaderNodeVertexColor')
+        vc.layer_name = 'Col'
+        nt.links.new(vc.outputs['Color'], nt.nodes['Principled BSDF'].inputs['Base Color'])
+        m['css_vcol'] = 1
+    o.data.materials.append(m)
+    cuffLen = 0.12
+    weighted(o, lambda p_: (lambda t: {f'{s}Hand': 1 - t, f'{s}ForeArm': t})(max(0.0, min(1.0, ((p_ - wr).dot(back) - 0.01) / cuffLen))))
+    print('gant', s, len(o.data.polygons), 'triangles, scale', round(k, 3))
+    return [o]
 
 
 def prajioud(s, color):
@@ -910,14 +1027,25 @@ def jacket(color, kind):
 
 
 def shoes(color, accent):
-    """high boxing shoes: foot and ankle, up to mid-shin, thin flexible sole"""
-    def keep(i):
-        return P[i].z < ankleZ + 0.2 and w(i, *FEET, 'LeftLeg', 'RightLeg') > 0.5
+    """high boxing shoes: foot and ankle, up to mid-shin, thin flexible sole.
+    v0.43 (Youssef, 2026-10-23, capture: « motif blanc » on the shoes): the white side stripe was chosen face by face
+    on the skin's triangles, a toothed band. Now the contrasts follow straight cuts: a sole rim standing out of the
+    upper (2 cm high, 6 mm proud) and a padded collar band at the top"""
+    top_z = ankleZ + 0.2
+    collar_z = top_z - 0.028
+    sole_z = 0.022
 
-    o, cov = shell('chaussures', keep, lambda i: 0.004 if P[i].z > 0.012 else 0.0015, 0.004,
+    def keep(i):
+        return P[i].z < top_z and w(i, *FEET, 'LeftLeg', 'RightLeg') > 0.5
+
+    def push(i):
+        z = P[i].z
+        return 0.0065 if z < sole_z else 0.006 if z > collar_z else 0.004
+
+    o, cov = shell('chaussures', keep, push, 0.004,
                    [fabric(f'chaussure-{color}', color, 'grain', rough=0.55, strength=0.7, coat=0.15), fabric(f'semelle-{accent}', accent, 'flat', rough=0.7)],
-                   lambda c, ids: 1 if c.z < 0.015 or (c.y < -0.04 and c.z < ankleZ + 0.15 and abs(abs(c.x) - 0.11) < 0.012) else 0,
-                   cuts=[(Vector((0, 0, ankleZ + 0.2)), Vector((0, 0, 1))), (Vector((0, 0, 0.015)), Vector((0, 0, 1)))])
+                   lambda c, ids: 1 if c.z < sole_z or c.z > collar_z else 0,
+                   cuts=[(Vector((0, 0, top_z)), Vector((0, 0, 1))), (Vector((0, 0, collar_z)), Vector((0, 0, 1))), (Vector((0, 0, sole_z)), Vector((0, 0, 1)))])
     return [o], cov
 
 
@@ -999,7 +1127,7 @@ def outfit(name):
         if female:
             add(top('brassiere', C['boxe'][0], C['boxe'][1]))
         for s in ('Left', 'Right'):
-            parts.extend(boxing_glove(s, C['glove'], '#F4F4F5'))
+            parts.extend(boxing_glove_v2(s, C['glove'], '#F4F4F5'))
         hide |= hide_hands()
         add(shoes('#16181D' if not female else '#F4F4F5', '#F4F4F5' if not female else '#16181D'))
     elif name == 'kickboxing':
@@ -1007,7 +1135,7 @@ def outfit(name):
         if female:
             add(top('brassiere', C['kick'][1], C['kick'][0]))
         for s in ('Left', 'Right'):
-            parts.extend(boxing_glove(s, C['glove2'], C['kick'][1]))
+            parts.extend(boxing_glove_v2(s, C['glove2'], C['kick'][1]))
         hide |= hide_hands()
         add(shin_guards('#F4F4F5' if not female else '#16181D'))
     elif name == 'muaythai':
@@ -1015,7 +1143,7 @@ def outfit(name):
         if female:
             add(top('brassiere', C['thai'][0], C['thai'][1]))
         for s in ('Left', 'Right'):
-            parts.extend(boxing_glove(s, C['glove'], C['thai'][1], thai=True))
+            parts.extend(boxing_glove_v2(s, C['glove'], C['thai'][1], thai=True))
             parts.extend(prajioud(s, '#B3122A' if female else '#D4AF37'))
         hide |= hide_hands()
     elif name == 'mma':
