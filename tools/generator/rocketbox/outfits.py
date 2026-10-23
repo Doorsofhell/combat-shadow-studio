@@ -350,7 +350,7 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=()):
     bm_.to_mesh(o.data)
     bm_.free()
     o.data.attributes.remove(o.data.attributes['src']) if 'src' in o.data.attributes else None
-    smooth(o, 2)
+    smooth(o, 2, cuts)
     if thick:
         sol = o.modifiers.new('Solidify', 'SOLIDIFY')
         sol.thickness = thick / max(MW.to_scale())
@@ -367,14 +367,25 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=()):
     return o, covered
 
 
-def smooth(o, n):
-    """relax the shell (cloth drapes, it does not copy every muscle)"""
+def smooth(o, n, planes=()):
+    """relax the shell (cloth drapes, it does not copy every muscle). v0.43: the points lying on a cut plane (a hem,
+    the edge of a colour band) stay on it, so those lines stay straight (the slivers beside a cut used to pull them
+    up and down: wavy straps and bands)"""
     if not n:
         return
     m = o.modifiers.new('Smooth', 'SMOOTH')
     m.factor = 0.5
     m.iterations = n
+    if planes:
+        g = o.vertex_groups.new(name='css-lisse')
+        for v in o.data.vertices:
+            q = o.matrix_world @ v.co
+            on = any(abs((q - pt).dot(nr)) < 0.0015 for pt, nr in planes)
+            g.add([v.index], 0.0 if on else 1.0, 'REPLACE')
+        m.vertex_group = g.name
     apply(o, m)
+    if planes and 'css-lisse' in o.vertex_groups:
+        o.vertex_groups.remove(o.vertex_groups['css-lisse'])
 
 
 def apply(o, mod):
@@ -644,6 +655,92 @@ def prajioud(s, color):
     t.data.materials.append(fabric(f'cordon-{color}', color, 'knit', rough=0.75, strength=3))
     weighted(t, {f'{s}Arm': 1.0})
     return [t]
+
+
+def prajioud_v2(s, color):
+    """v0.43 prajioud (Youssef, 2026-10-23: « équipements simplifiés »). Before: a smooth ring 12 mm away from the arm
+    all round, floating. Now a braided cord laid on the arm: its path follows the measured outline of the upper arm
+    (one radius per direction), two twisted strands, a knot on the outside of the arm with two short tails"""
+    a, b = H[f'{s}Arm'], H[f'{s}ForeArm']
+    ax = (b - a).normalized()
+    c = a + (b - a) * 0.42
+    e1 = (Vector((1, 0, 0)) - ax * ax.x).normalized()
+    if (e1.x > 0) != (s == 'Left'):
+        e1 = -e1  # e1: outside of the arm
+    e2 = ax.cross(e1).normalized()
+    # the upper arm only (skin weighted to the arm, close to its axis: not the chest or the back)
+    radial = lambda i: ((P[i] - c) - ax * (P[i] - c).dot(ax)).length
+    ids = [i for i in range(len(P)) if w(i, f'{s}Arm') > 0.8 and abs((P[i] - c).dot(ax)) < 0.015 and radial(i) < 0.065]
+    NA = 48
+    rad = []
+    for k_ in range(NA):
+        t_ = 2 * math.pi * k_ / NA
+        d_ = e1 * math.cos(t_) + e2 * math.sin(t_)
+        best = [((P[i] - c) - ax * (P[i] - c).dot(ax)).dot(d_) for i in ids
+                if ((P[i] - c) - ax * (P[i] - c).dot(ax)).normalized().dot(d_) > 0.97]
+        rad.append(sorted(best)[int(len(best) * 0.8)] if best else None)
+    known = [r_ for r_ in rad if r_]
+    rad = [r_ if r_ else sum(known) / len(known) for r_ in rad]
+    rad = [(rad[k_ - 1] + 2 * rad[k_] + rad[(k_ + 1) % NA]) / 4 for k_ in range(NA)]
+    cr = 0.0065  # cord radius
+    bm_ = bmesh.new()
+    SEG, AROUND = 96, 10
+
+    def ring_pt(t_):
+        k_ = t_ / (2 * math.pi) * NA
+        i0 = int(k_) % NA
+        f_ = k_ - int(k_)
+        r_ = rad[i0] * (1 - f_) + rad[(i0 + 1) % NA] * f_ + cr * 0.75
+        return c + (e1 * math.cos(t_) + e2 * math.sin(t_)) * r_
+
+    rows = []
+    for j in range(SEG):
+        t_ = 2 * math.pi * j / SEG
+        p0 = ring_pt(t_)
+        tan = (ring_pt(t_ + 0.01) - ring_pt(t_ - 0.01)).normalized()
+        nrm = (p0 - c - ax * (p0 - c).dot(ax)).normalized()
+        bi = tan.cross(nrm).normalized()
+        row = []
+        for k_ in range(AROUND):
+            ph = 2 * math.pi * k_ / AROUND
+            # two twisted strands: the section is pinched twice, the pinch turning along the cord
+            rr = cr * (1 + 0.16 * math.cos(2 * ph - 14 * t_))
+            row.append(bm_.verts.new(MWI @ (p0 + (nrm * math.cos(ph) + bi * math.sin(ph)) * rr)))
+        rows.append(row)
+    for j in range(SEG):
+        for k_ in range(AROUND):
+            bm_.faces.new([rows[j][k_], rows[(j + 1) % SEG][k_], rows[(j + 1) % SEG][(k_ + 1) % AROUND], rows[j][(k_ + 1) % AROUND]])
+    # knot on the outside of the arm and two tails hanging toward the elbow
+    kc = ring_pt(0.0) + e1 * 0.004
+    bmesh.ops.create_uvsphere(bm_, u_segments=12, v_segments=8, radius=1.0,
+                              matrix=Matrix.Translation(MWI @ kc) @ (MWI.to_3x3() @ Matrix.Diagonal((0.011, 0.012, 0.011))).to_4x4())
+    for sgn in (-1, 1):
+        start = kc + e2 * (0.006 * sgn)
+        end = start + ax * 0.045 + e1 * 0.006 + e2 * (0.008 * sgn)
+        prev = None
+        for j in range(7):
+            u_ = j / 6
+            q_ = start.lerp(end, u_)
+            d_ = (end - start).normalized()
+            n1 = d_.cross(e2).normalized()
+            n2 = d_.cross(n1).normalized()
+            rr = cr * (0.85 - 0.25 * u_)
+            row = [bm_.verts.new(MWI @ (q_ + (n1 * math.cos(2 * math.pi * k_ / 8) + n2 * math.sin(2 * math.pi * k_ / 8)) * rr)) for k_ in range(8)]
+            if prev:
+                for k_ in range(8):
+                    bm_.faces.new([prev[k_], row[k_], row[(k_ + 1) % 8], prev[(k_ + 1) % 8]])
+            prev = row
+        bm_.faces.new(prev[::-1])
+    bmesh.ops.recalc_face_normals(bm_, faces=bm_.faces[:])
+    o = new_obj(f'prajioud-{s}', bm_)
+    bm_.free()
+    o.matrix_world = MW
+    for p_ in o.data.polygons:
+        p_.use_smooth = True
+    o.data.materials.append(fabric(f'cordon-{color}', color, 'knit', rough=0.8, strength=2))
+    weighted(o, {f'{s}Arm': 1.0})
+    print('prajioud', s, len(o.data.polygons), 'faces, arm radius', round(sum(rad) / NA, 3))
+    return [o]
 
 
 def ring_profile(z, dz=0.012, pad=0.0, exclude=ARMS):
@@ -1046,35 +1143,222 @@ def shoes(color, accent):
                    [fabric(f'chaussure-{color}', color, 'grain', rough=0.55, strength=0.7, coat=0.15), fabric(f'semelle-{accent}', accent, 'flat', rough=0.7)],
                    lambda c, ids: 1 if c.z < sole_z or c.z > collar_z else 0,
                    cuts=[(Vector((0, 0, top_z)), Vector((0, 0, 1))), (Vector((0, 0, collar_z)), Vector((0, 0, 1))), (Vector((0, 0, sole_z)), Vector((0, 0, 1)))])
+    # a shoe does not show the toes: the front of the foot is smoothed into one rounded toe box (the gaps between
+    # the toes of the skin were moulded by the upper). Smoothing fades in from the instep to the toes
+    toe = o.vertex_groups.new(name='css-orteils')
+    for v in o.data.vertices:
+        q = MW @ v.co
+        fwd = -q.y  # toes point to -y (front of the body)
+        t = max(0.0, min(1.0, (fwd - 0.02) / 0.06)) * (1.0 if q.z < ankleZ else 0.0)
+        if t > 0:
+            toe.add([v.index], t, 'REPLACE')
+    sm = o.modifiers.new('Orteils', 'SMOOTH')
+    sm.factor = 1.0
+    sm.iterations = 30
+    sm.vertex_group = toe.name
+    apply(o, sm)
+    if 'css-orteils' in o.vertex_groups:
+        o.vertex_groups.remove(o.vertex_groups['css-orteils'])
     return [o], cov
 
 
-def shin_guards(color):
+SHOE_TRIS = int(os.environ.get('SHOE_TRIS', '2400'))
+
+
+def shoes_v2(color, accent):
+    """v0.43 boxing shoes (Youssef, 2026-10-23, capture: black shoes « avec un motif blanc »). Before: the skin of
+    the foot pushed out (shell): the shoe showed every toe and its white side stripe was cut along the skin's
+    triangles. Now each shoe is a closed shape measured on the coach's own foot and shin (cross-sections every
+    centimetre, plus a margin): a rounded toe box, a heel counter, a high shaft open at the top, a sole standing
+    out of the upper. Contrasts follow straight cuts (sole, padded collar): one mesh per shoe, vertex colours"""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import glove as GL
+    top_z = ankleZ + 0.2
+    collar_z = top_z - 0.028
+    parts, cov = [], set()
+    up_c, sole_c, collar_c = lin(color), lin(accent), lin(accent)
+    lining_c = lin('#1A1A1C')
+    m = fabric(f'chaussure-v2-{color}', '#FFFFFF', 'grain', rough=0.55, strength=0.7, coat=0.15)
+    if not m.get('css_vcol'):
+        nt = m.node_tree
+        vc = nt.nodes.new('ShaderNodeVertexColor')
+        vc.layer_name = 'Col'
+        nt.links.new(vc.outputs['Color'], nt.nodes['Principled BSDF'].inputs['Base Color'])
+        m['css_vcol'] = 1
+    for s in ('Left', 'Right'):
+        bones = (f'{s}Foot', f'{s}ToeBase', f'{s}Leg')
+        mine = [i for i in range(len(P)) if leg_of(i) == s and P[i].z < top_z + 0.01 and w(i, *bones) > 0.5]
+        O = H[f'{s}Foot'].copy()
+        O.z = 0
+        f = H[f'{s}ToeBase'] - H[f'{s}Foot']
+        f.z = 0
+        f.normalize()
+        l = Vector((0, 0, 1)).cross(f)
+        pts = np.array([P[i][:] for i in mine])
+        rel = pts - np.array(O[:])
+        U, V, Z = rel @ np.array(f[:]), rel @ np.array(l[:]), pts[:, 2]
+        ground = Z.min()
+        footm = Z < ankleZ + 0.03
+        u0, u1 = U[footm].min(), U[footm].max()
+        # foot cross-sections every centimetre: sides and top of the foot
+        us = np.arange(u0, u1 + 0.0101, 0.01)
+        vmin, vmax, hmax = [], [], []
+        for u_ in us:
+            sel = footm & (np.abs(U - u_) < 0.008)
+            if sel.sum() < 3:
+                sel = footm & (np.abs(U - u_) < 0.02)
+            vmin.append(V[sel].min()); vmax.append(V[sel].max()); hmax.append(Z[sel].max())
+        sm_ = lambda a: np.convolve(np.pad(a, 1, mode='edge'), np.ones(3) / 3, mode='valid')
+        vmin, vmax, hmax = sm_(np.array(vmin)) - 0.0045, sm_(np.array(vmax)) + 0.0045, sm_(np.array(hmax)) + 0.0045
+        # shin cross-sections every centimetre (ellipses round the leg)
+        zs = np.arange(ankleZ - 0.03, top_z + 0.0101, 0.01)
+        cx, cy, rx, ry = [], [], [], []
+        for z_ in zs:
+            sel = (~footm | (Z > ankleZ - 0.04)) & (np.abs(Z - z_) < 0.008) & (U < (u0 + u1) / 2)
+            if sel.sum() < 4:
+                sel = np.abs(Z - z_) < 0.02
+            q_ = pts[sel]
+            c_ = (q_[:, :2].max(0) + q_[:, :2].min(0)) / 2
+            cx.append(c_[0]); cy.append(c_[1])
+            rx.append((q_[:, 0].max() - q_[:, 0].min()) / 2 + 0.0045); ry.append((q_[:, 1].max() - q_[:, 1].min()) / 2 + 0.0045)
+        cx, cy, rx, ry = (sm_(np.array(a)) for a in (cx, cy, rx, ry))
+
+        def field(g):
+            u = (g - np.array(O[:])) @ np.array(f[:])
+            v = (g - np.array(O[:])) @ np.array(l[:])
+            z = g[..., 2]
+            ip = lambda a: np.interp(u, us, a)
+            a_ = np.maximum((ip(vmax) - ip(vmin)) / 2, 0.01)
+            vc_ = (ip(vmax) + ip(vmin)) / 2
+            b_ = np.maximum(ip(hmax) - ground, 0.01)
+            n_ = 2.6
+            qq = (np.abs(v - vc_) / a_) ** n_ + (np.maximum(z - ground, 0) / b_) ** n_
+            foot = (qq ** (1 / n_) - 1) * np.minimum(a_, b_)
+            foot = np.maximum(foot, ground - 0.004 - z)
+            foot = GL.smax(foot, np.maximum(u0 - 0.004 - u, u - u1 - 0.006), 0.03)
+            iz = lambda a: np.interp(z, zs, a)
+            ell = np.sqrt(((g[..., 0] - iz(cx)) / iz(rx)) ** 2 + ((g[..., 1] - iz(cy)) / iz(ry)) ** 2)
+            shaft = (ell - 1) * np.minimum(iz(rx), iz(ry))
+            shaft = np.maximum(shaft, np.maximum(z - top_z, ankleZ - 0.06 - z))
+            d = GL.smin(foot, shaft, 0.018)
+            # sole: the footprint, 4 mm wider, from the ground to 1.6 cm
+            fp = np.maximum(np.maximum(ip(vmin) - 0.004 - v, v - ip(vmax) - 0.004), np.maximum(u0 - 0.008 - u, u - u1 - 0.01))
+            sole = GL.smax(fp, np.maximum(z - ground - 0.016, ground - 0.001 - z), 0.006)
+            d = GL.smin(d, sole, 0.004)
+            # open top: the leg goes in (inner wall 5 mm)
+            inner = np.maximum(shaft + 0.005, top_z - 0.035 - z)
+            return GL.smax(d, -inner, 0.002)
+
+        lo = np.array([min(pts[:, 0].min(), pts[:, 0].min()) - 0.04, pts[:, 1].min() - 0.05, ground - 0.01])
+        hi = np.array([pts[:, 0].max() + 0.04, pts[:, 1].max() + 0.05, top_z + 0.01])
+        step = 0.0025
+        n = np.ceil((hi - lo) / step).astype(int) + 1
+        grid = np.stack(np.meshgrid(*[lo[a] + np.arange(n[a]) * step for a in range(3)], indexing='ij'), -1)
+        vv, qd = GL.surface_nets(field(grid), lo, step)
+        for _ in range(2):
+            e = 1e-4
+            dv = field(vv)
+            gr = np.stack([(field(vv + np.eye(3)[a] * e) - dv) / e for a in range(3)], -1)
+            gl = np.maximum(np.sqrt((gr * gr).sum(-1)), 1e-6)
+            vv = vv - (dv / gl)[:, None] * (gr / gl[:, None])
+        bm_ = bmesh.new()
+        bv = [bm_.verts.new(MWI @ Vector(p_)) for p_ in vv]
+        for q4 in qd:
+            try:
+                bm_.faces.new([bv[i] for i in q4])
+            except ValueError:
+                pass
+        bmesh.ops.recalc_face_normals(bm_, faces=bm_.faces[:])
+        o = new_obj(f'chaussure-{s}', bm_)
+        bm_.free()
+        o.matrix_world = MW
+        apply(o, o.modifiers.new('Tri', 'TRIANGULATE'))
+        dec = o.modifiers.new('Decimate', 'DECIMATE')
+        dec.ratio = min(1.0, SHOE_TRIS / max(1, len(o.data.polygons)))
+        apply(o, dec)
+        bm_ = bmesh.new()
+        bm_.from_mesh(o.data)
+        nz = (MWI.to_3x3() @ Vector((0, 0, 1))).normalized()
+        for zc in (ground + 0.016, collar_z):
+            bmesh.ops.bisect_plane(bm_, geom=bm_.verts[:] + bm_.edges[:] + bm_.faces[:], plane_co=MWI @ Vector((0, 0, zc)), plane_no=nz)
+        bmesh.ops.triangulate(bm_, faces=bm_.faces[:])
+        bm_.to_mesh(o.data)
+        bm_.free()
+        me_ = o.data
+        for p_ in me_.polygons:
+            p_.use_smooth = True
+        col = me_.color_attributes.new('Col', 'FLOAT_COLOR', 'CORNER')
+        for p_ in me_.polygons:
+            c = MW @ p_.center
+            # inside the opening (wall and floor of the cavity the leg goes into): dark lining
+            zi = min(max(c.z, zs[0]), zs[-1])
+            r_ = min(np.interp(zi, zs, rx), np.interp(zi, zs, ry))
+            inside = c.z > top_z - 0.04 and math.hypot(c.x - np.interp(zi, zs, cx), c.y - np.interp(zi, zs, cy)) < r_ - 0.0035
+            k_ = lining_c if inside else sole_c if c.z < ground + 0.016 else collar_c if c.z > collar_z else up_c
+            for li in p_.loop_indices:
+                col.data[li].color = (*k_, 1)
+        me_.color_attributes.active_color = col
+        o.data.materials.append(m)
+        # skin weights of the closest point of the foot or shin
+        kd = KDTree(len(mine))
+        for k2, i in enumerate(mine):
+            kd.insert(P[i], k2)
+        kd.balance()
+        weighted(o, lambda p_: VW[mine[kd.find(p_)[1]]])
+        # skin hidden under the shoe: inside it, except at the opening
+        dpts = field(np.array([P[i][:] for i in mine]))
+        cov |= {i for k2, i in enumerate(mine) if dpts[k2] < -0.001 and P[i].z < top_z - 0.012}
+        print('chaussure', s, len(me_.polygons), 'triangles')
+        parts.append(o)
+    return parts, cov
+
+
+def shin_guards(color, accent='#B3122A'):
     """v0.32 shin guard (Youssef, 2026-10-22: « protège-tibias incomplets ou mal ajustés »): a sleeve round the whole
     shin with straight edges (under the knee, above the ankle), padded in front, thinner behind. Before: only the
-    skin facing forward, with a toothed outline. No instep piece yet (a plate laid on the foot did not sit right)"""
+    skin facing forward, with a toothed outline. No instep piece yet (a plate laid on the foot did not sit right).
+    v0.43 (« équipements simplifiés »: a plain white sleeve, like a sock): the front plate is quilted in vertical
+    channels and two hook-and-loop straps in the accent colour close it behind the calf, each edge a straight cut"""
     top_z = kneeZ - 0.06
+    bot_z = ankleZ + 0.02
+    length = top_z - bot_z
+    straps = [(bot_z + length * 0.22, bot_z + length * 0.22 + 0.035), (bot_z + length * 0.68, bot_z + length * 0.68 + 0.035)]
 
     def keep(i):
         s = 'Left' if P[i].x > 0 else 'Right'
-        return w(i, f'{s}Leg', f'{s}Foot') > 0.5 and top_z > P[i].z > ankleZ + 0.02
+        return w(i, f'{s}Leg', f'{s}Foot') > 0.5 and top_z > P[i].z > bot_z
+
+    def centre(i):
+        s = 'Left' if P[i].x > 0 else 'Right'
+        c, _ = axis_point(i, f'{s}Leg', f'{s}Foot')
+        return c
 
     def push(i):
         front = max(0.0, N[i].dot(FWD))
         if P[i].z < ankleZ + 0.01:
             return 0.008
-        return 0.004 + 0.012 * front ** 0.7
+        # quilting: three padded channels side by side on the front plate, sewn lines between them
+        lat = P[i].x - centre(i).x
+        quilt = 0.5 + 0.5 * math.cos(lat / 0.024 * 2 * math.pi)
+        return 0.004 + (0.009 + 0.004 * quilt) * front ** 0.7
+
+    # behind the calf: beyond the vertical plane through the shin axes (the legs stand side by side at rest)
+    back_y = (H['LeftLeg'].y + H['RightLeg'].y) / 2 + 0.01
+
+    def mat_of(c, ids):
+        return 1 if c.y > back_y and any(lo < c.z < hi for lo, hi in straps) else 0
 
     pad = fabric(f'protection-{color}', color, 'grain', rough=0.62, strength=0.8, coat=0.1)
-    cuts = [(Vector((0, 0, top_z)), Vector((0, 0, 1))), (Vector((0, 0, ankleZ + 0.02)), Vector((0, 0, 1)))]
-    o, cov = shell('protege-tibias', keep, push, 0.006, [pad], cuts=cuts)
+    velcro = fabric(f'velcro-{accent}', accent, 'knit', rough=0.85, strength=1.5)
+    cuts = [(Vector((0, 0, z)), Vector((0, 0, 1))) for z in (top_z, bot_z, *[z for b in straps for z in b])] + [(Vector((0, back_y, 0)), Vector((0, 1, 0)))]
+    o, cov = shell('protege-tibias', keep, push, 0.006, [pad, velcro], mat_of, cuts=cuts)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [f'{s_}Foot', f'{s_}ToeBase'], f'{s_}Leg')
-    smooth(o, 2)
+    smooth(o, 2, cuts)
     return [o], cov
 
 
-def mma_gloves(color):
+def mma_gloves(color, accent='#B3122A'):
     def keep(i):
         s = 'Left' if P[i].x > 0 else 'Right'
         if w(i, f'{s}Hand') > 0.45:
@@ -1086,7 +1370,7 @@ def mma_gloves(color):
             return u < 0.55
         if w(i, f'{s}ForeArm') > 0.3:
             _, u = axis_point(i, f'{s}ForeArm', f'{s}Hand')
-            return u > 0.88
+            return u > 0.80
         return False
 
     def push(i):
@@ -1095,9 +1379,22 @@ def mma_gloves(color):
         q = P[i] - wr
         knuckles = max(0.0, 1 - abs(q.dot(a) - (H[f'{s}HandMiddle1'] - wr).length) / 0.03)
         back = max(0.0, N[i].dot(up))
-        return 0.004 + 0.012 * knuckles * back
+        return 0.004 + 0.015 * knuckles * back
 
-    o, cov = shell('gants-mma', keep, push, 0.004, [fabric(f'gant-mma-{color}', color, 'grain', rough=0.55, strength=0.7, coat=0.2)])
+    # v0.43: the wide wrist strap in the accent colour, cut straight across the forearm (before: one colour, the
+    # strap could not be told from the glove)
+    cuts, wrist = [], {}
+    for s in ('Left', 'Right'):
+        d_ = (H[f'{s}Hand'] - H[f'{s}ForeArm']).normalized()
+        wrist[s] = (H[f'{s}Hand'] - d_ * 0.006, d_)
+        cuts.append(wrist[s])
+
+    def strap(c, ids):
+        pt, d_ = wrist['Left' if c.x > 0 else 'Right']
+        return 1 if (c - pt).dot(d_) < 0 else 0
+
+    o, cov = shell('gants-mma', keep, push, 0.004, [fabric(f'gant-mma-{color}', color, 'grain', rough=0.55, strength=0.7, coat=0.2),
+                                                    fabric(f'sangle-mma-{accent}', accent, 'weave', rough=0.7, strength=1.2)], strap, cuts=cuts)
     return [o], set()
 
 
@@ -1129,7 +1426,7 @@ def outfit(name):
         for s in ('Left', 'Right'):
             parts.extend(boxing_glove_v2(s, C['glove'], '#F4F4F5'))
         hide |= hide_hands()
-        add(shoes('#16181D' if not female else '#F4F4F5', '#F4F4F5' if not female else '#16181D'))
+        add(shoes_v2('#16181D' if not female else '#F4F4F5', '#F4F4F5' if not female else '#16181D'))
     elif name == 'kickboxing':
         add(shorts('kick', *C['kick']))
         if female:
@@ -1137,20 +1434,20 @@ def outfit(name):
         for s in ('Left', 'Right'):
             parts.extend(boxing_glove_v2(s, C['glove2'], C['kick'][1]))
         hide |= hide_hands()
-        add(shin_guards('#F4F4F5' if not female else '#16181D'))
+        add(shin_guards('#F4F4F5' if not female else '#16181D', C['kick'][1] if not female else C['kick'][0]))
     elif name == 'muaythai':
         add(shorts('thai', *C['thai']))
         if female:
             add(top('brassiere', C['thai'][0], C['thai'][1]))
         for s in ('Left', 'Right'):
             parts.extend(boxing_glove_v2(s, C['glove'], C['thai'][1], thai=True))
-            parts.extend(prajioud(s, '#B3122A' if female else '#D4AF37'))
+            parts.extend(prajioud_v2(s, '#B3122A' if female else '#D4AF37'))
         hide |= hide_hands()
     elif name == 'mma':
         add(shorts('mma', *C['mma']))
         if female:
             add(top('brassiere', C['mma'][0], C['mma'][1]))
-        add(mma_gloves('#16181D'))
+        add(mma_gloves('#16181D', C['mma'][1]))
     elif name == 'bjj-nogi':
         add(top('rash-long', C['rash']))
         add(pants('#16181D', 'nogi', legging=True) if female else shorts('compression', '#16181D', '#B3122A'))
