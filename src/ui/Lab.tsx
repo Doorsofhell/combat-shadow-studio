@@ -7,6 +7,7 @@ import { StudioStage } from '../three/StudioStage';
 import { StudioEnvironment } from '../three/StudioEnvironment';
 import type { CoachRig } from '../engine/rig';
 import { getLibrary, getMotion } from '../engine/library';
+import { getBiomecaLibrary } from '../engine/biomeca';
 import { MotionSampler, duration } from '../engine/motion';
 import type { StanceStyle } from '../engine/author';
 import type { CoachId, DisciplineId } from '../domain/types';
@@ -88,7 +89,9 @@ export function Lab() {
   const sampler = useRef<MotionSampler | null>(null);
   const onRig = useCallback(
     (rig: CoachRig) => {
-      const lib = getLibrary(rig, style, champion && (q.get('d') || tech) ? championStance(championFor(coach), disc) : coachProfile(champion));
+      const baseLibrary = getLibrary(rig, style, champion && (q.get('d') || tech) ? championStance(championFor(coach), disc) : coachProfile(champion));
+      // ?engine=biomeca: capture the exact same movement with the experimental pipeline.
+      const lib = q.get('engine') === 'biomeca' ? getBiomecaLibrary(rig, baseLibrary) : baseLibrary;
       const m = getMotion(lib, motionId, southpaw) ?? lib.get('garde')!;
       sampler.current = new MotionSampler(rig, m);
       if (tech) {
