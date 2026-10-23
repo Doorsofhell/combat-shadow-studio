@@ -37,7 +37,7 @@ test.describe('Entraîner : trois espaces', () => {
     await page.getByTestId('space-disciplines').focus();
     await page.keyboard.press('ArrowRight');
     await expect(page.getByTestId('space-programmes')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('.prog-card')).toHaveCount(10);
+    await expect(page.locator('.prog-card')).toHaveCount(49); // 0.41: 49 programmes (10 before)
     // the choice is written to IndexedDB asynchronously: the app is closed a moment later, as a person would
     await page.waitForTimeout(600);
     await page.reload();
@@ -47,27 +47,62 @@ test.describe('Entraîner : trois espaces', () => {
     await expect(page.locator('.coach-bubble, .action-pill')).toHaveCount(0);
   });
 
-  test('Programmes : filtres combinables et réinitialisables', async ({ page }) => {
+  // 0.41 (Youssef, « Enrichissement des programmes » §6): « Filtres » quitte le contenu pour la barre inférieure
+  test('Programmes : filtres combinables et réinitialisables, dans la barre', async ({ page }) => {
     await seedProfile(page);
     await page.goto('/#/entrainer?espace=programmes');
-    await expect(page.getByTestId('prog-count')).toHaveText('10 programmes sur 10');
+    await expect(page.getByTestId('prog-count')).toHaveText('49 programmes sur 49');
+    // no filter button in the content any more
+    await expect(page.getByTestId('pf-more')).toHaveCount(0);
     await page.getByTestId('pf-d-muaythai').click();
-    await expect(page.locator('.prog-card')).toHaveCount(2);
-    // level, duration and objective are under « Filtres »
+    await expect(page.locator('.prog-card')).toHaveCount(8);
+    // level, duration, objective and equipment are in the panel opened from the bar
     await expect(page.getByTestId('pf-t-moyen')).toBeHidden();
-    await page.getByTestId('pf-more').click();
-    await expect(page.getByTestId('pf-more')).toHaveAttribute('aria-expanded', 'true');
-    await page.getByTestId('pf-t-moyen').click();
+    const filters = bar(page).getByTestId('nav-prog-filters');
+    await expect(filters).toHaveText(/Filtrer/);
+    await filters.click();
+    const panel = page.getByTestId('prog-filters-panel');
+    await expect(panel).toBeVisible();
+    await expect(panel.getByTestId('pp-d-muaythai')).toHaveAttribute('aria-pressed', 'true');
+    await panel.getByTestId('pf-t-moyen').click();
+    await expect(panel.getByTestId('pp-close')).toHaveText('Voir les résultats (5)');
+    await panel.getByTestId('pf-o-defense').click();
+    await expect(panel.getByTestId('pp-close')).toHaveText('Voir les résultats (1)');
+    await panel.getByTestId('pp-close').click();
+    await expect(panel).toBeHidden();
     await expect(page.locator('.prog-card')).toHaveCount(1);
-    await expect(page.getByTestId('pf-more')).toHaveText(/Filtres \(1\)/);
-    await expect(page.getByTestId('prog-muay-fondamentaux')).toBeVisible();
-    await page.getByTestId('pf-o-cardio').click();
-    await expect(page.locator('.prog-card')).toHaveCount(0);
+    await expect(page.getByTestId('prog-muay-defense-intermediaire')).toBeVisible();
+    await expect(filters).toHaveAttribute('aria-pressed', 'true');
+    await filters.click();
+    await panel.getByTestId('pf-o-cardio').click();
+    await expect(panel.getByTestId('pp-close')).toHaveText('Voir les résultats (0)');
+    await panel.getByTestId('pp-close').click();
+    await expect(page.getByText('Aucun programme pour ces filtres')).toBeVisible();
+    // kept while moving around the app
+    await page.goto('/#/techniques');
+    await page.goto('/#/entrainer?espace=programmes');
     await expect(page.getByText('Aucun programme pour ces filtres')).toBeVisible();
     await page.getByTestId('pf-reset').click();
-    await expect(page.locator('.prog-card')).toHaveCount(10);
-    await page.getByTestId('pf-l-debutant').click();
-    expect(await page.locator('.prog-card').count()).toBeGreaterThan(0);
+    await expect(page.locator('.prog-card')).toHaveCount(49);
+    await filters.click();
+    await panel.getByTestId('pf-m-tapis').click();
+    await expect(panel.getByTestId('pp-close')).toHaveText('Voir les résultats (22)');
+    await panel.getByTestId('pp-reset').click();
+    await expect(panel.getByTestId('pp-close')).toHaveText('Voir les résultats (49)');
+  });
+
+  test('Programmes : fiche complète, planning par semaine, séance de la semaine lancée', async ({ page }) => {
+    await seedProfile(page);
+    await page.goto('/#/programmes/boxe-defense-deplacements-debutant');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Bouger et se protéger');
+    await expect(page.getByTestId('prog-description')).toBeVisible();
+    await expect(page.getByTestId('prog-progress')).toContainText('0 séance faite sur 8') // 2 séances par semaine pendant 4 semaines;
+    for (const w of [1, 2, 3, 4]) await expect(page.getByTestId(`prog-week-${w}`)).toBeVisible();
+    await expect(page.getByTestId('prog-origin')).toContainText('Programme original');
+    await expect(page.getByTestId('prog-sources').getByRole('link').first()).toBeVisible();
+    await page.getByTestId('start-program').click();
+    await expect(page).toHaveURL(/prog=boxe-defense-deplacements-debutant&s=1/);
+    await expect(page.getByTestId('exercise-name')).toBeVisible();
   });
 
   test('reprise : pause, fermeture, réouverture, « Reprendre » revient au même exercice et au même temps', async ({ page }) => {

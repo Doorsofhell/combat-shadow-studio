@@ -11,6 +11,7 @@ import { keepScreenOn, onAppPause } from '../../platform/native';
 import { useResume } from '../../store/resume';
 import { createMoveStore } from './moveStore';
 import { RESUME_VERSION, ResumePhase, ResumeSnapshot, workProgress } from '../../domain/resume';
+import { BETWEEN_ITEMS as PROGRAM_BETWEEN_ITEMS, SESSION_COUNTDOWN } from '../../domain/programs';
 
 export type Phase = 'pret' | 'decompte' | 'travail' | 'repos' | 'termine';
 
@@ -49,8 +50,9 @@ export interface SessionPersist {
 /** a running session is also saved every 15 s of activity (never at every frame) */
 const SAVE_EVERY_MS = 15_000;
 
-const COUNTDOWN = 3;
-const BETWEEN_ITEMS = 15;
+const COUNTDOWN = SESSION_COUNTDOWN;
+// the same values give programSessionSeconds the real length of a programme session
+const BETWEEN_ITEMS = PROGRAM_BETWEEN_ITEMS;
 
 /**
  * Drives a training session: countdown, work and rest phases, rounds, items of a program,

@@ -353,12 +353,12 @@ export const APP_GUIDE: GuideEntry[] = [
   {
     id: 'programmes',
     title: 'Les programmes',
-    keywords: ['programme', 'programmes', 'programme guide', 'programmes guides', 'seance guidee', 'seances guidees', 'lancer le programme', 'blocs'],
+    keywords: ['programme', 'programmes', 'filtrer les programmes', 'programme guide', 'programmes guides', 'seance guidee', 'seances guidees', 'lancer le programme', 'blocs'],
     screens: ['programmes', 'programme'],
     answer:
-      'Un programme, c’est une séance complète, de l’échauffement au retour au calme, découpée en blocs : échauffement, technique, combinaisons, cardio, récupération.\n' +
-      'Sa page indique le temps de travail effectif, le nombre de blocs et de rounds, la fréquence conseillée, les objectifs et la progression. Touche « Lancer le programme » : les blocs s’enchaînent tout seuls.\n' +
-      'Les durées sont indicatives, adapte-les à ta forme.',
+      'Un programme, c’est une suite de séances complètes, de l’échauffement au retour au calme, découpées en blocs : échauffement, technique, combinaisons, cardio, récupération.\n' +
+      'La plupart durent 4 semaines, avec une séance différente chaque semaine. Leur page montre le planning, les exercices, le matériel, les prérequis, la sécurité et tes séances faites ou restantes. Touche « Lancer le programme » : la séance de ta semaine s’enchaîne toute seule.\n' +
+      'Pour trier, touche « Filtrer » dans la barre du bas : discipline, niveau, durée, objectif et matériel. Les durées sont calculées à partir des exercices et des repos ; adapte la fréquence à ta forme.',
     action: { to: '/programmes', label: 'Voir les programmes' },
   },
   {

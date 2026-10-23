@@ -49,6 +49,20 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.41.0',
+      releaseDate: '2026-10-23',
+      title: 'Programmes enrichis',
+      isMajor: true,
+      changes: [
+        { category: 'fonctionnalites', text: '49 programmes au lieu de 10 : jusqu’à 8 par discipline, du niveau débutant à expert. Les 10 programmes existants sont toujours là.' },
+        { category: 'fonctionnalites', text: 'Les nouveaux programmes durent 4 semaines, avec une séance différente chaque semaine. La fiche montre le planning, les exercices, le matériel, les prérequis, la sécurité et les sources.' },
+        { category: 'fonctionnalites', text: 'Ta progression : séances faites, séances restantes, et « Continuer » lance directement la séance de ta semaine.' },
+        { category: 'ameliorations', text: '« Filtrer » est maintenant dans la barre du bas : discipline, niveau, durée, objectif et matériel, avec le nombre de résultats. Tes filtres restent en place quand tu changes d’écran.' },
+        { category: 'ameliorations', text: 'Les durées sont calculées à partir des exercices, des repos et des transitions. Trois noms qui annonçaient une durée inexacte ont été corrigés.' },
+      ],
+      links: [{ label: 'Programmes', to: '/entrainer?espace=programmes' }],
+    },
+    {
       version: '0.40.0',
       releaseDate: '2026-10-22',
       title: 'Premium à vie, présentation',

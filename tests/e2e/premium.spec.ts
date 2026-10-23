@@ -73,7 +73,7 @@ test('les diamants sont visibles et les fonctions restent ouvertes', async ({ pa
   // programmes: one diamond on the title, the programmes still open
   await page.goto('/#/programmes');
   await expect(page.getByTestId('premium-all_programs')).toHaveCount(1);
-  await page.locator('a.ex-card').first().click();
+  await page.locator('a.prog-card').first().click(); // 0.41: the catalogue tiles are the programme cards
   await expect(page.getByTestId('start-program')).toBeEnabled();
   // legends, favourites, history, voice
   await page.goto('/#/champions');

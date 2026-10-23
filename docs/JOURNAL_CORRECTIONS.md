@@ -1770,3 +1770,28 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet : 178 réussis, 3 ÉCHOUÉS, 2 ignorés (Firebase). `navigation:51` attendait 8 entrées dans le Menu : test mis à jour pour la neuvième (Premium à vie), puis RÉUSSI. `coach-suggest:96` : délai dépassé sous charge, RÉUSSI relancé seul. `training-layout:325` (caméra Auto) : ÉCHOUÉ connu, déjà en échec avant ;
   - paiement réel : NON APPLICABLE ; Android réel : NON EXÉCUTÉ.
 - **Rapport** : `docs/v040/PREMIUM.md`.
+
+## 2026-10-23 · v0.41.0 · Programmes enrichis
+
+- **Demande** : « Enrichissement des programmes » (Youssef, 2026-10-22) ; publication en autonomie pour la soirée (20:39).
+- **Constat avant** :
+  - 10 programmes déployés, alors que la branche `main` (v0.14, ancienne) n'en a que 8 : `judo-bases-solo` et `bjj-mobilite-solo` ont été ajoutés en v0.13.0. Aucun programme n'avait disparu ;
+  - une seule séance répétée par programme, durées tapées à la main ;
+  - bouton « Filtres » dans le contenu ; pas de suivi de progression.
+- **Correction** :
+  - 49 programmes : les 10 existants (identifiants inchangés) et 39 nouveaux sur 4 semaines, une séance par semaine. 8 par discipline pour la boxe, le kick-boxing, le MMA et le muay-thaï ; 7 pour le judo et le jiu-jitsu brésilien, avec la raison écrite (pas de programme inventé pour atteindre le quota) ;
+  - sources : England Boxing, WAKO, IJF Academy et IBJJF consultés ; aucun ne publie de programme, donc aucun programme officiel ni adapté. Les 49 sont des programmes originaux, cités avec ce qui a été réellement lu ;
+  - durées calculées à partir des blocs, repos et transitions. Trois noms qui annonçaient une durée fausse ont été renommés, avec les mêmes identifiants : « Cardio combat express », « Coordination express » et « Technique avancée multi-disciplines » ;
+  - « Filtrer » dans la barre inférieure (discipline, niveau, durée, objectif, matériel), nombre de résultats, réinitialisation, filtres gardés pendant la navigation ;
+  - fiche complète du programme, progression (séances faites et restantes), lancement de la séance de la semaine, y compris depuis « Continuer mon programme » ;
+  - réponse du Coach IA mise à jour.
+- **Fichiers** : `src/domain/{programCatalog,programSources,programs,programMeta,types}.ts`, `src/ui/screens/{Train,Programs,Training}.tsx`, `train.css`, `src/ui/training/{plan,useSession}.ts`, `src/ui/nav/config.ts`, `src/coach/appGuide.ts`, `src/domain/releases.ts`, `docs/v041/`.
+- **Tests** :
+  - Vitest complet : 722 réussis, 1 ÉCHOUÉ connu (Amara, extension de hanche, déjà en échec avant), 1 ignoré ;
+  - Playwright complet : 178 réussis, 4 ÉCHOUÉS, 2 ignorés (Firebase) :
+    - `train-resume:26` attendait 10 programmes ; `train-resume:94` attendait 12 séances pour un programme à 2 séances par semaine. Ces deux attentes ont été corrigées ;
+    - `discipline-art` (Programmes) : l'icône de discipline manquait sur les tuiles du catalogue. Elle a été rétablie ;
+    - après ces trois corrections, `train-resume`, `discipline-art`, `premium` et `app` ont été relancés : 26 RÉUSSIS ;
+    - `training-layout:325` (caméra Auto) : ÉCHOUÉ connu, déjà en échec avant ;
+  - Android réel : NON EXÉCUTÉ.
+- **Rapport** : `docs/v041/PROGRAMMES.md`, `INVENTAIRE_PROGRAMMES.md`, `MATRICE_SOURCES.md`, `NON_EXECUTABLES.md`, captures dans `docs/v041/captures/`.

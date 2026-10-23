@@ -11,12 +11,15 @@ import { useStats, formatDuration } from '../../store/stats';
 import { useResume } from '../../store/resume';
 import { DISCIPLINES, DisciplineId, Exercise, LEVELS, LevelId, Program } from '../../domain/types';
 import { EXERCISE_BY_ID, exercisesFor } from '../../domain/exercises';
-import { PROGRAMS, PROGRAM_BY_ID } from '../../domain/programs';
+import { PROGRAMS, PROGRAM_BY_ID, programProgress, programQuery } from '../../domain/programs';
+import { NavPanel, usePanel } from '../nav/NavSheets';
 import { recommend } from '../../domain/recommend';
 import { ResumeCardState, ResumeSnapshot, pickCard, progressRatio } from '../../domain/resume';
 import {
   DURATION_LABEL,
   DurationBucket,
+  EQUIPMENT_LABEL,
+  EquipmentNeed,
   NO_PROGRAM_FILTER,
   OBJECTIVE_LABEL,
   ProgramFilters,
@@ -278,7 +281,7 @@ function ResumeCard({ recommended, onOpen, only }: { recommended?: Exercise; onO
             Séance {card.run.count + 1} · {p.durationMin} min · {p.frequency}
           </p>
           <p className="small muted">Dernière séance terminée le {new Date(card.run.lastDone).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}.</p>
-          <button type="button" className="btn primary" disabled={busy} onClick={() => go(`/entrainement?prog=${p.id}`)} data-testid="resume-action">
+          <button type="button" className="btn primary" disabled={busy} onClick={() => go(`/entrainement?${programQuery(p, programProgress(p, card.run.count).next)}`)} data-testid="resume-action">
             <AppIcon id="play" size={18} /> Continuer
           </button>
         </div>
@@ -402,86 +405,95 @@ function Disciplines() {
 
 function programStatus(p: Program, snapshots: ResumeSnapshot[], runs: Record<string, { count: number }>) {
   const s = snapshots.find((x) => x.programId === p.id);
+  const pr = programProgress(p, runs[p.id]?.count ?? 0);
   if (s) {
     const r = progressRatio(s);
-    return { key: 'en-cours', label: r !== null ? `En cours · ${Math.round(r * 100)} %` : 'En cours', ratio: r };
+    return { key: 'en-cours', label: r !== null ? `Séance en cours · ${Math.round(r * 100)} %` : 'Séance en cours', ratio: r };
   }
-  const n = runs[p.id]?.count ?? 0;
-  if (n) return { key: 'fait', label: `Fait ${n} fois`, ratio: null };
+  // v0.41: the real progress, from the sessions finished (never estimated)
+  if (pr.total !== null && pr.done) return { key: pr.finished ? 'fait' : 'en-cours', label: pr.finished ? `Terminé · ${pr.total} séances sur ${pr.total}` : `${pr.done} séance${pr.done > 1 ? 's' : ''} sur ${pr.total} · semaine ${pr.week}`, ratio: pr.done / pr.total };
+  if (pr.done) return { key: 'fait', label: `Fait ${pr.done} fois`, ratio: null };
   return { key: 'nouveau', label: 'Pas encore commencé', ratio: null };
 }
 
-function Programmes() {
-  const [f, setF] = useState<ProgramFilters>(NO_PROGRAM_FILTER);
-  // level, duration and objective fold under one « Filtres » button, so the list starts high on the screen
-  const [more, setMore] = useState(false);
+/** v0.41: the filters stay as they were while the user moves around the app (not saved on the device) */
+let keptFilters: ProgramFilters = NO_PROGRAM_FILTER;
+
+/** `thumbs`: the catalogue page (/programmes) shows the coach doing the key technique, as before 0.41 */
+export function Programmes({ thumbs = false }: { thumbs?: boolean }) {
+  const [f, setF] = useState<ProgramFilters>(keptFilters);
+  const panel = usePanel();
   const snapshots = useResume((s) => s.snapshots);
   const runs = useResume((s) => s.programs);
   const list = filterPrograms(PROGRAMS, f);
-  const set = (p: Partial<ProgramFilters>) => setF((x) => ({ ...x, ...p }));
+  const set = (p: Partial<ProgramFilters>) =>
+    setF((x) => {
+      keptFilters = { ...x, ...p };
+      return keptFilters;
+    });
+  const reset = () => ((keptFilters = NO_PROGRAM_FILTER), setF(NO_PROGRAM_FILTER));
   const n = activeFilterCount(f);
-  const nMore = n - (f.discipline !== 'tous' ? 1 : 0);
   const disciplines = ['tous', ...new Set(PROGRAMS.map((p) => p.discipline))];
+  const discOptions = disciplines.map((d) => ({
+    id: d,
+    label: d === 'tous' ? 'Toutes' : d === 'mixte' ? 'Multi' : DISCIPLINES.find((x) => x.id === d)!.short,
+    icon: d !== 'tous' && d !== 'mixte' ? <DisciplineEmblem id={d as DisciplineId} size={18} variant="contour" /> : undefined,
+  }));
+  // v0.41 (Youssef, « Enrichissement des programmes » §6): « Filtres » is in the bar, in place of « Programmes »
+  // (the space is already open); the panel holds every filter
+  const filterAction = { run: panel.show, icon: 'filter' as const, label: 'Filtrer', pressed: n > 0, ariaLabel: n ? `Filtrer les programmes, ${n} filtre${n > 1 ? 's' : ''} actif${n > 1 ? 's' : ''}` : 'Filtrer les programmes', testId: 'nav-prog-filters' };
+  useNavActions({ 'nav:/programmes': filterAction, filters: filterAction });
+  const chips = <T extends string>(label: string, value: T, options: { id: T; label: string }[], prefix: string, on: (v: T) => void) => (
+    <div className="nav-field" role="group" aria-label={label}>
+      <span>{label}</span>
+      <div className="nav-chips">
+        {options.map((o) => (
+          <button key={o.id} type="button" className={`chip ${value === o.id ? 'on' : ''}`} aria-pressed={value === o.id} onClick={() => on(o.id)} data-testid={`${prefix}${o.id}`}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
   return (
     <>
-      <div className="prog-filters" role="group" aria-label="Filtres des programmes">
-        <FilterChips
-          scroll
-          label="Discipline"
-          value={f.discipline}
-          onChange={(v) => set({ discipline: v })}
-          testPrefix="pf-d-"
-          options={disciplines.map((d) => ({
-            id: d,
-            label: d === 'tous' ? 'Toutes' : d === 'mixte' ? 'Multi' : DISCIPLINES.find((x) => x.id === d)!.short,
-            icon: d !== 'tous' && d !== 'mixte' ? <DisciplineEmblem id={d as DisciplineId} size={18} variant="contour" /> : undefined,
-          }))}
-        />
-        <button type="button" className={`chip filters-toggle ${more ? 'on' : ''}`} aria-expanded={more} aria-controls="prog-more" onClick={() => setMore((x) => !x)} data-testid="pf-more">
-          <AppIcon id="filters" size={18} /> Filtres{nMore > 0 ? ` (${nMore})` : ''}
-        </button>
-        <div id="prog-more" className="prog-more" hidden={!more}>
-        <FilterChips
-          scroll
-          label="Niveau"
-          value={f.level}
-          onChange={(v) => set({ level: v })}
-          testPrefix="pf-l-"
-          options={[{ id: 'tous' as const, label: 'Tous niveaux' }, ...LEVELS.filter((l) => PROGRAMS.some((p) => programLevel(p) === l.id)).map((l) => ({ id: l.id, label: l.name }))]}
-        />
-        <FilterChips
-          scroll
-          label="Durée"
-          value={f.duration}
-          onChange={(v) => set({ duration: v })}
-          testPrefix="pf-t-"
-          options={[{ id: 'tous' as const, label: 'Toutes durées' }, ...(Object.keys(DURATION_LABEL) as DurationBucket[]).map((k) => ({ id: k, label: DURATION_LABEL[k] }))]}
-        />
-        <FilterChips
-          scroll
-          label="Objectif"
-          value={f.objective}
-          onChange={(v) => set({ objective: v })}
-          testPrefix="pf-o-"
-          options={[{ id: 'tous' as const, label: 'Tous objectifs' }, ...(Object.keys(OBJECTIVE_LABEL) as ProgramObjective[]).map((k) => ({ id: k, label: OBJECTIVE_LABEL[k] }))]}
-        />
-        </div>
+      <div className="prog-filters" role="group" aria-label="Discipline des programmes">
+        <FilterChips scroll label="Discipline" value={f.discipline} onChange={(v) => set({ discipline: v })} testPrefix="pf-d-" options={discOptions} />
         <div className="prog-count">
           <span className="small muted" data-testid="prog-count" aria-live="polite">
             {list.length} programme{list.length > 1 ? 's' : ''} sur {PROGRAMS.length}
           </span>
           {n > 0 && (
-            <button type="button" className="btn ghost small" onClick={() => setF(NO_PROGRAM_FILTER)} data-testid="pf-reset">
-              Réinitialiser
+            <button type="button" className="btn ghost small" onClick={reset} data-testid="pf-reset">
+              Réinitialiser ({n})
             </button>
           )}
         </div>
       </div>
+      {panel.open && (
+        <NavPanel title="Filtrer les programmes" onClose={panel.hide} testId="prog-filters-panel">
+          {chips('Discipline', f.discipline, discOptions.map(({ id, label }) => ({ id, label })), 'pp-d-', (v) => set({ discipline: v }))}
+          {chips('Niveau', f.level, [{ id: 'tous' as const, label: 'Tous' }, ...LEVELS.filter((l) => PROGRAMS.some((p) => programLevel(p) === l.id)).map((l) => ({ id: l.id, label: l.name }))], 'pf-l-', (v) => set({ level: v }))}
+          {chips('Durée d’une séance', f.duration, [{ id: 'tous' as const, label: 'Toutes' }, ...(Object.keys(DURATION_LABEL) as DurationBucket[]).map((k) => ({ id: k, label: DURATION_LABEL[k] }))], 'pf-t-', (v) => set({ duration: v }))}
+          {chips('Objectif', f.objective, [{ id: 'tous' as const, label: 'Tous' }, ...(Object.keys(OBJECTIVE_LABEL) as ProgramObjective[]).map((k) => ({ id: k, label: OBJECTIVE_LABEL[k] }))], 'pf-o-', (v) => set({ objective: v }))}
+          {chips('Matériel', f.equipment, [{ id: 'tous' as const, label: 'Tous' }, ...(Object.keys(EQUIPMENT_LABEL) as EquipmentNeed[]).map((k) => ({ id: k, label: EQUIPMENT_LABEL[k] }))], 'pf-m-', (v) => set({ equipment: v }))}
+          <div className="nav-actions">
+            {n > 0 && (
+              <button type="button" className="nav-action" onClick={reset} data-testid="pp-reset">
+                Réinitialiser
+              </button>
+            )}
+            <button type="button" className="nav-action primary" onClick={() => panel.hide()} data-testid="pp-close">
+              Voir les résultats ({list.length})
+            </button>
+          </div>
+        </NavPanel>
+      )}
       {list.length === 0 ? (
         <EmptyState
           title="Aucun programme pour ces filtres"
           action={
-            <button type="button" className="btn secondary" onClick={() => setF(NO_PROGRAM_FILTER)}>
+            <button type="button" className="btn secondary" onClick={reset}>
               Réinitialiser les filtres
             </button>
           }
@@ -493,11 +505,15 @@ function Programmes() {
             const lvl = programLevel(p);
             return (
               <Link key={p.id} to={`/programmes/${p.id}`} className="card link prog-card" data-testid={`prog-${p.id}`} data-status={st.key}>
-                <span className="prog-emblem" aria-hidden>
-                  {p.discipline === 'mixte' ? <AppIcon id="programs" size={28} /> : <DisciplineIcon id={p.discipline} size={40} />}
-                </span>
+                {thumbs ? (
+                  <TechThumb id={programTechnique(p)} />
+                ) : (
+                  <span className="prog-emblem" aria-hidden>
+                    {p.discipline === 'mixte' ? <AppIcon id="programs" size={28} /> : <DisciplineIcon id={p.discipline} size={40} />}
+                  </span>
+                )}
                 <span className="body">
-                  <span className="eyebrow">{discName(p.discipline)}</span>
+                  <span className="eyebrow">{thumbs && p.discipline !== 'mixte' ? <DisciplineLabel id={p.discipline} name={discName(p.discipline)} /> : discName(p.discipline)}</span>
                   <span className="title">{p.name}</span>
                   <span className="prog-tags">
                     <span>{p.durationMin} min</span>
@@ -520,7 +536,7 @@ function Programmes() {
           })}
         </div>
       )}
-      <p className="small muted prog-note">Durées et fréquences indicatives : adapte-les à ta condition physique.</p>
+      <p className="small muted prog-note">Durées calculées à partir des blocs, des repos et des transitions. Fréquences indicatives : adapte-les à ta condition physique.</p>
     </>
   );
 }

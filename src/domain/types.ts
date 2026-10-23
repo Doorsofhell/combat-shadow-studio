@@ -88,15 +88,51 @@ export interface ProgramBlock {
   rest: number;
 }
 
+/** v0.41: one session of a programme, with its own blocks (a week of the programme plays its own session) */
+export interface ProgramSession {
+  week: number;
+  /** what this session adds, in one sentence */
+  focus: string;
+  blocks: ProgramBlock[];
+}
+
+/** what a programme mainly works (v0.33 filter; v0.41 adds défense, déplacements and enchaînements) */
+export type ProgramObjective = 'bases' | 'technique' | 'cardio' | 'coordination' | 'mobilite' | 'defense' | 'deplacements' | 'enchainements';
+
+/** v0.41: where a programme comes from (Youssef: « distinguer explicitement ») */
+export type ProgramOrigin = 'original' | 'adapte';
+
+export interface ProgramSourceRef {
+  /** a source of src/domain/programSources.ts */
+  id: string;
+  /** what was taken from it for this programme */
+  usage: string;
+}
+
 export interface Program {
   id: string;
   name: string;
   discipline: DisciplineId | 'mixte';
+  /** minutes of one session, computed from its blocks, rests and transitions (programSessionSeconds) */
   durationMin: number;
   frequency: string;
   goals: string[];
   progression: string;
+  /** the first session; programmes without `sessions` repeat this one */
   blocks: ProgramBlock[];
+  // v0.41 (Youssef, « Enrichissement des programmes »), optional so the first ten keep their shape
+  level?: LevelId;
+  objective?: ProgramObjective;
+  description?: string;
+  weeks?: number;
+  perWeek?: number;
+  prerequisites?: string[];
+  equipment?: string[];
+  safety?: string[];
+  /** one session per week, each with its own blocks; absent = the same session every time */
+  sessions?: ProgramSession[];
+  origin?: ProgramOrigin;
+  sources?: ProgramSourceRef[];
 }
 
 export type TrainingMode = 'libre' | 'technique' | 'cardio' | 'rounds' | 'programme' | 'personnalise';
