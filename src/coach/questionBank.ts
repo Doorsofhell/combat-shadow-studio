@@ -535,6 +535,10 @@ export const SCREEN_POOL: Record<CoachScreen, ScreenQ[]> = {
     { q: 'Mes données sont-elles envoyées sur internet ?', expect: 'app:confidentialite' },
     { q: 'Comment exporter mes données ?', expect: 'app:donnees' },
   ],
+  premium: [
+    { q: 'Est-ce que je dois payer pour utiliser l’application ?', expect: 'app:premium' },
+    { q: 'Que veut dire le petit diamant doré ?', expect: 'app:premium' },
+  ],
   entrainement: [
     { q: 'À quoi sert le bouton Décomposer ?', expect: 'app:decomposer' },
     { q: 'À quoi sert le bouton Ralenti ?', expect: 'app:ralenti' },

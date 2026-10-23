@@ -13,6 +13,7 @@ import { useNavActions } from '../../nav/store';
 import { MasteryBadge, PictoStrip, ScoreRing, comboName, dateFr, masteryKey, useUsage, type ComboUsage } from './shared';
 import { deleteCombo } from './actions';
 import './creator.css';
+import { PremiumMarker } from '../../premium/PremiumMarker';
 
 export type Sort = 'recents' | 'utilises' | 'evaluations';
 export type StatusFilter = 'tous' | 'acquise' | 'a-revoir';
@@ -70,7 +71,7 @@ export function CreatorList() {
 
   return (
     <div className="page creator-list">
-      <PageHead title="Mes enchaînements" eyebrow="Créateur" fallback="/entrainer" />
+      <PageHead title="Mes enchaînements" eyebrow="Créateur" fallback="/entrainer" badge={<PremiumMarker feature="unlimited_combos" />} />
 
       <Link to={`/createur/nouveau${d !== 'toutes' ? `?d=${d}` : ''}`} className="creator-new card link" data-testid="create-combo">
         <span className="creator-icon" aria-hidden>

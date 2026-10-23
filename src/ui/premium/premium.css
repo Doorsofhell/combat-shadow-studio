@@ -1,0 +1,120 @@
+/* v0.40 Premium à vie: the marker and the page (docs/v040/PREMIUM.md) */
+.premium-marker {
+  display: inline-grid;
+  place-items: center;
+  vertical-align: middle;
+  /* a 32 px target around a 16 px diamond, without pushing the title around */
+  min-width: 32px;
+  min-height: 32px;
+  margin: -8px -6px -8px 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 999px;
+  cursor: pointer;
+  flex: none;
+}
+.premium-marker:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: -4px;
+}
+.premium-head {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  text-align: center;
+  padding: 8px 0 4px;
+}
+.premium-gem {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--gold) 14%, var(--surface-2, transparent));
+  border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent);
+}
+.premium-head h1 {
+  margin: 4px 0 0;
+  font-size: 1.45rem;
+}
+.premium-tagline {
+  margin: 0;
+  color: var(--muted);
+}
+.premium-terms {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.premium-terms li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: var(--radius);
+  background: var(--tile, var(--surface-2));
+  border: 1px solid var(--tile-edge, var(--line));
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+.premium-benefits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.premium-benefits li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--line);
+}
+.premium-benefits li:last-child {
+  border-bottom: 0;
+}
+.premium-soon {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.premium-buy {
+  display: grid;
+  gap: 10px;
+  text-align: center;
+}
+.premium-price {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+.premium-price small {
+  display: block;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+.premium-active {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.premium-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+}

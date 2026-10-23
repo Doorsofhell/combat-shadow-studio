@@ -26,6 +26,7 @@ import { FullscreenStage } from '../fullscreen/FullscreenStage';
 import { StageGuard } from '../components/StageGuard';
 import { exerciseForTechnique } from '../../domain/quickPicks';
 import { TechniqueFilter, neighbours, parseTechniqueFilter, sheetQuery, techniqueCatalogue } from './techniqueOrder';
+import { PremiumMarker } from '../premium/PremiumMarker';
 
 const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
 
@@ -203,6 +204,9 @@ function FavoritesTab() {
     return <EmptyState title="Aucun favori pour l’instant" text="Touche l’étoile d’une technique ou d’un exercice pour le retrouver ici." />;
   return (
     <>
+      <p className="small muted premium-line">
+        Favoris illimités <PremiumMarker feature="unlimited_favorites" />
+      </p>
       {exs.length > 0 && (
         <section className="section">
           <SectionHead title="Exercices et combinaisons" />

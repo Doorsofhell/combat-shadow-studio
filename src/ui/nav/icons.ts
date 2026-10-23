@@ -41,6 +41,8 @@ export const NAV_EXTRA_ICONS = {
   trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
   save: '<path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/>',
   close: '<path d="M6 6l12 12M18 6 6 18"/>',
+  // v0.40: « Premium à vie » in Menu, the same cut gem as the gold marker
+  diamond: '<path d="M6.5 4h11l4 5.5L12 20.5 2.5 9.5z"/><path d="M2.5 9.5h19M9 4l-1.5 5.5L12 20.5l4.5-11L15 4"/>',
 } as const;
 
 export type NavIconId = keyof typeof NAV_ICONS | keyof typeof NAV_EXTRA_ICONS;

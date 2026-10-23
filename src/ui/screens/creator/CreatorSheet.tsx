@@ -15,6 +15,7 @@ import { RoundOptions } from '../Discipline';
 import { analyseSaved, deleteCombo, duplicateCombo } from './actions';
 import { MasteryBadge, ScoreRing, comboName, dateFr, masteryKey, useComboMastery, useUsage } from './shared';
 import './creator.css';
+import { PremiumMarker } from '../../premium/PremiumMarker';
 
 const DISC_NAME = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.name])) as Record<string, string>;
 
@@ -161,7 +162,9 @@ export function CreatorSheet() {
 
       <section className="card stack combo-analysis" aria-labelledby="h-analysis" data-testid="combo-analysis">
         <div className="row nowrap" style={{ justifyContent: 'space-between' }}>
-          <h2 id="h-analysis">Analyse de l’enchaînement</h2>
+          <h2 id="h-analysis">
+            Analyse de l’enchaînement <PremiumMarker feature="advanced_combo_builder" />
+          </h2>
           <span className="tag-local">Calcul local</span>
         </div>
         {!analysis ? (

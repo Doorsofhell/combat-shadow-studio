@@ -22,6 +22,7 @@ import { useNavActions } from '../nav/store';
 import { setSelection } from '../nav/selection';
 import { LegendPanels } from './LegendNav';
 import { DnaBar, DnaFlower, DnaLegend } from '../components/LegendDna';
+import { PremiumMarker } from '../premium/PremiumMarker';
 
 const DISC_NAME = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.name])) as Record<DisciplineId, string>;
 const DISC_SHORT = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.short])) as Record<DisciplineId, string>;
@@ -289,7 +290,7 @@ export function Champions() {
   if (raw === 'importer') return <Navigate to="/champions" replace />;
   return (
     <div className="page">
-      <PageHead title="Champions" eyebrow="Bibliothèque des combinaisons" />
+      <PageHead title="Champions" eyebrow="Bibliothèque des combinaisons" badge={<PremiumMarker feature="legends_collection" />} />
       <LegendPanels catalog={catalog ?? null} />
       {!catalog ? (
         <Loading catalogError={error} retry={retry} />

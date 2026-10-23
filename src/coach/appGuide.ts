@@ -35,6 +35,7 @@ export type CoachScreen =
   | 'coach-choix'
   | 'coach-ia'
   | 'confidentialite'
+  | 'premium'
   | 'entrainement';
 
 export interface GuideEntry {
@@ -63,7 +64,7 @@ export const APP_GUIDE: GuideEntry[] = [
     ],
     answer:
       'Combat Shadow Studio t’aide à t’entraîner seul, en shadow : ton coach en 3D (Kadir ou Amara) montre chaque mouvement et tu le fais en même temps, face à l’écran.\n' +
-      'Tout se passe avec la barre du bas : ses cinq boutons changent selon l’écran. Sur l’accueil : Entraîner (disciplines, programmes et tes enchaînements), Techniques (les fiches de chaque mouvement), Progrès (tes statistiques), Profil et Menu. Menu ouvre la navigation générale, avec aussi les Légendes, les Paramètres et les Nouveautés.\n' +
+      'Tout se passe avec la barre du bas : ses cinq boutons changent selon l’écran. Sur l’accueil : Entraîner (disciplines, programmes et tes enchaînements), Techniques (les fiches de chaque mouvement), Progrès (tes statistiques), Profil et Menu. Menu ouvre la navigation générale, avec aussi les Légendes, les Paramètres, les Nouveautés et Premium à vie.\n' +
       'Pour te lancer, touche « Commencer l’entraînement » sur l’accueil. Et si tu as une question, technique ou sur l’application, ouvre-moi avec « Coach IA » dans Menu.',
     action: { to: '/entrainer', label: 'Aller à Entraîner' },
   },
@@ -74,7 +75,7 @@ export const APP_GUIDE: GuideEntry[] = [
     answer:
       'La barre du bas est la même partout, séance comprise. Elle a toujours cinq boutons, qui changent selon l’écran : Retour à gauche (sauf sur l’accueil), les actions de l’écran au milieu, et Menu à droite.\n' +
       '• Retour revient à l’écran d’avant, avec tes filtres et ta position dans la page. Si un panneau est ouvert, il se ferme d’abord.\n' +
-      '• Menu ouvre la navigation générale : Accueil, Entraîner, Techniques, Progrès, Légendes, Profil, Paramètres et Nouveautés.\n' +
+      '• Menu ouvre la navigation générale : Accueil, Entraîner, Techniques, Progrès, Légendes, Profil, Paramètres, Nouveautés et Premium à vie.\n' +
       'Sur l’accueil, Profil est directement dans la barre ; sur ton profil, Réglages aussi.',
   },
   {
@@ -537,6 +538,17 @@ export const APP_GUIDE: GuideEntry[] = [
     action: { to: '/confidentialite', label: 'Lire la confidentialité' },
   },
   {
+    id: 'premium',
+    title: 'Premium à vie',
+    keywords: ['premium', 'premium a vie', 'diamant', 'payant', 'payante', 'payer', 'paiement', 'acheter', 'achat', 'prix', 'abonnement', 'gratuit', 'debloquer', 'version complete'],
+    screens: ['premium'],
+    answer:
+      'Premium à vie sera un achat unique, sans abonnement ni renouvellement. Le petit diamant doré signale les fonctions qui en feront partie.\n' +
+      'Pour l’instant, aucun paiement n’est possible et tu gardes accès à tout : le diamant est seulement une information, rien n’est bloqué.\n' +
+      'La page Premium à vie s’ouvre depuis Menu ou en touchant un diamant.',
+    action: { to: '/premium', label: 'Voir Premium à vie' },
+  },
+  {
     id: 'compte',
     title: 'Le compte et la synchronisation',
     keywords: ['un compte', 'le compte', 'creer un compte', 'mon compte', 'se connecter', 'me connecter', 'connexion', 'synchronisation', 'synchroniser', 'sync', 'mot de passe', 'mode invite'],
@@ -714,6 +726,8 @@ export function screenFromPath(pathname: string, search = ''): CoachScreen | und
       return 'coach-ia';
     case 'confidentialite':
       return 'confidentialite';
+    case 'premium':
+      return 'premium';
     default:
       return undefined;
   }

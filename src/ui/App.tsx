@@ -27,6 +27,7 @@ const DisciplinePage = lazy(() => import('./screens/Discipline').then((m) => ({ 
 const Library = lazy(() => import('./screens/Library').then((m) => ({ default: m.Library })));
 const TechniquePage = lazy(() => import('./screens/Library').then((m) => ({ default: m.TechniquePage })));
 const PartnerPage = lazy(() => import('./screens/Library').then((m) => ({ default: m.PartnerPage })));
+const PremiumPage = lazy(() => import('./premium/PremiumPage').then((m) => ({ default: m.PremiumPage })));
 const Programs = lazy(() => import('./screens/Programs').then((m) => ({ default: m.Programs })));
 const ProgramPage = lazy(() => import('./screens/Programs').then((m) => ({ default: m.ProgramPage })));
 const CreatorList = lazy(() => import('./screens/creator/CreatorList').then((m) => ({ default: m.CreatorList })));
@@ -199,6 +200,7 @@ export function App() {
             <Route path="/reglages" element={<SettingsPage />} />
             <Route path="/reglages/:section" element={<SettingsPage />} />
             <Route path="/confidentialite" element={<Privacy />} />
+            <Route path="/premium" element={<PremiumPage />} />
             <Route path="/connexion" element={<SignIn />} />
             <Route path="/profil" element={<ProfilePage />} />
             <Route path="/coach-ia" element={<CoachHistory />} />

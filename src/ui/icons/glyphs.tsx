@@ -543,6 +543,13 @@ export const GLYPHS = {
       <rect x="4" y="19.6" width="16" height="2.4" rx="1" fill={W} />
     </>
   ),
+  /** v0.40 Premium à vie: a cut gem (table, crown facets, pavilion) */
+  diamond: (
+    <>
+      <path d="M6.4 3.4h11.2l4.6 6-10.2 11.8L1.8 9.4z" fill={W} strokeLinejoin="round" stroke={W} strokeWidth="1" />
+      <path d="M2.4 9.4h19.2M8.6 3.6 7 9.4l5 11.4 5-11.4-1.6-5.8" {...cut} strokeWidth={1.5} />
+    </>
+  ),
   locked: (
     <>
       <path d="M7 10.4V7.6a5 5 0 0 1 10 0v2.8" {...line} strokeWidth={2.6} />

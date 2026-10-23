@@ -1749,3 +1749,24 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - nouveau `tests/e2e/progres-v2.spec.ts` : 4 RÉUSSIS ;
   - Android réel : NON EXÉCUTÉ.
 - **Rapport** : `docs/v039/PROGRES_V2.md`.
+
+## 2026-10-23 · v0.40.0 · Préparation Freemium et Premium à vie
+
+- **Demande** : « Préparation Freemium et Premium à vie » (Youssef, 2026-10-22 20:52) ; publication en autonomie pour la soirée (20:39). « Aucun paiement réel et aucun blocage de fonctionnalité dans cette livraison. »
+- **Constat avant** : aucune notion de droits ni d'offre dans l'application ; pas de page Premium.
+- **Correction** :
+  - catalogue typé de 14 droits (`src/monetization/entitlements.ts`), couche de droits avec `MONETIZATION_ENABLED = false` : `canAccessFeature` répond toujours oui, rien n'est bloqué ;
+  - statuts `free` et `premium_lifetime` ; aucun clic ni aucune commande de la version distribuée ne peut donner le statut Premium ;
+  - prix centralisé et indicatif (39,99 € TTC) ; interface du futur paiement documentée, non implémentée ;
+  - diamant doré discret sur les fonctions concernées (Créateur, analyse d'enchaînement, niveaux avancé et expert, programmes, Légendes, favoris, Historique, Activité, mode Décomposer, conseils techniques de la voix) ; il ouvre `/premium`, ne laisse aucun espace vide pour un utilisateur Premium et porte un libellé accessible ; aucun diamant sur « Créer un enchaînement » ni dans la barre ;
+  - page `/premium` et entrée « Premium à vie » en neuvième case du Menu (pas d'onglet dans la barre) ;
+  - réponse du Coach IA sur Premium ;
+  - correction en passant : une ligne de réglage contenant un diamant est liée à son interrupteur (toucher le texte activait le diamant au lieu de l'interrupteur).
+- **En attente de décision** : diamants des six disciplines et du rendu Anime (droits marqués « à confirmer », non affichés).
+- **Fichiers** : `src/monetization/`, `src/ui/premium/`, `src/ui/components/SettingsPanel.tsx`, `src/ui/nav/`, `src/ui/App.tsx`, `src/coach/`, écrans portant un diamant, `src/domain/releases.ts`, `docs/v040/`.
+- **Tests** :
+  - Vitest complet : 712 réussis, 1 ÉCHOUÉ connu (Amara, extension de hanche, déjà en échec avant), 1 ignoré ;
+  - `tests/e2e/premium.spec.ts` : 3 RÉUSSIS ;
+  - Playwright complet : 178 réussis, 3 ÉCHOUÉS, 2 ignorés (Firebase). `navigation:51` attendait 8 entrées dans le Menu : test mis à jour pour la neuvième (Premium à vie), puis RÉUSSI. `coach-suggest:96` : délai dépassé sous charge, RÉUSSI relancé seul. `training-layout:325` (caméra Auto) : ÉCHOUÉ connu, déjà en échec avant ;
+  - paiement réel : NON APPLICABLE ; Android réel : NON EXÉCUTÉ.
+- **Rapport** : `docs/v040/PREMIUM.md`.

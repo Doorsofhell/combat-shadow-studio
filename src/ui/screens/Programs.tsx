@@ -6,6 +6,7 @@ import { EXERCISE_BY_ID } from '../../domain/exercises';
 import { DISCIPLINES, ProgramBlock } from '../../domain/types';
 import { DisciplineLabel, EmptyState, PageHead } from '../components';
 import { AppIcon } from '../icons';
+import { PremiumMarker } from '../premium/PremiumMarker';
 
 const PHASE_LABEL: Record<ProgramBlock['phase'], string> = {
   echauffement: 'Échauffement',
@@ -20,7 +21,7 @@ const discName = (d: string) => (d === 'mixte' ? 'Multi-disciplines' : DISCIPLIN
 export function Programs() {
   return (
     <div className="page">
-      <PageHead title="Programmes" eyebrow="Séances guidées" fallback="/entrainer" />
+      <PageHead title="Programmes" eyebrow="Séances guidées" fallback="/entrainer" badge={<PremiumMarker feature="all_programs" />} />
       <p className="muted">Des séances complètes, de l’échauffement au retour au calme. Durées et fréquences indicatives : adapte-les à ta condition physique.</p>
       <div className="stack" style={{ gap: 8 }}>
         {PROGRAMS.map((p) => (

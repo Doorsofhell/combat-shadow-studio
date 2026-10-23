@@ -48,6 +48,7 @@ export type NavScreen =
   | 'coach-ia'
   | 'parametres'
   | 'confidentialite'
+  | 'premium'
   | 'autre';
 
 const BACK: NavSlot = { icon: 'back', label: 'Retour', action: 'back' };
@@ -90,6 +91,8 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
   // 5.10 — the mockup's `default` (settings)
   parametres: SETTINGS,
   confidentialite: SETTINGS,
+  // 0.40 (Youssef, « Préparation Freemium et Premium à vie » §8): reached from Menu and the markers, not from the bar
+  premium: PLACES,
   connexion: SETTINGS,
   // 5.11 — the other screens, built on the same rules (Retour first, Menu last, the main action second)
   entrainer: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'calendar', label: 'Programmes', action: 'nav:/programmes' }, { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' }, MENU],
@@ -145,6 +148,7 @@ export const NAV_PARENT: Record<NavScreen, string> = {
   'coach-ia': '/',
   parametres: '/',
   confidentialite: '/reglages',
+  premium: '/',
   autre: '/',
 };
 
@@ -182,11 +186,12 @@ export function navScreen(pathname: string, search = ''): NavScreen | null {
   if (p.startsWith('/coach-ia')) return 'coach-ia';
   if (p === '/reglages' || p.startsWith('/reglages/')) return 'parametres';
   if (p === '/confidentialite') return 'confidentialite';
+  if (p === '/premium') return 'premium';
   // a page the bar does not know yet still gets Retour and Menu
   return 'autre';
 }
 
-/** the eight places of « Navigation générale », in the mockup's order (section 6) */
+/** the eight places of « Navigation générale », in the mockup's order (section 6), then « Premium à vie » (0.40) */
 export interface MenuEntry {
   id: string;
   icon: NavIconId;
@@ -204,4 +209,6 @@ export const MENU_ENTRIES: readonly MenuEntry[] = [
   { id: 'parametres', icon: 'settings', label: 'Paramètres', to: '/reglages' },
   // as in the mockup, Nouveautés opens in the same sheet (no page change)
   { id: 'nouveautes', icon: 'sparkle', label: 'Nouveautés', to: '' },
+  // 0.40 (Youssef, « Préparation Freemium et Premium à vie » §8): a permanent way in, never a tab of the bar
+  { id: 'premium', icon: 'diamond', label: 'Premium à vie', to: '/premium' },
 ];

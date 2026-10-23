@@ -13,6 +13,7 @@ import { MODE_HELP, MODE_LABEL } from '../training/plan';
 import { DisciplineArtwork, EmptyState, FilterChips, KickboxingStylePicker, LevelSelector, PageHead, Segmented, Sheet, useKbStyle } from '../components';
 import { filterExercises } from '../../domain/kickboxingStyles';
 import { AppIcon, DisciplineIcon } from '../icons';
+import { PremiumMarker } from '../premium/PremiumMarker';
 
 export const KIND_LABEL: Record<Exercise['kind'], string> = {
   technique: 'Technique',
@@ -108,7 +109,10 @@ export function DisciplinePage() {
       </div>
       <section className="stack" aria-label="Niveau">
         <LevelSelector value={lvl.id} onChange={(l) => (setParam('niveau', l), setKind('tout'))} />
-        <p className="small muted">{lvl.goal}</p>
+        <p className="small muted">
+          {lvl.goal}
+          {(lvl.id === 'avance' || lvl.id === 'expert') && <PremiumMarker feature="advanced_techniques" />}
+        </p>
       </section>
       {disc.id === 'kickboxing' && <KickboxingStylePicker />}
       <FilterChips
