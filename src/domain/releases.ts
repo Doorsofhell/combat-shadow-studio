@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.45.1',
+      releaseDate: '2026-10-23',
+      title: 'Barre du bas plus sobre',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Barre du bas en gris, de jour comme de nuit : plus aucun fond coloré derrière les boutons. Les actions de l’écran sont un peu plus foncées que Retour et Menu, et celle qui est active ressort davantage, en caractères un peu plus gras.' },
+      ],
+      links: [{ label: 'Techniques', to: '/techniques' }],
+    },
+    {
       version: '0.45.0',
       releaseDate: '2026-10-23',
       title: 'Nouvelle page Premium',

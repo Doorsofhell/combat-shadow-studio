@@ -11,12 +11,13 @@
 :root {
   --nav-accent: #e43d43;
   --nav-panel: var(--soft);
-  /* v0.44 contextual actions: the theme's readable red, softened toward the neutral grey at rest, a faint tint of
-     the accent behind; when active, the full readable red and a stronger tint (light and dark from the same tokens) */
-  --nav-ctx: color-mix(in srgb, var(--red-ink) 68%, var(--muted));
-  --nav-ctx-bg: color-mix(in srgb, var(--red) 7%, transparent);
-  --nav-ctx-active: color-mix(in srgb, var(--red-ink) 86%, var(--c-text));
-  --nav-ctx-active-bg: color-mix(in srgb, var(--red) 12%, transparent);
+  /* v0.45.1 (Youssef, « Correctif mineur de navigation »): a monochrome bar, no background behind any place, no red.
+     Retour and Menu in the theme's neutral grey; the actions of the screen in graphite, between the neutral grey and
+     the text colour; the active one in the text colour itself (anthracite by day, near white by night). Light and
+     dark come from the same tokens. */
+  --nav-neutral: var(--muted);
+  --nav-ctx: color-mix(in srgb, var(--c-text) 62%, var(--muted));
+  --nav-active: var(--c-text);
 }
 
 .nav-bottom {
@@ -43,7 +44,7 @@
 .nav-btn {
   border: 0;
   background: transparent;
-  color: var(--muted);
+  color: var(--nav-neutral);
   min-width: 0;
   min-height: 55px;
   display: flex;
@@ -56,30 +57,28 @@
   position: relative;
   padding: 0;
   font: inherit;
-  transition: background 0.18s, color 0.18s, transform 0.18s;
+  transition: color 0.18s ease, transform 0.18s;
   -webkit-tap-highlight-color: transparent;
 }
 .nav-btn:active:not(:disabled) {
   transform: scale(0.9);
 }
-.nav-btn.active {
-  color: var(--red-ink);
-  background: var(--nav-panel);
+.nav-btn small {
+  transition: color 0.18s ease;
 }
-.nav-btn.active .nav-svg {
-  color: var(--nav-accent);
-}
-/* v0.44 (Youssef, « AMÉLIORATION DE LA BARRE DE NAVIGATION CONTEXTUELLE »): available action of the screen */
+/* an action of the screen (v0.44 roles, src/ui/nav/config.ts slotRole): graphite, slightly stronger than Retour/Menu */
 .nav-btn.ctx {
-  color: #a5404f;
+  color: #3a3d44;
   color: var(--nav-ctx);
-  background: var(--nav-ctx-bg);
 }
-/* selected: the same family, stronger */
+/* the place or action in use: the text colour and a slightly bolder word, no background, no red */
+.nav-btn.active,
 .nav-btn.ctx.active {
-  color: var(--red-ink);
-  color: var(--nav-ctx-active);
-  background: var(--nav-ctx-active-bg);
+  color: var(--c-text);
+  color: var(--nav-active);
+}
+.nav-btn.active small {
+  font-weight: 750;
 }
 .nav-btn:disabled {
   opacity: 0.38;
