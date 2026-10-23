@@ -20,6 +20,10 @@ export function getLibrary(rig: CoachRig, style: StanceStyle, profile?: { id: st
   let lib = perRig.get(key);
   if (!lib) {
     const a = new Author(rig.metrics, rig.chestFrame.bind(rig), style, profile?.offsets);
+    a.solvedShoulder = (p, side) => {
+      rig.apply(rig.resolve(p));
+      return rig.worldOf(side === 'L' ? 'LeftArm' : 'RightArm')!;
+    };
     lib = new Map();
     for (const m of buildAll(a)) {
       // joint safety on every key pose: no elbow folded beyond its natural range

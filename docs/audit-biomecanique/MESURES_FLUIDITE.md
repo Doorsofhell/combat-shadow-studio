@@ -10,16 +10,16 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 
 ## Total, 6 styles de garde
 
-528 animations, 2202 poses clés intérieures. Arrêts parasites : **2176 avant, 595 après**.
+528 animations, 2202 poses clés intérieures. Arrêts parasites : **2182 avant, 637 après**.
 
 | Style | Animations | Arrêts avant | Arrêts après |
 |---|---|---|---|
-| boxing | 88 | 359 | 95 |
-| kickboxing | 88 | 361 | 98 |
-| mma | 88 | 362 | 99 |
-| muaythai | 88 | 363 | 97 |
-| bjj | 88 | 363 | 101 |
-| judo | 88 | 368 | 105 |
+| boxing | 88 | 360 | 102 |
+| kickboxing | 88 | 362 | 105 |
+| mma | 88 | 363 | 106 |
+| muaythai | 88 | 366 | 106 |
+| bjj | 88 | 363 | 107 |
+| judo | 88 | 368 | 111 |
 
 ## Détail, garde de boxe
 
@@ -31,10 +31,10 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `direct` | 3 | 2 | 0 | 4,7 | 4,7 | 6,6 | 6,6 | 5,0 | 5,1 |
 | `jab-corps` | 3 | 2 | 0 | 7,1 | 7,1 | 10,4 | 10,4 | 8,1 | 8,1 |
 | `direct-corps` | 3 | 2 | 0 | 5,0 | 5,0 | 9,0 | 9,0 | 5,5 | 5,5 |
-| `crochet-avant` | 3 | 1 | 0 | 2,4 | 2,4 | 5,1 | 5,0 | 2,6 | 2,6 |
-| `crochet-arriere` | 3 | 1 | 0 | 4,7 | 4,7 | 7,0 | 7,0 | 5,1 | 5,1 |
-| `crochet-avant-corps` | 3 | 2 | 0 | 2,5 | 2,5 | 6,4 | 6,4 | 2,8 | 2,8 |
-| `crochet-arriere-corps` | 3 | 2 | 0 | 4,6 | 4,6 | 6,8 | 6,8 | 4,9 | 4,9 |
+| `crochet-avant` | 3 | 3 | 3 | 2,6 | 2,6 | 5,1 | 5,1 | 2,7 | 2,7 |
+| `crochet-arriere` | 3 | 1 | 1 | 3,5 | 3,5 | 6,7 | 6,7 | 3,6 | 3,6 |
+| `crochet-avant-corps` | 3 | 3 | 3 | 3,2 | 3,2 | 7,2 | 7,2 | 3,4 | 3,4 |
+| `crochet-arriere-corps` | 3 | 0 | 0 | 3,8 | 3,8 | 6,7 | 6,7 | 3,9 | 3,9 |
 | `uppercut-avant` | 4 | 3 | 0 | 4,0 | 4,0 | 5,5 | 5,2 | 4,4 | 4,4 |
 | `uppercut-arriere` | 4 | 3 | 0 | 4,5 | 4,5 | 6,5 | 5,8 | 4,8 | 4,8 |
 | `overhand` | 3 | 0 | 0 | 5,0 | 5,0 | 6,7 | 6,7 | 5,3 | 5,3 |
