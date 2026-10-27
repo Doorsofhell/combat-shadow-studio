@@ -37,6 +37,7 @@ export type CoachScreen =
   | 'confidentialite'
   | 'premium'
   | 'encyclopedie'
+  | 'chrono'
   | 'entrainement';
 
 export interface GuideEntry {
@@ -495,7 +496,7 @@ export const APP_GUIDE: GuideEntry[] = [
   {
     id: 'rounds',
     title: 'La durée des rounds',
-    keywords: ['rounds par defaut', 'duree des rounds', 'duree d un round', 'duree du round', 'nombre de rounds', 'regler les rounds', 'regler le repos', 'changer le temps de repos', 'chrono', 'chronometre', 'minuteur'],
+    keywords: ['rounds par defaut', 'duree des rounds', 'duree d un round', 'duree du round', 'nombre de rounds', 'regler les rounds', 'regler le repos', 'changer le temps de repos'],
     screens: ['reglages-rounds'],
     answer:
       'Dans Réglages, « Rounds par défaut » : la durée d’un round (1, 2, 3 ou 5 min) et le repos (30, 45, 60 ou 90 s).\n' +
@@ -561,6 +562,19 @@ export const APP_GUIDE: GuideEntry[] = [
       '• La barre du bas donne le classement par familles, l’index alphabétique et tes favoris ; le cœur d’une fiche l’ajoute à tes favoris.\n' +
       'Chaque fiche cite ses sources. Depuis une fiche technique, « Comprendre ce terme » ouvre la fiche du mot.',
     action: { to: '/encyclopedie', label: 'Ouvrir l’Encyclopédie' },
+  },
+  {
+    // v0.48 (« Chrono de combat », maquette B plein écran)
+    id: 'chrono',
+    title: 'Le chrono de combat',
+    keywords: ['chrono', 'chronometre', 'minuteur', 'timer', 'compte a rebours', 'chrono de combat', 'chronometre de combat', 'gong', 'cloche'],
+    screens: ['chrono'],
+    answer:
+      'Le chrono de combat s’ouvre avec « Chrono » dans la barre du bas. Il marche seul, sans le coach 3D.\n' +
+      '• Choisis un format prêt (boxe, kick-boxing, MMA, muay-thaï, JJB, judo, intervalles) ou règle le round, le repos et le nombre de rounds avec + et −.\n' +
+      '• Pendant la séance, tout l’écran prend la couleur de la phase : ambre pour la préparation, rouge pour le combat, bleu-vert pour le repos. Touche l’écran n’importe où pour mettre en pause.\n' +
+      'En pause, tu peux arrêter ou passer la phase. « Réglages » dans la barre règle la préparation, l’alerte avant la fin, les gongs et la voix. La séance va dans ton historique.',
+    action: { to: '/chrono', label: 'Ouvrir le chrono' },
   },
   {
     id: 'compte',
@@ -744,6 +758,8 @@ export function screenFromPath(pathname: string, search = ''): CoachScreen | und
       return 'premium';
     case 'encyclopedie':
       return 'encyclopedie';
+    case 'chrono':
+      return 'chrono';
     default:
       return undefined;
   }

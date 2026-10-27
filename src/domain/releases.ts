@@ -49,6 +49,19 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.48.0',
+      releaseDate: '2026-10-27',
+      title: 'Chrono de combat',
+      isMajor: true,
+      changes: [
+        { category: 'fonctionnalites', text: 'Nouveau chrono de combat, seul, sans le coach 3D : « Chrono » remplace « Techniques » dans la barre du bas (les techniques restent dans le Menu).' },
+        { category: 'fonctionnalites', text: 'Formats prêts (boxe, kick-boxing, MMA, muay-thaï, JJB, judo, intervalles) ou réglage libre du round, du repos et du nombre de rounds avec + et −. La durée totale s’affiche avant de démarrer.' },
+        { category: 'ameliorations', text: 'Pendant la séance, tout l’écran prend la couleur de la phase (ambre préparation, rouge combat, bleu-vert repos, gris pause) avec un très grand temps lisible de loin. Touche l’écran n’importe où pour mettre en pause ; en pause, tu peux arrêter ou passer la phase.' },
+        { category: 'ameliorations', text: 'Mêmes gongs, voix, préparation et alerte avant la fin que l’entraînement, aucun repos après le dernier round, un bilan à la fin et la séance enregistrée dans ton historique (terminée ou interrompue).' },
+      ],
+      links: [{ label: 'Chrono', to: '/chrono' }],
+    },
+    {
       version: '0.47.0',
       releaseDate: '2026-10-23',
       title: 'Chronomètre intégré au coach',

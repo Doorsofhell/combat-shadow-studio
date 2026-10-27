@@ -68,12 +68,26 @@ describe('barre : cinq places, mêmes icônes, libellés et ordre que la maquett
     out.splice(j + 1, 0, m);
     return out;
   };
+  // 0.48 (Youssef, 2026-10-23: « à la place de l'icône technique »): the main place Techniques is the fight timer
+  const chronoForTechniques = <T,>(xs: T[], labels: string[], chrono: T) => xs.map((x, i) => (labels[i] === 'Techniques' ? chrono : x));
   test.each(pairs)('%s → %s', (ref, ours) => {
     const slots = NAV_CONFIG[ours];
     expect(slots).toHaveLength(5);
     const labels = refLabels(ref);
-    expect(slots.map((s) => s.icon)).toEqual(progresAfterTrain(refCase(ref), labels));
-    expect(slots.map((s) => s.label)).toEqual(progresAfterTrain(labels, labels));
+    const swap = ref === 'home';
+    const icons = swap ? chronoForTechniques(refCase(ref), labels, 'stopwatch') : refCase(ref);
+    const words = swap ? chronoForTechniques(labels, labels, 'Chrono') : labels;
+    expect(slots.map((s) => s.icon)).toEqual(progresAfterTrain(icons, labels));
+    expect(slots.map((s) => s.label)).toEqual(progresAfterTrain(words, labels));
+  });
+  test('0.48 : « Chrono » remplace la place principale Techniques, Techniques reste dans Menu', () => {
+    for (const [screen, slots] of Object.entries(NAV_CONFIG)) expect(slots.some((x) => x.action === 'nav:/techniques'), screen).toBe(false);
+    for (const screen of ['accueil', 'entrainer', 'programmes'] as const) {
+      expect(NAV_CONFIG[screen].some((x) => x.action === 'nav:/chrono' && x.label === 'Chrono' && x.icon === 'stopwatch'), screen).toBe(true);
+    }
+    expect(MENU_ENTRIES.some((m) => m.to === '/techniques')).toBe(true);
+    expect(navScreen('/chrono')).toBe('chrono');
+    expect(NAV_CONFIG.chrono.map((x) => x.action)).toEqual(['back', 'toggle', 'setup', 'nav:/chrono', 'menu']);
   });
   test('séance : la place 2 passe de Démarrer à Pause puis Reprendre, même place', () => {
     expect(NAV_CONFIG.entrainement[1].action).toBe('toggle');

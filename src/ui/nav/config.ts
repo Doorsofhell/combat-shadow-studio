@@ -32,7 +32,7 @@ export interface NavSlot {
 export type NavRole = 'global' | 'contextual';
 
 /** the main places of the app: a link to one of them is navigation, not an action of the screen */
-export const GLOBAL_PLACES = ['/', '/entrainer', '/techniques', '/stats', '/profil', '/programmes', '/historique', '/objectifs', '/reglages', '/coach', '/champions', '/createur'];
+export const GLOBAL_PLACES = ['/', '/entrainer', '/techniques', '/chrono', '/stats', '/profil', '/programmes', '/historique', '/objectifs', '/reglages', '/coach', '/champions', '/createur'];
 
 export function slotRole(slot: NavSlot): NavRole {
   if (slot.role) return slot.role;
@@ -72,6 +72,7 @@ export type NavScreen =
   | 'premium'
   | 'encyclopedie'
   | 'encyclopedie-fiche'
+  | 'chrono'
   | 'autre';
 
 const BACK: NavSlot = { icon: 'back', label: 'Retour', action: 'back' };
@@ -84,7 +85,14 @@ const SETTINGS: NavSlot[] = [BACK, { icon: 'user', label: 'Profil', action: 'nav
 /** the encyclopedia: its three ways in (families, A–Z, favourites) between Retour and Menu */
 const ENCYCLOPEDIA: NavSlot[] = [BACK, { icon: 'ranking', label: 'Classement', action: 'ency-classement' }, { icon: 'az', label: 'A–Z', action: 'ency-az' }, { icon: 'heart', label: 'Favoris', action: 'ency-favoris' }, MENU];
 
-const PLACES: NavSlot[] = [BACK, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU];
+/**
+ * v0.48 (Youssef, 2026-10-23: « accéder au chronomètre depuis la barre bas de page à la place de l'icône technique »):
+ * the main place Techniques of the bar becomes the fight timer; Techniques stays in Menu and in the
+ * actions of the screens that open the techniques of what they show (discipline, legend, partner work).
+ */
+const CHRONO: NavSlot = { icon: 'stopwatch', label: 'Chrono', action: 'nav:/chrono' };
+
+const PLACES: NavSlot[] = [BACK, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, CHRONO, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU];
 
 export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
   // 5.1 — the mockup's `home`
@@ -92,7 +100,7 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
     { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' },
     // 0.34 (Youssef, 2026-10-22): Progrès right after Entraîner
     { icon: 'chart', label: 'Progrès', action: 'nav:/stats' },
-    { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' },
+    CHRONO,
     { icon: 'user', label: 'Profil', action: 'nav:/profil' },
     MENU,
   ],
@@ -124,11 +132,14 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
   // 0.46 (« Encyclopédie du combat » §9): Retour | Classement | A–Z | Favoris | Menu, on every screen of the encyclopedia
   encyclopedie: ENCYCLOPEDIA,
   'encyclopedie-fiche': ENCYCLOPEDIA,
+  // 0.48 (« Chrono de combat », maquette B): Démarrer / Pause / Reprendre follows the session, Réglages opens the
+  // chronometer options (or leads back to the setup), Chrono is the place shown
+  chrono: [BACK, { icon: 'play', label: 'Démarrer', action: 'toggle' }, { icon: 'options', label: 'Réglages', action: 'setup' }, CHRONO, MENU],
   // 5.11 — the other screens, built on the same rules (Retour first, Menu last, the main action second)
-  entrainer: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'calendar', label: 'Programmes', action: 'nav:/programmes' }, { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' }, MENU],
+  entrainer: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'calendar', label: 'Programmes', action: 'nav:/programmes' }, CHRONO, MENU],
   discipline: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'layers', label: 'Techniques', action: 'techniques' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
   // 0.41 (Youssef, « Enrichissement des programmes » §6): the programme filters are in the bar, as in the Créateur
-  programmes: [BACK, { icon: 'filter', label: 'Filtrer', action: 'filters' }, { icon: 'layers', label: 'Techniques', action: 'nav:/techniques' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
+  programmes: [BACK, { icon: 'filter', label: 'Filtrer', action: 'filters' }, CHRONO, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
   programme: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'calendar', label: 'Programmes', action: 'nav:/programmes' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
   partenaire: [BACK, { icon: 'layers', label: 'Techniques', action: 'techniques' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
   // 0.38 (Youssef, « Créateur d'enchaînements V2 »): the list, the sheet and the editor of the user's sequences
@@ -182,6 +193,7 @@ export const NAV_PARENT: Record<NavScreen, string> = {
   premium: '/',
   encyclopedie: '/',
   'encyclopedie-fiche': '/encyclopedie',
+  chrono: '/',
   autre: '/',
 };
 
@@ -220,6 +232,7 @@ export function navScreen(pathname: string, search = ''): NavScreen | null {
   if (p === '/reglages' || p.startsWith('/reglages/')) return 'parametres';
   if (p === '/confidentialite') return 'confidentialite';
   if (p === '/premium') return 'premium';
+  if (p === '/chrono') return 'chrono';
   if (p.startsWith('/encyclopedie/terme/')) return 'encyclopedie-fiche';
   if (p === '/encyclopedie' || p.startsWith('/encyclopedie/')) return 'encyclopedie';
   // a page the bar does not know yet still gets Retour and Menu

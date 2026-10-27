@@ -102,7 +102,8 @@ describe('bibliothèque d’icônes : intégration dans les écrans', () => {
     // 0.34: Progrès right after Entraîner (Youssef, 2026-10-22)
     expect(main.map((m) => m.label)).toEqual(['Accueil', 'Entraîner', 'Progrès', 'Techniques', 'Légendes']);
     expect(MENU_ENTRIES.map((m) => m.label)).not.toContain('Coach');
-    expect(NAV_CONFIG.accueil.map((s) => s.label)).toEqual(['Entraîner', 'Progrès', 'Techniques', 'Profil', 'Menu']);
+    // 0.48: « Chrono » in place of Techniques in the bar (Youssef, 2026-10-23); Techniques stays in the Menu (above)
+    expect(NAV_CONFIG.accueil.map((s) => s.label)).toEqual(['Entraîner', 'Progrès', 'Chrono', 'Profil', 'Menu']);
   });
 });
 

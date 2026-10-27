@@ -1,0 +1,292 @@
+/* v0.48 « Chrono de combat » (maquette B « Plein écran », choisie par Youssef le 2026-10-27) */
+
+/* ------------------------------------------------------------------ setup and summary: the app's own tokens */
+.chrono-page {
+  gap: 14px;
+}
+.chrono-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.chrono-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+}
+.chrono-tile-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.chrono-tile-value {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.chrono-tile-steps {
+  display: flex;
+  gap: 6px;
+  align-self: stretch;
+}
+.chrono-tile-steps .btn {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  font-size: 1.35rem;
+}
+.chrono-h {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+.chrono-format-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  overflow: hidden;
+}
+.chrono-format {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 0 14px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: transparent;
+  color: var(--c-text);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.chrono-format:first-child {
+  border-top: 0;
+}
+.chrono-format.on {
+  background: var(--soft);
+}
+.chrono-format-detail {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.chrono-format-dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-strong);
+}
+.chrono-format.on .chrono-format-dot {
+  background: var(--red);
+  border-color: var(--red);
+}
+.chrono-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.chrono-options-link {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--c-text-2);
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.chrono-total {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.chrono-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+.chrono-stats > div {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+}
+.chrono-stats dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.chrono-stats dd {
+  margin: 2px 0 0;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ the session: the whole screen is the phase */
+.chrono-run {
+  position: fixed;
+  inset: 0;
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.35s ease, color 0.35s ease;
+  /* the colours of v0.47 (training.css): amber preparation, red combat, teal rest, always with their word */
+  --run-bg: #c8102e;
+  --run-ink: #ffffff;
+  background: var(--run-bg);
+  color: var(--run-ink);
+}
+.chrono-run.decompte {
+  --run-bg: #f5b740;
+  --run-ink: #1a1306;
+}
+.chrono-run.travail {
+  --run-bg: #c8102e;
+  --run-ink: #ffffff;
+}
+.chrono-run.repos {
+  --run-bg: #0f766e;
+  --run-ink: #ffffff;
+}
+.chrono-run.paused {
+  --run-bg: var(--soft);
+  --run-ink: var(--c-text);
+}
+@media (prefers-reduced-motion: reduce) {
+  .chrono-run {
+    transition: none;
+  }
+}
+.chrono-tap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2vh;
+  padding: max(16px, env(safe-area-inset-top)) 16px 48px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.chrono-format-name {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  left: 18px;
+  right: 18px;
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.chrono-phase {
+  font-size: clamp(1.2rem, 5vw, 1.8rem);
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.chrono-time {
+  font-family: var(--font-display);
+  font-size: min(36vw, 26vh);
+  font-weight: 700;
+  line-height: 0.92;
+  font-variant-numeric: tabular-nums;
+}
+.chrono-round {
+  font-size: clamp(1rem, 4.4vw, 1.4rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.chrono-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 320px;
+}
+.chrono-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
+  background: currentColor;
+  opacity: 0.3;
+}
+.chrono-dot.done {
+  opacity: 1;
+}
+.chrono-dot.now {
+  width: 28px;
+  opacity: 1;
+}
+.chrono-warn {
+  margin-top: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #f5b740;
+  color: #1a1306;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.chrono-hint {
+  position: absolute;
+  bottom: 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+.chrono-paused-actions {
+  display: flex;
+  gap: 10px;
+  padding: 0 16px 16px;
+}
+.chrono-paused-actions .btn {
+  flex: 1;
+  min-height: 52px;
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .chrono-time {
+    font-size: 38vh;
+  }
+  .chrono-dots,
+  .chrono-hint {
+    display: none;
+  }
+}

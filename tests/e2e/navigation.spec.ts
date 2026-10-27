@@ -13,7 +13,8 @@ const RETOUR = ['back', 'Retour'];
 const MENU = ['grid', 'Menu'];
 const SCREENS: [string, string, string[][]][] = [
   // 0.34: Progrès right after Entraîner (Youssef, 2026-10-22)
-  ['/', 'accueil', [['dumbbell', 'Entraîner'], ['chart', 'Progrès'], ['layers', 'Techniques'], ['user', 'Profil'], MENU]],
+  // 0.48: « Chrono » in place of Techniques (Youssef, 2026-10-23); Techniques stays in Menu
+  ['/', 'accueil', [['dumbbell', 'Entraîner'], ['chart', 'Progrès'], ['stopwatch', 'Chrono'], ['user', 'Profil'], MENU]],
   ['/entrainement?ex=boxe-debutant-01&mode=technique', 'entrainement', [RETOUR, ['play', 'Démarrer'], ['scan', 'Décomposer'], ['camera', 'Caméra'], MENU]],
   ['/techniques?d=boxe', 'techniques', [RETOUR, ['search', 'Rechercher'], ['filter', 'Filtres'], ['play', 'Technique'], MENU]],
   ['/techniques/jab?d=boxe', 'fiche', [RETOUR, ['play', 'S’entraîner'], ['speed', 'Ralenti'], ['check', 'Maîtrise'], MENU]],
@@ -21,6 +22,7 @@ const SCREENS: [string, string, string[][]][] = [
   ['/champions', 'legendes', [RETOUR, ['search', 'Rechercher'], ['filter', 'Disciplines'], ['star', 'Légende'], MENU]],
   ['/profil', 'profil', [RETOUR, ['chart', 'Activité'], ['coach', 'Coach'], ['settings', 'Réglages'], MENU]],
   ['/reglages', 'parametres', [RETOUR, ['user', 'Profil'], ['options', 'Affichage'], ['camera', 'Caméra'], MENU]],
+  ['/chrono', 'chrono', [RETOUR, ['play', 'Démarrer'], ['options', 'Réglages'], ['stopwatch', 'Chrono'], MENU]],
 ];
 
 test.describe('393×851', () => {
@@ -125,12 +127,12 @@ test.describe('393×851', () => {
     const news = page.getByTestId('news-sheet');
     await expect(news).toBeVisible();
     const versions = await news.locator('[data-version]').evaluateAll((a) => a.map((x) => x.getAttribute('data-version')));
-    expect(versions[0]).toBe('0.47.0');
+    expect(versions[0]).toBe('0.48.0');
     expect(versions).toContain('0.34.0');
     expect(versions).toContain('0.33.0');
     expect(versions).toContain('0.32.0');
     expect(versions).toContain('0.31.0');
-    await expect(news.locator('[data-version="0.47.0"]')).toContainText('Version 0.47.0 · la plus récente');
+    await expect(news.locator('[data-version="0.48.0"]')).toContainText('Version 0.48.0 · la plus récente');
     await expect(news).not.toContainText('fictive');
     // seen: the dots go away at once
     await expect(page.getByTestId('menu-dot')).toHaveCount(0);

@@ -1957,3 +1957,11 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Android réel : NON EXÉCUTÉ.
 - **Captures** : `docs/v047-chrono/captures/`.
 - **Changement de comportement** : un exercice seul en Rounds ou Cardio s'arrête après ses propres rounds. Les programmes enchaînent toujours.
+
+## 2026-10-27 · v0.48.0 · Chrono de combat
+
+- **Demande** : un chronomètre paramétrable seul, ouvert depuis la barre du bas à la place de « Techniques » (Youssef, 2026-10-23 20:43), maquette B « Plein écran » choisie le 2026-10-27.
+- **Constat** : le chronomètre de la v0.47 n'existait que dans l'écran d'entraînement, avec le coach 3D.
+- **Ajout** : écran `/chrono` (round, repos et rounds avec − et +, 7 formats prêts, durée totale, options de la v0.47), séance plein écran à la couleur de la phase, pause d'un toucher n'importe où, « Arrêter » et « Passer la phase », bilan, historique « terminée » ou « interrompue ». « Chrono » remplace « Techniques » dans la barre ; Techniques reste dans le Menu. Même moteur de temps que la v0.47, avec `skip()` en plus.
+- **Fichiers** : `src/domain/chrono.ts`, `src/domain/session/timeline.ts`, `src/ui/chrono/`, `src/ui/App.tsx`, `src/ui/nav/{config.ts,icons.ts}`, `src/store/settings.ts`, `src/coach/{appGuide.ts,questionBank.ts}`, tests, `scripts/dev/shot-chrono-seul.mjs`, `src/domain/releases.ts`, `package.json`, `docs/v048-chrono/`.
+- **Tests** : détail dans `docs/v048-chrono/RAPPORT.md` §5. Vitest 806 RÉUSSIS ; `chrono-seul.spec` 5 RÉUSSIS ; Playwright complet 213 RÉUSSIS, 2 ÉCHOUÉS déjà en échec sur la v0.46.0 (`coach-suggest:96`, `training-layout:325`) ; Android réel NON EXÉCUTÉ.

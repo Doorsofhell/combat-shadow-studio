@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { idbStorage } from './storage';
 import { readSavedTheme, type ThemePref } from '../ui/theme/theme';
+import { cleanSetup } from '../domain/chrono';
 
 export type CueId = 'trajectoire' | 'hanches' | 'pivot' | 'articulations' | 'pieds' | 'garde' | 'comparaison';
 
@@ -64,6 +65,8 @@ export interface Settings {
   gongs: boolean;
   /** last Cardio intervals chosen (effort, recovery, cycles, intensity) */
   cardio: import('../ui/training/plan').CardioOptions;
+  /** v0.48: the last setup of the « Chrono de combat » screen (format, round, rest, rounds) */
+  chrono: import('../domain/chrono').ChronoSetup;
   /** kick-boxing rule set shown in the lists (K1, low kick, full contact) or every technique */
   kickboxingStyle: import('../domain/kickboxingStyles').KbStyleChoice;
   /**
@@ -120,6 +123,7 @@ export const DEFAULT_SETTINGS: Settings = {
   roundWarnSec: 10,
   gongs: true,
   cardio: { work: 60, rest: 20, cycles: 5, intensity: 'soutenue' },
+  chrono: { format: 'boxe', work: 180, rest: 60, rounds: 3 },
   kickboxingStyle: 'tous',
   actionPillCollapsed: false,
   coachPanelSize: 'normal',
@@ -159,7 +163,7 @@ export const useSettings = create<SettingsState>()(
       merge: (saved, current) => {
         const s = (saved as { settings?: Partial<Settings> })?.settings ?? {};
         const size = COACH_PANEL_SIZES.includes(s.coachPanelSize as CoachPanelSize) ? s.coachPanelSize : DEFAULT_SETTINGS.coachPanelSize;
-        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) }, cardio: { ...DEFAULT_SETTINGS.cardio, ...(s.cardio ?? {}) } } };
+        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) }, cardio: { ...DEFAULT_SETTINGS.cardio, ...(s.cardio ?? {}) }, chrono: cleanSetup(s.chrono) } };
       },
     },
   ),
