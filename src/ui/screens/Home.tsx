@@ -106,6 +106,8 @@ export function Home() {
       <button type="button" className="home-resume" onClick={picker.show} data-testid="resume-last" aria-haspopup="dialog" aria-label={`${resume ? 'Reprendre' : 'Discipline'} : ${shown.name}. Changer de discipline`}>
         <span className="eyebrow">{resume ? 'Reprendre' : 'Ta discipline'}</span>
         <span className="home-resume-disc" data-disc={shown.id}>
+          {/* the official icon of the discipline (the home always showed the main discipline's icon, 0.24) */}
+          <DisciplineIcon id={shown.id} size={40} />
           {shown.short}
         </span>
         <span className="small">

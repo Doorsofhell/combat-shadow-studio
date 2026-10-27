@@ -2038,3 +2038,17 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Tests adaptés au nouveau contrat, sans rien affaiblir : « Plus » s'ouvre après la pause (`nav-helpers`), Reprendre avant de mesurer le chrono (`coach-render`), Décomposer exigé masqué en mains libres et visible sinon (`training-layout`), bouton rond de recherche compté sur la fiche (`nav-contextuelle`, lot 3).
   - Premier passage : un toucher en plein écran mettait en pause (`fullscreen-dbltap`, 2 ÉCHOUÉS) ; corrigé, puis RÉUSSI.
   - Android réel : NON EXÉCUTÉ.
+
+## 2026-10-27 · 1.0.0 (lot 5 sur 5, non publié sur le lien public) · Aucune perte, notes de version, 1.0.0
+
+- **Demande** : fin du plan validé : prouver ligne par ligne qu'aucun contenu n'est perdu, puis livrer la 1.0.0.
+- **Changement** :
+  - nouveau test `tests/e2e/aucune-perte-v100.spec.ts` : les 28 lignes du tableau « Où va chaque contenu » du plan, chacune atteinte au doigt depuis la barre du bas et vérifiée sur son contenu (rapport `docs/v100/RAPPORT.md`) ;
+  - écart trouvé par la suite complète et corrigé : l'Accueil avait perdu l'icône officielle de la discipline principale (présente depuis la 0.24) ; elle revient dans la carte « Reprendre » ;
+  - notes de version 1.0.0 dans Nouveautés (`src/domain/releases.ts`), version 1.0.0 dans `package.json` (titre « Combat Shadow Studio v1.0.0 ») ;
+  - tests mis à jour au nouveau contrat : Nouveautés attend la 1.0.0 en tête ; le studio qui suit le thème Jour ou Nuit est celui de la lumière « Studio » (la lumière « Vive », par défaut depuis le lot 3, a son propre fond sombre, déjà vérifié par `moteur-lumiere.spec`).
+- **Tests** :
+  - TypeScript : RÉUSSI. Vitest : 849 RÉUSSIS, 1 ignoré.
+  - Playwright complet (240 tests, 34,9 min) : 233 RÉUSSIS, 2 ignorés (Firebase), 5 ÉCHOUÉS : `discipline-art` Accueil (icône perdue, corrigée), `theme:77` Jour et Nuit (contrat Vive, test adapté), `coach-bubble:66` (instable, RÉUSSI à la relance), `training-layout:329` caméra Auto (déjà en échec avant la refonte). Relance des 4 fichiers concernés après correction : 30 RÉUSSIS.
+  - `aucune-perte-v100.spec` : 6 RÉUSSIS.
+  - Android réel : NON EXÉCUTÉ.

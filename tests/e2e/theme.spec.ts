@@ -72,12 +72,31 @@ test('choix manuel mémorisé, prioritaire sur le système, appliqué avant le p
 
 // 0.27: Youssef chose « Suit le thème » for the training studio (2026-10-20 21:48): it is no longer always white,
 // it is anthracite in the dark theme and soft pearl grey in the light theme (status bar included)
+// 1.0.0: the light « Vive » (default since « Lumière vive OK », 2026-10-27) has its own dark stage
+// (moteur-lumiere.spec); the stage that follows the theme is the light « Studio », chosen here
 const STUDIO = { Jour: { bg: 'rgb(238, 240, 243)', meta: '#eef0f3' }, Nuit: { bg: 'rgb(11, 15, 20)', meta: '#0b0f14' } } as const;
 for (const pref of ['Jour', 'Nuit'] as const) {
   test(`le studio d’entraînement suit le thème ${pref}`, async ({ page }) => {
     await seed(page);
     await page.goto('/#/reglages');
     await page.getByRole('radio', { name: pref }).click();
+    await page.goto('/#/reglages/affichage');
+    await page.getByRole('radiogroup', { name: 'Lumière du coach' }).getByRole('radio', { name: 'Studio' }).click();
+    // written to IndexedDB asynchronously: leave once it is stored
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            new Promise<string>((res) => {
+              const r = indexedDB.open('keyval-store');
+              r.onsuccess = () => {
+                const q = r.result.transaction('keyval').objectStore('keyval').get('css-settings');
+                q.onsuccess = () => res(String(q.result ?? ''));
+              };
+            }),
+        ),
+      )
+      .toContain('"coachLight":"studio"');
     await page.goto('about:blank');
     await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
     const tr = page.locator('.training');

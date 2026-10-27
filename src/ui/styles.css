@@ -3549,6 +3549,9 @@ html.stage-fs-open body {
   border-radius: 8px;
 }
 .home-resume-disc {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-family: var(--font-display);
   font-weight: 800;
   font-size: clamp(2.6rem, 13vw, 3.6rem);
