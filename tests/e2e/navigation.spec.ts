@@ -16,14 +16,16 @@ const PLUS = ['grid', 'Plus'];
 const TAB_LABELS = ['Accueil', 'Entraîner', 'Apprendre', 'Progrès', 'Profil'];
 // path, screen, the buttons of the screen in reading order, the big button, the place lit, Retour (chip, row or none)
 const SCREENS: [string, string, string[][], string | null, string | null, 'chip' | 'row' | null][] = [
-  ['/', 'accueil', [['stopwatch', 'Chrono'], PLUS], null, 'Accueil', null],
+  // 1.0.0 (lot 3): the big button « Reprendre » (« Commencer » before the first session); Chrono is a tile of the page
+  ['/', 'accueil', [PLUS, ['play', 'Commencer']], 'resume', 'Accueil', null],
   ['/entrainement?ex=boxe-debutant-01&mode=technique', 'entrainement', [RETOUR, ['scan', 'Décomposer'], ['camera', 'Caméra'], ['play', 'Démarrer'], PLUS], 'toggle', null, 'row'],
   ['/techniques?d=boxe', 'techniques', [['search', 'Rechercher'], ['filter', 'Filtres'], ['play', 'Technique'], PLUS], null, 'Apprendre', null],
   ['/techniques/jab?d=boxe', 'fiche', [RETOUR, ['speed', 'Ralenti'], ['check', 'Maîtrise'], PLUS, ['play', 'S’entraîner']], 'train', 'Apprendre', 'chip'],
   ['/stats', 'progres', [['calendar', 'Période'], ['chart', 'Statistiques'], ['history', 'Historique'], PLUS], null, 'Progrès', null],
   ['/champions', 'legendes', [['search', 'Rechercher'], ['filter', 'Disciplines'], ['star', 'Légende'], PLUS], null, 'Apprendre', null],
-  ['/profil', 'profil', [['coach', 'Coach'], ['settings', 'Réglages'], PLUS], null, 'Profil', null],
-  ['/reglages', 'parametres', [RETOUR, ['options', 'Affichage'], ['camera', 'Caméra'], PLUS], null, 'Profil', 'chip'],
+  // 1.0.0 (lot 2): Mon coach and Réglages are tabs of Profil at the top of the screen, not repeated above the bar
+  ['/profil', 'profil', [PLUS], null, 'Profil', null],
+  ['/reglages', 'parametres', [['options', 'Affichage'], ['camera', 'Caméra'], PLUS], null, 'Profil', null],
   ['/chrono', 'chrono', [RETOUR, ['options', 'Réglages'], ['play', 'Démarrer'], PLUS], 'toggle', 'Entraîner', 'row'],
 ];
 
@@ -353,7 +355,8 @@ test.describe('393×851', () => {
   test('Profil et Paramètres : Réglages, Affichage, Caméra', async ({ page }) => {
     await seedProfile(page);
     await page.goto('/#/profil');
-    await bar(page).locator('[data-action="nav:/reglages"]').click();
+    // 1.0.0 (lot 2): Réglages is a tab of Profil
+    await page.getByTestId('tab-reglages').click();
     await expect(page).toHaveURL(/#\/reglages$/);
     await bar(page).locator('[data-action="nav:/reglages/affichage?focus=camera"]').click();
     await expect(page.getByTestId('settings-camera')).toBeInViewport();
@@ -361,12 +364,14 @@ test.describe('393×851', () => {
 
   test('Menu « Sur cet écran » : les actions de l’ancienne pilule sont toujours là', async ({ page }) => {
     await seedProfile(page);
-    // Accueil: Séance rapide, Technique du jour (Reprendre only after a past session), Coach IA
+    // Accueil (1.0.0, lot 3): Séance rapide and Technique du jour are tiles of the page, Reprendre the big button;
+    // « Plus » keeps the Coach IA
     await page.goto('/#/');
     await openMenu(page);
     const cmds = () => page.getByTestId('nav-commands').locator('button').evaluateAll((bs) => bs.map((b) => b.getAttribute('data-testid')));
-    expect(await cmds()).toEqual(['cmd-seance-rapide', 'cmd-technique-du-jour', 'cmd-coach-ia']);
-    await page.getByTestId('cmd-technique-du-jour').click();
+    expect(await cmds()).toEqual(['cmd-coach-ia']);
+    await page.keyboard.press('Escape');
+    await page.getByTestId('tile-daily').click();
     await expect(bar(page)).toHaveAttribute('data-screen', 'fiche');
     // Techniques: Au hasard opens a technique of the list
     await page.goto('/#/techniques?d=boxe');
@@ -374,7 +379,7 @@ test.describe('393×851', () => {
     await expect(bar(page)).toHaveAttribute('data-screen', 'fiche');
     // Séance rapide opens the recommended exercise of the main discipline
     await page.goto('/#/');
-    await menuCommand(page, 'cmd-seance-rapide');
+    await page.getByTestId('tile-quick').click();
     await expect(bar(page)).toHaveAttribute('data-screen', /^(discipline|entrainer)$/);
   });
 

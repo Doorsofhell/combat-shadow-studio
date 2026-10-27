@@ -75,16 +75,20 @@ describe('barre : cinq places, mêmes icônes, libellés et ordre que la maquett
     expect(slots).toHaveLength(5);
     const labels = refLabels(ref);
     const swap = ref === 'home';
-    const icons = swap ? chronoForTechniques(refCase(ref), labels, 'stopwatch') : refCase(ref);
-    const words = swap ? chronoForTechniques(labels, labels, 'Chrono') : labels;
+    // 1.0.0 (refonte, lot 3, maquette v4): on the home that place (Chrono since 0.48) is the big button
+    // « Reprendre »; Chrono is a tile of the page
+    const icons = swap ? chronoForTechniques(refCase(ref), labels, 'play') : refCase(ref);
+    const words = swap ? chronoForTechniques(labels, labels, 'Reprendre') : labels;
     expect(slots.map((s) => s.icon)).toEqual(progresAfterTrain(icons, labels));
     expect(slots.map((s) => s.label)).toEqual(progresAfterTrain(words, labels));
   });
   test('0.48 : « Chrono » remplace la place principale Techniques, Techniques reste dans Menu', () => {
     for (const [screen, slots] of Object.entries(NAV_CONFIG)) expect(slots.some((x) => x.action === 'nav:/techniques'), screen).toBe(false);
-    for (const screen of ['accueil', 'entrainer', 'programmes'] as const) {
+    for (const screen of ['entrainer', 'programmes'] as const) {
       expect(NAV_CONFIG[screen].some((x) => x.action === 'nav:/chrono' && x.label === 'Chrono' && x.icon === 'stopwatch'), screen).toBe(true);
     }
+    // 1.0.0 (lot 3): on the home, Chrono is the tile « Chrono seul » of the page
+    expect(readFileSync(resolve(process.cwd(), 'src/ui/screens/Home.tsx'), 'utf8')).toMatch(/to="\/chrono"[^>]*data-testid="tile-chrono"/);
     expect(MENU_ENTRIES.some((m) => m.to === '/techniques')).toBe(true);
     expect(navScreen('/chrono')).toBe('chrono');
     expect(NAV_CONFIG.chrono.map((x) => x.action)).toEqual(['back', 'toggle', 'setup', 'nav:/chrono', 'menu']);
@@ -224,7 +228,8 @@ describe('v0.44 rôles des emplacements (teinte des actions contextuelles)', () 
   });
   test('les liens vers les grandes rubriques ne sont jamais teintés (pas de coloration artificielle)', () => {
     // Accueil: only main places; Premium (until its own actions) and the pages without actions: Entraîner, Techniques, Progrès
-    expect(NAV_CONFIG.accueil.map(slotRole).every((r) => r === 'global')).toBe(true);
+    // (1.0.0: plus the big button « Reprendre », the action of the home)
+    expect(NAV_CONFIG.accueil.filter((x) => x.action !== 'resume').map(slotRole).every((r) => r === 'global')).toBe(true);
     expect(NAV_CONFIG.autre.map(slotRole).every((r) => r === 'global')).toBe(true);
     // a screen with one action of its own and two links: only the action is tinted
     expect(NAV_CONFIG.programmes.map(slotRole)).toEqual(['global', 'contextual', 'global', 'global', 'global']);

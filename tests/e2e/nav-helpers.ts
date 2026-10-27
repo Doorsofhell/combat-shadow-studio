@@ -48,7 +48,12 @@ export async function menuCommand(page: Page, testId: string) {
 
 /** the Coach IA panel, opened from the Menu (the former bubble) */
 export async function openCoachIA(page: Page) {
-  await menuCommand(page, 'cmd-coach-ia');
+  // 1.0.0 (lot 3): « Rechercher ou demander au coach » on every screen; « Plus » during a session
+  if ((await bar(page).getAttribute('data-screen')) === 'entrainement' || (await bar(page).getByTestId('app-search').count()) === 0) await menuCommand(page, 'cmd-coach-ia');
+  else {
+    await page.getByTestId('app-search').click();
+    await page.getByTestId('search-ask').click();
+  }
   await expect(page.getByTestId('coach-bubble-panel')).toBeVisible();
 }
 

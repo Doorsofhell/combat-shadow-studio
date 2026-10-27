@@ -155,12 +155,23 @@ describe('guide de l’application : contenu', () => {
       expect(barLabels, w).toContain(w);
       expect(by('barre-actions'), w).toContain(`« ${w} »`);
     }
-    for (const w of ['Séance rapide', 'Reprendre', 'Technique du jour', 'Au hasard', 'À revoir', 'Exercice suivant', 'Comment faire ?', 'Options']) {
+    for (const w of ['Au hasard', 'À revoir', 'Exercice suivant', 'Comment faire ?', 'Options']) {
       expect(commandLabels, w).toContain(w);
       expect(by('barre-actions'), w).toContain(`« ${w} »`);
     }
+    // 1.0.0 (lot 3): the former commands of the home are its tiles (words of the page) and its big button
+    const homeSrc = readFileSync(resolve(process.cwd(), 'src/ui/screens/Home.tsx'), 'utf8');
+    for (const w of ['Séance rapide', 'Technique du jour']) {
+      expect(homeSrc, w).toContain(`>${w}<`);
+      expect(by('barre-actions'), w).toContain(`« ${w} »`);
+      expect(by('screen-accueil'), w).toContain(`« ${w} »`);
+    }
+    expect(NAV_CONFIG.accueil.some((x) => x.label === 'Reprendre')).toBe(true);
+    expect(by('screen-accueil')).toContain('« Reprendre »');
+    // the search field that replaced the bubble, named as on screen
+    expect(by('barre-actions')).toContain('« Rechercher ou demander au coach »');
     expect(askCoach('C’est quoi les boutons du bas ?', ctx('techniques')).sources[0]?.id).toBe('app:barre-actions');
-    // the Coach IA opens from Menu on every screen; the floating pill and bubble are gone
+    // the Coach IA opens from the search field on every screen (from « Plus » in a session); the pill and bubble are gone
     expect(by('barre-actions')).toContain('« Coach IA »');
     expect(askCoach('Où est la pilule ?', ctx('accueil')).sources[0]?.id).toBe('app:barre-actions');
     // the IMC card: formula, adult WHO scale, its limits, nothing leaves the device

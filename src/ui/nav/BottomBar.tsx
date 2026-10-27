@@ -5,7 +5,7 @@ import { LATEST_RELEASE, hasUnseenRelease } from '../../domain/releases';
 import { usePhoto } from '../../store/photo';
 import { initials, useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { backInRow, NAV_CONFIG, NAV_PARENT, NO_TABS, PRIMARY, ROOT_SCREENS, SECTION, TABS, dockSlots, isRootPath, navScreen, slotRole, type NavScreen, type NavSlot, type Tab } from './config';
+import { backInRow, searchShape, NAV_CONFIG, NAV_PARENT, NO_TABS, PRIMARY, ROOT_SCREENS, SECTION, TABS, dockSlots, isRootPath, navScreen, slotRole, type NavScreen, type NavSlot, type Tab } from './config';
 import { pushLayer } from './layers';
 import { NavIcon } from './NavIcon';
 import { leave, useNavStore } from './store';
@@ -39,6 +39,14 @@ export function openMenu() {
   if (st.sheet) return;
   const layer = pushLayer(() => useNavStore.getState().setSheet(null));
   st.setSheet('menu', layer);
+}
+
+/** 1.0.0 (lot 3): « Rechercher ou demander au coach », a history layer like the other sheets */
+export function openSearch() {
+  const st = useNavStore.getState();
+  if (st.sheet) return;
+  const layer = pushLayer(() => useNavStore.getState().setSheet(null));
+  st.setSheet('search', layer);
 }
 
 /** 1.0.0: « Nouveautés » (tile of Réglages) opens the news sheet as a history layer; they count as seen */
@@ -133,6 +141,8 @@ export function BottomBar() {
   const dock = dockSlots(screen, loc.pathname);
   const tabs = !NO_TABS.has(screen);
   const section = SECTION[screen];
+  // 1.0.0 (lot 3): the Coach IA has its way in on every screen with the search field, and stays the last command of
+  // « Plus » (always at the same place, the only way in during the session)
   const withCoach = !loc.pathname.startsWith('/coach-ia');
   const hasMore = commands.length > 0 || withCoach;
 
@@ -201,14 +211,46 @@ export function BottomBar() {
   const secondary = dock.filter((d) => d !== primaryItem);
   const inRow = backInRow(screen, loc.pathname);
   const me = initials(profile);
+  // « Rechercher ou demander au coach » (maquette v4): a glass field on every screen with the places; it shrinks to
+  // a round button when the screen already has two actions of its own or more, so the row keeps one line
+  const shape = searchShape(screen, loc.pathname);
+  const searchSmall = shape === 'small';
+  // a screen with its own « Rechercher » (Techniques, Légendes): the round button shows the coach's spark, so the two
+  // magnifiers are never side by side
+  const ownSearch = secondary.some((d) => d.slot.action === 'search');
+  const search = shape !== 'none' && (
+    <button
+      type="button"
+      className={`nav-search glass ${searchSmall ? 'small' : ''}`}
+      onClick={() => {
+        haptic();
+        openSearch();
+      }}
+      aria-label="Rechercher ou demander au coach"
+      aria-haspopup="dialog"
+      data-testid="app-search"
+    >
+      <NavIcon id={searchSmall && ownSearch ? 'sparkle' : 'search'} />
+      {!searchSmall && (
+        <>
+          <span className="nav-search-text">Rechercher ou demander au coach</span>
+          <span className="nav-search-ai" aria-hidden>
+            <NavIcon id="sparkle" />
+            IA
+          </span>
+        </>
+      )}
+    </button>
+  );
 
   const bar = (
     <div className={`nav-bottom ${inRow && primaryItem ? 'compact' : ''} ${tabs ? '' : 'no-tabs'}`} ref={rootRef} data-testid="bottom-bar" data-screen={screen}>
       {backChip && backSlot && <div className="nav-backchip">{button(backSlot, 1, 'back')}</div>}
       <div className="nav-dock changing" ref={dockRef} role="toolbar" aria-label="Actions de l’écran">
-        {(secondary.length > 0 || (inRow && backSlot) || (hasMore && menuSlot)) && (
+        {(secondary.length > 0 || (inRow && backSlot) || (hasMore && menuSlot) || search) && (
           <div className={`nav-row ${secondary.length >= 3 ? 'many' : ''}`}>
             {inRow && backSlot && button(backSlot, 1, 'back')}
+            {search}
             {secondary.map(({ slot, place }) => button(slot, place, 'secondary'))}
             {inRow && primaryItem && button(primaryItem.slot, primaryItem.place, 'primary')}
             {hasMore && menuSlot && button(menuSlot, slots.indexOf(menuSlot) + 1, 'more')}

@@ -7,7 +7,9 @@ import { AppIcon } from '../icons';
 import { popLayer, pushLayer } from './layers';
 import { NavIcon } from './NavIcon';
 import { leave, useNavStore, type MenuCommand } from './store';
-import { haptic } from './BottomBar';
+import { haptic, openSearch } from './BottomBar';
+import { NO_TABS, navScreen, searchShape } from './config';
+import { SearchSheet } from './SearchSheet';
 
 /**
  * The mockup's bottom sheet (`.scrim` + `.sheet`, 220 ms `sheetin`): scrim that closes it, rounded top, handle and
@@ -132,15 +134,27 @@ export function NavSheets() {
   const commands = useNavStore((s) => s.commands);
   const runCommand = useNavStore((s) => s.runCommand);
   if (!sheet) return null;
-  // the Coach IA keeps one way in on every screen (former bubble): last command of « Sur cet écran »
+  // the Coach IA keeps one way in on every screen (former bubble): last command of « Sur cet écran »; 1.0.0 (lot 3):
+  // also « Rechercher ou demander au coach »
   const withCoach = !loc.pathname.startsWith('/coach-ia');
-  const allCommands = [...commands, ...(withCoach ? [{ id: 'coach-ia', label: 'Coach IA', icon: 'coach' as const, testId: 'cmd-coach-ia' }] : [])];
-  const runAny = (id: string) => (id === 'coach-ia' ? useCoachBubble.getState().setOpen(true) : runCommand(id));
+  // a screen with three actions or more has no room for the search field in its row: « Rechercher » opens first here
+  const screen = navScreen(loc.pathname, loc.search);
+  const withSearch = !!screen && !NO_TABS.has(screen) && searchShape(screen, loc.pathname) === 'none';
+  const allCommands = [
+    ...(withSearch ? [{ id: 'app-search', label: 'Rechercher', icon: 'search' as const, testId: 'cmd-app-search' }] : []),
+    ...commands,
+    ...(withCoach ? [{ id: 'coach-ia', label: 'Coach IA', icon: 'coach' as const, testId: 'cmd-coach-ia' }] : []),
+  ];
+  const runAny = (id: string) => (id === 'coach-ia' ? useCoachBubble.getState().setOpen(true) : id === 'app-search' ? openSearch() : runCommand(id));
   const close = (then?: () => void) => {
     setSheet(null);
     popLayer(layer, then);
   };
   const go = (to: string) => close(() => leave(() => nav(to)));
+
+  if (sheet === 'search') {
+    return <SearchSheet onClose={() => close()} onGo={go} onAsk={(q) => close(() => useCoachBubble.getState().ask(q))} />;
+  }
 
   if (sheet === 'news') {
     return (

@@ -38,13 +38,20 @@ test.beforeEach(async ({ page }) => {
   await seedProfile(page);
 });
 
-test('« Chrono » au-dessus de la barre sur Accueil et Entraîner, ouvre le chrono ; Techniques est la place Apprendre', async ({ page }) => {
-  for (const path of ['/#/', '/#/entrainer']) {
-    await page.goto(path);
-    await expect(bar(page).locator('[data-action="nav:/techniques"]')).toHaveCount(0);
-    await expect(bar(page).locator('[data-action="nav:/chrono"]')).toContainText('Chrono');
-  }
-  await bar(page).locator('[data-action="nav:/chrono"]').click();
+test('« Chrono » : tuile de l’Accueil, onglet d’Entraîner, ouvre le chrono ; Techniques est la place Apprendre', async ({ page }) => {
+  await page.goto('/#/');
+  await expect(bar(page).locator('[data-action="nav:/techniques"]')).toHaveCount(0);
+  // 1.0.0 (lot 3, maquette v4): on the home, Chrono is the tile « Chrono seul » of the page
+  await expect(bar(page).locator('[data-action="nav:/chrono"]')).toHaveCount(0);
+  await expect(page.getByTestId('tile-chrono')).toContainText('Chrono');
+  // 1.0.0 (lot 2): on Entraîner, Chrono is one of its tabs at the top, not repeated above the bar
+  await page.goto('/#/entrainer');
+  await expect(bar(page).locator('[data-action="nav:/chrono"]')).toHaveCount(0);
+  await expect(page.getByTestId('tab-chrono')).toHaveText('Chrono');
+  await page.getByTestId('tab-chrono').click();
+  await expect(page).toHaveURL(/#\/chrono$/);
+  await page.goto('/#/');
+  await page.getByTestId('tile-chrono').click();
   await expect(page).toHaveURL(/#\/chrono$/);
   await expect(bar(page)).toHaveAttribute('data-screen', 'chrono');
   await expect(page.getByTestId('chrono-setup-screen')).toBeVisible();

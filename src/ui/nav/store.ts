@@ -38,7 +38,7 @@ export interface MenuCommand {
 type ActionView = Omit<ScreenAction, 'run'>;
 type CommandView = Omit<MenuCommand, 'run'>;
 
-export type NavSheet = null | 'menu' | 'news';
+export type NavSheet = null | 'menu' | 'news' | 'search';
 
 interface NavState {
   actions: Record<string, ActionView>;

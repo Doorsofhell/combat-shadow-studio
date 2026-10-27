@@ -161,7 +161,8 @@ test.describe('Entraîner : ses espaces', () => {
   test('aucun contenu sous la barre inférieure (360×640)', async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 640 });
     await seedProfile(page);
-    for (const s of ['seances', 'disciplines', 'programmes']) {
+    // 1.0.0 (lot 2): Programmes is a tab of its own (/programmes), checked by the bar tests
+    for (const s of ['seances', 'disciplines']) {
       await page.goto(`/#/entrainer?espace=${s}`);
       await expect(page.locator('.train-panel a, .train-panel button').first()).toBeVisible();
       await page.waitForTimeout(300);

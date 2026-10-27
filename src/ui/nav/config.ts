@@ -101,7 +101,8 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
     { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' },
     // 0.34 (Youssef, 2026-10-22): Progrès right after Entraîner
     { icon: 'chart', label: 'Progrès', action: 'nav:/stats' },
-    CHRONO,
+    // 1.0.0 (lot 3, maquette v4): the big button « Reprendre »; Chrono is a tile of the page
+    { icon: 'play', label: 'Reprendre', action: 'resume' },
     { icon: 'user', label: 'Profil', action: 'nav:/profil' },
     MENU,
   ],
@@ -377,6 +378,7 @@ export function backInRow(screen: NavScreen, pathname = ''): boolean {
 
 /** the big button of the screen (the action most people come for); the other actions stay next to it */
 export const PRIMARY: Partial<Record<NavScreen, NavAction>> = {
+  accueil: 'resume',
   entrainer: 'start',
   discipline: 'start',
   programme: 'start',
@@ -403,6 +405,19 @@ export function dockSlots(screen: NavScreen, pathname?: string): { slot: NavSlot
   return NAV_CONFIG[screen]
     .map((slot, i) => ({ slot, place: i + 1 }))
     .filter(({ slot }) => slot.action !== 'back' && slot.action !== 'menu' && !(slot.action.startsWith('nav:') && shown(slot.action.slice(4))));
+}
+
+/**
+ * 1.0.0 (lot 3): how « Rechercher ou demander au coach » sits in the row of actions: a full glass field when the
+ * screen has one action of its own at most, a round button with two, and none with three or more (the words of the
+ * actions keep their room on a 360 px phone) or in the session; then it is the first command of « Plus ».
+ */
+export function searchShape(screen: NavScreen, pathname?: string): 'full' | 'small' | 'none' {
+  if (NO_TABS.has(screen)) return 'none';
+  const primary = PRIMARY[screen];
+  const secondary = dockSlots(screen, pathname).filter((d) => d.slot.action !== primary).length;
+  if (secondary >= 3) return 'none';
+  return secondary >= 2 || (backInRow(screen, pathname) && !!primary) ? 'small' : 'full';
 }
 
 /** the tabs at the top of a space (lot 1: Apprendre and Progrès, which held the former Menu places; lot 2: Entraîner

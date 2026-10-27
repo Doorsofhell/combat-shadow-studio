@@ -1993,3 +1993,30 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet (avant les corrections ci-dessus) : 208 RÉUSSIS, 2 ignorés, 11 ÉCHOUÉS dont 3 déjà en échec avant (`coach-suggest:96`, `training-layout:325`, `coaching-hud:60`).
   - Relance des 9 fichiers touchés après corrections : tous RÉUSSIS.
   - Android réel : NON EXÉCUTÉ.
+
+## 2026-10-27 · 1.0.0 (lot 2 sur 5, non publié) · Refonte ergonomique : onglets d'Entraîner et de Profil
+
+- **Demande** : suite du plan validé (Youssef, 2026-10-27) : chaque place de la barre a ses onglets en haut, sans perte de contenu.
+- **Changement** (branche `feature/refonte-v100`, commit `dcd7a8b`) :
+  - Entraîner : onglets Séance, Programmes, Enchaînements, Favoris et Chrono ; l'ancien espace « Programmes » mène à `/programmes` (choix enregistré conservé) ;
+  - nouvel écran Favoris (`/favoris`) : les favoris de la bibliothèque et l'accès aux combinaisons favorites des Légendes ; les anciens liens `?tab=favoris` et `?tab=legendes` redirigent ;
+  - Profil : onglets Mes infos, Mon coach, Coach IA et Réglages (point rouge tant que la nouvelle version n'est pas vue) ; la liste de liens en double sur Profil est retirée ;
+  - un lien déjà présent dans les onglets n'est plus répété au-dessus de la barre ; onglets cachés pendant le chrono en cours.
+- **Tests** :
+  - Vitest : RÉUSSIS (dont `refonte.test.ts` pour les onglets et l'absence de doublons).
+  - Playwright complet : 208 RÉUSSIS, 2 ignorés, 11 ÉCHOUÉS. 8 venaient de l'ancien contrat de la barre (tests mis à jour au lot 3, puis RÉUSSIS) ; 3 déjà en échec avant (`coach-suggest:96`, `training-layout:325`, `coaching-hud:60`).
+  - Android réel : NON EXÉCUTÉ.
+
+## 2026-10-27 · 1.0.0 (lot 3 sur 5, non publié) · Accueil, « Rechercher ou demander au coach », Lumière vive
+
+- **Demande** : maquette v4 validée : un accueil qui ne garde que ce qui sert à démarrer, et une barre « Rechercher ou demander au coach » qui remplace la bulle du Coach IA. Puis « Lumière vive OK » (Youssef, 2026-10-27 19:55).
+- **Changement** :
+  - Accueil : « Reprendre » avec la dernière discipline et la dernière séance (un toucher choisit la discipline parmi les six), le coach, trois tuiles (Séance rapide, Technique du jour, Chrono seul), l'objectif de la semaine avec les vrais chiffres (sinon « Aucun objectif fixé »), une ligne « Programme » et « Pour toi » ; gros bouton « Reprendre » dans la barre (« Commencer » avant la première séance). Statistiques dans Progrès, favoris dans Entraîner › Favoris : rien n'est perdu.
+  - Recherche locale (`src/domain/search.ts`) : techniques, encyclopédie, programmes, écrans et réglages, sans accents ni majuscules ; la première ligne pose la question au Coach IA (`src/ui/nav/SearchSheet.tsx`).
+  - Place du champ : entier si l'écran a une action au plus, rond avec deux, et première commande de « Plus » à partir de trois actions (Techniques, Progrès, Légendes) pour que les mots tiennent sur 360 px ; jamais en séance. Le Coach IA reste aussi dans « Plus » sur tous les écrans.
+  - Lumière du coach « Vive » par défaut ; un choix « Studio » déjà enregistré est gardé.
+  - Guide du Coach IA mis à jour pour la barre, la recherche et l'accueil (les textes sur la séance seront revus au lot 4).
+- **Tests** :
+  - Vitest : 845 RÉUSSIS, 1 ignoré (dont recherche, `searchShape`, guide).
+  - Playwright : nouveau `accueil-recherche.spec` (accueil, sélecteur de discipline, recherche, Coach IA, contraste Jour et Nuit à 360 × 640) et fichiers touchés : RÉUSSIS. `coach-suggest:304` a échoué une fois puis RÉUSSI deux fois (instable) ; `coach-suggest:96` ÉCHOUÉ, déjà en échec avant.
+  - Android réel : NON EXÉCUTÉ.

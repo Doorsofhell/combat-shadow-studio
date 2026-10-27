@@ -33,8 +33,9 @@ const session = (exerciseId: string, start: string) => ({ id: `${start}#1`, star
 test('liste : tuiles avec pictogrammes, dates réelles, « Non analysé » pour un enchaînement d’avant, barre de l’écran', async ({ page }) => {
   await seed(page, [OLD, KB], [session('perso-ancien', '2026-10-20T18:00:00.000Z'), session('perso-ancien', '2026-10-21T18:00:00.000Z')]);
   await page.goto('/#/createur');
+  // 1.0.0 (lot 2): Enchaînements is a tab of Entraîner, reached from its tabs (no Retour)
+  await expect(page.getByTestId('tab-enchainements')).toHaveAttribute('aria-current', 'page');
   await expect(await barSlots(page)).toEqual([
-    ['back', 'Retour'],
     ['search', 'Rechercher'],
     ['filter', 'Filtrer'],
     ['plus', 'Créer'],

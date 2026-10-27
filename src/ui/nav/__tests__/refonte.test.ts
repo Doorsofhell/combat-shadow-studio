@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { MENU_ENTRIES, NAV_CONFIG, PRIMARY, ROOT_SCREENS, SECTION, SECTION_TABS, TABS, dockSlots, navScreen, sectionTabsFor, type NavScreen } from '../config';
+import { MENU_ENTRIES, NAV_CONFIG, PRIMARY, ROOT_SCREENS, SECTION, SECTION_TABS, TABS, dockSlots, navScreen, searchShape, sectionTabsFor, type NavScreen } from '../config';
 
 // 1.0.0 (refonte ergonomique, Youssef 2026-10-27): « Aucune perte de contenu. Réorganisation, logique et intelligente »
 const screens = Object.keys(NAV_CONFIG) as NavScreen[];
@@ -92,5 +92,24 @@ describe('refonte 1.0.0 : le contenu de l’ancien Menu est redistribué, rien n
     expect(sectionTabsFor('createur-fiche')).toBeNull();
     expect(sectionTabsFor('fiche')).toBeNull();
     expect(sectionTabsFor('entrainement')).toBeNull();
+  });
+});
+
+// lot 3 (maquette v4): « Rechercher ou demander au coach » replaces the Coach IA bubble
+describe('1.0.0 lot 3 : accueil et recherche', () => {
+  it('Accueil : le gros bouton « Reprendre », plus de Chrono au-dessus de la barre (tuile de la page)', () => {
+    expect(PRIMARY.accueil).toBe('resume');
+    expect(dockSlots('accueil', '/').map((d) => d.slot.action)).toEqual(['resume']);
+  });
+  it('le champ de recherche sur chaque écran à places, jamais en séance ; rond ou dans « Plus » quand la rangée est pleine', () => {
+    expect(searchShape('accueil', '/')).toBe('full');
+    expect(searchShape('profil', '/profil')).toBe('full');
+    expect(searchShape('fiche', '/techniques/jab')).toBe('small');
+    expect(searchShape('techniques', '/techniques')).toBe('none');
+    expect(searchShape('progres', '/stats')).toBe('none');
+    expect(searchShape('entrainement', '/entrainement')).toBe('none');
+    // every screen with places reaches it, in the row or as the first command of « Plus »
+    const src = readFileSync('src/ui/nav/NavSheets.tsx', 'utf8');
+    expect(src).toContain("searchShape(screen, loc.pathname) === 'none'");
   });
 });

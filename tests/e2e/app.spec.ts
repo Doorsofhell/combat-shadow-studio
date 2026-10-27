@@ -24,6 +24,8 @@ test('premier lancement : questionnaire, choix obligatoire du coach, données co
   // bottom navigation (1.0.0 refonte ergonomique): five fixed places, the actions of the screen above them, « Plus »
   await expect(page.getByTestId('bottom-bar').locator('.nav-tab')).toHaveCount(5);
   await expect(page.getByTestId('bottom-bar').locator('[data-slot="5"]')).toHaveAttribute('data-action', 'menu');
+  // 1.0.0 (lot 3): « Rechercher ou demander au coach » above the places
+  await expect(page.getByTestId('app-search')).toBeVisible();
   await page.getByTestId('nav-entrainer').click();
   // 0.33: the disciplines are the second space of Entraîner
   await page.getByTestId('space-disciplines').click();

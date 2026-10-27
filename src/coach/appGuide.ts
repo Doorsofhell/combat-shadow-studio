@@ -66,48 +66,53 @@ export const APP_GUIDE: GuideEntry[] = [
     ],
     answer:
       'Combat Shadow Studio t’aide à t’entraîner seul, en shadow : ton coach en 3D (Kadir ou Amara) montre chaque mouvement et tu le fais en même temps, face à l’écran.\n' +
-      'Tout se passe avec la barre du bas : ses cinq boutons changent selon l’écran. Sur l’accueil : Entraîner (disciplines, programmes et tes enchaînements), Techniques (les fiches de chaque mouvement), Progrès (tes statistiques), Profil et Menu. Menu ouvre la navigation générale, avec aussi les Légendes, les Paramètres, les Nouveautés et Premium à vie.\n' +
-      'Pour te lancer, touche « Commencer l’entraînement » sur l’accueil. Et si tu as une question, technique ou sur l’application, ouvre-moi avec « Coach IA » dans Menu.',
+      'Dans la barre du bas, cinq places fixes : Accueil, Entraîner, Apprendre (techniques, légendes, encyclopédie), Progrès et Profil. Juste au-dessus, les boutons de l’écran, avec un gros bouton pour l’action principale.\n' +
+      'Pour te lancer, touche le gros bouton « Reprendre » sur l’accueil (« Commencer » avant ta première séance). Et si tu as une question, technique ou sur l’application, touche « Rechercher ou demander au coach » : tu trouves ce que tu cherches dans l’app, ou tu me poses la question.',
     action: { to: '/entrainer', label: 'Aller à Entraîner' },
   },
   {
     id: 'nav-tabs',
-    title: 'La barre du bas et le Menu',
-    keywords: ['barre du bas', 'barre de navigation', 'navigation', 'navigation generale', 'onglets', 'les onglets', 'menu principal', 'menu', 'changer d ecran', 'revenir a l accueil', 'bouton retour', 'retour', 'ou est le profil', 'ou sont les reglages'],
+    title: 'La barre du bas et ses cinq places',
+    keywords: ['barre du bas', 'barre de navigation', 'navigation', 'navigation generale', 'onglets', 'les onglets', 'menu principal', 'menu', 'changer d ecran', 'revenir a l accueil', 'bouton retour', 'retour', 'ou est le profil', 'ou sont les reglages', 'ou sont les parametres', 'ou est premium', 'ou sont les nouveautes'],
     answer:
-      'La barre du bas est la même partout, séance comprise. Elle a toujours cinq boutons, qui changent selon l’écran : Retour à gauche (sauf sur l’accueil), les actions de l’écran au milieu, et Menu à droite.\n' +
-      '• Retour revient à l’écran d’avant, avec tes filtres et ta position dans la page. Si un panneau est ouvert, il se ferme d’abord.\n' +
-      '• Menu ouvre la navigation générale : Accueil, Entraîner, Techniques, Progrès, Légendes, Profil, Paramètres, Nouveautés, Premium à vie et Encyclopédie.\n' +
-      'Sur l’accueil, Profil est directement dans la barre ; sur ton profil, Réglages aussi.',
+      'Version 1.0 : la barre du bas ne change plus d’un écran à l’autre. Elle a cinq places fixes : Accueil, Entraîner, Apprendre, Progrès et Profil (ta photo ou tes initiales). Seule la séance la cache, pour te laisser t’entraîner les mains libres.\n' +
+      '• Chaque place a ses onglets en haut de l’écran. Entraîner : Séance, Programmes, Enchaînements, Favoris et Chrono. Apprendre : Techniques, Légendes et Encyclopédie. Progrès : Tableau, Historique et Objectifs. Profil : Mes infos, Mon coach, Coach IA et Réglages.\n' +
+      '• Les Paramètres s’appellent maintenant Réglages (Profil › Réglages). En haut des Réglages, deux tuiles : Premium à vie et Nouveautés.\n' +
+      '• Retour est un petit bouton en haut à gauche sur les écrans de détail. Le retour d’Android ferme d’abord un panneau ouvert, puis revient à l’écran d’avant, avec tes filtres et ta position dans la page.\n' +
+      'Toutes les anciennes entrées du Menu sont là : Accueil, Entraîner, Progrès, Techniques, Légendes, Profil, Paramètres (Réglages), Nouveautés, Premium à vie et Encyclopédie.',
   },
   {
-    // v0.32 (Youssef, 2026-10-22, navigation dynamique): the former floating pill's actions are in the bar or in Menu
+    // v0.32 (Youssef, 2026-10-22, navigation dynamique): the former floating pill's actions are in the bar; 1.0.0: the
+    // Coach IA bubble became « Rechercher ou demander au coach »
     id: 'barre-actions',
-    title: 'Les boutons de la barre selon l’écran',
+    title: 'Les boutons de l’écran et la recherche',
     keywords: [
       'boutons du bas', 'boutons de la barre', 'icones du bas', 'actions rapides', 'raccourcis', 'seance rapide', 'technique du jour', 'je la maitrise', 'maitrise',
       'sur cet ecran', 'au hasard', 'pilule', 'pilule d actions', 'la pilule', 'bulle', 'ou est la pilule', 'ou est la bulle', 'icones flottantes', 'boutons flottants',
+      'bouton plus', 'barre de recherche', 'rechercher ou demander', 'ou est le coach ia', 'ouvrir le coach ia',
     ],
     answer:
-      'Les boutons du milieu de la barre changent selon l’écran :\n' +
+      'Au-dessus des cinq places, les boutons de l’écran changent selon l’écran :\n' +
       '• Séance : « Démarrer », qui devient « Pause » puis « Reprendre » au même endroit, « Décomposer » et « Caméra ».\n' +
       '• Techniques : « Rechercher », « Filtres » et « Technique », qui rouvre la dernière technique choisie.\n' +
       '• Fiche d’une technique : « S’entraîner », « Ralenti » (au quart de la vitesse) et « Maîtrise » (la marque comme assimilée ; touche encore pour la retirer).\n' +
       '• Progrès : « Période », « Statistiques » et « Historique ».\n' +
       '• Légendes : « Rechercher », « Disciplines » et « Légende » ; sur la fiche d’une légende, « Parcours », « Techniques » et « Favoris ».\n' +
-      'Les autres gestes de l’écran sont dans Menu, sous « Sur cet écran » : par exemple « Séance rapide », « Reprendre » et « Technique du jour » sur l’accueil, « Au hasard » et « À revoir » dans les techniques, « Exercice suivant », « Comment faire ? » et « Options » pendant une séance.\n' +
-      'C’est aussi là que tu m’ouvres : « Coach IA », sur tous les écrans. Les anciens boutons flottants (pilule et bulle) n’existent plus.',
+      'Sur l’accueil, trois tuiles : « Séance rapide », « Technique du jour » et « Chrono seul », et le gros bouton « Reprendre ». Les autres gestes d’un écran sont dans « Plus » : par exemple « Au hasard » et « À revoir » dans les techniques, « Exercice suivant », « Comment faire ? » et « Options » pendant une séance. « Plus » m’ouvre aussi, sur tous les écrans : « Coach IA ».\n' +
+      'Pour m’ouvrir ailleurs, touche « Rechercher ou demander au coach » au-dessus de la barre : écris ta question et choisis « Demander au Coach IA ». Le même champ trouve aussi les techniques, les mots de l’encyclopédie, les programmes et les réglages. Les anciens boutons flottants (pilule et bulle) n’existent plus.',
   },
   {
     id: 'screen-accueil',
     title: 'L’écran d’accueil',
-    keywords: ['accueil', 'ecran d accueil', 'page d accueil', 'bouton reprendre', 'reprendre ma seance', 'reprendre ma derniere seance', 'derniere seance', 'pour toi aujourd hui'],
+    keywords: ['accueil', 'ecran d accueil', 'page d accueil', 'bouton reprendre', 'reprendre ma seance', 'reprendre ma derniere seance', 'derniere seance', 'pour toi aujourd hui', 'chrono seul', 'objectif de la semaine', 'changer de discipline'],
     screens: ['accueil'],
     answer:
-      'L’accueil, c’est ton point de départ. En haut, ton coach t’attend en garde ; « Changer de coach » permet de passer de Kadir à Amara.\n' +
-      '« Commencer l’entraînement » ouvre l’exercice recommandé pour ton niveau. « Reprendre » relance ta dernière séance.\n' +
-      'Plus bas : ton temps de la semaine, ton objectif s’il est défini, tes favoris, un programme recommandé et des idées « Pour toi aujourd’hui ».\n' +
-      'Ton profil est dans la barre du bas, et les réglages dans Menu (Paramètres) ou sur ton profil.',
+      'L’accueil ne garde que ce qui sert à démarrer.\n' +
+      '• En haut, « Reprendre » avec ta dernière discipline et ta dernière séance. Touche-la pour choisir ta discipline parmi les six.\n' +
+      '• Ton coach t’attend en garde ; « Changer de coach » permet de passer de Kadir à Amara.\n' +
+      '• Trois tuiles : « Séance rapide » (l’exercice recommandé pour ton niveau), « Technique du jour » et « Chrono seul ».\n' +
+      '• Ton objectif de la semaine, avec tes vrais chiffres ; touche-le pour le régler dans Progrès › Objectifs. Dessous, un programme recommandé et une idée « Pour toi ».\n' +
+      'Le gros bouton « Reprendre » relance ta dernière séance (« Commencer » avant la première). Tes statistiques sont dans Progrès, tes favoris dans Entraîner › Favoris.',
   },
 
   // ------------------------------------------------------------------ s’entraîner
@@ -119,7 +124,7 @@ export const APP_GUIDE: GuideEntry[] = [
       'commencer un entrainement', 'lancer un exercice', 'commencer un exercice', 'demarrer un exercice', 'bouton demarrer', 'bouton s entrainer',
     ],
     answer:
-      'Le plus simple : sur l’accueil, touche « Commencer l’entraînement ». La fiche de l’exercice recommandé s’ouvre.\n' +
+      'Le plus simple : sur l’accueil, touche la tuile « Séance rapide ». La fiche de l’exercice recommandé s’ouvre. Le gros bouton « Reprendre » relance ta dernière séance.\n' +
       'Tu peux aussi aller dans l’onglet Entraîner, choisir une discipline puis un exercice.\n' +
       'Sur la fiche, choisis un mode (Libre, Technique, Cardio ou Rounds) puis touche « S’entraîner ». Dans le studio, touche « Démarrer » : après un court décompte, le coach enchaîne les mouvements et tu les fais avec lui.\n' +
       'Si tu débutes, prends le mode Technique : c’est plus lent et commenté.',
@@ -592,7 +597,7 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['mon profil', 'le profil', 'page profil', 'modifier mon profil', 'pseudo', 'changer mon pseudo', 'changer de niveau', 'modifier mon niveau', 'discipline principale', 'changer ma garde', 'taille du texte', 'texte plus grand', 'agrandir le texte', 'reduire les animations', 'questionnaire', 'refaire le questionnaire', 'm appeler par mon pseudo'],
     screens: ['profil'],
     answer:
-      'Ton profil s’ouvre avec « Profil » dans la barre du bas de l’accueil, ou dans Menu (ou Réglages, « Mon profil et mon compte »).\n' +
+      'Ton profil s’ouvre avec « Profil », la cinquième place de la barre du bas (ta photo ou tes initiales), onglet « Mes infos ».\n' +
       'Tu y changes ton pseudo (je t’appelle comme ça si « M’appeler par mon pseudo » est activé), tes disciplines et ta discipline principale, ta garde, ton rythme, tes objectifs, la taille du texte et la réduction des animations.\n' +
       'Ton niveau se choisit aussi sur la page de chaque discipline, et « Questionnaire et niveaux » dans les réglages refait l’évaluation de départ.',
     action: { to: '/profil', label: 'Ouvrir mon profil' },

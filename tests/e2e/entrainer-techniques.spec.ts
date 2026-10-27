@@ -60,11 +60,12 @@ test('Mes enchaînements : un enchaînement enregistré se lance et « Gérer »
   await expect(page.getByTestId('exercise-name')).toBeVisible();
 });
 
-test('Techniques : quatre sections, plus de Créateur ni de Programmes, anciens liens redirigés', async ({ page }) => {
+test('Techniques : deux sections, plus de Créateur ni de Programmes, anciens liens redirigés', async ({ page }) => {
   await seedProfile(page);
   await page.goto('/#/techniques');
   const sections = page.getByRole('tablist', { name: 'Sections' }).getByRole('tab');
-  await expect(sections).toHaveText(['Techniques', 'Combinaisons', 'Légendes', 'Favoris']);
+  // 1.0.0 (lot 2): Légendes is a tab of Apprendre, Favoris a tab of Entraîner
+  await expect(sections).toHaveText(['Techniques', 'Combinaisons']);
   await page.goto('about:blank');
   await page.goto('/#/techniques?tab=createur&d=muaythai');
   await expect(page).toHaveURL(/#\/createur\?d=muaythai$/);
