@@ -182,3 +182,48 @@ describe('moteur temporel de séance', () => {
     expect(tl.roundsDone).toBe(2);
   });
 });
+
+describe('passer la phase (v0.48, chrono de combat seul)', () => {
+  test('la préparation, un round et un repos passés : mêmes événements, temps passé non compté, round passé non fait', () => {
+    const c = clock();
+    const tl = new SessionTimeline([rounds(3, 60, 30)], cfg, c.now);
+    tl.start();
+    run(tl, c, 1);
+    expect(types(tl.skip()).filter((t) => t !== 'prep-count')).toEqual(['work-start']);
+    expect(tl.phase).toBe('travail');
+    run(tl, c, 10);
+    expect(types(tl.skip())).toEqual(['work-end', 'rest-start']);
+    expect(tl.workSec).toBeCloseTo(10, 1);
+    expect(tl.roundsDone).toBe(0);
+    run(tl, c, 5);
+    expect(types(tl.skip())).toEqual(['work-start']);
+    expect(tl.round).toBe(2);
+    expect(tl.restSec).toBeCloseTo(5, 1);
+    expect(tl.prepSec).toBeCloseTo(1, 1);
+    expect(tl.remaining).toBeCloseTo(60, 1);
+  });
+
+  test('en pause, passer garde la pause ; passer le dernier round termine la séance', () => {
+    const c = clock();
+    const tl = new SessionTimeline([rounds(1, 60, 0)], { ...cfg, chain: false }, c.now);
+    tl.start();
+    run(tl, c, 3 + 20);
+    tl.pause();
+    c.at(30);
+    expect(types(tl.skip())).toEqual(['work-end', 'done']);
+    expect(tl.phase).toBe('termine');
+    expect(tl.workSec).toBeCloseTo(20, 1);
+    expect(tl.roundsDone).toBe(0);
+    const c2 = clock();
+    const t2 = new SessionTimeline([rounds(2, 60, 30)], cfg, c2.now);
+    t2.start();
+    run(t2, c2, 3 + 5);
+    t2.pause();
+    t2.skip();
+    expect(t2.phase).toBe('repos');
+    expect(t2.paused).toBe(true);
+    c2.at(20);
+    expect(t2.tick()).toEqual([]);
+    expect(t2.remaining).toBeCloseTo(30, 1);
+  });
+});

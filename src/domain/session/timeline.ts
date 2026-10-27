@@ -79,6 +79,10 @@ export class SessionTimeline {
   /** last whole second announced in this phase, and whether the warning was given */
   private lastWhole = Infinity;
   private warned = false;
+  /** v0.48 « Passer la phase »: the time skipped is not counted as done */
+  private skippedWork = 0;
+  private skippedRest = 0;
+  private skippedPrep = 0;
 
   constructor(
     readonly items: readonly TimelineItem[],
@@ -121,13 +125,13 @@ export class SessionTimeline {
   }
   /** seconds of work, rest and preparation done (pauses excluded) */
   get workSec() {
-    return (this.worked + (this.phase === 'travail' ? this.active - this.phaseAt : 0)) / 1000;
+    return (this.worked - this.skippedWork + (this.phase === 'travail' ? this.active - this.phaseAt : 0)) / 1000;
   }
   get restSec() {
-    return (this.rested + (this.phase === 'repos' ? this.active - this.phaseAt : 0)) / 1000;
+    return (this.rested - this.skippedRest + (this.phase === 'repos' ? this.active - this.phaseAt : 0)) / 1000;
   }
   get prepSec() {
-    return (this.prepared + (this.phase === 'decompte' ? this.active - this.phaseAt : 0)) / 1000;
+    return (this.prepared - this.skippedPrep + (this.phase === 'decompte' ? this.active - this.phaseAt : 0)) / 1000;
   }
   /** the whole session, preparation, work and rest, pauses excluded */
   get totalSec() {
@@ -295,6 +299,27 @@ export class SessionTimeline {
       }
       break;
     }
+    return out;
+  }
+
+  /**
+   * v0.48 (chrono de combat seul, « Passer la phase »): ends the current timed phase now and opens the next one,
+   * exactly as if its time had run out, with the same events. The time skipped is not counted, and a skipped round
+   * is not counted as done. A paused session stays paused.
+   */
+  skip(): TimelineEvent[] {
+    if (!this.timed || this.phase === 'pret' || this.phase === 'termine') return [];
+    const left = Math.max(0, this.phaseLen * 1000 - (this.active - this.phaseAt));
+    const was = this.phase;
+    if (was === 'travail') this.skippedWork += left;
+    else if (was === 'repos') this.skippedRest += left;
+    else this.skippedPrep += left;
+    this.phaseAt -= left;
+    const paused = this.paused;
+    this.paused = false;
+    const out = this.tick();
+    if (was === 'travail' && out.some((e) => e.type === 'work-end')) this.roundsDone--;
+    if (paused && (this.phase as Phase) !== 'termine') this.paused = true;
     return out;
   }
 

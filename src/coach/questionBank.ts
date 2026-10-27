@@ -543,6 +543,11 @@ export const SCREEN_POOL: Record<CoachScreen, ScreenQ[]> = {
     { q: 'Comment trouver la définition d’un mot ?', expect: 'app:encyclopedie' },
     { q: 'À quoi sert l’Encyclopédie ?', expect: 'app:encyclopedie' },
   ],
+  chrono: [
+    { q: 'Comment marche le chrono de combat ?', expect: 'app:chrono' },
+    { q: 'Comment mettre le chrono en pause ?', expect: 'app:chrono' },
+    { q: 'Comment régler le minuteur de combat ?', expect: 'app:chrono' },
+  ],
   entrainement: [
     { q: 'À quoi sert le bouton Décomposer ?', expect: 'app:decomposer' },
     { q: 'À quoi sert le bouton Ralenti ?', expect: 'app:ralenti' },
