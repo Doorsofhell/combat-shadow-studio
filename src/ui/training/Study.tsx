@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { CoachRig } from '../../engine/rig';
-import type { MotionLibrary } from '../../engine/library';
-import { STUDY_PHASE_LABEL, StudyPlayer } from '../../engine/study';
+import type { CoachRig } from '../../engine';
+import type { MotionLibrary } from '../../engine';
+import { STUDY_PHASE_LABEL, StudyPlayer } from '../../engine';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
 import { instructionOf } from '../../domain/instructions';
 import { CUE_LABEL, CueId, useSettings } from '../../store/settings';

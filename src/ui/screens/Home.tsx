@@ -11,7 +11,7 @@ import { DISCIPLINES, LEVELS, TrainingMode } from '../../domain/types';
 import { EXERCISE_BY_ID } from '../../domain/exercises';
 import { recommend } from '../../domain/recommend';
 import { championFor } from '../../domain/coaches/catalog';
-import type { ComboPlayer, PlayerEvents } from '../../engine/player';
+import type { ComboPlayer, PlayerEvents } from '../../engine';
 import { MODE_LABEL } from '../training/plan';
 import { DisciplineLabel, EmptyState, EntryCard, ProgressBar, SectionHead, StatTile } from '../components';
 import { defaultFighterName } from '../components/fighter';

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ComboPlayer, PlayerEvents } from '../../engine/player';
+import type { ComboPlayer, PlayerEvents } from '../../engine';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
 import { SessionTimeline, type Phase, type TimelineEvent } from '../../domain/session/timeline';
 import { useStats, type SessionRecord } from '../../store/stats';

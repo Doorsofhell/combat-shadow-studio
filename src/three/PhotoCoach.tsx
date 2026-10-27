@@ -5,7 +5,7 @@ import type { GLTFLoader } from 'three-stdlib';
 import { Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, SRGBColorSpace } from 'three';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { restoreReferencePose, setLegLength } from './pose';
-import { CoachRig } from '../engine/rig';
+import { CoachRig } from '../engine';
 import { useOutfit, type OutfitId, type OutfitStatus } from './outfit';
 
 /**

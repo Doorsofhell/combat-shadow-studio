@@ -3,7 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { ContactShadows, OrbitControls } from '@react-three/drei';
 import { Box3, PerspectiveCamera, Vector3 } from 'three';
 import { FOV, centerOnSpheres, fitDistance, fitSpheres } from './framing';
-import type { Envelope } from '../engine/envelope';
+import type { Envelope } from '../engine';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 /** where the camera should look from, in scene terms (azimuth already oriented for the guard) */

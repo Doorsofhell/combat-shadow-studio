@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import type { PlayerMove } from '../../engine/player';
+import type { PlayerMove } from '../../engine';
 
 /**
  * 0.35: the move being played, as reported by the animation player (onMove). A tiny store outside React state so

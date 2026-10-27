@@ -1,4 +1,4 @@
-import type { StanceOffsets } from '../../engine/author';
+import type { StanceOffsets } from '../../engine';
 
 const deg = (d: number) => (d * Math.PI) / 180;
 

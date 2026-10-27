@@ -1,6 +1,6 @@
 import { TECHNIQUE_BY_ID } from './techniques';
 import type { DisciplineId, TechniqueCategory } from './types';
-import { STANCES } from '../engine/author';
+import { STANCES } from '../engine';
 
 /**
  * Teaching camera. Angles are expressed from the coach's point of view in orthodox guard:
