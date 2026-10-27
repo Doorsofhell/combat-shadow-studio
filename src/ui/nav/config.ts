@@ -332,6 +332,16 @@ export const SECTION: Record<NavScreen, TabId | null> = {
 /** the first screen of each space and its sibling tabs: reached from the bar, so no Retour chip */
 export const ROOT_SCREENS: ReadonlySet<NavScreen> = new Set<NavScreen>(['accueil', 'entrainer', 'techniques', 'legendes', 'encyclopedie', 'progres', 'historique', 'objectifs', 'profil']);
 
+/**
+ * The first page of a space or of one of its tabs: no Retour chip there (the bar leads to it). A deeper page of the
+ * same screen (A–Z of the encyclopedia, a section of Réglages) keeps Retour.
+ */
+export function isRootPath(pathname: string): boolean {
+  const p = pathname.replace(/\/+$/, '') || '/';
+  if (TABS.some((t) => t.to === p)) return true;
+  return Object.values(SECTION_TABS).some((tabs) => tabs!.some((t) => t.to === p));
+}
+
 /** the session is hands-free: no bar of places, its actions in one row with Retour */
 export const NO_TABS: ReadonlySet<NavScreen> = new Set<NavScreen>(['entrainement']);
 /** full-screen screens whose top belongs to them: Retour joins the row of actions instead of the top left */
@@ -343,6 +353,8 @@ export const PRIMARY: Partial<Record<NavScreen, NavAction>> = {
   discipline: 'start',
   programme: 'start',
   entrainement: 'toggle',
+  // in the row of the chronometer (BACK_IN_ROW), next to its own setup screen
+  chrono: 'toggle',
   fiche: 'train',
   combinaison: 'train',
   'createur-fiche': 'run',
@@ -356,10 +368,11 @@ const TAB_ROOTS = TABS.map((t) => t.to);
  * place except Retour, Menu (now « Plus »), the links to the five places, which the bar already shows, and a link
  * to the screen itself (Chrono on the chronometer).
  */
-export function dockSlots(screen: NavScreen): { slot: NavSlot; place: number }[] {
+export function dockSlots(screen: NavScreen, pathname?: string): { slot: NavSlot; place: number }[] {
+  const here = pathname === undefined ? null : pathname.replace(/\/+$/, '') || '/';
   return NAV_CONFIG[screen]
     .map((slot, i) => ({ slot, place: i + 1 }))
-    .filter(({ slot }) => slot.action !== 'back' && slot.action !== 'menu' && !(slot.action.startsWith('nav:') && (TAB_ROOTS.includes(slot.action.slice(4)) || navScreen(slot.action.slice(4)) === screen)));
+    .filter(({ slot }) => slot.action !== 'back' && slot.action !== 'menu' && !(slot.action.startsWith('nav:') && (TAB_ROOTS.includes(slot.action.slice(4)) || slot.action.slice(4) === here)));
 }
 
 /** the tabs at the top of a space (lot 1: Apprendre and Progrès, which held the former Menu places) */

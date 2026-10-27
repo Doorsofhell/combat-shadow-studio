@@ -55,10 +55,11 @@ test('Coach IA : la même entrée dans le Menu de chaque écran, sauf sur sa pro
     await expect(page.getByTestId('cmd-coach-ia'), s).toHaveText('Coach IA');
     await page.keyboard.press('Escape');
   }
-  // the whole coach page is open: no second way in
+  // the whole coach page is open: no second way in (1.0.0: this page has no other command, so no « Plus » at all)
   await page.goto('/#/coach-ia');
   await expect(page.getByRole('heading').first()).toBeVisible();
-  await openMenu(page);
+  await expect(bar(page)).toHaveAttribute('data-screen', 'coach-ia');
+  await expect(bar(page).locator('[data-action="menu"]')).toHaveCount(0);
   await expect(page.getByTestId('cmd-coach-ia')).toHaveCount(0);
 });
 
@@ -95,11 +96,11 @@ test('Coach IA à l’entraînement : pause, démo sur le lecteur, ralenti, sans
   await expect(page).toHaveURL(/#\/entrainement\?/);
 });
 
-test('Légendes dans le Menu « Navigation générale »', async ({ page }) => {
+test('Légendes : un onglet d’Apprendre (1.0.0, formerly in the Menu)', async ({ page }) => {
   await seed(page);
   await page.goto('/#/');
-  await openMenu(page);
-  await page.getByTestId('menu-legendes').click();
+  await page.getByTestId('nav-techniques').click();
+  await page.getByTestId('tab-legendes').click();
   await expect(page).toHaveURL(/#\/champions/);
   // 0.36 (Youssef, 2026-10-22 18:47, replaces the 0.27 rule): Techniques = Techniques, Combinaisons, Légendes,
   // Favoris; the Légendes section points to the Légendes screen, the Créateur and Programmes left for Entraîner

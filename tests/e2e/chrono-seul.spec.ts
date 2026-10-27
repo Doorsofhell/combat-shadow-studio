@@ -38,7 +38,7 @@ test.beforeEach(async ({ page }) => {
   await seedProfile(page);
 });
 
-test('barre du bas : « Chrono » à la place de Techniques, ouvre le chrono ; Techniques reste dans le Menu', async ({ page }) => {
+test('« Chrono » au-dessus de la barre sur Accueil et Entraîner, ouvre le chrono ; Techniques est la place Apprendre', async ({ page }) => {
   for (const path of ['/#/', '/#/entrainer']) {
     await page.goto(path);
     await expect(bar(page).locator('[data-action="nav:/techniques"]')).toHaveCount(0);
@@ -48,9 +48,10 @@ test('barre du bas : « Chrono » à la place de Techniques, ouvre le chrono ; T
   await expect(page).toHaveURL(/#\/chrono$/);
   await expect(bar(page)).toHaveAttribute('data-screen', 'chrono');
   await expect(page.getByTestId('chrono-setup-screen')).toBeVisible();
-  await expect(bar(page).locator('[data-action="nav:/chrono"]')).toHaveAttribute('aria-pressed', 'true');
-  await bar(page).locator('[data-action="menu"]').click();
-  await expect(page.getByTestId('menu-techniques')).toBeVisible();
+  // 1.0.0: the chronometer belongs to Entraîner, whose place is lit; Techniques is the place Apprendre
+  await expect(bar(page).locator('.nav-tab[aria-current="page"]')).toHaveAttribute('data-tab', 'entrainer');
+  await expect(bar(page).locator('[data-action="nav:/chrono"]')).toHaveCount(0);
+  await expect(bar(page).getByTestId('nav-techniques')).toBeVisible();
 });
 
 test('réglages : formats prêts, + et − bornés, total affiché, mémorisés et « Réglage perso » quand on modifie', async ({ page }) => {

@@ -87,9 +87,9 @@ test('Avantages, FAQ, Restaurer : un panneau à la fois, au-dessus de la page, f
   await page.getByTestId('nav-faq').click();
   await page.getByTestId('nav-faq').click();
   await expect(page.getByTestId('premium-panel-faq')).toHaveCount(0);
-  // Menu still opens the general navigation
+  // « Plus » still opens the commands of the screen (1.0.0, formerly Menu)
   await page.getByTestId('nav-menu').click();
-  await expect(page.getByTestId('menu-premium')).toBeVisible();
+  await expect(page.getByTestId('nav-menu-sheet')).toBeVisible();
 });
 
 for (const scheme of ['light', 'dark'] as const) {

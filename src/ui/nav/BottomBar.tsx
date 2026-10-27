@@ -5,7 +5,7 @@ import { LATEST_RELEASE, hasUnseenRelease } from '../../domain/releases';
 import { usePhoto } from '../../store/photo';
 import { initials, useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { BACK_IN_ROW, NAV_CONFIG, NAV_PARENT, NO_TABS, PRIMARY, ROOT_SCREENS, SECTION, TABS, dockSlots, navScreen, slotRole, type NavScreen, type NavSlot, type Tab } from './config';
+import { BACK_IN_ROW, NAV_CONFIG, NAV_PARENT, NO_TABS, PRIMARY, ROOT_SCREENS, SECTION, TABS, dockSlots, isRootPath, navScreen, slotRole, type NavScreen, type NavSlot, type Tab } from './config';
 import { pushLayer } from './layers';
 import { NavIcon } from './NavIcon';
 import { leave, useNavStore } from './store';
@@ -119,7 +119,7 @@ export function BottomBar() {
     document.documentElement.dataset.disc = profile.mainDiscipline;
   }, [profile.mainDiscipline]);
   // Retour at the top left: the pages leave room for it
-  const backChip = shown && !ROOT_SCREENS.has(screen!) && !BACK_IN_ROW.has(screen!);
+  const backChip = shown && !(ROOT_SCREENS.has(screen!) && isRootPath(loc.pathname)) && !BACK_IN_ROW.has(screen!);
   useEffect(() => {
     const html = document.documentElement;
     if (backChip) html.dataset.backChip = '';
@@ -129,7 +129,7 @@ export function BottomBar() {
   if (!screen || !profile.completed) return null;
   const slots = NAV_CONFIG[screen];
   const primary = PRIMARY[screen];
-  const dock = dockSlots(screen);
+  const dock = dockSlots(screen, loc.pathname);
   const tabs = !NO_TABS.has(screen);
   const section = SECTION[screen];
   const withCoach = !loc.pathname.startsWith('/coach-ia');

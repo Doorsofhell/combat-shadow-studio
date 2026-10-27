@@ -1,6 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
-import { openMenu } from './nav-helpers';
 
 /** every key/value of the app's IndexedDB (idb-keyval default store) */
 async function idbDump(page: Page): Promise<Record<string, unknown>> {
@@ -47,9 +46,9 @@ test('compte : mode invité, profil modifié conservé, export, suppression des 
   await onboard(page, 'Yan');
 
   // profile from the settings
-  // v0.32: Menu › Paramètres (no settings button in the header any more)
-  await openMenu(page);
-  await page.getByTestId('menu-parametres').click();
+  // 1.0.0 (refonte ergonomique): Profil › Réglages (formerly Menu › Paramètres)
+  await page.getByTestId('nav-profil').click();
+  await page.getByTestId('profil-reglages').click();
   await page.getByRole('link', { name: /Mon profil et mon compte/ }).click();
   await expect(page.getByTestId('profile-name')).toHaveText('Yan');
   await expect(page.getByText('Les comptes en ligne ne sont pas activés dans cette version. Tout reste sur cet appareil.')).toBeVisible();

@@ -43,7 +43,7 @@ test.describe('Entraîner : trois espaces', () => {
     await page.reload();
     await expect(page.getByTestId('space-programmes')).toHaveAttribute('aria-selected', 'true');
     // une seule barre de navigation, aucun bouton flottant
-    await expect(page.locator('nav.nav-bottom')).toHaveCount(1);
+    await expect(page.locator('.nav-bottom')).toHaveCount(1);
     await expect(page.locator('.coach-bubble, .action-pill')).toHaveCount(0);
   });
 
@@ -166,7 +166,7 @@ test.describe('Entraîner : trois espaces', () => {
         for (let el: Element | null = last; el; el = el.parentElement) if (el.scrollHeight > el.clientHeight + 1) el.scrollTop = el.scrollHeight;
         window.scrollTo(0, document.scrollingElement!.scrollHeight);
         await new Promise((res) => setTimeout(res, 250));
-        const nav = document.querySelector('nav.nav-bottom')!.getBoundingClientRect();
+        const nav = document.querySelector('.nav-bottom')!.getBoundingClientRect();
         return { navTop: nav.top, last: last.getBoundingClientRect().bottom, overflow: document.scrollingElement!.scrollWidth - innerWidth };
       });
       expect(r.last, s).toBeLessThanOrEqual(r.navTop);

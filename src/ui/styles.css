@@ -182,8 +182,13 @@
 :root[data-disc='bjj'] { --disc: var(--disc-bjj); }
 :root[data-disc='judo'] { --disc: var(--disc-judo); }
 
-/* 1.0.0: Retour is a chip at the top left of the detail screens; their content starts under it */
-html[data-back-chip] .page {
+/* 1.0.0: Retour is a chip at the top left of the detail screens (maquette v4: next to the title). A page that starts
+   with its title makes room beside it; any other page starts under the chip */
+html[data-back-chip] .page > .page-head:first-child {
+  padding-left: 58px;
+  min-height: 48px;
+}
+html[data-back-chip] .page:not(:has(> .page-head:first-child)) {
   padding-top: calc(var(--space-4) + 52px);
 }
 

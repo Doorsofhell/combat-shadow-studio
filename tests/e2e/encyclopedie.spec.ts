@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { bar, openMenu, seedProfile } from './nav-helpers';
+import { bar, seedProfile } from './nav-helpers';
 
 // v0.46 (Youssef, 2026-10-23, « Création de l'Encyclopédie du combat — Version 1.0 » §17): access from the Menu, the
 // eight families, filters, search, A–Z, favourites kept after a reload, Retour keeps the filters, links both ways with
@@ -12,23 +12,25 @@ test.beforeEach(async ({ page }) => {
 
 const results = (page: Page) => page.getByTestId('enc-results').getByTestId('enc-row');
 
-test('le Menu ouvre l’Encyclopédie (livre ouvert, description), sans Premium', async ({ page }) => {
+test('Apprendre ouvre l’Encyclopédie (onglet, 1.0.0 ; formerly in the Menu), sans Premium', async ({ page }) => {
   await page.goto('/#/');
-  await openMenu(page);
-  const entry = page.getByTestId('menu-encyclopedie');
-  await expect(entry).toContainText('Encyclopédie');
-  await expect(entry).toContainText('Dictionnaire illustré des 6 disciplines');
-  await expect(entry).not.toContainText('Glossaire');
+  await page.getByTestId('nav-techniques').click();
+  const entry = page.getByTestId('tab-encyclopedie');
+  await expect(entry).toHaveText('Encyclopédie');
   await entry.click();
   await expect(page.getByTestId('encyclopedia-home')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Encyclopédie du combat' })).toBeVisible();
   await expect(page.getByText('Techniques, équipements, règles et culture des 6 disciplines')).toBeVisible();
-  // the bar: Retour | Classement | A–Z | Favoris | Menu
+  // the actions: Classement | A–Z | Favoris | Plus (1.0.0: the first page of a tab of Apprendre has no Retour)
   await expect(bar(page)).toHaveAttribute('data-screen', 'encyclopedie');
   const labels = await bar(page).locator('[data-action]').evaluateAll((els) => els.map((e) => e.getAttribute('data-action')));
-  expect(labels).toEqual(['back', 'ency-classement', 'ency-az', 'ency-favoris', 'menu']);
+  expect(labels).toEqual(['ency-classement', 'ency-az', 'ency-favoris', 'menu']);
   await expect(page.getByTestId('nav-ency-classement')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByTestId('premium-lock')).toHaveCount(0);
+  // a deeper page of the encyclopedia keeps Retour
+  await page.getByTestId('nav-ency-az').click();
+  await expect(page).toHaveURL(/#\/encyclopedie\/az/);
+  await expect(bar(page).locator('.nav-backchip [data-action="back"]')).toBeVisible();
 });
 
 test('huit familles distinctes, chacune ouvre sa liste filtrée', async ({ page }) => {

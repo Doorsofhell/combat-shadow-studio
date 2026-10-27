@@ -1,5 +1,4 @@
 import { expect, Page, test } from '@playwright/test';
-import { openMenu } from './nav-helpers';
 
 async function onboard(page: Page, coach: 'homme' | 'femme') {
   await page.goto('/');
@@ -22,8 +21,8 @@ test('premier lancement : questionnaire, choix obligatoire du coach, données co
   await expect(page.getByTestId('home-cta')).toBeVisible();
   // 0.24: the coach chosen is Amara (stored choice 'femme')
   await expect(page.getByTestId('fighter-name')).toHaveText('Amara');
-  // bottom navigation (v0.32, mockup of 2026-10-22): one bar of five places, Menu last
-  await expect(page.getByTestId('bottom-bar').locator('button.nav-btn')).toHaveCount(5);
+  // bottom navigation (1.0.0 refonte ergonomique): five fixed places, the actions of the screen above them, « Plus »
+  await expect(page.getByTestId('bottom-bar').locator('.nav-tab')).toHaveCount(5);
   await expect(page.getByTestId('bottom-bar').locator('[data-slot="5"]')).toHaveAttribute('data-action', 'menu');
   await page.getByTestId('nav-entrainer').click();
   // 0.33: the disciplines are the second space of Entraîner
@@ -86,9 +85,9 @@ test('programme : les blocs s’enchaînent avec leurs rounds', async ({ page })
 
 test('réglages et confidentialité accessibles depuis l’accueil', async ({ page }) => {
   await onboard(page, 'homme');
-  // v0.32: Menu › Paramètres (no settings button in the header any more)
-  await openMenu(page);
-  await page.getByTestId('menu-parametres').click();
+  // 1.0.0 (refonte ergonomique): Profil › Réglages (formerly Menu › Paramètres)
+  await page.getByTestId('nav-profil').click();
+  await page.getByTestId('profil-reglages').click();
   await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
   await page.getByRole('link', { name: /Confidentialité/ }).click();
   await expect(page.getByText('Tout reste sur ton appareil.')).toBeVisible();

@@ -17,14 +17,18 @@ describe('refonte 1.0.0 : barre fixe et gros bouton', () => {
   it('le gros bouton de chaque écran est une action de cet écran', () => {
     for (const [s, a] of Object.entries(PRIMARY)) expect(dockSlots(s as NavScreen).map((d) => d.slot.action), s).toContain(a);
   });
-  it('aucune action d’écran ne disparaît : elle est au-dessus de la barre, ou c’est une des cinq places, ou l’écran lui-même', () => {
+  it('un lien vers la page affichée n’est pas répété (Chrono sur le chrono), un lien vers une autre page du même écran reste', () => {
+    expect(dockSlots('chrono', '/chrono').map((d) => d.slot.action)).not.toContain('nav:/chrono');
+    expect(dockSlots('parametres', '/reglages').map((d) => d.slot.action)).toEqual(['nav:/reglages/affichage', 'nav:/reglages/affichage?focus=camera']);
+  });
+  it('aucune action d’écran ne disparaît : elle est au-dessus de la barre, ou c’est une des cinq places', () => {
     const tabRoots = TABS.map((t) => t.to);
     for (const s of screens) {
       const shown = dockSlots(s).map((d) => d.slot.action);
       for (const slot of NAV_CONFIG[s]) {
         if (slot.action === 'back' || slot.action === 'menu' || shown.includes(slot.action)) continue;
         const to = slot.action.slice(4);
-        expect(slot.action.startsWith('nav:') && (tabRoots.includes(to) || navScreen(to) === s), `${s} → ${slot.action}`).toBe(true);
+        expect(slot.action.startsWith('nav:') && tabRoots.includes(to), `${s} → ${slot.action}`).toBe(true);
       }
     }
   });

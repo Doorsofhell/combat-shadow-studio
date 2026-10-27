@@ -3,10 +3,13 @@ import AxeBuilder from '@axe-core/playwright';
 import { bar, seedProfile } from './nav-helpers';
 
 /**
- * v0.44 roles, v0.45.1 colours (Youssef, 2026-10-23, « Correctif mineur de navigation »): a monochrome bar. No place
- * has a background of its own; Retour and Menu in a neutral grey; the actions of the screen in a graphite slightly more
- * contrasted; the active one more contrasted still, with a bolder word; never red or pink. Colours read on the real
- * bar, in light and dark menus. CAPTURES=dir writes the comparison captures (docs/v0451-navigation/).
+ * 1.0.0 (refonte ergonomique, maquette v4 validée par Youssef le 2026-10-27), replacing the v0.45.1 monochrome bar:
+ * - the five places: no background of their own, a neutral grey, the place lit in the text colour with a bolder word;
+ * - the actions of the screen: glass pills (a light background of their own, no frame) in the text colour; the
+ *   active one inverted;
+ * - the big button: the colour of the main discipline with dark text.
+ * Every word readable (WCAG AA 4.5:1), never red outside the colour of the discipline. Colours read on the real bar,
+ * by day and by night. CAPTURES=dir writes the captures.
  */
 const SHOTS = process.env.CAPTURES;
 
@@ -77,77 +80,88 @@ const grey = (c: string) => {
 /** no background of its own: fully transparent */
 const noBg = (c: string) => c.split(',')[3] === '0';
 
-for (const [theme, scheme] of [['clair', 'light'], ['sombre', 'dark']] as const) {
-  test.describe(`menus ${theme}`, () => {
+/** the buttons of the bar by kind, with the WCAG contrast of each word on what is behind it */
+async function parts(page: Page) {
+  const l = await look(page);
+  const c = await contrasts(page);
+  const kinds = await bar(page)
+    .locator('button')
+    .evaluateAll((bs) => bs.map((b) => (b.classList.contains('nav-tab') ? 'tab' : b.classList.contains('nav-primary') ? 'primary' : b.closest('.nav-backchip') ? 'back' : 'action')));
+  return l.map((x, i) => ({ ...x, kind: kinds[i], contrast: c[i], on: false }));
+}
+
+for (const [theme, scheme] of [['Jour', 'light'], ['Nuit', 'dark']] as const) {
+  test.describe(`thème ${theme}`, () => {
     test.use({ viewport: { width: 360, height: 740 } });
 
-    test('barre monochrome : aucun fond par bouton, Retour et Menu neutres, actions en graphite, active plus contrastée et plus grasse, jamais de rouge', async ({ page }) => {
-      // theme « auto » (default) follows the system
+    test('places neutres, actions en verre, gros bouton à la couleur de la discipline, tout lisible, jamais de rouge ailleurs', async ({ page }) => {
       await page.emulateMedia({ colorScheme: scheme });
+      await page.addInitScript((t) => localStorage.setItem('css-theme', t), theme === 'Jour' ? 'clair' : 'sombre');
       await seedProfile(page);
-      // a sheet of technique: S’entraîner, Ralenti, Maîtrise are its own actions
+      // a sheet of technique: S’entraîner (big button), Ralenti, Maîtrise, Plus
       await page.goto('/#/techniques/jab?d=boxe');
       await expect(bar(page)).toHaveAttribute('data-screen', 'fiche');
       await page.waitForTimeout(400);
-      let l = await look(page);
-      expect(l.map((x) => x.role)).toEqual(['global', 'contextual', 'contextual', 'contextual', 'global']);
-      const neutral = l[0];
-      expect(l[4].color).toBe(neutral.color);
-      for (const x of l) {
+      let l = await parts(page);
+      expect(l.map((x) => x.kind)).toEqual(['back', 'action', 'action', 'action', 'primary', 'tab', 'tab', 'tab', 'tab', 'tab']);
+      for (const x of l) expect(x.contrast, `${x.label} contraste`).toBeGreaterThanOrEqual(4.5);
+      const tabs = l.filter((x) => x.kind === 'tab');
+      const lit = await bar(page).locator('.nav-tab').evaluateAll((bs) => bs.map((b) => b.getAttribute('aria-current') === 'page'));
+      expect(lit).toEqual([false, false, true, false, false]);
+      for (const x of tabs) {
         expect(noBg(x.bg), `${x.label} fond ${x.bg}`).toBe(true);
         expect(grey(x.color), `${x.label} couleur ${x.color}`).toBe(true);
       }
-      for (const x of l.slice(1, 4)) expect(x.color, x.label!).not.toBe(neutral.color);
-      const rest = l[2];
-      let c = await contrasts(page);
-      for (const k of c) expect(k).toBeGreaterThanOrEqual(4.5);
-      // graphite: more contrasted than the neutral grey of Retour and Menu
-      for (const k of [1, 2, 3]) expect(c[k]).toBeGreaterThan(c[0]);
-      const restContrast = c[2];
+      // the place lit (Apprendre): more contrasted, bolder; the others the same neutral grey
+      const others = tabs.filter((_, i) => !lit[i]);
+      expect(new Set(others.map((x) => x.color)).size).toBe(1);
+      expect(tabs[2].color).not.toBe(others[0].color);
+      expect(tabs[2].contrast).toBeGreaterThan(others[0].contrast);
+      // the actions: a glass background of their own, a grey (text) colour
+      const acts = l.filter((x) => x.kind === 'action' || x.kind === 'back');
+      for (const x of acts) {
+        expect(noBg(x.bg), `${x.label} sans fond`).toBe(false);
+        expect(grey(x.color), `${x.label} couleur ${x.color}`).toBe(true);
+      }
+      // the big button: the colour of boxe (main discipline of the test profile), dark text
+      const big = l.find((x) => x.kind === 'primary')!;
+      expect(big.bg).toBe('255,59,59,255');
+      expect(big.color).toBe('11,15,20,255');
       if (SHOTS) await bar(page).screenshot({ path: `${SHOTS}/${theme}-1-fiche-repos.png` });
 
-      // Ralenti selected: stronger and bolder, the two others stay graphite
+      // Ralenti selected: inverted, still readable; the others unchanged
+      const rest = l[1];
       await bar(page).locator('[data-action="slow"]').click();
       await expect(bar(page).locator('[data-action="slow"]')).toHaveClass(/active/);
       await page.waitForTimeout(400);
-      l = await look(page);
-      expect(l[2].active).toBe(true);
-      expect(l[2].color).not.toBe(rest.color);
-      expect(noBg(l[2].bg), `fond actif ${l[2].bg}`).toBe(true);
-      expect(grey(l[2].color), `couleur active ${l[2].color}`).toBe(true);
-      expect(l[2].weight).toBeGreaterThan(rest.weight);
-      expect(l[1].color).toBe(rest.color);
-      expect(l[3].color).toBe(rest.color);
-      expect(l[0].color).toBe(neutral.color);
-      expect(l[4].color).toBe(neutral.color);
-      c = await contrasts(page);
-      for (const k of c) expect(k).toBeGreaterThanOrEqual(4.5);
-      expect(c[2]).toBeGreaterThan(restContrast);
+      l = await parts(page);
+      expect(l[1].active).toBe(true);
+      expect(l[1].bg).not.toBe(rest.bg);
+      expect(grey(l[1].color)).toBe(true);
+      expect(l[1].contrast).toBeGreaterThanOrEqual(4.5);
+      expect(l[2].bg).toBe(rest.bg);
+      for (const x of l) expect(x.contrast, `${x.label} contraste`).toBeGreaterThanOrEqual(4.5);
       const axe = await new AxeBuilder({ page }).include('[data-testid="bottom-bar"]').withTags(['wcag2a', 'wcag2aa']).analyze();
       expect(axe.violations.map((v) => v.id)).toEqual([]);
       if (SHOTS) await bar(page).screenshot({ path: `${SHOTS}/${theme}-2-fiche-ralenti.png` });
 
-      // another screen: its own three actions in graphite, nothing left selected from the previous one
+      // another screen: nothing left selected from the previous one, Progrès lit
       await page.goto('/#/stats');
       await expect(bar(page)).toHaveAttribute('data-screen', 'progres');
       await page.waitForTimeout(400);
-      l = await look(page);
-      expect(l.map((x) => x.role)).toEqual(['global', 'contextual', 'contextual', 'contextual', 'global']);
+      l = await parts(page);
       expect(l.some((x) => x.active)).toBe(false);
-      expect(l[2].color).toBe(rest.color);
+      await expect(bar(page).locator('.nav-tab[aria-current="page"]')).toHaveAttribute('data-tab', 'progres');
       if (SHOTS) await bar(page).screenshot({ path: `${SHOTS}/${theme}-3-progres.png` });
 
-      // Accueil: only links to the main places, all neutral
+      // Accueil: the five places keep the same size and place on every screen
+      const at = async () => bar(page).locator('.nav-tab').evaluateAll((bs) => bs.map((b) => { const r = b.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.width)]; }));
+      const onStats = await at();
       await page.goto('/#/');
       await expect(bar(page)).toHaveAttribute('data-screen', 'accueil');
-      await page.waitForTimeout(400);
-      l = await look(page);
-      expect(l.every((x) => x.role === 'global')).toBe(true);
-      expect(new Set(l.map((x) => x.color)).size).toBe(1);
+      expect(await at()).toEqual(onStats);
+      expect(new Set(onStats.map((x) => x[1])).size).toBe(1);
       if (SHOTS) await bar(page).screenshot({ path: `${SHOTS}/${theme}-4-accueil.png` });
-      // same size and place as before: five equal places, nothing moved
-      const sizes = await bar(page).locator('button').evaluateAll((bs) => bs.map((b) => Math.round(b.getBoundingClientRect().width)));
-      expect(new Set(sizes).size).toBe(1);
     });
   });
 }

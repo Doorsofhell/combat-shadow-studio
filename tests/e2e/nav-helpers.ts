@@ -33,7 +33,7 @@ export async function seedProfile(page: Page, extra: Record<string, unknown> = {
 
 export const bar = (page: Page) => page.getByTestId('bottom-bar');
 
-/** opens the Menu sheet from the bar's fifth place */
+/** opens « Plus » (1.0.0; formerly the Menu): the commands of the screen */
 export async function openMenu(page: Page) {
   await bar(page).locator('[data-action="menu"]').click();
   await expect(page.getByTestId('nav-menu-sheet')).toBeVisible();
