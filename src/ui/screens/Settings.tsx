@@ -212,6 +212,20 @@ export function SettingsPage() {
               ]}
             />
           </PanelRow>
+          {settings.coachStyle === 'realiste' && settings.coachRender === 'premium' && (
+            <PanelRow label="Lumière du coach" column>
+              <Segmented
+                label="Lumière du coach"
+                value={settings.coachLight}
+                onChange={(v) => set({ coachLight: v })}
+                options={[
+                  { id: 'studio', label: 'Studio' },
+                  { id: 'vive', label: 'Vive (fond sombre)' },
+                ]}
+              />
+              <p className="small muted">« Vive » reprend la lumière du labo CME : plus claire, avec un contour bleuté, et un fond sombre pendant l’entraînement.</p>
+            </PanelRow>
+          )}
           <PanelRow label="Version du rendu 3D" column>
             <Segmented
               label="Version du rendu 3D"

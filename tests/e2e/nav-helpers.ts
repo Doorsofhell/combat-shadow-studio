@@ -23,7 +23,8 @@ export async function seedProfile(page: Page, extra: Record<string, unknown> = {
           };
         });
       await put('u:local:css-profile', { state: { profile }, version: 0 });
-      if (settings) await put('u:local:css-settings', { state: { settings }, version: 2 });
+      // 0.49: the settings are a device key (src/store/storage.ts DEVICE_KEYS), not a user key
+      if (settings) await put('css-settings', { state: { settings }, version: 2 });
     },
     { profile: { ...DEFAULT_PROFILE, completed: true, coach: 'femme', mainDiscipline: 'boxe', disciplines: ['boxe'], ...extra }, settings: settings ?? null },
   );

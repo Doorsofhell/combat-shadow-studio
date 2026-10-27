@@ -111,9 +111,9 @@ export interface CoachStageProps {
 export function CoachStage(props: CoachStageProps) {
   const menuTheme = useResolvedTheme();
   const { coach, discipline, southpaw, cameraAngle, view, free, onUserOrbit, frameIds, quality, events, onPlayer, onRigReady, study, studyActive = false, zoom, ar, arActive = false, backdrop = 'studio' } = props;
-  const stageDark = backdrop !== 'studio' && menuTheme === 'dark';
   const fighter = useActiveFighter();
   const render = useSettings((s) => s.settings.coachRender);
+  const light = useSettings((s) => s.settings.coachLight);
   // 0.24: the coach is Kadir or Amara, on their own model, dressed for the discipline; the fallback
   // render ("précédent") keeps the generic coach and the custom fighter
   const champion = render === 'premium' && !props.look ? championFor(coach) : null;
@@ -187,6 +187,11 @@ export function CoachStage(props: CoachStageProps) {
     return () => document.removeEventListener('visibilitychange', on);
   }, []);
   const style = useSettings((s) => s.settings.coachStyle);
+  // v0.49 « Lumière vive » (CME-3D lab): realistic look only; its dark background on the training stage only (the
+  // other screens lay their own text and buttons over the stage, made for the theme's background)
+  const vive = light === 'vive' && style === 'realiste' && render === 'premium';
+  const viveBg = vive && backdrop === 'theme';
+  const stageDark = viveBg || (backdrop !== 'studio' && menuTheme === 'dark');
   // v0.31: discipline outfit of the Ultra-réaliste coaches; a failure is said, never silently replaced
   const outfitOn = useSettings((s) => s.settings.coachOutfit);
   const bjjOutfit = useSettings((s) => s.settings.bjjOutfit);
@@ -319,7 +324,7 @@ export function CoachStage(props: CoachStageProps) {
       // absence gave the staircase edges of the light quality)
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       camera={{ position: [0, 1.1, 5], fov: 30 }}
-      style={{ background: arActive || backdrop === 'theme' ? 'transparent' : backdrop === 'dark' ? 'var(--scene)' : '#fff', touchAction: 'none' }}
+      style={{ background: arActive ? 'transparent' : viveBg ? VIVID_BG : backdrop === 'theme' ? 'transparent' : backdrop === 'dark' ? 'var(--scene)' : '#fff', touchAction: 'none' }}
     >
       {quality === 'auto' && (
         <PerformanceMonitor
@@ -348,9 +353,10 @@ export function CoachStage(props: CoachStageProps) {
             dark={stageDark}
             shadows={realShadows}
             realistic={style === 'realiste'}
+            vive={vive}
           />
         )}
-        {style === 'realiste' && render === 'premium' && q === 'haute' && <StudioEnvironment intensity={0.12} />}
+        {style === 'realiste' && render === 'premium' && q === 'haute' && <StudioEnvironment intensity={vive ? 0.7 : 0.12} />}
         {ar && <ArScene bridge={ar} active={arActive} coachGroup={coachGroup} follow={follow} />}
         {/* the coach stays mounted when switching to AR: same model, same player, same animation */}
         <group ref={coachGroup}>
@@ -398,5 +404,8 @@ function DiagProbe({ animAt }: { animAt: { current: number } }) {
   });
   return null;
 }
+
+/** the dark blue-grey background of the CME-3D lab, under « Lumière vive » */
+const VIVID_BG = '#1d2733';
 
 const TOUCH = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;

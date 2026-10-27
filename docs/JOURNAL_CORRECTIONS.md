@@ -1965,3 +1965,16 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Ajout** : écran `/chrono` (round, repos et rounds avec − et +, 7 formats prêts, durée totale, options de la v0.47), séance plein écran à la couleur de la phase, pause d'un toucher n'importe où, « Arrêter » et « Passer la phase », bilan, historique « terminée » ou « interrompue ». « Chrono » remplace « Techniques » dans la barre ; Techniques reste dans le Menu. Même moteur de temps que la v0.47, avec `skip()` en plus.
 - **Fichiers** : `src/domain/chrono.ts`, `src/domain/session/timeline.ts`, `src/ui/chrono/`, `src/ui/App.tsx`, `src/ui/nav/{config.ts,icons.ts}`, `src/store/settings.ts`, `src/coach/{appGuide.ts,questionBank.ts}`, tests, `scripts/dev/shot-chrono-seul.mjs`, `src/domain/releases.ts`, `package.json`, `docs/v048-chrono/`.
 - **Tests** : détail dans `docs/v048-chrono/RAPPORT.md` §5. Vitest 806 RÉUSSIS ; `chrono-seul.spec` 5 RÉUSSIS ; Playwright complet 213 RÉUSSIS, 2 ÉCHOUÉS déjà en échec sur la v0.46.0 (`coach-suggest:96`, `training-layout:325`) ; Android réel NON EXÉCUTÉ.
+
+## 2026-10-27 · v0.49.0 · Moteur à part et lumière vive
+
+- **Demande** : garder le moteur de Shadow, l'améliorer avec ce qui est bon dans CME, et en faire « une espèce de module à part » qui peut évoluer étape par étape (Youssef, 2026-10-27 12:47). Puis : pourquoi les personnages de CME paraissent mieux aboutis (12:53).
+- **Constat** : le Kadir de CME est le même fichier que celui de Shadow ; seule la lumière diffère. 16 fichiers de l'application entraient directement dans les fichiers du moteur.
+- **Correction** :
+  - moteur 1.0.0 en module : porte d'entrée unique `src/engine/index.ts`, version, journal et mode d'emploi (`docs/moteur/`), test de frontière ;
+  - lissage selon la vitesse repris de CME ;
+  - option « Lumière du coach » (Studio par défaut, Vive = lumière et fond sombre de CME) ;
+  - aide des tests de bout en bout corrigée (clé des réglages).
+  - Aucun mouvement modifié. Épaule de Kadir non modifiée : décision à prendre par Youssef.
+- **Fichiers** : voir `docs/v049-moteur/RAPPORT.md` §3.
+- **Tests** : Vitest 814 RÉUSSIS ; `moteur-lumiere.spec` 2 RÉUSSIS ; Playwright complet 214 RÉUSSIS, 3 ÉCHOUÉS hors de cette version (`coach-suggest:96`, `training-layout:325`, `coaching-hud:60`, ce dernier aussi en échec sur la v0.48.0 au même moment) ; Android réel NON EXÉCUTÉ.
