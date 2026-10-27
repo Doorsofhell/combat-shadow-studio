@@ -1978,3 +1978,18 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Aucun mouvement modifié. Épaule de Kadir non modifiée : décision à prendre par Youssef.
 - **Fichiers** : voir `docs/v049-moteur/RAPPORT.md` §3.
 - **Tests** : Vitest 814 RÉUSSIS ; `moteur-lumiere.spec` 2 RÉUSSIS ; Playwright complet 214 RÉUSSIS, 3 ÉCHOUÉS hors de cette version (`coach-suggest:96`, `training-layout:325`, `coaching-hud:60`, ce dernier aussi en échec sur la v0.48.0 au même moment) ; Android réel NON EXÉCUTÉ.
+
+## 2026-10-27 · 1.0.0 (lot 1 sur 5, non publié) · Refonte ergonomique : fondations
+
+- **Demande** : refonte ergonomique 1.0.0 selon le plan et la maquette v4 validés (Youssef, 2026-10-27) : « Aucune perte de contenu. Réorganisation, logique et intelligente », « n'oublie pas le mode jour/nuit ».
+- **Changement** (branche `feature/refonte-v100`, lien public toujours sur la v0.49.0) :
+  - thème Nuit par défaut pour une nouvelle installation, choix déjà enregistrés conservés ; libellés Nuit / Jour / Auto ;
+  - couleur de la discipline principale sur le gros bouton (`src/ui/theme/disciplines.ts`, contraste vérifié par test) ;
+  - barre fixe à 5 onglets (Accueil, Entraîner, Apprendre, Progrès, Profil), gros bouton d'action, Retour en haut à gauche, « Plus » pour les commandes de l'écran ;
+  - Menu retiré : chaque entrée reste joignable (onglets, onglets de section Apprendre et Progrès, Profil › Mon coach / Coach IA / Réglages, Réglages › Premium et Nouveautés), vérifié par `src/ui/nav/__tests__/refonte.test.ts` ;
+  - corrections après la suite complète : barre remesurée en sortant du plein écran total (`BottomBar.tsx`), Retour dans la rangée d'actions sur l'atelier du combattant (`backInRow`, il cachait le bouton « Corps ») ; le test « Lumière du coach » attend l'écriture en IndexedDB avant de recharger (1 échec sur 3 sans cela).
+- **Tests** :
+  - TypeScript : RÉUSSI. Vitest : 835 RÉUSSIS, 1 ignoré.
+  - Playwright complet (avant les corrections ci-dessus) : 208 RÉUSSIS, 2 ignorés, 11 ÉCHOUÉS dont 3 déjà en échec avant (`coach-suggest:96`, `training-layout:325`, `coaching-hud:60`).
+  - Relance des 9 fichiers touchés après corrections : tous RÉUSSIS.
+  - Android réel : NON EXÉCUTÉ.

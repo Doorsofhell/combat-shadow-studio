@@ -18,6 +18,20 @@ test('Réglages > Affichage : « Lumière du coach » Studio par défaut, Vive m
   await page.goto('/#/reglages/affichage');
   await light.getByRole('radio', { name: 'Vive (fond sombre)' }).click();
   await expect(light.getByRole('radio', { name: 'Vive (fond sombre)' })).toHaveAttribute('aria-checked', 'true');
+  // the choice is written to IndexedDB asynchronously: reload once it is stored (an immediate reload could cut the
+  // write, 1 run in 3 on this machine)
+  const stored = () =>
+    page.evaluate(
+      () =>
+        new Promise<string>((res) => {
+          const r = indexedDB.open('keyval-store');
+          r.onsuccess = () => {
+            const q = r.result.transaction('keyval').objectStore('keyval').get('css-settings');
+            q.onsuccess = () => res(String(q.result ?? ''));
+          };
+        }),
+    );
+  await expect.poll(stored).toContain('"coachLight":"vive"');
   await page.reload();
   await expect(page.getByRole('radiogroup', { name: 'Lumière du coach' }).getByRole('radio', { name: 'Vive (fond sombre)' })).toHaveAttribute('aria-checked', 'true');
   await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=libre');

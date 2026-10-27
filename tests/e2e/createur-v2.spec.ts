@@ -38,7 +38,7 @@ test('liste : tuiles avec pictogrammes, dates réelles, « Non analysé » pour 
     ['search', 'Rechercher'],
     ['filter', 'Filtrer'],
     ['plus', 'Créer'],
-    ['grid', 'Menu'],
+    ['grid', 'Plus'],
   ]);
   const tile = page.getByTestId('tile-ancien');
   await expect(tile).toContainText('Mon un-deux');
@@ -75,12 +75,13 @@ test('création : sélecteur de pictogrammes, analyse locale enregistrée, fiche
   await page.goto('/#/createur');
   await bar(page).locator('[data-action="nav:/createur/nouveau"]').click();
   await expect(page).toHaveURL(/#\/createur\/nouveau/);
-  await expect(await barSlots(page)).toEqual([
+  // 1.0.0: Enregistrer is the big button, under the row of the other actions
+  await expect.poll(() => barSlots(page)).toEqual([
     ['back', 'Retour'],
     ['plus', 'Ajouter'],
-    ['save', 'Enregistrer'],
     ['close', 'Annuler'],
-    ['grid', 'Menu'],
+    ['grid', 'Plus'],
+    ['save', 'Enregistrer'],
   ]);
   await page.getByTestId('combo-name-input').fill('Un-deux-crochet');
   await bar(page).locator('[data-action="add"]').click();
@@ -98,12 +99,12 @@ test('création : sélecteur de pictogrammes, analyse locale enregistrée, fiche
   await bar(page).locator('[data-action="save"]').click();
   await expect(page).toHaveURL(/#\/createur\/[a-z0-9]+$/);
   await expect(page.getByTestId('combo-name')).toHaveText('Un-deux-crochet');
-  await expect(await barSlots(page)).toEqual([
+  await expect.poll(() => barSlots(page)).toEqual([
     ['back', 'Retour'],
-    ['play', 'Exécuter'],
     ['edit', 'Modifier'],
     ['trash', 'Supprimer'],
-    ['grid', 'Menu'],
+    ['grid', 'Plus'],
+    ['play', 'Exécuter'],
   ]);
   const analysis = page.getByTestId('combo-analysis');
   await expect(analysis).toContainText('Calcul local');

@@ -5,7 +5,7 @@ import { LATEST_RELEASE, hasUnseenRelease } from '../../domain/releases';
 import { usePhoto } from '../../store/photo';
 import { initials, useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { BACK_IN_ROW, NAV_CONFIG, NAV_PARENT, NO_TABS, PRIMARY, ROOT_SCREENS, SECTION, TABS, dockSlots, isRootPath, navScreen, slotRole, type NavScreen, type NavSlot, type Tab } from './config';
+import { backInRow, NAV_CONFIG, NAV_PARENT, NO_TABS, PRIMARY, ROOT_SCREENS, SECTION, TABS, dockSlots, isRootPath, navScreen, slotRole, type NavScreen, type NavSlot, type Tab } from './config';
 import { pushLayer } from './layers';
 import { NavIcon } from './NavIcon';
 import { leave, useNavStore } from './store';
@@ -113,13 +113,14 @@ export function BottomBar() {
     const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
     ro?.observe(el);
     return () => ro?.disconnect();
-  }, [shown, screen]);
+    // fsRoot: going in or out of the total fullscreen moves the bar to another parent, a new element to observe
+  }, [shown, screen, fsRoot]);
   // the main discipline lights the big buttons (styles.css --disc)
   useEffect(() => {
     document.documentElement.dataset.disc = profile.mainDiscipline;
   }, [profile.mainDiscipline]);
   // Retour at the top left: the pages leave room for it
-  const backChip = shown && !(ROOT_SCREENS.has(screen!) && isRootPath(loc.pathname)) && !BACK_IN_ROW.has(screen!);
+  const backChip = shown && !(ROOT_SCREENS.has(screen!) && isRootPath(loc.pathname)) && !backInRow(screen!, loc.pathname);
   useEffect(() => {
     const html = document.documentElement;
     if (backChip) html.dataset.backChip = '';
@@ -198,11 +199,11 @@ export function BottomBar() {
   const menuSlot = slots.find((s) => s.action === 'menu');
   const primaryItem = primary ? dock.find((d) => d.slot.action === primary) : undefined;
   const secondary = dock.filter((d) => d !== primaryItem);
-  const inRow = BACK_IN_ROW.has(screen);
+  const inRow = backInRow(screen, loc.pathname);
   const me = initials(profile);
 
   const bar = (
-    <div className={`nav-bottom ${inRow ? 'compact' : ''} ${tabs ? '' : 'no-tabs'}`} ref={rootRef} data-testid="bottom-bar" data-screen={screen}>
+    <div className={`nav-bottom ${inRow && primaryItem ? 'compact' : ''} ${tabs ? '' : 'no-tabs'}`} ref={rootRef} data-testid="bottom-bar" data-screen={screen}>
       {backChip && backSlot && <div className="nav-backchip">{button(backSlot, 1, 'back')}</div>}
       <div className="nav-dock changing" ref={dockRef} role="toolbar" aria-label="Actions de l’écran">
         {(secondary.length > 0 || (inRow && backSlot) || (hasMore && menuSlot)) && (
