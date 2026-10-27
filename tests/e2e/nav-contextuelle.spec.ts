@@ -98,12 +98,13 @@ for (const [theme, scheme] of [['Jour', 'light'], ['Nuit', 'dark']] as const) {
       await page.emulateMedia({ colorScheme: scheme });
       await page.addInitScript((t) => localStorage.setItem('css-theme', t), theme === 'Jour' ? 'clair' : 'sombre');
       await seedProfile(page);
-      // a sheet of technique: S’entraîner (big button), Ralenti, Maîtrise, Plus
+      // a sheet of technique: S’entraîner (big button), Ralenti, Maîtrise, Plus; 1.0.0 (lot 3): the round
+      // « Rechercher ou demander au coach » button first in the row
       await page.goto('/#/techniques/jab?d=boxe');
       await expect(bar(page)).toHaveAttribute('data-screen', 'fiche');
       await page.waitForTimeout(400);
       let l = await parts(page);
-      expect(l.map((x) => x.kind)).toEqual(['back', 'action', 'action', 'action', 'primary', 'tab', 'tab', 'tab', 'tab', 'tab']);
+      expect(l.map((x) => x.kind)).toEqual(['back', 'action', 'action', 'action', 'action', 'primary', 'tab', 'tab', 'tab', 'tab', 'tab']);
       for (const x of l) expect(x.contrast, `${x.label} contraste`).toBeGreaterThanOrEqual(4.5);
       const tabs = l.filter((x) => x.kind === 'tab');
       const lit = await bar(page).locator('.nav-tab').evaluateAll((bs) => bs.map((b) => b.getAttribute('aria-current') === 'page'));
@@ -130,16 +131,17 @@ for (const [theme, scheme] of [['Jour', 'light'], ['Nuit', 'dark']] as const) {
       if (SHOTS) await bar(page).screenshot({ path: `${SHOTS}/${theme}-1-fiche-repos.png` });
 
       // Ralenti selected: inverted, still readable; the others unchanged
-      const rest = l[1];
+      const SLOW = 2; // after the back chip and the search button
+      const rest = l[SLOW];
       await bar(page).locator('[data-action="slow"]').click();
       await expect(bar(page).locator('[data-action="slow"]')).toHaveClass(/active/);
       await page.waitForTimeout(400);
       l = await parts(page);
-      expect(l[1].active).toBe(true);
-      expect(l[1].bg).not.toBe(rest.bg);
-      expect(grey(l[1].color)).toBe(true);
-      expect(l[1].contrast).toBeGreaterThanOrEqual(4.5);
-      expect(l[2].bg).toBe(rest.bg);
+      expect(l[SLOW].active).toBe(true);
+      expect(l[SLOW].bg).not.toBe(rest.bg);
+      expect(grey(l[SLOW].color)).toBe(true);
+      expect(l[SLOW].contrast).toBeGreaterThanOrEqual(4.5);
+      expect(l[SLOW + 1].bg).toBe(rest.bg);
       for (const x of l) expect(x.contrast, `${x.label} contraste`).toBeGreaterThanOrEqual(4.5);
       const axe = await new AxeBuilder({ page }).include('[data-testid="bottom-bar"]').withTags(['wcag2a', 'wcag2aa']).analyze();
       expect(axe.violations.map((v) => v.id)).toEqual([]);

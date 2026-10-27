@@ -2020,3 +2020,20 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Vitest : 845 RÉUSSIS, 1 ignoré (dont recherche, `searchShape`, guide).
   - Playwright : nouveau `accueil-recherche.spec` (accueil, sélecteur de discipline, recherche, Coach IA, contraste Jour et Nuit à 360 × 640) et fichiers touchés : RÉUSSIS. `coach-suggest:304` a échoué une fois puis RÉUSSI deux fois (instable) ; `coach-suggest:96` ÉCHOUÉ, déjà en échec avant.
   - Android réel : NON EXÉCUTÉ.
+
+## 2026-10-27 · 1.0.0 (lot 4 sur 5, non publié) · Séance mains libres
+
+- **Demande** : maquette v4 validée, écran « Séance » : le téléphone posé devant soi, on s'entraîne sans le toucher.
+- **Changement** :
+  - pendant la séance, seuls Retour et Pause restent dans la barre ; Décomposer, Caméra et « Plus » reviennent avec la pause (`html[data-hands-free]`, `src/ui/nav/nav.css`) ;
+  - un toucher n'importe où sur le coach met en pause (attendu 320 ms pour ne pas gêner le double toucher du plein écran, `useStageFullscreen.ts`) ; un toucher pendant la pause ne relance pas, c'est « Reprendre » ; en plein écran total, un toucher réaffiche les commandes comme avant, sans pause ;
+  - vibrations (si l'appareil le permet) au départ, à la pause, à la reprise et à chaque changement de phase (travail, repos, fin) ;
+  - glisser le doigt à gauche ou à droite change d'onglet dans un espace (Entraîner, Apprendre, Progrès, Profil), sans boucler ; jamais sur le coach, un curseur, un champ, une liste qui défile de côté, ni quand une fenêtre est ouverte (`src/ui/nav/swipe.ts`) ;
+  - guide du Coach IA : textes de la séance mis à jour (« Plus », mode mains libres) ;
+  - coach entier dans le cadre aussi pour le cadre du nouvel accueil (`camera.test.ts`).
+- **Tests** :
+  - TypeScript : RÉUSSI. Vitest : 849 RÉUSSIS, 1 ignoré (dont `swipe.test.ts`).
+  - Playwright : nouveau `seance-mains-libres.spec` (mains libres, toucher = pause, double toucher = plein écran sans pause, glisser entre onglets) RÉUSSI. Fichiers de la séance relancés : `coach-render`, `fullscreen-dbltap`, `nav-contextuelle`, `app`, `coach-bubble`, `coach-panel-size`, `coaching-hud`, `navigation` RÉUSSIS ; `training-layout` 11 RÉUSSIS, 1 ÉCHOUÉ déjà en échec avant (caméra Auto).
+  - Tests adaptés au nouveau contrat, sans rien affaiblir : « Plus » s'ouvre après la pause (`nav-helpers`), Reprendre avant de mesurer le chrono (`coach-render`), Décomposer exigé masqué en mains libres et visible sinon (`training-layout`), bouton rond de recherche compté sur la fiche (`nav-contextuelle`, lot 3).
+  - Premier passage : un toucher en plein écran mettait en pause (`fullscreen-dbltap`, 2 ÉCHOUÉS) ; corrigé, puis RÉUSSI.
+  - Android réel : NON EXÉCUTÉ.

@@ -952,3 +952,10 @@ html[data-chrono-run] .sec-tabs {
 .search-hit .nav-svg {
   color: var(--muted);
 }
+
+/* 1.0.0 (lot 4, maquette v4 « Séance »): hands-free while the session runs: only Retour and Pause stay; Décomposer,
+   Caméra and « Plus » come back with the pause (Training.tsx sets data-hands-free) */
+html[data-hands-free] .nav-bottom .nav-row > .nav-btn.nav-secondary,
+html[data-hands-free] .nav-bottom .nav-row > .nav-btn.nav-more {
+  display: none;
+}

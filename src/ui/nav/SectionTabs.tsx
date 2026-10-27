@@ -1,11 +1,12 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
 import { hasUnseenRelease } from '../../domain/releases';
 import { isRootPath, navScreen, sectionTabsFor } from './config';
 import { haptic } from './BottomBar';
-import { leave } from './store';
+import { leave, useNavStore } from './store';
+import { swipeBlocked, swipeDirection, swipeTab } from './swipe';
 
 /**
  * 1.0.0 (refonte ergonomique, maquette v4): the tabs at the top of a space (Entraîner: Séance / Programmes /
@@ -44,6 +45,37 @@ export function SectionTabs() {
     const row = on?.parentElement;
     if (on && row && row.scrollWidth > row.clientWidth) row.scrollLeft = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2;
   }, [screen, !!tabs]);
+  // a horizontal swipe of the finger on the page opens the next or previous tab (swipe.ts)
+  const current = tabs?.find((t) => screen && t.screens.includes(screen))?.id;
+  useEffect(() => {
+    if (!tabs || !current) return;
+    // touch events, not pointer events: the browser cancels a pointer as soon as it may pan the page
+    let start: { x: number; y: number; t: number } | null = null;
+    const down = (e: TouchEvent) => {
+      const f = e.touches[0];
+      start = e.touches.length === 1 && !swipeBlocked(e.target as Element) ? { x: f.clientX, y: f.clientY, t: e.timeStamp } : null;
+    };
+    const up = (e: TouchEvent) => {
+      const s = start;
+      start = null;
+      const f = e.changedTouches[0];
+      // never while a sheet or a dialog is open, nor over the running chronometer (its tabs are hidden)
+      if (!s || !f || e.touches.length > 0 || useNavStore.getState().sheet || document.querySelector('[role="dialog"]') || 'chronoRun' in document.documentElement.dataset) return;
+      const to = swipeTab(tabs, current, swipeDirection(f.clientX - s.x, f.clientY - s.y, e.timeStamp - s.t));
+      if (!to) return;
+      haptic();
+      leave(() => nav(to.to));
+    };
+    const cancel = () => (start = null);
+    window.addEventListener('touchstart', down, { passive: true });
+    window.addEventListener('touchend', up, { passive: true });
+    window.addEventListener('touchcancel', cancel, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', down);
+      window.removeEventListener('touchend', up);
+      window.removeEventListener('touchcancel', cancel);
+    };
+  }, [tabs, current, nav]);
   if (!tabs || !screen) return null;
   return (
     <nav className="sec-tabs" aria-label="Rubriques" data-testid="section-tabs" ref={ref}>

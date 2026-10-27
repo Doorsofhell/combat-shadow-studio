@@ -31,7 +31,7 @@ import { CoachLookPicker } from '../components/CoachLookPicker';
 import { ArControls, ArIntroSheet, useArView } from '../training/ArMode';
 import { AppIcon } from '../icons';
 import { useNavActions } from '../nav/store';
-import { useSmartBack } from '../nav/BottomBar';
+import { useSmartBack, vibrate } from '../nav/BottomBar';
 import { openLayers } from '../nav/layers';
 import { ConfirmDialog } from '../components/Sheet';
 import { onBackButton } from '../../platform/native';
@@ -160,7 +160,10 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   // immersive mode becomes the total fullscreen: a double tap on the stage or the button turns it on; only the coach
   // is left, with the main control over it, and the controls fade after 2.5 s (a tap brings them back). The
   // session keeps running.
-  const fs = useStageFullscreen(root, { tapRef: stageRef });
+  // 1.0.0 (refonte, lot 4, maquette v4 « Séance »: « Un tap n’importe où met en pause »): a single tap on the stage
+  // pauses the running session (set below, once the session state is known)
+  const tapStage = useRef<() => void>(() => undefined);
+  const fs = useStageFullscreen(root, { tapRef: stageRef, onTap: () => tapStage.current() });
   const immersive = fs.active;
   const arRoot = useRef<HTMLDivElement>(null);
   const ar = useMemo(() => new ArBridge(), []);
@@ -426,6 +429,35 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
     [],
   );
   const toggleState = !running ? 'start' : view.paused ? 'resume' : 'pause';
+  // hands-free (maquette v4): while the session runs, only Pause (and Retour) stay above the bottom; Décomposer,
+  // Caméra and « Plus » come back with the pause. A tap anywhere on the stage pauses (not in total fullscreen, where
+  // a tap only brings the faded controls back, as before).
+  const handsFree = running && !view.paused && !st.tech && !camOpen && !asking && !sheet && !guideId;
+  tapStage.current = () => {
+    if (!handsFree || immersive) return;
+    pause();
+  };
+  useEffect(() => {
+    const html = document.documentElement;
+    if (handsFree) html.dataset.handsFree = '';
+    else delete html.dataset.handsFree;
+    return () => {
+      delete html.dataset.handsFree;
+    };
+  }, [handsFree]);
+  // vibrations at the moments that count, for a phone put down in front of the user (where the device can)
+  const prevBeat = useRef<{ running: boolean; paused: boolean; phase: string } | null>(null);
+  useEffect(() => {
+    const was = prevBeat.current;
+    prevBeat.current = { running, paused: view.paused, phase: view.phase };
+    if (!was) return;
+    let pattern: number[] | null = null;
+    if (!was.running && running) pattern = [60, 40, 90];
+    else if (running && !was.paused && view.paused) pattern = [30, 40, 30];
+    else if (running && was.paused && !view.paused) pattern = [20];
+    else if (running && !view.paused && was.phase !== view.phase && (view.phase === 'travail' || view.phase === 'repos' || view.phase === 'termine')) pattern = [80];
+    if (pattern) vibrate(pattern);
+  }, [running, view.paused, view.phase]);
   useNavActions(
     {
       back: { run: askLeave, ariaLabel: 'Retour : quitter l’entraînement', testId: 'nav-back' },

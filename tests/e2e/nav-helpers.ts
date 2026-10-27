@@ -35,6 +35,8 @@ export const bar = (page: Page) => page.getByTestId('bottom-bar');
 
 /** opens « Plus » (1.0.0; formerly the Menu): the commands of the screen */
 export async function openMenu(page: Page) {
+  // 1.0.0 (lot 4): a running session is hands-free, « Plus » comes back with the pause
+  if ((await bar(page).getAttribute('data-screen')) === 'entrainement' && (await page.getByTestId('pause').isVisible())) await page.getByTestId('pause').click();
   await bar(page).locator('[data-action="menu"]').click();
   await expect(page.getByTestId('nav-menu-sheet')).toBeVisible();
 }

@@ -20,6 +20,15 @@ export function haptic() {
   }
 }
 
+/** 1.0.0 (lot 4): a pattern of the session (start, pause, round) where the device can; nothing elsewhere */
+export function vibrate(pattern: number[]) {
+  try {
+    navigator.vibrate?.(pattern);
+  } catch {
+    // not allowed: nothing
+  }
+}
+
 /**
  * Smart back (section 11): the real previous page of the app, with its filters, search and scroll position (they
  * are in its URL or restored by ScrollMemory); when the screen was opened directly, its parent.

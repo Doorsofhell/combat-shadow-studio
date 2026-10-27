@@ -172,9 +172,10 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['entrainement'],
     answer:
       'Dans le studio, ton coach exécute les mouvements et tu les fais en même temps.\n' +
-      '• Dans la barre du bas : « Retour », « Démarrer » (qui devient « Pause » puis « Reprendre » au même endroit), « Décomposer », « Caméra » et « Menu ». Si tu touches Retour pendant la séance, elle se met en pause et l’application te demande avant de quitter.\n' +
+      '• En bas : « Retour », « Démarrer » (qui devient « Pause » puis « Reprendre » au même endroit), « Décomposer », « Caméra » et « Plus ». Si tu touches Retour pendant la séance, elle se met en pause et l’application te demande avant de quitter.\n' +
+      '• Mains libres : pendant la séance, seuls Retour et Pause restent, pour un téléphone posé devant toi. Touche le coach une fois, n’importe où : la séance se met en pause, et Décomposer, Caméra et Plus reviennent. Le téléphone vibre au départ, à la pause et à chaque round, s’il sait le faire.\n' +
       '• Sous le coach : le mouvement en cours, la consigne et le point clé du moment, puis le temps de séance, le cumul et les répétitions. Seul le temps de travail actif est compté.\n' +
-      '• Dans Menu, « Sur cet écran » : « Recommencer », « Exercice précédent », « Exercice suivant », « Comment faire ? », « Ralenti », « Options » et « Coach IA », qui m’ouvre et met la séance en pause.\n' +
+      '• Dans « Plus » : « Recommencer », « Exercice précédent », « Exercice suivant », « Comment faire ? », « Ralenti », « Options » et « Coach IA », qui m’ouvre et met la séance en pause.\n' +
       '• Sur le coach : le zoom, le plein écran et, en haut, « AR » pour la réalité augmentée.',
   },
   {
@@ -204,7 +205,7 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['entrainement'],
     answer:
       'Le bouton « Ralenti » fait passer le coach à un quart de sa vitesse : tu vois ainsi chaque détail du geste. Touche-le encore pour revenir à la vitesse normale.\n' +
-      'Pour régler finement, ouvre « Options » (Menu, « Sur cet écran ») : le curseur « Vitesse d’exécution » va de ×0,25 à ×1,5.\n' +
+      'Pour régler finement, ouvre « Options » (dans « Plus ») : le curseur « Vitesse d’exécution » va de ×0,25 à ×1,5.\n' +
       'Sur la fiche d’une technique, la barre de lecture a aussi son réglage de vitesse.',
   },
   {
@@ -245,7 +246,7 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['roue', 'parametres de la seance', 'options d entrainement', 'options', 'reperes au sol', 'marques au sol', 'les reperes', 'enchainement en cours', 'annonce des coups'],
     screens: ['entrainement'],
     answer:
-      'Dans le studio, « Options » (Menu, « Sur cet écran ») ouvre les options de la séance :\n' +
+      'Dans le studio, « Options » (dans « Plus ») ouvre les options de la séance :\n' +
       '• le coach (Kadir ou Amara) et le rendu ;\n' +
       '• ta garde : orthodoxe (gauche devant) ou gaucher (droite devant) ;\n' +
       '• l’angle de caméra ;\n' +
@@ -422,7 +423,7 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['historique'],
     answer:
       'L’historique liste tes séances jour par jour : l’exercice, la discipline, le niveau, le mode, l’heure, le temps actif et les répétitions.\n' +
-      'Tu l’ouvres depuis Progrès : le bouton Historique de la barre, la ligne Historique ou Menu, « Historique complet ». Dans Activité, le bouton Historique montre les séances de la période choisie.\n' +
+      'Tu l’ouvres depuis Progrès : l’onglet Historique en haut, ou le bouton Historique au-dessus de la barre. Dans Activité, le bouton Historique montre les séances de la période choisie.\n' +
       'Seul le temps de travail actif est enregistré : les pauses ne comptent pas.',
     action: { to: '/historique', label: 'Voir l’historique' },
   },
@@ -471,7 +472,7 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['reglages', 'reglage', 'parametres de l application', 'parametres', 'configuration', 'ou sont les reglages'],
     screens: ['reglages'],
     answer:
-      'Les réglages s’ouvrent avec Menu, puis Paramètres (ou Réglages sur ton profil).\n' +
+      'Les réglages s’ouvrent avec Profil, onglet Réglages. En haut, deux tuiles : Premium à vie et Nouveautés.\n' +
       '• Ton profil : un résumé et le lien pour le modifier.\n' +
       '• Apparence : le thème des menus et le rendu des combattants.\n' +
       '• Personnalisation : ton coach, Voix et sons, Rounds par défaut, Affichage 3D, et « Questionnaire et niveaux » pour refaire l’évaluation.\n' +
@@ -552,7 +553,7 @@ export const APP_GUIDE: GuideEntry[] = [
     answer:
       'Premium à vie sera un achat unique, sans abonnement ni renouvellement. Le petit diamant doré signale les fonctions qui en feront partie.\n' +
       'Pour l’instant, aucun paiement n’est possible et tu gardes accès à tout : le diamant est seulement une information, rien n’est bloqué.\n' +
-      'La page Premium à vie s’ouvre depuis Menu ou en touchant un diamant.',
+      'La page Premium à vie s’ouvre depuis Profil › Réglages (tuile en haut) ou en touchant un diamant.',
     action: { to: '/premium', label: 'Voir Premium à vie' },
   },
   {
@@ -632,7 +633,7 @@ export const APP_GUIDE: GuideEntry[] = [
     answer:
       'Je suis le coach IA de l’application. Je réponds directement sur ton appareil, à partir de la bibliothèque validée, même sans internet.\n' +
       'Je ne te vois pas : je ne corrige pas ton geste, mais j’explique, je montre une démo ou un ralenti, je propose des exercices et je t’explique l’application. Je sais aussi sur quel écran tu m’appelles.\n' +
-      'Tu me trouves sur tous les écrans avec Menu, puis « Coach IA » ; pendant une séance, je m’ouvre dans le bas de la scène et m’ouvrir met la séance en pause.\n' +
+      'Tu me trouves sur tous les écrans avec « Rechercher ou demander au coach », ou dans « Plus », « Coach IA » ; pendant une séance, je m’ouvre dans le bas de la scène et m’ouvrir met la séance en pause.\n' +
       'Les deux boutons en haut de mon panneau le réduisent (la première ligne de ma réponse et ta question) ou l’agrandissent (presque tout l’écran, pour lire confortablement) ; tu peux aussi glisser la petite barre du haut. Je garde la taille que tu as choisie.\n' +
       'Mes réglages (icône Historique, l’horloge en haut de mon panneau) : réponses courtes ou détaillées, lecture à voix haute, historique (désactivé par défaut) et saisie vocale du navigateur, qui passe en ligne et reste désactivée tant que tu ne l’actives pas.',
     action: { to: '/coach-ia', label: 'Réglages du coach' },
