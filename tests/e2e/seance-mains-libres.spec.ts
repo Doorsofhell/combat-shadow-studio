@@ -61,6 +61,31 @@ test('séance : un double toucher passe en plein écran sans mettre en pause', a
   await expect(page.getByTestId('phase')).not.toHaveText('Pause');
 });
 
+for (const width of [360, 393]) {
+  test(`séance ${width} px : « Démarrer » et « Reprendre » tiennent en entier dans le gros bouton, « Pause » reste lisible`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 780 });
+    await seedProfile(page);
+    await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
+    const whole = (id: string) =>
+      page.getByTestId(id).evaluate((b) => {
+        const label = b.querySelector('small')!;
+        const r = label.getBoundingClientRect();
+        const box = b.getBoundingClientRect();
+        return label.scrollWidth <= label.clientWidth + 1 && r.left >= box.left && r.right <= box.right + 0.5;
+      });
+    await expect(page.getByTestId('start')).toBeVisible();
+    expect(await whole('start'), 'Démarrer').toBe(true);
+    const ink = (id: string) => page.getByTestId(id).evaluate((b) => getComputedStyle(b.querySelector('small')!).color);
+    const dark = await ink('start');
+    await page.getByTestId('start').click();
+    // « Pause », the action in use, keeps the dark word of the big button
+    await expect.poll(() => ink('pause')).toBe(dark);
+    await page.getByTestId('pause').click();
+    await expect(page.getByTestId('resume')).toBeVisible();
+    expect(await whole('resume'), 'Reprendre').toBe(true);
+  });
+}
+
 test.describe('glisser au doigt', () => {
   test.use({ hasTouch: true, isMobile: true, viewport: { width: 393, height: 851 } });
 

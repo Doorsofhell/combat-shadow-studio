@@ -543,6 +543,11 @@
   line-height: 1;
   overflow: visible;
 }
+/* « Pause » while the session runs is the action in use: it keeps the dark word of the big button (the light text
+   colour of the places would vanish on a yellow discipline) */
+.nav-btn.nav-primary.active {
+  color: var(--on-disc);
+}
 .nav-btn.nav-primary:disabled {
   opacity: 0.45;
 }
@@ -760,6 +765,31 @@ html[data-chrono-run] .sec-tabs {
 .compact .nav-row > .nav-btn.nav-primary {
   flex: 1 1 auto;
   width: auto;
+  min-width: 0;
+  gap: 6px;
+  padding: 0 8px;
+}
+/* 1.0.0 (lot 4): with Retour, Décomposer, Caméra and « Plus » beside it, « Démarrer » and « Reprendre » stay whole on
+   a phone: « Plus » its icon over its word, as wide as the other actions; under 420 px the big button keeps its word
+   and drops its icon */
+.compact .nav-row > .nav-btn.nav-more {
+  flex: 0 0 52px;
+  min-width: 52px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0;
+}
+.compact .nav-row > .nav-btn.nav-more small {
+  font-size: 0.6875rem;
+}
+@media (max-width: 419px) {
+  html:not([data-hands-free]) .compact .nav-row:has(> .nav-more) > .nav-btn.nav-primary .nav-svg {
+    display: none;
+  }
+  .compact .nav-row > .nav-btn.nav-primary small {
+    font-size: min(1.25rem, 4.3vw);
+    letter-spacing: 0;
+  }
 }
 
 /* 1.0.0 (lot 3): « Rechercher ou demander au coach » (maquette v4 `.search`): a glass field in the row of actions,

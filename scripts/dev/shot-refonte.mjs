@@ -43,6 +43,18 @@ for (const theme of ['sombre', 'clair']) {
       await p.keyboard.press('Escape');
       console.log('ok', theme, 'recherche');
     }
+    // lot 4: the session running (hands-free: Retour and Pause only), then paused by a tap on the coach
+    if (id === 'seance') {
+      const t = theme === 'sombre' ? 'nuit' : 'jour';
+      await p.getByTestId('start').click();
+      await p.waitForTimeout(6000);
+      await p.screenshot({ path: `${OUT}/${t}-seance-en-cours.png` });
+      const box = await p.getByTestId('training-stage').boundingBox();
+      await p.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+      await p.waitForTimeout(1500);
+      await p.screenshot({ path: `${OUT}/${t}-seance-pause.png` });
+      console.log('ok', theme, 'seance en cours / pause');
+    }
   }
   await p.close();
 }
