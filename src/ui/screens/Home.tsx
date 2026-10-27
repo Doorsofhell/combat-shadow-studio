@@ -231,7 +231,7 @@ export function Home() {
 
       {favEx.length > 0 && (
         <section className="section" aria-labelledby="h-fav">
-          <SectionHead id="h-fav" title="Favoris" action={<Link to="/techniques?tab=favoris">Tous</Link>} />
+          <SectionHead id="h-fav" title="Favoris" action={<Link to="/favoris">Tous</Link>} />
           <div className="stack" style={{ gap: 8 }}>
             {favEx
               .map((id) => EXERCISE_BY_ID.get(id))

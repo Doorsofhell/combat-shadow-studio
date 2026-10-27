@@ -87,7 +87,7 @@ test('réglages et confidentialité accessibles depuis l’accueil', async ({ pa
   await onboard(page, 'homme');
   // 1.0.0 (refonte ergonomique): Profil › Réglages (formerly Menu › Paramètres)
   await page.getByTestId('nav-profil').click();
-  await page.getByTestId('profil-reglages').click();
+  await page.getByTestId('tab-reglages').click();
   await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
   await page.getByRole('link', { name: /Confidentialité/ }).click();
   await expect(page.getByText('Tout reste sur ton appareil.')).toBeVisible();

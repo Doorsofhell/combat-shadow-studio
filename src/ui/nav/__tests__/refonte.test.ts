@@ -55,12 +55,41 @@ describe('refonte 1.0.0 : le contenu de l’ancien Menu est redistribué, rien n
     }
     expect(reach(m.to), m.to).not.toBeNull();
   });
-  it('Profil mène à Mon coach, Coach IA et Réglages', () => {
-    for (const to of ['/coach', '/coach-ia', '/reglages']) expect(profile).toContain(`to="${to}"`);
+  it('Profil : Mes infos, Mon coach, Coach IA et Réglages en onglets (lot 2)', () => {
+    expect(sectionTabsFor('profil')?.map((t) => [t.label, t.to])).toEqual([
+      ['Mes infos', '/profil'],
+      ['Mon coach', '/coach'],
+      ['Coach IA', '/coach-ia'],
+      ['Réglages', '/reglages'],
+    ]);
+    for (const t of sectionTabsFor('profil')!) expect(t.screens.map((x) => navScreen(t.to) === x)).toContain(true);
+  });
+  it('Entraîner : Séance, Programmes, Enchaînements, Favoris, Chrono en onglets (lot 2)', () => {
+    expect(sectionTabsFor('entrainer')?.map((t) => [t.label, t.to])).toEqual([
+      ['Séance', '/entrainer'],
+      ['Programmes', '/programmes'],
+      ['Enchaînements', '/createur'],
+      ['Favoris', '/favoris'],
+      ['Chrono', '/chrono'],
+    ]);
+    for (const t of sectionTabsFor('entrainer')!) expect(t.screens.map((x) => navScreen(t.to) === x)).toContain(true);
+  });
+  it('sur le premier écran d’un onglet, un lien vers un autre onglet n’est pas répété au-dessus de la barre', () => {
+    expect(dockSlots('entrainer', '/entrainer').map((d) => d.slot.action)).toEqual(['start']);
+    expect(dockSlots('profil', '/profil').map((d) => d.slot.action)).toEqual([]);
+    for (const s of screens)
+      for (const t of sectionTabsFor(s) ?? [])
+        if (t.screens.includes(s)) {
+          const hidden = NAV_CONFIG[s].filter((x) => x.action.startsWith('nav:') && !dockSlots(s, t.to).some((d) => d.slot === x));
+          const tabs = (sectionTabsFor(s) ?? []).map((x) => x.to);
+          for (const x of hidden) expect(TABS.some((b) => b.to === x.action.slice(4)) || tabs.includes(x.action.slice(4)) || x.action.slice(4) === t.to, `${s} → ${x.action}`).toBe(true);
+        }
   });
   it('les onglets ne s’affichent que sur les premiers écrans de l’espace', () => {
     expect(sectionTabsFor('techniques')?.map((t) => t.label)).toEqual(['Techniques', 'Légendes', 'Encyclopédie']);
     expect(sectionTabsFor('progres')?.map((t) => t.label)).toEqual(['Tableau', 'Historique', 'Objectifs']);
+    expect(sectionTabsFor('programme')).toBeNull();
+    expect(sectionTabsFor('createur-fiche')).toBeNull();
     expect(sectionTabsFor('fiche')).toBeNull();
     expect(sectionTabsFor('entrainement')).toBeNull();
   });

@@ -324,7 +324,7 @@ export const APP_GUIDE: GuideEntry[] = [
     answer:
       'Pour garder une technique sous la main, touche l’étoile en haut à droite de sa fiche. Pour un exercice, c’est « Ajouter aux favoris » sur sa fiche ; pour une combinaison des Légendes, l’étoile de sa fiche.\n' +
       'Tu les retrouves dans Techniques, section Favoris, et sur l’accueil. Les combinaisons des Légendes ont aussi leur section Favoris dans l’onglet Légendes.',
-    action: { to: '/techniques?tab=favoris', label: 'Voir mes favoris' },
+    action: { to: '/favoris', label: 'Voir mes favoris' },
   },
   {
     id: 'screen-combinaisons',
@@ -760,6 +760,8 @@ export function screenFromPath(pathname: string, search = ''): CoachScreen | und
       return 'encyclopedie';
     case 'chrono':
       return 'chrono';
+    case 'favoris':
+      return 'favoris';
     default:
       return undefined;
   }

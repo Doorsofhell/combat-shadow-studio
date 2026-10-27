@@ -1,7 +1,7 @@
 import { useNavActions } from '../nav/store';
 import { TechThumb, keyTechnique, programTechnique } from '../components/TechThumb';
 import { useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { useCustom } from '../../store/custom';
 import { PictoStrip } from './creator/shared';
@@ -37,11 +37,12 @@ import { DisciplineEmblem } from '../emblems';
 import { useHydrated } from '../../store/useHydrated';
 import './train.css';
 
-type Space = 'seances' | 'disciplines' | 'programmes';
+// 1.0.0 (refonte, lot 2): Programmes is a tab of Entraîner at the top of the screen (SectionTabs); a saved
+// 'programmes' space (settings.trainSpace, kept as it is) opens Séances, an old link ?espace=programmes the tab
+type Space = 'seances' | 'disciplines';
 const SPACES: { id: Space; label: string }[] = [
   { id: 'seances', label: 'Séances' },
   { id: 'disciplines', label: 'Disciplines' },
-  { id: 'programmes', label: 'Programmes' },
 ];
 
 const discName = (d: string) => (d === 'mixte' ? 'Multi-disciplines' : DISCIPLINES.find((x) => x.id === d)!.name);
@@ -57,7 +58,7 @@ export function Train() {
   const saved = useSettings((s) => s.settings.trainSpace);
   const setSettings = useSettings((s) => s.set);
   const asked = q.get('espace') as Space | null;
-  const space: Space = asked && SPACES.some((s) => s.id === asked) ? asked : saved;
+  const space: Space = asked && SPACES.some((s) => s.id === asked) ? asked : saved === 'programmes' ? 'seances' : saved;
   const choose = (s: Space) => {
     setSettings({ trainSpace: s });
     if (asked) setQ({}, { replace: true });
@@ -80,6 +81,7 @@ export function Train() {
   // v0.32 bar: « Démarrer » opens the recommended session (first card of « Démarrage rapide »)
   useNavActions({ start: quick[0] && { run: () => setOpen(quick[0].id), ariaLabel: `Démarrer : ${quick[0].name}` } });
 
+  if (q.get('espace') === 'programmes') return <Navigate to="/programmes" replace />;
   return (
     <div className="page train-page">
       <PageHead title="Entraîner" eyebrow="Ton centre d’entraînement" back={false} />
@@ -109,7 +111,6 @@ export function Train() {
       <div role="tabpanel" id={`panel-${space}`} aria-labelledby={`tab-${space}`} className="train-panel" key={space}>
         {space === 'seances' && <Sessions quick={quick} recommended={rec.exercises[0]} onOpen={setOpen} />}
         {space === 'disciplines' && <Disciplines />}
-        {space === 'programmes' && <Programmes />}
       </div>
 
       {openEx && <ExerciseSheet ex={openEx} onClose={() => setOpen(null)} />}

@@ -507,6 +507,10 @@
   flex: 0 0 auto;
   min-width: 52px;
 }
+/* lot 2: on a screen whose links became tabs, « Plus » can be alone in its row: at the right, under the thumb */
+.nav-row > .nav-btn.nav-more:first-child {
+  margin-left: auto;
+}
 .nav-btn.nav-secondary.active {
   background: var(--ink);
   color: var(--bg);
@@ -685,7 +689,10 @@
   }
 }
 
-/* 1.0.0: the tabs at the top of a space (SectionTabs.tsx) */
+/* 1.0.0: the tabs at the top of a space (SectionTabs.tsx); not over the full-screen chronometer (ChronoScreen) */
+html[data-chrono-run] .sec-tabs {
+  display: none;
+}
 .sec-tabs {
   position: sticky;
   top: 0;
@@ -694,6 +701,7 @@
   background: linear-gradient(to bottom, var(--bg) 70%, transparent);
 }
 .sec-tabs-in {
+  position: relative;
   display: flex;
   gap: 4px;
   max-width: 760px;

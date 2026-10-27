@@ -184,7 +184,8 @@ describe('guide de l’application : liens vers les écrans', () => {
   test('les routes de App.tsx sont lues', () => {
     expect(ROUTES).toEqual(expect.arrayContaining(['/', '/stats', '/techniques/:id', '/reglages/:section']));
     // 0.36: Créateur and Programmes moved to Entraîner, Légendes is a section of the library again
-    expect(HUB_TABS).toEqual(['techniques', 'combinaisons', 'legendes', 'favoris']);
+    // 1.0.0 (refonte, lot 2): Légendes is a tab of Apprendre, Favoris a tab of Entraîner
+    expect(HUB_TABS).toEqual(['techniques', 'combinaisons']);
   });
 
   test('chaque lien du guide mène à une route existante, et à l’écran qu’il annonce', () => {
@@ -233,6 +234,7 @@ describe('écran courant', () => {
       ['/techniques', '', 'techniques'],
       ['/techniques', '?tab=combinaisons&d=mma', 'combinaisons'],
       ['/techniques', '?tab=favoris', 'favoris'],
+      ['/favoris', '', 'favoris'],
       ['/techniques', '?tab=createur', 'createur'],
       ['/techniques', '?tab=legendes', 'legendes'],
       ['/techniques', '?tab=programmes', 'programmes'],

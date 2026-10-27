@@ -102,15 +102,18 @@ test('Légendes : un onglet d’Apprendre (1.0.0, formerly in the Menu)', async 
   await page.getByTestId('nav-techniques').click();
   await page.getByTestId('tab-legendes').click();
   await expect(page).toHaveURL(/#\/champions/);
-  // 0.36 (Youssef, 2026-10-22 18:47, replaces the 0.27 rule): Techniques = Techniques, Combinaisons, Légendes,
-  // Favoris; the Légendes section points to the Légendes screen, the Créateur and Programmes left for Entraîner
+  // 1.0.0 (refonte, lot 2, replaces the 0.36 rule): Techniques = Techniques, Combinaisons; Légendes is a tab of
+  // Apprendre at the top of the screen and Favoris a tab of Entraîner; their old links lead there
   await page.goto('/#/techniques');
   const sections = page.getByRole('tablist', { name: 'Sections' }).getByRole('tab');
-  await expect(sections).toHaveText(['Techniques', 'Combinaisons', 'Légendes', 'Favoris']);
+  await expect(sections).toHaveText(['Techniques', 'Combinaisons']);
+  await expect(page.getByTestId('tab-legendes')).toBeVisible();
   await page.goto('/#/techniques?tab=legendes');
-  await expect(page.getByRole('tab', { name: 'Légendes' })).toHaveAttribute('aria-selected', 'true');
-  await page.getByTestId('legends-all').click();
   await expect(page).toHaveURL(/#\/champions$/);
+  await expect(page.getByTestId('tab-legendes')).toHaveAttribute('aria-current', 'page');
+  await page.goto('/#/techniques?tab=favoris');
+  await expect(page).toHaveURL(/#\/favoris$/);
+  await expect(page.getByTestId('tab-favoris')).toHaveAttribute('aria-current', 'page');
 });
 
 /** 0.25 (Youssef, 2026-10-20): the coach answers for the screen it is opened from, and explains the app. */

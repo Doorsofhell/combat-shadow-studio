@@ -134,10 +134,14 @@ test.describe('393×851', () => {
     await expect(page).toHaveURL(/#\/objectifs$/);
     await page.getByTestId('tab-historique').click();
     await expect(page).toHaveURL(/#\/historique$/);
-    // Paramètres (Réglages), Mon coach, Coach IA: links of Profil; Premium: tile of Réglages
+    // Paramètres (Réglages), Mon coach, Coach IA: tabs of Profil (lot 2); Premium: tile of Réglages
     await bar(page).getByTestId('nav-profil').click();
-    await expect(page.getByTestId('profil-links').locator('a')).toHaveCount(3);
-    await page.getByTestId('profil-reglages').click();
+    await expect(page.getByTestId('section-tabs').locator('button')).toHaveText(['Mes infos', 'Mon coach', 'Coach IA', 'Réglages']);
+    await page.getByTestId('tab-coach').click();
+    await expect(page).toHaveURL(/#\/coach$/);
+    await page.getByTestId('tab-coach-ia').click();
+    await expect(page).toHaveURL(/#\/coach-ia$/);
+    await page.getByTestId('tab-reglages').click();
     await expect(page).toHaveURL(/#\/reglages$/);
     await page.getByTestId('reglages-premium').click();
     await expect(page).toHaveURL(/#\/premium$/);
@@ -154,7 +158,7 @@ test.describe('393×851', () => {
     await expect(page.getByTestId('news-sheet')).toHaveCount(0);
     await bar(page).getByTestId('nav-profil').click();
     await expect(page.getByTestId('reglages-dot')).toBeVisible();
-    await page.getByTestId('profil-reglages').click();
+    await page.getByTestId('tab-reglages').click();
     await expect(page.getByTestId('news-dot')).toBeVisible();
     await page.getByTestId('reglages-nouveautes').click();
     const news = page.getByTestId('news-sheet');

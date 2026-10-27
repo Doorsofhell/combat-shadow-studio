@@ -73,6 +73,7 @@ export type NavScreen =
   | 'encyclopedie'
   | 'encyclopedie-fiche'
   | 'chrono'
+  | 'favoris'
   | 'autre';
 
 const BACK: NavSlot = { icon: 'back', label: 'Retour', action: 'back' };
@@ -151,6 +152,8 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
   combinaison: [BACK, { icon: 'play', label: 'S’entraîner', action: 'train' }, { icon: 'scan', label: 'Décomposer', action: 'decompose' }, { icon: 'heart', label: 'Favoris', action: 'favorite' }, MENU],
   coach: [BACK, { icon: 'user', label: 'Profil', action: 'nav:/profil' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, { icon: 'settings', label: 'Réglages', action: 'nav:/reglages' }, MENU],
   'coach-ia': PLACES,
+  // 1.0.0: the favourites, a tab of Entraîner (formerly a tab of the library of techniques)
+  favoris: PLACES,
   autre: PLACES,
 };
 
@@ -194,6 +197,7 @@ export const NAV_PARENT: Record<NavScreen, string> = {
   encyclopedie: '/',
   'encyclopedie-fiche': '/encyclopedie',
   chrono: '/',
+  favoris: '/entrainer',
   autre: '/',
 };
 
@@ -233,6 +237,7 @@ export function navScreen(pathname: string, search = ''): NavScreen | null {
   if (p === '/confidentialite') return 'confidentialite';
   if (p === '/premium') return 'premium';
   if (p === '/chrono') return 'chrono';
+  if (p === '/favoris') return 'favoris';
   if (p.startsWith('/encyclopedie/terme/')) return 'encyclopedie-fiche';
   if (p === '/encyclopedie' || p.startsWith('/encyclopedie/')) return 'encyclopedie';
   // a page the bar does not know yet still gets Retour and Menu
@@ -306,6 +311,7 @@ export const SECTION: Record<NavScreen, TabId | null> = {
   'createur-fiche': 'entrainer',
   'createur-editeur': 'entrainer',
   chrono: 'entrainer',
+  favoris: 'entrainer',
   techniques: 'apprendre',
   fiche: 'apprendre',
   partenaire: 'apprendre',
@@ -330,7 +336,24 @@ export const SECTION: Record<NavScreen, TabId | null> = {
 };
 
 /** the first screen of each space and its sibling tabs: reached from the bar, so no Retour chip */
-export const ROOT_SCREENS: ReadonlySet<NavScreen> = new Set<NavScreen>(['accueil', 'entrainer', 'techniques', 'legendes', 'encyclopedie', 'progres', 'historique', 'objectifs', 'profil']);
+export const ROOT_SCREENS: ReadonlySet<NavScreen> = new Set<NavScreen>([
+  'accueil',
+  'entrainer',
+  'programmes',
+  'createur',
+  'favoris',
+  'chrono',
+  'techniques',
+  'legendes',
+  'encyclopedie',
+  'progres',
+  'historique',
+  'objectifs',
+  'profil',
+  'coach',
+  'coach-ia',
+  'parametres',
+]);
 
 /**
  * The first page of a space or of one of its tabs: no Retour chip there (the bar leads to it). A deeper page of the
@@ -370,17 +393,20 @@ const TAB_ROOTS = TABS.map((t) => t.to);
 
 /**
  * The actions of a screen shown above the bar, with their place number in NAV_CONFIG (kept as data-slot): every
- * place except Retour, Menu (now « Plus »), the links to the five places, which the bar already shows, and a link
- * to the screen itself (Chrono on the chronometer).
+ * place except Retour, Menu (now « Plus »), the links to the five places, which the bar already shows, the links to
+ * the tabs shown at the top of the screen (lot 2), and a link to the screen itself (Chrono on the chronometer).
  */
 export function dockSlots(screen: NavScreen, pathname?: string): { slot: NavSlot; place: number }[] {
   const here = pathname === undefined ? null : pathname.replace(/\/+$/, '') || '/';
+  const tabs = here !== null && isRootPath(here) ? (sectionTabsFor(screen) ?? []).map((t) => t.to) : [];
+  const shown = (to: string) => TAB_ROOTS.includes(to) || tabs.includes(to) || to === here;
   return NAV_CONFIG[screen]
     .map((slot, i) => ({ slot, place: i + 1 }))
-    .filter(({ slot }) => slot.action !== 'back' && slot.action !== 'menu' && !(slot.action.startsWith('nav:') && (TAB_ROOTS.includes(slot.action.slice(4)) || slot.action.slice(4) === here)));
+    .filter(({ slot }) => slot.action !== 'back' && slot.action !== 'menu' && !(slot.action.startsWith('nav:') && shown(slot.action.slice(4))));
 }
 
-/** the tabs at the top of a space (lot 1: Apprendre and Progrès, which held the former Menu places) */
+/** the tabs at the top of a space (lot 1: Apprendre and Progrès, which held the former Menu places; lot 2: Entraîner
+ * and Profil) */
 export interface SectionTab {
   id: string;
   label: string;
@@ -388,6 +414,13 @@ export interface SectionTab {
   screens: readonly NavScreen[];
 }
 export const SECTION_TABS: Partial<Record<TabId, readonly SectionTab[]>> = {
+  entrainer: [
+    { id: 'seance', label: 'Séance', to: '/entrainer', screens: ['entrainer'] },
+    { id: 'programmes', label: 'Programmes', to: '/programmes', screens: ['programmes'] },
+    { id: 'enchainements', label: 'Enchaînements', to: '/createur', screens: ['createur'] },
+    { id: 'favoris', label: 'Favoris', to: '/favoris', screens: ['favoris'] },
+    { id: 'chrono', label: 'Chrono', to: '/chrono', screens: ['chrono'] },
+  ],
   apprendre: [
     { id: 'techniques', label: 'Techniques', to: '/techniques', screens: ['techniques'] },
     { id: 'legendes', label: 'Légendes', to: '/champions', screens: ['legendes'] },
@@ -398,9 +431,16 @@ export const SECTION_TABS: Partial<Record<TabId, readonly SectionTab[]>> = {
     { id: 'historique', label: 'Historique', to: '/historique', screens: ['historique'] },
     { id: 'objectifs', label: 'Objectifs', to: '/objectifs', screens: ['objectifs'] },
   ],
+  profil: [
+    { id: 'infos', label: 'Mes infos', to: '/profil', screens: ['profil'] },
+    { id: 'coach', label: 'Mon coach', to: '/coach', screens: ['coach'] },
+    { id: 'coach-ia', label: 'Coach IA', to: '/coach-ia', screens: ['coach-ia'] },
+    { id: 'reglages', label: 'Réglages', to: '/reglages', screens: ['parametres'] },
+  ],
 };
 
-/** the tabs shown on a screen, or null (only on the first screens of the space, not on a detail) */
+/** the tabs shown on a screen, or null (only on the first screens of the space, not on a detail; the caller also
+ * checks the path, isRootPath, for the deeper pages of a screen such as a section of Réglages) */
 export function sectionTabsFor(screen: NavScreen): readonly SectionTab[] | null {
   const s = SECTION[screen];
   const tabs = s ? SECTION_TABS[s] : undefined;

@@ -67,6 +67,15 @@ export function ChronoScreen() {
   const view: View = !tl ? 'setup' : tl.phase === 'termine' ? 'end' : 'run';
   const format = CHRONO_FORMAT_BY_ID.get((run?.setup ?? setup).format);
   const intervals = !!format?.intervals;
+  // 1.0.0 (lot 2): the tabs of Entraîner stay off the full-screen session and its summary
+  useEffect(() => {
+    const html = document.documentElement;
+    if (view === 'setup') delete html.dataset.chronoRun;
+    else html.dataset.chronoRun = '';
+    return () => {
+      delete html.dataset.chronoRun;
+    };
+  }, [view]);
 
   const speak = useCallback((text: string, interrupt = true) => {
     if (cfg.current.voice) say(text, { interrupt });

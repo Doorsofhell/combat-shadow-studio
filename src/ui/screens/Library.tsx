@@ -35,16 +35,16 @@ const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ de
 // library keeps Techniques, Combinaisons, Légendes and Favoris. The creator and the programmes live in Entraîner
 // (Séances, Programmes); their old links here are sent to /createur and /programmes. Légendes is back as a section
 // that leads into the legends library (0.27 had removed it while it was a tab of the bar; it is now in the Menu)
-type HubTab = 'techniques' | 'combinaisons' | 'legendes' | 'favoris';
+// 1.0.0 (refonte, lot 2): Légendes is a tab of Apprendre at the top of the screen and Favoris a tab of Entraîner
+// (/favoris); their old links here lead there
+type HubTab = 'techniques' | 'combinaisons';
 
 const HUB_TABS: { id: HubTab; label: string; icon: ReactNode }[] = [
   { id: 'techniques', label: 'Techniques', icon: <AppIcon id="techniques" size={18} /> },
   { id: 'combinaisons', label: 'Combinaisons', icon: <AppIcon id="combos" size={18} /> },
-  { id: 'legendes', label: 'Légendes', icon: <AppIcon id="legends" size={18} /> },
-  { id: 'favoris', label: 'Favoris', icon: <AppIcon id="favorite" size={18} /> },
 ];
 
-/** "Techniques" tab: individual techniques, combinations, legends, favourites. */
+/** "Techniques" tab of Apprendre: individual techniques and combinations. */
 export function Library() {
   const [q, setQ] = useSearchParams();
   const main = useProfile((s) => s.profile.mainDiscipline);
@@ -63,6 +63,8 @@ export function Library() {
   // 0.36: the creator and the programmes moved to Entraîner; old links keep working (the discipline goes along)
   if (q.get('tab') === 'createur') return <Navigate to={`/createur${q.get('d') ? `?d=${q.get('d')}` : ''}`} replace />;
   if (q.get('tab') === 'programmes') return <Navigate to="/programmes" replace />;
+  if (q.get('tab') === 'favoris') return <Navigate to="/favoris" replace />;
+  if (q.get('tab') === 'legendes') return <Navigate to="/champions" replace />;
   return (
     <div className="page">
       <PageHead title="Techniques" eyebrow="Bibliothèque" back={false} />
@@ -71,8 +73,6 @@ export function Library() {
       <div role="tabpanel" className="stack" style={{ gap: 16 }}>
         {tab === 'techniques' && <TechniquesTab d={d} setD={(x) => set('d', x)} cat={cat} setCat={(c) => set('cat', c)} />}
         {tab === 'combinaisons' && <CombosTab d={d} setD={(x) => set('d', x)} />}
-        {tab === 'legendes' && <LegendsTab d={d} />}
-        {tab === 'favoris' && <FavoritesTab />}
       </div>
     </div>
   );
@@ -179,22 +179,8 @@ function CombosTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) => vo
   );
 }
 
-/** 0.36: the way into the legends library (combinations inspired by champions), from the library of techniques */
-function LegendsTab({ d }: { d: DisciplineId }) {
-  const name = DISCIPLINES.find((x) => x.id === d)?.name ?? '';
-  return (
-    <>
-      <p className="small muted" style={{ margin: 0 }}>
-        Des combinaisons inspirées du style des grands champions, avec leur fiche et leur démonstration.
-      </p>
-      <EntryCard to="/champions" icon={<AppIcon id="legends" />} tone="gold" title="Toutes les légendes" text="Combinaison du jour, collections et fiches de chaque légende." testId="legends-all" />
-      <EntryCard to={`/champions?vue=champions&d=${d}`} icon={<DisciplineIcon id={d} size={22} />} title={`Légendes : ${name}`} text="Les légendes de la discipline choisie." testId="legends-discipline" />
-      <EntryCard to="/champions?vue=favoris" icon={<AppIcon id="favorite" />} title="Mes combinaisons favorites" text="Les combinaisons de légendes que tu as gardées." testId="legends-favorites" />
-    </>
-  );
-}
-
-function FavoritesTab() {
+/** the favourite exercises and techniques (1.0.0: shown in Entraîner › Favoris, screens/Favorites.tsx) */
+export function FavoritesList() {
   const favT = useGoals((s) => s.favTechniques);
   const favE = useGoals((s) => s.favExercises);
   const [open, setOpen] = useState<string | null>(null);

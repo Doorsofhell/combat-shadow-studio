@@ -72,8 +72,11 @@ test('Techniques : quatre sections, plus de Créateur ni de Programmes, anciens 
   await page.goto('/#/techniques?tab=programmes');
   await expect(page).toHaveURL(/#\/programmes$/);
   await page.goto('about:blank');
+  // 1.0.0: the old Légendes tab of the library leads to Apprendre › Légendes; the favourite legend combinations
+  // are in Entraîner › Favoris
   await page.goto('/#/techniques?tab=legendes');
-  await expect(page.getByTestId('legends-discipline')).toBeVisible();
+  await expect(page).toHaveURL(/#\/champions$/);
+  await page.goto('/#/favoris');
   await page.getByTestId('legends-favorites').click();
   await expect(page).toHaveURL(/#\/champions\?vue=favoris$/);
 });

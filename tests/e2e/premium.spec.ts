@@ -36,7 +36,7 @@ test('Réglages › Premium : la page v0.45, l’offre et aucun paiement possibl
   await page.goto('/#/');
   // 1.0.0: the tile Premium at the top of Réglages (Profil › Réglages), formerly Menu › Premium à vie
   await page.getByTestId('nav-profil').click();
-  await page.getByTestId('profil-reglages').click();
+  await page.getByTestId('tab-reglages').click();
   await page.getByTestId('reglages-premium').click();
   await expect(page).toHaveURL(/#\/premium$/);
   const p = page.getByTestId('premium-page');
@@ -88,7 +88,7 @@ test('les diamants sont visibles et les fonctions restent ouvertes', async ({ pa
   // legends, favourites, history, voice
   await page.goto('/#/champions');
   await expect(page.getByTestId('premium-legends_collection')).toBeVisible();
-  await page.goto('/#/techniques?tab=favoris');
+  await page.goto('/#/favoris'); // 1.0.0: Entraîner › Favoris
   await expect(page.getByTestId('premium-unlimited_favorites')).toHaveCount(1);
   await page.goto('/#/historique');
   await expect(page.getByTestId('premium-full_history')).toBeVisible();

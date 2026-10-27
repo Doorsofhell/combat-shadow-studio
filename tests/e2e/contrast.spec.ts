@@ -12,7 +12,7 @@ const SCREENS = [
   ['entrainer', '/#/entrainer'],
   // 0.33: the three spaces of Entraîner
   ['entrainer-disciplines', '/#/entrainer?espace=disciplines'],
-  ['entrainer-programmes', '/#/entrainer?espace=programmes'],
+  ['entrainer-programmes', '/#/programmes'],
   ['discipline', '/#/discipline/boxe'],
   ['techniques', '/#/techniques'],
   ['technique', '/#/techniques/jab'],

@@ -34,7 +34,7 @@ for (const scheme of ['light', 'dark'] as const)
       expect(x.nw, x.id).toBeGreaterThanOrEqual(72);
       expect(x.inside, `${x.id} dans sa carte`).toBe(true);
     }
-    await page.getByTestId('space-programmes').click();
+    await page.goto('/#/programmes'); // 1.0.0: a tab of Entraîner
     const outlines = page.locator('.prog-filters svg.discipline-emblem[data-variant="contour"]');
     await expect(outlines).toHaveCount(6);
     // the outline takes the colour of its chip text, so it reads in both themes
