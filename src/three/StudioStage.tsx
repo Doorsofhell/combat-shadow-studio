@@ -3,7 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { ContactShadows, OrbitControls } from '@react-three/drei';
 import { Box3, PerspectiveCamera, Vector3 } from 'three';
 import { FOV, centerOnSpheres, fitDistance, fitSpheres } from './framing';
-import type { Envelope } from '../engine/envelope';
+import type { Envelope } from '../engine';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 /** where the camera should look from, in scene terms (azimuth already oriented for the guard) */
@@ -47,6 +47,8 @@ export interface StudioStageProps {
   onUserOrbit?: () => void;
   /** dark menu stage: deeper floor shadow, rim light */
   dark?: boolean;
+  /** v0.49 « Lumière vive » of the realistic look (VividLights) */
+  vive?: boolean;
   /** realistic look, high quality (v0.29): the key light casts soft shadows on the coach itself */
   shadows?: boolean;
   /** realistic look (v0.29): contrasted studio lighting (key, fill, rim) instead of the even light of the drawn looks */
@@ -58,7 +60,8 @@ export interface StudioStageProps {
  * photo studio, warm key light from the front right (with soft shadows in high quality), cool fill
  * from the left, rim light from behind, little ambient light so the forms read in light and shade.
  */
-export function StageLights({ dark = false, shadows = false, realistic = false }: { dark?: boolean; shadows?: boolean; realistic?: boolean }) {
+export function StageLights({ dark = false, shadows = false, realistic = false, vive = false }: { dark?: boolean; shadows?: boolean; realistic?: boolean; vive?: boolean }) {
+  if (realistic && vive) return <VividLights shadows={shadows} />;
   return (
     <>
       <hemisphereLight args={['#ffffff', realistic ? '#b9b1a8' : '#d9d4cf', realistic ? 0.2 : 0.9]} />
@@ -84,6 +87,36 @@ export function StageLights({ dark = false, shadows = false, realistic = false }
   );
 }
 
+/**
+ * v0.49 « Lumière vive », taken from the CME-3D lab (PR #25, `cme-3d/src/lab/App.tsx`): much more ambient and sky
+ * light (cool from above, dark blue from the ground), a key light from high front right and a cool rim light from
+ * behind left, over a dark background. Same model, same shadows setting as the studio.
+ */
+function VividLights({ shadows }: { shadows: boolean }) {
+  return (
+    <>
+      <ambientLight intensity={0.7} />
+      <hemisphereLight args={['#e1f4ff', '#1a2633', 1.3]} />
+      <directionalLight
+        position={[2, 4, 3]}
+        intensity={2.5}
+        castShadow={shadows}
+        shadow-mapSize={[2048, 2048]}
+        shadow-bias={-0.0004}
+        shadow-normalBias={0.025}
+        shadow-radius={4}
+        shadow-camera-left={-1.6}
+        shadow-camera-right={1.6}
+        shadow-camera-top={2}
+        shadow-camera-bottom={-2}
+        shadow-camera-near={0.5}
+        shadow-camera-far={12}
+      />
+      <directionalLight position={[-2, 2, -3]} intensity={1.5} color="#bbd2e9" />
+    </>
+  );
+}
+
 /** camera state read by the end-to-end tests (degrees): where it looks from, relative to the coach */
 function probe(s: { az: number; el: number; dist: number }, o: { yaw: number }, free: boolean) {
   const w = window as unknown as { __cssCamera?: object };
@@ -100,7 +133,7 @@ const corner = new Vector3();
  * (computed from the real animation), from the requested angle, and glides to a new angle
  * instead of cutting. In free mode the user turns around the coach with a finger.
  */
-export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 1, focusY, follow, envelope, origin, orbit = false, free = false, onUserOrbit, dark = false, shadows = false, realistic = false }: StudioStageProps) {
+export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 1, focusY, follow, envelope, origin, orbit = false, free = false, onUserOrbit, dark = false, shadows = false, realistic = false, vive = false }: StudioStageProps) {
   const { camera, size } = useThree();
   const controls = useRef<OrbitControlsImpl>(null);
   const cur = useRef<{ az: number; el: number; dist: number; target: Vector3 } | null>(null);
@@ -205,7 +238,7 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
   const hi = quality === 'haute';
   return (
     <>
-      <StageLights dark={dark} shadows={shadows} realistic={realistic} />
+      <StageLights dark={dark} shadows={shadows} realistic={realistic} vive={vive} />
       {children}
       <ContactShadows position={[0, 0.001, 0]} opacity={dark ? 0.75 : 0.42} scale={6} blur={2.4} far={1.6} resolution={hi ? 512 : 256} color={dark ? '#000000' : '#3a3530'} />
       {orbit && <OrbitControls ref={controls} enablePan={false} enableDamping={false} minDistance={1.2} maxDistance={12} minPolarAngle={0.15} maxPolarAngle={1.75} />}

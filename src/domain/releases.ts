@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '0.49.0',
+      releaseDate: '2026-10-27',
+      title: 'Moteur à part et lumière vive',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Le moteur qui anime les coachs devient un module à part, avec son propre numéro de version (1.0.0) : il pourra évoluer étape par étape sans toucher au reste de l’application. Les mouvements ne changent pas.' },
+        { category: 'fonctionnalites', text: 'Nouvelle option « Lumière du coach » dans Réglages > Affichage, pour le rendu Ultra-réaliste : « Vive » reprend l’éclairage du labo CME, plus clair, avec un contour bleuté et un fond sombre pendant l’entraînement. « Studio » reste la lumière par défaut.' },
+      ],
+      links: [{ label: 'Affichage', to: '/reglages/affichage' }],
+    },
+    {
       version: '0.48.0',
       releaseDate: '2026-10-27',
       title: 'Chrono de combat',

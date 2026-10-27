@@ -1,8 +1,8 @@
-import type { CoachRig } from '../../engine/rig';
-import type { Effector } from '../../engine/study';
-import { analyseMotion } from '../../engine/study';
-import { MotionSampler } from '../../engine/motion';
-import { getLibrary, getMotion } from '../../engine/library';
+import type { CoachRig } from '../../engine';
+import type { Effector } from '../../engine';
+import { analyseMotion } from '../../engine';
+import { MotionSampler } from '../../engine';
+import { getLibrary, getMotion } from '../../engine';
 import type { Technique } from '../../domain/types';
 import { STYLE_OF } from '../../three/CoachStage';
 

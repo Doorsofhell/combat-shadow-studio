@@ -2,11 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
 import { DoubleSide, Group, Mesh, MeshBasicMaterial, Shape, Vector3 } from 'three';
-import type { CoachRig } from '../engine/rig';
-import type { ComboPlayer } from '../engine/player';
-import type { Motion } from '../engine/motion';
-import { MotionSampler } from '../engine/motion';
-import { analyseMotion } from '../engine/study';
+import type { CoachRig } from '../engine';
+import type { ComboPlayer } from '../engine';
+import type { Motion } from '../engine';
+import { MotionSampler } from '../engine';
+import { analyseMotion } from '../engine';
 import { useSettings } from '../store/settings';
 
 const RED = '#c8102e';

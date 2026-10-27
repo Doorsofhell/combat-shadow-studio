@@ -9,7 +9,7 @@ import { restoreReferencePose, setLegLength } from './pose';
 import { PhotoCoach } from './PhotoCoach';
 import type { OutfitId, OutfitStatus } from './outfit';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
-import { CoachRig } from '../engine/rig';
+import { CoachRig } from '../engine';
 import { applyManga, outlineMaterial, toonMaterial } from './manga';
 import { CoachMeta, Customizer } from './customize';
 import type { AtlasRects } from './groom';

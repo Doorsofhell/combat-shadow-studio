@@ -2,10 +2,10 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
 import { Group, Mesh, Vector3 } from 'three';
-import type { CoachRig } from '../engine/rig';
-import { MotionSampler } from '../engine/motion';
-import type { StudyPlayer } from '../engine/study';
-import type { BodyFocus } from '../engine/phases';
+import type { CoachRig } from '../engine';
+import { MotionSampler } from '../engine';
+import type { StudyPlayer } from '../engine';
+import type { BodyFocus } from '../engine';
 import { useSettings } from '../store/settings';
 
 const RED = '#c8102e';

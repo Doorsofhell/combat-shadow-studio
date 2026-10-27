@@ -1,7 +1,7 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FsExit } from '../../fullscreen/FullscreenStage';
 import { useStageFullscreen } from '../../fullscreen/useStageFullscreen';
-import type { ComboPlayer, PlayerEvents } from '../../../engine/player';
+import type { ComboPlayer, PlayerEvents } from '../../../engine';
 import type { StageView } from '../../../three/StudioStage';
 import type { DisciplineId } from '../../../domain/types';
 import type { FighterLook } from '../../../editor/look';

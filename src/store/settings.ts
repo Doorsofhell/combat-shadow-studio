@@ -47,6 +47,12 @@ export interface Settings {
    * kept as a fallback until the new one is validated on the devices
    */
   coachRender: 'premium' | 'precedent';
+  /**
+   * v0.49 light of the realistic coaches: the photo studio of v0.29 or the bright light of the CME-3D lab
+   * (Youssef 2026-10-27: CME's coaches « mieux aboutis », same model, brighter staging). Studio until he
+   * validates the other on his phone; older saves get it through `merge`.
+   */
+  coachLight: 'studio' | 'vive';
   cameraAngle: number;
   /** teaching camera mode; auto picks the best angle for each technique */
   cameraMode: import('../domain/camera').CameraMode;
@@ -112,6 +118,7 @@ export const DEFAULT_SETTINGS: Settings = {
   // v0.29 (Youssef, PROMPT MAÎTRE v0.29.0): Ultra-réaliste for a new installation or a save without a choice
   coachStyle: 'realiste',
   coachRender: 'premium',
+  coachLight: 'studio',
   cameraAngle: 35,
   cameraMode: 'auto',
   cues: { trajectoire: true, hanches: true, pivot: true, articulations: true, pieds: true, garde: false, comparaison: false },

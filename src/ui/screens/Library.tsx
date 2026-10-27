@@ -11,7 +11,7 @@ import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
 import { useGoals } from '../../store/goals';
 import { useActiveFighter } from '../../store/fighters';
-import type { ComboPlayer, PlayerEvents } from '../../engine/player';
+import type { ComboPlayer, PlayerEvents } from '../../engine';
 import { playerSteps } from '../training/plan';
 import { say } from '../../audio/voice';
 import { GuideCard } from '../GuideCard';
