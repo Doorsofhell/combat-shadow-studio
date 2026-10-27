@@ -49,6 +49,26 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.0.0',
+      releaseDate: '2026-10-27',
+      title: 'Nouvelle organisation de l’application',
+      isMajor: true,
+      changes: [
+        { category: 'fonctionnalites', text: 'Une barre du bas qui ne change plus : Accueil, Entraîner, Apprendre, Progrès et Profil, toujours à la même place. Chaque espace a ses onglets en haut de l’écran, et on passe de l’un à l’autre en glissant le doigt.' },
+        { category: 'fonctionnalites', text: 'Un accueil pour démarrer tout de suite : « Reprendre » relance ta dernière séance, avec trois raccourcis (Séance rapide, Technique du jour, Chrono seul) et ton objectif de la semaine.' },
+        { category: 'fonctionnalites', text: '« Rechercher ou demander au coach » : un seul champ pour trouver une technique, un terme de l’encyclopédie, un programme ou un réglage, ou poser la question au Coach IA.' },
+        { category: 'fonctionnalites', text: 'Séance mains libres : pose ton téléphone, seuls Retour et Pause restent à l’écran. Touche le coach pour mettre en pause ; Décomposer, Caméra et « Plus » reviennent pendant la pause. Le téléphone vibre au départ, à la pause et à chaque round.' },
+        { category: 'fonctionnalites', text: 'Un écran Favoris dans Entraîner : tes techniques favorites et tes combinaisons favorites des légendes au même endroit.' },
+        { category: 'ameliorations', text: 'Rien n’a disparu : chaque écran de la version précédente a sa place dans la nouvelle organisation (Légendes et Encyclopédie dans Apprendre, Mon coach, Coach IA, Réglages, Premium et Nouveautés dans Profil).' },
+        { category: 'ameliorations', text: 'Thème Nuit par défaut pour une nouvelle installation, et lumière « Vive » par défaut pour les coachs réalistes. Les choix déjà enregistrés sont gardés.' },
+        { category: 'ameliorations', text: 'Le gros bouton prend la couleur de ta discipline principale.' },
+      ],
+      links: [
+        { label: 'Accueil', to: '/' },
+        { label: 'Favoris', to: '/favoris' },
+      ],
+    },
+    {
       version: '0.49.0',
       releaseDate: '2026-10-27',
       title: 'Moteur à part et lumière vive',
