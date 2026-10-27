@@ -476,11 +476,11 @@ export const APP_GUIDE: GuideEntry[] = [
   {
     id: 'theme',
     title: 'Le thème clair ou sombre',
-    keywords: ['theme', 'mode sombre', 'mode clair', 'theme sombre', 'theme clair', 'fond noir', 'fond blanc', 'couleurs de l application'],
+    keywords: ['theme', 'mode nuit', 'mode jour', 'theme nuit', 'theme jour', 'mode sombre', 'mode clair', 'theme sombre', 'theme clair', 'fond noir', 'fond blanc', 'couleurs de l application'],
     screens: ['reglages'],
     answer:
-      'Dans Réglages, rubrique Apparence, « Thème des menus » propose Clair, Sombre ou Automatique (il suit ton téléphone).\n' +
-      'Le studio d’entraînement, lui, reste toujours blanc pour bien voir le coach.',
+      'Dans Réglages, rubrique Apparence, « Thème » propose Nuit (le choix de départ), Jour ou Auto (il suit ton téléphone).\n' +
+      'Le studio d’entraînement suit le même thème.',
     action: { to: '/reglages', label: 'Ouvrir les réglages' },
   },
   {

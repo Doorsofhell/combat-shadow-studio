@@ -107,7 +107,7 @@ export type CoachPanelSize = 'reduit' | 'normal' | 'agrandi';
 export const COACH_PANEL_SIZES: readonly CoachPanelSize[] = ['reduit', 'normal', 'agrandi'];
 
 export const DEFAULT_SETTINGS: Settings = {
-  theme: 'auto',
+  theme: 'sombre',
   voiceVolume: 1,
   effectsVolume: 0.8,
   voice: true,

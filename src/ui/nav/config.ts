@@ -265,3 +265,126 @@ export const MENU_ENTRIES: readonly MenuEntry[] = [
   // its description keeps the 3 × 3 grid above it intact
   { id: 'encyclopedie', icon: 'book', label: 'Encyclopédie', to: '/encyclopedie', hint: 'Dictionnaire illustré des 6 disciplines' },
 ];
+
+/* ==========================================================================
+   1.0.0 — refonte ergonomique (Youssef, 2026-10-27: « Aucune perte de contenu. Réorganisation, logique et
+   intelligente »; plan https://claude.ai/artifact/EYK3bqHmDsSC5iMsvUNRrQ, maquette v4 validée). NAV_CONFIG above
+   still lists the actions of every screen; the bar draws them differently:
+   - a fixed bar of five places (TABS), the same on every screen except the session;
+   - above it, the actions of the screen: one big button (PRIMARY) and the others as smaller buttons;
+   - Retour as a chip at the top left (not on the five main places);
+   - « Plus » opens the commands of the screen (former « Sur cet écran »); the former Menu places are now the
+     five places, the tabs of each space (SECTION_TABS), the links of Profil and the tiles of Réglages
+     (checked by src/ui/nav/__tests__/refonte.test.ts: no former entry is lost).
+   ========================================================================== */
+
+export type TabId = 'accueil' | 'entrainer' | 'apprendre' | 'progres' | 'profil';
+export interface Tab {
+  id: TabId;
+  label: string;
+  icon: NavIconId;
+  to: string;
+}
+export const TABS: readonly Tab[] = [
+  { id: 'accueil', label: 'Accueil', icon: 'home', to: '/' },
+  { id: 'entrainer', label: 'Entraîner', icon: 'dumbbell', to: '/entrainer' },
+  { id: 'apprendre', label: 'Apprendre', icon: 'book', to: '/techniques' },
+  { id: 'progres', label: 'Progrès', icon: 'chart', to: '/stats' },
+  // drawn with the user's photo or initials (BottomBar)
+  { id: 'profil', label: 'Profil', icon: 'user', to: '/profil' },
+];
+
+/** the space each screen belongs to: its place is lit in the bar */
+export const SECTION: Record<NavScreen, TabId | null> = {
+  accueil: 'accueil',
+  entrainer: 'entrainer',
+  discipline: 'entrainer',
+  programmes: 'entrainer',
+  programme: 'entrainer',
+  entrainement: 'entrainer',
+  createur: 'entrainer',
+  'createur-fiche': 'entrainer',
+  'createur-editeur': 'entrainer',
+  chrono: 'entrainer',
+  techniques: 'apprendre',
+  fiche: 'apprendre',
+  partenaire: 'apprendre',
+  legendes: 'apprendre',
+  'fiche-legende': 'apprendre',
+  combinaison: 'apprendre',
+  encyclopedie: 'apprendre',
+  'encyclopedie-fiche': 'apprendre',
+  progres: 'progres',
+  'progres-activite': 'progres',
+  'progres-detail': 'progres',
+  historique: 'progres',
+  objectifs: 'progres',
+  profil: 'profil',
+  connexion: 'profil',
+  coach: 'profil',
+  'coach-ia': 'profil',
+  parametres: 'profil',
+  confidentialite: 'profil',
+  premium: 'profil',
+  autre: null,
+};
+
+/** the first screen of each space and its sibling tabs: reached from the bar, so no Retour chip */
+export const ROOT_SCREENS: ReadonlySet<NavScreen> = new Set<NavScreen>(['accueil', 'entrainer', 'techniques', 'legendes', 'encyclopedie', 'progres', 'historique', 'objectifs', 'profil']);
+
+/** the session is hands-free: no bar of places, its actions in one row with Retour */
+export const NO_TABS: ReadonlySet<NavScreen> = new Set<NavScreen>(['entrainement']);
+/** full-screen screens whose top belongs to them: Retour joins the row of actions instead of the top left */
+export const BACK_IN_ROW: ReadonlySet<NavScreen> = new Set<NavScreen>(['entrainement', 'chrono']);
+
+/** the big button of the screen (the action most people come for); the other actions stay next to it */
+export const PRIMARY: Partial<Record<NavScreen, NavAction>> = {
+  entrainer: 'start',
+  discipline: 'start',
+  programme: 'start',
+  entrainement: 'toggle',
+  fiche: 'train',
+  combinaison: 'train',
+  'createur-fiche': 'run',
+  'createur-editeur': 'save',
+};
+
+const TAB_ROOTS = TABS.map((t) => t.to);
+
+/**
+ * The actions of a screen shown above the bar, with their place number in NAV_CONFIG (kept as data-slot): every
+ * place except Retour, Menu (now « Plus »), the links to the five places, which the bar already shows, and a link
+ * to the screen itself (Chrono on the chronometer).
+ */
+export function dockSlots(screen: NavScreen): { slot: NavSlot; place: number }[] {
+  return NAV_CONFIG[screen]
+    .map((slot, i) => ({ slot, place: i + 1 }))
+    .filter(({ slot }) => slot.action !== 'back' && slot.action !== 'menu' && !(slot.action.startsWith('nav:') && (TAB_ROOTS.includes(slot.action.slice(4)) || navScreen(slot.action.slice(4)) === screen)));
+}
+
+/** the tabs at the top of a space (lot 1: Apprendre and Progrès, which held the former Menu places) */
+export interface SectionTab {
+  id: string;
+  label: string;
+  to: string;
+  screens: readonly NavScreen[];
+}
+export const SECTION_TABS: Partial<Record<TabId, readonly SectionTab[]>> = {
+  apprendre: [
+    { id: 'techniques', label: 'Techniques', to: '/techniques', screens: ['techniques'] },
+    { id: 'legendes', label: 'Légendes', to: '/champions', screens: ['legendes'] },
+    { id: 'encyclopedie', label: 'Encyclopédie', to: '/encyclopedie', screens: ['encyclopedie'] },
+  ],
+  progres: [
+    { id: 'tableau', label: 'Tableau', to: '/stats', screens: ['progres'] },
+    { id: 'historique', label: 'Historique', to: '/historique', screens: ['historique'] },
+    { id: 'objectifs', label: 'Objectifs', to: '/objectifs', screens: ['objectifs'] },
+  ],
+};
+
+/** the tabs shown on a screen, or null (only on the first screens of the space, not on a detail) */
+export function sectionTabsFor(screen: NavScreen): readonly SectionTab[] | null {
+  const s = SECTION[screen];
+  const tabs = s ? SECTION_TABS[s] : undefined;
+  return tabs && tabs.some((t) => t.screens.includes(screen)) ? tabs : null;
+}

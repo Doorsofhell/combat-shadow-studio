@@ -2,10 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCoachBubble } from '../coach-ai/coachHost';
-import { LATEST_RELEASE, RELEASES, RELEASE_CATEGORY_LABEL, hasUnseenRelease, releaseDateLabel } from '../../domain/releases';
-import { useSettings } from '../../store/settings';
+import { RELEASES, RELEASE_CATEGORY_LABEL, releaseDateLabel } from '../../domain/releases';
 import { AppIcon } from '../icons';
-import { MENU_ENTRIES } from './config';
 import { popLayer, pushLayer } from './layers';
 import { NavIcon } from './NavIcon';
 import { leave, useNavStore, type MenuCommand } from './store';
@@ -121,9 +119,9 @@ function CommandIcon({ icon }: { icon: MenuCommand['icon'] }) {
 }
 
 /**
- * « Navigation générale » (section 6) and « Nouveautés » (section 7), opened from Menu, place 5 of the bar. The eight
- * places in the mockup's order; above them, under « Sur cet écran », the commands of the screen that have no place in
- * the bar (Précédent, Suivant, Comment faire ?, Options, Coach IA…), so nothing the former buttons did is lost.
+ * « Sur cet écran », opened from « Plus » (1.0.0; formerly the Menu): the commands of the screen that have no button
+ * of their own (Précédent, Suivant, Comment faire ?, Options, Coach IA…), so nothing the former buttons did is lost.
+ * « Nouveautés » (section 7) opens from the tile of Réglages.
  */
 export function NavSheets() {
   const nav = useNavigate();
@@ -133,14 +131,11 @@ export function NavSheets() {
   const setSheet = useNavStore((s) => s.setSheet);
   const commands = useNavStore((s) => s.commands);
   const runCommand = useNavStore((s) => s.runCommand);
-  const seen = useSettings((s) => s.settings.newsSeenVersion);
-  const setSettings = useSettings((s) => s.set);
   if (!sheet) return null;
   // the Coach IA keeps one way in on every screen (former bubble): last command of « Sur cet écran »
   const withCoach = !loc.pathname.startsWith('/coach-ia');
   const allCommands = [...commands, ...(withCoach ? [{ id: 'coach-ia', label: 'Coach IA', icon: 'coach' as const, testId: 'cmd-coach-ia' }] : [])];
   const runAny = (id: string) => (id === 'coach-ia' ? useCoachBubble.getState().setOpen(true) : runCommand(id));
-  const unseen = hasUnseenRelease(seen);
   const close = (then?: () => void) => {
     setSheet(null);
     popLayer(layer, then);
@@ -193,63 +188,30 @@ export function NavSheets() {
     );
   }
 
+  // 1.0.0 (refonte ergonomique): « Plus » holds the commands of the screen; the former places of the Menu are now
+  // the five places of the bar, the tabs of each space, the links of Profil and the tiles of Réglages
   return (
-    <NavPanel title="Navigation générale" onClose={() => close()} testId="nav-menu-sheet">
-      {allCommands.length > 0 && (
-        <div className="nav-commands" role="group" aria-label="Sur cet écran" data-testid="nav-commands">
-          <div className="nav-section">Sur cet écran</div>
-          <div className="nav-menugrid">
-            {allCommands.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                className={`nav-menuitem ${c.pressed ? 'on' : ''}`}
-                aria-pressed={c.pressed === undefined ? undefined : c.pressed}
-                disabled={c.disabled}
-                data-testid={c.testId ?? `cmd-${c.id}`}
-                onClick={() => {
-                  haptic();
-                  close(() => runAny(c.id));
-                }}
-              >
-                <CommandIcon icon={c.icon} />
-                <span>{c.label}</span>
-              </button>
-            ))}
-          </div>
-          <div className="nav-section">Navigation générale</div>
+    <NavPanel title="Sur cet écran" onClose={() => close()} testId="nav-menu-sheet">
+      <div className="nav-commands" role="group" aria-label="Sur cet écran" data-testid="nav-commands">
+        <div className="nav-menugrid">
+          {allCommands.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              className={`nav-menuitem ${c.pressed ? 'on' : ''}`}
+              aria-pressed={c.pressed === undefined ? undefined : c.pressed}
+              disabled={c.disabled}
+              data-testid={c.testId ?? `cmd-${c.id}`}
+              onClick={() => {
+                haptic();
+                close(() => runAny(c.id));
+              }}
+            >
+              <CommandIcon icon={c.icon} />
+              <span>{c.label}</span>
+            </button>
+          ))}
         </div>
-      )}
-      <div className="nav-menugrid" data-testid="nav-menu-grid">
-        {MENU_ENTRIES.map((m) => (
-          <button
-            key={m.id}
-            type="button"
-            className={`nav-menuitem ${m.id === 'nouveautes' ? 'highlight' : ''} ${m.hint ? 'wide' : ''}`}
-            data-go={m.id}
-            data-testid={`menu-${m.id}`}
-            aria-label={m.id === 'nouveautes' && unseen ? 'Nouveautés, nouvelle version' : m.label}
-            onClick={() => {
-              haptic();
-              if (m.id === 'nouveautes') {
-                // as in the mockup: the same sheet shows the news, and they count as seen
-                setSettings({ newsSeenVersion: LATEST_RELEASE.version });
-                setSheet('news');
-              } else go(m.to);
-            }}
-          >
-            <NavIcon id={m.icon} />
-            {m.hint ? (
-              <span className="nav-menuitem-text">
-                <span>{m.label}</span>
-                <small>{m.hint}</small>
-              </span>
-            ) : (
-              <span>{m.label}</span>
-            )}
-            {m.id === 'nouveautes' && unseen && <i className="nav-dot" data-testid="news-dot" aria-hidden />}
-          </button>
-        ))}
       </div>
     </NavPanel>
   );

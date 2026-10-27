@@ -304,3 +304,8 @@
 .pw-strength[data-strength='3'] .pw-bars i.on {
   background: var(--good, #2fbf71);
 }
+
+/* 1.0.0 (refonte ergonomique): Mon coach, Coach IA, Réglages under the hero of Profil */
+.me-links {
+  display: grid;
+}

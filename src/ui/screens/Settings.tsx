@@ -1,7 +1,9 @@
 import { championFor } from '../../domain/coaches/catalog';
 import { DISCIPLINES, LEVELS } from '../../domain/types';
 import { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { LATEST_RELEASE, hasUnseenRelease } from '../../domain/releases';
+import { openNews } from '../nav/BottomBar';
 import { useSettings } from '../../store/settings';
 import { useProfile } from '../../store/profile';
 import { exportData, useStats } from '../../store/stats';
@@ -89,6 +91,7 @@ const pct = (v: number) => `${Math.round(v * 100)} %`;
 export function SettingsPage() {
   const { section } = useParams();
   const { settings, set } = useSettings();
+  const unseen = hasUnseenRelease(settings.newsSeenVersion);
   const profile = useProfile((s) => s.profile);
   const updateProfile = useProfile((s) => s.update);
   const resetProfile = useProfile((s) => s.reset);
@@ -306,6 +309,20 @@ export function SettingsPage() {
     <div className="page">
       <PageHead title="Réglages" />
 
+      {/* 1.0.0 (refonte ergonomique): Premium and Nouveautés, formerly in the Menu, as the two tiles at the top */}
+      <div className="set-tiles">
+        <Link to="/premium" className="set-tile premium" data-testid="reglages-premium">
+          <span className="set-tile-k">Premium</span>
+          <strong>Avantages, FAQ, restaurer</strong>
+        </Link>
+        <button type="button" className="set-tile" data-testid="reglages-nouveautes" aria-label={unseen ? 'Nouveautés, nouvelle version' : 'Nouveautés'} onClick={openNews}>
+          <span className="set-tile-k">
+            Nouveautés{unseen && <i className="me-dot" data-testid="news-dot" aria-hidden />}
+          </span>
+          <strong>v{LATEST_RELEASE.version}</strong>
+        </button>
+      </div>
+
       <Panel title="Ton profil" icon="profile" id="p-profil">
         <div className="profile-summary" data-testid="settings-profile-summary">
           <div>
@@ -329,15 +346,16 @@ export function SettingsPage() {
       </Panel>
 
       <Panel title="Apparence" icon="theme" id="p-apparence">
-        <PanelRow label="Thème des menus" hint="Automatique suit ton téléphone. Le studio d’entraînement reste blanc." column>
+        <PanelRow label="Thème" hint="Nuit par défaut. Auto suit ton téléphone." column>
           <Segmented
-            label="Thème des menus"
+            label="Thème"
             value={settings.theme}
             onChange={(v) => set({ theme: v })}
             options={[
-              { id: 'clair', label: 'Clair' },
-              { id: 'sombre', label: 'Sombre' },
-              { id: 'auto', label: 'Automatique' },
+              // 1.0.0 (refonte ergonomique): Nuit first and by default, Jour, Auto
+              { id: 'sombre', label: 'Nuit' },
+              { id: 'clair', label: 'Jour' },
+              { id: 'auto', label: 'Auto' },
             ]}
           />
         </PanelRow>

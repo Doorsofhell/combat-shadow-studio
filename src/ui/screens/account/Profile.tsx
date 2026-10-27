@@ -7,6 +7,8 @@ import { useGoals } from '../../../store/goals';
 import { useCatalogUser } from '../../../store/catalog';
 import { useActiveFighter } from '../../../store/fighters';
 import { usePhoto } from '../../../store/photo';
+import { useSettings } from '../../../store/settings';
+import { hasUnseenRelease } from '../../../domain/releases';
 import { saveTextFile } from '../../../platform/native';
 import {
   changeEmail,
@@ -122,6 +124,7 @@ export function ProfilePage() {
   const [showLim, setShowLim] = useState(false);
   const [dialog, setDialog] = useState<null | 'erase' | 'signout' | 'delete' | 'link-email' | 'photo' | 'email' | 'password'>(null);
   const hasPhoto = usePhoto((s) => !!s.photo);
+  const unseen = hasUnseenRelease(useSettings((s) => s.settings.newsSeenVersion));
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -179,6 +182,22 @@ export function ProfilePage() {
           {fighter && <div className="small muted">Combattant : {fighter.name}</div>}
         </div>
       </div>
+
+      {/* 1.0.0 (refonte ergonomique): the former Menu places of the profile space, right under the hero */}
+      <nav className="me-links" aria-label="Mon espace" data-testid="profil-links">
+        <LinkRow to="/coach" icon={<AppIcon id="fighter" className="muted" />} label="Mon coach" hint={fighter?.name} />
+        <LinkRow to="/coach-ia" icon={<AppIcon id="coach" className="muted" />} label="Coach IA" hint="Tes questions et ses réponses" />
+        <LinkRow
+          to="/reglages"
+          icon={<AppIcon id="settings" className="muted" />}
+          label={
+            <span data-testid="profil-reglages">
+              Réglages{unseen && <i className="me-dot" data-testid="reglages-dot" aria-label="nouvelle version" />}
+            </span>
+          }
+          hint="Premium, nouveautés, thème, affichage, voix"
+        />
+      </nav>
 
       {err && (
         <div className="note err" role="alert">

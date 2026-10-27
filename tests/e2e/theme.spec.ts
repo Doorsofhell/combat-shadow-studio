@@ -1,7 +1,11 @@
 import { expect, Page, test } from '@playwright/test';
 import { DEFAULT_PROFILE } from '../../src/store/profile';
 
-/** Menu themes: Clair / Sombre / Automatique, remembered, live system switching, no flash, a training studio that follows the theme (0.27). */
+/**
+ * Themes: Nuit / Jour / Auto (1.0.0 refonte ergonomique: formerly Sombre / Clair / Automatique; Nuit by default for a
+ * new install, a choice already made is kept), remembered, live system switching, no flash, a training studio that
+ * follows the theme (0.27).
+ */
 async function seed(page: Page) {
   await page.goto('/icons/icon.svg');
   await page.evaluate(async (profile) => {
@@ -20,11 +24,22 @@ async function seed(page: Page) {
 const theme = (page: Page) => page.evaluate(() => document.documentElement.dataset.theme);
 const bodyBg = (page: Page) => page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor);
 
-test('Automatique par défaut, suit le système en direct sans redémarrer', async ({ page }) => {
-  await page.emulateMedia({ colorScheme: 'dark' });
+test('Nuit par défaut pour une nouvelle installation, même si le téléphone est en clair', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
   await seed(page);
   await page.goto('/#/reglages');
-  await expect(page.getByRole('radio', { name: 'Automatique' })).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByRole('radio', { name: 'Nuit' })).toHaveAttribute('aria-checked', 'true');
+  expect(await theme(page)).toBe('dark');
+  expect(await bodyBg(page)).toBe('rgb(11, 15, 20)');
+});
+
+test('un utilisateur existant en Automatique le garde ; Auto suit le système en direct sans redémarrer', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await seed(page);
+  // the choice saved by a version before 1.0.0
+  await page.evaluate(() => localStorage.setItem('css-theme', 'auto'));
+  await page.goto('/#/reglages');
+  await expect(page.getByRole('radio', { name: 'Auto' })).toHaveAttribute('aria-checked', 'true');
   expect(await theme(page)).toBe('dark');
   expect(await bodyBg(page)).toBe('rgb(11, 15, 20)');
   await page.emulateMedia({ colorScheme: 'light' });
@@ -37,7 +52,7 @@ test('choix manuel mémorisé, prioritaire sur le système, appliqué avant le p
   await page.emulateMedia({ colorScheme: 'dark' });
   await seed(page);
   await page.goto('/#/reglages');
-  await page.getByRole('radio', { name: 'Clair' }).click();
+  await page.getByRole('radio', { name: 'Jour' }).click();
   await expect.poll(() => theme(page)).toBe('light');
   await page.emulateMedia({ colorScheme: 'dark' });
   expect(await theme(page)).toBe('light');
@@ -47,8 +62,8 @@ test('choix manuel mémorisé, prioritaire sur le système, appliqué avant le p
   await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => (window as unknown as { reportTheme: (t?: string) => void }).reportTheme(document.documentElement.dataset.theme)));
   await page.reload();
   await expect.poll(() => atParse[0]).toBe('light');
-  await expect(page.getByRole('radio', { name: 'Clair' })).toHaveAttribute('aria-checked', 'true');
-  await page.getByRole('radio', { name: 'Sombre' }).click();
+  await expect(page.getByRole('radio', { name: 'Jour' })).toHaveAttribute('aria-checked', 'true');
+  await page.getByRole('radio', { name: 'Nuit' }).click();
   await page.emulateMedia({ colorScheme: 'light' });
   await expect.poll(() => theme(page)).toBe('dark');
   await page.reload();
@@ -57,8 +72,8 @@ test('choix manuel mémorisé, prioritaire sur le système, appliqué avant le p
 
 // 0.27: Youssef chose « Suit le thème » for the training studio (2026-10-20 21:48): it is no longer always white,
 // it is anthracite in the dark theme and soft pearl grey in the light theme (status bar included)
-const STUDIO = { Clair: { bg: 'rgb(238, 240, 243)', meta: '#eef0f3' }, Sombre: { bg: 'rgb(11, 15, 20)', meta: '#0b0f14' } } as const;
-for (const pref of ['Clair', 'Sombre'] as const) {
+const STUDIO = { Jour: { bg: 'rgb(238, 240, 243)', meta: '#eef0f3' }, Nuit: { bg: 'rgb(11, 15, 20)', meta: '#0b0f14' } } as const;
+for (const pref of ['Jour', 'Nuit'] as const) {
   test(`le studio d’entraînement suit le thème ${pref}`, async ({ page }) => {
     await seed(page);
     await page.goto('/#/reglages');
@@ -78,7 +93,7 @@ for (const pref of ['Clair', 'Sombre'] as const) {
     });
     for (const b of layers) expect(b).toBe('rgba(0, 0, 0, 0)');
     const stageBg = await page.locator('.tr-stage').evaluate((e) => getComputedStyle(e).backgroundImage);
-    expect(stageBg).toContain(pref === 'Sombre' ? 'rgb(11, 15, 20)' : 'rgb(227, 230, 234)');
+    expect(stageBg).toContain(pref === 'Nuit' ? 'rgb(11, 15, 20)' : 'rgb(227, 230, 234)');
     // a reload on the training screen starts with the right status bar colour (index.html, before the first paint)
     await page.reload();
     await expect(tr).toBeVisible();
@@ -96,6 +111,8 @@ for (const scheme of ['dark', 'light'] as const)
       document.documentElement.prepend(st);
     });
     await seed(page);
+    // 1.0.0: Nuit is the default; Auto keeps this test on both themes
+    await page.evaluate(() => localStorage.setItem('css-theme', 'auto'));
     await page.goto('/#/champions/kickboxing-hari-0001');
     const h = page.locator('h2', { hasText: 'Séquence' });
     await expect(h).toBeVisible();

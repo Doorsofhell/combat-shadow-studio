@@ -44,6 +44,8 @@
   --pill-bg: #1f2937;
   --pill-edge: #374151;
   --pill-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  /* 1.0.0 glass of the actions and places (no frames) */
+  --glass: rgba(255, 255, 255, 0.09);
 }
 
 /* light menus: chosen in Réglages, or automatic when the system is light (data-theme set by
@@ -81,6 +83,8 @@
   --pill-bg: #ffffff;
   --pill-edge: rgba(17, 18, 20, 0.16);
   --pill-shadow: 0 8px 24px rgba(17, 18, 20, 0.18);
+  /* 1.0.0 glass of the actions and places (no frames) */
+  --glass: rgba(17, 18, 20, 0.07);
 }
 
 /* media cards (renders on a dark backdrop) keep the dark palette in both themes */
@@ -156,6 +160,31 @@
   :root {
     --nav-h: 68px;
   }
+}
+
+/* 1.0.0 (refonte ergonomique, Youssef 2026-10-27): the six disciplines in vivid colours, the same by day and by
+   night (src/ui/theme/disciplines.ts holds the same values for the code); the main discipline of the profile lights
+   the big button of each screen (html[data-disc], set by the bottom bar) */
+:root {
+  --disc-boxe: #ff3b3b;
+  --disc-kickboxing: #ff9f1a;
+  --disc-mma: #ffe14d;
+  --disc-muaythai: #ff4fd8;
+  --disc-bjj: #3d8bff;
+  --disc-judo: #3df5e0;
+  --disc: var(--disc-boxe);
+  /* dark text on every vivid colour (contrast checked in src/ui/theme/__tests__/disciplines.test.ts) */
+  --on-disc: #0b0f14;
+}
+:root[data-disc='kickboxing'] { --disc: var(--disc-kickboxing); }
+:root[data-disc='mma'] { --disc: var(--disc-mma); }
+:root[data-disc='muaythai'] { --disc: var(--disc-muaythai); }
+:root[data-disc='bjj'] { --disc: var(--disc-bjj); }
+:root[data-disc='judo'] { --disc: var(--disc-judo); }
+
+/* 1.0.0: Retour is a chip at the top left of the detail screens; their content starts under it */
+html[data-back-chip] .page {
+  padding-top: calc(var(--space-4) + 52px);
 }
 
 * {
@@ -2344,7 +2373,7 @@ button.panel-row {
 
 .page.dash {
   /* the real visible height, above the navigation bar and the Android gesture area */
-  height: calc(100dvh - var(--nav-h) - env(safe-area-inset-bottom));
+  height: calc(100dvh - var(--nav-h) - env(safe-area-inset-bottom) - var(--tabs-h, 0px));
   min-height: 540px;
   padding-top: 0;
   padding-bottom: 8px;
@@ -3426,4 +3455,61 @@ html.stage-fs-open body {
   background: var(--surface-2, rgba(127, 127, 127, 0.08));
   padding: 8px;
   border-radius: 8px;
+}
+
+/* 1.0.0 (refonte ergonomique): the two tiles at the top of Réglages (Premium, Nouveautés), glass, no frame */
+.set-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.set-tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 92px;
+  padding: 14px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--glass);
+  color: var(--ink);
+  text-align: left;
+  text-decoration: none;
+  font: inherit;
+  cursor: pointer;
+}
+.set-tile.premium {
+  background: linear-gradient(150deg, color-mix(in srgb, #e3b341 26%, transparent), var(--glass));
+}
+.set-tile-k {
+  font-size: 0.6875rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.set-tile.premium .set-tile-k {
+  color: color-mix(in srgb, #e3b341 80%, var(--ink));
+}
+.set-tile strong {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+.set-tile:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* 1.0.0: « new version » dot next to Réglages (Profil) and Nouveautés (Réglages) */
+.me-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 6px;
+  vertical-align: 0.35em;
+  border-radius: 50%;
+  background: var(--nav-accent, #e43d43);
 }

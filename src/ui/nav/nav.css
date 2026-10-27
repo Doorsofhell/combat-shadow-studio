@@ -21,24 +21,23 @@
 }
 
 .nav-bottom {
+  /* 1.0.0: no blur here (a filter would trap the fixed Retour chip); each part has its own glass */
+  --nav-pad-b: 6px;
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 30;
-  background: var(--nav-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid var(--line);
-  padding: 10px max(8px, env(safe-area-inset-right)) calc(15px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 0 calc(var(--nav-pad-b) + env(safe-area-inset-bottom));
+  pointer-events: none;
+  /* the page fades under the actions instead of showing through them */
+  background: linear-gradient(to top, var(--bg) calc(100% - 14px), transparent);
 }
-
-.nav-bar {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 4px;
-  max-width: 640px;
-  margin: 0 auto;
+.nav-bottom > * {
+  pointer-events: auto;
 }
 
 .nav-btn {
@@ -126,7 +125,7 @@
 }
 
 /* the mockup's swap: the whole bar on a new screen, one icon on a new state */
-.nav-bar.changing,
+.nav-dock.changing,
 .nav-ico.swap {
   animation: nav-swap 0.26s ease both;
 }
@@ -375,13 +374,13 @@
 /* landscape phones: the same bar, less padding around it (--nav-h is 68 px there, styles.css) */
 @media (max-height: 520px) {
   .nav-bottom {
-    padding-top: 6px;
-    padding-bottom: calc(7px + env(safe-area-inset-bottom));
+    --nav-pad-b: 2px;
+    gap: 4px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nav-bar.changing,
+  .nav-dock.changing,
   .nav-ico.swap,
   .nav-sheet {
     animation: none;
@@ -452,4 +451,293 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+/* ==========================================================================
+   1.0.0 refonte ergonomique (maquette v4, src/ui/nav/config.ts TABS / PRIMARY / dockSlots):
+   glass without frames, the five places fixed at the bottom, one big button per screen above them, Retour as a
+   chip at the top left. The big button wears the colour of the main discipline (--disc, styles.css).
+   ========================================================================== */
+.nav-dock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 max(12px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left));
+  box-sizing: border-box;
+}
+.nav-dock:empty {
+  display: none;
+}
+.nav-row {
+  display: flex;
+  gap: 8px;
+}
+.nav-row > .nav-btn {
+  flex: 1 1 0;
+}
+.nav-primary-row {
+  display: flex;
+}
+
+/* the smaller actions: glass pills with their word, no border */
+.nav-btn.nav-secondary,
+.nav-btn.nav-more,
+.nav-row > .nav-btn.nav-back {
+  min-height: 52px;
+  flex-direction: row;
+  gap: 7px;
+  padding: 0 10px;
+  border-radius: 16px;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  backdrop-filter: blur(18px) saturate(1.3);
+  color: var(--ink);
+}
+.nav-btn.nav-secondary small,
+.nav-btn.nav-more small,
+.nav-row > .nav-btn.nav-back small {
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+.nav-btn.nav-more,
+.nav-row > .nav-btn.nav-back {
+  flex: 0 0 auto;
+  min-width: 52px;
+}
+.nav-btn.nav-secondary.active {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* the big button: the main action of the screen, in the thumb's reach */
+.nav-btn.nav-primary {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: clamp(64px, 10.5dvh, 88px);
+  flex-direction: row;
+  gap: 14px;
+  border-radius: 24px;
+  background: var(--disc);
+  color: var(--on-disc);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--disc) 28%, transparent);
+}
+.nav-btn.nav-primary .nav-svg {
+  width: 30px;
+  height: 30px;
+  fill: currentColor;
+  stroke-width: 2.2;
+}
+.nav-btn.nav-primary small {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 4.2dvh, 2.25rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  overflow: visible;
+}
+.nav-btn.nav-primary:disabled {
+  opacity: 0.45;
+}
+.compact .nav-btn.nav-primary {
+  min-height: 52px;
+  border-radius: 16px;
+  gap: 8px;
+}
+.compact .nav-btn.nav-primary small {
+  font-size: 1.25rem;
+}
+.compact .nav-btn.nav-primary .nav-svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Retour at the top left (the pages leave room for it: styles.css, html[data-back-chip]) */
+.nav-backchip {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 10px);
+  left: max(12px, env(safe-area-inset-left));
+  z-index: 31;
+}
+.nav-backchip .nav-btn.nav-back {
+  width: 46px;
+  height: 46px;
+  min-height: 46px;
+  border-radius: 50%;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  backdrop-filter: blur(18px) saturate(1.3);
+  color: var(--ink);
+}
+.nav-backchip .nav-btn.nav-back small {
+  display: none;
+}
+
+/* the five places */
+.nav-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 2px;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 4px max(6px, env(safe-area-inset-right)) 0 max(6px, env(safe-area-inset-left));
+  box-sizing: border-box;
+}
+.nav-tab {
+  border: 0;
+  background: transparent;
+  color: var(--nav-neutral);
+  min-width: 0;
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.18s ease, transform 0.18s;
+}
+.nav-tab:active {
+  transform: scale(0.92);
+}
+.nav-tab.on {
+  color: var(--ink);
+}
+.nav-tab small {
+  font-size: max(10px, 0.6875rem);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.nav-tab.on small {
+  font-weight: 800;
+}
+.nav-tab:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+.nav-tab .nav-dot {
+  top: 6px;
+  right: calc(50% - 16px);
+}
+.nav-me {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 800;
+  background: color-mix(in srgb, currentColor 22%, transparent);
+  color: inherit;
+  box-shadow: 0 0 0 1.6px currentColor;
+}
+.nav-me img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* landscape phones: everything on one row of actions, smaller places */
+@media (max-height: 520px) {
+  .nav-dock {
+    flex-direction: row;
+    align-items: stretch;
+  }
+  .nav-dock .nav-row {
+    flex: 1 1 auto;
+  }
+  .nav-dock .nav-primary-row {
+    flex: 1 1 40%;
+  }
+  .nav-btn.nav-primary {
+    min-height: 48px;
+    border-radius: 14px;
+  }
+  .nav-btn.nav-primary small {
+    font-size: 1.125rem;
+  }
+  .nav-btn.nav-secondary,
+  .nav-btn.nav-more,
+  .nav-row > .nav-btn.nav-back {
+    min-height: 44px;
+  }
+  .nav-tab {
+    min-height: 42px;
+    flex-direction: row;
+    gap: 6px;
+  }
+}
+
+/* the secondary words give way to icons on narrow phones when there are many actions */
+@media (max-width: 380px) {
+  .nav-row > .nav-btn.nav-secondary small {
+    font-size: 0.75rem;
+  }
+}
+
+/* 1.0.0: the tabs at the top of a space (SectionTabs.tsx) */
+.sec-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: calc(env(safe-area-inset-top) + 10px) max(var(--gutter, 16px), env(safe-area-inset-right)) 6px max(var(--gutter, 16px), env(safe-area-inset-left));
+  background: linear-gradient(to bottom, var(--bg) 70%, transparent);
+}
+.sec-tabs-in {
+  display: flex;
+  gap: 4px;
+  max-width: 760px;
+  margin: 0 auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.sec-tab {
+  flex: none;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 650;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.sec-tab.on {
+  background: var(--ink);
+  color: var(--bg);
+}
+.sec-tab:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.sec-tabs + * .page,
+.sec-tabs ~ .page {
+  padding-top: var(--space-2, 8px);
+}
+
+/* many actions on one row: icon above a short word, so no word is cut */
+.nav-row.many > .nav-btn.nav-secondary {
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 4px;
+}
+.nav-row.many > .nav-btn.nav-secondary small {
+  font-size: 0.6875rem;
+}
+/* a row that holds Retour too (session, chronometer): Retour as an icon, so the words of the actions fit */
+.nav-row > .nav-btn.nav-back small {
+  display: none;
 }

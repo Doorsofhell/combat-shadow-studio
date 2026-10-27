@@ -26,9 +26,9 @@ export function resolveTheme(pref: ThemePref, systemLight = !!mq()?.matches): Re
 export function readSavedTheme(): ThemePref {
   try {
     const v = localStorage.getItem(THEME_KEY);
-    return v === 'clair' || v === 'sombre' || v === 'auto' ? v : 'auto';
+    return v === 'clair' || v === 'sombre' || v === 'auto' ? v : 'sombre';
   } catch {
-    return 'auto';
+    return 'sombre';
   }
 }
 

@@ -9,6 +9,7 @@ import { installNativeHandlers } from '../platform/native';
 import { Toaster } from './components/Toast';
 import { BottomBar } from './nav/BottomBar';
 import { NavSheets } from './nav/NavSheets';
+import { SectionTabs } from './nav/SectionTabs';
 import { forgetLayers } from './nav/layers';
 import { useNavStore } from './nav/store';
 import { Home } from './screens/Home';
@@ -174,6 +175,8 @@ export function App() {
       <AudioSync />
       <DisplaySync />
       <ThemeColor />
+      {/* 1.0.0: the tabs of the space shown (Apprendre, Progrès), above its page */}
+      <SectionTabs />
       <Gate>
         <Suspense fallback={<Loading />}>
           <Routes>
