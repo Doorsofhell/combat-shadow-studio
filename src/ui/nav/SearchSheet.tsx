@@ -53,6 +53,20 @@ export function SearchSheet({ onClose, onGo, onAsk }: { onClose: () => void; onG
           ref={input}
           data-testid="search-input"
         />
+        {q && (
+          <button
+            type="button"
+            className="search-clear"
+            aria-label="Effacer"
+            onClick={() => {
+              setQ('');
+              input.current?.focus();
+            }}
+            data-testid="search-clear"
+          >
+            <NavIcon id="close" />
+          </button>
+        )}
       </form>
       {/* the first line asks the Coach IA (the typed text, or opens it empty) */}
       <button

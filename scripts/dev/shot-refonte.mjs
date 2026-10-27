@@ -3,6 +3,7 @@ import { chromium } from '@playwright/test';
 // (vite preview, PORT env, default 4174). node scripts/dev/shot-refonte.mjs OUT [lot]
 const OUT = process.argv[2];
 const BASE = `http://localhost:${process.env.PORT ?? 4174}`;
+const ONLY = (process.env.ONLY ?? '').split(',').filter(Boolean);
 const SCREENS = [
   ['accueil', '/', 9000],
   ['entrainer', '/entrainer', 3000],
@@ -28,11 +29,20 @@ for (const theme of ['sombre', 'clair']) {
   }, theme);
   await p.goto('about:blank');
   for (const [id, path, wait] of SCREENS) {
-    if (theme === 'clair' && !['accueil', 'fiche', 'reglages'].includes(id)) continue;
+    if (ONLY.length ? !ONLY.includes(id) : theme === 'clair' && !['accueil', 'fiche', 'reglages'].includes(id)) continue;
     await p.goto(BASE + '/#' + path);
     await p.waitForTimeout(wait);
     await p.screenshot({ path: `${OUT}/${theme === 'sombre' ? 'nuit' : 'jour'}-${id}.png` });
     console.log('ok', theme, id);
+    // lot 3: « Rechercher ou demander au coach » opened from the home, with a query
+    if (id === 'accueil') {
+      await p.getByTestId('app-search').click();
+      await p.getByTestId('search-input').fill('crochet');
+      await p.waitForTimeout(600);
+      await p.screenshot({ path: `${OUT}/${theme === 'sombre' ? 'nuit' : 'jour'}-recherche.png` });
+      await p.keyboard.press('Escape');
+      console.log('ok', theme, 'recherche');
+    }
   }
   await p.close();
 }
