@@ -49,6 +49,19 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.3.0',
+      releaseDate: '2026-10-28',
+      title: 'Consignes enchaînées sous le coach',
+      isMajor: false,
+      changes: [
+        { category: 'fonctionnalites', text: 'Pendant la séance, les consignes défilent une à une sous les pieds du coach : la consigne principale, puis chaque point clé, puis on recommence. Des petits traits montrent où tu en es.' },
+        { category: 'fonctionnalites', text: 'Elles restent en plein écran, la pause les arrête, et le coach est cadré au-dessus : le texte ne le couvre jamais.' },
+        { category: 'ameliorations', text: 'Réglages › Consignes pendant la séance : 2,5, 3,5 ou 5 secondes par consigne, ou « Point du moment » pour garder l’affichage d’avant.' },
+        { category: 'corrections', text: 'Fiche technique : « S’entraîner » n’est plus jamais grisé (une technique sans exercice se travaille seule), et les angles de caméra restent visibles au-dessus du bouton.' },
+      ],
+      links: [{ label: 'Consignes pendant la séance', to: '/reglages/consignes' }],
+    },
+    {
       version: '1.2.0',
       releaseDate: '2026-10-28',
       title: 'Profil et réglages en listes',

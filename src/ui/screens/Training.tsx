@@ -10,8 +10,8 @@ import { useCustom } from '../../store/custom';
 import { formatDuration } from '../../store/stats';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
 import { PointPhase, instructionOf } from '../../domain/instructions';
-import { DISCIPLINES, LEVELS, TrainingMode } from '../../domain/types';
-import { INTENSITY_LABEL, MODE_LABEL, Plan, customPlan, exercisePlan, programPlan } from '../training/plan';
+import { DISCIPLINES, DisciplineId, LEVELS, TrainingMode } from '../../domain/types';
+import { INTENSITY_LABEL, MODE_LABEL, Plan, customPlan, exercisePlan, programPlan, techniquePlan } from '../training/plan';
 import { cardioFromQuery } from '../training/TimerOptions';
 import { SessionPersist, useSession } from '../training/useSession';
 import { useCatalog } from '../../store/catalog';
@@ -26,6 +26,7 @@ import { CAMERA_MODES, CameraMode, manualView, stageAzimuth, stepViews, techniqu
 import type { StageView } from '../../three/StudioStage';
 import { StudyPanel, useStudy } from '../training/Study';
 import { MoveBand, MoveName } from '../training/MoveBand';
+import { ConsigneBand } from '../training/ConsigneBand';
 import { ArBridge } from '../../ar/ArBridge';
 import { CoachLookPicker } from '../components/CoachLookPicker';
 import { ArControls, ArIntroSheet, useArView } from '../training/ArMode';
@@ -66,6 +67,10 @@ export function Training() {
       return c ? customPlan(c, profile.levels[c.discipline], mode, o) : null;
     }
     if (q.get('ex')) return exercisePlan(q.get('ex')!, mode, o);
+    if (q.get('tech')) {
+      const dq = (DISCIPLINES.some((x) => x.id === q.get('d')) ? q.get('d') : profile.mainDiscipline) as DisciplineId;
+      return techniquePlan(q.get('tech')!, dq, profile.levels[dq] ?? 'debutant', mode, o);
+    }
     return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, combos.length, catalog]);
@@ -211,6 +216,19 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   if (anyMark && !free && !st.tech && stageView.el < 16) stageView = { ...stageView, el: 16 };
   if (!free && (camRot || camZoom !== 1)) stageView = { ...stageView, az: stageView.az + camRot, zoom: stageView.zoom * camZoom };
   if (!free) lastView.current = stageView;
+  // 1.3.0: the instructions band covers the bottom of the stage: the coach is framed in the part above it, so the
+  // text never covers a foot (the user's own free camera is left as it is)
+  const [consH, setConsH] = useState(0);
+  const [stageH, setStageH] = useState(0);
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setStageH(el.clientHeight));
+    ro.observe(el);
+    setStageH(el.clientHeight);
+    return () => ro.disconnect();
+  }, []);
+  if (consH > 0 && stageH > 0 && !free && !stageView.closeUp) stageView = { ...stageView, inset: { top: 0, left: 0, right: 0, bottom: Math.min(0.4, consH / stageH) } };
   // a temporary close-up always returns to the whole body
   useEffect(() => {
     if (!closeUp) return;
@@ -377,6 +395,9 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   // shown, since 0.35 as the subtitle of the band under the coach; the full list is shown before starting, on
   // pause, at rest and in "Comment faire ?"
   const focusOnly = view.phase === 'travail' && !view.paused && !st.tech;
+  // 1.3.0: the instructions follow one another under the coach while the session works; on pause the full list is
+  // back under the stage (in fullscreen, where that list is hidden, the band stays, stopped)
+  const consignesOn = settings.consignes === 'enchainees' && view.phase === 'travail' && !st.tech && !arActive && (!view.paused || immersive);
   const SLOW = 0.25;
   const slow = view.speed <= SLOW + 1e-3 && item.speed > SLOW;
   // progression of the session: rounds of timed work, else exercises of the plan
@@ -520,7 +541,7 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
         )}
       </header>
 
-      <div className="tr-stage" ref={stageRef} data-testid="training-stage">
+      <div className="tr-stage" ref={stageRef} data-testid="training-stage" style={consH ? ({ '--cons-h': `${consH}px` } as React.CSSProperties) : undefined}>
         <StageGuard place="entraînement">
         <CoachStage
           backdrop="theme"
@@ -580,7 +601,8 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
             {settings.groundMarks.pivot && <span><i className="bar blue" /> Pivot</span>}
           </div>
         )}
-        {item.soloNote && !immersive && !asking && <div className="solo-note">{item.soloNote}</div>}
+        {consignesOn && <ConsigneBand techniqueId={focusId ?? null} running={!view.paused} sec={settings.consigneSec} onHeight={setConsH} />}
+        {item.soloNote && !immersive && !asking && !consignesOn && <div className="solo-note">{item.soloNote}</div>}
         {!immersive && !asking && !arActive && !st.tech && <FsHint />}
         {/* the app's coach bubble and its panel are shown here (lower right corner of the stage) */}
         <div className="tr-coach-slot" ref={setCoachSlot} />
@@ -590,7 +612,7 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
         store={move}
         active={view.phase === 'travail'}
         studied={st.tech}
-        phase={livePhase}
+        phase={settings.consignes === 'point' ? livePhase : null}
         total={seq.length}
         idle={bandIdle}
         onInfo={(id) => {

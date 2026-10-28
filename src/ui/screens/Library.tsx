@@ -322,7 +322,10 @@ export function TechniquePage() {
   useNavActions(
     t
       ? {
-          train: drill && { run: () => nav(`/entrainement?ex=${encodeURIComponent(drill.id)}&mode=technique`), ariaLabel: `S’entraîner : ${drill.name}` },
+          // 1.3.0: never greyed out: without an exercise of the discipline that works it, the technique is trained alone
+          train: drill
+            ? { run: () => nav(`/entrainement?ex=${encodeURIComponent(drill.id)}&mode=technique`), ariaLabel: `S’entraîner : ${drill.name}` }
+            : { run: () => nav(`/entrainement?tech=${encodeURIComponent(t.id)}&d=${d}&mode=technique`), ariaLabel: `S’entraîner : ${t.name}` },
           slow: { run: toggleSlow, pressed: slowOn, ariaLabel: slowOn ? 'Ralenti, activé' : 'Ralenti' },
           mastery: { run: () => toggleMastery(t.id, 'acquise'), pressed: mastery[t.id] === 'acquise', ariaLabel: mastery[t.id] === 'acquise' ? 'Maîtrise : je la maîtrise' : 'Maîtrise : marquer comme maîtrisée' },
         }
@@ -339,7 +342,7 @@ export function TechniquePage() {
 
   if (!t) return <EmptyState title="Technique introuvable" action={<Link to="/techniques" className="btn">Retour aux techniques</Link>} />;
   return (
-    <div className="page" style={{ gap: 16 }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} data-testid="technique-page">
+    <div className="page tech-page" style={{ gap: 16 }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} data-testid="technique-page">
       <PageHead
         title={t.name}
         eyebrow={CATEGORY_LABEL[t.category]}

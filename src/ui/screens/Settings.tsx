@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { LATEST_RELEASE, hasUnseenRelease } from '../../domain/releases';
 import { openNews } from '../nav/BottomBar';
-import { useSettings } from '../../store/settings';
+import { CONSIGNE_SECS, useSettings } from '../../store/settings';
 import { useProfile } from '../../store/profile';
 import { exportData, useStats } from '../../store/stats';
 import { useCustom } from '../../store/custom';
@@ -219,6 +219,30 @@ export function SettingsPage() {
         <PanelRow label="Repos" column>
           <Segmented label="Repos" value={settings.defaultRestSec} onChange={(v) => set({ defaultRestSec: v })} options={[30, 45, 60, 90].map((s) => ({ id: s, label: `${s} s` }))} />
         </PanelRow>
+          </SetItem>
+          {/* 1.3.0: how the instructions are shown under the coach during the session */}
+          <SetItem id="consignes" icon="list" title="Consignes pendant la séance" summary={settings.consignes === 'point' ? 'Point du moment seulement' : `Enchaînées · ${String(settings.consigneSec).replace('.', ',')} s par consigne`}>
+        <PanelRow label="Affichage" column>
+          <Segmented
+            label="Affichage des consignes"
+            value={settings.consignes}
+            onChange={(v) => set({ consignes: v })}
+            options={[
+              { id: 'enchainees', label: 'Enchaînées' },
+              { id: 'point', label: 'Point du moment' },
+            ]}
+          />
+        </PanelRow>
+        <p className="small muted" style={{ padding: '0 0 8px' }}>
+          {settings.consignes === 'point'
+            ? 'Sous le coach, seulement le point clé de la phase qu’il joue, comme avant la 1.3.0.'
+            : 'Sous le coach, une consigne à la fois : la consigne principale, puis chaque point clé, puis on recommence. La pause les arrête.'}
+        </p>
+        {settings.consignes === 'enchainees' && (
+          <PanelRow label="Temps par consigne" column>
+            <Segmented label="Temps par consigne" value={settings.consigneSec} onChange={(v) => set({ consigneSec: v })} options={CONSIGNE_SECS.map((s) => ({ id: s, label: `${String(s).replace('.', ',')} s` }))} />
+          </PanelRow>
+        )}
           </SetItem>
           <SetItem id="coach-ia" icon="coachAi" title="Coach IA" summary={`Répond sur le téléphone · historique ${ai.keepHistory ? 'gardé' : 'désactivé'}`}>
             <Toggle

@@ -188,6 +188,28 @@ export function customPlan(c: CustomCombo, level: LevelId, mode: TrainingMode, o
   return { mode: 'personnalise', title: c.name, items: [item], start: 0, intensity: mode === 'cardio' ? (o.cardio ?? DEFAULT_CARDIO).intensity : undefined };
 }
 
+/**
+ * 1.3.0 (Youssef, 2026-10-28: the button « S'entraîner » of a technique sheet was greyed out): a technique that no
+ * exercise of its discipline works yet is trained on its own, in a session of that one technique.
+ */
+export function techniquePlan(techniqueId: string, discipline: DisciplineId, level: LevelId, mode: TrainingMode, o: ModeOptions): Plan | null {
+  const t = TECHNIQUE_BY_ID.get(techniqueId);
+  if (!t) return null;
+  const e: Exercise = {
+    id: `tech-${t.id}`,
+    discipline: t.disciplines.includes(discipline) ? discipline : t.disciplines[0],
+    level,
+    name: t.name,
+    kind: 'technique',
+    description: t.description,
+    sequence: [t.id],
+    ...LEVEL_SPEED[level],
+    instructions: [],
+    soloNote: t.soloNote,
+  };
+  return { mode, title: t.name, items: [fromExercise(e, mode, o)], start: 0, intensity: mode === 'cardio' ? (o.cardio ?? DEFAULT_CARDIO).intensity : undefined };
+}
+
 /** steps for the animation player */
 export const playerSteps = (seq: string[]) =>
   seq.map((id) => ({ techniqueId: id, motionId: TECHNIQUE_BY_ID.get(id)?.motion ?? 'garde' }));

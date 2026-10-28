@@ -102,6 +102,14 @@ export interface Settings {
   newsSeenVersion: string | null;
   /** 0.33: the last space opened on the Entraîner screen (Séances by default; older saves get it through `merge`) */
   trainSpace: 'seances' | 'disciplines' | 'programmes';
+  /**
+   * 1.3.0 (Youssef, 2026-10-28: « mode Enchaîné ==> OK »): during the session the instructions follow one another
+   * on the floor under the coach (enchaînées, the default) or the band only shows the point of the phase being
+   * played, as before 1.3.0 (point). Older saves get the default through `merge`.
+   */
+  consignes: 'enchainees' | 'point';
+  /** 1.3.0: seconds each instruction stays on screen (2.5, 3.5 or 5) */
+  consigneSec: number;
 }
 
 export type CoachPanelSize = 'reduit' | 'normal' | 'agrandi';
@@ -140,7 +148,12 @@ export const DEFAULT_SETTINGS: Settings = {
   bjjOutfit: 'gi',
   newsSeenVersion: null,
   trainSpace: 'seances',
+  consignes: 'enchainees',
+  consigneSec: 3.5,
 };
+
+/** 1.3.0: the times offered for one instruction */
+export const CONSIGNE_SECS: readonly number[] = [2.5, 3.5, 5];
 
 interface SettingsState {
   settings: Settings;
@@ -171,7 +184,7 @@ export const useSettings = create<SettingsState>()(
       merge: (saved, current) => {
         const s = (saved as { settings?: Partial<Settings> })?.settings ?? {};
         const size = COACH_PANEL_SIZES.includes(s.coachPanelSize as CoachPanelSize) ? s.coachPanelSize : DEFAULT_SETTINGS.coachPanelSize;
-        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) }, cardio: { ...DEFAULT_SETTINGS.cardio, ...(s.cardio ?? {}) }, chrono: cleanSetup(s.chrono) } };
+        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) }, cardio: { ...DEFAULT_SETTINGS.cardio, ...(s.cardio ?? {}) }, chrono: cleanSetup(s.chrono), consignes: s.consignes === 'point' ? 'point' : 'enchainees', consigneSec: CONSIGNE_SECS.includes(s.consigneSec as number) ? s.consigneSec! : DEFAULT_SETTINGS.consigneSec } };
       },
     },
   ),
