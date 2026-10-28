@@ -4,7 +4,7 @@ Equipment comes from the coach Kadir's own outfits (public/coaches/mma-kadir/ten
 their bind pose; the ring, cage, tatami area and belts are modelled here. Cycles render on a transparent background
 with a shadow catcher, so the picture sits on the app's surface colour in light and dark themes.
 
-Usage: python3 scripts/encyclopedie/scenes.py <out png dir> [scene ...]   (then scripts/encyclopedie/webp.py)
+Usage: python3 scripts/encyclopedie/scenes.py <out png dir> [scene ...]   (npm run visuels -- --only scenes runs it, then lays the pictures in their ambiance)
 """
 import math
 import sys

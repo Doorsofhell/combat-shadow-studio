@@ -55,7 +55,7 @@ export const RELEASES: readonly Release[] = (
       isMajor: false,
       changes: [
         { category: 'ameliorations', text: 'Le coach de l’Accueil, de la fiche technique, de la séance et de l’aperçu est maintenant le même écran : mêmes gestes, mêmes boutons, au même endroit.' },
-        { category: 'fonctionnalites', text: 'Touche le coach une fois : ses commandes apparaissent dans sa zone, à droite (son, vitesse, plein écran, pause en séance) et les angles en bas. Touche-le encore une fois : elles disparaissent. Deux touchers rapides : plein écran.' },
+        { category: 'fonctionnalites', text: 'Touche le coach une fois : ses commandes apparaissent dans sa zone, à droite (son, vitesse, plein écran, pause en séance) et les angles en haut à gauche. Touche-le encore une fois : elles disparaissent. Deux touchers rapides : plein écran.' },
         { category: 'ameliorations', text: 'En séance, un toucher sur le coach ne met plus en pause : il montre les commandes, dont la pause. Le gros bouton Pause reste en bas.' },
         { category: 'ameliorations', text: 'Fiche technique : la vitesse et les angles de caméra sont dans la zone du coach, il reste plus de place pour lui.' },
         { category: 'corrections', text: 'Voix coupée : un petit haut-parleur barré reste dans le coin du coach, pour ne jamais l’oublier.' },
@@ -64,6 +64,22 @@ export const RELEASES: readonly Release[] = (
       links: [
         { label: 'Pulsation pendant la séance', to: '/reglages/pulsation' },
         { label: 'Voix et sons', to: '/reglages/voix' },
+      ],
+    },
+    {
+      version: '1.3.1',
+      releaseDate: '2026-10-28',
+      title: 'Visuels studio',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Toutes les images des coachs ont l’allure de photos de salle de boxe : Kadir et Amara, éclairés comme en studio dans une salle sombre, avec une ambiance par discipline (bleu nuit pour la boxe, ambre pour le kick-boxing, rouge pour le muay-thaï, acier pour le MMA, bois chaud pour le judo, indigo pour le JJB).' },
+        { category: 'ameliorations', text: 'C’est le cas partout : vignettes des techniques et des programmes, illustrations de l’Encyclopédie (objets et lieux compris), visuels des disciplines et portraits de « Choisis ton coach ».' },
+        { category: 'disciplines', text: 'Le judo et le jiu-jitsu brésilien ont enfin leur visuel, comme les quatre autres disciplines.' },
+        { category: 'ameliorations', text: 'Kimonos de judo et de JJB plus naturels : un tissu de coton, sans l’effet tricot, sur le coach animé comme sur les images.' },
+      ],
+      links: [
+        { label: 'Techniques', to: '/techniques' },
+        { label: 'Encyclopédie', to: '/encyclopedie' },
       ],
     },
     {

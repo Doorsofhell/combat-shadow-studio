@@ -18,7 +18,7 @@ export function keyTechnique(ids: readonly string[]): string {
 
 /**
  * Card picture of a technique: our own 3D coach rendered at the key moment of the move, from its
- * teaching angle (scripts/dev/shot-thumbs.mjs). It names the move at a glance; the animation
+ * teaching angle, in the dark gym of its discipline (scripts/visuels). It names the move at a glance; the animation
  * itself is always played live in 3D.
  */
 export function TechThumb({ id, size = 'md', children }: { id: string; size?: 'sm' | 'md' | 'lg'; children?: React.ReactNode }) {
