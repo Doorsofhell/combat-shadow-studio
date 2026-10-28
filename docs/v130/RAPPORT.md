@@ -23,6 +23,17 @@ Fichiers : `src/ui/training/ConsigneBand.tsx`, `src/ui/screens/Training.tsx`, `s
 
 `docs/v130/captures/` : avant le départ, séance (2 moments), plein écran, en mode nuit (`*-dark.png`) et jour (`*-light.png`) ; `fiche-technique.png`.
 
+## Ajouts du même jour (demandes de Youssef pendant le lot)
+
+- **Haut-parleur** (« l'icône comme sur Windows », « par succession de clics j'augmente le volume ou je coupe le son », « en dessous des deux options déjà présentes… à droite ») : un bouton sous la vitesse et le plein écran ; chaque toucher passe au cran suivant (coupé, faible 35 %, moyen 70 %, fort 100 %) ; les ondes de l'icône et 3 petits traits montrent le cran. Il règle la voix du coach, le même réglage que Réglages › Voix et sons (`src/ui/training/SoundButton.tsx`).
+- **⋮ retiré de Mes infos et Réglages** (« tous les menus proposés sont déjà dans les pages principales ») : Coach et Affichage sont des lignes de Réglages, Activité est Progrès dans la barre.
+- **Accueil** : le numéro de version suit le titre de l'application au lieu de passer sous la photo.
+
 ## Tests
 
-Voir la fin de ce fichier, complétée après la suite complète.
+- TypeScript : RÉUSSI.
+- Vitest : 858 RÉUSSIS, 1 ignoré (dont `consignes.test.ts` : séquence, boucle, enchaînement de deux mouvements, crans du haut-parleur ; `settings.test.ts` : sauvegardes d'avant 1.3.0).
+- Nouveau `tests/e2e/consignes-v130.spec.ts`, 9 tests : une ligne à la fois et segments ; pause en plein écran qui arrête et reprise qui relance ; sol du coach toujours au-dessus de la bande (normal et plein écran) ; jour et nuit ; réglage « Point du moment » et temps 2,5 / 3,5 / 5 s ; fiche technique (S'entraîner actif, angles au-dessus du bouton, séance d'une technique seule) ; version sur l'Accueil ; pas de ⋮ sur Mes infos et Réglages ; haut-parleur à crans : RÉUSSIS.
+- Playwright complet sur le premier état du lot (260 tests, 39,8 min) : 256 RÉUSSIS, 2 ignorés (Firebase), 2 ÉCHOUÉS déjà en échec sur la 1.2.0 et la 1.1.1 : `training-layout:329` (caméra Auto après un pivot) et `coach-suggest:98` (défilement au doigt des questions).
+- Relance après les ajouts (consignes-v130, navigation, training-layout, fullscreen-dbltap, coaching-hud, aucune-perte-v100, nav-contextuelle, profil-v120, premium, premium-panels, app, account) : tous RÉUSSIS sauf `training-layout:329` (même échec qu'avant). `navigation:382` adapté : Affichage s'ouvre par sa ligne de Réglages au lieu du ⋮, la vérification de la caméra est gardée.
+- Android réel : NON EXÉCUTÉ.
