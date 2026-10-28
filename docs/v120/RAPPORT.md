@@ -47,6 +47,24 @@ Point de restauration : `restauration/avant-v120` (dd1f952). Branche : `feature/
 
 Les pages `/coach` (choix du coach au premier lancement) et `/coach-ia` (historique) restent. La barre du bas de Profil garde « Coach », qui ouvre maintenant Réglages › Mon coach.
 
+## Captures
+
+`docs/v120/captures/` : Mes infos et Réglages, lignes fermées et ouvertes, en mode nuit (`*-dark.png`) et en mode jour (`*-light.png`), 393 × 851.
+
+## Défauts trouvés en vérifiant et corrigés
+
+- Les lignes débordaient à droite de l'écran (le résumé sur une ligne élargissait la grille) : colonne `minmax(0, 1fr)`.
+- Le résumé de l'identité disait « Youssef · Mon coach » : il dit maintenant « avatar : mon coach ».
+- La pastille de Nouveautés n'avait plus son repère de test `news-dot` : rétabli.
+
 ## Tests
 
-Voir la section « Résultats » ci-dessous (remplie après exécution).
+- TypeScript : RÉUSSI.
+- Vitest : 849 RÉUSSIS, 1 ignoré (dont `refonte.test` mis à jour : 2 onglets dans Profil, « Coach » au-dessus de la barre ouvre Réglages › Mon coach).
+- Nouveau `tests/e2e/profil-v120.spec.ts` (deux onglets seulement ; chaque ligne de Mes infos et de Réglages s'ouvre et montre son contenu, une seule à la fois ; Retour referme la ligne puis quitte ; anciennes adresses ; jour et nuit) : 6/6 RÉUSSIS (deux passages).
+- 15 fichiers de tests de bout en bout adaptés aux lignes qui s'ouvrent (ouvrir la ligne avant de toucher son contenu), sans retirer aucune vérification ; `contrast.spec` vérifie en plus 4 lignes ouvertes.
+- `accueil-recherche:154` : le contraste était lu pendant que la feuille de recherche montait encore (1 passage sur 2) ; le test attend maintenant la fin de l'animation avant de lire les couleurs.
+- Playwright complet (254 tests, 37,5 min) : 250 RÉUSSIS, 2 ignorés (Firebase), 2 ÉCHOUÉS :
+  - `training-layout:329` caméra Auto : ÉCHOUÉ, déjà en échec avant la 1.0.0 ;
+  - `coach-suggest:98` questions suggérées (défilement au doigt) : ÉCHOUÉ, et ÉCHOUÉ aussi 2 fois sur 2 sur la 1.1.1 (dd1f952) : ce n'est pas causé par la 1.2.0, à traiter à part.
+- Android réel : NON EXÉCUTÉ.

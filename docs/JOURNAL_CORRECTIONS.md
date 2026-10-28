@@ -2088,3 +2088,20 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - TypeScript : RÉUSSI. Vitest : 849 RÉUSSIS, 1 ignoré.
   - Playwright (corrections-v110 dont les 2 nouveaux tests, navigation, chrono, chrono-seul, coach-bubble, accueil-recherche, createur-v2, nav-contextuelle, aucune-perte-v100) : 69 RÉUSSIS, 2 ÉCHOUÉS : `navigation:172` (attendait la 1.1.0 en tête, mis à jour) ; `chrono:30` instable (la préparation dure 3 s et la machine chargée lisait sa couleur après la fin) : la page enregistre maintenant l'aspect de la préparation au moment où elle s'affiche, sans rien retirer de ce qui est vérifié ; relances 18/18 RÉUSSIS et 2/2 pour `navigation:172`.
   - Android réel : NON EXÉCUTÉ.
+
+## 2026-10-28 · 1.2.0 · Profil et réglages en listes
+
+- **Demande** (Youssef, 07:4x) : « lorsqu'on clique sur la tête en haut à droite, 2 onglets glissants : Mes infos & Réglages avec tout le reste dans Réglages : une page avec toutes les options en liste bien présentées qui se déploient quand on clique dessus » ; « pareil dans Mes infos » ; proposition choisie B « Groupes Android ». Rappels : aucune perte de contenu, mode jour et nuit.
+- **Constat** : Profil avait 4 onglets (Mes infos, Mon coach, Coach IA, Réglages) ; Mes infos et Réglages étaient de longues pages de panneaux, avec des réglages d'affichage et de données dans Mes infos.
+- **Changement** (détail et tableau « où va chaque contenu » dans `docs/v120/RAPPORT.md`, captures jour et nuit dans `docs/v120/captures/`) :
+  - Profil = 2 onglets, Mes infos et Réglages ; Mon coach et Coach IA deviennent des lignes de Réglages (les pages `/coach` et `/coach-ia` restent) ;
+  - chaque onglet est une seule liste en groupes, chaque ligne montre sa valeur et s'ouvre sur place, une à la fois ; Retour referme la ligne d'abord (`src/ui/components/SettingsList.tsx`, styles `.set-*`) ;
+  - taille du texte, animations, langue et « M'appeler par mon pseudo » passent dans Réglages ; export, effacement et confidentialité regroupés dans Réglages › Données et confidentialité ; anciennes adresses `/reglages/<section>` ouvrent la bonne ligne ;
+  - guide du Coach IA, recherche et Nouveautés 1.2.0 mis à jour, version 1.2.0.
+- **Défauts trouvés en vérifiant et corrigés** : lignes qui débordaient à droite ; résumé de l'identité ambigu ; repère de la pastille Nouveautés.
+- **Tests** :
+  - TypeScript : RÉUSSI. Vitest : 849 RÉUSSIS, 1 ignoré.
+  - Nouveau `tests/e2e/profil-v120.spec.ts` : 6/6 RÉUSSIS. 15 fichiers adaptés sans retirer de vérification.
+  - Playwright complet (254 tests, 37,5 min) : 250 RÉUSSIS, 2 ignorés (Firebase), 2 ÉCHOUÉS : `training-layout:329` (déjà en échec avant la 1.0.0) et `coach-suggest:98` (ÉCHOUÉ aussi sur la 1.1.1, sans lien avec ce lot).
+  - Android réel : NON EXÉCUTÉ.
+

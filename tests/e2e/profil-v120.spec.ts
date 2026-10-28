@@ -78,7 +78,7 @@ test('Réglages : tout l’ancien contenu (Réglages, Mon coach, Coach IA, donn�
   await expect(page.getByTestId('diag3d')).toBeVisible();
   await openSetting(page, 'donnees');
   for (const id of ['export-my-data', 'delete-my-data']) await expect(page.getByTestId(id), id).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Importer' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Importer', exact: true })).toBeVisible();
   await openSetting(page, 'a-propos');
   await expect(page.locator('.settings-version')).toBeVisible();
   // the history of the Coach IA keeps its page

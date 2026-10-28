@@ -27,7 +27,8 @@ const SCREENS: [string, string, string[][], string[] | null, string | null, stri
   ['/stats', 'progres', [], ['Période', 'Statistiques', 'Historique'], null, 'Progrès', null],
   ['/champions', 'legendes', [], ['Disciplines', 'Légende'], null, 'Apprendre', null],
   // 1.0.0 (lot 2): Mon coach and Réglages are tabs of Profil at the top of the screen, not repeated
-  ['/profil', 'profil', [], null, null, 'Profil', null],
+  // 1.2.0: Mon coach is a row of Réglages, no longer a tab: « Coach » of the bar is in the ⋮ (it opens that row)
+  ['/profil', 'profil', [], ['Coach'], null, 'Profil', null],
   // 1.1.0: « Caméra » left Réglages (it opened the same page as Affichage)
   ['/reglages', 'parametres', [], ['Affichage'], null, 'Profil', null],
   // 1.1.1 (Youssef, 2026-10-28: « Plus si uniquement rechercher le retirer car en doublon »): the magnifier is in the
@@ -195,7 +196,7 @@ test.describe('393×851', () => {
     expect(versions).toContain('0.32.0');
     expect(versions).toContain('0.31.0');
     expect(versions).toContain('1.0.0');
-    await expect(news.locator('[data-version="1.1.1"]')).toContainText('Version 1.1.1 · la plus récente');
+    await expect(news.locator('[data-version="1.2.0"]')).toContainText('Version 1.2.0 · la plus récente');
     await expect(news).not.toContainText('fictive');
     // seen: the dots go away at once
     await expect(page.getByTestId('menu-dot')).toHaveCount(0);

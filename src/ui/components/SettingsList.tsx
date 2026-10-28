@@ -95,7 +95,7 @@ export function SetItem({ id, icon, title, summary, dot, tone, children }: { id:
 }
 
 /** a row that opens another page or a sheet instead of opening in place (Premium, Nouveautés) */
-export function SetAction({ icon, title, summary, dot, tone, onClick, to, testId, ariaLabel }: { icon: GlyphId; title: string; summary?: ReactNode; dot?: boolean; tone?: 'premium'; onClick?: () => void; to?: string; testId?: string; ariaLabel?: string }) {
+export function SetAction({ icon, title, summary, dot, dotTestId, tone, onClick, to, testId, ariaLabel }: { icon: GlyphId; title: string; summary?: ReactNode; dot?: boolean; dotTestId?: string; tone?: 'premium'; onClick?: () => void; to?: string; testId?: string; ariaLabel?: string }) {
   const s = useContext(Ctx)!;
   return (
     <div className={`set-item ${tone ?? ''}`}>
@@ -106,7 +106,7 @@ export function SetAction({ icon, title, summary, dot, tone, onClick, to, testId
         <span className="set-tx">
           <b>
             {title}
-            {dot && <i className="me-dot" aria-hidden />}
+            {dot && <i className="me-dot" aria-hidden data-testid={dotTestId} />}
           </b>
           {summary && <span>{summary}</span>}
         </span>

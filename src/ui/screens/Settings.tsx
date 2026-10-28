@@ -177,6 +177,7 @@ export function SettingsPage() {
             title="Nouveautés"
             summary={`Version ${LATEST_RELEASE.version}${unseen ? ' · à découvrir' : ''}`}
             dot={unseen}
+            dotTestId="news-dot"
             onClick={openNews}
             testId="reglages-nouveautes"
             ariaLabel={unseen ? 'Nouveautés, nouvelle version' : 'Nouveautés'}
