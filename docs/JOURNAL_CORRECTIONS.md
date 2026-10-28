@@ -2130,6 +2130,18 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - partout : le coach animé (rendu Ultra-réaliste) charge ces mêmes fichiers de tenue, donc séances, fiches et lecteur ont le nouveau tissu ; images judo/JJB régénérées (bannières, vignettes, encyclopédie, objets judogi et kimono de JJB) avec la nouvelle option `--d judo,bjj` du générateur.
 - **Tests** (après intégration de la 1.3.0) : TypeScript RÉUSSI ; Vitest 863 RÉUSSIS, 1 ignoré (dont `visuels.test.ts` et `outfit*.test.ts`) ; Playwright ciblé (visuels-studio, discipline-art, encyclopedie, navigation, app) 60/60 RÉUSSIS ; Playwright complet (267 tests, 51 min) : 262 RÉUSSIS, 2 ignorés (Firebase), 3 ÉCHOUÉS : `chrono-seul:95` RÉUSSI relancé seul, `training-layout:329` déjà en échec avant (voir 1.3.0), `coaching-hud:60` échoue aussi sur la 1.3.0 seule (vérifié dans une copie de la branche), donc pas lié aux visuels ; Android réel : NON EXÉCUTÉ.
 
+## 2026-10-28 · 1.3.2 · Illustrations de l’Encyclopédie (lots 1 à 3)
+
+- **Demande** (Youssef, 28 octobre 15:05) : « créer aussi des illustrations pour toutes celles qui manquent au niveau de l'encyclopédie » ; 15:08 : « reste dans le même thème et publie automatiquement ».
+- **Constat** : 46 fiches avaient une illustration « à produire » (`TO_PRODUCE` de `src/domain/encyclopedia/images.ts`). Elles se rangent en quatre lots : objets et lieux, un coach seul, schémas, scènes à deux (avec un partenaire ou un arbitre).
+- **Changement** (24 illustrations, même salle d’ambiance par discipline que les visuels studio) :
+  - lot 1, objets et lieux modélisés dans Blender (`scripts/encyclopedie/scenes.py`) : bandes, protège-dents, casque, coquille, protège-poitrine, sacs de frappe, pattes d’ours, paos, mongkon et pra jiad, dojo, chrono et cloche du round, gants anciens et règlement (texte illisible), tableau de score du JJB, livre des règles entouré des emblèmes des six disciplines (`cult-federations`, aucun logo de fédération) ;
+  - lot 2, le coach seul : gardes de muay-thaï et de kick-boxing, les trois styles de kick-boxing côte à côte (recette `mix`), et trois poses d’illustration nouvelles du moteur (`src/engine/library/illustrations.ts`, vue Lab `illu=`, jamais dans la bibliothèque des techniques) : échauffement des épaules, wai kru ;
+  - lot 3, schémas sur le coach : zones interdites, articulations à ne pas forcer, zones de choc à la tête, planche des articulations et des muscles ; les repères sont posés sur les vrais os du squelette 3D (`window.__labJoints`, `CoachRig.sceneOf`), les étiquettes rangées en colonnes sans chevauchement (`compose.py`, `draw_marks`) ;
+  - la soumission (main qui tape) passe au lot 4 : seule, la pose ne se lisait pas.
+- **Contrôle** : chaque image regardée sur planche ; reprises : casque et coquille (découpes booléennes sans effet, corrigées), bandes, protège-poitrine, dojo trop clair, wai kru (genoux au-dessus du tapis), étiquettes qui se chevauchaient.
+- **Tests** : nouveau `src/engine/__tests__/illustrations.test.ts` (chaque pose nommée existe, rien sous le tapis sur Kadir et Amara, genoux posés dans le wai kru) ; `encyclopedia.test.ts` inchangé et RÉUSSI (les schémas gardent une technique existante, le mouvement montré est dans `motion`).
+
 ## 2026-10-28 · 1.4.0 · Un seul écran coach, et la pulsation
 
 - **Demande** (Youssef, 28 octobre) : « L'écran du coach devrait être exactement le même module appelé partout et alimenté différemment en fonction du contexte » ; option A « un toucher montre les commandes sans pause, le toucher suivant les cache » ; haut-parleur sous la vitesse et le plein écran ; 13:20 « J'ai l'impression d'avoir perdu les consignes vocales » ; 15:03 « Je ne retrouve pas les clignotement demandé. Ils sont où ? » ; 15:06 « Pas besoin de dire voix coupée » ; 15:21 choix « Contour lumineux ».
@@ -2143,3 +2155,5 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Relance après la pulsation (pulsation, écran coach, coach-bubble, coaching-hud, séance mains libres, training-layout, consignes, profil) : 51 RÉUSSIS, 1 ÉCHOUÉ `training-layout:329` (déjà en échec avant).
   - Android réel : NON EXÉCUTÉ.
   - Intégration de la 1.3.1 (visuels studio, fusionnée pendant le lot) : conflits sur la version, les Nouveautés, le test de navigation et ce journal, résolus en gardant les deux versions (1.4.0 en tête, 1.3.1 ensuite). Après intégration : TypeScript RÉUSSI ; Vitest 867 RÉUSSIS, 1 ignoré ; Playwright (navigation, écran coach, pulsation, consignes, coach-bubble, plein écran) 58/58 RÉUSSIS.
+  - Intégration de la 1.3.2 (illustrations de l'Encyclopédie, fusionnée pendant le lot) : mêmes conflits, résolus en gardant les versions (1.4.0, 1.3.2, 1.3.1). Après intégration : TypeScript RÉUSSI ; Vitest 873 RÉUSSIS, 1 ignoré ; Playwright (navigation, écran coach, pulsation, coach-bubble, plein écran) 49/49 RÉUSSIS.
+  - Validation : Youssef, 28/10 17:42 « Je valide ».

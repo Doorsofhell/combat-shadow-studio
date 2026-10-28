@@ -1,12 +1,12 @@
 import { championFor, championLook, championStance } from '../domain/coaches/catalog';
-import { Suspense, useCallback, useMemo, useRef } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Suspense, useCallback, useEffect, useMemo, useRef, type MutableRefObject } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
 import { CoachModel } from '../three/CoachModel';
 import { outfitFor, type OutfitId, type OutfitStatus } from '../three/outfit';
 import { StudioStage } from '../three/StudioStage';
 import { StudioEnvironment } from '../three/StudioEnvironment';
 import type { CoachRig } from '../engine';
-import { getLibrary, getMotion } from '../engine';
+import { getIllustration, getLibrary, getMotion } from '../engine';
 import { MotionSampler, duration } from '../engine';
 import type { StanceStyle } from '../engine';
 import type { CoachId, DisciplineId } from '../domain/types';
@@ -87,10 +87,15 @@ export function Lab() {
   const labStyle = q.get('look') === 'realiste' ? 'realiste' : q.get('look') === 'manga' ? 'manga' : 'encre';
   const render = q.get('render') === 'precedent' ? 'precedent' : 'premium';
   const sampler = useRef<MotionSampler | null>(null);
+  const rigRef = useRef<CoachRig | null>(null);
   const onRig = useCallback(
     (rig: CoachRig) => {
-      const lib = getLibrary(rig, style, champion && (q.get('d') || tech) ? championStance(championFor(coach), disc) : coachProfile(champion));
-      const m = getMotion(lib, motionId, southpaw) ?? lib.get('garde')!;
+      rigRef.current = rig;
+      const profile = champion && (q.get('d') || tech) ? championStance(championFor(coach), disc) : coachProfile(champion);
+      const lib = getLibrary(rig, style, profile);
+      // illu=<id>: a pose of the encyclopedia illustrations (engine/library/illustrations.ts), not a technique
+      const illu = q.get('illu') ? getIllustration(rig, style, q.get('illu')!, profile) : undefined;
+      const m = illu ?? getMotion(lib, motionId, southpaw) ?? lib.get('garde')!;
       sampler.current = new MotionSampler(rig, m);
       if (tech) {
         // at=<fraction>: an instant before the key moment (0.5 = half way to it), for sequences of captures
@@ -132,10 +137,29 @@ export function Lab() {
             mood={!!q.get('mood')}
           >
             <CoachModel coach={coach} style={labStyle} render={render} quality="haute" look={look} model={champion ? `./coaches/${champion}/model` : undefined} onRig={onRig} onFrame={onFrame} outfit={outfit} onOutfit={onOutfit} />
+            <LabProbe rig={rigRef} />
             {labStyle === 'realiste' && render === 'premium' && <StudioEnvironment intensity={q.get('mood') ? 0.06 : 0.35} />}
           </StudioStage>
         </Suspense>
       </Canvas>
     </div>
   );
+}
+
+/** 1.3.2 window.__labJoints(names): where bones of the coach fall on the canvas (CSS pixels), for the marks drawn on
+ * the illustrations (scripts/visuels: zones to protect, joints, muscles) */
+function LabProbe({ rig }: { rig: MutableRefObject<CoachRig | null> }) {
+  const { camera, size } = useThree();
+  useEffect(() => {
+    (window as unknown as { __labJoints?: unknown }).__labJoints = (names: string[]) =>
+      Object.fromEntries(
+        names.map((n) => {
+          const p = rig.current?.sceneOf(n);
+          if (!p) return [n, null];
+          p.project(camera);
+          return [n, [((p.x + 1) / 2) * size.width, ((1 - p.y) / 2) * size.height]];
+        }),
+      );
+  }, [camera, size, rig]);
+  return null;
 }
