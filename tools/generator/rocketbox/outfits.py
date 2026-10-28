@@ -157,6 +157,26 @@ def rice(size=512, cols=80, rows=40, depth=0.7):
     return h * 0.9 + noise(size, 6) * 0.1
 
 
+def blur(a, r):
+    """tileable gaussian blur (FFT), r in pixels"""
+    f = np.fft.fftfreq(a.shape[0])
+    g = np.exp(-2 * (np.pi * r) ** 2 * (f[:, None] ** 2 + f[None, :] ** 2))
+    return np.real(np.fft.ifft2(np.fft.fft2(a) * g))
+
+
+def cotton(size=512, grains=0.25, slub=1.2, cells=(96, 64), depth=0.6):
+    """1.2.1 cotton of the gis (Youssef, 2026-10-28: « essaye de les faire avec effet moins tricot »): the regular
+    grid of grains of v0.32 still read as knitting once the picture is reduced. Now mostly an irregular cotton
+    surface (soft mottling + short slubs stretched along the warp), the real grain of the weave kept only faint"""
+    r = np.random.default_rng(11)
+    soft = noise(size, 8)
+    sl = blur(r.random((size, size)), slub)
+    sl = blur(np.repeat(sl[:, ::4], 4, axis=1), 1.5)  # threads: longer along x than across
+    sl = (sl - sl.min()) / (np.ptp(sl) + 1e-9)
+    fine = rice(size, cells[0], cells[1], depth)
+    return soft * 0.45 + sl * (0.55 - grains) + fine * grains
+
+
 def stitched(size=256, lines=8, base=None):
     """strip of cloth (belt, collar): u along the strip (one texture every 5 cm), v across it (0 to 1). Parallel
     rows of stitches sunk into a fine grain, like the stitched rows of a real belt or gi collar"""
@@ -213,7 +233,7 @@ def fabric(name, color, kind, rough=0.7, strength=2.0, sheen=0.0, coat=0.0, tone
     if name in MATS:
         return MATS[name]
     gens = {'weave': weave, 'knit': knit, 'satin': satin, 'grain': grain, 'flat': lambda: noise(256, 3) * 0.2,
-            'judogi': lambda: rice(512, 96, 64, 0.6), 'perle': lambda: rice(512, 128, 80, 0.9),
+            'judogi': lambda: cotton(512, 0.22, 1.4, (96, 64), 0.6), 'perle': lambda: cotton(512, 0.18, 1.0, (128, 80), 0.9),
             'ceinture': lambda: stitched(256, 9), 'col-judo': lambda: stitched(256, 7, rice(256, 24, 12, 0.6)),
             'col-bjj': lambda: stitched(256, 4, rice(256, 32, 16, 0.9)), 'serge': serge,
             'elastique': elastic, 'jersey': lambda: knit(512, 150), 'cuir': pebble}
@@ -880,15 +900,15 @@ def skirt(color, kind, top_z, length):
 def gi_fabric(color, kind):
     """judogi: double weave, heavy, larger grains; BJJ gi: pearl weave, lighter and finer. Matt cotton"""
     if kind == 'judo':
-        return fabric(f'gi-{color}-judo', color, 'judogi', rough=0.92, strength=0.45, tone=0.06)
-    return fabric(f'gi-{color}-bjj', color, 'perle', rough=0.9, strength=0.5, tone=0.14)
+        return fabric(f'gi-{color}-judo', color, 'judogi', rough=0.92, strength=0.2, tone=0.03)
+    return fabric(f'gi-{color}-bjj', color, 'perle', rough=0.9, strength=0.2, tone=0.04)
 
 
 def collar(color, kind):
     """thick collar and lapels: from the back of the neck, over the shoulders, crossing on the chest (left over
     right) down to the belt. v0.32: a stiff stitched band (judogi 5.5 cm wide, 1.2 cm thick, 7 rows; BJJ 4.2 cm,
     1 cm, 4 rows), no longer a thin ribbon"""
-    m = fabric(f'col-{color}-{kind}', color, 'col-judo' if kind == 'judo' else 'col-bjj', rough=0.9, strength=1.4, tone=0.12)
+    m = fabric(f'col-{color}-{kind}', color, 'col-judo' if kind == 'judo' else 'col-bjj', rough=0.9, strength=0.9, tone=0.08)
     parts = []
     nk = H['Neck']
     wd = 0.055 if kind == 'judo' else 0.042
@@ -1066,7 +1086,7 @@ def pants(color, kind, legging=False):
         mats = [fabric(f'pantalon-{color}-{kind}', color, 'jersey', rough=0.6, strength=0.5)]
     else:
         # gi trousers: a plainer, twilled cotton than the jacket, matt
-        mats = [fabric(f'pantalon-{color}-{kind}', color, 'serge', rough=0.9, strength=0.5, tone=0.06)]
+        mats = [fabric(f'pantalon-{color}-{kind}', color, 'serge', rough=0.9, strength=0.25, tone=0.03)]
     cuts = [(Vector((0, 0, ankleZ + (0.06 if not legging else 0.05))), Vector((0, 0, 1))), (Vector((0, 0, hipZ + (0.06 if legging else 0.09))), Vector((0, 0, 1)))]
     o, cov = shell(f'pantalon-{kind}', keep, push, 0.003, mats, cuts=cuts)
     for s_ in ('Left', 'Right'):

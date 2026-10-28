@@ -4,12 +4,13 @@ import type { TermImage } from './types';
  * Illustrations of the encyclopedia (§11, §12). Two origins only:
  * - 'rendu-3d': a capture of the app's own 3D coaches (Kadir, Amara; Microsoft Rocketbox base models, MIT licence,
  *   see docs/v029) playing the app's own animation, at three instants (start, half way, key moment). Made by
- *   scripts/encyclopedie/renders.mjs from `RENDERS` below; files under public/encyclopedie/.
+ *   scripts/visuels/generate.mjs from `RENDERS` below, laid in the dark gym of the discipline (studio visuals);
+ *   files under public/encyclopedie/.
  * - 'a-produire': no illustration yet. The sheet says so and shows the brief; nothing stands in for it.
  * Several terms may share one file (§12 « ne pas multiplier les copies d'une même image »).
  */
-const D = '2026-10-23';
-const TOOL = 'Moteur 3D de l’application (Three.js), capture automatique';
+const D = '2026-10-28';
+const TOOL = 'Moteur 3D de l’application (Three.js), capture automatique, salle d’ambiance de la discipline (scripts/visuels)';
 
 /** what to render: image id → technique of the app, coach and options of the Lab view */
 export interface RenderRecipe {
@@ -178,7 +179,7 @@ const scened = (s: SceneRecipe): TermImage => ({
   width: 720,
   height: 400,
   alt: s.alt,
-  origin: { kind: 'rendu-3d', what: s.what, tool: 'Blender 5.2 (bpy), scène du dépôt, rendu Cycles', date: D },
+  origin: { kind: 'rendu-3d', what: s.what, tool: 'Blender 5.2 (bpy), scène du dépôt, rendu Cycles, salle d’ambiance de la discipline (scripts/visuels)', date: D },
 });
 
 const ALIASES: [string, string][] = [

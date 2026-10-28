@@ -191,14 +191,16 @@ test.describe('393×851', () => {
     const news = page.getByTestId('news-sheet');
     await expect(news).toBeVisible();
     const versions = await news.locator('[data-version]').evaluateAll((a) => a.map((x) => x.getAttribute('data-version')));
-    expect(versions[0]).toBe('1.3.0');
+    expect(versions[0]).toBe('1.3.1');
+    expect(versions).toContain('1.3.0');
+    expect(versions).toContain('1.2.0');
     expect(versions).toContain('0.49.0');
     expect(versions).toContain('0.34.0');
     expect(versions).toContain('0.33.0');
     expect(versions).toContain('0.32.0');
     expect(versions).toContain('0.31.0');
     expect(versions).toContain('1.0.0');
-    await expect(news.locator('[data-version="1.3.0"]')).toContainText('Version 1.3.0 · la plus récente');
+    await expect(news.locator('[data-version="1.3.1"]')).toContainText('Version 1.3.1 · la plus récente');
     await expect(news).not.toContainText('fictive');
     // seen: the dots go away at once
     await expect(page.getByTestId('menu-dot')).toHaveCount(0);
