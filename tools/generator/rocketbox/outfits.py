@@ -899,6 +899,9 @@ def skirt(color, kind, top_z, length):
 
 def gi_fabric(color, kind):
     """judogi: double weave, heavy, larger grains; BJJ gi: pearl weave, lighter and finer. Matt cotton"""
+    if kind == 'costume':
+        # 1.4.1 a referee's suit jacket: fine twill, a little sheen
+        return fabric(f'costume-{color}', color, 'serge', rough=0.7, strength=0.15, sheen=0.1, tone=0.02)
     if kind == 'judo':
         return fabric(f'gi-{color}-judo', color, 'judogi', rough=0.92, strength=0.2, tone=0.03)
     return fabric(f'gi-{color}-bjj', color, 'perle', rough=0.9, strength=0.2, tone=0.04)
@@ -1098,7 +1101,7 @@ def pants(color, kind, legging=False):
 def jacket(color, kind):
     """gi / judogi jacket body and sleeves (to just above the wrist, wide); the skirt, collar and belt are added
     separately. v0.32: closer to the body, thinner cloth, folds; the judogi is wider and heavier than the BJJ gi"""
-    vz = {'judo': 0.25, 'bjj': 0.22}[kind]
+    vz = {'judo': 0.25, 'bjj': 0.22, 'costume': 0.24}[kind]
     judo = kind == 'judo'
 
     def keep(i):
@@ -1484,7 +1487,94 @@ def outfit(name):
         parts.extend(skirt(col, name, hipZ + 0.03, 0.2 if name == 'bjj' else 0.25))
         parts.extend(collar(col, name))
         parts.extend(belt(C['belt'], hipZ + 0.035, extra=0.02))
+    elif name == 'arbitre':
+        # 1.4.1 boxing referee (illustrations of the encyclopedia only): white shirt, black trousers, bow tie, shoes
+        add(top('rash-long', '#EEEEEA'))
+        parts.extend(shirt_collar('#EEEEEA'))
+        parts.extend(bow_tie('#111214'))
+        add(pants('#17181C', 'arbitre'))
+        add(shoes_v2('#16181D', '#16181D'))
+    elif name == 'arbitre-judo':
+        # judo referee: dark suit jacket over a white shirt front and a tie, dark trousers, barefoot on the tatami
+        parts.extend(shirt_front('#EEEEEA'))
+        parts.extend(shirt_collar('#EEEEEA'))
+        parts.extend(neck_tie('#5A1A22'))
+        add(jacket('#1C2230', 'costume'))
+        parts.extend(skirt('#1C2230', 'costume', hipZ + 0.03, 0.16))
+        add(pants('#1C2230', 'arbitre'))
     return parts, hide
+
+
+def neck_ring(z):
+    """centre and mean radius of the neck at height z"""
+    cx, cy, rad = ring_profile(z, pad=0.0)
+    return cx, cy, sum(rad) / len(rad), rad
+
+
+def shirt_collar(color):
+    """1.4.1 the band collar of a referee's shirt: a short tube round the base of the neck"""
+    z = H['Neck'].z - 0.02
+    cx, cy, r, _ = neck_ring(z)
+    o = tube('col-chemise', Vector((cx, cy, z - 0.03)), Vector((cx, cy, z + 0.02)), r + 0.012, r + 0.007, seg=40, rings=4)
+    solid(o, 0.003)
+    o.data.materials.append(fabric(f'col-{color}', color, 'flat', rough=0.7, strength=0.3))
+    weighted(o, {'Neck': 0.6, 'Spine2': 0.4})
+    return [o]
+
+
+def bow_tie(color):
+    """1.4.1 a boxing referee's bow tie at the collar: two wings and the knot"""
+    z = H['Neck'].z - 0.035
+    cx, cy, r, rad = neck_ring(z)
+    front = Vector((cx, cy - rad[9] - 0.016, z))
+    X, Y, Z = Vector((1, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1))
+    m = fabric(f'noeud-{color}', color, 'satin', rough=0.45, strength=0.4, sheen=0.3)
+    parts = []
+    for sg in (1, -1):
+        o = ellipsoid(f'papillon-{sg}', front + Vector((0.034 * sg, 0.002, 0)), (X, Y, Z), (0.034, 0.008, 0.02), seg=20, rings=12, power=0.7)
+        o.data.materials.append(m)
+        parts.append(o)
+    k = ellipsoid('papillon-noeud', front + Vector((0, -0.004, 0)), (X, Y, Z), (0.011, 0.009, 0.014), seg=16, rings=10)
+    k.data.materials.append(m)
+    parts.append(k)
+    for o in parts:
+        weighted(o, {'Neck': 0.5, 'Spine2': 0.5})
+    return parts
+
+
+def shirt_front(color):
+    """1.4.1 the shirt front seen in the V of a suit jacket (a whole shirt under the jacket showed through it)"""
+    z = H['Neck'].z - 0.03
+    cx = 0.0
+    pts = []
+    for k in range(13):
+        zz = z - k / 12 * 0.3
+        _, cy2, rad2 = ring_profile(zz, pad=0.0)
+        pts.append(Vector((cx, cy2 - rad2[9] - 0.004, zz)))
+    m = fabric(f'plastron-{color}', color, 'flat', rough=0.7, strength=0.3)
+    o = strip('plastron', pts, 0.17, Vector((0, -1, 0)), 0.002, m, across=6)
+    weighted(o, lambda c: {'Spine2': 0.8, 'Neck': 0.2} if c.z > chestZ else {'Spine2': 0.6, 'Spine1': 0.4})
+    return [o]
+
+
+def neck_tie(color):
+    """1.4.1 a judo referee's tie, from the collar down the shirt front to the top of the trousers"""
+    z = H['Neck'].z - 0.035
+    cx, cy, r, rad = neck_ring(z)
+    top_ = Vector((cx, cy - rad[9] - 0.012, z))
+    pts = []
+    for k in range(13):
+        t = k / 12
+        zz = z - t * (z - (hipZ + 0.1))
+        _, cy2, rad2 = ring_profile(zz, pad=0.0)
+        pts.append(Vector((cx, cy2 - rad2[9] - 0.008, zz)))
+    m = fabric(f'cravate-{color}', color, 'satin', rough=0.45, strength=0.4, sheen=0.3)
+    o = strip('cravate', pts, 0.06, Vector((0, -1, 0)), 0.004, m)
+    knot = ellipsoid('cravate-noeud', top_ + Vector((0, -0.006, -0.006)), (Vector((1, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1))), (0.016, 0.01, 0.02), seg=16, rings=10)
+    knot.data.materials.append(m)
+    weighted(o, lambda c: {'Spine2': 0.7, 'Spine1': 0.3} if c.z > chestZ - 0.1 else {'Spine1': 0.6, 'Spine': 0.4})
+    weighted(knot, {'Neck': 0.5, 'Spine2': 0.5})
+    return [o, knot]
 
 
 # quantisation of the hidden body vertices: millimetres

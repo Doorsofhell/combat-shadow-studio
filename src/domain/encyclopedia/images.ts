@@ -34,6 +34,14 @@ export interface RenderRecipe {
   /** close-up of an illu: part of the body height in the frame, and the height looked at (metres) */
   span?: number;
   fy?: number;
+  /** 1.4.1 a scene with two coaches (engine/library/illustrations.ts, duoScenes): Amara (A) and Kadir (B), one picture */
+  duo?: string;
+  /** 1.4.1 elevation of the camera for duo and illu (degrees) */
+  el?: number;
+  /** 1.4.1 outfit of the first coach instead of the discipline's (the referee's: arbitre, arbitre-judo) */
+  tenue?: string;
+  /** 1.4.1 an illu shown once, at its end, instead of three instants (a still gesture: the ippon) */
+  once?: boolean;
   /** one close-up picture of the coach at rest in guard instead of three instants (equipment worn) */
   still?: { az: number; el: number; span: number; fy: number; what: string };
   alt: string;
@@ -153,35 +161,32 @@ export const RENDERS: RenderRecipe[] = [
     alt: 'Planche du coach de face : articulations (épaule, coude, poignet, hanche, genou, cheville) et muscles principaux',
   },
   { id: 'prep-shadow', tech: 'crochet-arriere', coach: 'femme', d: 'kickboxing', alt: 'La coach enchaîne dans le vide, en shadow' },
+  // 1.4.1 scenes with two coaches (illustrations.ts, duoScenes): Amara and Kadir, partners for the illustration
+  { id: 'pos-montee', tech: 'garde', coach: 'femme', d: 'bjj', duo: 'duo-montee', az: 70, el: 25, alt: 'Montée : assise à califourchon sur le buste du partenaire allongé, genoux au sol de chaque côté' },
+  { id: 'pos-garde-fermee', tech: 'garde', coach: 'homme', d: 'bjj', duo: 'duo-garde-fermee', az: 50, el: 30, alt: 'Garde fermée : sur le dos, les jambes autour de la taille de la partenaire à genoux, chevilles croisées dans son dos' },
+  { id: 'pos-demi-garde', tech: 'garde', coach: 'homme', d: 'bjj', duo: 'duo-demi-garde', az: 20, el: 35, alt: 'Demi-garde : sur le dos, il emprisonne une jambe de la partenaire entre les siennes' },
+  { id: 'pos-controle-lateral', tech: 'garde', coach: 'femme', d: 'bjj', duo: 'duo-controle-lateral', az: -40, el: 30, alt: 'Contrôle latéral : en travers du partenaire allongé, poitrine contre poitrine, genoux collés à son flanc' },
+  { id: 'pos-genou-ventre', tech: 'garde', coach: 'femme', d: 'bjj', duo: 'duo-genou-ventre', az: 30, el: 25, span: 1.1, fy: 0.5, alt: 'Genou sur le ventre : un genou en travers du ventre du partenaire, l’autre jambe tendue sur le côté' },
+  { id: 'pos-controle-dos', tech: 'garde', coach: 'femme', d: 'bjj', duo: 'duo-controle-dos', az: 35, el: 15, alt: 'Contrôle du dos : collée au dos du partenaire assis, les talons crochetés à l’intérieur de ses cuisses' },
+  { id: 'pos-nord-sud', tech: 'garde', coach: 'femme', d: 'bjj', duo: 'duo-nord-sud', az: 90, el: 70, alt: 'Nord-sud : allongée tête-bêche sur la poitrine du partenaire, vue de dessus' },
+  { id: 'tech-passage-garde', tech: 'garde', coach: 'femme', d: 'bjj', duo: 'duo-passage-garde', az: 60, el: 20, alt: 'Passage de garde : debout, elle plaque les genoux du partenaire au sol sur le côté et contourne ses jambes' },
+  { id: 'tech-kesa-gatame', tech: 'garde', coach: 'femme', d: 'judo', duo: 'duo-kesa-gatame', az: 40, el: 30, alt: 'Kesa-gatame : assise contre le flanc du partenaire allongé, elle entoure sa tête et bloque son bras sous l’aisselle' },
+  { id: 'tech-cle-de-bras', tech: 'garde', coach: 'femme', d: 'bjj', duo: 'duo-cle-de-bras', az: 60, el: 45, alt: 'Clé de bras (juji-gatame) : jambes en travers du buste et du visage du partenaire, son bras tendu entre les cuisses, pouce vers le haut' },
+  { id: 'tech-etranglement-arriere', tech: 'garde', coach: 'femme', d: 'bjj', duo: 'duo-etranglement-arriere', az: 35, el: 15, alt: 'Étranglement arrière : collée au dos du partenaire assis, un bras autour de son cou, la main sur l’autre bras' },
+  { id: 'tech-triangle', tech: 'garde', coach: 'femme', d: 'bjj', duo: 'duo-triangle', az: -90, el: 25, alt: 'Triangle : sur le dos, ses jambes verrouillées autour du cou et d’un bras du partenaire à genoux' },
+  { id: 'regle-soumission', tech: 'garde', coach: 'homme', d: 'bjj', duo: 'duo-tape', az: 20, el: 55, span: 0.6, fy: 0.15, alt: 'Soumission : pris en clé de bras, le partenaire tape le tapis du plat de la main' },
+  { id: 'cult-jjb', tech: 'garde', coach: 'homme', d: 'bjj', duo: 'duo-garde-ouverte', az: 70, el: 18, span: 1.1, fy: 0.55, alt: 'Deux pratiquants en kimono : lui sur le dos en garde ouverte, pieds sur les hanches de la partenaire debout' },
+  { id: 'famille-regles', tech: 'garde', coach: 'femme', d: 'boxe', duo: 'duo-arbitre-stop', tenue: 'arbitre', az: 20, el: 8, span: 1.2, fy: 0.95, alt: 'L’arbitre s’interpose, la main ouverte devant le boxeur : le geste qui arrête l’échange' },
+  { id: 'regle-ko', tech: 'garde', coach: 'femme', d: 'boxe', duo: 'duo-arbitre-compte', tenue: 'arbitre', az: 0, el: 8, span: 1.2, fy: 0.95, alt: 'Le boxeur un genou au tapis, l’arbitre compte au-dessus de lui, la main ouverte' },
+  { id: 'regle-decision', tech: 'garde', coach: 'femme', d: 'boxe', duo: 'duo-arbitre-vainqueur', tenue: 'arbitre', az: 0, el: 6, span: 1.2, fy: 0.95, alt: 'L’arbitre lève le bras du vainqueur' },
+  { id: 'regle-penalite', tech: 'garde', coach: 'femme', d: 'boxe', duo: 'duo-arbitre-avertit', tenue: 'arbitre', az: 20, el: 8, span: 1.2, fy: 0.95, alt: 'L’arbitre avertit le boxeur : bras tendu vers lui, l’autre main sur la ceinture pour montrer un coup bas' },
+  { id: 'prep-sparring', tech: 'garde', coach: 'femme', d: 'boxe', duo: 'duo-sparring', az: 80, el: 8, span: 1.2, fy: 0.95, alt: 'Sparring : deux partenaires gantés en échange léger, le jab retenu arrive sur la garde' },
+  { id: 'regle-ippon', tech: 'garde', coach: 'homme', d: 'judo', illu: 'illu-ippon', once: true, tenue: 'arbitre-judo', az: 20, el: 8, alt: 'Arbitre de judo en costume, le bras levé à la verticale : ippon' },
 ];
 
-const TODO = (id: string, alt: string, brief: string): TermImage => ({ id, width: 720, height: 400, alt, origin: { kind: 'a-produire', brief } });
-
-/** illustrations still to make, with their brief (§11 B: « signaler précisément les illustrations restant à produire ») */
-const TO_PRODUCE: TermImage[] = [
-  TODO('tech-passage-garde', 'Passage de garde', 'Deux pratiquants en kimono : l’un sur le dos, jambes ouvertes ; l’autre contourne les jambes en les écartant (toreando). Trois instants.'),
-  TODO('tech-kesa-gatame', 'Kesa-gatame', 'Judoka assis sur le côté du partenaire allongé, bras du partenaire bloqué sous l’aisselle, tête entourée. Vue de trois quarts.'),
-  TODO('tech-cle-de-bras', 'Clé de bras', 'Depuis la garde, bras du partenaire tendu le long du buste, hanches levées ; coude dans l’axe. Pas de douleur exagérée.'),
-  TODO('tech-etranglement-arriere', 'Étranglement arrière', 'Pratiquant collé au dos du partenaire assis, un bras autour du cou verrouillé par l’autre, crochets des jambes. Vue de côté.'),
-  TODO('tech-triangle', 'Triangle', 'Pratiquant sur le dos, jambes en triangle autour du cou et d’un bras du partenaire. Vue de côté.'),
-  TODO('pos-garde-fermee', 'Garde fermée', 'Pratiquant sur le dos, chevilles croisées derrière le dos du partenaire à genoux.'),
-  TODO('pos-demi-garde', 'Demi-garde', 'Pratiquant sur le dos, une jambe du partenaire prise entre ses jambes.'),
-  TODO('pos-montee', 'Montée', 'Pratiquant assis à califourchon sur le buste du partenaire allongé, genoux au sol.'),
-  TODO('pos-controle-lateral', 'Contrôle latéral', 'Pratiquant en travers du buste du partenaire allongé, poitrine contre poitrine.'),
-  TODO('pos-genou-ventre', 'Genou sur le ventre', 'Un genou en travers du buste du partenaire, l’autre jambe tendue sur le côté.'),
-  TODO('pos-controle-dos', 'Contrôle du dos', 'Pratiquant accroché au dos du partenaire assis, crochets des jambes devant.'),
-  TODO('pos-nord-sud', 'Nord-sud', 'Pratiquant allongé tête-bêche sur la poitrine du partenaire. Vue de dessus.'),
-  TODO('famille-regles', 'Règles et arbitrage', 'Arbitre de boxe qui sépare deux boxeurs, geste clair. Personnages fictifs.'),
-  TODO('regle-pesee', 'Pesée', 'Combattant sur une balance, officiel qui lit le poids.'),
-  TODO('regle-ko', 'KO et arrêt de l’arbitre', 'Arbitre qui compte au-dessus d’un boxeur au tapis, sans blessure visible.'),
-  TODO('regle-decision', 'Décision', 'Arbitre qui lève le bras du vainqueur au centre du ring.'),
-  TODO('regle-soumission', 'Soumission', 'Gros plan d’une main qui tape trois fois sur le tapis.'),
-  TODO('regle-penalite', 'Fautes et pénalités', 'Arbitre qui donne un avertissement, bras tendu vers un combattant.'),
-  TODO('regle-ippon', 'Ippon', 'Arbitre de judo, bras levé à la verticale.'),
-  TODO('regle-arbitre', 'Arbitre et juges', 'Arbitre dans l’aire et trois juges à leur table autour du ring.'),
-  TODO('prep-sparring', 'Sparring', 'Deux partenaires casqués et gantés en échange léger, entraîneur à côté.'),
-  TODO('cult-jjb', 'Jiu-jitsu brésilien', 'Deux pratiquants en kimono sur un tatami, un en garde.'),
-];
+/** illustrations still to make, with their brief (§11 B: « signaler précisément les illustrations restant à produire »).
+ * None left since 1.4.1: the kind 'a-produire' stays for the next terms. */
+const TO_PRODUCE: TermImage[] = [];
 
 /** the files made from 3D renders and Blender scenes of the repository */
 const rendered = (r: RenderRecipe): TermImage => ({
@@ -190,17 +195,20 @@ const rendered = (r: RenderRecipe): TermImage => ({
   width: 720,
   height: 400,
   alt: r.alt,
-  frames: r.still ? undefined : 3,
+  // the three captions (start, half way, key moment) only for a sequence of three instants
+  frames: r.still || r.mix || r.views || r.duo || r.once ? undefined : 3,
   origin: {
     kind: 'rendu-3d',
     what: r.still
       ? r.still.what
       : r.mix
         ? `Coachs de l’application, chacun au moment clé de sa technique : ${r.mix.map((m) => `« ${m.tech} »`).join(', ')}`
+        : r.duo
+          ? `Coachs Amara et Kadir ensemble, scène « ${r.duo} » posée avec le moteur de l’application`
         : r.views
           ? `Coach ${r.coach === 'homme' ? 'Kadir' : 'Amara'} immobile, repères posés sur les os de son squelette 3D (moteur de l’application)`
           : r.illu
-          ? `Coach ${r.coach === 'homme' ? 'Kadir' : 'Amara'}, pose d’illustration « ${r.illu} » du moteur de l’application, en trois instants`
+          ? `Coach ${r.coach === 'homme' ? 'Kadir' : 'Amara'}, pose d’illustration « ${r.illu} » du moteur de l’application${r.once ? '' : ', en trois instants'}`
           : `Coach ${r.coach === 'homme' ? 'Kadir' : 'Amara'}, technique « ${r.tech} » de l’application, début, mi-chemin et moment clé`,
     tool: TOOL,
     date: D,
@@ -242,6 +250,8 @@ export const SCENES: SceneRecipe[] = [
   { id: 'cult-mongkon', scene: 'mongkon', alt: 'Mongkon blanc et rouge et deux pra jiad posés sur une planche', what: 'Mongkon et pra jiad modélisés pour l’encyclopédie' },
   { id: 'cult-federations', scene: 'livre-regles', alt: 'Un livre de règles entouré des emblèmes des six disciplines de l’application', what: 'Livre modélisé pour l’encyclopédie, entouré des emblèmes des disciplines de l’application (aucun logo de fédération)' },
   { id: 'regle-points-jjb', scene: 'tableau-jjb', alt: 'Tableau de score de JJB : points, avantages en vert, pénalités en rouge, temps restant', what: 'Tableau de score modélisé pour l’encyclopédie' },
+  { id: 'regle-pesee', scene: 'pesee', alt: 'La balance de la pesée officielle, son affichage en kilogrammes et la fiche de pesée', what: 'Balance et fiche modélisées pour l’encyclopédie (fiche illisible)' },
+  { id: 'regle-arbitre', scene: 'juges', alt: 'La table des trois juges au bord du ring : feuilles de pointage, chronomètre, et le coin du ring derrière', what: 'Table des juges et coin de ring modélisés pour l’encyclopédie' },
   { id: 'cult-boxe', scene: 'boxe-ancienne', alt: 'Gants de cuir anciens à côté d’un règlement imprimé', what: 'Gants anciens et feuille de règlement modélisés pour l’encyclopédie (texte illisible, rien de copié)' },
 ];
 

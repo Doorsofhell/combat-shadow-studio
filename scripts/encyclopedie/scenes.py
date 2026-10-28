@@ -1045,6 +1045,95 @@ def s_livre_regles():
     lights(c, 0.45)
 
 
+def s_pesee():
+    """the official weigh-in: a platform scale with its column and digital head (kilograms, red figures), the weigh-in
+    sheet on a clipboard leaning against the column (lines only, nothing readable)"""
+    led = mat('led-pesee', (1.0, 0.1, 0.08))
+    b = led.node_tree.nodes['Principled BSDF']
+    b.inputs['Emission Color'].default_value = (1.0, 0.12, 0.08, 1)
+    b.inputs['Emission Strength'].default_value = 6
+    steel = mat('acier', (0.62, 0.62, 0.64), 0.3, 1.0)
+    rubber = mat('caoutchouc', hexrgb('#1A1B1E'), 0.85)
+    box('socle', (0.62, 0.52, 0.07), (0, 0, 0.035), steel, 0.01)
+    box('tapis', (0.58, 0.48, 0.008), (0, 0, 0.074), rubber, 0.004)
+    # ribs on the rubber top
+    for k in range(9):
+        box('strie', (0.54, 0.008, 0.003), (0, -0.2 + k * 0.05, 0.079), mat('strie', hexrgb('#26272B'), 0.8))
+    cyl('colonne', 0.025, 1.05, (0, 0.3, 0.55), steel)
+    box('pied-colonne', (0.12, 0.1, 0.05), (0, 0.3, 0.025), steel, 0.01)
+    head = box('tete', (0.3, 0.08, 0.18), (0, 0.3, 1.12), mat('tete', hexrgb('#141416'), 0.35), 0.02)
+    box('ecran', (0.24, 0.01, 0.08), (0, 0.258, 1.14), mat('ecran-p', hexrgb('#050506'), 0.15))
+    _digit_text('70.2', 0.065, (-0.015, 0.252, 1.14), led)
+    _digit_text('kg', 0.03, (0.09, 0.252, 1.125), led)
+    for x in (-0.09, -0.03, 0.03, 0.09):
+        cyl('touche', 0.01, 0.008, (x, 0.258, 1.07), mat('touche', hexrgb('#3A3B40'), 0.5), rot=(math.pi / 2, 0, 0))
+    # the clipboard and its sheet on the floor beside the scale
+    rz = math.radians(-16)
+    rot = Matrix.Rotation(rz, 4, 'Z')
+    at = lambda x, y, z: tuple(Vector((0.5, -0.12, 0.0)) + rot @ Vector((x, y, z)))
+    box('planchette', (0.23, 0.32, 0.006), at(0, 0, 0.003), mat('planchette', hexrgb('#5A3A22'), 0.55), 0.002).rotation_euler.z = rz
+    box('fiche', (0.21, 0.27, 0.002), at(0, -0.01, 0.007), mat('papier-p', hexrgb('#ECE8DE'), 0.9)).rotation_euler.z = rz
+    ink = mat('encre-p', hexrgb('#2A2218'), 0.8)
+    for k in range(9):
+        w = 0.15 if k % 3 else 0.09
+        box('ligne', (w, 0.004, 0.0005), at(-0.08 + w / 2, 0.09 - k * 0.025, 0.0083), ink).rotation_euler.z = rz
+    box('pince', (0.08, 0.025, 0.015), at(0, 0.145, 0.012), steel, 0.004).rotation_euler.z = rz
+    ground(0)
+    c, *_ = frame(meshes(), azimuth=24, elevation=14, lens=55, margin=1.12)
+    lights(c, 1.0)
+
+
+def s_juges():
+    """the judges' table at the ring side: three chairs, three score sheets and pens, the round clock and the bell;
+    the corner of the ring behind (apron, padded post, ropes)"""
+    cloth = mat('nappe', hexrgb('#16171B'), 0.85)
+    wood = mat('bois-j', hexrgb('#4A3020'), 0.55)
+    paper = mat('papier-j', hexrgb('#ECE8DE'), 0.9)
+    ink = mat('encre-j', hexrgb('#2A2218'), 0.8)
+    steel = mat('acier-j', (0.6, 0.6, 0.62), 0.3, 1.0)
+    # the table, clothed to the floor at the front
+    box('plateau', (1.9, 0.62, 0.04), (0, 0, 0.74), cloth, 0.01)
+    box('jupe', (1.9, 0.01, 0.72), (0, 0.31, 0.37), cloth)
+    for k, x in enumerate((-0.6, 0.0, 0.6)):
+        # score sheet: a grid of boxes drawn as lines, and a pen
+        box('feuille', (0.3, 0.21, 0.002), (x, -0.04, 0.761), paper).rotation_euler.z = math.radians(4 - 4 * k)
+        for r in range(6):
+            box('ligne', (0.26, 0.003, 0.0005), (x, 0.05 - r * 0.03, 0.7625), ink).rotation_euler.z = math.radians(4 - 4 * k)
+        for c_ in range(4):
+            box('col', (0.003, 0.16, 0.0005), (x - 0.09 + c_ * 0.06, -0.025, 0.7625), ink).rotation_euler.z = math.radians(4 - 4 * k)
+        cyl('stylo', 0.005, 0.14, (x + 0.2, -0.06, 0.765), mat('stylo', hexrgb('#1E40AF'), 0.4), rot=(0, math.pi / 2, math.radians(30)))
+        # the judge's chair, on this side of the table: the judges face the ring
+        box('assise', (0.42, 0.42, 0.04), (x, -0.55, 0.46), wood, 0.01)
+        box('dossier', (0.42, 0.03, 0.42), (x, -0.75, 0.7), wood, 0.01)
+        for dx in (-0.18, 0.18):
+            for dy in (-0.37, -0.73):
+                cyl('pied', 0.015, 0.44, (x + dx, dy, 0.22), steel)
+    # the round clock on the table
+    case = box('chrono', (0.32, 0.08, 0.18), (0.95, 0.12, 0.85), mat('boitier-j', hexrgb('#141416'), 0.35), 0.015)
+    case.location.x = 0.78
+    led = mat('led-j', (1.0, 0.1, 0.08))
+    nd = led.node_tree.nodes['Principled BSDF']
+    nd.inputs['Emission Color'].default_value = (1.0, 0.12, 0.08, 1)
+    nd.inputs['Emission Strength'].default_value = 6
+    _digit_text('1:30', 0.07, (0.78, 0.078, 0.85), led)
+    # the corner of the ring behind the judges
+    h = 1.0
+    apron = mat('apron-j', hexrgb('#1F2937'), 0.7)
+    canvas = mat('toile-j', hexrgb('#C9CED6'), 0.85)
+    white = mat('corde-j', hexrgb('#F4F4F5'), 0.45)
+    box('ring', (4.0, 3.0, h), (0.4, 3.1, h / 2), apron)
+    box('toile', (3.95, 2.95, 0.04), (0.4, 3.1, h + 0.02), canvas, 0.01)
+    post = (-1.45, 1.75)
+    cyl('poteau', 0.06, 1.6, (post[0], post[1], h + 0.8), steel)
+    box('coussin', (0.22, 0.22, 1.25), (post[0] + 0.08, post[1] + 0.08, h + 0.85), mat('rouge-j', hexrgb('#B3122A'), 0.5), 0.04)
+    for z in (0.45, 0.8, 1.15, 1.5):
+        rope('corde', (post[0], post[1], h + z), (2.4, post[1], h + z), 0.035, white)
+        rope('corde', (post[0], post[1], h + z), (post[0], 4.6, h + z), 0.035, white)
+    ground(0)
+    c, *_ = frame([o for o in meshes() if o.name.split('.')[0] not in ('ring', 'toile', 'poteau', 'coussin', 'corde')], azimuth=-18, elevation=26, lens=38, margin=1.3, shift_z=0.3)
+    lights(c, 1.6)
+
+
 SCENES = {
     'gants-boxe': s_gants_boxe,
     'protege-tibias': s_protege_tibias,
@@ -1071,6 +1160,8 @@ SCENES = {
     'boxe-ancienne': s_boxe_ancienne,
     'tableau-jjb': s_tableau_jjb,
     'livre-regles': s_livre_regles,
+    'pesee': s_pesee,
+    'juges': s_juges,
 }
 
 if __name__ == '__main__':

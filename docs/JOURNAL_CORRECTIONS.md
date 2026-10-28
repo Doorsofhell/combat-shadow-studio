@@ -2157,3 +2157,21 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Intégration de la 1.3.1 (visuels studio, fusionnée pendant le lot) : conflits sur la version, les Nouveautés, le test de navigation et ce journal, résolus en gardant les deux versions (1.4.0 en tête, 1.3.1 ensuite). Après intégration : TypeScript RÉUSSI ; Vitest 867 RÉUSSIS, 1 ignoré ; Playwright (navigation, écran coach, pulsation, consignes, coach-bubble, plein écran) 58/58 RÉUSSIS.
   - Intégration de la 1.3.2 (illustrations de l'Encyclopédie, fusionnée pendant le lot) : mêmes conflits, résolus en gardant les versions (1.4.0, 1.3.2, 1.3.1). Après intégration : TypeScript RÉUSSI ; Vitest 873 RÉUSSIS, 1 ignoré ; Playwright (navigation, écran coach, pulsation, coach-bubble, plein écran) 49/49 RÉUSSIS.
   - Validation : Youssef, 28/10 17:42 « Je valide ».
+
+## 2026-10-28 · 1.4.1 · Encyclopédie complète (lot 4, scènes à deux)
+
+- **Demande** : suite de la demande du 28 octobre 15:05 (« publie automatiquement »), relancée à 17:13 : « continu ».
+- **Constat** : il restait 22 fiches « à produire ». Ce sont des scènes à deux personnes : positions au sol du JJB et du judo, soumissions, arbitre de boxe, sparring. S’y ajoutent l’ippon, la pesée et les juges.
+- **Changement** :
+  - moteur : scènes à deux (`duoScenes` dans `src/engine/library/illustrations.ts`, `getDuo`). Amara est toujours A et Kadir toujours B, chacun placé dans la scène (`Place`). On y trouve monté, garde fermée, demi-garde, contrôle latéral, genou sur le ventre, nord-sud, contrôle du dos, étranglement arrière, clé de bras (juji-gatame), triangle, kesa-gatame, passage de garde, garde ouverte et la main qui tape. Côté boxe : arrêt, compte, décision, avertissement et sparring. Ces poses servent seulement aux illustrations et n’entrent jamais dans la bibliothèque des techniques ;
+  - vue Lab : `duo=`, `champion2=`, `tenue2=`. Pour un duo, la tenue n’est « portée » que si les deux coachs l’ont ;
+  - deux tenues d’arbitre créées par nous (`outfits.py`) : `arbitre` (chemise blanche, nœud papillon, pantalon noir) et `arbitre-judo` (veste de costume, cravate, pieds nus). Le service worker ne les met pas en cache (`globIgnores`) ;
+  - Blender : la pesée (balance qui affiche 70.2 kg) et la table des juges au bord du ring ;
+  - correction de 1.3.2 : la légende « Début / Mi-chemin / Moment clé » s’affichait aussi sous les schémas et les compositions. Elle ne s’affiche plus que pour les vraies séquences ;
+  - accessibilité : si l’image ne charge pas, son libellé dit « illustration indisponible ».
+- **Contrôle** : chaque image regardée sur planche. Reprises : genoux sous le tapis (monté, nord-sud), jambes cachées (garde fermée), genou sur le ventre qui semblait assis, clé de bras refaite en juji-gatame, kesa penché du mauvais côté, triangle trop haut, boxeur KO accroupi, chemise blanche visible sous la veste de l’arbitre de judo, table des juges qui flottait.
+- **Tests** :
+  - nouveau `src/engine/__tests__/duo-illustrations.test.ts` : chaque scène existe, rien sous le tapis, les deux bassins à bonne distance ;
+  - nouveau `src/ui/encyclopedia/__tests__/enc-image.test.tsx` : l’emplacement vide annonce « Illustration à produire », une image produite est une vraie image ;
+  - `tests/e2e/encyclopedie.spec.ts` : le test « illustration manquante » ne trouvait plus de fiche « à produire », puisqu’il n’y en a plus. Il est réécrit, pas affaibli : il bloque l’image de Kesa-gatame et vérifie le message « Illustration indisponible », le libellé et la mention des coachs.
+  - Toute l’Encyclopédie (46/46 fiches) a maintenant son illustration.

@@ -53,7 +53,7 @@ export function EncImage({ id, mini, className = '' }: { id?: string; mini?: boo
   const [broken, setBroken] = useState(false);
   if (!img || !img.file || broken)
     return (
-      <span className={`enc-img missing ${mini ? 'mini' : ''} ${className}`} role="img" aria-label={img ? `${img.alt} : illustration à produire` : 'Illustration à produire'} data-testid="enc-img-missing">
+      <span className={`enc-img missing ${mini ? 'mini' : ''} ${className}`} role="img" aria-label={img ? `${img.alt} : illustration ${broken ? 'indisponible' : 'à produire'}` : 'Illustration à produire'} data-testid="enc-img-missing">
         <NavIcon id="book" />
         {!mini && <small>{broken ? 'Illustration indisponible' : 'Illustration à produire'}</small>}
       </span>
