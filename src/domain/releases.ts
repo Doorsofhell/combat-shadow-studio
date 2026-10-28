@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.3.2',
+      releaseDate: '2026-10-28',
+      title: 'Illustrations de l’Encyclopédie',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: '24 fiches de l’Encyclopédie ont enfin leur illustration, dans la même ambiance de salle que les autres : bandes, protège-dents, casque, coquille, protège-poitrine, sacs, pattes d’ours, paos, mongkon, dojo, chrono et cloche du round, gants anciens, tableau de score du JJB, fédérations.' },
+        { category: 'ameliorations', text: 'Le coach montre aussi l’échauffement, le wai kru, les trois styles de kick-boxing, la garde du muay-thaï et du kick-boxing.' },
+        { category: 'ameliorations', text: 'Sécurité : zones interdites, articulations à ne pas forcer, zones de choc à la tête et planche des muscles, repérés sur le corps du coach.' },
+      ],
+      links: [{ label: 'Encyclopédie', to: '/encyclopedie' }],
+    },
+    {
       version: '1.3.1',
       releaseDate: '2026-10-28',
       title: 'Visuels studio',

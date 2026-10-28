@@ -3,7 +3,9 @@ in the ambiance of their discipline (ambiances.json): out-of-focus heavy bags an
 bloom, colour grade, vignette and film grain. Nothing is downloaded: every pixel comes from our renders or from code.
 
 Usage: python3 -I scripts/visuels/compose.py <jobs.json>
-A job: {out, w, h, mood, seed, layers: [png...], centers: [x...], mode: floor|top, fill, top, blur, sizes, mini}
+A job: {out, w, h, mood, seed, layers: [png...], centers: [x...], mode: floor|top, fill, top, blur, sizes, mini, full, marks}
+- marks (1.3.2, schemas of the encyclopedia): zones, joints and labels drawn over the coach, at the bones the Lab
+  reported for each layer (raw pixels of the capture), moved like the layer was
 - layers share one crop (the union of their subjects), so the instants of a sequence keep their sizes and heights;
 - mode floor: feet on the floor of the room; mode top: a close-up whose top starts at `top` (share of the height);
 - sizes: the same picture at other sizes ([[w, h, file without extension]]); mini: square around layer i ({layer, size, suffix}).
@@ -15,7 +17,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 AMBIANCES = json.loads((Path(__file__).parent / 'ambiances.json').read_text())
 
@@ -124,6 +126,7 @@ def compose(job):
     light = np.array(amb['light'], np.float32)
     haze = np.array(amb['haze'], np.float32)
     placed = []
+    geo = []
     for im, cx in zip(layers, centers):
         b = subject_box(im)
         # the shared crop keeps heights; horizontally each instant is centred on its own subject
@@ -147,10 +150,29 @@ def compose(job):
         rgb = blur3(rgb, max(0.4, 0.7 * W / 1600))
         fall = np.clip(1 - (v - py / H) / max(1e-3, ch / H), 0, 1)
         side = np.clip(0.75 + 0.7 * (u - cx) * W / max(cw, 1), 0.6, 1.1)
+        if job.get('full'):
+            # a whole room filling the picture (the dojo): lit by its own lamps, no fall-off of a subject
+            fall, side = np.ones_like(fall), np.ones_like(side)
         rgb = (rgb * (0.85 + 0.25 * light) * ((0.5 + 0.5 * fall ** 0.7) * side)[..., None]) ** 1.15
         wrap = np.clip(blur(alpha[..., 0], W * 0.006)[..., None] - alpha * 0.9, 0, 1)
         img = img * (1 - alpha) + rgb * alpha + wrap * blur3(img, W * 0.02) * 0.15
         placed.append((px, py, cw, ch))
+        geo.append((b, sc, px, py))
+    # badges (1.3.2): small pictures standing on the floor around the subject, half on each side (emblems)
+    for k, path in enumerate(job.get('badges', [])):
+        n = len(job['badges'])
+        side, i = (-1, k) if k < (n + 1) // 2 else (1, k - (n + 1) // 2)
+        bh = round(H * job.get('badgeH', 0.3))
+        em = Image.open(path).convert('RGBA')
+        em = em.crop(em.getchannel('A').getbbox())
+        bw = round(em.width * bh / em.height)
+        em = em.resize((bw, bh), Image.LANCZOS)
+        cx = W / 2 + side * (0.19 + 0.105 * i) * W
+        cy = floor_y * H - bh / 2 - (0.12 if i % 2 else 0.03) * H
+        e = np.asarray(em, np.float32) / 255
+        x0, y0 = round(cx - bw / 2), round(cy - bh / 2)
+        a = e[..., 3:4] * 0.96
+        img[y0:y0 + bh, x0:x0 + bw] = img[y0:y0 + bh, x0:x0 + bw] * (1 - a) + (e[..., :3] * (0.85 + 0.2 * light)) * a
     # smoke in front, bloom, grade (teal shadows, warm highlights, soft shoulder), vignette
     img += (np.clip((blur(value_noise(rng, W, H, 4, 4), W * 0.03) - 0.4) * 1.5, 0, 1) * 0.06 * (0.4 + cone))[..., None] * haze
     img += blur3(np.clip(img - 0.55, 0, 1), W * 0.025) * 0.6
@@ -163,6 +185,8 @@ def compose(job):
     out = Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8))
     if job.get('blur'):
         out = out.filter(ImageFilter.GaussianBlur(job['blur'] * W / 1000))
+    if job.get('marks'):
+        out = draw_marks(out, job['marks'], geo, W, H)
     # film grain, stronger in the shadows
     g = rng.normal(0, 1, (H, W)).astype(np.float32)
     g = np.asarray(Image.fromarray(np.clip(g * 40 + 128, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.6)), np.float32) / 255 - 0.5
@@ -184,6 +208,72 @@ def compose(job):
         cyp = min(max(py + ch / 2, side / 2), H - side / 2)
         sq = out.crop((round(cxp - side / 2), round(cyp - side / 2), round(cxp + side / 2), round(cyp + side / 2)))
         sq.resize((m['size'], m['size']), Image.LANCZOS).save(f'{dst}{m.get("suffix", "-mini")}.webp', 'WEBP', quality=q, method=6)
+
+
+FONT = '/usr/share/fonts/opentype/inter/Inter-SemiBold.otf'
+RED = (235, 64, 64)
+
+
+def draw_marks(out, marks, geo, W, H):
+    """zones (soft red discs), joints (rings), twist arrows (arcs) and their labels, over the composed picture. The
+    labels of one side stand in a column beside the coach, spread so that they never overlap"""
+    import math
+    base = out.convert('RGBA')
+    glow = Image.new('RGBA', base.size, (0, 0, 0, 0))
+    over = Image.new('RGBA', base.size, (0, 0, 0, 0))
+    g, d = ImageDraw.Draw(glow), ImageDraw.Draw(over)
+    try:
+        font = ImageFont.truetype(FONT, max(12, round(W / 46)))
+    except OSError:
+        font = ImageFont.load_default()
+    th = font.size
+    pts = []
+    for m in marks:
+        b, sc, px, py = geo[m.get('layer', 0)]
+        fh = b[3] - b[1]
+        x = px + (m['x'] + m.get('dxH', 0) * fh - b[0]) * sc
+        y = py + (m['y'] + m.get('dyH', 0) * fh - b[1]) * sc
+        r = m.get('r', 0.035) * H
+        pts.append((m, x, y, r))
+        kind = m.get('kind', 'zone')
+        if kind == 'zone':
+            g.ellipse((x - r * 1.6, y - r * 1.6, x + r * 1.6, y + r * 1.6), fill=(*RED, 90))
+            d.ellipse((x - r, y - r, x + r, y + r), fill=(*RED, 110), outline=(255, 120, 110, 235), width=2)
+        elif kind == 'arc':
+            # a curved arrow around the joint: the direction it must not be forced in
+            d.arc((x - r, y - r, x + r, y + r), 200, 470, fill=(255, 110, 90, 240), width=3)
+            a = math.radians(470)
+            ex, ey = x + r * math.cos(a), y + r * math.sin(a)
+            t = a + math.pi / 2
+            for s_ in (-1, 1):
+                d.line((ex, ey, ex - 9 * math.cos(t) + s_ * 6 * math.cos(a), ey - 9 * math.sin(t) + s_ * 6 * math.sin(a)), fill=(255, 110, 90, 240), width=3)
+        else:
+            d.ellipse((x - 5, y - 5, x + 5, y + 5), fill=(255, 255, 255, 235), outline=(*RED, 255), width=2)
+    for side in (-1, 1):
+        col = [(m, x, y, r) for m, x, y, r in pts if m.get('label') and (-1 if m.get('side', 'r') == 'l' else 1) == side]
+        if not col:
+            continue
+        col.sort(key=lambda p: p[2])
+        # one column per side, just beyond the farthest mark of that side
+        edge = (max(x + r for _, x, _, r in col) if side > 0 else min(x - r for _, x, _, r in col))
+        cx = edge + side * 0.05 * W
+        ys, gap = [], th * 1.9
+        for _, _, y, _ in col:
+            ys.append(max(y, ys[-1] + gap) if ys else y)
+        over_h = ys[-1] - (H - th)
+        if over_h > 0:
+            ys = [v - over_h for v in ys]
+        for (m, x, y, r), ty in zip(col, ys):
+            tw = d.textlength(m['label'], font=font)
+            lx = min(max(cx, 8 + tw + 10), W - 8 - tw - 10) if True else cx
+            kind = m.get('kind', 'zone')
+            start = x + side * (r if kind != 'point' else 6)
+            d.line((start, y, lx - side * 6, ty), fill=(255, 255, 255, 170), width=1)
+            tx = lx - tw if side < 0 else lx
+            d.rounded_rectangle((tx - 5, ty - th * 0.75, tx + tw + 5, ty + th * 0.75), radius=4, fill=(12, 12, 16, 170))
+            d.text((tx, ty), m['label'], font=font, fill=(255, 255, 255, 245), anchor='lm')
+    glow = glow.filter(ImageFilter.GaussianBlur(W / 90))
+    return Image.alpha_composite(Image.alpha_composite(base, glow), over).convert('RGB')
 
 
 def main():

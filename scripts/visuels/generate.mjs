@@ -77,7 +77,37 @@ for (const r of RENDERS) {
   const d = r.d ?? t?.disciplines[0] ?? 'boxe';
   if (!inD(d)) continue;
   const out = `public/encyclopedie/${r.id}`;
-  if (r.still) {
+  if (r.views) {
+    // a schema: the coach still, seen from one or more sides, with marks on his bones
+    const pngs = r.views.map((v, i) => `${CACHE}/ency/${r.id}-${i}.png`);
+    const joints = [...new Set(r.marks.flatMap((m) => [].concat(m.bone)))];
+    r.views.forEach((v, i) => {
+      const q = new URLSearchParams({ champion: CHAMPION[r.coach], look: 'realiste', d, motion: r.motion ?? r.tech, style: STYLE[d], az: String(v.az), el: String(v.el ?? 4) });
+      if (v.span) {
+        q.set('span', String(v.span));
+        q.set('fy', String(v.fy));
+      }
+      renders.push({ png: pngs[i], q, vw: v.span ? 720 : 360, vh: v.span ? 400 : 480, dpr: 2, joints });
+    });
+    const n = r.views.length;
+    const close = r.views[0].span;
+    jobs.push({ out, w: 720, h: 400, mood: d, seed: r.id, layers: pngs, centers: n === 1 ? [0.5] : [0.3, 0.7], ...(close ? { mode: 'top', fill: 1, top: 0 } : { fill: 0.92 }), markSpec: r.marks, mini: { layer: 0, size: 160 } });
+  } else if (r.mix) {
+    // several techniques side by side, each at its key moment, from the same side
+    const pngs = r.mix.map((m, i) => `${CACHE}/ency/${r.id}-${i}.png`);
+    r.mix.forEach((m, i) => renders.push({ png: pngs[i], q: techQuery(m.tech, m.coach, m.d, { az: String(m.az ?? r.az ?? 60) }), vw: 240, vh: 400, dpr: 2 }));
+    jobs.push({ out, w: 720, h: 400, mood: d, seed: r.id, layers: pngs, centers: [1 / 6, 0.5, 5 / 6], fill: 0.95, mini: { layer: 1, size: 160 } });
+  } else if (r.illu) {
+    // a pose of the illustrations (engine/library/illustrations.ts), three instants
+    const q = new URLSearchParams({ champion: CHAMPION[r.coach], look: 'realiste', d, illu: r.illu, style: STYLE[d], az: String(r.az ?? 30), el: '8' });
+    if (r.span) {
+      q.set('span', String(r.span));
+      q.set('fy', String(r.fy));
+    }
+    const pngs = [0, 1, 2].map((i) => `${CACHE}/ency/${r.id}-${i}.png`);
+    renders.push({ png: pngs[2], pngs, q, vw: 240, vh: 400, dpr: 2, times: [0, 0.5, 1] });
+    jobs.push({ out, w: 720, h: 400, mood: d, seed: r.id, layers: pngs, centers: [1 / 6, 0.5, 5 / 6], fill: 0.95, mini: { layer: 2, size: 160 } });
+  } else if (r.still) {
     const png = `${CACHE}/ency/${r.id}.png`;
     const q = new URLSearchParams({ champion: CHAMPION[r.coach], look: 'realiste', d, motion: r.tech, style: STYLE[d] });
     for (const k of ['az', 'el', 'span', 'fy']) q.set(k, String(r.still[k]));
@@ -110,13 +140,18 @@ for (const coach of ['homme', 'femme']) {
   jobs.push({ out: `public/coaches/${c}/portrait`, w: 900, h: 1200, mood: 'mma', seed: `portrait-${c}`, layers: [png], centers: [0.5], fill: 0.96, quality: 84 });
 }
 
-const SCENE_MOOD = { 'gants-boxe': 'boxe', 'protege-tibias': 'kickboxing', rashguard: 'bjj', 'short-combat': 'mma', 'short-muaythai': 'muaythai', judogi: 'judo', 'kimono-jjb': 'bjj', ring: 'boxe', cage: 'mma', tatami: 'judo', ceintures: 'judo' };
+const SCENE_MOOD = { 'gants-boxe': 'boxe', 'protege-tibias': 'kickboxing', rashguard: 'bjj', 'short-combat': 'mma', 'short-muaythai': 'muaythai', judogi: 'judo', 'kimono-jjb': 'bjj', ring: 'boxe', cage: 'mma', tatami: 'judo', ceintures: 'judo', bandes: 'boxe', 'protege-dents': 'mma', casque: 'boxe', coquille: 'kickboxing', 'protege-poitrine': 'kickboxing', sac: 'boxe', 'pattes-ours': 'boxe', paos: 'muaythai', dojo: 'judo', round: 'boxe', mongkon: 'muaythai', 'boxe-ancienne': 'boxe', 'tableau-jjb': 'bjj', 'livre-regles': 'boxe' };
+// the rule book stands among the emblems of the six disciplines (our own, public/emblems)
+const BADGES = { 'livre-regles': ['boxe', 'kickboxing', 'muaythai', 'mma', 'judo', 'bjj'].map((d) => `public/emblems/${d}-256.webp`) };
+const ROOMS = new Set(['dojo']);
 const sceneJobs = [];
 for (const s of SCENES) {
   if (!want('scenes', s.id, s.scene) || !inD(SCENE_MOOD[s.scene] ?? 'boxe')) continue;
   const png = `${CACHE}/scenes/${s.scene}.png`;
   sceneJobs.push(s.scene);
-  jobs.push({ out: `public/encyclopedie/${s.id}`, w: 720, h: 400, mood: SCENE_MOOD[s.scene] ?? 'boxe', seed: s.id, layers: [png], centers: [0.5], fill: 0.86, floor: 0.9, mini: { size: 160 }, object: true });
+  // a whole room (the dojo) fills the picture; an object stands on the floor of the gym
+  const room = ROOMS.has(s.scene) ? { mode: 'top', fill: 1, top: 0, full: true } : BADGES[s.scene] ? { fill: 0.5, floor: 0.9, badges: BADGES[s.scene], badgeH: 0.24 } : { fill: 0.86, floor: 0.9 };
+  jobs.push({ out: `public/encyclopedie/${s.id}`, w: 720, h: 400, mood: SCENE_MOOD[s.scene] ?? 'boxe', seed: s.id, layers: [png], centers: [0.5], ...room, mini: { size: 160 }, object: true });
 }
 
 // ---- renders
@@ -157,6 +192,12 @@ if (todo.length) {
           const data = await page.evaluate(() => document.querySelector('canvas').toDataURL('image/png'));
           mkdirSync(png.slice(0, png.lastIndexOf('/')), { recursive: true });
           writeFileSync(png, Buffer.from(data.split(',')[1], 'base64'));
+          if (r.joints) {
+            // where the bones fall in this capture (raw pixels), for the marks of the schemas
+            const j = await page.evaluate((names) => window.__labJoints(names), r.joints);
+            for (const k in j) if (j[k]) j[k] = j[k].map((v) => v * r.dpr);
+            writeFileSync(`${png}.json`, JSON.stringify(j));
+          }
         }
         console.log(`rendu [${++done}/${todo.length}] ${r.png}`);
       } catch (e) {
@@ -179,6 +220,21 @@ if (scenesTodo.length) {
 }
 
 // ---- compositions
+// marks of the schemas: each mark sits on a bone (or between bones) of its layer, as the Lab reported it
+for (const j of jobs) {
+  if (!j.markSpec) continue;
+  j.marks = j.markSpec.flatMap((m) => {
+    const file = `${j.layers[m.layer ?? 0]}.json`;
+    if (!existsSync(file)) return [];
+    const at = JSON.parse(readFileSync(file, 'utf8'));
+    const pts = [].concat(m.bone).map((b) => at[b]).filter(Boolean);
+    if (!pts.length) return [];
+    const x = pts.reduce((a, p) => a + p[0], 0) / pts.length;
+    const y = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+    return [{ ...m, x, y }];
+  });
+  delete j.markSpec;
+}
 const ready = jobs.filter((j) => j.layers.every((p) => existsSync(p)));
 if (ready.length < jobs.length) console.log(`MANQUE ${jobs.length - ready.length} rendus : ${jobs.filter((j) => !ready.includes(j)).map((j) => j.out).join(', ')}`);
 mkdirSync(CACHE, { recursive: true });
