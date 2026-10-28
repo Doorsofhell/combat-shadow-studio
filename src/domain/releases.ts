@@ -49,7 +49,7 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
-      version: '1.2.1',
+      version: '1.3.1',
       releaseDate: '2026-10-28',
       title: 'Visuels studio',
       isMajor: false,
@@ -57,11 +57,28 @@ export const RELEASES: readonly Release[] = (
         { category: 'ameliorations', text: 'Toutes les images des coachs ont l’allure de photos de salle de boxe : Kadir et Amara, éclairés comme en studio dans une salle sombre, avec une ambiance par discipline (bleu nuit pour la boxe, ambre pour le kick-boxing, rouge pour le muay-thaï, acier pour le MMA, bois chaud pour le judo, indigo pour le JJB).' },
         { category: 'ameliorations', text: 'C’est le cas partout : vignettes des techniques et des programmes, illustrations de l’Encyclopédie (objets et lieux compris), visuels des disciplines et portraits de « Choisis ton coach ».' },
         { category: 'disciplines', text: 'Le judo et le jiu-jitsu brésilien ont enfin leur visuel, comme les quatre autres disciplines.' },
+        { category: 'ameliorations', text: 'Kimonos de judo et de JJB plus naturels : un tissu de coton, sans l’effet tricot, sur le coach animé comme sur les images.' },
       ],
       links: [
         { label: 'Techniques', to: '/techniques' },
         { label: 'Encyclopédie', to: '/encyclopedie' },
       ],
+    },
+    {
+      version: '1.3.0',
+      releaseDate: '2026-10-28',
+      title: 'Consignes enchaînées sous le coach',
+      isMajor: false,
+      changes: [
+        { category: 'fonctionnalites', text: 'Pendant la séance, les consignes défilent une à une sous les pieds du coach : la consigne principale, puis chaque point clé, puis on recommence. Des petits traits montrent où tu en es.' },
+        { category: 'fonctionnalites', text: 'Elles restent en plein écran, la pause les arrête, et le coach est cadré au-dessus : le texte ne le couvre jamais.' },
+        { category: 'fonctionnalites', text: 'Un haut-parleur sous la vitesse et le plein écran, à droite du coach : chaque toucher passe au cran suivant (coupé, faible, moyen, fort), et ses ondes montrent le volume.' },
+        { category: 'ameliorations', text: 'Réglages › Consignes pendant la séance : 2,5, 3,5 ou 5 secondes par consigne, ou « Point du moment » pour garder l’affichage d’avant.' },
+        { category: 'corrections', text: 'Accueil : le numéro de version suit le titre de l’application au lieu de passer sous ta photo.' },
+        { category: 'ameliorations', text: 'Mes infos et Réglages n’ont plus de ⋮ en haut à droite : tout ce qu’il proposait est déjà sur ces deux pages ou dans la barre du bas.' },
+        { category: 'corrections', text: 'Fiche technique : « S’entraîner » n’est plus jamais grisé (une technique sans exercice se travaille seule), et les angles de caméra restent visibles au-dessus du bouton.' },
+      ],
+      links: [{ label: 'Consignes pendant la séance', to: '/reglages/consignes' }],
     },
     {
       version: '1.2.0',

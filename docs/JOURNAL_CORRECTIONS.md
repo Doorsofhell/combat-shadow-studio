@@ -2106,7 +2106,14 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Android réel : NON EXÉCUTÉ.
 
 
-## 2026-10-28 · 1.2.1 · Visuels studio
+## 2026-10-28 · 1.3.0 · Consignes enchaînées sous le coach
+
+- **Demande** (Youssef, 28 octobre) : « A avec un enchaînement temporisé des consignes pour gain de place », « mode Enchaîné ==> OK » ; puis, pendant le lot : bouton « S'entraîner » grisé qui masque les options de visualisation (capture) ; haut-parleur « comme sur Windows », un toucher par cran, volume visible dans l'icône, sous les deux boutons de droite ; retirer les ⋮ de Mes infos et Réglages ; version sous la photo à remettre après le titre.
+- **Constat après vérification** : 67 couples technique/discipline n'avaient aucun exercice qui les travaille, d'où le bouton grisé (ex. high kick avant en MMA) ; la scène de la fiche technique laissait les angles de caméra sous le gros bouton à l'ouverture ; le ⋮ de Mes infos ne contenait que « Coach » et celui de Réglages « Affichage », déjà présents comme lignes ; la version était alignée à droite, sous la photo.
+- **Changement** (détail dans `docs/v130/RAPPORT.md`, captures jour et nuit dans `docs/v130/captures/`) : bande des consignes sur le sol (`ConsigneBand.tsx`), caméra qui garde le coach au-dessus, réglage Enchaînées / Point du moment et 2,5 / 3,5 / 5 s ; séance d'une technique seule (`techniquePlan`) ; hauteur de la scène de la fiche ; haut-parleur à crans (`SoundButton.tsx`) ; pas de ⋮ sur Mes infos et Réglages ; version après le titre ; Nouveautés 1.3.0, version 1.3.0.
+- **Tests** : TypeScript RÉUSSI ; Vitest 858 RÉUSSIS, 1 ignoré ; nouveau `consignes-v130.spec.ts` 9/9 RÉUSSIS ; Playwright complet 256 RÉUSSIS, 2 ignorés, 2 ÉCHOUÉS déjà en échec avant (`training-layout:329`, `coach-suggest:98`) ; relance des fichiers touchés après les ajouts : RÉUSSIS sauf `training-layout:329`. Android réel : NON EXÉCUTÉ.
+
+## 2026-10-28 · 1.3.1 · Visuels studio
 
 - **Demande** (Youssef, 28 octobre) : « pour toutes les images, des images réelles générées par IA, comme l'application sur la capture d'écran » ; après les exemples (https://claude.ai/artifact/3MBXcyKTaEeLuL3Qe7NALH) : « ambiance par discipline ; génération automatique one shot (partout, même encyclopédie) mais prévois de régénérer à la demande ; attention, les positions doivent être humaines et réalistes ».
 - **Constat** : des photos générées par IA ne sont pas possibles ici (aucun outil photoréaliste, sites bloqués). Les images de l'application étaient de trois styles : vignettes des techniques dessinées sur fond blanc (ancien modèle), encyclopédie en rendu réaliste sur fond blanc, visuels des disciplines dessinés ; le judo et le JJB n'avaient pas de visuel.
@@ -2115,7 +2122,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - une ambiance par discipline (`scripts/visuels/ambiances.json`) : boxe bleu nuit, kick-boxing ambre, muay-thaï rouge, MMA acier, judo bois chaud, JJB indigo ;
   - refaits : 182 vignettes (240 × 300), 56 illustrations de coach et 11 objets ou lieux de l'encyclopédie, 6 visuels de discipline (judo et JJB ajoutés), 2 portraits de « Choisis ton coach » ;
   - fond des vignettes sombre (`.tech-thumb`), provenance des images de l'encyclopédie mise à jour, anciens scripts de capture remplacés (`shot-thumbs`, `shot-portraits`, `encyclopedie/renders`, `encyclopedie/webp`) ;
-  - Nouveautés 1.2.1, version 1.2.1.
+  - Nouveautés 1.3.1, version 1.3.1 (prévue 1.2.1, renumérotée après la 1.3.0).
 - **Contrôle des poses** (`docs/visuels/CONTROLE_POSES.md`) : chaque rendu vérifié sur planche ; 3 corrections (`scripts/visuels/poses.json`) : sprawl montré de face (l'animation garde les tibias levés, anomalie du moteur à corriger dans un lot à part), sit-out à l'instant où la main est posée, visuel du judo en garde de saisie.
 - **Kimonos moins tricot** (Youssef, 28 octobre 13:22 : « je valide les visuels, pour les kimonos, essaye de les faire avec effet moins tricot » ; 13:28 : « intègre-la partout, même aux coachs animés ») :
   - constat : le tissu du judogi et du kimono de JJB était un grain en quadrillage très régulier (`rice`, v0.32) avec un relief marqué ; une fois l'image réduite, cette grille se lit comme des mailles de tricot ;

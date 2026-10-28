@@ -6,7 +6,7 @@ import { DISCIPLINES } from '../types';
 import { DISCIPLINE_ART } from '../disciplineArt';
 import { RENDERS, SCENES } from '../encyclopedia/images';
 
-// 1.2.1 « Visuels studio » (Youssef, 2026-10-28): every picture of a coach is made by scripts/visuels from our own 3D
+// 1.3.1 « Visuels studio » (Youssef, 2026-10-28): every picture of a coach is made by scripts/visuels from our own 3D
 // coaches, in the dark gym of its discipline. These tests check what the generator promises: every file, at its size,
 // one ambiance per discipline, and pose corrections that name real techniques.
 const root = resolve(__dirname, '../../..');

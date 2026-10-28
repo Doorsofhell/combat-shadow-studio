@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { seedProfile } from './nav-helpers';
 
-// 1.2.1 « Visuels studio » (Youssef, 2026-10-28: « ambiance par discipline, génération automatique, partout, même
+// 1.3.1 « Visuels studio » (Youssef, 2026-10-28: « ambiance par discipline, génération automatique, partout, même
 // encyclopédie »): the pictures of the coach come from scripts/visuels. Each one is really loaded, at the size the
 // generator writes, on the dark ground of the studio (no white frame left around a card picture), and judo and BJJ
 // have their discipline artwork like the four others.

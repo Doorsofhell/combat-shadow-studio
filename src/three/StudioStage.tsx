@@ -137,10 +137,11 @@ function VividLights({ shadows }: { shadows: boolean }) {
 }
 
 /** camera state read by the end-to-end tests (degrees): where it looks from, relative to the coach */
-function probe(s: { az: number; el: number; dist: number }, o: { yaw: number }, free: boolean) {
+function probe(s: { az: number; el: number; dist: number }, o: { yaw: number }, free: boolean, extra?: { insetBottom: number; floorY: number }) {
   const w = window as unknown as { __cssCamera?: object };
-  w.__cssCamera = { az: (s.az * 180) / Math.PI, el: (s.el * 180) / Math.PI, dist: s.dist, coachYaw: (o.yaw * 180) / Math.PI, free };
+  w.__cssCamera = { az: (s.az * 180) / Math.PI, el: (s.el * 180) / Math.PI, dist: s.dist, coachYaw: (o.yaw * 180) / Math.PI, free, ...extra };
 }
+const floorPt = new Vector3();
 
 const DEFAULT_BOX = new Box3(new Vector3(-0.55, 0, -0.6), new Vector3(0.55, 1.95, 0.7));
 const deg = Math.PI / 180;
@@ -251,7 +252,11 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
     cam.position.set(s.target.x + Math.sin(s.az) * Math.cos(s.el) * s.dist, s.target.y + Math.sin(s.el) * s.dist, s.target.z + Math.cos(s.az) * Math.cos(s.el) * s.dist);
     cam.lookAt(s.target);
     if (controls.current) controls.current.target.copy(s.target);
-    probe(s, o, false);
+    // 1.3.0: where the floor under the coach is drawn (fraction of the canvas height from the top) and the part of the
+    // canvas kept free at the bottom, for the tests: the instructions band must stay under the feet
+    cam.updateMatrixWorld();
+    floorPt.set(s.target.x, 0, s.target.z).project(cam);
+    probe(s, o, false, { insetBottom: ins?.bottom ?? 0, floorY: (1 - floorPt.y) / 2 });
   });
 
   const hi = quality === 'haute';

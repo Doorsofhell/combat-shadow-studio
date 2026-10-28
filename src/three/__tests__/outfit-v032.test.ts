@@ -115,7 +115,7 @@ function webpSize(path: string) {
 }
 
 describe('écran « Choisis ton coach »', () => {
-  // v0.32: the cartoon drawings are replaced by renders of the shipped 3D coaches (scripts/visuels since 1.2.1),
+  // v0.32: the cartoon drawings are replaced by renders of the shipped 3D coaches (scripts/visuels since 1.3.1),
   // at a resolution sharp on Android screens (450 x 600 points at density 2)
   test.each(COACHES)('%s : portrait rendu depuis le modèle 3D, 900 x 1200', (coach) => {
     expect(webpSize(`public/coaches/${coach}/portrait.webp`)).toEqual({ w: 900, h: 1200 });
