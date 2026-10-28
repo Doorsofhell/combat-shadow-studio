@@ -76,6 +76,9 @@ export function openNews() {
  * - Retour as a chip at the top left, except on the five places and their tabs.
  * The height of the whole is measured and given to the pages as --nav-h, so nothing hides behind it.
  */
+/** 1.3.0: screens whose every action is already on the page or in the bar */
+const NO_KEBAB: ReadonlySet<string> = new Set(['profil', 'parametres']);
+
 export function BottomBar() {
   const loc = useLocation();
   const nav = useNavigate();
@@ -227,8 +230,11 @@ export function BottomBar() {
   // 1.1.0 (proposition A « Android »): out of the session and the chronometer, the actions of the screen other than
   // its big button go into the ⋮ at the top right (with the commands of the former « Plus »), next to the photo of
   // the profile; the bar keeps its five places, Rechercher in place of Profil
-  const options = inRow ? [] : secondary;
-  const hasOptions = options.length > 0 || (!inRow && hasMore);
+  // 1.3.0 (Youssef, 2026-10-28: « Retire les … en haut à droite car tous les menus proposés sont déjà dans les pages
+  // principales Mes infos et Réglages »): no ⋮ on those two pages; Activité is Progrès in the bar, Coach and Affichage
+  // are rows of Réglages, Mes infos and Réglages are the two tabs
+  const options = inRow || NO_KEBAB.has(screen) ? [] : secondary;
+  const hasOptions = options.length > 0 || (!inRow && hasMore && !NO_KEBAB.has(screen));
   const searchOn = sheet === 'search';
   const profileOn = section === 'profil';
   // not on the full-screen tools (session, chronometer, fighter studio): their own buttons sit at the top right

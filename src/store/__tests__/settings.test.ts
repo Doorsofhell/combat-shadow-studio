@@ -45,3 +45,22 @@ describe('réglages : taille de la fenêtre du coach IA', () => {
     expect(bad.settings.coachPanelSize).toBe('normal');
   });
 });
+
+describe('1.3.0 consignes pendant la séance', () => {
+  const merge = useSettings.persist.getOptions().merge!;
+  type S = ReturnType<typeof useSettings.getState>;
+  it('une sauvegarde d’avant 1.3.0 reçoit « Enchaînées, 3,5 s » et garde ses autres choix', () => {
+    const old = merge({ settings: { voice: false } }, useSettings.getState()) as S;
+    expect(old.settings.voice).toBe(false);
+    expect(old.settings.consignes).toBe('enchainees');
+    expect(old.settings.consigneSec).toBe(3.5);
+  });
+  it('un choix enregistré est gardé, une valeur inconnue revient au défaut', () => {
+    const kept = merge({ settings: { consignes: 'point', consigneSec: 5 } }, useSettings.getState()) as S;
+    expect(kept.settings.consignes).toBe('point');
+    expect(kept.settings.consigneSec).toBe(5);
+    const bad = merge({ settings: { consignes: 'x' as never, consigneSec: 9 } }, useSettings.getState()) as S;
+    expect(bad.settings.consignes).toBe('enchainees');
+    expect(bad.settings.consigneSec).toBe(3.5);
+  });
+});

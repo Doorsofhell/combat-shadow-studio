@@ -28,9 +28,11 @@ const SCREENS: [string, string, string[][], string[] | null, string | null, stri
   ['/champions', 'legendes', [], ['Disciplines', 'Légende'], null, 'Apprendre', null],
   // 1.0.0 (lot 2): Mon coach and Réglages are tabs of Profil at the top of the screen, not repeated
   // 1.2.0: Mon coach is a row of Réglages, no longer a tab: « Coach » of the bar is in the ⋮ (it opens that row)
-  ['/profil', 'profil', [], ['Coach'], null, 'Profil', null],
+  // 1.3.0 (Youssef, 2026-10-28: « Retire les … en haut à droite car tous les menus proposés sont déjà dans les pages
+  // principales Mes infos et Réglages »): no ⋮ on Mes infos and Réglages
+  ['/profil', 'profil', [], null, null, 'Profil', null],
   // 1.1.0: « Caméra » left Réglages (it opened the same page as Affichage)
-  ['/reglages', 'parametres', [], ['Affichage'], null, 'Profil', null],
+  ['/reglages', 'parametres', [], null, null, 'Profil', null],
   // 1.1.1 (Youssef, 2026-10-28: « Plus si uniquement rechercher le retirer car en doublon »): the magnifier is in the
   // bar here, so no « Plus » holding only « Rechercher »
   ['/chrono', 'chrono', [RETOUR, ['options', 'Réglages'], ['play', 'Démarrer']], null, 'toggle', 'Entraîner', 'row'],
@@ -189,14 +191,14 @@ test.describe('393×851', () => {
     const news = page.getByTestId('news-sheet');
     await expect(news).toBeVisible();
     const versions = await news.locator('[data-version]').evaluateAll((a) => a.map((x) => x.getAttribute('data-version')));
-    expect(versions[0]).toBe('1.2.0');
+    expect(versions[0]).toBe('1.3.0');
     expect(versions).toContain('0.49.0');
     expect(versions).toContain('0.34.0');
     expect(versions).toContain('0.33.0');
     expect(versions).toContain('0.32.0');
     expect(versions).toContain('0.31.0');
     expect(versions).toContain('1.0.0');
-    await expect(news.locator('[data-version="1.2.0"]')).toContainText('Version 1.2.0 · la plus récente');
+    await expect(news.locator('[data-version="1.3.0"]')).toContainText('Version 1.3.0 · la plus récente');
     await expect(news).not.toContainText('fictive');
     // seen: the dots go away at once
     await expect(page.getByTestId('menu-dot')).toHaveCount(0);
@@ -384,8 +386,10 @@ test.describe('393×851', () => {
     await page.getByTestId('tab-reglages').click();
     await expect(page).toHaveURL(/#\/reglages$/);
     // 1.1.0: « Caméra » left Réglages; the camera settings are on the page « Affichage »
-    await tapAction(page, 'nav:/reglages/affichage');
-    await expect(page).toHaveURL(/#\/reglages\/affichage/);
+    // 1.3.0: no ⋮ on Réglages any more: Affichage is its row (the address /reglages/affichage still opens it)
+    await openSetting(page, 'affichage');
+    await expect(page.getByTestId('settings-camera')).toHaveCount(1);
+    await page.goto('/#/reglages/affichage');
     await expect(page.getByTestId('settings-camera')).toHaveCount(1);
   });
 

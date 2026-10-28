@@ -2105,3 +2105,10 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet (254 tests, 37,5 min) : 250 RÉUSSIS, 2 ignorés (Firebase), 2 ÉCHOUÉS : `training-layout:329` (déjà en échec avant la 1.0.0) et `coach-suggest:98` (ÉCHOUÉ aussi sur la 1.1.1, sans lien avec ce lot).
   - Android réel : NON EXÉCUTÉ.
 
+
+## 2026-10-28 · 1.3.0 · Consignes enchaînées sous le coach
+
+- **Demande** (Youssef, 28 octobre) : « A avec un enchaînement temporisé des consignes pour gain de place », « mode Enchaîné ==> OK » ; puis, pendant le lot : bouton « S'entraîner » grisé qui masque les options de visualisation (capture) ; haut-parleur « comme sur Windows », un toucher par cran, volume visible dans l'icône, sous les deux boutons de droite ; retirer les ⋮ de Mes infos et Réglages ; version sous la photo à remettre après le titre.
+- **Constat après vérification** : 67 couples technique/discipline n'avaient aucun exercice qui les travaille, d'où le bouton grisé (ex. high kick avant en MMA) ; la scène de la fiche technique laissait les angles de caméra sous le gros bouton à l'ouverture ; le ⋮ de Mes infos ne contenait que « Coach » et celui de Réglages « Affichage », déjà présents comme lignes ; la version était alignée à droite, sous la photo.
+- **Changement** (détail dans `docs/v130/RAPPORT.md`, captures jour et nuit dans `docs/v130/captures/`) : bande des consignes sur le sol (`ConsigneBand.tsx`), caméra qui garde le coach au-dessus, réglage Enchaînées / Point du moment et 2,5 / 3,5 / 5 s ; séance d'une technique seule (`techniquePlan`) ; hauteur de la scène de la fiche ; haut-parleur à crans (`SoundButton.tsx`) ; pas de ⋮ sur Mes infos et Réglages ; version après le titre ; Nouveautés 1.3.0, version 1.3.0.
+- **Tests** : TypeScript RÉUSSI ; Vitest 858 RÉUSSIS, 1 ignoré ; nouveau `consignes-v130.spec.ts` 9/9 RÉUSSIS ; Playwright complet 256 RÉUSSIS, 2 ignorés, 2 ÉCHOUÉS déjà en échec avant (`training-layout:329`, `coach-suggest:98`) ; relance des fichiers touchés après les ajouts : RÉUSSIS sauf `training-layout:329`. Android réel : NON EXÉCUTÉ.
