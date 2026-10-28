@@ -143,3 +143,26 @@ test('Mes infos et Réglages : plus de ⋮ en haut à droite, leur contenu reste
   await expect(page.getByTestId('set-affichage')).toBeVisible();
   await expect(page.getByTestId('bottom-bar').locator('[data-tab="progres"]')).toBeVisible();
 });
+
+test('haut-parleur sous la vitesse et le plein écran : chaque toucher passe au cran suivant, l’icône montre le volume', async ({ page }) => {
+  await seedProfile(page);
+  await page.goto('/#/entrainement?ex=boxe-debutant-02&mode=technique');
+  const sound = page.getByTestId('sound');
+  await expect(sound).toBeVisible();
+  // under the two tools already there, on the right of the stage
+  const [spd, fs, snd] = await Promise.all([page.locator('.stage-tools .btn').first().boundingBox(), page.getByTestId('fullscreen').boundingBox(), sound.boundingBox()]);
+  expect(snd!.y).toBeGreaterThan(fs!.y + fs!.height - 1);
+  expect(Math.abs(snd!.x + snd!.width - (fs!.x + fs!.width))).toBeLessThan(2);
+  expect(spd!.y).toBeLessThan(fs!.y);
+  // voice on at 100 % by default: loud, then off, low, medium, loud
+  await expect(sound).toHaveAttribute('data-level', '3');
+  for (const level of ['0', '1', '2', '3']) {
+    await sound.click();
+    await expect(sound).toHaveAttribute('data-level', level);
+    await expect(sound.locator('.sound-steps i.on')).toHaveCount(Number(level));
+  }
+  // the same setting as Réglages › Voix et sons
+  await sound.click();
+  await page.goto('/#/reglages/voix');
+  await expect(page.getByTestId('set-voix')).toContainText('Voix coupée');
+});

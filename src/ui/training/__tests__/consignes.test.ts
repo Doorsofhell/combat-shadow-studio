@@ -49,3 +49,13 @@ describe('1.3.0 consignes enchaînées', () => {
     for (const id of Object.keys(INSTRUCTIONS)) expect(consigneLines(id).length, id).toBeGreaterThanOrEqual(3);
   });
 });
+
+describe('1.3.0 haut-parleur à crans', () => {
+  it('coupé, faible, moyen, fort selon les réglages de la voix', async () => {
+    const { soundLevel, SOUND_STEPS } = await import('../SoundButton');
+    expect(soundLevel(false, 1)).toBe(0);
+    expect(soundLevel(true, 0)).toBe(0);
+    expect(SOUND_STEPS.slice(1).map((v) => soundLevel(true, v))).toEqual([1, 2, 3]);
+    expect(soundLevel(true, 0.6)).toBe(2);
+  });
+});

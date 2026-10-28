@@ -27,6 +27,7 @@ import type { StageView } from '../../three/StudioStage';
 import { StudyPanel, useStudy } from '../training/Study';
 import { MoveBand, MoveName } from '../training/MoveBand';
 import { ConsigneBand } from '../training/ConsigneBand';
+import { SoundButton } from '../training/SoundButton';
 import { ArBridge } from '../../ar/ArBridge';
 import { CoachLookPicker } from '../components/CoachLookPicker';
 import { ArControls, ArIntroSheet, useArView } from '../training/ArMode';
@@ -588,6 +589,8 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
               <AppIcon id="fullscreen" />
             </button>
           )}
+          {/* 1.3.0 (Youssef: « en dessous des deux options déjà présentes… à droite de l'écran »): the sound, one tap per step */}
+          {!arActive && <SoundButton />}
         </div>
         {!st.tech && !arActive && (settings.groundMarks.avantArriere || settings.groundMarks.pivot || settings.groundMarks.trajectoire) && (
           <div className="mark-legend" aria-label="Légende des repères" data-testid="mark-legend">

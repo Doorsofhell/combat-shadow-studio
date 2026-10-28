@@ -386,8 +386,10 @@ test.describe('393×851', () => {
     await page.getByTestId('tab-reglages').click();
     await expect(page).toHaveURL(/#\/reglages$/);
     // 1.1.0: « Caméra » left Réglages; the camera settings are on the page « Affichage »
-    await tapAction(page, 'nav:/reglages/affichage');
-    await expect(page).toHaveURL(/#\/reglages\/affichage/);
+    // 1.3.0: no ⋮ on Réglages any more: Affichage is its row (the address /reglages/affichage still opens it)
+    await openSetting(page, 'affichage');
+    await expect(page.getByTestId('settings-camera')).toHaveCount(1);
+    await page.goto('/#/reglages/affichage');
     await expect(page.getByTestId('settings-camera')).toHaveCount(1);
   });
 
