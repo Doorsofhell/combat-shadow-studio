@@ -47,6 +47,10 @@ function useEncyclopediaBar(place: Place) {
   });
 }
 
+/** the Claude page holds at most 512 files: its build (VITE_ENC_FULL_ONLY=1) ships no « -mini » copies and the
+ * thumbnails show the full image, scaled down by the browser */
+const FULL_ONLY = import.meta.env.VITE_ENC_FULL_ONLY === '1';
+
 /** an illustration, or the honest « to make » box (§11: never a stand-in picture) */
 export function EncImage({ id, mini, className = '' }: { id?: string; mini?: boolean; className?: string }) {
   const img = imageOf(id);
@@ -63,7 +67,7 @@ export function EncImage({ id, mini, className = '' }: { id?: string; mini?: boo
   return (
     <img
       className={`enc-img ${mini ? 'mini' : ''} ${className}`}
-      src={`${base}encyclopedie/${img.file}${mini ? '-mini' : ''}.webp`}
+      src={`${base}encyclopedie/${img.file}${mini && !FULL_ONLY ? '-mini' : ''}.webp`}
       width={w}
       height={h}
       alt={img.alt}
