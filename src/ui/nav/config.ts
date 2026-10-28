@@ -80,7 +80,10 @@ const BACK: NavSlot = { icon: 'back', label: 'Retour', action: 'back' };
 const MENU: NavSlot = { icon: 'grid', label: 'Menu', action: 'menu' };
 
 /** settings and the screens that hang from it: the mockup's `default` case */
-const SETTINGS: NavSlot[] = [BACK, { icon: 'user', label: 'Profil', action: 'nav:/profil' }, { icon: 'options', label: 'Affichage', action: 'nav:/reglages/affichage' }, { icon: 'camera', label: 'Caméra', action: 'nav:/reglages/affichage?focus=camera' }, MENU];
+// 1.1.0 (Youssef, 2026-10-27: « l'appareil photo sur cette page ne sert à rien, si c'est réellement le cas
+// retire-le »): Caméra led to the camera section of Affichage, the page itself on Affichage; the settings of the
+// camera stay in Réglages › Affichage 3D (and « Caméra » in Rechercher)
+const SETTINGS: NavSlot[] = [BACK, { icon: 'user', label: 'Profil', action: 'nav:/profil' }, { icon: 'options', label: 'Affichage', action: 'nav:/reglages/affichage' }, MENU];
 
 /** screens without actions of their own: the three main places of the app between Retour and Menu */
 /** the encyclopedia: its three ways in (families, A–Z, favourites) between Retour and Menu */
@@ -109,7 +112,8 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
   // 5.2 / 5.3 — the mockup's `train`; place 2 is drawn from the session state (see TOGGLE)
   entrainement: [BACK, { icon: 'play', label: 'Démarrer', action: 'toggle' }, { icon: 'scan', label: 'Décomposer', action: 'decompose' }, { icon: 'camera', label: 'Caméra', action: 'camera' }, MENU],
   // 5.4 — the mockup's `tech`
-  techniques: [BACK, { icon: 'search', label: 'Rechercher', action: 'search' }, { icon: 'filter', label: 'Filtres', action: 'filters' }, { icon: 'play', label: 'Technique', action: 'open-selected' }, MENU],
+  // 1.1.0: Rechercher is a place of the bar, scoped to the techniques here (LibraryNav.tsx)
+  techniques: [BACK, { icon: 'filter', label: 'Filtres', action: 'filters' }, { icon: 'play', label: 'Technique', action: 'open-selected' }, MENU],
   // 5.5 — the mockup's `detail`
   fiche: [BACK, { icon: 'play', label: 'S’entraîner', action: 'train' }, { icon: 'speed', label: 'Ralenti', action: 'slow' }, { icon: 'check', label: 'Maîtrise', action: 'mastery' }, MENU],
   // 5.6 — the mockup's `progress`
@@ -119,7 +123,7 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
   'progres-activite': [BACK, { icon: 'calendar', label: 'Période', action: 'period' }, { icon: 'chart', label: 'Statistiques', action: 'stats' }, { icon: 'history', label: 'Historique', action: 'history' }, MENU],
   'progres-detail': [BACK, { icon: 'calendar', label: 'Période', action: 'period' }, { icon: 'chart', label: 'Vue d’ensemble', action: 'nav:/stats' }, { icon: 'history', label: 'Historique', action: 'nav:/historique' }, MENU],
   // 5.7 — the mockup's `legends`
-  legendes: [BACK, { icon: 'search', label: 'Rechercher', action: 'search' }, { icon: 'filter', label: 'Disciplines', action: 'filters' }, { icon: 'star', label: 'Légende', action: 'open-selected' }, MENU],
+  legendes: [BACK, { icon: 'filter', label: 'Disciplines', action: 'filters' }, { icon: 'star', label: 'Légende', action: 'open-selected' }, MENU],
   // 5.8 — the mockup's `legenddetail`
   'fiche-legende': [BACK, { icon: 'history', label: 'Parcours', action: 'career' }, { icon: 'dumbbell', label: 'Techniques', action: 'techniques' }, { icon: 'heart', label: 'Favoris', action: 'favorite' }, MENU],
   // 5.9 — the mockup's `profile`
@@ -138,14 +142,15 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
   // chronometer options (or leads back to the setup), Chrono is the place shown
   chrono: [BACK, { icon: 'play', label: 'Démarrer', action: 'toggle' }, { icon: 'options', label: 'Réglages', action: 'setup' }, CHRONO, MENU],
   // 5.11 — the other screens, built on the same rules (Retour first, Menu last, the main action second)
-  entrainer: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'calendar', label: 'Programmes', action: 'nav:/programmes' }, CHRONO, MENU],
+  // 1.1.0: Chrono is the third choice of Séance (Séances / Disciplines / Chrono), no longer an action here
+  entrainer: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'calendar', label: 'Programmes', action: 'nav:/programmes' }, MENU],
   discipline: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'layers', label: 'Techniques', action: 'techniques' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
   // 0.41 (Youssef, « Enrichissement des programmes » §6): the programme filters are in the bar, as in the Créateur
   programmes: [BACK, { icon: 'filter', label: 'Filtrer', action: 'filters' }, CHRONO, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
   programme: [BACK, { icon: 'play', label: 'Démarrer', action: 'start' }, { icon: 'calendar', label: 'Programmes', action: 'nav:/programmes' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
   partenaire: [BACK, { icon: 'layers', label: 'Techniques', action: 'techniques' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, { icon: 'chart', label: 'Progrès', action: 'nav:/stats' }, MENU],
   // 0.38 (Youssef, « Créateur d'enchaînements V2 »): the list, the sheet and the editor of the user's sequences
-  createur: [BACK, { icon: 'search', label: 'Rechercher', action: 'search' }, { icon: 'filter', label: 'Filtrer', action: 'filters' }, { icon: 'plus', label: 'Créer', action: 'nav:/createur/nouveau' }, MENU],
+  createur: [BACK, { icon: 'filter', label: 'Filtrer', action: 'filters' }, { icon: 'plus', label: 'Créer', action: 'nav:/createur/nouveau' }, MENU],
   'createur-fiche': [BACK, { icon: 'play', label: 'Exécuter', action: 'run' }, { icon: 'edit', label: 'Modifier', action: 'edit' }, { icon: 'trash', label: 'Supprimer', action: 'delete' }, MENU],
   'createur-editeur': [BACK, { icon: 'plus', label: 'Ajouter', action: 'add' }, { icon: 'save', label: 'Enregistrer', action: 'save' }, { icon: 'close', label: 'Annuler', action: 'cancel' }, MENU],
   historique: [BACK, { icon: 'chart', label: 'Statistiques', action: 'nav:/stats' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, { icon: 'calendar', label: 'Objectifs', action: 'nav:/objectifs' }, MENU],
@@ -300,6 +305,14 @@ export const TABS: readonly Tab[] = [
   { id: 'profil', label: 'Profil', icon: 'user', to: '/profil' },
 ];
 
+/**
+ * 1.1.0 (Youssef, 2026-10-27, proposition A « La loupe prend la place de Profil »): the five places drawn in the bar;
+ * Profil (still a space, TABS) is the photo at the top right of every screen, Rechercher opens « Rechercher ou
+ * demander au coach » (no page of its own)
+ */
+export type BarPlace = Tab | { id: 'recherche'; label: string; icon: NavIconId; to: '' };
+export const BAR_PLACES: readonly BarPlace[] = [...TABS.filter((t) => t.id !== 'profil'), { id: 'recherche', label: 'Rechercher', icon: 'search', to: '' }];
+
 /** the space each screen belongs to: its place is lit in the bar */
 export const SECTION: Record<NavScreen, TabId | null> = {
   accueil: 'accueil',
@@ -363,6 +376,8 @@ export const ROOT_SCREENS: ReadonlySet<NavScreen> = new Set<NavScreen>([
 export function isRootPath(pathname: string): boolean {
   const p = pathname.replace(/\/+$/, '') || '/';
   if (TABS.some((t) => t.to === p)) return true;
+  // 1.1.0: the chronometer, third choice of Séance, under the tabs of Entraîner
+  if (p === '/chrono') return true;
   return Object.values(SECTION_TABS).some((tabs) => tabs!.some((t) => t.to === p));
 }
 
@@ -407,19 +422,6 @@ export function dockSlots(screen: NavScreen, pathname?: string): { slot: NavSlot
     .filter(({ slot }) => slot.action !== 'back' && slot.action !== 'menu' && !(slot.action.startsWith('nav:') && shown(slot.action.slice(4))));
 }
 
-/**
- * 1.0.0 (lot 3): how « Rechercher ou demander au coach » sits in the row of actions: a full glass field when the
- * screen has one action of its own at most, a round button with two, and none with three or more (the words of the
- * actions keep their room on a 360 px phone) or in the session; then it is the first command of « Plus ».
- */
-export function searchShape(screen: NavScreen, pathname?: string): 'full' | 'small' | 'none' {
-  if (NO_TABS.has(screen)) return 'none';
-  const primary = PRIMARY[screen];
-  const secondary = dockSlots(screen, pathname).filter((d) => d.slot.action !== primary).length;
-  if (secondary >= 3) return 'none';
-  return secondary >= 2 || (backInRow(screen, pathname) && !!primary) ? 'small' : 'full';
-}
-
 /** the tabs at the top of a space (lot 1: Apprendre and Progrès, which held the former Menu places; lot 2: Entraîner
  * and Profil) */
 export interface SectionTab {
@@ -430,11 +432,12 @@ export interface SectionTab {
 }
 export const SECTION_TABS: Partial<Record<TabId, readonly SectionTab[]>> = {
   entrainer: [
-    { id: 'seance', label: 'Séance', to: '/entrainer', screens: ['entrainer'] },
+    // 1.1.0 (Youssef, 2026-10-27: « je veux que chrono soit un troisième onglet et qu'il soit retiré en haut »):
+    // the chronometer is the third choice of Séance, its tab is Séance
+    { id: 'seance', label: 'Séance', to: '/entrainer', screens: ['entrainer', 'chrono'] },
     { id: 'programmes', label: 'Programmes', to: '/programmes', screens: ['programmes'] },
     { id: 'enchainements', label: 'Enchaînements', to: '/createur', screens: ['createur'] },
     { id: 'favoris', label: 'Favoris', to: '/favoris', screens: ['favoris'] },
-    { id: 'chrono', label: 'Chrono', to: '/chrono', screens: ['chrono'] },
   ],
   apprendre: [
     { id: 'techniques', label: 'Techniques', to: '/techniques', screens: ['techniques'] },

@@ -5,7 +5,7 @@ import { LATEST_RELEASE, hasUnseenRelease } from '../../domain/releases';
 import { usePhoto } from '../../store/photo';
 import { initials, useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { backInRow, searchShape, NAV_CONFIG, NAV_PARENT, NO_TABS, PRIMARY, ROOT_SCREENS, SECTION, TABS, dockSlots, isRootPath, navScreen, slotRole, type NavScreen, type NavSlot, type Tab } from './config';
+import { backInRow, BAR_PLACES, sectionTabsFor, NAV_CONFIG, NAV_PARENT, NO_TABS, PRIMARY, ROOT_SCREENS, SECTION, TABS, dockSlots, isRootPath, navScreen, slotRole, type NavScreen, type NavSlot, type Tab } from './config';
 import { pushLayer } from './layers';
 import { NavIcon } from './NavIcon';
 import { leave, useNavStore } from './store';
@@ -150,10 +150,13 @@ export function BottomBar() {
   const dock = dockSlots(screen, loc.pathname);
   const tabs = !NO_TABS.has(screen);
   const section = SECTION[screen];
-  // 1.0.0 (lot 3): the Coach IA has its way in on every screen with the search field, and stays the last command of
-  // « Plus » (always at the same place, the only way in during the session)
-  const withCoach = !loc.pathname.startsWith('/coach-ia');
-  const hasMore = commands.length > 0 || withCoach;
+  const inRow = backInRow(screen, loc.pathname);
+  // 1.1.0 (Youssef, 2026-10-27: « Retirer plus / coach IA car désormais il est dans la barre de recherche », then the
+  // magnifier as a place of the bar, proposition A): the Coach IA is reached from Rechercher; « Plus » (or the ⋮ at
+  // the top right) holds only what the screen gives
+  const tabsShown = !!sectionTabsFor(screen) && isRootPath(loc.pathname);
+  // in the session and the chronometer « Plus » always holds « Rechercher » (the bar's places are hidden there)
+  const hasMore = commands.length > 0 || inRow;
 
   const press = (slot: NavSlot) => {
     haptic();
@@ -218,50 +221,61 @@ export function BottomBar() {
   const menuSlot = slots.find((s) => s.action === 'menu');
   const primaryItem = primary ? dock.find((d) => d.slot.action === primary) : undefined;
   const secondary = dock.filter((d) => d !== primaryItem);
-  const inRow = backInRow(screen, loc.pathname);
   const me = initials(profile);
-  // « Rechercher ou demander au coach » (maquette v4): a glass field on every screen with the places; it shrinks to
-  // a round button when the screen already has two actions of its own or more, so the row keeps one line
-  const shape = searchShape(screen, loc.pathname);
-  const searchSmall = shape === 'small';
-  // a screen with its own « Rechercher » (Techniques, Légendes): the round button shows the coach's spark, so the two
-  // magnifiers are never side by side
-  const ownSearch = secondary.some((d) => d.slot.action === 'search');
-  const search = shape !== 'none' && (
-    <button
-      type="button"
-      className={`nav-search glass ${searchSmall ? 'small' : ''}`}
-      onClick={() => {
-        haptic();
-        openSearch();
-      }}
-      aria-label="Rechercher ou demander au coach"
-      aria-haspopup="dialog"
-      data-testid="app-search"
-    >
-      <NavIcon id={searchSmall && ownSearch ? 'sparkle' : 'search'} />
-      {!searchSmall && (
-        <>
-          <span className="nav-search-text">Rechercher ou demander au coach</span>
-          <span className="nav-search-ai" aria-hidden>
-            <NavIcon id="sparkle" />
-            IA
-          </span>
-        </>
+  // 1.1.0 (proposition A « Android »): out of the session and the chronometer, the actions of the screen other than
+  // its big button go into the ⋮ at the top right (with the commands of the former « Plus »), next to the photo of
+  // the profile; the bar keeps its five places, Rechercher in place of Profil
+  const options = inRow ? [] : secondary;
+  const hasOptions = options.length > 0 || (!inRow && hasMore);
+  const searchOn = sheet === 'search';
+  const profileOn = section === 'profil';
+  // not on the full-screen tools (session, chronometer, fighter studio): their own buttons sit at the top right
+  const topRight = tabs && !inRow && (
+    <div className={`nav-topright ${tabsShown ? 'in-tabs' : ''}`} data-testid="nav-topright">
+      {hasOptions && menuSlot && (
+        <button
+          type="button"
+          className="nav-kebab"
+          onClick={() => {
+            haptic();
+            openMenu();
+          }}
+          aria-label="Options de l’écran"
+          aria-haspopup="menu"
+          aria-expanded={sheet === 'menu'}
+          data-action="menu"
+          data-testid="nav-menu"
+        >
+          <NavIcon id="more" />
+        </button>
       )}
-    </button>
+      <button
+        type="button"
+        className={`nav-avatar ${profileOn ? 'on' : ''}`}
+        aria-current={profileOn ? 'page' : undefined}
+        aria-label={unseen ? 'Profil, nouvelle version à découvrir' : 'Profil'}
+        data-tab="profil"
+        data-testid="nav-profil"
+        onClick={() => goTab(TABS.find((t) => t.id === 'profil')!)}
+      >
+        <span className="nav-me" data-testid="nav-me">
+          {photo ? <img src={photo} alt="" /> : me}
+        </span>
+        {unseen && <i className="nav-dot" data-testid="menu-dot" aria-hidden />}
+      </button>
+    </div>
   );
 
   const bar = (
     <div className={`nav-bottom ${inRow && primaryItem ? 'compact' : ''} ${tabs ? '' : 'no-tabs'}`} ref={rootRef} data-testid="bottom-bar" data-screen={screen}>
       {backChip && backSlot && <div className="nav-backchip">{button(backSlot, 1, 'back')}</div>}
+      {topRight}
       <div className="nav-dock changing" ref={dockRef} role="toolbar" aria-label="Actions de l’écran">
-        {(secondary.length > 0 || (inRow && backSlot) || (hasMore && menuSlot) || search) && (
+        {inRow && (secondary.length > 0 || backSlot || (hasMore && menuSlot)) && (
           <div className={`nav-row ${secondary.length >= 3 ? 'many' : ''}`}>
-            {inRow && backSlot && button(backSlot, 1, 'back')}
-            {search}
+            {backSlot && button(backSlot, 1, 'back')}
             {secondary.map(({ slot, place }) => button(slot, place, 'secondary'))}
-            {inRow && primaryItem && button(primaryItem.slot, primaryItem.place, 'primary')}
+            {primaryItem && button(primaryItem.slot, primaryItem.place, 'primary')}
             {hasMore && menuSlot && button(menuSlot, slots.indexOf(menuSlot) + 1, 'more')}
           </div>
         )}
@@ -269,30 +283,46 @@ export function BottomBar() {
       </div>
       {tabs && (
         <nav className="nav-tabs" aria-label="Navigation principale">
-          {TABS.map((t) => {
-            const on = section === t.id;
+          {BAR_PLACES.map((t) => {
+            if (t.id === 'recherche') {
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  className={`nav-tab ${searchOn ? 'on' : ''}`}
+                  aria-label="Rechercher ou demander au coach"
+                  aria-haspopup="dialog"
+                  aria-expanded={searchOn}
+                  data-tab="recherche"
+                  data-testid="app-search"
+                  onClick={() => {
+                    haptic();
+                    openSearch();
+                  }}
+                >
+                  <span className="nav-ico">
+                    <NavIcon id="search" />
+                  </span>
+                  <small>{t.label}</small>
+                </button>
+              );
+            }
+            const on = section === t.id && !searchOn;
             return (
               <button
                 key={t.id}
                 type="button"
                 className={`nav-tab ${on ? 'on' : ''}`}
                 aria-current={on ? 'page' : undefined}
-                aria-label={t.id === 'profil' && unseen ? 'Profil, nouvelle version à découvrir' : t.label}
+                aria-label={t.label}
                 data-tab={t.id}
                 data-testid={`nav-${t.to === '/' ? 'accueil' : t.to.slice(1)}`}
-                onClick={() => goTab(t)}
+                onClick={() => goTab(t as Tab)}
               >
                 <span className="nav-ico">
-                  {t.id === 'profil' ? (
-                    <span className="nav-me" data-testid="nav-me">
-                      {photo ? <img src={photo} alt="" /> : me}
-                    </span>
-                  ) : (
-                    <NavIcon id={t.icon} />
-                  )}
+                  <NavIcon id={t.icon} />
                 </span>
                 <small>{t.label}</small>
-                {t.id === 'profil' && unseen && <i className="nav-dot" data-testid="menu-dot" aria-hidden />}
               </button>
             );
           })}

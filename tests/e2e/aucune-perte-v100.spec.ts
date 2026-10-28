@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { bar, seedProfile } from './nav-helpers';
+import { bar, closeMenu, menuItem, seedProfile, tapAction } from './nav-helpers';
 
 /**
  * 1.0.0 (refonte ergonomique, lot 5): the control promised in the validated plan (« Où va chaque contenu », Youssef,
@@ -13,8 +13,9 @@ test.describe.configure({ timeout: 300_000 });
 
 const tab = (page: Page, id: string) => page.getByTestId(`tab-${id}`).click();
 const PLACE: Record<string, string> = { accueil: 'accueil', entrainer: 'entrainer', techniques: 'apprendre', stats: 'progres', profil: 'profil' };
-/** one of the five places of the bar (by its place, not its test id: a screen action may share it) */
-const place = (page: Page, id: string) => bar(page).locator(`.nav-tab[data-tab="${PLACE[id]}"]`).click();
+/** one of the five places of the bar (by its place, not its test id: a screen action may share it); 1.1.0: Profil is
+ * the photo at the top right */
+const place = (page: Page, id: string) => bar(page).locator(`:is(.nav-tab, .nav-avatar)[data-tab="${PLACE[id]}"]`).click();
 
 test('plan, lignes 1 à 7 : l’ancien accueil (Reprendre, raccourcis, objectif, progression, Pour toi, favoris, légendes, programmes)', async ({ page }) => {
   await seedProfile(page);
@@ -73,9 +74,9 @@ test('plan, lignes 8 à 13 : Entraîner (démarrage rapide, discipline, programm
   await expect(page).toHaveURL(/#\/createur$/);
   await page.getByTestId('create-combo').first().click();
   await expect(page).toHaveURL(/#\/createur\/nouveau/);
-  // Chrono seul: Entraîner > Chrono
+  // Chrono seul: Entraîner > Séance > Chrono (1.1.0: third choice of Séance)
   await place(page, 'entrainer');
-  await tab(page, 'chrono');
+  await page.getByTestId('space-chrono').click();
   await expect(page).toHaveURL(/#\/chrono$/);
   // the session: Démarrer, Pause, then Décomposer, Caméra and Ralenti (in « Plus »)
   await place(page, 'entrainer');
@@ -89,7 +90,8 @@ test('plan, lignes 8 à 13 : Entraîner (démarrage rapide, discipline, programm
   await expect(page.getByTestId('resume')).toBeVisible();
   for (const a of ['decompose', 'camera']) await expect(bar(page).locator(`[data-action="${a}"]`), a).toBeVisible();
   await bar(page).locator('[data-action="menu"]').click();
-  for (const id of ['slow', 'options', 'cmd-restart']) await expect(page.getByTestId(id), id).toBeVisible();
+  // 1.1.0: and « Rechercher » (the Coach IA through it)
+  for (const id of ['slow', 'options', 'cmd-restart', 'cmd-search']) await expect(page.getByTestId(id), id).toBeVisible();
 });
 
 test('plan, lignes 14 à 17 : Apprendre (techniques, maîtrise et à revoir, fiches, partenaire, légendes, encyclopédie)', async ({ page }) => {
@@ -97,8 +99,10 @@ test('plan, lignes 14 à 17 : Apprendre (techniques, maîtrise et à revoir, fic
   await page.goto('/#/');
   await place(page, 'techniques');
   await expect(page).toHaveURL(/#\/techniques/);
-  // Rechercher and Filtres: actions of the screen
-  for (const a of ['nav-search', 'nav-filters']) await expect(bar(page).getByTestId(a), a).toBeVisible();
+  // Rechercher: the place of the bar (1.1.0); Filtres: in the ⋮ of the screen
+  await expect(bar(page).getByTestId('app-search')).toBeVisible();
+  await expect(await menuItem(page, 'filters')).toBeVisible();
+  await closeMenu(page);
   // a sheet of technique, its Maîtrise switch; « À revoir » comes back in the catalogue
   await page.locator('a[href*="#/techniques/"]').first().click();
   await expect(page.getByTestId('technique-page')).toBeVisible();
@@ -129,9 +133,9 @@ test('plan, lignes 14 à 17 : Apprendre (techniques, maîtrise et à revoir, fic
   await expect(page).toHaveURL(/#\/encyclopedie\/terme\//);
   await place(page, 'techniques');
   await tab(page, 'encyclopedie');
-  await bar(page).locator('[data-action="ency-az"]').click();
+  await tapAction(page, 'ency-az');
   await expect(page).toHaveURL(/#\/encyclopedie\/az$/);
-  await bar(page).locator('[data-action="ency-favoris"]').click();
+  await tapAction(page, 'ency-favoris');
   await expect(page).toHaveURL(/#\/encyclopedie\/favoris$/);
 });
 
@@ -177,7 +181,7 @@ test('plan, lignes 20 à 27 : Profil (photo, IMC, connexion, coach, Coach IA, r�
   await place(page, 'profil');
   await tab(page, 'coach');
   for (const id of ['coach-homme', 'coach-femme']) await expect(page.getByTestId(id), id).toBeVisible();
-  // Coach IA: the bar « Rechercher ou demander au coach », and Profil > Coach IA (the history)
+  // Coach IA: « Rechercher » in the bar (1.1.0), and Profil > Coach IA (the history)
   await tab(page, 'coach-ia');
   await expect(page).toHaveURL(/#\/coach-ia$/);
   await place(page, 'accueil');
@@ -201,7 +205,10 @@ test('plan, lignes 20 à 27 : Profil (photo, IMC, connexion, coach, Coach IA, r�
   // Premium à vie: Avantages, FAQ, Restaurer
   await page.getByTestId('reglages-premium').click();
   await expect(page.getByTestId('premium-benefits')).toBeVisible();
-  for (const a of ['benefits', 'faq', 'restore']) await expect(bar(page).locator(`[data-action="${a}"]`).or(page.getByRole('button', { name: new RegExp(a === 'faq' ? 'FAQ' : a === 'restore' ? 'Restaurer' : 'Avantages') })).first(), a).toBeVisible();
+  // 1.1.0: in the ⋮ at the top right
+  await menuItem(page, 'benefits');
+  for (const a of ['benefits', 'faq', 'restore']) await expect(page.getByTestId('nav-menu-sheet').locator(`[data-action="${a}"]`), a).toBeVisible();
+  await closeMenu(page);
   // Nouveautés: a tile of Réglages, with the real notes
   await place(page, 'profil');
   await tab(page, 'reglages');

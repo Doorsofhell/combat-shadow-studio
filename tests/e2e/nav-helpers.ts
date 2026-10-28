@@ -33,7 +33,7 @@ export async function seedProfile(page: Page, extra: Record<string, unknown> = {
 
 export const bar = (page: Page) => page.getByTestId('bottom-bar');
 
-/** opens « Plus » (1.0.0; formerly the Menu): the commands of the screen */
+/** opens « Plus » (1.0.0; formerly the Menu), 1.1.0: the ⋮ at the top right out of the session: the commands of the screen */
 export async function openMenu(page: Page) {
   // 1.0.0 (lot 4): a running session is hands-free, « Plus » comes back with the pause
   if ((await bar(page).getAttribute('data-screen')) === 'entrainement' && (await page.getByTestId('pause').isVisible())) await page.getByTestId('pause').click();
@@ -48,15 +48,47 @@ export async function menuCommand(page: Page, testId: string) {
   await expect(page.getByTestId('nav-menu-sheet')).toHaveCount(0);
 }
 
-/** the Coach IA panel, opened from the Menu (the former bubble) */
+/** the Coach IA panel, opened from the search (the former bubble) */
 export async function openCoachIA(page: Page) {
-  // 1.0.0 (lot 3): « Rechercher ou demander au coach » on every screen; « Plus » during a session
-  if ((await bar(page).getAttribute('data-screen')) === 'entrainement' || (await bar(page).getByTestId('app-search').count()) === 0) await menuCommand(page, 'cmd-coach-ia');
-  else {
-    await page.getByTestId('app-search').click();
-    await page.getByTestId('search-ask').click();
-  }
+  // 1.1.0 (loupe A): « Rechercher » is a place of the bar; in the session and the chronometer it is in « Plus »
+  await expect(bar(page)).toBeVisible();
+  if ((await bar(page).getByTestId('app-search').count()) === 0) await menuCommand(page, 'cmd-search');
+  else await page.getByTestId('app-search').click();
+  await page.getByTestId('search-ask').click();
   await expect(page.getByTestId('coach-bubble-panel')).toBeVisible();
+}
+
+/** an action of the screen by its action id (or `#testid`) */
+const sel = (key: string) => (key.startsWith('#') ? `[data-testid="${key.slice(1)}"]` : `[data-action="${key}"]`);
+
+/**
+ * 1.1.0 (proposition A « Android »): an action of the screen is in the row (session, chronometer, the big button)
+ * or in the ⋮ menu at the top right; this taps it wherever it is, like a person does
+ */
+export async function tapAction(page: Page, key: string) {
+  const inBar = bar(page).locator(sel(key));
+  if ((await inBar.count()) > 0 && (await inBar.first().isVisible())) return inBar.first().click();
+  await openMenu(page);
+  await page.getByTestId('nav-menu-sheet').locator(sel(key)).click();
+  await expect(page.getByTestId('nav-menu-sheet')).toHaveCount(0);
+}
+
+/** opens the ⋮ menu and gives the item of an action (close it with closeMenu) */
+export async function menuItem(page: Page, key: string) {
+  await openMenu(page);
+  return page.getByTestId('nav-menu-sheet').locator(sel(key));
+}
+
+export async function closeMenu(page: Page) {
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('nav-menu-sheet')).toHaveCount(0);
+}
+
+/** whether a toggle of the ⋮ menu is on (menuitemcheckbox) */
+export async function expectChecked(page: Page, key: string, on: boolean) {
+  const it = await menuItem(page, key);
+  await expect(it).toHaveAttribute('aria-checked', String(on));
+  await closeMenu(page);
 }
 
 /** the five places: icon and word */

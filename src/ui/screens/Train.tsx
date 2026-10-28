@@ -40,10 +40,59 @@ import './train.css';
 // 1.0.0 (refonte, lot 2): Programmes is a tab of Entraîner at the top of the screen (SectionTabs); a saved
 // 'programmes' space (settings.trainSpace, kept as it is) opens Séances, an old link ?espace=programmes the tab
 type Space = 'seances' | 'disciplines';
-const SPACES: { id: Space; label: string }[] = [
+// 1.1.0 (Youssef, 2026-10-27): « je veux que chrono soit un troisième onglet » of this control; the chronometer keeps
+// its own full-screen page (/chrono), which shows the same control (TrainSpaces)
+const SPACES: { id: Space | 'chrono'; label: string }[] = [
   { id: 'seances', label: 'Séances' },
   { id: 'disciplines', label: 'Disciplines' },
+  { id: 'chrono', label: 'Chrono' },
 ];
+
+/**
+ * The control Séances / Disciplines / Chrono, on Séance and on the chronometer. Chrono opens its page (never saved as
+ * the space of Séance); the arrows move between the three.
+ */
+export function TrainSpaces({ active, onChoose }: { active: Space | 'chrono'; onChoose: (s: Space) => void }) {
+  const nav = useNavigate();
+  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const choose = (id: Space | 'chrono') => {
+    if (id === active) return;
+    if (id === 'chrono') nav('/chrono');
+    else onChoose(id);
+  };
+  const onKey = (e: React.KeyboardEvent, i: number) => {
+    const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!d) return;
+    e.preventDefault();
+    const j = (i + d + SPACES.length) % SPACES.length;
+    choose(SPACES[j].id);
+    tabs.current[j]?.focus();
+  };
+  return (
+    <div className="train-seg" role="tablist" aria-label="Espaces d’entraînement" data-active={active}>
+      {SPACES.map((s, i) => (
+        <button
+          key={s.id}
+          ref={(el) => {
+            tabs.current[i] = el;
+          }}
+          type="button"
+          role="tab"
+          id={`tab-${s.id}`}
+          aria-selected={active === s.id}
+          aria-controls={s.id === 'chrono' ? undefined : `panel-${s.id}`}
+          tabIndex={active === s.id ? 0 : -1}
+          className={active === s.id ? 'on' : ''}
+          onClick={() => choose(s.id)}
+          onKeyDown={(e) => onKey(e, i)}
+          data-testid={`space-${s.id}`}
+        >
+          {s.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 const discName = (d: string) => (d === 'mixte' ? 'Multi-disciplines' : DISCIPLINES.find((x) => x.id === d)!.name);
 const levelName = (l: LevelId) => LEVELS.find((x) => x.id === l)!.name;
@@ -58,21 +107,11 @@ export function Train() {
   const saved = useSettings((s) => s.settings.trainSpace);
   const setSettings = useSettings((s) => s.set);
   const asked = q.get('espace') as Space | null;
-  const space: Space = asked && SPACES.some((s) => s.id === asked) ? asked : saved === 'programmes' ? 'seances' : saved;
+  const space: Space = asked === 'seances' || asked === 'disciplines' ? asked : saved === 'programmes' ? 'seances' : saved;
   const choose = (s: Space) => {
     setSettings({ trainSpace: s });
     if (asked) setQ({}, { replace: true });
   };
-  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
-  const onKey = (e: React.KeyboardEvent, i: number) => {
-    const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-    if (!d) return;
-    e.preventDefault();
-    const j = (i + d + SPACES.length) % SPACES.length;
-    choose(SPACES[j].id);
-    tabs.current[j]?.focus();
-  };
-
   const profile = useProfile((s) => s.profile);
   const rec = useMemo(() => recommend(profile), [profile]);
   const [open, setOpen] = useState<string | null>(null);
@@ -83,30 +122,9 @@ export function Train() {
 
   if (q.get('espace') === 'programmes') return <Navigate to="/programmes" replace />;
   return (
-    <div className="page train-page">
+    <div className={`page train-page ${space === 'disciplines' ? 'fit' : ''}`}>
       <PageHead title="Entraîner" eyebrow="Ton centre d’entraînement" back={false} />
-      <div className="train-seg" role="tablist" aria-label="Espaces d’entraînement" data-active={space}>
-        {SPACES.map((s, i) => (
-          <button
-            key={s.id}
-            ref={(el) => {
-              tabs.current[i] = el;
-            }}
-            type="button"
-            role="tab"
-            id={`tab-${s.id}`}
-            aria-selected={space === s.id}
-            aria-controls={`panel-${s.id}`}
-            tabIndex={space === s.id ? 0 : -1}
-            className={space === s.id ? 'on' : ''}
-            onClick={() => choose(s.id)}
-            onKeyDown={(e) => onKey(e, i)}
-            data-testid={`space-${s.id}`}
-          >
-            {s.label}
-          </button>
-        ))}
-      </div>
+      <TrainSpaces active={space} onChoose={choose} />
 
       <div role="tabpanel" id={`panel-${space}`} aria-labelledby={`tab-${space}`} className="train-panel" key={space}>
         {space === 'seances' && <Sessions quick={quick} recommended={rec.exercises[0]} onOpen={setOpen} />}

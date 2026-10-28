@@ -989,3 +989,191 @@ html[data-hands-free] .nav-bottom .nav-row > .nav-btn.nav-secondary,
 html[data-hands-free] .nav-bottom .nav-row > .nav-btn.nav-more {
   display: none;
 }
+
+/* ==========================================================================
+   1.1.0 (Youssef, 2026-10-27, proposition A « Android »): Rechercher in place of Profil in the bar, the photo of the
+   profile and the ⋮ of the options of the screen at the top right, the options as an Android menu, the search on
+   the whole screen
+   ========================================================================== */
+.nav-topright {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 14px);
+  right: max(8px, env(safe-area-inset-right));
+  z-index: 31;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+/* on a screen with tabs, on the row of the tabs */
+.nav-topright.in-tabs {
+  top: calc(env(safe-area-inset-top) + 8px);
+}
+html[data-chrono-run] .nav-topright {
+  display: none;
+}
+.nav-kebab,
+.nav-avatar {
+  position: relative;
+  /* 48 dp touch targets (Android) */
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-kebab {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  backdrop-filter: blur(18px) saturate(1.3);
+}
+.nav-kebab svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.6;
+}
+.nav-kebab[aria-expanded='true'] {
+  background: var(--soft);
+}
+.nav-kebab:focus-visible,
+.nav-avatar:focus-visible {
+  outline: 2px solid var(--nav-accent);
+  outline-offset: 2px;
+}
+.nav-avatar .nav-me {
+  width: 34px;
+  height: 34px;
+  font-size: 12px;
+}
+/* the profile is the space shown: a ring of the accent */
+.nav-avatar.on .nav-me {
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--nav-accent);
+}
+.nav-avatar .nav-dot {
+  top: 4px;
+  right: 4px;
+}
+/* the pages leave room for it: next to the title, and at the end of the row of tabs */
+.page > .page-head:first-child {
+  padding-right: 104px;
+}
+.sec-tabs-in {
+  margin-right: 104px;
+}
+@media (min-width: 900px) {
+  .sec-tabs-in {
+    margin-right: auto;
+  }
+}
+
+/* the menu of the ⋮ (Material 3 menu): under the button, at the top right */
+.nav-overlay.menu .nav-scrim {
+  background: transparent;
+}
+.nav-sheet.menu {
+  top: calc(env(safe-area-inset-top) + 64px);
+  bottom: auto;
+  left: auto;
+  right: max(10px, env(safe-area-inset-right));
+  margin: 0;
+  min-width: 220px;
+  max-width: min(320px, calc(100vw - 20px));
+  max-height: calc(100dvh - 200px);
+  padding: 8px 0;
+  border: 0;
+  border-radius: 16px;
+  box-shadow: 0 8px 28px #0006;
+  transform-origin: top right;
+  animation: nav-menuin 0.16s ease both;
+}
+@keyframes nav-menuin {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.nav-menulist {
+  display: flex;
+  flex-direction: column;
+}
+.nav-menulist .nav-menuitem {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 14px;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+  font-size: 0.95rem;
+}
+.nav-menulist .nav-menuitem span {
+  flex: 1;
+}
+.nav-menulist .nav-menuitem.on {
+  background: transparent;
+  color: var(--ink);
+}
+.nav-menulist .nav-menuitem:hover:not(:disabled) {
+  background: var(--soft);
+}
+.nav-menucheck {
+  flex: none !important;
+  color: var(--nav-accent);
+  display: grid;
+}
+
+/* « Rechercher ou demander au coach » on the whole screen (Material 3 search view) */
+.nav-sheet.full {
+  inset: 0;
+  max-width: none;
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+  padding-top: calc(env(safe-area-inset-top) + 12px);
+  animation: nav-fullin 0.18s ease both;
+}
+@keyframes nav-fullin {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.search-apply {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--soft);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+.search-apply .grow {
+  flex: 1;
+}
+
+/* the words a list is filtered with (former search field of the screen) */
+.query-chip {
+  align-self: flex-start;
+}

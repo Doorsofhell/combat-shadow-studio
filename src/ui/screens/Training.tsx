@@ -547,8 +547,12 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
           arActive={arActive}
         />
         </StageGuard>
-        {view.phase === 'decompte' && !view.paused && !st.tech && view.remaining !== null && view.remaining <= 3.05 && <div className="countdown">{Math.max(1, Math.ceil(view.remaining))}</div>}
+        {/* 1.1.0 (Youssef, 2026-10-27: « la numérotation en rouge au milieu de l'écran ne sert plus à rien car on a le
+            chronomètre en haut à droite »): no big countdown over the coach; the time of the preparation is in the HUD */}
         <div className="stage-tools">
+          {/* 1.1.0 (Youssef: « la vitesse d'exécution plus accessible directement depuis le démarrage de n'importe quel
+              mouvement ou enchaînement »): the speed at hand on the stage, before and during the session */}
+          {!arActive && <SpeedTool speed={view.speed} onChange={setSpeed} />}
           {teach.closeUp && !free && (
             <button className={`btn ${closeUp ? 'on' : ''}`} onClick={() => setCloseUp(!closeUp)} aria-label={teach.closeUp.label} aria-pressed={closeUp}>
               Zoom
@@ -909,6 +913,45 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
               Fermer
             </button>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** the speeds offered on the stage; the slider of the options keeps every step from ×0.25 to ×1.5 */
+const SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5];
+const speedText = (v: number) => `×${String(Math.round(v * 100) / 100).replace('.', ',')}`;
+
+/** ×1 on the stage; a touch shows the speeds next to it, one more touch picks one */
+function SpeedTool({ speed, onChange }: { speed: number; onChange: (v: number) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`speed-tool ${open ? 'open' : ''}`}>
+      <button type="button" className={`btn ${open ? 'on' : ''}`} onClick={() => setOpen(!open)} aria-expanded={open} aria-label={`Vitesse d’exécution : ${speedText(speed)}`} data-testid="speed-tool">
+        {speedText(speed)}
+      </button>
+      {open && (
+        <div className="speed-choices" role="radiogroup" aria-label="Vitesse d’exécution" data-testid="speed-choices">
+          {SPEEDS.map((v) => {
+            const on = Math.abs(v - speed) < 0.01;
+            return (
+              <button
+                key={v}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                className={`btn ${on ? 'on' : ''}`}
+                onClick={() => {
+                  onChange(v);
+                  setOpen(false);
+                }}
+                data-testid={`speed-${String(v).replace('.', '-')}`}
+              >
+                {speedText(v)}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

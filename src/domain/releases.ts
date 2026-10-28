@@ -49,6 +49,24 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.1.0',
+      releaseDate: '2026-10-28',
+      title: 'Recherche dans la barre et écrans allégés',
+      isMajor: false,
+      changes: [
+        { category: 'fonctionnalites', text: '« Rechercher » prend la cinquième place de la barre du bas : il cherche d’abord sur l’écran où tu es (les équipements de l’encyclopédie, tes enchaînements, les légendes…), puis dans toute l’application, et pose ta question au Coach IA. Il remplace les champs de recherche des écrans.' },
+        { category: 'fonctionnalites', text: 'Ton profil est ta photo en haut à droite de chaque écran. À côté, le ⋮ ouvre les options de l’écran dans un menu Android.' },
+        { category: 'fonctionnalites', text: 'Page d’une discipline : le niveau, le style et le type d’exercice tiennent sur une seule ligne de menus. Les explications (à quoi sert un niveau, les règles d’un style) sont dans les menus.' },
+        { category: 'fonctionnalites', text: 'Pendant la séance, la vitesse (×1) est en haut à droite du coach dès le départ : touche-la pour choisir de ×0,25 à ×1,5.' },
+        { category: 'fonctionnalites', text: 'Objectifs : choisis tes jours d’entraînement sur une ligne de 7 jours, comme un agenda.' },
+        { category: 'ameliorations', text: 'Chrono de combat : troisième choix de Séance (Séances, Disciplines, Chrono), sur une seule page sans défilement. Les 6 disciplines tiennent aussi sur un seul écran.' },
+        { category: 'ameliorations', text: 'Le grand compte à rebours rouge au milieu du coach est retiré : le temps reste affiché au-dessus du coach.' },
+        { category: 'ameliorations', text: '« Que signifient les statuts ? » devient une question toute prête de la recherche sur les écrans des légendes. L’ADN de la bibliothèque est allégé.' },
+        { category: 'corrections', text: 'Réglages : le bouton « Caméra », qui ouvrait la même page qu’« Affichage », est retiré.' },
+      ],
+      links: [{ label: 'Objectifs', to: '/objectifs' }],
+    },
+    {
       version: '1.0.0',
       releaseDate: '2026-10-27',
       title: 'Nouvelle organisation de l’application',

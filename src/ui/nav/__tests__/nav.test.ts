@@ -70,21 +70,27 @@ describe('barre : cinq places, mêmes icônes, libellés et ordre que la maquett
   };
   // 0.48 (Youssef, 2026-10-23: « à la place de l'icône technique »): the main place Techniques is the fight timer
   const chronoForTechniques = <T,>(xs: T[], labels: string[], chrono: T) => xs.map((x, i) => (labels[i] === 'Techniques' ? chrono : x));
+  // 1.1.0 (Youssef, 2026-10-27, loupe A): « Rechercher » left the screens for a place of the bar, and « Caméra » left
+  // Réglages (it opened the page already shown); the other places of the mockup keep their order
+  const GONE_110 = (ref: string) => ['Rechercher', ...(ref === 'default' ? ['Caméra'] : [])];
+  const keep110 = <T,>(xs: T[], labels: string[], ref: string) => xs.filter((_, i) => !GONE_110(ref).includes(labels[i]));
   test.each(pairs)('%s → %s', (ref, ours) => {
     const slots = NAV_CONFIG[ours];
-    expect(slots).toHaveLength(5);
-    const labels = refLabels(ref);
+    const all = refLabels(ref);
+    expect(slots).toHaveLength(5 - all.filter((w) => GONE_110(ref).includes(w)).length);
+    const labels = keep110(all, all, ref);
     const swap = ref === 'home';
     // 1.0.0 (refonte, lot 3, maquette v4): on the home that place (Chrono since 0.48) is the big button
     // « Reprendre »; Chrono is a tile of the page
-    const icons = swap ? chronoForTechniques(refCase(ref), labels, 'play') : refCase(ref);
+    const icons = swap ? chronoForTechniques(refCase(ref), labels, 'play') : keep110(refCase(ref), all, ref);
     const words = swap ? chronoForTechniques(labels, labels, 'Reprendre') : labels;
     expect(slots.map((s) => s.icon)).toEqual(progresAfterTrain(icons, labels));
     expect(slots.map((s) => s.label)).toEqual(progresAfterTrain(words, labels));
   });
   test('0.48 : « Chrono » remplace la place principale Techniques, Techniques reste dans Menu', () => {
     for (const [screen, slots] of Object.entries(NAV_CONFIG)) expect(slots.some((x) => x.action === 'nav:/techniques'), screen).toBe(false);
-    for (const screen of ['entrainer', 'programmes'] as const) {
+    // 1.1.0: on Entraîner, Chrono is the 3rd choice of Séance (segments of the page), no longer a place
+    for (const screen of ['programmes'] as const) {
       expect(NAV_CONFIG[screen].some((x) => x.action === 'nav:/chrono' && x.label === 'Chrono' && x.icon === 'stopwatch'), screen).toBe(true);
     }
     // 1.0.0 (lot 3): on the home, Chrono is the tile « Chrono seul » of the page
@@ -100,9 +106,11 @@ describe('barre : cinq places, mêmes icônes, libellés et ordre que la maquett
     expect(TOGGLE.resume).toEqual({ icon: 'play', label: 'Reprendre' });
   });
   test('tous les écrans : 5 places, Menu toujours en 5, Retour en 1 sauf l’accueil', () => {
+    // 1.1.0: 4 where « Rechercher » (now in the bar), « Caméra » (Réglages) or Chrono (Entraîner) left; Menu stays last
+    const FOUR_110 = ['techniques', 'legendes', 'parametres', 'confidentialite', 'connexion', 'entrainer', 'createur'];
     for (const [screen, slots] of Object.entries(NAV_CONFIG)) {
-      expect(slots, screen).toHaveLength(5);
-      expect(slots[4], screen).toEqual({ icon: 'grid', label: 'Menu', action: 'menu' });
+      expect(slots, screen).toHaveLength(FOUR_110.includes(screen) ? 4 : 5);
+      expect(slots[slots.length - 1], screen).toEqual({ icon: 'grid', label: 'Menu', action: 'menu' });
       if (screen !== 'accueil') expect(slots[0], screen).toEqual({ icon: 'back', label: 'Retour', action: 'back' });
       for (const s of slots) expect(navIconPaths(s.icon), `${screen} ${s.icon}`).toBeTruthy();
       // a page of the app behind every `nav:` action
@@ -220,11 +228,11 @@ describe('v0.44 rôles des emplacements (teinte des actions contextuelles)', () 
   });
   test('les actions propres à l’écran sont contextuelles', () => {
     const roles = (s: keyof typeof NAV_CONFIG) => NAV_CONFIG[s].map(slotRole);
-    expect(roles('techniques')).toEqual(['global', 'contextual', 'contextual', 'contextual', 'global']);
+    expect(roles('techniques')).toEqual(['global', 'contextual', 'contextual', 'global']);
     expect(roles('entrainement')).toEqual(['global', 'contextual', 'contextual', 'contextual', 'global']);
     expect(roles('progres')).toEqual(['global', 'contextual', 'contextual', 'contextual', 'global']);
     // Créer opens the editor of this screen: one of its actions
-    expect(roles('createur')).toEqual(['global', 'contextual', 'contextual', 'contextual', 'global']);
+    expect(roles('createur')).toEqual(['global', 'contextual', 'contextual', 'global']);
   });
   test('les liens vers les grandes rubriques ne sont jamais teintés (pas de coloration artificielle)', () => {
     // Accueil: only main places; Premium (until its own actions) and the pages without actions: Entraîner, Techniques, Progrès

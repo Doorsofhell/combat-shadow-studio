@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { MENU_ENTRIES, NAV_CONFIG, PRIMARY, ROOT_SCREENS, SECTION, SECTION_TABS, TABS, dockSlots, navScreen, searchShape, sectionTabsFor, type NavScreen } from '../config';
+import { BAR_PLACES, MENU_ENTRIES, NAV_CONFIG, PRIMARY, ROOT_SCREENS, SECTION, SECTION_TABS, TABS, backInRow, dockSlots, navScreen, sectionTabsFor, type NavScreen } from '../config';
 
 // 1.0.0 (refonte ergonomique, Youssef 2026-10-27): « Aucune perte de contenu. Réorganisation, logique et intelligente »
 const screens = Object.keys(NAV_CONFIG) as NavScreen[];
@@ -19,7 +19,8 @@ describe('refonte 1.0.0 : barre fixe et gros bouton', () => {
   });
   it('un lien vers la page affichée n’est pas répété (Chrono sur le chrono), un lien vers une autre page du même écran reste', () => {
     expect(dockSlots('chrono', '/chrono').map((d) => d.slot.action)).not.toContain('nav:/chrono');
-    expect(dockSlots('parametres', '/reglages').map((d) => d.slot.action)).toEqual(['nav:/reglages/affichage', 'nav:/reglages/affichage?focus=camera']);
+    // 1.1.0 (Youssef, 2026-10-27): « Caméra » left Réglages, it opened the same page as « Affichage »
+    expect(dockSlots('parametres', '/reglages').map((d) => d.slot.action)).toEqual(['nav:/reglages/affichage']);
   });
   it('aucune action d’écran ne disparaît : elle est au-dessus de la barre, ou c’est une des cinq places', () => {
     const tabRoots = TABS.map((t) => t.to);
@@ -64,14 +65,17 @@ describe('refonte 1.0.0 : le contenu de l’ancien Menu est redistribué, rien n
     ]);
     for (const t of sectionTabsFor('profil')!) expect(t.screens.map((x) => navScreen(t.to) === x)).toContain(true);
   });
-  it('Entraîner : Séance, Programmes, Enchaînements, Favoris, Chrono en onglets (lot 2)', () => {
+  it('Entraîner : Séance, Programmes, Enchaînements, Favoris en onglets (lot 2) ; 1.1.0 : Chrono est le 3e choix de Séance', () => {
     expect(sectionTabsFor('entrainer')?.map((t) => [t.label, t.to])).toEqual([
       ['Séance', '/entrainer'],
       ['Programmes', '/programmes'],
       ['Enchaînements', '/createur'],
       ['Favoris', '/favoris'],
-      ['Chrono', '/chrono'],
     ]);
+    // the chrono keeps the Séance tab lit and is reached from the segments Séances / Disciplines / Chrono
+    expect(sectionTabsFor('entrainer')![0].screens).toContain('chrono');
+    expect(readFileSync('src/ui/screens/Train.tsx', 'utf8')).toMatch(/data-testid=\{`space-\$\{/);
+    expect(readFileSync('src/ui/screens/Train.tsx', 'utf8')).toContain("'/chrono'");
     for (const t of sectionTabsFor('entrainer')!) expect(t.screens.map((x) => navScreen(t.to) === x)).toContain(true);
   });
   it('sur le premier écran d’un onglet, un lien vers un autre onglet n’est pas répété au-dessus de la barre', () => {
@@ -101,15 +105,15 @@ describe('1.0.0 lot 3 : accueil et recherche', () => {
     expect(PRIMARY.accueil).toBe('resume');
     expect(dockSlots('accueil', '/').map((d) => d.slot.action)).toEqual(['resume']);
   });
-  it('le champ de recherche sur chaque écran à places, jamais en séance ; rond ou dans « Plus » quand la rangée est pleine', () => {
-    expect(searchShape('accueil', '/')).toBe('full');
-    expect(searchShape('profil', '/profil')).toBe('full');
-    expect(searchShape('fiche', '/techniques/jab')).toBe('small');
-    expect(searchShape('techniques', '/techniques')).toBe('none');
-    expect(searchShape('progres', '/stats')).toBe('none');
-    expect(searchShape('entrainement', '/entrainement')).toBe('none');
-    // every screen with places reaches it, in the row or as the first command of « Plus »
-    const src = readFileSync('src/ui/nav/NavSheets.tsx', 'utf8');
-    expect(src).toContain("searchShape(screen, loc.pathname) === 'none'");
+  it('1.1.0 (loupe A) : « Rechercher » est une place de la barre sur chaque écran à places, jamais en séance', () => {
+    // the magnifier took the place of Profil; Profil is the photo at the top right
+    expect(BAR_PLACES.map((p) => p.label)).toEqual(['Accueil', 'Entraîner', 'Apprendre', 'Progrès', 'Rechercher']);
+    const bar = readFileSync('src/ui/nav/BottomBar.tsx', 'utf8');
+    expect(bar).toContain('data-testid="app-search"');
+    expect(bar).toContain('data-testid="nav-profil"');
+    // no screen keeps its own search slot: the bar's search covers the screen first (useSearchScope)
+    for (const [s, slots] of Object.entries(NAV_CONFIG)) expect(slots.some((x) => x.action === 'search'), s).toBe(false);
+    // the session hides the bar (in-row screens)
+    expect(backInRow('entrainement')).toBe(true);
   });
 });

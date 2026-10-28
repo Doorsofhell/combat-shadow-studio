@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { PageHead, Sheet } from '../components';
+import { useNavigate } from 'react-router-dom';
+import { TrainSpaces } from '../screens/Train';
 import { useSettings } from '../../store/settings';
 import { useProfile } from '../../store/profile';
 import { useStats } from '../../store/stats';
@@ -46,6 +48,7 @@ interface Run {
 }
 
 export function ChronoScreen() {
+  const navigate = useNavigate();
   const settings = useSettings((s) => s.settings);
   const set = useSettings((s) => s.set);
   const profile = useProfile((s) => s.profile);
@@ -258,8 +261,17 @@ export function ChronoScreen() {
     ];
     const warnText = warnBefore ? `alerte ${warnBefore} s` : 'sans alerte';
     return (
-      <div className="page chrono-page" data-testid="chrono-setup-screen">
-        <PageHead title="Chrono de combat" eyebrow="Outil d’entraînement" />
+      <div className="page chrono-page chrono-fit" data-testid="chrono-setup-screen">
+        {/* 1.1.0 (Youssef, 2026-10-27): the third choice of Séance, on one screen without scrolling; the title stays
+            for screen readers, the control says where we are */}
+        <h1 className="sr-only">Chrono de combat</h1>
+        <TrainSpaces
+          active="chrono"
+          onChoose={(sp) => {
+            set({ trainSpace: sp });
+            navigate('/entrainer');
+          }}
+        />
         <div className="chrono-tiles">
           {tiles.map((t) => (
             <div className="chrono-tile" key={t.id} data-testid={`chrono-tile-${t.id}`}>
@@ -316,9 +328,6 @@ export function ChronoScreen() {
             {mmss(chronoTotal(setup, prep))}
           </span>
         </div>
-        <button type="button" className="btn primary block lg chrono-start" onClick={start} data-testid="chrono-start">
-          Démarrer
-        </button>
 
         {options && (
           <Sheet title="Options du chrono" onClose={() => setOptions(false)}>

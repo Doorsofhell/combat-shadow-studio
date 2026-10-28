@@ -54,9 +54,17 @@ test('kick-boxing : le style choisi filtre les techniques et reste choisi d’un
 
   // the choice is saved: the discipline page opens on K1 and lists the knee exercises
   await page.goto('/#/discipline/kickboxing?niveau=debutant');
+  // 1.1.0 (« trois menus »): the style is a chip of the filter line, its menu says the rules
+  await expect(page.getByTestId('kb-style-chip')).toContainText('K1');
+  await page.getByTestId('kb-style-chip').click();
   await expect(page.getByTestId('kb-style-k1')).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByTestId('kb-style-chip-menu')).toContainText('Source');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('kb-style-chip-menu')).toHaveCount(0);
   await expect(page.getByTestId('ex-kickboxing-debutant-12')).toBeVisible();
+  await page.getByTestId('kb-style-chip').click();
   await page.getByTestId('kb-style-full-contact').click();
+  await expect(page.getByTestId('kb-style-chip')).toContainText('Full contact');
   await expect(page.getByTestId('ex-kickboxing-debutant-12')).toHaveCount(0);
   await expect(page.getByTestId('ex-kickboxing-debutant-05')).toHaveCount(0); // low kick
   await expect(page.getByTestId('ex-kickboxing-debutant-06')).toBeVisible(); // middle kick

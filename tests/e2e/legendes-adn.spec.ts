@@ -37,7 +37,8 @@ test('page d’un champion : fleur de style au lieu des cases, plus compacte, r�
   const img = dna.getByRole('img');
   await expect(img).toHaveAttribute('aria-label', /ADN de combat : \d+ fiches\. Poings \d+ %/);
   await expect(dna).toContainText(/\d+ fiches/);
-  await expect(dna).toContainText('jouables en 3D');
+  // 1.1.0 (Youssef, 2026-10-27: « Dans adn de la bibliothèque, retire nombre inspiré et tous jouable en 3d »)
+  await expect(dna).not.toContainText('jouables en 3D');
   // the former grid of five boxes was 160 px tall at 393 px wide
   expect((await dna.boundingBox())!.height).toBeLessThan(160);
   await expect(page.getByTestId('champ-focus').locator('li')).toHaveCount(3);

@@ -6,7 +6,7 @@ import { askCoach, type CoachAnswer, type CoachContext } from '../engine';
 import { parseQuestion } from '../nlu';
 import { SCREEN_QUESTIONS } from '../suggest';
 import { normalize } from '../text';
-import { MENU_ENTRIES, NAV_CONFIG, TOGGLE } from '../../ui/nav/config';
+import { BAR_PLACES, MENU_ENTRIES, NAV_CONFIG, TOGGLE } from '../../ui/nav/config';
 
 /**
  * 0.25 (Youssef, 2026-10-20): « que le coach IA réponde en fonction de la situation où il est appelé,
@@ -148,7 +148,8 @@ describe('guide de l’application : contenu', () => {
     for (const p of ['7 jours', '30 jours', '90 jours', '12 mois', 'Perso']) expect(by('screen-progres')).toContain(p);
     // every button named by the guide is a real word of the bar (NAV_CONFIG, the session's states) or a real command
     // « Sur cet écran » of a screen (labels read from the screens)
-    const barLabels = [...Object.values(NAV_CONFIG).flat().map((x) => x.label), ...Object.values(TOGGLE).map((x) => x.label)];
+    // 1.1.0: « Rechercher » is a place of the bar (BAR_PLACES), no longer a screen action
+    const barLabels = [...Object.values(NAV_CONFIG).flat().map((x) => x.label), ...Object.values(TOGGLE).map((x) => x.label), ...BAR_PLACES.map((x) => x.label)];
     const screenSrc = ['src/ui/screens/Home.tsx', 'src/ui/screens/Library.tsx', 'src/ui/screens/Training.tsx', 'src/ui/screens/Champions.tsx', 'src/ui/screens/progress/Dashboard.tsx'].map((f) => readFileSync(resolve(process.cwd(), f), 'utf8')).join('\n');
     const commandLabels = [...screenSrc.matchAll(/label: [`']([^`'(]+?)[\s(]*[`'$]/g)].map((m) => m[1].trim());
     for (const w of ['Démarrer', 'Pause', 'Reprendre', 'Décomposer', 'Caméra', 'Rechercher', 'Filtres', 'Technique', 'S’entraîner', 'Ralenti', 'Maîtrise', 'Période', 'Statistiques', 'Historique', 'Disciplines', 'Légende', 'Parcours', 'Techniques', 'Favoris']) {
@@ -168,11 +169,13 @@ describe('guide de l’application : contenu', () => {
     }
     expect(NAV_CONFIG.accueil.some((x) => x.label === 'Reprendre')).toBe(true);
     expect(by('screen-accueil')).toContain('« Reprendre »');
-    // the search field that replaced the bubble, named as on screen
-    expect(by('barre-actions')).toContain('« Rechercher ou demander au coach »');
+    // 1.1.0 (loupe A): the search is « Rechercher », a place of the bar; the options of a screen are in ⋮
+    expect(by('barre-actions')).toContain('« Rechercher » dans la barre');
+    expect(by('barre-actions')).toContain('⋮');
     expect(askCoach('C’est quoi les boutons du bas ?', ctx('techniques')).sources[0]?.id).toBe('app:barre-actions');
-    // the Coach IA opens from the search field on every screen (from « Plus » in a session); the pill and bubble are gone
-    expect(by('barre-actions')).toContain('« Coach IA »');
+    // the Coach IA opens from the search on every screen (1.1.0: no longer in « Plus »); the pill and bubble are gone
+    expect(by('barre-actions')).toContain('« Demander au Coach IA »');
+    expect(by('barre-actions')).not.toContain('« Plus » m’ouvre');
     expect(askCoach('Où est la pilule ?', ctx('accueil')).sources[0]?.id).toBe('app:barre-actions');
     // the IMC card: formula, adult WHO scale, its limits, nothing leaves the device
     for (const w of ['taille', 'poids', 'au carré', 'OMS', 'muscle', '18 ans', 'grossesse', 'médecin', 'sur ton appareil']) expect(by('imc'), w).toContain(w);

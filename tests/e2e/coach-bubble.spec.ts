@@ -44,22 +44,28 @@ test('Coach IA depuis le Menu : il s’ouvre, Échap le ferme, aucune bulle flot
   await openCoachIA(page);
 });
 
-test('Coach IA : la même entrée dans le Menu de chaque écran, sauf sur sa propre page', async ({ page }) => {
+test('Coach IA : par « Rechercher » sur chaque écran (dans « Plus » en séance), plus dans les menus', async ({ page }) => {
+  // 1.1.0 (Youssef, 2026-10-27: « Retirer plus / coach IA car désormais il est dans la barre de recherche »)
   await seed(page);
   const screens = ['/#/', '/#/techniques', '/#/techniques/jab?d=boxe', '/#/stats', '/#/champions', '/#/reglages', '/#/reglages/voix', '/#/profil', '/#/coach', '/#/connexion', '/#/entrainer', '/#/entrainement?ex=boxe-debutant-01&mode=technique'];
   for (const s of screens) {
     await page.goto('about:blank');
     await page.goto(s);
-    await openMenu(page);
-    await expect(page.getByTestId('cmd-coach-ia'), s).toBeVisible();
-    await expect(page.getByTestId('cmd-coach-ia'), s).toHaveText('Coach IA');
+    await expect(bar(page)).toBeVisible();
+    if (s.includes('entrainement')) {
+      await openMenu(page);
+      await expect(page.getByTestId('cmd-search'), s).toBeVisible();
+      await page.getByTestId('cmd-search').click();
+    } else await bar(page).getByTestId('app-search').click();
+    await expect(page.getByTestId('search-ask'), s).toBeVisible();
+    await expect(page.getByTestId('cmd-coach-ia'), s).toHaveCount(0);
     await page.keyboard.press('Escape');
   }
-  // the whole coach page is open: no second way in (1.0.0: this page has no other command, so no « Plus » at all)
+  // the whole coach page is open: its ⋮ has no second way in
   await page.goto('/#/coach-ia');
   await expect(page.getByRole('heading').first()).toBeVisible();
   await expect(bar(page)).toHaveAttribute('data-screen', 'coach-ia');
-  await expect(bar(page).locator('[data-action="menu"]')).toHaveCount(0);
+  if (await bar(page).locator('[data-action="menu"]').count()) await openMenu(page);
   await expect(page.getByTestId('cmd-coach-ia')).toHaveCount(0);
 });
 

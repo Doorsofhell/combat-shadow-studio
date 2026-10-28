@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }) => {
   await seedProfile(page);
 });
 
-test('préparation : « Prépare-toi » en ambre, grand décompte unique, puis le travail démarre et le décompte disparaît', async ({ page }) => {
+test('préparation : « Prépare-toi » en ambre, le temps de la phase (1.1.0 : plus de grand décompte), puis le travail démarre', async ({ page }) => {
   await page.goto('/#/entrainement?ex=boxe-debutant-08&mode=rounds&round=20&rest=10&rounds=2');
   await page.getByTestId('start').click();
   const phase = page.getByTestId('phase');
@@ -40,7 +40,10 @@ test('préparation : « Prépare-toi » en ambre, grand décompte unique, puis l
   expect(r).toBeGreaterThan(200);
   expect(g).toBeGreaterThan(140);
   expect(b).toBeLessThan(100);
-  await expect(page.locator('.countdown')).toHaveCount(1, { timeout: 4000 });
+  // 1.1.0 (Youssef, 2026-10-27): no big red countdown in the middle of the stage any more; the time of the
+  // preparation is the time of the phase, over the coach
+  await expect(page.locator('.countdown')).toHaveCount(0);
+  await expect(page.getByTestId('phase-time')).toBeVisible();
   await expect(phase).toHaveText('Combat · Round 1/2', { timeout: 8000 });
   await expect(page.locator('.countdown')).toHaveCount(0);
   await expect(page.getByTestId('phase-time')).toHaveAttribute('aria-label', /^Temps restant/);

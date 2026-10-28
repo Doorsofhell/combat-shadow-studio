@@ -12,7 +12,6 @@ import { DisciplineLabel, EmptyState, FilterChips, GoalRing, PageHead, ProgressB
 import { AppIcon } from '../icons';
 
 const MIN_GOALS = [0, 30, 60, 90, 120, 180, 240];
-const DAY_GOALS = [0, 1, 2, 3, 4, 5, 6, 7];
 
 export function GoalsCard({ sessions }: { sessions: SessionRecord[] }) {
   const goals = useGoals((s) => s.goals);
@@ -79,7 +78,7 @@ export function GoalsCard({ sessions }: { sessions: SessionRecord[] }) {
           </div>
           <div className="stack" style={{ gap: 8 }}>
             <span className="label">Jours d’entraînement par semaine</span>
-            <FilterChips label="Jours d’entraînement par semaine" value={goals.weeklySessions} onChange={(v) => setGoals({ weeklySessions: v })} options={DAY_GOALS.map((m) => ({ id: m, label: m ? String(m) : 'Aucun' }))} />
+            <DayGrid days={goals.trainingDays} count={goals.weeklySessions} onChange={(d) => setGoals({ trainingDays: d, weeklySessions: d.length })} />
           </div>
           <button type="button" className="btn primary block" onClick={() => (setEdit(false), toast('Objectifs enregistrés'))}>
             Valider
@@ -167,5 +166,41 @@ export function History() {
         </section>
       ))}
     </div>
+  );
+}
+
+const DAY_LETTERS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+const DAY_NAMES = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+
+/**
+ * 1.1.0: the seven days of the week on one row, as in a calendar; each touch picks or drops a day, none picked = no
+ * goal. A goal saved before (a number only) is said under the row until days are picked.
+ */
+function DayGrid({ days, count, onChange }: { days?: number[]; count: number; onChange: (d: number[]) => void }) {
+  const on = days ?? [];
+  return (
+    <>
+      <div className="day-grid" role="group" aria-label="Jours d’entraînement" data-testid="day-grid">
+        {DAY_LETTERS.map((l, i) => {
+          const sel = on.includes(i);
+          return (
+            <button
+              key={i}
+              type="button"
+              className={sel ? 'on' : ''}
+              aria-pressed={sel}
+              aria-label={DAY_NAMES[i]}
+              onClick={() => onChange(sel ? on.filter((x) => x !== i) : [...on, i].sort((a, b) => a - b))}
+              data-testid={`day-${i}`}
+            >
+              {l}
+            </button>
+          );
+        })}
+      </div>
+      <span className="small muted" data-testid="day-count">
+        {on.length ? `${on.length} jour${on.length > 1 ? 's' : ''} par semaine` : !days && count > 0 ? `Objectif actuel : ${count} jour${count > 1 ? 's' : ''} par semaine. Touche tes jours pour le préciser.` : 'Aucun jour choisi : pas d’objectif de jours.'}
+      </span>
+    </>
   );
 }

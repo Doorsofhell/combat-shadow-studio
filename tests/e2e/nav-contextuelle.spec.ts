@@ -1,6 +1,6 @@
 import { expect, Page, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { bar, seedProfile } from './nav-helpers';
+import { bar, closeMenu, expectChecked, menuItem, seedProfile, tapAction } from './nav-helpers';
 
 /**
  * 1.0.0 (refonte ergonomique, maquette v4 validée par Youssef le 2026-10-27), replacing the v0.45.1 monochrome bar:
@@ -16,7 +16,11 @@ const SHOTS = process.env.CAPTURES;
 /** waits for the colour transitions of the bar, then reads each place; colours as rgba numbers (the browser may
  * write a mixed colour as color(srgb …) or oklab(…): a canvas turns any of them into the same 0-255 values) */
 async function look(page: Page) {
-  await page.waitForFunction(() => document.querySelector('[data-testid="bottom-bar"]')!.getAnimations({ subtree: true }).filter((a) => a instanceof CSSTransition).length === 0);
+  // the bar can be remounted for a moment while a lazy screen loads: wait until it is there again and still
+  await page.waitForFunction(() => {
+    const b = document.querySelector('[data-testid="bottom-bar"]');
+    return !!b && b.getAnimations({ subtree: true }).filter((a) => a instanceof CSSTransition).length === 0;
+  });
   return bar(page)
     .locator('button')
     .evaluateAll((bs) => {
@@ -37,7 +41,11 @@ async function look(page: Page) {
 
 /** WCAG contrast of the label on the bar (the bar's own background under the place's tint) */
 async function contrasts(page: Page) {
-  await page.waitForFunction(() => document.querySelector('[data-testid="bottom-bar"]')!.getAnimations({ subtree: true }).filter((a) => a instanceof CSSTransition).length === 0);
+  // the bar can be remounted for a moment while a lazy screen loads: wait until it is there again and still
+  await page.waitForFunction(() => {
+    const b = document.querySelector('[data-testid="bottom-bar"]');
+    return !!b && b.getAnimations({ subtree: true }).filter((a) => a instanceof CSSTransition).length === 0;
+  });
   return bar(page).evaluate((nav) => {
     const cv = document.createElement('canvas').getContext('2d', { willReadFrequently: true })!;
     /** any CSS colour as [r, g, b, a] with a in 0-1 */
@@ -86,7 +94,7 @@ async function parts(page: Page) {
   const c = await contrasts(page);
   const kinds = await bar(page)
     .locator('button')
-    .evaluateAll((bs) => bs.map((b) => (b.classList.contains('nav-tab') ? 'tab' : b.classList.contains('nav-primary') ? 'primary' : b.closest('.nav-backchip') ? 'back' : 'action')));
+    .evaluateAll((bs) => bs.map((b) => (b.classList.contains('nav-tab') ? 'tab' : b.classList.contains('nav-primary') ? 'primary' : b.closest('.nav-backchip') ? 'back' : b.classList.contains('nav-kebab') ? 'kebab' : b.classList.contains('nav-avatar') ? 'avatar' : 'action')));
   return l.map((x, i) => ({ ...x, kind: kinds[i], contrast: c[i], on: false }));
 }
 
@@ -98,14 +106,15 @@ for (const [theme, scheme] of [['Jour', 'light'], ['Nuit', 'dark']] as const) {
       await page.emulateMedia({ colorScheme: scheme });
       await page.addInitScript((t) => localStorage.setItem('css-theme', t), theme === 'Jour' ? 'clair' : 'sombre');
       await seedProfile(page);
-      // a sheet of technique: S’entraîner (big button), Ralenti, Maîtrise, Plus; 1.0.0 (lot 3): the round
-      // « Rechercher ou demander au coach » button first in the row
+      // a sheet of technique: Retour, S’entraîner (big button); 1.1.0 (loupe A): Ralenti and Maîtrise in the ⋮ at the top
+      // right, next to the photo of the profile; « Rechercher » is the fifth place
       await page.goto('/#/techniques/jab?d=boxe');
       await expect(bar(page)).toHaveAttribute('data-screen', 'fiche');
       await page.waitForTimeout(400);
       let l = await parts(page);
-      expect(l.map((x) => x.kind)).toEqual(['back', 'action', 'action', 'action', 'action', 'primary', 'tab', 'tab', 'tab', 'tab', 'tab']);
-      for (const x of l) expect(x.contrast, `${x.label} contraste`).toBeGreaterThanOrEqual(4.5);
+      expect(l.map((x) => x.kind)).toEqual(['back', 'kebab', 'avatar', 'primary', 'tab', 'tab', 'tab', 'tab', 'tab']);
+      // the photo has no word of its own (its label is its aria-label); the others must be readable
+      for (const x of l.filter((y) => y.kind !== 'avatar')) expect(x.contrast, `${x.label} contraste`).toBeGreaterThanOrEqual(4.5);
       const tabs = l.filter((x) => x.kind === 'tab');
       const lit = await bar(page).locator('.nav-tab').evaluateAll((bs) => bs.map((b) => b.getAttribute('aria-current') === 'page'));
       expect(lit).toEqual([false, false, true, false, false]);
@@ -119,7 +128,7 @@ for (const [theme, scheme] of [['Jour', 'light'], ['Nuit', 'dark']] as const) {
       expect(tabs[2].color).not.toBe(others[0].color);
       expect(tabs[2].contrast).toBeGreaterThan(others[0].contrast);
       // the actions: a glass background of their own, a grey (text) colour
-      const acts = l.filter((x) => x.kind === 'action' || x.kind === 'back');
+      const acts = l.filter((x) => x.kind === 'kebab' || x.kind === 'back');
       for (const x of acts) {
         expect(noBg(x.bg), `${x.label} sans fond`).toBe(false);
         expect(grey(x.color), `${x.label} couleur ${x.color}`).toBe(true);
@@ -130,19 +139,17 @@ for (const [theme, scheme] of [['Jour', 'light'], ['Nuit', 'dark']] as const) {
       expect(big.color).toBe('11,15,20,255');
       if (SHOTS) await bar(page).screenshot({ path: `${SHOTS}/${theme}-1-fiche-repos.png` });
 
-      // Ralenti selected: inverted, still readable; the others unchanged
-      const SLOW = 2; // after the back chip and the search button
-      const rest = l[SLOW];
-      await bar(page).locator('[data-action="slow"]').click();
-      await expect(bar(page).locator('[data-action="slow"]')).toHaveClass(/active/);
+      // Ralenti selected (1.1.0: a toggle of the ⋮ menu): checked there, the bar unchanged and readable
+      await tapAction(page, 'slow');
+      await expectChecked(page, 'slow', true);
       await page.waitForTimeout(400);
       l = await parts(page);
-      expect(l[SLOW].active).toBe(true);
-      expect(l[SLOW].bg).not.toBe(rest.bg);
-      expect(grey(l[SLOW].color)).toBe(true);
-      expect(l[SLOW].contrast).toBeGreaterThanOrEqual(4.5);
-      expect(l[SLOW + 1].bg).toBe(rest.bg);
-      for (const x of l) expect(x.contrast, `${x.label} contraste`).toBeGreaterThanOrEqual(4.5);
+      for (const x of l.filter((y) => y.kind !== 'avatar')) expect(x.contrast, `${x.label} contraste`).toBeGreaterThanOrEqual(4.5);
+      const item = await menuItem(page, 'slow');
+      await expect(item).toHaveAttribute('aria-checked', 'true');
+      const menuAxe = await new AxeBuilder({ page }).include('[data-testid="nav-menu-sheet"]').withTags(['wcag2a', 'wcag2aa']).analyze();
+      expect(menuAxe.violations.map((v) => v.id)).toEqual([]);
+      await closeMenu(page);
       const axe = await new AxeBuilder({ page }).include('[data-testid="bottom-bar"]').withTags(['wcag2a', 'wcag2aa']).analyze();
       expect(axe.violations.map((v) => v.id)).toEqual([]);
       if (SHOTS) await bar(page).screenshot({ path: `${SHOTS}/${theme}-2-fiche-ralenti.png` });

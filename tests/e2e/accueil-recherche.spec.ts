@@ -92,27 +92,23 @@ test('Accueil : toucher la discipline la change parmi les six, sans rien effacer
   await expect(page).toHaveURL(/#\/$/);
 });
 
-test('Rechercher ou demander : sur chaque place, jamais en séance ; trouve et ouvre', async ({ page }) => {
+test('Rechercher : une place de la barre sur chaque écran, dans « Plus » en séance ; trouve et ouvre', async ({ page }) => {
   await seedProfile(page);
-  for (const path of ['/', '/entrainer', '/profil', '/techniques/jab?d=boxe']) {
+  // 1.1.0 (loupe A): « Rechercher » is the fifth place of the bar, on every screen with the places
+  for (const path of ['/', '/entrainer', '/profil', '/techniques/jab?d=boxe', '/techniques?d=boxe', '/stats']) {
     await page.goto(`/#${path}`);
     await expect(bar(page).getByTestId('app-search'), path).toBeVisible();
-  }
-  // three actions of the screen or more (Techniques, Progrès): no room in the row, « Rechercher » opens « Plus » first
-  for (const path of ['/techniques?d=boxe', '/stats']) {
-    await page.goto(`/#${path}`);
-    await expect(bar(page).locator('.nav-row > .nav-btn.nav-secondary')).toHaveCount(3);
-    await expect(bar(page).getByTestId('app-search'), path).toHaveCount(0);
-    await bar(page).locator('[data-action="menu"]').click();
-    await expect(page.getByTestId('nav-commands').locator('button').first()).toHaveAttribute('data-testid', 'cmd-app-search');
-    await page.getByTestId('cmd-app-search').click();
-    await expect(page.getByTestId('search-sheet')).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(page.getByTestId('search-sheet')).toHaveCount(0);
+    await expect(bar(page).locator('.nav-tab').nth(4), path).toHaveAttribute('data-testid', 'app-search');
   }
   await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
   await expect(bar(page)).toHaveAttribute('data-screen', 'entrainement');
   await expect(page.getByTestId('app-search')).toHaveCount(0);
+  // in the session, « Rechercher » is in « Plus »
+  await bar(page).locator('[data-action="menu"]').click();
+  await page.getByTestId('cmd-search').click();
+  await expect(page.getByTestId('search-sheet')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('search-sheet')).toHaveCount(0);
 
   await page.goto('/#/');
   await page.getByTestId('app-search').click();

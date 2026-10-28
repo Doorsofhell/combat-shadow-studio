@@ -17,7 +17,7 @@ import { useCustom } from '../../store/custom';
 import { useSettings } from '../../store/settings';
 import { MODE_HELP, MODE_LABEL } from '../training/plan';
 import { PageHead } from '../App';
-import { DisciplineCard, DisciplineLabel, SectionHead } from '../components';
+import { DisciplineCard, DisciplineLabel, QueryChip, SectionHead } from '../components';
 import { AppIcon, DisciplineIcon, LevelIcon, type GlyphId } from '../icons';
 import { useNavActions } from '../nav/store';
 import { setSelection } from '../nav/selection';
@@ -204,11 +204,14 @@ function ComboList({ list, catalog, empty, extra }: { list: CatalogCombo[]; cata
  * v0.28 (Youssef, 2026-10-20 21:52 : « retire les rectangles sur le nombre de techniques, sois
  * créatif ») : les cinq cases de compteurs sont remplacées par la fleur de style (ADN de combat
  * calculé sur les séquences, nombre de fiches au cœur) et une ligne de texte : statuts présents
- * seulement, et fiches jouables en 3D.
+ * seulement (1.1.0 : sans « inspirées » ni « jouables en 3D »).
  */
 function StatusLine({ list }: { list: CatalogCombo[] }) {
   const n = useMemo(() => catalogCounts(list), [list]);
-  const statuses = (['verifiee', 'adaptee', 'inspiree'] as CatalogStatus[]).filter((x) => n[x] > 0);
+  // 1.1.0 (Youssef, 2026-10-27: « dans l'ADN de la bibliothèque, retire nombre inspiré et tous jouables en 3D »):
+  // only the verified and adapted sheets are counted here; their meaning is a question of « Rechercher »
+  const statuses = (['verifiee', 'adaptee'] as CatalogStatus[]).filter((x) => n[x] > 0);
+  if (!statuses.length) return null;
   return (
     <span className="dna-status small">
       {statuses.map((x) => (
@@ -218,10 +221,6 @@ function StatusLine({ list }: { list: CatalogCombo[] }) {
           {n[x] > 1 ? 's' : ''}
         </span>
       ))}
-      <span className="dna-chip">
-        <AppIcon id="fighter" size={14} />
-        {n.playable === n.total ? (n.total > 1 ? 'Toutes jouables en 3D' : 'Jouable en 3D') : `${n.playable} jouable${n.playable > 1 ? 's' : ''} en 3D`}
-      </span>
     </span>
   );
 }
@@ -241,25 +240,6 @@ function DnaCard({ list, title, sub, testId }: { list: CatalogCombo[]; title: st
         <StatusLine list={list} />
       </div>
     </section>
-  );
-}
-
-function StatusExplainer() {
-  return (
-    <details className="note">
-      <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Que signifient les statuts ?</summary>
-      <ul style={{ margin: '8px 0 0', paddingLeft: 18 }}>
-        {(['verifiee', 'adaptee', 'inspiree'] as CatalogStatus[]).map((s) => (
-          <li key={s}>
-            <b>{STATUS_LABEL[s]}</b> : {STATUS_HELP[s]}
-          </li>
-        ))}
-      </ul>
-      <p className="small" style={{ margin: '8px 0 0' }}>
-        Les fiches livrées avec l’application sont toutes « inspirées » : aucune séquence n’est attribuée à un champion sans source vérifiable. Une fiche vérifiée ou adaptée cite toujours sa
-        référence.
-      </p>
-    </details>
   );
 }
 
@@ -305,7 +285,6 @@ export function Champions() {
             ))}
           </div>
           <DnaCard list={catalog.combos} title="ADN de la bibliothèque" sub={<span className="muted"> · {catalog.champions.length} légendes</span>} testId="cat-summary" />
-          <StatusExplainer />
           <div className="utabs" role="tablist" aria-label="Sections de la bibliothèque">
             {VIEWS.map((v) => (
               <button key={v.id} role="tab" className="utab" aria-selected={view === v.id} onClick={() => setView(v.id)}>
@@ -375,10 +354,8 @@ function Explorer({ catalog }: { catalog: Catalog }) {
 
   return (
     <div className="stack">
-      <div className="field">
-        <label htmlFor="cat-q">Rechercher</label>
-        <input id="cat-q" className="input" type="search" value={query.text ?? ''} onChange={(e) => set('q', e.target.value)} placeholder="Champion, technique, objectif… (ex. Tyson, crochet, teep)" />
-      </div>
+      {/* 1.1.0: the words come from « Rechercher » of the bar (scope Légendes, LegendNav.tsx) */}
+      <QueryChip value={query.text ?? ''} onClear={() => set('q', null)} />
       <div className="chip-scroll" role="group" aria-label="Discipline">
         <button className="chip" aria-pressed={!query.discipline} onClick={() => set('d', null)}>
           Toutes

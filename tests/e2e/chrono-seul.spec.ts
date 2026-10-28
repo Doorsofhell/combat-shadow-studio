@@ -38,17 +38,18 @@ test.beforeEach(async ({ page }) => {
   await seedProfile(page);
 });
 
-test('« Chrono » : tuile de l’Accueil, onglet d’Entraîner, ouvre le chrono ; Techniques est la place Apprendre', async ({ page }) => {
+test('« Chrono » : tuile de l’Accueil, choix de Séance dans Entraîner, ouvre le chrono ; Techniques est la place Apprendre', async ({ page }) => {
   await page.goto('/#/');
   await expect(bar(page).locator('[data-action="nav:/techniques"]')).toHaveCount(0);
   // 1.0.0 (lot 3, maquette v4): on the home, Chrono is the tile « Chrono seul » of the page
   await expect(bar(page).locator('[data-action="nav:/chrono"]')).toHaveCount(0);
   await expect(page.getByTestId('tile-chrono')).toContainText('Chrono');
-  // 1.0.0 (lot 2): on Entraîner, Chrono is one of its tabs at the top, not repeated above the bar
+  // 1.1.0: on Entraîner, Chrono is the third choice of Séance (Séances / Disciplines / Chrono), not a tab
   await page.goto('/#/entrainer');
   await expect(bar(page).locator('[data-action="nav:/chrono"]')).toHaveCount(0);
-  await expect(page.getByTestId('tab-chrono')).toHaveText('Chrono');
-  await page.getByTestId('tab-chrono').click();
+  await expect(page.getByTestId('tab-chrono')).toHaveCount(0);
+  await expect(page.getByTestId('space-chrono')).toContainText('Chrono');
+  await page.getByTestId('space-chrono').click();
   await expect(page).toHaveURL(/#\/chrono$/);
   await page.goto('/#/');
   await page.getByTestId('tile-chrono').click();
@@ -59,6 +60,8 @@ test('« Chrono » : tuile de l’Accueil, onglet d’Entraîner, ouvre le chron
   await expect(bar(page).locator('.nav-tab[aria-current="page"]')).toHaveAttribute('data-tab', 'entrainer');
   await expect(bar(page).locator('[data-action="nav:/chrono"]')).toHaveCount(0);
   await expect(bar(page).getByTestId('nav-techniques')).toBeVisible();
+  // and the segment Chrono of Séance is the one shown
+  await expect(page.getByTestId('space-chrono')).toHaveAttribute('aria-selected', 'true');
 });
 
 test('réglages : formats prêts, + et − bornés, total affiché, mémorisés et « Réglage perso » quand on modifie', async ({ page }) => {
@@ -93,7 +96,7 @@ test('plein écran : ambre « Prépare-toi », rouge « Combat », toucher = pau
   test.setTimeout(60_000);
   await page.goto('/#/chrono');
   await shortSetup(page);
-  await page.getByTestId('chrono-start').click();
+  await page.getByTestId('chrono-toggle').click(); // 1.1.0: the big button of the bar starts it (the in-page button is gone)
   const run = page.getByTestId('chrono-run');
   await expect(run).toHaveAttribute('data-phase', 'decompte');
   await expect(page.getByTestId('chrono-phase')).toHaveText('Prépare-toi');
@@ -127,7 +130,7 @@ test('fin : aucun repos après le dernier round, bilan, historique « terminée 
   test.setTimeout(90_000);
   await page.goto('/#/chrono');
   await shortSetup(page);
-  await page.getByTestId('chrono-start').click();
+  await page.getByTestId('chrono-toggle').click(); // 1.1.0: the big button of the bar starts it (the in-page button is gone)
   const run = page.getByTestId('chrono-run');
   await expect(run).toHaveAttribute('data-phase', 'travail', { timeout: 15_000 });
   await expect(run).toHaveAttribute('data-phase', 'repos', { timeout: 15_000 });
@@ -158,7 +161,7 @@ test('arrêt : en pause, « Arrêter » donne « Séance arrêtée » et l’his
   test.setTimeout(60_000);
   await page.goto('/#/chrono');
   await shortSetup(page);
-  await page.getByTestId('chrono-start').click();
+  await page.getByTestId('chrono-toggle').click(); // 1.1.0: the big button of the bar starts it (the in-page button is gone)
   const run = page.getByTestId('chrono-run');
   await expect(run).toHaveAttribute('data-phase', 'travail', { timeout: 15_000 });
   await page.waitForTimeout(2200);

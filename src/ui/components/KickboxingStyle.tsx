@@ -3,6 +3,7 @@ import { SOURCE_BY_ID } from '../../domain/biomech/sources';
 import { useSettings } from '../../store/settings';
 import { AppIcon } from '../icons';
 import { FilterChips } from './Chips';
+import { MenuChip } from './MenuChip';
 
 /** the kick-boxing style chosen by the user, saved with the settings */
 export function useKbStyle(): [KbStyleChoice, (s: KbStyleChoice) => void] {
@@ -37,6 +38,26 @@ export function KickboxingStylePicker() {
         )}
       </p>
     </section>
+  );
+}
+
+/** 1.1.0 (« trois menus »): the same choice as a chip of the filter line; the rules and their source are in its menu */
+export function KickboxingStyleChip() {
+  const [style, setStyle] = useKbStyle();
+  return (
+    <MenuChip
+      label="Style de kick-boxing"
+      value={style}
+      onChange={setStyle}
+      active={style !== 'tous'}
+      chipLabel={style === 'tous' ? 'Style' : undefined}
+      testId="kb-style-chip"
+      testPrefix="kb-style-"
+      options={[
+        { id: 'tous' as KbStyleChoice, label: 'Tous les styles', description: 'Toutes les techniques du kick-boxing.' },
+        ...KB_STYLES.map((s) => ({ id: s.id as KbStyleChoice, label: s.name, description: `${s.summary} Source : ${sourceNames(s.sources)}.` })),
+      ]}
+    />
   );
 }
 

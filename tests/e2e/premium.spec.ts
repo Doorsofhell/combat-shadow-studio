@@ -47,7 +47,11 @@ test('Réglages › Premium : la page v0.45, l’offre et aucun paiement possibl
   await expect(page.getByTestId('premium-benefits').locator('.premium-grid li')).toHaveCount(6);
   await expect(page.getByTestId('premium-soon')).toHaveText('Combattants et réglages avancés : à venir');
   // the bar of the page, in the mockup's order
-  await expect(page.getByTestId('bottom-bar').locator('.nav-btn')).toHaveText(['Retour', 'Avantages', 'FAQ', 'Restaurer', 'Plus']);
+  // 1.1.0: Retour in the bar, Avantages, FAQ and Restaurer in the ⋮ at the top right
+  await expect(page.getByTestId('bottom-bar').locator('.nav-btn')).toHaveText(['Retour']);
+  await page.getByTestId('nav-menu').click();
+  await expect(page.getByTestId('nav-menu-sheet').locator('.nav-menuitem[data-action] span:not(.nav-menucheck)')).toHaveText(['Avantages', 'FAQ', 'Restaurer']);
+  await page.keyboard.press('Escape');
   await page.getByTestId('premium-discover').click();
   const offer = page.getByTestId('premium-panel-offer');
   await expect(offer).toBeVisible();

@@ -8,8 +8,12 @@ import { popLayer, pushLayer } from './layers';
 import { NavIcon } from './NavIcon';
 import { leave, useNavStore, type MenuCommand } from './store';
 import { haptic, openSearch } from './BottomBar';
-import { NO_TABS, navScreen, searchShape } from './config';
+import { PRIMARY, backInRow, dockSlots, navScreen } from './config';
+import type { NavIconId } from './icons';
 import { SearchSheet } from './SearchSheet';
+
+/** the panels open now, the last one on top */
+const openPanels: object[] = [];
 
 /**
  * The mockup's bottom sheet (`.scrim` + `.sheet`, 220 ms `sheetin`): scrim that closes it, rounded top, handle and
@@ -24,6 +28,7 @@ export function NavPanel({
   wide,
   closable,
   aboveBar,
+  variant = 'sheet',
 }: {
   title: string;
   onClose: () => void;
@@ -34,13 +39,20 @@ export function NavPanel({
   closable?: boolean;
   /** v0.45: the sheet stops above the bottom bar, which stays visible and usable (Premium panels) */
   aboveBar?: boolean;
+  /** 1.1.0: 'menu' = the Android menu of the ⋮ at the top right (no handle, no title); 'full' = the whole screen
+   *  (search) */
+  variant?: 'sheet' | 'menu' | 'full';
 }) {
   const ref = useRef<HTMLElement>(null);
   const opener = useRef<Element | null>(typeof document !== 'undefined' ? document.activeElement : null);
   useEffect(() => {
     const el = ref.current;
     el?.focus();
+    // 1.1.0: panels can be stacked (the ⋮ menu over a panel of Premium): only the top one answers Escape
+    const me = {};
+    openPanels.push(me);
     const onKey = (e: KeyboardEvent) => {
+      if (openPanels[openPanels.length - 1] !== me) return;
       if (e.key === 'Escape') {
         e.stopPropagation();
         onClose();
@@ -61,17 +73,18 @@ export function NavPanel({
     window.addEventListener('keydown', onKey, true);
     const back = opener.current;
     return () => {
+      openPanels.splice(openPanels.indexOf(me), 1);
       window.removeEventListener('keydown', onKey, true);
       if (back instanceof HTMLElement && back.isConnected) back.focus();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return createPortal(
-    <div className={`nav-overlay ${aboveBar ? 'above-bar' : ''}`}>
+    <div className={`nav-overlay ${aboveBar ? 'above-bar' : ''} ${variant}`}>
       <div className="nav-scrim" onClick={onClose} data-testid="nav-scrim" />
-      <section className={`nav-sheet ${wide ? 'wide' : ''}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={ref} data-testid={testId}>
-        <div className="nav-handle" aria-hidden />
-        {closable ? (
+      <section className={`nav-sheet ${wide ? 'wide' : ''} ${variant}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={ref} data-testid={testId}>
+        {variant === 'sheet' && <div className="nav-handle" aria-hidden />}
+        {variant === 'menu' ? null : closable ? (
           <div className="nav-sheet-head">
             <h2 className="nav-sheet-title">{title}</h2>
             <button type="button" className="nav-sheet-close" onClick={onClose} aria-label="Fermer" data-testid="panel-close">
@@ -132,20 +145,44 @@ export function NavSheets() {
   const layer = useNavStore((s) => s.sheetLayer);
   const setSheet = useNavStore((s) => s.setSheet);
   const commands = useNavStore((s) => s.commands);
+  const actions = useNavStore((s) => s.actions);
+  const run = useNavStore((s) => s.run);
   const runCommand = useNavStore((s) => s.runCommand);
   if (!sheet) return null;
-  // the Coach IA keeps one way in on every screen (former bubble): last command of « Sur cet écran »; 1.0.0 (lot 3):
-  // also « Rechercher ou demander au coach »
-  const withCoach = !loc.pathname.startsWith('/coach-ia');
-  // a screen with three actions or more has no room for the search field in its row: « Rechercher » opens first here
+  // 1.1.0 (Youssef, 2026-10-27: « Retirer plus / coach IA … Retire-le de tous les écrans »): the Coach IA is reached
+  // from Rechercher (bar) and Profil › Coach IA, no longer from here. Out of the session and the chronometer, the
+  // actions of the screen other than its big button come first (the ⋮ at the top right, proposition A)
   const screen = navScreen(loc.pathname, loc.search);
-  const withSearch = !!screen && !NO_TABS.has(screen) && searchShape(screen, loc.pathname) === 'none';
-  const allCommands = [
-    ...(withSearch ? [{ id: 'app-search', label: 'Rechercher', icon: 'search' as const, testId: 'cmd-app-search' }] : []),
-    ...commands,
-    ...(withCoach ? [{ id: 'coach-ia', label: 'Coach IA', icon: 'coach' as const, testId: 'cmd-coach-ia' }] : []),
-  ];
-  const runAny = (id: string) => (id === 'coach-ia' ? useCoachBubble.getState().setOpen(true) : id === 'app-search' ? openSearch() : runCommand(id));
+  const options =
+    screen && !backInRow(screen, loc.pathname)
+      ? dockSlots(screen, loc.pathname)
+          .filter((d) => d.slot.action !== PRIMARY[screen])
+          .map(({ slot }) => {
+            const a = actions[slot.action];
+            const builtIn = slot.action.startsWith('nav:');
+            return {
+              id: `slot:${slot.action}`,
+              action: slot.action,
+              label: a?.label ?? slot.label,
+              icon: (a?.icon ?? slot.icon) as NavIconId,
+              pressed: a?.pressed,
+              disabled: builtIn ? !!a?.disabled : !a || !!a.disabled,
+              ariaLabel: a?.ariaLabel,
+              testId: a?.testId ?? `nav-${slot.action.replace(/^nav:\//, '').replace(/[/?=&]/g, '-')}`,
+            };
+          })
+      : [];
+  // in the session and the chronometer the bar's places are hidden: « Rechercher » (and through it the Coach IA)
+  // stays reachable from « Plus », so nothing is lost
+  const inRow = !!screen && backInRow(screen, loc.pathname);
+  const searchCmd = inRow ? [{ id: 'app-search', label: 'Rechercher', icon: 'search' as NavIconId, testId: 'cmd-search', pressed: undefined as boolean | undefined, disabled: false, action: undefined as string | undefined, ariaLabel: undefined as string | undefined }] : [];
+  const allCommands = [...options, ...commands.map((c) => ({ ...c, action: undefined as string | undefined, ariaLabel: undefined as string | undefined })), ...searchCmd];
+  const runAny = (c: (typeof allCommands)[number]) => {
+    if (c.id === 'app-search') return openSearch();
+    if (!c.action) return runCommand(c.id);
+    if (c.action.startsWith('nav:') && !actions[c.action]) return leave(() => nav(c.action!.slice(4)));
+    run(c.action);
+  };
   const close = (then?: () => void) => {
     setSheet(null);
     popLayer(layer, then);
@@ -153,7 +190,7 @@ export function NavSheets() {
   const go = (to: string) => close(() => leave(() => nav(to)));
 
   if (sheet === 'search') {
-    return <SearchSheet onClose={() => close()} onGo={go} onAsk={(q) => close(() => useCoachBubble.getState().ask(q))} />;
+    return <SearchSheet onClose={() => close()} onGo={go} onAsk={(q) => close(() => useCoachBubble.getState().ask(q))} onApply={(then) => close(then)} />;
   }
 
   if (sheet === 'news') {
@@ -202,27 +239,37 @@ export function NavSheets() {
     );
   }
 
-  // 1.0.0 (refonte ergonomique): « Plus » holds the commands of the screen; the former places of the Menu are now
-  // the five places of the bar, the tabs of each space, the links of Profil and the tiles of Réglages
+  // 1.0.0: « Plus » holds the commands of the screen; 1.1.0: drawn as the Android menu of the ⋮ at the top right
+  // (out of the session and the chronometer, where « Plus » stays in the row)
+  const asMenu = !!screen && !backInRow(screen, loc.pathname);
   return (
-    <NavPanel title="Sur cet écran" onClose={() => close()} testId="nav-menu-sheet">
+    <NavPanel title="Sur cet écran" onClose={() => close()} testId="nav-menu-sheet" variant={asMenu ? 'menu' : 'sheet'}>
       <div className="nav-commands" role="group" aria-label="Sur cet écran" data-testid="nav-commands">
-        <div className="nav-menugrid">
+        <div className={asMenu ? 'nav-menulist' : 'nav-menugrid'} role={asMenu ? 'menu' : undefined}>
           {allCommands.map((c) => (
             <button
               key={c.id}
               type="button"
+              role={asMenu ? (c.pressed !== undefined ? 'menuitemcheckbox' : 'menuitem') : undefined}
               className={`nav-menuitem ${c.pressed ? 'on' : ''}`}
-              aria-pressed={c.pressed === undefined ? undefined : c.pressed}
+              aria-pressed={c.pressed === undefined || asMenu ? undefined : c.pressed}
+              aria-checked={asMenu && c.pressed !== undefined ? c.pressed : undefined}
+              aria-label={c.ariaLabel}
               disabled={c.disabled}
+              data-action={c.action}
               data-testid={c.testId ?? `cmd-${c.id}`}
               onClick={() => {
                 haptic();
-                close(() => runAny(c.id));
+                close(() => runAny(c));
               }}
             >
               <CommandIcon icon={c.icon} />
               <span>{c.label}</span>
+              {asMenu && c.pressed && (
+                <span className="nav-menucheck" aria-hidden>
+                  <NavIcon id="check" />
+                </span>
+              )}
             </button>
           ))}
         </div>

@@ -19,13 +19,11 @@ test('vue d’ensemble : un anneau avec son total, trois chiffres, les détails 
   await page.goto('about:blank');
   await page.goto('/#/stats');
   await expect(page.getByTestId('progress-overview')).toBeVisible();
-  // 1.0.0: the Progrès tab is a root (no Retour); « Menu » became « Plus »
-  await expect(await barSlots(page)).toEqual([
-    ['calendar', 'Période'],
-    ['chart', 'Statistiques'],
-    ['history', 'Historique'],
-    ['grid', 'Plus'],
-  ]);
+  // 1.0.0: the Progrès tab is a root (no Retour); 1.1.0: its actions are in the ⋮ at the top right
+  await expect(await barSlots(page)).toEqual([]);
+  await page.getByTestId('nav-menu').click();
+  await expect(page.getByTestId('nav-menu-sheet').locator('.nav-menuitem[data-action] span:not(.nav-menucheck)')).toHaveText(['Période', 'Statistiques', 'Historique']);
+  await page.keyboard.press('Escape');
   // no goal: the course, written as « n / total »
   await expect(page.getByTestId('main-ring-value')).toHaveText(/^\d+ \/ \d+$/);
   await expect(page.getByTestId('main-ring')).toHaveAttribute('aria-label', /Parcours : \d+ \/ \d+ techniques étudiées/);
@@ -87,12 +85,10 @@ test('détail : la barre ramène à la vue d’ensemble ; petit écran sans déf
   await page.goto('about:blank');
   await page.goto('/#/stats/disciplines');
   // 1.0.0: « Vue d’ensemble » leads to /stats, the Progrès tab itself (and Retour): the dock does not repeat a tab
-  await expect(await barSlots(page)).toEqual([
-    ['back', 'Retour'],
-    ['calendar', 'Période'],
-    ['history', 'Historique'],
-    ['grid', 'Plus'],
-  ]);
+  await expect(await barSlots(page)).toEqual([['back', 'Retour']]);
+  await page.getByTestId('nav-menu').click();
+  await expect(page.getByTestId('nav-menu-sheet').locator('.nav-menuitem[data-action] span:not(.nav-menucheck)')).toHaveText(['Période', 'Historique']);
+  await page.keyboard.press('Escape');
   await expect(page.getByTestId('nav-stats')).toBeVisible();
   for (const path of ['/#/stats', '/#/stats/techniques', '/#/stats/disciplines', '/#/stats/enchainements']) {
     await page.goto(path);

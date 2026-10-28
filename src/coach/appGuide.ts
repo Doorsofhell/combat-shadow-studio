@@ -66,8 +66,8 @@ export const APP_GUIDE: GuideEntry[] = [
     ],
     answer:
       'Combat Shadow Studio t’aide à t’entraîner seul, en shadow : ton coach en 3D (Kadir ou Amara) montre chaque mouvement et tu le fais en même temps, face à l’écran.\n' +
-      'Dans la barre du bas, cinq places fixes : Accueil, Entraîner, Apprendre (techniques, légendes, encyclopédie), Progrès et Profil. Juste au-dessus, les boutons de l’écran, avec un gros bouton pour l’action principale.\n' +
-      'Pour te lancer, touche le gros bouton « Reprendre » sur l’accueil (« Commencer » avant ta première séance). Et si tu as une question, technique ou sur l’application, touche « Rechercher ou demander au coach » : tu trouves ce que tu cherches dans l’app, ou tu me poses la question.',
+      'Dans la barre du bas, cinq places fixes : Accueil, Entraîner, Apprendre (techniques, légendes, encyclopédie), Progrès et Rechercher. Ton profil est ta photo en haut à droite, à côté du ⋮ qui ouvre les options de l’écran. Juste au-dessus de la barre, le gros bouton de l’action principale.\n' +
+      'Pour te lancer, touche le gros bouton « Reprendre » sur l’accueil (« Commencer » avant ta première séance). Et si tu as une question, technique ou sur l’application, touche « Rechercher » dans la barre : tu trouves ce que tu cherches dans l’app, ou tu me poses la question.',
     action: { to: '/entrainer', label: 'Aller à Entraîner' },
   },
   {
@@ -75,8 +75,8 @@ export const APP_GUIDE: GuideEntry[] = [
     title: 'La barre du bas et ses cinq places',
     keywords: ['barre du bas', 'barre de navigation', 'navigation', 'navigation generale', 'onglets', 'les onglets', 'menu principal', 'menu', 'changer d ecran', 'revenir a l accueil', 'bouton retour', 'retour', 'ou est le profil', 'ou sont les reglages', 'ou sont les parametres', 'ou est premium', 'ou sont les nouveautes'],
     answer:
-      'Version 1.0 : la barre du bas ne change plus d’un écran à l’autre. Elle a cinq places fixes : Accueil, Entraîner, Apprendre, Progrès et Profil (ta photo ou tes initiales). Seule la séance la cache, pour te laisser t’entraîner les mains libres.\n' +
-      '• Chaque place a ses onglets en haut de l’écran. Entraîner : Séance, Programmes, Enchaînements, Favoris et Chrono. Apprendre : Techniques, Légendes et Encyclopédie. Progrès : Tableau, Historique et Objectifs. Profil : Mes infos, Mon coach, Coach IA et Réglages.\n' +
+      'Version 1.1 : la barre du bas ne change pas d’un écran à l’autre. Elle a cinq places fixes : Accueil, Entraîner, Apprendre, Progrès et Rechercher. Ton Profil est ta photo (ou tes initiales) en haut à droite de chaque écran. Seule la séance cache la barre, pour te laisser t’entraîner les mains libres.\n' +
+      '• Chaque place a ses onglets en haut de l’écran. Entraîner : Séance (avec Séances, Disciplines et Chrono), Programmes, Enchaînements et Favoris. Apprendre : Techniques, Légendes et Encyclopédie. Progrès : Tableau, Historique et Objectifs. Profil : Mes infos, Mon coach, Coach IA et Réglages.\n' +
       '• Les Paramètres s’appellent maintenant Réglages (Profil › Réglages). En haut des Réglages, deux tuiles : Premium à vie et Nouveautés.\n' +
       '• Retour est un petit bouton en haut à gauche sur les écrans de détail. Le retour d’Android ferme d’abord un panneau ouvert, puis revient à l’écran d’avant, avec tes filtres et ta position dans la page.\n' +
       'Toutes les anciennes entrées du Menu sont là : Accueil, Entraîner, Progrès, Techniques, Légendes, Profil, Paramètres (Réglages), Nouveautés, Premium à vie et Encyclopédie.',
@@ -92,14 +92,14 @@ export const APP_GUIDE: GuideEntry[] = [
       'bouton plus', 'barre de recherche', 'rechercher ou demander', 'ou est le coach ia', 'ouvrir le coach ia',
     ],
     answer:
-      'Au-dessus des cinq places, les boutons de l’écran changent selon l’écran :\n' +
-      '• Séance : « Démarrer », qui devient « Pause » puis « Reprendre » au même endroit, « Décomposer » et « Caméra ».\n' +
-      '• Techniques : « Rechercher », « Filtres » et « Technique », qui rouvre la dernière technique choisie.\n' +
+      'Le gros bouton de l’écran est au-dessus des cinq places ; les autres boutons de l’écran sont dans le ⋮, en haut à droite :\n' +
+      '• Séance : « Démarrer », qui devient « Pause » puis « Reprendre » au même endroit, « Décomposer » et « Caméra », en bas pendant la séance.\n' +
+      '• Techniques : « Filtres » et « Technique », qui rouvre la dernière technique choisie. « Rechercher », dans la barre, cherche d’abord parmi les techniques.\n' +
       '• Fiche d’une technique : « S’entraîner », « Ralenti » (au quart de la vitesse) et « Maîtrise » (la marque comme assimilée ; touche encore pour la retirer).\n' +
       '• Progrès : « Période », « Statistiques » et « Historique ».\n' +
-      '• Légendes : « Rechercher », « Disciplines » et « Légende » ; sur la fiche d’une légende, « Parcours », « Techniques » et « Favoris ».\n' +
-      'Sur l’accueil, trois tuiles : « Séance rapide », « Technique du jour » et « Chrono seul », et le gros bouton « Reprendre ». Les autres gestes d’un écran sont dans « Plus » : par exemple « Au hasard » et « À revoir » dans les techniques, « Exercice suivant », « Comment faire ? » et « Options » pendant une séance. « Plus » m’ouvre aussi, sur tous les écrans : « Coach IA ».\n' +
-      'Pour m’ouvrir ailleurs, touche « Rechercher ou demander au coach » au-dessus de la barre : écris ta question et choisis « Demander au Coach IA ». Le même champ trouve aussi les techniques, les mots de l’encyclopédie, les programmes et les réglages. Les anciens boutons flottants (pilule et bulle) n’existent plus.',
+      '• Légendes : « Disciplines » et « Légende » ; sur la fiche d’une légende, « Parcours », « Techniques » et « Favoris ».\n' +
+      'Sur l’accueil, trois tuiles : « Séance rapide », « Technique du jour » et « Chrono seul », et le gros bouton « Reprendre ». Les autres gestes d’un écran sont aussi dans le ⋮ : par exemple « Au hasard » et « À revoir » dans les techniques ; pendant une séance, ils sont dans « Plus » : « Exercice suivant », « Comment faire ? », « Options » et « Rechercher ».\n' +
+      'Pour m’ouvrir, touche « Rechercher » dans la barre du bas : écris ta question et choisis « Demander au Coach IA ». Le même champ trouve aussi les techniques, les mots de l’encyclopédie, les programmes et les réglages, et d’abord ce qui est sur l’écran où tu es (par exemple les équipements). Les anciens boutons flottants (pilule et bulle) n’existent plus.',
   },
   {
     id: 'screen-accueil',
@@ -175,8 +175,8 @@ export const APP_GUIDE: GuideEntry[] = [
       '• En bas : « Retour », « Démarrer » (qui devient « Pause » puis « Reprendre » au même endroit), « Décomposer », « Caméra » et « Plus ». Si tu touches Retour pendant la séance, elle se met en pause et l’application te demande avant de quitter.\n' +
       '• Mains libres : pendant la séance, seuls Retour et Pause restent, pour un téléphone posé devant toi. Touche le coach une fois, n’importe où : la séance se met en pause, et Décomposer, Caméra et Plus reviennent. Le téléphone vibre au départ, à la pause et à chaque round, s’il sait le faire.\n' +
       '• Sous le coach : le mouvement en cours, la consigne et le point clé du moment, puis le temps de séance, le cumul et les répétitions. Seul le temps de travail actif est compté.\n' +
-      '• Dans « Plus » : « Recommencer », « Exercice précédent », « Exercice suivant », « Comment faire ? », « Ralenti », « Options » et « Coach IA », qui m’ouvre et met la séance en pause.\n' +
-      '• Sur le coach : le zoom, le plein écran et, en haut, « AR » pour la réalité augmentée.',
+      '• Dans « Plus » : « Recommencer », « Exercice précédent », « Exercice suivant », « Comment faire ? », « Ralenti » et « Options ».\n' +
+      '• Sur le coach : la vitesse (×1, touche-la pour choisir de ×0,25 à ×1,5), le zoom, le plein écran et, en haut, « AR » pour la réalité augmentée.',
   },
   {
     id: 'decomposer',
@@ -205,7 +205,7 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['entrainement'],
     answer:
       'Le bouton « Ralenti » fait passer le coach à un quart de sa vitesse : tu vois ainsi chaque détail du geste. Touche-le encore pour revenir à la vitesse normale.\n' +
-      'Pour régler finement, ouvre « Options » (dans « Plus ») : le curseur « Vitesse d’exécution » va de ×0,25 à ×1,5.\n' +
+      'Dès le démarrage, touche la vitesse en haut à droite du coach (×1) : tu choisis de ×0,25 à ×1,5. Pour régler encore plus finement, ouvre « Options » (dans « Plus ») : le curseur « Vitesse d’exécution » va de ×0,25 à ×1,5.\n' +
       'Sur la fiche d’une technique, la barre de lecture a aussi son réglage de vitesse.',
   },
   {
@@ -576,7 +576,7 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['chrono', 'chronometre', 'minuteur', 'timer', 'compte a rebours', 'chrono de combat', 'chronometre de combat', 'gong', 'cloche'],
     screens: ['chrono'],
     answer:
-      'Le chrono de combat s’ouvre avec « Chrono » dans la barre du bas. Il marche seul, sans le coach 3D.\n' +
+      'Le chrono de combat s’ouvre avec « Chrono », le troisième choix de Séance dans Entraîner. Il marche seul, sans le coach 3D.\n' +
       '• Choisis un format prêt (boxe, kick-boxing, MMA, muay-thaï, JJB, judo, intervalles) ou règle le round, le repos et le nombre de rounds avec + et −.\n' +
       '• Pendant la séance, tout l’écran prend la couleur de la phase : ambre pour la préparation, rouge pour le combat, bleu-vert pour le repos. Touche l’écran n’importe où pour mettre en pause.\n' +
       'En pause, tu peux arrêter ou passer la phase. « Réglages » dans la barre règle la préparation, l’alerte avant la fin, les gongs et la voix. La séance va dans ton historique.',
@@ -598,7 +598,7 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['mon profil', 'le profil', 'page profil', 'modifier mon profil', 'pseudo', 'changer mon pseudo', 'changer de niveau', 'modifier mon niveau', 'discipline principale', 'changer ma garde', 'taille du texte', 'texte plus grand', 'agrandir le texte', 'reduire les animations', 'questionnaire', 'refaire le questionnaire', 'm appeler par mon pseudo'],
     screens: ['profil'],
     answer:
-      'Ton profil s’ouvre avec « Profil », la cinquième place de la barre du bas (ta photo ou tes initiales), onglet « Mes infos ».\n' +
+      'Ton profil s’ouvre avec ta photo (ou tes initiales) en haut à droite de chaque écran, onglet « Mes infos ».\n' +
       'Tu y changes ton pseudo (je t’appelle comme ça si « M’appeler par mon pseudo » est activé), tes disciplines et ta discipline principale, ta garde, ton rythme, tes objectifs, la taille du texte et la réduction des animations.\n' +
       'Ton niveau se choisit aussi sur la page de chaque discipline, et « Questionnaire et niveaux » dans les réglages refait l’évaluation de départ.',
     action: { to: '/profil', label: 'Ouvrir mon profil' },
@@ -633,7 +633,7 @@ export const APP_GUIDE: GuideEntry[] = [
     answer:
       'Je suis le coach IA de l’application. Je réponds directement sur ton appareil, à partir de la bibliothèque validée, même sans internet.\n' +
       'Je ne te vois pas : je ne corrige pas ton geste, mais j’explique, je montre une démo ou un ralenti, je propose des exercices et je t’explique l’application. Je sais aussi sur quel écran tu m’appelles.\n' +
-      'Tu me trouves sur tous les écrans avec « Rechercher ou demander au coach », ou dans « Plus », « Coach IA » ; pendant une séance, je m’ouvre dans le bas de la scène et m’ouvrir met la séance en pause.\n' +
+      'Tu me trouves sur tous les écrans avec « Rechercher », dans la barre du bas (pendant une séance, dans « Plus »), et dans Profil › Coach IA.\n' +
       'Les deux boutons en haut de mon panneau le réduisent (la première ligne de ma réponse et ta question) ou l’agrandissent (presque tout l’écran, pour lire confortablement) ; tu peux aussi glisser la petite barre du haut. Je garde la taille que tu as choisie.\n' +
       'Mes réglages (icône Historique, l’horloge en haut de mon panneau) : réponses courtes ou détaillées, lecture à voix haute, historique (désactivé par défaut) et saisie vocale du navigateur, qui passe en ligne et reste désactivée tant que tu ne l’actives pas.',
     action: { to: '/coach-ia', label: 'Réglages du coach' },

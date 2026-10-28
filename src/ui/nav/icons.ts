@@ -58,6 +58,10 @@ export const NAV_EXTRA_ICONS = {
   // v0.48 (Chrono de combat): the stopwatch of the bar, crown and side button
   stopwatch: '<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.6 2M9.5 2.5h5M12 2.5V6M18.4 6.6l1.5-1.5"/>',
   az: '<path d="M3 11 6 3l3 8M4.1 8h3.8M13 3h6l-6 8h6"/><path d="M16 14v7m-3-3 3 3 3-3"/>',
+  // 1.1.0 (proposition A « Android »): the ⋮ of the options of the screen, at the top right
+  more: '<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>',
+  // 1.1.0: the arrow of a menu chip (filters on one line)
+  chevronDown: '<path d="m6 9 6 6 6-6"/>',
 } as const;
 
 export type NavIconId = keyof typeof NAV_ICONS | keyof typeof NAV_EXTRA_ICONS;

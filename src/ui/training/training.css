@@ -217,17 +217,36 @@
   background: var(--red);
 }
 
-.countdown {
+/* 1.1.0: the speed on the stage (top right, above the fullscreen button); its choices open to the left */
+.speed-tool {
+  position: relative;
+}
+.speed-tool > .btn {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 0.85em;
+}
+.speed-choices {
+  /* a column under ×1 along the right edge, so the centred tip of the stage never covers it (Android menu) */
+  flex-direction: column;
+  width: max-content;
   position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-size: 6rem;
-  font-weight: 900;
-  color: var(--red-ink);
-  pointer-events: none;
-  z-index: 3;
-  text-shadow: 0 2px 20px var(--tr-glow);
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 6;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--tr-glass);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.speed-choices .btn {
+  min-width: 44px;
+  min-height: 40px;
+  padding: 0 6px;
+  font-variant-numeric: tabular-nums;
 }
 
 .solo-note {

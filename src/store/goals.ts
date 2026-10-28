@@ -9,8 +9,14 @@ import { idbStorage } from './storage';
 export interface Goals {
   /** active minutes per week, 0 = no goal */
   weeklyMinutes: number;
-  /** training days per week, 0 = no goal */
+  /** training days per week, 0 = no goal (1.1.0: the number of trainingDays once days are picked) */
   weeklySessions: number;
+  /**
+   * 1.1.0 (Youssef, 2026-10-27: « grille sur une ligne type agenda Google où on clique pour sélectionner les jours de
+   * la semaine, pas besoin de aucun, multi-sélection possible »): the days chosen, 0 = Monday … 6 = Sunday. Absent
+   * for a goal saved before 1.1.0 (a number of days only, kept as it is until days are picked).
+   */
+  trainingDays?: number[];
 }
 
 interface GoalsState {

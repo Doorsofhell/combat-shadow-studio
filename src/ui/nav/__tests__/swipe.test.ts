@@ -16,9 +16,9 @@ describe('glisser pour changer d’onglet', () => {
   it('suit l’ordre des onglets et s’arrête aux bouts', () => {
     const tabs = SECTION_TABS.entrainer!;
     expect(swipeTab(tabs, 'seance', 1)?.id).toBe('programmes');
-    expect(swipeTab(tabs, 'favoris', 1)?.id).toBe('chrono');
+    // 1.1.0: Chrono left the tabs (3rd choice of Séance); Favoris is the last tab
+    expect(swipeTab(tabs, 'favoris', 1)).toBeNull();
     expect(swipeTab(tabs, 'seance', -1)).toBeNull();
-    expect(swipeTab(tabs, 'chrono', 1)).toBeNull();
     expect(swipeTab(tabs, 'programmes', 0)).toBeNull();
   });
 });

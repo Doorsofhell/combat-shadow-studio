@@ -9,7 +9,7 @@ import { ConfirmDialog, PageHead, toast } from '../../components';
 import { AppIcon, DisciplineIcon } from '../../icons';
 import { NavPanel, usePanel } from '../../nav/NavSheets';
 import { fold } from '../../nav/selection';
-import { useNavActions } from '../../nav/store';
+import { useNavActions, useSearchScope } from '../../nav/store';
 import { MasteryBadge, PictoStrip, ScoreRing, comboName, dateFr, masteryKey, useUsage, type ComboUsage } from './shared';
 import { deleteCombo } from './actions';
 import './creator.css';
@@ -51,9 +51,9 @@ export function CreatorList() {
   const d = (q.get('d') as DisciplineId | null) ?? 'toutes';
   const sort = (q.get('tri') as Sort | null) ?? 'recents';
   const status = (q.get('statut') as StatusFilter | null) ?? 'tous';
-  const [text, setText] = useState('');
+  // 1.1.0: the words come from « Rechercher » of the bar (scope « Mes enchaînements »), kept in the address
+  const text = q.get('q') ?? '';
   const [doomed, setDoomed] = useState<CustomCombo | null>(null);
-  const search = usePanel();
   const filters = usePanel();
   const set = (k: string, v: string, def: string) => {
     const n = new URLSearchParams(q);
@@ -64,8 +64,16 @@ export function CreatorList() {
   const list = useMemo(() => arrange(combos, { d, sort, status, text, usage, mastery }), [combos, d, sort, status, text, usage, mastery]);
   const count = (x: DisciplineId) => combos.filter((c) => c.discipline === x).length;
 
+  useSearchScope({
+    label: 'Mes enchaînements',
+    hits: (w) => {
+      const f = fold(w);
+      return combos.filter((c) => fold(comboName(c)).includes(f)).map((c) => ({ label: comboName(c), to: `/createur/${c.id}` }));
+    },
+    apply: (w) => set('q', w, ''),
+    current: text,
+  });
   useNavActions({
-    search: { run: search.show, testId: 'nav-search', ariaLabel: text ? `Rechercher : « ${text} »` : 'Rechercher un enchaînement' },
     filters: { run: filters.show, testId: 'nav-filters', ariaLabel: `Filtrer : ${SORT_LABEL[sort]}${status !== 'tous' ? `, ${status === 'acquise' ? 'acquis' : 'encore du mal'}` : ''}` },
   });
 
@@ -106,7 +114,12 @@ export function CreatorList() {
         <p className="small muted" data-testid="active-filters">
           {status !== 'tous' && <>Statut : {status === 'acquise' ? 'Acquis' : 'Encore du mal'}. </>}
           {text && <>Recherche : « {text} ». </>}
-          <button type="button" className="link-btn" onClick={() => (setText(''), set('statut', 'tous', 'tous'))}>
+          <button type="button" className="link-btn" onClick={() => {
+              const n = new URLSearchParams(q);
+              n.delete('q');
+              n.delete('statut');
+              setQ(n, { replace: true });
+            }}>
             Tout afficher
           </button>
         </p>
@@ -143,16 +156,6 @@ export function CreatorList() {
         />
       )}
 
-      {search.open && (
-        <NavPanel title="Rechercher un enchaînement" onClose={search.hide} testId="search-panel">
-          <input className="nav-search" type="search" autoFocus value={text} onChange={(e) => setText(e.target.value)} placeholder="Nom de l’enchaînement" aria-label="Nom de l’enchaînement" data-testid="search-input" />
-          <div className="nav-actions">
-            <button type="button" className="nav-action primary" onClick={() => search.hide()} data-testid="search-close">
-              Voir les résultats ({list.length})
-            </button>
-          </div>
-        </NavPanel>
-      )}
       {filters.open && (
         <NavPanel title="Filtrer" onClose={filters.hide} testId="filters-panel">
           <div className="nav-field" role="group" aria-label="Trier par">

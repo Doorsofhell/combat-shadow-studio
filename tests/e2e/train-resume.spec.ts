@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { bar, seedProfile } from './nav-helpers';
+import { bar, menuItem, seedProfile } from './nav-helpers';
 
 // 0.33 (Youssef, 2026-10-22 « Refonte premium de l'écran Entraîner »): trois espaces, carte de reprise réelle
 // (§5-6, §21) : la séance reprend après fermeture, à la bonne place et au bon chronomètre, jamais depuis zéro
@@ -29,7 +29,8 @@ test.describe('Entraîner : ses espaces', () => {
     await seedProfile(page);
     await page.goto('/#/entrainer');
     const tabs = page.getByRole('tablist', { name: 'Espaces d’entraînement' });
-    await expect(tabs.getByRole('tab')).toHaveCount(2);
+    // 1.1.0: Séances, Disciplines and Chrono (the chronometer moved here from the tabs of Entraîner)
+    await expect(tabs.getByRole('tab')).toHaveCount(3);
     await expect(page.getByTestId('space-seances')).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByTestId('resume-card')).toHaveAttribute('data-state', 'premiere');
     await expect(page.getByTestId('resume-card').getByRole('heading')).toHaveText('Commence ton premier entraînement');
@@ -39,9 +40,9 @@ test.describe('Entraîner : ses espaces', () => {
     await page.waitForTimeout(600);
     await page.reload();
     await expect(page.getByTestId('space-disciplines')).toHaveAttribute('aria-selected', 'true');
-    // clavier : flèche droite, retour à Séances
+    // clavier : flèche gauche, retour à Séances (1.1.0 : à droite de Disciplines, il y a maintenant Chrono)
     await page.getByTestId('space-disciplines').focus();
-    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowLeft');
     await expect(page.getByTestId('space-seances')).toHaveAttribute('aria-selected', 'true');
     // Programmes : l'onglet en haut d'Entraîner, et l'ancien lien y mène
     await page.getByTestId('tab-programmes').click();
@@ -65,7 +66,8 @@ test.describe('Entraîner : ses espaces', () => {
     await expect(page.locator('.prog-card')).toHaveCount(8);
     // level, duration, objective and equipment are in the panel opened from the bar
     await expect(page.getByTestId('pf-t-moyen')).toBeHidden();
-    const filters = bar(page).getByTestId('nav-prog-filters');
+    // 1.1.0: in the ⋮ at the top right
+    const filters = await menuItem(page, '#nav-prog-filters');
     await expect(filters).toHaveText(/Filtrer/);
     await filters.click();
     const panel = page.getByTestId('prog-filters-panel');
@@ -79,8 +81,10 @@ test.describe('Entraîner : ses espaces', () => {
     await expect(panel).toBeHidden();
     await expect(page.locator('.prog-card')).toHaveCount(1);
     await expect(page.getByTestId('prog-muay-defense-intermediaire')).toBeVisible();
-    await expect(filters).toHaveAttribute('aria-pressed', 'true');
-    await filters.click();
+    // filters on: the item of the ⋮ is checked
+    const on = await menuItem(page, '#nav-prog-filters');
+    await expect(on).toHaveAttribute('aria-checked', 'true');
+    await on.click();
     await panel.getByTestId('pf-o-cardio').click();
     await expect(panel.getByTestId('pp-close')).toHaveText('Voir les résultats (0)');
     await panel.getByTestId('pp-close').click();
@@ -91,7 +95,7 @@ test.describe('Entraîner : ses espaces', () => {
     await expect(page.getByText('Aucun programme pour ces filtres')).toBeVisible();
     await page.getByTestId('pf-reset').click();
     await expect(page.locator('.prog-card')).toHaveCount(49);
-    await filters.click();
+    await (await menuItem(page, '#nav-prog-filters')).click();
     await panel.getByTestId('pf-m-tapis').click();
     await expect(panel.getByTestId('pp-close')).toHaveText('Voir les résultats (22)');
     await panel.getByTestId('pp-reset').click();

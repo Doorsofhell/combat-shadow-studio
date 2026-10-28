@@ -2052,3 +2052,24 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet (240 tests, 34,9 min) : 233 RÉUSSIS, 2 ignorés (Firebase), 5 ÉCHOUÉS : `discipline-art` Accueil (icône perdue, corrigée), `theme:77` Jour et Nuit (contrat Vive, test adapté), `coach-bubble:66` (instable, RÉUSSI à la relance), `training-layout:329` caméra Auto (déjà en échec avant la refonte). Relance des 4 fichiers concernés après correction : 30 RÉUSSIS.
   - `aucune-perte-v100.spec` : 6 RÉUSSIS.
   - Android réel : NON EXÉCUTÉ.
+
+## 2026-10-28 · 1.1.0 · Recherche dans la barre et écrans allégés
+
+- **Demande** : retours de Youssef sur la 1.0.0 (2026-10-27 23:18 → 2026-10-28 00:10), chaque point choisi sur maquette dynamique : loupe A, ligne de filtres A « trois menus », Chrono dans Séance, écrans sans défilement, vitesse dès le départ, grille des jours, question des statuts dans la recherche.
+- **Constat après vérification** :
+  - la page d'une discipline empilait niveau, style et type sur trois blocs : l'écran défilait avant la première technique ;
+  - plusieurs champs de recherche différents (barre et « Rechercher dans équipements », etc.) ;
+  - « Caméra » dans Réglages ouvrait la même page qu'« Affichage » ;
+  - la vitesse n'était réglable qu'en pause, le grand compte à rebours rouge cachait le coach, Disciplines et Chrono de combat défilaient sur 393 × 851.
+- **Changement** (détail dans `docs/v110/RAPPORT.md`, captures jour et nuit dans `docs/v110/captures/`) :
+  - « Rechercher » prend la 5e place de la barre ; Profil = photo en haut à droite, à côté du ⋮ des options de l'écran (`BottomBar.tsx`, `NavSheets.tsx`, `nav.css`) ; la recherche filtre la liste de l'écran (Entrée) et remplace les champs des écrans ; Coach IA par la recherche, et par « Plus › Rechercher » en séance et au chrono ;
+  - page discipline : niveau, style (kick-boxing) et type sur une ligne de puces menus Android (`MenuChip.tsx`, `KickboxingStyleChip`), explications et sources dans les menus, Retour d'Android ferme le menu d'abord ;
+  - Chrono = 3e choix de Séance ; « Caméra » retiré de Réglages ; grand compte à rebours retiré ; vitesse « ×1 » sur le coach dès le départ ; 6 disciplines et Chrono de combat sans défilement ; ADN de la bibliothèque sans « nombre inspiré » ni « jouables en 3D » ; « Que signifient les statuts ? » devient une question de la recherche ; jours d'entraînement en grille de 7 jours (ancien nombre gardé) ;
+  - guide du Coach IA et Nouveautés 1.1.0 mis à jour, version 1.1.0.
+- **Défauts trouvés par les tests et corrigés** : photo et ⋮ posés sur le studio du combattant (contraste, cadrage) → cachés sur les outils plein écran ; choix de vitesse sous l'astuce du coach → colonne sous « ×1 » ; Échap fermait aussi le panneau ouvert dessous → seul le panneau du dessus répond ; emblème de 72 px qui cachait le nom de la discipline → 52 px.
+- **Tests** :
+  - TypeScript : RÉUSSI. Vitest : 849 RÉUSSIS, 1 ignoré.
+  - Nouveau `tests/e2e/corrections-v110.spec.ts` (ligne de filtres, loupe et recherche de l'écran, sans défilement, vitesse, grille des jours, statuts) : RÉUSSI.
+  - Playwright complet n° 1 : 221 RÉUSSIS, 23 ÉCHOUÉS, 2 ignorés ; surtout des tests écrits pour l'ancienne navigation, adaptés au nouveau contrat sans rien affaiblir, plus les 4 défauts ci-dessus corrigés. Relances ciblées : 100 RÉUSSIS / 8 ÉCHOUÉS, puis 55 / 2, puis `train-resume` 6/6.
+  - Playwright complet final (246 tests, 33,4 min) : 241 RÉUSSIS, 2 ignorés (Firebase), 3 ÉCHOUÉS : `emblems:24` (mesure 51,99998 px pour 52 : comparaison au dixième de pixel), `nav-contextuelle:97` Nuit (la barre est remontée un instant pendant le chargement de Progrès : le test attend qu'elle soit là) — relance de ces deux fichiers : 5 RÉUSSIS ; `training-layout:329` caméra Auto ÉCHOUÉ, déjà en échec avant la 1.0.0.
+  - Android réel : NON EXÉCUTÉ.

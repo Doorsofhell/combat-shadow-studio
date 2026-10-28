@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { seedProfile } from './nav-helpers';
+import { closeMenu, expectChecked, menuItem, openMenu, seedProfile, tapAction } from './nav-helpers';
 
 // v0.45 (Youssef, 2026-10-23, « Refonte page Premium à vie » §10 and the definitive mockup): no main scroll at
 // several phone heights, nothing hidden behind the bar, the four panels (one at a time, cross, Back), the accordions,
@@ -44,10 +44,10 @@ test('Avantages, FAQ, Restaurer : un panneau à la fois, au-dessus de la page, f
   const bar = page.getByTestId('bottom-bar');
   const before = await page.getByTestId('premium-page').boundingBox();
 
-  await page.getByTestId('nav-benefits').click();
+  // 1.1.0: Avantages, FAQ and Restaurer are in the ⋮ at the top right, the panel shown checked
+  await tapAction(page, 'benefits');
   const benefits = page.getByTestId('premium-panel-benefits');
   await expect(benefits.getByRole('heading', { name: 'Détails des avantages' })).toBeVisible();
-  await expect(page.getByTestId('nav-benefits')).toHaveAttribute('aria-pressed', 'true');
   await expect(bar).toBeVisible();
   // accordions: open as in the mockup, a tap folds one line
   const row = benefits.getByTestId('benefit-disciplines');
@@ -58,13 +58,18 @@ test('Avantages, FAQ, Restaurer : un panneau à la fois, au-dessus de la page, f
   await row.getByRole('button').click();
   await expect(row.locator('p')).toBeVisible();
 
+  // the panel shown is checked in the ⋮ (opening the menu and closing it keeps the panel)
+  await expectChecked(page, 'benefits', true);
+  await expect(benefits).toBeVisible();
   // FAQ replaces Avantages: only one panel, only one active action
-  await page.getByTestId('nav-faq').click();
+  await tapAction(page, 'faq');
   await expect(benefits).toHaveCount(0);
   const faq = page.getByTestId('premium-panel-faq');
   await expect(faq.locator('.premium-fold')).toHaveCount(4);
   await expect(faq).toContainText('S’agit-il d’un abonnement ?');
-  await expect(page.locator('.nav-btn[aria-pressed="true"]')).toHaveCount(1);
+  await menuItem(page, 'faq');
+  await expect(page.getByTestId('nav-menu-sheet').locator('[aria-checked="true"]')).toHaveCount(1);
+  await closeMenu(page);
   await faq.getByTestId('faq-0').getByRole('button').click();
   await expect(faq.getByTestId('faq-0').locator('p')).toBeHidden();
   // the cross closes it and the page is exactly as before
@@ -73,7 +78,7 @@ test('Avantages, FAQ, Restaurer : un panneau à la fois, au-dessus de la page, f
   expect(await page.getByTestId('premium-page').boundingBox()).toEqual(before);
 
   // Restaurer: the real entry point, which says no purchase system is wired
-  await page.getByTestId('nav-restore').click();
+  await tapAction(page, 'restore');
   const restore = page.getByTestId('premium-panel-restore');
   await restore.getByTestId('restore-now').click();
   await expect(restore.getByTestId('restore-result')).toHaveAttribute('data-kind', 'indisponible');
@@ -84,11 +89,11 @@ test('Avantages, FAQ, Restaurer : un panneau à la fois, au-dessus de la page, f
   await expect(restore).toHaveCount(0);
   await expect(page).toHaveURL(/#\/premium$/);
   // pressing the active action again closes its panel
-  await page.getByTestId('nav-faq').click();
-  await page.getByTestId('nav-faq').click();
+  await tapAction(page, 'faq');
+  await tapAction(page, 'faq');
   await expect(page.getByTestId('premium-panel-faq')).toHaveCount(0);
-  // « Plus » still opens the commands of the screen (1.0.0, formerly Menu)
-  await page.getByTestId('nav-menu').click();
+  // the ⋮ still opens the commands of the screen (1.0.0 « Plus », formerly Menu)
+  await openMenu(page);
   await expect(page.getByTestId('nav-menu-sheet')).toBeVisible();
 });
 

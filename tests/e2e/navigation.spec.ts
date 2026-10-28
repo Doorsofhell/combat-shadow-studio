@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { RELEASES } from '../../src/domain/releases';
-import { bar, barSlots, menuCommand, openCoachIA, openMenu, seedProfile } from './nav-helpers';
+import { bar, barSlots, closeMenu, expectChecked, menuCommand, menuItem, openCoachIA, openMenu, seedProfile, tapAction } from './nav-helpers';
 
 /**
  * 1.0.0 (refonte ergonomique, Youssef 2026-10-27, maquette v4 validée): the five places of the app fixed at the
@@ -10,39 +10,53 @@ import { bar, barSlots, menuCommand, openCoachIA, openMenu, seedProfile } from '
  * former Menu places are the five places, the tabs of each space, the links of Profil and the tiles of Réglages.
  * (v0.32–0.49: one bar of five places that changed with the screen, and a Menu; the actions per screen are kept,
  * see src/ui/nav/__tests__/refonte.test.ts.)
+ * 1.1.0 (Youssef, 2026-10-27, loupe A): « Rechercher » in place of Profil in the bar, the photo of the profile and
+ * the ⋮ of the screen's options at the top right; the row of actions stays only in the session and the chronometer.
  */
 const RETOUR = ['back', 'Retour'];
 const PLUS = ['grid', 'Plus'];
-const TAB_LABELS = ['Accueil', 'Entraîner', 'Apprendre', 'Progrès', 'Profil'];
-// path, screen, the buttons of the screen in reading order, the big button, the place lit, Retour (chip, row or none)
-const SCREENS: [string, string, string[][], string | null, string | null, 'chip' | 'row' | null][] = [
+const TAB_LABELS = ['Accueil', 'Entraîner', 'Apprendre', 'Progrès', 'Rechercher'];
+// path, screen, the buttons in the bar in reading order, the options of the ⋮ (null: no ⋮), the big button, the place
+// lit (Profil: the photo at the top right), Retour (chip, row or none)
+const SCREENS: [string, string, string[][], string[] | null, string | null, string | null, 'chip' | 'row' | null][] = [
   // 1.0.0 (lot 3): the big button « Reprendre » (« Commencer » before the first session); Chrono is a tile of the page
-  ['/', 'accueil', [PLUS, ['play', 'Commencer']], 'resume', 'Accueil', null],
-  ['/entrainement?ex=boxe-debutant-01&mode=technique', 'entrainement', [RETOUR, ['scan', 'Décomposer'], ['camera', 'Caméra'], ['play', 'Démarrer'], PLUS], 'toggle', null, 'row'],
-  ['/techniques?d=boxe', 'techniques', [['search', 'Rechercher'], ['filter', 'Filtres'], ['play', 'Technique'], PLUS], null, 'Apprendre', null],
-  ['/techniques/jab?d=boxe', 'fiche', [RETOUR, ['speed', 'Ralenti'], ['check', 'Maîtrise'], PLUS, ['play', 'S’entraîner']], 'train', 'Apprendre', 'chip'],
-  ['/stats', 'progres', [['calendar', 'Période'], ['chart', 'Statistiques'], ['history', 'Historique'], PLUS], null, 'Progrès', null],
-  ['/champions', 'legendes', [['search', 'Rechercher'], ['filter', 'Disciplines'], ['star', 'Légende'], PLUS], null, 'Apprendre', null],
-  // 1.0.0 (lot 2): Mon coach and Réglages are tabs of Profil at the top of the screen, not repeated above the bar
-  ['/profil', 'profil', [PLUS], null, 'Profil', null],
-  ['/reglages', 'parametres', [['options', 'Affichage'], ['camera', 'Caméra'], PLUS], null, 'Profil', null],
-  ['/chrono', 'chrono', [RETOUR, ['options', 'Réglages'], ['play', 'Démarrer'], PLUS], 'toggle', 'Entraîner', 'row'],
+  ['/', 'accueil', [['play', 'Commencer']], null, 'resume', 'Accueil', null],
+  ['/entrainement?ex=boxe-debutant-01&mode=technique', 'entrainement', [RETOUR, ['scan', 'Décomposer'], ['camera', 'Caméra'], ['play', 'Démarrer'], PLUS], null, 'toggle', null, 'row'],
+  ['/techniques?d=boxe', 'techniques', [], ['Filtres', 'Technique'], null, 'Apprendre', null],
+  ['/techniques/jab?d=boxe', 'fiche', [RETOUR, ['play', 'S’entraîner']], ['Ralenti', 'Maîtrise'], 'train', 'Apprendre', 'chip'],
+  ['/stats', 'progres', [], ['Période', 'Statistiques', 'Historique'], null, 'Progrès', null],
+  ['/champions', 'legendes', [], ['Disciplines', 'Légende'], null, 'Apprendre', null],
+  // 1.0.0 (lot 2): Mon coach and Réglages are tabs of Profil at the top of the screen, not repeated
+  ['/profil', 'profil', [], null, null, 'Profil', null],
+  // 1.1.0: « Caméra » left Réglages (it opened the same page as Affichage)
+  ['/reglages', 'parametres', [], ['Affichage'], null, 'Profil', null],
+  ['/chrono', 'chrono', [RETOUR, ['options', 'Réglages'], ['play', 'Démarrer'], PLUS], null, 'toggle', 'Entraîner', 'row'],
 ];
 
 test.describe('393×851', () => {
   test.use({ viewport: { width: 393, height: 851 } });
 
-  for (const [path, screen, slots, primary, lit, back] of SCREENS) {
+  for (const [path, screen, slots, options, primary, lit, back] of SCREENS) {
     test(`« ${screen} » : cinq places fixes, actions de l’écran et gros bouton`, async ({ page }) => {
       await seedProfile(page);
       await page.goto(`/#${path}`);
       await expect(bar(page)).toHaveAttribute('data-screen', screen);
       expect(await barSlots(page)).toEqual(slots);
+      // the ⋮ at the top right holds the other actions of the screen, in their order
+      if (options) {
+        await openMenu(page);
+        const words = await page.getByTestId('nav-menu-sheet').locator('.nav-menuitem[data-action] span:not(.nav-menucheck)').allTextContents();
+        expect(words).toEqual(options);
+        await closeMenu(page);
+      } else await expect(bar(page).locator('.nav-kebab')).toHaveCount(0);
+      // the photo of the profile at the top right, out of the full-screen session and chronometer
+      await expect(bar(page).getByTestId('nav-profil')).toHaveCount(back === 'row' ? 0 : 1);
       // the five places, the same everywhere except the hands-free session
       const tabs = bar(page).locator('.nav-tab');
       if (screen === 'entrainement') await expect(tabs).toHaveCount(0);
       else await expect(tabs.locator('small')).toHaveText(TAB_LABELS);
-      if (lit) await expect(bar(page).locator('.nav-tab[aria-current="page"] small')).toHaveText(lit);
+      if (lit === 'Profil') await expect(bar(page).getByTestId('nav-profil')).toHaveAttribute('aria-current', 'page');
+      else if (lit) await expect(bar(page).locator('.nav-tab[aria-current="page"] small')).toHaveText(lit);
       // one big button at most, the main action of the screen
       const big = bar(page).locator('.nav-primary');
       await expect(big).toHaveCount(primary ? 1 : 0);
@@ -85,7 +99,9 @@ test.describe('393×851', () => {
     await expect(bar(page).locator('[data-action="menu"]')).toHaveAttribute('aria-expanded', 'true');
     // the former Menu places are gone from it: they are the places, tabs, Profil links and Réglages tiles
     await expect(page.getByTestId('nav-menu-grid')).toHaveCount(0);
-    await expect(page.getByTestId('cmd-coach-ia')).toBeVisible();
+    // 1.1.0: the Coach IA is reached from « Rechercher », no longer from here; the options of the screen are
+    await expect(page.getByTestId('cmd-coach-ia')).toHaveCount(0);
+    await expect(page.getByTestId('nav-menu-sheet').locator('[data-action="period"]')).toBeVisible();
     // a modal sheet: focus inside, the page behind under a scrim
     await expect(page.getByRole('dialog', { name: 'Sur cet écran' })).toBeVisible();
     expect(await page.evaluate(() => !!document.activeElement?.closest('[data-testid="nav-menu-sheet"]'))).toBe(true);
@@ -117,6 +133,7 @@ test.describe('393×851', () => {
       ['nav-stats', /#\/stats$/, 'progres'],
       ['nav-profil', /#\/profil$/, 'profil'],
     ];
+    // 1.1.0: Profil is the photo at the top right, « Rechercher » the fifth place
     for (const [id, re, screen] of places) {
       await bar(page).getByTestId(id).click();
       await expect(page).toHaveURL(re);
@@ -147,7 +164,7 @@ test.describe('393×851', () => {
     await expect(page).toHaveURL(/#\/reglages$/);
     await page.getByTestId('reglages-premium').click();
     await expect(page).toHaveURL(/#\/premium$/);
-    await expect(bar(page).locator('.nav-tab[aria-current="page"]')).toHaveAttribute('data-tab', 'profil');
+    await expect(bar(page).getByTestId('nav-profil')).toHaveAttribute('aria-current', 'page');
   });
 
   test('Nouveautés : pastilles tant que la version n’est pas ouverte, notes réelles, mémorisé après rechargement', async ({ page }) => {
@@ -166,13 +183,14 @@ test.describe('393×851', () => {
     const news = page.getByTestId('news-sheet');
     await expect(news).toBeVisible();
     const versions = await news.locator('[data-version]').evaluateAll((a) => a.map((x) => x.getAttribute('data-version')));
-    expect(versions[0]).toBe('1.0.0');
+    expect(versions[0]).toBe('1.1.0');
     expect(versions).toContain('0.49.0');
     expect(versions).toContain('0.34.0');
     expect(versions).toContain('0.33.0');
     expect(versions).toContain('0.32.0');
     expect(versions).toContain('0.31.0');
-    await expect(news.locator('[data-version="1.0.0"]')).toContainText('Version 1.0.0 · la plus récente');
+    expect(versions).toContain('1.0.0');
+    await expect(news.locator('[data-version="1.1.0"]')).toContainText('Version 1.1.0 · la plus récente');
     await expect(news).not.toContainText('fictive');
     // seen: the dots go away at once
     await expect(page.getByTestId('menu-dot')).toHaveCount(0);
@@ -234,7 +252,8 @@ test.describe('393×851', () => {
     await bar(page).locator('[data-action="camera"]').click();
     await expect(bar(page).locator('[data-action="camera"]')).toHaveAttribute('aria-pressed', 'false');
     await openMenu(page);
-    for (const id of ['cmd-restart', 'cmd-prev', 'cmd-next', 'how-to', 'slow', 'options', 'cmd-coach-ia']) await expect(page.getByTestId(id)).toHaveCount(1);
+    // 1.1.0: the Coach IA through « Rechercher », which stays in « Plus » during the session
+    for (const id of ['cmd-restart', 'cmd-prev', 'cmd-next', 'how-to', 'slow', 'options', 'cmd-search']) await expect(page.getByTestId(id)).toHaveCount(1);
     await page.getByTestId('options').click();
     const opts = page.getByRole('dialog', { name: 'Options d’entraînement' });
     await expect(opts).toBeVisible();
@@ -248,25 +267,27 @@ test.describe('393×851', () => {
   test('catalogue : Rechercher, Filtres, Technique (la technique sélectionnée) et retour intelligent', async ({ page }) => {
     await seedProfile(page);
     await page.goto('/#/techniques?d=boxe');
-    const tech = bar(page).locator('[data-action="open-selected"]');
     // nothing chosen yet: Technique does not launch an arbitrary technique
-    await expect(tech).toBeDisabled();
-    // search, any discipline
-    await bar(page).locator('[data-action="search"]').click();
+    await expect(await menuItem(page, 'open-selected')).toBeDisabled();
+    await closeMenu(page);
+    // search (1.1.0: the place « Rechercher » of the bar, the techniques of the screen first)
+    await bar(page).getByTestId('app-search').click();
     await page.getByTestId('search-input').fill('crochet');
-    await expect(page.getByTestId('search-results').locator('button').first()).toBeVisible();
-    await page.getByTestId('search-results').locator('button').first().click();
+    await expect(page.getByTestId('search-own-hit').first()).toBeVisible();
+    await page.getByTestId('search-own-hit').first().click();
     await expect(bar(page)).toHaveAttribute('data-screen', 'fiche');
     // Retour: the catalogue as it was
     await bar(page).locator('[data-slot="1"]').click();
     await expect(bar(page)).toHaveAttribute('data-screen', 'techniques');
     await expect(page).toHaveURL(/d=boxe/);
     // the technique opened last is the selection
+    const tech = await menuItem(page, 'open-selected');
     await expect(tech).toBeEnabled();
     await expect(tech).toHaveAttribute('aria-label', /^Technique : ouvrir /);
+    await closeMenu(page);
     await expect(page.locator('.tech-card.selected')).toHaveCount(1);
     // filters: discipline kept in the URL, Retour from a sheet comes back to these filters
-    await bar(page).locator('[data-action="filters"]').click();
+    await tapAction(page, 'filters');
     await page.getByTestId('filter-d-muaythai').click();
     await page.getByTestId('filters-close').click();
     await expect(page.getByTestId('filters-panel')).toHaveCount(0);
@@ -289,17 +310,14 @@ test.describe('393×851', () => {
     await page.goto('/#/techniques/jab?d=boxe');
     await expect(bar(page)).toHaveAttribute('data-screen', 'fiche');
     await expect(page.getByTestId('technique-page')).toBeVisible();
-    const slow = bar(page).locator('[data-action="slow"]');
-    await slow.click();
-    await expect(slow).toHaveAttribute('aria-pressed', 'true');
-    await slow.click();
-    await expect(slow).toHaveAttribute('aria-pressed', 'false');
-    const mastery = bar(page).locator('[data-action="mastery"]');
-    await mastery.click();
-    await expect(mastery).toHaveAttribute('aria-pressed', 'true');
-    await mastery.click();
-    await expect(mastery).toHaveAttribute('aria-pressed', 'false');
-    // the Coach IA is in the Menu
+    // 1.1.0: Ralenti and Maîtrise are toggles of the ⋮ menu (checked or not)
+    for (const a of ['slow', 'mastery']) {
+      await tapAction(page, a);
+      await expectChecked(page, a, true);
+      await tapAction(page, a);
+      await expectChecked(page, a, false);
+    }
+    // the Coach IA through « Rechercher »
     await openCoachIA(page);
     await page.keyboard.press('Escape');
     await bar(page).locator('[data-slot="1"]').click();
@@ -310,20 +328,21 @@ test.describe('393×851', () => {
     await seedProfile(page);
     await page.goto('/#/champions?vue=champions');
     await expect(bar(page)).toHaveAttribute('data-screen', 'legendes');
-    const legend = bar(page).locator('[data-action="open-selected"]');
-    await expect(legend).toBeDisabled();
+    await expect(await menuItem(page, 'open-selected')).toBeDisabled();
+    await closeMenu(page);
     await page.locator('a.champ-card').first().click();
     await expect(bar(page)).toHaveAttribute('data-screen', 'fiche-legende');
-    const fav = page.getByTestId('legend-fav');
-    await fav.click();
-    await expect(fav).toHaveAttribute('aria-pressed', 'true');
-    await bar(page).locator('[data-action="career"]').click();
+    // 1.1.0: Favoris, Parcours and Techniques are in the ⋮ of the legend
+    await tapAction(page, 'favorite');
+    await expectChecked(page, 'favorite', true);
+    await tapAction(page, 'career');
     await expect(page.getByTestId('legend-career')).toBeInViewport();
-    await bar(page).locator('[data-action="techniques"]').click();
+    await tapAction(page, 'techniques');
     await expect(page.getByTestId('legend-techniques')).toBeInViewport();
     await bar(page).locator('[data-slot="1"]').click();
     await expect(bar(page)).toHaveAttribute('data-screen', 'legendes');
-    await expect(legend).toBeEnabled();
+    await expect(await menuItem(page, 'open-selected')).toBeEnabled();
+    await closeMenu(page);
     // the favourite is kept (Favoris view of the Légendes)
     await page.goto('/#/champions?vue=favoris');
     await expect(page.getByTestId('fav-legends')).toBeVisible();
@@ -333,18 +352,17 @@ test.describe('393×851', () => {
     await seedProfile(page);
     // 0.39 (refonte Progrès): on the overview, Statistiques opens Activité and Historique the history
     await page.goto('/#/stats');
-    await bar(page).locator('[data-action="history"]').click();
+    await tapAction(page, 'history');
     await expect(page).toHaveURL(/#\/historique$/);
     await page.goto('/#/stats');
-    await bar(page).locator('[data-action="stats"]').click();
+    await tapAction(page, 'stats');
     await expect(page).toHaveURL(/#\/stats\/activite$/);
     // in Activité, Historique and Statistiques switch the view (same page, same period)
-    const history = bar(page).locator('[data-action="history"]');
-    await history.click();
-    await expect(history).toHaveAttribute('aria-pressed', 'true');
-    await expect(bar(page).locator('[data-action="stats"]')).toHaveAttribute('aria-pressed', 'false');
-    await bar(page).locator('[data-action="stats"]').click();
-    await expect(history).toHaveAttribute('aria-pressed', 'false');
+    await tapAction(page, 'history');
+    await expectChecked(page, 'history', true);
+    await expectChecked(page, 'stats', false);
+    await tapAction(page, 'stats');
+    await expectChecked(page, 'history', false);
     // the whole history is a command of the Menu
     await menuCommand(page, 'cmd-historique-complet');
     await expect(page).toHaveURL(/#\/historique/);
@@ -353,25 +371,25 @@ test.describe('393×851', () => {
     await expect(page).toHaveURL(/#\/objectifs/);
   });
 
-  test('Profil et Paramètres : Réglages, Affichage, Caméra', async ({ page }) => {
+  test('Profil et Paramètres : Réglages, Affichage (la caméra y est)', async ({ page }) => {
     await seedProfile(page);
     await page.goto('/#/profil');
     // 1.0.0 (lot 2): Réglages is a tab of Profil
     await page.getByTestId('tab-reglages').click();
     await expect(page).toHaveURL(/#\/reglages$/);
-    await bar(page).locator('[data-action="nav:/reglages/affichage?focus=camera"]').click();
-    await expect(page.getByTestId('settings-camera')).toBeInViewport();
+    // 1.1.0: « Caméra » left Réglages; the camera settings are on the page « Affichage »
+    await tapAction(page, 'nav:/reglages/affichage');
+    await expect(page).toHaveURL(/#\/reglages\/affichage/);
+    await expect(page.getByTestId('settings-camera')).toHaveCount(1);
   });
 
   test('Menu « Sur cet écran » : les actions de l’ancienne pilule sont toujours là', async ({ page }) => {
     await seedProfile(page);
     // Accueil (1.0.0, lot 3): Séance rapide and Technique du jour are tiles of the page, Reprendre the big button;
-    // « Plus » keeps the Coach IA
+    // 1.1.0: no ⋮ on the home (its Coach IA command went to « Rechercher »)
     await page.goto('/#/');
-    await openMenu(page);
-    const cmds = () => page.getByTestId('nav-commands').locator('button').evaluateAll((bs) => bs.map((b) => b.getAttribute('data-testid')));
-    expect(await cmds()).toEqual(['cmd-coach-ia']);
-    await page.keyboard.press('Escape');
+    await expect(bar(page)).toBeVisible();
+    await expect(bar(page).locator('.nav-kebab')).toHaveCount(0);
     await page.getByTestId('tile-daily').click();
     await expect(bar(page)).toHaveAttribute('data-screen', 'fiche');
     // Techniques: Au hasard opens a technique of the list
@@ -394,16 +412,16 @@ test.describe('393×851', () => {
     expect(outline).not.toBe('nonenone');
     await page.keyboard.press('Enter');
     await expect(bar(page)).toHaveAttribute('data-screen', 'progres');
-    // an action of the screen
-    const period = bar(page).locator('[data-action="period"]');
-    await period.focus();
-    expect(await period.evaluate((b) => getComputedStyle(b).outlineStyle + getComputedStyle(b).boxShadow)).not.toBe('nonenone');
+    // the ⋮ of the screen's options (1.1.0)
+    const kebab = bar(page).getByTestId('nav-menu');
+    await kebab.focus();
+    expect(await kebab.evaluate((b) => getComputedStyle(b).outlineStyle + getComputedStyle(b).boxShadow)).not.toBe('nonenone');
   });
 
   test('mouvement réduit : pas d’animation de la barre ni de « Plus »', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await seedProfile(page);
-    await page.goto('/#/');
+    await page.goto('/#/stats');
     await openMenu(page);
     const d = await page.evaluate(() => [...document.querySelectorAll('.nav-sheet, .nav-ico, .nav-dock')].map((e) => parseFloat(getComputedStyle(e).animationDuration) || 0));
     for (const x of d) expect(x).toBeLessThanOrEqual(0.01);
