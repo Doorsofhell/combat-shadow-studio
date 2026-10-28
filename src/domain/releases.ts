@@ -57,6 +57,7 @@ export const RELEASES: readonly Release[] = (
         { category: 'fonctionnalites', text: 'Pendant la séance, les consignes défilent une à une sous les pieds du coach : la consigne principale, puis chaque point clé, puis on recommence. Des petits traits montrent où tu en es.' },
         { category: 'fonctionnalites', text: 'Elles restent en plein écran, la pause les arrête, et le coach est cadré au-dessus : le texte ne le couvre jamais.' },
         { category: 'ameliorations', text: 'Réglages › Consignes pendant la séance : 2,5, 3,5 ou 5 secondes par consigne, ou « Point du moment » pour garder l’affichage d’avant.' },
+        { category: 'corrections', text: 'Accueil : le numéro de version suit le titre de l’application au lieu de passer sous ta photo.' },
         { category: 'ameliorations', text: 'Mes infos et Réglages n’ont plus de ⋮ en haut à droite : tout ce qu’il proposait est déjà sur ces deux pages ou dans la barre du bas.' },
         { category: 'corrections', text: 'Fiche technique : « S’entraîner » n’est plus jamais grisé (une technique sans exercice se travaille seule), et les angles de caméra restent visibles au-dessus du bouton.' },
       ],
