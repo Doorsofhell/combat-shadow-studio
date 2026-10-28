@@ -7,6 +7,7 @@ import { legMotions } from './legs';
 import { mmaMotions } from './mma';
 import { grapplingMotions } from './grappling';
 import { upperMotions } from './upper';
+import { illustrationMotions } from './illustrations';
 
 export type MotionLibrary = Map<string, Motion>;
 
@@ -34,6 +35,21 @@ export function getLibrary(rig: CoachRig, style: StanceStyle, profile?: { id: st
     perRig.set(key, lib);
   }
   return lib;
+}
+
+/**
+ * 1.3.2 A pose of the encyclopedia illustrations (illustrations.ts), built on demand for the Lab view: never part of
+ * the library of techniques. Same joint safety as the techniques.
+ */
+export function getIllustration(rig: CoachRig, style: StanceStyle, id: string, profile?: { id: string; offsets: StanceOffsets }): Motion | undefined {
+  const a = new Author(rig.metrics, rig.chestFrame.bind(rig), style, profile?.offsets);
+  a.solvedShoulder = (p, side) => {
+    rig.apply(rig.resolve(p));
+    return rig.worldOf(side === 'L' ? 'LeftArm' : 'RightArm')!;
+  };
+  const m = illustrationMotions(a).find((x) => x.id === id);
+  if (m) for (const k of m.keys) a.openElbows(k.pose);
+  return m;
 }
 
 export function getMotion(lib: MotionLibrary, id: string, southpaw: boolean): Motion | undefined {

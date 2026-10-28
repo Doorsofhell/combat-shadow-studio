@@ -23,7 +23,7 @@ export { STANCES, type StanceOffsets, type StanceStyle } from './author';
 
 // the motions and their playback
 export { MotionSampler, duration, motionPhase, type Motion } from './motion';
-export { getLibrary, getMotion, type MotionLibrary } from './library';
+export { getIllustration, getLibrary, getMotion, type MotionLibrary } from './library';
 export { ComboPlayer, type PlayerEvents, type PlayerMove } from './player';
 
 // the study mode (Analyse technique) and the framing

@@ -768,6 +768,11 @@ export class CoachRig {
     return r ? this.bonePos(r) : undefined;
   }
 
+  /** 1.3.2 where a bone really is in the scene (model transform included), for marks on the illustrations */
+  sceneOf(name: string) {
+    return this.bones.get(name)?.bone.getWorldPosition(new Vector3());
+  }
+
   restOf(name: string) {
     return this.bones.get(name)?.worldPos.clone();
   }

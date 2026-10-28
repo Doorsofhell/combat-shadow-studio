@@ -20,6 +20,20 @@ export interface RenderRecipe {
   /** discipline of the outfit and stance, when the technique belongs to several */
   d?: string;
   southpaw?: boolean;
+  /** 1.3.2 a pose of the illustrations (engine/library/illustrations.ts) instead of a technique: three instants */
+  illu?: string;
+  /** 1.3.2 several techniques side by side, each at its key moment (e.g. the three styles of kick-boxing) */
+  mix?: { tech: string; coach: 'homme' | 'femme'; d: string; az?: number }[];
+  /** azimuth of the camera for illu and mix (degrees, 0 = facing the coach) */
+  az?: number;
+  /** 1.3.2 an engine motion shown instead of the technique's own (schemas: the neutral standing posture) */
+  motion?: string;
+  /** 1.3.2 a schema: the coach still seen from these sides, with marks on his bones */
+  views?: { az: number; el?: number; span?: number; fy?: number }[];
+  marks?: { layer?: number; bone: string | string[]; dxH?: number; dyH?: number; label?: string; kind?: 'zone' | 'arc' | 'point'; side?: 'l' | 'r'; r?: number }[];
+  /** close-up of an illu: part of the body height in the frame, and the height looked at (metres) */
+  span?: number;
+  fy?: number;
   /** one close-up picture of the coach at rest in guard instead of three instants (equipment worn) */
   still?: { az: number; el: number; span: number; fy: number; what: string };
   alt: string;
@@ -85,6 +99,59 @@ export const RENDERS: RenderRecipe[] = [
   { id: 'secu-ukemi', tech: 'ukemi-ushiro', coach: 'homme', d: 'judo', alt: 'Le judoka chute en arrière, version basse' },
   // equipment worn: an open glove only reads on a hand
   { id: 'eq-gants-mma', tech: 'garde', coach: 'homme', d: 'mma', still: { az: 35, el: 6, span: 0.9, fy: 1.45, what: 'Coach Kadir en garde, tenue de MMA, plan rapproché sur les gants' }, alt: 'Gants de MMA ouverts, portés en garde' },
+  // 1.3.2: the coach alone, for culture, rules and preparation
+  { id: 'cult-muaythai', tech: 'garde', coach: 'homme', d: 'muaythai', still: { az: 48, el: 4, span: 1.04, fy: 0.86, what: 'Coach Kadir en garde de muay-thaï, tenue de muay-thaï' }, alt: 'Nak muay en garde thaï, prêt au combat' },
+  { id: 'cult-kickboxing', tech: 'garde', coach: 'femme', d: 'kickboxing', still: { az: 45, el: 4, span: 1.04, fy: 0.86, what: 'Coach Amara en garde de kick-boxing, gants et protège-tibias' }, alt: 'Combattante de kick-boxing en garde, gants et protège-tibias' },
+  { id: 'regle-styles-kb', tech: 'high-kick-arriere', coach: 'femme', d: 'kickboxing', az: 70, mix: [{ tech: 'high-kick-arriere', coach: 'femme', d: 'kickboxing' }, { tech: 'low-kick-arriere', coach: 'homme', d: 'kickboxing', az: -35 }, { tech: 'genou-direct-arriere', coach: 'femme', d: 'kickboxing' }], alt: 'Trois coups côte à côte : coup de pied haut (full contact), low kick, genou (K1)' },
+  { id: 'prep-echauffement', tech: 'garde', illu: 'illu-echauffement', coach: 'femme', d: 'mma', az: 20, alt: 'La coach mobilise les épaules : bras devant, au-dessus de la tête, puis ouverts' },
+  { id: 'cult-wai-kru', tech: 'garde', illu: 'illu-wai-kru', coach: 'homme', d: 'muaythai', az: 70, alt: 'Le nak muay à genoux, mains jointes, puis s’incline jusqu’au tapis (wai kru)' },
+  // 1.3.2: schemas drawn on the coach (zones, joints, muscles), placed on his real bones
+  {
+    id: 'secu-zones', tech: 'garde', motion: 'neutre', coach: 'homme', d: 'mma', views: [{ az: 0 }, { az: 180 }],
+    marks: [
+      { layer: 0, bone: ['LeftUpLeg', 'RightUpLeg'], dyH: 0.03, label: 'Aine', side: 'l' },
+      { layer: 1, bone: 'Head', dyH: -0.045, label: 'Arrière de la tête', side: 'r' },
+      { layer: 1, bone: 'Neck', label: 'Nuque', side: 'r', r: 0.026 },
+      { layer: 1, bone: 'Spine', dxH: 0.045, dyH: -0.01, label: 'Reins', side: 'r', r: 0.03 },
+      { layer: 1, bone: 'Spine', dxH: -0.045, dyH: -0.01, r: 0.03 },
+    ],
+    alt: 'Le coach de face et de dos : l’aine, l’arrière de la tête, la nuque et les reins marqués en rouge',
+  },
+  {
+    id: 'secu-articulations', tech: 'garde', motion: 'neutre', coach: 'homme', d: 'mma', views: [{ az: 0 }],
+    marks: [
+      { bone: 'LeftForeArm', kind: 'arc', label: 'Coude : jamais tendu au-delà', side: 'r', r: 0.04 },
+      { bone: 'LeftLeg', kind: 'arc', label: 'Genou : pas de torsion', side: 'r', r: 0.045 },
+      { bone: 'Spine1', kind: 'arc', label: 'Colonne : pas de torsion forcée', side: 'l', r: 0.06 },
+    ],
+    alt: 'Le coach debout : flèches de torsion au coude, au genou et sur la colonne, les sens à ne pas forcer',
+  },
+  {
+    id: 'secu-commotion', tech: 'garde', motion: 'neutre', coach: 'homme', d: 'mma', views: [{ az: 90, el: 2, span: 0.2, fy: 1.62 }],
+    marks: [
+      { bone: 'Head', dyH: -0.32, dxH: -0.17, label: 'Tempe', side: 'l', r: 0.06 },
+      { bone: 'Head', dyH: -0.03, dxH: -0.26, label: 'Menton', side: 'l', r: 0.06 },
+      { bone: 'Head', dyH: -0.3, dxH: 0.17, label: 'Arrière du crâne', side: 'r', r: 0.06 },
+    ],
+    alt: 'La tête du coach de profil : tempe, menton et arrière du crâne, les zones où un choc peut causer une commotion',
+  },
+  {
+    id: 'famille-securite', tech: 'garde', motion: 'neutre', coach: 'homme', d: 'mma', views: [{ az: 0 }],
+    marks: [
+      { bone: 'LeftArm', kind: 'point', label: 'Épaule', side: 'r' },
+      { bone: 'LeftForeArm', kind: 'point', label: 'Coude', side: 'r' },
+      { bone: 'LeftHand', kind: 'point', label: 'Poignet', side: 'r' },
+      { bone: 'LeftUpLeg', kind: 'point', label: 'Hanche', side: 'r' },
+      { bone: 'LeftLeg', kind: 'point', label: 'Genou', side: 'r' },
+      { bone: 'LeftFoot', kind: 'point', label: 'Cheville', side: 'r' },
+      { bone: 'RightArm', kind: 'point', dyH: 0.02, label: 'Deltoïde', side: 'l' },
+      { bone: 'Spine2', kind: 'point', dxH: -0.05, dyH: 0.01, label: 'Pectoral', side: 'l' },
+      { bone: 'Spine', kind: 'point', dyH: -0.03, label: 'Abdominaux', side: 'l' },
+      { bone: ['RightArm', 'RightForeArm'], kind: 'point', label: 'Biceps', side: 'l' },
+      { bone: ['RightUpLeg', 'RightLeg'], kind: 'point', label: 'Quadriceps', side: 'l' },
+    ],
+    alt: 'Planche du coach de face : articulations (épaule, coude, poignet, hanche, genou, cheville) et muscles principaux',
+  },
   { id: 'prep-shadow', tech: 'crochet-arriere', coach: 'femme', d: 'kickboxing', alt: 'La coach enchaîne dans le vide, en shadow' },
 ];
 
@@ -104,39 +171,16 @@ const TO_PRODUCE: TermImage[] = [
   TODO('pos-genou-ventre', 'Genou sur le ventre', 'Un genou en travers du buste du partenaire, l’autre jambe tendue sur le côté.'),
   TODO('pos-controle-dos', 'Contrôle du dos', 'Pratiquant accroché au dos du partenaire assis, crochets des jambes devant.'),
   TODO('pos-nord-sud', 'Nord-sud', 'Pratiquant allongé tête-bêche sur la poitrine du partenaire. Vue de dessus.'),
-  TODO('eq-bandes', 'Bandes de protection', 'Main bandée vue de dos et de paume : poignet, base du pouce, phalanges ; bande enroulée à côté.'),
-  TODO('eq-protege-dents', 'Protège-dents', 'Protège-dents thermoformable posé, vue de trois quarts, à côté d’un étui.'),
-  TODO('eq-casque', 'Casque', 'Casque de boxe amateur sans protège-joues, de face et de profil.'),
-  TODO('eq-coquille', 'Coquille', 'Coquille de protection seule, vue de face, sobre.'),
-  TODO('eq-protege-poitrine', 'Protège-poitrine', 'Protection de poitrine pour combattante, posée à plat.'),
-  TODO('eq-sac', 'Sac de frappe', 'Sac lourd suspendu par des chaînes dans une salle, et à côté un sac « banane » plus long.'),
-  TODO('eq-pattes-ours', 'Pattes d’ours', 'Paire de pattes d’ours, face de frappe et poignée.'),
-  TODO('eq-paos', 'Paos', 'Paire de paos thaïs, sangles d’avant-bras visibles.'),
-  TODO('lieu-dojo', 'Dojo', 'Salle de judo traditionnelle avec tatamis, vue générale.'),
   TODO('famille-regles', 'Règles et arbitrage', 'Arbitre de boxe qui sépare deux boxeurs, geste clair. Personnages fictifs.'),
-  TODO('regle-round', 'Round', 'Chronomètre de round et cloche, ou combattants qui regagnent leur coin à la fin du round.'),
-  TODO('regle-styles-kb', 'Styles de kick-boxing', 'Trois silhouettes côte à côte : poings et pieds au-dessus de la ceinture (full contact), low kick, genou (K1).'),
   TODO('regle-pesee', 'Pesée', 'Combattant sur une balance, officiel qui lit le poids.'),
   TODO('regle-ko', 'KO et arrêt de l’arbitre', 'Arbitre qui compte au-dessus d’un boxeur au tapis, sans blessure visible.'),
   TODO('regle-decision', 'Décision', 'Arbitre qui lève le bras du vainqueur au centre du ring.'),
   TODO('regle-soumission', 'Soumission', 'Gros plan d’une main qui tape trois fois sur le tapis.'),
   TODO('regle-penalite', 'Fautes et pénalités', 'Arbitre qui donne un avertissement, bras tendu vers un combattant.'),
   TODO('regle-ippon', 'Ippon', 'Arbitre de judo, bras levé à la verticale.'),
-  TODO('regle-points-jjb', 'Points en JJB', 'Tableau de points de JJB : points, avantages, pénalités, pour deux athlètes.'),
   TODO('regle-arbitre', 'Arbitre et juges', 'Arbitre dans l’aire et trois juges à leur table autour du ring.'),
   TODO('prep-sparring', 'Sparring', 'Deux partenaires casqués et gantés en échange léger, entraîneur à côté.'),
-  TODO('prep-echauffement', 'Échauffement', 'Pratiquant qui saute à la corde, puis mobilisation des épaules.'),
-  TODO('secu-commotion', 'Commotion cérébrale', 'Illustration sobre d’une tête de profil avec les zones d’alerte, sans image choquante.'),
-  TODO('secu-articulations', 'Précautions articulaires', 'Schéma du coude, du genou et de la colonne avec les sens de torsion dangereux.'),
-  TODO('secu-zones', 'Zones interdites', 'Silhouette de face et de dos avec la nuque, l’arrière de la tête, l’aine et les reins marqués.'),
-  TODO('famille-securite', 'Anatomie et sécurité', 'Planche anatomique pédagogique d’un combattant : muscles principaux et articulations.'),
-  TODO('cult-wai-kru', 'Wai kru', 'Combattant agenouillé sur le ring, mongkon sur la tête, en prosternation.'),
-  TODO('cult-mongkon', 'Mongkon', 'Mongkon posé sur une table, et deux pra jiad.'),
-  TODO('cult-muaythai', 'Muay-thaï', 'Nak muay en garde thaï dans un ring, ambiance de stade, personnage fictif.'),
   TODO('cult-jjb', 'Jiu-jitsu brésilien', 'Deux pratiquants en kimono sur un tatami, un en garde.'),
-  TODO('cult-boxe', 'Histoire de la boxe', 'Gants de cuir anciens et réglement imprimé, ambiance XIXe siècle.'),
-  TODO('cult-kickboxing', 'Histoire du kick-boxing', 'Combattant de kick-boxing en short et gants, pieds nus, dans un ring.'),
-  TODO('cult-federations', 'Fédérations', 'Six pictogrammes de disciplines autour d’un livre de règles, sans logo de fédération.'),
 ];
 
 /** the files made from 3D renders and Blender scenes of the repository */
@@ -147,7 +191,20 @@ const rendered = (r: RenderRecipe): TermImage => ({
   height: 400,
   alt: r.alt,
   frames: r.still ? undefined : 3,
-  origin: { kind: 'rendu-3d', what: r.still ? r.still.what : `Coach ${r.coach === 'homme' ? 'Kadir' : 'Amara'}, technique « ${r.tech} » de l’application, début, mi-chemin et moment clé`, tool: TOOL, date: D },
+  origin: {
+    kind: 'rendu-3d',
+    what: r.still
+      ? r.still.what
+      : r.mix
+        ? `Coachs de l’application, chacun au moment clé de sa technique : ${r.mix.map((m) => `« ${m.tech} »`).join(', ')}`
+        : r.views
+          ? `Coach ${r.coach === 'homme' ? 'Kadir' : 'Amara'} immobile, repères posés sur les os de son squelette 3D (moteur de l’application)`
+          : r.illu
+          ? `Coach ${r.coach === 'homme' ? 'Kadir' : 'Amara'}, pose d’illustration « ${r.illu} » du moteur de l’application, en trois instants`
+          : `Coach ${r.coach === 'homme' ? 'Kadir' : 'Amara'}, technique « ${r.tech} » de l’application, début, mi-chemin et moment clé`,
+    tool: TOOL,
+    date: D,
+  },
 });
 
 /** illustrations of objects and places, rendered with Blender from the outfits of the coaches or from simple scenes */
@@ -171,6 +228,21 @@ export const SCENES: SceneRecipe[] = [
   { id: 'lieu-cage', scene: 'cage', alt: 'Cage octogonale grillagée', what: 'Cage à huit côtés modélisée pour l’encyclopédie' },
   { id: 'lieu-tatami', scene: 'tatami', alt: 'Aire de judo : zone de combat et zone de sécurité', what: 'Aire de tatamis modélisée pour l’encyclopédie (zone de combat et zone de sécurité de couleurs différentes)' },
   { id: 'cult-ceintures', scene: 'ceintures', alt: 'Ceintures de couleur roulées', what: 'Ceintures modélisées pour l’encyclopédie : blanche, bleue, violette, marron, noire' },
+  // 1.3.2: equipment and places modelled in scenes.py (no outfit of the coaches holds them)
+  { id: 'eq-bandes', scene: 'bandes', alt: 'Deux bandes de protection, une roulée, une déroulée avec sa boucle de pouce', what: 'Bandes modélisées pour l’encyclopédie' },
+  { id: 'eq-protege-dents', scene: 'protege-dents', alt: 'Protège-dents bleu à côté de son étui ouvert', what: 'Protège-dents et étui modélisés pour l’encyclopédie' },
+  { id: 'eq-casque', scene: 'casque', alt: 'Casque de boxe amateur rouge, de face et de profil', what: 'Casque modélisé pour l’encyclopédie (sans protège-joues)' },
+  { id: 'eq-coquille', scene: 'coquille', alt: 'Coquille de protection avec sa ceinture élastique', what: 'Coquille modélisée pour l’encyclopédie' },
+  { id: 'eq-protege-poitrine', scene: 'protege-poitrine', alt: 'Protège-poitrine moulé à deux coques, bord en mousse', what: 'Protège-poitrine modélisé pour l’encyclopédie' },
+  { id: 'eq-sac', scene: 'sac', alt: 'Sac lourd et sac « banane » suspendus par leurs chaînes', what: 'Sacs de frappe modélisés pour l’encyclopédie' },
+  { id: 'eq-pattes-ours', scene: 'pattes-ours', alt: 'Paire de pattes d’ours : face de frappe et poignée', what: 'Pattes d’ours modélisées pour l’encyclopédie' },
+  { id: 'eq-paos', scene: 'paos', alt: 'Paire de paos thaïs : face de frappe, sangles d’avant-bras et poignée', what: 'Paos modélisés pour l’encyclopédie' },
+  { id: 'lieu-dojo', scene: 'dojo', alt: 'Dojo traditionnel : tatamis, cloisons shoji, alcôve en bois', what: 'Dojo modélisé pour l’encyclopédie (tatamis, shoji, tokonoma)' },
+  { id: 'regle-round', scene: 'round', alt: 'Chronomètre de round (round 3, 2:47) et cloche avec son marteau', what: 'Chronomètre et cloche modélisés pour l’encyclopédie' },
+  { id: 'cult-mongkon', scene: 'mongkon', alt: 'Mongkon blanc et rouge et deux pra jiad posés sur une planche', what: 'Mongkon et pra jiad modélisés pour l’encyclopédie' },
+  { id: 'cult-federations', scene: 'livre-regles', alt: 'Un livre de règles entouré des emblèmes des six disciplines de l’application', what: 'Livre modélisé pour l’encyclopédie, entouré des emblèmes des disciplines de l’application (aucun logo de fédération)' },
+  { id: 'regle-points-jjb', scene: 'tableau-jjb', alt: 'Tableau de score de JJB : points, avantages en vert, pénalités en rouge, temps restant', what: 'Tableau de score modélisé pour l’encyclopédie' },
+  { id: 'cult-boxe', scene: 'boxe-ancienne', alt: 'Gants de cuir anciens à côté d’un règlement imprimé', what: 'Gants anciens et feuille de règlement modélisés pour l’encyclopédie (texte illisible, rien de copié)' },
 ];
 
 const scened = (s: SceneRecipe): TermImage => ({

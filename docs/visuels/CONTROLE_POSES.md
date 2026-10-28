@@ -33,3 +33,12 @@ et techniques de judo font humains au moment clé : appuis au sol, buste et bras
 - Ce sont des rendus 3D retouchés, pas des photos : de près, on voit que les visages et la peau sont de la 3D.
 - Les tenues sont celles des coachs (pas de t-shirt ni de bandes de main pour l'instant).
 - La lumière principale vient toujours de la droite : c'est voulu, toutes les images se ressemblent ainsi.
+
+## 1.3.2 · Encyclopédie
+
+- **Wai kru** : les genoux flottaient au-dessus du tapis ; pieds reculés (z −0,4) et bassin baissé, vérifié par le
+  test `illustrations.test.ts` (genoux à moins de 10 cm du sol sur Kadir et Amara).
+- **Échauffement** : bras tendus devant, puis au-dessus de la tête, puis ouverts ; image prise au milieu (bras levés).
+- **Styles de kick-boxing** : trois coachs (high kick, low kick, genou), l'homme tourné de −35° pour que les trois
+  silhouettes ne se cachent pas.
+- **Soumission** (main qui tape) : seule, la pose ne se lisait pas ; reportée au lot 4 avec un partenaire.
