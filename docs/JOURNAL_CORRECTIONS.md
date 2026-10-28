@@ -2157,3 +2157,10 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Intégration de la 1.3.1 (visuels studio, fusionnée pendant le lot) : conflits sur la version, les Nouveautés, le test de navigation et ce journal, résolus en gardant les deux versions (1.4.0 en tête, 1.3.1 ensuite). Après intégration : TypeScript RÉUSSI ; Vitest 867 RÉUSSIS, 1 ignoré ; Playwright (navigation, écran coach, pulsation, consignes, coach-bubble, plein écran) 58/58 RÉUSSIS.
   - Intégration de la 1.3.2 (illustrations de l'Encyclopédie, fusionnée pendant le lot) : mêmes conflits, résolus en gardant les versions (1.4.0, 1.3.2, 1.3.1). Après intégration : TypeScript RÉUSSI ; Vitest 873 RÉUSSIS, 1 ignoré ; Playwright (navigation, écran coach, pulsation, coach-bubble, plein écran) 49/49 RÉUSSIS.
   - Validation : Youssef, 28/10 17:42 « Je valide ».
+
+## 2026-10-28 · 1.4.0 · Page Claude sous la limite des 512 fichiers
+
+- **Demande** (Youssef, 28 octobre 18:10) : « Oui » à la proposition de faire servir les vignettes de l'encyclopédie par les grandes images, uniquement sur la page Claude.
+- **Constat après vérification** : une page Claude accepte au plus 512 fichiers par version (refus « manifest exceeds 512 entries ») ; la construction 1.4.0 en compte 526 utiles, dont 90 vignettes « -mini » de l'encyclopédie.
+- **Changement** : réglage de construction `VITE_ENC_FULL_ONLY=1` (`src/ui/encyclopedia/Encyclopedia.tsx`), utilisé seulement pour la page Claude : les vignettes affichent l'image entière réduite par le navigateur et les copies « -mini » ne sont pas envoyées (436 fichiers). Le lien GitHub et l'application ne changent pas.
+- **Tests** : TypeScript RÉUSSI ; contrôle de la construction de la page Claude servie en local : encyclopédie affichée, 0 demande de « -mini », 0 image en erreur (RÉUSSI). Page Claude publiée en 1.4.0 (versions 60 à 62). Android réel : NON EXÉCUTÉ.
