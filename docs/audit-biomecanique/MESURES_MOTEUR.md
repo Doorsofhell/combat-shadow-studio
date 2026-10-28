@@ -21,7 +21,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Pas latéral gauche (`pas-gauche`) | deplacement | 31,4 | 51 % | 0,21 | 3,0 (LeftToeBase) | 6° | 0,58 |
 | Pas latéral droit (`pas-droite`) | deplacement | 30,3 | 51 % | 0,21 | 3,0 (LeftToeBase) | 6° | 0,58 |
 | Relevé depuis les genoux (`releve-genoux`) | sol | 28,7 | 54 % | 1,01 | -0,1 (LeftToeBase) | 4° | 5,70 |
-| Sit-out (`sit-out`) | sol | 28,0 | 44 % | 0,00 | -0,5 (LeftToeBase) | 12° | 14,51 |
+| Sit-out (`sit-out`) | sol | 27,9 | 44 % | 0,00 | -0,5 (LeftToeBase) | 12° | 14,51 |
 | Relevé technique (`releve-technique`) | sol | 27,2 | 10 % | 0,00 | 0,1 (LeftToeBase) | 23° | 11,10 |
 | Check hook (crochet pivot) (`check-hook`) | poing | 23,6 | 57 % | 0,26 | 3,0 (LeftToeBase) | 20° | 1,93 |
 | Front kick avant (`front-kick-avant`) | pied | 22,8 | 26 % | 0,68 | 3,0 (LeftToeBase) | 6° | 0,03 |

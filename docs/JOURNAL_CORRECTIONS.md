@@ -2175,3 +2175,15 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - nouveau `src/ui/encyclopedia/__tests__/enc-image.test.tsx` : l’emplacement vide annonce « Illustration à produire », une image produite est une vraie image ;
   - `tests/e2e/encyclopedie.spec.ts` : le test « illustration manquante » ne trouvait plus de fiche « à produire », puisqu’il n’y en a plus. Il est réécrit, pas affaibli : il bloque l’image de Kesa-gatame et vérifie le message « Illustration indisponible », le libellé et la mention des coachs.
   - Toute l’Encyclopédie (46/46 fiches) a maintenant son illustration.
+
+## 2026-10-28 · 1.6.0 (provisoire) · Deux nouveaux coachs : Axel et Kaila (MakeHuman)
+
+- **Demande** : Youssef, 28/10 17:42 : « Je veux passer au plus vite aux 2 coachs supplémentaires mieux aboutis après prise de connaissance de » makehumancommunity ; 17:43 « Utilise toutes les optimisations possibles » ; 18:41 « Quand je clique sur changer de coach, je ne veux voir que la liste des coachs, rien d'autre » ; 19:10 l'aperçu de travail « vraiment nul » (peaux transférées de Rocketbox, abandonnées).
+- **Constat après vérification** : les packs d'assets MakeHuman (peaux, cheveux, sourcils, cils) sont CC0 sur files.makehumancommunity.org (hair02 et hair03 sont CC-BY, non utilisés). Le maillage MakeHuman a des faces plus grandes que Rocketbox : les tenues générées par `outfits.py` y avaient des bords en dents de scie et les chaussures de boxe se cassaient sur le maillage de base.
+- **Changement** :
+  - `tools/generator/makehuman/build_photo.py` (nouveau) : corps MakeHuman de la recette, squelette Mixamo de MPFB, peau photo, yeux, sourcils, cils et tresse MakeHuman ; cuir chevelu peint (cheveux plaqués de Kaila, coupe rase d'Axel), sous-vêtements peints, tatouage tribal d'Axel ; une subdivision puis réduction à 42 800 triangles ; os sans préfixe. Recettes `axel.json` (1,94 m) et `kaila.json` (1,65 m). README dans le dossier.
+  - Poids : textures WebP, cheveux 1024 px : `photo.glb` 1,8 Mo (Axel) et 2,2 Mo (Kaila), contre 2,5 et 2,9 Mo pour Kadir et Amara.
+  - `outfits.py` : mode `MH_BODY=1` (brassière coupée par des plans, ceinture qui ne se soulève plus sur les fessiers, points des coupes gardés sur leur plan) et tranches plus larges pour les chaussures d'un maillage moins dense. Les tenues de Kadir et Amara ne changent pas (mode désactivé par défaut, fichiers non régénérés).
+  - Appli : `ALL_COACHES` (Kadir, Axel, Amara, Kaila), `profile.champion` (le coach choisi pour le type de corps ; absent = Kadir ou Amara comme avant, aucune donnée enregistrée ne change), gardes propres (Axel droit et relâché, Kaila basse, mains ouvertes), looks, portraits. « Changer de coach » (Accueil) ouvre `/coach` : seulement la liste et Valider. Réglages, première ouverture et options de séance proposent les quatre coachs.
+  - Moteur : sit-out, pied droit tourné de 8° de plus vers l'extérieur (sur un bassin large, le retour à quatre pattes dépassait la rotation interne de la hanche : 49,7° pour 45°).
+- **Tests** : voir le compte rendu de la PR (résultats RÉUSSI / ÉCHOUÉ / NON EXÉCUTÉ).

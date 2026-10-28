@@ -65,7 +65,7 @@ export const APP_GUIDE: GuideEntry[] = [
       'par ou commencer', 'par ou je commence', 'je commence par quoi', 'comment commencer', 'je debute', 'premiere fois',
     ],
     answer:
-      'Combat Shadow Studio t’aide à t’entraîner seul, en shadow : ton coach en 3D (Kadir ou Amara) montre chaque mouvement et tu le fais en même temps, face à l’écran.\n' +
+      'Combat Shadow Studio t’aide à t’entraîner seul, en shadow : ton coach en 3D (Kadir, Axel, Amara ou Kaila) montre chaque mouvement et tu le fais en même temps, face à l’écran.\n' +
       'Dans la barre du bas, cinq places fixes : Accueil, Entraîner, Apprendre (techniques, légendes, encyclopédie), Progrès et Rechercher. Ton profil est ta photo en haut à droite, à côté du ⋮ qui ouvre les options de l’écran. Juste au-dessus de la barre, le gros bouton de l’action principale.\n' +
       'Pour te lancer, touche le gros bouton « Reprendre » sur l’accueil (« Commencer » avant ta première séance). Et si tu as une question, technique ou sur l’application, touche « Rechercher » dans la barre : tu trouves ce que tu cherches dans l’app, ou tu me poses la question.',
     action: { to: '/entrainer', label: 'Aller à Entraîner' },
@@ -247,7 +247,7 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['entrainement'],
     answer:
       'Dans le studio, « Options » (dans « Plus ») ouvre les options de la séance :\n' +
-      '• le coach (Kadir ou Amara) et le rendu ;\n' +
+      '• le coach (Kadir, Axel, Amara ou Kaila) et le rendu ;\n' +
       '• ta garde : orthodoxe (gauche devant) ou gaucher (droite devant) ;\n' +
       '• l’angle de caméra ;\n' +
       '• les repères au sol : position et orientation des pieds, pied avant ou arrière, direction du pivot, trajectoires ;\n' +
@@ -259,10 +259,10 @@ export const APP_GUIDE: GuideEntry[] = [
   {
     id: 'choose-coach',
     title: 'Choisir son coach',
-    keywords: ['changer de coach', 'choisir mon coach', 'choisir un coach', 'choix du coach', 'autre coach', 'mon coach', 'kadir', 'amara', 'coach homme', 'coach femme'],
+    keywords: ['changer de coach', 'choisir mon coach', 'choisir un coach', 'choix du coach', 'autre coach', 'mon coach', 'kadir', 'amara', 'axel', 'kaila', 'coach homme', 'coach femme'],
     screens: ['coach-choix'],
     answer:
-      'Tu as deux coachs : Kadir « L’Aigle », un lutteur patient qui met une pression constante, et Amara « La Lionne », une frappeuse puissante à la garde haute. Les deux montrent les mêmes techniques.\n' +
+      'Tu as quatre coachs : Kadir « L’Aigle », lutteur patient à la pression constante ; Axel « Aura-Stone », grand frappeur sec au regard de pierre ; Amara « La Lionne », frappeuse puissante à la garde haute ; Kaila « La Valkyrie », compacte et puissante, toujours vers l’avant. Tous montrent les mêmes techniques.\n' +
       'Pour changer : « Changer de coach » sur l’accueil, Réglages puis « Mon coach », ou « Options » pendant une séance. Tes statistiques sont conservées.',
     action: { to: '/coach', label: 'Choisir mon coach' },
   },

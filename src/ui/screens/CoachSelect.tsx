@@ -7,7 +7,7 @@ import { AppIcon } from '../icons';
 
 /** 1.5: the four coaches (Kadir, Axel, Amara, Kaila). The stored coach stays 'homme' / 'femme', the profile's
  * `champion` names the coach of that body type. */
-export const COACHES = ALL_COACHES.map((c) => ({ id: c.id, coach: c.coach, name: `${c.name} « ${c.nickname} »`, desc: c.style, img: c.portrait }));
+export const COACHES = ALL_COACHES.map((c) => ({ id: c.id, coach: c.coach, name: `${c.name}\u00a0«\u00a0${c.nickname}\u00a0»`, desc: c.style, img: c.portrait }));
 
 /** the coach the user chose, or null before the first choice */
 export function useChosenCoach(): string | null {
