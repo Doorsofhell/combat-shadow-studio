@@ -1,4 +1,4 @@
-import { championFor, championLook, championStance } from '../domain/coaches/catalog';
+import { championById, championFor, championLook, championStance } from '../domain/coaches/catalog';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { CoachModel } from '../three/CoachModel';
@@ -54,7 +54,7 @@ export function Lab() {
   const champion2 = duoId && q.get('champion2') && COACH_LOOKS[q.get('champion2')!] ? q.get('champion2')! : null;
   const coach2 = (champion2 ? COACH_LOOKS[champion2].sex : 'femme') as CoachId;
   const outfit2 = q.get('tenue2') === '0' ? null : ((q.get('tenue2') as OutfitId | null) ?? outfitFor(disc, true, 'gi'));
-  const look2 = useMemo(() => (champion2 ? championLook(championFor(coach2), disc) : null), [champion2, coach2, disc]);
+  const look2 = useMemo(() => (champion2 ? championLook(championById(champion2) ?? championFor(coach2), disc) : null), [champion2, coach2, disc]);
   // with two coaches, the outfit state reported is the one of both (worn only when both are)
   const outfits = useRef<string[]>([]);
   const report = useCallback(
@@ -72,7 +72,7 @@ export function Lab() {
   // art=1: official discipline artwork (discipline gear, collection palette: anthracite, red, gold)
   const look = useMemo<FighterLook | null>(() => {
     // with d=<discipline> or a technique: the coach dressed for that discipline, as in the app
-    if (champion) return q.get('d') || tech ? championLook(championFor(coach), disc) : COACH_LOOKS[champion];
+    if (champion) return q.get('d') || tech ? championLook(championById(champion) ?? championFor(coach), disc) : COACH_LOOKS[champion];
     if (!q.get('art')) {
       // top=<garment>&bottom=<garment>: clothing checks on the default look
       if (!q.get('top') && !q.get('bottom')) return null;
@@ -136,7 +136,7 @@ export function Lab() {
         startDuo();
         return;
       }
-      const profile = champion && (q.get('d') || tech) ? championStance(championFor(coach), disc) : coachProfile(champion);
+      const profile = champion && (q.get('d') || tech) ? championStance(championById(champion) ?? championFor(coach), disc) : coachProfile(champion);
       const lib = getLibrary(rig, style, profile);
       // illu=<id>: a pose of the encyclopedia illustrations (engine/library/illustrations.ts), not a technique
       const illu = q.get('illu') ? getIllustration(rig, style, q.get('illu')!, profile) : undefined;

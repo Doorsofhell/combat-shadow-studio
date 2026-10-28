@@ -1,4 +1,5 @@
-import { CHAMPIONS } from '../../domain/coaches/catalog';
+import { ALL_COACHES } from '../../domain/coaches/catalog';
+import { pickChampion, useChosenCoach } from './CoachSelect';
 import '../training/training.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -20,7 +21,6 @@ import { FsHint } from '../fullscreen/FullscreenStage';
 import { useStageFullscreen } from '../fullscreen/useStageFullscreen';
 import type { CoachAction } from '../../coach/engine';
 import { GuideCard } from '../GuideCard';
-import { chooseCoach } from '../components/fighter';
 import { CAMERA_MODES, CameraMode, manualView, stageAzimuth, stepViews, techniqueView, viewName } from '../../domain/camera';
 import type { StageView } from '../../three/StudioStage';
 import { StudyPanel, useStudy } from '../training/Study';
@@ -198,6 +198,7 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   }, [ar]);
   const southpaw = profile.guard === 'gaucher';
   const coach = profile.coach ?? 'homme';
+  const chosenCoach = useChosenCoach();
   const st = useStudy(southpaw);
   // the study can show the other guard for comparison
   const stageSouthpaw = st.tech ? st.southpaw : southpaw;
@@ -880,12 +881,11 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
             <div className="stack">
               <span className="label">Coach</span>
               <div className="row">
-                <button className={`chip ${coach === 'homme' ? 'on' : ''}`} onClick={() => chooseCoach('homme')}>
-                  {CHAMPIONS.homme.name}
-                </button>
-                <button className={`chip ${coach === 'femme' ? 'on' : ''}`} onClick={() => chooseCoach('femme')}>
-                  {CHAMPIONS.femme.name}
-                </button>
+                {ALL_COACHES.map((c) => (
+                  <button key={c.id} className={`chip ${chosenCoach === c.id ? 'on' : ''}`} onClick={() => pickChampion(c)}>
+                    {c.name}
+                  </button>
+                ))}
               </div>
             </div>
             <div className="stack">

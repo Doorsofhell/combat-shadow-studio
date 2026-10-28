@@ -159,6 +159,17 @@ lips_v = members("lips", 0.2)
 LIPS_Z = sum(v.co.z for v in lips_v) / len(lips_v)
 FACE_Y = min(v.co.y for v in members("body") if v.co.z > EZ - 0.02 and abs(v.co.x) < 0.01)
 print("LANDMARKS eye", EYE_L, "head", HEAD_TOP, "K", K, "faceY", FACE_Y)
+# face landmarks (Blender axes, metres) for the photo skin transfer of the MakeHuman coaches
+# (tools/generator/makehuman/transfer.py): mouth corners and lip middles, eye corners, ears
+def _bl(v):
+    return [round(v[0], 5), round(v[1], 5), round(v[2], 5)]
+_lip_mid = [v.co.copy() for v in lips_v if abs(v.co.x) < 0.004]
+_lash = [v.co.copy() for v in members("helper-l-eyelashes-1", 0.0)]
+_ear = [v.co.copy() for v in members("ears", 0.0) if v.co.x > 0]
+FACE_LM = dict(mouthL=_bl(max(lips_v, key=lambda v: v.co.x).co), lipTop=_bl(max(_lip_mid, key=lambda c: c.z)),
+               lipBot=_bl(min(_lip_mid, key=lambda c: c.z)), eyeInL=_bl(min(_lash, key=lambda c: c.x)),
+               eyeOutL=_bl(max(_lash, key=lambda c: c.x)), eyeL=_bl(EYE_L), earL=_bl(sum(_ear, Vector()) / len(_ear)),
+               earTopL=_bl(max(_ear, key=lambda c: c.z)), earLowL=_bl(min(_ear, key=lambda c: c.z)))
 
 
 def smooth(e0, e1, x):
@@ -595,6 +606,7 @@ else:
                     mouth=gl(MOUTH), knee=gl(KNEE), lipsY=round(LIPS_Z, 5), nippleY=round(NIP_Z, 5), nippleX=round(NIP_X, 5),
                     shoulderX=round(SH_X, 5), faceZ=round(-FACE_Y, 5), K=round(K, 5)),
                open(os.path.join(OUT, f"coach_{WHO}{SUFFIX}.meta.json"), "w"), indent=1)
+    _json.dump(FACE_LM, open(os.path.join(OUT, f"coach_{WHO}{SUFFIX}.face.json"), "w"), indent=1)
 
 # light from AO: broad occlusion for volume, fine occlusion for muscle separation ("definition")
 shade = (0.55 + 0.45 * np.clip(AO, 0, 1) ** 1.2) * (0.8 + 0.2 * np.clip(AO_FINE, 0, 1) ** 1.5)

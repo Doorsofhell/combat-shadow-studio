@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 const [OUT, coaches = 'mma-kadir,mma-amara', outfits = 'boxe,kickboxing,muaythai,mma,bjj,bjj-nogi,judo', angles = '0,90,180'] = process.argv.slice(2);
 const MOVE = { boxe: ['crochet-avant', 0.2], kickboxing: ['high-kick-avant', 0.36], muaythai: ['low-kick-arriere', 0.4], mma: ['sprawl', 0.5], bjj: ['high-kick-arriere', 0.42], 'bjj-nogi': ['genou-direct-arriere', 0.34], judo: ['high-kick-arriere', 0.42] };
 const DISC = { 'bjj-nogi': 'bjj' };
-const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const p = await b.newPage({ viewport: { width: 300, height: 460 }, deviceScaleFactor: 1 });
 p.on('pageerror', (e) => console.log('ERR', e.stack?.slice(0, 400)));
 const shot = async (url, file, t) => {

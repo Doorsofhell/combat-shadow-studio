@@ -17,7 +17,6 @@ import { saveTextFile } from '../../platform/native';
 import { ConfirmDialog, PageHead, PanelRow, SetAction, SetGroup, SetItem, SetLink, SettingsList, Segmented, SliderRow, Toggle, toast } from '../components';
 import { CoachLookPicker } from '../components/CoachLookPicker';
 import { CoachPicker } from './CoachSelect';
-import { chooseCoach } from '../components/fighter';
 import { CoachAiSettings } from './CoachHistory';
 import { AccountDataBody } from './account/Profile';
 import { useCoachAi } from '../../store/coachAi';
@@ -154,7 +153,7 @@ export function SettingsPage() {
   };
 
   const d = profile.mainDiscipline;
-  const coach = championFor(profile.coach);
+  const coach = championFor(profile.coach, profile.champion);
   const looks: Record<string, string> = { realiste: 'Ultra-réaliste', encre: 'Anime', manga: 'Anime' };
   const ai = useCoachAi();
   const textSize = profile.display.textSize === 'grand' ? 'texte grand' : 'texte normal';
@@ -188,7 +187,7 @@ export function SettingsPage() {
         <SetGroup title="Coach et entraînement">
           <SetItem id="coach" icon="fighter" title="Mon coach" summary={`${coach.name} · ${looks[settings.coachStyle] ?? 'Ultra-réaliste'}`}>
             <p className="small muted">Ton coach montre chaque mouvement en 3D. Tu peux en changer à tout moment, tes statistiques sont conservées.</p>
-            <CoachPicker value={profile.coach} onChange={(c) => chooseCoach(c)} />
+            <CoachPicker />
             <PanelRow label="Rendu des combattants" column>
               <CoachLookPicker testId="settings-coach-look" />
             </PanelRow>

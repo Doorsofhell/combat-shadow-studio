@@ -43,7 +43,43 @@ export const CHAMPIONS: Record<CoachId, ChampionCoach> = {
   },
 };
 
-export const championFor = (coach: CoachId | null | undefined): ChampionCoach => CHAMPIONS[coach === 'femme' ? 'femme' : 'homme'];
+/**
+ * 1.5 (Youssef 2026-10-28: « 2 coachs supplémentaires mieux aboutis », built from MakeHuman, all assets CC0, see
+ * tools/generator/makehuman): Axel and Kaila. The stored coach stays 'homme' | 'femme' (the body type the rest of the app
+ * reads); the profile's `champion` names which coach of that body type is shown.
+ */
+export const EXTRA_COACHES: ChampionCoach[] = [
+  {
+    id: 'axel',
+    coach: 'homme',
+    name: 'Axel',
+    nickname: 'Aura-Stone',
+    style: 'Frappeur longiligne, regard de pierre',
+    bio: 'Grand, sec, posture droite et bras relâchés : Axel ne gaspille rien et frappe de loin, sans prévenir.',
+    portrait: './coaches/axel/portrait.webp',
+  },
+  {
+    id: 'kaila',
+    coach: 'femme',
+    name: 'Kaila',
+    nickname: 'La Valkyrie',
+    style: 'Puissante et compacte, toujours vers l’avant',
+    bio: 'Centre de gravité bas, mains ouvertes prêtes à saisir : Kaila avance sans cesse et impose son rythme.',
+    portrait: './coaches/kaila/portrait.webp',
+  },
+];
+
+/** every coach, in the order of the choice screen */
+export const ALL_COACHES: ChampionCoach[] = [CHAMPIONS.homme, EXTRA_COACHES[0], CHAMPIONS.femme, EXTRA_COACHES[1]];
+
+export const championById = (id: string | null | undefined) => ALL_COACHES.find((c) => c.id === id);
+
+/** the coach shown for a body type: the chosen coach when it has that body type, else Kadir or Amara */
+export const championFor = (coach: CoachId | null | undefined, chosen?: string | null): ChampionCoach => {
+  const sex: CoachId = coach === 'femme' ? 'femme' : 'homme';
+  const c = championById(chosen);
+  return c && c.coach === sex ? c : CHAMPIONS[sex];
+};
 
 /** the coach's own model, without extension */
 export const championModel = (c: ChampionCoach) => `./coaches/${c.id}/model`;

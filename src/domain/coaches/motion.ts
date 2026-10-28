@@ -29,6 +29,24 @@ export const COACH_STANCES: Record<string, StanceOffsets> = {
     fist: 0.2,
     rearHeel: deg(4),
   },
+  // 1.5 Axel « Aura-Stone »: tall and upright, arms a little loose and lower, economy of movement
+  axel: {
+    knee: -0.03,
+    pelvisPitch: deg(-3),
+    chestPitch: deg(-3),
+    leadHand: [0, -0.03, -0.02],
+    rearHand: [0, -0.02, -0.01],
+    fist: 0.1,
+  },
+  // Kaila « La Valkyrie »: low centre of gravity, wide base, chest forward, hands open and forward to grip
+  kaila: {
+    knee: 0.025,
+    pelvisPitch: deg(3),
+    chestPitch: deg(3),
+    leadHand: [0, -0.03, 0.03],
+    rearHand: [0, -0.02, 0.02],
+    fist: -0.3,
+  },
 };
 
 export const coachProfile = (id: string | null | undefined) => (id && COACH_STANCES[id] ? { id, offsets: COACH_STANCES[id] } : undefined);

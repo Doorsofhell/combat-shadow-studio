@@ -69,6 +69,8 @@ export interface Profile {
   limitations: string;
   mainDiscipline: DisciplineId;
   coach: CoachId | null;
+  /** 1.5: which coach of that body type (ALL_COACHES id: mma-kadir, axel, mma-amara, kaila); absent = Kadir or Amara */
+  champion?: string | null;
   coachAi: CoachAiPrefs;
   /** the questionnaire answers stay on this device unless the user exports them or turns on sync */
   completed: boolean;

@@ -1,35 +1,45 @@
-import { CHAMPIONS } from '../../domain/coaches/catalog';
+import { ALL_COACHES, CHAMPIONS, championFor, type ChampionCoach } from '../../domain/coaches/catalog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
-import type { CoachId } from '../../domain/types';
 import { PageHead } from '../components';
 import { chooseCoach } from '../components/fighter';
 import { AppIcon } from '../icons';
 
-// 0.24: Kadir and Amara (the stored choice stays 'homme' / 'femme')
-export const COACHES: { id: CoachId; name: string; desc: string; img: string }[] = (['homme', 'femme'] as const).map((id) => ({
-  id,
-  name: `${CHAMPIONS[id].name} « ${CHAMPIONS[id].nickname} »`,
-  desc: CHAMPIONS[id].style,
-  img: CHAMPIONS[id].portrait,
-}));
+/** 1.5: the four coaches (Kadir, Axel, Amara, Kaila). The stored coach stays 'homme' / 'femme', the profile's
+ * `champion` names the coach of that body type. */
+export const COACHES = ALL_COACHES.map((c) => ({ id: c.id, coach: c.coach, name: `${c.name} « ${c.nickname} »`, desc: c.style, img: c.portrait }));
 
-/** The two coaches side by side; nothing is selected until the user taps one. */
-export function CoachPicker({ value, onChange }: { value: CoachId | null; onChange: (c: CoachId) => void }) {
+/** the coach the user chose, or null before the first choice */
+export function useChosenCoach(): string | null {
+  const coach = useProfile((s) => s.profile.coach);
+  const champion = useProfile((s) => s.profile.champion);
+  return coach ? championFor(coach, champion).id : null;
+}
+
+export function pickChampion(c: ChampionCoach) {
+  chooseCoach(c.coach);
+  const st = useProfile.getState();
+  st.update({ coach: c.coach, champion: c.id });
+}
+
+/** The coaches in a grid; nothing is selected until the user taps one. Without props: the stored choice. */
+export function CoachPicker({ value, onChange }: { value?: string | null; onChange?: (c: ChampionCoach) => void }) {
+  const stored = useChosenCoach();
+  const current = value === undefined ? stored : value;
   return (
     <div className="coach-pick" role="radiogroup" aria-label="Choix du coach">
-      {COACHES.map((c) => (
+      {COACHES.map((c, i) => (
         <button
           key={c.id}
           type="button"
           role="radio"
-          aria-checked={value === c.id}
-          className={`coach-card ${value === c.id ? 'on' : ''}`}
-          onClick={() => onChange(c.id)}
-          data-testid={`coach-${c.id}`}
+          aria-checked={current === c.id}
+          className={`coach-card ${current === c.id ? 'on' : ''}`}
+          onClick={() => (onChange ?? pickChampion)(ALL_COACHES[i])}
+          data-testid={c.id === CHAMPIONS.homme.id ? 'coach-homme' : c.id === CHAMPIONS.femme.id ? 'coach-femme' : `coach-${c.id}`}
         >
           <img src={c.img} alt="" loading="eager" />
-          {value === c.id && (
+          {current === c.id && (
             <span className="tick" aria-hidden>
               <AppIcon id="check" size={18} />
             </span>
@@ -47,18 +57,18 @@ export function CoachPicker({ value, onChange }: { value: CoachId | null; onChan
   );
 }
 
+/** Youssef 2026-10-28 18:41: « Quand je clique sur changer de coach, je ne veux voir que la liste des coachs, rien d'autre. » */
 export function CoachSelect() {
   const [q] = useSearchParams();
   const first = q.get('first') === '1';
-  const coach = useProfile((s) => s.profile.coach);
+  const chosen = useChosenCoach();
   const nav = useNavigate();
   return (
-    <div className="page">
+    <div className="page coach-select">
       <PageHead title="Choisis ton coach" eyebrow="Coach" back={!first} />
-      <p className="muted">Ton coach montre chaque mouvement en 3D. Tu peux en changer à tout moment, tes statistiques sont conservées.</p>
-      <CoachPicker value={coach} onChange={(c) => chooseCoach(c)} />
-      <button type="button" className="btn primary block lg" disabled={!coach} onClick={() => (first ? nav('/', { replace: true }) : nav(-1))}>
-        {coach ? 'Valider' : 'Choisis un coach pour continuer'}
+      <CoachPicker />
+      <button type="button" className="btn primary block lg" disabled={!chosen} onClick={() => (first ? nav('/', { replace: true }) : nav(-1))} data-testid="coach-valider">
+        {chosen ? 'Valider' : 'Choisis un coach pour continuer'}
       </button>
     </div>
   );
