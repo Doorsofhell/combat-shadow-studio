@@ -1,5 +1,6 @@
 import { expect, Page, test } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
+import { openSetting } from './nav-helpers';
 
 /** every key/value of the app's IndexedDB (idb-keyval default store) */
 async function idbDump(page: Page): Promise<Record<string, unknown>> {
@@ -45,18 +46,24 @@ test('compte : mode invité, profil modifié conservé, export, suppression des 
   await page.getByTestId('guest-continue').click();
   await onboard(page, 'Yan');
 
-  // profile from the settings
+  // profile from the photo
   // 1.0.0 (refonte ergonomique): Profil › Réglages (formerly Menu › Paramètres)
+  // 1.2.0: Profil › Mes infos, one list whose rows open in place
   await page.getByTestId('nav-profil').click();
-  await page.getByTestId('tab-reglages').click();
-  await page.getByRole('link', { name: /Mon profil et mon compte/ }).click();
+  await page.getByTestId('tab-infos').click();
   await expect(page.getByTestId('profile-name')).toHaveText('Yan');
+  await openSetting(page, 'compte');
   await expect(page.getByText('Les comptes en ligne ne sont pas activés dans cette version. Tout reste sur cet appareil.')).toBeVisible();
+  await openSetting(page, 'identite');
   await page.getByTestId('pseudo-input').fill('Yanis');
   await page.getByLabel('Prénom (facultatif)').fill('Yann');
+  await openSetting(page, 'corps');
   await page.getByLabel('Taille', { exact: true }).fill('180');
+  await openSetting(page, 'objectifs');
   await page.getByTestId('pf-goal-mobilite').click();
+  await openSetting(page, 'disciplines');
   await page.getByTestId('pf-disc-mma').click();
+  await openSetting(page, 'limitations');
   await page.getByTestId('show-limitations').click();
   await page.getByLabel('Limitations ou blessures').fill('genou droit fragile');
   await expect(page.getByTestId('profile-name')).toHaveText('Yanis');
@@ -64,11 +71,16 @@ test('compte : mode invité, profil modifié conservé, export, suppression des 
 
   await page.reload();
   await expect(page.getByTestId('profile-name')).toHaveText('Yanis');
+  await openSetting(page, 'identite');
   await expect(page.getByLabel('Prénom (facultatif)')).toHaveValue('Yann');
+  await openSetting(page, 'corps');
   await expect(page.getByLabel('Taille', { exact: true })).toHaveValue('180');
+  await openSetting(page, 'objectifs');
   await expect(page.getByTestId('pf-goal-mobilite')).toHaveAttribute('aria-pressed', 'true');
+  await openSetting(page, 'disciplines');
   await expect(page.getByTestId('pf-disc-mma')).toHaveAttribute('aria-pressed', 'true');
   // limitations hidden by default, then readable
+  await openSetting(page, 'limitations');
   await expect(page.getByLabel('Limitations ou blessures')).toHaveCount(0);
   await page.getByTestId('show-limitations').click();
   await expect(page.getByLabel('Limitations ou blessures')).toHaveValue('genou droit fragile');
@@ -82,7 +94,10 @@ test('compte : mode invité, profil modifié conservé, export, suppression des 
   expect(raw).not.toContain('genou');
   expect(raw).toContain('AES-GCM');
 
-  // export of all my data
+  // export of all my data (1.2.0: Réglages › Données et confidentialité, reached from Mes infos › Compte)
+  await openSetting(page, 'compte');
+  await page.getByTestId('infos-donnees').click();
+  await expect(page).toHaveURL(/#\/reglages\/donnees$/);
   const [download] = await Promise.all([page.waitForEvent('download'), page.getByTestId('export-my-data').click()]);
   const json = JSON.parse(await readFile((await download.path())!, 'utf8'));
   expect(json.app).toBe('combat-shadow-studio');
@@ -145,12 +160,15 @@ test.describe(() => {
     const codes = (await (await request.get(`${AUTH_EMU}/emulator/v1/projects/demo-css/oobCodes`)).json()) as { oobCodes: { email: string; requestType: string; oobLink: string }[] };
     const link = codes.oobCodes.find((c) => c.email === email && c.requestType === 'VERIFY_EMAIL')!.oobLink;
     await request.get(link);
+    await openSetting(page, 'compte');
     await page.getByRole('button', { name: 'J’ai vérifié' }).click();
     await expect(page.getByText('E-mail à vérifier')).toHaveCount(0);
 
     // sync on: data in Firestore, without the limitations
+    await openSetting(page, 'limitations');
     await page.getByTestId('show-limitations').click();
     await page.getByLabel('Limitations ou blessures').fill('épaule gauche');
+    await page.goto(`${FB}#/reglages/donnees`);
     await page.getByRole('switch', { name: /Synchronisation en ligne/ }).check({ force: true });
     await expect(page.getByTestId('sync-status')).toContainText('À jour', { timeout: 20_000 });
     const docUrl = `${FS_EMU}/v1/projects/demo-css/databases/(default)/documents/users/${uid}/sync/profile`;
@@ -159,6 +177,8 @@ test.describe(() => {
     expect(doc).not.toContain('épaule');
 
     // sign out: back to an empty guest; sign in again: the account's data is back
+    await page.goto(`${FB}#/profil`);
+    await openSetting(page, 'compte');
     await page.getByTestId('sign-out').click();
     await page.getByRole('dialog').getByRole('button', { name: 'Se déconnecter' }).click();
     await expect(page.getByText('Entraîne-toi seul')).toBeVisible();
@@ -172,6 +192,7 @@ test.describe(() => {
     await expect(page.getByTestId('profile-name')).toHaveText('Ana');
 
     // delete the account: re-authentication, cloud copy and local data removed
+    await page.goto(`${FB}#/reglages/donnees`);
     await page.getByTestId('delete-account').click();
     await page.getByLabel('Confirme avec ton mot de passe').fill('motdepasse1');
     await page.getByRole('dialog').getByRole('button', { name: 'Supprimer' }).click();

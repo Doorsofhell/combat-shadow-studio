@@ -149,7 +149,7 @@ export function Home() {
           </div>
         </div>
         <div className="hero-top">
-          <Link to="/coach" className="chip" aria-label={`Changer de coach (${name})`}>
+          <Link to="/reglages/coach" className="chip" aria-label={`Changer de coach (${name})`}>
             Changer de coach
           </Link>
         </div>

@@ -1,0 +1,52 @@
+# Version 1.2.0 : Profil et Réglages en listes groupées
+
+Demande de Youssef (28/10/2026) : « lorsqu'on clique sur la tête en haut à droite, 2 onglets glissants : Mes infos & Réglages, avec tout le reste dans Réglages : une page avec toutes les options en liste bien présentées qui se déploient quand on clique dessus », puis « pareil dans Mes infos : une seule liste dont chaque option se déploie au toucher ». Proposition choisie : **B « Groupes Android »** (maquette https://claude.ai/artifact/GFjk4xkB2eZVxKk6sK4dS3).
+
+Contraintes rappelées : aucune perte de contenu, mode jour et mode nuit, Retour Android cohérent.
+
+Point de restauration : `restauration/avant-v120` (dd1f952). Branche : `feature/profil-v120`.
+
+## Ce qui change
+
+- La photo en haut à droite ouvre **deux onglets** : Mes infos et Réglages (avant : Mes infos, Mon coach, Coach IA, Réglages).
+- **Mes infos** et **Réglages** sont chacun une seule liste rangée en groupes à petit titre rouge, dans des blocs arrondis, comme les réglages d'un Pixel. Chaque ligne montre son icône, son nom et sa valeur actuelle ; un toucher l'ouvre sur place.
+- Une seule ligne ouverte à la fois. La ligne ouverte est une étape de l'historique : **Retour la referme d'abord**, puis quitte la page.
+- Les anciennes adresses (`/reglages/voix`, `/reglages/rounds`, `/reglages/affichage`, `/reglages/donnees`) ouvrent la liste sur la bonne ligne. Mes infos accepte `?ouvert=<ligne>`.
+- Composant : `src/ui/components/SettingsList.tsx` (`SettingsList`, `SetGroup`, `SetItem`, `SetAction`, `SetLink`) ; styles `.set-*` dans `src/ui/styles.css`.
+
+## Où va chaque contenu
+
+| Avant | Maintenant |
+|---|---|
+| Mes infos › carte photo et nom | Mes infos, en haut (inchangé) |
+| Mes infos › pseudo, prénom, nom, avatar, photo | Mes infos › Moi › Identité |
+| Mes infos › date de naissance, âge, taille, poids, IMC | Mes infos › Moi › Âge, taille, poids |
+| Mes infos › disciplines, niveaux, discipline principale, années | Mes infos › Ma pratique › Disciplines et niveaux |
+| Mes infos › garde | Mes infos › Ma pratique › Garde |
+| Mes infos › séances, durée, difficulté | Mes infos › Ma pratique › Rythme |
+| Mes infos › objectifs | Mes infos › Ma pratique › Objectifs |
+| Mes infos › limitations | Mes infos › Ma pratique › Limitations physiques |
+| Mes infos › favoris | Mes infos › Mon parcours › Favoris |
+| Mes infos › temps actif, séances | Mes infos › Mon parcours › Mon activité |
+| Mes infos › compte, connexion, déconnexion | Mes infos › Mon parcours › Compte (avec un lien vers Mes données) |
+| Mes infos › taille du texte, réduire les animations | Réglages › Affichage › Apparence |
+| Mes infos › « M'appeler par mon pseudo » | Réglages › Coach et entraînement › Coach IA |
+| Mes infos › langue | Réglages › Affichage › Apparence |
+| Mes infos › synchronisation, export, suppression, confidentialité | Réglages › Données › Données et confidentialité |
+| Onglet Mon coach (Kadir, Amara) | Réglages › Coach et entraînement › Mon coach (avec le rendu des combattants) |
+| Onglet Coach IA (réglages) | Réglages › Coach et entraînement › Coach IA ; l'historique garde sa page `/coach-ia` |
+| Réglages › tuiles Premium et Nouveautés | Réglages › Abonnement et nouveautés (lignes) |
+| Réglages › Ton profil (résumé) | Retiré : tout son contenu est dans Mes infos |
+| Réglages › Apparence (thème, rendu) | Thème : Réglages › Apparence ; rendu : Réglages › Mon coach |
+| Réglages › Voix et sons | Réglages › Voix et sons |
+| Réglages › Rounds par défaut | Réglages › Rounds par défaut |
+| Réglages › Affichage 3D (avec journal 3D) | Réglages › Affichage 3D |
+| Réglages › Questionnaire et niveaux | Réglages › Questionnaire et niveaux |
+| Réglages › Données (exporter, importer, tout effacer) | Réglages › Données et confidentialité |
+| Réglages › numéro de version, crédits | Réglages › À propos |
+
+Les pages `/coach` (choix du coach au premier lancement) et `/coach-ia` (historique) restent. La barre du bas de Profil garde « Coach », qui ouvre maintenant Réglages › Mon coach.
+
+## Tests
+
+Voir la section « Résultats » ci-dessous (remplie après exécution).

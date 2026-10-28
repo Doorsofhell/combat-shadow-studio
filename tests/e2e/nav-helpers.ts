@@ -98,3 +98,14 @@ export async function barSlots(page: Page) {
     .locator('button.nav-btn')
     .evaluateAll((bs) => bs.map((b) => [b.getAttribute('data-icon'), (b.querySelector('small')?.textContent ?? '').trim()]));
 }
+
+/**
+ * 1.2.0 (Youssef, 2026-10-28, proposition B « Groupes Android »): Mes infos and Réglages are lists whose rows open in
+ * place; opens the row `id` (testid set-<id>) the way a person does, unless it is already open
+ */
+export async function openSetting(page: Page, id: string) {
+  const row = page.getByTestId(`set-${id}`);
+  await row.scrollIntoViewIfNeeded();
+  if ((await row.getAttribute('aria-expanded')) !== 'true') await row.click();
+  await expect(row).toHaveAttribute('aria-expanded', 'true');
+}

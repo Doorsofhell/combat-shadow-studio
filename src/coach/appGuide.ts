@@ -76,7 +76,7 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['barre du bas', 'barre de navigation', 'navigation', 'navigation generale', 'onglets', 'les onglets', 'menu principal', 'menu', 'changer d ecran', 'revenir a l accueil', 'bouton retour', 'retour', 'ou est le profil', 'ou sont les reglages', 'ou sont les parametres', 'ou est premium', 'ou sont les nouveautes'],
     answer:
       'Version 1.1 : la barre du bas ne change pas d’un écran à l’autre. Elle a cinq places fixes : Accueil, Entraîner, Apprendre, Progrès et Rechercher. Ton Profil est ta photo (ou tes initiales) en haut à droite de chaque écran. Seule la séance cache la barre, pour te laisser t’entraîner les mains libres.\n' +
-      '• Chaque place a ses onglets en haut de l’écran. Entraîner : Séance (avec Séances, Disciplines et Chrono), Programmes, Enchaînements et Favoris. Apprendre : Techniques, Légendes et Encyclopédie. Progrès : Tableau, Historique et Objectifs. Profil : Mes infos, Mon coach, Coach IA et Réglages.\n' +
+      '• Chaque place a ses onglets en haut de l’écran. Entraîner : Séance (avec Séances, Disciplines et Chrono), Programmes, Enchaînements et Favoris. Apprendre : Techniques, Légendes et Encyclopédie. Progrès : Tableau, Historique et Objectifs. Profil : Mes infos et Réglages.\n' +
       '• Les Paramètres s’appellent maintenant Réglages (Profil › Réglages). En haut des Réglages, deux tuiles : Premium à vie et Nouveautés.\n' +
       '• Retour est un petit bouton en haut à gauche sur les écrans de détail. Le retour d’Android ferme d’abord un panneau ouvert, puis revient à l’écran d’avant, avec tes filtres et ta position dans la page.\n' +
       'Toutes les anciennes entrées du Menu sont là : Accueil, Entraîner, Progrès, Techniques, Légendes, Profil, Paramètres (Réglages), Nouveautés, Premium à vie et Encyclopédie.',
@@ -472,11 +472,11 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['reglages', 'reglage', 'parametres de l application', 'parametres', 'configuration', 'ou sont les reglages'],
     screens: ['reglages'],
     answer:
-      'Les réglages s’ouvrent avec Profil, onglet Réglages. En haut, deux tuiles : Premium à vie et Nouveautés.\n' +
-      '• Ton profil : un résumé et le lien pour le modifier.\n' +
-      '• Apparence : le thème des menus et le rendu des combattants.\n' +
-      '• Personnalisation : ton coach, Voix et sons, Rounds par défaut, Affichage 3D, et « Questionnaire et niveaux » pour refaire l’évaluation.\n' +
-      '• Données : exporter, importer, tout effacer, et la confidentialité.',
+      'Les réglages s’ouvrent avec ta photo en haut à droite, onglet Réglages. C’est une seule liste en groupes : touche une ligne pour l’ouvrir, touche-la encore (ou Retour) pour la refermer.\n' +
+      '• Abonnement et nouveautés : Premium et Nouveautés.\n' +
+      '• Coach et entraînement : Mon coach (et le rendu des combattants), Voix et sons, Rounds par défaut, Coach IA, « Questionnaire et niveaux ».\n' +
+      '• Affichage : Apparence (thème, taille du texte, animations, langue) et Affichage 3D.\n' +
+      '• Données : exporter, importer, effacer, la confidentialité, et À propos.',
     action: { to: '/reglages', label: 'Ouvrir les réglages' },
   },
   {
@@ -485,7 +485,7 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['theme', 'mode nuit', 'mode jour', 'theme nuit', 'theme jour', 'mode sombre', 'mode clair', 'theme sombre', 'theme clair', 'fond noir', 'fond blanc', 'couleurs de l application'],
     screens: ['reglages'],
     answer:
-      'Dans Réglages, rubrique Apparence, « Thème » propose Nuit (le choix de départ), Jour ou Auto (il suit ton téléphone).\n' +
+      'Dans Réglages, ligne Apparence, « Thème » propose Nuit (le choix de départ), Jour ou Auto (il suit ton téléphone).\n' +
       'Le studio d’entraînement suit le même thème.',
     action: { to: '/reglages', label: 'Ouvrir les réglages' },
   },
@@ -599,7 +599,8 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['profil'],
     answer:
       'Ton profil s’ouvre avec ta photo (ou tes initiales) en haut à droite de chaque écran, onglet « Mes infos ».\n' +
-      'Tu y changes ton pseudo (je t’appelle comme ça si « M’appeler par mon pseudo » est activé), tes disciplines et ta discipline principale, ta garde, ton rythme, tes objectifs, la taille du texte et la réduction des animations.\n' +
+      'C’est une liste en groupes (Moi, Ma pratique, Mon parcours) : touche une ligne pour l’ouvrir. Tu y changes ton pseudo, ta taille et ton poids, tes disciplines et ta discipline principale, ta garde, ton rythme et tes objectifs.\n' +
+      'La taille du texte, la réduction des animations et « M’appeler par mon pseudo » sont dans Réglages (Apparence et Coach IA).\n' +
       'Ton niveau se choisit aussi sur la page de chaque discipline, et « Questionnaire et niveaux » dans les réglages refait l’évaluation de départ.',
     action: { to: '/profil', label: 'Ouvrir mon profil' },
   },
@@ -633,7 +634,7 @@ export const APP_GUIDE: GuideEntry[] = [
     answer:
       'Je suis le coach IA de l’application. Je réponds directement sur ton appareil, à partir de la bibliothèque validée, même sans internet.\n' +
       'Je ne te vois pas : je ne corrige pas ton geste, mais j’explique, je montre une démo ou un ralenti, je propose des exercices et je t’explique l’application. Je sais aussi sur quel écran tu m’appelles.\n' +
-      'Tu me trouves sur tous les écrans avec « Rechercher », dans la barre du bas (pendant une séance, dans « Plus »), et dans Profil › Coach IA.\n' +
+      'Tu me trouves sur tous les écrans avec « Rechercher », dans la barre du bas (pendant une séance, dans « Plus »), et dans Réglages › Coach IA.\n' +
       'Les deux boutons en haut de mon panneau le réduisent (la première ligne de ma réponse et ta question) ou l’agrandissent (presque tout l’écran, pour lire confortablement) ; tu peux aussi glisser la petite barre du haut. Je garde la taille que tu as choisie.\n' +
       'Mes réglages (icône Historique, l’horloge en haut de mon panneau) : réponses courtes ou détaillées, lecture à voix haute, historique (désactivé par défaut) et saisie vocale du navigateur, qui passe en ligne et reste désactivée tant que tu ne l’actives pas.',
     action: { to: '/coach-ia', label: 'Réglages du coach' },

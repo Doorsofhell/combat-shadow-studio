@@ -27,7 +27,7 @@ const bodyBg = (page: Page) => page.evaluate(() => getComputedStyle(document.doc
 test('Nuit par défaut pour une nouvelle installation, même si le téléphone est en clair', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await seed(page);
-  await page.goto('/#/reglages');
+  await page.goto('/#/reglages/apparence'); // 1.2.0: Réglages › Apparence
   await expect(page.getByRole('radio', { name: 'Nuit' })).toHaveAttribute('aria-checked', 'true');
   expect(await theme(page)).toBe('dark');
   expect(await bodyBg(page)).toBe('rgb(11, 15, 20)');
@@ -38,7 +38,7 @@ test('un utilisateur existant en Automatique le garde ; Auto suit le système en
   await seed(page);
   // the choice saved by a version before 1.0.0
   await page.evaluate(() => localStorage.setItem('css-theme', 'auto'));
-  await page.goto('/#/reglages');
+  await page.goto('/#/reglages/apparence'); // 1.2.0: Réglages › Apparence
   await expect(page.getByRole('radio', { name: 'Auto' })).toHaveAttribute('aria-checked', 'true');
   expect(await theme(page)).toBe('dark');
   expect(await bodyBg(page)).toBe('rgb(11, 15, 20)');
@@ -51,7 +51,7 @@ test('un utilisateur existant en Automatique le garde ; Auto suit le système en
 test('choix manuel mémorisé, prioritaire sur le système, appliqué avant le premier affichage', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await seed(page);
-  await page.goto('/#/reglages');
+  await page.goto('/#/reglages/apparence'); // 1.2.0: Réglages › Apparence
   await page.getByRole('radio', { name: 'Jour' }).click();
   await expect.poll(() => theme(page)).toBe('light');
   await page.emulateMedia({ colorScheme: 'dark' });
@@ -78,7 +78,7 @@ const STUDIO = { Jour: { bg: 'rgb(238, 240, 243)', meta: '#eef0f3' }, Nuit: { bg
 for (const pref of ['Jour', 'Nuit'] as const) {
   test(`le studio d’entraînement suit le thème ${pref}`, async ({ page }) => {
     await seed(page);
-    await page.goto('/#/reglages');
+    await page.goto('/#/reglages/apparence'); // 1.2.0: Réglages › Apparence
     await page.getByRole('radio', { name: pref }).click();
     await page.goto('/#/reglages/affichage');
     await page.getByRole('radiogroup', { name: 'Lumière du coach' }).getByRole('radio', { name: 'Studio' }).click();

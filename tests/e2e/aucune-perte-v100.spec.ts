@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { bar, closeMenu, menuItem, seedProfile, tapAction } from './nav-helpers';
+import { bar, closeMenu, menuItem, openSetting, seedProfile, tapAction } from './nav-helpers';
 
 /**
  * 1.0.0 (refonte ergonomique, lot 5): the control promised in the validated plan (« Où va chaque contenu », Youssef,
@@ -166,23 +166,32 @@ test('plan, lignes 20 à 27 : Profil (photo, IMC, connexion, coach, Coach IA, r�
   await page.goto('/#/');
   await place(page, 'profil');
   // Profil: photo, IMC, Connexion, Confidentialité
+  // 1.2.0 (« Groupes Android »): rows of Mes infos opened in place; Confidentialité in Réglages › Données
+  await openSetting(page, 'identite');
   await expect(page.getByTestId('photo-open')).toBeVisible();
+  await openSetting(page, 'corps');
   await expect(page.getByText(/IMC/).first()).toBeVisible();
+  await tab(page, 'reglages');
+  await openSetting(page, 'donnees');
   await page.getByRole('link', { name: /Politique de confidentialité/ }).click();
   await expect(page).toHaveURL(/#\/confidentialite$/);
   // Connexion: as in v0.49, the link shows only when online accounts are on in the build; otherwise the guest mode
   await place(page, 'profil');
+  await tab(page, 'infos');
+  await openSetting(page, 'compte');
   const signIn = page.getByRole('link', { name: /Créer un compte ou se connecter/ });
   if (await signIn.count()) {
     await signIn.click();
     await expect(page).toHaveURL(/#\/connexion$/);
   } else await expect(page.getByText('Mode invité', { exact: true })).toBeVisible();
-  // Mon coach: Kadir and Amara
+  // Mon coach: Kadir and Amara (1.2.0: Réglages › Mon coach)
   await place(page, 'profil');
-  await tab(page, 'coach');
+  await tab(page, 'reglages');
+  await openSetting(page, 'coach');
   for (const id of ['coach-homme', 'coach-femme']) await expect(page.getByTestId(id), id).toBeVisible();
-  // Coach IA: « Rechercher » in the bar (1.1.0), and Profil > Coach IA (the history)
-  await tab(page, 'coach-ia');
+  // Coach IA: « Rechercher » in the bar (1.1.0), and Réglages › Coach IA, with the history (1.2.0)
+  await openSetting(page, 'coach-ia');
+  await page.getByTestId('reglages-coach-ia-history').click();
   await expect(page).toHaveURL(/#\/coach-ia$/);
   await place(page, 'accueil');
   await page.getByTestId('app-search').click();
@@ -191,17 +200,19 @@ test('plan, lignes 20 à 27 : Profil (photo, IMC, connexion, coach, Coach IA, r�
   // Réglages: the same sections
   await place(page, 'profil');
   await tab(page, 'reglages');
-  for (const [name, re] of [
-    [/Voix et sons/, /#\/reglages\/voix$/],
-    [/Rounds par défaut/, /#\/reglages\/rounds$/],
-    [/Affichage 3D/, /#\/reglages\/affichage$/],
-    [/Exporter, importer, effacer/, /#\/reglages\/donnees$/],
+  // 1.2.0: rows of the list, opened in place (Retour closes them)
+  for (const [id, inside] of [
+    ['voix', 'Tester la voix'],
+    ['rounds', 'Durée du round'],
+    ['affichage', 'Version du rendu 3D'],
+    ['donnees', 'Exporter mes données'],
   ] as const) {
-    await page.getByRole('link', { name }).first().click();
-    await expect(page).toHaveURL(re);
-    await page.goBack();
-    await expect(page).toHaveURL(/#\/reglages$/);
+    await openSetting(page, id);
+    await expect(page.getByText(inside).first(), id).toBeVisible();
   }
+  await page.goBack();
+  await expect(page).toHaveURL(/#\/reglages$/);
+  await expect(page.locator('.set-item[data-open="true"]')).toHaveCount(0);
   // Premium à vie: Avantages, FAQ, Restaurer
   await page.getByTestId('reglages-premium').click();
   await expect(page.getByTestId('premium-benefits')).toBeVisible();

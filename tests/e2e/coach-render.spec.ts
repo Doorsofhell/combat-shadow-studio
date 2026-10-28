@@ -62,7 +62,7 @@ const checked = (page: Page, testId: string) => page.getByTestId(testId).locator
 
 test('the look is chosen in the settings, the studio and the training options, and remembered', async ({ page }) => {
   await seed(page);
-  await open(page, '/#/reglages');
+  await open(page, '/#/reglages/coach'); // 1.2.0: Réglages › Mon coach
   // 0.29: a new device starts in Ultra-réaliste (it was Encre, labelled "Anime" since 0.24, before)
   await expect(checked(page, 'settings-coach-look')).toHaveText('Ultra-réaliste');
   // the premium Encre look is labelled "Anime" since 0.24 (same saved id 'encre')
@@ -89,7 +89,7 @@ test('the look is chosen in the settings, the studio and the training options, a
 
 test('0.29: a device that saved the Anime look before keeps it', async ({ page }) => {
   await seed(page, { coachStyle: 'encre', coachRender: 'premium', voice: false });
-  await open(page, '/#/reglages');
+  await open(page, '/#/reglages/coach'); // 1.2.0: Réglages › Mon coach
   await expect(checked(page, 'settings-coach-look')).toHaveText('Anime');
 });
 

@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { RELEASES } from '../../src/domain/releases';
-import { bar, barSlots, closeMenu, expectChecked, menuCommand, menuItem, openCoachIA, openMenu, seedProfile, tapAction } from './nav-helpers';
+import { bar, barSlots, closeMenu, expectChecked, menuCommand, menuItem, openCoachIA, openMenu, openSetting, seedProfile, tapAction } from './nav-helpers';
 
 /**
  * 1.0.0 (refonte ergonomique, Youssef 2026-10-27, maquette v4 validée): the five places of the app fixed at the
@@ -155,14 +155,17 @@ test.describe('393×851', () => {
     await expect(page).toHaveURL(/#\/objectifs$/);
     await page.getByTestId('tab-historique').click();
     await expect(page).toHaveURL(/#\/historique$/);
-    // Paramètres (Réglages), Mon coach, Coach IA: tabs of Profil (lot 2); Premium: tile of Réglages
+    // Paramètres (Réglages): tab of Profil (lot 2); 1.2.0: Mon coach and Coach IA are rows of Réglages; Premium: a row
     await bar(page).getByTestId('nav-profil').click();
-    await expect(page.getByTestId('section-tabs').locator('button')).toHaveText(['Mes infos', 'Mon coach', 'Coach IA', 'Réglages']);
-    await page.getByTestId('tab-coach').click();
-    await expect(page).toHaveURL(/#\/coach$/);
-    await page.getByTestId('tab-coach-ia').click();
-    await expect(page).toHaveURL(/#\/coach-ia$/);
+    await expect(page.getByTestId('section-tabs').locator('button')).toHaveText(['Mes infos', 'Réglages']);
     await page.getByTestId('tab-reglages').click();
+    await expect(page).toHaveURL(/#\/reglages$/);
+    await openSetting(page, 'coach');
+    await expect(page.getByTestId('coach-homme')).toBeVisible();
+    await openSetting(page, 'coach-ia');
+    await page.getByTestId('reglages-coach-ia-history').click();
+    await expect(page).toHaveURL(/#\/coach-ia$/);
+    await page.goBack();
     await expect(page).toHaveURL(/#\/reglages$/);
     await page.getByTestId('reglages-premium').click();
     await expect(page).toHaveURL(/#\/premium$/);
@@ -185,7 +188,7 @@ test.describe('393×851', () => {
     const news = page.getByTestId('news-sheet');
     await expect(news).toBeVisible();
     const versions = await news.locator('[data-version]').evaluateAll((a) => a.map((x) => x.getAttribute('data-version')));
-    expect(versions[0]).toBe('1.1.1');
+    expect(versions[0]).toBe('1.2.0');
     expect(versions).toContain('0.49.0');
     expect(versions).toContain('0.34.0');
     expect(versions).toContain('0.33.0');

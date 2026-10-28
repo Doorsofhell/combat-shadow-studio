@@ -127,7 +127,8 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
   // 5.8 — the mockup's `legenddetail`
   'fiche-legende': [BACK, { icon: 'history', label: 'Parcours', action: 'career' }, { icon: 'dumbbell', label: 'Techniques', action: 'techniques' }, { icon: 'heart', label: 'Favoris', action: 'favorite' }, MENU],
   // 5.9 — the mockup's `profile`
-  profil: [BACK, { icon: 'chart', label: 'Activité', action: 'nav:/stats' }, { icon: 'coach', label: 'Coach', action: 'nav:/coach' }, { icon: 'settings', label: 'Réglages', action: 'nav:/reglages' }, MENU],
+  // 1.2.0: Mon coach is a row of Réglages; « Coach » of the mockup opens Réglages on that row
+  profil: [BACK, { icon: 'chart', label: 'Activité', action: 'nav:/stats' }, { icon: 'coach', label: 'Coach', action: 'nav:/reglages/coach' }, { icon: 'settings', label: 'Réglages', action: 'nav:/reglages' }, MENU],
   // 5.10 — the mockup's `default` (settings)
   parametres: SETTINGS,
   confidentialite: SETTINGS,
@@ -449,10 +450,9 @@ export const SECTION_TABS: Partial<Record<TabId, readonly SectionTab[]>> = {
     { id: 'historique', label: 'Historique', to: '/historique', screens: ['historique'] },
     { id: 'objectifs', label: 'Objectifs', to: '/objectifs', screens: ['objectifs'] },
   ],
+  // 1.2.0 (Youssef: « 2 onglets glissants : Mes infos & Réglages ») : Mon coach and Coach IA are rows of Réglages
   profil: [
     { id: 'infos', label: 'Mes infos', to: '/profil', screens: ['profil'] },
-    { id: 'coach', label: 'Mon coach', to: '/coach', screens: ['coach'] },
-    { id: 'coach-ia', label: 'Coach IA', to: '/coach-ia', screens: ['coach-ia'] },
     { id: 'reglages', label: 'Réglages', to: '/reglages', screens: ['parametres'] },
   ],
 };

@@ -60,7 +60,8 @@ const SCREENS: [string, string, number][] = [
   ['Légendes > champions', '/#/champions?vue=champions&d=muaythai', 4],
   ['Programmes', '/#/programmes', 1],
   ['Progrès', '/#/stats', 6],
-  ['Profil', '/#/profil', 4],
+  // 1.2.0: the disciplines are in Mes infos › Disciplines et niveaux
+  ['Profil', '/#/profil?ouvert=disciplines', 4],
 ];
 
 for (const [name, path, min] of SCREENS)
