@@ -1,13 +1,11 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FsExit } from '../../fullscreen/FullscreenStage';
-import { useStageFullscreen } from '../../fullscreen/useStageFullscreen';
+import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CoachScreen } from '../../coach-screen/CoachScreen';
 import type { ComboPlayer, PlayerEvents } from '../../../engine';
 import type { StageView } from '../../../three/StudioStage';
 import type { DisciplineId } from '../../../domain/types';
 import type { FighterLook } from '../../../editor/look';
 import { TECHNIQUE_BY_ID } from '../../../domain/techniques';
 import { oriented } from '../../../domain/camera';
-import { StageGuard } from '../../components/StageGuard';
 import { AppIcon } from '../../icons';
 
 const CoachStage = lazy(() => import('../../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
@@ -167,7 +165,6 @@ export function Preview({
   const animRef = useRef<HTMLDivElement>(null);
   // the fighter is framed in the part of the stage the buttons leave free (top row, right column, bottom bar)
   const inset = useInset(stageRef, [partsRef, viewsRef, animRef]);
-  const fs = useStageFullscreen(stageRef);
   const view = useMemo<StageView>(() => {
     const base = VIEW_BUTTONS.find((b) => b.id === state.mode) ?? VIEW_BUTTONS[3];
     const az = oriented({ az: base.az }, southpaw);
@@ -184,36 +181,39 @@ export function Preview({
 
   return (
     <div className="cs-preview">
-      {/* 0.27: a double tap shows the fighter on the whole screen (Youssef, 2026-10-20 22:09) */}
-      <div className={`cs-stage${fs.active ? ' stage-fs' : ''}${fs.idle ? ' fs-idle' : ''}`} ref={stageRef} data-testid="studio-stage" data-fullscreen={fs.active}>
-        <div className="cs-stage-3d" role="img" aria-label="Aperçu 3D de ton combattant. Fais glisser pour tourner autour, pince ou utilise la molette pour zoomer. Touche deux fois pour le plein écran.">
-        <StageGuard place="aperçu">
-          <Suspense
-            fallback={
-              <div className="hero-loading" role="status" aria-label="Chargement du combattant">
-                <div className="stage-skeleton" />
-              </div>
-            }
-          >
-            <CoachStage
-              backdrop="dark"
-              coach={look.sex}
-              look={look}
-              discipline={discipline}
-              southpaw={southpaw}
-              view={view}
-              free={state.mode === 'libre'}
-              onUserOrbit={onUserOrbit}
-              frameIds={frameIds}
-              quality={quality}
-              events={NO_EVENTS}
-              onPlayer={onPlayer}
-            />
-          </Suspense>
-        </StageGuard>
-        </div>
-        {fs.active && <FsExit onExit={fs.exit} />}
-      </div>
+      {/* 1.4.0: the coach screen of the app (the same module everywhere): a tap shows the fullscreen in the zone of
+          the fighter, a double tap shows it on the whole screen; the angles and the framing stay around it */}
+      <CoachScreen
+        context="apercu"
+        className="cs-stage"
+        screenRef={stageRef}
+        testId="studio-stage"
+        place="aperçu"
+        stageClassName="cs-stage-3d"
+        stageLabel="Aperçu 3D de ton combattant. Fais glisser pour tourner autour, pince ou utilise la molette pour zoomer. Touche deux fois pour le plein écran."
+        hint={false}
+        fallback={
+          <div className="hero-loading" role="status" aria-label="Chargement du combattant">
+            <div className="stage-skeleton" />
+          </div>
+        }
+        stage={
+          <CoachStage
+            backdrop="dark"
+            coach={look.sex}
+            look={look}
+            discipline={discipline}
+            southpaw={southpaw}
+            view={view}
+            free={state.mode === 'libre'}
+            onUserOrbit={onUserOrbit}
+            frameIds={frameIds}
+            quality={quality}
+            events={NO_EVENTS}
+            onPlayer={onPlayer}
+          />
+        }
+      />
 
       <div className="cs-parts" role="radiogroup" aria-label="Cadrage" ref={partsRef}>
         {PART_BUTTONS.map((b) => (

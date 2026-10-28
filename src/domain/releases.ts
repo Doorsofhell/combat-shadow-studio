@@ -49,6 +49,20 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.4.0',
+      releaseDate: '2026-10-28',
+      title: 'Un seul écran coach, partout',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Le coach de l’Accueil, de la fiche technique, de la séance et de l’aperçu est maintenant le même écran : mêmes gestes, mêmes boutons, au même endroit.' },
+        { category: 'fonctionnalites', text: 'Touche le coach une fois : ses commandes apparaissent dans sa zone, à droite (son, vitesse, plein écran, pause en séance) et les angles en bas. Touche-le encore une fois : elles disparaissent. Deux touchers rapides : plein écran.' },
+        { category: 'ameliorations', text: 'En séance, un toucher sur le coach ne met plus en pause : il montre les commandes, dont la pause. Le gros bouton Pause reste en bas.' },
+        { category: 'ameliorations', text: 'Fiche technique : la vitesse et les angles de caméra sont dans la zone du coach, il reste plus de place pour lui.' },
+        { category: 'corrections', text: 'Voix coupée : un petit haut-parleur barré reste dans le coin du coach, et la séance le dit au départ, avec la façon de remettre le son.' },
+      ],
+      links: [{ label: 'Voix et sons', to: '/reglages/voix' }],
+    },
+    {
       version: '1.3.0',
       releaseDate: '2026-10-28',
       title: 'Consignes enchaînées sous le coach',

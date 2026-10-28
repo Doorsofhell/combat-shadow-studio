@@ -2061,10 +2061,11 @@ button.panel-row {
 }
 
 /* 1.3.0 (Youssef, 2026-10-28: « le bouton s'entraîner… masque les options de visualisation »): on a technique sheet
-   the coach, the step arrows, the speed and the camera angles all fit above the bottom bar when the page opens */
+   the coach, the step arrows and the playback row fit above the bottom bar when the page opens (1.4.0: the speed and
+   the angles are in the coach zone) */
 @media (orientation: portrait) {
   .tech-page .preview-stage {
-    height: calc(100dvh - var(--nav-h) - env(safe-area-inset-bottom) - 360px);
+    height: calc(100dvh - var(--nav-h) - env(safe-area-inset-bottom) - 300px);
     min-height: 260px;
   }
 }

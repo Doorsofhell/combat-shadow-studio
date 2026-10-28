@@ -150,53 +150,6 @@
   touch-action: none;
 }
 
-.stage-tools {
-  position: absolute;
-  right: 8px;
-  top: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  z-index: 2;
-}
-
-.stage-tools .btn {
-  min-height: 44px;
-  min-width: 44px;
-  padding: 0 8px;
-  border-radius: 12px;
-  background: var(--tr-glass);
-  font-size: 0.75em;
-}
-
-.stage-tools .btn.on {
-  background: var(--ink);
-  color: var(--bg);
-}
-
-.stage-tools .sound-btn {
-  flex-direction: column;
-  gap: 2px;
-  min-height: 52px;
-}
-.stage-tools .sound-btn.off {
-  color: var(--red-ink);
-}
-.sound-steps {
-  display: flex;
-  gap: 2px;
-}
-.sound-steps i {
-  width: 6px;
-  height: 3px;
-  border-radius: 2px;
-  background: currentColor;
-  opacity: 0.3;
-}
-.sound-steps i.on {
-  opacity: 1;
-}
-
 .cam-btn {
   flex-direction: column;
   gap: 0 !important;
@@ -238,38 +191,6 @@
 .phase.decompte,
 .phase.travail {
   background: var(--red);
-}
-
-/* 1.1.0: the speed on the stage (top right, above the fullscreen button); its choices open to the left */
-.speed-tool {
-  position: relative;
-}
-.speed-tool > .btn {
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  font-size: 0.85em;
-}
-.speed-choices {
-  /* a column under ×1 along the right edge, so the centred tip of the stage never covers it (Android menu) */
-  flex-direction: column;
-  width: max-content;
-  position: absolute;
-  right: 0;
-  top: calc(100% + 6px);
-  z-index: 6;
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 14px;
-  background: var(--tr-glass);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-}
-.speed-choices .btn {
-  min-width: 44px;
-  min-height: 40px;
-  padding: 0 6px;
-  font-variant-numeric: tabular-nums;
 }
 
 .solo-note {
@@ -587,21 +508,20 @@
   margin: 0 auto;
 }
 .training.immersive .tr-bottom,
-.training.immersive .stage-tools,
 .training.immersive .stage-badge,
 .training.immersive .mark-legend,
 .training.immersive .coach-bubble.in-host {
   transition: opacity 0.25s ease;
 }
 .training.immersive.fs-idle .tr-bottom,
-.training.immersive.fs-idle .stage-tools,
 .training.immersive.fs-idle .stage-badge,
 .training.immersive.fs-idle .mark-legend,
 .training.immersive.fs-idle .coach-bubble.in-host {
   opacity: 0;
   pointer-events: none;
 }
-.training.immersive .stage-tools {
+.training.immersive .coach-tools,
+.training.immersive .coach-muted {
   top: max(8px, env(safe-area-inset-top));
 }
 /* the stage now runs under the floating main control: the coach bubble sits just above it */
@@ -610,8 +530,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .training.immersive .tr-bottom,
-  .training.immersive .stage-tools,
-  .training.immersive .stage-badge,
+    .training.immersive .stage-badge,
   .training.immersive .mark-legend,
   .training.immersive .coach-bubble.in-host {
     transition: none;

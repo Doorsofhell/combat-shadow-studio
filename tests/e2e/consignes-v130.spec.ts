@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openSetting, seedProfile } from './nav-helpers';
+import { openSetting, seedProfile, showCoachTools } from './nav-helpers';
 import { INSTRUCTIONS } from '../../src/domain/instructions';
 
 /**
@@ -47,6 +47,8 @@ test('la consigne principale, puis chaque point clé, une ligne à la fois, avec
 
 test('la pause arrête l’enchaînement, la reprise le relance', async ({ page }) => {
   await startJab(page, { consigneSec: 2.5 });
+  // 1.4.0: the fullscreen is in the commands of the coach, shown by a tap on it
+  await showCoachTools(page);
   await page.getByTestId('fullscreen').click();
   const band = page.getByTestId('consignes');
   await expect(band).toBeVisible();
@@ -70,7 +72,10 @@ test('le texte ne couvre jamais le coach : la caméra garde ses pieds au-dessus 
     return { stage: stage!, band: band! };
   };
   for (const fs of [false, true]) {
-    if (fs) await page.getByTestId('fullscreen').click();
+    if (fs) {
+      await showCoachTools(page);
+      await page.getByTestId('fullscreen').click();
+    }
     await expect.poll(async () => (await camera(page)).insetBottom ?? 0, { timeout: 20_000 }).toBeGreaterThan(0.05);
     await page.waitForTimeout(2500);
     const { stage, band } = await box();
@@ -111,7 +116,9 @@ test('fiche technique : « S’entraîner » toujours actif, et les angles de ca
   await page.goto('/#/techniques/high-kick-avant?d=mma');
   const train = page.getByTestId('nav-train');
   await expect(train).toBeEnabled();
-  const cam = page.getByRole('radio', { name: 'Face', exact: true });
+  // 1.4.0: the angles are in the commands of the coach (a tap on it), inside its zone
+  await showCoachTools(page);
+  const cam = page.getByTestId('coach-angles').getByRole('radio', { name: 'Face', exact: true });
   await expect(cam).toBeVisible();
   const [c, b] = await Promise.all([cam.boundingBox(), train.boundingBox()]);
   expect(c!.y + c!.height, 'angles au-dessus du bouton').toBeLessThanOrEqual(b!.y);
@@ -148,9 +155,11 @@ test('haut-parleur sous la vitesse et le plein écran : chaque toucher passe au 
   await seedProfile(page);
   await page.goto('/#/entrainement?ex=boxe-debutant-02&mode=technique');
   const sound = page.getByTestId('sound');
+  // 1.4.0: in the commands of the coach, shown by a tap on it
+  await showCoachTools(page);
   await expect(sound).toBeVisible();
   // under the two tools already there, on the right of the stage
-  const [spd, fs, snd] = await Promise.all([page.locator('.stage-tools .btn').first().boundingBox(), page.getByTestId('fullscreen').boundingBox(), sound.boundingBox()]);
+  const [spd, fs, snd] = await Promise.all([page.locator('.coach-tools .btn').first().boundingBox(), page.getByTestId('fullscreen').boundingBox(), sound.boundingBox()]);
   expect(snd!.y).toBeGreaterThan(fs!.y + fs!.height - 1);
   expect(Math.abs(snd!.x + snd!.width - (fs!.x + fs!.width))).toBeLessThan(2);
   expect(spd!.y).toBeLessThan(fs!.y);

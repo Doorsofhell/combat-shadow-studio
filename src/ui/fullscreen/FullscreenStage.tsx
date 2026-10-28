@@ -1,7 +1,5 @@
-import { ReactNode, useRef } from 'react';
 import { useSettings } from '../../store/settings';
 import { AppIcon } from '../icons';
-import { useStageFullscreen } from './useStageFullscreen';
 
 /** the discreet way out, top right of the view in fullscreen (it fades with the other controls) */
 export function FsExit({ onExit }: { onExit: () => void }) {
@@ -27,19 +25,4 @@ export function FsHint() {
   );
 }
 
-/**
- * A 3D coach view that a double tap shows on the whole screen (see useStageFullscreen): the home hero, the
- * technique sheet, the fighter studio preview. The training screen uses the hook directly, merged with its own
- * immersive mode.
- */
-export function FullscreenStage({ className, children, testId, hint = true }: { className: string; children: ReactNode; testId?: string; hint?: boolean }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const fs = useStageFullscreen(ref);
-  return (
-    <div ref={ref} className={`${className}${fs.active ? ' stage-fs' : ''}${fs.idle ? ' fs-idle' : ''}`} data-testid={testId} data-fullscreen={fs.active}>
-      {children}
-      {fs.active && <FsExit onExit={fs.exit} />}
-      {hint && !fs.active && <FsHint />}
-    </div>
-  );
-}
+// 1.4.0: the views that a double tap shows on the whole screen are the coach screen of the app (CoachScreen.tsx)

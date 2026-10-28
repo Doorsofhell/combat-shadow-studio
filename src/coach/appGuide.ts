@@ -173,10 +173,10 @@ export const APP_GUIDE: GuideEntry[] = [
     answer:
       'Dans le studio, ton coach exécute les mouvements et tu les fais en même temps.\n' +
       '• En bas : « Retour », « Démarrer » (qui devient « Pause » puis « Reprendre » au même endroit), « Décomposer », « Caméra » et « Plus ». Si tu touches Retour pendant la séance, elle se met en pause et l’application te demande avant de quitter.\n' +
-      '• Mains libres : pendant la séance, seuls Retour et Pause restent, pour un téléphone posé devant toi. Touche le coach une fois, n’importe où : la séance se met en pause, et Décomposer, Caméra et Plus reviennent. Le téléphone vibre au départ, à la pause et à chaque round, s’il sait le faire.\n' +
+      '• Mains libres : pendant la séance, seuls Retour et Pause restent, pour un téléphone posé devant toi. Touche le coach une fois : ses commandes apparaissent sur lui (pause, vitesse, plein écran, son, angles), sans arrêter la séance ; touche-le encore une fois pour les cacher. À la pause, Décomposer, Caméra et Plus reviennent. Le téléphone vibre au départ, à la pause et à chaque round, s’il sait le faire.\n' +
       '• Sous le coach : le mouvement en cours, la consigne et le point clé du moment, puis le temps de séance, le cumul et les répétitions. Seul le temps de travail actif est compté.\n' +
       '• Dans « Plus » : « Recommencer », « Exercice précédent », « Exercice suivant », « Comment faire ? », « Ralenti » et « Options ».\n' +
-      '• Sur le coach : la vitesse (×1, touche-la pour choisir de ×0,25 à ×1,5), le zoom, le plein écran et, en haut, « AR » pour la réalité augmentée.',
+      '• Sur le coach, après un toucher : la pause, la vitesse (touche-la pour choisir de ×0,25 à ×1,5), le zoom, le plein écran, le haut-parleur (chaque toucher passe au cran suivant : coupé, faible, moyen, fort) et, en haut à gauche, les angles. En haut, « AR » pour la réalité augmentée. Si la voix est coupée, un petit haut-parleur barré reste dans le coin.',
   },
   {
     id: 'decomposer',
@@ -295,8 +295,8 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['fiche', 'fiche technique', 'cette fiche', 'page de la technique', 'consignes du coach', 'barre de lecture'],
     screens: ['technique'],
     answer:
-      'Sur une fiche, le coach montre la technique en boucle. La barre de lecture met en pause ou relance et règle la vitesse ; juste à côté, deux icônes te servent à marquer où tu en es.\n' +
-      'Dessous : les angles de caméra, la description, le guide pas à pas (étapes, erreurs fréquentes, points clés) et les « Consignes du coach ». En kick-boxing, une carte indique ce que chaque style autorise.\n' +
+      'Sur une fiche, le coach montre la technique en boucle. Touche-le une fois : le son, la vitesse, le plein écran et les angles de caméra apparaissent sur lui ; touche-le encore pour les cacher. Sous le coach, la lecture met en pause ou relance ; juste à côté, deux icônes te servent à marquer où tu en es.\n' +
+      'Dessous : la description, le guide pas à pas (étapes, erreurs fréquentes, points clés) et les « Consignes du coach ». En kick-boxing, une carte indique ce que chaque style autorise.\n' +
       'L’étoile en haut à droite ajoute la technique à tes favoris.',
   },
   {
