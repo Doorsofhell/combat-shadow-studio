@@ -28,9 +28,11 @@ const SCREENS: [string, string, string[][], string[] | null, string | null, stri
   ['/champions', 'legendes', [], ['Disciplines', 'Légende'], null, 'Apprendre', null],
   // 1.0.0 (lot 2): Mon coach and Réglages are tabs of Profil at the top of the screen, not repeated
   // 1.2.0: Mon coach is a row of Réglages, no longer a tab: « Coach » of the bar is in the ⋮ (it opens that row)
-  ['/profil', 'profil', [], ['Coach'], null, 'Profil', null],
+  // 1.3.0 (Youssef, 2026-10-28: « Retire les … en haut à droite car tous les menus proposés sont déjà dans les pages
+  // principales Mes infos et Réglages »): no ⋮ on Mes infos and Réglages
+  ['/profil', 'profil', [], null, null, 'Profil', null],
   // 1.1.0: « Caméra » left Réglages (it opened the same page as Affichage)
-  ['/reglages', 'parametres', [], ['Affichage'], null, 'Profil', null],
+  ['/reglages', 'parametres', [], null, null, 'Profil', null],
   // 1.1.1 (Youssef, 2026-10-28: « Plus si uniquement rechercher le retirer car en doublon »): the magnifier is in the
   // bar here, so no « Plus » holding only « Rechercher »
   ['/chrono', 'chrono', [RETOUR, ['options', 'Réglages'], ['play', 'Démarrer']], null, 'toggle', 'Entraîner', 'row'],
