@@ -29,13 +29,22 @@ test.beforeEach(async ({ page }) => {
 
 test('préparation : « Prépare-toi » en ambre, le temps de la phase (1.1.0 : plus de grand décompte), puis le travail démarre', async ({ page }) => {
   await page.goto('/#/entrainement?ex=boxe-debutant-08&mode=rounds&round=20&rest=10&rounds=2');
+  // the preparation lasts 3 s: its look is recorded in the page the moment it shows, so a slow machine cannot miss it
+  await page.evaluate(() => {
+    const w = window as unknown as { __prep?: [string, string, string] };
+    const seen = () => {
+      const e = document.querySelector('[data-testid="phase"]');
+      if (!w.__prep && e?.textContent === 'Prépare-toi') w.__prep = [e.textContent, getComputedStyle(e).backgroundColor, e.className];
+    };
+    new MutationObserver(seen).observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true });
+  });
   await page.getByTestId('start').click();
   const phase = page.getByTestId('phase');
-  await expect(phase).toHaveText('Prépare-toi');
-  await expect(phase).toHaveClass(/decompte/);
+  await expect.poll(() => page.evaluate(() => !!(window as unknown as { __prep?: unknown }).__prep)).toBe(true);
   // amber with dark text, not the red of work (text and colour read together: the preparation is short)
-  const [text, bg] = await phase.evaluate((e) => [e.textContent, getComputedStyle(e).backgroundColor]);
+  const [text, bg, cls] = await page.evaluate(() => (window as unknown as { __prep: [string, string, string] }).__prep);
   expect(text).toBe('Prépare-toi');
+  expect(cls).toMatch(/decompte/);
   const [r, g, b] = bg!.match(/\d+/g)!.map(Number);
   expect(r).toBeGreaterThan(200);
   expect(g).toBeGreaterThan(140);

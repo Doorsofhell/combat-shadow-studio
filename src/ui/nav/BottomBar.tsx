@@ -155,8 +155,10 @@ export function BottomBar() {
   // magnifier as a place of the bar, proposition A): the Coach IA is reached from Rechercher; « Plus » (or the ⋮ at
   // the top right) holds only what the screen gives
   const tabsShown = !!sectionTabsFor(screen) && isRootPath(loc.pathname);
-  // in the session and the chronometer « Plus » always holds « Rechercher » (the bar's places are hidden there)
-  const hasMore = commands.length > 0 || inRow;
+  // in the session the bar's places are hidden: « Plus » holds « Rechercher » there. 1.1.1 (Youssef, 2026-10-28:
+  // « si uniquement rechercher le retirer car en doublon »): where the places show (chronometer, fighter studio), the
+  // magnifier is already in the bar, so « Plus » appears only when the screen has something of its own
+  const hasMore = commands.length > 0 || (inRow && !tabs);
 
   const press = (slot: NavSlot) => {
     haptic();

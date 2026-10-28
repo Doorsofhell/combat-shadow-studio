@@ -136,3 +136,34 @@ test('Légendes : « Que signifient les statuts ? » est une question de la rech
   await expect(await menuItem(page, 'filters')).toBeVisible();
   await closeMenu(page);
 });
+
+test('1.1.1 : « Plus » qui ne tiendrait que « Rechercher » est retiré là où la loupe est dans la barre', async ({ page }) => {
+  // Youssef, 2026-10-28: « Dans le bouton en bas à droite plus si uniquement rechercher le retirer car en doublon »
+  await seedProfile(page);
+  await page.goto('/#/chrono');
+  await expect(bar(page)).toHaveAttribute('data-screen', 'chrono');
+  await expect(bar(page).getByTestId('app-search')).toBeVisible();
+  await expect(bar(page).locator('[data-action="menu"]')).toHaveCount(0);
+  // in the session the places are hidden: « Rechercher » stays in « Plus », with the other commands
+  await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
+  await expect(bar(page).getByTestId('app-search')).toHaveCount(0);
+  await bar(page).locator('[data-action="menu"]').click();
+  await expect(page.getByTestId('cmd-search')).toBeVisible();
+  await expect(page.getByTestId('cmd-restart')).toBeVisible();
+});
+
+test('1.1.1 : le créateur d’enchaînement garde ses icônes de mouvements et sa recherche dans le choix', async ({ page }) => {
+  // Youssef, 2026-10-28: « Le créateur d'enchaînement doit garder les icônes »
+  await seedProfile(page);
+  await page.goto('/#/createur/nouveau?d=boxe');
+  await page.getByTestId('add-move').click();
+  const picker = page.getByTestId('move-picker');
+  await expect(picker.getByTestId('picker-search')).toBeVisible();
+  const cells = picker.locator('.picker-cell');
+  expect(await cells.count()).toBeGreaterThan(10);
+  // every move has its pictogram, drawn (not an empty box)
+  const sizes = await cells.evaluateAll((cs) => cs.map((c) => { const s = c.querySelector('svg'); const r = s?.getBoundingClientRect(); return s && r ? Math.min(r.width, r.height) * (s.querySelectorAll('path,line,circle,ellipse,polyline,rect').length > 0 ? 1 : 0) : 0; }));
+  expect(Math.min(...sizes)).toBeGreaterThanOrEqual(32);
+  await picker.getByTestId('picker-search').fill('jab');
+  await expect(picker.getByTestId('add-jab').locator('svg')).toBeVisible();
+});

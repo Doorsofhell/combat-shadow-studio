@@ -30,7 +30,9 @@ const SCREENS: [string, string, string[][], string[] | null, string | null, stri
   ['/profil', 'profil', [], null, null, 'Profil', null],
   // 1.1.0: « Caméra » left Réglages (it opened the same page as Affichage)
   ['/reglages', 'parametres', [], ['Affichage'], null, 'Profil', null],
-  ['/chrono', 'chrono', [RETOUR, ['options', 'Réglages'], ['play', 'Démarrer'], PLUS], null, 'toggle', 'Entraîner', 'row'],
+  // 1.1.1 (Youssef, 2026-10-28: « Plus si uniquement rechercher le retirer car en doublon »): the magnifier is in the
+  // bar here, so no « Plus » holding only « Rechercher »
+  ['/chrono', 'chrono', [RETOUR, ['options', 'Réglages'], ['play', 'Démarrer']], null, 'toggle', 'Entraîner', 'row'],
 ];
 
 test.describe('393×851', () => {
@@ -183,14 +185,14 @@ test.describe('393×851', () => {
     const news = page.getByTestId('news-sheet');
     await expect(news).toBeVisible();
     const versions = await news.locator('[data-version]').evaluateAll((a) => a.map((x) => x.getAttribute('data-version')));
-    expect(versions[0]).toBe('1.1.0');
+    expect(versions[0]).toBe('1.1.1');
     expect(versions).toContain('0.49.0');
     expect(versions).toContain('0.34.0');
     expect(versions).toContain('0.33.0');
     expect(versions).toContain('0.32.0');
     expect(versions).toContain('0.31.0');
     expect(versions).toContain('1.0.0');
-    await expect(news.locator('[data-version="1.1.0"]')).toContainText('Version 1.1.0 · la plus récente');
+    await expect(news.locator('[data-version="1.1.1"]')).toContainText('Version 1.1.1 · la plus récente');
     await expect(news).not.toContainText('fictive');
     // seen: the dots go away at once
     await expect(page.getByTestId('menu-dot')).toHaveCount(0);

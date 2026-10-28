@@ -49,6 +49,20 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.1.1',
+      releaseDate: '2026-10-28',
+      title: 'Plus de doublon de la recherche',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Chrono de combat : le bouton « Plus », qui ne contenait que « Rechercher », est retiré : la loupe est déjà dans la barre du bas. Pendant la séance, où la barre est cachée, « Rechercher » reste dans « Plus ».' },
+        { category: 'corrections', text: 'Le créateur d’enchaînement garde ses icônes de mouvements et sa recherche dans « Ajouter un mouvement ».' },
+      ],
+      links: [
+        { label: 'Chrono de combat', to: '/chrono' },
+        { label: 'Mes enchaînements', to: '/createur' },
+      ],
+    },
+    {
       version: '1.1.0',
       releaseDate: '2026-10-28',
       title: 'Recherche dans la barre et écrans allégés',

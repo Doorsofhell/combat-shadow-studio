@@ -8,7 +8,7 @@ import { popLayer, pushLayer } from './layers';
 import { NavIcon } from './NavIcon';
 import { leave, useNavStore, type MenuCommand } from './store';
 import { haptic, openSearch } from './BottomBar';
-import { PRIMARY, backInRow, dockSlots, navScreen } from './config';
+import { NO_TABS, PRIMARY, backInRow, dockSlots, navScreen } from './config';
 import type { NavIconId } from './icons';
 import { SearchSheet } from './SearchSheet';
 
@@ -172,9 +172,9 @@ export function NavSheets() {
             };
           })
       : [];
-  // in the session and the chronometer the bar's places are hidden: « Rechercher » (and through it the Coach IA)
-  // stays reachable from « Plus », so nothing is lost
-  const inRow = !!screen && backInRow(screen, loc.pathname);
+  // in the session the bar's places are hidden: « Rechercher » (and through it the Coach IA) stays reachable from
+  // « Plus », so nothing is lost; where the places show, the magnifier of the bar is enough (1.1.1, no duplicate)
+  const inRow = !!screen && backInRow(screen, loc.pathname) && NO_TABS.has(screen);
   const searchCmd = inRow ? [{ id: 'app-search', label: 'Rechercher', icon: 'search' as NavIconId, testId: 'cmd-search', pressed: undefined as boolean | undefined, disabled: false, action: undefined as string | undefined, ariaLabel: undefined as string | undefined }] : [];
   const allCommands = [...options, ...commands.map((c) => ({ ...c, action: undefined as string | undefined, ariaLabel: undefined as string | undefined })), ...searchCmd];
   const runAny = (c: (typeof allCommands)[number]) => {

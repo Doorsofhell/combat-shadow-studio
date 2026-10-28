@@ -2073,3 +2073,18 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet n° 1 : 221 RÉUSSIS, 23 ÉCHOUÉS, 2 ignorés ; surtout des tests écrits pour l'ancienne navigation, adaptés au nouveau contrat sans rien affaiblir, plus les 4 défauts ci-dessus corrigés. Relances ciblées : 100 RÉUSSIS / 8 ÉCHOUÉS, puis 55 / 2, puis `train-resume` 6/6.
   - Playwright complet final (246 tests, 33,4 min) : 241 RÉUSSIS, 2 ignorés (Firebase), 3 ÉCHOUÉS : `emblems:24` (mesure 51,99998 px pour 52 : comparaison au dixième de pixel), `nav-contextuelle:97` Nuit (la barre est remontée un instant pendant le chargement de Progrès : le test attend qu'elle soit là) — relance de ces deux fichiers : 5 RÉUSSIS ; `training-layout:329` caméra Auto ÉCHOUÉ, déjà en échec avant la 1.0.0.
   - Android réel : NON EXÉCUTÉ.
+
+## 2026-10-28 · 1.1.1 · Plus de doublon de la recherche
+
+- **Demande** (Youssef, 07:19, avec deux captures, en validant la PR #31) : « Le créateur d'enchaînement doit garder les icônes » ; « Dans le bouton en bas à droite plus si uniquement rechercher le retirer car en doublon ».
+- **Constat après vérification** :
+  - sur le Chrono de combat, « Plus » ne contenait que « Rechercher » (ajouté en 1.1.0 pour la séance et le chrono), alors que la loupe est déjà dans la barre du bas sur cet écran ; seule la séance cache les places de la barre ;
+  - le créateur d'enchaînement (« Ajouter un mouvement ») a toujours ses pictogrammes et son champ de recherche : la 1.1.0 n'y avait pas touché (seule la liste « Mes enchaînements » passe par la loupe). Aucun test ne le protégeait.
+- **Changement** :
+  - « Plus » n'apparaît plus qu'avec des commandes de l'écran, ou pendant la séance où « Rechercher » y reste (`BottomBar.tsx`, `NavSheets.tsx`) ;
+  - nouveau test qui garde les icônes et la recherche du choix des mouvements ;
+  - Nouveautés 1.1.1, version 1.1.1.
+- **Tests** :
+  - TypeScript : RÉUSSI. Vitest : 849 RÉUSSIS, 1 ignoré.
+  - Playwright (corrections-v110 dont les 2 nouveaux tests, navigation, chrono, chrono-seul, coach-bubble, accueil-recherche, createur-v2, nav-contextuelle, aucune-perte-v100) : 69 RÉUSSIS, 2 ÉCHOUÉS : `navigation:172` (attendait la 1.1.0 en tête, mis à jour) ; `chrono:30` instable (la préparation dure 3 s et la machine chargée lisait sa couleur après la fin) : la page enregistre maintenant l'aspect de la préparation au moment où elle s'affiche, sans rien retirer de ce qui est vérifié ; relances 18/18 RÉUSSIS et 2/2 pour `navigation:172`.
+  - Android réel : NON EXÉCUTÉ.
