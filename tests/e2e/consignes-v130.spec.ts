@@ -121,3 +121,25 @@ test('fiche technique : « S’entraîner » toujours actif, et les angles de ca
   await page.getByTestId('start').click();
   await expect(page.getByTestId('consignes')).toHaveAttribute('data-technique', 'high-kick-avant', { timeout: 60_000 });
 });
+
+test('Accueil : le numéro de version suit le titre de l’application, loin de la photo du profil', async ({ page }) => {
+  await seedProfile(page);
+  await page.goto('/#/');
+  const [brand, ver, photo] = await Promise.all([page.locator('.home-head .brand').boundingBox(), page.getByTestId('home-version').boundingBox(), page.getByTestId('nav-profil').boundingBox()]);
+  await expect(page.getByTestId('home-version')).toHaveText(/^v\d+\.\d+\.\d+/);
+  expect(ver!.x, 'juste après le titre').toBeLessThan(brand!.x + brand!.width + 16);
+  expect(ver!.x + ver!.width, 'pas sous la photo').toBeLessThan(photo!.x);
+});
+
+test('Mes infos et Réglages : plus de ⋮ en haut à droite, leur contenu reste sur la page', async ({ page }) => {
+  await seedProfile(page);
+  for (const path of ['/profil', '/reglages']) {
+    await page.goto(`/#${path}`);
+    await expect(page.getByTestId('nav-profil')).toBeVisible();
+    await expect(page.getByTestId('nav-menu'), path).toHaveCount(0);
+  }
+  // what the ⋮ held: Coach and Affichage are rows of Réglages, Activité is Progrès in the bar
+  await expect(page.getByTestId('set-coach')).toBeVisible();
+  await expect(page.getByTestId('set-affichage')).toBeVisible();
+  await expect(page.getByTestId('bottom-bar').locator('[data-tab="progres"]')).toBeVisible();
+});

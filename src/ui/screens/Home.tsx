@@ -92,7 +92,9 @@ export function Home() {
 
   return (
     <div className="page home" style={{ gap: 16 }}>
-      <header className="home-head row between">
+      {/* 1.3.0 (Youssef, 2026-10-28: « le numéro de version s'affiche sous la photo de profil, positionne-le directement
+          après le titre de l'application »): the version follows the name, clear of the photo at the top right */}
+      <header className="home-head row" style={{ gap: 8, alignItems: 'baseline', justifyContent: 'flex-start' }}>
         <div className="brand">
           Combat <b>Shadow</b> Studio
         </div>
