@@ -22,7 +22,10 @@
 /* v0.45 the page, after the definitive mockup (maquettes/premium-2026-10-23/maquette-premium-definitive.png): one screen
    that fits between the head and the bar; the gaps shrink with the height before anything else (docs/v045-premium) */
 .page.dash.premium-page {
-  --pg: clamp(5px, 1.6dvh, 16px);
+  /* 1.0.0: the room left above the bottom of the screen (taller since the refonte) sets the gaps, not the screen
+     height alone: --pv is about calc(var(--pv) * 1) with the former 80 px bar */
+  --pv: calc((100dvh - var(--nav-h)) / 88);
+  --pg: clamp(5px, calc(var(--pv) * 1.6), 16px);
   gap: var(--pg);
   /* fills the visible height and spreads the five blocks; on a very short screen the page grows (and scrolls)
      rather than cutting or overlapping anything */
@@ -45,19 +48,19 @@
 .premium-head {
   display: grid;
   justify-items: center;
-  gap: clamp(2px, 0.6dvh, 6px);
+  gap: clamp(2px, calc(var(--pv) * 0.6), 6px);
   text-align: center;
   flex: none;
 }
 .premium-gem {
   display: grid;
   place-items: center;
-  width: clamp(46px, 8.2dvh, 72px);
-  height: clamp(46px, 8.2dvh, 72px);
+  width: clamp(42px, calc(var(--pv) * 7.2), 72px);
+  height: clamp(42px, calc(var(--pv) * 7.2), 72px);
   border-radius: 16px;
   background: color-mix(in srgb, var(--gold) 16%, var(--c-surface));
   border: 1px solid color-mix(in srgb, var(--gold) 50%, transparent);
-  margin-bottom: clamp(2px, 0.8dvh, 8px);
+  margin-bottom: clamp(2px, calc(var(--pv) * 0.8), 8px);
 }
 .premium-head h2 {
   font-size: 1.12rem;
@@ -79,7 +82,7 @@
   align-items: center;
   gap: 10px;
   margin: 0;
-  padding: clamp(9px, 1.4dvh, 13px) 14px;
+  padding: clamp(9px, calc(var(--pv) * 1.4), 13px) 14px;
   font-weight: 700;
   font-size: 0.9rem;
   flex: none;
@@ -100,14 +103,14 @@
   stroke-width: 2.6;
 }
 .premium-card {
-  padding: clamp(10px, 1.6dvh, 14px) 12px;
+  padding: clamp(10px, calc(var(--pv) * 1.6), 14px) 12px;
   flex: none;
 }
 .premium-card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2px clamp(6px, 1.2dvh, 10px);
+  padding: 0 2px clamp(6px, calc(var(--pv) * 1.2), 10px);
 }
 .premium-card-head h3 {
   font-size: 1.05rem;
@@ -125,7 +128,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: clamp(34px, 6.6dvh, 60px);
+  min-height: clamp(34px, calc(var(--pv) * 6), 60px);
   padding: 0 4px;
   font-size: 0.86rem;
   color: var(--ink);
@@ -140,7 +143,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: clamp(4px, 0.8dvh, 8px) 0 0;
+  margin: clamp(4px, calc(var(--pv) * 0.8), 8px) 0 0;
   padding: 8px 10px;
   border-radius: 10px;
   background: var(--surface-2);
@@ -158,7 +161,7 @@
   justify-items: center;
   gap: 4px;
   text-align: center;
-  padding: clamp(10px, 1.6dvh, 14px) 12px 12px;
+  padding: clamp(10px, calc(var(--pv) * 1.6), 14px) 12px 12px;
   border-radius: 14px;
   background: #1f2125;
   border: 1px solid #ffffff14;
@@ -175,7 +178,7 @@
   font-size: 0.84rem;
 }
 .premium-cta {
-  margin-top: clamp(4px, 1dvh, 8px);
+  margin-top: clamp(4px, calc(var(--pv) * 1), 8px);
   justify-self: stretch;
   min-height: 46px;
   border: 0;

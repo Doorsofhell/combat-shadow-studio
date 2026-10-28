@@ -180,6 +180,7 @@ export function ProfilePage() {
         </div>
       </div>
 
+
       {err && (
         <div className="note err" role="alert">
           {err}
@@ -387,7 +388,7 @@ export function ProfilePage() {
             })}
           </div>
         </PanelRow>
-        <LinkRow to="/techniques" label="Techniques favorites" hint={`${favT} technique(s), ${favE} exercice(s)`} />
+        <LinkRow to="/favoris" label="Techniques favorites" hint={`${favT} technique(s), ${favE} exercice(s)`} />
         <LinkRow to="/champions" label="Combinaisons favorites" hint={`${favC} combinaison(s)`} />
       </Section>
 

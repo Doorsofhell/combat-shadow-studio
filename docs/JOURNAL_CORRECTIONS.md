@@ -1978,3 +1978,113 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Aucun mouvement modifié. Épaule de Kadir non modifiée : décision à prendre par Youssef.
 - **Fichiers** : voir `docs/v049-moteur/RAPPORT.md` §3.
 - **Tests** : Vitest 814 RÉUSSIS ; `moteur-lumiere.spec` 2 RÉUSSIS ; Playwright complet 214 RÉUSSIS, 3 ÉCHOUÉS hors de cette version (`coach-suggest:96`, `training-layout:325`, `coaching-hud:60`, ce dernier aussi en échec sur la v0.48.0 au même moment) ; Android réel NON EXÉCUTÉ.
+
+## 2026-10-27 · 1.0.0 (lot 1 sur 5, non publié) · Refonte ergonomique : fondations
+
+- **Demande** : refonte ergonomique 1.0.0 selon le plan et la maquette v4 validés (Youssef, 2026-10-27) : « Aucune perte de contenu. Réorganisation, logique et intelligente », « n'oublie pas le mode jour/nuit ».
+- **Changement** (branche `feature/refonte-v100`, lien public toujours sur la v0.49.0) :
+  - thème Nuit par défaut pour une nouvelle installation, choix déjà enregistrés conservés ; libellés Nuit / Jour / Auto ;
+  - couleur de la discipline principale sur le gros bouton (`src/ui/theme/disciplines.ts`, contraste vérifié par test) ;
+  - barre fixe à 5 onglets (Accueil, Entraîner, Apprendre, Progrès, Profil), gros bouton d'action, Retour en haut à gauche, « Plus » pour les commandes de l'écran ;
+  - Menu retiré : chaque entrée reste joignable (onglets, onglets de section Apprendre et Progrès, Profil › Mon coach / Coach IA / Réglages, Réglages › Premium et Nouveautés), vérifié par `src/ui/nav/__tests__/refonte.test.ts` ;
+  - corrections après la suite complète : barre remesurée en sortant du plein écran total (`BottomBar.tsx`), Retour dans la rangée d'actions sur l'atelier du combattant (`backInRow`, il cachait le bouton « Corps ») ; le test « Lumière du coach » attend l'écriture en IndexedDB avant de recharger (1 échec sur 3 sans cela).
+- **Tests** :
+  - TypeScript : RÉUSSI. Vitest : 835 RÉUSSIS, 1 ignoré.
+  - Playwright complet (avant les corrections ci-dessus) : 208 RÉUSSIS, 2 ignorés, 11 ÉCHOUÉS dont 3 déjà en échec avant (`coach-suggest:96`, `training-layout:325`, `coaching-hud:60`).
+  - Relance des 9 fichiers touchés après corrections : tous RÉUSSIS.
+  - Android réel : NON EXÉCUTÉ.
+
+## 2026-10-27 · 1.0.0 (lot 2 sur 5, non publié) · Refonte ergonomique : onglets d'Entraîner et de Profil
+
+- **Demande** : suite du plan validé (Youssef, 2026-10-27) : chaque place de la barre a ses onglets en haut, sans perte de contenu.
+- **Changement** (branche `feature/refonte-v100`, commit `dcd7a8b`) :
+  - Entraîner : onglets Séance, Programmes, Enchaînements, Favoris et Chrono ; l'ancien espace « Programmes » mène à `/programmes` (choix enregistré conservé) ;
+  - nouvel écran Favoris (`/favoris`) : les favoris de la bibliothèque et l'accès aux combinaisons favorites des Légendes ; les anciens liens `?tab=favoris` et `?tab=legendes` redirigent ;
+  - Profil : onglets Mes infos, Mon coach, Coach IA et Réglages (point rouge tant que la nouvelle version n'est pas vue) ; la liste de liens en double sur Profil est retirée ;
+  - un lien déjà présent dans les onglets n'est plus répété au-dessus de la barre ; onglets cachés pendant le chrono en cours.
+- **Tests** :
+  - Vitest : RÉUSSIS (dont `refonte.test.ts` pour les onglets et l'absence de doublons).
+  - Playwright complet : 208 RÉUSSIS, 2 ignorés, 11 ÉCHOUÉS. 8 venaient de l'ancien contrat de la barre (tests mis à jour au lot 3, puis RÉUSSIS) ; 3 déjà en échec avant (`coach-suggest:96`, `training-layout:325`, `coaching-hud:60`).
+  - Android réel : NON EXÉCUTÉ.
+
+## 2026-10-27 · 1.0.0 (lot 3 sur 5, non publié) · Accueil, « Rechercher ou demander au coach », Lumière vive
+
+- **Demande** : maquette v4 validée : un accueil qui ne garde que ce qui sert à démarrer, et une barre « Rechercher ou demander au coach » qui remplace la bulle du Coach IA. Puis « Lumière vive OK » (Youssef, 2026-10-27 19:55).
+- **Changement** :
+  - Accueil : « Reprendre » avec la dernière discipline et la dernière séance (un toucher choisit la discipline parmi les six), le coach, trois tuiles (Séance rapide, Technique du jour, Chrono seul), l'objectif de la semaine avec les vrais chiffres (sinon « Aucun objectif fixé »), une ligne « Programme » et « Pour toi » ; gros bouton « Reprendre » dans la barre (« Commencer » avant la première séance). Statistiques dans Progrès, favoris dans Entraîner › Favoris : rien n'est perdu.
+  - Recherche locale (`src/domain/search.ts`) : techniques, encyclopédie, programmes, écrans et réglages, sans accents ni majuscules ; la première ligne pose la question au Coach IA (`src/ui/nav/SearchSheet.tsx`).
+  - Place du champ : entier si l'écran a une action au plus, rond avec deux, et première commande de « Plus » à partir de trois actions (Techniques, Progrès, Légendes) pour que les mots tiennent sur 360 px ; jamais en séance. Le Coach IA reste aussi dans « Plus » sur tous les écrans.
+  - Lumière du coach « Vive » par défaut ; un choix « Studio » déjà enregistré est gardé.
+  - Guide du Coach IA mis à jour pour la barre, la recherche et l'accueil (les textes sur la séance seront revus au lot 4).
+- **Tests** :
+  - Vitest : 845 RÉUSSIS, 1 ignoré (dont recherche, `searchShape`, guide).
+  - Playwright : nouveau `accueil-recherche.spec` (accueil, sélecteur de discipline, recherche, Coach IA, contraste Jour et Nuit à 360 × 640) et fichiers touchés : RÉUSSIS. `coach-suggest:304` a échoué une fois puis RÉUSSI deux fois (instable) ; `coach-suggest:96` ÉCHOUÉ, déjà en échec avant.
+  - Android réel : NON EXÉCUTÉ.
+
+## 2026-10-27 · 1.0.0 (lot 4 sur 5, non publié) · Séance mains libres
+
+- **Demande** : maquette v4 validée, écran « Séance » : le téléphone posé devant soi, on s'entraîne sans le toucher.
+- **Changement** :
+  - pendant la séance, seuls Retour et Pause restent dans la barre ; Décomposer, Caméra et « Plus » reviennent avec la pause (`html[data-hands-free]`, `src/ui/nav/nav.css`) ;
+  - un toucher n'importe où sur le coach met en pause (attendu 320 ms pour ne pas gêner le double toucher du plein écran, `useStageFullscreen.ts`) ; un toucher pendant la pause ne relance pas, c'est « Reprendre » ; en plein écran total, un toucher réaffiche les commandes comme avant, sans pause ;
+  - vibrations (si l'appareil le permet) au départ, à la pause, à la reprise et à chaque changement de phase (travail, repos, fin) ;
+  - glisser le doigt à gauche ou à droite change d'onglet dans un espace (Entraîner, Apprendre, Progrès, Profil), sans boucler ; jamais sur le coach, un curseur, un champ, une liste qui défile de côté, ni quand une fenêtre est ouverte (`src/ui/nav/swipe.ts`) ;
+  - guide du Coach IA : textes de la séance mis à jour (« Plus », mode mains libres) ;
+  - coach entier dans le cadre aussi pour le cadre du nouvel accueil (`camera.test.ts`) ;
+  - défauts vus sur les captures et corrigés : « Démarrer » et « Reprendre » coupés dans le gros bouton à côté de Retour, Décomposer, Caméra et « Plus » (« Plus » prend la largeur des autres actions, et sous 420 px le gros bouton garde son mot sans son icône) ; « Pause » écrit en clair sur un gros bouton jaune (MMA), illisible : il garde l'encre foncée du gros bouton.
+- **Tests** :
+  - TypeScript : RÉUSSI. Vitest : 849 RÉUSSIS, 1 ignoré (dont `swipe.test.ts`).
+  - Playwright : nouveau `seance-mains-libres.spec` (mains libres, toucher = pause, double toucher = plein écran sans pause, mots entiers à 360 et 393 px, « Pause » lisible, glisser entre onglets) RÉUSSI ; avec `navigation`, `nav-contextuelle` et `chrono-seul` : 39 RÉUSSIS. Fichiers de la séance relancés : `coach-render`, `fullscreen-dbltap`, `nav-contextuelle`, `app`, `coach-bubble`, `coach-panel-size`, `coaching-hud`, `navigation` RÉUSSIS ; `training-layout` 11 RÉUSSIS, 1 ÉCHOUÉ déjà en échec avant (caméra Auto).
+  - Tests adaptés au nouveau contrat, sans rien affaiblir : « Plus » s'ouvre après la pause (`nav-helpers`), Reprendre avant de mesurer le chrono (`coach-render`), Décomposer exigé masqué en mains libres et visible sinon (`training-layout`), bouton rond de recherche compté sur la fiche (`nav-contextuelle`, lot 3).
+  - Premier passage : un toucher en plein écran mettait en pause (`fullscreen-dbltap`, 2 ÉCHOUÉS) ; corrigé, puis RÉUSSI.
+  - Android réel : NON EXÉCUTÉ.
+
+## 2026-10-27 · 1.0.0 (lot 5 sur 5, non publié sur le lien public) · Aucune perte, notes de version, 1.0.0
+
+- **Demande** : fin du plan validé : prouver ligne par ligne qu'aucun contenu n'est perdu, puis livrer la 1.0.0.
+- **Changement** :
+  - nouveau test `tests/e2e/aucune-perte-v100.spec.ts` : les 28 lignes du tableau « Où va chaque contenu » du plan, chacune atteinte au doigt depuis la barre du bas et vérifiée sur son contenu (rapport `docs/v100/RAPPORT.md`) ;
+  - écart trouvé par la suite complète et corrigé : l'Accueil avait perdu l'icône officielle de la discipline principale (présente depuis la 0.24) ; elle revient dans la carte « Reprendre » ;
+  - notes de version 1.0.0 dans Nouveautés (`src/domain/releases.ts`), version 1.0.0 dans `package.json` (titre « Combat Shadow Studio v1.0.0 ») ;
+  - tests mis à jour au nouveau contrat : Nouveautés attend la 1.0.0 en tête ; le studio qui suit le thème Jour ou Nuit est celui de la lumière « Studio » (la lumière « Vive », par défaut depuis le lot 3, a son propre fond sombre, déjà vérifié par `moteur-lumiere.spec`).
+- **Tests** :
+  - TypeScript : RÉUSSI. Vitest : 849 RÉUSSIS, 1 ignoré.
+  - Playwright complet (240 tests, 34,9 min) : 233 RÉUSSIS, 2 ignorés (Firebase), 5 ÉCHOUÉS : `discipline-art` Accueil (icône perdue, corrigée), `theme:77` Jour et Nuit (contrat Vive, test adapté), `coach-bubble:66` (instable, RÉUSSI à la relance), `training-layout:329` caméra Auto (déjà en échec avant la refonte). Relance des 4 fichiers concernés après correction : 30 RÉUSSIS.
+  - `aucune-perte-v100.spec` : 6 RÉUSSIS.
+  - Android réel : NON EXÉCUTÉ.
+
+## 2026-10-28 · 1.1.0 · Recherche dans la barre et écrans allégés
+
+- **Demande** : retours de Youssef sur la 1.0.0 (2026-10-27 23:18 → 2026-10-28 00:10), chaque point choisi sur maquette dynamique : loupe A, ligne de filtres A « trois menus », Chrono dans Séance, écrans sans défilement, vitesse dès le départ, grille des jours, question des statuts dans la recherche.
+- **Constat après vérification** :
+  - la page d'une discipline empilait niveau, style et type sur trois blocs : l'écran défilait avant la première technique ;
+  - plusieurs champs de recherche différents (barre et « Rechercher dans équipements », etc.) ;
+  - « Caméra » dans Réglages ouvrait la même page qu'« Affichage » ;
+  - la vitesse n'était réglable qu'en pause, le grand compte à rebours rouge cachait le coach, Disciplines et Chrono de combat défilaient sur 393 × 851.
+- **Changement** (détail dans `docs/v110/RAPPORT.md`, captures jour et nuit dans `docs/v110/captures/`) :
+  - « Rechercher » prend la 5e place de la barre ; Profil = photo en haut à droite, à côté du ⋮ des options de l'écran (`BottomBar.tsx`, `NavSheets.tsx`, `nav.css`) ; la recherche filtre la liste de l'écran (Entrée) et remplace les champs des écrans ; Coach IA par la recherche, et par « Plus › Rechercher » en séance et au chrono ;
+  - page discipline : niveau, style (kick-boxing) et type sur une ligne de puces menus Android (`MenuChip.tsx`, `KickboxingStyleChip`), explications et sources dans les menus, Retour d'Android ferme le menu d'abord ;
+  - Chrono = 3e choix de Séance ; « Caméra » retiré de Réglages ; grand compte à rebours retiré ; vitesse « ×1 » sur le coach dès le départ ; 6 disciplines et Chrono de combat sans défilement ; ADN de la bibliothèque sans « nombre inspiré » ni « jouables en 3D » ; « Que signifient les statuts ? » devient une question de la recherche ; jours d'entraînement en grille de 7 jours (ancien nombre gardé) ;
+  - guide du Coach IA et Nouveautés 1.1.0 mis à jour, version 1.1.0.
+- **Défauts trouvés par les tests et corrigés** : photo et ⋮ posés sur le studio du combattant (contraste, cadrage) → cachés sur les outils plein écran ; choix de vitesse sous l'astuce du coach → colonne sous « ×1 » ; Échap fermait aussi le panneau ouvert dessous → seul le panneau du dessus répond ; emblème de 72 px qui cachait le nom de la discipline → 52 px.
+- **Tests** :
+  - TypeScript : RÉUSSI. Vitest : 849 RÉUSSIS, 1 ignoré.
+  - Nouveau `tests/e2e/corrections-v110.spec.ts` (ligne de filtres, loupe et recherche de l'écran, sans défilement, vitesse, grille des jours, statuts) : RÉUSSI.
+  - Playwright complet n° 1 : 221 RÉUSSIS, 23 ÉCHOUÉS, 2 ignorés ; surtout des tests écrits pour l'ancienne navigation, adaptés au nouveau contrat sans rien affaiblir, plus les 4 défauts ci-dessus corrigés. Relances ciblées : 100 RÉUSSIS / 8 ÉCHOUÉS, puis 55 / 2, puis `train-resume` 6/6.
+  - Playwright complet final (246 tests, 33,4 min) : 241 RÉUSSIS, 2 ignorés (Firebase), 3 ÉCHOUÉS : `emblems:24` (mesure 51,99998 px pour 52 : comparaison au dixième de pixel), `nav-contextuelle:97` Nuit (la barre est remontée un instant pendant le chargement de Progrès : le test attend qu'elle soit là) — relance de ces deux fichiers : 5 RÉUSSIS ; `training-layout:329` caméra Auto ÉCHOUÉ, déjà en échec avant la 1.0.0.
+  - Android réel : NON EXÉCUTÉ.
+
+## 2026-10-28 · 1.1.1 · Plus de doublon de la recherche
+
+- **Demande** (Youssef, 07:19, avec deux captures, en validant la PR #31) : « Le créateur d'enchaînement doit garder les icônes » ; « Dans le bouton en bas à droite plus si uniquement rechercher le retirer car en doublon ».
+- **Constat après vérification** :
+  - sur le Chrono de combat, « Plus » ne contenait que « Rechercher » (ajouté en 1.1.0 pour la séance et le chrono), alors que la loupe est déjà dans la barre du bas sur cet écran ; seule la séance cache les places de la barre ;
+  - le créateur d'enchaînement (« Ajouter un mouvement ») a toujours ses pictogrammes et son champ de recherche : la 1.1.0 n'y avait pas touché (seule la liste « Mes enchaînements » passe par la loupe). Aucun test ne le protégeait.
+- **Changement** :
+  - « Plus » n'apparaît plus qu'avec des commandes de l'écran, ou pendant la séance où « Rechercher » y reste (`BottomBar.tsx`, `NavSheets.tsx`) ;
+  - nouveau test qui garde les icônes et la recherche du choix des mouvements ;
+  - Nouveautés 1.1.1, version 1.1.1.
+- **Tests** :
+  - TypeScript : RÉUSSI. Vitest : 849 RÉUSSIS, 1 ignoré.
+  - Playwright (corrections-v110 dont les 2 nouveaux tests, navigation, chrono, chrono-seul, coach-bubble, accueil-recherche, createur-v2, nav-contextuelle, aucune-perte-v100) : 69 RÉUSSIS, 2 ÉCHOUÉS : `navigation:172` (attendait la 1.1.0 en tête, mis à jour) ; `chrono:30` instable (la préparation dure 3 s et la machine chargée lisait sa couleur après la fin) : la page enregistre maintenant l'aspect de la préparation au moment où elle s'affiche, sans rien retirer de ce qui est vérifié ; relances 18/18 RÉUSSIS et 2/2 pour `navigation:172`.
+  - Android réel : NON EXÉCUTÉ.

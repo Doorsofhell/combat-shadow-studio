@@ -31,7 +31,7 @@ import { CoachLookPicker } from '../components/CoachLookPicker';
 import { ArControls, ArIntroSheet, useArView } from '../training/ArMode';
 import { AppIcon } from '../icons';
 import { useNavActions } from '../nav/store';
-import { useSmartBack } from '../nav/BottomBar';
+import { useSmartBack, vibrate } from '../nav/BottomBar';
 import { openLayers } from '../nav/layers';
 import { ConfirmDialog } from '../components/Sheet';
 import { onBackButton } from '../../platform/native';
@@ -160,7 +160,10 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   // immersive mode becomes the total fullscreen: a double tap on the stage or the button turns it on; only the coach
   // is left, with the main control over it, and the controls fade after 2.5 s (a tap brings them back). The
   // session keeps running.
-  const fs = useStageFullscreen(root, { tapRef: stageRef });
+  // 1.0.0 (refonte, lot 4, maquette v4 « Séance »: « Un tap n’importe où met en pause »): a single tap on the stage
+  // pauses the running session (set below, once the session state is known)
+  const tapStage = useRef<() => void>(() => undefined);
+  const fs = useStageFullscreen(root, { tapRef: stageRef, onTap: () => tapStage.current() });
   const immersive = fs.active;
   const arRoot = useRef<HTMLDivElement>(null);
   const ar = useMemo(() => new ArBridge(), []);
@@ -426,6 +429,35 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
     [],
   );
   const toggleState = !running ? 'start' : view.paused ? 'resume' : 'pause';
+  // hands-free (maquette v4): while the session runs, only Pause (and Retour) stay above the bottom; Décomposer,
+  // Caméra and « Plus » come back with the pause. A tap anywhere on the stage pauses (not in total fullscreen, where
+  // a tap only brings the faded controls back, as before).
+  const handsFree = running && !view.paused && !st.tech && !camOpen && !asking && !sheet && !guideId;
+  tapStage.current = () => {
+    if (!handsFree || immersive) return;
+    pause();
+  };
+  useEffect(() => {
+    const html = document.documentElement;
+    if (handsFree) html.dataset.handsFree = '';
+    else delete html.dataset.handsFree;
+    return () => {
+      delete html.dataset.handsFree;
+    };
+  }, [handsFree]);
+  // vibrations at the moments that count, for a phone put down in front of the user (where the device can)
+  const prevBeat = useRef<{ running: boolean; paused: boolean; phase: string } | null>(null);
+  useEffect(() => {
+    const was = prevBeat.current;
+    prevBeat.current = { running, paused: view.paused, phase: view.phase };
+    if (!was) return;
+    let pattern: number[] | null = null;
+    if (!was.running && running) pattern = [60, 40, 90];
+    else if (running && !was.paused && view.paused) pattern = [30, 40, 30];
+    else if (running && was.paused && !view.paused) pattern = [20];
+    else if (running && !view.paused && was.phase !== view.phase && (view.phase === 'travail' || view.phase === 'repos' || view.phase === 'termine')) pattern = [80];
+    if (pattern) vibrate(pattern);
+  }, [running, view.paused, view.phase]);
   useNavActions(
     {
       back: { run: askLeave, ariaLabel: 'Retour : quitter l’entraînement', testId: 'nav-back' },
@@ -515,8 +547,12 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
           arActive={arActive}
         />
         </StageGuard>
-        {view.phase === 'decompte' && !view.paused && !st.tech && view.remaining !== null && view.remaining <= 3.05 && <div className="countdown">{Math.max(1, Math.ceil(view.remaining))}</div>}
+        {/* 1.1.0 (Youssef, 2026-10-27: « la numérotation en rouge au milieu de l'écran ne sert plus à rien car on a le
+            chronomètre en haut à droite »): no big countdown over the coach; the time of the preparation is in the HUD */}
         <div className="stage-tools">
+          {/* 1.1.0 (Youssef: « la vitesse d'exécution plus accessible directement depuis le démarrage de n'importe quel
+              mouvement ou enchaînement »): the speed at hand on the stage, before and during the session */}
+          {!arActive && <SpeedTool speed={view.speed} onChange={setSpeed} />}
           {teach.closeUp && !free && (
             <button className={`btn ${closeUp ? 'on' : ''}`} onClick={() => setCloseUp(!closeUp)} aria-label={teach.closeUp.label} aria-pressed={closeUp}>
               Zoom
@@ -877,6 +913,45 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
               Fermer
             </button>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** the speeds offered on the stage; the slider of the options keeps every step from ×0.25 to ×1.5 */
+const SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5];
+const speedText = (v: number) => `×${String(Math.round(v * 100) / 100).replace('.', ',')}`;
+
+/** ×1 on the stage; a touch shows the speeds next to it, one more touch picks one */
+function SpeedTool({ speed, onChange }: { speed: number; onChange: (v: number) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`speed-tool ${open ? 'open' : ''}`}>
+      <button type="button" className={`btn ${open ? 'on' : ''}`} onClick={() => setOpen(!open)} aria-expanded={open} aria-label={`Vitesse d’exécution : ${speedText(speed)}`} data-testid="speed-tool">
+        {speedText(speed)}
+      </button>
+      {open && (
+        <div className="speed-choices" role="radiogroup" aria-label="Vitesse d’exécution" data-testid="speed-choices">
+          {SPEEDS.map((v) => {
+            const on = Math.abs(v - speed) < 0.01;
+            return (
+              <button
+                key={v}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                className={`btn ${on ? 'on' : ''}`}
+                onClick={() => {
+                  onChange(v);
+                  setOpen(false);
+                }}
+                data-testid={`speed-${String(v).replace('.', '-')}`}
+              >
+                {speedText(v)}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

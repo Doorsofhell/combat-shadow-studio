@@ -28,13 +28,16 @@ for (const scheme of ['light', 'dark'] as const)
     const r = await detailed(page);
     expect(r.map((x) => x.id).sort()).toEqual([...IDS].sort());
     for (const x of r) {
-      expect(x.w, x.id).toBe(72);
-      expect(x.h, x.id).toBe(72);
+      // 1.1.0 (Youssef, 2026-10-27: the six disciplines on one screen, no scrolling): the emblem is drawn at 52 px
+      // so the name stays readable beside it; the picture itself keeps its 72 px file (never upscaled)
+      // (sub-pixel layout: 51.99998 is 52 px on screen)
+      expect(x.w, x.id).toBeCloseTo(52, 1);
+      expect(x.h, x.id).toBeCloseTo(52, 1);
       // the 2x file is used on 2x screens, the 1x elsewhere: never an upscaled picture
       expect(x.nw, x.id).toBeGreaterThanOrEqual(72);
       expect(x.inside, `${x.id} dans sa carte`).toBe(true);
     }
-    await page.getByTestId('space-programmes').click();
+    await page.goto('/#/programmes'); // 1.0.0: a tab of Entraîner
     const outlines = page.locator('.prog-filters svg.discipline-emblem[data-variant="contour"]');
     await expect(outlines).toHaveCount(6);
     // the outline takes the colour of its chip text, so it reads in both themes

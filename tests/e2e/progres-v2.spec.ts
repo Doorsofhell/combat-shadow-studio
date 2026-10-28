@@ -19,13 +19,11 @@ test('vue d’ensemble : un anneau avec son total, trois chiffres, les détails 
   await page.goto('about:blank');
   await page.goto('/#/stats');
   await expect(page.getByTestId('progress-overview')).toBeVisible();
-  await expect(await barSlots(page)).toEqual([
-    ['back', 'Retour'],
-    ['calendar', 'Période'],
-    ['chart', 'Statistiques'],
-    ['history', 'Historique'],
-    ['grid', 'Menu'],
-  ]);
+  // 1.0.0: the Progrès tab is a root (no Retour); 1.1.0: its actions are in the ⋮ at the top right
+  await expect(await barSlots(page)).toEqual([]);
+  await page.getByTestId('nav-menu').click();
+  await expect(page.getByTestId('nav-menu-sheet').locator('.nav-menuitem[data-action] span:not(.nav-menucheck)')).toHaveText(['Période', 'Statistiques', 'Historique']);
+  await page.keyboard.press('Escape');
   // no goal: the course, written as « n / total »
   await expect(page.getByTestId('main-ring-value')).toHaveText(/^\d+ \/ \d+$/);
   await expect(page.getByTestId('main-ring')).toHaveAttribute('aria-label', /Parcours : \d+ \/ \d+ techniques étudiées/);
@@ -86,20 +84,23 @@ test('détail : la barre ramène à la vue d’ensemble ; petit écran sans déf
   await seed(page, [{ daysAgo: 1, sec: 600 }], view({}));
   await page.goto('about:blank');
   await page.goto('/#/stats/disciplines');
-  await expect(await barSlots(page)).toEqual([
-    ['back', 'Retour'],
-    ['calendar', 'Période'],
-    ['chart', 'Vue d’ensemble'],
-    ['history', 'Historique'],
-    ['grid', 'Menu'],
-  ]);
+  // 1.0.0: « Vue d’ensemble » leads to /stats, the Progrès tab itself (and Retour): the dock does not repeat a tab
+  await expect(await barSlots(page)).toEqual([['back', 'Retour']]);
+  await page.getByTestId('nav-menu').click();
+  await expect(page.getByTestId('nav-menu-sheet').locator('.nav-menuitem[data-action] span:not(.nav-menucheck)')).toHaveText(['Période', 'Historique']);
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('nav-stats')).toBeVisible();
   for (const path of ['/#/stats', '/#/stats/techniques', '/#/stats/disciplines', '/#/stats/enchainements']) {
     await page.goto(path);
     await page.waitForTimeout(400);
     const over = await page.evaluate(() => document.scrollingElement!.scrollWidth - window.innerWidth);
     expect(over, path).toBeLessThanOrEqual(0);
   }
+  // back to the overview: the Progrès tab (1.0.0), and Retour
   await page.goto('/#/stats/disciplines');
-  await bar(page).locator('[data-action="nav:/stats"]').click();
+  await page.getByTestId('nav-stats').click();
+  await expect(page).toHaveURL(/#\/stats$/);
+  await page.goto('/#/stats/disciplines');
+  await bar(page).locator('[data-action="back"]').click();
   await expect(page).toHaveURL(/#\/stats$/);
 });

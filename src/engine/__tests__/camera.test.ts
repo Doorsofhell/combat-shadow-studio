@@ -51,8 +51,11 @@ describe('caméra pédagogique', () => {
     }
   });
 
+  // 1.0.0 (Youssef, 2026-10-27, PERMANENT: « les mouvements du coach ne doivent jamais sortir de l'écran »): also the
+  // wide frame of the new home (393 × 272 px, aspect 1.45)
   test.each([
     ['portrait', 0.75],
+    ['accueil 1.0', 1.45],
     ['paysage', 1.8],
   ])('le corps entier reste dans le cadre pendant tout le mouvement (%s)', (_n, aspect) => {
     for (const c of ['homme', 'femme'] as const)

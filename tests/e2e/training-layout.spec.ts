@@ -82,6 +82,9 @@ async function checkFits(page: Page, label: string) {
       play: inView('[data-testid=start], [data-testid=pause], [data-testid=resume]'),
       ar: inView('[data-testid=ar-button]'),
       decompose: inView('[data-testid=decompose]'),
+      // 1.0.0 (lot 4): while the session runs, hands-free mode keeps only Retour and Pause; Décomposer comes back
+      // with the pause
+      handsFree: 'handsFree' in document.documentElement.dataset,
       // v0.32 (navigation, 2026-10-22): the one bottom bar replaces the coach bubble and the training buttons; it is
       // on screen and nothing of the session is under it
       bar: inView('[data-testid=bottom-bar]'),
@@ -105,7 +108,8 @@ async function checkFits(page: Page, label: string) {
   expect(r.rootScroll, `${label} débordement`).toBeLessThanOrEqual(1);
   expect(r.overflowMode, label).toBe(false);
   expect(r.barOver, `${label} la barre du bas masque un élément de la séance`).toBe('');
-  for (const k of ['points', 'cue', 'name', 'title', 'time', 'play', 'ar', 'decompose', 'bar'] as const) expect(r[k], `${label} ${k} visible`).toBe(true);
+  for (const k of ['points', 'cue', 'name', 'title', 'time', 'play', 'ar', 'bar'] as const) expect(r[k], `${label} ${k} visible`).toBe(true);
+  expect(r.decompose, `${label} decompose ${r.handsFree ? 'masqué (mains libres)' : 'visible'}`).toBe(!r.handsFree);
   expect(r.clipped, `${label} textes coupés`).toBe('');
   expect(r.stageH, `${label} hauteur du coach`).toBeGreaterThan(150);
 }

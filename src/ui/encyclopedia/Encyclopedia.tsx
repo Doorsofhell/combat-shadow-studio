@@ -17,11 +17,11 @@ import { PARTNER_BY_ID } from '../../domain/partner';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
 import { DISCIPLINES, type DisciplineId } from '../../domain/types';
 import { useGoals } from '../../store/goals';
-import { EmptyState, PageHead } from '../components';
+import { EmptyState, PageHead, QueryChip } from '../components';
 import { Tabs } from '../components/Tabs';
 import { AppIcon } from '../icons';
 import { NavIcon } from '../nav/NavIcon';
-import { useNavActions } from '../nav/store';
+import { useNavActions, useSearchScope } from '../nav/store';
 import './encyclopedia.css';
 
 /**
@@ -75,14 +75,8 @@ export function EncImage({ id, mini, className = '' }: { id?: string; mini?: boo
   );
 }
 
-function SearchField({ value, onChange, placeholder, testId = 'enc-search' }: { value: string; onChange: (v: string) => void; placeholder: string; testId?: string }) {
-  return (
-    <label className="enc-search">
-      <NavIcon id="search" />
-      <input type="search" className="input" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} aria-label={placeholder} data-testid={testId} enterKeyHint="search" />
-    </label>
-  );
-}
+/** 1.1.0: the search of the encyclopedia is « Rechercher » of the bar, scoped here (a term, a translation) */
+const termHit = (t: Term) => ({ label: t.name, hint: t.subtitle, to: `/encyclopedie/terme/${t.id}` });
 
 function TermRow({ t, showFamily }: { t: Term; showFamily?: boolean }) {
   const fav = useGoals((s) => s.favTerms.includes(t.id));
@@ -108,36 +102,13 @@ function TermRow({ t, showFamily }: { t: Term; showFamily?: boolean }) {
 export function EncyclopediaHome() {
   useEncyclopediaBar('classement');
   const nav = useNavigate();
-  const [q, setQ] = useState('');
   const c = useMemo(coverage, []);
-  const results = q.trim() ? findTerms({ query: q }) : [];
+  useSearchScope({ label: 'Encyclopédie', hits: (q) => findTerms({ query: q }).map(termHit), apply: (q) => nav(`/encyclopedie/liste?q=${encodeURIComponent(q)}`) });
   return (
     <div className="page enc-page" data-testid="encyclopedia-home">
       <PageHead title="Encyclopédie du combat" eyebrow="Encyclopédie" />
       <p className="enc-lead">Techniques, équipements, règles et culture des 6 disciplines</p>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (q.trim()) nav(`/encyclopedie/liste?q=${encodeURIComponent(q.trim())}`);
-        }}
-      >
-        <SearchField value={q} onChange={setQ} placeholder="Rechercher un terme, une traduction…" />
-      </form>
-      {q.trim() ? (
-        results.length ? (
-          <ul className="enc-list" data-testid="enc-results">
-            {results.slice(0, 30).map((t) => (
-              <TermRow key={t.id} t={t} showFamily />
-            ))}
-          </ul>
-        ) : (
-          <p className="muted" data-testid="enc-no-result">
-            Aucun terme ne correspond à « {q.trim()} ».
-          </p>
-        )
-      ) : (
-        <>
-          <ul className="enc-families" data-testid="enc-families">
+      <ul className="enc-families" data-testid="enc-families">
             {FAMILIES.map((f) => (
               <li key={f.id}>
                 <Link to={`/encyclopedie/liste?f=${f.id}`} className="enc-family" data-testid={`enc-family-${f.id}`}>
@@ -151,8 +122,6 @@ export function EncyclopediaHome() {
           <p className="enc-status small muted" data-testid="enc-coverage">
             Version 1.0 : {c.total} fiches, toutes vérifiées sur leurs sources. Relecture par un expert de chaque discipline : à venir. Le contenu continue de s’enrichir.
           </p>
-        </>
-      )}
     </div>
   );
 }
@@ -174,11 +143,12 @@ export function EncyclopediaList() {
   };
   const terms = findTerms({ family, sub, discipline: d, query: q });
   const title = fam?.label ?? 'Recherche';
+  useSearchScope({ label: fam?.label ?? 'Encyclopédie', hits: (w) => findTerms({ family, sub, discipline: d, query: w }).map(termHit), apply: (w) => set('q', w), current: q });
   return (
     <div className="page enc-page" data-testid="encyclopedia-list" data-family={family ?? ''}>
       <PageHead title={title} eyebrow={fam ? `Encyclopédie / ${fam.label}` : 'Encyclopédie'} />
       {fam && <p className="enc-lead">{fam.short}</p>}
-      <SearchField value={q} onChange={(v) => set('q', v || undefined)} placeholder={fam ? `Rechercher dans ${fam.label.toLowerCase()}…` : 'Rechercher un terme…'} testId="enc-list-search" />
+      <QueryChip value={q} onClear={() => set('q', undefined)} />
       <div className="chip-scroll" role="radiogroup" aria-label="Discipline" data-testid="enc-disciplines">
         <button type="button" role="radio" aria-checked={!d} className={`chip ${!d ? 'on' : ''}`} onClick={() => set('d', undefined)} data-testid="enc-d-toutes">
           Toutes

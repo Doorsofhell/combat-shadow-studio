@@ -60,11 +60,12 @@ test('Mes enchaînements : un enchaînement enregistré se lance et « Gérer »
   await expect(page.getByTestId('exercise-name')).toBeVisible();
 });
 
-test('Techniques : quatre sections, plus de Créateur ni de Programmes, anciens liens redirigés', async ({ page }) => {
+test('Techniques : deux sections, plus de Créateur ni de Programmes, anciens liens redirigés', async ({ page }) => {
   await seedProfile(page);
   await page.goto('/#/techniques');
   const sections = page.getByRole('tablist', { name: 'Sections' }).getByRole('tab');
-  await expect(sections).toHaveText(['Techniques', 'Combinaisons', 'Légendes', 'Favoris']);
+  // 1.0.0 (lot 2): Légendes is a tab of Apprendre, Favoris a tab of Entraîner
+  await expect(sections).toHaveText(['Techniques', 'Combinaisons']);
   await page.goto('about:blank');
   await page.goto('/#/techniques?tab=createur&d=muaythai');
   await expect(page).toHaveURL(/#\/createur\?d=muaythai$/);
@@ -72,8 +73,11 @@ test('Techniques : quatre sections, plus de Créateur ni de Programmes, anciens 
   await page.goto('/#/techniques?tab=programmes');
   await expect(page).toHaveURL(/#\/programmes$/);
   await page.goto('about:blank');
+  // 1.0.0: the old Légendes tab of the library leads to Apprendre › Légendes; the favourite legend combinations
+  // are in Entraîner › Favoris
   await page.goto('/#/techniques?tab=legendes');
-  await expect(page.getByTestId('legends-discipline')).toBeVisible();
+  await expect(page).toHaveURL(/#\/champions$/);
+  await page.goto('/#/favoris');
   await page.getByTestId('legends-favorites').click();
   await expect(page).toHaveURL(/#\/champions\?vue=favoris$/);
 });

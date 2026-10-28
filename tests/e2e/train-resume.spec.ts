@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { bar, seedProfile } from './nav-helpers';
+import { bar, menuItem, seedProfile } from './nav-helpers';
 
 // 0.33 (Youssef, 2026-10-22 « Refonte premium de l'écran Entraîner »): trois espaces, carte de reprise réelle
 // (§5-6, §21) : la séance reprend après fermeture, à la bonne place et au bon chronomètre, jamais depuis zéro
@@ -22,35 +22,43 @@ async function startAndPause(page: Page, workMs: number) {
   return toSec(await page.getByTestId('session-time').textContent());
 }
 
-test.describe('Entraîner : trois espaces', () => {
-  test('Séances par défaut, Disciplines et Programmes ; le dernier espace est retenu', async ({ page }) => {
+test.describe('Entraîner : ses espaces', () => {
+  // 1.0.0 (refonte, lot 2): Programmes became a tab of Entraîner at the top of the screen; Séances and Disciplines
+  // stay the two spaces of the Séance tab
+  test('Séances par défaut, Disciplines, Programmes en onglet ; le dernier espace est retenu', async ({ page }) => {
     await seedProfile(page);
     await page.goto('/#/entrainer');
     const tabs = page.getByRole('tablist', { name: 'Espaces d’entraînement' });
+    // 1.1.0: Séances, Disciplines and Chrono (the chronometer moved here from the tabs of Entraîner)
     await expect(tabs.getByRole('tab')).toHaveCount(3);
     await expect(page.getByTestId('space-seances')).toHaveAttribute('aria-selected', 'true');
     await expect(page.getByTestId('resume-card')).toHaveAttribute('data-state', 'premiere');
     await expect(page.getByTestId('resume-card').getByRole('heading')).toHaveText('Commence ton premier entraînement');
     await page.getByTestId('space-disciplines').click();
     for (const d of ['boxe', 'kickboxing', 'mma', 'muaythai', 'bjj', 'judo']) await expect(page.getByTestId(`disc-${d}`)).toBeVisible();
-    // clavier : flèche droite vers Programmes
-    await page.getByTestId('space-disciplines').focus();
-    await page.keyboard.press('ArrowRight');
-    await expect(page.getByTestId('space-programmes')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('.prog-card')).toHaveCount(49); // 0.41: 49 programmes (10 before)
     // the choice is written to IndexedDB asynchronously: the app is closed a moment later, as a person would
     await page.waitForTimeout(600);
     await page.reload();
-    await expect(page.getByTestId('space-programmes')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('space-disciplines')).toHaveAttribute('aria-selected', 'true');
+    // clavier : flèche gauche, retour à Séances (1.1.0 : à droite de Disciplines, il y a maintenant Chrono)
+    await page.getByTestId('space-disciplines').focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.getByTestId('space-seances')).toHaveAttribute('aria-selected', 'true');
+    // Programmes : l'onglet en haut d'Entraîner, et l'ancien lien y mène
+    await page.getByTestId('tab-programmes').click();
+    await expect(page).toHaveURL(/#\/programmes$/);
+    await expect(page.locator('.prog-card')).toHaveCount(49); // 0.41: 49 programmes (10 before)
+    await page.goto('/#/entrainer?espace=programmes');
+    await expect(page).toHaveURL(/#\/programmes$/);
     // une seule barre de navigation, aucun bouton flottant
-    await expect(page.locator('nav.nav-bottom')).toHaveCount(1);
+    await expect(page.locator('.nav-bottom')).toHaveCount(1);
     await expect(page.locator('.coach-bubble, .action-pill')).toHaveCount(0);
   });
 
   // 0.41 (Youssef, « Enrichissement des programmes » §6): « Filtres » quitte le contenu pour la barre inférieure
   test('Programmes : filtres combinables et réinitialisables, dans la barre', async ({ page }) => {
     await seedProfile(page);
-    await page.goto('/#/entrainer?espace=programmes');
+    await page.goto('/#/programmes');
     await expect(page.getByTestId('prog-count')).toHaveText('49 programmes sur 49');
     // no filter button in the content any more
     await expect(page.getByTestId('pf-more')).toHaveCount(0);
@@ -58,7 +66,8 @@ test.describe('Entraîner : trois espaces', () => {
     await expect(page.locator('.prog-card')).toHaveCount(8);
     // level, duration, objective and equipment are in the panel opened from the bar
     await expect(page.getByTestId('pf-t-moyen')).toBeHidden();
-    const filters = bar(page).getByTestId('nav-prog-filters');
+    // 1.1.0: in the ⋮ at the top right
+    const filters = await menuItem(page, '#nav-prog-filters');
     await expect(filters).toHaveText(/Filtrer/);
     await filters.click();
     const panel = page.getByTestId('prog-filters-panel');
@@ -72,19 +81,21 @@ test.describe('Entraîner : trois espaces', () => {
     await expect(panel).toBeHidden();
     await expect(page.locator('.prog-card')).toHaveCount(1);
     await expect(page.getByTestId('prog-muay-defense-intermediaire')).toBeVisible();
-    await expect(filters).toHaveAttribute('aria-pressed', 'true');
-    await filters.click();
+    // filters on: the item of the ⋮ is checked
+    const on = await menuItem(page, '#nav-prog-filters');
+    await expect(on).toHaveAttribute('aria-checked', 'true');
+    await on.click();
     await panel.getByTestId('pf-o-cardio').click();
     await expect(panel.getByTestId('pp-close')).toHaveText('Voir les résultats (0)');
     await panel.getByTestId('pp-close').click();
     await expect(page.getByText('Aucun programme pour ces filtres')).toBeVisible();
     // kept while moving around the app
     await page.goto('/#/techniques');
-    await page.goto('/#/entrainer?espace=programmes');
+    await page.goto('/#/programmes');
     await expect(page.getByText('Aucun programme pour ces filtres')).toBeVisible();
     await page.getByTestId('pf-reset').click();
     await expect(page.locator('.prog-card')).toHaveCount(49);
-    await filters.click();
+    await (await menuItem(page, '#nav-prog-filters')).click();
     await panel.getByTestId('pf-m-tapis').click();
     await expect(panel.getByTestId('pp-close')).toHaveText('Voir les résultats (22)');
     await panel.getByTestId('pp-reset').click();
@@ -154,7 +165,8 @@ test.describe('Entraîner : trois espaces', () => {
   test('aucun contenu sous la barre inférieure (360×640)', async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 640 });
     await seedProfile(page);
-    for (const s of ['seances', 'disciplines', 'programmes']) {
+    // 1.0.0 (lot 2): Programmes is a tab of its own (/programmes), checked by the bar tests
+    for (const s of ['seances', 'disciplines']) {
       await page.goto(`/#/entrainer?espace=${s}`);
       await expect(page.locator('.train-panel a, .train-panel button').first()).toBeVisible();
       await page.waitForTimeout(300);
@@ -166,7 +178,7 @@ test.describe('Entraîner : trois espaces', () => {
         for (let el: Element | null = last; el; el = el.parentElement) if (el.scrollHeight > el.clientHeight + 1) el.scrollTop = el.scrollHeight;
         window.scrollTo(0, document.scrollingElement!.scrollHeight);
         await new Promise((res) => setTimeout(res, 250));
-        const nav = document.querySelector('nav.nav-bottom')!.getBoundingClientRect();
+        const nav = document.querySelector('.nav-bottom')!.getBoundingClientRect();
         return { navTop: nav.top, last: last.getBoundingClientRect().bottom, overflow: document.scrollingElement!.scrollWidth - innerWidth };
       });
       expect(r.last, s).toBeLessThanOrEqual(r.navTop);

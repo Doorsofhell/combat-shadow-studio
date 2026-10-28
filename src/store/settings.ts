@@ -49,8 +49,9 @@ export interface Settings {
   coachRender: 'premium' | 'precedent';
   /**
    * v0.49 light of the realistic coaches: the photo studio of v0.29 or the bright light of the CME-3D lab
-   * (Youssef 2026-10-27: CME's coaches « mieux aboutis », same model, brighter staging). Studio until he
-   * validates the other on his phone; older saves get it through `merge`.
+   * (Youssef 2026-10-27: CME's coaches « mieux aboutis », same model, brighter staging). 1.0.0: Vive is the
+   * default (Youssef, 2026-10-27 19:55 « Lumière vive OK »); a saved choice is kept as it is, saves from before
+   * 0.49 (without this field) get Vive through `merge`.
    */
   coachLight: 'studio' | 'vive';
   cameraAngle: number;
@@ -107,7 +108,7 @@ export type CoachPanelSize = 'reduit' | 'normal' | 'agrandi';
 export const COACH_PANEL_SIZES: readonly CoachPanelSize[] = ['reduit', 'normal', 'agrandi'];
 
 export const DEFAULT_SETTINGS: Settings = {
-  theme: 'auto',
+  theme: 'sombre',
   voiceVolume: 1,
   effectsVolume: 0.8,
   voice: true,
@@ -118,7 +119,7 @@ export const DEFAULT_SETTINGS: Settings = {
   // v0.29 (Youssef, PROMPT MAÎTRE v0.29.0): Ultra-réaliste for a new installation or a save without a choice
   coachStyle: 'realiste',
   coachRender: 'premium',
-  coachLight: 'studio',
+  coachLight: 'vive',
   cameraAngle: 35,
   cameraMode: 'auto',
   cues: { trajectoire: true, hanches: true, pivot: true, articulations: true, pieds: true, garde: false, comparaison: false },

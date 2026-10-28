@@ -107,6 +107,8 @@ test('switching the look during a session keeps the session, the move and the ti
     .getByRole('button', { name: /Fermer|Reprendre|OK/ })
     .last()
     .click();
+  // 1.0.0 (lot 4, séance mains libres): « Plus » is reached through the pause; Reprendre goes on from the same place
+  if (await page.getByTestId('resume').isVisible()) await page.getByTestId('resume').click();
   await page.waitForTimeout(2500);
   const after = Number((await page.getByTestId('session-time').textContent())!.replace(/\D/g, ''));
   expect(after).toBeGreaterThan(before);

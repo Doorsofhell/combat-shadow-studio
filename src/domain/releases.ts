@@ -49,6 +49,58 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.1.1',
+      releaseDate: '2026-10-28',
+      title: 'Plus de doublon de la recherche',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Chrono de combat : le bouton « Plus », qui ne contenait que « Rechercher », est retiré : la loupe est déjà dans la barre du bas. Pendant la séance, où la barre est cachée, « Rechercher » reste dans « Plus ».' },
+        { category: 'corrections', text: 'Le créateur d’enchaînement garde ses icônes de mouvements et sa recherche dans « Ajouter un mouvement ».' },
+      ],
+      links: [
+        { label: 'Chrono de combat', to: '/chrono' },
+        { label: 'Mes enchaînements', to: '/createur' },
+      ],
+    },
+    {
+      version: '1.1.0',
+      releaseDate: '2026-10-28',
+      title: 'Recherche dans la barre et écrans allégés',
+      isMajor: false,
+      changes: [
+        { category: 'fonctionnalites', text: '« Rechercher » prend la cinquième place de la barre du bas : il cherche d’abord sur l’écran où tu es (les équipements de l’encyclopédie, tes enchaînements, les légendes…), puis dans toute l’application, et pose ta question au Coach IA. Il remplace les champs de recherche des écrans.' },
+        { category: 'fonctionnalites', text: 'Ton profil est ta photo en haut à droite de chaque écran. À côté, le ⋮ ouvre les options de l’écran dans un menu Android.' },
+        { category: 'fonctionnalites', text: 'Page d’une discipline : le niveau, le style et le type d’exercice tiennent sur une seule ligne de menus. Les explications (à quoi sert un niveau, les règles d’un style) sont dans les menus.' },
+        { category: 'fonctionnalites', text: 'Pendant la séance, la vitesse (×1) est en haut à droite du coach dès le départ : touche-la pour choisir de ×0,25 à ×1,5.' },
+        { category: 'fonctionnalites', text: 'Objectifs : choisis tes jours d’entraînement sur une ligne de 7 jours, comme un agenda.' },
+        { category: 'ameliorations', text: 'Chrono de combat : troisième choix de Séance (Séances, Disciplines, Chrono), sur une seule page sans défilement. Les 6 disciplines tiennent aussi sur un seul écran.' },
+        { category: 'ameliorations', text: 'Le grand compte à rebours rouge au milieu du coach est retiré : le temps reste affiché au-dessus du coach.' },
+        { category: 'ameliorations', text: '« Que signifient les statuts ? » devient une question toute prête de la recherche sur les écrans des légendes. L’ADN de la bibliothèque est allégé.' },
+        { category: 'corrections', text: 'Réglages : le bouton « Caméra », qui ouvrait la même page qu’« Affichage », est retiré.' },
+      ],
+      links: [{ label: 'Objectifs', to: '/objectifs' }],
+    },
+    {
+      version: '1.0.0',
+      releaseDate: '2026-10-27',
+      title: 'Nouvelle organisation de l’application',
+      isMajor: true,
+      changes: [
+        { category: 'fonctionnalites', text: 'Une barre du bas qui ne change plus : Accueil, Entraîner, Apprendre, Progrès et Profil, toujours à la même place. Chaque espace a ses onglets en haut de l’écran, et on passe de l’un à l’autre en glissant le doigt.' },
+        { category: 'fonctionnalites', text: 'Un accueil pour démarrer tout de suite : « Reprendre » relance ta dernière séance, avec trois raccourcis (Séance rapide, Technique du jour, Chrono seul) et ton objectif de la semaine.' },
+        { category: 'fonctionnalites', text: '« Rechercher ou demander au coach » : un seul champ pour trouver une technique, un terme de l’encyclopédie, un programme ou un réglage, ou poser la question au Coach IA.' },
+        { category: 'fonctionnalites', text: 'Séance mains libres : pose ton téléphone, seuls Retour et Pause restent à l’écran. Touche le coach pour mettre en pause ; Décomposer, Caméra et « Plus » reviennent pendant la pause. Le téléphone vibre au départ, à la pause et à chaque round.' },
+        { category: 'fonctionnalites', text: 'Un écran Favoris dans Entraîner : tes techniques favorites et tes combinaisons favorites des légendes au même endroit.' },
+        { category: 'ameliorations', text: 'Rien n’a disparu : chaque écran de la version précédente a sa place dans la nouvelle organisation (Légendes et Encyclopédie dans Apprendre, Mon coach, Coach IA, Réglages, Premium et Nouveautés dans Profil).' },
+        { category: 'ameliorations', text: 'Thème Nuit par défaut pour une nouvelle installation, et lumière « Vive » par défaut pour les coachs réalistes. Les choix déjà enregistrés sont gardés.' },
+        { category: 'ameliorations', text: 'Le gros bouton prend la couleur de ta discipline principale.' },
+      ],
+      links: [
+        { label: 'Accueil', to: '/' },
+        { label: 'Favoris', to: '/favoris' },
+      ],
+    },
+    {
       version: '0.49.0',
       releaseDate: '2026-10-27',
       title: 'Moteur à part et lumière vive',

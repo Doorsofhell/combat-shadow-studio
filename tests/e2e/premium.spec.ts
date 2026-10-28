@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { openMenu, seedProfile } from './nav-helpers';
+import { seedProfile } from './nav-helpers';
 
 // v0.40 (Youssef, 2026-10-22, « Préparation Freemium et Premium à vie » §11): statut Free. The diamonds are visible,
 // they open the Premium page, and every feature stays open; no payment is possible and no payment service is called.
@@ -28,14 +28,16 @@ test.beforeEach(async ({ page }) => {
 
 // v0.45 (Youssef, 2026-10-23, « Refonte page Premium à vie » + maquette définitive en 5 écrans): one screen, the bar
 // Retour / Avantages / FAQ / Restaurer / Menu, four panels over the page; still no payment possible
-test('Menu « Premium à vie » : la page v0.45, l’offre et aucun paiement possible', async ({ page }) => {
+test('Réglages › Premium : la page v0.45, l’offre et aucun paiement possible', async ({ page }) => {
   const payCalls: string[] = [];
   page.on('request', (r) => {
     if (/stripe|billing|play\.google|paypal|checkout/i.test(r.url())) payCalls.push(r.url());
   });
   await page.goto('/#/');
-  await openMenu(page);
-  await page.getByTestId('menu-premium').click();
+  // 1.0.0: the tile Premium at the top of Réglages (Profil › Réglages), formerly Menu › Premium à vie
+  await page.getByTestId('nav-profil').click();
+  await page.getByTestId('tab-reglages').click();
+  await page.getByTestId('reglages-premium').click();
   await expect(page).toHaveURL(/#\/premium$/);
   const p = page.getByTestId('premium-page');
   await expect(p.getByRole('heading', { name: 'Premium à vie' })).toBeVisible();
@@ -45,7 +47,11 @@ test('Menu « Premium à vie » : la page v0.45, l’offre et aucun paiement pos
   await expect(page.getByTestId('premium-benefits').locator('.premium-grid li')).toHaveCount(6);
   await expect(page.getByTestId('premium-soon')).toHaveText('Combattants et réglages avancés : à venir');
   // the bar of the page, in the mockup's order
-  await expect(page.getByTestId('bottom-bar').locator('.nav-btn')).toHaveText(['Retour', 'Avantages', 'FAQ', 'Restaurer', 'Menu']);
+  // 1.1.0: Retour in the bar, Avantages, FAQ and Restaurer in the ⋮ at the top right
+  await expect(page.getByTestId('bottom-bar').locator('.nav-btn')).toHaveText(['Retour']);
+  await page.getByTestId('nav-menu').click();
+  await expect(page.getByTestId('nav-menu-sheet').locator('.nav-menuitem[data-action] span:not(.nav-menucheck)')).toHaveText(['Avantages', 'FAQ', 'Restaurer']);
+  await page.keyboard.press('Escape');
   await page.getByTestId('premium-discover').click();
   const offer = page.getByTestId('premium-panel-offer');
   await expect(offer).toBeVisible();
@@ -56,12 +62,12 @@ test('Menu « Premium à vie » : la page v0.45, l’offre et aucun paiement pos
   await expect(page.getByTestId('premium-active')).toHaveCount(0);
   await expect(page.locator('input[autocomplete^="cc-"], input[name*="card" i]')).toHaveCount(0);
   expect(payCalls).toEqual([]);
-  // Android back: the panel closes first, then Retour comes back where Menu was opened
+  // Android back: the panel closes first, then Retour comes back where Premium was opened (1.0.0: Réglages)
   await page.goBack();
   await expect(offer).toHaveCount(0);
   await expect(page).toHaveURL(/#\/premium$/);
   await page.goBack();
-  await expect(page).toHaveURL(/#\/$/);
+  await expect(page).toHaveURL(/#\/reglages$/);
 });
 
 test('les diamants sont visibles et les fonctions restent ouvertes', async ({ page }) => {
@@ -86,7 +92,7 @@ test('les diamants sont visibles et les fonctions restent ouvertes', async ({ pa
   // legends, favourites, history, voice
   await page.goto('/#/champions');
   await expect(page.getByTestId('premium-legends_collection')).toBeVisible();
-  await page.goto('/#/techniques?tab=favoris');
+  await page.goto('/#/favoris'); // 1.0.0: Entraîner › Favoris
   await expect(page.getByTestId('premium-unlimited_favorites')).toHaveCount(1);
   await page.goto('/#/historique');
   await expect(page.getByTestId('premium-full_history')).toBeVisible();

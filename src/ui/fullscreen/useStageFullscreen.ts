@@ -3,6 +3,9 @@ import { onBackButton } from '../../platform/native';
 import { useSettings } from '../../store/settings';
 import { createDoubleTap, NO_DOUBLE_TAP } from './doubleTap';
 
+/** the longest gap between the two taps of a double tap (createDoubleTap's default) */
+const DOUBLE_TAP_GAP = 300;
+
 /** the controls over the stage fade out after this long without a tap */
 export const FS_IDLE_MS = 2500;
 
@@ -42,7 +45,15 @@ function exitFs() {
  * controls over the view fade out after 2.5 s and come back with a single tap. A double tap marks the one-time
  * tip as seen.
  */
-export function useStageFullscreen(ref: RefObject<HTMLElement | null>, opts: { onChange?: (on: boolean) => void; tapRef?: RefObject<HTMLElement | null> } = {}) {
+export function useStageFullscreen(
+  ref: RefObject<HTMLElement | null>,
+  opts: {
+    onChange?: (on: boolean) => void;
+    tapRef?: RefObject<HTMLElement | null>;
+    /** 1.0.0 (lot 4): a single tap on the view, once it is sure no second tap follows (the session's pause) */
+    onTap?: () => void;
+  } = {},
+) {
   const tapRef = opts.tapRef ?? ref;
   const [active, setActive] = useState(false);
   const [idle, setIdle] = useState(false);
@@ -50,6 +61,9 @@ export function useStageFullscreen(ref: RefObject<HTMLElement | null>, opts: { o
   const timer = useRef<number | undefined>(undefined);
   const onChange = useRef(opts.onChange);
   onChange.current = opts.onChange;
+  const onTap = useRef(opts.onTap);
+  onTap.current = opts.onTap;
+  const tapTimer = useRef<number | undefined>(undefined);
 
   const wake = useCallback(() => {
     setIdle(false);
@@ -96,8 +110,13 @@ export function useStageFullscreen(ref: RefObject<HTMLElement | null>, opts: { o
     const up = (e: PointerEvent) => {
       if (ignore(e)) return d.cancel(e.pointerId);
       const r = d.up(e.pointerId, e.clientX, e.clientY, e.timeStamp);
+      window.clearTimeout(tapTimer.current);
       if (r === 'double') toggle();
-      else if (r === 'tap' && activeRef.current) wake();
+      else if (r === 'tap') {
+        if (activeRef.current) wake();
+        // a single tap only once the time for a second one has passed
+        if (onTap.current) tapTimer.current = window.setTimeout(() => onTap.current?.(), DOUBLE_TAP_GAP + 20);
+      }
     };
     const cancel = (e: PointerEvent) => d.cancel(e.pointerId);
     el.addEventListener('pointerdown', down);
@@ -105,6 +124,7 @@ export function useStageFullscreen(ref: RefObject<HTMLElement | null>, opts: { o
     el.addEventListener('pointerup', up);
     el.addEventListener('pointercancel', cancel);
     return () => {
+      window.clearTimeout(tapTimer.current);
       el.removeEventListener('pointerdown', down);
       el.removeEventListener('pointermove', move);
       el.removeEventListener('pointerup', up);

@@ -44,21 +44,28 @@ test('Coach IA depuis le Menu : il s’ouvre, Échap le ferme, aucune bulle flot
   await openCoachIA(page);
 });
 
-test('Coach IA : la même entrée dans le Menu de chaque écran, sauf sur sa propre page', async ({ page }) => {
+test('Coach IA : par « Rechercher » sur chaque écran (dans « Plus » en séance), plus dans les menus', async ({ page }) => {
+  // 1.1.0 (Youssef, 2026-10-27: « Retirer plus / coach IA car désormais il est dans la barre de recherche »)
   await seed(page);
   const screens = ['/#/', '/#/techniques', '/#/techniques/jab?d=boxe', '/#/stats', '/#/champions', '/#/reglages', '/#/reglages/voix', '/#/profil', '/#/coach', '/#/connexion', '/#/entrainer', '/#/entrainement?ex=boxe-debutant-01&mode=technique'];
   for (const s of screens) {
     await page.goto('about:blank');
     await page.goto(s);
-    await openMenu(page);
-    await expect(page.getByTestId('cmd-coach-ia'), s).toBeVisible();
-    await expect(page.getByTestId('cmd-coach-ia'), s).toHaveText('Coach IA');
+    await expect(bar(page)).toBeVisible();
+    if (s.includes('entrainement')) {
+      await openMenu(page);
+      await expect(page.getByTestId('cmd-search'), s).toBeVisible();
+      await page.getByTestId('cmd-search').click();
+    } else await bar(page).getByTestId('app-search').click();
+    await expect(page.getByTestId('search-ask'), s).toBeVisible();
+    await expect(page.getByTestId('cmd-coach-ia'), s).toHaveCount(0);
     await page.keyboard.press('Escape');
   }
-  // the whole coach page is open: no second way in
+  // the whole coach page is open: its ⋮ has no second way in
   await page.goto('/#/coach-ia');
   await expect(page.getByRole('heading').first()).toBeVisible();
-  await openMenu(page);
+  await expect(bar(page)).toHaveAttribute('data-screen', 'coach-ia');
+  if (await bar(page).locator('[data-action="menu"]').count()) await openMenu(page);
   await expect(page.getByTestId('cmd-coach-ia')).toHaveCount(0);
 });
 
@@ -95,21 +102,24 @@ test('Coach IA à l’entraînement : pause, démo sur le lecteur, ralenti, sans
   await expect(page).toHaveURL(/#\/entrainement\?/);
 });
 
-test('Légendes dans le Menu « Navigation générale »', async ({ page }) => {
+test('Légendes : un onglet d’Apprendre (1.0.0, formerly in the Menu)', async ({ page }) => {
   await seed(page);
   await page.goto('/#/');
-  await openMenu(page);
-  await page.getByTestId('menu-legendes').click();
+  await page.getByTestId('nav-techniques').click();
+  await page.getByTestId('tab-legendes').click();
   await expect(page).toHaveURL(/#\/champions/);
-  // 0.36 (Youssef, 2026-10-22 18:47, replaces the 0.27 rule): Techniques = Techniques, Combinaisons, Légendes,
-  // Favoris; the Légendes section points to the Légendes screen, the Créateur and Programmes left for Entraîner
+  // 1.0.0 (refonte, lot 2, replaces the 0.36 rule): Techniques = Techniques, Combinaisons; Légendes is a tab of
+  // Apprendre at the top of the screen and Favoris a tab of Entraîner; their old links lead there
   await page.goto('/#/techniques');
   const sections = page.getByRole('tablist', { name: 'Sections' }).getByRole('tab');
-  await expect(sections).toHaveText(['Techniques', 'Combinaisons', 'Légendes', 'Favoris']);
+  await expect(sections).toHaveText(['Techniques', 'Combinaisons']);
+  await expect(page.getByTestId('tab-legendes')).toBeVisible();
   await page.goto('/#/techniques?tab=legendes');
-  await expect(page.getByRole('tab', { name: 'Légendes' })).toHaveAttribute('aria-selected', 'true');
-  await page.getByTestId('legends-all').click();
   await expect(page).toHaveURL(/#\/champions$/);
+  await expect(page.getByTestId('tab-legendes')).toHaveAttribute('aria-current', 'page');
+  await page.goto('/#/techniques?tab=favoris');
+  await expect(page).toHaveURL(/#\/favoris$/);
+  await expect(page.getByTestId('tab-favoris')).toHaveAttribute('aria-current', 'page');
 });
 
 /** 0.25 (Youssef, 2026-10-20): the coach answers for the screen it is opened from, and explains the app. */

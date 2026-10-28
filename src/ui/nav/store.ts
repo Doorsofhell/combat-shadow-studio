@@ -38,7 +38,7 @@ export interface MenuCommand {
 type ActionView = Omit<ScreenAction, 'run'>;
 type CommandView = Omit<MenuCommand, 'run'>;
 
-export type NavSheet = null | 'menu' | 'news';
+export type NavSheet = null | 'menu' | 'news' | 'search';
 
 interface NavState {
   actions: Record<string, ActionView>;
@@ -133,4 +133,48 @@ export function setLeaveGuard(guard: ((go: () => void) => void) | null) {
 export function leave(go: () => void) {
   if (leaveGuard) leaveGuard(go);
   else go();
+}
+
+/**
+ * 1.1.0 (Youssef, 2026-10-27: « la barre de recherche … remplace toutes les recherches, comme rechercher dans les
+ * équipements »): a screen that had its own search field gives its scope to « Rechercher ou demander au coach »
+ * instead. The search shows the screen's own results first (`hits`), then the rest of the app; `apply` keeps the
+ * former filtered list of the screen (« Afficher les résultats dans … »).
+ */
+export interface ScopeHit {
+  label: string;
+  hint?: string;
+  to: string;
+}
+export interface SearchScope {
+  /** the screen, as people name it (« Équipements », « Techniques ») */
+  label: string;
+  hits: (q: string) => ScopeHit[];
+  /** filters the list of the screen with the words typed */
+  apply?: (q: string) => void;
+  /** the words the list of the screen is filtered with now */
+  current?: string;
+}
+export const useSearchScopeStore = create<{ scope: SearchScope | null }>(() => ({ scope: null }));
+
+/** declares the search scope of a screen while it is shown (read live: the functions act on the current state) */
+export function useSearchScope(scope: SearchScope | null) {
+  const live = useRef(scope);
+  live.current = scope;
+  const label = scope?.label ?? null;
+  const hasApply = !!scope?.apply;
+  const current = scope?.current ?? '';
+  useLayoutEffect(() => {
+    if (label === null) return;
+    const s: SearchScope = {
+      label,
+      hits: (q) => live.current?.hits(q) ?? [],
+      apply: hasApply ? (q) => live.current?.apply?.(q) : undefined,
+      current,
+    };
+    useSearchScopeStore.setState({ scope: s });
+    return () => {
+      if (useSearchScopeStore.getState().scope === s) useSearchScopeStore.setState({ scope: null });
+    };
+  }, [label, hasApply, current]);
 }

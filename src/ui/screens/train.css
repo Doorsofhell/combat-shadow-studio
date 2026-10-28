@@ -475,3 +475,45 @@
 .prog-ex li {
   break-inside: avoid;
 }
+
+/* 1.1.0 (Youssef, 2026-10-27: « je ne veux pas de défilement, toutes les disciplines doivent apparaître directement à
+   l'écran »): Disciplines fills the screen between the tabs and the bar, the six cards in three rows that share it */
+.train-page.fit {
+  height: calc(100dvh - var(--tabs-h, 60px));
+  min-height: 420px;
+  gap: 12px;
+  padding-top: var(--space-2, 8px);
+}
+.train-page.fit > .train-panel {
+  flex: 1;
+  min-height: 0;
+}
+.train-page.fit .train-disc-grid {
+  height: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+}
+.train-page.fit .disc-card.train-disc {
+  min-height: 0;
+  padding: 10px 12px;
+}
+.train-page.fit .disc-card.train-disc .disc-emblem {
+  top: 8px;
+  right: 8px;
+}
+/* the six cards share the screen: a 52 px emblem leaves the name clear of it (WCAG contrast, tests/e2e/contrast) */
+.train-page.fit .disc-card.train-disc .disc-emblem > * {
+  width: 52px;
+  height: 52px;
+}
+@media (max-height: 760px) {
+  .train-page.fit .disc-card.train-disc .sub {
+    display: none;
+  }
+}
+@media (min-width: 720px) {
+  .train-page.fit .train-disc-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+  }
+}

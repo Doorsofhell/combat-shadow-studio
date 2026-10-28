@@ -11,7 +11,7 @@ import { useSettings } from '../../store/settings';
 import { formatDuration, useStats } from '../../store/stats';
 import { useGoals } from '../../store/goals';
 import { MODE_HELP, MODE_LABEL } from '../training/plan';
-import { DisciplineArtwork, EmptyState, FilterChips, KickboxingStylePicker, LevelSelector, PageHead, Segmented, Sheet, useKbStyle } from '../components';
+import { DisciplineArtwork, EmptyState, KickboxingStyleChip, LevelPips, MenuChip, PageHead, Segmented, Sheet, useKbStyle } from '../components';
 import { filterExercises } from '../../domain/kickboxingStyles';
 import { AppIcon, DisciplineIcon } from '../icons';
 import { PremiumMarker } from '../premium/PremiumMarker';
@@ -108,21 +108,31 @@ export function DisciplinePage() {
           {disc.tagline}
         </span>
       </div>
-      <section className="stack" aria-label="Niveau">
-        <LevelSelector value={lvl.id} onChange={(l) => (setParam('niveau', l), setKind('tout'))} />
-        <p className="small muted">
-          {lvl.goal}
-          {(lvl.id === 'avance' || lvl.id === 'expert') && <PremiumMarker feature="advanced_techniques" />}
-        </p>
-      </section>
-      {disc.id === 'kickboxing' && <KickboxingStylePicker />}
-      <FilterChips
-        scroll
-        label="Type d’exercice"
-        value={kind}
-        onChange={setKind}
-        options={[{ id: 'tout' as KindFilter, label: `Tout (${all.length})` }, ...kinds.map((k) => ({ id: k as KindFilter, label: KIND_LABEL[k] }))]}
-      />
+      {/* 1.1.0 (Youssef, 2026-10-28, proposition A « trois menus »): level, style and type on one line; what a level
+          is for and the rules of a style are in the menus */}
+      <div className="filter-line" role="toolbar" aria-label="Filtres des exercices" data-testid="filter-line">
+        <MenuChip
+          label="Niveau"
+          value={lvl.id}
+          onChange={(l) => (setParam('niveau', l), setKind('tout'))}
+          lead={<LevelPips index={LEVELS.indexOf(lvl)} />}
+          testId="level-chip"
+          testPrefix="level-"
+          options={LEVELS.map((l, i) => ({ id: l.id, label: l.name, description: l.goal, lead: <LevelPips index={i} /> }))}
+        />
+        {disc.id === 'kickboxing' && <KickboxingStyleChip />}
+        <MenuChip
+          label="Type d’exercice"
+          value={kind}
+          onChange={setKind}
+          active={kind !== 'tout'}
+          chipLabel={kind === 'tout' ? `Tout (${all.length})` : `${KIND_LABEL[kind]} (${list.length})`}
+          testId="kind-chip"
+          testPrefix="kind-"
+          options={[{ id: 'tout' as KindFilter, label: `Tout (${all.length})` }, ...kinds.map((k) => ({ id: k as KindFilter, label: `${KIND_LABEL[k]} (${all.filter((e) => e.kind === k).length})` }))]}
+        />
+        {(lvl.id === 'avance' || lvl.id === 'expert') && <PremiumMarker feature="advanced_techniques" />}
+      </div>
       <ExerciseList list={list} onOpen={(x) => setParam('ex', x)} />
       <div className="grid2">
         <Link className="btn secondary" to={`/createur/nouveau?d=${disc.id}`}>

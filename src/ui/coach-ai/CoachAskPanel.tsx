@@ -4,6 +4,7 @@ import { askCoach, exampleQuestions, type CoachAction, type CoachAnswer, type Co
 import { getSpeechInput, speakReply, stopReply, type SpeechInput } from '../../coach/speech';
 import { useCatalog } from '../../store/catalog';
 import { useCoachAi } from '../../store/coachAi';
+import { useCoachBubble } from './coachHost';
 import { COACH_PANEL_SIZES, useSettings, type CoachPanelSize } from '../../store/settings';
 import { AppIcon } from '../icons';
 import { createDoubleTap, TAP_CONTROLS } from '../fullscreen/doubleTap';
@@ -113,6 +114,13 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
     };
   }, []);
   useEffect(() => () => speech?.stop(), [speech]);
+
+  // 1.0.0 (lot 3): the question typed in the search bar is asked at once
+  useEffect(() => {
+    const pending = useCoachBubble.getState().takePending();
+    if (pending) ask(pending);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // une nouvelle technique à l’écran remplace la technique de la réponse précédente
   useEffect(() => {

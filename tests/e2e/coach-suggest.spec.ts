@@ -42,8 +42,10 @@ async function openCoach(page: Page, ex: string) {
   await page.goto(`/#/entrainement?ex=${ex}&mode=technique`);
   // 0.25 (Youssef, 2026-10-20 12:30: « le coach IA doit être identique sur tous les écrans, une bulle flottante en bas à droite »): the training screen's own « Coach » button is replaced by the app's bubble
   // v0.32 (navigation, 2026-10-22): no floating bubble any more, the Coach IA is in the Menu of the bottom bar
+  // 1.1.0: through « Rechercher », in « Plus » during the session
   await page.getByTestId('bottom-bar').locator('[data-action="menu"]').tap();
-  await page.getByTestId('cmd-coach-ia').tap();
+  await page.getByTestId('cmd-search').tap();
+  await page.getByTestId('search-ask').tap();
   await expect(page.getByTestId('coach-suggestion').first()).toBeVisible();
 }
 

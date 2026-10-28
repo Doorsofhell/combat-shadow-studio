@@ -9,6 +9,7 @@ import { installNativeHandlers } from '../platform/native';
 import { Toaster } from './components/Toast';
 import { BottomBar } from './nav/BottomBar';
 import { NavSheets } from './nav/NavSheets';
+import { SectionTabs } from './nav/SectionTabs';
 import { forgetLayers } from './nav/layers';
 import { useNavStore } from './nav/store';
 import { Home } from './screens/Home';
@@ -27,6 +28,7 @@ const DisciplinePage = lazy(() => import('./screens/Discipline').then((m) => ({ 
 const Library = lazy(() => import('./screens/Library').then((m) => ({ default: m.Library })));
 const TechniquePage = lazy(() => import('./screens/Library').then((m) => ({ default: m.TechniquePage })));
 const PartnerPage = lazy(() => import('./screens/Library').then((m) => ({ default: m.PartnerPage })));
+const Favorites = lazy(() => import('./screens/Favorites').then((m) => ({ default: m.Favorites })));
 const PremiumPage = lazy(() => import('./premium/PremiumPage').then((m) => ({ default: m.PremiumPage })));
 const ChronoScreen = lazy(() => import('./chrono/ChronoScreen').then((m) => ({ default: m.ChronoScreen })));
 const EncyclopediaHome = lazy(() => import('./encyclopedia/Encyclopedia').then((m) => ({ default: m.EncyclopediaHome })));
@@ -174,6 +176,8 @@ export function App() {
       <AudioSync />
       <DisplaySync />
       <ThemeColor />
+      {/* 1.0.0: the tabs of the space shown (Apprendre, Progrès), above its page */}
+      <SectionTabs />
       <Gate>
         <Suspense fallback={<Loading />}>
           <Routes>
@@ -207,6 +211,7 @@ export function App() {
             <Route path="/reglages/:section" element={<SettingsPage />} />
             <Route path="/confidentialite" element={<Privacy />} />
             <Route path="/chrono" element={<ChronoScreen />} />
+            <Route path="/favoris" element={<Favorites />} />
             <Route path="/encyclopedie" element={<EncyclopediaHome />} />
             <Route path="/encyclopedie/liste" element={<EncyclopediaList />} />
             <Route path="/encyclopedie/terme/:id" element={<EncyclopediaTerm />} />

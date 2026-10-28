@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { bar, openMenu, seedProfile } from './nav-helpers';
+import { bar, closeMenu, menuItem, seedProfile, tapAction } from './nav-helpers';
 
 // v0.46 (Youssef, 2026-10-23, « Création de l'Encyclopédie du combat — Version 1.0 » §17): access from the Menu, the
 // eight families, filters, search, A–Z, favourites kept after a reload, Retour keeps the filters, links both ways with
@@ -12,23 +12,30 @@ test.beforeEach(async ({ page }) => {
 
 const results = (page: Page) => page.getByTestId('enc-results').getByTestId('enc-row');
 
-test('le Menu ouvre l’Encyclopédie (livre ouvert, description), sans Premium', async ({ page }) => {
+test('Apprendre ouvre l’Encyclopédie (onglet, 1.0.0 ; formerly in the Menu), sans Premium', async ({ page }) => {
   await page.goto('/#/');
-  await openMenu(page);
-  const entry = page.getByTestId('menu-encyclopedie');
-  await expect(entry).toContainText('Encyclopédie');
-  await expect(entry).toContainText('Dictionnaire illustré des 6 disciplines');
-  await expect(entry).not.toContainText('Glossaire');
+  await page.getByTestId('nav-techniques').click();
+  const entry = page.getByTestId('tab-encyclopedie');
+  await expect(entry).toHaveText('Encyclopédie');
   await entry.click();
   await expect(page.getByTestId('encyclopedia-home')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Encyclopédie du combat' })).toBeVisible();
   await expect(page.getByText('Techniques, équipements, règles et culture des 6 disciplines')).toBeVisible();
-  // the bar: Retour | Classement | A–Z | Favoris | Menu
+  // the actions: Classement | A–Z | Favoris (1.0.0: the first page of a tab of Apprendre has no Retour), 1.1.0: in
+  // the ⋮ at the top right, the page shown checked
   await expect(bar(page)).toHaveAttribute('data-screen', 'encyclopedie');
   const labels = await bar(page).locator('[data-action]').evaluateAll((els) => els.map((e) => e.getAttribute('data-action')));
-  expect(labels).toEqual(['back', 'ency-classement', 'ency-az', 'ency-favoris', 'menu']);
-  await expect(page.getByTestId('nav-ency-classement')).toHaveAttribute('aria-pressed', 'true');
+  expect(labels).toEqual(['menu']);
+  await menuItem(page, 'ency-classement');
+  const items = await page.getByTestId('nav-menu-sheet').locator('[data-action]').evaluateAll((els) => els.map((e) => e.getAttribute('data-action')));
+  expect(items).toEqual(['ency-classement', 'ency-az', 'ency-favoris']);
+  await expect(page.getByTestId('nav-ency-classement')).toHaveAttribute('aria-checked', 'true');
+  await closeMenu(page);
   await expect(page.getByTestId('premium-lock')).toHaveCount(0);
+  // a deeper page of the encyclopedia keeps Retour
+  await tapAction(page, 'ency-az');
+  await expect(page).toHaveURL(/#\/encyclopedie\/az/);
+  await expect(bar(page).locator('.nav-backchip [data-action="back"]')).toBeVisible();
 });
 
 test('huit familles distinctes, chacune ouvre sa liste filtrée', async ({ page }) => {
@@ -58,13 +65,16 @@ test('filtres combinés : sous-catégorie, discipline et recherche ; aucun résu
   await expect(page).toHaveURL(/s=pieds/);
   await expect(page).toHaveURL(/d=muaythai/);
   await expect(results(page).filter({ hasText: 'Teep' })).toHaveCount(1);
-  await page.getByTestId('enc-list-search').fill('zzzz');
+  // 1.1.0: « Rechercher » (bar) filters this list with Entrée
+  await bar(page).getByTestId('app-search').click();
+  await page.getByTestId('search-input').fill('zzzz');
+  await expect(page.getByTestId('search-apply')).toBeVisible();
+  await page.getByTestId('search-input').press('Enter');
   await expect(page.getByTestId('enc-no-result')).toBeVisible();
 });
 
 test('recherche : nom international, synonyme, accents et tirets', async ({ page }) => {
-  await page.goto('/#/encyclopedie');
-  const search = page.getByTestId('enc-search');
+  // 1.1.0: « Rechercher » of the bar searches the encyclopedia first on its screens; Entrée opens the list of results
   for (const [q, id] of [
     ['cross', 'direct'],
     ['southpaw', 'gaucher'],
@@ -72,7 +82,11 @@ test('recherche : nom international, synonyme, accents et tirets', async ({ page
     ['kouchi gari', 'ko-uchi-gari'],
     ['mata leão', 'etranglement-arriere'],
   ]) {
-    await search.fill(q);
+    await page.goto('/#/encyclopedie');
+    await bar(page).getByTestId('app-search').click();
+    await page.getByTestId('search-input').fill(q);
+    await expect(page.getByTestId('search-apply')).toBeVisible();
+    await page.getByTestId('search-input').press('Enter');
     await expect(results(page).first(), q).toHaveAttribute('data-term', id);
   }
 });
@@ -121,9 +135,10 @@ test('une illustration pas encore produite est annoncée, jamais remplacée par 
 
 test('A–Z : lettres sans terme désactivées, alias menant à la fiche', async ({ page }) => {
   await page.goto('/#/encyclopedie');
-  await page.getByTestId('nav-ency-az').click();
+  await tapAction(page, 'ency-az');
   await expect(page.getByTestId('encyclopedia-az')).toBeVisible();
-  await expect(page.getByTestId('nav-ency-az')).toHaveAttribute('aria-pressed', 'true');
+  await expect(await menuItem(page, 'ency-az')).toHaveAttribute('aria-checked', 'true');
+  await closeMenu(page);
   await page.getByTestId('enc-letter-C').click();
   const cross = page.getByTestId('enc-az-list').getByTestId('enc-az-item').filter({ hasText: /^Cross/ });
   await expect(cross).toContainText('→ Direct');
@@ -141,13 +156,13 @@ test('favoris : ajoutés depuis la fiche, gardés après rechargement, retirés'
   await page.waitForTimeout(400); // persisted store write
   await page.reload();
   await expect(page.getByTestId('enc-fav')).toHaveAttribute('aria-pressed', 'true');
-  await page.getByTestId('nav-ency-favoris').click();
+  await tapAction(page, 'ency-favoris');
   await expect(page.getByTestId('encyclopedia-favorites')).toBeVisible();
   await expect(results(page)).toHaveCount(1);
   await expect(results(page).first()).toHaveAttribute('data-term', 'teep');
   await results(page).first().click();
   await page.getByTestId('enc-fav').click();
-  await page.getByTestId('nav-ency-favoris').click();
+  await tapAction(page, 'ency-favoris');
   await expect(page.getByTestId('enc-no-favorite')).toBeVisible();
 });
 

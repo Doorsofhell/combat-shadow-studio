@@ -20,13 +20,24 @@ export interface CoachHost {
 interface CoachBubbleState {
   open: boolean;
   host: CoachHost | null;
+  /** 1.0.0 (lot 3): a question typed in « Rechercher ou demander au coach », asked as soon as the panel opens */
+  pending: string | null;
   setOpen: (open: boolean) => void;
   setHost: (host: CoachHost | null) => void;
+  ask: (question: string) => void;
+  takePending: () => string | null;
 }
 
-export const useCoachBubble = create<CoachBubbleState>((set) => ({
+export const useCoachBubble = create<CoachBubbleState>((set, get) => ({
   open: false,
   host: null,
+  pending: null,
   setOpen: (open) => set({ open }),
   setHost: (host) => set({ host }),
+  ask: (question) => set({ open: true, pending: question.trim() || null }),
+  takePending: () => {
+    const q = get().pending;
+    if (q) set({ pending: null });
+    return q;
+  },
 }));
