@@ -10,7 +10,7 @@ const PNG = Buffer.from(
 
 test('photo de profil : ajouter, cadrer, garder après rechargement, supprimer', async ({ page }) => {
   await seedProfile(page);
-  await page.goto('/#/profil');
+  await page.goto('/#/profil?ouvert=identite'); // 1.2.0: Mes infos › Identité holds « Ajouter une photo »
   const avatar = page.locator('.acc-hero .acc-avatar');
   // no 3D fighter in this seed: the initials are shown
   const before = await avatar.getAttribute('data-avatar');

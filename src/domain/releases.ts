@@ -49,6 +49,21 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.2.0',
+      releaseDate: '2026-10-28',
+      title: 'Profil et réglages en listes',
+      isMajor: false,
+      changes: [
+        { category: 'fonctionnalites', text: 'Ta photo en haut à droite ouvre deux onglets : Mes infos et Réglages. Mon coach et Coach IA sont maintenant des lignes de Réglages.' },
+        { category: 'fonctionnalites', text: 'Mes infos et Réglages sont chacun une seule liste rangée en groupes, comme les réglages d’un téléphone Android. Chaque ligne montre sa valeur actuelle et s’ouvre sur place quand tu la touches ; Retour la referme.' },
+        { category: 'ameliorations', text: 'Taille du texte, animations et « M’appeler par mon pseudo » passent dans Réglages (Apparence et Coach IA) ; l’export et l’effacement de tes données sont regroupés dans « Données et confidentialité ». Rien n’a été retiré.' },
+      ],
+      links: [
+        { label: 'Mes infos', to: '/profil' },
+        { label: 'Réglages', to: '/reglages' },
+      ],
+    },
+    {
       version: '1.1.1',
       releaseDate: '2026-10-28',
       title: 'Plus de doublon de la recherche',

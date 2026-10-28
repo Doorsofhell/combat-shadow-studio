@@ -29,6 +29,11 @@ const SCREENS = [
   ['historique', '/#/historique'],
   ['reglages', '/#/reglages'],
   ['profil', '/#/profil'],
+  // 1.2.0: the rows of the two lists, opened
+  ['reglages-voix', '/#/reglages/voix'],
+  ['reglages-donnees', '/#/reglages/donnees'],
+  ['profil-identite', '/#/profil?ouvert=identite'],
+  ['profil-disciplines', '/#/profil?ouvert=disciplines'],
   ['confidentialite', '/#/confidentialite'],
   ['coach-ia', '/#/coach-ia'],
   ['connexion', '/#/connexion'],
@@ -184,7 +189,8 @@ test('contraste des états : survol, appui, champ vide', async ({ page }) => {
   bad.push(...(await audit(page, 'appui')));
   await page.mouse.up();
   await page.goto('about:blank');
-  await page.goto('/#/profil');
+  // 1.2.0: the fields with a placeholder are in Mes infos › Âge, taille, poids
+  await page.goto('/#/profil?ouvert=corps');
   await page.waitForLoadState('networkidle');
   expect(await page.locator('input[placeholder]').count()).toBeGreaterThan(0);
   // placeholders: same AA rule as the text typed in the field

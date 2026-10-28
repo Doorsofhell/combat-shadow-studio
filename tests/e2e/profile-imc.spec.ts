@@ -39,7 +39,7 @@ test.use({ viewport: { width: 393, height: 851 } });
 
 test('180 cm et 75 kg : 23,1, corpulence normale, jauge et conseil ; mis à jour à la saisie', async ({ page }) => {
   await seed(page);
-  await page.goto('/#/profil');
+  await page.goto('/#/profil?ouvert=corps'); // 1.2.0: Mes infos › Âge, taille, poids
   // nothing to compute yet: a hint only
   await expect(page.getByTestId('bmi-hint')).toContainText('Indique ta taille');
   await expect(page.getByTestId('bmi-gauge')).toHaveCount(0);
@@ -83,7 +83,7 @@ test('180 cm et 75 kg : 23,1, corpulence normale, jauge et conseil ; mis à jour
 
 test('moins de 18 ans : l’échelle adulte ne s’applique pas', async ({ page }) => {
   await seed(page, { age: 15, heightCm: 165, weightKg: 55 });
-  await page.goto('/#/profil');
+  await page.goto('/#/profil?ouvert=corps'); // 1.2.0: Mes infos › Âge, taille, poids
   await expect(page.getByTestId('bmi-minor')).toContainText('moins de 18 ans');
   await expect(page.getByTestId('bmi-category')).toHaveCount(0);
   await expect(page.getByTestId('bmi-gauge')).toHaveCount(0);
@@ -100,7 +100,7 @@ for (const scheme of ['dark', 'light'] as const)
       [170, 100, 'Obésité (classe I)'],
     ] as const) {
       await seed(page, { heightCm: h, weightKg: w, age: 30 });
-      await page.goto('/#/profil');
+      await page.goto('/#/profil?ouvert=corps'); // 1.2.0: Mes infos › Âge, taille, poids
       await expect(page.getByTestId('bmi-category')).toHaveText(cat);
       await card(page).scrollIntoViewIfNeeded();
       const axe = await new AxeBuilder({ page }).include('[data-testid="bmi-card"]').withRules(['color-contrast', 'aria-meter-name', 'aria-allowed-attr', 'aria-valid-attr-value', 'list', 'listitem']).analyze();

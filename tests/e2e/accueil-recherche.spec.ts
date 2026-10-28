@@ -169,6 +169,8 @@ for (const theme of ['clair', 'sombre'] as const) {
     await page.getByTestId('app-search').click();
     await page.getByTestId('search-input').fill('ga');
     await expect(page.getByTestId('search-hit').first()).toBeVisible();
+    // 1.2.0: the colours are read once the sheet has finished sliding up (axe read a sheet still moving, 1 run in 2)
+    await page.getByTestId('search-sheet').evaluate((e) => Promise.all(e.parentElement!.getAnimations({ subtree: true }).map((a) => a.finished)));
     const sheet = await new AxeBuilder({ page }).include('[data-testid="search-sheet"]').withRules(['color-contrast']).analyze();
     expect(sheet.violations).toEqual([]);
   });

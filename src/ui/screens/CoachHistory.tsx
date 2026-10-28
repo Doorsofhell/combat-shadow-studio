@@ -13,12 +13,53 @@ const fmt = (iso: string) => {
   }
 };
 
+/** 1.2.0: the settings of the Coach IA, on its page and in Réglages › Coach IA (the same store, never copied) */
+export function CoachAiSettings() {
+  const ai = useCoachAi();
+  const caps = detectSpeechCapabilities();
+  return (
+    <>
+      <Toggle on={ai.enabled} onChange={(v) => ai.set({ enabled: v })} label="Coach IA" hint="Affiche le bouton « Demande au coach » pendant l’entraînement." />
+      <PanelRow label="Longueur des réponses" column>
+        <Segmented
+          label="Longueur des réponses"
+          value={ai.detail}
+          onChange={(v) => ai.set({ detail: v })}
+          options={[
+            { id: 'court', label: 'Courtes' },
+            { id: 'detaille', label: 'Détaillées' },
+          ]}
+        />
+      </PanelRow>
+      <Toggle
+        on={ai.voiceReplies}
+        onChange={(v) => ai.set({ voiceReplies: v })}
+        label="Lire les réponses à voix haute"
+        hint={caps.localVoice ? 'Avec une voix installée sur l’appareil.' : 'Aucune voix française installée sur cet appareil : les réponses resteront écrites.'}
+      />
+      <Toggle
+        on={ai.keepHistory}
+        onChange={(v) => ai.set({ keepHistory: v })}
+        label="Garder l’historique"
+        hint="Les échanges restent sur cet appareil uniquement. Désactiver efface l’historique."
+      />
+      {caps.onlineWebSpeech && (
+        <Toggle
+          on={ai.onlineSpeechOptIn}
+          onChange={(v) => ai.set({ onlineSpeechOptIn: v })}
+          label="Saisie vocale du navigateur (en ligne)"
+          hint="En ligne, l’audio est envoyé au service de reconnaissance du navigateur. Désactivée par défaut ; ne fonctionne pas sans connexion."
+        />
+      )}
+      {!caps.onlineWebSpeech && <PanelRow label="Saisie vocale" hint="Pas encore disponible hors ligne sur cet appareil : pose tes questions par écrit." />}
+    </>
+  );
+}
+
 /** Coach IA : réglages et historique local des échanges (thème sombre). Route attendue : /coach-ia */
 export function CoachHistory() {
   const ai = useCoachAi();
   const [confirm, setConfirm] = useState(false);
-  const caps = detectSpeechCapabilities();
-
   return (
     <div className="page">
       <PageHead title="Coach IA" eyebrow="Questions et réponses" fallback="/" />
@@ -29,39 +70,7 @@ export function CoachHistory() {
       </div>
 
       <Panel title="Réglages" icon="settings" id="cai-settings">
-        <Toggle on={ai.enabled} onChange={(v) => ai.set({ enabled: v })} label="Coach IA" hint="Affiche le bouton « Demande au coach » pendant l’entraînement." />
-        <PanelRow label="Longueur des réponses" column>
-          <Segmented
-            label="Longueur des réponses"
-            value={ai.detail}
-            onChange={(v) => ai.set({ detail: v })}
-            options={[
-              { id: 'court', label: 'Courtes' },
-              { id: 'detaille', label: 'Détaillées' },
-            ]}
-          />
-        </PanelRow>
-        <Toggle
-          on={ai.voiceReplies}
-          onChange={(v) => ai.set({ voiceReplies: v })}
-          label="Lire les réponses à voix haute"
-          hint={caps.localVoice ? 'Avec une voix installée sur l’appareil.' : 'Aucune voix française installée sur cet appareil : les réponses resteront écrites.'}
-        />
-        <Toggle
-          on={ai.keepHistory}
-          onChange={(v) => ai.set({ keepHistory: v })}
-          label="Garder l’historique"
-          hint="Les échanges restent sur cet appareil uniquement. Désactiver efface l’historique."
-        />
-        {caps.onlineWebSpeech && (
-          <Toggle
-            on={ai.onlineSpeechOptIn}
-            onChange={(v) => ai.set({ onlineSpeechOptIn: v })}
-            label="Saisie vocale du navigateur (en ligne)"
-            hint="En ligne, l’audio est envoyé au service de reconnaissance du navigateur. Désactivée par défaut ; ne fonctionne pas sans connexion."
-          />
-        )}
-        {!caps.onlineWebSpeech && <PanelRow label="Saisie vocale" hint="Pas encore disponible hors ligne sur cet appareil : pose tes questions par écrit." />}
+        <CoachAiSettings />
       </Panel>
 
       <section className="stack" style={{ gap: 8 }} aria-labelledby="cai-hist">

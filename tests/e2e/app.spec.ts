@@ -91,7 +91,9 @@ test('réglages et confidentialité accessibles depuis l’accueil', async ({ pa
   await page.getByTestId('nav-profil').click();
   await page.getByTestId('tab-reglages').click();
   await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
-  await page.getByRole('link', { name: /Confidentialité/ }).click();
+  // 1.2.0: Réglages › Données et confidentialité
+  await page.getByTestId('set-donnees').click();
+  await page.getByRole('link', { name: /Politique de confidentialité/ }).click();
   await expect(page.getByText('Tout reste sur ton appareil.')).toBeVisible();
 });
 

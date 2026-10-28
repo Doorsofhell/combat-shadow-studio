@@ -50,17 +50,18 @@ describe('refonte 1.0.0 : le contenu de l’ancien Menu est redistribué, rien n
   };
   it.each(MENU_ENTRIES.map((m) => [m.label, m] as const))('%s', (_label, m) => {
     if (m.id === 'nouveautes') {
-      expect(settings).toContain('data-testid="reglages-nouveautes"');
+      // 1.2.0: a row of the list (SetAction testId)
+      expect(settings).toContain('testId="reglages-nouveautes"');
       expect(settings).toContain('onClick={openNews}');
       return;
     }
     expect(reach(m.to), m.to).not.toBeNull();
   });
-  it('Profil : Mes infos, Mon coach, Coach IA et Réglages en onglets (lot 2)', () => {
+  // 1.2.0 (Youssef, 2026-10-28: « 2 onglets glissants : Mes infos & Reglages avec tous le reste dans reglages »):
+  // Mon coach and Coach IA became rows of Réglages
+  it('Profil : Mes infos et Réglages en onglets (lot 2, 1.2.0)', () => {
     expect(sectionTabsFor('profil')?.map((t) => [t.label, t.to])).toEqual([
       ['Mes infos', '/profil'],
-      ['Mon coach', '/coach'],
-      ['Coach IA', '/coach-ia'],
       ['Réglages', '/reglages'],
     ]);
     for (const t of sectionTabsFor('profil')!) expect(t.screens.map((x) => navScreen(t.to) === x)).toContain(true);
@@ -80,7 +81,8 @@ describe('refonte 1.0.0 : le contenu de l’ancien Menu est redistribué, rien n
   });
   it('sur le premier écran d’un onglet, un lien vers un autre onglet n’est pas répété au-dessus de la barre', () => {
     expect(dockSlots('entrainer', '/entrainer').map((d) => d.slot.action)).toEqual(['start']);
-    expect(dockSlots('profil', '/profil').map((d) => d.slot.action)).toEqual([]);
+    // 1.2.0: Mon coach is no longer a tab but a row of Réglages, so « Coach » stays above the bar and opens it
+    expect(dockSlots('profil', '/profil').map((d) => d.slot.action)).toEqual(['nav:/reglages/coach']);
     for (const s of screens)
       for (const t of sectionTabsFor(s) ?? [])
         if (t.screens.includes(s)) {
