@@ -37,6 +37,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,jpg,webp,svg,glb,wasm,json,woff,woff2}', 'draco/*'],
         maximumFileSizeToCacheInBytes: 12 * 1024 * 1024,
+        // 1.3.3 referee outfits: only for the encyclopedia illustrations (scripts/visuels), never loaded by the app
+        globIgnores: ['**/tenues/arbitre*'],
       },
     }),
   ],

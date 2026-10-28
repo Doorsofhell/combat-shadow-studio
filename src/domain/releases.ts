@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.3.3',
+      releaseDate: '2026-10-28',
+      title: 'Encyclopédie complète',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Toutes les fiches de l’Encyclopédie ont leur illustration : les 22 dernières montrent les deux coachs ensemble au sol (montée, gardes, contrôles, nord-sud, dos, passage de garde) et les soumissions (clé de bras, triangle, étranglement arrière, kesa-gatame).' },
+        { category: 'ameliorations', text: 'Règles et arbitrage illustrés : l’arbitre qui s’interpose, qui compte, qui avertit, qui lève le bras du vainqueur, l’ippon, la pesée, la table des juges, et le sparring.' },
+        { category: 'corrections', text: 'Les légendes « Début, Mi-chemin, Moment clé » n’apparaissent plus sous les images qui ne sont pas une suite de trois instants (schémas, styles de kick-boxing).' },
+      ],
+      links: [{ label: 'Encyclopédie', to: '/encyclopedie' }],
+    },
+    {
       version: '1.3.2',
       releaseDate: '2026-10-28',
       title: 'Illustrations de l’Encyclopédie',

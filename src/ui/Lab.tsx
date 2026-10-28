@@ -1,12 +1,12 @@
 import { championFor, championLook, championStance } from '../domain/coaches/catalog';
-import { Suspense, useCallback, useEffect, useMemo, useRef, type MutableRefObject } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { CoachModel } from '../three/CoachModel';
 import { outfitFor, type OutfitId, type OutfitStatus } from '../three/outfit';
 import { StudioStage } from '../three/StudioStage';
 import { StudioEnvironment } from '../three/StudioEnvironment';
 import type { CoachRig } from '../engine';
-import { getIllustration, getLibrary, getMotion } from '../engine';
+import { getDuo, getIllustration, getLibrary, getMotion, type Place } from '../engine';
 import { MotionSampler, duration } from '../engine';
 import type { StanceStyle } from '../engine';
 import type { CoachId, DisciplineId } from '../domain/types';
@@ -49,9 +49,25 @@ export function Lab() {
   const cam = Number(q.get('cam') ?? '35');
   // v0.31 tenue=<outfit id> or tenue=0: the discipline outfit, as in the app by default
   const outfit = q.get('tenue') === '0' ? null : ((q.get('tenue') as OutfitId | null) ?? outfitFor(disc, true, 'gi'));
-  const onOutfit = useCallback((st: OutfitStatus) => {
-    (window as unknown as { __labOutfit?: string }).__labOutfit = st.state;
-  }, []);
+  // 1.3.3 duo=<scene id>&champion2=<coach id>[&tenue2=<outfit>]: a scene with two coaches (illustrations.ts)
+  const duoId = q.get('duo');
+  const champion2 = duoId && q.get('champion2') && COACH_LOOKS[q.get('champion2')!] ? q.get('champion2')! : null;
+  const coach2 = (champion2 ? COACH_LOOKS[champion2].sex : 'femme') as CoachId;
+  const outfit2 = q.get('tenue2') === '0' ? null : ((q.get('tenue2') as OutfitId | null) ?? outfitFor(disc, true, 'gi'));
+  const look2 = useMemo(() => (champion2 ? championLook(championFor(coach2), disc) : null), [champion2, coach2, disc]);
+  // with two coaches, the outfit state reported is the one of both (worn only when both are)
+  const outfits = useRef<string[]>([]);
+  const report = useCallback(
+    (i: number, st: OutfitStatus) => {
+      outfits.current[i] = st.state;
+      const all = champion2 ? [outfits.current[0], outfits.current[1]] : [outfits.current[0]];
+      const final = (x?: string) => x === 'portee' || x === 'aucune' || x === 'erreur';
+      (window as unknown as { __labOutfit?: string }).__labOutfit = all.includes('erreur') ? 'erreur' : all.every(final) ? (all.includes('portee') ? 'portee' : 'aucune') : 'chargement';
+    },
+    [champion2],
+  );
+  const onOutfit = useCallback((st: OutfitStatus) => report(0, st), [report]);
+  const onOutfit2 = useCallback((st: OutfitStatus) => report(1, st), [report]);
   const southpaw = q.get('garde') === 'gaucher';
   // art=1: official discipline artwork (discipline gear, collection palette: anthracite, red, gold)
   const look = useMemo<FighterLook | null>(() => {
@@ -87,10 +103,39 @@ export function Lab() {
   const labStyle = q.get('look') === 'realiste' ? 'realiste' : q.get('look') === 'manga' ? 'manga' : 'encre';
   const render = q.get('render') === 'precedent' ? 'precedent' : 'premium';
   const sampler = useRef<MotionSampler | null>(null);
+  const sampler2 = useRef<MotionSampler | null>(null);
   const rigRef = useRef<CoachRig | null>(null);
+  const rig2Ref = useRef<CoachRig | null>(null);
+  const [places, setPlaces] = useState<[Place, Place] | null>(null);
+  const startDuo = useCallback(() => {
+    const ra = rigRef.current;
+    const rb = rig2Ref.current;
+    if (!ra || !rb || !duoId) return;
+    const d = getDuo(ra, rb, style, duoId);
+    if (!d) return;
+    sampler.current = new MotionSampler(ra, d.a);
+    sampler2.current = new MotionSampler(rb, d.b);
+    setPlaces([d.placeA, d.placeB]);
+    Object.assign(window, { __labDur: duration(d.a), __labPeak: d.a.impacts[0] ?? duration(d.a) / 2, __labT: (t: number) => (tRef.current = t) });
+    (window as unknown as { __labReady: boolean }).__labReady = true;
+  }, [duoId, style]);
+  const onRig2 = useCallback(
+    (rig: CoachRig) => {
+      rig2Ref.current = rig;
+      startDuo();
+    },
+    [startDuo],
+  );
+  const onFrame2 = useCallback((rig: CoachRig) => {
+    if (sampler2.current) rig.apply(sampler2.current.sample(tRef.current));
+  }, []);
   const onRig = useCallback(
     (rig: CoachRig) => {
       rigRef.current = rig;
+      if (duoId) {
+        startDuo();
+        return;
+      }
       const profile = champion && (q.get('d') || tech) ? championStance(championFor(coach), disc) : coachProfile(champion);
       const lib = getLibrary(rig, style, profile);
       // illu=<id>: a pose of the encyclopedia illustrations (engine/library/illustrations.ts), not a technique
@@ -106,7 +151,7 @@ export function Lab() {
       Object.assign(window, { __labDur: duration(m), __labPeak: m.impacts[0] ?? duration(m) / 2, __labT: (t: number) => (tRef.current = t) });
       (window as unknown as { __labReady: boolean }).__labReady = true;
     },
-    [style, motionId, southpaw, tech, q],
+    [style, motionId, southpaw, tech, q, duoId, startDuo],
   );
   const onFrame = useCallback(
     (rig: CoachRig) => {
@@ -136,7 +181,14 @@ export function Lab() {
             focusY={q.get('fy') ? Number(q.get('fy')) : undefined}
             mood={!!q.get('mood')}
           >
-            <CoachModel coach={coach} style={labStyle} render={render} quality="haute" look={look} model={champion ? `./coaches/${champion}/model` : undefined} onRig={onRig} onFrame={onFrame} outfit={outfit} onOutfit={onOutfit} />
+            <group position={places ? [places[0].x, 0, places[0].z] : undefined} rotation={places ? [0, places[0].yaw, 0] : undefined}>
+              <CoachModel coach={coach} style={labStyle} render={render} quality="haute" look={look} model={champion ? `./coaches/${champion}/model` : undefined} onRig={onRig} onFrame={onFrame} outfit={outfit} onOutfit={onOutfit} />
+            </group>
+            {champion2 && (
+              <group position={places ? [places[1].x, 0, places[1].z] : undefined} rotation={places ? [0, places[1].yaw, 0] : undefined} visible={!!places}>
+                <CoachModel coach={coach2} style={labStyle} render={render} quality="haute" look={look2} model={`./coaches/${champion2}/model`} onRig={onRig2} onFrame={onFrame2} outfit={outfit2} onOutfit={onOutfit2} />
+              </group>
+            )}
             <LabProbe rig={rigRef} />
             {labStyle === 'realiste' && render === 'premium' && <StudioEnvironment intensity={q.get('mood') ? 0.06 : 0.35} />}
           </StudioStage>

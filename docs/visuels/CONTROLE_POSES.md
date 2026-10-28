@@ -42,3 +42,24 @@ et techniques de judo font humains au moment clé : appuis au sol, buste et bras
 - **Styles de kick-boxing** : trois coachs (high kick, low kick, genou), l'homme tourné de −35° pour que les trois
   silhouettes ne se cachent pas.
 - **Soumission** (main qui tape) : seule, la pose ne se lisait pas ; reportée au lot 4 avec un partenaire.
+
+## 1.3.3 · Scènes à deux de l’Encyclopédie
+
+Chaque scène a été rendue, regardée, corrigée puis rendue de nouveau (quatre à cinq passes). Le test
+`src/engine/__tests__/duo-illustrations.test.ts` vérifie qu'aucune articulation ne passe sous le tapis et que les deux
+corps sont bien ensemble sans être l'un dans l'autre.
+
+- **Montée** : les genoux d'Amara passaient sous le tapis (détecté par le test) ; bassin remonté, pieds reculés.
+- **Garde fermée** : les jambes de Kadir restaient cachées dans le corps d'Amara (chevilles trop loin, genoux presque
+  tendus) ; Amara rapprochée, chevilles croisées plus bas dans son dos, vue de trois quarts.
+- **Demi-garde** : lisible seulement vue depuis les jambes (az 20, plongée 35°).
+- **Genou sur le ventre** : la jambe gauche, trop loin, ne pouvait pas toucher le sol et faisait descendre les
+  hanches (elle paraissait assise) ; pied rapproché, genou orienté vers le ventre.
+- **Clé de bras** : la version « depuis la garde » ne se lisait pas ; refaite en juji-gatame classique, couchée en
+  travers, jambes sur le buste et le visage, bras tendu entre les cuisses, pouce vers le haut.
+- **Triangle** : le buste de Kadir restait haut et les jambes d'Amara passaient dans son dos ; buste plongé, tête
+  basse sur sa poitrine, vue depuis le côté où la jambe verrouille.
+- **Kesa-gatame** : Amara penchait du mauvais côté (signe du roulis) ; elle s'appuie maintenant sur son buste.
+- **Arbitre qui compte** : Kadir paraissait accroupi ; genou droit posé au tapis.
+- **Ippon** : sous la veste du costume, la chemise entière traversait le tissu ; remplacée par un plastron visible
+  dans le V seulement.

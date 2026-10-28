@@ -134,7 +134,7 @@ function turnToFours(a: Author): Pose {
 }
 
 /** all fours: hands under the shoulders, knees and toes on the mat, hips high, back flat */
-function allFours(a: Author): Pose {
+export function allFours(a: Author): Pose {
   const s = a.s;
   return {
     hips: v3(0, 0.5 * s, -0.25 * s),

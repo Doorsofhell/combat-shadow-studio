@@ -97,6 +97,20 @@ for (const r of RENDERS) {
     const pngs = r.mix.map((m, i) => `${CACHE}/ency/${r.id}-${i}.png`);
     r.mix.forEach((m, i) => renders.push({ png: pngs[i], q: techQuery(m.tech, m.coach, m.d, { az: String(m.az ?? r.az ?? 60) }), vw: 240, vh: 400, dpr: 2 }));
     jobs.push({ out, w: 720, h: 400, mood: d, seed: r.id, layers: pngs, centers: [1 / 6, 0.5, 5 / 6], fill: 0.95, mini: { layer: 1, size: 160 } });
+  } else if (r.duo) {
+    // 1.3.3 two coaches in one scene (engine/library/illustrations.ts, duoScenes): Amara and Kadir, one picture
+    const png = `${CACHE}/ency/${r.id}.png`;
+    const q = new URLSearchParams({ champion: CHAMPION.femme, champion2: CHAMPION.homme, look: 'realiste', d, duo: r.duo, style: STYLE[d], az: String(r.az ?? 60), el: String(r.el ?? 20), span: String(r.span ?? 0.85), fy: String(r.fy ?? 0.4) });
+    if (r.tenue) q.set('tenue', r.tenue);
+    renders.push({ png, q, vw: 720, vh: 400, dpr: 2 });
+    jobs.push({ out, w: 720, h: 400, mood: d, seed: r.id, layers: [png], centers: [0.5], fill: 0.95, mini: { size: 160 } });
+  } else if (r.illu && r.once) {
+    // a still gesture of the illustrations, once
+    const png = `${CACHE}/ency/${r.id}.png`;
+    const q = new URLSearchParams({ champion: CHAMPION[r.coach], look: 'realiste', d, illu: r.illu, style: STYLE[d], az: String(r.az ?? 30), el: String(r.el ?? 8) });
+    if (r.tenue) q.set('tenue', r.tenue);
+    renders.push({ png, q, vw: 360, vh: 400, dpr: 2 });
+    jobs.push({ out, w: 720, h: 400, mood: d, seed: r.id, layers: [png], centers: [0.5], fill: 0.95, mini: { size: 160 } });
   } else if (r.illu) {
     // a pose of the illustrations (engine/library/illustrations.ts), three instants
     const q = new URLSearchParams({ champion: CHAMPION[r.coach], look: 'realiste', d, illu: r.illu, style: STYLE[d], az: String(r.az ?? 30), el: '8' });
@@ -140,17 +154,19 @@ for (const coach of ['homme', 'femme']) {
   jobs.push({ out: `public/coaches/${c}/portrait`, w: 900, h: 1200, mood: 'mma', seed: `portrait-${c}`, layers: [png], centers: [0.5], fill: 0.96, quality: 84 });
 }
 
-const SCENE_MOOD = { 'gants-boxe': 'boxe', 'protege-tibias': 'kickboxing', rashguard: 'bjj', 'short-combat': 'mma', 'short-muaythai': 'muaythai', judogi: 'judo', 'kimono-jjb': 'bjj', ring: 'boxe', cage: 'mma', tatami: 'judo', ceintures: 'judo', bandes: 'boxe', 'protege-dents': 'mma', casque: 'boxe', coquille: 'kickboxing', 'protege-poitrine': 'kickboxing', sac: 'boxe', 'pattes-ours': 'boxe', paos: 'muaythai', dojo: 'judo', round: 'boxe', mongkon: 'muaythai', 'boxe-ancienne': 'boxe', 'tableau-jjb': 'bjj', 'livre-regles': 'boxe' };
+const SCENE_MOOD = { 'gants-boxe': 'boxe', 'protege-tibias': 'kickboxing', rashguard: 'bjj', 'short-combat': 'mma', 'short-muaythai': 'muaythai', judogi: 'judo', 'kimono-jjb': 'bjj', ring: 'boxe', cage: 'mma', tatami: 'judo', ceintures: 'judo', bandes: 'boxe', 'protege-dents': 'mma', casque: 'boxe', coquille: 'kickboxing', 'protege-poitrine': 'kickboxing', sac: 'boxe', 'pattes-ours': 'boxe', paos: 'muaythai', dojo: 'judo', round: 'boxe', mongkon: 'muaythai', 'boxe-ancienne': 'boxe', 'tableau-jjb': 'bjj', 'livre-regles': 'boxe', pesee: 'boxe', juges: 'boxe' };
 // the rule book stands among the emblems of the six disciplines (our own, public/emblems)
 const BADGES = { 'livre-regles': ['boxe', 'kickboxing', 'muaythai', 'mma', 'judo', 'bjj'].map((d) => `public/emblems/${d}-256.webp`) };
 const ROOMS = new Set(['dojo']);
+// a wide set seen from above (the judges' table and the ring): it fills the height, no floor line under it
+const WIDE = new Set(['juges']);
 const sceneJobs = [];
 for (const s of SCENES) {
   if (!want('scenes', s.id, s.scene) || !inD(SCENE_MOOD[s.scene] ?? 'boxe')) continue;
   const png = `${CACHE}/scenes/${s.scene}.png`;
   sceneJobs.push(s.scene);
   // a whole room (the dojo) fills the picture; an object stands on the floor of the gym
-  const room = ROOMS.has(s.scene) ? { mode: 'top', fill: 1, top: 0, full: true } : BADGES[s.scene] ? { fill: 0.5, floor: 0.9, badges: BADGES[s.scene], badgeH: 0.24 } : { fill: 0.86, floor: 0.9 };
+  const room = ROOMS.has(s.scene) ? { mode: 'top', fill: 1, top: 0, full: true } : WIDE.has(s.scene) ? { mode: 'top', fill: 0.96, top: 0.03 } : BADGES[s.scene] ? { fill: 0.5, floor: 0.9, badges: BADGES[s.scene], badgeH: 0.24 } : { fill: 0.86, floor: 0.9 };
   jobs.push({ out: `public/encyclopedie/${s.id}`, w: 720, h: 400, mood: SCENE_MOOD[s.scene] ?? 'boxe', seed: s.id, layers: [png], centers: [0.5], ...room, mini: { size: 160 }, object: true });
 }
 

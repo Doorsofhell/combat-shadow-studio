@@ -123,14 +123,21 @@ test('fiche : image dimensionnée, onglets, sources datées, provenance de l’i
   await expect(page.getByTestId('encyclopedia-term')).toHaveAttribute('data-term', 'jab');
 });
 
-test('une illustration pas encore produite est annoncée, jamais remplacée par un pictogramme muet', async ({ page }) => {
-  await page.goto('/#/encyclopedie/terme/kesa-gatame');
-  const missing = page.getByTestId('enc-figure').getByTestId('enc-img-missing');
-  await expect(missing).toBeVisible();
-  await expect(missing).toContainText('Illustration à produire');
-  await expect(missing).toHaveAttribute('aria-label', /illustration à produire/);
-  await page.getByTestId('enc-tab-src').click();
-  await expect(page.getByTestId('enc-image-origin')).toContainText('à produire');
+test.describe('illustration absente', () => {
+  // 1.3.3: every term of the encyclopedia has its illustration now. A picture that cannot be loaded (offline, removed
+  // file) must still be announced in words, never left as a silent pictogram. The service worker is kept out so the
+  // file can really fail; the case of a term still without illustration is in src/ui/encyclopedia/__tests__.
+  test.use({ serviceWorkers: 'block' });
+  test('une illustration indisponible est annoncée, jamais remplacée par un pictogramme muet', async ({ page }) => {
+    await page.route('**/encyclopedie/tech-kesa-gatame.webp', (r) => r.abort());
+    await page.goto('/#/encyclopedie/terme/kesa-gatame');
+    const missing = page.getByTestId('enc-figure').getByTestId('enc-img-missing');
+    await expect(missing).toBeVisible();
+    await expect(missing).toContainText('Illustration indisponible');
+    await expect(missing).toHaveAttribute('aria-label', /Kesa-gatame.*illustration indisponible/);
+    await page.getByTestId('enc-tab-src').click();
+    await expect(page.getByTestId('enc-image-origin')).toContainText('Amara et Kadir');
+  });
 });
 
 test('A–Z : lettres sans terme désactivées, alias menant à la fiche', async ({ page }) => {
