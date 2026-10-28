@@ -4,6 +4,7 @@
 //   npm run visuels                              everything (renders cached in .cache/visuels, then composed)
 //   npm run visuels -- --only thumbs,art         families: thumbs, ency, art, portraits, scenes
 //   npm run visuels -- --id jab,tech-jab         some pictures only (technique id, encyclopedia id, discipline id…)
+//   npm run visuels -- --d judo,bjj --only thumbs,ency,art   the pictures of some disciplines only (an outfit changed)
 //   npm run visuels -- --force                   render again even when the cached render exists (coach or motion changed)
 //   npm run visuels -- --recompose               no rendering: compose the cached renders again (ambiances.json changed)
 //
@@ -23,6 +24,7 @@ const opt = (name) => {
 };
 const ONLY = opt('only');
 const IDS = opt('id');
+const DISC = opt('d');
 const FORCE = args.includes('--force');
 const RECOMPOSE = args.includes('--recompose');
 const CACHE = '.cache/visuels';
@@ -46,6 +48,8 @@ const pose = (tech, coach) => ({ ...(POSES[tech] ?? {}), ...(POSES[`${tech}@${co
 const renders = [];
 const jobs = [];
 const want = (family, ...ids) => (!ONLY || ONLY.includes(family)) && (!IDS || ids.some((id) => IDS.includes(id)));
+/** --d: discipline of the picture (its gym and the coach's outfit) */
+const inD = (d) => !DISC || DISC.includes(d);
 
 function techQuery(tech, coach, d, extra = {}) {
   const p = pose(tech, coach);
@@ -60,6 +64,7 @@ for (const t of TECHNIQUES) {
   for (const coach of ['homme', 'femme']) {
     if (!want('thumbs', t.id, `${t.id}@${coach}`)) continue;
     const d = pose(t.id, coach).d ?? t.disciplines[0];
+    if (!inD(d)) continue;
     const png = `${CACHE}/thumbs/${coach}/${t.id}.png`;
     renders.push({ png, q: techQuery(t.id, coach, d, { thumb: '1' }), vw: 240, vh: 300, dpr: 2 });
     jobs.push({ out: `public/thumbs/${coach}/${t.id}`, w: 240, h: 300, mood: d, seed: `thumb-${coach}-${t.id}`, layers: [png], centers: [0.5], fill: 0.98, quality: 78 });
@@ -70,6 +75,7 @@ for (const r of RENDERS) {
   const t = TECHNIQUES.find((x) => x.id === r.tech);
   if (!want('ency', r.id, r.tech)) continue;
   const d = r.d ?? t?.disciplines[0] ?? 'boxe';
+  if (!inD(d)) continue;
   const out = `public/encyclopedie/${r.id}`;
   if (r.still) {
     const png = `${CACHE}/ency/${r.id}.png`;
@@ -89,7 +95,7 @@ for (const r of RENDERS) {
 }
 
 for (const a of ART) {
-  if (!want('art', a.discipline, a.tech)) continue;
+  if (!want('art', a.discipline, a.tech) || !inD(a.discipline)) continue;
   const png = `${CACHE}/art/${a.discipline}.png`;
   renders.push({ png, q: techQuery(a.tech, a.coach, a.discipline, a.az !== undefined ? { az: String(a.az) } : {}), vw: 600, vh: 760, dpr: 1.5 });
   jobs.push({ out: `public/art/disciplines/${a.discipline}-600`, w: 600, h: 760, mood: a.discipline, seed: `art-${a.discipline}`, layers: [png], centers: [0.5], fill: 0.92, sizes: [[240, 304, `public/art/disciplines/${a.discipline}-240`]], quality: 82 });
@@ -97,7 +103,7 @@ for (const a of ART) {
 
 for (const coach of ['homme', 'femme']) {
   const c = CHAMPION[coach];
-  if (!want('portraits', c)) continue;
+  if (!want('portraits', c) || !inD('mma')) continue;
   const png = `${CACHE}/portraits/${c}.png`;
   const q = new URLSearchParams({ champion: c, look: 'realiste', d: 'mma', tenue: 'mma', motion: 'garde', style: 'mma', az: '28', el: '6', span: '1.04', fy: '0.86' });
   renders.push({ png, q, vw: 450, vh: 600, dpr: 2 });
@@ -107,7 +113,7 @@ for (const coach of ['homme', 'femme']) {
 const SCENE_MOOD = { 'gants-boxe': 'boxe', 'protege-tibias': 'kickboxing', rashguard: 'bjj', 'short-combat': 'mma', 'short-muaythai': 'muaythai', judogi: 'judo', 'kimono-jjb': 'bjj', ring: 'boxe', cage: 'mma', tatami: 'judo', ceintures: 'judo' };
 const sceneJobs = [];
 for (const s of SCENES) {
-  if (!want('scenes', s.id, s.scene)) continue;
+  if (!want('scenes', s.id, s.scene) || !inD(SCENE_MOOD[s.scene] ?? 'boxe')) continue;
   const png = `${CACHE}/scenes/${s.scene}.png`;
   sceneJobs.push(s.scene);
   jobs.push({ out: `public/encyclopedie/${s.id}`, w: 720, h: 400, mood: SCENE_MOOD[s.scene] ?? 'boxe', seed: s.id, layers: [png], centers: [0.5], fill: 0.86, floor: 0.9, mini: { size: 160 }, object: true });
@@ -131,11 +137,16 @@ if (todo.length) {
       try {
         r.q.set('mood', '1');
         r.q.set('alpha', '1');
-        await page.goto(`http://localhost:${PORT}/#/lab?${r.q}`);
-        await page.waitForFunction(() => window.__labReady === true, null, { timeout: 600000 });
-        await page.waitForFunction(() => ['portee', 'aucune', 'erreur'].includes(window.__labOutfit), null, { timeout: 120000 }).catch(() => {});
-        const outfit = await page.evaluate(() => window.__labOutfit);
-        if (outfit !== 'portee') console.log('ATTENTION tenue', outfit, r.png);
+        // under heavy CPU load the outfit can fail to load (the coach would be drawn without it): load the page again
+        let outfit;
+        for (let attempt = 0; attempt < 3 && outfit !== 'portee' && outfit !== 'aucune'; attempt++) {
+          await page.goto(attempt ? 'about:blank' : `http://localhost:${PORT}/#/lab?${r.q}`);
+          if (attempt) await page.goto(`http://localhost:${PORT}/#/lab?${r.q}`);
+          await page.waitForFunction(() => window.__labReady === true, null, { timeout: 600000 });
+          await page.waitForFunction(() => ['portee', 'aucune', 'erreur'].includes(window.__labOutfit), null, { timeout: 120000 }).catch(() => {});
+          outfit = await page.evaluate(() => window.__labOutfit);
+          if (outfit !== 'portee') console.log('ATTENTION tenue', outfit, r.png, attempt < 2 && outfit !== 'aucune' ? '(nouvel essai)' : '');
+        }
         await page.waitForTimeout(3000);
         const shots = r.times ? r.times.map((f, i) => [f, r.pngs[i]]) : [[null, r.png]];
         for (const [f, png] of shots) {

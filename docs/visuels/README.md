@@ -41,6 +41,7 @@ l'application), sauf indication contraire dans `poses.json`.
 npm run visuels                              # tout (environ 2 h sur un processeur sans carte graphique)
 npm run visuels -- --only thumbs,art         # une ou plusieurs familles : thumbs, ency, art, portraits, scenes
 npm run visuels -- --id jab,tech-jab,boxe    # quelques images : technique, id d'encyclopédie, discipline…
+npm run visuels -- --d judo,bjj --force      # les images de quelques disciplines (une tenue a changé)
 npm run visuels -- --force                   # refaire les rendus 3D (coachs ou mouvements modifiés)
 npm run visuels -- --recompose               # seulement réappliquer les ambiances, sans nouveau rendu (quelques minutes)
 ```
