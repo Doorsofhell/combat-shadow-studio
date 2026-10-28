@@ -1246,3 +1246,67 @@ body:has(.training .sheet-backdrop) .nav-bottom {
     animation: none;
   }
 }
+
+/* 1.4.0 (Youssef, 2026-10-28: « Toute l'interface doit pulser ou clignoter discrètement au rythme du bip du round ou
+   de l'annonce vocale des combinaisons »): one short flash per signal, in the colour of the phase (amber
+   preparation, red work, teal rest), at most 3 a second (pulse.ts). It never takes a tap. */
+.tr-pulse {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: inherit;
+}
+.training[data-pulse='contour'] .tr-pulse {
+  box-shadow: inset 0 0 0 3px var(--pulse-c), inset 0 0 36px 6px var(--pulse-c);
+}
+.training[data-pulse='fond'] .tr-pulse {
+  background: radial-gradient(ellipse at 50% 55%, var(--pulse-c), transparent 70%);
+}
+.training[data-pulse='contour'].pulse-on .tr-pulse {
+  animation: tr-pulse 0.32s ease-out;
+}
+.training[data-pulse='fond'].pulse-on .tr-pulse {
+  animation: tr-pulse-soft 0.38s ease-out;
+}
+.training[data-pulse='chrono'].pulse-on .hud-time {
+  animation: tr-pulse-chrono 0.32s ease-out;
+}
+@keyframes tr-pulse {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: var(--pulse-i, 0.7);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes tr-pulse-soft {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: calc(var(--pulse-i, 0.7) * 0.35);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes tr-pulse-chrono {
+  30% {
+    color: var(--pulse-c);
+    transform: scale(1.08);
+  }
+}
+/* fewer animations asked by the system: a softer flash, same rhythm */
+@media (prefers-reduced-motion: reduce) {
+  .training[data-pulse='contour'].pulse-on .tr-pulse {
+    animation-name: tr-pulse-soft;
+  }
+  .training[data-pulse='chrono'].pulse-on .hud-time {
+    transform: none;
+  }
+}

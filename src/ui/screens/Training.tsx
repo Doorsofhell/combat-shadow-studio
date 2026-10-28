@@ -26,8 +26,8 @@ import type { StageView } from '../../three/StudioStage';
 import { StudyPanel, useStudy } from '../training/Study';
 import { MoveBand, MoveName } from '../training/MoveBand';
 import { ConsigneBand } from '../training/ConsigneBand';
-import { toast } from '../components/Toast';
 import { CoachScreen, useCoachUi } from '../coach-screen/CoachScreen';
+import { usePulseFlash } from '../training/pulse';
 import { ArBridge } from '../../ar/ArBridge';
 import { CoachLookPicker } from '../components/CoachLookPicker';
 import { ArControls, ArIntroSheet, useArView } from '../training/ArMode';
@@ -475,14 +475,8 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
       delete html.dataset.handsFree;
     };
   }, [handsFree]);
-  // 1.4.0 (Youssef, 2026-10-28: « J'ai l'impression d'avoir perdu les consignes vocales »): a session that starts
-  // with the voice off says so once, and how to bring it back (a crossed speaker also stays in the coach zone)
-  const saidMuted = useRef(false);
-  useEffect(() => {
-    if (!running || saidMuted.current) return;
-    saidMuted.current = true;
-    if (!settings.voice || settings.voiceVolume <= 0) toast('Voix coupée : touche le coach, puis le haut-parleur pour la remettre');
-  }, [running, settings.voice, settings.voiceVolume]);
+  // 1.4.0: the screen flashes with the signals of the session (style and strength in Réglages)
+  usePulseFlash(root, running ? settings.pulse : 'off');
   // vibrations at the moments that count, for a phone put down in front of the user (where the device can)
   const prevBeat = useRef<{ running: boolean; paused: boolean; phase: string } | null>(null);
   useEffect(() => {
@@ -529,7 +523,15 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   );
 
   return (
-    <div className={`training ${immersive ? 'immersive' : ''} ${fs.idle ? 'fs-idle' : ''} ${overflow ? 'overflow' : ''} ${asking ? 'asking' : ''}`} ref={root} data-testid="training">
+    <div
+      className={`training ${immersive ? 'immersive' : ''} ${fs.idle ? 'fs-idle' : ''} ${overflow ? 'overflow' : ''} ${asking ? 'asking' : ''}`}
+      ref={root}
+      data-testid="training"
+      data-pulse={settings.pulse}
+      style={{ '--pulse-i': settings.pulseIntensity, '--pulse-c': view.phase === 'decompte' ? 'var(--phase-prep)' : view.phase === 'repos' ? 'var(--phase-rest-ink)' : 'var(--red)' } as React.CSSProperties}
+    >
+      {/* 1.4.0: the flash of the signals (gong, countdown, move called), never over a button (pointer-events: none) */}
+      <div className="tr-pulse" aria-hidden="true" />
       {/* 0.35 HUD: discipline and level, the state of the session, the round and its time left, a thin progress bar.
           The exercise (and so the full combination) is no longer shown here while it runs: see the band and tr-info */}
       <header className={`tr-top tr-hud ${view.phase} ${view.paused ? 'paused' : ''}`} data-testid="hud">

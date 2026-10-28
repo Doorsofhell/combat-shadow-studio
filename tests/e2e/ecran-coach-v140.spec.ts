@@ -80,7 +80,7 @@ test('fiche technique : les angles et la vitesse dans la zone du coach changent 
   await expect(page.getByTestId('mastery-switch')).toBeVisible();
 });
 
-test('voix coupée : un haut-parleur barré reste dans le coin, et la séance le dit au départ', async ({ page }) => {
+test('voix coupée : un haut-parleur barré reste dans le coin, sans message au départ (Youssef : « Pas besoin de dire voix coupée »)', async ({ page }) => {
   await seedProfile(page, {}, { voice: false });
   for (const [path, id] of [['/', 'hero-stage'], ['/techniques/jab?d=boxe', 'technique-stage']] as const) {
     await page.goto(`/#${path}`);
@@ -89,7 +89,8 @@ test('voix coupée : un haut-parleur barré reste dans le coin, et la séance le
   await page.goto('/#/entrainement?ex=boxe-debutant-02&mode=technique');
   await expect(page.getByTestId('coach-muted')).toBeVisible();
   await page.getByTestId('start').click();
-  await expect(page.getByText('Voix coupée : touche le coach, puis le haut-parleur pour la remettre')).toBeVisible();
+  await page.waitForTimeout(1500);
+  await expect(page.getByText(/Voix coupée/)).toHaveCount(0);
   // the sound back: the sign goes away
   await showCoachTools(page);
   await page.getByTestId('sound').click();

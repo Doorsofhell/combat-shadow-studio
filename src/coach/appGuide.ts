@@ -295,7 +295,7 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['fiche', 'fiche technique', 'cette fiche', 'page de la technique', 'consignes du coach', 'barre de lecture'],
     screens: ['technique'],
     answer:
-      'Sur une fiche, le coach montre la technique en boucle. Touche-le une fois : le son, la vitesse, le plein écran et les angles de caméra apparaissent sur lui ; touche-le encore pour les cacher. Sous le coach, la lecture met en pause ou relance ; juste à côté, deux icônes te servent à marquer où tu en es.\n' +
+      'Sur une fiche, le coach montre la technique en boucle. Touche-le une fois : le son, la vitesse, le plein écran et les angles de caméra apparaissent sur lui ; touche-le encore pour les cacher. Sous le coach, la barre de lecture met en pause ou relance ; juste à côté, deux icônes te servent à marquer où tu en es.\n' +
       'Dessous : la description, le guide pas à pas (étapes, erreurs fréquentes, points clés) et les « Consignes du coach ». En kick-boxing, une carte indique ce que chaque style autorise.\n' +
       'L’étoile en haut à droite ajoute la technique à tes favoris.',
   },
