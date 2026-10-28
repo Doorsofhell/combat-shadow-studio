@@ -2105,3 +2105,15 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet (254 tests, 37,5 min) : 250 RÉUSSIS, 2 ignorés (Firebase), 2 ÉCHOUÉS : `training-layout:329` (déjà en échec avant la 1.0.0) et `coach-suggest:98` (ÉCHOUÉ aussi sur la 1.1.1, sans lien avec ce lot).
   - Android réel : NON EXÉCUTÉ.
 
+
+## 2026-10-28 · 1.2.1 · Visuels studio
+
+- **Demande** (Youssef, 28 octobre) : « pour toutes les images, des images réelles générées par IA, comme l'application sur la capture d'écran » ; après les exemples (https://claude.ai/artifact/3MBXcyKTaEeLuL3Qe7NALH) : « ambiance par discipline ; génération automatique one shot (partout, même encyclopédie) mais prévois de régénérer à la demande ; attention, les positions doivent être humaines et réalistes ».
+- **Constat** : des photos générées par IA ne sont pas possibles ici (aucun outil photoréaliste, sites bloqués). Les images de l'application étaient de trois styles : vignettes des techniques dessinées sur fond blanc (ancien modèle), encyclopédie en rendu réaliste sur fond blanc, visuels des disciplines dessinés ; le judo et le JJB n'avaient pas de visuel.
+- **Changement** (méthode et régénération dans `docs/visuels/README.md`) :
+  - générateur `npm run visuels` (`scripts/visuels/generate.mjs`) : nos coachs 3D posés par le moteur au moment clé, éclairés en studio sombre (vue Lab `mood=1`, nouvelles `MoodLights` de `StudioStage`), puis posés dans une salle dessinée par le code (`scripts/visuels/compose.py` : sacs et lampes flous, fumée, halo, étalonnage, grain) ; options `--only`, `--id`, `--force`, `--recompose` ;
+  - une ambiance par discipline (`scripts/visuels/ambiances.json`) : boxe bleu nuit, kick-boxing ambre, muay-thaï rouge, MMA acier, judo bois chaud, JJB indigo ;
+  - refaits : 182 vignettes (240 × 300), 56 illustrations de coach et 11 objets ou lieux de l'encyclopédie, 6 visuels de discipline (judo et JJB ajoutés), 2 portraits de « Choisis ton coach » ;
+  - fond des vignettes sombre (`.tech-thumb`), provenance des images de l'encyclopédie mise à jour, anciens scripts de capture remplacés (`shot-thumbs`, `shot-portraits`, `encyclopedie/renders`, `encyclopedie/webp`) ;
+  - Nouveautés 1.2.1, version 1.2.1.
+- **Contrôle des poses** (`docs/visuels/CONTROLE_POSES.md`) : chaque rendu vérifié sur planche ; 3 corrections (`scripts/visuels/poses.json`) : sprawl montré de face (l'animation garde les tibias levés, anomalie du moteur à corriger dans un lot à part), sit-out à l'instant où la main est posée, visuel du judo en garde de saisie.

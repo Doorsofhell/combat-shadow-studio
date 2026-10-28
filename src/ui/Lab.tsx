@@ -82,6 +82,7 @@ export function Lab() {
       },
     };
   }, [q, coach, disc, champion]);
+  // mood=1: lights of the studio visuals (scripts/visuels), with alpha=1 for a transparent picture
   // look=realiste|manga|encre, render=precedent: the v0.22 render (fallback), for before/after captures
   const labStyle = q.get('look') === 'realiste' ? 'realiste' : q.get('look') === 'manga' ? 'manga' : 'encre';
   const render = q.get('render') === 'precedent' ? 'precedent' : 'premium';
@@ -128,9 +129,10 @@ export function Lab() {
             quality="haute"
             zoom={Number(q.get('zoom') ?? '1')}
             focusY={q.get('fy') ? Number(q.get('fy')) : undefined}
+            mood={!!q.get('mood')}
           >
             <CoachModel coach={coach} style={labStyle} render={render} quality="haute" look={look} model={champion ? `./coaches/${champion}/model` : undefined} onRig={onRig} onFrame={onFrame} outfit={outfit} onOutfit={onOutfit} />
-            {labStyle === 'realiste' && render === 'premium' && <StudioEnvironment />}
+            {labStyle === 'realiste' && render === 'premium' && <StudioEnvironment intensity={q.get('mood') ? 0.06 : 0.35} />}
           </StudioStage>
         </Suspense>
       </Canvas>

@@ -1,7 +1,7 @@
 {
   "name": "combat-shadow-studio",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,6 +10,7 @@
     "typecheck": "tsc -b",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "visuels": "node scripts/visuels/generate.mjs",
     "build:android": "tsc -b && CAP_BUILD=1 vite build && node scripts/android-version.mjs && cap sync android",
     "android:open": "cap open android",
     "android:apk-test": "npm run build:android && cd android && ./gradlew assembleDebug",

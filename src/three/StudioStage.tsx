@@ -53,6 +53,8 @@ export interface StudioStageProps {
   shadows?: boolean;
   /** realistic look (v0.29): contrasted studio lighting (key, fill, rim) instead of the even light of the drawn looks */
   realistic?: boolean;
+  /** studio visuals (scripts/visuels): dark photo-studio lights, no floor shadow (the picture is laid on its own room) */
+  mood?: boolean;
 }
 
 /**
@@ -92,6 +94,23 @@ export function StageLights({ dark = false, shadows = false, realistic = false, 
  * light (cool from above, dark blue from the ground), a key light from high front right and a cool rim light from
  * behind left, over a dark background. Same model, same shadows setting as the studio.
  */
+/**
+ * Studio visuals (cards, encyclopedia, discipline artwork made by scripts/visuels): a hard warm key light from high on
+ * the right, two cool rim lights from behind, almost no ambient light, so the coach stands out of a dark room in light
+ * and shade like a gym photo. No shadow map: on the photo-textured skin it drew stripes.
+ */
+function MoodLights() {
+  return (
+    <>
+      <hemisphereLight args={['#9fb4d0', '#0a0c10', 0.05]} />
+      <directionalLight position={[3.2, 4.0, 0.9]} intensity={4.2} color="#ffe2bf" />
+      <directionalLight position={[-3, 2.2, -2.5]} intensity={2.6} color="#7fa8ff" />
+      <directionalLight position={[3, 1.8, -3]} intensity={1.6} color="#a9c4ff" />
+      <directionalLight position={[-2, 0.8, 2.5]} intensity={0.12} color="#5d7290" />
+    </>
+  );
+}
+
 function VividLights({ shadows }: { shadows: boolean }) {
   return (
     <>
@@ -133,7 +152,7 @@ const corner = new Vector3();
  * (computed from the real animation), from the requested angle, and glides to a new angle
  * instead of cutting. In free mode the user turns around the coach with a finger.
  */
-export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 1, focusY, follow, envelope, origin, orbit = false, free = false, onUserOrbit, dark = false, shadows = false, realistic = false, vive = false }: StudioStageProps) {
+export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 1, focusY, follow, envelope, origin, orbit = false, free = false, onUserOrbit, dark = false, shadows = false, realistic = false, vive = false, mood = false }: StudioStageProps) {
   const { camera, size } = useThree();
   const controls = useRef<OrbitControlsImpl>(null);
   const cur = useRef<{ az: number; el: number; dist: number; target: Vector3 } | null>(null);
@@ -238,9 +257,9 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
   const hi = quality === 'haute';
   return (
     <>
-      <StageLights dark={dark} shadows={shadows} realistic={realistic} vive={vive} />
+      {mood ? <MoodLights /> : <StageLights dark={dark} shadows={shadows} realistic={realistic} vive={vive} />}
       {children}
-      <ContactShadows position={[0, 0.001, 0]} opacity={dark ? 0.75 : 0.42} scale={6} blur={2.4} far={1.6} resolution={hi ? 512 : 256} color={dark ? '#000000' : '#3a3530'} />
+      {!mood && <ContactShadows position={[0, 0.001, 0]} opacity={dark ? 0.75 : 0.42} scale={6} blur={2.4} far={1.6} resolution={hi ? 512 : 256} color={dark ? '#000000' : '#3a3530'} />}
       {orbit && <OrbitControls ref={controls} enablePan={false} enableDamping={false} minDistance={1.2} maxDistance={12} minPolarAngle={0.15} maxPolarAngle={1.75} />}
     </>
   );

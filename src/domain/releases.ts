@@ -49,6 +49,21 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.2.1',
+      releaseDate: '2026-10-28',
+      title: 'Visuels studio',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Toutes les images des coachs ont l’allure de photos de salle de boxe : Kadir et Amara, éclairés comme en studio dans une salle sombre, avec une ambiance par discipline (bleu nuit pour la boxe, ambre pour le kick-boxing, rouge pour le muay-thaï, acier pour le MMA, bois chaud pour le judo, indigo pour le JJB).' },
+        { category: 'ameliorations', text: 'C’est le cas partout : vignettes des techniques et des programmes, illustrations de l’Encyclopédie (objets et lieux compris), visuels des disciplines et portraits de « Choisis ton coach ».' },
+        { category: 'disciplines', text: 'Le judo et le jiu-jitsu brésilien ont enfin leur visuel, comme les quatre autres disciplines.' },
+      ],
+      links: [
+        { label: 'Techniques', to: '/techniques' },
+        { label: 'Encyclopédie', to: '/encyclopedie' },
+      ],
+    },
+    {
       version: '1.2.0',
       releaseDate: '2026-10-28',
       title: 'Profil et réglages en listes',
