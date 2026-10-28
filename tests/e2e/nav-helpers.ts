@@ -109,3 +109,17 @@ export async function openSetting(page: Page, id: string) {
   if ((await row.getAttribute('aria-expanded')) !== 'true') await row.click();
   await expect(row).toHaveAttribute('aria-expanded', 'true');
 }
+
+/**
+ * 1.4.0 (Youssef, 2026-10-28, option A): the commands of the coach (speed, angles, fullscreen, speaker, pause) are
+ * hidden at rest; one tap on the coach shows them. Shows them if they are hidden (the same as that tap, through the
+ * button kept for the keyboard and screen readers).
+ */
+export async function showCoachTools(page: Page) {
+  const tools = page.getByTestId('coach-tools');
+  // a screen that has just opened may still be mounting its coach (the profile loads): tap again until they show
+  await expect(async () => {
+    if (!(await tools.isVisible())) await page.getByTestId('coach-ui-toggle').dispatchEvent('click');
+    await expect(tools).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 30_000 });
+}

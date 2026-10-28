@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { LATEST_RELEASE, hasUnseenRelease } from '../../domain/releases';
 import { openNews } from '../nav/BottomBar';
-import { CONSIGNE_SECS, useSettings } from '../../store/settings';
+import { CONSIGNE_SECS, PULSE_STYLES, PulseStyle, useSettings } from '../../store/settings';
 import { useProfile } from '../../store/profile';
 import { exportData, useStats } from '../../store/stats';
 import { useCustom } from '../../store/custom';
@@ -92,6 +92,7 @@ function Diag3dRows() {
 }
 
 const pct = (v: number) => `${Math.round(v * 100)} %`;
+const PULSE_LABEL: Record<PulseStyle, string> = { contour: 'Contour lumineux', fond: 'Fond qui respire', chrono: 'Chrono seul', off: 'Coupée' };
 
 export function SettingsPage() {
   const { section } = useParams();
@@ -243,6 +244,22 @@ export function SettingsPage() {
             <Segmented label="Temps par consigne" value={settings.consigneSec} onChange={(v) => set({ consigneSec: v })} options={CONSIGNE_SECS.map((s) => ({ id: s, label: `${String(s).replace('.', ',')} s` }))} />
           </PanelRow>
         )}
+          </SetItem>
+          {/* 1.4.0 (Youssef, 2026-10-28: « Toute l'interface doit pulser ou clignoter discrètement au rythme du bip du
+              round ou de l'annonce vocale des combinaisons ») */}
+          <SetItem id="pulsation" icon="notifications" title="Pulsation pendant la séance" summary={settings.pulse === 'off' ? 'Coupée' : `${PULSE_LABEL[settings.pulse]} · ${pct(settings.pulseIntensity)}`}>
+            <PanelRow label="Style" column>
+              <Segmented
+                label="Style de la pulsation"
+                value={settings.pulse}
+                onChange={(v) => set({ pulse: v })}
+                options={PULSE_STYLES.map((id) => ({ id, label: PULSE_LABEL[id] }))}
+              />
+            </PanelRow>
+            {settings.pulse !== 'off' && <SliderRow id="pi" label="Intensité" value={settings.pulseIntensity} min={0.3} max={1} step={0.1} onChange={(v) => set({ pulseIntensity: v })} format={pct} />}
+            <p className="small muted" style={{ padding: '0 0 8px' }}>
+              L’écran s’éclaire brièvement à chaque signal de la séance : gong, décompte, annonce d’un coup. Jamais plus de 3 éclairs par seconde.
+            </p>
           </SetItem>
           <SetItem id="coach-ia" icon="coachAi" title="Coach IA" summary={`Répond sur le téléphone · historique ${ai.keepHistory ? 'gardé' : 'désactivé'}`}>
             <Toggle

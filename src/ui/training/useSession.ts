@@ -7,6 +7,7 @@ import { useSettings } from '../../store/settings';
 import { say, stopVoice } from '../../audio/voice';
 import { beep, bell, impact, restSignal, unlockAudio } from '../../audio/sound';
 import { Plan, playerSteps } from './plan';
+import { pulse } from './pulse';
 import { keepScreenOn, onAppPause } from '../../platform/native';
 import { useResume } from '../../store/resume';
 import { createMoveStore } from './moveStore';
@@ -216,6 +217,8 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
         const cfg = settingsRef.current;
         const t = TECHNIQUE_BY_ID.get(techId);
         // the chronometer's calls come first: a move is not called over « Round 2 » or « Dix secondes »
+        // 1.4.0: the screen flashes with the move called (with the voice or without it)
+        if (t) pulse('move');
         if (t && cfg.voice && cfg.announceMoves && performance.now() - s.timerSaidAt > 1500) {
           // faster speech when the next move follows quickly, so the call stays on the move
           const rate = timeToNext < 0.5 ? 1.45 : timeToNext < 0.9 ? 1.25 : 1.1;
@@ -286,12 +289,14 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
           case 'prep-count':
             if (e.n <= COUNTDOWN) {
               beep(false);
+              pulse('count');
               speak(String(e.n));
             }
             break;
           case 'work-start': {
             // the start signal, once: the gong (or the bell of the former sessions when gongs are off)
             bell(1);
+            pulse('gong');
             const it = plan.items[e.itemIndex];
             speak(e.round === 1 ? 'En garde' : cardio ? `Cycle ${e.round}` : `Round ${e.round}`);
             if (it && e.round === 1) s.banner = null;
@@ -299,12 +304,14 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
             break;
           }
           case 'warning':
+            pulse('warning');
             if (cfg.voice) speak(e.secondsLeft >= 30 ? 'Trente secondes' : 'Dix secondes', false);
             else beep(true);
             break;
           case 'work-end': {
             flush(e.itemIndex);
             if (cfg.gongs) bell(3);
+            pulse('gong');
             const it = plan.items[e.itemIndex];
             if (e.last) speak('Séance terminée. Bravo');
             else if (e.nextItem) {
@@ -329,6 +336,7 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
             break;
           case 'rest-count':
             beep(false);
+            pulse('count');
             break;
           case 'done':
             phaseChanged = true;

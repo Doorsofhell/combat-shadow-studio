@@ -64,3 +64,23 @@ describe('1.3.0 consignes pendant la séance', () => {
     expect(bad.settings.consigneSec).toBe(3.5);
   });
 });
+
+describe('1.4.0 pulsation pendant la séance', () => {
+  const merge = useSettings.persist.getOptions().merge!;
+  type S = ReturnType<typeof useSettings.getState>;
+  it('une sauvegarde d’avant 1.4.0 reçoit « Contour lumineux, 70 % » et garde ses autres choix', () => {
+    const old = merge({ settings: { voice: false, consigneSec: 5 } }, useSettings.getState()) as S;
+    expect(old.settings.voice).toBe(false);
+    expect(old.settings.consigneSec).toBe(5);
+    expect(old.settings.pulse).toBe('contour');
+    expect(old.settings.pulseIntensity).toBe(0.7);
+  });
+  it('un choix enregistré est gardé, une valeur inconnue revient au défaut', () => {
+    const kept = merge({ settings: { pulse: 'off', pulseIntensity: 0.4 } }, useSettings.getState()) as S;
+    expect(kept.settings.pulse).toBe('off');
+    expect(kept.settings.pulseIntensity).toBe(0.4);
+    const bad = merge({ settings: { pulse: 'stroboscope' as never, pulseIntensity: 5 } }, useSettings.getState()) as S;
+    expect(bad.settings.pulse).toBe('contour');
+    expect(bad.settings.pulseIntensity).toBe(0.7);
+  });
+});

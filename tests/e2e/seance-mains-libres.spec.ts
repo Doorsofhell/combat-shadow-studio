@@ -3,9 +3,11 @@ import { bar, seedProfile } from './nav-helpers';
 
 /**
  * 1.0.0 (refonte ergonomique, lot 4; maquette v4 « Séance » validée par Youssef le 2026-10-27): the phone is put down
- * in front of the user. While the session runs, only Retour and Pause stay; a tap anywhere on the stage pauses;
- * Décomposer, Caméra and « Plus » come back with the pause; vibrations mark the start, the pause and the rounds;
- * a horizontal swipe changes the tab of a space.
+ * in front of the user. While the session runs, only Retour and Pause stay; Décomposer, Caméra and « Plus » come back
+ * with the pause; vibrations mark the start, the pause and the rounds; a horizontal swipe changes the tab of a space.
+ * 1.4.0 (Youssef, 2026-10-28, option A of the coach screen: « un toucher montre les commandes sans pause, le toucher
+ * suivant les cache »): a tap on the stage no longer pauses (1.0.0); it shows the commands of the coach, Pause among
+ * them, and the next tap hides them.
  */
 
 async function recordVibrations(page: Page) {
@@ -17,7 +19,7 @@ async function recordVibrations(page: Page) {
 }
 const vibrations = (page: Page) => page.evaluate(() => (window as unknown as { __vib: unknown[] }).__vib);
 
-test('séance : mains libres, toucher la scène met en pause, les outils reviennent à la pause', async ({ page }) => {
+test('séance : mains libres, toucher la scène montre les commandes sans pause, les outils reviennent à la pause', async ({ page }) => {
   await recordVibrations(page);
   await seedProfile(page);
   await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
@@ -30,10 +32,21 @@ test('séance : mains libres, toucher la scène met en pause, les outils revienn
   for (const a of ['decompose', 'camera', 'menu']) await expect(bar(page).locator(`[data-action="${a}"]`), a).toBeHidden();
   await expect(bar(page).locator('[data-action="back"]')).toBeVisible();
   expect(await vibrations(page)).toContainEqual([60, 40, 90]);
-  // one tap anywhere on the stage: pause (once the time for a double tap has passed)
+  // one tap on the stage: the commands of the coach, the session goes on (once the time for a double tap has passed)
   const stage = page.getByTestId('training-stage');
   const box = (await stage.boundingBox())!;
+  await expect(page.getByTestId('coach-tools')).toHaveCount(0);
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(page.getByTestId('coach-tools')).toBeVisible();
+  await expect(stage).toHaveAttribute('data-ui', 'on');
+  await expect(page.getByTestId('phase')).not.toHaveText('Pause');
+  // the next tap hides them
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(page.getByTestId('coach-tools')).toHaveCount(0);
+  await expect(page.getByTestId('phase')).not.toHaveText('Pause');
+  // the pause of the commands
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await page.getByTestId('coach-pause').click();
   await expect(page.getByTestId('phase')).toHaveText('Pause');
   await expect(page.getByTestId('resume')).toBeVisible();
   expect(await vibrations(page)).toContainEqual([30, 40, 30]);

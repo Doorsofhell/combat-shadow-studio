@@ -3,7 +3,6 @@ import '../training/training.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { CoachStage } from '../../three/CoachStage';
-import { StageGuard } from '../components/StageGuard';
 import { useProfile } from '../../store/profile';
 import { GROUND_MARK_LABEL, GroundMarkId, useSettings } from '../../store/settings';
 import { useCustom } from '../../store/custom';
@@ -27,7 +26,8 @@ import type { StageView } from '../../three/StudioStage';
 import { StudyPanel, useStudy } from '../training/Study';
 import { MoveBand, MoveName } from '../training/MoveBand';
 import { ConsigneBand } from '../training/ConsigneBand';
-import { SoundButton } from '../training/SoundButton';
+import { CoachScreen, useCoachUi } from '../coach-screen/CoachScreen';
+import { usePulseFlash } from '../training/pulse';
 import { ArBridge } from '../../ar/ArBridge';
 import { CoachLookPicker } from '../components/CoachLookPicker';
 import { ArControls, ArIntroSheet, useArView } from '../training/ArMode';
@@ -40,6 +40,14 @@ import { onBackButton } from '../../platform/native';
 import { useResume } from '../../store/resume';
 import { ResumeSnapshot, matchesPlan, sessionQuery } from '../../domain/resume';
 import { useHydrated } from '../../store/useHydrated';
+
+/** 1.4.0: the angles at hand in the coach zone (every other one stays in the sheet « Caméra ») */
+const QUICK_ANGLES: { id: CameraMode; label: string }[] = [
+  { id: 'auto', label: 'Auto' },
+  { id: 'face', label: 'Face' },
+  { id: 'trois-quarts-droit', label: '3/4' },
+  { id: 'profil-droit', label: 'Profil' },
+];
 
 export function Training() {
   const [q] = useSearchParams();
@@ -166,9 +174,11 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   // immersive mode becomes the total fullscreen: a double tap on the stage or the button turns it on; only the coach
   // is left, with the main control over it, and the controls fade after 2.5 s (a tap brings them back). The
   // session keeps running.
-  // 1.0.0 (refonte, lot 4, maquette v4 « Séance »: « Un tap n’importe où met en pause »): a single tap on the stage
-  // pauses the running session (set below, once the session state is known)
+  // 1.4.0 (Youssef, 2026-10-28, option A: « un toucher montre les commandes sans pause, le toucher suivant les
+  // cache »): a single tap on the stage shows or hides the commands of the coach zone (it paused the session in
+  // 1.0.0); the pause is in the commands and in the bottom bar
   const tapStage = useRef<() => void>(() => undefined);
+  const coachUi = useCoachUi();
   const fs = useStageFullscreen(root, { tapRef: stageRef, onTap: () => tapStage.current() });
   const immersive = fs.active;
   const arRoot = useRef<HTMLDivElement>(null);
@@ -452,12 +462,10 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   );
   const toggleState = !running ? 'start' : view.paused ? 'resume' : 'pause';
   // hands-free (maquette v4): while the session runs, only Pause (and Retour) stay above the bottom; Décomposer,
-  // Caméra and « Plus » come back with the pause. A tap anywhere on the stage pauses (not in total fullscreen, where
-  // a tap only brings the faded controls back, as before).
+  // Caméra and « Plus » come back with the pause. A tap on the stage shows or hides the commands of the coach (1.4.0).
   const handsFree = running && !view.paused && !st.tech && !camOpen && !asking && !sheet && !guideId;
   tapStage.current = () => {
-    if (!handsFree || immersive) return;
-    pause();
+    if (!arActive) coachUi.toggle();
   };
   useEffect(() => {
     const html = document.documentElement;
@@ -467,6 +475,8 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
       delete html.dataset.handsFree;
     };
   }, [handsFree]);
+  // 1.4.0: the screen flashes with the signals of the session (style and strength in Réglages)
+  usePulseFlash(root, running ? settings.pulse : 'off');
   // vibrations at the moments that count, for a phone put down in front of the user (where the device can)
   const prevBeat = useRef<{ running: boolean; paused: boolean; phase: string } | null>(null);
   useEffect(() => {
@@ -513,7 +523,15 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   );
 
   return (
-    <div className={`training ${immersive ? 'immersive' : ''} ${fs.idle ? 'fs-idle' : ''} ${overflow ? 'overflow' : ''} ${asking ? 'asking' : ''}`} ref={root} data-testid="training">
+    <div
+      className={`training ${immersive ? 'immersive' : ''} ${fs.idle ? 'fs-idle' : ''} ${overflow ? 'overflow' : ''} ${asking ? 'asking' : ''}`}
+      ref={root}
+      data-testid="training"
+      data-pulse={settings.pulse}
+      style={{ '--pulse-i': settings.pulseIntensity, '--pulse-c': view.phase === 'decompte' ? 'var(--phase-prep)' : view.phase === 'repos' ? 'var(--phase-rest-ink)' : 'var(--red)' } as React.CSSProperties}
+    >
+      {/* 1.4.0: the flash of the signals (gong, countdown, move called), never over a button (pointer-events: none) */}
+      <div className="tr-pulse" aria-hidden="true" />
       {/* 0.35 HUD: discipline and level, the state of the session, the round and its time left, a thin progress bar.
           The exercise (and so the full combination) is no longer shown here while it runs: see the band and tr-info */}
       <header className={`tr-top tr-hud ${view.phase} ${view.paused ? 'paused' : ''}`} data-testid="hud">
@@ -542,56 +560,61 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
         )}
       </header>
 
-      <div className="tr-stage" ref={stageRef} data-testid="training-stage" style={consH ? ({ '--cons-h': `${consH}px` } as React.CSSProperties) : undefined}>
-        <StageGuard place="entraînement">
-        <CoachStage
-          backdrop="theme"
-          coach={coach}
-          discipline={item.discipline}
-          southpaw={stageSouthpaw}
-          view={stageView}
-          free={free}
-          onUserOrbit={() => setCamMode('libre')}
-          frameIds={seq}
-          quality={settings.quality}
-          events={events}
-          onPlayer={onPlayer}
-          onRigReady={(rig, lib) => {
-            st.onRigReady(rig, lib);
-            if (autoStudy.current) {
-              autoStudy.current = false;
-              openStudy(seq[0]);
-            }
-          }}
-          study={st.study}
-          studyActive={!!st.tech}
-          ar={ar}
-          arActive={arActive}
-        />
-        </StageGuard>
+      <CoachScreen
+        context="seance"
+        className="tr-stage"
+        screenRef={stageRef}
+        testId="training-stage"
+        place="entraînement"
+        stageClassName="tr-stage-3d"
+        style={consH ? ({ '--cons-h': `${consH}px` } as React.CSSProperties) : undefined}
+        fs={fs}
+        ui={coachUi}
+        hint={false}
+        fallback={null}
+        commands={{
+          // 1.1.0 (Youssef: « la vitesse d'exécution plus accessible directement depuis le démarrage »)
+          speed: arActive ? undefined : { value: view.speed, onChange: setSpeed },
+          // 1.3.0 (Youssef: « en dessous des deux options déjà présentes… à droite de l'écran »): the speaker
+          sound: !arActive,
+          pause: running ? { paused: view.paused, onToggle: view.paused ? resume : pause } : undefined,
+          angles: arActive || st.tech ? undefined : { value: isAuto ? 'auto' : camMode, options: QUICK_ANGLES, onChange: (id) => (id === 'auto' ? resetCam() : chooseAngle(id as CameraMode)) },
+          extra:
+            teach.closeUp && !free ? (
+              <button className={`btn ${closeUp ? 'on' : ''}`} onClick={() => setCloseUp(!closeUp)} aria-label={teach.closeUp.label} aria-pressed={closeUp}>
+                Zoom
+              </button>
+            ) : undefined,
+        }}
+        stage={
+          <CoachStage
+            backdrop="theme"
+            coach={coach}
+            discipline={item.discipline}
+            southpaw={stageSouthpaw}
+            view={stageView}
+            free={free}
+            onUserOrbit={() => setCamMode('libre')}
+            frameIds={seq}
+            quality={settings.quality}
+            events={events}
+            onPlayer={onPlayer}
+            onRigReady={(rig, lib) => {
+              st.onRigReady(rig, lib);
+              if (autoStudy.current) {
+                autoStudy.current = false;
+                openStudy(seq[0]);
+              }
+            }}
+            study={st.study}
+            studyActive={!!st.tech}
+            ar={ar}
+            arActive={arActive}
+          />
+        }
+      >
         {/* 1.1.0 (Youssef, 2026-10-27: « la numérotation en rouge au milieu de l'écran ne sert plus à rien car on a le
             chronomètre en haut à droite »): no big countdown over the coach; the time of the preparation is in the HUD */}
-        <div className="stage-tools">
-          {/* 1.1.0 (Youssef: « la vitesse d'exécution plus accessible directement depuis le démarrage de n'importe quel
-              mouvement ou enchaînement »): the speed at hand on the stage, before and during the session */}
-          {!arActive && <SpeedTool speed={view.speed} onChange={setSpeed} />}
-          {teach.closeUp && !free && (
-            <button className={`btn ${closeUp ? 'on' : ''}`} onClick={() => setCloseUp(!closeUp)} aria-label={teach.closeUp.label} aria-pressed={closeUp}>
-              Zoom
-            </button>
-          )}
-          {immersive ? (
-            <button className="btn on" onClick={fs.exit} aria-label="Quitter le plein écran" data-testid="fs-exit">
-              <AppIcon id="exitFullscreen" />
-            </button>
-          ) : (
-            <button className="btn" onClick={fs.enter} aria-label="Plein écran : le coach seul, sur tout l’écran" aria-pressed={false} data-testid="fullscreen">
-              <AppIcon id="fullscreen" />
-            </button>
-          )}
-          {/* 1.3.0 (Youssef: « en dessous des deux options déjà présentes… à droite de l'écran »): the sound, one tap per step */}
-          {!arActive && <SoundButton />}
-        </div>
         {!st.tech && !arActive && (settings.groundMarks.avantArriere || settings.groundMarks.pivot || settings.groundMarks.trajectoire) && (
           <div className="mark-legend" aria-label="Légende des repères" data-testid="mark-legend">
             {settings.groundMarks.avantArriere && (
@@ -606,10 +629,10 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
         )}
         {consignesOn && <ConsigneBand techniqueId={focusId ?? null} running={!view.paused} sec={settings.consigneSec} onHeight={setConsH} />}
         {item.soloNote && !immersive && !asking && !consignesOn && <div className="solo-note">{item.soloNote}</div>}
-        {!immersive && !asking && !arActive && !st.tech && <FsHint />}
+        {!immersive && !asking && !arActive && !st.tech && !coachUi.shown && <FsHint />}
         {/* the app's coach bubble and its panel are shown here (lower right corner of the stage) */}
         <div className="tr-coach-slot" ref={setCoachSlot} />
-      </div>
+      </CoachScreen>
 
       <MoveBand
         store={move}
@@ -944,41 +967,3 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   );
 }
 
-/** the speeds offered on the stage; the slider of the options keeps every step from ×0.25 to ×1.5 */
-const SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5];
-const speedText = (v: number) => `×${String(Math.round(v * 100) / 100).replace('.', ',')}`;
-
-/** ×1 on the stage; a touch shows the speeds next to it, one more touch picks one */
-function SpeedTool({ speed, onChange }: { speed: number; onChange: (v: number) => void }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className={`speed-tool ${open ? 'open' : ''}`}>
-      <button type="button" className={`btn ${open ? 'on' : ''}`} onClick={() => setOpen(!open)} aria-expanded={open} aria-label={`Vitesse d’exécution : ${speedText(speed)}`} data-testid="speed-tool">
-        {speedText(speed)}
-      </button>
-      {open && (
-        <div className="speed-choices" role="radiogroup" aria-label="Vitesse d’exécution" data-testid="speed-choices">
-          {SPEEDS.map((v) => {
-            const on = Math.abs(v - speed) < 0.01;
-            return (
-              <button
-                key={v}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                className={`btn ${on ? 'on' : ''}`}
-                onClick={() => {
-                  onChange(v);
-                  setOpen(false);
-                }}
-                data-testid={`speed-${String(v).replace('.', '-')}`}
-              >
-                {speedText(v)}
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}

@@ -49,6 +49,24 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.4.0',
+      releaseDate: '2026-10-28',
+      title: 'Un seul écran coach, et la pulsation',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Le coach de l’Accueil, de la fiche technique, de la séance et de l’aperçu est maintenant le même écran : mêmes gestes, mêmes boutons, au même endroit.' },
+        { category: 'fonctionnalites', text: 'Touche le coach une fois : ses commandes apparaissent dans sa zone, à droite (son, vitesse, plein écran, pause en séance) et les angles en haut à gauche. Touche-le encore une fois : elles disparaissent. Deux touchers rapides : plein écran.' },
+        { category: 'ameliorations', text: 'En séance, un toucher sur le coach ne met plus en pause : il montre les commandes, dont la pause. Le gros bouton Pause reste en bas.' },
+        { category: 'ameliorations', text: 'Fiche technique : la vitesse et les angles de caméra sont dans la zone du coach, il reste plus de place pour lui.' },
+        { category: 'corrections', text: 'Voix coupée : un petit haut-parleur barré reste dans le coin du coach, pour ne jamais l’oublier.' },
+        { category: 'fonctionnalites', text: 'Pulsation : pendant la séance, le contour de l’écran s’éclaire brièvement au gong, au décompte et à chaque coup annoncé, dans la couleur du moment. Jamais plus de 3 éclairs par seconde. Style, intensité ou coupure dans Réglages › Pulsation pendant la séance.' },
+      ],
+      links: [
+        { label: 'Pulsation pendant la séance', to: '/reglages/pulsation' },
+        { label: 'Voix et sons', to: '/reglages/voix' },
+      ],
+    },
+    {
       version: '1.3.2',
       releaseDate: '2026-10-28',
       title: 'Illustrations de l’Encyclopédie',
