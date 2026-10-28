@@ -2091,7 +2091,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 
 ## 2026-10-28 · 1.2.0 · Profil et réglages en listes
 
-- **Demande** (Youssef, 07:4x) : « lorsqu'on clique sur la tête en haut à droite, 2 onglets glissants : Mes infos & Réglages avec tout le reste dans Réglages : une page avec toutes les options en liste bien présentées qui se déploient quand on clique dessus » ; « pareil dans Mes infos » ; proposition choisie B « Groupes Android ». Rappels : aucune perte de contenu, mode jour et nuit.
+- **Demande** (Youssef, 28 octobre) : « lorsqu'on clique sur la tête en haut à droite, 2 onglets glissants : Mes infos & Réglages avec tout le reste dans Réglages : une page avec toutes les options en liste bien présentées qui se déploient quand on clique dessus » ; « pareil dans Mes infos » ; proposition choisie B « Groupes Android ». Rappels : aucune perte de contenu, mode jour et nuit.
 - **Constat** : Profil avait 4 onglets (Mes infos, Mon coach, Coach IA, Réglages) ; Mes infos et Réglages étaient de longues pages de panneaux, avec des réglages d'affichage et de données dans Mes infos.
 - **Changement** (détail et tableau « où va chaque contenu » dans `docs/v120/RAPPORT.md`, captures jour et nuit dans `docs/v120/captures/`) :
   - Profil = 2 onglets, Mes infos et Réglages ; Mon coach et Coach IA deviennent des lignes de Réglages (les pages `/coach` et `/coach-ia` restent) ;
