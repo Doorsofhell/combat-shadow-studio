@@ -34,13 +34,13 @@ export interface RenderRecipe {
   /** close-up of an illu: part of the body height in the frame, and the height looked at (metres) */
   span?: number;
   fy?: number;
-  /** 1.3.3 a scene with two coaches (engine/library/illustrations.ts, duoScenes): Amara (A) and Kadir (B), one picture */
+  /** 1.4.1 a scene with two coaches (engine/library/illustrations.ts, duoScenes): Amara (A) and Kadir (B), one picture */
   duo?: string;
-  /** 1.3.3 elevation of the camera for duo and illu (degrees) */
+  /** 1.4.1 elevation of the camera for duo and illu (degrees) */
   el?: number;
-  /** 1.3.3 outfit of the first coach instead of the discipline's (the referee's: arbitre, arbitre-judo) */
+  /** 1.4.1 outfit of the first coach instead of the discipline's (the referee's: arbitre, arbitre-judo) */
   tenue?: string;
-  /** 1.3.3 an illu shown once, at its end, instead of three instants (a still gesture: the ippon) */
+  /** 1.4.1 an illu shown once, at its end, instead of three instants (a still gesture: the ippon) */
   once?: boolean;
   /** one close-up picture of the coach at rest in guard instead of three instants (equipment worn) */
   still?: { az: number; el: number; span: number; fy: number; what: string };
@@ -161,7 +161,7 @@ export const RENDERS: RenderRecipe[] = [
     alt: 'Planche du coach de face : articulations (épaule, coude, poignet, hanche, genou, cheville) et muscles principaux',
   },
   { id: 'prep-shadow', tech: 'crochet-arriere', coach: 'femme', d: 'kickboxing', alt: 'La coach enchaîne dans le vide, en shadow' },
-  // 1.3.3 scenes with two coaches (illustrations.ts, duoScenes): Amara and Kadir, partners for the illustration
+  // 1.4.1 scenes with two coaches (illustrations.ts, duoScenes): Amara and Kadir, partners for the illustration
   { id: 'pos-montee', tech: 'garde', coach: 'femme', d: 'bjj', duo: 'duo-montee', az: 70, el: 25, alt: 'Montée : assise à califourchon sur le buste du partenaire allongé, genoux au sol de chaque côté' },
   { id: 'pos-garde-fermee', tech: 'garde', coach: 'homme', d: 'bjj', duo: 'duo-garde-fermee', az: 50, el: 30, alt: 'Garde fermée : sur le dos, les jambes autour de la taille de la partenaire à genoux, chevilles croisées dans son dos' },
   { id: 'pos-demi-garde', tech: 'garde', coach: 'homme', d: 'bjj', duo: 'duo-demi-garde', az: 20, el: 35, alt: 'Demi-garde : sur le dos, il emprisonne une jambe de la partenaire entre les siennes' },
@@ -185,7 +185,7 @@ export const RENDERS: RenderRecipe[] = [
 ];
 
 /** illustrations still to make, with their brief (§11 B: « signaler précisément les illustrations restant à produire »).
- * None left since 1.3.3: the kind 'a-produire' stays for the next terms. */
+ * None left since 1.4.1: the kind 'a-produire' stays for the next terms. */
 const TO_PRODUCE: TermImage[] = [];
 
 /** the files made from 3D renders and Blender scenes of the repository */

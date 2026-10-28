@@ -49,7 +49,7 @@ export function Lab() {
   const cam = Number(q.get('cam') ?? '35');
   // v0.31 tenue=<outfit id> or tenue=0: the discipline outfit, as in the app by default
   const outfit = q.get('tenue') === '0' ? null : ((q.get('tenue') as OutfitId | null) ?? outfitFor(disc, true, 'gi'));
-  // 1.3.3 duo=<scene id>&champion2=<coach id>[&tenue2=<outfit>]: a scene with two coaches (illustrations.ts)
+  // 1.4.1 duo=<scene id>&champion2=<coach id>[&tenue2=<outfit>]: a scene with two coaches (illustrations.ts)
   const duoId = q.get('duo');
   const champion2 = duoId && q.get('champion2') && COACH_LOOKS[q.get('champion2')!] ? q.get('champion2')! : null;
   const coach2 = (champion2 ? COACH_LOOKS[champion2].sex : 'femme') as CoachId;

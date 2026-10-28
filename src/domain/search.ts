@@ -38,6 +38,7 @@ const PLACES: { label: string; to: string; hint?: string; words?: string[] }[] =
   { label: 'Mon coach', to: '/reglages/coach', hint: 'Réglages', words: ['kadir', 'amara', 'changer de coach'] },
   { label: 'Coach IA', to: '/reglages/coach-ia', hint: 'Réglages', words: ['historique du coach', 'questions'] },
   { label: 'Consignes pendant la séance', to: '/reglages/consignes', hint: 'Réglages', words: ['consignes', 'points clés', 'temps par consigne', 'enchaînées'] },
+  { label: 'Pulsation pendant la séance', to: '/reglages/pulsation', hint: 'Réglages', words: ['pulsation', 'clignotement', 'clignoter', 'flash', 'éclair', 'bip'] },
   { label: 'Mes infos', to: '/profil', hint: 'Profil', words: ['profil', 'pseudo', 'taille', 'poids', 'imc', 'photo'] },
   { label: 'Thème Nuit, Jour, Auto', to: '/reglages', hint: 'Réglages', words: ['theme', 'sombre', 'clair', 'mode nuit', 'mode jour'] },
   { label: 'Voix et sons', to: '/reglages/voix', hint: 'Réglages', words: ['voix', 'son', 'volume', 'gong', 'audio'] },

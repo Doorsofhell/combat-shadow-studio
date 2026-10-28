@@ -8,7 +8,7 @@ import { RENDERS } from '../../domain/encyclopedia/images';
 import type { Place } from '../library/illustrations';
 
 /**
- * 1.3.3 Scenes with two coaches of the encyclopedia (illustrations.ts, duoScenes; Lab `duo=`): every scene named by
+ * 1.4.1 Scenes with two coaches of the encyclopedia (illustrations.ts, duoScenes; Lab `duo=`): every scene named by
  * a recipe exists, on Amara (A) and Kadir (B) no joint goes through the mat, and the two bodies are really together
  * without being one inside the other (their pelvises neither apart nor merged).
  */

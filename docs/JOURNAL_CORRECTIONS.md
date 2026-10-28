@@ -2142,7 +2142,23 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Contrôle** : chaque image regardée sur planche ; reprises : casque et coquille (découpes booléennes sans effet, corrigées), bandes, protège-poitrine, dojo trop clair, wai kru (genoux au-dessus du tapis), étiquettes qui se chevauchaient.
 - **Tests** : nouveau `src/engine/__tests__/illustrations.test.ts` (chaque pose nommée existe, rien sous le tapis sur Kadir et Amara, genoux posés dans le wai kru) ; `encyclopedia.test.ts` inchangé et RÉUSSI (les schémas gardent une technique existante, le mouvement montré est dans `motion`).
 
-## 2026-10-28 · 1.3.3 · Encyclopédie complète (lot 4, scènes à deux)
+## 2026-10-28 · 1.4.0 · Un seul écran coach, et la pulsation
+
+- **Demande** (Youssef, 28 octobre) : « L'écran du coach devrait être exactement le même module appelé partout et alimenté différemment en fonction du contexte » ; option A « un toucher montre les commandes sans pause, le toucher suivant les cache » ; haut-parleur sous la vitesse et le plein écran ; 13:20 « J'ai l'impression d'avoir perdu les consignes vocales » ; 15:03 « Je ne retrouve pas les clignotement demandé. Ils sont où ? » ; 15:06 « Pas besoin de dire voix coupée » ; 15:21 choix « Contour lumineux ».
+- **Constat après vérification** : quatre scènes coach écrites séparément (Accueil, fiche, séance, aperçu) ; la voix de la 1.3.0 parle bien (séance enregistrée : « Prépare-toi », « 3, 2, 1 », « En garde », « Jab », point clé, volume 100 %), cause probable un toucher sur le haut-parleur réglé au maximum, dont le cran suivant est « coupé » ; la pulsation demandée à 00:07 n'avait pas été codée (la maquette attendait un choix).
+- **Changement** (détail dans `docs/v140/RAPPORT.md`, 14 captures jour et nuit dans `docs/v140/captures/`) : module `src/ui/coach-screen/CoachScreen.tsx` appelé par les 4 écrans ; un toucher montre ou cache les commandes, en séance il ne met plus en pause (pause dans les commandes) ; vitesse et angles de la fiche dans la zone du coach ; haut-parleur barré quand la voix est coupée, sans message au départ ; pulsation contour lumineux à chaque signal de séance (`src/ui/training/pulse.ts`, 3 éclairs par seconde au plus, WCAG 2.3.1), réglage Contour / Fond / Chrono seul / Coupée et intensité ; guide du Coach IA, recherche et Nouveautés 1.4.0, version 1.4.0. `FullscreenStage` retiré (remplacé par le module).
+- **Défauts trouvés en vérifiant et corrigés** : commandes de l'Accueil sur « Changer de coach » ; rangée des angles au milieu de l'écran en paysage (bloquait le double toucher) ; astuce du double toucher sur les angles ; texte du guide qui ne parlait plus de la barre de lecture.
+- **Tests** :
+  - TypeScript : RÉUSSI. Vitest : 862 RÉUSSIS, 1 ignoré (dont `pulse.test.ts` et les valeurs par défaut de la pulsation).
+  - Nouveaux `ecran-coach-v140.spec.ts` (6) et `pulsation-v140.spec.ts` : RÉUSSIS. 5 fichiers adaptés au nouveau geste sans retirer de vérification.
+  - Playwright complet (avant la pulsation, 269 tests) : 263 RÉUSSIS, 2 ignorés (Firebase), 4 ÉCHOUÉS : `coach-bubble:126` (texte du guide, corrigé puis RÉUSSI), `coaching-hud:60` (RÉUSSI à la relance), `training-layout:329` et `coach-suggest:98` (déjà en échec avant).
+  - Relance après la pulsation (pulsation, écran coach, coach-bubble, coaching-hud, séance mains libres, training-layout, consignes, profil) : 51 RÉUSSIS, 1 ÉCHOUÉ `training-layout:329` (déjà en échec avant).
+  - Android réel : NON EXÉCUTÉ.
+  - Intégration de la 1.3.1 (visuels studio, fusionnée pendant le lot) : conflits sur la version, les Nouveautés, le test de navigation et ce journal, résolus en gardant les deux versions (1.4.0 en tête, 1.3.1 ensuite). Après intégration : TypeScript RÉUSSI ; Vitest 867 RÉUSSIS, 1 ignoré ; Playwright (navigation, écran coach, pulsation, consignes, coach-bubble, plein écran) 58/58 RÉUSSIS.
+  - Intégration de la 1.3.2 (illustrations de l'Encyclopédie, fusionnée pendant le lot) : mêmes conflits, résolus en gardant les versions (1.4.0, 1.3.2, 1.3.1). Après intégration : TypeScript RÉUSSI ; Vitest 873 RÉUSSIS, 1 ignoré ; Playwright (navigation, écran coach, pulsation, coach-bubble, plein écran) 49/49 RÉUSSIS.
+  - Validation : Youssef, 28/10 17:42 « Je valide ».
+
+## 2026-10-28 · 1.4.1 · Encyclopédie complète (lot 4, scènes à deux)
 
 - **Demande** : suite de la demande du 28 octobre 15:05 (« publie automatiquement »), relancée à 17:13 : « continu ».
 - **Constat** : il restait 22 fiches « à produire ». Ce sont des scènes à deux personnes : positions au sol du JJB et du judo, soumissions, arbitre de boxe, sparring. S’y ajoutent l’ippon, la pesée et les juges.

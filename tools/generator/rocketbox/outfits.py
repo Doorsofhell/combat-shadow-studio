@@ -900,7 +900,7 @@ def skirt(color, kind, top_z, length):
 def gi_fabric(color, kind):
     """judogi: double weave, heavy, larger grains; BJJ gi: pearl weave, lighter and finer. Matt cotton"""
     if kind == 'costume':
-        # 1.3.3 a referee's suit jacket: fine twill, a little sheen
+        # 1.4.1 a referee's suit jacket: fine twill, a little sheen
         return fabric(f'costume-{color}', color, 'serge', rough=0.7, strength=0.15, sheen=0.1, tone=0.02)
     if kind == 'judo':
         return fabric(f'gi-{color}-judo', color, 'judogi', rough=0.92, strength=0.2, tone=0.03)
@@ -1488,7 +1488,7 @@ def outfit(name):
         parts.extend(collar(col, name))
         parts.extend(belt(C['belt'], hipZ + 0.035, extra=0.02))
     elif name == 'arbitre':
-        # 1.3.3 boxing referee (illustrations of the encyclopedia only): white shirt, black trousers, bow tie, shoes
+        # 1.4.1 boxing referee (illustrations of the encyclopedia only): white shirt, black trousers, bow tie, shoes
         add(top('rash-long', '#EEEEEA'))
         parts.extend(shirt_collar('#EEEEEA'))
         parts.extend(bow_tie('#111214'))
@@ -1512,7 +1512,7 @@ def neck_ring(z):
 
 
 def shirt_collar(color):
-    """1.3.3 the band collar of a referee's shirt: a short tube round the base of the neck"""
+    """1.4.1 the band collar of a referee's shirt: a short tube round the base of the neck"""
     z = H['Neck'].z - 0.02
     cx, cy, r, _ = neck_ring(z)
     o = tube('col-chemise', Vector((cx, cy, z - 0.03)), Vector((cx, cy, z + 0.02)), r + 0.012, r + 0.007, seg=40, rings=4)
@@ -1523,7 +1523,7 @@ def shirt_collar(color):
 
 
 def bow_tie(color):
-    """1.3.3 a boxing referee's bow tie at the collar: two wings and the knot"""
+    """1.4.1 a boxing referee's bow tie at the collar: two wings and the knot"""
     z = H['Neck'].z - 0.035
     cx, cy, r, rad = neck_ring(z)
     front = Vector((cx, cy - rad[9] - 0.016, z))
@@ -1543,7 +1543,7 @@ def bow_tie(color):
 
 
 def shirt_front(color):
-    """1.3.3 the shirt front seen in the V of a suit jacket (a whole shirt under the jacket showed through it)"""
+    """1.4.1 the shirt front seen in the V of a suit jacket (a whole shirt under the jacket showed through it)"""
     z = H['Neck'].z - 0.03
     cx = 0.0
     pts = []
@@ -1558,7 +1558,7 @@ def shirt_front(color):
 
 
 def neck_tie(color):
-    """1.3.3 a judo referee's tie, from the collar down the shirt front to the top of the trousers"""
+    """1.4.1 a judo referee's tie, from the collar down the shirt front to the top of the trousers"""
     z = H['Neck'].z - 0.035
     cx, cy, r, rad = neck_ring(z)
     top_ = Vector((cx, cy - rad[9] - 0.012, z))

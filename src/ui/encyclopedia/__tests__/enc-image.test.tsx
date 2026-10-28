@@ -3,7 +3,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it } from 'vitest';
 import { EncImage } from '../Encyclopedia';
 
-// 1.3.3 Every term has its illustration now (the e2e test checks a picture that cannot load). The case of a term
+// 1.4.1 Every term has its illustration now (the e2e test checks a picture that cannot load). The case of a term
 // whose illustration is still to make stays covered here: it is announced in words, never a silent pictogram.
 let root: Root | null = null;
 let host: HTMLDivElement | null = null;

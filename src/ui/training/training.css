@@ -150,53 +150,6 @@
   touch-action: none;
 }
 
-.stage-tools {
-  position: absolute;
-  right: 8px;
-  top: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  z-index: 2;
-}
-
-.stage-tools .btn {
-  min-height: 44px;
-  min-width: 44px;
-  padding: 0 8px;
-  border-radius: 12px;
-  background: var(--tr-glass);
-  font-size: 0.75em;
-}
-
-.stage-tools .btn.on {
-  background: var(--ink);
-  color: var(--bg);
-}
-
-.stage-tools .sound-btn {
-  flex-direction: column;
-  gap: 2px;
-  min-height: 52px;
-}
-.stage-tools .sound-btn.off {
-  color: var(--red-ink);
-}
-.sound-steps {
-  display: flex;
-  gap: 2px;
-}
-.sound-steps i {
-  width: 6px;
-  height: 3px;
-  border-radius: 2px;
-  background: currentColor;
-  opacity: 0.3;
-}
-.sound-steps i.on {
-  opacity: 1;
-}
-
 .cam-btn {
   flex-direction: column;
   gap: 0 !important;
@@ -238,38 +191,6 @@
 .phase.decompte,
 .phase.travail {
   background: var(--red);
-}
-
-/* 1.1.0: the speed on the stage (top right, above the fullscreen button); its choices open to the left */
-.speed-tool {
-  position: relative;
-}
-.speed-tool > .btn {
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  font-size: 0.85em;
-}
-.speed-choices {
-  /* a column under ×1 along the right edge, so the centred tip of the stage never covers it (Android menu) */
-  flex-direction: column;
-  width: max-content;
-  position: absolute;
-  right: 0;
-  top: calc(100% + 6px);
-  z-index: 6;
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 14px;
-  background: var(--tr-glass);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-}
-.speed-choices .btn {
-  min-width: 44px;
-  min-height: 40px;
-  padding: 0 6px;
-  font-variant-numeric: tabular-nums;
 }
 
 .solo-note {
@@ -587,21 +508,20 @@
   margin: 0 auto;
 }
 .training.immersive .tr-bottom,
-.training.immersive .stage-tools,
 .training.immersive .stage-badge,
 .training.immersive .mark-legend,
 .training.immersive .coach-bubble.in-host {
   transition: opacity 0.25s ease;
 }
 .training.immersive.fs-idle .tr-bottom,
-.training.immersive.fs-idle .stage-tools,
 .training.immersive.fs-idle .stage-badge,
 .training.immersive.fs-idle .mark-legend,
 .training.immersive.fs-idle .coach-bubble.in-host {
   opacity: 0;
   pointer-events: none;
 }
-.training.immersive .stage-tools {
+.training.immersive .coach-tools,
+.training.immersive .coach-muted {
   top: max(8px, env(safe-area-inset-top));
 }
 /* the stage now runs under the floating main control: the coach bubble sits just above it */
@@ -610,8 +530,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .training.immersive .tr-bottom,
-  .training.immersive .stage-tools,
-  .training.immersive .stage-badge,
+    .training.immersive .stage-badge,
   .training.immersive .mark-legend,
   .training.immersive .coach-bubble.in-host {
     transition: none;
@@ -1325,5 +1244,69 @@ body:has(.training .sheet-backdrop) .nav-bottom {
 @media (prefers-reduced-motion: reduce) {
   .cons-line p {
     animation: none;
+  }
+}
+
+/* 1.4.0 (Youssef, 2026-10-28: « Toute l'interface doit pulser ou clignoter discrètement au rythme du bip du round ou
+   de l'annonce vocale des combinaisons »): one short flash per signal, in the colour of the phase (amber
+   preparation, red work, teal rest), at most 3 a second (pulse.ts). It never takes a tap. */
+.tr-pulse {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: inherit;
+}
+.training[data-pulse='contour'] .tr-pulse {
+  box-shadow: inset 0 0 0 3px var(--pulse-c), inset 0 0 36px 6px var(--pulse-c);
+}
+.training[data-pulse='fond'] .tr-pulse {
+  background: radial-gradient(ellipse at 50% 55%, var(--pulse-c), transparent 70%);
+}
+.training[data-pulse='contour'].pulse-on .tr-pulse {
+  animation: tr-pulse 0.32s ease-out;
+}
+.training[data-pulse='fond'].pulse-on .tr-pulse {
+  animation: tr-pulse-soft 0.38s ease-out;
+}
+.training[data-pulse='chrono'].pulse-on .hud-time {
+  animation: tr-pulse-chrono 0.32s ease-out;
+}
+@keyframes tr-pulse {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: var(--pulse-i, 0.7);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes tr-pulse-soft {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: calc(var(--pulse-i, 0.7) * 0.35);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes tr-pulse-chrono {
+  30% {
+    color: var(--pulse-c);
+    transform: scale(1.08);
+  }
+}
+/* fewer animations asked by the system: a softer flash, same rhythm */
+@media (prefers-reduced-motion: reduce) {
+  .training[data-pulse='contour'].pulse-on .tr-pulse {
+    animation-name: tr-pulse-soft;
+  }
+  .training[data-pulse='chrono'].pulse-on .hud-time {
+    transform: none;
   }
 }

@@ -110,7 +110,18 @@ export interface Settings {
   consignes: 'enchainees' | 'point';
   /** 1.3.0: seconds each instruction stays on screen (2.5, 3.5 or 5) */
   consigneSec: number;
+  /**
+   * 1.4.0 (Youssef, 2026-10-28: « Toute l'interface doit pulser ou clignoter discrètement au rythme du bip du round
+   * ou de l'annonce vocale des combinaisons »): during the session the screen flashes briefly on each signal (gong,
+   * countdown, warning, move called). `pulse` is the style or off; `pulseIntensity` its strength (0.3 to 1). Never
+   * more than 3 flashes a second. Older saves get the defaults through `merge`.
+   */
+  pulse: PulseStyle;
+  pulseIntensity: number;
 }
+
+export type PulseStyle = 'contour' | 'fond' | 'chrono' | 'off';
+export const PULSE_STYLES: readonly PulseStyle[] = ['contour', 'fond', 'chrono', 'off'];
 
 export type CoachPanelSize = 'reduit' | 'normal' | 'agrandi';
 export const COACH_PANEL_SIZES: readonly CoachPanelSize[] = ['reduit', 'normal', 'agrandi'];
@@ -150,6 +161,8 @@ export const DEFAULT_SETTINGS: Settings = {
   trainSpace: 'seances',
   consignes: 'enchainees',
   consigneSec: 3.5,
+  pulse: 'contour',
+  pulseIntensity: 0.7,
 };
 
 /** 1.3.0: the times offered for one instruction */
@@ -184,7 +197,7 @@ export const useSettings = create<SettingsState>()(
       merge: (saved, current) => {
         const s = (saved as { settings?: Partial<Settings> })?.settings ?? {};
         const size = COACH_PANEL_SIZES.includes(s.coachPanelSize as CoachPanelSize) ? s.coachPanelSize : DEFAULT_SETTINGS.coachPanelSize;
-        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) }, cardio: { ...DEFAULT_SETTINGS.cardio, ...(s.cardio ?? {}) }, chrono: cleanSetup(s.chrono), consignes: s.consignes === 'point' ? 'point' : 'enchainees', consigneSec: CONSIGNE_SECS.includes(s.consigneSec as number) ? s.consigneSec! : DEFAULT_SETTINGS.consigneSec } };
+        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) }, cardio: { ...DEFAULT_SETTINGS.cardio, ...(s.cardio ?? {}) }, chrono: cleanSetup(s.chrono), consignes: s.consignes === 'point' ? 'point' : 'enchainees', consigneSec: CONSIGNE_SECS.includes(s.consigneSec as number) ? s.consigneSec! : DEFAULT_SETTINGS.consigneSec, pulse: PULSE_STYLES.includes(s.pulse as PulseStyle) ? s.pulse! : DEFAULT_SETTINGS.pulse, pulseIntensity: typeof s.pulseIntensity === 'number' && s.pulseIntensity >= 0.3 && s.pulseIntensity <= 1 ? s.pulseIntensity : DEFAULT_SETTINGS.pulseIntensity } };
       },
     },
   ),

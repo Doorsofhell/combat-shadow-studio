@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useMemo } from 'react';
+import { lazy, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
@@ -16,11 +16,10 @@ import { defaultFighterName } from '../components/fighter';
 import { DisciplineIcon } from '../icons';
 import { useNavActions } from '../nav/store';
 import { NavPanel, usePanel } from '../nav/NavSheets';
-import { FullscreenStage } from '../fullscreen/FullscreenStage';
 import { useKbStyle } from '../components/KickboxingStyle';
 import { techniquesFor } from '../../domain/techniques';
 import { filterTechniques } from '../../domain/kickboxingStyles';
-import { StageGuard } from '../components/StageGuard';
+import { CoachScreen } from '../coach-screen/CoachScreen';
 import { techniqueOfTheDay } from '../../domain/quickPicks';
 
 /** the 3D bundle (three.js, R3F) stays out of the main chunk */
@@ -124,26 +123,30 @@ export function Home() {
       </button>
 
       <section className="hero home-hero" aria-label={`${name}, ${disc.name}`}>
-        {/* 0.27: a double tap shows the coach on the whole screen (Youssef, 2026-10-20 22:09) */}
-        <FullscreenStage className="hero-stage" testId="hero-stage">
-          {/* v0.29: the guard sits outside the hidden layer, so its message and button can be read and used */}
-          <StageGuard place="accueil">
-          <div className="hero-stage-3d" aria-hidden>
-            <Suspense fallback={<StageFallback />}>
-              <CoachStage
-                backdrop="dark"
-                coach={coach}
-                discipline={profile.mainDiscipline}
-                southpaw={profile.guard === 'gaucher'}
-                cameraAngle={25}
-                quality={settings.quality}
-                events={NO_EVENTS}
-                onPlayer={onPlayer}
-              />
-            </Suspense>
-          </div>
-          </StageGuard>
-        </FullscreenStage>
+        {/* 1.4.0: the coach screen of the app (the same module everywhere): a tap shows the sound and the
+            fullscreen in the zone of the coach; a double tap shows the coach on the whole screen */}
+        <CoachScreen
+          context="accueil"
+          className="hero-stage"
+          testId="hero-stage"
+          place="accueil"
+          stageClassName="hero-stage-3d"
+          stageHidden
+          fallback={<StageFallback />}
+          commands={{ sound: true }}
+          stage={
+            <CoachStage
+              backdrop="dark"
+              coach={coach}
+              discipline={profile.mainDiscipline}
+              southpaw={profile.guard === 'gaucher'}
+              cameraAngle={25}
+              quality={settings.quality}
+              events={NO_EVENTS}
+              onPlayer={onPlayer}
+            />
+          }
+        />
         <div className="hero-fade" />
         <div className="hero-info">
           <div className="hero-name" data-testid="fighter-name">

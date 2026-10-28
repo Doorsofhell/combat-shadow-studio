@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { bar, closeMenu, menuItem, seedProfile } from './nav-helpers';
+import { bar, closeMenu, menuItem, seedProfile, showCoachTools } from './nav-helpers';
 
 /**
  * 1.1.0 (Youssef, 2026-10-27/28): the corrections asked on the 1.0.0 — the magnifier in the bar and the photo with
@@ -91,7 +91,9 @@ test('sans défilement : les 6 disciplines et le chrono de combat tiennent dans 
 test('séance : la vitesse sur le coach dès le départ, pas de grand compte à rebours', async ({ page }) => {
   await seedProfile(page);
   await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
-  // the speed of the exercise (a beginner's exercise may start slower than ×1)
+  // the speed of the exercise (a beginner's exercise may start slower than ×1); 1.4.0: in the commands of the coach,
+  // shown by one tap on it
+  await showCoachTools(page);
   await expect(page.getByTestId('speed-tool')).toHaveText(/^×[0-9],?[0-9]*$/);
   await page.getByTestId('speed-tool').click();
   await expect(page.getByTestId('speed-choices').getByRole('radio')).toHaveText(['×0,25', '×0,5', '×0,75', '×1', '×1,25', '×1,5']);
@@ -99,6 +101,7 @@ test('séance : la vitesse sur le coach dès le départ, pas de grand compte à 
   await expect(page.getByTestId('speed-tool')).toHaveText('×0,5');
   await page.getByTestId('start').click();
   await expect(page.locator('.countdown')).toHaveCount(0);
+  await showCoachTools(page);
   await expect(page.getByTestId('speed-tool')).toBeVisible();
 });
 

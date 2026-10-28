@@ -144,7 +144,7 @@ export function illustrationMotions(a: Author): Motion[] {
   return [waiKru(a), warmUp(a), tap(a), ippon(a)];
 }
 
-// ------------------------------------------------------------------ scenes with two people (1.3.3)
+// ------------------------------------------------------------------ scenes with two people (1.4.1)
 
 /** where a body stands in the scene: ground position and heading (yaw, same convention as the poses) */
 export interface Place {

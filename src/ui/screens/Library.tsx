@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { CATEGORY_LABEL, TECHNIQUE_BY_ID, TECHNIQUES, techniquesFor } from '../../domain/techniques';
 import { EXERCISES, EXERCISE_BY_ID } from '../../domain/exercises';
@@ -16,15 +16,15 @@ import { playerSteps } from '../training/plan';
 import { say } from '../../audio/voice';
 import { GuideCard } from '../GuideCard';
 import { MasterySwitch } from '../components/Playback';
-import { AnimationBadge, DisciplineLabel, ModeBadge, CameraControls, EmptyState, EntryCard, FilterChips, KbOnlyBadge, KickboxingRulesCard, KickboxingStylePicker, LevelSelector, PageHead, PlaybackControls, SectionHead, Tabs, TechniqueCard, useKbStyle } from '../components';
+import { AnimationBadge, DisciplineLabel, ModeBadge, EmptyState, EntryCard, FilterChips, KbOnlyBadge, KickboxingRulesCard, KickboxingStylePicker, LevelSelector, PageHead, PlaybackControls, SectionHead, Tabs, TechniqueCard, useKbStyle } from '../components';
 import { filterExercises, filterTechniques } from '../../domain/kickboxingStyles';
 import { ExerciseList, ExerciseSheet } from './Discipline';
 import { AppIcon, DisciplineIcon } from '../icons';
 import { useNavActions } from '../nav/store';
 import { setSelection, useSelection } from '../nav/selection';
 import { LibraryPanels } from './LibraryNav';
-import { FullscreenStage } from '../fullscreen/FullscreenStage';
-import { StageGuard } from '../components/StageGuard';
+import { CoachScreen } from '../coach-screen/CoachScreen';
+import { CAMERA_PRESETS } from '../components/Playback';
 import { exerciseForTechnique } from '../../domain/quickPicks';
 import { TechniqueFilter, neighbours, parseTechniqueFilter, sheetQuery, techniqueCatalogue } from './techniqueOrder';
 import { PremiumMarker } from '../premium/PremiumMarker';
@@ -43,6 +43,9 @@ const HUB_TABS: { id: HubTab; label: string; icon: ReactNode }[] = [
   { id: 'techniques', label: 'Techniques', icon: <AppIcon id="techniques" size={18} /> },
   { id: 'combinaisons', label: 'Combinaisons', icon: <AppIcon id="combos" size={18} /> },
 ];
+
+/** 1.4.0: the speeds of a technique sheet, in the coach zone (the former slider went from ×0.2 to ×1.2) */
+const SHEET_SPEEDS = [0.2, 0.4, 0.6, 0.8, 1, 1.2];
 
 /** "Techniques" tab of Apprendre: individual techniques and combinations. */
 export function Library() {
@@ -353,10 +356,19 @@ export function TechniquePage() {
           </button>
         }
       />
-      {/* 0.27: a double tap shows the coach on the whole screen (Youssef, 2026-10-20 22:09) */}
-      <FullscreenStage className="preview-stage" testId="technique-stage">
-        <StageGuard place="fiche technique">
-        <Suspense fallback={<div className="hero-loading"><div className="stage-skeleton" /></div>}>
+      {/* 1.4.0: the coach screen of the app (the same module everywhere): a tap shows the sound, the speed, the
+          angles and the fullscreen in the zone of the coach; a double tap shows the coach on the whole screen */}
+      <CoachScreen
+        context="fiche"
+        className="preview-stage"
+        testId="technique-stage"
+        place="fiche technique"
+        commands={{
+          sound: true,
+          speed: { value: speed, onChange: setPlayerSpeed, speeds: SHEET_SPEEDS },
+          angles: { value: cam, options: CAMERA_PRESETS, onChange: (a) => setCam(a as number) },
+        }}
+        stage={
           <CoachStage
             backdrop="dark"
             coach={(render === 'premium' ? null : fighter?.look.sex) ?? profile.coach ?? 'homme'}
@@ -367,9 +379,8 @@ export function TechniquePage() {
             events={events}
             onPlayer={onPlayer}
           />
-        </Suspense>
-        </StageGuard>
-      </FullscreenStage>
+        }
+      />
       {near && near.total > 1 && (
         <nav className="tech-step" aria-label="Techniques de la liste" data-testid="technique-step">
           <button
@@ -404,14 +415,8 @@ export function TechniquePage() {
           else player.current?.play();
           setPlaying(!playing);
         }}
-        speed={speed}
-        onSpeed={(v) => {
-          setSpeed(v);
-          if (player.current) player.current.speed = v;
-        }}
         extra={<MasterySwitch id={t.id} />}
       />
-      <CameraControls value={cam} onChange={setCam} />
       <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
         <ModeBadge mode={t.mode} />
         <AnimationBadge id={t.id} />

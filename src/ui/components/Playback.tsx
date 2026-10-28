@@ -3,18 +3,23 @@ import { useGoals, type Mastery } from '../../store/goals';
 import { AppIcon } from '../icons';
 import { Segmented } from './Chips';
 
-/** Play / pause and speed slider of a 3D preview. */
-export function PlaybackControls({ playing, onToggle, speed, onSpeed, min = 0.2, max = 1.2, extra }: { playing: boolean; onToggle: () => void; speed: number; onSpeed: (v: number) => void; min?: number; max?: number; extra?: React.ReactNode }) {
+/**
+ * Play / pause and speed slider of a 3D preview. 1.4.0: without `onSpeed` the speed is left to the commands of the
+ * coach screen (the technique sheet).
+ */
+export function PlaybackControls({ playing, onToggle, speed, onSpeed, min = 0.2, max = 1.2, extra }: { playing: boolean; onToggle: () => void; speed?: number; onSpeed?: (v: number) => void; min?: number; max?: number; extra?: React.ReactNode }) {
   return (
     <div className="playback">
       <button type="button" className="btn icon" onClick={onToggle} aria-label={playing ? 'Pause' : 'Lecture'}>
         {playing ? <AppIcon id="pause" /> : <AppIcon id="play" />}
       </button>
-      <label className="speed-ctl">
-        <span>Vitesse</span>
-        <input type="range" min={min} max={max} step={0.05} value={speed} onChange={(e) => onSpeed(Number(e.target.value))} aria-label="Vitesse de l’animation" />
-        <b>×{speed.toFixed(2)}</b>
-      </label>
+      {onSpeed && speed !== undefined && (
+        <label className="speed-ctl">
+          <span>Vitesse</span>
+          <input type="range" min={min} max={max} step={0.05} value={speed} onChange={(e) => onSpeed(Number(e.target.value))} aria-label="Vitesse de l’animation" />
+          <b>×{speed.toFixed(2)}</b>
+        </label>
+      )}
       {extra}
     </div>
   );

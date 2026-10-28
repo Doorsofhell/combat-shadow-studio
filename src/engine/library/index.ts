@@ -53,7 +53,7 @@ export function getIllustration(rig: CoachRig, style: StanceStyle, id: string, p
 }
 
 /**
- * 1.3.3 A scene of the encyclopedia with two coaches (illustrations.ts): A and B each get their own motion and their
+ * 1.4.1 A scene of the encyclopedia with two coaches (illustrations.ts): A and B each get their own motion and their
  * place in the scene. Built for the Lab view only.
  */
 export function getDuo(rigA: CoachRig, rigB: CoachRig, style: StanceStyle, id: string) {

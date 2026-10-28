@@ -43,7 +43,7 @@ et techniques de judo font humains au moment clé : appuis au sol, buste et bras
   silhouettes ne se cachent pas.
 - **Soumission** (main qui tape) : seule, la pose ne se lisait pas ; reportée au lot 4 avec un partenaire.
 
-## 1.3.3 · Scènes à deux de l’Encyclopédie
+## 1.4.1 · Scènes à deux de l’Encyclopédie
 
 Chaque scène a été rendue, regardée, corrigée puis rendue de nouveau (quatre à cinq passes). Le test
 `src/engine/__tests__/duo-illustrations.test.ts` vérifie qu'aucune articulation ne passe sous le tapis et que les deux

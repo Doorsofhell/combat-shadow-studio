@@ -98,7 +98,7 @@ for (const r of RENDERS) {
     r.mix.forEach((m, i) => renders.push({ png: pngs[i], q: techQuery(m.tech, m.coach, m.d, { az: String(m.az ?? r.az ?? 60) }), vw: 240, vh: 400, dpr: 2 }));
     jobs.push({ out, w: 720, h: 400, mood: d, seed: r.id, layers: pngs, centers: [1 / 6, 0.5, 5 / 6], fill: 0.95, mini: { layer: 1, size: 160 } });
   } else if (r.duo) {
-    // 1.3.3 two coaches in one scene (engine/library/illustrations.ts, duoScenes): Amara and Kadir, one picture
+    // 1.4.1 two coaches in one scene (engine/library/illustrations.ts, duoScenes): Amara and Kadir, one picture
     const png = `${CACHE}/ency/${r.id}.png`;
     const q = new URLSearchParams({ champion: CHAMPION.femme, champion2: CHAMPION.homme, look: 'realiste', d, duo: r.duo, style: STYLE[d], az: String(r.az ?? 60), el: String(r.el ?? 20), span: String(r.span ?? 0.85), fy: String(r.fy ?? 0.4) });
     if (r.tenue) q.set('tenue', r.tenue);
