@@ -28,6 +28,9 @@ female = sex == 'femme'
 # every edge that followed the skin's points came out as a saw edge: the sports bra is cut by planes from positions
 # (not from the skin weights) and the waistband rises over 1.5 cm instead of one step
 GEOM_BRA = MH_BODY = os.environ.get('MH_BODY') == '1'
+# 1.9: hem of the vale-tudo short, as a share of the thigh from the knee (0.5 = mid-thigh); the Rocketbox photo bodies
+# have underwear painted down to mid-thigh, the short must cover it
+VT_HEM = float(os.environ.get('VT_HEM', '0.42'))
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=src)
@@ -981,9 +984,11 @@ def shorts(kind, color, band, n_leg=None):
     """kind: boxe (loose, to just above the knee, high waistband), kick (fitted, short), thai (short, very wide,
     high waistband), mma (board short, side slits, to the knee), compression"""
     # the photo body has its underwear painted down to mid-thigh: every short reaches below it
-    hem = {'boxe': 0.3, 'kick': 0.3, 'thai': 0.32, 'mma': 0.18, 'compression': 0.3}[kind]
-    waist = hipZ + {'boxe': 0.13, 'kick': 0.11, 'thai': 0.13, 'mma': 0.11, 'compression': 0.1}[kind]
-    bandH = {'boxe': 0.07, 'kick': 0.04, 'thai': 0.08, 'mma': 0.04, 'compression': 0.025}[kind]
+    # 1.9 (Youssef's MMA coach references, 2026-10-29): vale-tudo = fitted compression short to mid-thigh, thin
+    # flat waistband, matt jersey
+    hem = {'boxe': 0.3, 'kick': 0.3, 'thai': 0.32, 'mma': 0.18, 'compression': 0.3, 'vale-tudo': VT_HEM}[kind]
+    waist = hipZ + {'boxe': 0.13, 'kick': 0.11, 'thai': 0.13, 'mma': 0.11, 'compression': 0.1, 'vale-tudo': 0.1}[kind]
+    bandH = {'boxe': 0.07, 'kick': 0.04, 'thai': 0.08, 'mma': 0.04, 'compression': 0.025, 'vale-tudo': 0.035}[kind]
 
     def hemz(i):
         s = leg_of(i)
@@ -999,13 +1004,17 @@ def shorts(kind, color, band, n_leg=None):
     def push(i):
         # MH_BODY: the glutes of a MakeHuman body rise close to the waistband; the loose leg push there lifted the
         # cloth over the band (black teeth on the band)
+        if kind == 'vale-tudo':
+            # a flat waistband (a raised one made lumps on the Rocketbox body) and a little more room at the hem,
+            # where the skin's larger triangles pierced a 3 mm shell
+            return 0.0045 + 0.003 * max(0.0, 1 - (P[i].z - hemz(i)) / 0.04)
         if P[i].z > hipZ + 0.02 or (MH_BODY and P[i].z > waist - bandH - 0.05):
             if MH_BODY:
                 t = min(1.0, max(0.0, (P[i].z - (waist - bandH)) / 0.015 + 0.5))
                 return 0.004 + 0.006 * t * t * (3 - 2 * t)
             return 0.004 + (0.006 if P[i].z > waist - bandH else 0)
         s = leg_of(i)
-        if kind in ('kick', 'compression'):
+        if kind in ('kick', 'compression', 'vale-tudo'):
             return 0.003
         flare = {'boxe': 0.03, 'thai': 0.075, 'mma': 0.022}[kind]
         crotch = max(0.0, 1 - abs(P[i].x) / 0.05)
@@ -1013,7 +1022,7 @@ def shorts(kind, color, band, n_leg=None):
 
     # v0.32 (« matières trop brillantes ou plastifiées »): satin keeps a soft sheen but is no longer wet-looking,
     # polyester is matt; the satin relief is shallower (it drew wavy lines)
-    sheenK = {'boxe': ('satin', 0.6, 0.35, 0.3), 'thai': ('satin', 0.58, 0.4, 0.3), 'kick': ('serge', 0.62, 0.2, 0.4), 'mma': ('flat', 0.68, 0.1, 1.0), 'compression': ('jersey', 0.6, 0.1, 0.5)}[kind]
+    sheenK = {'boxe': ('satin', 0.6, 0.35, 0.3), 'thai': ('satin', 0.58, 0.4, 0.3), 'kick': ('serge', 0.62, 0.2, 0.4), 'mma': ('flat', 0.68, 0.1, 1.0), 'compression': ('jersey', 0.6, 0.1, 0.5), 'vale-tudo': ('jersey', 0.66, 0.18, 0.7)}[kind]
     mats = [fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3]), fabric(f'ceinture-{kind}-{band}', band, 'elastique', rough=0.65, strength=0.5, tone=0.1)]
     hems = {H[f'{s}Leg'].z + hem * (H[f'{s}UpLeg'].z - H[f'{s}Leg'].z) for s in ('Left', 'Right')}
     cuts = [(Vector((0, 0, z)), Vector((0, 0, 1))) for z in (*hems, waist, waist - bandH)]
@@ -1022,7 +1031,7 @@ def shorts(kind, color, band, n_leg=None):
     return [o], cov
 
 
-def top(kind, color, accent=None):
+def top(kind, color, accent=None, geom=False):
     """kind: brassiere (sports bra), debardeur (tank top), rash-court, rash-long"""
     lowZ = {'brassiere': chestZ - 0.07 if female else chestZ - 0.05, 'debardeur': hipZ + 0.06, 'rash-court': hipZ + 0.04, 'rash-long': hipZ + 0.04}[kind]
     sleeve = {'brassiere': 0, 'debardeur': 0, 'rash-court': 0.45, 'rash-long': 0.93}[kind]
@@ -1042,7 +1051,7 @@ def top(kind, color, accent=None):
                 return sleeve > 0.5 and u < (sleeve - 0.5) * 2
             _, u = axis_point(i, f'{s}Arm', f'{s}ForeArm')
             return u < sleeve * (2 if sleeve <= 0.5 else 1)
-        if kind == 'brassiere' and GEOM_BRA:
+        if kind == 'brassiere' and (GEOM_BRA or geom):
             # MakeHuman bodies (1.5): their shoulder and neck weights blend over a wide area, so the weight rules
             # below gave a torn edge; the same cut drawn from positions only: scoop at the front with two straps,
             # racer back behind
@@ -1073,7 +1082,7 @@ def top(kind, color, accent=None):
         elif sleeve > 0.5:
             a, b = H[f'{s_}ForeArm'], H[f'{s_}Hand']
             cuts.append((a + (b - a) * (sleeve - 0.5) * 2, (b - a).normalized()))
-    if kind == 'brassiere' and GEOM_BRA:
+    if kind == 'brassiere' and (GEOM_BRA or geom):
         nk = H['Neck']
         cuts += [(Vector((0, 0, z)), Vector((0, 0, 1))) for z in (nk.z - 0.13, chestZ + 0.02, nk.z - 0.02)]
         cuts += [(Vector((x, 0, 0)), Vector((1, 0, 0))) for x in (-0.1, -0.06, -0.05, 0.05, 0.06, 0.1)]
@@ -1418,7 +1427,7 @@ def shin_guards(color, accent='#B3122A'):
     return [o], cov
 
 
-def mma_gloves(color, accent='#B3122A'):
+def mma_gloves(color, accent='#B3122A', palm=None):
     def keep(i):
         s = 'Left' if P[i].x > 0 else 'Right'
         if w(i, f'{s}Hand') > 0.45:
@@ -1458,11 +1467,20 @@ def mma_gloves(color, accent='#B3122A'):
                 cuts.append((H[f] + ax * 0.55, ax.normalized()))
 
     def strap(c, ids):
-        pt, d_ = wrist['Left' if c.x > 0 else 'Right']
-        return 1 if (c - pt).dot(d_) < 0 else 0
+        s = 'Left' if c.x > 0 else 'Right'
+        pt, d_ = wrist[s]
+        if (c - pt).dot(d_) < 0:
+            return 1
+        # 1.9: palm padding in its own colour (white palm of the reference glove, Youssef 2026-10-29)
+        if palm and w(ids[0], f'{s}Hand') > 0.6 and N[ids[0]].dot(hand_frame(s)[3]) < -0.35:
+            return 2
+        return 0
 
-    o, cov = shell('gants-mma', keep, push, 0.004, [fabric(f'gant-mma-{color}', color, 'grain', rough=0.55, strength=0.7, coat=0.2),
-                                                    fabric(f'sangle-mma-{accent}', accent, 'weave', rough=0.7, strength=1.2)], strap, cuts=cuts)
+    mats = [fabric(f'gant-mma-{color}', color, 'grain', rough=0.55, strength=0.7, coat=0.2),
+            fabric(f'sangle-mma-{accent}', accent, 'weave', rough=0.7, strength=1.2)]
+    if palm:
+        mats.append(fabric(f'paume-mma-{palm}', palm, 'grain', rough=0.6, strength=0.6, coat=0.1))
+    o, cov = shell('gants-mma', keep, push, 0.004, mats, strap, cuts=cuts)
     return [o], set()
 
 
@@ -1474,8 +1492,8 @@ def hide_hands():
 # colours: the app's palette (anthracite #1F2937, deep red #B3122A, gold #D4AF37, white) for the coaches, a
 # different combination for each coach so they never wear the same outfit
 C = {
-    'homme': dict(boxe=('#B3122A', '#D4AF37'), kick=('#16181D', '#B3122A'), thai=('#C8102E', '#F4F4F5'), mma=('#1F2937', '#B3122A'), gi='#1E2A44', judo='#F7F6F2', belt='#121212', glove='#B3122A', glove2='#16181D', rash='#1F2937'),
-    'femme': dict(boxe=('#16181D', '#D4AF37'), kick=('#B3122A', '#16181D'), thai=('#1D2B57', '#D4AF37'), mma=('#16181D', '#D4AF37'), gi='#F2F0EA', judo='#F7F6F2', belt='#121212', glove='#16181D', glove2='#B3122A', rash='#B3122A'),
+    'homme': dict(boxe=('#B3122A', '#D4AF37'), kick=('#16181D', '#B3122A'), thai=('#C8102E', '#F4F4F5'), mma=('#3A3D43', '#1A1B1F'), gi='#1E2A44', judo='#F7F6F2', belt='#121212', glove='#B3122A', glove2='#16181D', rash='#1F2937'),
+    'femme': dict(boxe=('#16181D', '#D4AF37'), kick=('#B3122A', '#16181D'), thai=('#1D2B57', '#D4AF37'), mma=('#141519', '#202126'), gi='#F2F0EA', judo='#F7F6F2', belt='#121212', glove='#16181D', glove2='#B3122A', rash='#B3122A'),
 }[sex]
 
 
@@ -1512,10 +1530,13 @@ def outfit(name):
             parts.extend(prajioud_v2(s, '#B3122A' if female else '#D4AF37'))
         hide |= hide_hands()
     elif name == 'mma':
-        add(shorts('mma', *C['mma']))
+        # 1.9 (Youssef's references, 2026-10-29): vale-tudo short to mid-thigh (charcoal for him, black for her),
+        # plain black racer-back bra, open gloves black with a white strap and palm (him) or all black (her)
+        add(shorts('vale-tudo', *C['mma']))
         if female:
-            add(top('brassiere', C['mma'][0], C['mma'][1]))
-        add(mma_gloves('#16181D', C['mma'][1]))
+            # geom: the racer back cut by planes on Amara too (her weight cut left a torn edge on the back)
+            add(top('brassiere', C['mma'][0], geom=True))
+        add(mma_gloves('#16181D', '#E9E9E6', '#E9E9E6') if not female else mma_gloves('#16181D', '#2B2D33'))
     elif name == 'bjj-nogi':
         add(top('rash-long', C['rash']))
         add(pants('#16181D', 'nogi', legging=True) if female else shorts('compression', '#16181D', '#B3122A'))

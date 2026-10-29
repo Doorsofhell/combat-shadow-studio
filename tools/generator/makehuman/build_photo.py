@@ -362,14 +362,18 @@ def mhmat_texture(path, key="diffuseTexture"):
 
 def tinted(src, tint, name):
     """the asset texture multiplied by a tint (skin tone), or recoloured (hair: "tint" with 4 values = colour +
-    strength, the strand shading of the asset kept as luminance so a dark asset can become blond), alpha kept"""
+    strength, optional 5th = contrast softening 0-1, the strand shading of the asset kept as luminance so a dark asset can become blond), alpha kept"""
     from PIL import Image
     im = Image.open(src).convert("RGBA")
     a = np.asarray(im, np.float32) / 255
-    if tint and len(tint) == 4:
+    if tint and len(tint) >= 4:
         lum = a[..., :3].mean(-1)
         vis = a[..., 3] > 0.3
         lum = lum / max(np.percentile(lum[vis], 95), 1e-3) if vis.any() else lum
+        if len(tint) > 4 and vis.any():
+            # 1.9: a 5th value softens the strand contrast toward the median (braid01: dark gaps between the
+            # strands came out as stripes once recoloured blond)
+            lum = lum + (np.median(lum[vis]) - lum) * tint[4]
         a[..., :3] = np.clip(np.array(tint[:3], np.float32) * (1 - tint[3] + tint[3] * 1.3 * lum[..., None]), 0, 1)
     elif tint:
         a[..., :3] = np.clip(a[..., :3] * np.array(tint, np.float32), 0, 1)
