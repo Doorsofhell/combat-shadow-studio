@@ -19,7 +19,7 @@ import { COACH_LOOKS } from '../looks';
  * and the guard keeps the centre of mass between the feet.
  */
 const D = 180 / Math.PI;
-const STYLE: Record<string, 'mma'> = { 'mma-kadir': 'mma', 'mma-amara': 'mma' };
+const STYLE: Record<string, 'mma'> = { 'mma-kadir': 'mma', 'mma-amara': 'mma', axel: 'mma', kaila: 'mma' };
 const fields = ['dorsi', 'plantar', 'inversion', 'eversion', 'rotation'] as const;
 
 describe('gardes propres aux coachs', () => {

@@ -49,7 +49,7 @@ export function Home() {
   const premium = settings.coachRender === 'premium';
   // 0.24: the coach on stage is Kadir or Amara; the fallback render keeps the custom fighter
   const coach = premium ? (profile.coach ?? 'homme') : (fighter?.look.sex ?? profile.coach ?? 'homme');
-  const name = premium ? championFor(profile.coach).name : (fighter?.name ?? defaultFighterName(profile.coach));
+  const name = premium ? championFor(profile.coach, profile.champion).name : (fighter?.name ?? defaultFighterName(profile.coach));
 
   const thisWeek = weekKey(new Date().toISOString());
   const week = sessions.filter((s) => weekKey(s.start) === thisWeek);
@@ -154,7 +154,7 @@ export function Home() {
           </div>
         </div>
         <div className="hero-top">
-          <Link to="/reglages/coach" className="chip" aria-label={`Changer de coach (${name})`}>
+          <Link to="/coach" className="chip" aria-label={`Changer de coach (${name})`}>
             Changer de coach
           </Link>
         </div>

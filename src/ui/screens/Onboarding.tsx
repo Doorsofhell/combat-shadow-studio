@@ -8,6 +8,7 @@ import { DISCIPLINES, DisciplineId, LEVELS, LevelId } from '../../domain/types';
 import type { HairStyle } from '../../editor/look';
 import { recommend } from '../../domain/recommend';
 import { CoachPicker } from './CoachSelect';
+import { championFor, type ChampionCoach } from '../../domain/coaches/catalog';
 import { DisciplineLabel, DisciplineCard, LevelSelector, OptionGrid } from '../components';
 import { chooseCoach } from '../components/fighter';
 import { AppIcon } from '../icons';
@@ -79,9 +80,9 @@ export function Onboarding() {
   const coach = fighter?.look.sex ?? p.coach;
   const canNext = step !== 1 || !!coach;
 
-  const pickCoach = (c: 'homme' | 'femme') => {
-    chooseCoach(c, true);
-    set({ coach: c });
+  const pickCoach = (c: ChampionCoach) => {
+    chooseCoach(c.coach, true);
+    set({ coach: c.coach, champion: c.id });
   };
   const editLook = (fn: (l: NonNullable<typeof fighter>['look']) => NonNullable<typeof fighter>['look']) => {
     if (fighter) useFighters.getState().update(fighter.id, fn(fighter.look));
@@ -168,7 +169,7 @@ export function Onboarding() {
           <>
             <h2>Choisis ton coach</h2>
             <p className="muted">Obligatoire pour continuer. Il deviendra ton combattant : tu pourras le personnaliser et en changer à tout moment, sans perdre tes statistiques.</p>
-            <CoachPicker value={coach} onChange={pickCoach} />
+            <CoachPicker value={coach ? championFor(coach, p.champion).id : null} onChange={pickCoach} />
           </>
         )}
 

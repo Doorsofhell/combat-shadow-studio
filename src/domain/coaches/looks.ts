@@ -38,4 +38,30 @@ export const COACH_LOOKS: Record<string, FighterLook> = {
     };
     l.gear = { ...l.gear, hands: 'gants-mma', handsPaint: paint('#16171a', '#2a2b30') };
   }),
+  // 1.5, MakeHuman coaches (tools/generator/makehuman): tanned skin, buzz cut, tribal tattoo painted in the skin
+  axel: look('homme', (l) => {
+    l.skin = '#b98563';
+    l.eyes = '#3a2416';
+    l.hair = { style: 'rase', color: '#1c140f', length: 0.05, meches: 0.4, flow: 0.1 };
+    l.beard = { style: 'aucune', color: '#1c140f' };
+    l.bodyHair = 0.1;
+    l.outfit = { ...l.outfit, bottom: 'short-mma-court', bottomPaint: paint('#141518', '#b3122a', 'bande'), top: 'aucun', shoes: 'pieds-nus' };
+    l.gear = { ...l.gear, hands: 'gants-mma', handsPaint: paint('#16171a', '#b3122a') };
+  }),
+  // fair skin, blond braid pulled back tight
+  kaila: look('femme', (l) => {
+    l.skin = '#e2bfa3';
+    l.eyes = '#4f7b78';
+    l.hair = { style: 'tresses', color: '#c9a66b', length: 0.5, meches: 0.6, flow: 0.15 };
+    l.beard = { style: 'aucune', color: '#c9a66b' };
+    l.outfit = {
+      ...l.outfit,
+      bottom: 'short-mma-court',
+      bottomPaint: paint('#141518', '#d4af37', 'bande'),
+      top: 'brassiere',
+      topPaint: paint('#141518'),
+      shoes: 'pieds-nus',
+    };
+    l.gear = { ...l.gear, hands: 'gants-mma', handsPaint: paint('#16171a', '#d4af37') };
+  }),
 };

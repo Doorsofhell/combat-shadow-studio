@@ -49,6 +49,19 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.6.0',
+      releaseDate: '2026-10-28',
+      title: 'Deux nouveaux coachs : Axel et Kaila',
+      isMajor: true,
+      changes: [
+        { category: 'coachs', text: 'Axel « Aura-Stone » : grand frappeur sec (1,94 m), visage carré, regard de pierre, tatouage tribal au bras gauche et aux côtes, posture droite et bras relâchés.' },
+        { category: 'coachs', text: 'Kaila « La Valkyrie » : compacte et puissante (1,65 m), tresse blonde plaquée, garde basse et mains ouvertes prêtes à saisir.' },
+        { category: 'ameliorations', text: 'Changer de coach ouvre maintenant un écran avec seulement la liste des quatre coachs : Kadir, Axel, Amara et Kaila.' },
+        { category: 'ameliorations', text: 'Les deux nouveaux coachs ont leur tenue dans les six disciplines, en Ultra-réaliste et en Anime, et des modèles plus légers que Kadir et Amara.' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.4.1',
       releaseDate: '2026-10-28',
       title: 'Encyclopédie complète',

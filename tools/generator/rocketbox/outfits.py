@@ -24,6 +24,10 @@ ONLY = os.environ.get('ONLY', '').split(',') if os.environ.get('ONLY') else None
 TEX = os.path.join(outdir, '_tex')
 os.makedirs(TEX, exist_ok=True)
 female = sex == 'femme'
+# MakeHuman coaches (tools/generator/makehuman), MH_BODY=1: their quads are larger than the Rocketbox triangles, so
+# every edge that followed the skin's points came out as a saw edge: the sports bra is cut by planes from positions
+# (not from the skin weights) and the waistband rises over 1.5 cm instead of one step
+GEOM_BRA = MH_BODY = os.environ.get('MH_BODY') == '1'
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=src)
@@ -342,10 +346,23 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=()):
     garment.balance()
     # only where the garment really is (the region test alone would also hide skin a cut removed)
     covered = {i for i in covered if garment.find(P[i])[2] < 0.07}
+    # MH_BODY: the points of a cut stay on it after the push (on the tilted skin of the lower back the push along the
+    # normal moved them off the plane, the smoothing then pulled them up and down: a toothed colour band)
+    on_cut = {}
+    if MH_BODY:
+        for v in bm_.verts:
+            q = MW @ v.co
+            for k, (pt, nr) in enumerate(cuts):
+                if abs((q - pt).dot(nr)) < 0.0003:
+                    on_cut[v.index] = k
+                    break
     for v in bm_.verts:
         i = v[lay]
         d = push(i)
         world = (MW @ v.co) + (N[i] * d if isinstance(d, (int, float)) else d)
+        if v.index in on_cut:
+            pt, nr = cuts[on_cut[v.index]]
+            world = world - nr * (world - pt).dot(nr)
         v.co = MWI @ world
     # hems: the free edges stand off the skin a little (a folded, stitched edge is thicker, and the skin never shows over it)
     for v in bm_.verts:
@@ -980,7 +997,12 @@ def shorts(kind, color, band, n_leg=None):
         return True
 
     def push(i):
-        if P[i].z > hipZ + 0.02:
+        # MH_BODY: the glutes of a MakeHuman body rise close to the waistband; the loose leg push there lifted the
+        # cloth over the band (black teeth on the band)
+        if P[i].z > hipZ + 0.02 or (MH_BODY and P[i].z > waist - bandH - 0.05):
+            if MH_BODY:
+                t = min(1.0, max(0.0, (P[i].z - (waist - bandH)) / 0.015 + 0.5))
+                return 0.004 + 0.006 * t * t * (3 - 2 * t)
             return 0.004 + (0.006 if P[i].z > waist - bandH else 0)
         s = leg_of(i)
         if kind in ('kick', 'compression'):
@@ -1020,6 +1042,15 @@ def top(kind, color, accent=None):
                 return sleeve > 0.5 and u < (sleeve - 0.5) * 2
             _, u = axis_point(i, f'{s}Arm', f'{s}ForeArm')
             return u < sleeve * (2 if sleeve <= 0.5 else 1)
+        if kind == 'brassiere' and GEOM_BRA:
+            # MakeHuman bodies (1.5): their shoulder and neck weights blend over a wide area, so the weight rules
+            # below gave a torn edge; the same cut drawn from positions only: scoop at the front with two straps,
+            # racer back behind
+            nk = H['Neck']
+            ax = abs(P[i].x)
+            if P[i].y < 0:
+                return P[i].z < nk.z - 0.13 or (0.05 < ax < 0.1 and P[i].z < nk.z - 0.02)
+            return P[i].z < chestZ + 0.02 or (ax < 0.06 and P[i].z < nk.z - 0.02)
         if kind in ('brassiere', 'debardeur'):
             # neckline: scoop at the front, racer back behind (shoulder blades free)
             nk = H['Neck']
@@ -1042,6 +1073,10 @@ def top(kind, color, accent=None):
         elif sleeve > 0.5:
             a, b = H[f'{s_}ForeArm'], H[f'{s_}Hand']
             cuts.append((a + (b - a) * (sleeve - 0.5) * 2, (b - a).normalized()))
+    if kind == 'brassiere' and GEOM_BRA:
+        nk = H['Neck']
+        cuts += [(Vector((0, 0, z)), Vector((0, 0, 1))) for z in (nk.z - 0.13, chestZ + 0.02, nk.z - 0.02)]
+        cuts += [(Vector((x, 0, 0)), Vector((1, 0, 0))) for x in (-0.1, -0.06, -0.05, 0.05, 0.06, 0.1)]
     o, cov = shell(f'haut-{kind}', keep, lambda i: 0.0035 if kind != 'debardeur' else 0.006, 0.003, mats,
                    (lambda c, ids: 1 if w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ else 0) if accent else None, cuts=cuts)
     for s_ in ('Left', 'Right'):
@@ -1238,8 +1273,10 @@ def shoes_v2(color, accent):
         cx, cy, rx, ry = [], [], [], []
         for z_ in zs:
             sel = (~footm | (Z > ankleZ - 0.04)) & (np.abs(Z - z_) < 0.008) & (U < (u0 + u1) / 2)
-            if sel.sum() < 4:
-                sel = np.abs(Z - z_) < 0.02
+            for w_ in (0.02, 0.04, 0.08):  # coarser meshes (MakeHuman base mesh): wider slices
+                if sel.sum() >= 4:
+                    break
+                sel = np.abs(Z - z_) < w_
             q_ = pts[sel]
             c_ = (q_[:, :2].max(0) + q_[:, :2].min(0)) / 2
             cx.append(c_[0]); cy.append(c_[1])

@@ -330,7 +330,8 @@ function ResumeCard({ recommended, onOpen, only }: { recommended?: Exercise; onO
 
 function ResumeSnapshotCard({ s, busy, onGo }: { s: ResumeSnapshot; busy: boolean; onGo: () => void }) {
   const ratio = progressRatio(s);
-  const coach = championFor(s.coach);
+  const chosen = useProfile((st) => st.profile.champion);
+  const coach = championFor(s.coach, chosen);
   const round = s.rounds > 1 ? ` · round ${s.round}/${s.rounds}` : '';
   // the block in progress, when the session has several (programme, exercises of a level)
   const block = s.itemCount > 1 && s.itemName !== s.title ? s.itemName : '';

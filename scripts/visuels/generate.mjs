@@ -145,11 +145,12 @@ for (const a of ART) {
   jobs.push({ out: `public/art/disciplines/${a.discipline}-600`, w: 600, h: 760, mood: a.discipline, seed: `art-${a.discipline}`, layers: [png], centers: [0.5], fill: 0.92, sizes: [[240, 304, `public/art/disciplines/${a.discipline}-240`]], quality: 82 });
 }
 
-for (const coach of ['homme', 'femme']) {
-  const c = CHAMPION[coach];
+// 1.5: Axel (1.94 m) and Kaila (1.65 m), the MakeHuman coaches, framed on their own height
+const PORTRAIT = { 'mma-kadir': ['1.04', '0.86'], 'mma-amara': ['1.04', '0.86'], axel: ['1.16', '0.97'], kaila: ['0.99', '0.82'] };
+for (const [c, [span, fy]] of Object.entries(PORTRAIT)) {
   if (!want('portraits', c) || !inD('mma')) continue;
   const png = `${CACHE}/portraits/${c}.png`;
-  const q = new URLSearchParams({ champion: c, look: 'realiste', d: 'mma', tenue: 'mma', motion: 'garde', style: 'mma', az: '28', el: '6', span: '1.04', fy: '0.86' });
+  const q = new URLSearchParams({ champion: c, look: 'realiste', d: 'mma', tenue: 'mma', motion: 'garde', style: 'mma', az: '28', el: '6', span, fy });
   renders.push({ png, q, vw: 450, vh: 600, dpr: 2 });
   jobs.push({ out: `public/coaches/${c}/portrait`, w: 900, h: 1200, mood: 'mma', seed: `portrait-${c}`, layers: [png], centers: [0.5], fill: 0.96, quality: 84 });
 }

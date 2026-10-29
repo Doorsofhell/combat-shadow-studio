@@ -831,7 +831,9 @@ function sitOut(a: Author): Motion {
     d.chest = { yaw: deg(10), pitch: deg(35), roll: 0 };
     d.head = { yaw: deg(10), pitch: deg(-5), roll: 0 };
     d.footL = a.air(v3(-0.72 * s, 0.08 * s, 0.04 * s), deg(-90), deg(20), 0, v3(0, 1, 0.3), deg(10));
-    d.footR = { ...a.ground(v3(-0.42 * s, 0, -0.36 * s), deg(-108), 0), pole: v3(-0.25, 1, -0.35) };
+    // 1.5: foot turned 8° more outward (-116°, was -108°): on a wide-hipped body (Kaila) the way back to all fours
+    // took the hip past its inward rotation range
+    d.footR = { ...a.ground(v3(-0.42 * s, 0, -0.36 * s), deg(-116), 0), pole: v3(-0.25, 1, -0.35) };
     d.handR = a.hand('chest', v3(-0.06 * s, 0.1 * s, 0.26 * s), v3(-0.5, -1, 0), 0.1, 1);
   });
   return {
