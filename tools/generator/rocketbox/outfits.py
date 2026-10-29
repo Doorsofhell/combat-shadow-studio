@@ -1450,6 +1450,12 @@ def mma_gloves(color, accent='#B3122A'):
         wrist[s] = (H[f'{s}Hand'] - d_ * 0.006, d_)
         cuts.append(wrist[s])
         cuts.append((H[f'{s}Hand'] - d_ * 0.05, d_))
+        # v1.7: the open end of each finger hole on a straight cut across the finger (where keep() stops), not
+        # along the skin's triangles: on the MakeHuman fingers the ragged edge looked like black claws
+        if MH_BODY:
+            for f in (f'{s}Hand{n}1' for n in ('Index', 'Middle', 'Ring', 'Pinky')):
+                ax = H[f.replace('1', '2')] - H[f]
+                cuts.append((H[f] + ax * 0.55, ax.normalized()))
 
     def strap(c, ids):
         pt, d_ = wrist['Left' if c.x > 0 else 'Right']
