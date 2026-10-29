@@ -40,11 +40,21 @@ describe('coachs MakeHuman : Axel et Kaila', () => {
     }
   });
 
-  test('Ultra-réaliste : peau, yeux, sourcils et cils sur le squelette, cheveux de Kaila en cartes (alpha)', () => {
+  test('Ultra-réaliste : peau, yeux, sourcils, cils et vrais cheveux en cartes (alpha) sur le squelette', () => {
     for (const c of COACHES) {
       const mats = glbInfo(`public/coaches/${c.id}/photo.glb`).map((m) => m.material);
-      expect(mats, c.id).toEqual(expect.arrayContaining(['Skin', 'Eyes_opacity', 'Eyebrows_opacity', 'Eyelashes_opacity']));
-      if (c.id === 'kaila') expect(mats).toContain('Hair_opacity');
+      // 1.6.1 (« plus de ultra réalisme »): Axel has real hair too, no longer a painted scalp
+      expect(mats, c.id).toEqual(expect.arrayContaining(['Skin', 'Eyes_opacity', 'Eyebrows_opacity', 'Eyelashes_opacity', 'Hair_opacity']));
+    }
+  });
+
+  test('1.6.1 : la peau a son relief (pores et plis, normal map) et une couleur', () => {
+    for (const c of COACHES) {
+      const buf = readFileSync(`public/coaches/${c.id}/photo.glb`);
+      const json = JSON.parse(buf.subarray(20, 20 + buf.readUInt32LE(12)).toString('utf8'));
+      const skin = json.materials.find((m: { name: string }) => m.name === 'Skin');
+      expect(skin.normalTexture, c.id).toBeDefined();
+      expect(skin.pbrMetallicRoughness.baseColorTexture, c.id).toBeDefined();
     }
   });
 

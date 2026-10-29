@@ -159,13 +159,13 @@
   ]
  ],
  "photo": {
-  "skin": "skins/young_caucasian_female/young_caucasian_female.mhmat",
+  "skin": "skins/toigo_light_skin_female_freckles/toigo_light_skin_female_freckles.mhmat",
   "skin_tint": [
-   0.97,
-   0.86,
-   0.76
+   1.0,
+   0.894,
+   0.816
   ],
-  "hair": "hair/braid01/braid01.mhclo",
+  "hair": "hair/ponytail01/ponytail01.mhclo",
   "hair_tint": [
    0.86,
    0.72,
@@ -175,7 +175,6 @@
   "eyebrows": "eyebrows/eyebrow003/eyebrow003.mhclo",
   "eyelashes": "eyelashes/eyelashes02/eyelashes02.mhclo",
   "eyes": "eyes/materials/bluegreen.mhmat",
-  "hair_cut": 0.17,
   "scalp": [
    0.66,
    0.53,
@@ -183,6 +182,8 @@
    0.95
   ],
   "subdiv": 1,
-  "decimate": 0.4
+  "decimate": 0.4,
+  "skin_normal_from": "skins/mindfront_skin_male_african_middleage/mindfront_skin_male_african_middleage.mhmat",
+  "skin_normal": 0.7
  }
 }
