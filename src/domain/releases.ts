@@ -73,6 +73,19 @@ export const RELEASES: readonly Release[] = (
       links: [],
     },
     {
+      version: '1.6.1',
+      releaseDate: '2026-10-29',
+      title: 'Axel et Kaila plus réalistes',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Vrais cheveux en Ultra-réaliste : coupe courte brun foncé pour Axel, queue de cheval plaquée pour Kaila (avant : cheveux peints sur le crâne).' },
+        { category: 'ameliorations', text: 'Peau plus vivante : pores et petits plis, barbe de deux jours pour Axel, taches de rousseur pour Kaila.' },
+        { category: 'ameliorations', text: 'Les yeux d’Axel et Kaila brillent sous la lumière, comme de vrais yeux.' },
+        { category: 'corrections', text: 'Gants de MMA d’Axel et Kaila : le bout des doigts est net, il n’y a plus de pointes noires comme des griffes.' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.6.0',
       releaseDate: '2026-10-28',
       title: 'Deux nouveaux coachs : Axel et Kaila',

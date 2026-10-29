@@ -176,9 +176,9 @@
    0.44
   ],
   "hair_tint": [
-   0.11,
-   0.085,
-   0.07,
+   0.1,
+   0.075,
+   0.06,
    0.6
   ],
   "eyebrows": "eyebrows/eyebrow009/eyebrow009.mhclo",
@@ -192,6 +192,15 @@
   ],
   "tattoo": true,
   "subdiv": 1,
-  "decimate": 0.4
+  "decimate": 0.4,
+  "hair": "hair/short01/short01.mhclo",
+  "stubble": [
+   0.2,
+   0.19,
+   0.2,
+   0.32
+  ],
+  "skin_normal_from": "skins/mindfront_skin_male_african_middleage/mindfront_skin_male_african_middleage.mhmat",
+  "skin_normal": 1.0
  }
 }

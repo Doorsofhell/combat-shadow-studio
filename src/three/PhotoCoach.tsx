@@ -55,6 +55,9 @@ export function PhotoCoach({
       // plain mipmapping; anisotropic filtering keeps its detail (4 samples: cheap on phone graphics chips)
       for (const t of [old.map, old.normalMap]) if (t) t.anisotropy = 4;
       const hair = /opacity/.test(old.name);
+      // v1.7: the wet eyes of the MakeHuman coaches (their own material) catch a sharp highlight of the lights,
+      // as real eyes do; matte, they looked like a doll's
+      const eyes = old.name === 'Eyes_opacity';
       m.material =
         quality === 'haute' && !hair
           ? new MeshPhysicalMaterial({
@@ -68,7 +71,7 @@ export function PhotoCoach({
               sheenColor: '#c98a72',
               specularIntensity: 0.4,
             })
-          : new MeshStandardMaterial({ name: old.name, map: old.map, normalMap: old.normalMap, roughness: 0.6, metalness: 0, alphaTest: hair ? 0.4 : 0, alphaToCoverage: hair, transparent: false });
+          : new MeshStandardMaterial({ name: old.name, map: old.map, normalMap: old.normalMap, roughness: eyes ? 0.08 : 0.6, metalness: 0, alphaTest: hair ? 0.4 : 0, alphaToCoverage: hair, transparent: false });
     });
     restoreReferencePose(s);
     return s;

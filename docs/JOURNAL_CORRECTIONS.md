@@ -2189,6 +2189,23 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests** : TypeScript RÉUSSI ; Vitest 907 RÉUSSIS, 1 ignoré (nouveau `makehuman-coaches.test.ts`, `coach-profiles.test.ts` étendu, mesures et pictogrammes régénérés après le sit-out) ; Playwright : nouveau `coachs-v160.spec.ts` RÉUSSI, navigation, coach-render, account, profil-v120, aucune-perte-v100, app 51 RÉUSSIS, 2 ignorés (Firebase) ; suite complète NON EXÉCUTÉE ; Android réel NON EXÉCUTÉ.
 - **Validation** : Youssef, 29/10 08:07 « je valide, publie et continu ». Numéro 1.6.0 (la 1.5.0 reste réservée à la barre de recherche et au Coach IA).
 
+## 2026-10-29 · 1.6.1 · Axel et Kaila plus réalistes
+
+- **Demande** : Youssef, 29/10 08:05 « je cherche plus de ultra réalisme » ; 08:07 « je valide, publie et continu de travailler par la suite ».
+- **Constat après vérification** (gros plans dans le studio de l'app, 1.6.0) : les cheveux peints sur le crâne faisaient un casque (Axel) ou des rayures (Kaila) ; la peau MakeHuman était lisse, sans pores ni plis ; les yeux étaient mats, comme ceux d'une poupée (matériau des yeux réglé comme la peau, rugosité 0,6) ; au bout des gants de MMA, la coupe suivait les triangles du maillage et faisait des pointes noires, comme des griffes.
+- **Changement** :
+  - vrais cheveux en cartes alpha : `short01` brun foncé pour Axel, `ponytail01` (queue de cheval plaquée) pour Kaila, au lieu de la tresse. Huit coiffures CC0 rendues et comparées ;
+  - les pixels cachés des cartes de cheveux prennent la couleur moyenne des cheveux (blancs dans les fichiers MakeHuman, ils ressortaient en points blancs au bord des mèches) ;
+  - peau : relief fin (pores, petits plis) pris dans la normal map CC0 `mindfront_skin_male_african_middleage`, filtrée passe-haut pour ne garder ni ses muscles ni ses cicatrices, ajouté au relief anatomique de chaque coach. La peau `mindfront_aksel_skin` a été essayée puis écartée : elle a un œil au beurre noir et des cicatrices ;
+  - Axel : barbe de deux jours peinte (menton, mâchoire, lèvre supérieure, placée autour des lèvres mesurées sur le maillage, bords fondus) ;
+  - Kaila : peau photo CC0 `toigo_light_skin_female_freckles` (taches de rousseur), même teint ;
+  - yeux : rugosité 0,08 pour le matériau des yeux d'Axel et Kaila (`PhotoCoach.tsx`) : ils ont un reflet net des lumières. Kadir et Amara ne changent pas (leurs yeux font partie de la texture de la tête) ;
+  - gants de MMA (`outfits.py`, mode `MH_BODY` seulement) : un plan de coupe en travers de chaque doigt, là où le gant s'arrête. Le bord est net. Les tenues de Kadir et Amara ne sont pas régénérées ; seules les tenues MMA d'Axel et Kaila changent (les autres sortent identiques octet pour octet) ;
+  - `build_photo.py` : nouvelles clés de recette `stubble`, `skin_normal_from`, `skin_normal`, `skin_normal_blur`, `relief_size` (README) ; portraits régénérés.
+  - Poids : `photo.glb` 2,30 Mo (Axel, avant 1,82) et 2,47 Mo (Kaila, avant 2,22), toujours sous la limite de 2,5 Mo du test.
+- **Avant/après** : captures dans le studio de l'app (Lab, Ultra-réaliste) : visage, corps entier, dos.
+- **Tests** : TypeScript RÉUSSI ; Vitest 907 RÉUSSIS, 1 ignoré (`makehuman-coaches.test.ts` : vrais cheveux exigés pour les deux coachs, nouveau test « la peau a son relief ») ; Playwright : `coachs-v160`, `navigation` (Nouveautés 1.6.1), `coach-render` 33 RÉUSSIS ; suite complète NON EXÉCUTÉE ; Android réel NON EXÉCUTÉ.
+
 ## 2026-10-29 · 1.7.0 · Rechercher et demander au coach dans la même fenêtre (proposition A)
 
 - **Demande** : Youssef, 28/10 11:30, a choisi la proposition A « Réponse du coach en tête » (maquette https://claude.ai/artifact/9Bm1j9XWeRYAWtittrjn5q) : une seule barre avec l'icône IA, la réponse du coach en haut, les résultats de l'application en dessous, plus de gros bouton noir. Prévue en 1.5.0, numérotée 1.7.0 car la 1.6.0 (Axel et Kaila) est sortie avant.
