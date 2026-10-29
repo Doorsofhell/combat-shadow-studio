@@ -39,7 +39,7 @@ Pour chaque droit, le tableau indique si la fonction existe dans l'application e
 | `unlimited_favorites` | Favoris illimités | Une ligne en tête de l'onglet Favoris | oui | oui | nombre limité (à fixer) |
 | `legends_collection` | Collection complète des légendes | Titre « Champions » | oui | oui | une sélection (à fixer) |
 | `all_disciplines` | Six disciplines complètes | — | oui | **non** : choix commercial à confirmer | à décider |
-| `anime_rendering` | Rendu Anime | — | oui | **non** : « si ce choix commercial est confirmé » | rendu Ultra-réaliste gratuit |
+| `anime_rendering` | Rendu Anime | — | — | **retiré en 1.9** : le rendu Anime est supprimé (Youssef, 2026-10-29) | — |
 | `all_fighters` | Galerie complète des combattants | — | **non** (seuls Kadir et Amara existent) | non | — |
 | `advanced_timer` | Réglages avancés du chronomètre | — | **non** (seuls rounds et repos existent) | non | — |
 

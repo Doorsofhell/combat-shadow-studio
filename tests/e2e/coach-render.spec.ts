@@ -5,9 +5,8 @@ import { defaultLook } from '../../src/editor/look';
 import { menuCommand } from './nav-helpers';
 
 /**
- * Coach render 0.23: two looks (Ultra-réaliste, Encre) on the same model, the choice in three places
- * and remembered, the session kept when switching, the studio framing in the free part of the stage,
- * and the Encre look without the screen-space hatching of the previous render.
+ * Coach render: since 1.9 one look only (Ultra-réaliste; the Anime / Encre look is removed at Youssef's
+ * request), saved older looks migrated, and the studio framing in the free part of the stage.
  */
 async function seed(page: Page, settings?: Record<string, unknown>) {
   await page.goto('/icons/icon.svg');
@@ -60,68 +59,38 @@ const savedSettings = (page: Page) =>
 
 const checked = (page: Page, testId: string) => page.getByTestId(testId).locator('[role="radio"][aria-checked="true"]');
 
-test('the look is chosen in the settings, the studio and the training options, and remembered', async ({ page }) => {
+// 1.9 (Youssef, 2026-10-29: « supprime définitivement le rendu Anime »): the look choice is gone. The three
+// tests of the choice (picker in three places and remembered, the saved Anime look kept, switching the look
+// during a session) are replaced by the two below: no choice anywhere, and a saved Anime / Manga look opens
+// in Ultra-réaliste with the other settings kept.
+test('1.9: no look choice in the settings, the studio or the training options', async ({ page }) => {
   await seed(page);
-  await open(page, '/#/reglages/coach'); // 1.2.0: Réglages › Mon coach
-  // 0.29: a new device starts in Ultra-réaliste (it was Encre, labelled "Anime" since 0.24, before)
-  await expect(checked(page, 'settings-coach-look')).toHaveText('Ultra-réaliste');
-  // the premium Encre look is labelled "Anime" since 0.24 (same saved id 'encre')
-  await page.getByTestId('settings-coach-look').getByRole('radio', { name: 'Anime' }).click();
-  await expect.poll(async () => (await savedSettings(page)).coachStyle).toBe('encre');
-  expect((await savedSettings(page)).coachRender).toBe('premium');
+  await open(page, '/#/reglages/coach');
+  await expect(page.getByText('Ton coach montre chaque mouvement')).toBeVisible();
+  await expect(page.getByText('Rendu des combattants')).toHaveCount(0);
+  await expect(page.getByRole('radio', { name: 'Anime' })).toHaveCount(0);
+  await expect(page.getByText(/Ultra-réaliste/).first()).toBeVisible();
 
   await open(page, '/#/combattant');
-  await expect(checked(page, 'studio-coach-look')).toHaveText('Anime');
-  // the customised look shows in both looks: no "switch to Encre" warning any more
+  await expect(page.getByRole('radio', { name: 'Anime' })).toHaveCount(0);
   await expect(page.getByText('Passer au style Encre')).toHaveCount(0);
-  await page.getByTestId('studio-coach-look').getByRole('radio', { name: 'Ultra-réaliste' }).click();
-  await expect.poll(async () => (await savedSettings(page)).coachStyle).toBe('realiste');
 
   await open(page, '/#/entrainement?ex=boxe-debutant-01&mode=technique');
   await menuCommand(page, 'options');
-  await expect(checked(page, 'training-coach-look')).toHaveText('Ultra-réaliste');
-  await page.getByTestId('training-coach-look').getByRole('radio', { name: 'Anime' }).click();
-  await expect.poll(async () => (await savedSettings(page)).coachStyle).toBe('encre');
-  await page.reload();
-  await menuCommand(page, 'options');
-  await expect(checked(page, 'training-coach-look')).toHaveText('Anime');
+  await expect(page.getByRole('dialog', { name: 'Options d’entraînement' })).toBeVisible();
+  await expect(page.getByTestId('training-coach-look')).toHaveCount(0);
+  await expect(page.getByRole('radio', { name: 'Anime' })).toHaveCount(0);
 });
 
-test('0.29: a device that saved the Anime look before keeps it', async ({ page }) => {
-  await seed(page, { coachStyle: 'encre', coachRender: 'premium', voice: false });
-  await open(page, '/#/reglages/coach'); // 1.2.0: Réglages › Mon coach
-  await expect(checked(page, 'settings-coach-look')).toHaveText('Anime');
-});
-
-test('switching the look during a session keeps the session, the move and the timer', async ({ page }) => {
-  await seed(page);
-  await open(page, '/#/entrainement?ex=boxe-debutant-01&mode=technique');
-  await page.getByTestId('start').click();
-  await expect.poll(async () => Number((await page.getByTestId('session-time').textContent())!.replace(/\D/g, '')), { timeout: 30000 }).toBeGreaterThan(2);
-  const before = Number((await page.getByTestId('session-time').textContent())!.replace(/\D/g, ''));
-  const move = await page.getByTestId('current-move').textContent();
-  await menuCommand(page, 'options');
-  await page.getByTestId('training-coach-look').getByRole('radio', { name: 'Ultra-réaliste' }).click();
-  await page
-    .getByRole('dialog', { name: 'Options d’entraînement' })
-    .getByRole('button', { name: /Fermer|Reprendre|OK/ })
-    .last()
-    .click();
-  // 1.0.0 (lot 4, séance mains libres): « Plus » is reached through the pause; Reprendre goes on from the same place
-  if (await page.getByTestId('resume').isVisible()) await page.getByTestId('resume').click();
-  await page.waitForTimeout(2500);
-  const after = Number((await page.getByTestId('session-time').textContent())!.replace(/\D/g, ''));
-  expect(after).toBeGreaterThan(before);
-  await expect(page.getByTestId('current-move')).toHaveText(move!);
-  await expect(page.getByTestId('pause')).toBeVisible();
-  // the coach is still drawn (the canvas keeps its 3D context)
-  expect(
-    await page
-      .locator('canvas')
-      .first()
-      .evaluate((c: HTMLCanvasElement) => !!(c.getContext('webgl2') || c.getContext('webgl'))),
-  ).toBe(true);
-});
+for (const old of ['encre', 'manga'])
+  test(`1.9: a device that saved the ${old} look opens in Ultra-réaliste, other settings kept`, async ({ page }) => {
+    await seed(page, { coachStyle: old, coachRender: 'premium', voice: false });
+    await open(page, '/#/reglages/coach');
+    await expect(page.getByText(/Ultra-réaliste/).first()).toBeVisible();
+    await expect.poll(async () => (await savedSettings(page)).coachStyle).toBe('realiste');
+    expect((await savedSettings(page)).coachRender).toBe('premium');
+    expect(((await savedSettings(page)) as unknown as { voice: boolean }).voice).toBe(false);
+  });
 
 /** pixels of the coach on the studio stage: the backgrounds are made transparent for the capture */
 async function coachBox(page: Page) {
@@ -202,50 +171,4 @@ test('studio: the whole fighter is large and never under the buttons; face, ches
   await expect.poll(dist, { timeout: 8000 }).toBeGreaterThan(full * 0.9);
 });
 
-/** high-frequency energy of the coach's pixels (hatching is a fine periodic pattern) */
-async function fineDetail(page: Page, query: string) {
-  await open(page, `/#/lab?${query}`);
-  await page.waitForFunction(() => (window as unknown as { __labReady?: boolean }).__labReady === true, null, { timeout: 90000 });
-  await page.waitForTimeout(2000);
-  const png = await page.screenshot();
-  return page.evaluate(async (b64) => {
-    const img = new Image();
-    img.src = 'data:image/png;base64,' + b64;
-    await img.decode();
-    const c = document.createElement('canvas');
-    c.width = img.width;
-    c.height = img.height;
-    const g = c.getContext('2d')!;
-    g.drawImage(img, 0, 0);
-    const d = g.getImageData(0, 0, c.width, c.height).data;
-    const L = (x: number, y: number) => {
-      const i = (y * c.width + x) * 4;
-      return 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-    };
-    let e = 0;
-    let n = 0;
-    for (let y = 2; y < c.height - 2; y++)
-      for (let x = 2; x < c.width - 2; x++) {
-        const v = L(x, y);
-        // inside the coach only (white studio), away from its outline
-        if (v > 235 || L(x - 2, y) > 235 || L(x + 2, y) > 235 || L(x, y - 2) > 235 || L(x, y + 2) > 235) continue;
-        const lap = Math.abs(4 * v - L(x - 1, y) - L(x + 1, y) - L(x, y - 1) - L(x, y + 1));
-        e += Math.min(lap, 80);
-        n++;
-      }
-    return { energy: e / Math.max(1, n), pixels: n };
-  }, png.toString('base64'));
-}
-
-test('Encre 0.23 has no screen-space hatching (fine detail well below the previous render)', async ({ page }) => {
-  await page.setViewportSize({ width: 420, height: 640 });
-  const q = 'coach=homme&motion=garde&t=0.4&look=encre&art=1&d=boxe&zoom=2&fy=1.2';
-  const before = await fineDetail(page, `${q}&render=precedent`);
-  const after = await fineDetail(page, q);
-  expect(before.pixels).toBeGreaterThan(10000);
-  expect(after.pixels).toBeGreaterThan(10000);
-  test.info().annotations.push({ type: 'détail fin', description: `avant ${before.energy.toFixed(2)}, après ${after.energy.toFixed(2)}` });
-  // measured, not a threshold of its own: the shader test (customize.test.ts) checks the cause; here the
-  // fine detail of the coach's pixels must go down
-  expect(after.energy).toBeLessThan(before.energy);
-});
+// 1.9: the test « Encre 0.23 has no screen-space hatching » is removed with the Encre / Anime look itself.

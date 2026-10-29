@@ -51,8 +51,16 @@ test('préférences existantes : Studio enregistré reste Studio ; une sauvegard
   await expect(page.getByRole('radiogroup', { name: 'Lumière du coach' }).getByRole('radio', { name: 'Vive (fond sombre)' })).toHaveAttribute('aria-checked', 'true');
 });
 
-test('le rendu Anime n’a pas d’option de lumière (son ombrage dessine les formes)', async ({ page }) => {
-  await seedProfile(page, {}, { coachStyle: 'encre' });
+// 1.9: the Anime look is removed (Youssef, 2026-10-29); a device that saved it opens in Ultra-réaliste and
+// gets the light option, the previous 3D render still has none
+test('1.9 : un ancien réglage Anime ouvre en Ultra-réaliste, avec l’option de lumière', async ({ page }) => {
+  await seedProfile(page, {}, { coachStyle: 'encre', coachRender: 'premium' });
+  await page.goto('/#/reglages/affichage');
+  await expect(page.getByRole('radiogroup', { name: 'Lumière du coach' })).toBeVisible();
+});
+
+test('la version précédente du rendu 3D n’a pas d’option de lumière', async ({ page }) => {
+  await seedProfile(page, {}, { coachStyle: 'realiste', coachRender: 'precedent' });
   await page.goto('/#/reglages/affichage');
   await expect(page.getByRole('radiogroup', { name: 'Lumière du coach' })).toHaveCount(0);
 });

@@ -10,7 +10,6 @@ import { PhotoCoach } from './PhotoCoach';
 import type { OutfitId, OutfitStatus } from './outfit';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { CoachRig } from '../engine';
-import { applyManga, outlineMaterial, toonMaterial } from './manga';
 import { CoachMeta, Customizer } from './customize';
 import type { AtlasRects } from './groom';
 import HAIR_RECTS from './hair_atlas.json';
@@ -24,7 +23,8 @@ import type { CoachId } from '../domain/types';
 const JSON_MODELS = import.meta.env.VITE_COACH_FORMAT === 'json';
 const EXT = JSON_MODELS ? 'json' : 'glb';
 
-export type CoachStyle = 'manga' | 'encre' | 'realiste';
+/** 1.9: Ultra-réaliste only, the Anime and Manga looks are removed (Youssef, 2026-10-29) */
+export type CoachStyle = 'realiste';
 
 /**
  * premium (v0.23): both looks share one model (geometry, skeleton, clothes, customisation), only the
@@ -35,7 +35,9 @@ export type CoachRender = 'premium' | 'precedent';
 
 export function coachUrl(coach: CoachId, style: CoachStyle, render: CoachRender = 'premium') {
   const who = coach === 'homme' ? 'male' : 'female';
-  return `./models/coach_${who}${style !== 'realiste' || render === 'premium' ? '_manga' : ''}.${EXT}`;
+  // the premium render uses the customisable model (file still named "_manga"), the previous one the v0.22 model
+  void style;
+  return `./models/coach_${who}${render === 'premium' ? '_manga' : ''}.${EXT}`;
 }
 
 /** knitted or woven clothes (the rest is padded gear: gloves, shin guards, helmets...) */
@@ -97,7 +99,7 @@ function patchJsonModels(loader: GLTFLoader) {
 const DRACO = './draco/';
 
 export function preloadCoaches() {
-  for (const c of ['homme', 'femme'] as const) useGLTF.preload(coachUrl(c, 'manga'), DRACO, true, patchJsonModels);
+  for (const c of ['homme', 'femme'] as const) useGLTF.preload(coachUrl(c, 'realiste'), DRACO, true, patchJsonModels);
 }
 
 /** Upgrade the exported materials: physically based skin with a soft sheen, matte fabrics. */
@@ -236,7 +238,7 @@ function useOptionalTexture(url: string, wanted: boolean, what: string) {
 
 export function CoachModel(props: CoachModelProps) {
   // v0.29: the Ultra-réaliste look of the champion coaches is a photo-textured avatar (PhotoCoach); the
-  // generated model stays for the Anime look and as the fallback (?photo=0 in development)
+  // generated model stays as the fallback (?photo=0 in development, render « précédent »)
   const { model, style, render = 'premium', quality } = props;
   // VITE_PHOTO_COACH=0 at build time: the generated models everywhere (comparisons, fallback build)
   const noPhoto = import.meta.env.VITE_PHOTO_COACH === '0' || (import.meta.env.DEV && typeof location !== 'undefined' && /[?&]photo=0/.test(location.search + location.hash));
@@ -263,7 +265,7 @@ function GeneratedCoach({ coach, style, quality, look, render = 'premium', ghost
   const own = model && render === 'premium' ? model : null;
   const gltf = useGLTF(own ? `${own}.${EXT}` : coachUrl(coach, style, render), DRACO, true, patchJsonModels);
   const premium = render === 'premium';
-  const custom = style !== 'realiste' || premium;
+  const custom = premium;
   const meta = useMeta(own ? `${own}.meta.json` : `./models/coach_${who(coach)}_manga.meta.json`);
   const maskUrl = own ? `${own}_masks.png` : `./models/coach_${who(coach)}_manga_masks.png`;
   const masks = useLoader(TextureLoader, maskUrl);
@@ -306,10 +308,6 @@ function GeneratedCoach({ coach, style, quality, look, render = 'premium', ghost
       mesh.visible = true;
     });
     upgradeMaterials(s, quality, style === 'realiste' && premium && quality === 'haute');
-    // premium: Encre and the older Manga choice are both drawn with the clean cel shading
-    // premium: Encre (labelled Anime) and the older Manga choice are both drawn in the anime look
-    const ink = premium ? 'anime' : style === 'encre' ? 'encre' : 'manga';
-    if (style !== 'realiste') applyManga(s, ink);
     let c: Customizer | null = null;
     if (custom) {
       masks.flipY = false;
@@ -317,16 +315,13 @@ function GeneratedCoach({ coach, style, quality, look, render = 'premium', ghost
       face.flipY = false;
       face.colorSpace = NoColorSpace;
       try {
-        const opts =
-          style === 'realiste'
-            ? { toon: (n: string, col: Color) => (quality === 'haute' ? fabricMaterial(n, col) : new MeshStandardMaterial({ name: n, color: col, roughness: 0.8, metalness: 0 })), outline: noOutline }
-            : { toon: (n: string, col: Color) => toonMaterial(n, null, col, ink), outline: (w: number) => (ink !== 'manga' ? outlineMaterial(w * 1.25, '#1b1d22') : outlineMaterial(w)) };
+        const opts = { toon: (n: string, col: Color) => (quality === 'haute' ? fabricMaterial(n, col) : new MeshStandardMaterial({ name: n, color: col, roughness: 0.8, metalness: 0 })), outline: noOutline };
         const groom =
           own && style === 'realiste' && hairAtlas
             ? { atlas: hairAtlas, rects: HAIR_RECTS as AtlasRects, style: own.includes('amara') ? 'degrade' : 'court-barbe', density: quality === 'basse' ? 0.55 : 1 }
             : null;
         const realSkin = style === 'realiste' && skinDetail ? { detail: skinDetail, scatter: quality === 'haute' ? 0.32 : 0.25 } : null;
-        c = new Customizer(s, meta, masks, { ...opts, legacy: !premium, face: own ? face : null, flat: ink === 'anime' ? 0.9 : 0, groom, realSkin });
+        c = new Customizer(s, meta, masks, { ...opts, legacy: !premium, face: own ? face : null, flat: 0, groom, realSkin });
         // development hook for the screenshot scripts
         if (import.meta.env.DEV) ((window as unknown as { __cssCustomizers?: Customizer[] }).__cssCustomizers ??= []).push(c);
       } catch (e) {

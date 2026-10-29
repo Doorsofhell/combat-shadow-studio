@@ -5,6 +5,7 @@ import type { GLTFLoader } from 'three-stdlib';
 import { Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, SRGBColorSpace } from 'three';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { restoreReferencePose, setLegLength } from './pose';
+import { FaceAnimator, type FaceOptions } from './face';
 import { CoachRig } from '../engine';
 import { useOutfit, type OutfitId, type OutfitStatus } from './outfit';
 
@@ -76,6 +77,11 @@ export function PhotoCoach({
     restoreReferencePose(s);
     return s;
   }, [gltf, quality]);
+  // 1.9: blinks, gaze and the effort of the strikes on the facial bones (src/three/face.ts); after the rig's pose
+  const face = useMemo(() => {
+    restoreReferencePose(scene);
+    return new FaceAnimator(scene, url.length);
+  }, [scene, url]);
   const rig = useMemo(() => {
     restoreReferencePose(scene);
     setLegLength(scene, legLength);
@@ -121,6 +127,8 @@ export function PhotoCoach({
   if (import.meta.env.DEV) (globalThis as { __photoScene?: Object3D }).__photoScene = scene;
   useFrame((_, dt) => {
     onFrame(rig, Math.min(dt, 0.05));
+    // fixed images (Lab, portraits) ask for a still face, or impose an expression: window.__cssFace
+    face.update(Math.min(dt, 0.05), (globalThis as { __cssFace?: FaceOptions }).__cssFace);
     // garments are taken off in an effect cleanup (quality or outfit change) before the new state is rendered:
     // an image is never drawn with the coach shown without them
     if (scene.visible && expected && dressed.state === 'portee' && !hasGarment(scene)) scene.visible = false;

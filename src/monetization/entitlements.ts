@@ -19,7 +19,6 @@ export type EntitlementId =
   | 'legends_collection'
   | 'all_disciplines'
   | 'all_fighters'
-  | 'anime_rendering'
   | 'advanced_timer';
 
 /** what exists in the app today */
@@ -182,18 +181,6 @@ export const ENTITLEMENTS: readonly Entitlement[] = [
     marker: false,
   },
   {
-    id: 'anime_rendering',
-    name: 'Rendu Anime',
-    description: 'Le rendu Anime des coachs 3D.',
-    screens: ['/reglages/affichage'],
-    implementation: 'implemente',
-    kind: 'acces',
-    freeLimit: 'Rendu Ultra-réaliste gratuit',
-    availableToday: TODAY,
-    readiness: 'a-confirmer',
-    marker: false,
-  },
-  {
     id: 'all_fighters',
     name: 'Galerie complète des combattants',
     description: 'Les combattants supplémentaires, au-delà de Kadir et Amara.',
@@ -229,7 +216,8 @@ export const PREMIUM_BENEFITS: readonly { label: string; features: EntitlementId
   { label: 'Création illimitée d’enchaînements personnalisés', features: ['unlimited_combos', 'advanced_combo_builder'] },
   { label: 'Coaching 3D complet', features: ['advanced_breakdown', 'advanced_voice'] },
   { label: 'Toutes les disciplines et techniques', features: ['all_disciplines', 'advanced_techniques'] },
-  { label: 'Tous les combattants et rendus', features: ['all_fighters', 'anime_rendering'] },
+  // 1.9: « et rendus » dropped with the Anime look (Youssef, 2026-10-29)
+  { label: 'Tous les combattants', features: ['all_fighters'] },
   { label: 'Tous les programmes et niveaux', features: ['all_programs', 'advanced_techniques'] },
   { label: 'Statistiques et comparaisons avancées', features: ['advanced_statistics'] },
   { label: 'Réglages avancés d’entraînement', features: ['advanced_timer'] },

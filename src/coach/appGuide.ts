@@ -269,10 +269,10 @@ export const APP_GUIDE: GuideEntry[] = [
   {
     id: 'render',
     title: 'Le rendu des combattants',
-    keywords: ['rendu', 'rendu des combattants', 'style anime', 'anime', 'ultra realiste', 'realiste', 'look du coach', 'apparence du coach', 'graphismes', 'style graphique', 'manga', 'encre'],
+    keywords: ['rendu', 'rendu des combattants', 'style anime', 'anime', 'ultra realiste', 'realiste', 'look du coach', 'apparence du coach', 'graphismes', 'style graphique', 'manga', 'encre', 'dessin anime'],
     answer:
-      'Dans Réglages, rubrique Apparence, « Rendu des combattants » propose deux looks : Anime ou Ultra-réaliste. C’est le même coach, avec les mêmes mouvements : seul l’aspect change.\n' +
-      'Tu retrouves ce choix dans Réglages, Affichage 3D, et dans les « Options » du studio. Si tu utilises l’ancienne version du rendu 3D (secours), les choix sont Encre, Manga et Réaliste.',
+      'Les coachs s’affichent en Ultra-réaliste : peau, cheveux, regard et vêtements proches d’un vrai combattant, avec un visage qui cligne des yeux et se crispe dans l’effort.\n' +
+      'Le style Anime a été retiré dans la version 1.9 : il n’y a plus de choix de look. Si ton appareil peine, baisse la qualité dans Réglages, « Affichage 3D ».',
     action: { to: '/reglages', label: 'Ouvrir les réglages' },
   },
 
@@ -516,7 +516,6 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['reglages-affichage'],
     answer:
       'Dans Réglages, « Affichage 3D », tu règles :\n' +
-      '• Rendu des combattants : Anime ou Ultra-réaliste.\n' +
       '• Qualité : Auto, Haute ou Économie. En Auto, la qualité baisse d’elle-même si l’appareil n’arrive pas à suivre ; si ça saccade, choisis Économie.\n' +
       '• Version du rendu 3D : la nouvelle, ou la précédente en secours.\n' +
       '• Caméra par défaut : 3/4, Face ou Profil.',

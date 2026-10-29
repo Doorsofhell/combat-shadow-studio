@@ -15,7 +15,6 @@ import { bell, unlockAudio } from '../../audio/sound';
 import { hasFrenchVoice, say, voiceAvailable } from '../../audio/voice';
 import { saveTextFile } from '../../platform/native';
 import { ConfirmDialog, PageHead, PanelRow, SetAction, SetGroup, SetItem, SetLink, SettingsList, Segmented, SliderRow, Toggle, toast } from '../components';
-import { CoachLookPicker } from '../components/CoachLookPicker';
 import { CoachPicker } from './CoachSelect';
 import { CoachAiSettings } from './CoachHistory';
 import { AccountDataBody } from './account/Profile';
@@ -154,7 +153,6 @@ export function SettingsPage() {
 
   const d = profile.mainDiscipline;
   const coach = championFor(profile.coach, profile.champion);
-  const looks: Record<string, string> = { realiste: 'Ultra-réaliste', encre: 'Anime', manga: 'Anime' };
   const ai = useCoachAi();
   const textSize = profile.display.textSize === 'grand' ? 'texte grand' : 'texte normal';
   const theme = settings.theme === 'clair' ? 'Jour' : settings.theme === 'auto' ? 'Auto' : 'Nuit';
@@ -185,12 +183,9 @@ export function SettingsPage() {
         </SetGroup>
 
         <SetGroup title="Coach et entraînement">
-          <SetItem id="coach" icon="fighter" title="Mon coach" summary={`${coach.name} · ${looks[settings.coachStyle] ?? 'Ultra-réaliste'}`}>
+          <SetItem id="coach" icon="fighter" title="Mon coach" summary={`${coach.name} · Ultra-réaliste`}>
             <p className="small muted">Ton coach montre chaque mouvement en 3D. Tu peux en changer à tout moment, tes statistiques sont conservées.</p>
             <CoachPicker />
-            <PanelRow label="Rendu des combattants" column>
-              <CoachLookPicker testId="settings-coach-look" />
-            </PanelRow>
           </SetItem>
           <SetItem id="voix" icon="audio" title="Voix et sons" summary={`${settings.voice ? 'Voix activée' : 'Voix coupée'} · voix ${pct(settings.voiceVolume)} · effets ${pct(settings.effectsVolume)}`}>
         <Toggle label="Voix du coach" on={settings.voice} onChange={(v) => set({ voice: v })} />

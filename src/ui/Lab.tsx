@@ -32,6 +32,12 @@ export function Lab() {
   const style = tech ? STYLE_OF[disc] : ((q.get('style') ?? 'boxing') as StanceStyle);
   const motionId = tech?.motion ?? q.get('motion') ?? 'garde';
   const tRef = useRef(Number(q.get('t') ?? '0'));
+  // 1.9 the face of a fixed image: still (no blink, eyes ahead), or an imposed expression: effort=0..1, blink=0..1;
+  // face=live animates it as in the app
+  useMemo(() => {
+    const num = (k: string) => (q.get(k) !== null ? Number(q.get(k)) : undefined);
+    (globalThis as { __cssFace?: object }).__cssFace = q.get('face') === 'live' ? {} : { still: true, effort: num('effort'), blink: num('blink') };
+  }, [q]);
   const envelope = useRef<Envelope | null>(null);
   const origin = useRef({ x: 0, z: 0, yaw: 0 });
   const view = useMemo<StageView | undefined>(() => {
@@ -99,8 +105,9 @@ export function Lab() {
     };
   }, [q, coach, disc, champion]);
   // mood=1: lights of the studio visuals (scripts/visuels), with alpha=1 for a transparent picture
-  // look=realiste|manga|encre, render=precedent: the v0.22 render (fallback), for before/after captures
-  const labStyle = q.get('look') === 'realiste' ? 'realiste' : q.get('look') === 'manga' ? 'manga' : 'encre';
+  // render=precedent: the v0.22 render (fallback), for before/after captures; look= is ignored since 1.9
+  // (Ultra-réaliste only, the Anime and Manga looks are removed)
+  const labStyle = 'realiste' as const;
   const render = q.get('render') === 'precedent' ? 'precedent' : 'premium';
   const sampler = useRef<MotionSampler | null>(null);
   const sampler2 = useRef<MotionSampler | null>(null);

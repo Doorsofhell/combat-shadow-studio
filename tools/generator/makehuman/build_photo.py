@@ -52,7 +52,56 @@ for p, w in RECIPE["paired"]:
     for s in ("l", "r"):
         TargetService.load_target(h, os.path.join(T, p.replace("X", s) + ".target.gz"), weight=w)
 
+# 1.9 face rig (eyelids, eyes, brows, jaw, mouth corners) for src/three/face.ts: the mixamo rig has no facial bones,
+# so they are taken from the full MakeHuman rig ("default", 163 bones) fitted on a copy of the same body, under the
+# names of the Rocketbox face rig of Kadir and Amara (one animation for the four coaches)
+FACE_BONES = {"eye.L": "LeftEye", "eye.R": "RightEye", "jaw": "Face_MJaw"}
+for s_, S_ in (("L", "L"), ("R", "R")):
+    FACE_BONES.update({f"orbicularis03.{s_}": f"Face_{S_}EyeBlinkTop", f"orbicularis04.{s_}": f"Face_{S_}EyeBlinkBottom",
+                       f"oculi01.{s_}": f"Face_{S_}InnerEyebrow", f"risorius03.{s_}": f"Face_{S_}MouthCorner"})
+FACE_POS, FACE_W = {}, {}
+if PH.get("face_rig", True):
+    h2 = h.copy()
+    h2.data = h.data.copy()
+    bpy.context.collection.objects.link(h2)
+    rig2 = HumanService.add_builtin_rig(h2, "default")
+    for src in FACE_BONES:
+        b = rig2.data.bones[src]
+        FACE_POS[src] = (rig2.matrix_world @ b.head_local, rig2.matrix_world @ b.tail_local)
+    gi = {g.index: g.name for g in h2.vertex_groups}
+    for v in h2.data.vertices:
+        for g in v.groups:
+            n = gi[g.group]
+            if n in FACE_BONES and not n.startswith("eye.") and g.weight > 0.01:
+                FACE_W.setdefault(n, {})[v.index] = g.weight
+    for o in (h2, rig2):
+        bpy.data.objects.remove(o, do_unlink=True)
+    print("face rig", {FACE_BONES[k]: len(v) for k, v in FACE_W.items()})
+
 rig = HumanService.add_builtin_rig(h, "mixamo")
+if FACE_POS:
+    bpy.context.view_layer.objects.active = rig
+    for o in bpy.data.objects:
+        o.select_set(o == rig)
+    bpy.ops.object.mode_set(mode="EDIT")
+    inv = rig.matrix_world.inverted()
+    for src, dst in FACE_BONES.items():
+        eb = rig.data.edit_bones.new("mixamorig:" + dst)
+        eb.head, eb.tail = inv @ FACE_POS[src][0], inv @ FACE_POS[src][1]
+        eb.parent = rig.data.edit_bones["mixamorig:Head"]
+        eb.use_deform = True
+    bpy.ops.object.mode_set(mode="OBJECT")
+    # the skin moved by a facial bone leaves the head by as much (the weights of a vertex still add up to one)
+    head_g = h.vertex_groups["mixamorig:Head"]
+    taken = {}
+    for src, ws in FACE_W.items():
+        g = h.vertex_groups.new(name="mixamorig:" + FACE_BONES[src])
+        for i, w in ws.items():
+            g.add([i], w, "REPLACE")
+            taken[i] = taken.get(i, 0.0) + w
+    for i, w in taken.items():
+        hw = next((x.weight for x in h.data.vertices[i].groups if x.group == head_g.index), 0.0)
+        head_g.add([i], max(0.0, hw - w), "REPLACE")
 parts = {}
 for kind, key in (("Eyes", "eyes_mesh"), ("Eyebrows", "eyebrows"), ("Eyelashes", "eyelashes"), ("Hair", "hair")):
     rel = PH.get(key, "eyes/high-poly/high-poly.mhclo" if kind == "Eyes" else None)
@@ -60,6 +109,31 @@ for kind, key in (("Eyes", "eyes_mesh"), ("Eyebrows", "eyebrows"), ("Eyelashes",
         continue
     parts[kind] = HumanService.add_mhclo_asset(asset(rel), h, asset_type=kind, subdiv_levels=0, material_type="MAKESKIN")
     print("asset", kind, rel, len(parts[kind].data.vertices))
+
+if FACE_POS and "Eyes" in parts:
+    eo = parts["Eyes"]
+    for gr in list(eo.vertex_groups):
+        eo.vertex_groups.remove(gr)
+    gl, gr_ = eo.vertex_groups.new(name="mixamorig:LeftEye"), eo.vertex_groups.new(name="mixamorig:RightEye")
+    for v in eo.data.vertices:
+        (gl if (eo.matrix_world @ v.co).x > 0 else gr_).add([v.index], 1.0, "REPLACE")
+    # the hair stays on the head bone; the brows follow their brow bone and the lashes their lids only
+    keep = {"Eyebrows": ("Face_LInnerEyebrow", "Face_RInnerEyebrow"), "Eyelashes": ("Face_LEyeBlinkTop", "Face_LEyeBlinkBottom", "Face_REyeBlinkTop", "Face_REyeBlinkBottom")}
+    for k, o in parts.items():
+        if k == "Eyes":
+            continue
+        fg = [g for g in o.vertex_groups if "Face_" in g.name and g.name[10:] not in keep.get(k, ())]
+        if not fg:
+            continue
+        hg = o.vertex_groups.get("mixamorig:Head") or o.vertex_groups.new(name="mixamorig:Head")
+        for v in o.data.vertices:
+            gone = sum(x.weight for x in v.groups if x.group in {g.index for g in fg})
+            if gone > 0:
+                hw = next((x.weight for x in v.groups if x.group == hg.index), 0.0)
+                hg.add([v.index], hw + gone, "REPLACE")
+        for g in fg:
+            o.vertex_groups.remove(g)
+    print("proxy face groups", {k: [g.name[10:] for g in o.vertex_groups if "Face_" in g.name] for k, o in parts.items()})
 
 bpy.context.view_layer.objects.active = h
 for o in bpy.data.objects:

@@ -29,7 +29,6 @@ import { ConsigneBand } from '../training/ConsigneBand';
 import { CoachScreen, useCoachUi } from '../coach-screen/CoachScreen';
 import { usePulseFlash } from '../training/pulse';
 import { ArBridge } from '../../ar/ArBridge';
-import { CoachLookPicker } from '../components/CoachLookPicker';
 import { ArControls, ArIntroSheet, useArView } from '../training/ArMode';
 import { AppIcon } from '../icons';
 import { useNavActions } from '../nav/store';
@@ -887,10 +886,6 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
                   </button>
                 ))}
               </div>
-            </div>
-            <div className="stack">
-              <span className="label">Rendu</span>
-              <CoachLookPicker testId="training-coach-look" />
             </div>
             <div className="stack">
               <span className="label">Garde</span>
