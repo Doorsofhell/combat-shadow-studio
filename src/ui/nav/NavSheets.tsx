@@ -190,7 +190,7 @@ export function NavSheets() {
   const go = (to: string) => close(() => leave(() => nav(to)));
 
   if (sheet === 'search') {
-    return <SearchSheet onClose={() => close()} onGo={go} onAsk={(q) => close(() => useCoachBubble.getState().ask(q))} onApply={(then) => close(then)} />;
+    return <SearchSheet onClose={() => close()} onGo={go} onAsk={(q, saved) => close(() => useCoachBubble.getState().ask(q, saved))} onApply={(then) => close(then)} />;
   }
 
   if (sheet === 'news') {

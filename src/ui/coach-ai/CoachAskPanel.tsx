@@ -118,7 +118,8 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
   // 1.0.0 (lot 3): the question typed in the search bar is asked at once
   useEffect(() => {
     const pending = useCoachBubble.getState().takePending();
-    if (pending) ask(pending);
+    // 1.7.0: a question already answered at the top of the search is not kept twice in the history
+    if (pending) ask(pending.question, false, pending.saved);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -127,7 +128,7 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
     last.current.techniqueId = undefined;
   }, [context.techniqueId]);
 
-  const ask = (question: string, suggested = false) => {
+  const ask = (question: string, suggested = false, saved = false) => {
     const text = question.trim();
     if (!text) return;
     // a double tap sends once
@@ -145,8 +146,8 @@ export function CoachAskPanel({ context, onAction, onClose, historyHref = COACH_
     setQ('');
     answerBox.current?.scrollTo({ top: 0 });
     answerBox.current?.scrollIntoView?.({ block: 'nearest' });
-    ai.push({ question: text, answer: a.text, intent: a.intent, techniqueId: a.techniqueId });
-    if (ai.voiceReplies) speakReply(a.text);
+    if (!saved) ai.push({ question: text, answer: a.text, intent: a.intent, techniqueId: a.techniqueId });
+    if (ai.voiceReplies && !saved) speakReply(a.text);
     // les demandes de démo / ralenti / répétition s’exécutent tout de suite
     if (['demo', 'slow', 'repeat'].includes(a.intent) && a.actions[0]) onAction(a.actions[0]);
   };

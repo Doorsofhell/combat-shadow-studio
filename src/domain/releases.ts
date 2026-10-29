@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.7.0',
+      releaseDate: '2026-10-29',
+      title: 'Rechercher et demander au coach, dans la même fenêtre',
+      isMajor: false,
+      changes: [
+        { category: 'fonctionnalites', text: 'Quand tu poses une question dans « Rechercher » (« Comment corriger mon jab ? »), la réponse du Coach IA s’affiche en haut, en court avec « Lire la suite », et les résultats de l’application juste en dessous.' },
+        { category: 'ameliorations', text: 'L’étoile ✦ est dans la barre de recherche : elle envoie ce que tu as tapé au coach, ou ouvre le Coach IA en grand quand la barre est vide. Le gros bouton noir « Demander au Coach IA » est retiré.' },
+        { category: 'ameliorations', text: 'Pour un simple mot (« garde »), la première ligne « Demander au coach » donne aussi sa réponse sans changer de fenêtre ; « Continuer avec le Coach IA » ouvre la conversation sur la même question.' },
+      ],
+      links: [],
+    },
+    {
       version: '1.6.0',
       releaseDate: '2026-10-28',
       title: 'Deux nouveaux coachs : Axel et Kaila',

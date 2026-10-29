@@ -133,7 +133,8 @@ test('Légendes : « Que signifient les statuts ? » est une question de la rech
   await bar(page).getByTestId('app-search').click();
   await expect(page.getByTestId('search-question')).toHaveText(/Que signifient les statuts/);
   await page.getByTestId('search-question').click();
-  await expect(page.getByTestId('coach-bubble-panel')).toBeVisible();
+  // 1.7.0 (proposition A): the answer shows at the top of the search
+  await expect(page.getByTestId('search-coach-text')).toContainText(/statut/i);
   // the options of the screen in the ⋮
   await page.keyboard.press('Escape');
   await expect(await menuItem(page, 'filters')).toBeVisible();
