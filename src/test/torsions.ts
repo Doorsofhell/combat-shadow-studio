@@ -170,6 +170,8 @@ export interface TorsionSample {
       kneeFlex: number;
       kneeRot: number;
       kneeSide: number;
+      /** 1.8.0: the hand is laid on the mat (rig.handOnMat) */
+      onMat: boolean;
     }
   >;
 }
@@ -215,7 +217,11 @@ export function measureTorsions(rig: CoachRig): TorsionSample {
     // faces along the hinge axis toward the midline (thumb up when the forearm points forward)
     const hinge = new Vector3().crossVectors(u, a).normalize(); // points to the coach's right for both arms when hanging
     const medial = hinge.clone().multiplyScalar(sgn); // toward the midline
-    const palm = A.palm0.clone().applyQuaternion(rig.turnOf(`${n}Hand`)!);
+    // 1.8.0: the palm as it would face with the wrist straight (hand axis replaced by the forearm's): the thumb-side
+    // axis of the hand does not move when the wrist bends, the palm itself does, and a hand bent back near 90°
+    // (laid flat on the mat) read as 15° more pronation than the forearm really turned
+    const radial = A.radial0.clone().applyQuaternion(rig.turnOf(`${n}Hand`)!);
+    const palm = new Vector3().crossVectors(f, radial).multiplyScalar(Math.sign(new Vector3().crossVectors(A.hand0, A.radial0).dot(A.palm0)));
     const pronation = signedAngle(orthoTo(medial, f), orthoTo(palm, f), f) * D * sgn;
     // wrist, in the frame of the distal forearm (forearm turned by the hand bone's own twist)
     const wr = rel(rig, `${n}ForeArm`, `${n}Hand`);
@@ -223,7 +229,9 @@ export function measureTorsions(rig: CoachRig): TorsionSample {
     const sw2 = wst.twistQ.clone().invert().multiply(wst.swingQ).multiply(wst.twistQ);
     const d2 = A.hand0.clone().applyQuaternion(sw2);
     const wristFlex = Math.atan2(d2.dot(A.palm0), d2.dot(A.hand0)) * D;
-    const wristDev = Math.atan2(d2.dot(A.radial0), d2.dot(A.hand0)) * D;
+    // 1.8.0: deviation read as a latitude (against the flexion plane), not against the forearm's axis alone, which
+    // read a few degrees of deviation as 70° once the wrist was bent back near 90° (hand flat on the mat)
+    const wristDev = Math.atan2(d2.dot(A.radial0), Math.hypot(d2.dot(A.hand0), d2.dot(A.palm0))) * D;
     // legs
     const L = R.leg[s];
     // hip rotation: same decomposition from standing (the clinic's two positions, lying and sitting, are
@@ -242,6 +250,7 @@ export function measureTorsions(rig: CoachRig): TorsionSample {
     const knee = swingTwist(rel(rig, `${n}UpLeg`, `${n}Leg`), R.axis.get(`${n}Leg`)!);
     const kneeRot = knee.twist * D * -sgn;
     side[s] = {
+      onMat: rig.handOnMat[s],
       shoulderRot,
       shoulderElev: sh.swing * D,
       hipElev: hip.swing * D,
@@ -283,6 +292,11 @@ export const TORSION_LIMITS = {
   /** wrist (AAOS: flexion 80°, extension 70°, radial deviation 20°, ulnar 30°) */
   wristFlex: 80,
   wristExt: 70,
+  /**
+   * 1.8.0 (option recommended to Youssef, 2026-10-29): a hand laid flat on the mat and carrying the body (push-up, posting
+   * on the floor) bends back past the active range, forearm close to vertical over a flat palm: about 90°
+   */
+  wristExtLoaded: 90,
   wristRadial: 20,
   wristUlnar: 30,
   /** elbow and knee: hyperextension past straight (elbow up to 5–10° in healthy adults, knee ≈ 5°) */
@@ -367,7 +381,7 @@ export function readings(m: TorsionSample) {
     out.push({ key: 'pronation', side: s, value: a.pronation, limit: L.pronation });
     out.push({ key: 'supination', side: s, value: -a.pronation, limit: L.supination });
     out.push({ key: 'wristFlex', side: s, value: a.wristFlex, limit: L.wristFlex });
-    out.push({ key: 'wristExt', side: s, value: -a.wristFlex, limit: L.wristExt });
+    out.push({ key: 'wristExt', side: s, value: -a.wristFlex, limit: a.onMat ? L.wristExtLoaded : L.wristExt });
     out.push({ key: 'wristRadial', side: s, value: a.wristDev, limit: L.wristRadial });
     out.push({ key: 'wristUlnar', side: s, value: -a.wristDev, limit: L.wristUlnar });
     out.push({ key: 'elbowHyper', side: s, value: -a.elbowFlex, limit: L.elbowHyper });

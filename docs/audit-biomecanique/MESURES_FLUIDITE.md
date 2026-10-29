@@ -91,7 +91,7 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `feinte-lutte` | 1 | 0 | 0 | 0,0 | 0,0 | 11,0 | 11,0 | – | – |
 | `changement-niveau` | 2 | 0 | 0 | 0,0 | 0,0 | 11,5 | 11,5 | – | – |
 | `entree-lutte` | 4 | 1 | 1 | 13,9 | 13,9 | 13,7 | 13,7 | 0,0 | 0,0 |
-| `sprawl` | 6 | 6 | 3 | 7,3 | 7,3 | 8,8 | 8,8 | 0,0 | 0,0 |
+| `sprawl` | 6 | 6 | 3 | 8,6 | 8,6 | 9,7 | 9,3 | 0,0 | 0,0 |
 | `defense-lutte` | 2 | 0 | 0 | 0,0 | 0,0 | 15,4 | 15,4 | 0,0 | 0,0 |
 | `descente-sol` | 2 | 2 | 1 | 0,0 | 0,0 | 12,1 | 12,3 | – | – |
 | `sortie-hanche` | 3 | 1 | 1 | 4,2 | 4,2 | 4,2 | 4,2 | 0,0 | 0,1 |
@@ -107,8 +107,8 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `kumikata` | 4 | 0 | 0 | 2,2 | 2,2 | 2,5 | 2,5 | 0,0 | 0,0 |
 | `uchikomi-o-goshi` | 4 | 1 | 0 | 11,9 | 11,9 | 11,9 | 11,9 | 0,0 | 0,0 |
 | `uchikomi-o-soto-gari` | 6 | 3 | 1 | 10,7 | 10,7 | 10,3 | 10,3 | 0,0 | 0,0 |
-| `uchikomi-o-uchi-gari` | 8 | 5 | 3 | 4,2 | 4,2 | 4,0 | 4,0 | 0,0 | 0,0 |
-| `uchikomi-ko-uchi-gari` | 6 | 2 | 1 | 3,6 | 3,6 | 5,5 | 5,5 | 0,0 | 0,0 |
+| `uchikomi-o-uchi-gari` | 8 | 5 | 3 | 4,1 | 4,1 | 4,0 | 4,0 | 0,0 | 0,0 |
+| `uchikomi-ko-uchi-gari` | 6 | 2 | 1 | 3,5 | 3,5 | 5,4 | 5,4 | 0,0 | 0,0 |
 | `ukemi-ushiro` | 9 | 12 | 0 | 3,4 | 3,4 | 5,8 | 5,5 | 3,6 | 3,6 |
 | `ukemi-yoko` | 11 | 9 | 0 | 11,3 | 11,3 | 11,3 | 11,3 | 0,0 ; 0,0 | 0,0 ; 0,0 |
 | `sit-out` | 8 | 6 | 2 | 7,1 | 7,1 | 9,3 | 9,3 | 0,0 | 0,0 |

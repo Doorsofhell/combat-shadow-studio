@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.8.0',
+      releaseDate: '2026-10-29',
+      title: 'Des mouvements au sol plus vrais',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Plus aucune partie du corps des coachs ne passe sous le tapis : cuisses dans le sprawl, doigts des mains posées au sol, dos et épaules dans les chutes, orteils et genoux dans les relevés.' },
+        { category: 'ameliorations', text: 'Sprawl : les jambes partent tendues loin derrière, les cuisses se posent sur le tapis et les tibias restent levés, puis les pieds reviennent sous le bassin d’un geste moins brusque.' },
+        { category: 'ameliorations', text: 'Mains en appui (sit-out, relevé technique, pont, sortie de hanche) : la main se pose à plat sur le tapis, comme dans une pompe, au lieu de s’y enfoncer.' },
+      ],
+      links: [],
+    },
+    {
       version: '1.7.0',
       releaseDate: '2026-10-29',
       title: 'Rechercher et demander au coach, dans la même fenêtre',

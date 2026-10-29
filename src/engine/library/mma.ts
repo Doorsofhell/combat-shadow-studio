@@ -182,17 +182,23 @@ function sprawl(a: Author): Motion {
     d.hips = v3(0, 0.42 * s, -0.42 * s);
     d.pelvis = { yaw: 0, pitch: deg(72), roll: 0 };
     d.chest = { yaw: 0, pitch: deg(-10), roll: 0 };
-    d.footL = a.air(v3(0.26 * s, 0.3 * s, -1.05 * s), deg(10), deg(30), 0, v3(0.3, -1, 0), deg(20));
-    d.footR = a.air(v3(-0.26 * s, 0.3 * s, -1.05 * s), deg(-10), deg(30), 0, v3(-0.3, -1, 0), deg(20));
+    // 1.8.0: the legs shoot back already straight (a leg's length behind the hips), not bent under the body
+    const back = d.hips.z - 0.92 * a.L;
+    d.footL = a.air(v3(0.26 * s, 0.3 * s, back), deg(10), deg(30), 0, v3(0.3, -1, 0), deg(20));
+    d.footR = a.air(v3(-0.26 * s, 0.3 * s, back), deg(-10), deg(30), 0, v3(-0.3, -1, 0), deg(20));
   });
   const flat = edit(kick, (d) => {
     press(d, 0.05 * s, 0.38 * s); // the head is pushed down to the mat: in solo the hands end on the floor and break the fall
-    d.hips = v3(0, 0.16 * s, -0.5 * s);
-    d.pelvis = { yaw: 0, pitch: deg(82), roll: 0 };
+    d.hips = v3(0, 0.2 * s, -0.5 * s);
+    d.pelvis = { yaw: 0, pitch: deg(84), roll: 0 };
     d.chest = { yaw: 0, pitch: deg(-24), roll: 0 };
     d.head = { yaw: 0, pitch: deg(-45), roll: 0 };
-    d.footL = a.ground(v3(0.3 * s, 0, -1.18 * s), deg(15), deg(78));
-    d.footR = a.ground(v3(-0.3 * s, 0, -1.18 * s), deg(-15), deg(78));
+    // 1.8.0 (audit des mouvements; Youssef: « le sprawl garde les tibias levés »): the legs are long and straight
+    // behind, on the toes; with the feet at -1.18 m the legs were too long for the gap and the knees bent through
+    // the mat (thighs up to 20 cm under the floor, shins pointing up). The feet now sit a leg's length behind the hips.
+    const back = d.hips.z - 0.97 * a.L;
+    d.footL = a.ground(v3(0.3 * s, 0, back), deg(15), deg(78));
+    d.footR = a.ground(v3(-0.3 * s, 0, back), deg(-15), deg(78));
   });
   // the feet leave the floor to come back under the hips (a hop), they never drag on the mat
   const hop = edit(flat, (d) => {
@@ -220,14 +226,14 @@ function sprawl(a: Author): Motion {
       { t: 0.24, pose: drop, ease: 'load' },
       { t: 0.4, pose: kick, ease: 'linear' },
       { t: 0.52, pose: flat, ease: 'out' },
-      { t: 0.86, pose: flat, ease: 'linear' },
+      { t: 0.78, pose: flat, ease: 'linear' },
       // the hips rise in two pushes: flowing through the hop would lower them mid-way and bring the
-      // knees through the mat
-      { t: 1.04, pose: hop, ease: 'inOut', hold: true },
-      { t: 1.22, pose: crouch, ease: 'load' },
-      { t: 1.52, pose: g, ease: 'inOut' },
+      // knees through the mat. 1.8.0: the feet come from a leg's length behind, a little more time for it
+      { t: 1.12, pose: hop, ease: 'inOut', hold: true },
+      { t: 1.28, pose: crouch, ease: 'load' },
+      { t: 1.56, pose: g, ease: 'inOut' },
     ],
-    chainAt: 1.44,
+    chainAt: 1.48,
     impacts: [0.52],
     startState: 'stand',
     endState: 'stand',
