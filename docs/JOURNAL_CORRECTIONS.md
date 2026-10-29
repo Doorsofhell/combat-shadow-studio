@@ -2204,3 +2204,4 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - `build_photo.py` : nouvelles clés de recette `stubble`, `skin_normal_from`, `skin_normal`, `skin_normal_blur`, `relief_size` (README) ; portraits régénérés.
   - Poids : `photo.glb` 2,30 Mo (Axel, avant 1,82) et 2,47 Mo (Kaila, avant 2,22), toujours sous la limite de 2,5 Mo du test.
 - **Avant/après** : captures dans le studio de l'app (Lab, Ultra-réaliste) : visage, corps entier, dos.
+- **Tests** : TypeScript RÉUSSI ; Vitest 907 RÉUSSIS, 1 ignoré (`makehuman-coaches.test.ts` : vrais cheveux exigés pour les deux coachs, nouveau test « la peau a son relief ») ; Playwright : `coachs-v160`, `navigation` (Nouveautés 1.6.1), `coach-render` 33 RÉUSSIS ; suite complète NON EXÉCUTÉE ; Android réel NON EXÉCUTÉ.
