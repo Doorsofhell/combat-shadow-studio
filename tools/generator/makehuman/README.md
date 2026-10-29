@@ -35,10 +35,15 @@ npm run visuels -- --only portraits --id kaila
 | `scalp` | cuir chevelu peint (couleur, force) : cheveux plaqués en arrière, ou coupe rase |
 | `eyebrows`, `eyelashes`, `eyes` | sourcils, cils, iris |
 | `tattoo` | tatouage tribal peint (bras gauche, côtes gauches) |
+| `stubble` | barbe de deux jours peinte (couleur, force) : menton, mâchoire, lèvre supérieure, autour des lèvres mesurées sur le maillage |
+| `skin_normal_from`, `skin_normal`, `skin_normal_blur` | relief fin de la peau (pores, petits plis) pris dans la normal map d'une autre peau MakeHuman, filtré passe-haut (ses muscles et cicatrices ne passent pas), force, rayon du filtre (px sur 2048) |
+| `relief_size` | taille de la normal map finale (1024 par défaut, pour les téléphones) |
 | `subdiv`, `decimate` | une subdivision puis réduction (42 800 triangles, comme Kadir) ; sans ces clés, le maillage de base (26 700 triangles) |
 
 ## Pièges connus
 
 - `outfits.py` doit tourner avec `MH_BODY=1 DECIMATE=1` : sinon les bords de la brassière et des ceintures sortent en dents de scie (le maillage MakeHuman a des faces plus grandes que Rocketbox).
 - La taille femme de MakeHuman n'est pas linéaire (0,56 donne 1,65 m avec les autres réglages de Kaila) : vérifier la taille avant de mettre `scale`.
+- Lancer chaque construction dans son propre dossier de travail : les textures intermédiaires (`<id>_hair.png`…) s'écrivent à côté de la sortie et deux constructions du même coach en parallèle s'écrasent (PNG corrompu, cheveux blancs).
+- Peau `mindfront_aksel_skin` : couleur inutilisable (œil au beurre noir, cicatrices peintes), et sa normal map a des cicatrices au visage. Le relief fin vient de `mindfront_skin_male_african_middleage`, filtré.
 - Ne jamais nommer un script bpy `inspect.py` (il masque le module standard et Blender plante).

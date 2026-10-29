@@ -155,7 +155,7 @@ def uv_raster(values, size):
 
 vg = {g.name: g.index for g in h.vertex_groups}
 P = np.array([(h.matrix_world @ v.co)[:] for v in h.data.vertices])  # world: Blender axes, Z up, metres
-W = np.zeros((len(P), 6), np.float32)  # scalp, torso, legs+hips, arms+hands, nipple, spine2
+W = np.zeros((len(P), 6), np.float32)  # scalp, torso, legs+hips, arms+hands, nipple, lips
 groups = dict(scalp=0)
 for v in h.data.vertices:
     for g in v.groups:
@@ -172,6 +172,8 @@ for v in h.data.vertices:
                 W[v.index, 3] += g.weight
         elif n == "nipple":
             W[v.index, 4] = g.weight
+        elif n == "lips":
+            W[v.index, 5] = g.weight
 B = {b.name[10:]: (rig.matrix_world @ b.head_local) for b in rig.data.bones}
 hips_z, thigh_z, knee_z = B["Hips"].z, B["LeftUpLeg"].z, B["LeftLeg"].z
 # underwear (the base layer when no discipline outfit is worn, as the Rocketbox coaches): boxer briefs, and a
@@ -182,7 +184,7 @@ top = hips_z + 0.03 * (B["Head"].z - hips_z) / 0.8
 nip = P[W[:, 4] > 0.3]
 nz = nip[:, 2].mean() if len(nip) else B["Spine2"].z
 # per texel (sharp hems): scalp weight, body-part weights and the 3D position, rasterised in UV space
-R = uv_raster(np.concatenate([W[:, :4], P], 1), 2048)
+R = uv_raster(np.concatenate([W[:, :4], P, W[:, 5:6]], 1), 2048)
 Zt, region_t = R[..., 6], np.clip(R[..., 1] + R[..., 2] - R[..., 3], 0, 1)
 edge = lambda d: np.clip(d / 0.0025, 0, 1)
 shorts = edge(Zt - low) * edge(top - Zt) * (R[..., 3] < 0.5)
@@ -226,7 +228,22 @@ if PH.get("tattoo"):
         w = 0.011 * along
         blade = (fx > 0.07) & (np.abs(Zt - curve) < w) & (fy > -0.06) & (fy < 0.08) & (R[..., 3] < 0.3)
         ink = np.maximum(ink, blade.astype(np.float32))
-LAYERS = np.stack([R[..., 0], shorts, bra, Xt, Yt, Zt, ink], -1)
+# short beard ("stubble" in the recipe): chin, jaw, upper lip and the top of the neck, lips left bare, around the
+# mouth measured on the lips of the mesh; soft edges so it fades into the skin as a real two-day beard
+beard = np.zeros_like(shorts)
+lipv = P[W[:, 5] > 0.3]
+if PH.get("stubble") and len(lipv):
+    soft = lambda d, w: np.clip(d / w, 0, 1)
+    lz, ly, ex = lipv[:, 2].mean(), lipv[:, 1].min(), np.abs(lipv[:, 0]).max()
+    dz, ax_ = Zt - lz, np.abs(Xt)
+    hy = B["Head"].y
+    front = soft(hy + 0.01 - Yt, 0.02)  # the front of the head (the face looks to -Y)
+    chin = soft(dz + 0.075, 0.02) * soft(0.0 - dz, 0.012)
+    lip = soft(dz - 0.004, 0.004) * soft(0.024 - dz, 0.006) * soft(ex + 0.006 - ax_, 0.008)
+    # jaw line up to the sideburns, along the side of the face, below the cheekbones
+    side = soft(ax_ - ex, 0.01) * soft(dz + 0.06, 0.02) * soft(0.045 - dz - 0.4 * (Yt - ly), 0.03)
+    beard = np.maximum(chin, np.maximum(lip, side)) * front * (1 - np.clip(R[..., 7] * 3, 0, 1)) * (R[..., 0] < 0.5)
+LAYERS = np.stack([R[..., 0], shorts, bra, Xt, Yt, Zt, ink, beard], -1)
 print("layers: scalp %.0f shorts %.0f bra %.0f texels" % tuple((LAYERS[..., i] > 0.5).sum() for i in range(3)))
 
 # the MakeHuman base mesh as it is (regular quads, ~26 000 triangles): the garments of outfits.py are cut along its
@@ -282,6 +299,11 @@ def tinted(src, tint, name):
         a[..., :3] = np.clip(np.array(tint[:3], np.float32) * (1 - tint[3] + tint[3] * 1.3 * lum[..., None]), 0, 1)
     elif tint:
         a[..., :3] = np.clip(a[..., :3] * np.array(tint, np.float32), 0, 1)
+    # the hidden texels (often white in the assets) take the mean colour of the visible ones: mipmaps and alpha to
+    # coverage blend them in at the edges of the hair cards, where they showed as white specks
+    vis = a[..., 3] > 0.5
+    if vis.any() and not vis.all():
+        a[~vis, :3] = a[vis, :3].mean(0)
     out = os.path.join(os.path.dirname(OUT), name + ".png")
     Image.fromarray((a * 255).astype(np.uint8)).save(out)
     return out
@@ -330,6 +352,12 @@ def paint_skin(path):
         # a darker hem band along the edges of the garment
         hem = np.clip(1 - np.abs(m - 0.5) * 2, 0, 1) * 0.35
         a = a * (1 - m) + cloth * (1 - hem) * m
+    if PH.get("stubble"):
+        # shaved beard: a cool grey shadow of the roots under the skin, with a fine grain of hair tips
+        col, k = np.array(PH["stubble"][:3], np.float32), PH["stubble"][3]
+        m = LAYERS[..., 7:8]
+        dots = 0.75 + 0.25 * (grain[..., None] > 0.6)
+        a = a * (1 - k * m * dots) + col * a.mean(-1, keepdims=True) / max(a.mean(), 1e-3) * k * m * dots
     ink = LAYERS[..., 6:7] * 0.85
     a = a * (1 - ink) + np.array([0.05, 0.06, 0.07], np.float32) * ink
     Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8)).save(path)
@@ -350,15 +378,46 @@ for kind, tint_key, rough in (("Eyebrows", "hair_tint", 0.8), ("Eyelashes", None
     material(o, kind + "_opacity", tinted(tex, PH.get(tint_key) if tint_key else None, RECIPE["id"] + "_" + kind.lower()), alpha=True, rough=rough)
     o.name = kind
 
+def skin_relief():
+    """the normal map of the skin: the anatomical relief of the generator and/or the fine detail of a skin asset's
+    normal map (pores, fine wrinkles), blended by adding their slopes. "relief_size" in the recipe: its resolution
+    (1024)"""
+    from PIL import Image
+    size = PH.get("relief_size", 1024)
+    # "skin_normal_from": take the normal map of another skin asset (its colours may not suit: scars, bruises)
+    src = asset(PH["skin_normal_from"]) if PH.get("skin_normal_from") else skin_mhmat
+    maps = [p for p in (RELIEF, mhmat_texture(src, "normalmapTexture")) if p and os.path.exists(p)]
+    if not maps:
+        return None
+    if len(maps) == 1 and size == 1024 and maps[0] == RELIEF:
+        return RELIEF
+    xy = np.zeros((size, size, 2), np.float32)
+    for k, p in enumerate(maps):
+        n = np.asarray(Image.open(p).convert("RGB").resize((size, size), Image.LANCZOS), np.float32) / 127.5 - 1
+        d = n[..., :2] / np.maximum(n[..., 2:3], 0.2)
+        if k:
+            # only the fine detail of the skin asset (pores, small folds): its muscles, scars and body shape are
+            # taken out by a high-pass filter (the coach keeps the anatomy of his own relief)
+            from scipy.ndimage import gaussian_filter
+            d = (d - gaussian_filter(d, (PH.get("skin_normal_blur", 4) * size / 2048,) * 2 + (0,))) * PH.get("skin_normal", 1.0)
+        xy += d
+    n = np.concatenate([xy, np.ones_like(xy[..., :1])], -1)
+    n /= np.linalg.norm(n, axis=-1, keepdims=True)
+    out = os.path.join(os.path.dirname(OUT), RECIPE["id"] + "_relief.png")
+    Image.fromarray(((n + 1) * 127.5).clip(0, 255).astype(np.uint8)).save(out)
+    return out
+
+
 # ------------------------------------------------------------------ phone budget
-if RELIEF and os.path.exists(RELIEF):
+RELIEF = skin_relief()
+if RELIEF:
     nt = h.data.materials[0].node_tree
     bsdf = [n for n in nt.nodes if n.type == "BSDF_PRINCIPLED"][0]
     n = nt.nodes.new("ShaderNodeTexImage")
     n.image = bpy.data.images.load(RELIEF)
     n.image.colorspace_settings.name = "Non-Color"
-    if max(n.image.size) > 1024:
-        n.image.scale(1024, 1024)
+    if max(n.image.size) > PH.get("relief_size", 1024):
+        n.image.scale(PH.get("relief_size", 1024), PH.get("relief_size", 1024))
     nm = nt.nodes.new("ShaderNodeNormalMap")
     nm.inputs["Strength"].default_value = 0.6
     nt.links.new(n.outputs["Color"], nm.inputs["Color"])
