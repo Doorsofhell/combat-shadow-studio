@@ -49,6 +49,20 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.9.0',
+      releaseDate: '2026-10-29',
+      title: 'Coachs plus vivants, rendu Anime retiré',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Les visages des coachs vivent : ils clignent des yeux, le regard bouge un peu, les sourcils se froncent et les yeux se plissent au moment des frappes.' },
+        { category: 'ameliorations', text: 'Nouvelle tenue de MMA pour les quatre coachs : short de compression à mi-cuisse, brassière noire dos nageur, gants ouverts noirs (sangle et paume blanches pour Kadir et Axel).' },
+        { category: 'ameliorations', text: 'Muscles mieux dessinés sur la peau, Kaila plus sèche ; les yeux de Kadir et Amara brillent comme ceux d’Axel et Kaila.' },
+        { category: 'corrections', text: 'Le relief de la peau était éclairé par en dessous ; il suit maintenant la lumière.' },
+        { category: 'fonctionnalites', text: 'Le rendu Anime est retiré : les coachs s’affichent toujours en Ultra-réaliste, tes autres réglages sont gardés.' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.6.1',
       releaseDate: '2026-10-29',
       title: 'Axel et Kaila plus réalistes',
