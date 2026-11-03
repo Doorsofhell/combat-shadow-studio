@@ -1,15 +1,12 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { matchPath, useLocation, useNavigate } from 'react-router-dom';
-import { screenFromPath } from '../../coach/appGuide';
+import { useLocation } from 'react-router-dom';
 import type { CoachAction } from '../../coach/engine';
-import { EXERCISE_BY_ID } from '../../domain/exercises';
-import { TECHNIQUE_BY_ID } from '../../domain/techniques';
-import { DISCIPLINES, LEVELS, type DisciplineId, type LevelId } from '../../domain/types';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
 import { CoachAskPanel } from './CoachAskPanel';
 import { useCoachBubble } from './coachHost';
+import { useCoachContext } from './useCoachContext';
 
 /**
  * Screens without the bubble: onboarding (the profile is not made yet, and its buttons sit at the
@@ -20,7 +17,6 @@ const HIDDEN = ['/bienvenue', '/lab', '/coach-ia'];
 const HOSTED = ['/entrainement'];
 
 const under = (pathname: string, p: string) => pathname === p || pathname.startsWith(`${p}/`);
-const isDiscipline = (d: string | null | undefined): d is DisciplineId => !!d && DISCIPLINES.some((x) => x.id === d);
 
 /**
  * The AI coach's question panel, the same on every screen (0.25 « identique sur tous les écrans »). v0.32
@@ -34,7 +30,6 @@ const isDiscipline = (d: string | null | undefined): d is DisciplineId => !!d &&
  */
 export function CoachBubble() {
   const loc = useLocation();
-  const nav = useNavigate();
   const profile = useProfile((s) => s.profile);
   const open = useCoachBubble((s) => s.open);
   const setOpen = useCoachBubble((s) => s.setOpen);
@@ -43,6 +38,7 @@ export function CoachBubble() {
   const size = useSettings((s) => s.settings.coachPanelSize);
   const hidden = HIDDEN.some((p) => under(loc.pathname, p));
   const hosted = HOSTED.some((p) => under(loc.pathname, p));
+  const { context, act } = useCoachContext(hosted);
 
   // a new screen starts with the bubble closed
   useEffect(() => setOpen(false), [loc.pathname, setOpen]);
@@ -58,43 +54,9 @@ export function CoachBubble() {
   if (hosted && !host) return null;
   const inHost = hosted ? host : null;
 
-  const q = new URLSearchParams(loc.search);
-  const screen = screenFromPath(loc.pathname, loc.search);
-  const techParam = matchPath('/techniques/:id', loc.pathname)?.params.id;
-  const tech = techParam && TECHNIQUE_BY_ID.has(techParam) ? techParam : undefined;
-  const exParam = q.get('ex');
-  const exerciseId = exParam && EXERCISE_BY_ID.has(exParam) ? exParam : undefined;
-  const programId = matchPath('/programmes/:id', loc.pathname)?.params.id;
-  const comboParam = matchPath('/champions/:id', loc.pathname)?.params.id;
-  const comboId = comboParam && comboParam !== 'c' ? comboParam : undefined;
-  // the discipline on screen (discipline page, ?d= of the library, open exercise), else the main one
-  const routeDisc = matchPath('/discipline/:id', loc.pathname)?.params.id ?? q.get('d') ?? (exerciseId ? EXERCISE_BY_ID.get(exerciseId)!.discipline : undefined);
-  const discipline = isDiscipline(routeDisc) ? routeDisc : profile.mainDiscipline;
-  const niveau = q.get('niveau');
-  const level = LEVELS.some((l) => l.id === niveau) ? (niveau as LevelId) : profile.levels[discipline];
-
-  const context = inHost
-    ? inHost.context
-    : {
-        pseudo: profile.coachAi.usePseudo ? profile.pseudo : undefined,
-        discipline,
-        level,
-        guard: profile.guard,
-        techniqueId: tech,
-        exerciseId,
-        programId,
-        comboId,
-        screen,
-        goals: profile.goals,
-      };
-
   const onAction = (a: CoachAction) => {
-    if (inHost) return inHost.onAction(a);
-    setOpen(false);
-    if (a.type === 'demo' || a.type === 'repeat' || a.type === 'slow') nav(`/techniques/${encodeURIComponent(a.techniqueId)}`);
-    else if (a.type === 'start-exercise') nav(`/entrainement?ex=${encodeURIComponent(a.exerciseId)}&mode=technique`);
-    else if (a.type === 'start-combo') nav(`/entrainement?cat=${encodeURIComponent(a.comboId)}&mode=technique`);
-    else if (a.type === 'navigate') nav(a.to);
+    if (!inHost) setOpen(false);
+    act(a);
   };
 
   if (!open) return null;

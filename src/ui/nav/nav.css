@@ -919,27 +919,116 @@ html[data-chrono-run] .sec-tabs {
   cursor: pointer;
 }
 .search-ask {
+  /* 1.7.0 (proposition A): a light dashed line, no more big black button */
   appearance: none;
-  border: 0;
   width: 100%;
   min-height: 52px;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0 16px;
-  border-radius: 18px;
-  background: var(--ink);
-  color: var(--bg);
+  padding: 0 14px;
+  border-radius: 16px;
+  border: 1px dashed color-mix(in srgb, var(--nav-accent) 55%, transparent);
+  background: none;
+  color: var(--ink);
   font: 700 0.9375rem/1.2 var(--font-text);
   text-align: left;
   cursor: pointer;
   margin-bottom: 8px;
+}
+.search-ask .nav-svg {
+  color: var(--nav-accent);
+  flex: none;
 }
 .search-ask span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* the ✦ inside the bar */
+.search-ai {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: var(--nav-accent);
+  width: 44px;
+  height: 44px;
+  margin-right: -10px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+  flex: none;
+}
+.search-ai.on {
+  background: var(--red);
+  color: var(--on-red);
+}
+.search-ai:focus-visible,
+.search-ask:focus-visible,
+.search-coach button:focus-visible {
+  outline: 2px solid var(--nav-accent);
+  outline-offset: 2px;
+}
+/* the coach's answer at the top of the search */
+.search-coach {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--nav-accent) 9%, var(--nav-panel));
+  border: 1px solid color-mix(in srgb, var(--nav-accent) 30%, transparent);
+  margin-bottom: 8px;
+}
+.search-coach-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--red-ink);
+  font: 700 0.75rem/1 var(--font-text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.search-coach p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+.search-coach p.clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.search-coach-more {
+  appearance: none;
+  justify-self: start;
+  border: 0;
+  background: none;
+  color: var(--red-ink);
+  font: 700 0.875rem/1 var(--font-text);
+  padding: 8px 0;
+  min-height: 36px;
+  cursor: pointer;
+}
+.search-coach-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.search-coach-acts button {
+  appearance: none;
+  border: 1px solid color-mix(in srgb, var(--nav-accent) 40%, transparent);
+  background: none;
+  color: var(--ink);
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 20px;
+  font: 600 0.8125rem/1 var(--font-text);
+  cursor: pointer;
 }
 .search-none {
   color: var(--muted);

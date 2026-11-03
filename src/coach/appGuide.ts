@@ -99,7 +99,7 @@ export const APP_GUIDE: GuideEntry[] = [
       '• Progrès : « Période », « Statistiques » et « Historique ».\n' +
       '• Légendes : « Disciplines » et « Légende » ; sur la fiche d’une légende, « Parcours », « Techniques » et « Favoris ».\n' +
       'Sur l’accueil, trois tuiles : « Séance rapide », « Technique du jour » et « Chrono seul », et le gros bouton « Reprendre ». Les autres gestes d’un écran sont aussi dans le ⋮ : par exemple « Au hasard » et « À revoir » dans les techniques ; pendant une séance, ils sont dans « Plus » : « Exercice suivant », « Comment faire ? », « Options » et « Rechercher ».\n' +
-      'Pour m’ouvrir, touche « Rechercher » dans la barre du bas : écris ta question et choisis « Demander au Coach IA ». Le même champ trouve aussi les techniques, les mots de l’encyclopédie, les programmes et les réglages, et d’abord ce qui est sur l’écran où tu es (par exemple les équipements). Les anciens boutons flottants (pilule et bulle) n’existent plus.',
+      'Pour me parler, touche « Rechercher » dans la barre du bas et écris ta question : ma réponse s’affiche en haut, et les résultats de l’application juste en dessous. Pour un simple mot, touche « Demander au coach » ou l’étoile ✦ dans la barre (« Demander au Coach IA ») ; avec la barre vide, l’étoile ouvre ma fenêtre en grand. Le même champ trouve aussi les techniques, les mots de l’encyclopédie, les programmes et les réglages, et d’abord ce qui est sur l’écran où tu es (par exemple les équipements). Les anciens boutons flottants (pilule et bulle) n’existent plus.',
   },
   {
     id: 'screen-accueil',

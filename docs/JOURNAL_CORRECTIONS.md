@@ -2205,3 +2205,20 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Poids : `photo.glb` 2,30 Mo (Axel, avant 1,82) et 2,47 Mo (Kaila, avant 2,22), toujours sous la limite de 2,5 Mo du test.
 - **Avant/après** : captures dans le studio de l'app (Lab, Ultra-réaliste) : visage, corps entier, dos.
 - **Tests** : TypeScript RÉUSSI ; Vitest 907 RÉUSSIS, 1 ignoré (`makehuman-coaches.test.ts` : vrais cheveux exigés pour les deux coachs, nouveau test « la peau a son relief ») ; Playwright : `coachs-v160`, `navigation` (Nouveautés 1.6.1), `coach-render` 33 RÉUSSIS ; suite complète NON EXÉCUTÉE ; Android réel NON EXÉCUTÉ.
+
+## 2026-10-29 · 1.7.0 · Rechercher et demander au coach dans la même fenêtre (proposition A)
+
+- **Demande** : Youssef, 28/10 11:30, a choisi la proposition A « Réponse du coach en tête » (maquette https://claude.ai/artifact/9Bm1j9XWeRYAWtittrjn5q) : une seule barre avec l'icône IA, la réponse du coach en haut, les résultats de l'application en dessous, plus de gros bouton noir. Prévue en 1.5.0, numérotée 1.7.0 car la 1.6.0 (Axel et Kaila) est sortie avant.
+- **Constat** : dans la 1.6.0, « Rechercher » affichait un gros bouton noir « Demander au Coach IA » qui fermait la recherche et ouvrait le panneau du coach à part.
+- **Changement** :
+  - `src/ui/nav/SearchSheet.tsx` : l'étoile ✦ dans la barre (`search-ai`) ; une question (« ? » ou phrase qui commence comme une question, `looksLikeQuestion`) affiche la réponse du coach en tête (`search-coach`), trois lignes puis « Lire la suite », ses actions et « Continuer avec le Coach IA » ; un simple mot affiche les résultats avec en première ligne « Demander au coach : « … » » (trait pointillé, plus de bouton noir), qui répond dans la même fenêtre ; les questions « Sur cet écran » répondent aussi sur place ; avec la barre vide, l'étoile ouvre le Coach IA en grand comme avant.
+  - `src/ui/coach-ai/useCoachContext.ts` (nouveau) : le contexte de l'écran et les actions du coach, partagés par le panneau et la recherche (même réponse aux deux endroits).
+  - `coachHost.ts` / `CoachAskPanel.tsx` : une question déjà gardée dans l'historique depuis la recherche n'y est pas ajoutée deux fois quand on continue dans le panneau.
+  - L'historique et la voix ne retiennent que ce qui est demandé exprès (Entrée, ✦, la ligne « Demander au coach », une question de l'écran), pas l'aperçu pendant la frappe.
+  - Couleurs : texte rouge en `--red-ink` (contraste jour et nuit). Guide du coach (`appGuide.ts`) mis à jour.
+- **Tests** :
+  - TypeScript : RÉUSSI. Vitest : 909 RÉUSSIS, 1 ignoré (nouveau `src/ui/nav/__tests__/search-coach.test.ts`).
+  - Nouveau `tests/e2e/recherche-ia-v170.spec.ts` (4) : RÉUSSI (simple mot, question + « Lire la suite » + historique à une seule entrée, action de la réponse, ✦ barre vide).
+  - Adaptés au nouveau geste sans retirer de vérification : `nav-helpers.ts`, `accueil-recherche` (contraste jour/nuit étendu à la carte du coach et à la ligne « Demander au coach »), `corrections-v110`, `coach-bubble`, `aucune-perte-v100`, `coach-suggest`, `navigation` (1.7.0 en tête).
+  - Playwright complet (282) : 278 RÉUSSIS, 2 ignorés (Firebase), 2 ÉCHOUÉS déjà en échec avant ce lot : `coach-suggest:99` (flèches des suggestions ; RÉUSSI 2 fois sur 2 relancé seul sur cette branche, RÉUSSI sur la 1.6.0 seule) et `training-layout:329` (caméra Auto).
+  - Android réel : NON EXÉCUTÉ.
