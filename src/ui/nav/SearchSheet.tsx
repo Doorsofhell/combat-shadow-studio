@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { askCoach, type CoachAnswer } from '../../coach/engine';
+import { speakReply, stopReply } from '../../coach/speech';
 import { searchApp, type SearchHit } from '../../domain/search';
+import { useCatalog } from '../../store/catalog';
+import { useCoachAi } from '../../store/coachAi';
+import { useCoachContext } from '../coach-ai/useCoachContext';
 import { NavIcon } from './NavIcon';
 import { NavPanel } from './NavSheets';
 import { haptic } from './BottomBar';
@@ -22,12 +27,27 @@ export const SCREEN_QUESTIONS: Partial<Record<NavScreen, string[]>> = {
 };
 
 /**
+ * 1.7.0: a question (a « ? », or a sentence that starts like one) gets the coach's answer at the top of the search,
+ * without asking; a plain word gets only the results, with « Demander au coach » as the first line
+ */
+export const looksLikeQuestion = (s: string) =>
+  /\?/.test(s) || /^(comment|pourquoi|quand|quel|quelle|quels|quelles|combien|est-ce|c'est quoi|c’est quoi|qu'est|qu’est|que |quoi|explique|aide|montre|dois-je|peux-tu|donne)/i.test(s.trim());
+
+/** the routes where the Coach IA acts on the screen itself (as in CoachBubble) */
+const HOSTED = ['/entrainement'];
+
+/**
  * 1.0.0 (refonte ergonomique, lot 3; maquette v4, écran « Recherche »): « Rechercher ou demander au coach ». One field
  * for the whole app, which replaces the former Coach IA bubble: it finds techniques, encyclopedia terms, programmes
  * and places or settings of the app (src/domain/search.ts, local), and its first line asks the typed text to the
  * Coach IA (local too). `onGo` and `onAsk` close the sheet before leaving.
+ * 1.7.0 (Youssef, 2026-10-28 11:30, proposition A « Réponse du coach en tête », maquette 9Bm1j9XWeRYAWtittrjn5q): one
+ * bar with the IA icon ✦ inside, no big black « Demander au Coach IA » button any more. The coach's answer (local
+ * engine, coach/engine.ts) shows at the top of the same sheet, short with « Lire la suite », its actions below it,
+ * and the app's results under it. « Continuer avec le Coach IA » opens the full panel on the same question; the ✦
+ * with an empty field opens the panel as before.
  */
-export function SearchSheet({ onClose, onGo, onAsk, onApply }: { onClose: () => void; onGo: (to: string) => void; onAsk: (q: string) => void; onApply: (run: () => void) => void }) {
+export function SearchSheet({ onClose, onGo, onAsk, onApply }: { onClose: () => void; onGo: (to: string) => void; onAsk: (q: string, saved?: boolean) => void; onApply: (run: () => void) => void }) {
   const [q, setQ] = useState('');
   // the field takes the focus once the sheet has focused itself (NavPanel), so the keyboard opens at once
   const input = useRef<HTMLInputElement>(null);
@@ -41,6 +61,35 @@ export function SearchSheet({ onClose, onGo, onAsk, onApply }: { onClose: () => 
   const questions = (screen && SCREEN_QUESTIONS[screen]) ?? [];
   const hits = useMemo(() => searchApp(q), [q]);
   const typed = q.trim();
+  const ai = useCoachAi();
+  const { catalog } = useCatalog(ai.enabled);
+  const { context, act } = useCoachContext(HOSTED.some((p) => loc.pathname === p || loc.pathname.startsWith(`${p}/`)));
+  // the question the coach answers at the top: asked (✦, Entrée, « Demander au coach », a question of the screen),
+  // or the typed text itself when it reads as a question
+  const [asked, setAsked] = useState<string | null>(null);
+  const [more, setMore] = useState(false);
+  const question = asked ?? (ai.enabled && looksLikeQuestion(typed) ? typed : null);
+  const answer: CoachAnswer | null = useMemo(
+    () => (question && ai.enabled ? askCoach(question, { ...context, preferences: { detail: ai.detail }, catalog }) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [question, ai.enabled, ai.detail, catalog, context.screen, context.techniqueId, context.discipline, context.level],
+  );
+  // what was asked on purpose goes to the history and is read aloud when the coach speaks, as in the panel
+  const saved = useRef(new Set<string>());
+  const askHere = (text: string) => {
+    const t = text.trim();
+    if (!t) return;
+    if (!ai.enabled) return onAsk(t);
+    setAsked(t);
+    setMore(false);
+    if (saved.current.has(t)) return;
+    saved.current.add(t);
+    const a = askCoach(t, { ...context, preferences: { detail: ai.detail }, catalog });
+    ai.push({ question: t, answer: a.text, intent: a.intent, techniqueId: a.techniqueId });
+    if (ai.voiceReplies) speakReply(a.text);
+  };
+  useEffect(() => () => stopReply(), []);
+  const long = !!answer && answer.text.length > 160;
   // 1.1.0: the screen's own results first (its former search field), at most 8
   const own = useMemo(() => (scope && typed.length >= 2 ? scope.hits(typed).slice(0, 8) : []), [scope, typed]);
   const placeholder = scope ? `Rechercher dans ${scope.label.toLowerCase()} ou demander au coach` : 'Rechercher ou demander au coach';
@@ -59,18 +108,24 @@ export function SearchSheet({ onClose, onGo, onAsk, onApply }: { onClose: () => 
         role="search"
         onSubmit={(e) => {
           e.preventDefault();
-          // Entrée: the first result when there is one, else the question to the coach
-          if (scope?.apply && typed) onApply(() => scope.apply!(typed));
+          // Entrée: a question goes to the coach (answer at the top); otherwise the first result when there is one,
+          // else the coach
+          if (typed && looksLikeQuestion(typed)) askHere(typed);
+          else if (scope?.apply && typed) onApply(() => scope.apply!(typed));
           else if (own[0]) onGo(own[0].to);
           else if (hits[0]) onGo(hits[0].to);
-          else if (typed) onAsk(typed);
+          else if (typed) askHere(typed);
         }}
       >
         <NavIcon id="search" />
         <input
           type="search"
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => {
+            setQ(e.target.value);
+            setAsked(null);
+            setMore(false);
+          }}
           placeholder={placeholder}
           aria-label={placeholder}
           autoComplete="off"
@@ -85,6 +140,7 @@ export function SearchSheet({ onClose, onGo, onAsk, onApply }: { onClose: () => 
             aria-label="Effacer"
             onClick={() => {
               setQ('');
+              setAsked(null);
               input.current?.focus();
             }}
             data-testid="search-clear"
@@ -92,20 +148,64 @@ export function SearchSheet({ onClose, onGo, onAsk, onApply }: { onClose: () => 
             <NavIcon id="close" />
           </button>
         )}
+        {/* ✦: the typed text to the coach, here; empty, the Coach IA panel */}
+        <button
+          type="button"
+          className={`search-ai${answer ? ' on' : ''}`}
+          aria-label={typed ? `Demander au Coach IA : ${typed}` : 'Ouvrir le Coach IA'}
+          title="Demander au Coach IA"
+          data-testid="search-ai"
+          onClick={() => {
+            haptic();
+            if (typed) askHere(typed);
+            else onAsk('');
+          }}
+        >
+          <NavIcon id="sparkle" />
+        </button>
       </form>
-      {/* the first line asks the Coach IA (the typed text, or opens it empty) */}
-      <button
-        type="button"
-        className="search-ask"
-        data-testid="search-ask"
-        onClick={() => {
-          haptic();
-          onAsk(typed);
-        }}
-      >
-        <NavIcon id="sparkle" />
-        <span>{typed ? `Demander au Coach IA : « ${typed} »` : 'Demander au Coach IA'}</span>
-      </button>
+      {answer && question && (
+        <section className={`search-coach${more ? ' more' : ''}`} aria-label="Réponse du Coach IA" aria-live="polite" data-testid="search-coach">
+          <div className="search-coach-head">
+            <NavIcon id="sparkle" />
+            <span>Coach IA</span>
+          </div>
+          <p className={long && !more ? 'clamped' : undefined} data-testid="search-coach-text">
+            {answer.text}
+          </p>
+          {long && !more && (
+            <button type="button" className="search-coach-more" data-testid="search-coach-more" onClick={() => setMore(true)}>
+              Lire la suite
+            </button>
+          )}
+          <div className="search-coach-acts">
+            {answer.actions.slice(0, 3).map((a, i) => (
+              <button
+                key={i}
+                type="button"
+                data-testid="search-coach-action"
+                onClick={() => {
+                  haptic();
+                  onApply(() => act(a));
+                }}
+              >
+                {a.label}
+              </button>
+            ))}
+            <button
+              type="button"
+              data-testid="search-coach-open"
+              onClick={() => {
+                haptic();
+                // the panel asks it again: already in the history when it was asked on purpose
+                onAsk(question, saved.current.has(question));
+              }}
+            >
+              Continuer avec le Coach IA
+            </button>
+          </div>
+        </section>
+      )}
       {!typed ? (
         <div className="search-suggest">
           {questions.length > 0 && (
@@ -119,7 +219,8 @@ export function SearchSheet({ onClose, onGo, onAsk, onApply }: { onClose: () => 
                   data-testid="search-question"
                   onClick={() => {
                     haptic();
-                    onAsk(x);
+                    setQ(x);
+                    askHere(x);
                   }}
                 >
                   <NavIcon id="help" />
@@ -134,7 +235,15 @@ export function SearchSheet({ onClose, onGo, onAsk, onApply }: { onClose: () => 
           <div className="nav-section">Essaie</div>
           <div className="search-chips">
             {SEARCH_SUGGESTIONS.map((s) => (
-              <button key={s} type="button" className="search-chip" onClick={() => setQ(s)}>
+              <button
+                key={s}
+                type="button"
+                className="search-chip"
+                onClick={() => {
+                  setQ(s);
+                  setAsked(null);
+                }}
+              >
                 {s}
               </button>
             ))}
@@ -142,6 +251,20 @@ export function SearchSheet({ onClose, onGo, onAsk, onApply }: { onClose: () => 
         </div>
       ) : (
         <div className="search-results" data-testid="search-results">
+          {!answer && (
+            <button
+              type="button"
+              className="search-ask"
+              data-testid="search-ask"
+              onClick={() => {
+                haptic();
+                askHere(typed);
+              }}
+            >
+              <NavIcon id="sparkle" />
+              <span>Demander au coach : « {typed} »</span>
+            </button>
+          )}
           {scope?.apply && (
             <button
               type="button"

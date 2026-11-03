@@ -192,6 +192,8 @@ test.describe('393×851', () => {
     await expect(news).toBeVisible();
     const versions = await news.locator('[data-version]').evaluateAll((a) => a.map((x) => x.getAttribute('data-version')));
     expect(versions[0]).toBe('1.9.0');
+    expect(versions).toContain('1.8.0');
+    expect(versions).toContain('1.6.0');
     expect(versions).toContain('1.6.1');
     expect(versions).toContain('1.4.0');
     expect(versions).toContain('1.3.2');

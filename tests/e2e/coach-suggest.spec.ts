@@ -45,7 +45,8 @@ async function openCoach(page: Page, ex: string) {
   // 1.1.0: through « Rechercher », in « Plus » during the session
   await page.getByTestId('bottom-bar').locator('[data-action="menu"]').tap();
   await page.getByTestId('cmd-search').tap();
-  await page.getByTestId('search-ask').tap();
+  // 1.7.0: the ✦ of the bar, with the field empty
+  await page.getByTestId('search-ai').tap();
   await expect(page.getByTestId('coach-suggestion').first()).toBeVisible();
 }
 

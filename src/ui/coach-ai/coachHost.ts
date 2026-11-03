@@ -22,22 +22,26 @@ interface CoachBubbleState {
   host: CoachHost | null;
   /** 1.0.0 (lot 3): a question typed in « Rechercher ou demander au coach », asked as soon as the panel opens */
   pending: string | null;
+  /** 1.7.0: the pending question was already answered (and kept in the history) at the top of the search */
+  pendingSaved: boolean;
   setOpen: (open: boolean) => void;
   setHost: (host: CoachHost | null) => void;
-  ask: (question: string) => void;
-  takePending: () => string | null;
+  ask: (question: string, saved?: boolean) => void;
+  takePending: () => { question: string; saved: boolean } | null;
 }
 
 export const useCoachBubble = create<CoachBubbleState>((set, get) => ({
   open: false,
   host: null,
   pending: null,
+  pendingSaved: false,
   setOpen: (open) => set({ open }),
   setHost: (host) => set({ host }),
-  ask: (question) => set({ open: true, pending: question.trim() || null }),
+  ask: (question, saved = false) => set({ open: true, pending: question.trim() || null, pendingSaved: saved }),
   takePending: () => {
-    const q = get().pending;
-    if (q) set({ pending: null });
-    return q;
+    const { pending, pendingSaved } = get();
+    if (!pending) return null;
+    set({ pending: null, pendingSaved: false });
+    return { question: pending, saved: pendingSaved };
   },
 }));

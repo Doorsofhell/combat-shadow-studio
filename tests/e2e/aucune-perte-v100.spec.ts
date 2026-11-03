@@ -195,7 +195,8 @@ test('plan, lignes 20 à 27 : Profil (photo, IMC, connexion, coach, Coach IA, r�
   await expect(page).toHaveURL(/#\/coach-ia$/);
   await place(page, 'accueil');
   await page.getByTestId('app-search').click();
-  await expect(page.getByTestId('search-ask')).toBeVisible();
+  // 1.7.0: the ✦ of the bar
+  await expect(page.getByTestId('search-ai')).toBeVisible();
   await page.keyboard.press('Escape');
   // Réglages: the same sections
   await place(page, 'profil');

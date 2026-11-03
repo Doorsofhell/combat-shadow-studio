@@ -63,6 +63,30 @@ export const RELEASES: readonly Release[] = (
       links: [{ label: 'Changer de coach', to: '/coach' }],
     },
     {
+      version: '1.8.0',
+      releaseDate: '2026-10-29',
+      title: 'Des mouvements au sol plus vrais',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Plus aucune partie du corps des coachs ne passe sous le tapis : cuisses dans le sprawl, doigts des mains posées au sol, dos et épaules dans les chutes, orteils et genoux dans les relevés.' },
+        { category: 'ameliorations', text: 'Sprawl : les jambes partent tendues loin derrière, les cuisses se posent sur le tapis et les tibias restent levés, puis les pieds reviennent sous le bassin d’un geste moins brusque.' },
+        { category: 'ameliorations', text: 'Mains en appui (sit-out, relevé technique, pont, sortie de hanche) : la main se pose à plat sur le tapis, comme dans une pompe, au lieu de s’y enfoncer.' },
+      ],
+      links: [],
+    },
+    {
+      version: '1.7.0',
+      releaseDate: '2026-10-29',
+      title: 'Rechercher et demander au coach, dans la même fenêtre',
+      isMajor: false,
+      changes: [
+        { category: 'fonctionnalites', text: 'Quand tu poses une question dans « Rechercher » (« Comment corriger mon jab ? »), la réponse du Coach IA s’affiche en haut, en court avec « Lire la suite », et les résultats de l’application juste en dessous.' },
+        { category: 'ameliorations', text: 'L’étoile ✦ est dans la barre de recherche : elle envoie ce que tu as tapé au coach, ou ouvre le Coach IA en grand quand la barre est vide. Le gros bouton noir « Demander au Coach IA » est retiré.' },
+        { category: 'ameliorations', text: 'Pour un simple mot (« garde »), la première ligne « Demander au coach » donne aussi sa réponse sans changer de fenêtre ; « Continuer avec le Coach IA » ouvre la conversation sur la même question.' },
+      ],
+      links: [],
+    },
+    {
       version: '1.6.1',
       releaseDate: '2026-10-29',
       title: 'Axel et Kaila plus réalistes',

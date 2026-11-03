@@ -2206,6 +2206,47 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Avant/après** : captures dans le studio de l'app (Lab, Ultra-réaliste) : visage, corps entier, dos.
 - **Tests** : TypeScript RÉUSSI ; Vitest 907 RÉUSSIS, 1 ignoré (`makehuman-coaches.test.ts` : vrais cheveux exigés pour les deux coachs, nouveau test « la peau a son relief ») ; Playwright : `coachs-v160`, `navigation` (Nouveautés 1.6.1), `coach-render` 33 RÉUSSIS ; suite complète NON EXÉCUTÉE ; Android réel NON EXÉCUTÉ.
 
+## 2026-10-29 · 1.7.0 · Rechercher et demander au coach dans la même fenêtre (proposition A)
+
+- **Demande** : Youssef, 28/10 11:30, a choisi la proposition A « Réponse du coach en tête » (maquette https://claude.ai/artifact/9Bm1j9XWeRYAWtittrjn5q) : une seule barre avec l'icône IA, la réponse du coach en haut, les résultats de l'application en dessous, plus de gros bouton noir. Prévue en 1.5.0, numérotée 1.7.0 car la 1.6.0 (Axel et Kaila) est sortie avant.
+- **Constat** : dans la 1.6.0, « Rechercher » affichait un gros bouton noir « Demander au Coach IA » qui fermait la recherche et ouvrait le panneau du coach à part.
+- **Changement** :
+  - `src/ui/nav/SearchSheet.tsx` : l'étoile ✦ dans la barre (`search-ai`) ; une question (« ? » ou phrase qui commence comme une question, `looksLikeQuestion`) affiche la réponse du coach en tête (`search-coach`), trois lignes puis « Lire la suite », ses actions et « Continuer avec le Coach IA » ; un simple mot affiche les résultats avec en première ligne « Demander au coach : « … » » (trait pointillé, plus de bouton noir), qui répond dans la même fenêtre ; les questions « Sur cet écran » répondent aussi sur place ; avec la barre vide, l'étoile ouvre le Coach IA en grand comme avant.
+  - `src/ui/coach-ai/useCoachContext.ts` (nouveau) : le contexte de l'écran et les actions du coach, partagés par le panneau et la recherche (même réponse aux deux endroits).
+  - `coachHost.ts` / `CoachAskPanel.tsx` : une question déjà gardée dans l'historique depuis la recherche n'y est pas ajoutée deux fois quand on continue dans le panneau.
+  - L'historique et la voix ne retiennent que ce qui est demandé exprès (Entrée, ✦, la ligne « Demander au coach », une question de l'écran), pas l'aperçu pendant la frappe.
+  - Couleurs : texte rouge en `--red-ink` (contraste jour et nuit). Guide du coach (`appGuide.ts`) mis à jour.
+- **Tests** :
+  - TypeScript : RÉUSSI. Vitest : 909 RÉUSSIS, 1 ignoré (nouveau `src/ui/nav/__tests__/search-coach.test.ts`).
+  - Nouveau `tests/e2e/recherche-ia-v170.spec.ts` (4) : RÉUSSI (simple mot, question + « Lire la suite » + historique à une seule entrée, action de la réponse, ✦ barre vide).
+  - Adaptés au nouveau geste sans retirer de vérification : `nav-helpers.ts`, `accueil-recherche` (contraste jour/nuit étendu à la carte du coach et à la ligne « Demander au coach »), `corrections-v110`, `coach-bubble`, `aucune-perte-v100`, `coach-suggest`, `navigation` (1.7.0 en tête).
+  - Playwright complet (282) : 278 RÉUSSIS, 2 ignorés (Firebase), 2 ÉCHOUÉS déjà en échec avant ce lot : `coach-suggest:99` (flèches des suggestions ; RÉUSSI 2 fois sur 2 relancé seul sur cette branche, RÉUSSI sur la 1.6.0 seule) et `training-layout:329` (caméra Auto).
+  - Android réel : NON EXÉCUTÉ.
+
+## 2026-10-29 · 1.8.0 · Audit des mouvements : plus rien sous le tapis
+
+- **Demande** : Youssef, 28/10 : auditer tous les mouvements des coachs et les corriger, « par tous les moyens », pour qu'ils soient réels, réalistes, humainement faisables, sans torsion anormale et fluides ; ne jamais corriger l'utilisateur ; ce qui est physiquement impossible peut être empêché automatiquement ; un changement pédagogique passe par sa validation.
+- **Constat après vérification** : mesure sur la peau des quatre coachs (maillages de l'application posés sur le CPU, `src/test/skin.ts`), toutes les techniques :
+  - sprawl : cuisses et tibias jusqu'à −20 cm sous le tapis (pieds trop loin pour la longueur des jambes, genoux pliés à travers le sol) ;
+  - mains posées au sol (descente, sortie de hanche, relevé technique, pont, rétention de garde, changement de base, sit-out) : doigts de −6 à −14 cm ;
+  - chutes (ushiro et yoko ukemi), rétention de garde, pont : dos et épaules de −5 à −13 cm ;
+  - orteils de −2 à −9 cm (uchikomi o-uchi et ko-uchi, relevés, sit-out, changement de base, ukemi) ; genoux d'Axel −3,6 cm à genoux.
+- **Changement** :
+  - `src/engine/rig.ts` : le moteur lit une fois le contour de la peau du modèle (tronc, jambes, pieds, mains) et l'utilise à chaque image : le corps couché est soulevé jusqu'au tapis (1,5 cm d'écrasement laissé), un genou posé ou un pied que la jambe ne peut pas atteindre relève les hanches, un pied qui n'est pas à plat est sorti du tapis, les orteils près du sol ne piquent plus dedans (sans dépasser 70° d'extension), une main au sol se plie au poignet jusqu'à poser les doigts, s'ouvre quand la paume regarde le tapis, et se referme sur les phalanges si l'amplitude du poignet ne suffit pas. Aucune vitesse ni angle des mouvements déjà validés n'est changé hors du contact avec le sol.
+  - Mains en appui : extension du poignet en charge jusqu'à 90° (main à plat, avant-bras presque vertical, comme dans une pompe), seulement quand la main est posée au tapis ; 70° partout ailleurs. **Choix de Youssef** (carte de décision du 29/10, 13:34) : main à plat.
+  - `src/engine/library/mma.ts`, sprawl : jambes tendues à une longueur de jambe derrière les hanches, bassin un peu plus haut (cuisses posées, tibias levés), retour des pieds en 0,34 s au lieu de 0,18 s (vitesse max du pied 9,3 m/s au lieu de 25,6 avec les pieds plus loin). Durée 1,56 s au lieu de 1,52 s.
+  - Mesures corrigées (pas affaiblies) dans `src/test/torsions.ts` : l'inclinaison du poignet se lit maintenant contre le plan de flexion (l'ancienne formule lisait 4° d'inclinaison comme 70° quand le poignet est plié à 90°) et la pronation sur l'axe du pouce, qui ne bouge pas quand le poignet se plie (l'ancienne lisait 15° de trop sur une main à plat). `src/engine/audit.ts` compte comme appui une main que le moteur a posée au tapis (sur les phalanges, le poignet est à 8 cm).
+- **Résultat** (`docs/audit-biomecanique/MESURES_SOL.md`) : au pire −2,8 cm (épaule de Kadir en ushiro-ukemi), −2,5 cm (dos d'Axel en rétention de garde), −2,2 cm (cuisses dans le sprawl), tout le reste au-dessus de −2 cm. Glissement des pieds en appui (switch kick, sit-out, changement de base, relevé technique) : mesuré, pas encore traité (lot suivant).
+- **Tests** :
+  - nouveau `src/engine/__tests__/floor-contact.test.ts` : la peau des 4 coachs ne passe jamais à plus de 3 cm sous le tapis, toutes les techniques, 15 images par seconde ; document `MESURES_SOL.md` régénéré par le test ;
+  - `engine.test.ts` et `pose.test.ts` (cibles des mains et des pieds) visent l'endroit où le moteur a posé la cheville ou le poignet (`footAim`, `handAim`), comme ils le faisaient déjà pour le talon levé ; la tolérance de 2 cm n'est pas changée ;
+  - `torsions.ts` : limite d'extension du poignet 90° seulement pour une main posée au tapis (`handOnMat`) ;
+  - documents de mesures régénérés (chevilles, torsions, moteur, fluidité) et pictogrammes ;
+  - TypeScript RÉUSSI ; Vitest 912 RÉUSSIS, 1 ignoré (après report de la 1.6.1 : Axel et Kaila refaits, `MESURES_SOL.md` régénéré) ;
+  - Playwright complet (282) : 278 RÉUSSIS, 2 ignorés (Firebase), 2 ÉCHOUÉS déjà en échec avant ce lot (1.7.0) : `coach-suggest:99` (flèches des suggestions) et `training-layout:329` (caméra Auto) ;
+  - Android réel : NON EXÉCUTÉ.
+- **Validation** : Youssef, 29/10 13:35 « je valide » (1.7.0 et 1.8.0 fusionnées dans feature/combat-shadow-v030).
+
 ## 2026-10-29 · 1.9.0 · Coachs plus vivants, tenue MMA d'après les références, rendu Anime supprimé
 
 - **Demande** : Youssef, 29/10 10:59 « essaye de pousser plus loin l'ultra réalisme, l'expression des visages est trop statique, fait quelque chose, supprime définitivement le rendu "Anime", Corrige aussi Kadir et Amara pour leurs faire bénéficier des plus de Axel & Kaila » ; 11:51 deux planches de référence (coach MMA homme et femme, rangées dans `maquettes/references-2026-10-29/`) ; 11:55 « on reste en Open Source pure. Améliore aussi les vêtements » (CC0 seulement, pas de CC-BY).
@@ -2224,3 +2265,5 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests retirés ou réécrits (fonction supprimée à la demande de Youssef)** : `coach-render.spec` (choix du look à trois endroits, look Anime gardé, changement de look en séance, hachures Encre) remplacé par « aucun choix de look » et « un ancien réglage Anime ou Manga ouvre en Ultra-réaliste » ; `moteur-lumiere.spec` « le rendu Anime n'a pas d'option de lumière » remplacé par « un ancien réglage Anime ouvre en Ultra-réaliste avec l'option de lumière » et « la version précédente n'a pas d'option de lumière » ; `profil-v120.spec` ne cherche plus `settings-coach-look` ; `settings-style.test` vérifie la migration vers Ultra-réaliste ; `rights.test` et `appGuide.test` suivent les textes.
 - **Tests** : TypeScript RÉUSSI ; Vitest 927 RÉUSSIS, 1 ignoré (nouveau `src/three/__tests__/face.test.ts` : 20 tests sur les 4 coachs) ; Playwright ciblé `coach-render`, `moteur-lumiere`, `profil-v120`, `coachs-v160` : 15 RÉUSSIS.
 - **Avant/après** : https://claude.ai/artifact/9FCj9LtLaSMBFRc7qNMLxC (1.6.1 et 1.9.0 à côté des références).
+- **Ajout du 03/11** (Youssef, 29/10 14:20 « diminue aussi la taille des fiches coach pour que cela tienne sur une page dans choisi ton coach, un clique sur la fiche doit faire pivoter la fiche sur un mode plus de details ») : fiches compactes, les quatre et « Valider » tiennent sur un écran de 360×640 à 430×932 ; un appui choisit le coach et retourne sa fiche (surnom, taille mesurée sur le modèle 3D, style, garde, points forts), un 2e appui la remet. Portraits refaits avec la nouvelle tenue MMA. Test `coachs-v160.spec` (2 tailles d'écran) : RÉUSSI.
+- **Intégration de la 1.8.0** (fusion de `feature/combat-shadow-v030`, tête 3f035df) : `MESURES_SOL.md` régénéré (corps de Kaila plus sec, poids du visage d'Axel), écarts de quelques dixièmes de millimètre, test du contact avec le tapis RÉUSSI.

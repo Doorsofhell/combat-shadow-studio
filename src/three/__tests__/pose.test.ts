@@ -98,8 +98,9 @@ describe('longueur des jambes aux limites du curseur', () => {
               const target = side === 'Left' ? pose.footL.ankle : pose.footR.ankle;
               const hip = rig.worldOf(`${side}UpLeg`)!;
               // a heel lifted by the floor rule (dorsiflexion past the weight-bearing range) moves the ankle on
-              // purpose, about the ball of the foot: compare with the lifted ankle (src/engine/rig.ts settlePlanted)
-              const aim = rig.heelLift[side === 'Left' ? 'L' : 'R']?.ankle ?? target;
+              // purpose, about the ball of the foot, and a foot authored into the mat is lifted out of it (1.8.0): compare
+              // with where the rig aimed the ankle (src/engine/rig.ts footAim, settlePlanted, floorFoot)
+              const aim = rig.footAim[side === 'Left' ? 'L' : 'R'] ?? target;
               // closer than the knee allows (deep crouch on a lifted heel): the knee limit holds the foot short on purpose
               const minReach = Math.sqrt(m.thigh ** 2 + m.shin ** 2 + 2 * m.thigh * m.shin * Math.cos(KNEE_MAX_FLEX));
               if (hip.distanceTo(aim) <= (m.thigh + m.shin) * 0.985 && hip.distanceTo(aim) >= minReach * 1.05) expect(foot.distanceTo(aim), `${at} appui ${side}`).toBeLessThan(0.02);

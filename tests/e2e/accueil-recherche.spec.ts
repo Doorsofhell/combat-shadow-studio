@@ -139,8 +139,10 @@ test('Rechercher ou demander : la question va au Coach IA, qui répond hors lign
   await page.getByTestId('app-search').click();
   await page.getByTestId('search-input').fill('comment corriger mon jab quand je fatigue');
   await expect(page.getByTestId('search-sheet')).toContainText('Rien de ce nom dans l’app');
-  await expect(page.getByTestId('search-ask')).toContainText('Demander au Coach IA : « comment corriger mon jab quand je fatigue »');
-  await page.getByTestId('search-ask').click();
+  // 1.7.0 (proposition A): a question gets the coach's answer at the top of the search, at once
+  await expect(page.getByTestId('search-coach-text')).not.toBeEmpty();
+  await expect(page.getByTestId('search-ask')).toHaveCount(0);
+  await page.getByTestId('search-coach-open').click();
   await expect(page.getByTestId('search-sheet')).toHaveCount(0);
   const panel = page.getByTestId('coach-bubble-panel');
   await expect(panel).toBeVisible();
@@ -173,5 +175,15 @@ for (const theme of ['clair', 'sombre'] as const) {
     await page.getByTestId('search-sheet').evaluate((e) => Promise.all(e.parentElement!.getAnimations({ subtree: true }).map((a) => a.finished)));
     const sheet = await new AxeBuilder({ page }).include('[data-testid="search-sheet"]').withRules(['color-contrast']).analyze();
     expect(sheet.violations).toEqual([]);
+    // 1.7.0: the coach's answer at the top, and the line « Demander au coach »
+    await page.getByTestId('search-input').fill('Comment corriger mon jab ?');
+    await expect(page.getByTestId('search-coach')).toBeVisible();
+    const card = await new AxeBuilder({ page }).include('[data-testid="search-sheet"]').withRules(['color-contrast']).analyze();
+    expect(card.violations).toEqual([]);
+    await page.getByTestId('search-input').fill('garde');
+    await expect(page.getByTestId('search-ask')).toBeVisible();
+    const row = await new AxeBuilder({ page }).include('[data-testid="search-sheet"]').withRules(['color-contrast']).analyze();
+    expect(row.violations).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
   });
 }
