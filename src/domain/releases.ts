@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.10.1',
+      releaseDate: '2026-11-03',
+      title: 'Mises à jour plus rapides',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Une nouvelle version s’installe en quelques secondes : l’appli ne télécharge plus d’avance tous les coachs et toutes les tenues (plus de 100 Mo), chacun est gardé sur ton téléphone dès que tu l’utilises.' },
+      ],
+      links: [],
+    },
+    {
       version: '1.10.0',
       releaseDate: '2026-11-03',
       title: 'Coachs plus réalistes, tenues mieux ajustées',
