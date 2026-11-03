@@ -57,7 +57,7 @@ def smax(a, b, k):
 STRAP_C, STRAP_HALF, LINING_X = -0.068, 0.030, -0.075
 
 
-def sd_glove(p):
+def sd_glove(p, thai=False):
     """distance to the glove surface (metres) for points p (..., 3) in the hand frame of a reference hand (wrist to
     middle knuckle 9.5 cm): x along the hand toward the knuckles, y across toward the index and thumb, z out of the
     back of the hand. Returns (distance, region) with region 0 leather, 1 strap, 2 lining"""
@@ -69,15 +69,21 @@ def sd_glove(p):
     pf[..., 2] = (z + 0.004) / (0.88 + 0.12 * taper)
     fist = sd_round_box(pf, (0.100, 0.0, 0.0), (0.082, 0.066, 0.055), 0.038)
     # dome over the back of the hand, full striking face
-    fist = smin(fist, sd_ellipsoid(p, (0.104, 0.0, 0.020), (0.085, 0.062, 0.050)), 0.02)
-    fist = smin(fist, sd_ellipsoid(p, (0.154, 0.0, 0.002), (0.036, 0.064, 0.056)), 0.02)
+    if thai:
+        # padding spread back over the hand toward the wrist, lower over the knuckles
+        fist = smin(fist, sd_ellipsoid(p, (0.088, 0.0, 0.016), (0.100, 0.062, 0.046)), 0.024)
+        fist = smin(fist, sd_ellipsoid(p, (0.150, 0.0, 0.0), (0.030, 0.062, 0.052)), 0.02)
+    else:
+        fist = smin(fist, sd_ellipsoid(p, (0.104, 0.0, 0.020), (0.085, 0.062, 0.050)), 0.02)
+        fist = smin(fist, sd_ellipsoid(p, (0.154, 0.0, 0.002), (0.036, 0.064, 0.056)), 0.02)
     # roll of the curled fingers under the padding (front, palm side)
     fist = smin(fist, sd_capsule(p, (0.140, -0.044, -0.034), (0.140, 0.044, -0.034), 0.032), 0.015)
     # palm side hollowed behind the finger roll (the grip)
     fist = smax(fist, -sd_capsule(p, (0.062, -0.07, -0.088), (0.062, 0.07, -0.088), 0.038), 0.014)
     # thumb along the index side, tip forward and a little toward the palm, joined by a crease
-    thumb = sd_capsule(p, (0.046, 0.070, -0.016), (0.120, 0.068, -0.034), 0.024)
-    thumb = smin(thumb, sd_ellipsoid(p, (0.124, 0.066, -0.035), (0.027, 0.025, 0.024)), 0.01)
+    ty = 0.064 if thai else 0.070
+    thumb = sd_capsule(p, (0.046, ty, -0.016), (0.120, ty - 0.002, -0.034), 0.024)
+    thumb = smin(thumb, sd_ellipsoid(p, (0.124, ty - 0.004, -0.035), (0.027, 0.025, 0.024)), 0.01)
     # the thumb stands out from the fist: a crease along its join
     d = smin(fist, thumb, 0.004)
     # cuff: tapers from the fist over the wrist to the forearm, oval, slightly flared at its open end
@@ -86,7 +92,14 @@ def sd_glove(p):
     rz = 0.042 + 0.004 * u
     ell = np.sqrt((y / ry) ** 2 + ((z + 0.002) / rz) ** 2)
     cuff_r = (ell - 1.0) * np.minimum(ry, rz)
-    cuff = np.maximum(cuff_r, np.maximum(x - 0.04, -0.125 - x))
+    # the Thai cuff ends 2 cm sooner and flares a little more (wrist free for the clinch)
+    end = -0.105 if thai else -0.125
+    if thai:
+        ry = ry + 0.004 * u
+        rz = rz + 0.003 * u
+        ell = np.sqrt((y / ry) ** 2 + ((z + 0.002) / rz) ** 2)
+        cuff_r = (ell - 1.0) * np.minimum(ry, rz)
+    cuff = np.maximum(cuff_r, np.maximum(x - 0.04, end - x))
     # a short neck between fist and cuff: the fist reads as a padded volume, not a sock
     d = smin(d, cuff, 0.016)
     # hook-and-loop strap round the cuff, rounded edges
@@ -117,9 +130,9 @@ def piping(p):
     return np.maximum(ring, thumbseam)
 
 
-def regions(v):
+def regions(v, thai=False):
     """colour region and piping mask of points of the glove surface (hand frame)"""
-    _, reg = sd_glove(v)
+    _, reg = sd_glove(v, thai)
     return reg, piping(v) > 0.35
 
 
@@ -186,22 +199,23 @@ def surface_nets(sdf, origin, step):
     return verts, quads
 
 
-def glove_mesh(step=0.0016):
+def glove_mesh(step=0.0016, thai=False):
     """reference glove in the hand frame: vertices, quads, region per vertex"""
+    sd = lambda x: sd_glove(x, thai)
     lo = np.array([-0.135, -0.090, -0.085])
     hi = np.array([0.205, 0.095, 0.080])
     n = np.ceil((hi - lo) / step).astype(int) + 1
     g = np.stack(np.meshgrid(*[lo[a] + np.arange(n[a]) * step for a in range(3)], indexing='ij'), -1)
-    d, _ = sd_glove(g)
+    d, _ = sd(g)
     d = d - piping(g) * 0.0016
     v, q = surface_nets(d, lo, step)
     # project the vertices onto the surface (two Newton steps on the field), for a smooth result
     for _ in range(2):
         e = 1e-4
-        dv, _ = sd_glove(v)
+        dv, _ = sd(v)
         dv = dv - piping(v) * 0.0016
-        grad = np.stack([(sd_glove(v + np.eye(3)[a] * e)[0] - piping(v + np.eye(3)[a] * e) * 0.0016 - dv) / e for a in range(3)], -1)
+        grad = np.stack([(sd(v + np.eye(3)[a] * e)[0] - piping(v + np.eye(3)[a] * e) * 0.0016 - dv) / e for a in range(3)], -1)
         gl = np.maximum(_len(grad), 1e-6)
         v = v - (dv / gl)[:, None] * (grad / gl[:, None])
-    reg, pip = regions(v)
+    reg, pip = regions(v, thai)
     return v, q, reg, pip

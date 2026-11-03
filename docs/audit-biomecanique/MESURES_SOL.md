@@ -11,11 +11,12 @@ Avant 1.8.0 : cuisses et tibias jusqu’à −20 cm (sprawl), doigts jusqu’à 
 
 | Mouvement | mma-kadir | mma-amara | axel | kaila |
 |---|---|---|---|---|
-| bjj changement-base | -0.8 (LeftHandMiddle3) | -1.1 (LeftToeBase) | -0.9 (LeftToeBase) | -0.7 (LeftToeBase) |
+| bjj changement-base | -0.8 (LeftHandMiddle3) | -1.1 (LeftToeBase) | -0.9 (LeftToeBase) | -0.7 (LeftFoot) |
 | bjj pont | -0.7 (LeftFoot) | -0.8 (LeftToeBase) | -0.6 (LeftToeBase) | -1.1 (Spine2) |
-| bjj releve-genoux | -1.0 (LeftToeBase) | -1.2 (LeftToeBase) | -1.7 (LeftLeg) | -0.7 (LeftToeBase) |
-| bjj retention-garde | -1.5 (LeftShoulder) | -0.9 (LeftToeBase) | -2.5 (Spine2) | -1.1 (Spine2) |
-| bjj sit-out | -1.4 (LeftHandMiddle3) | -1.1 (LeftToeBase) | -1.1 (RightToeBase) | -0.7 (LeftToeBase) |
+| bjj releve-genoux | -1.0 (LeftToeBase) | -1.2 (LeftToeBase) | -1.7 (LeftLeg) | -0.7 (LeftFoot) |
+| bjj retention-garde | -0.9 (RightShoulder) | -0.9 (LeftToeBase) | -2.5 (Spine2) | -1.1 (Spine2) |
+| bjj sit-out | -1.4 (LeftHandMiddle3) | -1.1 (LeftToeBase) | -1.1 (RightToeBase) | -0.8 (RightToeBase) |
+| judo uchikomi-ko-uchi-gari | -0.8 (RightToeBase) | -0.7 (RightFoot) | -1.0 (RightToeBase) | -1.1 (RightToeBase) |
 | judo uchikomi-o-uchi-gari | -1.2 (RightToeBase) | -0.7 (RightToeBase) | -0.6 (RightToeBase) | -0.6 (RightToeBase) |
 | judo ukemi-ushiro | -2.8 (LeftArm) | -1.2 (Spine2) | -2.1 (Spine2) | -1.2 (Spine2) |
 | judo ukemi-yoko | -0.7 (RightArm) | -1.0 (RightToeBase) | -0.7 (Spine2) | -1.1 (Spine2) |

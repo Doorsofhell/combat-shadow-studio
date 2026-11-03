@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import type { GLTFLoader } from 'three-stdlib';
-import { Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, SRGBColorSpace } from 'three';
+import { Material, Mesh, MeshStandardMaterial, Object3D, type SkinnedMesh } from 'three';
+import { applyBreath, Breath } from './breath';
+import { Sway } from './sway';
+import { hairFadeAttribute, photoMaterial, photoPart, skinLookFor } from './photoMaterials';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { restoreReferencePose, setLegLength } from './pose';
 import { FaceAnimator, type FaceOptions } from './face';
@@ -16,8 +19,6 @@ import { useOutfit, type OutfitId, type OutfitStatus } from './outfit';
  * font pas du tout humain »). Converted by tools/generator/rocketbox/convert.py: same bone names as our models,
  * so the rig and every animation drive it unchanged.
  */
-/** depth of the skin's normal map (anatomy, pores): 1 = as exported */
-const SKIN_RELIEF = 1.5;
 
 export function PhotoCoach({
   url,
@@ -47,45 +48,26 @@ export function PhotoCoach({
   onFrame: (rig: CoachRig, dt: number) => void;
 }) {
   const gltf = useGLTF(url, draco, true, extendLoader);
+  // 1.10: breathing of the chest and belly, on the skin and on the garments (src/three/breath.ts)
+  const breath = useMemo(() => new Breath(), []);
   const scene = useMemo(() => {
+    // 1.10: skin calibrated per coach (relief, scattering, pores: photoMaterials.ts SKIN_LOOK)
+    const look = skinLookFor(url);
     const s = cloneSkinned(gltf.scene);
     s.traverse((o) => {
       const m = o as Mesh;
       if (!m.isMesh) return;
       m.frustumCulled = false;
-      const old = m.material as MeshStandardMaterial;
-      if (old.map) old.map.colorSpace = SRGBColorSpace;
-      // v0.31 (« flou ou halo », Youssef 2026-10-22): skin seen at a grazing angle (arms, flanks) was blurred by
-      // plain mipmapping; anisotropic filtering keeps its detail (4 samples: cheap on phone graphics chips)
-      for (const t of [old.map, old.normalMap]) if (t) t.anisotropy = 4;
-      const hair = /opacity/.test(old.name);
-      // v1.7: the wet eyes of the MakeHuman coaches (their own material) catch a sharp highlight of the lights,
-      // as real eyes do; matte, they looked like a doll's
-      const eyes = old.name === 'Eyes_opacity';
-      // 1.9: the normal map keeps the scale and orientation the loader gave it (its green channel is flipped when
-      // the model has no tangents; a new material lost that and lit the muscles from below), and the anatomy of
-      // the skin is drawn a little deeper (Youssef's references: drier, more defined musculature)
-      const normalScale = old.normalScale.clone().multiplyScalar(eyes || hair ? 1 : SKIN_RELIEF);
-      m.material =
-        quality === 'haute' && !hair
-          ? new MeshPhysicalMaterial({
-              name: old.name,
-              map: old.map,
-              normalMap: old.normalMap,
-              normalScale,
-              // 1.9: the eyes stay wet in high quality too (they were matte like the skin)
-              roughness: eyes ? 0.08 : 0.58,
-              metalness: 0,
-              sheen: eyes ? 0 : 0.3,
-              sheenRoughness: 0.6,
-              sheenColor: '#c98a72',
-              specularIntensity: 0.4,
-            })
-          : new MeshStandardMaterial({ name: old.name, map: old.map, normalMap: old.normalMap, normalScale, roughness: eyes ? 0.08 : 0.6, metalness: 0, alphaTest: hair ? 0.4 : 0, alphaToCoverage: hair, transparent: false });
+      // 1.10: each part classified (skin, eyes, hair, brows, lashes) and rebuilt from all its source properties
+      // (src/three/photoMaterials.ts): before, « opacity » sent the eyes, brows and lashes to the hair branch
+      const part = photoPart(m.material as Material);
+      if (part === 'cheveux') hairFadeAttribute(m.geometry);
+      m.material = photoMaterial(m.material as MeshStandardMaterial, part, quality, look);
+      if (part === 'peau' && (m as SkinnedMesh).isSkinnedMesh) applyBreath(m.material as Material, breath.uniformsFor(m as SkinnedMesh));
     });
     restoreReferencePose(s);
     return s;
-  }, [gltf, quality]);
+  }, [gltf, quality, url, breath]);
   // 1.9: blinks, gaze and the effort of the strikes on the facial bones (src/three/face.ts); after the rig's pose
   const face = useMemo(() => {
     restoreReferencePose(scene);
@@ -126,7 +108,16 @@ export function PhotoCoach({
     },
     [gl, camera, scene],
   );
-  const dressed = useOutfit(scene, outfitUrl, outfit, quality, extendLoader, prepare);
+  // 1.10: the skirt of the gi and the belt tails swing a little (src/three/sway.ts)
+  const sway = useMemo(() => new Sway(), []);
+  const decorate = useCallback(
+    (g: SkinnedMesh) => {
+      applyBreath(g.material as Material, breath.uniformsFor(g));
+      sway.add(g, outfit === 'judo');
+    },
+    [breath, sway, outfit],
+  );
+  const dressed = useOutfit(scene, outfitUrl, outfit, quality, extendLoader, prepare, decorate);
   useEffect(() => onOutfit?.(dressed), [dressed, onOutfit]);
   // v0.32 (Youssef, 2026-10-22 10:33: « le combattant apparaît brièvement en sous-vêtements »): the coach is
   // drawn only once its outfit is worn, or when there is none, or when it failed (the base layer is then said)
@@ -137,7 +128,12 @@ export function PhotoCoach({
   useFrame((_, dt) => {
     onFrame(rig, Math.min(dt, 0.05));
     // fixed images (Lab, portraits) ask for a still face, or impose an expression: window.__cssFace
-    face.update(Math.min(dt, 0.05), (globalThis as { __cssFace?: FaceOptions }).__cssFace);
+    const fo = (globalThis as { __cssFace?: FaceOptions }).__cssFace;
+    face.update(Math.min(dt, 0.05), fo);
+    // still images (Lab, portraits): the chest at rest, so two captures of the same instant are the same
+    breath.update(fo?.still ? 0 : dt, face.state.effort);
+    if (fo?.still) breath.amount.value.set(0, 0, 0, 0);
+    sway.update(fo?.still ? 0 : Math.min(dt, 0.05));
     // garments are taken off in an effect cleanup (quality or outfit change) before the new state is rendered:
     // an image is never drawn with the coach shown without them
     if (scene.visible && expected && dressed.state === 'portee' && !hasGarment(scene)) scene.visible = false;
