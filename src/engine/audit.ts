@@ -87,7 +87,9 @@ export function balanceAt(rig: CoachRig): BalanceSample {
   const extra: P2[] = [];
   for (const [b, h] of CONTACTS) {
     const p = rig.worldOf(b)!;
-    if (p.y < h) extra.push([p.x - 0.03, p.z - 0.03], [p.x + 0.03, p.z - 0.03], [p.x + 0.03, p.z + 0.03], [p.x - 0.03, p.z + 0.03]);
+    // 1.8.0: a hand laid on the mat by the rig bears weight, flat or on its knuckles (wrist up to 8 cm high)
+    const laid = b === 'LeftHand' ? rig.handOnMat.L : b === 'RightHand' ? rig.handOnMat.R : false;
+    if (p.y < h || laid) extra.push([p.x - 0.03, p.z - 0.03], [p.x + 0.03, p.z - 0.03], [p.x + 0.03, p.z + 0.03], [p.x - 0.03, p.z + 0.03]);
   }
   const com = centreOfMass(rig);
   const pts = [...soles.flat(), ...extra];

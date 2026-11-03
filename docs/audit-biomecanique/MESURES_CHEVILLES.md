@@ -9,9 +9,9 @@ même mesure). Pires valeurs. Amplitudes de référence : `src/engine/limits.ts`
 | Coach | À plat : dorsiflexion | À plat : éversion | À plat : torsion pied/tibia | En l’air : dorsiflexion | En l’air : flexion plantaire | En l’air : inversion | En l’air : torsion | Orteils relevés |
 |---|---|---|---|---|---|---|---|---|
 | Homme, avant (v0.22.0) | 62° | 106° | 109° | 74° | 85° | 172° | 178° | 18° |
-| Homme, après | 43° | 16° | 22° | 20° | 50° | 34° | 15° | 65° |
+| Homme, après | 43° | 16° | 18° | 20° | 50° | 34° | 15° | 68° |
 | Femme, avant (v0.22.0) | 63° | 102° | 81° | 74° | 85° | 176° | 175° | 18° |
-| Femme, après | 42° | 15° | 21° | 20° | 50° | 35° | 15° | 65° |
+| Femme, après | 42° | 15° | 16° | 20° | 50° | 35° | 15° | 65° |
 | Référence | 40° en charge | 15° | ≈ 15° | 20° | 50° | 35° | ≈ 15° | 70° |
 
 ## Front kick avant (kick-boxing), pied de frappe
