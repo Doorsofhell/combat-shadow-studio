@@ -2291,3 +2291,16 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Téléphone Android réel : NON EXÉCUTÉ.
   - Captures avant/après : 36 planches dans `docs/v1100/captures/` (`tenues-*`, `detail-*`, `lumieres-*`) et page de comparaison https://claude.ai/artifact/CAejygcuEVDqz1siRRa2nM.
 - **Restauration** : `restauration/avant-realisme-v1100`
+
+## 2026-11-03 · 1.10.1 · Mises à jour qui s'installent vraiment
+
+- **Demande** : Youssef, 03/11 18:15 « je ne vois toujours pas la 1.10 après plusieurs fermetures et rafraîchissement ».
+- **Constat après vérification** : le site publié affichait bien v1.10.0 (vérifié avec une adresse sans cache). Le service worker (`vite-plugin-pwa`, `autoUpdate`) gardait d'avance tous les fichiers, coachs et tenues compris : 122 Mo. Pour passer de la 1.9 à la 1.10, il devait d'abord télécharger 263 fichiers changés, soit 71 Mo. Tant que ce téléchargement n'était pas fini (appli fermée, réseau mobile), le téléphone restait sur l'ancienne version. Le téléphone de Youssef n'a pas pu être inspecté : c'est la cause la plus probable, pas une cause vérifiée sur son appareil.
+- **Correction** : `vite.config.ts` ne garde d'avance que l'appli (12,7 Mo, 544 fichiers). Les fichiers de `coaches/*/` et de `models/` sont gardés à leur première utilisation (cache `css-modeles`, réseau d'abord avec 4 s de délai, la copie gardée hors ligne). Un coach ou une tenue jamais ouvert n'est pas disponible hors ligne.
+- **Tests** :
+  - TypeScript : TEST RÉUSSI.
+  - Build : TEST RÉUSSI.
+  - Vitest `src/domain` : 196 RÉUSSIS.
+  - Playwright `outfit-loading`, `emblems` (affichage hors ligne), `coachs-v160`, `coach-3d-recovery` : 13 RÉUSSIS.
+  - Android réel : NON EXÉCUTÉ.
+- **Validation** : Youssef, 03/11 18:19 « Je valide ».
