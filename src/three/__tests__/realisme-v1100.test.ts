@@ -170,3 +170,19 @@ describe('peau : diffusion, ombres adoucies, pores, relief calibré par coach', 
       expect(m.customProgramCacheKey()).toContain('css-skin');
     });
 });
+
+// 1.10: the racer-back bra once reached the forearms (Rocketbox rest pose: forearms at chest height), a sheet of
+// cloth thrown round the arms in motion (Amara, mma). Every point of every bra stays between the shoulder joints.
+describe('brassières : aucune partie sur les bras', () => {
+  for (const c of ['mma-amara', 'kaila'])
+    for (const o of ['boxe', 'kickboxing', 'muaythai', 'mma'])
+      test(`${c} ${o}`, () => {
+        const { parts, bind } = readGlb(file(c, o));
+        const bra = parts.filter((p) => p.name.startsWith('haut-brassiere'));
+        expect(bra.length).toBeGreaterThan(0);
+        const sx = Math.max(Math.abs(bind.get('LeftArm')!.x), Math.abs(bind.get('RightArm')!.x));
+        let worst = 0;
+        for (const p of bra) for (const q of p.positions) worst = Math.max(worst, Math.abs(q.x));
+        expect(worst, `${c} ${o} |x| max ${worst.toFixed(3)} / épaule ${sx.toFixed(3)}`).toBeLessThan(sx + 0.03);
+      });
+});

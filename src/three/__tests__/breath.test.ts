@@ -49,6 +49,9 @@ describe('respiration', () => {
       const shader = { uniforms: {}, vertexShader: ShaderLib.standard.vertexShader, fragmentShader: '' };
       m.onBeforeCompile(shader as never, undefined as never);
       expect(shader.vertexShader).toContain('cssBreathAmp.x * cssWc');
+      // bind-space normal, never the already skinned objectNormal (posed twice: cloth thrown away in the jab, 1.10)
+      expect(shader.vertexShader).toContain('transformed += normalize(normal) *');
+      expect(shader.vertexShader).not.toMatch(/transformed \+= objectNormal/);
       expect(m.customProgramCacheKey()).toContain('css-breath');
     });
 });

@@ -83,13 +83,16 @@ uniform vec4 cssBreathChest;
 uniform vec4 cssBreathBelly;
 uniform vec4 cssBreathAmp;
 `;
+// the point moves along its own normal before skinning (bind space, like the point itself). Not objectNormal: in a
+// skinned mesh three.js has already posed it at begin_vertex, and the pose then applied to the point a second time
+// threw the cloth of a twisting torso centimetres away (seen on Amara's bra in the jab, 1.10)
 const VERT_BODY = /* glsl */ `
 {
   vec3 cssDc = (position - cssBreathChest.xyz) / cssBreathChest.w;
   vec3 cssDb = (position - cssBreathBelly.xyz) / cssBreathBelly.w;
   float cssWc = exp(-dot(cssDc, cssDc) * 1.6);
   float cssWb = exp(-dot(cssDb, cssDb) * 2.0);
-  transformed += objectNormal * (cssBreathAmp.x * cssWc * cssBreath.x + cssBreathAmp.y * cssWb * cssBreath.y);
+  transformed += normalize(normal) * (cssBreathAmp.x * cssWc * cssBreath.x + cssBreathAmp.y * cssWb * cssBreath.y);
 }
 `;
 

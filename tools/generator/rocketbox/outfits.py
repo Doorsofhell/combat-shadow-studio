@@ -1320,7 +1320,10 @@ def bra_field():
                 d = (r - n_ * dn).length + 0.3 * abs(dn) - (0.011 + 0.005 * _ss(0.7, 1.0, u[k] + (u[k + 1] - u[k]) * t))
                 best = min(best, d)
         return best
-    arms = [(H[f'{s_}Arm'], H[f'{s_}ForeArm']) for s_ in ('Left', 'Right')]
+    # upper arm and forearm: in the rest pose of the Rocketbox bodies the forearms hang at chest height, and with the
+    # upper arm only the cut kept them (Amara's bra reached her wrists, 43 cm from the axis)
+    arms = [(H[f'{s_}{a}'], H[f'{s_}{b}']) for s_ in ('Left', 'Right') for a, b in (('Arm', 'ForeArm'), ('ForeArm', 'Hand'))]
+    shoulder_x = max(abs(H['LeftArm'].x), abs(H['RightArm'].x))
 
     def arm_clear(q):
         best = 1e9
@@ -1328,7 +1331,8 @@ def bra_field():
             ab = b - a
             t = max(0.0, min(1.0, (q - a).dot(ab) / ab.dot(ab)))
             best = min(best, (q - (a + ab * t)).length)
-        return 0.068 - best
+        # and never past the shoulder joints sideways (the torso is narrower than that)
+        return max(0.068 - best, abs(q.x) - shoulder_x - 0.01)
 
     def field(q):
         ax = abs(q.x)
@@ -1381,7 +1385,8 @@ def bra_v2(color, accent=None):
     if accent:
         mats.append(fabric(f'liseré-{accent}', accent, 'elastique', rough=0.6, strength=0.8))
         cuts.append((Vector((0, 0, low + 0.02)), Vector((0, 0, 1))))
-    o, cov = shell('haut-brassiere', keep, lambda i: 0.0038, 0.0022, mats,
+    # 5.5 mm off the skin: at 3.8 the chest pushed through under the front strap when the arm reaches out (Kaila's jab)
+    o, cov = shell('haut-brassiere', keep, lambda i: 0.0055, 0.0022, mats,
                    (lambda c, ids: 1 if c.z < low + 0.02 else 0) if accent else None, hem=0.008, cuts=cuts, iso=F)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
