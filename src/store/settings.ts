@@ -38,10 +38,11 @@ export interface Settings {
   impactSounds: boolean;
   quality: 'auto' | 'haute' | 'basse';
   /**
-   * look of the coaches: realistic (default since v0.29, « Ultra-réaliste »), ink/anime (default from v0.14
-   * to v0.28) or cel-shaded manga (previous render only)
+   * look of the coaches: Ultra-réaliste only since 1.9 (Youssef, 2026-10-29: « supprime définitivement le rendu
+   * Anime »). The ink/anime look (default from v0.14 to v0.28) and the cel-shaded manga look are gone; the
+   * field stays so the saved settings keep their shape
    */
-  coachStyle: 'encre' | 'manga' | 'realiste';
+  coachStyle: 'realiste';
   /**
    * v0.23 render of the coaches (one model for both looks, clean cel shading) or the previous render,
    * kept as a fallback until the new one is validated on the devices
@@ -187,17 +188,19 @@ export const useSettings = create<SettingsState>()(
       // (an explicit 'realiste' choice is kept)
       // v2 (0.29.0): Ultra-réaliste becomes the default for new installations; a saved look is kept as it is
       // (« conserver les préférences déjà choisies par les utilisateurs existants »)
-      version: 2,
+      // v3 (1.9.0): the Anime (« encre ») and Manga looks are removed: every saved look becomes Ultra-réaliste,
+      // the other settings are kept
+      version: 3,
       migrate: (saved, version) => {
         const st = (saved ?? {}) as { settings?: Partial<Settings> };
-        if (version < 1 && st.settings?.coachStyle === 'manga') st.settings = { ...st.settings, coachStyle: 'encre' };
+        if (version < 3 && st.settings) st.settings = { ...st.settings, coachStyle: 'realiste' };
         return st as unknown as SettingsState;
       },
       // settings saved by an older version get the new fields with their default value
       merge: (saved, current) => {
         const s = (saved as { settings?: Partial<Settings> })?.settings ?? {};
         const size = COACH_PANEL_SIZES.includes(s.coachPanelSize as CoachPanelSize) ? s.coachPanelSize : DEFAULT_SETTINGS.coachPanelSize;
-        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) }, cardio: { ...DEFAULT_SETTINGS.cardio, ...(s.cardio ?? {}) }, chrono: cleanSetup(s.chrono), consignes: s.consignes === 'point' ? 'point' : 'enchainees', consigneSec: CONSIGNE_SECS.includes(s.consigneSec as number) ? s.consigneSec! : DEFAULT_SETTINGS.consigneSec, pulse: PULSE_STYLES.includes(s.pulse as PulseStyle) ? s.pulse! : DEFAULT_SETTINGS.pulse, pulseIntensity: typeof s.pulseIntensity === 'number' && s.pulseIntensity >= 0.3 && s.pulseIntensity <= 1 ? s.pulseIntensity : DEFAULT_SETTINGS.pulseIntensity } };
+        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachStyle: 'realiste', coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) }, cardio: { ...DEFAULT_SETTINGS.cardio, ...(s.cardio ?? {}) }, chrono: cleanSetup(s.chrono), consignes: s.consignes === 'point' ? 'point' : 'enchainees', consigneSec: CONSIGNE_SECS.includes(s.consigneSec as number) ? s.consigneSec! : DEFAULT_SETTINGS.consigneSec, pulse: PULSE_STYLES.includes(s.pulse as PulseStyle) ? s.pulse! : DEFAULT_SETTINGS.pulse, pulseIntensity: typeof s.pulseIntensity === 'number' && s.pulseIntensity >= 0.3 && s.pulseIntensity <= 1 ? s.pulseIntensity : DEFAULT_SETTINGS.pulseIntensity } };
       },
     },
   ),

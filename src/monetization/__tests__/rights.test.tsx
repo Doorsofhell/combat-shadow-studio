@@ -54,7 +54,7 @@ describe('catalogue des droits', () => {
   it('la page n’annonce comme disponible que ce qui existe', () => {
     expect(PREMIUM_BENEFITS).toHaveLength(8);
     expect(PREMIUM_BENEFITS[0].label).toBe('Création illimitée d’enchaînements personnalisés');
-    expect(PREMIUM_BENEFITS.filter((b) => !benefitAvailable(b)).map((b) => b.label)).toEqual(['Tous les combattants et rendus', 'Réglages avancés d’entraînement']);
+    expect(PREMIUM_BENEFITS.filter((b) => !benefitAvailable(b)).map((b) => b.label)).toEqual(['Tous les combattants', 'Réglages avancés d’entraînement']);
   });
   it('prix centralisé, indicatif', () => {
     expect(formatPrice()).toBe('39,99 € TTC');
@@ -73,7 +73,6 @@ describe('statut Free (préparation)', () => {
     }
     expect(shouldShowPremiumMarker('unlimited_combos')).toBe(true);
     // undecided or not built: no marker
-    expect(shouldShowPremiumMarker('anime_rendering')).toBe(false);
     expect(shouldShowPremiumMarker('all_fighters')).toBe(false);
   });
   it('le marqueur ouvre la page Premium sans déclencher l’action autour de lui', () => {
@@ -97,7 +96,7 @@ describe('statut Free (préparation)', () => {
     expect([...el.querySelectorAll('.premium-grid li')].map((l) => l.textContent)).toEqual(['Enchaînements', 'Coaching 3D', '6 disciplines', 'Programmes', 'Statistiques', 'Historique']);
     expect(el.querySelector('[data-testid="premium-soon"]')!.textContent).toBe('Combattants et réglages avancés : à venir');
     // the band names exactly the benefits that do not exist yet
-    expect(PREMIUM_BENEFITS.filter((b) => !benefitAvailable(b)).map((b) => b.label)).toEqual(['Tous les combattants et rendus', 'Réglages avancés d’entraînement']);
+    expect(PREMIUM_BENEFITS.filter((b) => !benefitAvailable(b)).map((b) => b.label)).toEqual(['Tous les combattants', 'Réglages avancés d’entraînement']);
     // every category is backed by features that exist
     for (const c of PREMIUM_CATEGORIES) expect(benefitAvailable(c), c.id).toBe(true);
     expect(el.querySelectorAll('button')).toHaveLength(1);

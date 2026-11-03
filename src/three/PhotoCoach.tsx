@@ -5,6 +5,7 @@ import type { GLTFLoader } from 'three-stdlib';
 import { Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, SRGBColorSpace } from 'three';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { restoreReferencePose, setLegLength } from './pose';
+import { FaceAnimator, type FaceOptions } from './face';
 import { CoachRig } from '../engine';
 import { useOutfit, type OutfitId, type OutfitStatus } from './outfit';
 
@@ -15,6 +16,9 @@ import { useOutfit, type OutfitId, type OutfitStatus } from './outfit';
  * font pas du tout humain »). Converted by tools/generator/rocketbox/convert.py: same bone names as our models,
  * so the rig and every animation drive it unchanged.
  */
+/** depth of the skin's normal map (anatomy, pores): 1 = as exported */
+const SKIN_RELIEF = 1.5;
+
 export function PhotoCoach({
   url,
   outfitUrl = null,
@@ -58,24 +62,35 @@ export function PhotoCoach({
       // v1.7: the wet eyes of the MakeHuman coaches (their own material) catch a sharp highlight of the lights,
       // as real eyes do; matte, they looked like a doll's
       const eyes = old.name === 'Eyes_opacity';
+      // 1.9: the normal map keeps the scale and orientation the loader gave it (its green channel is flipped when
+      // the model has no tangents; a new material lost that and lit the muscles from below), and the anatomy of
+      // the skin is drawn a little deeper (Youssef's references: drier, more defined musculature)
+      const normalScale = old.normalScale.clone().multiplyScalar(eyes || hair ? 1 : SKIN_RELIEF);
       m.material =
         quality === 'haute' && !hair
           ? new MeshPhysicalMaterial({
               name: old.name,
               map: old.map,
               normalMap: old.normalMap,
-              roughness: 0.58,
+              normalScale,
+              // 1.9: the eyes stay wet in high quality too (they were matte like the skin)
+              roughness: eyes ? 0.08 : 0.58,
               metalness: 0,
-              sheen: 0.3,
+              sheen: eyes ? 0 : 0.3,
               sheenRoughness: 0.6,
               sheenColor: '#c98a72',
               specularIntensity: 0.4,
             })
-          : new MeshStandardMaterial({ name: old.name, map: old.map, normalMap: old.normalMap, roughness: eyes ? 0.08 : 0.6, metalness: 0, alphaTest: hair ? 0.4 : 0, alphaToCoverage: hair, transparent: false });
+          : new MeshStandardMaterial({ name: old.name, map: old.map, normalMap: old.normalMap, normalScale, roughness: eyes ? 0.08 : 0.6, metalness: 0, alphaTest: hair ? 0.4 : 0, alphaToCoverage: hair, transparent: false });
     });
     restoreReferencePose(s);
     return s;
   }, [gltf, quality]);
+  // 1.9: blinks, gaze and the effort of the strikes on the facial bones (src/three/face.ts); after the rig's pose
+  const face = useMemo(() => {
+    restoreReferencePose(scene);
+    return new FaceAnimator(scene, url.length);
+  }, [scene, url]);
   const rig = useMemo(() => {
     restoreReferencePose(scene);
     setLegLength(scene, legLength);
@@ -121,6 +136,8 @@ export function PhotoCoach({
   if (import.meta.env.DEV) (globalThis as { __photoScene?: Object3D }).__photoScene = scene;
   useFrame((_, dt) => {
     onFrame(rig, Math.min(dt, 0.05));
+    // fixed images (Lab, portraits) ask for a still face, or impose an expression: window.__cssFace
+    face.update(Math.min(dt, 0.05), (globalThis as { __cssFace?: FaceOptions }).__cssFace);
     // garments are taken off in an effect cleanup (quality or outfit change) before the new state is rendered:
     // an image is never drawn with the coach shown without them
     if (scene.visible && expected && dressed.state === 'portee' && !hasGarment(scene)) scene.visible = false;

@@ -7,24 +7,26 @@ describe('style du coach', () => {
     expect(DEFAULT_SETTINGS.coachStyle).toBe('realiste');
   });
 
-  test('0.29 : le style déjà enregistré est gardé, un réglage sans style prend Ultra-réaliste', () => {
+  // 1.9 (Youssef, 2026-10-29: « supprime définitivement le rendu Anime »): the saved Anime / Manga looks are no
+  // longer kept (the 0.29 test « le style déjà enregistré est gardé » is replaced by this one)
+  test('1.9 : un style Anime ou Manga enregistré devient Ultra-réaliste, les autres réglages sont gardés', () => {
     const { migrate, merge } = useSettings.persist.getOptions();
-    const kept = migrate!({ settings: { coachStyle: 'encre', voice: false } }, 1) as { settings: { coachStyle: string; voice: boolean } };
-    expect(kept.settings.coachStyle).toBe('encre');
-    expect(kept.settings.voice).toBe(false);
+    for (const [old, v] of [['encre', 2], ['manga', 2], ['encre', 1], ['manga', 0]] as const) {
+      const m = migrate!({ settings: { coachStyle: old, voice: false } }, v) as { settings: { coachStyle: string; voice: boolean } };
+      expect(m.settings.coachStyle).toBe('realiste');
+      expect(m.settings.voice).toBe(false);
+    }
     const cur = useSettings.getState();
-    const a = merge!(kept, cur) as typeof cur;
-    expect(a.settings.coachStyle).toBe('encre');
+    // even a value that skipped the migration is drawn in Ultra-réaliste
+    const a = merge!({ settings: { coachStyle: 'encre', voice: false } }, cur) as typeof cur;
+    expect(a.settings.coachStyle).toBe('realiste');
     const b = merge!({ settings: { voice: false } }, cur) as typeof cur;
     expect(b.settings.coachStyle).toBe('realiste');
     expect(b.settings.voice).toBe(false);
   });
 
-  test('anciens réglages : l’ancien défaut « manga » passe à « Encre », un choix « réaliste » est gardé', () => {
+  test('anciens réglages : un choix « réaliste » est gardé', () => {
     const migrate = useSettings.persist.getOptions().migrate!;
-    const a = migrate({ settings: { coachStyle: 'manga', voice: false } }, 0) as { settings: { coachStyle: string; voice: boolean } };
-    expect(a.settings.coachStyle).toBe('encre');
-    expect(a.settings.voice).toBe(false);
     const b = migrate({ settings: { coachStyle: 'realiste' } }, 0) as { settings: { coachStyle: string } };
     expect(b.settings.coachStyle).toBe('realiste');
   });

@@ -63,7 +63,7 @@ const ENTRY_QUESTIONS: Record<string, [string, CoachScreen?]> = {
   ar: ['C’est quoi la réalité augmentée ?', 'entrainement'],
   'options-entrainement': ['Comment afficher les repères au sol ?', 'entrainement'],
   'choose-coach': ['Comment changer de coach ?', 'accueil'],
-  render: ['Comment choisir le style Anime ou Ultra-réaliste ?', 'reglages'],
+  render: ['Comment choisir le style Anime ou Ultra-réaliste ?', 'reglages'], // 1.9: the answer says Anime is gone
   'screen-techniques': ['Comment trouver une technique ?', 'techniques'],
   'screen-technique': ['À quoi sert cet écran ?', 'technique'],
   mastery: ['Comment je marque une technique ?', 'techniques'],
@@ -135,10 +135,11 @@ describe('guide de l’application : contenu', () => {
     expect(by('coach-ia')).toMatch(/sans internet/);
     // the mastery switch: two icons next to the playback bar, coloured edge, "À revoir", Progrès > Maîtrise
     for (const w of ['Assimilée', 'Encore du mal', 'barre de lecture', 'liseré', 'À revoir', 'Maîtrise']) expect(by('mastery')).toContain(w);
-    // the two coaches and the two renders really offered
+    // the two coaches really offered, and the render answer up to date
     expect(by('choose-coach')).toMatch(/Kadir/);
     expect(by('choose-coach')).toMatch(/Amara/);
-    expect(by('render')).toMatch(/Anime/);
+    // 1.9: one render only, the answer says the Anime look was removed (and offers no choice)
+    expect(by('render')).toMatch(/Anime a été retiré/);
     expect(by('render')).toMatch(/Ultra-réaliste/);
     // the five tabs of the bottom bar, as App.tsx names them
     // v0.32 navigation dynamique: the places of « Navigation générale » are named in the answer about the bar

@@ -1,4 +1,5 @@
 import { ALL_COACHES, CHAMPIONS, championFor, type ChampionCoach } from '../../domain/coaches/catalog';
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { PageHead } from '../components';
@@ -22,37 +23,74 @@ export function pickChampion(c: ChampionCoach) {
   st.update({ coach: c.coach, champion: c.id });
 }
 
-/** The coaches in a grid; nothing is selected until the user taps one. Without props: the stored choice. */
+/**
+ * The coaches in a grid; nothing is selected until the user taps one. Without props: the stored choice.
+ * 1.9 (Youssef 2026-10-29: « diminue la taille des fiches coach pour que cela tienne sur une page, un clic sur la
+ * fiche doit la faire pivoter sur un mode plus de détails »): compact cards; a tap chooses the coach and turns its
+ * card over (surnom, taille, garde, style, points forts); a second tap turns it back.
+ */
 export function CoachPicker({ value, onChange }: { value?: string | null; onChange?: (c: ChampionCoach) => void }) {
   const stored = useChosenCoach();
   const current = value === undefined ? stored : value;
+  const [turned, setTurned] = useState<string | null>(null);
   return (
     <div className="coach-pick" role="radiogroup" aria-label="Choix du coach">
-      {COACHES.map((c, i) => (
-        <button
-          key={c.id}
-          type="button"
-          role="radio"
-          aria-checked={current === c.id}
-          className={`coach-card ${current === c.id ? 'on' : ''}`}
-          onClick={() => (onChange ?? pickChampion)(ALL_COACHES[i])}
-          data-testid={c.id === CHAMPIONS.homme.id ? 'coach-homme' : c.id === CHAMPIONS.femme.id ? 'coach-femme' : `coach-${c.id}`}
-        >
-          <img src={c.img} alt="" loading="eager" />
-          {current === c.id && (
-            <span className="tick" aria-hidden>
-              <AppIcon id="check" size={18} />
+      {ALL_COACHES.map((c) => {
+        const on = current === c.id;
+        const back = turned === c.id;
+        return (
+          <button
+            key={c.id}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            aria-expanded={back}
+            aria-label={`${c.name} « ${c.nickname} »${back ? ', détails affichés' : ''}`}
+            className={`coach-card ${on ? 'on' : ''} ${back ? 'turned' : ''}`}
+            onClick={() => {
+              (onChange ?? pickChampion)(c);
+              setTurned(back ? null : c.id);
+            }}
+            data-testid={c.id === CHAMPIONS.homme.id ? 'coach-homme' : c.id === CHAMPIONS.femme.id ? 'coach-femme' : `coach-${c.id}`}
+          >
+            <span className="coach-flip">
+              <span className="coach-face front" aria-hidden={back}>
+                <img src={c.portrait} alt="" loading="eager" />
+                <span className="lbl">
+                  {c.name}
+                  <span className="nick">« {c.nickname} »</span>
+                </span>
+              </span>
+              <span className="coach-face back" aria-hidden={!back} data-testid={`coach-details-${c.id}`}>
+                <span className="lbl">
+                  {c.name}
+                  <span className="nick">« {c.nickname} »</span>
+                </span>
+                <span className="facts">
+                  <span>
+                    <b>Taille</b> {c.height}
+                  </span>
+                  <span>
+                    <b>Style</b> {c.style}
+                  </span>
+                  <span>
+                    <b>Garde</b> {c.guard}
+                  </span>
+                  <span>
+                    <b>Points forts</b> {c.strengths.join(' · ')}
+                  </span>
+                </span>
+                <span className="again">Touche pour revenir</span>
+              </span>
             </span>
-          )}
-          <span className="lbl">
-            {c.name}
-            <br />
-            <span className="small muted" style={{ fontWeight: 500 }}>
-              {c.desc}
-            </span>
-          </span>
-        </button>
-      ))}
+            {on && (
+              <span className="tick" aria-hidden>
+                <AppIcon id="check" size={16} />
+              </span>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }
