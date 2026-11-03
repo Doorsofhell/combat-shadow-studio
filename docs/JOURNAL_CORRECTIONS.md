@@ -2267,3 +2267,27 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Avant/après** : https://claude.ai/artifact/9FCj9LtLaSMBFRc7qNMLxC (1.6.1 et 1.9.0 à côté des références).
 - **Ajout du 03/11** (Youssef, 29/10 14:20 « diminue aussi la taille des fiches coach pour que cela tienne sur une page dans choisi ton coach, un clique sur la fiche doit faire pivoter la fiche sur un mode plus de details ») : fiches compactes, les quatre et « Valider » tiennent sur un écran de 360×640 à 430×932 ; un appui choisit le coach et retourne sa fiche (surnom, taille mesurée sur le modèle 3D, style, garde, points forts), un 2e appui la remet. Portraits refaits avec la nouvelle tenue MMA. Test `coachs-v160.spec` (2 tailles d'écran) : RÉUSSI.
 - **Intégration de la 1.8.0** (fusion de `feature/combat-shadow-v030`, tête 3f035df) : `MESURES_SOL.md` régénéré (corps de Kaila plus sec, poids du visage d'Axel), écarts de quelques dixièmes de millimètre, test du contact avec le tapis RÉUSSI.
+
+## 2026-11-03 · 1.10.0 · Réalisme des coachs, des tenues et des accessoires
+
+- **Demande** : Youssef, 03/11 15:47, amélioration concrète, visible et mesurable du réalisme de Kadir, Amara, Axel et Kaila, de leurs tenues et de leurs accessoires, en 5 lots, sur une branche dédiée, sans fusion ni publication automatique.
+- **Base** : 1.9.0 vérifiée (f180064 = 646b293). Point de restauration `restauration/avant-realisme-v1100`.
+- **Constat après vérification et corrections** : détail dans `docs/v1100/RAPPORT.md` (16 défauts classés en géométrie, poids, matériau, lumière et animation). Principaux points :
+  - poids des gants de boxe inversés (poing à 76 % sur l'avant-bras) → poids selon la position ; vraie coupe thaïe ;
+  - yeux, sourcils et cils pris pour des cheveux (regex `/opacity/`) → classification explicite ; propriétés des matériaux conservées dans `PhotoCoach` et `dress()` ;
+  - pli sous l'omoplate de Kadir : poids qui changent trop vite (pas la normal map) → poids lissés sans bouger les points (pli de garde 74° → 62°) ; aisselles de Kaila (étirement 7,2 → 3,1) ;
+  - brassière de Kaila, shorts, sous-vêtements peints, chaussures de boxe → coupe par champ, bords lisses, ceinture au-dessus du sous-vêtement peint ;
+  - brassière d'Amara étendue jusqu'aux avant-bras → dégagement des bras complet ;
+  - peau : diffusion approchée, ombres adoucies, pores, réglage par coach ; fondu des pointes des cheveux ;
+  - respiration et mouvement des pans du gi et de la ceinture. Un défaut de la respiration (vêtements projetés en mouvement, normale posée deux fois) a été trouvé par la mesure de performance et corrigé avant livraison.
+- **Fichiers** : `src/three/{photoMaterials,skinShader,breath,sway,PhotoCoach,outfit}.ts(x)`, `src/ui/Lab.tsx`, `tools/generator/rocketbox/{outfits,glove,smooth_weights}.py`, `regen_outfits.sh`, `tools/generator/makehuman/alpha_bleed.py`, `scripts/dev/shot-realisme.mjs`, 30 tenues et 4 `photo.glb`.
+- **Mesures** : triangles 950 k → 1,06 M, fichiers 50,1 → 55,8 Mo, parties dessinées inchangées (218). Sur ordinateur en rendu logiciel (**pas une mesure Android**) : chargement inchangé, temps d'image +3 % (Axel) à +46 % (Amara).
+- **Tests** :
+  - TypeScript (`npx tsc -b`) : TEST RÉUSSI.
+  - Build (`vite build`, titre v1.10.0) : TEST RÉUSSI.
+  - Vitest complet : 991 RÉUSSIS, 1 ignoré (déjà ignoré en 1.9.0). Nouveaux : `realisme-v1100` (gants, coupe thaïe, matériaux, brassières entre les épaules), `deformation-v1100` (4 coachs × 7 poses × 4 zones contre la 1.9.0), `breath`, `sway`.
+  - Playwright ciblé (`coach-3d-recovery`, `coach-render`, `coach-studio`, `coachs-v160`, `ecran-coach-v140`, `moteur-lumiere`, `outfit-loading`) : 30 RÉUSSIS.
+  - Playwright complet (282 tests, environ 40 min) : NON EXÉCUTÉ.
+  - Téléphone Android réel : NON EXÉCUTÉ.
+  - Captures avant/après : 36 planches dans `docs/v1100/captures/` (`tenues-*`, `detail-*`, `lumieres-*`) et page de comparaison https://claude.ai/artifact/CAejygcuEVDqz1siRRa2nM.
+- **Restauration** : `restauration/avant-realisme-v1100`
