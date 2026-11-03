@@ -109,6 +109,10 @@ export function Lab() {
   // (Ultra-réaliste only, the Anime and Manga looks are removed)
   const labStyle = 'realiste' as const;
   const render = q.get('render') === 'precedent' ? 'precedent' : 'premium';
+  // 1.10 light=app|vive|sombre: the lights of the training stage in high quality (CoachStage: realistic studio with
+  // soft shadows and the room reflections at 0.12; « Lumière vive » at 0.7; the dark stage), for before/after
+  // captures under the real lighting; without it the Lab keeps its even light (older scripts)
+  const light = (['app', 'vive', 'sombre'] as const).find((l) => l === q.get('light')) ?? null;
   const sampler = useRef<MotionSampler | null>(null);
   const sampler2 = useRef<MotionSampler | null>(null);
   const rigRef = useRef<CoachRig | null>(null);
@@ -149,6 +153,8 @@ export function Lab() {
       const illu = q.get('illu') ? getIllustration(rig, style, q.get('illu')!, profile) : undefined;
       const m = illu ?? getMotion(lib, motionId, southpaw) ?? lib.get('garde')!;
       sampler.current = new MotionSampler(rig, m);
+      // 1.10 frame=1: a pose without technique (garde, neutre) framed on its own space like a technique
+      if (!tech && q.get('frame')) envelope.current = sequenceEnvelope(rig, lib, [m.id], southpaw);
       if (tech) {
         // at=<fraction>: an instant before the key moment (0.5 = half way to it), for sequences of captures
         tRef.current = analyseMotion(rig, m).peak * Number(q.get('at') ?? '1');
@@ -175,18 +181,22 @@ export function Lab() {
     [q],
   );
   return (
-    <div style={{ position: 'fixed', inset: 0, background: q.get('alpha') ? 'transparent' : '#fff' }}>
-      <Canvas shadows dpr={[1, 2]} gl={{ alpha: true, antialias: true, preserveDrawingBuffer: true }}>
+    <div style={{ position: 'fixed', inset: 0, background: q.get('alpha') ? 'transparent' : light === 'vive' ? '#1d2733' : light === 'sombre' ? '#15171c' : '#fff' }}>
+      <Canvas shadows={light ? 'soft' : true} dpr={[1, 2]} gl={{ alpha: true, antialias: true, preserveDrawingBuffer: true }}>
         <Suspense fallback={null}>
           <StudioStage
             view={view}
-            envelope={tech ? envelope : undefined}
-            origin={tech ? origin : undefined}
+            envelope={tech || q.get('frame') ? envelope : undefined}
+            origin={tech || q.get('frame') ? origin : undefined}
             cameraAngle={cam}
             quality="haute"
             zoom={Number(q.get('zoom') ?? '1')}
             focusY={q.get('fy') ? Number(q.get('fy')) : undefined}
             mood={!!q.get('mood')}
+            realistic={!!light}
+            vive={light === 'vive'}
+            dark={light === 'sombre' || light === 'vive'}
+            shadows={!!light}
           >
             <group position={places ? [places[0].x, 0, places[0].z] : undefined} rotation={places ? [0, places[0].yaw, 0] : undefined}>
               <CoachModel coach={coach} style={labStyle} render={render} quality="haute" look={look} model={champion ? `./coaches/${champion}/model` : undefined} onRig={onRig} onFrame={onFrame} outfit={outfit} onOutfit={onOutfit} />
@@ -197,7 +207,7 @@ export function Lab() {
               </group>
             )}
             <LabProbe rig={rigRef} />
-            {labStyle === 'realiste' && render === 'premium' && <StudioEnvironment intensity={q.get('mood') ? 0.06 : 0.35} />}
+            {labStyle === 'realiste' && render === 'premium' && <StudioEnvironment intensity={q.get('mood') ? 0.06 : light === 'vive' ? 0.7 : light ? 0.12 : 0.35} />}
           </StudioStage>
         </Suspense>
       </Canvas>
