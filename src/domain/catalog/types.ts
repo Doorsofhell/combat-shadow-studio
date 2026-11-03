@@ -44,6 +44,11 @@ export interface CatalogChampion {
   style: string;
   traits: string[];
   source: string;
+  /** v1.1.0 (facultatifs, ignorés par les versions plus anciennes) : pays, époque quand elle est connue avec certitude */
+  country?: string;
+  era?: string;
+  /** « Le savais-tu ? » : une anecdote vérifiée sur la page citée */
+  funFact?: { text: string; url: string };
 }
 
 export interface CatalogCombo {
@@ -125,6 +130,14 @@ export const TAG_LABEL: Record<string, string> = {
   'high-kick': 'High kick',
   teep: 'Teep / front kick',
   check: 'Check',
+  // v1.1.0 : judo et jiu-jitsu brésilien
+  projection: 'Entrées de projection',
+  kuzushi: 'Kuzushi (déséquilibre)',
+  uchikomi: 'Uchikomi',
+  'sortie-dessous': 'Sortie de dessous',
+  'garde-sol': 'Garde au sol',
+  base: 'Base',
+  mobilite: 'Mobilité',
 };
 
 export const tagLabel = (t: string) => TAG_LABEL[t] ?? t;

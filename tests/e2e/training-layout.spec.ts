@@ -1,6 +1,7 @@
 import { expect, Page, test } from '@playwright/test';
 import { DEFAULT_PROFILE } from '../../src/store/profile';
 import { defaultLook } from '../../src/editor/look';
+import { menuCommand, openCoachIA, openMenu } from './nav-helpers';
 
 /**
  * The training screen must hold on one screen, without any scrolling: coach, move name, current
@@ -40,6 +41,7 @@ async function open(page: Page, path: string) {
 const SIZES = [
   { name: 'petit 360x640', width: 360, height: 640 },
   { name: 'standard 393x851', width: 393, height: 851 },
+  { name: 'android 412x915', width: 412, height: 915 },
   { name: 'grand 430x932', width: 430, height: 932 },
   { name: 'paysage 740x360', width: 740, height: 360 },
   { name: 'paysage 915x412', width: 915, height: 412 },
@@ -80,6 +82,23 @@ async function checkFits(page: Page, label: string) {
       play: inView('[data-testid=start], [data-testid=pause], [data-testid=resume]'),
       ar: inView('[data-testid=ar-button]'),
       decompose: inView('[data-testid=decompose]'),
+      // 1.0.0 (lot 4): while the session runs, hands-free mode keeps only Retour and Pause; Décomposer comes back
+      // with the pause
+      handsFree: 'handsFree' in document.documentElement.dataset,
+      // v0.32 (navigation, 2026-10-22): the one bottom bar replaces the coach bubble and the training buttons; it is
+      // on screen and nothing of the session is under it
+      bar: inView('[data-testid=bottom-bar]'),
+      barOver: (() => {
+        const b = document.querySelector('[data-testid=bottom-bar]')?.getBoundingClientRect();
+        if (!b) return 'absente';
+        return [...document.querySelectorAll('.training button, .tr-info *, .tr-top *')]
+          .filter((e) => {
+            const r = e.getBoundingClientRect();
+            return r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== 'hidden' && !(r.right <= b.left || r.left >= b.right || r.bottom <= b.top + 1 || r.top >= b.bottom);
+          })
+          .map((e) => e.getAttribute('aria-label') || e.textContent)
+          .join(' / ');
+      })(),
       clipped,
       stageH: stage.height,
     };
@@ -88,7 +107,9 @@ async function checkFits(page: Page, label: string) {
   expect(r.scrollX, `${label} défilement horizontal`).toBeLessThanOrEqual(0);
   expect(r.rootScroll, `${label} débordement`).toBeLessThanOrEqual(1);
   expect(r.overflowMode, label).toBe(false);
-  for (const k of ['points', 'cue', 'name', 'title', 'time', 'play', 'ar', 'decompose'] as const) expect(r[k], `${label} ${k} visible`).toBe(true);
+  expect(r.barOver, `${label} la barre du bas masque un élément de la séance`).toBe('');
+  for (const k of ['points', 'cue', 'name', 'title', 'time', 'play', 'ar', 'bar'] as const) expect(r[k], `${label} ${k} visible`).toBe(true);
+  expect(r.decompose, `${label} decompose ${r.handsFree ? 'masqué (mains libres)' : 'visible'}`).toBe(!r.handsFree);
   expect(r.clipped, `${label} textes coupés`).toBe('');
   expect(r.stageH, `${label} hauteur du coach`).toBeGreaterThan(150);
 }
@@ -137,6 +158,38 @@ test('mode Décomposer et pause : rien ne déborde', async ({ page }) => {
   expect(r.root).toBeLessThanOrEqual(1);
 });
 
+test('analyse technique : phases mesurées, rejouer une phase, comparer les gardes, sans débordement', async ({ page }) => {
+  await seed(page);
+  await page.setViewportSize({ width: 360, height: 640 });
+  await open(page, `/#/entrainement?ex=boxe-debutant-08&mode=technique`);
+  await page.getByTestId('decompose').click();
+  const steps = page.getByTestId('study-steps');
+  await expect(steps).toBeVisible();
+  // a new technique is first shown at real speed
+  await expect(page.getByTestId('study-phase')).toHaveText(/Vitesse réelle|^1\./);
+  const n = await steps.getByRole('listitem').count();
+  expect(n).toBeGreaterThanOrEqual(4);
+  await expect(steps.getByRole('listitem').first()).toHaveText('1. Position de départ');
+  // replay the second phase: the coach plays it and stops on its end
+  const second = steps.getByRole('listitem').nth(1);
+  const label = ((await second.textContent()) ?? '').replace(/^2\. /, '');
+  await second.click();
+  await expect(second).toHaveClass(/on/);
+  await expect(page.getByTestId('study-play')).toHaveText(/Lecture/, { timeout: 10000 });
+  await expect(page.getByTestId('study-text')).not.toBeEmpty();
+  expect(label.length).toBeGreaterThan(3);
+  // the other guard, without touching the profile
+  const guard = page.getByTestId('study-guard');
+  await expect(guard).toHaveAttribute('aria-pressed', 'false');
+  await guard.click();
+  await expect(guard).toHaveAttribute('aria-pressed', 'true');
+  const r = await page.evaluate(() => ({ s: document.scrollingElement!.scrollHeight - innerHeight, root: (() => { const t = document.querySelector('.training') as HTMLElement; return t.scrollHeight - t.clientHeight; })() }));
+  expect(r.s).toBeLessThanOrEqual(0);
+  expect(r.root).toBeLessThanOrEqual(1);
+  await page.getByTestId('study-close').click();
+  await expect(page.getByTestId('study-panel')).toHaveCount(0);
+});
+
 test('demander au coach : pause, réponse hors ligne, ralenti, sans défilement ni consignes masquées', async ({ page }) => {
   await seed(page);
   for (const [w, h] of [
@@ -146,11 +199,15 @@ test('demander au coach : pause, réponse hors ligne, ralenti, sans défilement 
     await page.setViewportSize({ width: w, height: h });
     await open(page, `/#/entrainement?ex=boxe-debutant-01&mode=technique`);
     await page.getByTestId('start').click();
-    await page.getByTestId('ask-coach').click();
+    // v0.32 (navigation, 2026-10-22): the Coach IA opens from the Menu of the bottom bar (no floating bubble)
+    await openCoachIA(page);
     await expect(page.getByTestId('phase')).toHaveText('Pause');
     await page.getByTestId('coach-input').fill('Pourquoi dois-je pivoter le pied arrière ?');
     await page.getByTestId('coach-send').click();
     await expect(page.getByTestId('coach-answer')).toContainText('pied arrière');
+    // v0.29: measure once the panel and the training layout have stopped moving (the overlap was read
+    // while the panel was still sliding in, the known flake of this test, also on v0.28.0)
+    await page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a.effect?.getTiming().iterations !== Infinity).map((a) => a.finished)));
     const r = await page.evaluate(() => {
       const panel = document.querySelector('[data-testid=coach-ask-panel]')!.getBoundingClientRect();
       const info = document.querySelector('.tr-info')!.getBoundingClientRect();
@@ -180,7 +237,8 @@ test('zone Caméra : angle, rotation, zoom, recentrer, sans masquer le coach ni 
     const r = await page.evaluate(() => {
       const vw = innerWidth;
       const vh = innerHeight;
-      const ids = ['cam-auto', 'cam-next', 'cam-left', 'cam-right', 'zoom-in', 'zoom-out', 'cam-reset', 'cam-close', 'start', 'ask-coach'];
+      // v0.32 (navigation, 2026-10-22): Démarrer and Menu (where the Coach IA is) are places of the bottom bar
+      const ids = ['cam-auto', 'cam-next', 'cam-left', 'cam-right', 'zoom-in', 'zoom-out', 'cam-reset', 'cam-close', 'start', 'nav-menu'];
       const hidden = ids.filter((id) => {
         const b = document.querySelector(`[data-testid=${id}]`)?.getBoundingClientRect();
         return !b || b.width < 40 || b.height < 40 || b.left < -1 || b.right > vw + 1 || b.top < -1 || b.bottom > vh + 1;
@@ -202,11 +260,11 @@ test('zone Caméra : angle, rotation, zoom, recentrer, sans masquer le coach ni 
   // the controls act: angle chosen, then everything back to the advised angle
   await page.getByTestId('cam-next').click();
   await expect(page.getByTestId('cam-angle')).toHaveText('Face');
-  await expect(page.getByTestId('cam-mode')).toContainText('Face');
+  await expect(page.getByTestId('cam-mode')).toHaveAttribute('aria-label', /^Caméra : Face/);
   await page.getByTestId('zoom-in').click();
   await page.getByTestId('cam-left').click();
   await page.getByTestId('cam-reset').click();
-  await expect(page.getByTestId('cam-mode')).toContainText('Auto');
+  await expect(page.getByTestId('cam-mode')).toHaveAttribute('aria-label', /^Caméra : Auto/);
   await expect(page.getByTestId('cam-auto')).toHaveAttribute('aria-pressed', 'true');
   await page.getByTestId('cam-close').click();
   await expect(page.getByTestId('decompose')).toBeVisible();
@@ -218,12 +276,15 @@ const settle = (page: Page) => page.waitForTimeout(3500);
 /** waits until the camera has stopped gliding, then reads it */
 async function steady(page: Page) {
   await expect.poll(() => camera(page), { timeout: 30_000 }).toBeTruthy();
+  // four calm readings in a row: one calm half-second can be a pause while the coach is still loading
   let prev = await camera(page);
-  for (let i = 0; i < 40; i++) {
+  let calm = 0;
+  for (let i = 0; i < 60; i++) {
     await page.waitForTimeout(500);
     const c = await camera(page);
-    if (Math.abs(c.az - prev.az) < 0.2 && Math.abs(c.dist - prev.dist) < 0.005 && Math.abs(c.el - prev.el) < 0.2) return c;
+    calm = Math.abs(c.az - prev.az) < 0.2 && Math.abs(c.dist - prev.dist) < 0.005 && Math.abs(c.el - prev.el) < 0.2 ? calm + 1 : 0;
     prev = c;
+    if (calm >= 4) return c;
   }
   return prev;
 }
@@ -238,7 +299,7 @@ test('caméra : « Auto » annule rotation et zoom, un angle manuel est exact', 
   await page.getByTestId('cam-right').click();
   await page.getByTestId('zoom-in').click();
   await expect(page.getByTestId('cam-auto')).toHaveAttribute('aria-pressed', 'false');
-  await expect(page.getByTestId('cam-mode')).toContainText('Auto ajusté');
+  await expect(page.getByTestId('cam-mode')).toHaveAttribute('aria-label', /^Caméra : Auto ajusté/);
   await settle(page);
   expect(Math.abs((await camera(page)).az - auto.az - 30)).toBeLessThan(3);
   // back to Auto: the advised angle and distance, nothing left from the adjustment
@@ -255,7 +316,7 @@ test('caméra : « Auto » annule rotation et zoom, un angle manuel est exact', 
   expect(Math.abs((await camera(page)).az)).toBeLessThan(2);
   // the same choices from the Options sheet
   await page.getByTestId('cam-close').click();
-  await page.getByTestId('options').click();
+  await menuCommand(page, 'options');
   await page.getByTestId('cam-chip-profil-gauche').click();
   await settle(page);
   expect(Math.abs((await camera(page)).az - 90)).toBeLessThan(2);
@@ -292,9 +353,12 @@ test('consigne principale, points clés, ralenti et ligne de temps', async ({ pa
   await expect(page.getByTestId('key-points').locator('li')).toHaveCount(5);
   await expect(page.getByTestId('timer-row')).toContainText('Séance');
   await expect(page.getByTestId('timer-row')).toContainText('rép.');
-  await page.getByTestId('slow').click();
+  // v0.32 (navigation): Ralenti is a command of the Menu (« Sur cet écran »); it stays pressed there
+  await menuCommand(page, 'slow');
+  await openMenu(page);
   await expect(page.getByTestId('slow')).toHaveAttribute('aria-pressed', 'true');
-  await page.getByTestId('options').click();
+  await page.keyboard.press('Escape');
+  await menuCommand(page, 'options');
   await expect(page.getByTestId('speed')).toHaveText('×0.25');
 });
 
@@ -305,7 +369,7 @@ test('repères au sol : chacun s’active seul, légende sans débordement, choi
   await page.setViewportSize({ width: 360, height: 640 });
   await open(page, `/#/entrainement?ex=muaythai-intermediaire-11&mode=technique`);
   await expect(page.getByTestId('mark-legend')).toHaveCount(0);
-  await page.getByTestId('options').click();
+  await menuCommand(page, 'options');
   const ids = ['pieds', 'orientation', 'avantArriere', 'pivot', 'trajectoire'];
   for (const id of ids) await expect(page.getByTestId(`mark-${id}`)).toHaveAttribute('aria-pressed', 'false');
   await page.getByTestId('mark-pivot').click();
@@ -330,9 +394,10 @@ test('exercice précédent et suivant', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 851 });
   await open(page, `/#/entrainement?ex=boxe-debutant-02&mode=technique`);
   const first = await page.getByTestId('exercise-name').textContent();
-  await page.getByRole('button', { name: 'Exercice suivant' }).click();
+  // v0.32: Précédent and Suivant are commands of the Menu (« Sur cet écran »)
+  await menuCommand(page, 'cmd-next');
   await expect(page.getByTestId('exercise-name')).not.toHaveText(first!);
-  await page.getByRole('button', { name: 'Exercice précédent' }).click();
+  await menuCommand(page, 'cmd-prev');
   await expect(page.getByTestId('exercise-name')).toHaveText(first!);
 });
 
@@ -341,9 +406,10 @@ test('changer de coach pendant l’entraînement : la coach femme s’affiche', 
   await page.setViewportSize({ width: 393, height: 851 });
   await open(page, `/#/entrainement?ex=boxe-debutant-02&mode=technique`);
   await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'homme');
-  await page.getByTestId('options').click();
-  await page.getByRole('button', { name: 'Coach femme' }).click();
+  await menuCommand(page, 'options');
+  // 0.24: the two coaches are named Kadir and Amara
+  await page.getByRole('button', { name: 'Amara' }).click();
   await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'femme');
-  await page.getByRole('button', { name: 'Coach homme' }).click();
+  await page.getByRole('button', { name: 'Kadir' }).click();
   await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'homme');
 });

@@ -29,6 +29,7 @@ export const ZONE_LABEL: Record<TattooZone, string> = {
 export const BOTTOM_LABEL: Record<BottomType, string> = {
   'short-boxe': 'Short de boxe',
   'short-mma': 'Short MMA',
+  'short-mma-court': 'Short MMA court',
   'short-thai': 'Short thaï',
   'short-compression': 'Cuissard',
   legging: 'Legging',

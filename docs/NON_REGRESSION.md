@@ -16,6 +16,16 @@ chaque lot, point de restauration, rapport (TEST RÉUSSI / ÉCHOUÉ / NON EXÉCU
 | `restauration/lot-4g` | v0.13.0 (non publiée) | Coach IA : questions suggérées par technique, défilement au doigt, flèches, pas d'envoi en glissant, clavier non ouvert automatiquement |
 | `restauration/lot-5` | v0.13.0 | Illustration officielle par discipline depuis un référentiel central (10 écrans) ; BJJ et judo : techniques et parcours solo, fiches partenaire réel, badge de mode |
 | `restauration/lot-5c` | v0.13.1 | Textes lisibles en sombre dans le lecteur d'artifact (couleur et police du thème sur body) |
+| `restauration/lot-6a` | v0.14.0 | Style Encre par défaut ; relief anatomique cuit sur les 4 coachs (normal map conservée par les 3 styles) ; générateur dans `tools/generator` ; vignettes régénérées |
+| `restauration/lot-6b` | v0.15.0 | Mode Analyse technique : phases mesurées sur l'animation, vitesse réelle puis ralenti, reprise d'une phase, surbrillance, voix, comparaison des gardes |
+| `restauration/lot-6c` | v0.16.0 | Coups qui accélèrent jusqu'à l'impact, phase « Armé », registre des animations (7 contrôles), état de l'animation sur chaque fiche |
+| `restauration/lot-7` | v0.17.0 | Audit biomécanique : équilibre sur un pied (20 animations), sprawl refait, 17 textes corrigés selon les sources, fiches pilotes, documents `docs/audit-biomecanique/` |
+| `restauration/lot-8` | v0.18.0 | Silhouettes naturelles : musculature réduite et harmonieuse sur les 4 modèles, relief adouci, 150 vignettes régénérées, attente de caméra stable renforcée dans le test |
+| `restauration/lot-9` | v0.19.0 | Bibliothèque d’icônes premium : composant central AppIcon, 6 icônes de discipline, palette officielle, favoris en cœur |
+| `restauration/lot-10` | v0.20.0 | Mouvements plus fluides : vitesses conservées à travers les poses clés (941 → 320 arrêts parasites), sprawl sans à-coup des mains, mesures `MESURES_FLUIDITE.md` |
+| `restauration/lot-11` | v0.21.0 | Kick-boxing en trois styles (K1, low kick, full contact) : choix enregistré, techniques et exercices filtrés, règles sourcées sur les fiches, genoux en K1 |
+| `restauration/lot-12` | v0.22.0 | Menu Progrès refondu : périodes 7 j / 30 j / 90 j / 12 mois / personnalisée comparées à la période précédente de même durée, jauge du parcours, onglets Activité, Niveaux, Catégories, Exercices, Historique, page Objectifs, sans défilement vertical |
+| `restauration/lot-13` | v0.23.0 | Refonte des coachs 3D : chevilles dans les amplitudes humaines, rendu Encre sans hachures et Ultra-réaliste sur le même modèle personnalisé (ancien rendu en secours), vêtements en volume, studio cadré hors des boutons avec gros plans |
 | `restauration/lot-4e` | v0.11.0 | Images des techniques sur les cartes (coach 3D choisi), changement de coach femme depuis l’entraînement |
 | `restauration/lot-4d` | v0.10.0 | Repères au sol optionnels (pieds, orientation, avant/arrière, pivot, trajectoires) |
 | `restauration/lot-4c` | v0.9.0 | Commandes hiérarchisées, zone Caméra regroupée (angle, rotation, zoom, recentrer), progression |
@@ -93,9 +103,11 @@ Captures de référence : `/mnt/project-files/combat-shadow-studio/reference/<da
 | Points clés | Visibles et lisibles | `training-layout.spec` | captures entraînement |
 | Commandes | Aucun bouton inaccessible | `training-layout.spec`, `app.spec` | – |
 | Responsive | Aucun chevauchement ni débordement | `training-layout.spec`, `coach-studio.spec` | 3 formats |
+| Menu Progrès | Chiffres comparés à la période précédente de même durée, aucun pourcentage depuis zéro, disciplines jamais mélangées, aucune donnée effacée, pas de défilement vertical sur Android | `progress.test` (18 cas, 4 fuseaux horaires), `progress-dashboard.spec` (10 cas, 3 formats Android, clair et sombre), `app.spec` | captures 360×640 à 412×915 |
 | Données utilisateur | Aucune perte | `migration*.test`, `store.test`, `account.spec` | – |
 | Performances | Pas de dégradation non justifiée | taille des fichiers du build | – |
 | Coach IA | Réponses hors ligne, pause, ralenti | `coach.test`, `training-layout.spec` | – |
+| Coachs 3D | Chevilles dans les amplitudes, style choisi mémorisé, séance conservée au changement de style, combattant jamais sous les boutons, ancien rendu disponible | `ankle-range.test`, `customize.test`, `coach-render.spec`, `coach-studio.spec` | planches `docs/captures-coachs/` |
 | Réalité augmentée | Démarrage, refus, arrêt caméra | `ar.test` | non applicable sans appareil |
 
 Commandes : `npx tsc -b`, `npx vitest run`, `npx vite build` puis

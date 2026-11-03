@@ -1,7 +1,8 @@
 import { GUIDES } from '../domain/guide';
 import { TECHNIQUE_BY_ID } from '../domain/techniques';
 
-/** "Comment faire" sheet of a technique: numbered steps, frequent mistakes, breathing, key points. */
+/** "Comment faire" sheet of a technique: numbered steps, frequent mistakes, breathing, key points.
+ * 0.24 (épuration): the mistakes and key points are folded, a tap opens them. */
 export function GuideCard({ id, southpaw, title = false }: { id: string; southpaw?: boolean; title?: boolean }) {
   const t = TECHNIQUE_BY_ID.get(id);
   const g = GUIDES[id];
@@ -24,22 +25,26 @@ export function GuideCard({ id, southpaw, title = false }: { id: string; southpa
           </p>
         )}
       </div>
-      <div className="card stack">
-        <h3>Erreurs fréquentes</h3>
+      <details className="card stack fold">
+        <summary>
+          <h3>Erreurs fréquentes</h3>
+        </summary>
         <ul className="plain-list">
           {g.errors.map((s, i) => (
             <li key={i}>{s}</li>
           ))}
         </ul>
-      </div>
-      <div className="card stack">
-        <h3>Points clés</h3>
+      </details>
+      <details className="card stack fold">
+        <summary>
+          <h3>Points clés</h3>
+        </summary>
         <ul className="plain-list">
           {t.keyPoints.map((k, i) => (
             <li key={i}>{k}</li>
           ))}
         </ul>
-      </div>
+      </details>
     </div>
   );
 }

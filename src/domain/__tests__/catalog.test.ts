@@ -13,6 +13,7 @@ import { importCatalog } from '../catalog/import';
 import { catalogCounts, dailyPick, searchCombos } from '../catalog/search';
 import { catalogPlan } from '../catalog/plan';
 import { useCatalogUser } from '../../store/catalog';
+import { hash } from '../catalog/search';
 
 const file = JSON.parse(readFileSync(resolve(process.cwd(), 'public/catalog/catalog-v1.json'), 'utf8')) as CatalogFile;
 const combos = file.combos;
@@ -106,7 +107,9 @@ describe('catalogue des combinaisons de champions', () => {
 
   test('tous les champions demandés, avec des fiches dans chacune de leurs disciplines', () => {
     const count = (d: DisciplineId) => file.champions.filter((c) => c.disciplines.includes(d)).length;
-    expect([count('boxe'), count('kickboxing'), count('mma'), count('muaythai')]).toEqual([20, 20, 24, 20]);
+    // v1.1.0 (Youssef, 2026-10-20 21:52 : « enrichis toutes les disciplines et les légendes ») : 80 profils de la
+    // v1.0.0 + championnes en frappe, judo et jiu-jitsu brésilien ; Shevchenko et Jędrzejczyk ont aussi le muay-thaï
+    expect([count('boxe'), count('kickboxing'), count('mma'), count('muaythai'), count('judo'), count('bjj')]).toEqual([24, 23, 28, 25, 9, 8]);
     for (const ch of file.champions) {
       expect(ch.style.length).toBeGreaterThan(20);
       for (const d of ch.disciplines) expect(combos.some((c) => c.champion === ch.id && c.discipline === d), `${ch.id} ${d}`).toBe(true);
@@ -227,5 +230,74 @@ describe('données utilisateur de la bibliothèque', () => {
     expect(buildCatalog(file, s().imported).comboById.has('store-0001')).toBe(true);
     s().removeImported('store-0001');
     expect(s().imported.combos).toEqual([]);
+  });
+});
+
+describe('v1.1.0 : légendes enrichies (v0.28, Youssef 2026-10-20 21:52)', () => {
+  const v10 = combos.filter((c) => c.addedAt === '2026-10-17');
+  const v11 = combos.filter((c) => c.addedAt === '2026-10-20');
+  const champ = new Map(file.champions.map((c) => [c.id, c]));
+
+  test('les 1100 fiches de la v1.0.0 gardent identifiants, ordre et séquences (favoris, collections, historique)', () => {
+    expect(file.version).toBe('1.1.0');
+    expect(v10).toHaveLength(1100);
+    expect(combos.slice(0, 1100)).toEqual(v10);
+    expect(hash(v10.map((c) => `${c.id}:${c.sequence.join(',')}`).join('|'))).toBe(3986123295);
+    expect(v10.length + v11.length).toBe(combos.length);
+  });
+
+  test('fiches par discipline : avant / après', () => {
+    const n = (d: DisciplineId) => of(d).length;
+    expect([n('boxe'), n('kickboxing'), n('mma'), n('muaythai'), n('judo'), n('bjj')]).toEqual([348, 286, 348, 310, 108, 96]);
+  });
+
+  test('chaque champion a un pays et une anecdote sourcée (lien https)', () => {
+    for (const c of file.champions) {
+      expect(c.country, c.id).toBeTruthy();
+      expect(c.funFact?.text.length, c.id).toBeGreaterThan(20);
+      expect(c.funFact?.url, c.id).toMatch(/^https:\/\/en\.wikipedia\.org\/wiki\//);
+      expect(c.source).toMatch(/Profil de style général/);
+    }
+  });
+
+  test('nouveaux profils : judo, jiu-jitsu, et des championnes dans chaque discipline', () => {
+    const names = file.champions.map((c) => c.name);
+    for (const n of ['Teddy Riner', 'Clarisse Agbegnenou', 'Ryoko Tani', 'Uta Abe', 'Majlinda Kelmendi', 'Ronda Rousey', 'Roger Gracie', 'Marcelo Garcia', 'Gabi Garcia', 'Mackenzie Dern', 'Beatriz « Bia » Mesquita', 'Ffion Davies'])
+      expect(names).toContain(n);
+    const women: Record<string, string[]> = {
+      boxe: ['shields', 'taylor', 'mossely', 'serrano'],
+      kickboxing: ['meksen', 'vansoest', 'stamp'],
+      muaythai: ['meksen', 'vansoest', 'stamp', 'shevchenko', 'jedrzejczyk'],
+      mma: ['shevchenko', 'jedrzejczyk', 'nunes', 'cyborg', 'namajunas', 'zhang', 'rousey'],
+      judo: ['agbegnenou', 'tani', 'kelmendi', 'uta-abe', 'rousey'],
+      bjj: ['gabi-garcia', 'dern', 'bia-mesquita', 'ffion-davies'],
+    };
+    for (const [d, ids] of Object.entries(women)) expect(ids.filter((id) => champ.get(id)?.disciplines.includes(d as DisciplineId)).length, d).toBeGreaterThanOrEqual(3);
+    // every new profile or new discipline gets 12 sheets
+    const per = new Map<string, number>();
+    for (const c of v11) per.set(`${c.champion}|${c.discipline}`, (per.get(`${c.champion}|${c.discipline}`) ?? 0) + 1);
+    expect([...per.values()].every((n) => n === 12)).toBe(true);
+  });
+
+  test('judo et jiu-jitsu : exercices solo honnêtes, uniquement des techniques existantes, tous jouables en 3D', () => {
+    for (const d of ['judo', 'bjj'] as DisciplineId[]) {
+      expect(of(d).length).toBeGreaterThanOrEqual(90);
+      for (const c of of(d)) {
+        expect(c.sequence.every((id) => TECHNIQUE_BY_ID.get(id)?.disciplines.includes(d)), c.id).toBe(true);
+        expect(isPlayable3D(c), c.id).toBe(true);
+        expect(c.source.note, c.id).toMatch(/^Exercice solo .* non relevée en combat\.$/);
+        expect(c.status).toBe('inspiree');
+      }
+      for (const l of ['debutant', 'intermediaire', 'avance', 'expert']) expect(of(d).some((c) => c.level === l), `${d} ${l}`).toBe(true);
+    }
+    expect(of('judo').every((c) => c.sequence.some((id) => TECHNIQUE_BY_ID.get(id)!.category === 'projection'))).toBe(true);
+    expect(of('bjj').every((c) => c.sequence.at(-1) === 'releve-technique')).toBe(true);
+  });
+
+  test('un fichier d’une version précédente (sans les nouveaux champs) reste valide', () => {
+    const old = { ...file, champions: file.champions.map(({ country: _c, era: _e, funFact: _f, ...rest }) => rest) };
+    expect(validateCatalogFile(old).ok).toBe(true);
+    const bad = { ...file.champions[0], funFact: { text: 'x', url: 'http://pas-https' } };
+    expect(validateCatalogFile({ ...file, champions: [bad, ...file.champions.slice(1)] }).ok).toBe(false);
   });
 });

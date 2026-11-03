@@ -4,7 +4,7 @@ import type { DisciplineId, LevelId } from '../types';
 import { CATALOG_SCHEMA } from './types';
 import type { CatalogChampion, CatalogCombo, CatalogFile } from './types';
 
-const DISCIPLINES: DisciplineId[] = ['boxe', 'kickboxing', 'mma', 'muaythai'];
+const DISCIPLINES: DisciplineId[] = ['boxe', 'kickboxing', 'mma', 'muaythai', 'bjj', 'judo'];
 const LEVELS: LevelId[] = ['debutant', 'intermediaire', 'avance', 'expert'];
 const STATUSES = ['verifiee', 'adaptee', 'inspiree'];
 const GUARDS = ['orthodoxe', 'gaucher', 'les-deux'];
@@ -79,6 +79,9 @@ export function validateChampion(ch: unknown): string[] {
   if (!isStr(c.style)) out.push('description du style manquante');
   if (!isStrList(c.traits, 1, 8)) out.push('traits de style manquants');
   if (!isStr(c.source)) out.push('source du profil manquante');
+  if (c.country !== undefined && !isStr(c.country)) out.push('pays invalide');
+  if (c.era !== undefined && !isStr(c.era)) out.push('époque invalide');
+  if (c.funFact !== undefined && (!c.funFact || !isStr(c.funFact.text) || !isStr(c.funFact.url) || !/^https:\/\//.test(c.funFact.url))) out.push('anecdote invalide (texte et lien https attendus)');
   return out;
 }
 

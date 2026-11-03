@@ -1,3 +1,5 @@
+import { useNavActions } from '../nav/store';
+import { CardioOptionsPicker, ChronoOptions, cardioParams } from '../training/TimerOptions';
 import { TechThumb, keyTechnique } from '../components/TechThumb';
 import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -9,8 +11,10 @@ import { useSettings } from '../../store/settings';
 import { formatDuration, useStats } from '../../store/stats';
 import { useGoals } from '../../store/goals';
 import { MODE_HELP, MODE_LABEL } from '../training/plan';
-import { DisciplineArtwork, EmptyState, FilterChips, LevelSelector, PageHead, Segmented, Sheet } from '../components';
-import { IconPlay, IconPlus, IconStar, IconStarFilled } from '../icons';
+import { DisciplineArtwork, EmptyState, KickboxingStyleChip, LevelPips, MenuChip, PageHead, Segmented, Sheet, useKbStyle } from '../components';
+import { filterExercises } from '../../domain/kickboxingStyles';
+import { AppIcon, DisciplineIcon } from '../icons';
+import { PremiumMarker } from '../premium/PremiumMarker';
 
 export const KIND_LABEL: Record<Exercise['kind'], string> = {
   technique: 'Technique',
@@ -38,7 +42,7 @@ export function ExerciseList({ list, onOpen }: { list: Exercise[]; onOpen: (id: 
           <span className="body">
             <span className="title">
               {e.name}
-              {fav.includes(e.id) && <IconStarFilled width={14} height={14} style={{ color: 'var(--gold)', marginLeft: 6, verticalAlign: -1 }} aria-label="Favori" />}
+              {fav.includes(e.id) && <AppIcon id="favorite" size={14} tone="accent" label="Favori" style={{ marginLeft: 6, verticalAlign: -1 }} />}
             </span>
             <span className="row" style={{ gap: 6 }}>
               <span className="badge">{KIND_LABEL[e.kind]}</span>
@@ -59,11 +63,27 @@ export function DisciplinePage() {
   const [q, setQ] = useSearchParams();
   const profile = useProfile((s) => s.profile);
   const [kind, setKind] = useState<KindFilter>('tout');
+  const [kbStyle] = useKbStyle();
   const disc = DISCIPLINES.find((d) => d.id === id);
+  const navTo = useNavigate();
+  // v0.32 bar: « Démarrer » opens the first exercise of the list shown (level and type chosen on the page),
+  // « Techniques » the catalogue of this discipline
+  const firstEx = disc ? filterExercises(exercisesFor(disc.id, ((q.get('niveau') as LevelId) ?? profile.levels[disc.id])), kbStyle).filter((e) => kind === 'tout' || e.kind === kind)[0] : undefined;
+  useNavActions({
+    start: firstEx && {
+      run: () => {
+        const n = new URLSearchParams(q);
+        n.set('ex', firstEx.id);
+        setQ(n, { replace: true });
+      },
+      ariaLabel: `Démarrer : ${firstEx.name}`,
+    },
+    techniques: disc && { run: () => navTo(`/techniques?d=${disc.id}`) },
+  });
   if (!disc) return <EmptyState title="Discipline introuvable" action={<Link to="/entrainer" className="btn">Retour</Link>} />;
   const level = (q.get('niveau') as LevelId) ?? profile.levels[disc.id];
   const lvl = LEVELS.find((l) => l.id === level) ?? LEVELS[0];
-  const all = exercisesFor(disc.id, lvl.id);
+  const all = filterExercises(exercisesFor(disc.id, lvl.id), kbStyle);
   const kinds = [...new Set(all.map((e) => e.kind))];
   const list = kind === 'tout' ? all : all.filter((e) => e.kind === kind);
   const open = q.get('ex') ? EXERCISE_BY_ID.get(q.get('ex')!) : undefined;
@@ -79,29 +99,44 @@ export function DisciplinePage() {
       <PageHead title={disc.name} eyebrow="Discipline" fallback="/entrainer" />
       <div className="disc-card dark-scope banner" style={{ pointerEvents: 'none' }} aria-hidden>
         <DisciplineArtwork id={disc.id} format="cover" eager />
+        <DisciplineIcon id={disc.id} size={56} />
         <span className="bar" />
         <span className="name" style={{ fontSize: '1.1rem' }}>
-          {exercisesFor(disc.id, lvl.id).length} exercices
+          {all.length} exercices
         </span>
         <span className="sub" style={{ fontSize: '0.88rem' }}>
           {disc.tagline}
         </span>
       </div>
-      <section className="stack" aria-label="Niveau">
-        <LevelSelector value={lvl.id} onChange={(l) => (setParam('niveau', l), setKind('tout'))} />
-        <p className="small muted">{lvl.goal}</p>
-      </section>
-      <FilterChips
-        scroll
-        label="Type d’exercice"
-        value={kind}
-        onChange={setKind}
-        options={[{ id: 'tout' as KindFilter, label: `Tout (${all.length})` }, ...kinds.map((k) => ({ id: k as KindFilter, label: KIND_LABEL[k] }))]}
-      />
+      {/* 1.1.0 (Youssef, 2026-10-28, proposition A « trois menus »): level, style and type on one line; what a level
+          is for and the rules of a style are in the menus */}
+      <div className="filter-line" role="toolbar" aria-label="Filtres des exercices" data-testid="filter-line">
+        <MenuChip
+          label="Niveau"
+          value={lvl.id}
+          onChange={(l) => (setParam('niveau', l), setKind('tout'))}
+          lead={<LevelPips index={LEVELS.indexOf(lvl)} />}
+          testId="level-chip"
+          testPrefix="level-"
+          options={LEVELS.map((l, i) => ({ id: l.id, label: l.name, description: l.goal, lead: <LevelPips index={i} /> }))}
+        />
+        {disc.id === 'kickboxing' && <KickboxingStyleChip />}
+        <MenuChip
+          label="Type d’exercice"
+          value={kind}
+          onChange={setKind}
+          active={kind !== 'tout'}
+          chipLabel={kind === 'tout' ? `Tout (${all.length})` : `${KIND_LABEL[kind]} (${list.length})`}
+          testId="kind-chip"
+          testPrefix="kind-"
+          options={[{ id: 'tout' as KindFilter, label: `Tout (${all.length})` }, ...kinds.map((k) => ({ id: k as KindFilter, label: `${KIND_LABEL[k]} (${all.filter((e) => e.kind === k).length})` }))]}
+        />
+        {(lvl.id === 'avance' || lvl.id === 'expert') && <PremiumMarker feature="advanced_techniques" />}
+      </div>
       <ExerciseList list={list} onOpen={(x) => setParam('ex', x)} />
       <div className="grid2">
-        <Link className="btn secondary" to={`/createur?d=${disc.id}`}>
-          <IconPlus width={18} /> Créer
+        <Link className="btn secondary" to={`/createur/nouveau?d=${disc.id}`}>
+          <AppIcon id="add" size={18} /> Créer
         </Link>
         <Link className="btn secondary" to={`/techniques?d=${disc.id}`}>
           Techniques
@@ -125,6 +160,8 @@ export function ExerciseSheet({ ex, onClose }: { ex: Exercise; onClose: () => vo
   const [rounds, setRounds] = useState(3);
   const go = () => {
     const p = new URLSearchParams({ ex: ex.id, mode });
+    // v0.47: the Cardio intervals chosen (effort, recovery, cycles, intensity) go with the link
+    if (mode === 'cardio') for (const [k, v] of Object.entries(cardioParams(settings.cardio))) p.set(k, v);
     if (mode === 'rounds') {
       p.set('round', String(round));
       p.set('rest', String(rest));
@@ -139,7 +176,7 @@ export function ExerciseSheet({ ex, onClose }: { ex: Exercise; onClose: () => vo
       onClose={onClose}
       footer={
         <button type="button" className="btn primary block lg" onClick={go} data-testid="go-training">
-          <IconPlay /> S’entraîner
+          <AppIcon id="play" /> S’entraîner
         </button>
       }
     >
@@ -160,7 +197,7 @@ export function ExerciseSheet({ ex, onClose }: { ex: Exercise; onClose: () => vo
       )}
       {ex.soloNote && <div className="note">{ex.soloNote}</div>}
       <button type="button" className="btn ghost" style={{ alignSelf: 'flex-start', marginLeft: -12 }} aria-pressed={fav} onClick={() => toggleFav(ex.id)}>
-        {fav ? <IconStarFilled style={{ color: 'var(--gold)' }} /> : <IconStar />}
+        {fav ? <AppIcon id="favorite" tone="accent" /> : <AppIcon id="favoriteOutline" />}
         {fav ? 'Dans tes favoris' : 'Ajouter aux favoris'}
       </button>
       <div className="stack">
@@ -177,6 +214,8 @@ export function ExerciseSheet({ ex, onClose }: { ex: Exercise; onClose: () => vo
         <p className="small muted">{MODE_HELP[mode]}</p>
       </div>
       {mode === 'rounds' && <RoundOptions round={round} rest={rest} rounds={rounds} setRound={setRound} setRest={setRest} setRounds={setRounds} />}
+      {mode === 'cardio' && <CardioOptionsPicker />}
+      {(mode === 'rounds' || mode === 'cardio') && <ChronoOptions />}
     </Sheet>
   );
 }

@@ -26,8 +26,8 @@ export default defineConfig({
         scope: './',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#101116',
-        theme_color: '#101116',
+        background_color: '#0b0f14',
+        theme_color: '#0b0f14',
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
@@ -37,6 +37,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,jpg,webp,svg,glb,wasm,json,woff,woff2}', 'draco/*'],
         maximumFileSizeToCacheInBytes: 12 * 1024 * 1024,
+        // 1.3.3 referee outfits: only for the encyclopedia illustrations (scripts/visuels), never loaded by the app
+        globIgnores: ['**/tenues/arbitre*'],
       },
     }),
   ],

@@ -1,13 +1,16 @@
-import { ReactNode, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DISCIPLINES, DisciplineId, LEVELS, LevelId } from '../../../domain/types';
 import { Difficulty, Profile, SPORT_GOALS, ageFrom, displayName, initials, useProfile } from '../../../store/profile';
 import { formatDuration, sessionCount, sum, useStats, weekKey } from '../../../store/stats';
 import { useGoals } from '../../../store/goals';
 import { useCatalogUser } from '../../../store/catalog';
 import { useActiveFighter } from '../../../store/fighters';
+import { usePhoto } from '../../../store/photo';
 import { saveTextFile } from '../../../platform/native';
 import {
+  changeEmail,
+  changePassword,
   deleteAccount,
   deleteMyData,
   linkEmail,
@@ -24,9 +27,11 @@ import { useSyncPrefs } from '../../../account/syncPrefs';
 import { buildFullExport } from '../../../account/export';
 import { passwordProblem, emailLooksValid } from '../../../account/auth/types';
 import type { SignInMethod } from '../../../account/auth/types';
-import { DisciplineLabel, Chip, ConfirmDialog, LinkRow, PageHead, Panel, PanelRow, Segmented, Sheet, StatTile, Toggle, toast } from '../../components';
-import { IconDownload, IconFighter, IconShield, IconTrash, IconUser } from '../../icons';
+import { DisciplineLabel, Chip, ConfirmDialog, PageHead, PanelRow, Segmented, SetGroup, SetItem, SetLink, SettingsList, Sheet, StatTile, Toggle, toast } from '../../components';
+import { AppIcon } from '../../icons';
 import { PasswordField } from './SignIn';
+import { BmiCard } from './BmiCard';
+import { PhotoSheet } from './PhotoSheet';
 import './account.css';
 
 const METHOD_LABEL: Record<SignInMethod, string> = { password: 'E-mail et mot de passe', 'google.com': 'Google' };
@@ -70,12 +75,18 @@ function NumField({ id, label, value, onChange, unit, min, max }: { id: string; 
 
 export function Avatar({ profile, size = 72 }: { profile: Profile; size?: number }) {
   const fighter = useActiveFighter();
-  const useFighter = profile.avatar === 'fighter' && fighter;
+  const photo = usePhoto((s) => s.photo);
+  const googlePhoto = useAccount((s) => (s.status === 'signedIn' ? s.user?.photoURL : null));
+  // the personal photo always wins; a missing picture (other device, signed out) falls back to the coach or initials
+  const src = profile.avatar === 'photo' ? photo : profile.avatar === 'google' ? googlePhoto : null;
+  const useFighter = (profile.avatar === 'fighter' || (profile.avatar !== 'initiales' && !src)) && fighter;
   return (
-    <span className="acc-avatar" style={{ width: size, height: size }} aria-hidden>
-      {useFighter ? (
+    <span className="acc-avatar" style={{ width: size, height: size }} aria-hidden data-avatar={src ? profile.avatar : useFighter ? 'fighter' : 'initiales'}>
+      {src ? (
+        <img src={src} alt="" referrerPolicy="no-referrer" />
+      ) : useFighter ? (
         <>
-          <IconFighter />
+          <AppIcon id="fighter" />
           <span className="skin" style={{ background: fighter.look.skin }} />
         </>
       ) : (
@@ -85,15 +96,11 @@ export function Avatar({ profile, size = 72 }: { profile: Profile; size?: number
   );
 }
 
-function Section({ title, id, children }: { title: string; id: string; children: ReactNode }) {
-  return (
-    <Panel title={title} id={id}>
-      {children}
-    </Panel>
-  );
-}
-
-/** Profile: identity, sport profile, statistics, privacy and account management, all for the current user. */
+/**
+ * Profile › Mes infos. 1.2.0 (Youssef, 2026-10-28: « pareil dans mes infos : une seule liste dont chaque option se
+ * déploie au toucher », proposition B « Groupes Android »): what describes the user, one list in groups (Moi, Ma
+ * pratique, Mon parcours). Display, Coach IA, privacy and data moved to Réglages, nothing removed.
+ */
 export function ProfilePage() {
   const profile = useProfile((s) => s.profile);
   const update = useProfile((s) => s.update);
@@ -103,13 +110,12 @@ export function ProfilePage() {
   const favT = useGoals((s) => s.favTechniques.length);
   const favE = useGoals((s) => s.favExercises.length);
   const favC = useCatalogUser((s) => s.favorites.length);
-  const { status, user, capabilities: caps, providerId, sync } = useAccount();
-  const syncOn = useSyncPrefs((s) => s.enabled);
-  const setSync = useSyncPrefs((s) => s.setEnabled);
-  const nav = useNavigate();
+  const { status, user, capabilities: caps } = useAccount();
+  const [params] = useSearchParams();
 
   const [showLim, setShowLim] = useState(false);
-  const [dialog, setDialog] = useState<null | 'erase' | 'signout' | 'delete' | 'link-email'>(null);
+  const [dialog, setDialog] = useState<null | 'signout' | 'delete' | 'link-email' | 'photo' | 'email' | 'password'>(null);
+  const hasPhoto = usePhoto((s) => !!s.photo);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -118,6 +124,12 @@ export function ProfilePage() {
   const weekSec = sum(sessions.filter((s) => weekKey(s.start) === thisWeek));
   const practised = profile.disciplines.length ? profile.disciplines : [profile.mainDiscipline];
   const birthAge = ageFrom(profile.birthDate);
+  const age = birthAge ?? profile.age;
+  const discName = (d: DisciplineId) => DISCIPLINES.find((x) => x.id === d)!.name;
+  const levelName = (d: DisciplineId) => LEVELS.find((l) => l.id === profile.levels[d])?.name ?? '';
+  const goalNames = SPORT_GOALS.filter((g) => profile.goals.includes(g.id)).map((g) => g.label);
+  const AVATAR: Record<string, string> = { fighter: 'avatar : mon coach', initiales: 'avatar : initiales', photo: 'avatar : ma photo', google: 'avatar : Google' };
+  const DIFF: Record<Difficulty, string> = { douce: 'douce', progressive: 'progressive', exigeante: 'exigeante' };
 
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
@@ -138,19 +150,17 @@ export function ProfilePage() {
     update({ disciplines: next, mainDiscipline: next.includes(profile.mainDiscipline) ? profile.mainDiscipline : next[0] });
   };
 
-  const doExport = () =>
-    run(async () => {
-      const json = await buildFullExport(user);
-      const m = await saveTextFile(`combat-shadow-studio-mes-donnees-${today()}.json`, json);
-      toast(m);
-    });
-
   return (
     <div className="page">
       <PageHead title="Profil" eyebrow={status === 'signedIn' ? 'Compte' : 'Mode invité'} fallback="/reglages" />
 
       <div className="card acc-hero">
-        <Avatar profile={profile} />
+        <button type="button" className="acc-avatar-btn" onClick={() => setDialog('photo')} aria-label="Modifier la photo de profil" data-testid="avatar-edit">
+          <Avatar profile={profile} />
+          <span className="acc-avatar-pen" aria-hidden>
+            <AppIcon id="edit" size={14} />
+          </span>
+        </button>
         <div className="grow" style={{ minWidth: 0 }}>
           <div className="acc-name" data-testid="profile-name">
             {name}
@@ -169,278 +179,336 @@ export function ProfilePage() {
         </div>
       )}
 
-      {/* ---------------------------------------------------------------- account */}
-      <Section title="Compte" id="pr-compte">
-        {status !== 'signedIn' && caps.email && (
-          <LinkRow to="/connexion" icon={<IconUser className="muted" />} label="Créer un compte ou se connecter" hint="Tes données d’invité peuvent être gardées dans le compte" />
-        )}
-        {status !== 'signedIn' && !caps.email && <PanelRow label="Mode invité" hint="Les comptes en ligne ne sont pas activés dans cette version. Tout reste sur cet appareil." />}
-        {status === 'signedIn' && user && (
-          <>
-            {!user.emailVerified && (
-              <div className="panel-row col">
-                <span className="small">Un e-mail de vérification a été envoyé à {user.email}. Ouvre le lien puis reviens ici.</span>
-                <div className="row" style={{ gap: 8 }}>
-                  <button type="button" className="btn secondary sm" disabled={busy} onClick={() => run(async () => (await sendVerification(), toast('E-mail renvoyé.')))}>
-                    Renvoyer l’e-mail
-                  </button>
-                  <button type="button" className="btn secondary sm" disabled={busy} onClick={() => run(async () => void toast((await refreshUser())?.emailVerified ? 'Adresse vérifiée.' : 'Adresse pas encore vérifiée.'))}>
-                    J’ai vérifié
-                  </button>
-                </div>
+      <SettingsList initial={params.get('ouvert')} testId="infos-list">
+        <SetGroup title="Moi">
+          <SetItem id="identite" icon="profile" title="Identité" summary={[profile.pseudo || 'Sans pseudo', AVATAR[profile.avatar]].filter(Boolean).join(' · ')}>
+            <div className="acc-fields">
+              <TextField id="pf-pseudo" label="Pseudo" value={profile.pseudo} onChange={(v) => update({ pseudo: v })} placeholder="Comment le coach t’appelle" hint="Utilisé par le coach pour s’adresser à toi." maxLength={24} testId="pseudo-input" autoComplete="nickname" />
+              <div className="grid2">
+                <TextField id="pf-prenom" label="Prénom (facultatif)" value={profile.firstName ?? ''} onChange={(v) => update({ firstName: v || undefined })} autoComplete="given-name" />
+                <TextField id="pf-nom" label="Nom (facultatif)" value={profile.lastName ?? ''} onChange={(v) => update({ lastName: v || undefined })} autoComplete="family-name" />
               </div>
-            )}
-            <div className="panel-row col">
-              <span>Méthodes de connexion</span>
-              <ul className="acc-methods">
-                {user.methods.map((m) => (
-                  <li key={m}>
-                    <span className="small">{METHOD_LABEL[m]}</span>
-                    {user.methods.length > 1 && (
-                      <button type="button" className="btn ghost sm" disabled={busy} onClick={() => run(async () => (await unlinkMethod(m), toast('Méthode retirée.')))}>
-                        Retirer
-                      </button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-              {caps.link && (
-                <div className="row" style={{ gap: 8 }}>
-                  {!user.methods.includes('password') && (
-                    <button type="button" className="btn secondary sm" onClick={() => setDialog('link-email')}>
-                      Ajouter e-mail et mot de passe
-                    </button>
-                  )}
-                  {caps.google && !user.methods.includes('google.com') && (
-                    <button type="button" className="btn secondary sm" disabled={busy} onClick={() => run(async () => (await linkGoogle(), toast('Google relié à ton compte.')))}>
-                      Relier Google
-                    </button>
-                  )}
-                </div>
-              )}
             </div>
-            <div className="panel-row">
-              <button type="button" className="btn secondary block" onClick={() => setDialog('signout')} data-testid="sign-out">
-                Se déconnecter
+            <PanelRow label="Avatar" column>
+              <Segmented
+                label="Avatar"
+                value={profile.avatar}
+                onChange={(a) => (a === 'photo' && !hasPhoto ? setDialog('photo') : update({ avatar: a }))}
+                options={[
+                  { id: 'fighter', label: 'Mon coach' },
+                  { id: 'initiales', label: 'Initiales' },
+                  { id: 'photo', label: 'Ma photo' },
+                  ...(status === 'signedIn' && user?.photoURL ? [{ id: 'google' as const, label: 'Google' }] : []),
+                ]}
+              />
+              <button type="button" className="btn secondary sm" onClick={() => setDialog('photo')} data-testid="photo-open">
+                <AppIcon id="camera" size={18} /> {hasPhoto ? 'Changer ou supprimer ma photo' : 'Ajouter une photo'}
               </button>
-            </div>
-          </>
-        )}
-      </Section>
-
-      {/* ---------------------------------------------------------------- personal info */}
-      <Section title="Informations personnelles" id="pr-perso">
-        <div className="acc-fields">
-          <TextField id="pf-pseudo" label="Pseudo" value={profile.pseudo} onChange={(v) => update({ pseudo: v })} placeholder="Comment le coach t’appelle" hint="Utilisé par le coach pour s’adresser à toi." maxLength={24} testId="pseudo-input" autoComplete="nickname" />
-          <div className="grid2">
-            <TextField id="pf-prenom" label="Prénom (facultatif)" value={profile.firstName ?? ''} onChange={(v) => update({ firstName: v || undefined })} autoComplete="given-name" />
-            <TextField id="pf-nom" label="Nom (facultatif)" value={profile.lastName ?? ''} onChange={(v) => update({ lastName: v || undefined })} autoComplete="family-name" />
-          </div>
-          <div className="grid2">
-            <div className="field">
-              <label htmlFor="pf-naissance">Date de naissance</label>
-              <input id="pf-naissance" className="input" type="date" max={today()} value={profile.birthDate ?? ''} onChange={(e) => update({ birthDate: e.target.value || undefined })} />
-            </div>
-            {birthAge !== undefined ? (
-              <div className="field">
-                <span className="label">Âge</span>
-                <span className="input" aria-live="polite">
-                  {birthAge} ans
-                </span>
-              </div>
-            ) : (
-              <NumField id="pf-age" label="Ou ton âge" unit="ans" value={profile.age} min={5} max={120} onChange={(v) => update({ age: v })} />
-            )}
-          </div>
-          <div className="grid2">
-            <NumField id="pf-taille" label="Taille" unit="cm" value={profile.heightCm} min={80} max={250} onChange={(v) => update({ heightCm: v })} />
-            <NumField id="pf-poids" label="Poids" unit="kg" value={profile.weightKg} min={20} max={300} onChange={(v) => update({ weightKg: v })} />
-          </div>
-          <p className="small muted">Facultatif. Ces mesures servent seulement à ton suivi : l’application n’en tire aucune conclusion sur ta santé ni ton aptitude.</p>
-        </div>
-        <PanelRow label="Avatar" column>
-          <Segmented
-            label="Avatar"
-            value={profile.avatar}
-            onChange={(a) => update({ avatar: a })}
-            options={[
-              { id: 'fighter', label: 'Mon combattant' },
-              { id: 'initiales', label: 'Initiales' },
-            ]}
-          />
-        </PanelRow>
-        <LinkRow to="/combattant" icon={<IconFighter className="muted" />} label="Personnaliser mon combattant" hint="Apparence, tenue, tatouages, équipement" />
-        <PanelRow label="Langue" hint="Français (seule langue disponible pour l’instant)" />
-      </Section>
-
-      {/* ---------------------------------------------------------------- sport profile */}
-      <Section title="Profil sportif" id="pr-sport">
-        <PanelRow label="Disciplines pratiquées" column>
-          <div className="row" style={{ gap: 8 }} role="group" aria-label="Disciplines pratiquées">
-            {DISCIPLINES.map((d) => (
-              <Chip key={d.id} on={practised.includes(d.id)} onClick={() => toggleDiscipline(d.id)} testId={`pf-disc-${d.id}`}>
-                <DisciplineLabel id={d.id} name={d.name} />
-              </Chip>
-            ))}
-          </div>
-        </PanelRow>
-        {practised.map((d) => (
-          <PanelRow key={d} label={`Niveau en ${DISCIPLINES.find((x) => x.id === d)!.name.toLowerCase()}`}>
-            <select aria-label={`Niveau en ${DISCIPLINES.find((x) => x.id === d)!.name}`} className="input" style={{ width: 'auto' }} value={profile.levels[d]} onChange={(e) => update({ levels: { ...profile.levels, [d]: e.target.value as LevelId } })}>
-              {LEVELS.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name}
-                </option>
-              ))}
-            </select>
-          </PanelRow>
-        ))}
-        {practised.length > 1 && (
-          <PanelRow label="Discipline principale">
-            <select aria-label="Discipline principale" className="input" style={{ width: 'auto' }} value={profile.mainDiscipline} onChange={(e) => update({ mainDiscipline: e.target.value as DisciplineId })}>
-              {practised.map((d) => (
-                <option key={d} value={d}>
-                  {DISCIPLINES.find((x) => x.id === d)!.name}
-                </option>
-              ))}
-            </select>
-          </PanelRow>
-        )}
-        <div className="acc-fields">
-          <NumField id="pf-annees" label="Années de pratique" unit="ans" value={profile.yearsExperience} min={0} max={80} onChange={(v) => update({ yearsExperience: v })} />
-        </div>
-        <PanelRow label="Garde" column>
-          <Segmented
-            label="Garde"
-            value={profile.guard}
-            onChange={(g) => update({ guard: g })}
-            options={[
-              { id: 'orthodoxe', label: 'Orthodoxe' },
-              { id: 'gaucher', label: 'Gaucher' },
-            ]}
-          />
-        </PanelRow>
-        <PanelRow label="Séances par semaine" column>
-          <Segmented label="Séances par semaine" value={profile.daysPerWeek} onChange={(v) => update({ daysPerWeek: v })} options={[1, 2, 3, 4, 5, 6, 7].map((n) => ({ id: n, label: String(n) }))} />
-        </PanelRow>
-        <PanelRow label="Durée habituelle d’une séance" column>
-          <Segmented label="Durée habituelle d’une séance" value={profile.sessionMinutes} onChange={(v) => update({ sessionMinutes: v })} options={[10, 15, 20, 30, 45, 60].map((m) => ({ id: m, label: `${m}` }))} />
-          <span className="hint">En minutes.</span>
-        </PanelRow>
-        <PanelRow label="Difficulté préférée" column>
-          <Segmented<Difficulty>
-            label="Difficulté préférée"
-            value={profile.difficulty}
-            onChange={(v) => update({ difficulty: v })}
-            options={[
-              { id: 'douce', label: 'Douce' },
-              { id: 'progressive', label: 'Progressive' },
-              { id: 'exigeante', label: 'Exigeante' },
-            ]}
-          />
-        </PanelRow>
-        <PanelRow label="Objectifs" column>
-          <div className="row" style={{ gap: 8 }} role="group" aria-label="Objectifs">
-            {SPORT_GOALS.map((g) => {
-              const on = profile.goals.includes(g.id);
-              return (
-                <Chip key={g.id} on={on} onClick={() => update({ goals: on ? profile.goals.filter((x) => x !== g.id) : [...profile.goals, g.id] })} testId={`pf-goal-${g.id}`}>
-                  {g.label}
-                </Chip>
-              );
-            })}
-          </div>
-        </PanelRow>
-        <LinkRow to="/techniques" label="Techniques favorites" hint={`${favT} technique(s), ${favE} exercice(s)`} />
-        <LinkRow to="/champions" label="Combinaisons favorites" hint={`${favC} combinaison(s)`} />
-      </Section>
-
-      {/* ---------------------------------------------------------------- stats */}
-      <section className="stack" style={{ gap: 8 }} aria-labelledby="pr-stats">
-        <h2 className="panel-title" id="pr-stats">
-          Statistiques
-        </h2>
-        <div className="stat-tiles">
-          <StatTile value={formatDuration(sum(sessions))} label="Temps actif total" testId="pf-total" />
-          <StatTile value={sessionCount(sessions)} label="Séances" />
-          <StatTile value={formatDuration(weekSec)} label="Cette semaine" />
-        </div>
-        <Link to="/stats" className="small">
-          Voir toute ma progression
-        </Link>
-      </section>
-
-      {/* ---------------------------------------------------------------- limitations */}
-      <Section title="Limitations physiques" id="pr-lim">
-        <div className="panel-row col">
-          <span className="small muted">
-            Facultatif. Chiffré sur cet appareil, jamais synchronisé ni envoyé. Sert uniquement à te rappeler de ménager une zone ; ce n’est ni un avis ni un diagnostic médical.
-          </span>
-          {!canStoreLimitations && <div className="note warn">Le chiffrement n’est pas disponible dans ce navigateur : ce que tu écris ici ne sera pas enregistré.</div>}
-          {showLim ? (
-            <>
-              <label htmlFor="pf-lim" className="label">
-                Limitations ou blessures
-              </label>
-              <textarea id="pf-lim" className="input" value={profile.limitations} maxLength={500} onChange={(e) => update({ limitations: e.target.value })} placeholder="Par exemple : genou droit fragile" />
-              <div className="row" style={{ gap: 8 }}>
-                <button type="button" className="btn secondary sm" onClick={() => setShowLim(false)}>
-                  Masquer
-                </button>
-                {profile.limitations && (
-                  <button type="button" className="btn ghost sm" onClick={() => update({ limitations: '' })}>
-                    Effacer
-                  </button>
+            </PanelRow>
+          </SetItem>
+          <SetItem
+            id="corps"
+            icon="details"
+            title="Âge, taille, poids"
+            summary={[age !== undefined ? `${age} ans` : null, profile.heightCm ? `${profile.heightCm} cm` : null, profile.weightKg ? `${profile.weightKg} kg` : null].filter(Boolean).join(' · ') || 'Facultatif, non renseigné'}
+          >
+            <div className="acc-fields">
+              <div className="grid2">
+                <div className="field">
+                  <label htmlFor="pf-naissance">Date de naissance</label>
+                  <input id="pf-naissance" className="input" type="date" max={today()} value={profile.birthDate ?? ''} onChange={(e) => update({ birthDate: e.target.value || undefined })} />
+                </div>
+                {birthAge !== undefined ? (
+                  <div className="field">
+                    <span className="label">Âge</span>
+                    <span className="input" aria-live="polite">
+                      {birthAge} ans
+                    </span>
+                  </div>
+                ) : (
+                  <NumField id="pf-age" label="Ou ton âge" unit="ans" value={profile.age} min={5} max={120} onChange={(v) => update({ age: v })} />
                 )}
               </div>
-            </>
-          ) : (
-            <button type="button" className="btn secondary sm" onClick={() => setShowLim(true)} data-testid="show-limitations">
-              {profile.limitations ? 'Afficher (renseigné)' : 'Renseigner'}
-            </button>
+              <div className="grid2">
+                <NumField id="pf-taille" label="Taille" unit="cm" value={profile.heightCm} min={80} max={250} onChange={(v) => update({ heightCm: v })} />
+                <NumField id="pf-poids" label="Poids" unit="kg" value={profile.weightKg} min={20} max={300} onChange={(v) => update({ weightKg: v })} />
+              </div>
+              <p className="small muted">Facultatif. Ces mesures servent seulement à ton suivi : l’application n’en tire aucune conclusion sur ta santé ni ton aptitude.</p>
+              <BmiCard heightCm={profile.heightCm} weightKg={profile.weightKg} age={birthAge ?? profile.age} />
+            </div>
+          </SetItem>
+        </SetGroup>
+
+        <SetGroup title="Ma pratique">
+          <SetItem
+            id="disciplines"
+            icon="train"
+            title="Disciplines et niveaux"
+            summary={`${discName(profile.mainDiscipline)} ${levelName(profile.mainDiscipline).toLowerCase()}${practised.length > 1 ? ` · ${practised.length} disciplines` : ''}${profile.yearsExperience !== undefined ? ` · ${profile.yearsExperience} an${profile.yearsExperience > 1 ? 's' : ''}` : ''}`}
+          >
+            <PanelRow label="Disciplines pratiquées" column>
+              <div className="row" style={{ gap: 8 }} role="group" aria-label="Disciplines pratiquées">
+                {DISCIPLINES.map((d) => (
+                  <Chip key={d.id} on={practised.includes(d.id)} onClick={() => toggleDiscipline(d.id)} testId={`pf-disc-${d.id}`}>
+                    <DisciplineLabel id={d.id} name={d.name} />
+                  </Chip>
+                ))}
+              </div>
+            </PanelRow>
+            {practised.map((d) => (
+              <PanelRow key={d} label={`Niveau en ${discName(d).toLowerCase()}`}>
+                <select aria-label={`Niveau en ${discName(d)}`} className="input" style={{ width: 'auto' }} value={profile.levels[d]} onChange={(e) => update({ levels: { ...profile.levels, [d]: e.target.value as LevelId } })}>
+                  {LEVELS.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.name}
+                    </option>
+                  ))}
+                </select>
+              </PanelRow>
+            ))}
+            {practised.length > 1 && (
+              <PanelRow label="Discipline principale">
+                <select aria-label="Discipline principale" className="input" style={{ width: 'auto' }} value={profile.mainDiscipline} onChange={(e) => update({ mainDiscipline: e.target.value as DisciplineId })}>
+                  {practised.map((d) => (
+                    <option key={d} value={d}>
+                      {discName(d)}
+                    </option>
+                  ))}
+                </select>
+              </PanelRow>
+            )}
+            <div className="acc-fields">
+              <NumField id="pf-annees" label="Années de pratique" unit="ans" value={profile.yearsExperience} min={0} max={80} onChange={(v) => update({ yearsExperience: v })} />
+            </div>
+          </SetItem>
+          <SetItem id="garde" icon="shield" title="Garde" summary={profile.guard === 'gaucher' ? 'Gaucher' : 'Orthodoxe'}>
+            <PanelRow label="Garde" column>
+              <Segmented
+                label="Garde"
+                value={profile.guard}
+                onChange={(g) => update({ guard: g })}
+                options={[
+                  { id: 'orthodoxe', label: 'Orthodoxe' },
+                  { id: 'gaucher', label: 'Gaucher' },
+                ]}
+              />
+            </PanelRow>
+          </SetItem>
+          <SetItem id="rythme" icon="calendar" title="Rythme" summary={`${profile.daysPerWeek} séance${profile.daysPerWeek > 1 ? 's' : ''} par semaine · ${profile.sessionMinutes} min · ${DIFF[profile.difficulty]}`}>
+            <PanelRow label="Séances par semaine" column>
+              <Segmented label="Séances par semaine" value={profile.daysPerWeek} onChange={(v) => update({ daysPerWeek: v })} options={[1, 2, 3, 4, 5, 6, 7].map((n) => ({ id: n, label: String(n) }))} />
+            </PanelRow>
+            <PanelRow label="Durée habituelle d’une séance" column>
+              <Segmented label="Durée habituelle d’une séance" value={profile.sessionMinutes} onChange={(v) => update({ sessionMinutes: v })} options={[10, 15, 20, 30, 45, 60].map((m) => ({ id: m, label: `${m}` }))} />
+              <span className="hint">En minutes.</span>
+            </PanelRow>
+            <PanelRow label="Difficulté préférée" column>
+              <Segmented<Difficulty>
+                label="Difficulté préférée"
+                value={profile.difficulty}
+                onChange={(v) => update({ difficulty: v })}
+                options={[
+                  { id: 'douce', label: 'Douce' },
+                  { id: 'progressive', label: 'Progressive' },
+                  { id: 'exigeante', label: 'Exigeante' },
+                ]}
+              />
+            </PanelRow>
+          </SetItem>
+          <SetItem id="objectifs" icon="target" title="Objectifs" summary={goalNames.length ? goalNames.join(', ') : 'Aucun choisi'}>
+            <PanelRow label="Objectifs" column>
+              <div className="row" style={{ gap: 8 }} role="group" aria-label="Objectifs">
+                {SPORT_GOALS.map((g) => {
+                  const on = profile.goals.includes(g.id);
+                  return (
+                    <Chip key={g.id} on={on} onClick={() => update({ goals: on ? profile.goals.filter((x) => x !== g.id) : [...profile.goals, g.id] })} testId={`pf-goal-${g.id}`}>
+                      {g.label}
+                    </Chip>
+                  );
+                })}
+              </div>
+            </PanelRow>
+          </SetItem>
+          <SetItem id="limitations" icon="shield" title="Limitations physiques" summary={profile.limitations ? 'Renseigné · reste sur ce téléphone' : 'Facultatif · reste sur ce téléphone'}>
+          <div className="panel-row col">
+            <span className="small muted">
+              Facultatif. Chiffré sur cet appareil, jamais synchronisé ni envoyé. Sert uniquement à te rappeler de ménager une zone ; ce n’est ni un avis ni un diagnostic médical.
+            </span>
+            {!canStoreLimitations && <div className="note warn">Le chiffrement n’est pas disponible dans ce navigateur : ce que tu écris ici ne sera pas enregistré.</div>}
+            {showLim ? (
+              <>
+                <label htmlFor="pf-lim" className="label">
+                  Limitations ou blessures
+                </label>
+                <textarea id="pf-lim" className="input" value={profile.limitations} maxLength={500} onChange={(e) => update({ limitations: e.target.value })} placeholder="Par exemple : genou droit fragile" />
+                <div className="row" style={{ gap: 8 }}>
+                  <button type="button" className="btn secondary sm" onClick={() => setShowLim(false)}>
+                    Masquer
+                  </button>
+                  {profile.limitations && (
+                    <button type="button" className="btn ghost sm" onClick={() => update({ limitations: '' })}>
+                      Effacer
+                    </button>
+                  )}
+                </div>
+              </>
+            ) : (
+              <button type="button" className="btn secondary sm" onClick={() => setShowLim(true)} data-testid="show-limitations">
+                {profile.limitations ? 'Afficher (renseigné)' : 'Renseigner'}
+              </button>
+            )}
+          </div>
+          </SetItem>
+        </SetGroup>
+
+        <SetGroup title="Mon parcours">
+          <SetItem id="favoris" icon="favorite" title="Favoris" summary={`${favT + favE} technique(s) et exercice(s) · ${favC} combinaison(s)`}>
+            <SetLink to="/favoris" label="Techniques favorites" hint={`${favT} technique(s), ${favE} exercice(s)`} />
+            <SetLink to="/champions" label="Combinaisons favorites" hint={`${favC} combinaison(s)`} />
+          </SetItem>
+          <SetItem id="activite" icon="progress" title="Mon activité" summary={`${formatDuration(sum(sessions))} au total · ${sessionCount(sessions)} séance(s)`}>
+            <div className="stat-tiles">
+              <StatTile value={formatDuration(sum(sessions))} label="Temps actif total" testId="pf-total" />
+              <StatTile value={sessionCount(sessions)} label="Séances" />
+              <StatTile value={formatDuration(weekSec)} label="Cette semaine" />
+            </div>
+            <SetLink to="/stats" label="Voir toute ma progression" />
+          </SetItem>
+          <SetItem id="compte" icon="profile" title="Compte" summary={status === 'signedIn' && user ? (user.email ?? 'Connecté') : 'Mode invité · tout reste sur ce téléphone'}>
+          {status !== 'signedIn' && caps.email && (
+            <SetLink to="/connexion" label="Créer un compte ou se connecter" hint="Tes données d’invité peuvent être gardées dans le compte" />
           )}
+          {status !== 'signedIn' && !caps.email && <PanelRow label="Mode invité" hint="Les comptes en ligne ne sont pas activés dans cette version. Tout reste sur cet appareil." />}
+          <SetLink to="/reglages/donnees" label="Mes données" hint="Exporter, effacer, confidentialité : dans Réglages" testId="infos-donnees" />
+          {status === 'signedIn' && user && (
+            <>
+              {!user.emailVerified && (
+                <div className="panel-row col">
+                  <span className="small">Un e-mail de vérification a été envoyé à {user.email}. Ouvre le lien puis reviens ici.</span>
+                  <div className="row" style={{ gap: 8 }}>
+                    <button type="button" className="btn secondary sm" disabled={busy} onClick={() => run(async () => (await sendVerification(), toast('E-mail renvoyé.')))}>
+                      Renvoyer l’e-mail
+                    </button>
+                    <button type="button" className="btn secondary sm" disabled={busy} onClick={() => run(async () => void toast((await refreshUser())?.emailVerified ? 'Adresse vérifiée.' : 'Adresse pas encore vérifiée.'))}>
+                      J’ai vérifié
+                    </button>
+                  </div>
+                </div>
+              )}
+              <div className="panel-row col">
+                <span>Méthodes de connexion</span>
+                <ul className="acc-methods">
+                  {user.methods.map((m) => (
+                    <li key={m}>
+                      <span className="small">{METHOD_LABEL[m]}</span>
+                      {user.methods.length > 1 && (
+                        <button type="button" className="btn ghost sm" disabled={busy} onClick={() => run(async () => (await unlinkMethod(m), toast('Méthode retirée.')))}>
+                          Retirer
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                {caps.link && (
+                  <div className="row" style={{ gap: 8 }}>
+                    {!user.methods.includes('password') && (
+                      <button type="button" className="btn secondary sm" onClick={() => setDialog('link-email')}>
+                        Ajouter e-mail et mot de passe
+                      </button>
+                    )}
+                    {caps.google && !user.methods.includes('google.com') && (
+                      <button type="button" className="btn secondary sm" disabled={busy} onClick={() => run(async () => (await linkGoogle(), toast('Google relié à ton compte.')))}>
+                        Relier Google
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+              {user.methods.includes('password') && (
+                <div className="panel-row col">
+                  <span>Identifiants</span>
+                  <div className="row" style={{ gap: 8 }}>
+                    <button type="button" className="btn secondary sm" onClick={() => setDialog('email')} data-testid="change-email">
+                      Modifier l’adresse e-mail
+                    </button>
+                    <button type="button" className="btn secondary sm" onClick={() => setDialog('password')} data-testid="change-password">
+                      Modifier le mot de passe
+                    </button>
+                  </div>
+                </div>
+              )}
+              <div className="panel-row">
+                <button type="button" className="btn secondary block" onClick={() => setDialog('signout')} data-testid="sign-out">
+                  <AppIcon id="signOut" size={18} /> Se déconnecter
+                </button>
+              </div>
+            </>
+          )}
+          </SetItem>
+        </SetGroup>
+      </SettingsList>
+
+      {dialog === 'signout' && <SignOutSheet onClose={() => setDialog(null)} />}
+      {dialog === 'delete' && user && <DeleteAccountSheet methods={user.methods} onClose={() => setDialog(null)} />}
+      {dialog === 'link-email' && <LinkEmailSheet defaultEmail={user?.email ?? ''} onClose={() => setDialog(null)} />}
+      {dialog === 'photo' && <PhotoSheet onClose={() => setDialog(null)} />}
+      {dialog === 'email' && user && <ChangeEmailSheet email={user.email ?? ''} onClose={() => setDialog(null)} />}
+      {dialog === 'password' && <ChangePasswordSheet onClose={() => setDialog(null)} />}
+    </div>
+  );
+}
+
+/**
+ * 1.2.0: « Confidentialité et données » of the account, moved from Mes infos to Réglages › Données et confidentialité
+ * (online sync, privacy policy, export of my data, delete my data or my account), with its own dialogs.
+ */
+export function AccountDataBody() {
+  const { status, user, capabilities: caps, providerId, sync } = useAccount();
+  const syncOn = useSyncPrefs((s) => s.enabled);
+  const setSync = useSyncPrefs((s) => s.setEnabled);
+  const nav = useNavigate();
+  const [dialog, setDialog] = useState<null | 'erase' | 'delete'>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const run = async (fn: () => Promise<void>) => {
+    setBusy(true);
+    setErr(null);
+    try {
+      await fn();
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const doExport = () =>
+    run(async () => {
+      const json = await buildFullExport(user);
+      const m = await saveTextFile(`combat-shadow-studio-mes-donnees-${today()}.json`, json);
+      toast(m);
+    });
+  return (
+    <>
+      {err && (
+        <div className="note err" role="alert">
+          {err}
         </div>
-      </Section>
-
-      {/* ---------------------------------------------------------------- display */}
-      <Section title="Affichage" id="pr-affichage">
-        <PanelRow label="Taille du texte" column>
-          <Segmented
-            label="Taille du texte"
-            value={profile.display.textSize}
-            onChange={(v) => update({ display: { ...profile.display, textSize: v } })}
-            options={[
-              { id: 'normal', label: 'Normale' },
-              { id: 'grand', label: 'Grande' },
-            ]}
-          />
-        </PanelRow>
-        <Toggle label="Réduire les animations" hint="Écrans et transitions sans mouvement" on={profile.display.reduceMotion} onChange={(v) => update({ display: { ...profile.display, reduceMotion: v } })} />
-      </Section>
-
-      {/* ---------------------------------------------------------------- AI coach */}
-      <Section title="Coach IA" id="pr-ia">
-        <Toggle label="M’appeler par mon pseudo" hint={profile.pseudo ? `Le coach t’appelle « ${profile.pseudo} »` : 'Renseigne un pseudo plus haut'} on={profile.coachAi.usePseudo} onChange={(v) => update({ coachAi: { ...profile.coachAi, usePseudo: v } })} />
-        <PanelRow label="Tes questions restent sur cet appareil" hint="Le coach IA répond sur l’appareil : aucune question n’est envoyée sur internet." />
-        <LinkRow to="/coach-ia" label="Réglages et historique du coach IA" hint="Historique local désactivé par défaut, effaçable à tout moment" />
-      </Section>
-
-      {/* ---------------------------------------------------------------- privacy & data */}
-      <Section title="Confidentialité et données" id="pr-data">
+      )}
         {providerId === 'firebase' && status === 'signedIn' && user ? (
           <>
             <Toggle label="Synchronisation en ligne" hint="Sauvegarde ton profil, tes combattants, séances, enchaînements et favoris dans ton compte (sauf les limitations physiques)" on={syncOn} onChange={setSync} />
             {syncOn && sync && (
               <div className="panel-row col">
-                <span className="small muted" role="status" data-testid="sync-status">
-                  {sync.phase === 'syncing' && 'Synchronisation…'}
-                  {sync.phase === 'idle' && `À jour${sync.lastSyncAt ? ` (${new Date(sync.lastSyncAt).toLocaleString('fr-FR')})` : ''}.`}
-                  {sync.phase === 'offline' && 'Hors ligne : tes modifications sont gardées et seront envoyées au retour de la connexion.'}
-                  {sync.phase === 'error' && (sync.message ?? 'La synchronisation a échoué.')}
+                <span className={`small sync-state ${sync.phase}`} role="status" data-testid="sync-status" data-phase={sync.phase}>
+                  {!user.emailVerified && 'En attente : vérifie ton adresse e-mail pour activer la sauvegarde en ligne.'}
+                  {user.emailVerified && sync.phase === 'syncing' && 'Synchronisation en cours…'}
+                  {user.emailVerified && sync.phase === 'idle' && `Synchronisé${sync.lastSyncAt ? ` le ${new Date(sync.lastSyncAt).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}` : ''}.`}
+                  {user.emailVerified && sync.phase === 'offline' && 'En attente de connexion : tes modifications sont gardées sur cet appareil et partiront au retour du réseau.'}
+                  {user.emailVerified && sync.phase === 'error' && `Erreur de synchronisation. ${sync.message ?? ''} Tes données restent sur cet appareil.`}
                 </span>
                 {sync.phase !== 'syncing' && user.emailVerified && (
-                  <button type="button" className="btn secondary sm" onClick={() => void syncNow()}>
-                    Synchroniser maintenant
+                  <button type="button" className="btn secondary sm" onClick={() => void syncNow()} data-testid="sync-retry">
+                    <AppIcon id="sync" size={18} /> {sync.phase === 'error' ? 'Réessayer' : 'Synchroniser maintenant'}
                   </button>
                 )}
               </div>
@@ -449,16 +517,16 @@ export function ProfilePage() {
         ) : (
           <PanelRow label="Synchronisation en ligne" hint={caps.email ? 'Disponible avec un compte. Désactivée par défaut.' : 'Non disponible dans cette version : tout reste sur cet appareil.'} />
         )}
-        <LinkRow to="/confidentialite" icon={<IconShield className="muted" />} label="Politique de confidentialité" />
+        <SetLink to="/confidentialite" label="Politique de confidentialité" />
         <div className="panel-row col">
           <span className="small muted">Un fichier JSON avec tout ton profil, tes combattants, séances, enchaînements, favoris et réglages. Les limitations y figurent en clair : garde-le en lieu sûr.</span>
           <button type="button" className="btn secondary block" onClick={doExport} disabled={busy} data-testid="export-my-data">
-            <IconDownload width={18} /> Exporter mes données
+            <AppIcon id="download" size={18} /> Exporter mes données
           </button>
         </div>
         <div className="panel-row col">
           <button type="button" className="btn danger block" onClick={() => setDialog('erase')} data-testid="delete-my-data">
-            <IconTrash width={18} /> Supprimer mes données
+            <AppIcon id="delete" size={18} /> Supprimer mes données
           </button>
           {status === 'signedIn' && (
             <button type="button" className="btn danger block" onClick={() => setDialog('delete')} data-testid="delete-account">
@@ -466,8 +534,6 @@ export function ProfilePage() {
             </button>
           )}
         </div>
-      </Section>
-
       {dialog === 'erase' && (
         <ConfirmDialog
           title="Supprimer mes données ?"
@@ -485,10 +551,8 @@ export function ProfilePage() {
           }
         />
       )}
-      {dialog === 'signout' && <SignOutSheet onClose={() => setDialog(null)} />}
       {dialog === 'delete' && user && <DeleteAccountSheet methods={user.methods} onClose={() => setDialog(null)} />}
-      {dialog === 'link-email' && <LinkEmailSheet defaultEmail={user?.email ?? ''} onClose={() => setDialog(null)} />}
-    </div>
+    </>
   );
 }
 
@@ -601,6 +665,96 @@ function LinkEmailSheet({ defaultEmail, onClose }: { defaultEmail: string; onClo
       )}
       <button type="button" className="btn primary block" disabled={busy} onClick={go}>
         Ajouter
+      </button>
+    </Sheet>
+  );
+}
+
+function ChangeEmailSheet({ email, onClose }: { email: string; onClose: () => void }) {
+  const [next, setNext] = useState('');
+  const [pw, setPw] = useState('');
+  const [err, setErr] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const go = async () => {
+    if (!emailLooksValid(next)) return setErr('Adresse e-mail invalide.');
+    if (next.trim().toLowerCase() === email.toLowerCase()) return setErr('C’est déjà ton adresse.');
+    setBusy(true);
+    setErr(null);
+    try {
+      await reauthenticate('password', pw);
+      await changeEmail(next);
+      setDone(true);
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Sheet title="Modifier l’adresse e-mail" onClose={onClose} center>
+      {done ? (
+        <>
+          <p className="small" role="status">
+            Un lien de confirmation a été envoyé à <b>{next.trim()}</b>. Ton adresse changera seulement quand tu l’auras ouvert ; d’ici là, continue à te connecter avec {email}.
+          </p>
+          <button type="button" className="btn primary block" onClick={onClose}>
+            Compris
+          </button>
+        </>
+      ) : (
+        <>
+          <div className="field">
+            <label htmlFor="new-email">Nouvelle adresse e-mail</label>
+            <input id="new-email" className="input" type="email" autoComplete="email" value={next} onChange={(e) => setNext(e.target.value)} />
+          </div>
+          <PasswordField id="ce-pw" label="Confirme avec ton mot de passe actuel" value={pw} onChange={setPw} autoComplete="current-password" />
+          {err && (
+            <div className="note err" role="alert">
+              {err}
+            </div>
+          )}
+          <button type="button" className="btn primary block" disabled={busy || !pw || !next} onClick={go}>
+            Envoyer le lien de confirmation
+          </button>
+        </>
+      )}
+    </Sheet>
+  );
+}
+
+function ChangePasswordSheet({ onClose }: { onClose: () => void }) {
+  const [old, setOld] = useState('');
+  const [pw, setPw] = useState('');
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const go = async () => {
+    const pb = passwordProblem(pw);
+    if (pb) return setErr(pb);
+    setBusy(true);
+    setErr(null);
+    try {
+      await reauthenticate('password', old);
+      await changePassword(pw);
+      toast('Mot de passe modifié.');
+      onClose();
+    } catch (e) {
+      setErr((e as Error).message);
+      setBusy(false);
+    }
+  };
+  return (
+    <Sheet title="Modifier le mot de passe" onClose={onClose} center>
+      <PasswordField id="cp-old" label="Mot de passe actuel" value={old} onChange={setOld} autoComplete="current-password" />
+      <PasswordField id="cp-new" label="Nouveau mot de passe" value={pw} onChange={setPw} autoComplete="new-password" />
+      <span className="small muted">Au moins 8 caractères, avec une lettre et un chiffre.</span>
+      {err && (
+        <div className="note err" role="alert">
+          {err}
+        </div>
+      )}
+      <button type="button" className="btn primary block" disabled={busy || !old || !pw} onClick={go}>
+        Enregistrer
       </button>
     </Sheet>
   );

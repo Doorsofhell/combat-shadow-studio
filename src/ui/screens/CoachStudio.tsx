@@ -59,7 +59,6 @@ export function CoachStudio() {
   const store = useFighters.getState;
   const profile = useProfile((s) => s.profile);
   const settings = useSettings((s) => s.settings);
-  const setSettings = useSettings((s) => s.set);
 
   const [editId, setEditId] = useState<string | null>(null);
   const fighter = fighters.find((f) => f.id === editId) ?? fighters.find((f) => f.id === activeId) ?? fighters[0] ?? null;
@@ -72,7 +71,7 @@ export function CoachStudio() {
   const [newSheet, setNewSheet] = useState(false);
   const [pv, setPv] = useState<PreviewState>({
     mode: 'trois-quarts',
-    faceZoom: false,
+    part: 'corps',
     anim: 'garde',
     playing: true,
   });
@@ -152,7 +151,7 @@ export function CoachStudio() {
     setTab(t);
     setPv((p) => ({
       ...p,
-      faceZoom: FACE_TABS.includes(t),
+      part: FACE_TABS.includes(t) ? 'visage' : p.part === 'visage' ? 'corps' : p.part,
       mode: FACE_TABS.includes(t) && p.mode !== 'face' && p.mode !== 'trois-quarts' ? 'face' : p.mode,
     }));
   };
@@ -222,7 +221,7 @@ export function CoachStudio() {
       case 'cheveux':
         return <HairPanel {...p} />;
       case 'tatouages':
-        return <TattooPanel key={fighter.id} {...p} onZone={(z) => setPv((s) => ({ ...s, faceZoom: false, mode: zoneView(z) }))} />;
+        return <TattooPanel key={fighter.id} {...p} onZone={(z) => setPv((s) => ({ ...s, part: 'corps', mode: zoneView(z) }))} />;
       case 'tenue':
         return <OutfitPanel {...p} />;
       case 'equipement':
@@ -251,14 +250,6 @@ export function CoachStudio() {
           <Tabs items={TABS} value={tab} onChange={onTab} label="Catégories" variant="underline" />
         </div>
         <div className="cs-scroll" role="tabpanel" aria-label={TABS.find((t) => t.id === tab)?.label} data-testid="editor-panel">
-          {settings.coachStyle === 'realiste' && (
-            <div className="note warn cs-note">
-              Ton apparence personnalisée s’affiche avec les styles « Encre » et « Manga ».
-              <Button variant="secondary" onClick={() => setSettings({ coachStyle: 'encre' })}>
-                Passer au style Encre
-              </Button>
-            </div>
-          )}
           {panel}
         </div>
         {dirty && (

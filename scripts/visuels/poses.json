@@ -1,0 +1,12 @@
+{
+ "_doc": "Pose corrections of the studio visuals, checked by eye on the contact sheets (docs/visuels/CONTROLE_POSES.md). Key: a technique id, or <technique>@homme / @femme for one coach. at: instant as a share of the key moment (1 = key moment); az: camera angle; d: discipline (outfit and ambiance); garde: gaucher.",
+ "sprawl": {
+  "at": 1.2,
+  "az": 8,
+  "why": "vu de côté, les tibias du sprawl de l’animation restent levés (genoux pliés au lieu de jambes tendues, anomalie du mouvement notée dans CONTROLE_POSES.md) : vue de face, hanches au sol, mains en appui"
+ },
+ "sit-out": {
+  "at": 0.71,
+  "why": "au moment clé le corps paraît flotter de côté, jambe lancée, sans appui visible : on montre l’instant où la main est posée et la hanche commence à tourner"
+ }
+}

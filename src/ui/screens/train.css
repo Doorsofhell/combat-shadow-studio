@@ -1,0 +1,519 @@
+/* 0.33 — Entraîner: three spaces under one segmented control, resume card, compact cards */
+
+.train-seg {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 4px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--ink), transparent 92%);
+  isolation: isolate;
+}
+
+.train-seg button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 650;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition:
+    color var(--t-med) var(--ease),
+    background-color var(--t-med) var(--ease),
+    box-shadow var(--t-med) var(--ease);
+}
+
+.train-seg button.on {
+  color: var(--ink);
+  background: var(--bg);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.18),
+    inset 0 -2px 0 var(--red);
+}
+
+.train-seg button:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: -2px;
+}
+
+.train-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: train-in var(--t-med) var(--ease) both;
+}
+
+@keyframes train-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .train-seg button {
+    transition: none;
+  }
+  .train-panel {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------- resume card */
+.resume-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+  padding: 16px;
+  border-radius: var(--radius-l);
+  background:
+    radial-gradient(ellipse at 90% 0%, color-mix(in srgb, var(--red), transparent 86%), transparent 60%),
+    var(--soft);
+  border: 1px solid color-mix(in srgb, var(--red), transparent 75%);
+}
+
+.resume-card.skeleton {
+  min-height: 168px;
+  border-color: transparent;
+}
+
+.resume-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.resume-body .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.resume-body h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.resume-name {
+  margin: 0;
+  font-weight: 650;
+}
+
+.resume-meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.resume-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 4px 0 0;
+}
+
+.resume-facts div {
+  display: flex;
+  flex-direction: column;
+}
+
+.resume-facts dt {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.resume-facts dd {
+  margin: 0;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.resume-progress,
+.prog-card .track,
+.disc-progress .track {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ink), transparent 88%);
+  overflow: hidden;
+}
+
+.resume-progress {
+  margin-top: 6px;
+}
+
+.resume-progress span,
+.prog-card .track span,
+.disc-progress .track span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--red);
+}
+
+.resume-body .btn {
+  margin-top: 8px;
+  align-self: flex-start;
+  min-height: 48px;
+}
+
+@media (max-width: 380px) {
+  .resume-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------------------------------------------------------------- quick start */
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px;
+}
+
+.quick-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  min-height: 72px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--soft);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.quick-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.quick-body .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+}
+
+.quick-title {
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.quick-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.quick-go {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------- disciplines (cards ~23 % lower than before) */
+.train-disc-grid {
+  gap: 10px;
+}
+
+.disc-card.train-disc {
+  min-height: 184px;
+  padding: 12px;
+}
+
+.disc-card.train-disc .disc-emblem {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.disc-card.train-disc .name {
+  font-size: 1.15rem;
+}
+
+.disc-progress {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.disc-progress .track {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.disc-progress .n {
+  font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+}
+
+@media (min-width: 720px) {
+  .train-disc-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ---------------------------------------------------------------- programmes */
+.prog-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filters-toggle {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.prog-more {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prog-more[hidden] {
+  display: none;
+}
+
+.prog-count {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+}
+
+.card.link.prog-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  color: var(--ink);
+}
+
+.prog-emblem {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: linear-gradient(165deg, #263244 0%, #11171f 100%);
+  color: #f4f4f5;
+}
+
+.prog-card .body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.prog-card .title {
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.prog-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 0.8rem;
+}
+
+.prog-tags span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.prog-status {
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: var(--muted);
+}
+
+.prog-status.en-cours {
+  color: var(--red-ink);
+}
+
+.prog-status.fait {
+  color: var(--ink);
+}
+
+.prog-card .track {
+  height: 4px;
+  margin-top: 2px;
+}
+
+.prog-note {
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------- 0.36 creator card (Séances) */
+.creator-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 16px;
+  border-radius: var(--radius-l);
+  background:
+    radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--red), transparent 80%), transparent 65%),
+    linear-gradient(160deg, color-mix(in srgb, var(--soft), var(--ink) 4%), var(--soft));
+  border: 1px solid color-mix(in srgb, var(--red), transparent 60%);
+  box-shadow: inset 3px 0 0 var(--red);
+}
+.creator-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--red), transparent 82%);
+  color: var(--red-ink, var(--red));
+}
+.creator-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.creator-body h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.creator-body p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+/* the button takes the card's full width, on one line even at 360 px */
+.creator-cta {
+  grid-column: 1 / -1;
+  justify-content: center;
+  white-space: nowrap;
+}
+.perso-empty {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+}
+.section .resume-card + .quick-grid {
+  margin-top: 8px;
+}
+
+/* v0.41: the programme sheet */
+.prog-page h2 {
+  font-size: 1.02rem;
+  margin: 0;
+}
+.prog-page .track {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ink), transparent 88%);
+  overflow: hidden;
+}
+.prog-page .track span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--red);
+}
+.prog-week summary .badge {
+  margin-left: 6px;
+}
+.prog-week summary {
+  cursor: pointer;
+}
+.prog-week summary .block {
+  display: block;
+  margin-top: 2px;
+}
+.prog-week .panel {
+  margin-top: 8px;
+}
+.prog-page ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.prog-ex {
+  columns: 2;
+  column-gap: 16px;
+}
+.prog-ex li {
+  break-inside: avoid;
+}
+
+/* 1.1.0 (Youssef, 2026-10-27: « je ne veux pas de défilement, toutes les disciplines doivent apparaître directement à
+   l'écran »): Disciplines fills the screen between the tabs and the bar, the six cards in three rows that share it */
+.train-page.fit {
+  height: calc(100dvh - var(--tabs-h, 60px));
+  min-height: 420px;
+  gap: 12px;
+  padding-top: var(--space-2, 8px);
+}
+.train-page.fit > .train-panel {
+  flex: 1;
+  min-height: 0;
+}
+.train-page.fit .train-disc-grid {
+  height: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+}
+.train-page.fit .disc-card.train-disc {
+  min-height: 0;
+  padding: 10px 12px;
+}
+.train-page.fit .disc-card.train-disc .disc-emblem {
+  top: 8px;
+  right: 8px;
+}
+/* the six cards share the screen: a 52 px emblem leaves the name clear of it (WCAG contrast, tests/e2e/contrast) */
+.train-page.fit .disc-card.train-disc .disc-emblem > * {
+  width: 52px;
+  height: 52px;
+}
+@media (max-height: 760px) {
+  .train-page.fit .disc-card.train-disc .sub {
+    display: none;
+  }
+}
+@media (min-width: 720px) {
+  .train-page.fit .train-disc-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+  }
+}

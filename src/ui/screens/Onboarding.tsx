@@ -1,3 +1,4 @@
+import { useSettings } from '../../store/settings';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Profile, SPORT_GOALS, useProfile } from '../../store/profile';
@@ -7,9 +8,10 @@ import { DISCIPLINES, DisciplineId, LEVELS, LevelId } from '../../domain/types';
 import type { HairStyle } from '../../editor/look';
 import { recommend } from '../../domain/recommend';
 import { CoachPicker } from './CoachSelect';
+import { championFor, type ChampionCoach } from '../../domain/coaches/catalog';
 import { DisciplineLabel, DisciplineCard, LevelSelector, OptionGrid } from '../components';
 import { chooseCoach } from '../components/fighter';
-import { IconFighter, IconGlove, IconShield, IconTrend } from '../icons';
+import { AppIcon } from '../icons';
 
 export const GOALS = SPORT_GOALS;
 
@@ -63,12 +65,13 @@ function num(v: string) {
   return v.trim() === '' || !Number.isFinite(n) ? undefined : n;
 }
 
-/** First launch, 8 short steps. Answers stay on this device. */
+/** First launch, 7 short steps (8 with the fallback render). Answers stay on this device. */
 export function Onboarding() {
   const stored = useProfile((s) => s.profile);
   const update = useProfile((s) => s.update);
   const fighter = useFighters((s) => s.fighters.find((f) => f.id === s.activeId) ?? null);
   const nav = useNavigate();
+  const premium = useSettings((s) => s.settings.coachRender === 'premium');
   const [step, setStep] = useState(0);
   const [p, setP] = useState<Profile>({ ...stored });
   const [name, setName] = useState('');
@@ -77,16 +80,21 @@ export function Onboarding() {
   const coach = fighter?.look.sex ?? p.coach;
   const canNext = step !== 1 || !!coach;
 
-  const pickCoach = (c: 'homme' | 'femme') => {
-    chooseCoach(c, true);
-    set({ coach: c });
+  const pickCoach = (c: ChampionCoach) => {
+    chooseCoach(c.coach, true);
+    set({ coach: c.coach, champion: c.id });
   };
   const editLook = (fn: (l: NonNullable<typeof fighter>['look']) => NonNullable<typeof fighter>['look']) => {
     if (fighter) useFighters.getState().update(fighter.id, fn(fighter.look));
   };
+  // 0.24: the coach is Kadir or Amara, whose look is fixed: the "Apparence" step (custom fighter) is
+  // skipped (it stays reachable only with the fallback render)
+  const skipLook = premium;
+  const shown = skipLook ? STEPS.filter((x) => x !== 'Apparence') : STEPS;
+  const shownIdx = skipLook && step > 2 ? step - 1 : step;
   const next = () => {
     if (step === 2 && fighter && name.trim()) useFighters.getState().rename(fighter.id, name);
-    setStep(step + 1);
+    setStep(skipLook && step === 1 ? 3 : step + 1);
     window.scrollTo(0, 0);
   };
   const finish = () => {
@@ -103,12 +111,12 @@ export function Onboarding() {
             Combat <b>Shadow</b> Studio
           </div>
           <span className="small muted num-figure" aria-hidden>
-            {step + 1}/{STEPS.length}
+            {shownIdx + 1}/{shown.length}
           </span>
         </div>
-        <div className="ob-progress" role="progressbar" aria-label={`Étape ${step + 1} sur ${STEPS.length} : ${STEPS[step]}`} aria-valuemin={1} aria-valuemax={STEPS.length} aria-valuenow={step + 1}>
-          {STEPS.map((_, i) => (
-            <i key={i} className={i <= step ? 'done' : ''} />
+        <div className="ob-progress" role="progressbar" aria-label={`Étape ${shownIdx + 1} sur ${shown.length} : ${STEPS[step]}`} aria-valuemin={1} aria-valuemax={shown.length} aria-valuenow={shownIdx + 1}>
+          {shown.map((_, i) => (
+            <i key={i} className={i <= shownIdx ? 'done' : ''} />
           ))}
         </div>
         <div className="eyebrow">{STEPS[step]}</div>
@@ -122,23 +130,23 @@ export function Onboarding() {
               <br />
               <em>guidé par un coach 3D</em>
             </h1>
-            <p className="muted">Boxe anglaise, kick-boxing, MMA et muay-thaï, du niveau débutant à expert. Ton combattant montre chaque mouvement, tu le suis comme dans un miroir de salle.</p>
+            <p className="muted">Boxe anglaise, kick-boxing, MMA et muay-thaï, du niveau débutant à expert. Ton coach montre chaque mouvement, tu le suis comme dans un miroir de salle.</p>
             <ul className="feature-list">
               <li>
                 <span className="icon-tile red" aria-hidden>
-                  <IconGlove />
+                  <AppIcon id="train" />
                 </span>
                 <span>Plus de 60 techniques animées et des centaines d’exercices</span>
               </li>
               <li>
                 <span className="icon-tile" aria-hidden>
-                  <IconTrend />
+                  <AppIcon id="progress" />
                 </span>
                 <span>Programmes, rounds chronométrés et suivi de ta progression</span>
               </li>
               <li>
                 <span className="icon-tile" aria-hidden>
-                  <IconShield />
+                  <AppIcon id="privacy" />
                 </span>
                 <span>
                   Tes réponses restent sur cet appareil. <Link to="/confidentialite">Confidentialité</Link>
@@ -161,7 +169,7 @@ export function Onboarding() {
           <>
             <h2>Choisis ton coach</h2>
             <p className="muted">Obligatoire pour continuer. Il deviendra ton combattant : tu pourras le personnaliser et en changer à tout moment, sans perdre tes statistiques.</p>
-            <CoachPicker value={coach} onChange={pickCoach} />
+            <CoachPicker value={coach ? championFor(coach, p.champion).id : null} onChange={pickCoach} />
           </>
         )}
 
@@ -354,7 +362,7 @@ export function Onboarding() {
               </div>
             ))}
             <p className="small muted row nowrap" style={{ gap: 8 }}>
-              <IconFighter width={18} /> Tu pourras tout personnaliser plus tard dans l’onglet Coach.
+              <AppIcon id="fighter" size={18} /> Tu pourras tout personnaliser plus tard dans l’onglet Coach.
             </p>
           </>
         )}
@@ -362,7 +370,7 @@ export function Onboarding() {
 
       <div className="ob-foot">
         {step > 0 && (
-          <button type="button" className="btn secondary" onClick={() => setStep(step - 1)}>
+          <button type="button" className="btn secondary" onClick={() => setStep(skipLook && step === 3 ? 1 : step - 1)}>
             Retour
           </button>
         )}

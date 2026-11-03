@@ -1,4 +1,6 @@
-import type { Program, ProgramBlock } from './types';
+import type { DisciplineId, Program, ProgramBlock } from './types';
+import { EXERCISE_BY_ID } from './exercises';
+import { PROGRAM_RECIPES, buildProgram, disciplineDefaults } from './programCatalog';
 
 const b = (label: string, phase: ProgramBlock['phase'], exercise: string, work: number, rounds: number, rest: number): ProgramBlock => ({
   label, phase, exercise, work, rounds, rest,
@@ -8,12 +10,12 @@ const b = (label: string, phase: ProgramBlock['phase'], exercise: string, work: 
  * Structured sessions: warm-up, technique, combinations, cardio, recovery.
  * Durations and frequencies are indicative and should be adapted to the declared abilities.
  */
-export const PROGRAMS: Program[] = [
+const FIRST_TEN: Program[] = [
   {
     id: 'boxe-initiation-4-semaines', name: 'Boxe anglaise - Initiation 4 semaines', discipline: 'boxe', durationMin: 25,
-    frequency: '3 séances par semaine pendant 4 semaines',
-    goals: ['Tenir une garde correcte', 'Jab et direct propres', 'Se déplacer sans croiser les pieds'],
-    progression: 'Semaines 1-2 à vitesse lente ; semaines 3-4 : augmente la vitesse à 0,8 et passe aux rounds de 2 minutes.',
+    frequency: '3 séances par semaine pendant 4 semaines', weeks: 4, perWeek: 3,
+    goals: ['Tenir une garde solide', 'Des jabs et des directs propres', 'Te déplacer sans croiser les pieds'],
+    progression: 'Semaines 1-2 en douceur, vitesse lente. Semaines 3-4 : vitesse 0,8 et rounds de 2 minutes.',
     blocks: [
       b('Échauffement : garde et pas', 'echauffement', 'boxe-debutant-06', 60, 2, 20),
       b('Jab', 'technique', 'boxe-debutant-02', 90, 2, 30),
@@ -26,8 +28,8 @@ export const PROGRAMS: Program[] = [
   {
     id: 'kick-poings-pieds', name: 'Kick-boxing - Techniques poings-pieds', discipline: 'kickboxing', durationMin: 30,
     frequency: '2 à 3 séances par semaine',
-    goals: ['Enchaîner poings et pieds sans perdre la garde', 'Pivot correct sur les coups de pied'],
-    progression: 'Augmente la vitesse par paliers de 0,1 quand les pivots restent propres.',
+    goals: ['Enchaîner poings et pieds sans lâcher la garde', 'Bien pivoter sur les coups de pied'],
+    progression: 'Monte la vitesse par paliers de 0,1, seulement quand tes pivots restent propres.',
     blocks: [
       b('Échauffement : pas et garde', 'echauffement', 'kickboxing-debutant-11', 60, 2, 20),
       b('Low kick', 'technique', 'kickboxing-debutant-05', 90, 2, 30),
@@ -40,8 +42,8 @@ export const PROGRAMS: Program[] = [
   {
     id: 'mma-striking-mobilite', name: 'MMA - Shadow striking et mobilité', discipline: 'mma', durationMin: 30,
     frequency: '2 séances par semaine',
-    goals: ['Changer de niveau sans casser le dos', 'Sprawl rapide', 'Se relever proprement'],
-    progression: 'Commence par des rounds de 2 minutes, puis 3 minutes avec moins de repos.',
+    goals: ['Descendre sur les jambes sans casser le dos', 'Un sprawl rapide', 'Te relever proprement'],
+    progression: 'Commence par des rounds de 2 minutes, puis passe à 3 minutes avec moins de repos.',
     blocks: [
       b('Échauffement : déplacements', 'echauffement', 'mma-debutant-11', 60, 2, 20),
       b('Changement de niveau', 'technique', 'mma-debutant-05', 60, 2, 30),
@@ -54,8 +56,8 @@ export const PROGRAMS: Program[] = [
   {
     id: 'muay-fondamentaux', name: 'Muay-thaï - Techniques fondamentales', discipline: 'muaythai', durationMin: 30,
     frequency: '3 séances par semaine',
-    goals: ['Teep, low kick et genou corrects', 'Check réflexe'],
-    progression: 'Passe des exercices débutant aux intermédiaires quand les retours en garde sont automatiques.',
+    goals: ['Un teep, un low kick et un genou propres', 'Un check réflexe, qui part tout seul'],
+    progression: 'Passe aux exercices intermédiaires quand tu reviens en garde sans y penser.',
     blocks: [
       b('Échauffement : garde thaï', 'echauffement', 'muaythai-debutant-01', 60, 2, 20),
       b('Teep', 'technique', 'muaythai-debutant-04', 90, 2, 30),
@@ -66,10 +68,10 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
-    id: 'cardio-combat-20', name: 'Cardio combat - 20 minutes', discipline: 'mixte', durationMin: 20,
+    id: 'cardio-combat-20', name: 'Cardio combat express', discipline: 'mixte', durationMin: 20,
     frequency: '2 à 4 séances par semaine, jamais deux jours d’affilée au début',
-    goals: ['Endurance', 'Rester précis en étant fatigué'],
-    progression: 'Réduis le repos de 15 s chaque semaine, sans descendre sous 30 s.',
+    goals: ['Gagner en endurance', 'Rester précis même quand tu es fatigué'],
+    progression: 'Chaque semaine, retire 15 s de repos, sans descendre sous 30 s.',
     blocks: [
       b('Échauffement : pas et jab', 'echauffement', 'boxe-debutant-12', 90, 1, 20),
       b('Cardio boxe', 'cardio', 'boxe-avance-11', 120, 2, 45),
@@ -79,10 +81,10 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
-    id: 'coordination-15', name: 'Coordination - 15 minutes', discipline: 'mixte', durationMin: 15,
+    id: 'coordination-15', name: 'Coordination express', discipline: 'mixte', durationMin: 15,
     frequency: '3 séances par semaine, possible en complément',
-    goals: ['Coordonner bras et jambes', 'Garder les appuis pendant les défenses'],
-    progression: 'Augmente la vitesse quand l’enchaînement est fluide trois fois de suite.',
+    goals: ['Bras et jambes qui travaillent ensemble', 'Rester stable pendant les défenses'],
+    progression: 'Accélère quand l’enchaînement passe fluide trois fois de suite.',
     blocks: [
       b('Pas latéraux', 'echauffement', 'boxe-debutant-07', 60, 1, 15),
       b('Jab → Esquive → Direct', 'technique', 'boxe-intermediaire-03', 90, 2, 30),
@@ -92,10 +94,10 @@ export const PROGRAMS: Program[] = [
     ],
   },
   {
-    id: 'technique-avancee-30', name: 'Technique avancée - 30 minutes', discipline: 'mixte', durationMin: 30,
+    id: 'technique-avancee-30', name: 'Technique avancée multi-disciplines', discipline: 'mixte', durationMin: 30,
     frequency: '2 séances par semaine',
-    goals: ['Fluidité des longues combinaisons', 'Angles et défenses intégrés'],
-    progression: 'Passe aux exercices experts quand les combinaisons avancées sont fluides à vitesse 1.',
+    goals: ['De longues combinaisons fluides', 'Angles et défenses glissés dedans'],
+    progression: 'Passe aux exercices experts quand les combinaisons avancées coulent à vitesse 1.',
     blocks: [
       b('Échauffement', 'echauffement', 'boxe-intermediaire-01', 90, 1, 20),
       b('Jab → Direct → Roll → Crochet', 'technique', 'boxe-avance-01', 120, 2, 40),
@@ -108,8 +110,8 @@ export const PROGRAMS: Program[] = [
   {
     id: 'muay-armes-completes', name: 'Muay-thaï - Huit armes', discipline: 'muaythai', durationMin: 35,
     frequency: '2 séances par semaine',
-    goals: ['Coudes et genoux à courte distance', 'Clinch simulé'],
-    progression: 'Commence à vitesse 0,7 ; les coudes doivent rester courts et protégés.',
+    goals: ['Coudes et genoux de près', 'Le clinch simulé (corps à corps)'],
+    progression: 'Commence à vitesse 0,7. Tes coudes restent courts et bien protégés.',
     blocks: [
       b('Échauffement : teep et pas', 'echauffement', 'muaythai-avance-10', 90, 1, 20),
       b('Coudes en série', 'technique', 'muaythai-avance-02', 90, 2, 30),
@@ -119,8 +121,85 @@ export const PROGRAMS: Program[] = [
       b('Retour au calme', 'recuperation', 'muaythai-debutant-01', 60, 1, 0),
     ],
   },
+  // 0.28 : premiers programmes de grappling, en solo (complément du club ou du dojo, jamais à sa place)
+  {
+    id: 'judo-bases-solo', name: 'Judo - Bases en solo', discipline: 'judo', durationMin: 25,
+    frequency: '2 à 3 séances par semaine, en complément du dojo',
+    goals: ['Te déplacer sans croiser les pieds', 'Des entrées (uchikomi) propres, genoux fléchis', 'Une chute arrière basse, menton rentré'],
+    progression: 'Vitesse lente d’abord. Ajoute les entrées suivantes quand tes pieds finissent bien placés. Les chutes restent en version basse, sur un tapis épais.',
+    blocks: [
+      b('Échauffement : tsugi-ashi', 'echauffement', 'judo-debutant-02', 60, 2, 20),
+      b('Ayumi-ashi', 'technique', 'judo-debutant-05', 60, 2, 20),
+      b('Chute arrière, version basse', 'technique', 'judo-debutant-07', 60, 2, 30),
+      b('Kumi-kata', 'technique', 'judo-debutant-06', 60, 2, 20),
+      b('Uchikomi d’o-goshi', 'technique', 'judo-intermediaire-05', 90, 2, 30),
+      b('Prise de garde puis entrée', 'combinaisons', 'judo-intermediaire-08', 90, 2, 40),
+      b('Retour au calme : shizen-tai', 'recuperation', 'judo-debutant-01', 60, 1, 0),
+    ],
+  },
+  {
+    id: 'bjj-mobilite-solo', name: 'Jiu-jitsu brésilien - Mobilité et relevés en solo', discipline: 'bjj', durationMin: 25,
+    frequency: '2 à 3 séances par semaine, en complément du club',
+    goals: ['Des hanches mobiles au sol', 'Te relever proprement, en posture', 'Une chute arrière sûre'],
+    progression: 'Commence lentement, sur un tapis. Passe aux enchaînements quand chaque mouvement reste fluide.',
+    blocks: [
+      b('Échauffement : posture debout', 'echauffement', 'bjj-debutant-01', 60, 1, 0),
+      b('Chute arrière, version basse', 'technique', 'bjj-debutant-07', 60, 2, 30),
+      b('Sortie de hanche (shrimp)', 'technique', 'bjj-debutant-04', 90, 2, 30),
+      b('Sit-out', 'technique', 'bjj-debutant-06', 90, 2, 30),
+      b('Relevé depuis les genoux', 'technique', 'bjj-debutant-08', 60, 2, 30),
+      b('Changement de base et sit-out', 'combinaisons', 'bjj-intermediaire-07', 120, 2, 45),
+      b('Retour au calme : posture', 'recuperation', 'bjj-debutant-01', 60, 1, 0),
+    ],
+  },
 ];
+
+/** the session engine's own timings (src/ui/training/useSession.ts): countdown before the first block, pause between blocks */
+export const SESSION_COUNTDOWN = 3;
+export const BETWEEN_ITEMS = 15;
+
+/**
+ * v0.41: the real length of a session, as the engine plays it: the countdown, each block's rounds and the rests
+ * between them, and the pause before the next block (at least 15 s, longer when the block had a longer rest).
+ */
+export function programSessionSeconds(blocks: readonly ProgramBlock[]) {
+  let t = blocks.length ? SESSION_COUNTDOWN : 0;
+  blocks.forEach((x, i) => {
+    t += x.work * x.rounds + x.rest * Math.max(0, x.rounds - 1);
+    if (i < blocks.length - 1) t += Math.max(BETWEEN_ITEMS, x.rest ? Math.min(x.rest, 30) : 0);
+  });
+  return t;
+}
+const minutesOf = (blocks: readonly ProgramBlock[]) => Math.round(programSessionSeconds(blocks) / 60);
+
+/** the first ten keep their ids and content; their length is now computed, and they get their discipline's sources */
+const firstTen = FIRST_TEN.map((p): Program => {
+  const d = p.discipline === 'mixte' ? null : disciplineDefaults(p.discipline as DisciplineId);
+  return { ...p, durationMin: minutesOf(p.blocks), origin: 'original', ...(d ? { equipment: d.equipment, safety: d.safety, sources: d.sources } : {}) };
+});
+
+export const PROGRAMS: Program[] = [...firstTen, ...PROGRAM_RECIPES.map((r) => buildProgram(r, (id) => EXERCISE_BY_ID.get(id)?.name ?? id, minutesOf))];
 
 export const PROGRAM_BY_ID = new Map(PROGRAMS.map((p) => [p.id, p]));
 
-export const programSeconds = (p: Program) => p.blocks.reduce((a, x) => a + x.work * x.rounds + x.rest * Math.max(0, x.rounds - 1), 0);
+/** the sessions of a programme: its own, or its single session repeated */
+export const programSessions = (p: Program) => p.sessions ?? [{ week: 1, focus: '', blocks: p.blocks }];
+
+/** work, rests and transitions of one session (the first, or the one asked) */
+export const programSeconds = (p: Program, session = 0) => programSessionSeconds(programSessions(p)[Math.min(session, programSessions(p).length - 1)].blocks);
+
+/**
+ * v0.41: where the user stands in a programme, from the sessions really finished (useResume, one per finished
+ * programme session). The total exists only for a programme that states its weeks and sessions per week.
+ */
+export function programProgress(p: Program, finished = 0) {
+  const sessions = programSessions(p);
+  const total = p.weeks && p.perWeek ? p.weeks * p.perWeek : null;
+  const done = total ? Math.min(finished, total) : finished;
+  const week = p.perWeek && p.weeks ? Math.min(p.weeks, Math.floor(done / p.perWeek) + 1) : 1;
+  const next = Math.min(week - 1, sessions.length - 1);
+  return { done, total, remaining: total === null ? null : total - done, week, next, finished: total !== null && done >= total };
+}
+
+/** the query of /entrainement for a session of a programme (week = index + 1); single-session programmes keep `prog=` only */
+export const programQuery = (p: Program, session: number) => (p.sessions && p.sessions.length > 1 ? `prog=${p.id}&s=${session + 1}` : `prog=${p.id}`);

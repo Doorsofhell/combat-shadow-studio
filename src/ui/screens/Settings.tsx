@@ -1,27 +1,104 @@
-import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSettings } from '../../store/settings';
+import { championFor } from '../../domain/coaches/catalog';
+import { DISCIPLINES, LEVELS } from '../../domain/types';
+import { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { LATEST_RELEASE, hasUnseenRelease } from '../../domain/releases';
+import { openNews } from '../nav/BottomBar';
+import { CONSIGNE_SECS, PULSE_STYLES, PulseStyle, useSettings } from '../../store/settings';
 import { useProfile } from '../../store/profile';
 import { exportData, useStats } from '../../store/stats';
 import { useCustom } from '../../store/custom';
 import { useGoals } from '../../store/goals';
-import { useActiveFighter, useFighters } from '../../store/fighters';
+import { useFighters } from '../../store/fighters';
 import { DEFAULT_CATALOG_USER, useCatalogUser } from '../../store/catalog';
 import { bell, unlockAudio } from '../../audio/sound';
 import { hasFrenchVoice, say, voiceAvailable } from '../../audio/voice';
 import { saveTextFile } from '../../platform/native';
-import { ConfirmDialog, LinkRow, PageHead, Panel, PanelRow, Segmented, SliderRow, Toggle, toast } from '../components';
-import { defaultFighterName } from '../components/fighter';
-import { IconDownload, IconFighter, IconShield, IconTrash, IconUpload, IconUser } from '../icons';
+import { ConfirmDialog, PageHead, PanelRow, SetAction, SetGroup, SetItem, SetLink, SettingsList, Segmented, SliderRow, Toggle, toast } from '../components';
+import { CoachPicker } from './CoachSelect';
+import { CoachAiSettings } from './CoachHistory';
+import { AccountDataBody } from './account/Profile';
+import { useCoachAi } from '../../store/coachAi';
+import { AppIcon } from '../icons';
+import { clearDiag, diagText, readDiag } from '../../three/diag3d';
+import { resetStability, stabilityLevel } from '../../three/safe3d';
+import { PremiumMarker } from '../premium/PremiumMarker';
+
+/**
+ * v0.29 (coach that vanished on Youssef's phone): what the 3D did on this device, to copy and send.
+ * The journal stays on the phone (src/three/diag3d.ts).
+ */
+function Diag3dRows() {
+  const [level, setLevel] = useState(stabilityLevel);
+  const [entries, setEntries] = useState(readDiag);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(diagText(entries));
+      toast('Journal 3D copié');
+    } catch {
+      toast('Copie impossible : sélectionne le texte du journal');
+    }
+  };
+  return (
+    <>
+      <PanelRow
+        label="Stabilité de la 3D"
+        hint={
+          level === 0
+            ? 'Qualité choisie appliquée, aucun incident graphique récent.'
+            : `Qualité allégée (niveau ${level}) après un incident graphique. Elle remonte d’elle-même après 10 minutes sans incident.`
+        }
+        column
+      >
+        {level > 0 && (
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() => {
+              resetStability();
+              setLevel(0);
+              toast('Qualité choisie rétablie');
+            }}
+          >
+            Rétablir la qualité choisie
+          </button>
+        )}
+      </PanelRow>
+      <PanelRow label="Journal 3D" hint={`${entries.length} évènement(s) enregistré(s) sur cet appareil, rien n’est envoyé.`} column>
+        <details data-testid="diag3d">
+          <summary>Voir le journal</summary>
+          <pre className="diag3d-log">{diagText(entries)}</pre>
+        </details>
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+          <button type="button" className="btn secondary" onClick={copy}>
+            Copier le journal
+          </button>
+          <button
+            type="button"
+            className="btn ghost"
+            onClick={() => {
+              clearDiag();
+              setEntries([]);
+            }}
+          >
+            Effacer
+          </button>
+        </div>
+      </PanelRow>
+    </>
+  );
+}
 
 const pct = (v: number) => `${Math.round(v * 100)} %`;
+const PULSE_LABEL: Record<PulseStyle, string> = { contour: 'Contour lumineux', fond: 'Fond qui respire', chrono: 'Chrono seul', off: 'Coupée' };
 
 export function SettingsPage() {
+  const { section } = useParams();
   const { settings, set } = useSettings();
+  const unseen = hasUnseenRelease(settings.newsSeenVersion);
   const profile = useProfile((s) => s.profile);
   const updateProfile = useProfile((s) => s.update);
   const resetProfile = useProfile((s) => s.reset);
-  const fighter = useActiveFighter();
   const stats = useStats();
   const custom = useCustom();
   const clearGoals = useGoals((s) => s.clear);
@@ -29,6 +106,13 @@ export function SettingsPage() {
   const file = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [confirmErase, setConfirmErase] = useState(false);
+  // v0.32 bar of the settings: « Caméra » opens the display settings on the camera row
+  const loc = useLocation();
+  useEffect(() => {
+    if (section !== 'affichage' || new URLSearchParams(loc.search).get('focus') !== 'camera') return;
+    const id = requestAnimationFrame(() => document.getElementById('reglage-camera')?.scrollIntoView({ block: 'start' }));
+    return () => cancelAnimationFrame(id);
+  }, [section, loc.search, loc.key]);
 
   const doExport = async () => {
     const json = exportData({ sessions: stats.sessions, perExercise: stats.perExercise }, { profile, settings, custom: custom.combos });
@@ -67,53 +151,46 @@ export function SettingsPage() {
     nav('/bienvenue');
   };
 
+  const d = profile.mainDiscipline;
+  const coach = championFor(profile.coach, profile.champion);
+  const ai = useCoachAi();
+  const textSize = profile.display.textSize === 'grand' ? 'texte grand' : 'texte normal';
+  const theme = settings.theme === 'clair' ? 'Jour' : settings.theme === 'auto' ? 'Auto' : 'Nuit';
+  const quality = settings.quality === 'haute' ? 'Haute' : settings.quality === 'basse' ? 'Économie' : 'Auto';
+
+  /*
+   * 1.2.0 (Youssef, 2026-10-28: « Reglages avec tous le reste … une page avec toutes les options en liste bien
+   * présentées qui se déploient quand on clique dessus », proposition B « Groupes Android »): everything of the former
+   * Réglages, Mon coach and Coach IA tabs, and the display, Coach IA and data parts of Mes infos, in one list. The
+   * former sub-pages (/reglages/voix, /affichage, /rounds, /donnees) open the same list with their row open.
+   */
   return (
     <div className="page">
       <PageHead title="Réglages" />
-
-      <Panel title="Apparence" id="p-apparence">
-        <PanelRow label="Thème des menus" hint="Automatique suit le réglage clair ou sombre de ton téléphone. Le studio d’entraînement reste blanc." column>
-          <Segmented
-            label="Thème des menus"
-            value={settings.theme}
-            onChange={(v) => set({ theme: v })}
-            options={[
-              { id: 'clair', label: 'Clair' },
-              { id: 'sombre', label: 'Sombre' },
-              { id: 'auto', label: 'Automatique' },
-            ]}
+      <SettingsList initial={section ?? null} testId="reglages-list">
+        <SetGroup title="Abonnement et nouveautés">
+          <SetAction icon="premium" tone="premium" title="Premium" summary="Avantages, FAQ, restaurer un achat" to="/premium" testId="reglages-premium" />
+          <SetAction
+            icon="notifications"
+            title="Nouveautés"
+            summary={`Version ${LATEST_RELEASE.version}${unseen ? ' · à découvrir' : ''}`}
+            dot={unseen}
+            dotTestId="news-dot"
+            onClick={openNews}
+            testId="reglages-nouveautes"
+            ariaLabel={unseen ? 'Nouveautés, nouvelle version' : 'Nouveautés'}
           />
-        </PanelRow>
-      </Panel>
+        </SetGroup>
 
-      <Panel title="Profil" id="p-profil">
-        <LinkRow to="/profil" icon={<IconUser className="muted" />} label="Mon profil et mon compte" hint="Informations, profil sportif, export et suppression de tes données" />
-        <LinkRow to="/combattant" icon={<IconFighter className="muted" />} label={fighter?.name ?? defaultFighterName(profile.coach)} hint="Personnaliser ton combattant" />
-        <LinkRow to="/coach" label="Coach" hint={profile.coach === 'femme' ? 'Coach femme' : 'Coach homme'} />
-        <PanelRow label="Garde">
-          <Segmented
-            label="Garde"
-            value={profile.guard}
-            onChange={(g) => updateProfile({ guard: g })}
-            options={[
-              { id: 'orthodoxe', label: 'Orthodoxe' },
-              { id: 'gaucher', label: 'Gaucher' },
-            ]}
-          />
-        </PanelRow>
-        <button type="button" className="panel-row" onClick={() => (updateProfile({ completed: false }), nav('/bienvenue'))}>
-          <span className="grow">
-            Questionnaire et niveaux
-            <span className="hint">Refaire l’évaluation de départ</span>
-          </span>
-          <span className="small muted">Modifier</span>
-        </button>
-      </Panel>
-
-      <Panel title="Voix et sons" id="p-voix">
+        <SetGroup title="Coach et entraînement">
+          <SetItem id="coach" icon="fighter" title="Mon coach" summary={`${coach.name} · Ultra-réaliste`}>
+            <p className="small muted">Ton coach montre chaque mouvement en 3D. Tu peux en changer à tout moment, tes statistiques sont conservées.</p>
+            <CoachPicker />
+          </SetItem>
+          <SetItem id="voix" icon="audio" title="Voix et sons" summary={`${settings.voice ? 'Voix activée' : 'Voix coupée'} · voix ${pct(settings.voiceVolume)} · effets ${pct(settings.effectsVolume)}`}>
         <Toggle label="Voix du coach" on={settings.voice} onChange={(v) => set({ voice: v })} />
         <Toggle label="Annoncer chaque mouvement" on={settings.announceMoves} onChange={(v) => set({ announceMoves: v })} />
-        <Toggle label="Conseils techniques" hint="En mode technique" on={settings.techniqueTips} onChange={(v) => set({ techniqueTips: v })} />
+        <Toggle label="Conseils techniques" hint="En mode technique" on={settings.techniqueTips} onChange={(v) => set({ techniqueTips: v })} extra={<PremiumMarker feature="advanced_voice" />} />
         <Toggle label="Sons d’impact" on={settings.impactSounds} onChange={(v) => set({ impactSounds: v })} />
         <SliderRow id="vv" label="Volume de la voix" value={settings.voiceVolume} min={0} max={1} step={0.05} onChange={(v) => set({ voiceVolume: v })} format={pct} />
         <SliderRow id="fx" label="Volume des effets (cloche, bips)" value={settings.effectsVolume} min={0} max={1} step={0.05} onChange={(v) => set({ effectsVolume: v })} format={pct} />
@@ -129,66 +206,190 @@ export function SettingsPage() {
         </div>
         {voiceAvailable() && !hasFrenchVoice() && <p className="small muted" style={{ padding: '0 0 12px' }}>Aucune voix française n’est installée sur cet appareil : la voix par défaut sera utilisée.</p>}
         {!voiceAvailable() && <p className="small muted" style={{ padding: '0 0 12px' }}>La synthèse vocale n’est pas disponible dans ce navigateur.</p>}
-      </Panel>
-
-      <Panel title="Affichage 3D" id="p-3d">
-        <PanelRow label="Qualité" hint="En mode Auto, la qualité baisse d’elle-même si l’appareil n’arrive pas à suivre." column>
-          <Segmented
-            label="Qualité"
-            value={settings.quality}
-            onChange={(q) => set({ quality: q })}
-            options={[
-              { id: 'auto', label: 'Auto' },
-              { id: 'haute', label: 'Haute' },
-              { id: 'basse', label: 'Économie' },
-            ]}
-          />
-        </PanelRow>
-        <PanelRow label="Rendu des combattants" column>
-          <Segmented
-            label="Rendu des combattants"
-            value={settings.coachStyle}
-            onChange={(v) => set({ coachStyle: v })}
-            options={[
-              { id: 'encre', label: 'Encre' },
-              { id: 'manga', label: 'Manga' },
-              { id: 'realiste', label: 'Réaliste' },
-            ]}
-          />
-        </PanelRow>
-        <PanelRow label="Caméra par défaut" column>
-          <Segmented
-            label="Caméra par défaut"
-            value={settings.cameraAngle}
-            onChange={(a) => set({ cameraAngle: a })}
-            options={[
-              { id: 35, label: '3/4' },
-              { id: 0, label: 'Face' },
-              { id: 90, label: 'Profil' },
-            ]}
-          />
-        </PanelRow>
-      </Panel>
-
-      <Panel title="Rounds par défaut" id="p-rounds">
+          </SetItem>
+          <SetItem id="rounds" icon="repeat" title="Rounds par défaut" summary={`${settings.defaultRoundSec / 60} min, repos ${settings.defaultRestSec} s`}>
         <PanelRow label="Durée du round" column>
           <Segmented label="Durée du round" value={settings.defaultRoundSec} onChange={(v) => set({ defaultRoundSec: v })} options={[60, 120, 180, 300].map((s) => ({ id: s, label: `${s / 60} min` }))} />
         </PanelRow>
         <PanelRow label="Repos" column>
           <Segmented label="Repos" value={settings.defaultRestSec} onChange={(v) => set({ defaultRestSec: v })} options={[30, 45, 60, 90].map((s) => ({ id: s, label: `${s} s` }))} />
         </PanelRow>
-      </Panel>
+          </SetItem>
+          {/* 1.3.0: how the instructions are shown under the coach during the session */}
+          <SetItem id="consignes" icon="list" title="Consignes pendant la séance" summary={settings.consignes === 'point' ? 'Point du moment seulement' : `Enchaînées · ${String(settings.consigneSec).replace('.', ',')} s par consigne`}>
+        <PanelRow label="Affichage" column>
+          <Segmented
+            label="Affichage des consignes"
+            value={settings.consignes}
+            onChange={(v) => set({ consignes: v })}
+            options={[
+              { id: 'enchainees', label: 'Enchaînées' },
+              { id: 'point', label: 'Point du moment' },
+            ]}
+          />
+        </PanelRow>
+        <p className="small muted" style={{ padding: '0 0 8px' }}>
+          {settings.consignes === 'point'
+            ? 'Sous le coach, seulement le point clé de la phase qu’il joue, comme avant la 1.3.0.'
+            : 'Sous le coach, une consigne à la fois : la consigne principale, puis chaque point clé, puis on recommence. La pause les arrête.'}
+        </p>
+        {settings.consignes === 'enchainees' && (
+          <PanelRow label="Temps par consigne" column>
+            <Segmented label="Temps par consigne" value={settings.consigneSec} onChange={(v) => set({ consigneSec: v })} options={CONSIGNE_SECS.map((s) => ({ id: s, label: `${String(s).replace('.', ',')} s` }))} />
+          </PanelRow>
+        )}
+          </SetItem>
+          {/* 1.4.0 (Youssef, 2026-10-28: « Toute l'interface doit pulser ou clignoter discrètement au rythme du bip du
+              round ou de l'annonce vocale des combinaisons ») */}
+          <SetItem id="pulsation" icon="notifications" title="Pulsation pendant la séance" summary={settings.pulse === 'off' ? 'Coupée' : `${PULSE_LABEL[settings.pulse]} · ${pct(settings.pulseIntensity)}`}>
+            <PanelRow label="Style" column>
+              <Segmented
+                label="Style de la pulsation"
+                value={settings.pulse}
+                onChange={(v) => set({ pulse: v })}
+                options={PULSE_STYLES.map((id) => ({ id, label: PULSE_LABEL[id] }))}
+              />
+            </PanelRow>
+            {settings.pulse !== 'off' && <SliderRow id="pi" label="Intensité" value={settings.pulseIntensity} min={0.3} max={1} step={0.1} onChange={(v) => set({ pulseIntensity: v })} format={pct} />}
+            <p className="small muted" style={{ padding: '0 0 8px' }}>
+              L’écran s’éclaire brièvement à chaque signal de la séance : gong, décompte, annonce d’un coup. Jamais plus de 3 éclairs par seconde.
+            </p>
+          </SetItem>
+          <SetItem id="coach-ia" icon="coachAi" title="Coach IA" summary={`Répond sur le téléphone · historique ${ai.keepHistory ? 'gardé' : 'désactivé'}`}>
+            <Toggle
+              label="M’appeler par mon pseudo"
+              hint={profile.pseudo ? `Le coach t’appelle « ${profile.pseudo} »` : 'Renseigne un pseudo dans Mes infos'}
+              on={profile.coachAi.usePseudo}
+              onChange={(v) => updateProfile({ coachAi: { ...profile.coachAi, usePseudo: v } })}
+            />
+            <CoachAiSettings />
+            <PanelRow label="Tes questions restent sur cet appareil" hint="Le coach IA répond sur l’appareil : aucune question n’est envoyée sur internet." />
+            <SetLink to="/coach-ia" label="Historique des échanges" hint="Historique local désactivé par défaut, effaçable à tout moment" testId="reglages-coach-ia-history" />
+          </SetItem>
+          <SetItem id="questionnaire" icon="details" title="Questionnaire et niveaux" summary={`${DISCIPLINES.find((x) => x.id === d)?.name ?? '—'} · ${LEVELS.find((l) => l.id === profile.levels[d])?.name ?? '—'} · ${profile.guard === 'gaucher' ? 'gaucher' : 'orthodoxe'}`}>
+            <p className="small muted">Refaire l’évaluation de départ : tes réponses actuelles restent tant que tu ne valides pas le nouveau questionnaire.</p>
+            <button type="button" className="btn secondary" onClick={() => (updateProfile({ completed: false }), nav('/bienvenue'))} data-testid="reglages-questionnaire">
+              Refaire le questionnaire
+            </button>
+          </SetItem>
+        </SetGroup>
 
-      <Panel title="Données et confidentialité" id="p-data">
-        <LinkRow to="/confidentialite" icon={<IconShield className="muted" />} label="Confidentialité" hint="Aucune mesure d’audience, aucune publicité ; synchronisation seulement si tu l’actives" />
+        <SetGroup title="Affichage">
+          <SetItem id="apparence" icon="theme" title="Apparence" summary={`${theme} · ${textSize} · français`}>
+            <PanelRow label="Thème" hint="Nuit par défaut. Auto suit ton téléphone." column>
+              <Segmented
+                label="Thème"
+                value={settings.theme}
+                onChange={(v) => set({ theme: v })}
+                options={[
+                  // 1.0.0 (refonte ergonomique): Nuit first and by default, Jour, Auto
+                  { id: 'sombre', label: 'Nuit' },
+                  { id: 'clair', label: 'Jour' },
+                  { id: 'auto', label: 'Auto' },
+                ]}
+              />
+            </PanelRow>
+            <PanelRow label="Taille du texte" column>
+              <Segmented
+                label="Taille du texte"
+                value={profile.display.textSize}
+                onChange={(v) => updateProfile({ display: { ...profile.display, textSize: v } })}
+                options={[
+                  { id: 'normal', label: 'Normale' },
+                  { id: 'grand', label: 'Grande' },
+                ]}
+              />
+            </PanelRow>
+            <Toggle label="Réduire les animations" hint="Écrans et transitions sans mouvement" on={profile.display.reduceMotion} onChange={(v) => updateProfile({ display: { ...profile.display, reduceMotion: v } })} />
+            <PanelRow label="Langue" hint="Français (seule langue disponible pour l’instant)" />
+          </SetItem>
+          <SetItem id="affichage" icon="display" title="Affichage 3D" summary={`Qualité ${quality.toLowerCase()} · tenue ${settings.coachOutfit ? 'de la discipline' : 'de base'}`}>
+          {/* v0.31: discipline outfits of the Ultra-réaliste coaches (on by default) */}
+          <Toggle
+            on={settings.coachOutfit}
+            onChange={(v) => set({ coachOutfit: v })}
+            label="Tenue de la discipline"
+            hint="En Ultra-réaliste, le coach porte la tenue de la discipline : gants, short, kimono… Désactivée, il s’entraîne en tenue de base."
+          />
+          {settings.coachOutfit && (
+            <PanelRow label="Jiu-jitsu brésilien" column>
+              <Segmented
+                label="Tenue de jiu-jitsu brésilien"
+                value={settings.bjjOutfit}
+                onChange={(v) => set({ bjjOutfit: v })}
+                options={[
+                  { id: 'gi', label: 'Kimono (gi)' },
+                  { id: 'nogi', label: 'Sans kimono (no-gi)' },
+                ]}
+              />
+            </PanelRow>
+          )}
+          <PanelRow label="Qualité" hint="En mode Auto, la qualité baisse d’elle-même si l’appareil n’arrive pas à suivre." column>
+            <Segmented
+              label="Qualité"
+              value={settings.quality}
+              onChange={(q) => set({ quality: q })}
+              options={[
+                { id: 'auto', label: 'Auto' },
+                { id: 'haute', label: 'Haute' },
+                { id: 'basse', label: 'Économie' },
+              ]}
+            />
+          </PanelRow>
+          {settings.coachStyle === 'realiste' && settings.coachRender === 'premium' && (
+            <PanelRow label="Lumière du coach" column>
+              <Segmented
+                label="Lumière du coach"
+                value={settings.coachLight}
+                onChange={(v) => set({ coachLight: v })}
+                options={[
+                  { id: 'studio', label: 'Studio' },
+                  { id: 'vive', label: 'Vive (fond sombre)' },
+                ]}
+              />
+              <p className="small muted">« Vive » reprend la lumière du labo CME : plus claire, avec un contour bleuté, et un fond sombre pendant l’entraînement.</p>
+            </PanelRow>
+          )}
+          <PanelRow label="Version du rendu 3D" column>
+            <Segmented
+              label="Version du rendu 3D"
+              value={settings.coachRender}
+              onChange={(v) => set({ coachRender: v })}
+              options={[
+                { id: 'premium', label: 'Nouvelle (0.24)' },
+                { id: 'precedent', label: 'Précédente (secours)' },
+              ]}
+            />
+            <p className="small muted">La version précédente reste disponible tant que la nouvelle n’est pas validée sur ton téléphone.</p>
+          </PanelRow>
+          <div id="reglage-camera" data-testid="settings-camera" />
+          <PanelRow label="Caméra par défaut" column>
+            <Segmented
+              label="Caméra par défaut"
+              value={settings.cameraAngle}
+              onChange={(a) => set({ cameraAngle: a })}
+              options={[
+                { id: 35, label: '3/4' },
+                { id: 0, label: 'Face' },
+                { id: 90, label: 'Profil' },
+              ]}
+            />
+          </PanelRow>
+            <Diag3dRows />
+          </SetItem>
+        </SetGroup>
+
+        <SetGroup title="Données">
+          <SetItem id="donnees" icon="privacy" title="Données et confidentialité" summary="Sur ce téléphone · exporter, importer, effacer">
+            <AccountDataBody />
         <div className="panel-row col">
           <span className="small muted">L’export crée un fichier que tu peux garder ou réimporter sur un autre appareil.</span>
           <div className="grid2">
             <button type="button" className="btn secondary" onClick={doExport}>
-              <IconDownload width={18} /> Exporter
+              <AppIcon id="download" size={18} /> Exporter
             </button>
             <button type="button" className="btn secondary" onClick={() => file.current?.click()}>
-              <IconUpload width={18} /> Importer
+              <AppIcon id="upload" size={18} /> Importer
             </button>
           </div>
           <input ref={file} type="file" accept="application/json,.json" hidden onChange={(e) => e.target.files?.[0] && doImport(e.target.files[0])} />
@@ -200,18 +401,19 @@ export function SettingsPage() {
         </div>
         <div className="panel-row">
           <button type="button" className="btn danger block" onClick={() => setConfirmErase(true)}>
-            <IconTrash width={18} /> Tout effacer
+            <AppIcon id="delete" size={18} /> Tout effacer
           </button>
         </div>
-      </Panel>
-
-      <Panel title="À propos" id="p-about">
-        <p className="small muted" style={{ padding: '12px 0' }}>
-          Combat Shadow Studio, version {import.meta.env.VITE_APP_VERSION} (développement). Combattants 3D générés à partir de MakeHuman (licence CC0), animations produites par le moteur de l’application. Cette application ne
-          remplace pas un entraîneur ni un avis médical.
-        </p>
-      </Panel>
-
+          </SetItem>
+          <SetItem id="a-propos" icon="info" title="À propos" summary={`Version ${import.meta.env.VITE_APP_VERSION}`}>
+            <p className="small muted settings-version">
+              Version {import.meta.env.VITE_APP_VERSION}
+              <br />
+              Combattants 3D générés à partir de MakeHuman (licence CC0), animations produites par le moteur de l’application. Cette application ne remplace pas un entraîneur ni un avis médical.
+            </p>
+          </SetItem>
+        </SetGroup>
+      </SettingsList>
       {confirmErase && (
         <ConfirmDialog
           title="Tout effacer ?"

@@ -1,11 +1,12 @@
-import { Component, ReactNode, Suspense, lazy, useCallback, useEffect, useMemo, useRef } from 'react';
-import type { ComboPlayer, PlayerEvents } from '../../../engine/player';
+import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CoachScreen } from '../../coach-screen/CoachScreen';
+import type { ComboPlayer, PlayerEvents } from '../../../engine';
 import type { StageView } from '../../../three/StudioStage';
 import type { DisciplineId } from '../../../domain/types';
 import type { FighterLook } from '../../../editor/look';
 import { TECHNIQUE_BY_ID } from '../../../domain/techniques';
 import { oriented } from '../../../domain/camera';
-import { IconPause, IconPlay } from '../../icons';
+import { AppIcon } from '../../icons';
 
 const CoachStage = lazy(() => import('../../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
 
@@ -53,20 +54,56 @@ const steps = (seq: string[]) =>
   }));
 const NO_EVENTS: PlayerEvents = {};
 
-class StageBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  render() {
-    if (this.state.failed) return <div className="hero-loading small">Affichage 3D indisponible sur cet appareil. Tes réglages sont quand même enregistrés.</div>;
-    return this.props.children;
-  }
+/** what the camera frames: the whole body, or a close-up */
+export type PreviewPart = 'corps' | 'visage' | 'buste' | 'jambes';
+
+export const PART_BUTTONS: { id: PreviewPart; label: string; testId: string }[] = [
+  { id: 'corps', label: 'Corps', testId: 'part-corps' },
+  { id: 'visage', label: 'Visage', testId: 'face-zoom' },
+  { id: 'buste', label: 'Buste', testId: 'part-buste' },
+  { id: 'jambes', label: 'Jambes', testId: 'part-jambes' },
+];
+
+/** close-ups: height looked at (fraction of the body), zoom, camera height */
+const PARTS: Record<Exclude<PreviewPart, 'corps'>, { focus: number; span: number; el: number }> = {
+  visage: { focus: 0.9, span: 0.3, el: 4 },
+  buste: { focus: 0.75, span: 0.58, el: 6 },
+  jambes: { focus: 0.3, span: 0.68, el: 12 },
+};
+
+type Inset = NonNullable<StageView['inset']>;
+
+/** parts of the stage covered by the buttons, measured on screen (fractions) */
+function useInset(stage: React.RefObject<HTMLDivElement | null>, covers: React.RefObject<HTMLElement | null>[]) {
+  const [inset, setInset] = useState<Inset | undefined>(undefined);
+  useEffect(() => {
+    const el = stage.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const measure = () => {
+      const r = el.getBoundingClientRect();
+      if (r.width < 10 || r.height < 10) return;
+      const [top, right, bottom] = covers.map((c) => c.current?.getBoundingClientRect());
+      const next: Inset = {
+        top: top ? Math.max(0, top.bottom - r.top + 4) / r.height : 0,
+        right: right ? Math.max(0, r.right - right.left + 4) / r.width : 0,
+        bottom: bottom ? Math.max(0, r.bottom - bottom.top + 4) / r.height : 0,
+        left: 0,
+      };
+      setInset((p) => (p && Math.abs(p.top - next.top) + Math.abs(p.right - next.right) + Math.abs(p.bottom - next.bottom) < 0.01 ? p : next));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    covers.forEach((c) => c.current && ro.observe(c.current));
+    return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return inset;
 }
 
 export interface PreviewState {
   mode: ViewMode;
-  faceZoom: boolean;
+  part: PreviewPart;
   anim: string;
   playing: boolean;
 }
@@ -122,12 +159,21 @@ export function Preview({
     else player.current.pause();
   }, [state.playing]);
 
+  const stageRef = useRef<HTMLDivElement>(null);
+  const partsRef = useRef<HTMLDivElement>(null);
+  const viewsRef = useRef<HTMLDivElement>(null);
+  const animRef = useRef<HTMLDivElement>(null);
+  // the fighter is framed in the part of the stage the buttons leave free (top row, right column, bottom bar)
+  const inset = useInset(stageRef, [partsRef, viewsRef, animRef]);
   const view = useMemo<StageView>(() => {
     const base = VIEW_BUTTONS.find((b) => b.id === state.mode) ?? VIEW_BUTTONS[3];
     const az = oriented({ az: base.az }, southpaw);
-    if (state.faceZoom) return { az, el: 4, zoom: 3.4, focus: 0.92, closeUp: true };
-    return { az, el: state.mode === 'dos' ? 10 : 6, zoom: 0.9, focus: 0.52 };
-  }, [state.mode, state.faceZoom, southpaw]);
+    if (state.part !== 'corps') {
+      const p = PARTS[state.part];
+      return { az, el: p.el, zoom: 1, span: p.span, focus: p.focus, closeUp: true, inset };
+    }
+    return { az, el: state.mode === 'dos' ? 10 : 6, zoom: 1, focus: 0.52, inset };
+  }, [state.mode, state.part, southpaw, inset]);
 
   const onUserOrbit = useCallback(() => onState({ mode: 'libre' }), [onState]);
   // the guard is framed from the real animation too, so a tall fighter or a helmet is never cropped
@@ -135,56 +181,66 @@ export function Preview({
 
   return (
     <div className="cs-preview">
-      <div className="cs-stage" role="img" aria-label="Aperçu 3D de ton combattant. Fais glisser pour tourner autour, pince ou utilise la molette pour zoomer.">
-        <StageBoundary>
-          <Suspense
-            fallback={
-              <div className="hero-loading" role="status" aria-label="Chargement du combattant">
-                <div className="stage-skeleton" />
-              </div>
-            }
+      {/* 1.4.0: the coach screen of the app (the same module everywhere): a tap shows the fullscreen in the zone of
+          the fighter, a double tap shows it on the whole screen; the angles and the framing stay around it */}
+      <CoachScreen
+        context="apercu"
+        className="cs-stage"
+        screenRef={stageRef}
+        testId="studio-stage"
+        place="aperçu"
+        stageClassName="cs-stage-3d"
+        stageLabel="Aperçu 3D de ton combattant. Fais glisser pour tourner autour, pince ou utilise la molette pour zoomer. Touche deux fois pour le plein écran."
+        hint={false}
+        fallback={
+          <div className="hero-loading" role="status" aria-label="Chargement du combattant">
+            <div className="stage-skeleton" />
+          </div>
+        }
+        stage={
+          <CoachStage
+            backdrop="dark"
+            coach={look.sex}
+            look={look}
+            discipline={discipline}
+            southpaw={southpaw}
+            view={view}
+            free={state.mode === 'libre'}
+            onUserOrbit={onUserOrbit}
+            frameIds={frameIds}
+            quality={quality}
+            events={NO_EVENTS}
+            onPlayer={onPlayer}
+          />
+        }
+      />
+
+      <div className="cs-parts" role="radiogroup" aria-label="Cadrage" ref={partsRef}>
+        {PART_BUTTONS.map((b) => (
+          <button
+            key={b.id}
+            type="button"
+            role="radio"
+            className="cs-part-btn"
+            aria-checked={state.part === b.id}
+            aria-pressed={state.part === b.id}
+            onClick={() => onState({ part: b.id, mode: b.id === 'visage' && state.mode === 'libre' ? 'face' : state.mode })}
+            data-testid={b.testId}
           >
-            <CoachStage
-              backdrop="dark"
-              coach={look.sex}
-              look={look}
-              discipline={discipline}
-              southpaw={southpaw}
-              view={view}
-              free={state.mode === 'libre'}
-              onUserOrbit={onUserOrbit}
-              frameIds={frameIds}
-              quality={quality}
-              events={NO_EVENTS}
-              onPlayer={onPlayer}
-            />
-          </Suspense>
-        </StageBoundary>
+            {b.label}
+          </button>
+        ))}
       </div>
 
-      <div className="cs-views" role="group" aria-label="Angle de vue">
+      <div className="cs-views" role="group" aria-label="Angle de vue" ref={viewsRef}>
         {VIEW_BUTTONS.map((b) => (
           <button key={b.id} type="button" className="cs-view-btn" aria-pressed={state.mode === b.id} onClick={() => onState({ mode: b.id })} data-testid={`view-${b.id}`}>
             {b.label}
           </button>
         ))}
-        <button
-          type="button"
-          className="cs-view-btn"
-          aria-pressed={state.faceZoom}
-          onClick={() =>
-            onState({
-              faceZoom: !state.faceZoom,
-              mode: state.mode === 'libre' ? 'face' : state.mode,
-            })
-          }
-          data-testid="face-zoom"
-        >
-          Visage
-        </button>
       </div>
 
-      <div className="cs-anim">
+      <div className="cs-anim" ref={animRef}>
         <button
           type="button"
           className="cs-play"
@@ -192,7 +248,7 @@ export function Preview({
           aria-label={state.playing ? 'Mettre l’animation en pause' : 'Lancer l’animation'}
           data-testid="anim-play"
         >
-          {state.playing ? <IconPause /> : <IconPlay />}
+          {state.playing ? <AppIcon id="pause" /> : <AppIcon id="play" />}
         </button>
         <label className="sr-only" htmlFor="cs-anim-select">
           Animation

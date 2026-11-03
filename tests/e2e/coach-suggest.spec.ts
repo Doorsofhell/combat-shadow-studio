@@ -40,8 +40,43 @@ const exerciseOn = (d: string, tech: string) => EXERCISES.find((e) => e.discipli
 async function openCoach(page: Page, ex: string) {
   await page.goto('about:blank');
   await page.goto(`/#/entrainement?ex=${ex}&mode=technique`);
-  await page.getByTestId('ask-coach').tap();
+  // 0.25 (Youssef, 2026-10-20 12:30: « le coach IA doit être identique sur tous les écrans, une bulle flottante en bas à droite »): the training screen's own « Coach » button is replaced by the app's bubble
+  // v0.32 (navigation, 2026-10-22): no floating bubble any more, the Coach IA is in the Menu of the bottom bar
+  // 1.1.0: through « Rechercher », in « Plus » during the session
+  await page.getByTestId('bottom-bar').locator('[data-action="menu"]').tap();
+  await page.getByTestId('cmd-search').tap();
+  // 1.7.0: the ✦ of the bar, with the field empty
+  await page.getByTestId('search-ai').tap();
   await expect(page.getByTestId('coach-suggestion').first()).toBeVisible();
+}
+
+/**
+ * 0.27: the panel remembers the questions it showed and offers others at the next opening. To ask each
+ * question of a first display in turn, the memory is emptied before reopening (as on a first use).
+ */
+async function forgetShownQuestions(page: Page) {
+  // a list counts as seen after 1.5 s on screen: let the pending one be written first
+  await page.waitForTimeout(1600);
+  await page.evaluate(
+    () =>
+      new Promise<void>((res, rej) => {
+        const r = indexedDB.open('keyval-store');
+        r.onsuccess = () => {
+          const store = r.result.transaction('keyval', 'readwrite').objectStore('keyval');
+          const g = store.get('u:local:css-coach-ai');
+          g.onsuccess = () => {
+            if (!g.result) return res();
+            const v = JSON.parse(g.result as string);
+            v.state.recentSuggestions = [];
+            const w = store.put(JSON.stringify(v), 'u:local:css-coach-ai');
+            w.onsuccess = () => res();
+            w.onerror = () => rej(w.error);
+          };
+          g.onerror = () => rej(g.error);
+        };
+        r.onerror = () => rej(r.error);
+      }),
+  );
 }
 
 const rail = (page: Page) => page.getByTestId('coach-suggest-rail');
@@ -117,9 +152,12 @@ test('questions suggérées : chaque question répond, une seule fois, et propos
   for (const q of ['Comment bien pivoter mon pied arrière ?', 'Comment utiliser ma hanche pour frapper ?', 'Où placer ma main avant ?', 'Comment éviter de perdre l’équilibre ?', 'Comment revenir rapidement en garde ?', 'Quelle est la différence entre jab et direct ?'])
     expect(qs).toContain(q);
   for (const q of qs.filter((x) => !x.startsWith('Montre-moi'))) {
+    await forgetShownQuestions(page);
     await openCoach(page, exerciseOn('mma', 'direct'));
     const card = page.getByTestId('coach-suggestion').filter({ hasText: q });
     await card.scrollIntoViewIfNeeded();
+    // a tap within 150 ms of a scroll of the rail is read as the end of a swipe (SuggestRail)
+    await page.waitForTimeout(250);
     await card.tap();
     const answer = page.getByTestId('coach-answer');
     await expect(answer, q).not.toContainText(PLACEHOLDER);
@@ -139,6 +177,24 @@ test('questions suggérées : un double tap n’envoie qu’une question', async
   await page.goto('/#/coach-ia');
   await page.getByRole('switch', { name: /Garder l’historique/ }).check({ force: true });
   await expect(page.getByRole('switch', { name: /Garder l’historique/ })).toBeChecked();
+  // the setting is written to IndexedDB asynchronously: wait until it is saved before reloading the app
+  // (openCoach reloads), otherwise the reload can read the old value and nothing is recorded
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          new Promise<string>((res) => {
+            const r = indexedDB.open('keyval-store');
+            r.onsuccess = () => {
+              const g = r.result.transaction('keyval').objectStore('keyval').get('u:local:css-coach-ai');
+              g.onsuccess = () => res(String(g.result ?? ''));
+              g.onerror = () => res('');
+            };
+            r.onerror = () => res('');
+          }),
+      ),
+    )
+    .toContain('"keepHistory":true');
   await openCoach(page, exerciseOn('boxe', 'jab'));
   const card = page.getByTestId('coach-suggestion').first();
   const q = (await card.textContent())!;
@@ -176,8 +232,10 @@ test('questions suggérées : changement de technique pendant la séance', async
   await seed(page);
   await openCoach(page, exerciseOn('boxe', 'jab'));
   const first = await page.getByTestId('coach-suggestion').allTextContents();
-  // the panel stays open while the exercise changes: its questions follow
-  await page.getByRole('button', { name: 'Exercice suivant' }).tap();
+  // the panel stays open while the exercise changes: its questions follow (v0.32: « Exercice suivant » is a command
+  // of the Menu, « Sur cet écran »)
+  await page.getByTestId('bottom-bar').locator('[data-action="menu"]').tap();
+  await page.getByTestId('cmd-next').tap();
   await expect(page.getByTestId('coach-ask-panel')).toBeVisible();
   const move = (await page.getByTestId('current-move').textContent())!;
   await expect.poll(async () => (await page.getByTestId('coach-suggestion').allTextContents()).join('|')).not.toBe(first.join('|'));

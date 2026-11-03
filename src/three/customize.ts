@@ -11,13 +11,15 @@
  * - rigid gear (boxing gloves, headgear bar, mouthguard) and hair pieces (bun, ponytail, braids)
  *   are attached to the hand or head bone.
  */
+import { makeSkinUniforms, patchRealSkin, prepareDetail } from './skin';
+import { AtlasRects, GROOM_BEARD_GLSL, GROOM_STYLES, bodyHairCards, groomFace, lashCards, skinnedGroom, GroomSource, attachToHead, beardCards, browCards, hairMaterial, scalpCards } from './groom';
 import {
   BackSide,
   BufferAttribute,
   BufferGeometry,
   CatmullRomCurve3,
   Color,
-  LatheGeometry,
+  DoubleSide,
   Material,
   Matrix4,
   Mesh,
@@ -29,11 +31,10 @@ import {
   Texture,
   TorusGeometry,
   TubeGeometry,
-  Vector2,
   Vector3,
   Vector4,
 } from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { GLOVE_INDEX, GLOVE_POSITIONS } from './gloveShape';
 import type { FighterLook, Paint, Pattern, Tattoo, TattooZone } from '../editor/look';
 import { TATTOO_DESIGNS, tattooAtlas } from '../editor/tattoos';
 
@@ -112,6 +113,25 @@ export function bindBonePositions(mesh: SkinnedMesh) {
   return out;
 }
 
+/**
+ * The eyelids fold sharply around the eye: at full width the ink hull pokes through the lids and reads
+ * as stray strokes on the face. The outline fades out within a few centimetres of each eye.
+ */
+function thinInkNearEyes(body: SkinnedMesh, meta: CoachMeta) {
+  const ink = body.geometry.getAttribute('aInk');
+  if (!ink || body.geometry.userData.eyeInk) return;
+  const pos = body.geometry.getAttribute('position');
+  const eyes = [v3(meta.eyeL), v3(meta.eyeR)];
+  const p = new Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    p.fromBufferAttribute(pos, i);
+    const d = Math.min(p.distanceTo(eyes[0]), p.distanceTo(eyes[1]));
+    if (d < 0.045) ink.setX(i, ink.getX(i) * (0.15 + 0.85 * Math.max(0, (d - 0.025) / 0.02)));
+  }
+  ink.needsUpdate = true;
+  body.geometry.userData.eyeInk = true;
+}
+
 export function mapBody(mesh: SkinnedMesh, meta: CoachMeta): BodyMap {
   const g = mesh.geometry;
   const pos = g.getAttribute('position').array as Float32Array;
@@ -121,7 +141,24 @@ export function mapBody(mesh: SkinnedMesh, meta: CoachMeta): BodyMap {
   const count = g.getAttribute('position').count;
   const names = mesh.skeleton.bones.map((b) => boneKey(b.name));
   const bone = bindBonePositions(mesh);
-  const track = ['LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm', 'LeftShoulder', 'RightShoulder', 'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg', 'Neck', 'Head', 'Hips', 'Spine', 'Spine1', 'Spine2'];
+  const track = [
+    'LeftArm',
+    'RightArm',
+    'LeftForeArm',
+    'RightForeArm',
+    'LeftShoulder',
+    'RightShoulder',
+    'LeftUpLeg',
+    'RightUpLeg',
+    'LeftLeg',
+    'RightLeg',
+    'Neck',
+    'Head',
+    'Hips',
+    'Spine',
+    'Spine1',
+    'Spine2',
+  ];
   const w: Record<string, Float32Array> = {};
   for (const t of track) w[t] = new Float32Array(count);
   const chain: Chain[] = new Array(count);
@@ -209,15 +246,23 @@ export function regionWeights(b: BodyMap) {
     B[i * 4 + 3] = (torso + legs * 0.6) * back * smooth(pelvisY - 0.16, pelvisY - 0.08, y) * smooth(pelvisY + 0.06, pelvisY - 0.02, y);
     // C
     C[i * 4] = Math.min(1, w.Neck[i]) * (c === 'head' ? 0 : 1);
-    C[i * 4 + 1] = torso * smooth(0.3, 0.8, Math.abs(nx)) * smooth(pelvisY - 0.04, pelvisY + 0.03, y) * smooth(pelvisY + 0.22, pelvisY + 0.12, y) +
+    C[i * 4 + 1] =
+      torso * smooth(0.3, 0.8, Math.abs(nx)) * smooth(pelvisY - 0.04, pelvisY + 0.03, y) * smooth(pelvisY + 0.22, pelvisY + 0.12, y) +
       torso * front * 0.6 * smooth(pelvisY - 0.02, pelvisY + 0.05, y) * smooth(nipY - 0.04, nipY - 0.12, y);
     const head = c === 'head' ? 1 : 0;
     C[i * 4 + 2] = head * smooth(0.0, 0.5, nz + 0.3) * smooth(mouth.y + 0.02 * K, mouth.y - 0.005 * K, y) * smooth(mouth.y - 0.075 * K, mouth.y - 0.04 * K, y);
     C[i * 4 + 3] = head * front * smooth(0.018 * K, 0.04 * K, Math.abs(x)) * smooth(mouth.y, mouth.y + 0.02 * K, y) * smooth(eye.y - 0.005 * K, eye.y - 0.025 * K, y);
     // D
     D[i * 4] = head * front * smooth(eye.y + 0.004 * K, eye.y + 0.016 * K, y) * smooth(eye.y + 0.045 * K, eye.y + 0.028 * K, y) * smooth(0.075 * K, 0.04 * K, Math.abs(x));
-    D[i * 4 + 1] = head * front * smooth(0.02 * K, 0.006 * K, Math.abs(x)) * smooth(mouth.y + 0.012 * K, mouth.y + 0.025 * K, y) * smooth(eye.y, eye.y - 0.012 * K, y) * smooth(meta.faceZ - 0.035 * K, meta.faceZ - 0.01, z);
-    D[i * 4 + 2] = torso * front * smooth(nipY - 0.1, nipY - 0.04, y) * smooth(nipY + 0.1, nipY + 0.03, y) * smooth(meta.nippleX + 0.08, meta.nippleX + 0.02, Math.abs(x)) * smooth(0.0, 0.03, Math.abs(x));
+    D[i * 4 + 1] =
+      head *
+      front *
+      smooth(0.02 * K, 0.006 * K, Math.abs(x)) *
+      smooth(mouth.y + 0.012 * K, mouth.y + 0.025 * K, y) *
+      smooth(eye.y, eye.y - 0.012 * K, y) *
+      smooth(meta.faceZ - 0.035 * K, meta.faceZ - 0.01, z);
+    D[i * 4 + 2] =
+      torso * front * smooth(nipY - 0.1, nipY - 0.04, y) * smooth(nipY + 0.1, nipY + 0.03, y) * smooth(meta.nippleX + 0.08, meta.nippleX + 0.02, Math.abs(x)) * smooth(0.0, 0.03, Math.abs(x));
     D[i * 4 + 3] = Math.min(1, fore) * smooth(0.95, 0.75, b.armT[i]);
   }
   return { A, B, C, D };
@@ -242,6 +287,13 @@ export interface CustomUniforms {
   uMouth: { value: Vector3 };
   uK: { value: number };
   uMasks: { value: Texture | null };
+  /** face paint of a champion coach (see tools/generator/coaches/face_paint.py), uFaceOn = 0 without one */
+  uFace: { value: Texture | null };
+  uFaceOn: { value: number };
+  /** 1: hair, beard and brows are hair cards (realistic, v0.29): the skin keeps a smooth shade under them */
+  uGroom: { value: number };
+  uGroomFace: { value: Vector3 };
+  uFlat: { value: number };
   uTatN: { value: number };
   uTatA: { value: Vector3[] };
   uTatU: { value: Vector3[] };
@@ -276,6 +328,11 @@ export function makeUniforms(meta: CoachMeta): CustomUniforms {
     uMouth: { value: mouthOf(meta) },
     uK: { value: meta.K },
     uMasks: { value: null },
+    uFace: { value: null },
+    uFaceOn: { value: 0 },
+    uGroom: { value: 0 },
+    uGroomFace: { value: new Vector3() },
+    uFlat: { value: 0 },
     uTatN: { value: 0 },
     uTatA: { value: arr(() => new Vector3()) },
     uTatU: { value: arr(() => new Vector3()) },
@@ -316,7 +373,7 @@ vRestN = normal;
 vDef = clamp(dot(aRegA, uDefA) + dot(aRegB, uDefB), 0.0, 1.5);
 `;
 
-const SKIN_FRAGMENT_HEAD = /* glsl */ `
+const SKIN_FRAGMENT_HEAD = GROOM_BEARD_GLSL + /* glsl */ `
 varying vec3 vRest;
 varying vec3 vRestN;
 varying float vDef;
@@ -330,6 +387,10 @@ uniform float uBodyHair;
 uniform vec3 uMouth;
 uniform float uK;
 uniform sampler2D uMasks;
+uniform sampler2D uFace;
+uniform float uFaceOn;
+uniform float uGroom;
+uniform float uFlat;
 uniform int uTatN;
 uniform vec3 uTatA[${MAX_TATTOOS}];
 uniform vec3 uTatU[${MAX_TATTOOS}];
@@ -358,13 +419,28 @@ const SKIN_FRAGMENT_BODY = /* glsl */ `
   // muscle definition: deepen the baked occlusion where the user asks for it
   float lum = dot(base, W) / max(dot(uSkinRef, W), 0.01);
   c *= max(0.35, 1.0 + (lum - 1.0) * vDef * 1.4);
+  // Anime: flat skin tone, the light and shade come from the cel shading (the texture's baked
+  // occlusion is what showed as stains); a trace of it keeps the lips and the creases
+  c = mix(c, uSkinTone * mix(1.0, lum, 0.2) * mix(vec3(1.0), base / max(dot(base, W), 0.01) * dot(uSkinRef, W) / max(uSkinRef, vec3(0.01)), 0.35), uFlat);
   vec4 mk = texture2D(uMasks, vMapUv);
-  float n = cssHash(floor(vMapUv * 2048.0));
+  // per-texel grain of the painted hair; with hair cards the skin only keeps a smooth shade under them
+  float n = mix(cssHash(floor(vMapUv * 2048.0)), 0.5, uGroom);
   float hair = clamp(mk.r * uHairCover * (0.75 + 0.25 * n), 0.0, 1.0);
   c = mix(c, uHairColor * (0.7 + 0.6 * n), hair);
-  float beard = mk.b * uBeard.x * beardRegion(vRest);
-  c = mix(c, uBeardColor * (0.7 + 0.6 * n), clamp(beard * (0.55 + 0.45 * n), 0.0, 1.0));
-  c = mix(c, uHairColor, mk.a * uBodyHair * step(0.6, n) * 0.8);
+  float beard = uBeard.x * mix(mk.b * beardRegion(vRest), groomBeard(vRest), uGroom);
+  // under the beard cards: a shaving shadow, not a solid paint
+  c = mix(c, uBeardColor * (0.7 + 0.6 * n), clamp(beard * (0.55 + 0.45 * n) * mix(1.0, 0.9, uGroom), 0.0, 1.0));
+  // Anime: body hair as a light flat shade, not a speckle (it read as stains on the chest)
+  c = mix(c, uHairColor, mk.a * uBodyHair * mix(step(0.6, n), 0.22, uFlat) * 0.8);
+  if (uFaceOn > 0.5) {
+    // face paint: g shadow, b warm tint, a eyebrow (hair colour, hair-like grain), r ink lines
+    vec4 fc = texture2D(uFace, vMapUv);
+    c *= 1.0 - 0.38 * fc.g;
+    c = mix(c, c * vec3(1.12, 0.78, 0.76), fc.b);
+    c = mix(c, uHairColor * (0.75 + 0.5 * n), fc.a * mix(0.95, 0.5, uGroom));
+    c = mix(c, vec3(0.055, 0.045, 0.05), fc.r);
+  }
+  // CSS_REAL_SKIN_COLOR
   for (int i = 0; i < ${MAX_TATTOOS}; i++) {
     if (i >= uTatN) break;
     vec3 q = vRest - uTatA[i];
@@ -401,10 +477,15 @@ const EYE_FRAGMENT = /* glsl */ `
 #include <map_fragment>
 {
   vec3 c = diffuseColor.rgb;
-  float mx = max(c.r, max(c.g, c.b));
-  float sat = mx - min(c.r, min(c.g, c.b));
-  float iris = smoothstep(0.02, 0.08, sat) * step(0.02, mx);
-  diffuseColor.rgb = mix(c, uEyeColor * (0.35 + 2.2 * dot(c, vec3(0.3, 0.59, 0.11))), iris);
+  // the iris is found by its place on the texture (the same eye texture in every model: two discs,
+  // measured on the image), not by its colour: the colour test also caught the pink veins and the
+  // grey edge of the whites, drawn as dark blotches (v0.29)
+  float d = min(distance(vMapUv, vec2(0.2885, 0.7093)), distance(vMapUv, vec2(0.7045, 0.2972)));
+  float iris = smoothstep(0.123, 0.113, d);
+  // the chosen colour keeps the drawing of the iris (its fibres): tint by the ratio of brightness
+  vec3 w = vec3(0.3, 0.59, 0.11);
+  vec3 tint = uEyeColor / max(dot(uEyeColor, w), 0.02);
+  diffuseColor.rgb = mix(c, tint * dot(c, w) * 1.25, iris * 0.9);
 }
 `;
 
@@ -431,6 +512,7 @@ const PAINT_HEAD = /* glsl */ `
 varying vec3 vRest;
 varying vec3 vRestN;
 varying float vCover;
+varying float vHem;
 uniform vec3 uColor;
 uniform vec3 uColor2;
 uniform float uPattern;
@@ -440,7 +522,12 @@ uniform float uGhost;
 vec3 cssPaint(vec3 p, vec3 n) {
   int pat = int(uPattern + 0.5);
   float m = 0.0;
-  if (pat == 1) m = step(0.82, abs(n.x));
+  if (pat == 1) {
+    // side stripe, anti-aliased (the draped cloth normal is smooth, so the edge is a clean line)
+    float ax = abs(normalize(n).x);
+    float w = max(fwidth(ax), 1e-3);
+    m = smoothstep(0.82 - w, 0.82 + w, ax);
+  }
   else if (pat == 2) m = step(0.0, p.x);
   else if (pat == 3) m = mod(floor(p.x * 22.0) + floor(p.y * 22.0) + floor(p.z * 22.0), 2.0);
   else if (pat == 4) m = step(0.3, sin(p.x * 31.0 + sin(p.y * 17.0) * 2.0) * sin(p.y * 23.0 + p.z * 19.0) + 0.5 * sin(p.z * 41.0 + p.x * 13.0));
@@ -454,8 +541,122 @@ vec3 cssPaint(vec3 p, vec3 n) {
 const PAINT_FRAGMENT = /* glsl */ `
 #include <color_fragment>
 if (vCover < 0.0) discard;
-diffuseColor.rgb = cssPaint(vRest, vRestN);
+diffuseColor.rgb = cssPaint(vRest, vRestN) * mix(1.0, 0.7, vHem);
 diffuseColor.a *= uGhost;
+#ifdef CSS_FABRIC
+  cssH = cssFabric(cssShade);
+  diffuseColor.rgb *= cssShade;
+#endif
+`;
+
+/**
+ * Fabric of the realistic look (CSS_FABRIC, set by the realistic cloth material): the cloth is drawn
+ * from its rest position on the body, so every detail stays on the garment as the coach moves.
+ * - soft folds (relief and a little shade in the creases), stretched around the limbs and the waist;
+ * - the knit (fine ribs) and the slight colour variation of the yarn, faded out before they get close
+ *   to the size of a pixel (no shimmer on a full-body view);
+ * - the elastic ribs of the waistband and the seam under it, the panel seams of the side stripes, and a
+ *   double topstitch along every edge (vCover is the distance to the cut, in metres).
+ * The details are a height (metres) turned into a normal from its screen derivatives, like a bump map.
+ */
+const FABRIC_HEAD = /* glsl */ `
+#ifdef CSS_FABRIC
+float cssH = 0.0;
+float cssShade = 1.0;
+float cssHash3(vec3 p) {
+  p = fract(p * 0.3183099 + 0.1);
+  p *= 17.0;
+  return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+float cssNoise(vec3 x) {
+  vec3 i = floor(x);
+  vec3 f = fract(x);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(mix(cssHash3(i), cssHash3(i + vec3(1.0, 0.0, 0.0)), f.x), mix(cssHash3(i + vec3(0.0, 1.0, 0.0)), cssHash3(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
+    mix(mix(cssHash3(i + vec3(0.0, 0.0, 1.0)), cssHash3(i + vec3(1.0, 0.0, 1.0)), f.x), mix(cssHash3(i + vec3(0.0, 1.0, 1.0)), cssHash3(i + vec3(1.0, 1.0, 1.0)), f.x), f.y),
+    f.z);
+}
+// 1 on a line of half-width w around d = 0, anti-aliased
+float cssLine(float d, float w) {
+  float aa = fwidth(d) + 1e-6;
+  return 1.0 - smoothstep(w - aa, w + aa, abs(d));
+}
+float cssFabric(out float shade) {
+  vec3 p = vRest;
+  // metres per pixel: details are faded out before they reach the pixel size
+  float px = length(fwidth(p)) + 1e-6;
+  float knit = (1.0 - smoothstep(0.3, 0.75, px / 0.0016)) * (1.0 - vHem);
+  float fine = (1.0 - smoothstep(0.3, 0.75, px / 0.004)) * (1.0 - vHem);
+  shade = 1.0;
+  // folds: soft creases, closer along the height than around the body
+  float f = cssNoise(p * vec3(16.0, 42.0, 16.0)) * 0.67 + cssNoise(p * vec3(34.0, 85.0, 34.0)) * 0.33;
+  float h = (f - 0.5) * 0.0022;
+  shade *= 1.0 - 0.09 * smoothstep(0.5, 0.15, f);
+  // knit
+  float k = 6.2832 / 0.0016;
+  h += sin((p.x + p.z) * k) * sin(p.y * k) * 0.00008 * knit;
+  // yarn colour
+  shade *= 1.0 + 0.06 * (cssNoise(p * 520.0) - 0.5) * fine + 0.035 * (cssNoise(p * 55.0) - 0.5);
+  // waistband: elastic ribs, a seam under it
+  if (uBandY > 0.0) {
+    float band = smoothstep(uBandY - 0.0015, uBandY + 0.0015, p.y);
+    h += band * sin(atan(p.z, p.x) * 280.0) * 0.00016 * fine;
+    float seam = cssLine(p.y - uBandY, 0.001);
+    h -= seam * 0.0006;
+    shade *= 1.0 - 0.22 * seam;
+  }
+  // panel seams along the side stripes
+  if (int(uPattern + 0.5) == 1) {
+    float seam = cssLine(abs(normalize(vRestN).x) - 0.82, 0.01);
+    h -= seam * 0.0005;
+    shade *= 1.0 - 0.18 * seam;
+  }
+  // double topstitch along the edges, in dashes
+  float st = max(cssLine(vCover - 0.007, 0.00045), cssLine(vCover - 0.013, 0.00045));
+  float dash = mix(1.0, smoothstep(0.25, 0.4, abs(fract(dot(p, vec3(1.0, 0.8, 1.2)) / 0.0035) - 0.5)), fine);
+  h -= st * 0.00035;
+  shade *= 1.0 - 0.2 * st * dash;
+  // the rolled hem: a slight ridge along the cut
+  h += smoothstep(0.004, 0.0, vCover) * 0.0006;
+  return h;
+}
+#endif
+`;
+
+/** the fabric height turned into a normal (see FABRIC_HEAD) */
+const FABRIC_NORMAL = /* glsl */ `
+#include <normal_fragment_maps>
+#ifdef CSS_FABRIC
+{
+  vec3 sp = -vViewPosition;
+  vec3 dpx = dFdx(sp);
+  vec3 dpy = dFdy(sp);
+  vec2 dh = vec2(dFdx(cssH), dFdy(cssH));
+  vec3 r1 = cross(dpy, normal);
+  vec3 r2 = cross(normal, dpx);
+  float det = dot(dpx, r1) * faceDirection;
+  vec3 grad = sign(det) * (dh.x * r1 + dh.y * r2);
+  normal = normalize(abs(det) * normal - grad);
+}
+#endif
+`;
+
+/** fabric: the sheen takes the colour of the yarn (a grey sheen turned black shorts grey), the roughness varies a little */
+const FABRIC_LIGHT = /* glsl */ `
+#include <lights_physical_fragment>
+#ifdef CSS_FABRIC
+  // the hem strip (the thickness of the cloth along the cut) is seen edge-on: lit with the normal of the
+  // cloth, its sheen and reflection peaked there and drew a white sawtooth along every edge
+  float cssOut = 1.0 - vHem;
+  #ifdef USE_SHEEN
+    material.sheenColor = (vec3(0.07) + 0.42 * sqrt(max(diffuseColor.rgb, vec3(0.0)))) * cssShade * cssOut;
+  #endif
+  material.specularColor *= cssOut;
+  material.specularColorBlended *= cssOut;
+  material.specularF90 *= cssOut;
+  material.roughness = clamp(material.roughness + 0.08 * (cssNoise(vRest * 90.0) - 0.5), 0.3, 1.0);
+#endif
 `;
 
 /** composes a material's onBeforeCompile with another patch */
@@ -473,6 +674,11 @@ function chainPatch(m: Material, key: string, patch: (shader: { vertexShader: st
 function addShape(shader: { vertexShader: string; uniforms: Record<string, unknown> }, u: CustomUniforms) {
   Object.assign(shader.uniforms, u);
   shader.vertexShader = SHAPE_VERTEX_HEAD + shader.vertexShader.replace('#include <begin_vertex>', SHAPE_VERTEX_BODY);
+}
+
+function addHide(shader: { vertexShader: string; fragmentShader: string }) {
+  shader.vertexShader = 'attribute float aHide;\nvarying float vHide;\n' + shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvHide = aHide;');
+  shader.fragmentShader = 'varying float vHide;\n' + shader.fragmentShader.replace('void main() {', 'void main() {\nif (vHide > 0.0) discard;');
 }
 
 function setRegions(g: BufferGeometry, r: { A: Float32Array; B: Float32Array; C: Float32Array; D: Float32Array }) {
@@ -518,7 +724,21 @@ export interface GarmentSpec {
   /** waistband above this height, in the second colour (0 = none) */
   bandY?: number;
   hemY?: number;
+  /**
+   * cloth that stands off the body (boxing and thai shorts, t-shirt): the surface is smoothed so it
+   * bridges the hollows between the muscles instead of following each of them (0 = skin-tight)
+   */
+  drape?: number;
+  /** hides the skin it covers (opaque clothes): the body cannot show through when a joint bends */
+  hidesBody?: boolean;
+  /** distance inside the cut from which the skin is hidden (default HIDE_MARGIN); thin straps need less */
+  hideMargin?: number;
+  /** strip of fabric thickness along the cut (default true) */
+  hem?: boolean;
 }
+
+/** distance inside the hem from which the skin under an opaque garment is not drawn (metres) */
+export const HIDE_MARGIN = 0.015;
 
 /** builds the shell geometry of a garment from the body vertices it covers */
 export function buildShell(body: BufferGeometry, map: BodyMap, spec: GarmentSpec): BufferGeometry | null {
@@ -538,34 +758,209 @@ export function buildShell(body: BufferGeometry, map: BodyMap, spec: GarmentSpec
   const remap = new Map<number, number>();
   const used: number[] = [];
   for (const v of tris) if (!remap.has(v)) (remap.set(v, used.length), used.push(v));
-  const g = new BufferGeometry();
-  const P = new Float32Array(used.length * 3);
-  const N = new Float32Array(used.length * 3);
-  const cover = new Float32Array(used.length);
+  const m = used.length;
+  const P = new Float32Array(m * 3);
+  const N = new Float32Array(m * 3);
+  const TH = new Float32Array(m);
   used.forEach((v, j) => {
     const th = spec.thickness(v);
+    TH[j] = th;
     for (let k = 0; k < 3; k++) {
       N[j * 3 + k] = map.nrm[v * 3 + k];
       P[j * 3 + k] = map.pos[v * 3 + k] + map.nrm[v * 3 + k] * th;
     }
-    cover[j] = cov[v];
   });
-  g.setAttribute('position', new BufferAttribute(P, 3));
-  g.setAttribute('normal', new BufferAttribute(N, 3));
+  if (spec.drape)
+    drapeShell(
+      P,
+      N,
+      TH,
+      used,
+      tris.map((v) => remap.get(v)!),
+      map,
+      spec.drape,
+    );
+
+  // hem: a strip from the cloth surface down to the skin along the cut (cover = 0), so the edge has
+  // the thickness of the fabric instead of a paper-thin cut
+  const hem: { p: number[]; q: number[]; nrm: number[]; src: number }[] = [];
+  const local = (v: number) => remap.get(v)!;
+  for (let t = 0; spec.hem !== false && t < tris.length; t += 3) {
+    const vs = [tris[t], tris[t + 1], tris[t + 2]];
+    const cuts: { j0: number; j1: number; f: number }[] = [];
+    for (let e = 0; e < 3; e++) {
+      const a = vs[e];
+      const b = vs[(e + 1) % 3];
+      if (cov[a] > 0 !== cov[b] > 0) cuts.push({ j0: local(a), j1: local(b), f: cov[a] / (cov[a] - cov[b]) });
+    }
+    if (cuts.length !== 2) continue;
+    const at = (c: { j0: number; j1: number; f: number }, arr: Float32Array) => [0, 1, 2].map((k) => arr[c.j0 * 3 + k] * (1 - c.f) + arr[c.j1 * 3 + k] * c.f);
+    const ends = cuts.map((c) => {
+      const outer = at(c, P);
+      const nn = at(c, N);
+      const th = TH[c.j0] * (1 - c.f) + TH[c.j1] * c.f;
+      const off = [0, 1, 2].map((k) => outer[k] - (map.pos[used[c.j0] * 3 + k] * (1 - c.f) + map.pos[used[c.j1] * 3 + k] * c.f));
+      const depth = Math.hypot(off[0], off[1], off[2]) || th;
+      const nl = Math.hypot(nn[0], nn[1], nn[2]) || 1;
+      // the inner edge sits just under the skin, so no gap shows between the hem and the body
+      const inner = outer.map((x, k) => x - (nn[k] / nl) * (depth + 0.0015));
+      return { outer, inner, nrm: nn.map((x) => x / nl), src: c.f < 0.5 ? c.j0 : c.j1 };
+    });
+    // the strip keeps the normal of the cloth: lit like the fabric next to it (a normal along the cut
+    // caught the rim light and drew a pale sawtooth along every hem)
+    for (const e of ends) hem.push({ p: e.outer, q: e.inner, nrm: e.nrm, src: e.src });
+  }
+
+  const extra = hem.length * 2;
+  const total = m + extra;
+  const g = new BufferGeometry();
+  const PP = new Float32Array(total * 3);
+  const NN = new Float32Array(total * 3);
+  const cover = new Float32Array(total);
+  PP.set(P);
+  NN.set(N);
+  used.forEach((v, j) => (cover[j] = cov[v]));
+  const hemSrc: number[] = [];
+  hem.forEach((h, i) => {
+    const o = m + i * 2;
+    PP.set(h.p, o * 3);
+    PP.set(h.q, (o + 1) * 3);
+    NN.set(h.nrm, o * 3);
+    NN.set(h.nrm, (o + 1) * 3);
+    cover[o] = cover[o + 1] = 0.001;
+    hemSrc.push(h.src, h.src);
+  });
+  g.setAttribute('position', new BufferAttribute(PP, 3));
+  g.setAttribute('normal', new BufferAttribute(NN, 3));
   g.setAttribute('aCover', new BufferAttribute(cover, 1));
+  // 1 on the hem strip: the inside of the fabric, in its own shadow
+  const hemFlag = new Float32Array(total);
+  hemFlag.fill(1, m);
+  g.setAttribute('aHem', new BufferAttribute(hemFlag, 1));
   const copy = (name: string) => {
     const src = body.getAttribute(name);
     if (!src) return;
     const it = src.itemSize;
-    const out = new (src.array.constructor as Float32ArrayConstructor)(used.length * it);
-    used.forEach((v, j) => {
+    const out = new (src.array.constructor as Float32ArrayConstructor)(total * it);
+    const from = (j: number) => (j < m ? used[j] : used[hemSrc[j - m]]);
+    for (let j = 0; j < total; j++) {
+      const v = from(j);
       for (let k = 0; k < it; k++) out[j * it + k] = (src.array as ArrayLike<number>)[v * it + k];
-    });
+    }
     g.setAttribute(name, new BufferAttribute(out, it, src.normalized));
   };
   for (const a of ['uv', 'skinIndex', 'skinWeight', 'aRegA', 'aRegB', 'aRegC', 'aRegD']) copy(a);
-  g.setIndex(tris.map((v) => remap.get(v)!));
+  // body vertex under each shell vertex, and the part hidden by a garment worn over this one
+  const src = new Int32Array(total);
+  for (let j = 0; j < total; j++) src[j] = j < m ? used[j] : used[hemSrc[j - m]];
+  g.userData.src = src;
+  g.setAttribute('aHide', new BufferAttribute(new Float32Array(total), 1));
+  const faces = tris.map((v) => remap.get(v)!);
+  // two triangles per hem segment, both sides (the strip is seen from above and from below)
+  for (let i = 0; i < hem.length; i += 2) {
+    const a = m + i * 2;
+    const b = a + 2;
+    faces.push(a, a + 1, b + 1, a, b + 1, b, a, b + 1, a + 1, a, b, b + 1);
+  }
+  g.setIndex(faces);
   return g;
+}
+
+/**
+ * Smooths a garment that stands off the body: a few passes of neighbour averaging over the welded
+ * surface (vertices split along texture seams move together); each point keeps the smoothed height
+ * above the skin (along the skin normal, kept between 0.75 and 1.6 times its thickness), so the cloth
+ * bridges the hollows, never sinks into the body, and its edges stay on the cut.
+ */
+function drapeShell(P: Float32Array, N: Float32Array, TH: Float32Array, used: number[], faces: number[], map: BodyMap, strength: number) {
+  const m = used.length;
+  // weld by rest position
+  const key = (j: number) => `${Math.round(map.pos[used[j] * 3] * 2e4)},${Math.round(map.pos[used[j] * 3 + 1] * 2e4)},${Math.round(map.pos[used[j] * 3 + 2] * 2e4)}`;
+  const ids = new Map<string, number>();
+  const weld = new Int32Array(m);
+  for (let j = 0; j < m; j++) {
+    const k = key(j);
+    if (!ids.has(k)) ids.set(k, ids.size);
+    weld[j] = ids.get(k)!;
+  }
+  const W = ids.size;
+  const nb: Set<number>[] = Array.from({ length: W }, () => new Set<number>());
+  for (let t = 0; t < faces.length; t += 3)
+    for (let e = 0; e < 3; e++) {
+      const a = weld[faces[t + e]];
+      const b = weld[faces[t + ((e + 1) % 3)]];
+      if (a !== b) (nb[a].add(b), nb[b].add(a));
+    }
+  const pos = new Float32Array(W * 3);
+  const cnt = new Float32Array(W);
+  for (let j = 0; j < m; j++) {
+    const w = weld[j];
+    if (cnt[w]++ === 0) for (let k = 0; k < 3; k++) pos[w * 3 + k] = P[j * 3 + k];
+  }
+  const passes = Math.round(2 + 6 * strength);
+  const next = new Float32Array(W * 3);
+  for (let it = 0; it < passes; it++) {
+    for (let w = 0; w < W; w++) {
+      const ns = nb[w];
+      if (!ns.size) {
+        for (let k = 0; k < 3; k++) next[w * 3 + k] = pos[w * 3 + k];
+        continue;
+      }
+      const avg = [0, 0, 0];
+      ns.forEach((o) => {
+        for (let k = 0; k < 3; k++) avg[k] += pos[o * 3 + k];
+      });
+      for (let k = 0; k < 3; k++) next[w * 3 + k] = pos[w * 3 + k] * 0.5 + (avg[k] / ns.size) * 0.5;
+    }
+    pos.set(next);
+  }
+  for (let j = 0; j < m; j++) {
+    const w = weld[j];
+    const v = used[j];
+    let d = 0;
+    for (let k = 0; k < 3; k++) d += (pos[w * 3 + k] - map.pos[v * 3 + k]) * N[j * 3 + k];
+    // between 0.75 and 1.6 times the thickness above the skin: the cloth bridges the hollows a little,
+    // never sinks into the body and never floats away from it (a top worn over it stays above it)
+    const min = TH[j] * 0.75;
+    const max = TH[j] * 1.6;
+    // only the height above the skin is taken from the smoothing: the slide along the surface pulled the
+    // open edges of the shell (waistband, leg openings) in and out, and the cut read as a ruffled frill
+    const h = Math.min(max, Math.max(min, d));
+    for (let k = 0; k < 3; k++) P[j * 3 + k] = map.pos[v * 3 + k] + h * N[j * 3 + k];
+  }
+  // normals of the draped cloth, shared across the texture seams: the side stripes and the light
+  // follow the cloth, not the muscles underneath
+  const acc = new Float32Array(W * 3);
+  const e1 = new Vector3();
+  const e2 = new Vector3();
+  const fn = new Vector3();
+  for (let t = 0; t < faces.length; t += 3) {
+    const [a, b, c] = [faces[t], faces[t + 1], faces[t + 2]];
+    e1.set(P[b * 3] - P[a * 3], P[b * 3 + 1] - P[a * 3 + 1], P[b * 3 + 2] - P[a * 3 + 2]);
+    e2.set(P[c * 3] - P[a * 3], P[c * 3 + 1] - P[a * 3 + 1], P[c * 3 + 2] - P[a * 3 + 2]);
+    fn.crossVectors(e1, e2);
+    for (const v of [a, b, c]) for (let k = 0; k < 3; k++) acc[weld[v] * 3 + k] += fn.getComponent(k);
+  }
+  for (let j = 0; j < m; j++) {
+    const w = weld[j];
+    fn.set(acc[w * 3], acc[w * 3 + 1], acc[w * 3 + 2]);
+    // keep the body normal where the cloth surface is degenerate, or flipped against the body
+    if (fn.lengthSq() < 1e-14 || fn.x * N[j * 3] + fn.y * N[j * 3 + 1] + fn.z * N[j * 3 + 2] <= 0) continue;
+    fn.normalize();
+    N[j * 3] = fn.x;
+    N[j * 3 + 1] = fn.y;
+    N[j * 3 + 2] = fn.z;
+  }
+}
+
+/** garments worn over another one: at least 9 mm above it where both cover the body (the drape of the shorts can stand a few millimetres off) */
+function layered(specs: Record<string, GarmentSpec>, under: GarmentSpec): Record<string, GarmentSpec> {
+  const out: Record<string, GarmentSpec> = {};
+  // eased in over 6 cm above the waistband, so the drape of the top does not pull it back under the edge;
+  // the drape lets the cloth underneath stand up to 1.6 times its thickness off the skin
+  const ease = (i: number) => Math.min(1, Math.max(0, (under.cover(i) + 0.06) / 0.06));
+  for (const [k, sp] of Object.entries(specs)) out[k] = { ...sp, thickness: (i) => Math.max(sp.thickness(i), (under.thickness(i) * (under.drape ? 1.6 : 1) + 0.005) * ease(i)) };
+  return out;
 }
 
 const clampN = (v: number) => (Number.isFinite(v) ? v : -1);
@@ -593,61 +988,106 @@ export function garmentSpecs(m: BodyMap) {
   const toes = (i: number) => isFoot(i) && z(i) > ankleZ + 0.1 * (K / 1);
   const armW = (i: number) => w.LeftArm[i] + w.RightArm[i];
 
-  const shorts = (waistTop: number, tMax: number): CoverFn => (i) =>
-    isTorso(i) ? Math.min(waistTop - y(i), 0.2) : isLeg(i) ? Math.min((tMax - legT[i]) * legLen, waistTop - y(i)) : -1;
-  const top = (sleeve: number | null, low = pelvisY + 0.04): CoverFn => (i) => {
-    const front = Math.max(0, nz(i));
-    const collar = neckY - 0.035 - 0.04 * front;
-    if (isTorso(i)) {
-      let c = Math.min(y(i) - low, collar - y(i));
-      if (sleeve === null) c = Math.min(c, (0.18 - armW(i)) * 0.4, (meta.shoulderX * 0.95 - Math.abs(x(i))) + (nipY + 0.02 - y(i) > 0 ? 0.2 : 0));
-      return c;
-    }
-    if (chain[i] === 'neck') return collar - y(i);
-    if (isArm(i)) return sleeve === null ? -1 : (sleeve - armT[i]) * armLen;
-    return -1;
-  };
+  const shorts =
+    (waistTop: number, tMax: number): CoverFn =>
+    (i) =>
+      isTorso(i) ? Math.min(waistTop - y(i), 0.2) : isLeg(i) ? Math.min((tMax - legT[i]) * legLen, waistTop - y(i)) : -1;
+  const neckZ = meta.neck[2];
+  const top =
+    (sleeve: number | null, low = pelvisY + 0.04): CoverFn =>
+    (i) => {
+      // the neckline dips in front: from the position around the neck (a normal-based dip followed
+      // every bump of the mesh and gave a jagged collar)
+      const front = Math.min(1, Math.max(0, (z(i) - neckZ) / 0.07));
+      const collar = neckY - 0.035 - 0.04 * front;
+      if (isTorso(i)) {
+        let c = Math.min(y(i) - low, collar - y(i));
+        if (sleeve === null) c = Math.min(c, (0.18 - armW(i)) * 0.4, meta.shoulderX * 0.95 - Math.abs(x(i)) + (nipY + 0.02 - y(i) > 0 ? 0.2 : 0));
+        return c;
+      }
+      if (chain[i] === 'neck') return collar - y(i);
+      if (isArm(i)) return sleeve === null ? -1 : (sleeve - armT[i]) * armLen;
+      // the buttocks and the top of the thighs belong to the leg bones: same hem height, so the cut stays
+      // a clean line instead of following the skinning boundary (jagged teeth at the lower back)
+      if (isLeg(i)) return y(i) - low;
+      return -1;
+    };
   const sportsBra: CoverFn = (i) => {
-    if (!isTorso(i)) return -1;
-    const band = Math.min(y(i) - (nipY - 0.1), nipY + (nz(i) > 0 ? 0.1 : 0.02) - y(i));
+    if (!isTorso(i) && !isArm(i) && chain[i] !== 'neck') return -1;
     const ax = Math.abs(x(i));
-    const strap = Math.min(ax - 0.045, 0.11 - ax, neckY - 0.02 - y(i), y(i) - nipY);
+    // one formula for the torso, the base of the neck and the top of the arm, cut by position only: a cut that changes with the
+    // skinning boundary leaves a ragged edge on the shoulder. Racer back: the straps run over the
+    // trapezius close to the neck (the shoulder blades move a lot in guard) and meet between the shoulder
+    // blades; the blend follows the normal so the front and the back join without a step.
+    // front/back from the position against the neck, not the normal: over the trapezius the normal
+    // turns from front to back within a few millimetres and tore the strap into jagged patches
+    const zb = Math.min(1, Math.max(0, (neckZ + 0.01 - z(i)) / 0.06));
+    const back = zb * zb * (3 - 2 * zb);
+    const t = Math.min(1, Math.max(0, (y(i) - nipY) / (neckY - 0.06 - nipY)));
+    // over the top the strap lies out on the shoulder (0.085), clear of the base of the neck where the
+    // trapezius folds when the shoulders rise in guard and tore a strap lying there into jagged patches
+    const top = Math.min(1, Math.max(0, (y(i) - (neckY - 0.1)) / 0.06));
+    const c = (0.062 + 0.023 * top) * (1 - back * (1 - t));
+    const strap = Math.min(0.022 - Math.abs(ax - c), neckY + 0.02 - y(i), y(i) - nipY + 0.02);
+    // the front panel rises to a scoop under the collarbones; above the chest it stays inside the armpits
+    // the band is on the torso only: on the arm it left a ragged patch at the front of the shoulder
+    // once the arm is raised in guard
+    if (!isTorso(i)) return strap;
+    const band = Math.min(y(i) - (nipY - 0.1), nipY + (nz(i) > 0 ? 0.075 : 0.02) - y(i), meta.shoulderX * 0.8 - ax + Math.max(0, nipY - y(i)) * 2);
     return Math.max(band, strap);
   };
-  const wraps = (thumb = true): CoverFn => (i) => {
-    if (isHand(i)) return m.fingerTip[i] < 0.3 || !thumb ? 0.03 - m.fingerTip[i] * 0.05 : -1;
-    if (isArm(i)) return (armT[i] - 0.9) * armLen;
-    return -1;
-  };
-  const shin = (t0: number, t1: number, frontOnly: boolean, instep: boolean): CoverFn => (i) => {
-    if (isLeg(i)) {
-      const c = Math.min(legT[i] - t0, t1 - legT[i]) * legLen;
-      return frontOnly ? Math.min(c, (nz(i) + 0.35) * 0.08) : c;
-    }
-    if (instep && isFoot(i)) return !toes(i) && ny(i) > 0.15 ? 0.02 : -1;
-    return -1;
-  };
+  const wraps =
+    (thumb = true): CoverFn =>
+    (i) => {
+      if (isHand(i)) return m.fingerTip[i] < 0.3 || !thumb ? 0.03 - m.fingerTip[i] * 0.05 : -1;
+      if (isArm(i)) return (armT[i] - 0.9) * armLen;
+      return -1;
+    };
+  const shin =
+    (t0: number, t1: number, frontOnly: boolean, instep: boolean): CoverFn =>
+    (i) => {
+      if (isLeg(i)) {
+        const c = Math.min(legT[i] - t0, t1 - legT[i]) * legLen;
+        return frontOnly ? Math.min(c, (nz(i) + 0.35) * 0.08) : c;
+      }
+      if (instep && isFoot(i)) return !toes(i) && ny(i) > 0.15 ? 0.02 : -1;
+      return -1;
+    };
   const face = (i: number, narrow: boolean) => {
     const wFace = narrow ? 0.04 : 0.066;
     return nz(i) > 0.15 && Math.abs(x(i)) < wFace * (K / 1) && y(i) < eyeY + 0.03 && y(i) > mouthY - (narrow ? 0.02 : 0.06);
   };
-  const head = (narrow: boolean): CoverFn => (i) => (chain[i] === 'head' && !face(i, narrow) && y(i) > mouthY - 0.05 * K ? 0.02 : -1);
+  const head =
+    (narrow: boolean): CoverFn =>
+    (i) =>
+      chain[i] === 'head' && !face(i, narrow) && y(i) > mouthY - 0.05 * K ? 0.02 : -1;
 
   return {
     bottom: {
-      'short-boxe': { cover: shorts(pelvisY + 0.12, 0.42), thickness: (i: number) => 0.01 + 0.012 * Math.max(0, legT[i]) * (isLeg(i) ? 1 : 0), bandY: pelvisY + 0.07 },
-      'short-mma': { cover: shorts(pelvisY + 0.07, 0.52), thickness: (i: number) => 0.009 + 0.01 * Math.max(0, legT[i]) * (isLeg(i) ? 1 : 0), bandY: pelvisY + 0.04 },
-      'short-thai': { cover: shorts(pelvisY + 0.13, 0.3), thickness: (i: number) => 0.009 + 0.035 * Math.max(0, legT[i]) * (isLeg(i) ? 1 : 0), bandY: pelvisY + 0.06 },
-      'short-compression': { cover: shorts(pelvisY + 0.06, 0.38), thickness: () => 0.0035, bandY: pelvisY + 0.035 },
-      legging: { cover: shorts(pelvisY + 0.07, 0.96), thickness: () => 0.0035, bandY: pelvisY + 0.04 },
+      'short-boxe': { cover: shorts(pelvisY + 0.12, 0.42), thickness: (i: number) => 0.01 + 0.012 * Math.max(0, legT[i]) * (isLeg(i) ? 1 : 0), bandY: pelvisY + 0.07, drape: 0.6, hidesBody: true },
+      // mid-thigh fight shorts (the champion coaches)
+      'short-mma-court': { cover: shorts(pelvisY + 0.07, 0.36), thickness: (i: number) => 0.008 + 0.008 * Math.max(0, legT[i]) * (isLeg(i) ? 1 : 0), bandY: pelvisY + 0.04, drape: 0.45, hidesBody: true },
+      'short-mma': { cover: shorts(pelvisY + 0.07, 0.52), thickness: (i: number) => 0.009 + 0.01 * Math.max(0, legT[i]) * (isLeg(i) ? 1 : 0), bandY: pelvisY + 0.04, drape: 0.5, hidesBody: true },
+      'short-thai': { cover: shorts(pelvisY + 0.13, 0.3), thickness: (i: number) => 0.009 + 0.035 * Math.max(0, legT[i]) * (isLeg(i) ? 1 : 0), bandY: pelvisY + 0.06, drape: 0.7, hidesBody: true },
+      'short-compression': { cover: shorts(pelvisY + 0.06, 0.38), thickness: () => 0.0035, bandY: pelvisY + 0.035, hidesBody: true },
+      legging: { cover: shorts(pelvisY + 0.07, 0.96), thickness: () => 0.0035, bandY: pelvisY + 0.04, hidesBody: true },
     } as Record<string, GarmentSpec>,
     top: {
-      'rashguard-court': { cover: top(0.42), thickness: () => 0.004 },
-      'rashguard-long': { cover: top(0.97), thickness: () => 0.004 },
-      compression: { cover: top(0.97), thickness: () => 0.003 },
-      tshirt: { cover: top(0.3, pelvisY - 0.02), thickness: (i: number) => (isArm(i) ? 0.012 : 0.009) },
-      debardeur: { cover: top(null, pelvisY - 0.0), thickness: () => 0.007 },
-      brassiere: { cover: sportsBra, thickness: () => 0.004 },
+      'rashguard-court': { cover: top(0.42), thickness: () => 0.004, hidesBody: true },
+      'rashguard-long': { cover: top(0.97), thickness: () => 0.004, hidesBody: true },
+      compression: { cover: top(0.97), thickness: () => 0.003, hidesBody: true },
+      tshirt: { cover: top(0.3, pelvisY - 0.02), thickness: (i: number) => (isArm(i) ? 0.012 : 0.009), drape: 0.5, hidesBody: true },
+      debardeur: { cover: top(null, pelvisY - 0.0), thickness: () => 0.007, drape: 0.35, hidesBody: true },
+      brassiere: {
+      cover: sportsBra,
+      thickness: () => 0.005,
+      // a compression top bridges the small reliefs of the chest instead of moulding them
+      drape: 0.3,
+      hidesBody: true,
+      // the skin is hidden 9 mm inside the cut: at 4 mm the cloth, 5 mm above the skin, no longer covered
+      // the hole along the edges seen at a grazing angle (white specks along the straps and on the neck)
+      hideMargin: 0.009,
+    },
     } as Record<string, GarmentSpec>,
     shoes: {
       'chaussures-boxe': { cover: (i: number) => (isFoot(i) ? 0.05 : isLeg(i) ? (legT[i] - 0.8) * legLen : -1), thickness: () => 0.007, bandY: 0 },
@@ -693,39 +1133,58 @@ function attachToBone(body: SkinnedMesh, boneName: string, geo: BufferGeometry, 
   return mesh;
 }
 
-/** boxing glove around a hand in the bind pose: padded fist, thumb, cuff */
+/** decoded once: the sculpted glove of the reference hand (gloveShape.ts, made by tools/generator/rocketbox/glove_ts.py) */
+let gloveRef: { pos: Int16Array; index: Uint16Array } | null = null;
+function gloveShape() {
+  if (gloveRef) return gloveRef;
+  const bytes = (b64: string) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer;
+  gloveRef = { pos: new Int16Array(bytes(GLOVE_POSITIONS)), index: new Uint16Array(bytes(GLOVE_INDEX)) };
+  return gloveRef;
+}
+
+/**
+ * boxing glove around a hand in the bind pose. v0.43 (Youssef, 2026-10-23: « les gants ne doivent plus ressembler
+ * à des sphères ou à des blocs rigides »): the sculpted glove of the Ultra-réaliste coaches (padded fist domed over
+ * the back of the hand, finger roll, thumb along the index, cuff with its strap), sized on this hand. Before: two
+ * spheres and a lathe.
+ */
 export function gloveGeometry(b: Record<string, Vector3>, side: 'Left' | 'Right') {
   const wrist = b[`${side}Hand`];
   const mid = b[`${side}HandMiddle1`] ?? wrist;
   const idx = b[`${side}HandIndex1`] ?? mid;
   const pinky = b[`${side}HandPinky1`] ?? mid;
+  const elbow = b[`${side}ForeArm`];
   const axis = mid.clone().sub(wrist).normalize();
   const lateral = idx.clone().sub(pinky);
   lateral.addScaledVector(axis, -lateral.dot(axis)).normalize();
-  // right-handed basis (a mirrored one turns the faces inside out and only the black outline shows)
-  const palm = new Vector3().crossVectors(lateral, axis).normalize();
-  const handLen = wrist.distanceTo(mid) * 2.1;
-  const basis = new Matrix4().makeBasis(lateral, axis, palm);
-  // about 12-14 oz: fist ~17 cm long, 13 cm wide, 12 cm deep on an adult hand
-  const fist = new SphereGeometry(1, 28, 20);
-  fist.scale(handLen * 0.33, handLen * 0.42, handLen * 0.3);
-  fist.applyMatrix4(basis);
-  fist.translate(...wrist.clone().addScaledVector(axis, handLen * 0.42).toArray());
-  const thumb = new SphereGeometry(1, 16, 12);
-  thumb.scale(handLen * 0.11, handLen * 0.22, handLen * 0.11);
-  thumb.rotateZ(0.5);
-  thumb.applyMatrix4(basis);
-  thumb.translate(...wrist.clone().addScaledVector(axis, handLen * 0.3).addScaledVector(lateral, handLen * 0.29).addScaledVector(palm, -handLen * 0.08).toArray());
-  const cuffPts = [new Vector2(handLen * 0.24, 0), new Vector2(handLen * 0.26, handLen * 0.22), new Vector2(handLen * 0.25, handLen * 0.5)];
-  const cuff = new LatheGeometry(cuffPts, 24);
-  cuff.applyMatrix4(basis);
-  cuff.translate(...wrist.clone().addScaledVector(axis, -handLen * 0.3).toArray());
-  const parts = [fist, thumb, cuff].map((g) => {
-    const ng = g.toNonIndexed();
-    ng.deleteAttribute('uv');
-    return ng;
-  });
-  return mergeGeometries(parts)!;
+  // back of the hand: away from the body centre line at rest (arms at the sides), as in outfits.py hand_frame
+  const back = new Vector3().crossVectors(axis, lateral).normalize();
+  if (Math.abs(back.x) > 0.3 && back.x * wrist.x < 0) back.negate();
+  // behind the wrist the cuff runs along the forearm
+  const fore = elbow ? wrist.clone().sub(elbow).normalize() : axis.clone();
+  const k = Math.max(0.9, Math.min(1.1, wrist.distanceTo(mid) / 0.095));
+  const { pos, index } = gloveShape();
+  const out = new Float32Array(pos.length);
+  const p = new Vector3();
+  for (let i = 0; i < pos.length; i += 3) {
+    const x = (pos[i] / 10000) * k, y = (pos[i + 1] / 10000) * k, z = (pos[i + 2] / 10000) * k;
+    p.copy(wrist)
+      .addScaledVector(x >= 0 ? axis : fore, x)
+      .addScaledVector(lateral, y)
+      .addScaledVector(back, z);
+    out[i] = p.x;
+    out[i + 1] = p.y;
+    out[i + 2] = p.z;
+  }
+  const g = new BufferGeometry();
+  g.setAttribute('position', new BufferAttribute(out, 3));
+  // one hand's frame is mirrored: its triangles turn the other way round
+  const mirrored = new Vector3().crossVectors(axis, lateral).dot(back) < 0;
+  const ix = Uint32Array.from(index);
+  if (mirrored) for (let t = 0; t < ix.length; t += 3) [ix[t + 1], ix[t + 2]] = [ix[t + 2], ix[t + 1]];
+  g.setIndex(new BufferAttribute(ix, 1));
+  g.computeVertexNormals();
+  return g;
 }
 
 function tubeGeometry(points: Vector3[], radius: number, taper = 0.4) {
@@ -756,11 +1215,60 @@ function rigidOutline(mesh: Mesh, width = 0.004) {
   return o;
 }
 
+/**
+ * reads the red channel (hair cover) of the painted masks on the CPU; null outside a browser. Through
+ * WebGL, not a 2D canvas: the masks keep data in the alpha channel and a 2D canvas premultiplies it,
+ * which wipes the colour channels wherever alpha is 0.
+ */
+function maskReader(tex: Texture | null, ch = 0): ((u: number, v: number) => number) | null {
+  const img = tex?.image as (TexImageSource & { width: number; height: number }) | undefined;
+  if (!img || typeof document === 'undefined' || !img.width) return null;
+  const S = 512;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = S;
+  const gl = cv.getContext('webgl', { premultipliedAlpha: false, preserveDrawingBuffer: true });
+  if (!gl) return null;
+  try {
+    const t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    const W = img.width;
+    const H = img.height;
+    const fb = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+    const px = new Uint8Array(W * H * 4);
+    gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    gl.getExtension('WEBGL_lose_context')?.loseContext();
+    // rows come back in upload order: row 0 is the top row of the image, as glTF uv v = 0
+    return (u, v) => {
+      const x = Math.min(W - 1, Math.max(0, Math.floor(u * W)));
+      const y = Math.min(H - 1, Math.max(0, Math.floor(v * H)));
+      return px[(y * W + x) * 4 + ch] / 255;
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ----------------------------------------------------------------------------- customiser
 
 export interface CustomizerOptions {
   toon: (name: string, color: Color) => Material;
   outline: (width: number) => Material;
+  /** v0.22 clothes (fallback render): no drape, no hem strip, skin drawn under the clothes */
+  legacy?: boolean;
+  /** face paint of a champion coach (same UV layout as the skin) */
+  face?: Texture | null;
+  /** 0-1: how much the skin texture's light and shade is flattened to the plain skin tone (Anime) */
+  flat?: number;
+  /** hair cards (realistic look of the champion coaches, v0.29) */
+  groom?: { atlas: Texture; rects: AtlasRects; style: string; density?: number } | null;
+  /** realistic skin (v0.29): micro-relief, mottling, oily T-zone, light through the skin */
+  realSkin?: { detail: Texture; scatter: number } | null;
 }
 
 interface Layer {
@@ -781,6 +1289,7 @@ export class Customizer {
   readonly map: BodyMap;
   readonly u: CustomUniforms;
   private hair: SkinnedMesh | null;
+  private eyes: Mesh | null = null;
   private bun: Object3D | null;
   private layers = new Map<string, Layer>();
   private specs: ReturnType<typeof garmentSpecs>;
@@ -788,6 +1297,8 @@ export class Customizer {
   private hairPieceKey = '';
   private ghost = { value: 1 };
   private atlas: Texture | null = null;
+  /** per slot: how deep each body vertex is under that slot's opaque garment (metres, > 0 hidden) */
+  private hidden = new Map<string, Float32Array>();
 
   constructor(
     readonly root: Object3D,
@@ -814,10 +1325,17 @@ export class Customizer {
     this.body = body;
     this.hair = hair;
     this.bun = bun;
+    this.eyes = eyes;
     this.map = mapBody(body, meta);
+    if (!this.opt.legacy) thinInkNearEyes(body, meta);
     this.specs = garmentSpecs(this.map);
     this.u = makeUniforms(meta);
     this.u.uMasks.value = masks;
+    this.u.uFlat.value = opt.flat ?? 0;
+    if (opt.face) {
+      this.u.uFace.value = opt.face;
+      this.u.uFaceOn.value = 1;
+    }
     this.u.uGhost = this.ghost;
     setRegions(body.geometry, regionWeights(this.map));
     // the built-in clothes of the generated model are replaced by the creator's layers
@@ -825,14 +1343,28 @@ export class Customizer {
     this.u.uSkinRef.value = averageSkin((body.material as MeshLambertMaterial).map);
 
     const u = this.u;
+    // skin under opaque clothes is not drawn (> 0: hidden), see HIDE_MARGIN
+    body.geometry.setAttribute('aHide', new BufferAttribute(new Float32Array(this.map.count), 1));
     chainPatch(body.material as Material, 'css-skin', (sh) => {
       addShape(sh, u);
+      addHide(sh);
       sh.fragmentShader = SKIN_FRAGMENT_HEAD + sh.fragmentShader.replace('#include <map_fragment>', SKIN_FRAGMENT_BODY);
     });
-    // outlines share the body geometry: same shape
+    if (opt.realSkin) {
+      const su = makeSkinUniforms();
+      su.uSkinDetail.value = prepareDetail(opt.realSkin.detail);
+      su.uSkinReal.value.set(26, 0.55, opt.realSkin.scatter, 1);
+      su.uFaceRef.value.set(meta.eyeL[1], meta.faceZ, (meta.eyeL[1] + meta.lipsY) / 2 - 0.004, meta.lipsY);
+      patchRealSkin(body.material as Material, su);
+    }
+    // outlines share the body geometry: same shape, same hidden parts
     root.traverse((o) => {
       const m = o as SkinnedMesh;
-      if (m.isSkinnedMesh && m.geometry === body.geometry && m !== body) chainPatch(m.material as Material, 'css-shape', (sh) => addShape(sh, u));
+      if (m.isSkinnedMesh && m.geometry === body.geometry && m !== body)
+        chainPatch(m.material as Material, 'css-shape', (sh) => {
+          addShape(sh, u);
+          addHide(sh);
+        });
     });
     if (hair) {
       zeroRegions(hair.geometry);
@@ -842,7 +1374,15 @@ export class Customizer {
       const patchHair = (mat: Material) =>
         chainPatch(mat, 'css-hair', (sh) => {
           addShape(sh, u);
-          sh.vertexShader = 'uniform sampler2D uMasks;\nuniform vec4 uHairStyle;\nuniform float uHairLen;\nuniform vec3 uHeadC;\n' + sh.vertexShader.replace('vRest = transformed;', 'vRest = transformed;').replace('#include <begin_vertex>', HAIR_VERTEX);
+          sh.vertexShader =
+            'uniform sampler2D uMasks;\nuniform vec4 uHairStyle;\nuniform float uHairLen;\nuniform vec3 uHeadC;\nvarying vec2 vHairUv;\n' +
+            sh.vertexShader.replace('vRest = transformed;', 'vRest = transformed;').replace('#include <begin_vertex>', HAIR_VERTEX + '\nvHairUv = uv;');
+          // the hairline follows the painted mask per pixel, not the edge of the shell's triangles
+          // (otherwise a saw-tooth edge shows on the forehead and the temples)
+          if (!this.opt.legacy)
+            sh.fragmentShader =
+              'uniform sampler2D uMasks;\nvarying vec2 vHairUv;\n' +
+              sh.fragmentShader.replace('void main() {', 'void main() {\n  if (texture2D(uMasks, vHairUv).r < 0.5) discard;');
         });
       patchHair(hm);
       root.traverse((o) => {
@@ -911,7 +1451,10 @@ export class Customizer {
     const o = look.outfit;
     const g = look.gear;
     this.layer('bottom', o.bottom === 'aucun' ? null : o.bottom, this.specs.bottom, o.bottomPaint);
-    this.layer('top', o.top === 'aucun' ? null : o.top, this.specs.top, o.topPaint);
+    // a top worn over shorts lies over their waistband instead of crossing it
+    const under = o.bottom === 'aucun' || this.opt.legacy ? null : this.specs.bottom[o.bottom];
+    this.layer('top', o.top === 'aucun' ? null : o.top, under ? layered(this.specs.top, under) : this.specs.top, o.topPaint, this.opt.legacy ? '' : o.bottom);
+    if (!this.opt.legacy) this.hideUnder('bottom', o.top === 'aucun' ? null : (this.specs.top[o.top] ?? null));
     this.layer('shoes', o.shoes === 'pieds-nus' ? null : o.shoes, this.specs.shoes, o.shoesPaint);
     if (g.hands === 'gants-boxe') {
       this.layer('hands', null, this.specs.hands, g.handsPaint);
@@ -938,9 +1481,9 @@ export class Customizer {
     };
   }
 
-  private layer(slot: string, type: string | null, specs: Record<string, GarmentSpec>, paint: Paint) {
+  private layer(slot: string, type: string | null, specs: Record<string, GarmentSpec>, paint: Paint, over = '') {
     const prev = this.layers.get(slot);
-    const key = type ? `${slot}:${type}` : '';
+    const key = type ? `${slot}:${type}${over ? `/${over}` : ''}` : '';
     if (prev && prev.key === key) {
       // colours and pattern: uniforms only
       const pu = this.paintUniforms(paint, type ? specs[type] : undefined);
@@ -953,9 +1496,16 @@ export class Customizer {
       prev.objects.forEach((o) => o.removeFromParent());
       this.layers.delete(slot);
     }
+    if (this.hidden.delete(slot)) this.updateHidden();
     if (!type || !specs[type]) return;
     const spec = specs[type];
-    const geo = buildShell(this.body.geometry, this.map, spec);
+    if (spec.hidesBody && !this.opt.legacy) {
+      const h = new Float32Array(this.map.count);
+      for (let i = 0; i < h.length; i++) h[i] = spec.cover(i) - (spec.hideMargin ?? HIDE_MARGIN);
+      this.hidden.set(slot, h);
+      this.updateHidden();
+    }
+    const geo = buildShell(this.body.geometry, this.map, this.opt.legacy ? { ...spec, drape: 0, hem: false } : spec);
     if (!geo) return;
     const uniforms = this.paintUniforms(paint, spec);
     let minY = Infinity;
@@ -963,6 +1513,11 @@ export class Customizer {
     for (let i = 0; i < P.count; i++) minY = Math.min(minY, P.getY(i));
     uniforms.uHemY.value = minY;
     const mat = this.opt.toon(`css-${type}`, new Color(1, 1, 1));
+    // both faces on the bottoms: where the hip folds (front of the hip in guard) a few shell triangles
+    // turn their back to the camera; drawn one-sided they left a hole onto the background, since the
+    // skin under the garment is not drawn. Not on the tops: the inner face of the thin straps showed
+    // as jagged black patches over the shoulders
+    if (!this.opt.legacy && slot === 'bottom') mat.side = DoubleSide;
     mat.polygonOffset = true;
     mat.polygonOffsetFactor = -1;
     mat.polygonOffsetUnits = -2;
@@ -971,8 +1526,17 @@ export class Customizer {
     chainPatch(mat, 'css-paint', (sh) => {
       addShape(sh, u);
       Object.assign(sh.uniforms, uniforms, { uGhost: ghost });
-      sh.vertexShader = 'attribute float aCover;\nvarying float vCover;\n' + sh.vertexShader.replace('vRest = transformed;', 'vRest = transformed;\nvCover = aCover;');
-      sh.fragmentShader = PAINT_HEAD + sh.fragmentShader.replace('#include <color_fragment>', PAINT_FRAGMENT);
+      sh.vertexShader =
+        'attribute float aCover;\nvarying float vCover;\nattribute float aHem;\nvarying float vHem;\n' +
+        sh.vertexShader.replace('vRest = transformed;', 'vRest = transformed;\nvCover = aCover;\nvHem = aHem;');
+      sh.fragmentShader =
+        PAINT_HEAD +
+        FABRIC_HEAD +
+        sh.fragmentShader
+          .replace('#include <color_fragment>', PAINT_FRAGMENT)
+          .replace('#include <normal_fragment_maps>', FABRIC_NORMAL)
+          .replace('#include <lights_physical_fragment>', FABRIC_LIGHT);
+      addHide(sh);
     });
     const mesh = new SkinnedMesh(geo, mat);
     mesh.bind(this.body.skeleton, this.body.bindMatrix);
@@ -982,6 +1546,7 @@ export class Customizer {
       addShape(sh, u);
       sh.vertexShader = 'attribute float aCover;\nvarying float vCover;\n' + sh.vertexShader.replace('vRest = transformed;', 'vRest = transformed;\nvCover = aCover;');
       sh.fragmentShader = 'varying float vCover;\n' + sh.fragmentShader.replace('void main() {', 'void main() {\nif (vCover < 0.0) discard;');
+      addHide(sh);
     });
     outline.bind(this.body.skeleton, this.body.bindMatrix);
     outline.frustumCulled = false;
@@ -993,6 +1558,36 @@ export class Customizer {
       parent.add(m);
     }
     this.layers.set(slot, { key, objects: [mesh, outline], uniforms });
+  }
+
+  /** the part of a garment covered by the one worn over it is not drawn (nor its outline) */
+  private hideUnder(slot: string, over: GarmentSpec | null) {
+    const l = this.layers.get(slot);
+    const mesh = l?.objects[0] as SkinnedMesh | undefined;
+    const src = mesh?.geometry.userData.src as Int32Array | undefined;
+    if (!mesh || !src) return;
+    const a = mesh.geometry.getAttribute('aHide') as BufferAttribute;
+    const out = a.array as Float32Array;
+    for (let j = 0; j < out.length; j++) out[j] = over ? over.cover(src[j]) - 0.025 : -1;
+    a.needsUpdate = true;
+  }
+
+  private updateHidden() {
+    const a = this.body.geometry.getAttribute('aHide') as BufferAttribute;
+    const out = a.array as Float32Array;
+    out.fill(-1);
+    this.hidden.forEach((h) => {
+      for (let i = 0; i < out.length; i++) if (h[i] > out[i]) out[i] = h[i];
+    });
+    a.needsUpdate = true;
+  }
+
+  /** body vertices hidden under the clothes (tests) */
+  hiddenCount() {
+    const a = this.body.geometry.getAttribute('aHide').array as Float32Array;
+    let n = 0;
+    for (const v of a) if (v > 0) n++;
+    return n;
   }
 
   private rigidLayer(slot: string, type: string | null, paint: Paint, build: () => Mesh[]) {
@@ -1045,6 +1640,65 @@ export class Customizer {
     return m ? [m] : [];
   }
 
+  private groomMeshes: Object3D[] = [];
+  private groomMaterials: { hair: MeshLambertMaterial; beard: MeshLambertMaterial; body: MeshLambertMaterial } | null = null;
+
+  /** realistic hair: cards built once per model (see groom.ts), recoloured with the look */
+  private applyGroom(look: FighterLook) {
+    const g = this.opt.groom!;
+    this.u.uGroom.value = 1;
+    const f = groomFace({ eyeL: v3(this.map.meta.eyeL), lipsY: this.map.meta.lipsY });
+    this.u.uGroomFace.value.set(f.eyeY, f.lipsY, f.earZ);
+    if (!this.groomMaterials) {
+      const t0 = performance.now();
+      const base = GROOM_STYLES[g.style] ?? GROOM_STYLES['court-barbe'];
+      // low quality: fewer cards
+      const d = g.density ?? 1;
+      const st = { ...base, scalpCards: Math.round(base.scalpCards * d), beardCards: Math.round(base.beardCards * d) };
+      const meta = this.map.meta;
+      const scalp = maskReader(this.u.uMasks.value);
+      if (!scalp) return;
+      const src: GroomSource = {
+        body: this.body,
+        scalp,
+        beard: maskReader(this.u.uMasks.value, 2),
+        // the eyebrows are painted in the face paint (alpha) of the champion coaches, else in the masks
+        brow: this.opt.face ? maskReader(this.opt.face, 3) : maskReader(this.u.uMasks.value, 1),
+        headLow: v3(meta.headLow),
+        headTop: v3(meta.headTop),
+        eyeL: v3(meta.eyeL),
+        eyeR: v3(meta.eyeR),
+        lipsY: meta.lipsY,
+        faceZ: meta.faceZ,
+      };
+      const hair = hairMaterial('css-groom-hair', g.atlas, new Color());
+      const beard = hairMaterial('css-groom-beard', g.atlas, new Color(), 0.6);
+      // body hair: finer and lighter than the beard
+      this.groomMaterials = { hair, beard, body: hairMaterial('css-groom-body', g.atlas, new Color(), 0.7, 0.6) };
+      const parts: [BufferGeometry | null, MeshLambertMaterial][] = [
+        [scalpCards(src, st, g.rects), hair],
+        [beardCards(src, st, g.rects), beard],
+        [browCards(src, st, g.rects), hair],
+      ];
+      for (const [geo, mat] of parts) {
+        const m = geo && attachToHead(this.body, geo, mat);
+        if (m) this.groomMeshes.push(m);
+      }
+      // body hair: fine hairs on the forearms, shins and down the chest (male coaches with body hair)
+      if (this.eyes) {
+        const lashes = lashCards(this.body, this.eyes.geometry, g.rects);
+        const m = lashes && attachToHead(this.body, lashes, hair);
+        if (m) this.groomMeshes.push(m);
+      }
+      const bh = bodyHairCards(this.body, this.map, maskReader(this.u.uMasks.value, 3), look.bodyHair, g.rects);
+      if (bh) this.groomMeshes.push(skinnedGroom(this.body, bh, this.groomMaterials.body));
+      if (import.meta.env.DEV) (globalThis as { __groomMs?: number }).__groomMs = performance.now() - t0;
+    }
+    this.groomMaterials.hair.color.copy(this.u.uHairColor.value);
+    this.groomMaterials.beard.color.copy(this.u.uBeardColor.value);
+    this.groomMaterials.body.color.copy(this.u.uHairColor.value);
+  }
+
   private applyHair(look: FighterLook) {
     const u = this.u;
     const st = look.hair.style;
@@ -1064,16 +1718,87 @@ export class Customizer {
     u.uHairStyle.value.set(s[0], s[1], s[2], s[3]);
     u.uHairLen.value = s[4];
     u.uHairCover.value = s[5];
-    if (this.hair) this.setVisible(this.hair, st !== 'rase');
+    if (this.hair) this.setVisible(this.hair, st !== 'rase' && !this.opt.groom);
+    if (this.opt.groom) {
+      if (this.bun) this.setVisible(this.bun, false);
+      this.applyGroom(look);
+      return;
+    }
     if (this.bun) this.setVisible(this.bun, st === 'chignon' && look.sex === 'femme');
     if (this.bun) ((this.bun as Mesh).material as MeshLambertMaterial).color?.copy(u.uHairColor.value);
-    const key = `${st}:${L.toFixed(2)}:${look.sex}`;
+    const key = `${st}:${L.toFixed(2)}:${look.sex}:${look.hair.meches ?? 0}:${look.hair.flow ?? 0}`;
     if (key !== this.hairPieceKey) {
       this.hairPieces.forEach((o) => o.removeFromParent());
       this.hairPieces = this.buildHairPieces(st, L, look.sex);
+      if (look.hair.meches && st !== 'rase') this.hairPieces.push(...this.buildLocks(s, look.hair.meches, look.hair.flow ?? 0.3));
       this.hairPieceKey = key;
     }
     this.hairPieces.forEach((o) => ((o as Mesh).material as MeshLambertMaterial).color?.copy(u.uHairColor.value));
+  }
+
+  /**
+   * Modelled locks: tapered blades laid on the hair shell, combed back from the hairline and lifted
+   * by `flow`. They give the haircut a volume and a drawn silhouette (Encre) that a painted shell has
+   * not. Only on the scalp the mask covers, and where the style keeps hair (top, sides, back).
+   */
+  private buildLocks(s: number[], density: number, flow: number): Object3D[] {
+    if (!this.hair) return [];
+    const scalp = maskReader(this.u.uMasks.value);
+    if (!scalp) return [];
+    const g = this.hair.geometry;
+    const P = g.getAttribute('position');
+    const N = g.getAttribute('normal');
+    const UV = g.getAttribute('uv');
+    const meta = this.map.meta;
+    const c = v3(meta.headLow).lerp(v3(meta.headTop), 0.5);
+    const len = s[4];
+    // short hair: short dense locks; longer hair: fewer, longer ones
+    const lockLen = 0.012 + len * 2.4;
+    const width = 0.006 + len * 0.45;
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const pos: number[] = [];
+    const p = new Vector3();
+    const n = new Vector3();
+    const d = new Vector3();
+    const side = new Vector3();
+    const comb = new Vector3();
+    const seen = new Set<string>();
+    for (let i = 0; i < P.count; i++) {
+      p.fromBufferAttribute(P, i);
+      // the shell has seams (duplicated vertices): one lock per position
+      const k = `${p.x.toFixed(3)}:${p.y.toFixed(3)}:${p.z.toFixed(3)}`;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      if (scalp(UV.getX(i), UV.getY(i)) < 0.6 || rnd() > density) continue;
+      const h = p.clone().sub(c);
+      const top = smooth(-0.01, 0.07, h.y);
+      const sd = smooth(0.035, 0.075, Math.abs(h.x));
+      const bk = smooth(0.0, 0.07, -h.z);
+      const prof = Math.max(top * s[0], sd * s[1], bk * s[2]);
+      if (prof < 0.5) continue;
+      n.fromBufferAttribute(N, i).normalize();
+      p.addScaledVector(n, len * prof);
+      // combed back and down from the forehead, outward over the sides
+      comb.set(h.x * 0.6, -0.15, -1).normalize();
+      d.copy(comb).addScaledVector(n, -comb.dot(n)).normalize();
+      side.crossVectors(n, d).normalize();
+      const l = lockLen * prof * (0.75 + 0.5 * rnd());
+      const w = width * (0.8 + 0.4 * rnd());
+      const tip = p.clone().addScaledVector(d, l).addScaledVector(n, l * flow * 0.5 + 0.001);
+      const b1 = p.clone().addScaledVector(side, -w).addScaledVector(n, -0.002);
+      const b2 = p.clone().addScaledVector(side, w).addScaledVector(n, -0.002);
+      const ridge = p.clone().addScaledVector(n, 0.0025 + l * 0.08).addScaledVector(d, l * 0.25);
+      for (const t of [b1, ridge, tip, ridge, b2, tip]) pos.push(t.x, t.y, t.z);
+    }
+    if (!pos.length) return [];
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(new Float32Array(pos), 3));
+    geo.computeVertexNormals();
+    const m = attachToBone(this.body, 'Head', geo, this.opt.toon('css-hairlock', new Color(1, 1, 1)));
+    if (!m) return [];
+    (m.material as MeshLambertMaterial).side = DoubleSide;
+    return [m];
   }
 
   private buildHairPieces(st: string, L: number, sex: string): Object3D[] {
@@ -1102,7 +1827,13 @@ export class Customizer {
     if (st === 'tresses') {
       for (const sx of [-1, 1]) {
         const s0 = new Vector3(c.x + sx * r * 0.55, c.y - r * 0.1, c.z - r * 0.75);
-        add(tubeGeometry([s0, s0.clone().add(new Vector3(sx * 0.02, -0.08, -0.03)), s0.clone().add(new Vector3(sx * 0.03, -0.16 - 0.18 * L, -0.02)), s0.clone().add(new Vector3(sx * 0.03, -0.22 - 0.26 * L, 0.0))], 0.016, 0.5));
+        add(
+          tubeGeometry(
+            [s0, s0.clone().add(new Vector3(sx * 0.02, -0.08, -0.03)), s0.clone().add(new Vector3(sx * 0.03, -0.16 - 0.18 * L, -0.02)), s0.clone().add(new Vector3(sx * 0.03, -0.22 - 0.26 * L, 0.0))],
+            0.016,
+            0.5,
+          ),
+        );
       }
     }
     return out;
@@ -1124,7 +1855,15 @@ export class Customizer {
       u.uTatU.value[i].copy(f.u);
       u.uTatV.value[i].copy(f.v);
       u.uTatP.value[i].set(f.cylinder ? 1 : 0, f.radius, Math.cos(rot), Math.sin(rot));
-      u.uTatQ.value[i].set(t.u * f.half[0], t.v * f.half[1], t.size, Math.max(0, TATTOO_DESIGNS.findIndex((d) => d.id === t.design)));
+      u.uTatQ.value[i].set(
+        t.u * f.half[0],
+        t.v * f.half[1],
+        t.size,
+        Math.max(
+          0,
+          TATTOO_DESIGNS.findIndex((d) => d.id === t.design),
+        ),
+      );
       const col = lin(t.color);
       u.uTatC.value[i].set(col.r, col.g, col.b, t.intensity);
     }
@@ -1139,7 +1878,10 @@ export function zoneFrame(m: BodyMap, zone: TattooZone) {
     const ax = c.clone().sub(a).normalize();
     const len = a.distanceTo(c);
     const origin = a.clone().addScaledVector(ax, len * (t0 + t1) * 0.5);
-    const u = front.clone().sub(ax.clone().multiplyScalar(front.dot(ax))).normalize();
+    const u = front
+      .clone()
+      .sub(ax.clone().multiplyScalar(front.dot(ax)))
+      .normalize();
     // radius: mean distance of the zone's vertices to the axis
     let sum = 0;
     let k = 0;
@@ -1148,7 +1890,10 @@ export function zoneFrame(m: BodyMap, zone: TattooZone) {
       p.set(m.pos[i * 3], m.pos[i * 3 + 1], m.pos[i * 3 + 2]).sub(a);
       const t = p.dot(ax) / len;
       if (t < t0 || t > t1) continue;
-      const r = p.clone().sub(ax.clone().multiplyScalar(p.dot(ax))).length();
+      const r = p
+        .clone()
+        .sub(ax.clone().multiplyScalar(p.dot(ax)))
+        .length();
       if (r < 0.12) {
         sum += r;
         k++;
@@ -1221,4 +1966,3 @@ function averageSkin(map: Texture | null): Color {
   }
   return out;
 }
-

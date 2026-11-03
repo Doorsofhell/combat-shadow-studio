@@ -46,7 +46,7 @@ src/
   audio/       voix française (Web Speech API), cloche et bips synthétisés (Web Audio, aucun fichier)
   ui/          écrans React, moteur de séance (useSession)
 public/models/ coach_male.glb, coach_female.glb (glTF binaire, textures JPEG)
-generator/     (dans le dossier du projet) scripts Blender qui produisent les deux coachs
+tools/generator/ scripts Blender + MPFB2 qui produisent les coachs (voir son README)
 ```
 
 ### Animation

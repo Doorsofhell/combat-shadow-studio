@@ -1,18 +1,68 @@
-/* Training screen (white studio), augmented reality overlay and "Décomposer" mode. */
+/* Training screen (studio that follows the menu theme), augmented reality overlay and "Décomposer" mode. */
 /* -------------------------------------------------- training */
-.training,
+/* light scope (the Coach IA panel and other always-light cards): white, whatever the menus' theme */
 .light-scope {
-  /* WHITE TRAINING STUDIO: the one light screen of the app, whatever the menus' theme */
   --bg: #ffffff;
   --ink: #111214;
   --ink-2: #3d4046;
   --muted: #5f646c;
   --line: #e3e4e8;
   --soft: #f3f4f6;
-  --red: #d7263d;
+  --red: #e11d2f;
   --red-ink: #c41f35;
   --red-soft: #fdecef;
   color: var(--ink);
+  color-scheme: light;
+}
+
+/*
+ * 0.27 (Youssef, 2026-10-20 21:48, « Suit le thème »): the training studio is no longer always white. Dark theme:
+ * anthracite like the home hero, a soft halo on the floor so the coach stands out; light theme: soft pearl grey.
+ * Both plain and sober. The aliases below re-theme the shared components (.btn, .chip…) inside the studio; the
+ * --tr-* tokens are the studio's own surfaces (glass buttons over the stage, phase label, sheets).
+ */
+.training {
+  --bg: #0b0f14;
+  --ink: #f4f4f5;
+  --ink-2: #d1d5db;
+  --muted: #9ca3af;
+  --line: #2b3443;
+  --soft: #1f2937;
+  --red: #e11d2f;
+  --red-ink: #ff6b77;
+  --red-soft: rgba(225, 29, 47, 0.18);
+  --tr-stage: radial-gradient(ellipse 70% 42% at 50% 86%, #1d2634 0%, #121923 55%, #0b0f14 100%);
+  --tr-glass: rgba(31, 41, 55, 0.92);
+  --tr-phase: #374151;
+  --tr-sheet: #141b25;
+  --tr-glow: rgba(11, 15, 20, 0.9);
+  /* v0.47 phase colours: amber preparation, signature red work, discreet teal rest (text on them stays readable) */
+  --phase-prep: #f5b740;
+  --phase-prep-ink: #1a1306;
+  --phase-rest: #0f766e;
+  --phase-rest-ink: #3fd1bf;
+  color: var(--ink);
+  color-scheme: dark;
+}
+:root[data-theme='light'] .training {
+  --bg: #eef0f3;
+  --ink: #111214;
+  --ink-2: #3d4046;
+  --muted: #565b63;
+  --line: #d6d9df;
+  --soft: #ffffff;
+  --red: #e11d2f;
+  --red-ink: #c41f35;
+  --red-soft: #fdecef;
+  --tr-stage: radial-gradient(ellipse 70% 42% at 50% 86%, #f8f9fb 0%, #eef0f3 55%, #e3e6ea 100%);
+  --tr-glass: rgba(255, 255, 255, 0.94);
+  --tr-phase: #111214;
+  --tr-sheet: #ffffff;
+  --tr-glow: #ffffff;
+  --phase-prep: #f2a516;
+  --phase-prep-ink: #1a1306;
+  --phase-rest: #0f766e;
+  --phase-rest-ink: #0f766e;
   color-scheme: light;
 }
 
@@ -27,8 +77,8 @@
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
-  grid-template-areas: 'top' 'stage' 'info' 'bottom';
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+  grid-template-areas: 'top' 'stage' 'band' 'info' 'bottom';
   background: var(--bg);
   overflow: hidden;
   font-size: clamp(0.86rem, 0.8rem + 0.3vw, 1rem);
@@ -37,7 +87,7 @@
 /* explicit alternative when the text is enlarged beyond what one screen can hold */
 .training.overflow {
   overflow-y: auto;
-  grid-template-rows: auto minmax(min(46dvh, 340px), 1fr) auto auto;
+  grid-template-rows: auto minmax(min(46dvh, 340px), 1fr) auto auto auto;
   height: auto;
   min-height: 100dvh;
 }
@@ -93,35 +143,11 @@
   grid-area: stage;
   position: relative;
   min-height: 0;
-  background: radial-gradient(ellipse at 50% 92%, #eceef1 0%, #fff 60%);
+  background: var(--tr-stage);
 }
 
 .tr-stage canvas {
   touch-action: none;
-}
-
-.stage-tools {
-  position: absolute;
-  right: 8px;
-  top: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  z-index: 2;
-}
-
-.stage-tools .btn {
-  min-height: 44px;
-  min-width: 44px;
-  padding: 0 8px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.94);
-  font-size: 0.75em;
-}
-
-.stage-tools .btn.on {
-  background: var(--ink);
-  color: #fff;
 }
 
 .cam-btn {
@@ -146,14 +172,14 @@
   font-size: 0.8rem;
   padding: 5px 10px;
   border-radius: 8px;
-  background: var(--ink);
+  background: var(--tr-phase);
   color: #fff;
   letter-spacing: 0.03em;
   font-variant-numeric: tabular-nums;
 }
 
 .phase.light {
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--tr-glass);
   color: var(--ink);
   border: 1px solid var(--line);
 }
@@ -167,19 +193,6 @@
   background: var(--red);
 }
 
-.countdown {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-size: 6rem;
-  font-weight: 900;
-  color: var(--red-ink);
-  pointer-events: none;
-  z-index: 3;
-  text-shadow: 0 2px 20px #fff;
-}
-
 .solo-note {
   position: absolute;
   left: 10px;
@@ -187,7 +200,7 @@
   bottom: 8px;
   z-index: 2;
   font-size: 0.75em;
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--tr-glass);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 5px 9px;
@@ -321,25 +334,10 @@
   gap: 8px;
 }
 
-/* main controls: previous, play / pause, next, ask the coach; « recommencer » stays discreet */
-.controls.with-coach {
-  grid-template-columns: 44px 48px minmax(0, 1fr) 48px 60px;
-}
-
 .controls .btn.icon.ghost {
   width: 44px;
 }
 
-.coach-btn {
-  flex-direction: column;
-  gap: 1px !important;
-  padding: 0 4px;
-  font-size: 0.72em;
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-.coach-btn.on,
 .tr-secondary .btn.on,
 .tr-camera .btn.on {
   background: var(--ink);
@@ -469,13 +467,74 @@
 .training.immersive .tr-meta,
 .training.immersive .tr-secondary,
 .training.immersive .tr-camera,
-.training.immersive .coach-btn,
 .training.immersive .controls .btn.icon {
   display: none;
 }
 
 .training.immersive .controls {
   grid-template-columns: minmax(0, 1fr);
+}
+
+/* 0.27 total fullscreen (Youssef, 2026-10-20 22:09, double tap on the coach): the stage takes the whole screen, the
+   title and the instructions step aside, the main control floats over the bottom of the stage; every control over
+   the coach fades after 2.5 s without a tap (fs-idle) and comes back with a tap. The session keeps running. */
+.training.immersive {
+  display: block;
+  max-width: none;
+  overflow: hidden;
+}
+.training.immersive .tr-stage {
+  position: absolute;
+  inset: 0;
+}
+.training.immersive .tr-top,
+.training.immersive .tr-band,
+.training.immersive .tr-info {
+  display: none;
+}
+.training.immersive .tr-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  background: transparent;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+.training.immersive .tr-bottom .controls {
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+}
+.training.immersive .tr-bottom,
+.training.immersive .stage-badge,
+.training.immersive .mark-legend,
+.training.immersive .coach-bubble.in-host {
+  transition: opacity 0.25s ease;
+}
+.training.immersive.fs-idle .tr-bottom,
+.training.immersive.fs-idle .stage-badge,
+.training.immersive.fs-idle .mark-legend,
+.training.immersive.fs-idle .coach-bubble.in-host {
+  opacity: 0;
+  pointer-events: none;
+}
+.training.immersive .coach-tools,
+.training.immersive .coach-muted {
+  top: max(8px, env(safe-area-inset-top));
+}
+/* the stage now runs under the floating main control: the coach bubble sits just above it */
+.training.immersive .coach-bubble.in-host {
+  bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+}
+@media (prefers-reduced-motion: reduce) {
+  .training.immersive .tr-bottom,
+    .training.immersive .stage-badge,
+  .training.immersive .mark-legend,
+  .training.immersive .coach-bubble.in-host {
+    transition: none;
+  }
 }
 
 /* small phones: tighter spacing, same content */
@@ -496,11 +555,15 @@
 @media (orientation: landscape) and (min-width: 560px) {
   .training {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
     grid-template-areas:
       'top top'
+      'stage band'
       'stage info'
       'bottom bottom';
+  }
+  .tr-band {
+    border-left: 1px solid var(--line);
   }
   .tr-info {
     border-top: 0;
@@ -571,7 +634,7 @@
   position: fixed;
   inset: 0;
   background: rgba(17, 18, 20, 0.35);
-  z-index: 30;
+  z-index: 40;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -582,7 +645,7 @@
   max-width: 760px;
   max-height: 85vh;
   overflow: auto;
-  background: #fff;
+  background: var(--tr-sheet, #fff);
   border-radius: 18px 18px 0 0;
   padding: 16px 16px max(16px, env(safe-area-inset-bottom));
   display: flex;
@@ -599,7 +662,8 @@
 }
 .ar-overlay:xr-overlay > * { pointer-events: auto; }
 .ar-top { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
-.phase.light { background: rgba(255,255,255,.9); color: var(--ink); }
+/* 0.27: scoped to the AR overlay (it used to override the studio chip, white on white once the studio is dark) */
+.ar-overlay .phase.light { background: rgba(255,255,255,.9); color: #111214; }
 .ar-move { align-self: center; background: rgba(17,18,20,.6); padding: 6px 12px; border-radius: 999px; font-size: 15px; }
 .ar-bottom { display: flex; flex-direction: column; gap: 8px; background: rgba(17,18,20,.45); border-radius: 18px; padding: 10px; }
 .ar-bottom .speed { color: #fff; }
@@ -626,6 +690,18 @@
     clip: rect(0 0 0 0);
     white-space: nowrap;
   }
+}
+
+/* -------------------------------------------------- the coach bubble (0.25: the app's one bubble, hosted by the stage) */
+.tr-coach-slot {
+  display: contents;
+}
+/* lower right corner of the stage: never over the controls under it, nor over the stage tools above */
+.coach-bubble.in-host {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 3;
 }
 
 /* -------------------------------------------------- "Demander au coach" (compact, over the lower part of the stage) */
@@ -655,11 +731,23 @@
   max-height: 5.8em;
   overflow-y: auto;
 }
-/* "Agrandir": a long answer takes the whole stage, still scrolling inside the panel */
-.tr-ask .cai-panel.expanded {
-  flex: 1;
+/* 0.27 « Agrandir » (Youssef, 2026-10-20 21:59): the panel takes the whole stage (the session is paused), the
+   answer scrolls inside it; the controls and instructions under the stage stay visible */
+.tr-ask.size-agrandi {
+  top: 8px;
+  max-height: none;
+  align-items: stretch;
 }
-.tr-ask .cai-panel.expanded .cai-answer {
+.tr-ask .cai-panel.size-agrandi {
+  flex: 1;
+  height: auto;
+}
+.tr-ask .cai-panel.size-agrandi .cai-answer {
+  max-height: none;
+}
+/* « Réduire »: a thin bar at the bottom of the stage, the coach stays fully visible above it */
+.tr-ask .cai-panel.size-reduit .cai-answer {
+  min-height: 0;
   max-height: none;
 }
 /* Android keyboard open: the panel sits right above it, the field and "Envoyer" stay visible */
@@ -670,7 +758,7 @@
   bottom: calc(var(--kb, 0px) + 8px);
   max-height: calc(var(--vvh, 60dvh) - 16px);
   margin: 0 auto;
-  z-index: 30;
+  z-index: 35; /* above the bottom bar */
   animation: none;
 }
 .tr-ask .cai-panel.kbd .cai-answer {
@@ -736,7 +824,7 @@
   max-width: calc(100% - 80px);
   padding: 3px 8px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--tr-glass);
   font-size: 0.72em;
   font-weight: 600;
   color: var(--ink);
@@ -768,4 +856,457 @@
 
 .mark-legend .blue {
   background: #2563eb;
+}
+/* teaching phases of the studied technique: one row, scrolls sideways when they do not fit */
+.study-steps { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
+.study-steps .chip { flex: none; white-space: nowrap; }
+
+/* v0.32 navigation dynamique: the commands of the session are in the app's bottom bar; the screen ends above it */
+.training {
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  height: auto;
+}
+.training.overflow {
+  min-height: calc(100dvh - var(--nav-h) - env(safe-area-inset-bottom));
+}
+.tr-bottom {
+  padding-bottom: 6px;
+}
+.tr-bottom:empty {
+  display: none;
+}
+/* total fullscreen: the bar is drawn inside the fullscreen stage, over the coach, and fades with the other controls */
+.training.immersive {
+  bottom: 0;
+}
+.training.immersive .nav-bottom,
+body:has(.training.immersive) .nav-bottom {
+  background: var(--tr-glass);
+  transition: opacity 0.25s ease;
+}
+/* (the second selector: a browser without the Fullscreen API keeps the bar outside the stage) */
+.training.immersive.fs-idle .nav-bottom,
+body:has(.training.immersive.fs-idle) .nav-bottom {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* v0.32: the session screen is a fixed layer (its own stacking context), so its modal sheet cannot rise above the
+   bottom bar by z-index: while it is open the bar steps aside, as under any modal */
+body:has(.training .sheet-backdrop) .nav-bottom {
+  visibility: hidden;
+}
+
+/* ------------------------------------------- 0.35 coaching HUD: one compact line over the stage, and a thin bar */
+.tr-hud {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.hud-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.hud-disc {
+  flex: 1;
+  min-width: 0;
+  /* a long discipline and level wrap on two short lines rather than being cut */
+  line-height: 1.2;
+  font-size: 0.72em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.tr-hud .phase {
+  flex: none;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.74em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.tr-hud .phase.pret,
+.tr-hud .phase.termine,
+.tr-hud .phase.paused {
+  background: var(--soft);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+/* the chronometer: digits that do not move, readable at a glance, no card around them */
+.hud-time {
+  flex: none;
+  font-family: var(--font-display, 'Rajdhani', 'Inter', sans-serif);
+  font-size: 1.45em;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+/* rest: the time left a little more visible (green, the colour of the rest chip) */
+.tr-hud.repos .hud-time {
+  font-size: 1.7em;
+  color: #2e9e64;
+}
+.tr-hud.paused .hud-time {
+  color: var(--muted);
+}
+.tr-hud .ar-state {
+  min-height: 36px;
+  padding: 0 9px;
+}
+.hud-progress {
+  flex: none;
+  height: 3px;
+  width: 100%;
+}
+
+/* ------------------------------------------- 0.35 the band: the move being played, and only it, under the stage */
+.tr-band {
+  grid-area: band;
+  /* a fixed height: a name coming or going never resizes the stage */
+  height: 48px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 max(10px, env(safe-area-inset-right)) 0 max(14px, env(safe-area-inset-left));
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--soft), transparent 40%);
+  overflow: hidden;
+}
+.tr-band.on {
+  box-shadow: inset 3px 0 0 var(--red);
+}
+.band-move {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  animation: band-in 0.12s ease-out;
+}
+.band-move.idle {
+  animation: none;
+}
+.band-name {
+  font-family: var(--font-display, 'Rajdhani', 'Inter', sans-serif);
+  font-size: 1.4em;
+  font-weight: 700;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.band-point {
+  font-size: 0.8em;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.band-idle {
+  font-size: 0.85em;
+  color: var(--muted);
+}
+.band-step {
+  flex: none;
+  font-size: 0.78em;
+  font-weight: 700;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.band-info {
+  flex: none;
+}
+/* the name comes in softly; it leaves at once (no fade-out: a name never outlasts its move) */
+@keyframes band-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .band-move {
+    animation: none;
+  }
+}
+@media (max-height: 700px) {
+  .tr-band {
+    height: 38px;
+  }
+  .band-name {
+    font-size: 1.15em;
+  }
+  .band-point {
+    font-size: 0.74em;
+  }
+  .tr-hud .ar-state {
+    min-height: 30px;
+  }
+  .tr-hud {
+    gap: 3px;
+    padding-top: max(3px, env(safe-area-inset-top));
+    padding-bottom: 2px;
+  }
+}
+@media (orientation: landscape) and (min-width: 560px) {
+  .tr-band {
+    border-top: 0;
+  }
+}
+
+/* ------------------------------------------- 0.47 chronometer: phase colours (always with their word), bar, summary */
+.phase.decompte,
+.tr-hud .phase.decompte {
+  background: var(--phase-prep);
+  color: var(--phase-prep-ink);
+}
+.phase.repos,
+.tr-hud .phase.repos {
+  background: var(--phase-rest);
+  color: #fff;
+}
+.tr-hud.decompte .hud-time {
+  color: var(--ink);
+}
+.tr-hud.repos .hud-time {
+  color: var(--phase-rest-ink);
+}
+.tr-hud .hud-time.elapsed {
+  color: var(--ink-2);
+}
+.hud-progress.phase-bar.decompte i {
+  background: var(--phase-prep);
+}
+.hud-progress.phase-bar.repos i {
+  background: var(--phase-rest);
+}
+.hud-progress.phase-bar.paused i {
+  background: var(--muted);
+}
+/* a phase bar restarts at each phase: no sliding back from full to empty */
+.hud-progress.phase-bar i {
+  transition: width 0.1s linear;
+}
+.tr-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px 10px;
+  margin: 4px 0 0;
+}
+.tr-summary div {
+  min-width: 0;
+}
+.tr-summary dt {
+  font-size: 0.72em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.tr-summary dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------- 1.3.0 the instructions, one at a time, on the floor under the coach */
+.tr-consignes {
+  /* the floor of the stage is dark in both themes (« Lumière vive »): the band keeps its own dark palette so the line
+     reads the same by day and by night */
+  --cons-bg: 10, 14, 20;
+  --cons-ink: #f4f4f5;
+  --cons-muted: #aab1bb;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: grid;
+  gap: 5px;
+  padding: 22px max(14px, env(safe-area-inset-right)) 9px max(14px, env(safe-area-inset-left));
+  background: linear-gradient(to top, rgba(var(--cons-bg), 0.92) 62%, rgba(var(--cons-bg), 0));
+  pointer-events: none;
+}
+.cons-tag {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cons-muted);
+}
+.cons-kind {
+  flex: none;
+  color: #ff6b77;
+}
+.cons-tech {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cons-count {
+  flex: none;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.cons-line {
+  /* two lines of text at most, always the same height: the coach never moves when a line changes */
+  height: 2.6em;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+.cons-line p {
+  margin: 0;
+  font-size: 1em;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--cons-ink);
+  text-wrap: balance;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  animation: cons-in 0.35s ease-out;
+}
+@keyframes cons-in {
+  from {
+    opacity: 0;
+    transform: translateY(60%);
+  }
+}
+.cons-segs {
+  display: flex;
+  gap: 4px;
+}
+.cons-segs i {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--cons-muted);
+  opacity: 0.35;
+  position: relative;
+  overflow: hidden;
+}
+.cons-segs i.done {
+  background: var(--cons-ink);
+  opacity: 0.7;
+}
+.cons-segs i.cur {
+  opacity: 1;
+  background: color-mix(in srgb, var(--cons-muted) 40%, transparent);
+}
+.cons-segs i.cur b {
+  position: absolute;
+  inset: 0;
+  background: var(--red);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.tr-consignes.paused .cons-segs i.cur b {
+  background: var(--cons-muted);
+}
+/* what sits at the bottom of the stage goes up above the band */
+.tr-stage .coach-bubble.in-host,
+.tr-stage .mark-legend {
+  bottom: calc(var(--cons-h, 0px) + 8px);
+}
+/* fullscreen: the band sits just above the floating main control, which fades away when not touched */
+.training.immersive .tr-consignes {
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  padding-top: 10px;
+  background: linear-gradient(to top, rgba(var(--cons-bg), 0.8) 70%, rgba(var(--cons-bg), 0));
+}
+.training.immersive .tr-stage .coach-bubble.in-host {
+  bottom: calc(var(--cons-h, 92px) + 8px);
+}
+@media (max-height: 700px) {
+  .tr-consignes {
+    padding-top: 14px;
+    padding-bottom: 6px;
+    gap: 3px;
+  }
+  .cons-line p {
+    font-size: 0.92em;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cons-line p {
+    animation: none;
+  }
+}
+
+/* 1.4.0 (Youssef, 2026-10-28: « Toute l'interface doit pulser ou clignoter discrètement au rythme du bip du round ou
+   de l'annonce vocale des combinaisons »): one short flash per signal, in the colour of the phase (amber
+   preparation, red work, teal rest), at most 3 a second (pulse.ts). It never takes a tap. */
+.tr-pulse {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: inherit;
+}
+.training[data-pulse='contour'] .tr-pulse {
+  box-shadow: inset 0 0 0 3px var(--pulse-c), inset 0 0 36px 6px var(--pulse-c);
+}
+.training[data-pulse='fond'] .tr-pulse {
+  background: radial-gradient(ellipse at 50% 55%, var(--pulse-c), transparent 70%);
+}
+.training[data-pulse='contour'].pulse-on .tr-pulse {
+  animation: tr-pulse 0.32s ease-out;
+}
+.training[data-pulse='fond'].pulse-on .tr-pulse {
+  animation: tr-pulse-soft 0.38s ease-out;
+}
+.training[data-pulse='chrono'].pulse-on .hud-time {
+  animation: tr-pulse-chrono 0.32s ease-out;
+}
+@keyframes tr-pulse {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: var(--pulse-i, 0.7);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes tr-pulse-soft {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: calc(var(--pulse-i, 0.7) * 0.35);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes tr-pulse-chrono {
+  30% {
+    color: var(--pulse-c);
+    transform: scale(1.08);
+  }
+}
+/* fewer animations asked by the system: a softer flash, same rhythm */
+@media (prefers-reduced-motion: reduce) {
+  .training[data-pulse='contour'].pulse-on .tr-pulse {
+    animation-name: tr-pulse-soft;
+  }
+  .training[data-pulse='chrono'].pulse-on .hud-time {
+    transform: none;
+  }
 }

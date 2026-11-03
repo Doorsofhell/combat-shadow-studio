@@ -1,20 +1,26 @@
-import { TechThumb, keyTechnique, programTechnique } from '../components/TechThumb';
-import { Component, ReactNode, Suspense, lazy, useCallback, useMemo } from 'react';
+import { lazy, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
 import { useActiveFighter } from '../../store/fighters';
-import { formatDuration, sessionCount, sum, useStats, weekKey } from '../../store/stats';
+import { sessionCount, sum, useStats, weekKey } from '../../store/stats';
 import { useGoals } from '../../store/goals';
-import { useCatalog, useCatalogUser } from '../../store/catalog';
 import { DISCIPLINES, LEVELS, TrainingMode } from '../../domain/types';
 import { EXERCISE_BY_ID } from '../../domain/exercises';
 import { recommend } from '../../domain/recommend';
-import type { ComboPlayer, PlayerEvents } from '../../engine/player';
+import { championFor } from '../../domain/coaches/catalog';
+import type { ComboPlayer, PlayerEvents } from '../../engine';
 import { MODE_LABEL } from '../training/plan';
-import { DisciplineArtwork, DisciplineCard, DisciplineLabel, EmptyState, EntryCard, ProgressBar, SectionHead, StatTile } from '../components';
+import { ProgressBar } from '../components';
 import { defaultFighterName } from '../components/fighter';
-import { IconChevron, IconClock, IconGear, IconPlay, IconRestart, IconTrend, IconUser } from '../icons';
+import { DisciplineIcon } from '../icons';
+import { useNavActions } from '../nav/store';
+import { NavPanel, usePanel } from '../nav/NavSheets';
+import { useKbStyle } from '../components/KickboxingStyle';
+import { techniquesFor } from '../../domain/techniques';
+import { filterTechniques } from '../../domain/kickboxingStyles';
+import { CoachScreen } from '../coach-screen/CoachScreen';
+import { techniqueOfTheDay } from '../../domain/quickPicks';
 
 /** the 3D bundle (three.js, R3F) stays out of the main chunk */
 const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
@@ -22,21 +28,9 @@ const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ de
 const RESUMABLE: TrainingMode[] = ['libre', 'technique', 'cardio', 'rounds'];
 const NO_EVENTS: PlayerEvents = {};
 
-/** keeps the home screen usable when WebGL is unavailable */
-class StageBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  render() {
-    if (this.state.failed) return <div className="hero-loading small">Affichage 3D indisponible sur cet appareil.</div>;
-    return this.props.children;
-  }
-}
-
 function StageFallback() {
   return (
-    <div className="hero-loading" role="status" aria-label="Chargement du combattant">
+    <div className="hero-loading" role="status" aria-label="Chargement du coach">
       <div className="stage-skeleton" />
     </div>
   );
@@ -48,22 +42,18 @@ export function Home() {
   const fighter = useActiveFighter();
   const sessions = useStats((s) => s.sessions);
   const weeklyGoal = useGoals((s) => s.goals.weeklyMinutes);
-  const favEx = useGoals((s) => s.favExercises);
-  const favCombos = useCatalogUser((s) => s.favorites);
-  // the champions library is only loaded when the user has favourite combinations
-  const { catalog } = useCatalog(favCombos.length > 0);
-  const legendFavs = catalog ? favCombos.map((id) => catalog.comboById.get(id)).filter((c) => !!c).slice(0, 3) : [];
   const nav = useNavigate();
   const rec = useMemo(() => recommend(profile), [profile]);
   const disc = DISCIPLINES.find((d) => d.id === profile.mainDiscipline)!;
   const level = LEVELS.find((l) => l.id === profile.levels[disc.id])!;
-  const coach = fighter?.look.sex ?? profile.coach ?? 'homme';
-  const name = fighter?.name ?? defaultFighterName(profile.coach);
+  const premium = settings.coachRender === 'premium';
+  // 0.24: the coach on stage is Kadir or Amara; the fallback render keeps the custom fighter
+  const coach = premium ? (profile.coach ?? 'homme') : (fighter?.look.sex ?? profile.coach ?? 'homme');
+  const name = premium ? championFor(profile.coach, profile.champion).name : (fighter?.name ?? defaultFighterName(profile.coach));
 
   const thisWeek = weekKey(new Date().toISOString());
   const week = sessions.filter((s) => weekKey(s.start) === thisWeek);
   const weekSec = sum(week);
-  const totalSec = sum(sessions);
   const sorted = useMemo(() => [...sessions].sort((a, b) => b.start.localeCompare(a.start)), [sessions]);
   const last = sorted[0];
   const resume = last && EXERCISE_BY_ID.has(last.exerciseId) && RESUMABLE.includes(last.mode) ? `/entrainement?ex=${last.exerciseId}&mode=${last.mode}` : null;
@@ -80,202 +70,169 @@ export function Home() {
     if (recEx) nav(`/discipline/${recEx.discipline}?niveau=${recEx.level}&ex=${recEx.id}`);
     else nav('/entrainer');
   };
+  const update = useProfile((s) => s.update);
+  const picker = usePanel();
+
+  // 0.26 quick actions; 1.0.0 (refonte, lot 3, maquette v4): they are the three tiles of the page, and the big
+  // button « Reprendre » relaunches the last session (« Commencer » before the first one)
+  const [kbStyle] = useKbStyle();
+  const main = profile.mainDiscipline;
+  const daily = useMemo(() => techniqueOfTheDay(filterTechniques(techniquesFor(main), main, kbStyle)), [main, kbStyle]);
+  const resumeNow = () => (resume ? nav(resume) : start());
+  useNavActions({
+    resume: { label: resume ? 'Reprendre' : 'Commencer', icon: 'play', run: resumeNow, testId: 'home-cta', ariaLabel: resume && last ? `Reprendre : ${last.exerciseName}` : 'Commencer l’entraînement' },
+  });
+  const goalMin = weeklyGoal;
+  const goalSessions = useGoals((s) => s.goals.weeklySessions);
+  const weekMin = Math.round(weekSec / 60);
+  const weekSessions = sessionCount(week);
+  const lastDisc = last ? DISCIPLINES.find((d) => d.id === last.discipline) : undefined;
+  const shown = resume && lastDisc ? lastDisc : disc;
 
   return (
-    <div className="page" style={{ gap: 22 }}>
-      <header className="home-head">
-        <div className="grow">
-          <div className="brand">
-            Combat <b>Shadow</b> Studio
-          </div>
+    <div className="page home" style={{ gap: 16 }}>
+      {/* 1.3.0 (Youssef, 2026-10-28: « le numéro de version s'affiche sous la photo de profil, positionne-le directement
+          après le titre de l'application »): the version follows the name, clear of the photo at the top right */}
+      <header className="home-head row" style={{ gap: 8, alignItems: 'baseline', justifyContent: 'flex-start' }}>
+        <div className="brand">
+          Combat <b>Shadow</b> Studio
         </div>
-        <Link to="/combattant" className="btn icon ghost" aria-label="Mon profil et mon combattant" title="Profil">
-          <IconUser />
-        </Link>
-        <Link to="/reglages" className="btn icon ghost" aria-label="Réglages" title="Réglages" style={{ marginRight: -10 }} data-testid="open-settings">
-          <IconGear />
-        </Link>
+        <span className="small muted num-figure" data-testid="home-version">
+          v{import.meta.env.VITE_APP_VERSION}
+        </span>
       </header>
 
-      <section className="hero" aria-label={`${name}, ${disc.name}`}>
-        <div className="hero-stage" aria-hidden>
-          <StageBoundary>
-            <Suspense fallback={<StageFallback />}>
-              <CoachStage
-                backdrop="dark"
-                coach={coach}
-                discipline={profile.mainDiscipline}
-                southpaw={profile.guard === 'gaucher'}
-                cameraAngle={25}
-                quality={settings.quality}
-                events={NO_EVENTS}
-                onPlayer={onPlayer}
-              />
-            </Suspense>
-          </StageBoundary>
-        </div>
+      {/* « Reprendre » : the last session (or the main discipline before the first one); a tap chooses the
+          discipline among the six (maquette v4) */}
+      <button type="button" className="home-resume" onClick={picker.show} data-testid="resume-last" aria-haspopup="dialog" aria-label={`${resume ? 'Reprendre' : 'Discipline'} : ${shown.name}. Changer de discipline`}>
+        <span className="eyebrow">{resume ? 'Reprendre' : 'Ta discipline'}</span>
+        <span className="home-resume-disc" data-disc={shown.id}>
+          {/* the official icon of the discipline (the home always showed the main discipline's icon, 0.24) */}
+          <DisciplineIcon id={shown.id} size={40} />
+          {shown.short}
+        </span>
+        <span className="small">
+          {resume && last ? (
+            <>
+              {last.exerciseName} · {MODE_LABEL[last.mode]}
+            </>
+          ) : (
+            level.name
+          )}
+        </span>
+      </button>
+
+      <section className="hero home-hero" aria-label={`${name}, ${disc.name}`}>
+        {/* 1.4.0: the coach screen of the app (the same module everywhere): a tap shows the sound and the
+            fullscreen in the zone of the coach; a double tap shows the coach on the whole screen */}
+        <CoachScreen
+          context="accueil"
+          className="hero-stage"
+          testId="hero-stage"
+          place="accueil"
+          stageClassName="hero-stage-3d"
+          stageHidden
+          fallback={<StageFallback />}
+          commands={{ sound: true }}
+          stage={
+            <CoachStage
+              backdrop="dark"
+              coach={coach}
+              discipline={profile.mainDiscipline}
+              southpaw={profile.guard === 'gaucher'}
+              cameraAngle={25}
+              quality={settings.quality}
+              events={NO_EVENTS}
+              onPlayer={onPlayer}
+            />
+          }
+        />
         <div className="hero-fade" />
         <div className="hero-info">
-          <div>
-            <div className="eyebrow disc-label">
-              <DisciplineArtwork id={disc.id} format="avatar" size="xs" />
-              <span>
-                {disc.name} · {level.name}
-              </span>
-            </div>
-            <div className="hero-name" data-testid="fighter-name">
-              {name}
-            </div>
+          <div className="hero-name" data-testid="fighter-name">
+            {name}
           </div>
         </div>
         <div className="hero-top">
-          <Link to="/combattant" className="chip" aria-label={`Personnaliser ${name}`}>
-            Personnaliser
+          <Link to="/coach" className="chip" aria-label={`Changer de coach (${name})`}>
+            Changer de coach
           </Link>
         </div>
       </section>
 
-      <div className="stack" style={{ gap: 10, marginTop: -6 }}>
-        <button type="button" className="btn primary block lg" onClick={start} data-testid="home-cta">
-          <IconPlay /> Commencer l’entraînement
+      <div className="home-tiles">
+        <button type="button" className="home-tile" onClick={start} data-testid="tile-quick">
+          <span className="eyebrow">Séance rapide</span>
+          <b>{recEx ? recEx.name : 'Choisir'}</b>
         </button>
-        {recEx && (
-          <p className="small muted" style={{ textAlign: 'center' }}>
-            Recommandé : <span style={{ color: 'var(--ink)' }}>{recEx.name}</span>
-          </p>
+        {daily && (
+          <Link to={`/techniques/${daily.id}?d=${main}`} className="home-tile" data-testid="tile-daily">
+            <span className="eyebrow">Technique du jour</span>
+            <b>{daily.name}</b>
+          </Link>
         )}
+        <Link to="/chrono" className="home-tile" data-testid="tile-chrono">
+          <span className="eyebrow">Chrono</span>
+          <b>Seul</b>
+        </Link>
       </div>
 
-      {resume && last && (
-        <Link to={resume} className="card link ex-card" data-testid="resume-last">
-          <span className="icon-tile red" aria-hidden>
-            <IconRestart />
+      {/* the weekly goal, real figures only; the details are in Progrès › Objectifs */}
+      <Link to="/objectifs" className="home-goal" data-testid="home-goal">
+        <span className="row between">
+          <span className="eyebrow">Objectif de la semaine</span>
+          <span className="num-figure home-goal-n">
+            {goalMin > 0 ? `${weekMin} / ${goalMin} min` : goalSessions > 0 ? `${weekSessions} / ${goalSessions}` : `${weekMin} min`}
           </span>
-          <span className="body">
-            <span className="eyebrow">Reprendre</span>
-            <span className="title">{last.exerciseName}</span>
-            <span className="small muted">
-              <DisciplineLabel id={last.discipline} name={DISCIPLINES.find((d) => d.id === last.discipline)?.name ?? ''} /> · {MODE_LABEL[last.mode]}
-            </span>
-          </span>
-          <IconChevron />
-        </Link>
-      )}
-
-      <section className="section" aria-labelledby="h-progress">
-        <SectionHead id="h-progress" title="Ta progression" action={<Link to="/stats">Tout voir</Link>} />
-        {sessions.length === 0 ? (
-          <EmptyState title="Aucune séance pour l’instant" text="Ton temps actif, tes séances et ta progression apparaîtront ici après ton premier entraînement." />
+        </span>
+        {goalMin > 0 || goalSessions > 0 ? (
+          <ProgressBar
+            value={goalMin > 0 ? weekMin / goalMin : weekSessions / goalSessions}
+            label="Objectif hebdomadaire"
+            tone={(goalMin > 0 ? weekMin >= goalMin : weekSessions >= goalSessions) ? 'gold' : 'red'}
+          />
         ) : (
-          <>
-            <div className="stat-tiles">
-              <StatTile value={Math.round(weekSec / 60)} unit="min" label="Cette semaine" />
-              <StatTile value={formatDuration(totalSec)} label="Temps cumulé" />
-              <StatTile value={sessionCount(sessions)} label="Séances" />
-            </div>
-            {weeklyGoal > 0 && (
-              <div className="card stack" style={{ gap: 8 }}>
-                <div className="row between">
-                  <span className="small">Objectif de la semaine</span>
-                  <span className="small num-figure">
-                    {Math.round(weekSec / 60)} / {weeklyGoal} min
-                  </span>
-                </div>
-                <ProgressBar value={weekSec / 60 / weeklyGoal} label="Objectif hebdomadaire" tone={weekSec / 60 >= weeklyGoal ? 'gold' : 'red'} />
-              </div>
-            )}
-            {last && (
-              <div className="card row nowrap" style={{ gap: 14 }}>
-                <span className="icon-tile" aria-hidden>
-                  <IconClock />
-                </span>
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span className="eyebrow" style={{ display: 'block' }}>
-                    Dernière séance
-                  </span>
-                  <span style={{ fontWeight: 600 }}>{last.exerciseName}</span>
-                  <span className="small muted" style={{ display: 'block' }}>
-                    {new Date(last.start).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} · {formatDuration(last.activeSec)} actives
-                  </span>
-                </span>
-              </div>
-            )}
-          </>
+          <span className="small muted">Aucun objectif fixé. Touche ici pour en choisir un.</span>
         )}
-      </section>
+      </Link>
 
-      {legendFavs.length > 0 && (
-        <section className="section" aria-labelledby="h-legend-fav">
-          <SectionHead id="h-legend-fav" title="Combinaisons favorites" action={<Link to="/champions">Légendes</Link>} />
-          <div className="stack" style={{ gap: 8 }}>
-            {legendFavs.map((c) => (
-              <Link key={c!.id} to={`/champions/${c!.id}`} className="card link ex-card">
-                <TechThumb id={keyTechnique(c!.sequence)} />
-                <span className="body">
-                  <span className="title">{c!.name}</span>
-                  <span className="small muted">{catalog?.championById.get(c!.champion)?.name ?? 'Combinaison des légendes'}</span>
-                </span>
-                <IconChevron />
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {favEx.length > 0 && (
-        <section className="section" aria-labelledby="h-fav">
-          <SectionHead id="h-fav" title="Favoris" action={<Link to="/techniques?tab=favoris">Tous</Link>} />
-          <div className="stack" style={{ gap: 8 }}>
-            {favEx
-              .map((id) => EXERCISE_BY_ID.get(id))
-              .filter((e) => !!e)
-              .slice(0, 3)
-              .map((e) => (
-                <Link key={e!.id} to={`/discipline/${e!.discipline}?niveau=${e!.level}&ex=${e!.id}`} className="card link ex-card">
-                  <TechThumb id={keyTechnique(e!.sequence)} />
-                  <span className="body">
-                    <span className="title">{e!.name}</span>
-                    <span className="small muted"><DisciplineLabel id={e!.discipline} name={DISCIPLINES.find((d) => d.id === e!.discipline)?.name ?? ''} /></span>
-                  </span>
-                  <IconChevron />
-                </Link>
-              ))}
-          </div>
-        </section>
-      )}
-
-      {recProg && (
-        <section className="section" aria-labelledby="h-prog">
-          <SectionHead id="h-prog" title="Programme recommandé" action={<Link to="/programmes">Programmes</Link>} />
-          <EntryCard to={`/programmes/${recProg.id}`} icon={<IconTrend />} thumb={programTechnique(recProg)} tone="red" title={recProg.name} text={`${recProg.durationMin} min · ${recProg.frequency}`} />
-        </section>
-      )}
-
-      <section className="section" aria-labelledby="h-disc">
-        <SectionHead id="h-disc" title="Disciplines" action={<Link to="/entrainer">Entraîner</Link>} />
-        <div className="disc-grid compact" data-testid="home-disciplines">
-          {DISCIPLINES.map((d) => (
-            <DisciplineCard key={d.id} id={d.id} to={`/discipline/${d.id}`} level={profile.levels[d.id]} compact testId={`home-disc-${d.id}`} />
-          ))}
+      {/* former « Programme recommandé » and « Pour toi aujourd’hui »: one line under the gauge */}
+      {(recProg || rec.exercises[1]) && (
+        <div className="home-next">
+          {recProg && (
+            <Link to={`/programmes/${recProg.id}`} className="chip" data-testid="home-prog">
+              Programme : {recProg.name}
+            </Link>
+          )}
+          {rec.exercises[1] && (
+            <Link to={`/discipline/${rec.exercises[1].discipline}?niveau=${rec.exercises[1].level}&ex=${rec.exercises[1].id}`} className="chip" data-testid="home-foryou">
+              Pour toi : {rec.exercises[1].name}
+            </Link>
+          )}
         </div>
-      </section>
+      )}
 
-      {rec.exercises.length > 1 && (
-        <section className="section" aria-labelledby="h-rec">
-          <SectionHead id="h-rec" title="Pour toi aujourd’hui" action={<Link to={`/discipline/${disc.id}`}>{disc.short}</Link>} />
-          <div className="stack" style={{ gap: 8 }}>
-            {rec.exercises.slice(1, 4).map((e) => (
-              <Link key={e.id} to={`/discipline/${e.discipline}?niveau=${e.level}&ex=${e.id}`} className="card link ex-card">
-                <TechThumb id={keyTechnique(e.sequence)} />
-                <span className="body">
-                  <span className="eyebrow">{LEVELS.find((l) => l.id === e.level)!.name}</span>
-                  <span className="title">{e.name}</span>
-                </span>
-                <IconChevron />
-              </Link>
+      {picker.open && (
+        <NavPanel title="Choisir la discipline" onClose={() => picker.hide()} testId="disc-picker">
+          <div className="home-discs">
+            {DISCIPLINES.map((d) => (
+              <button
+                key={d.id}
+                type="button"
+                className={`home-disc ${d.id === main ? 'on' : ''}`}
+                aria-pressed={d.id === main}
+                data-testid={`pick-${d.id}`}
+                onClick={() => {
+                  update({ mainDiscipline: d.id });
+                  picker.hide();
+                }}
+              >
+                <DisciplineIcon id={d.id} size={28} />
+                <b>{d.short}</b>
+              </button>
             ))}
           </div>
-        </section>
+        </NavPanel>
       )}
     </div>
   );
