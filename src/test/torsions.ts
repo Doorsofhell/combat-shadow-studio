@@ -293,7 +293,7 @@ export const TORSION_LIMITS = {
   wristFlex: 80,
   wristExt: 70,
   /**
-   * 1.8.0 (option recommended to Youssef, 2026-10-29): a hand laid flat on the mat and carrying the body (push-up, posting
+   * 1.8.0 (Youssef's choice, 2026-10-29 13:34: main à plat): a hand laid flat on the mat and carrying the body (push-up, posting
    * on the floor) bends back past the active range, forearm close to vertical over a flat palm: about 90°
    */
   wristExtLoaded: 90,
