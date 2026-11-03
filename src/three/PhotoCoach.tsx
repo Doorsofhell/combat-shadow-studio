@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import type { GLTFLoader } from 'three-stdlib';
-import { Material, Mesh, MeshStandardMaterial, Object3D } from 'three';
-import { photoMaterial, photoPart, skinLookFor } from './photoMaterials';
+import { Material, Mesh, MeshStandardMaterial, Object3D, type SkinnedMesh } from 'three';
+import { applyBreath, Breath } from './breath';
+import { Sway } from './sway';
+import { hairFadeAttribute, photoMaterial, photoPart, skinLookFor } from './photoMaterials';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { restoreReferencePose, setLegLength } from './pose';
 import { FaceAnimator, type FaceOptions } from './face';
@@ -46,6 +48,8 @@ export function PhotoCoach({
   onFrame: (rig: CoachRig, dt: number) => void;
 }) {
   const gltf = useGLTF(url, draco, true, extendLoader);
+  // 1.10: breathing of the chest and belly, on the skin and on the garments (src/three/breath.ts)
+  const breath = useMemo(() => new Breath(), []);
   const scene = useMemo(() => {
     // 1.10: skin calibrated per coach (relief, scattering, pores: photoMaterials.ts SKIN_LOOK)
     const look = skinLookFor(url);
@@ -56,11 +60,14 @@ export function PhotoCoach({
       m.frustumCulled = false;
       // 1.10: each part classified (skin, eyes, hair, brows, lashes) and rebuilt from all its source properties
       // (src/three/photoMaterials.ts): before, « opacity » sent the eyes, brows and lashes to the hair branch
-      m.material = photoMaterial(m.material as MeshStandardMaterial, photoPart(m.material as Material), quality, look);
+      const part = photoPart(m.material as Material);
+      if (part === 'cheveux') hairFadeAttribute(m.geometry);
+      m.material = photoMaterial(m.material as MeshStandardMaterial, part, quality, look);
+      if (part === 'peau' && (m as SkinnedMesh).isSkinnedMesh) applyBreath(m.material as Material, breath.uniformsFor(m as SkinnedMesh));
     });
     restoreReferencePose(s);
     return s;
-  }, [gltf, quality, url]);
+  }, [gltf, quality, url, breath]);
   // 1.9: blinks, gaze and the effort of the strikes on the facial bones (src/three/face.ts); after the rig's pose
   const face = useMemo(() => {
     restoreReferencePose(scene);
@@ -101,7 +108,16 @@ export function PhotoCoach({
     },
     [gl, camera, scene],
   );
-  const dressed = useOutfit(scene, outfitUrl, outfit, quality, extendLoader, prepare);
+  // 1.10: the skirt of the gi and the belt tails swing a little (src/three/sway.ts)
+  const sway = useMemo(() => new Sway(), []);
+  const decorate = useCallback(
+    (g: SkinnedMesh) => {
+      applyBreath(g.material as Material, breath.uniformsFor(g));
+      sway.add(g, outfit === 'judo');
+    },
+    [breath, sway, outfit],
+  );
+  const dressed = useOutfit(scene, outfitUrl, outfit, quality, extendLoader, prepare, decorate);
   useEffect(() => onOutfit?.(dressed), [dressed, onOutfit]);
   // v0.32 (Youssef, 2026-10-22 10:33: « le combattant apparaît brièvement en sous-vêtements »): the coach is
   // drawn only once its outfit is worn, or when there is none, or when it failed (the base layer is then said)
@@ -112,7 +128,12 @@ export function PhotoCoach({
   useFrame((_, dt) => {
     onFrame(rig, Math.min(dt, 0.05));
     // fixed images (Lab, portraits) ask for a still face, or impose an expression: window.__cssFace
-    face.update(Math.min(dt, 0.05), (globalThis as { __cssFace?: FaceOptions }).__cssFace);
+    const fo = (globalThis as { __cssFace?: FaceOptions }).__cssFace;
+    face.update(Math.min(dt, 0.05), fo);
+    // still images (Lab, portraits): the chest at rest, so two captures of the same instant are the same
+    breath.update(fo?.still ? 0 : dt, face.state.effort);
+    if (fo?.still) breath.amount.value.set(0, 0, 0, 0);
+    sway.update(fo?.still ? 0 : Math.min(dt, 0.05));
     // garments are taken off in an effect cleanup (quality or outfit change) before the new state is rendered:
     // an image is never drawn with the coach shown without them
     if (scene.visible && expected && dressed.state === 'portee' && !hasGarment(scene)) scene.visible = false;

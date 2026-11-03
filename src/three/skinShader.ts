@@ -30,7 +30,7 @@ export interface SkinLook {
   tint: [number, number, number];
 }
 
-export const DEFAULT_SKIN: SkinLook = { relief: 1.3, wrap: 0.5, shadowLift: 0.32, pores: 0.05, roughVar: 0.12, tintVar: 0.05, tint: [1, 0.42, 0.26] };
+export const DEFAULT_SKIN: SkinLook = { relief: 1.3, wrap: 0.5, shadowLift: 0.32, pores: 0.05, roughVar: 0.12, tintVar: 0.05, tint: [1, 0.5, 0.36] };
 
 const HEADER = /* glsl */ `
 uniform float cssWrap;

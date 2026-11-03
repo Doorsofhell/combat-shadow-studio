@@ -1,5 +1,5 @@
 import { applySkinShader, DEFAULT_SKIN, type SkinLook } from './skinShader';
-import { DoubleSide, FrontSide, Material, MeshPhysicalMaterial, MeshStandardMaterial, SRGBColorSpace, type MeshStandardMaterialParameters } from 'three';
+import { BufferAttribute, BufferGeometry, DoubleSide, FrontSide, Material, MeshPhysicalMaterial, MeshStandardMaterial, SRGBColorSpace, type MeshStandardMaterialParameters } from 'three';
 
 /**
  * 1.10 materials of the Ultra-réaliste coaches (PhotoCoach) and of their outfits (outfit.ts dress()).
@@ -86,7 +86,7 @@ export const SKIN_LOOK: Record<string, SkinLook> = {
   'mma-kadir': { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, wrap: 0.45, shadowLift: 0.36 },
   'mma-amara': { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, wrap: 0.45, shadowLift: 0.34 },
   axel: { ...DEFAULT_SKIN, relief: 1.5, pores: 0.06, wrap: 0.5, shadowLift: 0.3 },
-  kaila: { ...DEFAULT_SKIN, relief: 1.35, pores: 0.05, wrap: 0.55, shadowLift: 0.32, tint: [1, 0.46, 0.3] },
+  kaila: { ...DEFAULT_SKIN, relief: 1.35, pores: 0.05, wrap: 0.55, shadowLift: 0.32, tint: [1, 0.52, 0.38] },
 };
 
 export function skinLookFor(url: string): SkinLook {
@@ -126,10 +126,50 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
       const p: MeshStandardMaterialParameters = { ...base, metalness: 0, roughness: 0.18, transparent: false, alphaTest: cut, depthWrite: true };
       return hi ? new MeshPhysicalMaterial({ ...p, clearcoat: 1, clearcoatRoughness: 0.04, specularIntensity: 0.8 }) : new MeshStandardMaterial({ ...p, roughness: 0.12 });
     }
-    case 'cheveux':
-      return new MeshStandardMaterial({ ...base, metalness: 0, roughness: Math.max(0.55, old.roughness), side: DoubleSide, transparent: false, alphaTest: 0.4, alphaToCoverage: true, depthWrite: true });
+    case 'cheveux': {
+      const m = new MeshStandardMaterial({ ...base, metalness: 0, roughness: Math.max(0.55, old.roughness), side: DoubleSide, transparent: false, alphaTest: 0.4, alphaToCoverage: true, depthWrite: true });
+      fadeHairEnds(m);
+      return m;
+    }
     case 'sourcils':
     case 'cils':
       return new MeshStandardMaterial({ ...base, metalness: 0, side: DoubleSide, transparent: false, alphaTest: 0.3, alphaToCoverage: true, depthWrite: true });
   }
+}
+
+/**
+ * 1.10 (« effet casque », « travaillez d'abord la silhouette et l'implantation »): the hair cards ended at the nape on
+ * a hard, opaque line (Axel's short cut read as a helmet from behind). The lowest 2.5 cm of a hair mesh thin out
+ * (alpha times a ramp read from the attribute cssHairFade, prepared once per geometry by hairFadeAttribute), so
+ * the hairline at the nape and the tips of a ponytail fade into single strands as real hair does.
+ */
+export function hairFadeAttribute(geometry: BufferGeometry, span = 0.025) {
+  if (geometry.getAttribute('cssHairFade')) return;
+  const pos = geometry.getAttribute('position');
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (let i = 0; i < pos.count; i++) {
+    lo = Math.min(lo, pos.getY(i));
+    hi = Math.max(hi, pos.getY(i));
+  }
+  // the Rocketbox and MakeHuman files may be in metres or centimetres: the span follows the size of the head's hair
+  const unit = hi - lo > 5 ? 100 : 1;
+  const f = new Float32Array(pos.count);
+  for (let i = 0; i < pos.count; i++) {
+    const t = Math.min(1, Math.max(0, (pos.getY(i) - lo) / (span * unit)));
+    f[i] = 0.35 + 0.65 * t * t * (3 - 2 * t);
+  }
+  geometry.setAttribute('cssHairFade', new BufferAttribute(f, 1));
+}
+
+function fadeHairEnds(m: Material) {
+  m.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nattribute float cssHairFade;\nvarying float vCssHairFade;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvCssHairFade = cssHairFade;');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying float vCssHairFade;')
+      .replace('#include <alphamap_fragment>', '#include <alphamap_fragment>\ndiffuseColor.a *= vCssHairFade;');
+  };
+  m.customProgramCacheKey = () => 'css-hair-fade';
 }

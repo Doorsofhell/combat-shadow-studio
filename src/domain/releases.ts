@@ -49,6 +49,21 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.10.0',
+      releaseDate: '2026-11-03',
+      title: 'Coachs plus réalistes, tenues mieux ajustées',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Gants de boxe : le poing suit enfin la main et la manchette l’avant-bras (ils se déformaient à l’envers). Les gants de muay-thaï ont leur vraie coupe, plus courte et plus ronde.' },
+        { category: 'corrections', text: 'Les yeux, les sourcils et les cils gardent leur propre matière (ils étaient traités comme des cheveux) ; les cheveux se voient des deux côtés, sans effet de casque.' },
+        { category: 'ameliorations', text: 'Épaules et aisselles plus naturelles en garde : plus de pli marqué sous l’omoplate de Kadir, peau moins étirée sous les bras de Kaila.' },
+        { category: 'ameliorations', text: 'Peau plus vivante : la lumière la traverse un peu, les ombres sont moins dures, pores et petites variations de teinte, réglés pour chaque coach.' },
+        { category: 'ameliorations', text: 'Les coachs respirent, plus vite pendant l’effort ; la veste du gi et les pans de la ceinture bougent un peu avec les hanches.' },
+        { category: 'ameliorations', text: 'Tenues refaites : brassière dos nageur ajustée, shorts aux ourlets fins, sous-vêtements dessinés sur la peau enfin couverts, chaussures de boxe mieux taillées (bout, col, talon).' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.9.0',
       releaseDate: '2026-10-29',
       title: 'Coachs plus vivants, rendu Anime retiré',

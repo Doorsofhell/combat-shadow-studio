@@ -420,7 +420,7 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
     return o, covered
 
 
-def iso_cut(bm_, F, near=0.025):
+def iso_cut(bm_, F, near=0.016):
     """1.10: cut a mesh along the zero line of the field F (world point -> float, < 0 inside) and delete what is
     outside. The faces near the line are subdivided once first (finer edge), each edge crossing the line is split at
     the interpolated zero, the two new points of a face are joined, and the faces whose centre is outside go"""
@@ -1320,19 +1320,33 @@ def bra_field():
                 d = (r - n_ * dn).length + 0.3 * abs(dn) - (0.011 + 0.005 * _ss(0.7, 1.0, u[k] + (u[k + 1] - u[k]) * t))
                 best = min(best, d)
         return best
+    arms = [(H[f'{s_}Arm'], H[f'{s_}ForeArm']) for s_ in ('Left', 'Right')]
+
+    def arm_clear(q):
+        best = 1e9
+        for a, b in arms:
+            ab = b - a
+            t = max(0.0, min(1.0, (q - a).dot(ab) / ab.dot(ab)))
+            best = min(best, (q - (a + ab * t)).length)
+        return 0.068 - best
+
     def field(q):
         ax = abs(q.x)
         front = _ss(yc + 0.02, yc - 0.035, q.y)
         t_front = nk.z - 0.158 + 0.04 * _ss(0.0, 0.07, ax)
         t_back = cz + 0.004
         T = t_back + (t_front - t_back) * front
-        band = max(q.z - T, low - q.z, ax - xside)
+        # armhole: the top edge dips toward the side, under the armpit (no cloth over the shoulder joint)
+        T -= 0.05 * _ss(0.1, 0.17, ax) * (1 - 0.6 * front)
+        # the side seam is not a vertical cut any more (it left the flank bare under the arm): the band wraps the
+        # whole torso and stops where the upper arm begins (6.8 cm round its axis, a smooth line in the armpit)
+        band = max(q.z - T, low - q.z, arm_clear(q))
         # racer panel (back only): 2 cm wide under the meeting point, 9 cm at the band
         wz = 0.016 + 0.32 * max(0.0, D.z - q.z)
         panel = max(ax - wz, q.z - D.z, yc + 0.01 - q.y, low - q.z)
         f = _smin(band, panel, 0.02)
         # the straps never cross the under-arm side seam
-        f = _smin(f, max(strap(q), ax - xside - 0.01), 0.008)
+        f = _smin(f, max(strap(q), arm_clear(q)), 0.008)
         return f
     print('brassiere: centre y', round(yc, 3), 'demi-largeur', round(xside, 3), 'croisement dos z', round(D.z, 3))
     return field
@@ -1585,14 +1599,16 @@ def shoes_v2(color, accent):
             qq = (np.abs(v - vc_) / a_) ** n_ + (np.maximum(z - ground, 0) / b_) ** n_
             foot = (qq ** (1 / n_) - 1) * np.minimum(a_, b_)
             foot = np.maximum(foot, ground - 0.004 - z)
-            foot = GL.smax(foot, np.maximum(u0 - 0.004 - u, u - u1 - 0.006), 0.03)
+            # 1.10: 1.2 cm of room in front of the toes (was 6 mm): when the forefoot bends the toes came through the
+            # tip of the toe box (skin-coloured notches at the front of the soles)
+            foot = GL.smax(foot, np.maximum(u0 - 0.004 - u, u - u1 - 0.012), 0.03)
             iz = lambda a: np.interp(z, zs, a)
             ell = np.sqrt(((g[..., 0] - iz(cx)) / iz(rx)) ** 2 + ((g[..., 1] - iz(cy)) / iz(ry)) ** 2)
             shaft = (ell - 1) * np.minimum(iz(rx), iz(ry))
             shaft = np.maximum(shaft, np.maximum(z - top_z, ankleZ - 0.06 - z))
             d = GL.smin(foot, shaft, 0.018)
             # sole: the footprint, 4 mm wider, from the ground to 1.6 cm
-            fp = np.maximum(np.maximum(ip(vmin) - 0.004 - v, v - ip(vmax) - 0.004), np.maximum(u0 - 0.008 - u, u - u1 - 0.01))
+            fp = np.maximum(np.maximum(ip(vmin) - 0.004 - v, v - ip(vmax) - 0.004), np.maximum(u0 - 0.008 - u, u - u1 - 0.016))
             sole = GL.smax(fp, np.maximum(z - ground - 0.016, ground - 0.001 - z), 0.006)
             d = GL.smin(d, sole, 0.004)
             # open top: the leg goes in (inner wall 5 mm)
@@ -1629,8 +1645,12 @@ def shoes_v2(color, accent):
         bm_ = bmesh.new()
         bm_.from_mesh(o.data)
         nz = (MWI.to_3x3() @ Vector((0, 0, 1))).normalized()
-        for zc in (ground + 0.016, collar_z):
+        for zc in (ground + 0.016, collar_z, top_z - 0.006):
             bmesh.ops.bisect_plane(bm_, geom=bm_.verts[:] + bm_.edges[:] + bm_.faces[:], plane_co=MWI @ Vector((0, 0, zc)), plane_no=nz)
+        # 1.10: the rolled top of the shaft came out of the field toothed (2.5 mm grid, then decimated): cut straight,
+        # the shaft ends on a clean ring and its dark lining shows inside
+        bmesh.ops.delete(bm_, geom=[f_ for f_ in bm_.faces if (MW @ f_.calc_center_median()).z > top_z - 0.006], context='FACES')
+        bmesh.ops.delete(bm_, geom=[v_ for v_ in bm_.verts if not v_.link_faces], context='VERTS')
         bmesh.ops.triangulate(bm_, faces=bm_.faces[:])
         bm_.to_mesh(o.data)
         bm_.free()
@@ -1657,7 +1677,9 @@ def shoes_v2(color, accent):
         weighted(o, lambda p_: VW[mine[kd.find(p_)[1]]])
         # skin hidden under the shoe: inside it, except at the opening
         dpts = field(np.array([P[i][:] for i in mine]))
-        cov |= {i for k2, i in enumerate(mine) if dpts[k2] < -0.001 and P[i].z < top_z - 0.012}
+        # (up to 3 mm under the straight top: the leg skin no longer shows inside the opening; and the skin that
+        # pokes a few millimetres through the shaft at the Achilles tendon is hidden too, it showed as orange drips)
+        cov |= {i for k2, i in enumerate(mine) if dpts[k2] < 0.006 and P[i].z < top_z - 0.009}
         print('chaussure', s, len(me_.polygons), 'triangles')
         parts.append(o)
     return parts, cov

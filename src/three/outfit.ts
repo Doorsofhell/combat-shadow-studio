@@ -78,6 +78,8 @@ export function useOutfit(
   extendLoader: (l: GLTFLoader) => void,
   /** v0.32: sends the garments' textures and shaders to the graphics chip before the coach is shown */
   prepare?: (garments: Object3D[]) => Promise<void>,
+  /** 1.10: shader additions of the coach (breathing) given to each garment once bound */
+  decorate?: (garment: SkinnedMesh) => void,
 ): Status {
   // v0.32 (Youssef, 2026-10-22 10:33: the coach showed in underwear before the outfit): an outfit to put on
   // starts as « chargement » from the first image, so the stage keeps the coach hidden until it is worn
@@ -142,6 +144,7 @@ export function useOutfit(
             mesh.bind(skel, m.bindMatrix);
             // four influences per point, summing to one (the export keeps the four strongest)
             mesh.normalizeSkinWeights();
+            decorate?.(mesh);
             added.push(mesh);
           }
           if (hide) {
@@ -193,7 +196,7 @@ export function useOutfit(
       }
       restore.forEach((f) => f());
     };
-  }, [scene, url, outfit, quality, extendLoader, prepare]);
+  }, [scene, url, outfit, quality, extendLoader, prepare, decorate]);
   // a state left by the previous coach or file never counts for this one: when the coach changes, the new body
   // was drawn once with the old « portée » state before the effect ran (outfit-loading.spec, coach change)
   const stale = !!url && !!outfit && (status.scene !== scene || status.url !== url);
