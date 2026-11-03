@@ -282,11 +282,14 @@ def new_obj(name, bm_):
     return o
 
 
-def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=()):
+def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=None):
     """body faces whose vertices all satisfy keep(i), pushed out by push(i) (metres along the normal, or a
     Vector: free displacement), given a thickness. mats: list of materials, mat_of(face centre, vertex ids) -> index.
     cuts: (point, normal) planes the body is sliced along first, so hems and colour bands are straight lines
-    instead of following the triangles"""
+    instead of following the triangles.
+    iso (1.10): a field f(world point) < 0 inside the garment. Its zero line is cut exactly through the triangles
+    (edges split where f changes sign, after one subdivision near the line), so a curved edge (a neckline, a strap,
+    a racer back) is smooth whatever the size of the body's faces; `keep` is then only a generous region"""
     o = body.copy()
     o.data = body.data.copy()
     o.name = name
@@ -327,7 +330,16 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=()):
                 return ok[i]
         return ok[KD.find(c)[1]]
 
-    bmesh.ops.delete(bm_, geom=[f for f in bm_.faces if not face_ok(f)], context='FACES')
+    if iso is not None:
+        bmesh.ops.delete(bm_, geom=[f for f in bm_.faces if not ok[KD.find(MW @ f.calc_center_median())[1]]], context='FACES')
+        bmesh.ops.delete(bm_, geom=[v for v in bm_.verts if not v.link_faces], context='VERTS')
+        iso_cut(bm_, iso)
+        for v in bm_.verts:
+            v[lay] = KD.find(MW @ v.co)[1]
+        # the skin hidden under the garment: inside the field only (the generous region would hide bare skin)
+        ok = [ok[i] and iso(P[i]) < -0.002 for i in range(len(P))]
+    else:
+        bmesh.ops.delete(bm_, geom=[f for f in bm_.faces if not face_ok(f)], context='FACES')
     bmesh.ops.delete(bm_, geom=[v for v in bm_.verts if not v.link_faces], context='VERTS')
     # the body is split along its texture seams: weld them, or the garment shows a crack there
     bmesh.ops.remove_doubles(bm_, verts=bm_.verts[:], dist=0.0005 / max(MW.to_scale()))
@@ -342,7 +354,8 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=()):
     for k_, q_ in enumerate(edge_pts):
         ekd.insert(q_, k_)
     ekd.balance()
-    covered = {i for i in range(len(P)) if ok[i] and (not edge_pts or ekd.find(P[i])[2] > 0.012)}
+    # 1.10: an edge cut by a field lies exactly on its line, the skin under it can be hidden closer to it (6 mm)
+    covered = {i for i in range(len(P)) if ok[i] and (not edge_pts or ekd.find(P[i])[2] > (0.006 if iso is not None else 0.012))}
     garment = KDTree(len(bm_.verts))
     for k_, v in enumerate(bm_.verts):
         garment.insert(MW @ v.co, k_)
@@ -376,7 +389,7 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=()):
             # the cut the edge comes from is the closest one (another plane can pass a few centimetres away)
             q = MW @ v.co
             ds = sorted((abs((q - pt).dot(nr)), k) for k, (pt, nr) in enumerate(cuts))
-            if ds and ds[0][0] < 0.035:
+            if ds and ds[0][0] < 0.035 and iso is None:
                 pt, nr = cuts[ds[0][1]]
                 q = q - nr * (q - pt).dot(nr)
             v.co = MWI @ q
@@ -390,7 +403,7 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=()):
     bm_.to_mesh(o.data)
     bm_.free()
     o.data.attributes.remove(o.data.attributes['src']) if 'src' in o.data.attributes else None
-    smooth(o, 2, cuts)
+    smooth(o, 2, cuts, border=0.35 if iso is not None else 1.0)
     if thick:
         sol = o.modifiers.new('Solidify', 'SOLIDIFY')
         sol.thickness = thick / max(MW.to_scale())
@@ -407,7 +420,60 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=()):
     return o, covered
 
 
-def smooth(o, n, planes=()):
+def iso_cut(bm_, F, near=0.025):
+    """1.10: cut a mesh along the zero line of the field F (world point -> float, < 0 inside) and delete what is
+    outside. The faces near the line are subdivided once first (finer edge), each edge crossing the line is split at
+    the interpolated zero, the two new points of a face are joined, and the faces whose centre is outside go"""
+    val = {v: F(MW @ v.co) for v in bm_.verts}
+    edges = [e for e in bm_.edges if min(abs(val[e.verts[0]]), abs(val[e.verts[1]])) < near or (val[e.verts[0]] < 0) != (val[e.verts[1]] < 0)]
+    if edges:
+        bmesh.ops.subdivide_edges(bm_, edges=edges, cuts=1, use_grid_fill=True, smooth=0.0)
+    val = {v: F(MW @ v.co) for v in bm_.verts}
+    for v, x in val.items():
+        if abs(x) < 1e-6:
+            val[v] = 1e-6
+    on = set()
+    for e in list(bm_.edges):
+        a, b = e.verts
+        fa, fb = val[a], val[b]
+        if (fa < 0) == (fb < 0):
+            continue
+        t = fa / (fa - fb)
+        # two refinement steps on the real field (it is not linear along the edge)
+        pa, pb = a.co.copy(), b.co.copy()
+        for _ in range(2):
+            q = pa.lerp(pb, t)
+            fq = F(MW @ q)
+            if (fq < 0) == (fa < 0):
+                pa, fa = q, fq
+            else:
+                pb, fb = q, fq
+            t2 = fa / (fa - fb) if abs(fa - fb) > 1e-12 else 0.5
+            t = t2
+        q = pa.lerp(pb, t)
+        ne, nv = bmesh.utils.edge_split(e, a, 0.5)
+        nv.co = q
+        val[nv] = 0.0
+        on.add(nv)
+    for f in list(bm_.faces):
+        vs = [v for v in f.verts if v in on]
+        if len(vs) == 2 and not bm_.edges.get(vs):
+            try:
+                bmesh.ops.connect_verts(bm_, verts=vs)
+            except Exception:
+                pass
+    out = []
+    for f in bm_.faces:
+        inside = [val.get(v, 0.0) for v in f.verts if v not in on]
+        c = F(MW @ f.calc_center_median())
+        if c > 0 and (not inside or max(inside) > 0):
+            out.append(f)
+    bmesh.ops.delete(bm_, geom=out, context='FACES')
+    bmesh.ops.delete(bm_, geom=[v for v in bm_.verts if not v.link_faces], context='VERTS')
+    bmesh.ops.triangulate(bm_, faces=[f for f in bm_.faces if len(f.verts) > 4])
+
+
+def smooth(o, n, planes=(), border=1.0):
     """relax the shell (cloth drapes, it does not copy every muscle). v0.43: the points lying on a cut plane (a hem,
     the edge of a colour band) stay on it, so those lines stay straight (the slivers beside a cut used to pull them
     up and down: wavy straps and bands)"""
@@ -416,15 +482,23 @@ def smooth(o, n, planes=()):
     m = o.modifiers.new('Smooth', 'SMOOTH')
     m.factor = 0.5
     m.iterations = n
-    if planes:
+    if planes or border < 1.0:
+        # border < 1 (1.10, curved edges cut by a field): the free edge is smoothed less, it keeps its line
+        bnd = set()
+        if border < 1.0:
+            import bmesh as _bm
+            b_ = _bm.new()
+            b_.from_mesh(o.data)
+            bnd = {v.index for v in b_.verts if v.is_boundary}
+            b_.free()
         g = o.vertex_groups.new(name='css-lisse')
         for v in o.data.vertices:
             q = o.matrix_world @ v.co
             on = any(abs((q - pt).dot(nr)) < 0.0015 for pt, nr in planes)
-            g.add([v.index], 0.0 if on else 1.0, 'REPLACE')
+            g.add([v.index], 0.0 if on else border if v.index in bnd else 1.0, 'REPLACE')
         m.vertex_group = g.name
     apply(o, m)
-    if planes and 'css-lisse' in o.vertex_groups:
+    if (planes or border < 1.0) and 'css-lisse' in o.vertex_groups:
         o.vertex_groups.remove(o.vertex_groups['css-lisse'])
 
 
@@ -586,7 +660,7 @@ def boxing_glove(s, color, accent, thai=False):
 
 
 GLOVE_TRIS = int(os.environ.get('GLOVE_TRIS', '2200'))
-_GLOVE = None
+_GLOVE = {}
 
 
 def lin(hexc):
@@ -596,12 +670,12 @@ def lin(hexc):
 
 def boxing_glove_v2(s, color, accent, thai=False):
     """v0.43 sculpted glove (tools/generator/rocketbox/glove.py): one mesh per hand, vertex-coloured regions"""
-    global _GLOVE
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import glove as GL
-    if _GLOVE is None:
-        _GLOVE = GL.glove_mesh()
-    v, q, _, _ = _GLOVE
+    # 1.10: the Thai cut is its own shape (glove.py, thai=True); before, `thai` only renamed the material
+    if thai not in _GLOVE:
+        _GLOVE[thai] = GL.glove_mesh(thai=thai)
+    v, q, _, _ = _GLOVE[thai]
     wr, a, lat, up = hand_frame(s)
     # the glove follows the size of the hand (wrist to middle knuckle, 9.5 cm on the reference), within limits
     k = max(0.9, min(1.1, (H[f'{s}HandMiddle1'] - wr).length / 0.095))
@@ -654,8 +728,8 @@ def boxing_glove_v2(s, color, accent, thai=False):
             x_ = inv_b @ d_
         return tuple(x_ / k)
 
-    vreg, pip = GL.regions(np.array([local(MW @ vv.co) for vv in me_.vertices]))
-    freg, _ = GL.regions(np.array([local(MW @ f_.center) for f_ in me_.polygons]))
+    vreg, pip = GL.regions(np.array([local(MW @ vv.co) for vv in me_.vertices]), thai)
+    freg, _ = GL.regions(np.array([local(MW @ f_.center) for f_ in me_.polygons]), thai)
     leather = lin(color)
     strap = lin(accent)
     lining = lin('#1A1A1C')
@@ -676,8 +750,16 @@ def boxing_glove_v2(s, color, accent, thai=False):
         nt.links.new(vc.outputs['Color'], nt.nodes['Principled BSDF'].inputs['Base Color'])
         m['css_vcol'] = 1
     o.data.materials.append(m)
-    cuffLen = 0.12
-    weighted(o, lambda p_: (lambda t: {f'{s}Hand': 1 - t, f'{s}ForeArm': t})(max(0.0, min(1.0, ((p_ - wr).dot(back) - 0.01) / cuffLen))))
+    # 1.10 (audit 2026-11-03): `back` points from the forearm to the wrist, so (p - wr).dot(back) is positive in
+    # FRONT of the wrist: the old blend gave the padded fist up to 100 % of the forearm and left the cuff on the hand
+    # (the striking volume did not follow the wrist, the cuff turned with the hand). Now the fist and the neck of the
+    # cuff (up to 1 cm behind the wrist) follow the hand only; the cuff blends smoothly to the forearm, which holds
+    # its open end alone (smoothstep over 8 cm behind the wrist)
+    def glove_w(p_):
+        u = max(0.0, min(1.0, (-(p_ - wr).dot(back) - 0.01) / 0.08))
+        t = u * u * (3 - 2 * u)
+        return {f'{s}Hand': 1 - t, f'{s}ForeArm': t}
+    weighted(o, glove_w)
     print('gant', s, len(o.data.polygons), 'triangles, scale', round(k, 3))
     return [o]
 
@@ -988,6 +1070,14 @@ def shorts(kind, color, band, n_leg=None):
     # flat waistband, matt jersey
     hem = {'boxe': 0.3, 'kick': 0.3, 'thai': 0.32, 'mma': 0.18, 'compression': 0.3, 'vale-tudo': VT_HEM}[kind]
     waist = hipZ + {'boxe': 0.13, 'kick': 0.11, 'thai': 0.13, 'mma': 0.11, 'compression': 0.1, 'vale-tudo': 0.1}[kind]
+    # 1.10: the waistband covers the underwear painted on the skin (Kadir's showed as a brown band above his
+    # vale-tudo short in 1.9), 8 mm over its top at most 6 cm higher than the cut asked
+    if 'top' not in _PAINT:
+        tops = [r[1] for r in (painted_cloth_range(hipZ - 0.05, hipZ + 0.2, b) for b in (True, False)) if r]
+        _PAINT['top'] = max(tops) if tops else None
+        print('sous-vêtement peint, haut', None if _PAINT['top'] is None else round(_PAINT['top'], 3), 'bassin', round(hipZ, 3))
+    if _PAINT['top'] is not None:
+        waist = max(waist, min(waist + 0.06, _PAINT['top'] + 0.008))
     bandH = {'boxe': 0.07, 'kick': 0.04, 'thai': 0.08, 'mma': 0.04, 'compression': 0.025, 'vale-tudo': 0.035}[kind]
 
     def hemz(i):
@@ -1005,9 +1095,10 @@ def shorts(kind, color, band, n_leg=None):
         # MH_BODY: the glutes of a MakeHuman body rise close to the waistband; the loose leg push there lifted the
         # cloth over the band (black teeth on the band)
         if kind == 'vale-tudo':
-            # a flat waistband (a raised one made lumps on the Rocketbox body) and a little more room at the hem,
-            # where the skin's larger triangles pierced a 3 mm shell
-            return 0.0045 + 0.003 * max(0.0, 1 - (P[i].z - hemz(i)) / 0.04)
+            # a flat waistband (a raised one made lumps on the Rocketbox body). 1.10: the 3 mm of extra room at the
+            # hem made the leg flare (Youssef's audit: « jambes légèrement évasées »); the hem is now cut exactly by
+            # its field and the skin hidden up to 6 mm from it, so the skin no longer pierces a close fit there
+            return 0.0042 + 0.0008 * max(0.0, 1 - (P[i].z - hemz(i)) / 0.03)
         if P[i].z > hipZ + 0.02 or (MH_BODY and P[i].z > waist - bandH - 0.05):
             if MH_BODY:
                 t = min(1.0, max(0.0, (P[i].z - (waist - bandH)) / 0.015 + 0.5))
@@ -1024,9 +1115,16 @@ def shorts(kind, color, band, n_leg=None):
     # polyester is matt; the satin relief is shallower (it drew wavy lines)
     sheenK = {'boxe': ('satin', 0.6, 0.35, 0.3), 'thai': ('satin', 0.58, 0.4, 0.3), 'kick': ('serge', 0.62, 0.2, 0.4), 'mma': ('flat', 0.68, 0.1, 1.0), 'compression': ('jersey', 0.6, 0.1, 0.5), 'vale-tudo': ('jersey', 0.66, 0.18, 0.7)}[kind]
     mats = [fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3]), fabric(f'ceinture-{kind}-{band}', band, 'elastique', rough=0.65, strength=0.5, tone=0.1)]
-    hems = {H[f'{s}Leg'].z + hem * (H[f'{s}UpLeg'].z - H[f'{s}Leg'].z) for s in ('Left', 'Right')}
-    cuts = [(Vector((0, 0, z)), Vector((0, 0, 1))) for z in (*hems, waist, waist - bandH)]
-    o, cov = shell(f'short-{kind}', keep, push, 0.004, mats, lambda c, ids: 1 if c.z > waist - bandH else 0, cuts=cuts)
+    # 1.10: waist and hems are the zero line of a field (exact, smooth edges whatever the body's triangles; the plane
+    # cuts left a wavy waistband on the MakeHuman bodies); the band's lower line stays a straight plane cut
+    hz = {s: H[f'{s}Leg'].z + hem * (H[f'{s}UpLeg'].z - H[f'{s}Leg'].z) for s in ('Left', 'Right')}
+    F = lambda q: max(q.z - waist, hz['Left' if q.x > 0 else 'Right'] - q.z)
+    keep_g = lambda i: P[i].z < waist + 0.03 and P[i].z > min(hz.values()) - 0.04 and w(i, *ARMS) < 0.2
+    cuts = [(Vector((0, 0, waist - bandH)), Vector((0, 0, 1)))]
+    # fine jersey for the fitted cuts (2.5 mm with its rim), 3.5 mm for the loose ones
+    thick = 0.0025 if kind in ('vale-tudo', 'compression', 'kick') else 0.0035
+    o, cov = shell(f'short-{kind}', keep_g, push, thick, mats, lambda c, ids: 1 if c.z > waist - bandH else 0, cuts=cuts, iso=F,
+                   hem=0.004 if thick < 0.003 else 0.006)
     smooth(o, 1)
     return [o], cov
 
@@ -1088,6 +1186,189 @@ def top(kind, color, accent=None, geom=False):
         cuts += [(Vector((x, 0, 0)), Vector((1, 0, 0))) for x in (-0.1, -0.06, -0.05, 0.05, 0.06, 0.1)]
     o, cov = shell(f'haut-{kind}', keep, lambda i: 0.0035 if kind != 'debardeur' else 0.006, 0.003, mats,
                    (lambda c, ids: 1 if w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ else 0) if accent else None, cuts=cuts)
+    for s_ in ('Left', 'Right'):
+        fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
+    return [o], cov
+
+
+def _ss(a, b, x):
+    t = max(0.0, min(1.0, (x - a) / (b - a)))
+    return t * t * (3 - 2 * t)
+
+
+def _smin(a, b, k):
+    h = max(0.0, min(1.0, 0.5 + 0.5 * (b - a) / k))
+    return b + (a - b) * h - k * h * (1 - h)
+
+
+def painted_cloth_bottom(zlo, zhi, back=True):
+    r = painted_cloth_range(zlo, zhi, back)
+    return None if r is None else r[0]
+
+
+_PAINT = {}
+
+
+def painted_cloth_range(zlo, zhi, back=True):
+    """1.10: lowest height of the underwear painted on the skin texture (the Rocketbox photo bodies, and the
+    MakeHuman coaches whose skin was transferred from them, carry a painted sports bra): texels much darker than the
+    skin around the spine (back) or the sternum (front), between zlo and zhi. A garment must reach below it, or the
+    painted band shows under its edge (seen on Kaila's back in 1.9). None when nothing is painted"""
+    import numpy as _np
+    mat = body.active_material
+    img = None
+    if mat and mat.use_nodes:
+        for nd in mat.node_tree.nodes:
+            if nd.type == 'TEX_IMAGE' and nd.image and 'normal' not in nd.image.name.lower():
+                lk = [l for l in mat.node_tree.links if l.from_node == nd and l.to_socket.name == 'Base Color']
+                if lk:
+                    img = nd.image
+    if img is None:
+        return None
+    wd, ht = img.size
+    px = _np.empty(wd * ht * 4, _np.float32)
+    img.pixels.foreach_get(px)
+    px = px.reshape(ht, wd, 4)
+    uvl = me.uv_layers.active.data
+    uv_of = {}
+    for lp in me.loops:
+        uv_of.setdefault(lp.vertex_index, uvl[lp.index].uv)
+    yc = H['Spine2'].y
+    samples = []
+    for i in range(len(P)):
+        q = P[i]
+        if not (zlo < q.z < zhi and abs(q.x) < 0.07 and ((q.y > yc + 0.02) if back else (q.y < yc - 0.04))) or i not in uv_of:
+            continue
+        u, v = uv_of[i]
+        c = px[min(ht - 1, max(0, int(v * ht))), min(wd - 1, max(0, int(u * wd)))]
+        samples.append((q.z, 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]))
+    if not samples:
+        return None
+    skin = sorted(l for _, l in samples)[int(len(samples) * 0.85)]
+    dark = sorted(z for z, l in samples if l < skin * 0.35)
+    if len(dark) < 8:
+        return None
+    return dark[max(0, int(len(dark) * 0.03))], dark[min(len(dark) - 1, int(len(dark) * 0.97))]
+
+
+def bra_field():
+    """1.10 (Youssef 2026-11-03, « brassière de la coach blonde » first): the racer-back sports bra as a field on the
+    body, < 0 inside, measured on the coach's own landmarks. Before, its edges were the body's triangles (Rocketbox)
+    or axis-aligned planes (MakeHuman): torn edges at the armpits and a rectangular block in the back.
+    - under-band: from the band's bottom (chest joint - 7 cm) to its top, which rises from the back (at the chest
+      joint) to the front cups, with a soft scoop between the cups; stops at the side seam under the arm;
+    - two straps from the top of the cups, over the trapezius near the neck, down the back to meet between the
+      shoulder blades, each a band 2.2 cm wide laid on the skin (a spline snapped to the body), widening to 3.2 cm
+      where they meet;
+    - the racer panel from that meeting point down to the band, widening as it goes;
+    joined with smooth unions (rounded joins, no corner where the pieces meet)"""
+    nk = H['Neck']
+    cz = chestZ
+    low = bra_low()
+    # torso landmarks: centre depth and half width at the chest, without the arms
+    def armw(i):
+        return w(i, 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm')
+    # (the arm's weights spread over the side of the torso; the hanging arms are further out than 20 cm)
+    sl = [P[i] for i in range(len(P)) if abs(P[i].z - (cz - 0.03)) < 0.006 and abs(P[i].x) < 0.2 and armw(i) < 0.6 and w(i, *HANDS) < 0.1]
+    yc = (min(p.y for p in sl) + max(p.y for p in sl)) / 2
+    xside = max(abs(p.x) for p in sl if abs(p.y - yc) < 0.05) - 0.004
+    def surf(x, z, front):
+        """the body point at (x, z) on the front (smallest y) or the back"""
+        c = [P[i] for i in range(len(P)) if abs(P[i].x - x) < 0.009 and abs(P[i].z - z) < 0.009 and armw(i) < 0.2]
+        return (min if front else max)(c, key=lambda p: p.y)
+    def top_of(x):
+        # top of the trapezius: not the neck (its points rise well above the shoulder line)
+        c = [P[i] for i in range(len(P)) if abs(P[i].x - x) < 0.008 and abs(P[i].y - nk.y) < 0.035 and armw(i) < 0.2 and w(i, 'Head', 'Neck') < 0.3]
+        return max(c, key=lambda p: p.z)
+    D = surf(0.0, cz + 0.075, False)
+    paths = []
+    for sx in (1, -1):
+        # front: up from the cup; over the trapezius; back: straight down and in to the meeting point (a racer back
+        # runs diagonally, it does not swing out over the shoulder blade)
+        ctrl = [surf(sx * 0.082, nk.z - 0.135, True), surf(sx * 0.08, nk.z - 0.07, True), top_of(sx * 0.075),
+                surf(sx * 0.05, (nk.z - 0.04) * 0.55 + D.z * 0.45, False), D]
+        pts = []
+        for k in range(len(ctrl) - 1):
+            p0, p1, p2, p3 = ctrl[max(0, k - 1)], ctrl[k], ctrl[k + 1], ctrl[min(len(ctrl) - 1, k + 2)]
+            for j in range(12):
+                t = j / 12
+                q = 0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t + (-p0 + 3 * p1 - 3 * p2 + p3) * t ** 3)
+                pts.append(P[KD.find(q)[1]].copy())
+        pts.append(D.copy())
+        # snapped to the nearest skin point each sample zigzags by a few millimetres: a wavy strap edge. Relaxed
+        # along the curve, each sample then held at the skin's height under it (nearest point + its normal)
+        for _ in range(6):
+            pts = [pts[0]] + [(pts[k - 1] + pts[k] * 2 + pts[k + 1]) / 4 for k in range(1, len(pts) - 1)] + [pts[-1]]
+        pts = [q + N[KD.find(q)[1]] * (P[KD.find(q)[1]] - q).dot(N[KD.find(q)[1]]) for q in pts]
+        # arc length along the strap (0 at the cup, 1 at the meeting point): its width grows toward the back
+        L = [0.0]
+        for a, b in zip(pts, pts[1:]):
+            L.append(L[-1] + (b - a).length)
+        paths.append((pts, [x / L[-1] for x in L], [N[KD.find(q)[1]] for q in pts]))
+    def strap(q):
+        best = 1e9
+        for pts, u, nn in paths:
+            for k in range(len(pts) - 1):
+                a, b = pts[k], pts[k + 1]
+                ab = b - a
+                t = max(0.0, min(1.0, (q - a).dot(ab) / max(1e-9, ab.dot(ab))))
+                # distance measured across the skin (the part along the skin's normal counts for little): over the
+                # ridge of the trapezius a plain 3D distance gave a wider, lumpy strap
+                r = q - (a + ab * t)
+                n_ = nn[k]
+                dn = r.dot(n_)
+                d = (r - n_ * dn).length + 0.3 * abs(dn) - (0.011 + 0.005 * _ss(0.7, 1.0, u[k] + (u[k + 1] - u[k]) * t))
+                best = min(best, d)
+        return best
+    def field(q):
+        ax = abs(q.x)
+        front = _ss(yc + 0.02, yc - 0.035, q.y)
+        t_front = nk.z - 0.158 + 0.04 * _ss(0.0, 0.07, ax)
+        t_back = cz + 0.004
+        T = t_back + (t_front - t_back) * front
+        band = max(q.z - T, low - q.z, ax - xside)
+        # racer panel (back only): 2 cm wide under the meeting point, 9 cm at the band
+        wz = 0.016 + 0.32 * max(0.0, D.z - q.z)
+        panel = max(ax - wz, q.z - D.z, yc + 0.01 - q.y, low - q.z)
+        f = _smin(band, panel, 0.02)
+        # the straps never cross the under-arm side seam
+        f = _smin(f, max(strap(q), ax - xside - 0.01), 0.008)
+        return f
+    print('brassiere: centre y', round(yc, 3), 'demi-largeur', round(xside, 3), 'croisement dos z', round(D.z, 3))
+    return field
+
+
+_BRA_LOW = []
+
+
+def bra_low():
+    """bottom of the under-band: 7 cm under the chest joint, lower when the skin has a bra painted lower (1 cm under it)"""
+    if not _BRA_LOW:
+        low = chestZ - 0.07
+        for back in (True, False):
+            z = painted_cloth_bottom(chestZ - 0.2, chestZ + 0.02, back)
+            print('brassiere peinte', 'dos' if back else 'devant', None if z is None else round(z, 3))
+            if z is not None:
+                low = min(low, z - 0.01)
+        _BRA_LOW.append(max(low, chestZ - 0.12))
+    return _BRA_LOW[0]
+
+
+def bra_v2(color, accent=None):
+    """1.10 racer-back sports bra cut by bra_field() (smooth edges), thin jersey (2.2 mm), its under-band in the
+    accent colour when there is one (straight line 2 cm above the bottom)"""
+    F = bra_field()
+    nk = H['Neck']
+    low = bra_low()
+    def keep(i):
+        return low - 0.02 < P[i].z < nk.z + 0.01 and w(i, 'Head') < 0.2 and w(i, *HANDS) < 0.3 and F(P[i]) < 0.03
+    mats = [fabric(f'haut-brassiere-{color}', color, 'jersey', rough=0.62, strength=0.45, sheen=0.12)]
+    cuts = []
+    if accent:
+        mats.append(fabric(f'liseré-{accent}', accent, 'elastique', rough=0.6, strength=0.8))
+        cuts.append((Vector((0, 0, low + 0.02)), Vector((0, 0, 1))))
+    o, cov = shell('haut-brassiere', keep, lambda i: 0.0038, 0.0022, mats,
+                   (lambda c, ids: 1 if c.z < low + 0.02 else 0) if accent else None, hem=0.008, cuts=cuts, iso=F)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
     return [o], cov
@@ -1508,7 +1789,7 @@ def outfit(name):
     if name == 'boxe':
         add(shorts('boxe', *C['boxe']))
         if female:
-            add(top('brassiere', C['boxe'][0], C['boxe'][1]))
+            add(bra_v2(C['boxe'][0], C['boxe'][1]))
         for s in ('Left', 'Right'):
             parts.extend(boxing_glove_v2(s, C['glove'], '#F4F4F5'))
         hide |= hide_hands()
@@ -1516,7 +1797,7 @@ def outfit(name):
     elif name == 'kickboxing':
         add(shorts('kick', *C['kick']))
         if female:
-            add(top('brassiere', C['kick'][1], C['kick'][0]))
+            add(bra_v2(C['kick'][1], C['kick'][0]))
         for s in ('Left', 'Right'):
             parts.extend(boxing_glove_v2(s, C['glove2'], C['kick'][1]))
         hide |= hide_hands()
@@ -1524,7 +1805,7 @@ def outfit(name):
     elif name == 'muaythai':
         add(shorts('thai', *C['thai']))
         if female:
-            add(top('brassiere', C['thai'][0], C['thai'][1]))
+            add(bra_v2(C['thai'][0], C['thai'][1]))
         for s in ('Left', 'Right'):
             parts.extend(boxing_glove_v2(s, C['glove'], C['thai'][1], thai=True))
             parts.extend(prajioud_v2(s, '#B3122A' if female else '#D4AF37'))
@@ -1535,7 +1816,7 @@ def outfit(name):
         add(shorts('vale-tudo', *C['mma']))
         if female:
             # geom: the racer back cut by planes on Amara too (her weight cut left a torn edge on the back)
-            add(top('brassiere', C['mma'][0], geom=True))
+            add(bra_v2(C['mma'][0]))
         add(mma_gloves('#16181D', '#E9E9E6', '#E9E9E6') if not female else mma_gloves('#16181D', '#2B2D33'))
     elif name == 'bjj-nogi':
         add(top('rash-long', C['rash']))

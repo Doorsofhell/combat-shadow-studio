@@ -20,6 +20,8 @@ export interface SkinnedBody {
   ibm: Matrix4[];
   /** name of the bone that weighs most on each vertex */
   part: string[];
+  /** 1.10: triangles (vertex indices into pos), with step = 1 only */
+  index: Uint32Array;
 }
 
 interface GNode {
@@ -86,6 +88,7 @@ export function loadSkinnedBody(model: string, step = 3, meshes?: (name: string)
   const P: number[] = [];
   const J: number[] = [];
   const W: number[] = [];
+  const I: number[] = [];
   nodes.forEach((n) => {
     if (n.mesh === undefined || n.skin === undefined) return;
     const mesh = json.meshes[n.mesh];
@@ -94,6 +97,11 @@ export function loadSkinnedBody(model: string, step = 3, meshes?: (name: string)
       const pos = read(prim.attributes.POSITION);
       const jo = read(prim.attributes.JOINTS_0);
       const we = read(prim.attributes.WEIGHTS_0);
+      if (step === 1) {
+        const base = P.length / 3;
+        const idx = prim.indices !== undefined ? read(prim.indices) : Array.from({ length: pos.length / 3 }, (_, i) => i);
+        for (const i of idx) I.push(base + i);
+      }
       for (let v = 0; v < pos.length / 3; v += step) {
         P.push(pos[v * 3], pos[v * 3 + 1], pos[v * 3 + 2]);
         J.push(jo[v * 4], jo[v * 4 + 1], jo[v * 4 + 2], jo[v * 4 + 3]);
@@ -117,7 +125,33 @@ export function loadSkinnedBody(model: string, step = 3, meshes?: (name: string)
   root.add(sm);
   root.updateMatrixWorld(true);
   sm.bind(new Skeleton(bones as Bone[], ibm), sm.matrixWorld);
-  return { root, pos: Float32Array.from(P), joints: Uint16Array.from(J), weights: Float32Array.from(W), count, bones, ibm, part };
+  return { root, pos: Float32Array.from(P), joints: Uint16Array.from(J), weights: Float32Array.from(W), count, bones, ibm, part, index: Uint32Array.from(I) };
+}
+
+/** 1.10: every vertex of the posed body (after rig.apply), xyz, in the order of `pos` */
+export function posedPositions(b: SkinnedBody, out = new Float32Array(b.count * 3)): Float32Array {
+  b.root.updateMatrixWorld(true);
+  const mats = b.bones.map((bone, i) => new Matrix4().multiplyMatrices(bone.matrixWorld, b.ibm[i]).elements);
+  for (let v = 0; v < b.count; v++) {
+    const x = b.pos[v * 3];
+    const y = b.pos[v * 3 + 1];
+    const z = b.pos[v * 3 + 2];
+    let px = 0;
+    let py = 0;
+    let pz = 0;
+    for (let k = 0; k < 4; k++) {
+      const w = b.weights[v * 4 + k];
+      if (!w) continue;
+      const e = mats[b.joints[v * 4 + k]];
+      px += w * (e[0] * x + e[4] * y + e[8] * z + e[12]);
+      py += w * (e[1] * x + e[5] * y + e[9] * z + e[13]);
+      pz += w * (e[2] * x + e[6] * y + e[10] * z + e[14]);
+    }
+    out[v * 3] = px;
+    out[v * 3 + 1] = py;
+    out[v * 3 + 2] = pz;
+  }
+  return out;
 }
 
 /**

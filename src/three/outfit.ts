@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BufferAttribute, Material, Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, Skeleton, SkinnedMesh, Bone, SRGBColorSpace } from 'three';
+import { BufferAttribute, Material, Mesh, MeshStandardMaterial, Object3D, Skeleton, SkinnedMesh, Bone, SRGBColorSpace } from 'three';
 import { GLTFLoader } from 'three-stdlib';
 import type { DisciplineId } from '../domain/types';
 import { log3d } from './diag3d';
+import { physicalFrom } from './photoMaterials';
 
 /**
  * v0.31 discipline outfits of the Ultra-réaliste coaches (Youssef, 2026-10-22: « TENUES ET ACCESSOIRES 3D PREMIUM
@@ -202,24 +203,18 @@ export function useOutfit(
   );
 }
 
-/** fabric look: satin and knit get a soft sheen, leather a light clear coat (in high quality only) */
+/** fabric look: satin and knit get a soft sheen, leather a light clear coat (in high quality only). 1.10: the
+ * physical material starts from all the source's properties (photoMaterials.ts physicalFrom): double faces of the
+ * loose garments, roughness and occlusion maps, alpha were lost before in high quality */
 function dress(src: Material, quality: 'haute' | 'basse'): Material {
   const m = src as MeshStandardMaterial;
   if (m.map) m.map.colorSpace = SRGBColorSpace;
-  for (const t of [m.map, m.normalMap]) if (t) t.anisotropy = 4;
+  for (const t of [m.map, m.normalMap, m.roughnessMap]) if (t) t.anisotropy = 4;
   const sheen = Number(m.userData?.css_sheen ?? 0);
   const coat = Number(m.userData?.css_coat ?? 0);
   if (quality === 'basse' || (!sheen && !coat)) return m.clone();
-  return new MeshPhysicalMaterial({
-    name: m.name,
-    color: m.color,
-    map: m.map,
-    normalMap: m.normalMap,
-    normalScale: m.normalScale,
-    roughness: m.roughness,
+  return physicalFrom(m, {
     metalness: 0,
-    // v0.43 gloves: leather, strap and lining are vertex colours of one mesh (one draw call per glove)
-    vertexColors: m.vertexColors,
     sheen,
     sheenRoughness: 0.45,
     sheenColor: m.color.clone().lerp(m.color.clone().set('#ffffff'), 0.4),

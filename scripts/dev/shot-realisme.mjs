@@ -30,7 +30,7 @@ const SHOTS = {
   visage: { q: 'frame=1&motion=garde&az=20&el=4&span=0.15&fy=1.6' },
   'buste-dos': { q: 'frame=1&motion=garde&az=165&el=6&span=0.42&fy=1.3' },
   mains: { q: 'frame=1&motion=garde&az=60&el=4&span=0.28&fy=1.4' },
-  pieds: { q: 'frame=1&motion=garde&az=30&el=14&span=0.25&fy=0.15' },
+  pieds: { q: 'frame=1&motion=garde&az=30&el=14&span=0.2&fy=0.08' },
   jab: { q: 'tech=jab&az=40&el=8' },
   crochet: { q: 'tech=crochet-avant&az=40&el=8' },
   'high-kick': { q: 'tech=high-kick-avant&az=60&el=8' },

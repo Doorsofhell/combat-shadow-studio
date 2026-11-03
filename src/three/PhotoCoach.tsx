@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import type { GLTFLoader } from 'three-stdlib';
-import { Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, SRGBColorSpace } from 'three';
+import { Material, Mesh, MeshStandardMaterial, Object3D } from 'three';
+import { photoMaterial, photoPart } from './photoMaterials';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { restoreReferencePose, setLegLength } from './pose';
 import { FaceAnimator, type FaceOptions } from './face';
@@ -53,35 +54,9 @@ export function PhotoCoach({
       const m = o as Mesh;
       if (!m.isMesh) return;
       m.frustumCulled = false;
-      const old = m.material as MeshStandardMaterial;
-      if (old.map) old.map.colorSpace = SRGBColorSpace;
-      // v0.31 (« flou ou halo », Youssef 2026-10-22): skin seen at a grazing angle (arms, flanks) was blurred by
-      // plain mipmapping; anisotropic filtering keeps its detail (4 samples: cheap on phone graphics chips)
-      for (const t of [old.map, old.normalMap]) if (t) t.anisotropy = 4;
-      const hair = /opacity/.test(old.name);
-      // v1.7: the wet eyes of the MakeHuman coaches (their own material) catch a sharp highlight of the lights,
-      // as real eyes do; matte, they looked like a doll's
-      const eyes = old.name === 'Eyes_opacity';
-      // 1.9: the normal map keeps the scale and orientation the loader gave it (its green channel is flipped when
-      // the model has no tangents; a new material lost that and lit the muscles from below), and the anatomy of
-      // the skin is drawn a little deeper (Youssef's references: drier, more defined musculature)
-      const normalScale = old.normalScale.clone().multiplyScalar(eyes || hair ? 1 : SKIN_RELIEF);
-      m.material =
-        quality === 'haute' && !hair
-          ? new MeshPhysicalMaterial({
-              name: old.name,
-              map: old.map,
-              normalMap: old.normalMap,
-              normalScale,
-              // 1.9: the eyes stay wet in high quality too (they were matte like the skin)
-              roughness: eyes ? 0.08 : 0.58,
-              metalness: 0,
-              sheen: eyes ? 0 : 0.3,
-              sheenRoughness: 0.6,
-              sheenColor: '#c98a72',
-              specularIntensity: 0.4,
-            })
-          : new MeshStandardMaterial({ name: old.name, map: old.map, normalMap: old.normalMap, normalScale, roughness: eyes ? 0.08 : 0.6, metalness: 0, alphaTest: hair ? 0.4 : 0, alphaToCoverage: hair, transparent: false });
+      // 1.10: each part classified (skin, eyes, hair, brows, lashes) and rebuilt from all its source properties
+      // (src/three/photoMaterials.ts): before, « opacity » sent the eyes, brows and lashes to the hair branch
+      m.material = photoMaterial(m.material as MeshStandardMaterial, photoPart(m.material as Material), quality, { skinRelief: SKIN_RELIEF });
     });
     restoreReferencePose(s);
     return s;
