@@ -20,6 +20,11 @@ export interface ChampionCoach {
   bio: string;
   /** rendered from our own 3D model */
   portrait: string;
+  /** 1.9 (back of the coach card): height of the 3D model, rounded; how the guard looks (src/domain/coaches/motion.ts) */
+  height: string;
+  guard: string;
+  /** what the coach shows best, taken from the motion profile and the bio (no invented numbers) */
+  strengths: string[];
 }
 
 export const CHAMPIONS: Record<CoachId, ChampionCoach> = {
@@ -31,6 +36,9 @@ export const CHAMPIONS: Record<CoachId, ChampionCoach> = {
     style: 'Lutteur patient, pression constante',
     bio: 'Garde basse, pas courts, changements de niveau : Kadir avance sans relâche et ne gaspille aucun geste.',
     portrait: './coaches/mma-kadir/portrait.webp',
+    height: '1,80 m',
+    guard: 'Basse, buste au-dessus des genoux, mains ouvertes devant pour saisir',
+    strengths: ['Changements de niveau', 'Pression constante', 'Lutte et contrôle'],
   },
   femme: {
     id: 'mma-amara',
@@ -40,6 +48,9 @@ export const CHAMPIONS: Record<CoachId, ChampionCoach> = {
     style: 'Frappeuse puissante, garde haute',
     bio: 'Garde de face, poings fermés, droite chargée : Amara frappe fort et juste, puis enchaîne.',
     portrait: './coaches/mma-amara/portrait.webp',
+    height: '1,73 m',
+    guard: 'Haute et de profil, poings fermés, droite chargée',
+    strengths: ['Puissance des frappes', 'Précision', 'Enchaînements'],
   },
 };
 
@@ -57,6 +68,9 @@ export const EXTRA_COACHES: ChampionCoach[] = [
     style: 'Frappeur longiligne, regard de pierre',
     bio: 'Grand, sec, posture droite et bras relâchés : Axel ne gaspille rien et frappe de loin, sans prévenir.',
     portrait: './coaches/axel/portrait.webp',
+    height: '1,94 m',
+    guard: 'Droite et haute, bras un peu relâchés',
+    strengths: ['Allonge', 'Frappes de loin', 'Économie de mouvement'],
   },
   {
     id: 'kaila',
@@ -66,6 +80,9 @@ export const EXTRA_COACHES: ChampionCoach[] = [
     style: 'Puissante et compacte, toujours vers l’avant',
     bio: 'Centre de gravité bas, mains ouvertes prêtes à saisir : Kaila avance sans cesse et impose son rythme.',
     portrait: './coaches/kaila/portrait.webp',
+    height: '1,65 m',
+    guard: 'Basse et large, buste vers l’avant, mains ouvertes prêtes à saisir',
+    strengths: ['Centre de gravité bas', 'Avancée constante', 'Saisies'],
   },
 ];
 
