@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'vitest';
 import { existsSync } from 'node:fs';
-import { DoubleSide, FrontSide, MeshPhysicalMaterial, MeshStandardMaterial, Texture } from 'three';
+import { DoubleSide, FrontSide, MeshPhysicalMaterial, MeshStandardMaterial, ShaderLib, Texture } from 'three';
 import { readGlb } from '../../test/glbRead';
-import { photoMaterial, photoPart, physicalFrom, type PhotoPart } from '../photoMaterials';
+import { photoMaterial, photoPart, physicalFrom, SKIN_LOOK, type PhotoPart } from '../photoMaterials';
+import { DEFAULT_SKIN, SKIN_SHADER_OK } from '../skinShader';
 
 /**
  * 1.10 realism pass (Youssef, 2026-11-03, « améliorer concrètement le réalisme des personnages, vêtements et
@@ -104,7 +105,7 @@ describe('matériaux des coachs photo : parties séparées, propriétés conserv
     for (const part of ['peau', 'yeux', 'cheveux', 'sourcils', 'cils'] as const)
       test(`${part} ${q} : cartes, couleur et couleurs de sommets conservées`, () => {
         const s = src();
-        const m = photoMaterial(s, part, q, { skinRelief: 1.5 });
+        const m = photoMaterial(s, part, q, { ...DEFAULT_SKIN, relief: 1.5 });
         expect(m.map).toBe(s.map);
         expect(m.normalMap).toBe(s.normalMap);
         expect(m.roughnessMap).toBe(s.roughnessMap);
@@ -133,7 +134,7 @@ describe('matériaux des coachs photo : parties séparées, propriétés conserv
   test('yeux MakeHuman (source transparente) : la coque de cornée reste découpée', () => {
     const s = src();
     s.transparent = true;
-    const m = photoMaterial(s, 'yeux', 'haute', { skinRelief: 1.5 });
+    const m = photoMaterial(s, 'yeux', 'haute', { ...DEFAULT_SKIN, relief: 1.5 });
     expect(m.transparent).toBe(false);
     expect(m.alphaTest).toBeGreaterThanOrEqual(0.4);
   });
@@ -148,4 +149,24 @@ describe('matériaux des coachs photo : parties séparées, propriétés conserv
     expect(m.vertexColors).toBe(true);
     expect(m.sheen).toBe(0.5);
   });
+});
+
+describe('peau : diffusion, ombres adoucies, pores, relief calibré par coach', () => {
+  test('les morceaux de shader remplacés existent dans cette version de three.js', () => expect(SKIN_SHADER_OK).toBe(true));
+  test('relief calibré par coach, jamais l’ancienne amplification uniforme de 1,5 pour tous', () => {
+    const r = COACHES.map((c) => SKIN_LOOK[c].relief);
+    expect(new Set(r).size).toBeGreaterThan(2);
+    expect(SKIN_LOOK['mma-kadir'].relief).toBeLessThan(1.5);
+    expect(SKIN_LOOK['mma-amara'].relief).toBeLessThan(1.5);
+  });
+  for (const q of ['haute', 'basse'] as const)
+    test(`peau ${q} : shader ajouté, pores en haute qualité seulement`, () => {
+      const m = photoMaterial(new MeshStandardMaterial({ name: 'Skin', map: new Texture() }), 'peau', q, SKIN_LOOK.kaila);
+      const shader = { uniforms: {}, fragmentShader: (m.type === 'MeshPhysicalMaterial' ? ShaderLib.physical : ShaderLib.standard).fragmentShader, vertexShader: '' };
+      m.onBeforeCompile(shader as never, undefined as never);
+      expect(shader.fragmentShader).toContain('cssWrapIrr( geometryNormal');
+      expect(shader.fragmentShader).toContain('cssShadowLift(');
+      expect((shader.uniforms as Record<string, { value: number }>).cssPores.value).toBe(q === 'haute' ? SKIN_LOOK.kaila.pores : 0);
+      expect(m.customProgramCacheKey()).toContain('css-skin');
+    });
 });

@@ -3,7 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import type { GLTFLoader } from 'three-stdlib';
 import { Material, Mesh, MeshStandardMaterial, Object3D } from 'three';
-import { photoMaterial, photoPart } from './photoMaterials';
+import { photoMaterial, photoPart, skinLookFor } from './photoMaterials';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { restoreReferencePose, setLegLength } from './pose';
 import { FaceAnimator, type FaceOptions } from './face';
@@ -17,8 +17,6 @@ import { useOutfit, type OutfitId, type OutfitStatus } from './outfit';
  * font pas du tout humain »). Converted by tools/generator/rocketbox/convert.py: same bone names as our models,
  * so the rig and every animation drive it unchanged.
  */
-/** depth of the skin's normal map (anatomy, pores): 1 = as exported */
-const SKIN_RELIEF = 1.5;
 
 export function PhotoCoach({
   url,
@@ -49,6 +47,8 @@ export function PhotoCoach({
 }) {
   const gltf = useGLTF(url, draco, true, extendLoader);
   const scene = useMemo(() => {
+    // 1.10: skin calibrated per coach (relief, scattering, pores: photoMaterials.ts SKIN_LOOK)
+    const look = skinLookFor(url);
     const s = cloneSkinned(gltf.scene);
     s.traverse((o) => {
       const m = o as Mesh;
@@ -56,11 +56,11 @@ export function PhotoCoach({
       m.frustumCulled = false;
       // 1.10: each part classified (skin, eyes, hair, brows, lashes) and rebuilt from all its source properties
       // (src/three/photoMaterials.ts): before, « opacity » sent the eyes, brows and lashes to the hair branch
-      m.material = photoMaterial(m.material as MeshStandardMaterial, photoPart(m.material as Material), quality, { skinRelief: SKIN_RELIEF });
+      m.material = photoMaterial(m.material as MeshStandardMaterial, photoPart(m.material as Material), quality, look);
     });
     restoreReferencePose(s);
     return s;
-  }, [gltf, quality]);
+  }, [gltf, quality, url]);
   // 1.9: blinks, gaze and the effort of the strikes on the facial bones (src/three/face.ts); after the rig's pose
   const face = useMemo(() => {
     restoreReferencePose(scene);

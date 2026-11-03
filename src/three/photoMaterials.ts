@@ -1,3 +1,4 @@
+import { applySkinShader, DEFAULT_SKIN, type SkinLook } from './skinShader';
 import { DoubleSide, FrontSide, Material, MeshPhysicalMaterial, MeshStandardMaterial, SRGBColorSpace, type MeshStandardMaterialParameters } from 'three';
 
 /**
@@ -72,9 +73,25 @@ export function physicalFrom(m: MeshStandardMaterial, extra: ConstructorParamete
   return new MeshPhysicalMaterial({ ...standardParams(m), ...extra });
 }
 
-export interface PhotoLook {
-  /** depth of the skin's normal map (1 = as exported) */
-  skinRelief: number;
+export type PhotoLook = SkinLook;
+
+/**
+ * 1.10 per coach (Youssef: « calibrez les paramètres par coach », « n'appliquez pas une amplification globale »):
+ * 1.9 drew every skin's anatomy 1.5 times deeper. The Rocketbox photo skins (Kadir, Amara) already carry the
+ * muscles in their photo and their normal map: 1.2 and 1.15. The MakeHuman skins (Axel, Kaila) are smoother, their
+ * relief comes from our anatomy bake (normal scale 0.6 in the file): 1.5 and 1.35. Pores stronger where the skin
+ * texture has none of its own (MakeHuman), scattering a little warmer on the lighter skin (Kaila).
+ */
+export const SKIN_LOOK: Record<string, SkinLook> = {
+  'mma-kadir': { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, wrap: 0.45, shadowLift: 0.36 },
+  'mma-amara': { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, wrap: 0.45, shadowLift: 0.34 },
+  axel: { ...DEFAULT_SKIN, relief: 1.5, pores: 0.06, wrap: 0.5, shadowLift: 0.3 },
+  kaila: { ...DEFAULT_SKIN, relief: 1.35, pores: 0.05, wrap: 0.55, shadowLift: 0.32, tint: [1, 0.46, 0.3] },
+};
+
+export function skinLookFor(url: string): SkinLook {
+  const id = Object.keys(SKIN_LOOK).find((k) => url.includes(`/${k}/`));
+  return id ? SKIN_LOOK[id] : DEFAULT_SKIN;
 }
 
 /**
@@ -92,11 +109,14 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
   const hi = quality === 'haute';
   switch (part) {
     case 'peau': {
-      const normalScale = old.normalScale.clone().multiplyScalar(look.skinRelief);
+      const normalScale = old.normalScale.clone().multiplyScalar(look.relief);
       const p: MeshStandardMaterialParameters = { ...base, normalScale, side: FrontSide, metalness: 0, roughness: 0.58, transparent: false, alphaTest: 0 };
-      return hi
+      const m = hi
         ? new MeshPhysicalMaterial({ ...p, sheen: 0.3, sheenRoughness: 0.6, sheenColor: '#c98a72', specularIntensity: 0.4 })
         : new MeshStandardMaterial({ ...p, roughness: 0.6 });
+      // scattering and lifted shadows in both qualities (a few instructions), pores in high quality only
+      applySkinShader(m, look, hi);
+      return m;
     }
     case 'yeux': {
       // drawn opaque, so the eye never sorts against the lashes or the lids. The MakeHuman eye has an outer shell
