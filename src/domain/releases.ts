@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.18.0',
+      releaseDate: '2026-11-04',
+      title: 'Buste d’Inaya plus naturel',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Le haut du corps d’Inaya n’a plus la forme de l’ancien maillot : plus de cordon autour du cou, plus de bourrelet dans le dos, plus de contour autour de la poitrine. Sa poitrine garde son volume.' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.17.0',
       releaseDate: '2026-11-04',
       title: 'Inaya légèrement bronzée',

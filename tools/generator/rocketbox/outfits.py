@@ -39,6 +39,11 @@ for o in list(bpy.data.objects):
         bpy.data.objects.remove(o)
 arm = [o for o in bpy.data.objects if o.type == 'ARMATURE'][0]
 body = [o for o in bpy.data.objects if o.type == 'MESH'][0]
+# 1.18: the shipped photo.glb carries the facial expressions as morph targets (1.16); imported as shape keys, they
+# forbid applying the modifiers of the shells. The outfits only need the rest shape: the keys are dropped.
+for o in bpy.data.objects:
+    if o.type == 'MESH' and o.data.shape_keys:
+        o.shape_key_clear()
 MW = body.matrix_world.copy()
 MWI = MW.inverted()
 NM = MW.to_3x3().inverted().transposed()
