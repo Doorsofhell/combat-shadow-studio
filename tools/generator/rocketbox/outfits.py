@@ -282,7 +282,7 @@ def new_obj(name, bm_):
     return o
 
 
-def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=None):
+def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=None, edge_skin=0.006):
     """body faces whose vertices all satisfy keep(i), pushed out by push(i) (metres along the normal, or a
     Vector: free displacement), given a thickness. mats: list of materials, mat_of(face centre, vertex ids) -> index.
     cuts: (point, normal) planes the body is sliced along first, so hems and colour bands are straight lines
@@ -355,7 +355,7 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
         ekd.insert(q_, k_)
     ekd.balance()
     # 1.10: an edge cut by a field lies exactly on its line, the skin under it can be hidden closer to it (6 mm)
-    covered = {i for i in range(len(P)) if ok[i] and (not edge_pts or ekd.find(P[i])[2] > (0.006 if iso is not None else 0.012))}
+    covered = {i for i in range(len(P)) if ok[i] and (not edge_pts or ekd.find(P[i])[2] > (edge_skin if iso is not None else 0.012))}
     garment = KDTree(len(bm_.verts))
     for k_, v in enumerate(bm_.verts):
         garment.insert(MW @ v.co, k_)
@@ -383,7 +383,7 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
     # hems: the free edges stand off the skin a little (a folded, stitched edge is thicker, and the skin never shows over it)
     for v in bm_.verts:
         if any(e.is_boundary for e in v.link_edges):
-            v.co = v.co + (MWI.to_3x3() @ N[v[lay]]) * (hem * 0.25)
+            v.co = v.co + (MWI.to_3x3() @ N[v[lay]]) * (hem * float(os.environ.get("HEM_LIFT", "0.25")))
             # v0.32: a hem lies exactly on its cut (the push along the skin's normal used to move each point a little
             # up or down the limb: a ragged, toothed edge on the sleeves and the waistbands)
             # the cut the edge comes from is the closest one (another plane can pass a few centimetres away)
@@ -393,6 +393,22 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
                 pt, nr = cuts[ds[0][1]]
                 q = q - nr * (q - pt).dot(nr)
             v.co = MWI @ q
+    # 1.13 (Youssef, 04/11: « bords effilochés »): a hem cut by a field crosses the body's triangles at every angle;
+    # each point then took its own skin normal for the lift above and the edge came out in small waves, read as a
+    # frayed hem. The free edges are relaxed along themselves (each point toward the middle of its two neighbours
+    # on the edge), which keeps the line's course and removes the waves
+    if iso is not None:
+        bnb = {}
+        for e in bm_.edges:
+            if e.is_boundary:
+                a_, b_ = e.verts
+                bnb.setdefault(a_, []).append(b_)
+                bnb.setdefault(b_, []).append(a_)
+        loop = [v for v, nn in bnb.items() if len(nn) == 2]
+        for _ in range(int(os.environ.get('HEM_RELAX', '6'))):
+            new = {v: v.co * 0.5 + (bnb[v][0].co + bnb[v][1].co) * 0.25 for v in loop}
+            for v, c in new.items():
+                v.co = c
     if mats:
         o.data.materials.clear()
         for m in mats:
@@ -403,7 +419,7 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
     bm_.to_mesh(o.data)
     bm_.free()
     o.data.attributes.remove(o.data.attributes['src']) if 'src' in o.data.attributes else None
-    smooth(o, 2, cuts, border=0.35 if iso is not None else 1.0)
+    smooth(o, 2, cuts, border=float(os.environ.get("SMOOTH_BORDER", "0.35")) if iso is not None else 1.0)
     if thick:
         sol = o.modifiers.new('Solidify', 'SOLIDIFY')
         sol.thickness = thick / max(MW.to_scale())
@@ -413,9 +429,20 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
         sol.use_even_offset = False
         sol.use_quality_normals = True
         sol.material_offset_rim = 0
+        if iso is not None and os.environ.get('RIM_FLAT', '1') == '1':
+            o.vertex_groups.new(name='css-rim')
+            sol.rim_vertex_group = 'css-rim'
         apply(o, sol)
+    rim = None
+    if thick and iso is not None and 'css-rim' in o.vertex_groups:
+        gi = o.vertex_groups['css-rim'].index
+        rim = {v.index for v in o.data.vertices if any(g.group == gi and g.weight > 0.5 for g in v.groups)}
+        o.vertex_groups.remove(o.vertex_groups['css-rim'])
+        print('rim', name, len(rim))
     for p in o.data.polygons:
-        p.use_smooth = True
+        # 1.13: the thin band that closes a field-cut hem is drawn flat: smooth, its normals blended the outside and
+        # the inside of the cloth and the hem read as a puffy, wrinkled roll (« bords effilochés »)
+        p.use_smooth = not (rim is not None and os.environ.get('RIM_FLAT', '1') == '1' and all(i in rim for i in p.vertices))
     o['covers'] = len(covered)
     return o, covered
 
@@ -1397,6 +1424,139 @@ def bra_v2(color, accent=None, bandeau=False):
     return [o], cov
 
 
+def square_field(low, strap=(float(os.environ.get("SQ_IN", "0.112")), float(os.environ.get("SQ_OUT", "0.142")))):
+    """1.13 (Youssef, 04/11: « une brassière moulante pleine pour masquer les fissures », Inaya): a full top with a
+    square neckline and wide straps set out on the shoulders. The halter straps of the sports body run up from the
+    cups to the back of the neck within 11 cm of the axis above the chest (measured on her photo.glb: x <= 0.121 at
+    1.34 m, 0.106 at 1.40 m); a garment copied from the skin there copies their fold and came out torn. Straps between
+    12.2 and 15.8 cm from the axis and a neckline under the cups' top (front) and at the chest joint (back) keep every
+    edge off them.
+    low: bottom of the top (z)"""
+    nk = H['Neck']
+    cz = chestZ
+    sl = [P[i] for i in range(len(P)) if abs(P[i].z - (cz - 0.03)) < 0.006 and abs(P[i].x) < 0.2
+          and w(i, 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm') < 0.6 and w(i, *HANDS) < 0.1]
+    yc = (min(p.y for p in sl) + max(p.y for p in sl)) / 2
+    arms = [(H[f'{s_}{a}'], H[f'{s_}{b}']) for s_ in ('Left', 'Right') for a, b in (('Arm', 'ForeArm'), ('ForeArm', 'Hand'))]
+    shoulder_x = max(abs(H['LeftArm'].x), abs(H['RightArm'].x))
+
+    def arm_clear(q):
+        best = 1e9
+        for a, b in arms:
+            ab = b - a
+            t = max(0.0, min(1.0, (q - a).dot(ab) / ab.dot(ab)))
+            best = min(best, (q - (a + ab * t)).length)
+        return max(0.068 - best, abs(q.x) - shoulder_x - 0.01)
+
+    def field(q):
+        ax = abs(q.x)
+        front = _ss(yc + 0.02, yc - 0.035, q.y)
+        # square neckline: straight across the front 15 cm under the neck joint, at the chest joint behind
+        T = (cz + 0.004) + ((nk.z - 0.15) - (cz + 0.004)) * front
+        T -= 0.05 * _ss(0.15, 0.19, ax) * (1 - 0.6 * front)
+        body_ = max(q.z - T, low - q.z, arm_clear(q))
+        # over the shoulder the strap passes 5 cm from the arm's axis (6.8 cm cut it in two near the joint)
+        st = max(strap[0] - ax, ax - strap[1], low - q.z, arm_clear(q) - float(os.environ.get("SQ_ARM", "0.022")))
+        return _smin(body_, st, 0.012)
+    return field
+
+
+def relax_weights(o, repeat, k=0.5):
+    """1.13: Laplacian smoothing of all the skin weights of a garment over its own edges (the points a solidify
+    split along a rim share nothing: each layer is smoothed on its own, they start from the same weights), then
+    the 4 strongest kept and normalised"""
+    me_ = o.data
+    nv = len(me_.vertices)
+    ng = len(o.vertex_groups)
+    Wm = [[0.0] * ng for _ in range(nv)]
+    for v in me_.vertices:
+        for g in v.groups:
+            Wm[v.index][g.group] = g.weight
+    nb = [[] for _ in range(nv)]
+    for e in me_.edges:
+        a_, b_ = e.vertices
+        nb[a_].append(b_)
+        nb[b_].append(a_)
+    for _ in range(repeat):
+        new = []
+        for i in range(nv):
+            if not nb[i]:
+                new.append(Wm[i])
+                continue
+            avg = [0.0] * ng
+            for j_ in nb[i]:
+                wj = Wm[j_]
+                for g in range(ng):
+                    if wj[g]:
+                        avg[g] += wj[g]
+            m = 1.0 / len(nb[i])
+            new.append([(1 - k) * Wm[i][g] + k * avg[g] * m for g in range(ng)])
+        Wm = new
+    for i in range(nv):
+        top4 = sorted(range(ng), key=lambda g: -Wm[i][g])[:4]
+        tot = sum(Wm[i][g] for g in top4) or 1.0
+        for g in range(ng):
+            o.vertex_groups[g].remove([i])
+        for g in top4:
+            if Wm[i][g] > 1e-4:
+                o.vertex_groups[g].add([i], Wm[i][g] / tot, 'REPLACE')
+
+
+def top_square(color, accent=None, low=None, name='haut-carre'):
+    """1.13 full top with a square neckline (square_field): a sports bra (low = bra_low()), a crop top or a tank top
+    (lower), fine jersey 2.2 mm laid 5.5 mm off the skin like bra_v2, an accent band at the bottom when given"""
+    low = bra_low() if low is None else low
+    F = square_field(low)
+    nk = H['Neck']
+    def keep(i):
+        return low - 0.02 < P[i].z < nk.z + 0.01 and w(i, 'Head') < 0.2 and w(i, *HANDS) < 0.3 and F(P[i]) < 0.03
+    mats = [fabric(f'{name}-{color}', color, 'jersey', rough=0.62, strength=0.45, sheen=0.12)]
+    cuts = []
+    if accent:
+        mats.append(fabric(f'liseré-{accent}', accent, 'elastique', rough=0.6, strength=0.8))
+        cuts.append((Vector((0, 0, low + 0.02)), Vector((0, 0, 1))))
+    # over the shoulder the deltoid swells and slides under the strap when the guard is raised: the strap stands
+    # 9 mm off the skin there (5.5 elsewhere), or the skin's edge came through it in teeth
+    def push(i):
+        q = P[i]
+        return 0.0055 + float(os.environ.get("SQ_PUSH", "0.0035")) * _ss(chestZ - 0.03, chestZ + 0.03, q.z) * _ss(0.105, 0.12, abs(q.x))
+    o, cov = shell(name, keep, push, 0.0022, mats,
+                   (lambda c, ids: 1 if c.z < low + 0.02 else 0) if accent else None, hem=0.008, cuts=cuts, iso=F,
+                   edge_skin=float(os.environ.get('SQ_EDGE', '0.002')))
+    for s_ in ('Left', 'Right'):
+        fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
+    # each point of the decimated top takes the weights of its closest skin point: along the strap's outer edge
+    # those alternate between the arm and the shoulder blade, and the edge came out in teeth when the guard rises.
+    # Relaxed over the garment (the skin under it is smoothed the same way by smooth_weights.py)
+    relax_weights(o, int(os.environ.get('SQ_SMOOTH', '8')))
+    # the skin under the straps: shell() keeps the skin drawn near any free edge of the copy, and the body's texture
+    # seams over the shoulder blade leave such edges inside the strap (half its skin stayed drawn, and came through
+    # in teeth when the guard rises). Everything 4 mm inside the field is hidden
+    cov = set(cov) | {i for i in range(len(P)) if keep(i) and F(P[i]) < -0.004}
+    if os.environ.get('SQ_DBG'):
+        reg = [i for i in range(len(P)) if 0.135 < abs(P[i].x) < 0.155 and 1.33 < P[i].z < 1.47 and P[i].y > 0]
+        print('SQDBG region', len(reg), 'covered', sum(1 for i in reg if i in cov), 'keep', sum(1 for i in reg if keep(i)),
+              'Fneg', sum(1 for i in reg if F(P[i]) < -0.004), 'sample', [(round(P[i].x, 3), round(P[i].z, 3), round(F(P[i]), 4), keep(i)) for i in reg[:8]])
+    return [o], cov
+
+
+# 1.13 proposals for Inaya's top (INAYA_TOP): bandeau (1.12), carree (square-neck sports bra), crop (square-neck crop
+# top to the navel), debardeur (square-neck tank top to the waistband)
+INAYA_TOP = os.environ.get('INAYA_TOP', '')
+
+
+def female_top(color, accent=None):
+    if INAYA_TOP == 'bandeau':
+        return bra_v2(color, accent, bandeau=True)
+    if INAYA_TOP == 'carree':
+        return top_square(color, accent)
+    if INAYA_TOP == 'crop':
+        return top_square(color, accent, low=hipZ + 0.13, name='haut-crop')
+    if INAYA_TOP == 'debardeur':
+        return top_square(color, accent, low=hipZ + 0.05, name='haut-debardeur')
+    return None
+
+
 def folds(i, amp):
     """v0.32 soft folds of a loose garment: a smooth wave field over the body (wavelength 12 to 20 cm), so the cloth
     is not a smooth inflated copy of the skin"""
@@ -1830,7 +1990,7 @@ def outfit(name):
     if name == 'boxe':
         add(shorts('boxe', *C['boxe']))
         if female:
-            add(bra_v2(C['boxe'][0], C['boxe'][1], bandeau=BANDEAU))
+            add(female_top(C['boxe'][0], C['boxe'][1]) or bra_v2(C['boxe'][0], C['boxe'][1], bandeau=BANDEAU))
         for s in ('Left', 'Right'):
             parts.extend(boxing_glove_v2(s, C['glove'], '#F4F4F5'))
         hide |= hide_hands()
@@ -1838,7 +1998,7 @@ def outfit(name):
     elif name == 'kickboxing':
         add(shorts('kick', *C['kick']))
         if female:
-            add(bra_v2(C['kick'][1], C['kick'][0], bandeau=BANDEAU))
+            add(female_top(C['kick'][1], C['kick'][0]) or bra_v2(C['kick'][1], C['kick'][0], bandeau=BANDEAU))
         for s in ('Left', 'Right'):
             parts.extend(boxing_glove_v2(s, C['glove2'], C['kick'][1]))
         hide |= hide_hands()
@@ -1846,7 +2006,7 @@ def outfit(name):
     elif name == 'muaythai':
         add(shorts('thai', *C['thai']))
         if female:
-            add(bra_v2(C['thai'][0], C['thai'][1]))
+            add(female_top(C['thai'][0], C['thai'][1]) or bra_v2(C['thai'][0], C['thai'][1]))
         for s in ('Left', 'Right'):
             parts.extend(boxing_glove_v2(s, C['glove'], C['thai'][1], thai=True))
             parts.extend(prajioud_v2(s, C.get('praj', '#B3122A' if female else '#D4AF37')))
@@ -1857,7 +2017,7 @@ def outfit(name):
         add(shorts('vale-tudo', *C['mma']))
         if female:
             # geom: the racer back cut by planes on Amara too (her weight cut left a torn edge on the back)
-            add(bra_v2(C['mma'][0]))
+            add(female_top(C['mma'][0]) or bra_v2(C['mma'][0]))
         if 'mmag' in C:
             add(mma_gloves(*C['mmag']))
         else:
