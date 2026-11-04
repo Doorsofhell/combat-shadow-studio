@@ -2365,16 +2365,17 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - mèches en cartes retirées pour Inaya (`NO_HAIR_CARDS=1`), comme pour Naël ;
   - Inaya reconstruite et ses 7 tenues régénérées : aucun point de peau cachée manquant.
 - **Méthodes essayées et abandonnées** (le défaut revenait ou empirait) : recoller le bord des bretelles sur la peau (150 à 280 triangles retournés), poser toute la bretelle sur la peau du cou (453 triangles retournés), supprimer les bretelles au-dessus de la peau du cou (vrais trous), doubler les triangles à l'envers (sans effet, le défaut n'était pas là).
-- **Reste à corriger (non résolu)** :
-  - les brassières de boxe et de kick-boxing restent déchirées au cou : elles sont copiées sur deux couches (les bretelles du bikini et la peau du cou dessous), qui se croisent. Amara a le même défaut, masqué par son haut noir ;
+- **Brassières déchirées au cou** : elles étaient copiées sur deux couches qui se croisent, les bretelles du bikini et la peau du cou dessous (Amara a le même défaut, masqué par son haut noir). Décision de Youssef (04/11 06:21, « Brassière sans bretelles au cou ») : les hauts de boxe et de kick-boxing d'Inaya deviennent des bandeaux, sans bretelles ni dos nageur (`outfits.py`, `bra_field(straps=False)`, `BANDEAU` pour la palette d'Inaya). Plus de déchirure sur les captures.
+- **Reste à corriger** :
+  - vus de dessus, quelques petits éclats de couleur au trapèze droit en kick-boxing : c'est le short, vu à travers une fente du pli du cou (déjà présent en 1.11.0) ;
   - un petit carré plus clair reste à la base du chignon ;
   - le contour des anciennes bretelles se devine encore légèrement sur la peau.
-- **Fichiers** : `tools/generator/rocketbox/{extra_textures,both_sides}.py`, `src/three/photoMaterials.ts`, `public/coaches/{inaya,nael}/`, `src/domain/releases.ts`, `package.json`.
-- **Captures** : `docs/v1120/captures/inaya-cou-avant-apres.jpg` (ordinateur, rendu logiciel, **pas sur téléphone Android**).
+- **Fichiers** : `tools/generator/rocketbox/{extra_textures,both_sides,outfits}.py`, `src/three/photoMaterials.ts`, `public/coaches/{inaya,nael}/`, `src/domain/releases.ts`, `package.json`.
+- **Captures** : `docs/v1120/captures/inaya-cou-avant-apres.jpg` et `inaya-bandeau.jpg` (ordinateur, rendu logiciel, **pas sur téléphone Android**).
 - **Tests** :
   - TypeScript (`npx tsc -b`) : TEST RÉUSSI.
   - Vitest complet : 1037 RÉUSSIS, 1 ignoré (déjà ignoré avant).
-  - Playwright ciblé (`coachs-v160`) : 4 RÉUSSIS.
+  - Playwright ciblé (`coachs-v160`) : 4 RÉUSSIS (refait après les bandeaux).
   - Playwright complet : NON EXÉCUTÉ.
   - Téléphone Android réel : NON EXÉCUTÉ.
 - **Validation** : en attente du « je valide » de Youssef (aucune fusion ni publication avant).

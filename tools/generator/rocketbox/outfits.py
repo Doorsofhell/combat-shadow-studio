@@ -1251,7 +1251,7 @@ def painted_cloth_range(zlo, zhi, back=True):
     return dark[max(0, int(len(dark) * 0.03))], dark[min(len(dark) - 1, int(len(dark) * 0.97))]
 
 
-def bra_field():
+def bra_field(straps=True):
     """1.10 (Youssef 2026-11-03, « brassière de la coach blonde » first): the racer-back sports bra as a field on the
     body, < 0 inside, measured on the coach's own landmarks. Before, its edges were the body's triangles (Rocketbox)
     or axis-aligned planes (MakeHuman): torn edges at the armpits and a rectangular block in the back.
@@ -1349,6 +1349,10 @@ def bra_field():
         wz = 0.016 + 0.32 * max(0.0, D.z - q.z)
         panel = max(ax - wz, q.z - D.z, yc + 0.01 - q.y, low - q.z)
         f = _smin(band, panel, 0.02)
+        if not straps:
+            # 1.12 bandeau (Youssef, 04/11, « Brassière sans bretelles au cou », Inaya): the band alone, no straps and
+            # no racer panel, so nothing runs over the sports body's halter straps at the neck
+            return band
         # the straps never cross the under-arm side seam
         f = _smin(f, max(strap(q), arm_clear(q)), 0.008)
         return f
@@ -1372,10 +1376,10 @@ def bra_low():
     return _BRA_LOW[0]
 
 
-def bra_v2(color, accent=None):
+def bra_v2(color, accent=None, bandeau=False):
     """1.10 racer-back sports bra cut by bra_field() (smooth edges), thin jersey (2.2 mm), its under-band in the
-    accent colour when there is one (straight line 2 cm above the bottom)"""
-    F = bra_field()
+    accent colour when there is one (straight line 2 cm above the bottom). bandeau (1.12): the band alone"""
+    F = bra_field(straps=not bandeau)
     nk = H['Neck']
     low = bra_low()
     def keep(i):
@@ -1810,6 +1814,9 @@ C = {
     'nael': dict(boxe=('#F4F4F5', '#1D4E89'), kick=('#1D4E89', '#F4F4F5'), thai=('#0F6B57', '#D4AF37'), mma=('#24344D', '#101521'), gi='#17181C', judo='#1B3F8B', belt='#121212', glove='#1D4E89', glove2='#F4F4F5', rash='#1D4E89', praj='#F4F4F5', mmag=('#1D4E89', '#F4F4F5', '#F4F4F5')),
     'inaya': dict(boxe=('#5B2A6E', '#E36414'), kick=('#E36414', '#16181D'), thai=('#F4F4F5', '#5B2A6E'), mma=('#3A1730', '#241020'), gi='#1B3F8B', judo='#1B3F8B', belt='#121212', glove='#5B2A6E', glove2='#E36414', rash='#5B2A6E', praj='#E36414', mmag=('#5B2A6E', '#E36414', '#E36414')),
 }[os.environ.get('PALETTE') or sex]
+# 1.12 (Youssef, 04/11, decision « Brassière sans bretelles au cou »): Inaya's boxing and kick-boxing tops are bandeaus;
+# her sports body's halter straps run round the neck and a strapped bra copied over them came out torn there
+BANDEAU = os.environ.get('PALETTE') == 'inaya'
 
 
 def outfit(name):
@@ -1823,7 +1830,7 @@ def outfit(name):
     if name == 'boxe':
         add(shorts('boxe', *C['boxe']))
         if female:
-            add(bra_v2(C['boxe'][0], C['boxe'][1]))
+            add(bra_v2(C['boxe'][0], C['boxe'][1], bandeau=BANDEAU))
         for s in ('Left', 'Right'):
             parts.extend(boxing_glove_v2(s, C['glove'], '#F4F4F5'))
         hide |= hide_hands()
@@ -1831,7 +1838,7 @@ def outfit(name):
     elif name == 'kickboxing':
         add(shorts('kick', *C['kick']))
         if female:
-            add(bra_v2(C['kick'][1], C['kick'][0]))
+            add(bra_v2(C['kick'][1], C['kick'][0], bandeau=BANDEAU))
         for s in ('Left', 'Right'):
             parts.extend(boxing_glove_v2(s, C['glove2'], C['kick'][1]))
         hide |= hide_hands()

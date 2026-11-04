@@ -55,6 +55,7 @@ export const RELEASES: readonly Release[] = (
       isMajor: false,
       changes: [
         { category: 'corrections', text: 'Inaya : plus de lambeaux noirs ni de fentes claires au cou et aux épaules, son chignon est blond comme ses cheveux et les mèches raides qui en sortaient ont disparu.' },
+        { category: 'coachs', text: 'Inaya porte maintenant une brassière bandeau en boxe et en kick-boxing.' },
         { category: 'corrections', text: 'Naël et Inaya : les bords de leur peau ne bavent plus en noir quand on les voit de loin sur téléphone.' },
       ],
       links: [{ label: 'Changer de coach', to: '/coach' }],
