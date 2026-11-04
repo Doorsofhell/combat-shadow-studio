@@ -1,4 +1,4 @@
-import { Bone, Object3D, Quaternion, Vector3 } from 'three';
+import { Bone, Mesh, Object3D, Quaternion, Vector3 } from 'three';
 
 /**
  * 1.9 (Youssef, 2026-10-29: « l'expression des visages est trop statique, fait quelque chose »): a living face for
@@ -14,6 +14,11 @@ import { Bone, Object3D, Quaternion, Vector3 } from 'three';
  * The body animation never reads these bones: the technique shown is unchanged. Movements are given in metres
  * and degrees in the frame of the head at rest, so the same values suit every model. Seeded random: the same
  * coach blinks the same way from one run to the next.
+ *
+ * 1.16 (Youssef 04/11 14:16 « applique ta proposition »): the Rocketbox coaches now carry 25 of the avatars' own
+ * facial expressions as morph targets (ARKit names, tools/generator/rocketbox/morph_{extract,apply}): when the model
+ * has them, the lids, brows, cheeks, nose and mouth move with them (whole surfaces, a centimetre for a blink)
+ * instead of the few facial bones; the eyes still turn with their bones.
  */
 
 type Side = 'L' | 'R';
@@ -21,6 +26,39 @@ export interface FaceOptions {
   still?: boolean;
   effort?: number;
   blink?: number;
+  /** imposed expression weights (Lab ?expr=), ARKit names without their number: { JawOpen: 1 } */
+  expr?: Record<string, number>;
+}
+
+/** the expressions used, by ARKit name (the model's targets are named AK_nn_<name>) */
+export const FACE_EXPRESSIONS = [
+  'BrowDownLeft', 'BrowDownRight', 'BrowInnerUp', 'CheekPuff', 'CheekSquintLeft', 'CheekSquintRight', 'EyeBlinkLeft',
+  'EyeBlinkRight', 'EyeSquintLeft', 'EyeSquintRight', 'EyeWideLeft', 'EyeWideRight', 'JawOpen', 'MouthClose',
+  'MouthFrownLeft', 'MouthFrownRight', 'MouthFunnel', 'MouthPressLeft', 'MouthPressRight', 'MouthSmileLeft',
+  'MouthSmileRight', 'MouthStretchLeft', 'MouthStretchRight', 'NoseSneerLeft', 'NoseSneerRight',
+] as const;
+export type FaceExpression = (typeof FACE_EXPRESSIONS)[number];
+
+/**
+ * the face for a given blink (0..1), effort (0..1) and exhale (0..1): weights of the expressions. Effort: brows
+ * down and together, eyes narrowed, cheeks raised, nose wrinkled a little, lips pressed (the jaw sets). Exhale: the
+ * short breath of the strike, lips rounded and parted. Kept moderate: a set face, not a grimace.
+ */
+export function expressionWeights(blink: number, effort: number, exhale: number): Partial<Record<FaceExpression, number>> {
+  const e = effort;
+  const lid = Math.max(blink, 0.3 * e);
+  const press = 0.45 * e * (1 - exhale);
+  return {
+    EyeBlinkLeft: lid, EyeBlinkRight: lid,
+    EyeSquintLeft: 0.9 * e, EyeSquintRight: 0.9 * e,
+    CheekSquintLeft: 0.5 * e, CheekSquintRight: 0.5 * e,
+    BrowDownLeft: 0.9 * e, BrowDownRight: 0.9 * e,
+    NoseSneerLeft: 0.3 * e, NoseSneerRight: 0.3 * e,
+    MouthPressLeft: press, MouthPressRight: press,
+    MouthStretchLeft: 0.2 * e, MouthStretchRight: 0.2 * e,
+    MouthFunnel: 0.45 * exhale,
+    JawOpen: 0.14 * exhale,
+  };
 }
 interface Lid {
   bone: Bone;
@@ -73,6 +111,32 @@ function toBone(b: Bone, axis: Vector3): Vector3 {
   return axis.clone().applyQuaternion(b.getWorldQuaternion(new Quaternion()).invert()).normalize();
 }
 
+/**
+ * a primitive whose drawn points never move with the expressions (the body, the eyeballs: glTF gives every primitive
+ * of a mesh the same targets) loses them: three.js would keep a texture of points × expressions for it in graphics
+ * memory (6 MB for the body) for nothing. Returns true when the targets were dropped.
+ */
+export function dropStillMorphs(m: Mesh): boolean {
+  const g = m.geometry;
+  const targets = g.morphAttributes.position;
+  if (!targets?.length) return false;
+  const idx = g.index;
+  const n = idx ? idx.count : g.attributes.position.count;
+  for (const t of targets)
+    for (let i = 0; i < n; i++) {
+      const v = idx ? idx.getX(i) : i;
+      if (Math.abs(t.getX(v)) + Math.abs(t.getY(v)) + Math.abs(t.getZ(v)) > 1e-6) return false;
+    }
+  // a clone of the geometry: the loaded model's own geometry may be shared with another primitive
+  const c = g.clone();
+  c.morphAttributes = {};
+  m.geometry = c;
+  m.updateMorphTargets();
+  m.morphTargetInfluences = undefined;
+  m.morphTargetDictionary = undefined;
+  return true;
+}
+
 /** mulberry32: small seeded generator */
 function rng(seed: number) {
   let a = seed >>> 0;
@@ -92,6 +156,9 @@ export class FaceAnimator {
   private movers: Mover[] = [];
   private jaw: { bone: Bone; q: Quaternion; axis: Vector3 } | null = null;
   private ends: Object3D[] = [];
+  /** meshes with the expressions, and the index of each expression in their morphTargetInfluences */
+  private morphs: { mesh: Mesh; idx: Partial<Record<FaceExpression, number>> }[] = [];
+  private exhale = 0;
   private last: Vector3[] = [];
   private rand: () => number;
   private t = 0;
@@ -155,7 +222,24 @@ export class FaceAnimator {
       if (b) this.ends.push(b);
     }
     this.last = this.ends.map((b) => b.getWorldPosition(new Vector3()));
-    this.active = this.lids.length > 0 || this.eyes.length > 0;
+    root.traverse((o) => {
+      const m = o as Mesh;
+      const dict = m.isMesh ? m.morphTargetDictionary : undefined;
+      if (!dict || !m.morphTargetInfluences) return;
+      const idx: Partial<Record<FaceExpression, number>> = {};
+      for (const [k, i] of Object.entries(dict)) {
+        const name = k.replace(/^AK_\d+_/, '') as FaceExpression;
+        if ((FACE_EXPRESSIONS as readonly string[]).includes(name)) idx[name] = i;
+      }
+      if (idx.EyeBlinkLeft !== undefined) this.morphs.push({ mesh: m, idx });
+    });
+    // the expressions replace the lid, brow, mouth and jaw bones (both at once would close the eyes twice)
+    if (this.morphs.length) {
+      this.lids = [];
+      this.movers = [];
+      this.jaw = null;
+    }
+    this.active = this.lids.length > 0 || this.eyes.length > 0 || this.morphs.length > 0;
   }
 
   /**
@@ -227,10 +311,24 @@ export class FaceAnimator {
     }
     // the jaw sets and opens a crack on the exhale of the strike (2.5° at full effort)
     if (this.jaw) this.jaw.bone.quaternion.copy(this.jaw.q).multiply(tmpQ.setFromAxisAngle(this.jaw.axis, (2.5 * Math.PI * this.effort) / 180));
+    if (this.morphs.length) {
+      // the exhale follows the effort with a short delay and lasts a little longer (breath out as the strike lands)
+      const ex = still ? 0 : this.effort;
+      this.exhale += (ex - this.exhale) * Math.min(1, dt / (ex > this.exhale ? 0.09 : 0.25));
+      const w = opts.expr ?? expressionWeights(blink, this.effort, this.exhale);
+      for (const { mesh, idx } of this.morphs) {
+        const inf = mesh.morphTargetInfluences!;
+        inf.fill(0);
+        for (const [k, v] of Object.entries(w)) {
+          const i = idx[k as FaceExpression];
+          if (i !== undefined) inf[i] = Math.max(0, Math.min(1, v ?? 0));
+        }
+      }
+    }
   }
 
   /** for the tests: current blink and effort */
   get state() {
-    return { effort: this.effort, blinking: this.blinkAt >= 0 };
+    return { effort: this.effort, blinking: this.blinkAt >= 0, expressions: this.morphs.length > 0 };
   }
 }

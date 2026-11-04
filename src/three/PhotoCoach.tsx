@@ -8,7 +8,7 @@ import { Sway } from './sway';
 import { hairFadeAttribute, photoMaterial, photoPart, skinLookFor } from './photoMaterials';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { restoreReferencePose, setLegLength } from './pose';
-import { FaceAnimator, type FaceOptions } from './face';
+import { dropStillMorphs, FaceAnimator, type FaceOptions } from './face';
 import { CoachRig } from '../engine';
 import { useOutfit, type OutfitId, type OutfitStatus } from './outfit';
 
@@ -58,6 +58,8 @@ export function PhotoCoach({
       const m = o as Mesh;
       if (!m.isMesh) return;
       m.frustumCulled = false;
+      // 1.16: the expressions stay only on the face (src/three/face.ts)
+      dropStillMorphs(m);
       // 1.10: each part classified (skin, eyes, hair, brows, lashes) and rebuilt from all its source properties
       // (src/three/photoMaterials.ts): before, « opacity » sent the eyes, brows and lashes to the hair branch
       const part = photoPart(m.material as Material);
