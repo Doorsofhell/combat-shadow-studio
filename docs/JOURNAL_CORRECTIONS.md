@@ -2510,4 +2510,4 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS.
   - Playwright complet : NON EXÉCUTÉ.
   - Téléphone Android réel : NON EXÉCUTÉ.
-- **Validation** : en attente du « je valide » de Youssef (aucune fusion ni publication avant).
+- **Validation** : « je valide » de Youssef le 04/11 à 14:54 ; publiée en 1.17.0 (numérotée 1.16.0 au départ, la 1.16.0 étant passée avant).
