@@ -26,8 +26,25 @@ def save(a, name):
     Image.fromarray((np.clip(a, 0, 1) * 255 + 0.5).astype(np.uint8)).save(os.path.join(out, name))
 
 
+def _box(a, r, axis):
+    # running mean over 2r+1 pixels (edges clamped)
+    pad = [(0, 0)] * a.ndim
+    pad[axis] = (r + 1, r)
+    c = np.cumsum(np.pad(a, pad, mode='edge'), axis=axis, dtype=np.float64)
+    n = a.shape[axis]
+    hi = np.take(c, np.arange(2 * r + 1, 2 * r + 1 + n), axis=axis)
+    lo = np.take(c, np.arange(0, n), axis=axis)
+    return ((hi - lo) / (2 * r + 1)).astype(np.float32)
+
+
 def blur(a, r):
-    return np.asarray(Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(r)), dtype=np.float32) / 255
+    """Gaussian-like blur of a float image (three box passes), full float precision: an 8-bit blur loses the faint
+    far edge of a colour spread outwards (bleed, below)"""
+    a = np.asarray(a, dtype=np.float32)
+    b = max(1, int(round(r * 0.8)))
+    for _ in range(3):
+        a = _box(_box(a, b, 0), b, 1)
+    return a
 
 
 def smooth(e0, e1, x):
@@ -51,6 +68,56 @@ def fabric(a, mask, color):
     f = np.array(color, dtype=np.float32) * np.clip(0.55 + 0.45 * L, 0.3, 1.2)[..., None] * weave[..., None]
     return a * (1 - mask[..., None]) + f * mask[..., None]
 
+def bleed(a, px=32, known=None):
+    """1.12 (Youssef's photo of Inaya from above, 04/11: black shreds at the neck and the shoulders): the baked
+    texture stopped exactly at the edge of each UV island, black beyond. On a phone the smaller mip levels mix that
+    black into the skin along every seam. The colour of each island is spread outwards by px pixels (the original
+    Rocketbox textures have such a margin)"""
+    known = (a.sum(-1) > 0).astype(np.float32) if known is None else known.astype(np.float32)
+    out = a.copy()
+    k = known.copy()
+    acc = a * known[..., None]
+    r = 1
+    while r <= px:
+        num = np.stack([blur(acc[..., c], r) for c in range(3)], -1)
+        den = blur(k, r)
+        fill = (k < 0.5) & (den > 1e-3)
+        out[fill] = num[fill] / den[fill][:, None]
+        k = np.maximum(k, fill.astype(np.float32))
+        acc = out * k[..., None]
+        r *= 2
+    return out
+
+
+
+def upper_mask(shape, above, v_min=0.0, v_max=1.0):
+    """texture pixels of the body triangles above `above` metres (glTF y) whose UV centre lies between v_min and v_max,
+    from a shipped model with the same UVs (Amara's photo body: same sports avatar, same UV layout)"""
+    import json, struct
+    from PIL import ImageDraw
+    path = os.environ.get('UV_GLB', os.path.join(os.path.dirname(__file__), '../../../public/coaches/mma-amara/photo.glb'))
+    raw = open(path, 'rb').read()
+    jl = struct.unpack('<I', raw[12:16])[0]
+    J = json.loads(raw[20:20 + jl])
+    b0 = 20 + jl + 8
+
+    def acc(i, dt, n):
+        a = J['accessors'][i]
+        v = J['bufferViews'][a['bufferView']]
+        return np.frombuffer(raw, dtype=dt, count=a['count'] * n, offset=b0 + v.get('byteOffset', 0) + a.get('byteOffset', 0)).reshape(-1, n)
+    pr = next(p for m in J['meshes'] for p in m['primitives'] if 'body' in J['materials'][p['material']]['name'])
+    P = acc(pr['attributes']['POSITION'], '<f4', 3)
+    T = acc(pr['attributes']['TEXCOORD_0'], '<f4', 2)
+    ia = J['accessors'][pr['indices']]
+    I = acc(pr['indices'], '<u4' if ia['componentType'] == 5125 else '<u2', 1).reshape(-1, 3)
+    H, W = shape
+    im = Image.new('L', (W, H), 0)
+    d = ImageDraw.Draw(im)
+    for t in I:
+        if P[t, 1].mean() > above and v_min <= T[t, 1].mean() <= v_max:
+            d.polygon([(float(T[k, 0] * W), float(T[k, 1] * H)) for k in t], fill=255)
+    return np.asarray(im, dtype=np.float32) / 255
+
 
 name = os.path.basename(ftdir.rstrip('/'))
 head = load(os.path.join(ftdir, f'{name}_head_color.png'))
@@ -66,11 +133,108 @@ if who == 'nael':
 else:
     pre = 'f021'
     pink = close(smooth(0.08, 0.2, np.minimum(body[..., 0], body[..., 2]) - body[..., 1]), 10)
+    # 1.12 (Youssef's photo, 04/11, black shreds at the neck and the shoulders): the sports body's halter bikini top
+    # is a part of the body mesh itself (its own UV island, bottom middle of the texture), its straps run up to the
+    # neck, outside every 3D bra of the outfits. That island takes the chest's skin colour (its own folds kept, softer),
+    # so a strap no longer shows; every outfit has its own 3D top over the chest
+    top = upper_mask(body.shape[:2], 1.1, v_min=0.78)
+    grown = np.clip(blur(top, 2) * 4, 0, 1)
+    up = upper_mask(body.shape[:2], 1.15, v_max=0.6)
+    chest = body[(up > 0.5) & (body.sum(-1) > 0.3)]
+    tone = np.median(chest, 0)
+    Lt = lum(body)
+    ref = float(np.median(Lt[top > 0.5])) if (top > 0.5).any() else 0.1
+    # only its broad shading: the flower print of the old fabric must not show through (blurred luminance)
+    Lt = blur(Lt, 6)
+    shade = np.clip(1 + 0.35 * (Lt - ref) / max(ref, 0.03), 0.85, 1.1)
+    skin = tone[None, None, :] * shade[..., None] * (1 + 0.03 * (rng.random(Lt.shape, dtype=np.float32) - 0.5))[..., None]
+    body = body * (1 - grown[..., None]) + skin * grown[..., None]
+    pink = pink * (1 - grown)
     body = fabric(body, pink, (0.055, 0.055, 0.06))
+
+
+if who == 'inaya':
+    # 1.12: the bun is the sports body's (its geometry), but the head texture is the donor's: on the bun's UV islands
+    # (bottom right) the donor's atlas holds unrelated pieces (bits of face, light skin), hence a patchy bun and a
+    # light square at the nape. Those islands are found from the shipped model's head (triangles behind the head,
+    # above 1.5 m, nape included) and filled with strands from the donor's own hair (crop from the top of the head, tiled),
+    # shaded darker towards each island's edge so the bun keeps its volume
+    import json, struct
+    from PIL import ImageDraw
+    path = os.environ.get('HEAD_UV_GLB', os.path.join(os.path.dirname(__file__), '../../../public/coaches/inaya/photo.glb'))
+    raw = open(path, 'rb').read()
+    jl = struct.unpack('<I', raw[12:16])[0]
+    J = json.loads(raw[20:20 + jl])
+    b0 = 20 + jl + 8
+
+    def gacc(i, dt, n):
+        a = J['accessors'][i]
+        v = J['bufferViews'][a['bufferView']]
+        return np.frombuffer(raw, dtype=dt, count=a['count'] * n, offset=b0 + v.get('byteOffset', 0) + a.get('byteOffset', 0)).reshape(-1, n)
+    pr = next(p for m in J['meshes'] for p in m['primitives'] if 'head' in J['materials'][p['material']]['name'])
+    P = gacc(pr['attributes']['POSITION'], '<f4', 3)
+    T = gacc(pr['attributes']['TEXCOORD_0'], '<f4', 2)
+    ia = J['accessors'][pr['indices']]
+    I = gacc(pr['indices'], '<u4' if ia['componentType'] == 5125 else '<u2', 1).reshape(-1, 3)
+    HH, HW = head.shape[:2]
+    im = Image.new('L', (HW, HH), 0)
+    d = ImageDraw.Draw(im)
+    for t in I:
+        c = P[t].mean(0)
+        u = T[t].mean(0)
+        if c[1] > float(os.environ.get("BUN_Y", "1.5")) and c[2] < -0.08 and u[0] > 0.5 and u[1] > 0.62:
+            d.polygon([(float(T[k, 0] * HW), float(T[k, 1] * HH)) for k in t], fill=255)
+    bun = np.asarray(im, dtype=np.float32) / 255
+    hv, hu = np.mgrid[0:HH, 0:HW].astype(np.float32)
+    hv /= HH
+    hu /= HW
+    crown = head[(hv < 0.35) & (hu > 0.1) & (hu < 0.9)]
+    blond = crown[lum(crown) > np.percentile(lum(crown), 60)].mean(0)
+    y0, y1, x0, x1 = int(0.05 * HH), int(0.25 * HH), int(0.12 * HW), int(0.38 * HW)
+    patch = head[y0:y1, x0:x1]
+    patch = np.concatenate([patch, patch[::-1]], 0)  # mirrored tiles: no seam line
+    patch = np.concatenate([patch, patch[:, ::-1]], 1)
+    reps = (HH // patch.shape[0] + 1, HW // patch.shape[1] + 1, 1)
+    strands = np.tile(patch, reps)[:HH, :HW]
+    # distance to the island's edge, through repeated blurs: 0 at the edge, 1 inside
+    depth = np.clip(blur(bun, 24) * 2 - 1, 0, 1) * bun
+    strands = strands * (0.62 + 0.38 * depth)[..., None]
+    m = np.clip(blur(bun, 1.5) * 1.5, 0, 1)
+    head = head * (1 - m[..., None]) + strands * m[..., None]
+    # the nape under the bun: the sports head keeps its hair down to about 1.5 m there, the donor's texture is bare
+    # skin (a light square under the bun). Same strands behind the head above 1.5 m, faded in over 3 cm
+    im = Image.new('L', (HW, HH), 0)
+    d = ImageDraw.Draw(im)
+    for t in I:
+        c = P[t].mean(0)
+        if c[2] < -0.06 and 1.48 < c[1] < 1.6 and abs(c[0]) < 0.055 and not (T[t, 0].mean() > 0.5 and T[t, 1].mean() > 0.62):
+            d.polygon([(float(T[k, 0] * HW), float(T[k, 1] * HH)) for k in t], fill=int(255 * min(1.0, (c[1] - 1.48) / 0.03)))
+    nape = blur(np.asarray(im, dtype=np.float32) / 255, 3)
+    # only where that texture is bare skin (closer to the neck's skin than to the blonde): the hair already there stays
+    skin_ref = np.median(head[(hv > 0.5) & (hv < 0.6) & (hu > 0.4) & (hu < 0.6)], 0)
+    dh = np.linalg.norm(head - blond, axis=-1)
+    ds = np.linalg.norm(head - skin_ref, axis=-1)
+    bare = np.clip((dh - ds) / 0.08 + 0.5, 0, 1)
+    nm_ = blur(nape * bare, 2)[..., None]
+    raw_strands = np.tile(patch, reps)[:HH, :HW]
+    sel_ = nm_[..., 0] > 0.3
+    if sel_.any():
+        raw_strands = raw_strands * (0.9 * blond / np.maximum(raw_strands[sel_].mean(0), 1e-3))
+    head = head * (1 - nm_) + raw_strands * nm_
+head = bleed(head)
+body = bleed(body)
 save(head, f'{pre}_head_color.png')
 save(body, f'{pre}_body_color.png')
 for n in (f'{pre}_head_normal.tga', f'{pre}_body_normal.tga'):
     shutil.copy(os.path.join(basetex, n), out)
+if who == 'inaya':
+    # 1.12: the normal map still carried the halter's relief (raised strap edges, cup seams): on screen, thin white
+    # highlight lines along the old straps at the neck and the shoulders. Flat normal (0.5, 0.5, 1) over that island
+    nm = Image.open(os.path.join(basetex, f'{pre}_body_normal.tga')).convert('RGB')
+    g = np.asarray(Image.fromarray((grown * 255).astype(np.uint8)).resize(nm.size, Image.BILINEAR), dtype=np.float32)[..., None] / 255
+    a = np.asarray(nm, dtype=np.float32)
+    a = a * (1 - g) + np.array([128, 128, 255], np.float32) * g
+    Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)).save(os.path.join(out, f'{pre}_body_normal.tga'))
 for p in glob.glob(os.path.join(donortex, '*_opacity_color.tga')):
     shutil.copy(p, os.path.join(out, 'Hair_opacity_color.tga'))  # face_transfer.py renames the material
 print('ok', who, out, sorted(os.listdir(out)))

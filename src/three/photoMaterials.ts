@@ -114,7 +114,10 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
   switch (part) {
     case 'peau': {
       const normalScale = old.normalScale.clone().multiplyScalar(look.relief);
-      const p: MeshStandardMaterialParameters = { ...base, normalScale, side: FrontSide, metalness: 0, roughness: 0.58, transparent: false, alphaTest: 0 };
+      // 1.12: a model can ask for its body skin from both sides (`bothSides` in the glTF material's extras, set by
+      // tools/generator/rocketbox/both_sides.py): Inaya's halter straps make a fold whose inner wall faces away
+      const side = old.userData?.bothSides ? DoubleSide : FrontSide;
+      const p: MeshStandardMaterialParameters = { ...base, normalScale, side, metalness: 0, roughness: 0.58, transparent: false, alphaTest: 0 };
       const m = hi
         ? new MeshPhysicalMaterial({ ...p, sheen: 0.3, sheenRoughness: 0.6, sheenColor: '#c98a72', specularIntensity: 0.4 })
         : new MeshStandardMaterial({ ...p, roughness: 0.6 });
