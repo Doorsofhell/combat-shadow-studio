@@ -34,13 +34,14 @@ test('six coachs : Kaila choisie au premier lancement, Axel depuis « Changer de
 
 /**
  * 1.9 (Youssef 2026-10-29: « diminue la taille des fiches coach pour que cela tienne sur une page dans choisi ton
- * coach, un clic sur la fiche doit faire pivoter la fiche sur un mode plus de détails »)
+ * coach »), 1.13 (Youssef 2026-11-04, option B: the turning cards became a selection screen, the chosen coach's sheet
+ * with bars under the row of the six coaches; « un appui retourne la fiche » became « un appui montre sa fiche »)
  */
 for (const [w, h] of [
   [400, 820],
   [360, 640],
 ])
-  test(`fiches coach ${w}x${h} : les six et « Valider » tiennent sur un écran, un appui retourne la fiche`, async ({ page }) => {
+  test(`écran de choix ${w}x${h} : les six, la fiche et « Valider » tiennent sur un écran, un appui montre la fiche`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await page.goto('/');
     await page.getByTestId('next').click();
@@ -50,25 +51,26 @@ for (const [w, h] of [
     await page.getByTestId('finish').click();
     await page.goto('/#/coach');
     await expect(page.locator('.coach-card')).toHaveCount(6);
-    // no page scroll: every card and the button inside the screen, above the bottom bar
+    // no page scroll: every coach, the sheet and the button inside the screen, above the bottom bar
     expect(await page.evaluate(() => document.scrollingElement!.scrollHeight)).toBeLessThanOrEqual(h);
     const bar = await page.getByTestId('bottom-bar').boundingBox();
-    for (const id of ['coach-homme', 'coach-axel', 'coach-nael', 'coach-femme', 'coach-kaila', 'coach-inaya', 'coach-valider']) {
+    for (const id of ['coach-homme', 'coach-axel', 'coach-nael', 'coach-femme', 'coach-kaila', 'coach-inaya', 'coach-details-axel', 'coach-valider']) {
       const b = (await page.getByTestId(id).boundingBox())!;
       expect(b.y + b.height, id).toBeLessThanOrEqual(bar ? bar.y + 1 : h);
     }
-    // the details are on the back of the card
+    // Axel's weight could not be measured on his model: said so, never a made-up number
+    await expect(page.getByTestId('coach-details-axel')).toContainText('non mesuré');
+    await expect(page.getByTestId('coach-details-kaila')).toHaveCount(0);
+    await page.getByTestId('coach-kaila').click();
+    await expect(page.getByTestId('coach-kaila')).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByTestId('coach-axel')).toHaveAttribute('aria-checked', 'false');
     const details = page.getByTestId('coach-details-kaila');
-    await expect(details).toHaveAttribute('aria-hidden', 'true');
-    await page.getByTestId('coach-kaila').click();
-    await expect(page.getByTestId('coach-kaila')).toHaveAttribute('aria-checked', 'true');
-    await expect(page.getByTestId('coach-kaila')).toHaveAttribute('aria-expanded', 'true');
-    await expect(details).toHaveAttribute('aria-hidden', 'false');
-    for (const t of ['La Valkyrie', 'Taille', '1,65 m', 'Garde', 'Points forts']) await expect(details).toContainText(t);
-    // a second tap turns it back, the coach stays chosen
-    await page.getByTestId('coach-kaila').click();
-    await expect(page.getByTestId('coach-kaila')).toHaveAttribute('aria-expanded', 'false');
-    await expect(page.getByTestId('coach-kaila')).toHaveAttribute('aria-checked', 'true');
+    for (const t of ['La Valkyrie', 'Taille', '1,65 m', 'Poids', 'Profil de style', 'indicatif', 'Poings', 'Pieds', 'Lutte', 'Sol', 'Vitesse', 'Défense', 'Endurance'])
+      await expect(details).toContainText(t);
+    await expect(page.getByTestId('coach-valider')).toHaveText(/Valider Kaila/i);
+    // a measured weight is shown with its bar (Kadir: 91 kg, volume of his model)
+    await page.getByTestId('coach-homme').click();
+    await expect(page.getByTestId('coach-details-mma-kadir')).toContainText('91 kg');
   });
 
 /** 1.11 (Youssef 2026-11-03 23:03: « créé 2 joueurs supplémentaires, ne remplace pas les autres »): Naël and Inaya */
