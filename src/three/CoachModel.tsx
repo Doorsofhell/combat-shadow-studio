@@ -261,8 +261,16 @@ export function CoachModel(props: CoachModelProps) {
   return <GeneratedCoach {...props} />;
 }
 
+/**
+ * 1.11: Naël and Inaya exist only as photo avatars (Rocketbox, tools/generator/rocketbox/face_transfer.py); where
+ * the generated model is drawn instead (VITE_PHOTO_COACH=0 builds), they use the generated model of the coach whose
+ * body they share (Kadir, Amara)
+ */
+const GENERATED_OF: Record<string, string> = { nael: 'mma-kadir', inaya: 'mma-amara' };
+const generatedModel = (model: string) => model.replace(/coaches\/([^/]+)\/model$/, (m, id: string) => (GENERATED_OF[id] ? `coaches/${GENERATED_OF[id]}/model` : m));
+
 function GeneratedCoach({ coach, style, quality, look, render = 'premium', ghostGear = false, model, onRig, onFrame }: CoachModelProps) {
-  const own = model && render === 'premium' ? model : null;
+  const own = model && render === 'premium' ? generatedModel(model) : null;
   const gltf = useGLTF(own ? `${own}.${EXT}` : coachUrl(coach, style, render), DRACO, true, patchJsonModels);
   const premium = render === 'premium';
   const custom = premium;

@@ -1038,16 +1038,18 @@ input[type='range'] {
 }
 
 /* -------------------------------------------------- coach picker */
+/* 1.11: six coaches, the men on the first row, the women on the second (Kadir Axel Naël / Amara Kaila Inaya) */
 .coach-pick {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
 }
 
 /* 1.9: compact cards (the four coaches and the button fit on one phone screen); a tap turns the card over */
 .coach-card {
-  /* header, button and bottom bar take about 310 px; two rows of cards share the rest (label: 48 px) */
-  --card-img: clamp(84px, calc((100dvh - 312px) / 2 - 48px), 240px);
+  /* header, button and bottom bar take about 310 px; two rows of cards share the rest. 1.11: three cards a row,
+  the name and nickname often take two lines there (label: 58 px, 360x640 overflowed by 15 px with 48) */
+  --card-img: clamp(84px, calc((100dvh - 312px) / 2 - 58px), 240px);
   border: 2px solid transparent;
   border-radius: var(--radius-l);
   background: var(--soft);
@@ -1103,9 +1105,9 @@ input[type='range'] {
 }
 
 .coach-card .lbl {
-  padding: 6px 10px 8px;
+  padding: 6px 8px 8px;
   font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   line-height: 1.15;
   display: flex;

@@ -23,7 +23,7 @@ import { analyseMotion } from '../study';
  * Results written to docs/v1100/MESURES_DEFORMATIONS.md. Limits: a few known extremes of the old skin weights are
  * allowed, every coach must stay under them, and the 1.10 corrections must not raise any.
  */
-const COACHES = ['mma-kadir', 'mma-amara', 'axel', 'kaila'] as const;
+const COACHES = ['mma-kadir', 'mma-amara', 'axel', 'kaila', 'nael', 'inaya'] as const;
 const POSES: [string, string, number][] = [
   ['garde', 'garde', 0],
   ['jab', 'jab', 1],
@@ -136,12 +136,19 @@ writeFileSync(
 const BASE = resolve(__dirname, '../../../docs/v1100/deformations-1.9.0.json');
 if (process.env.DEFORM_BASE) writeFileSync(BASE, JSON.stringify(all, null, 1));
 const base = JSON.parse(readFileSync(BASE, 'utf8')) as typeof all;
+// 1.11: Naël and Inaya did not exist in 1.9.0. Their reference is their own measure at 1.11.0 (Youssef's decision,
+// 03/11 23:54: the two small gaps measured against the 1.9.0 bodies of Kadir and Amara, Naël's armpit and Inaya's
+// elbow in guard, are accepted and logged in docs/JOURNAL_CORRECTIONS.md); written once with DEFORM_BASE_1110=1
+const BASE_1110 = resolve(__dirname, '../../../docs/v1110/deformations-1.11.0.json');
+const NEW_1110 = ['nael', 'inaya'];
+if (process.env.DEFORM_BASE_1110) writeFileSync(BASE_1110, JSON.stringify(Object.fromEntries(NEW_1110.map((c) => [c, all[c as keyof typeof all]])), null, 1));
+Object.assign(base, JSON.parse(readFileSync(BASE_1110, 'utf8')));
 
 describe('déformations aux articulations (peau des quatre coachs)', () => {
   // no joint of any coach in any pose folds, collapses or stretches more than in 1.9.0 (small tolerance: the
   // weights smoothed round a joint move its neighbours a little)
   for (const id of COACHES)
-    test(`${id} : aucune zone ne se dégrade par rapport à la 1.9.0`, () => {
+    test(`${id} : aucune zone ne se dégrade par rapport à la ${NEW_1110.includes(id) ? '1.11.0' : '1.9.0'}`, () => {
       for (const [label] of POSES)
         for (const r of Object.keys(REGIONS)) {
           const x = all[id][label][r];

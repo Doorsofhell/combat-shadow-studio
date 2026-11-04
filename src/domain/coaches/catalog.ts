@@ -84,10 +84,38 @@ export const EXTRA_COACHES: ChampionCoach[] = [
     guard: 'Basse et large, buste vers l’avant, mains ouvertes prêtes à saisir',
     strengths: ['Centre de gravité bas', 'Avancée constante', 'Saisies'],
   },
+  // 1.11 (Youssef 2026-11-03 23:03: « créé 2 joueurs supplémentaires, ne remplace pas les autres, nomme-les
+  // différemment, colore leurs vêtements différemment, même moteur 3D »): the Rocketbox sports bodies of Kadir and
+  // Amara with a Rocketbox face grafted on (tools/generator/rocketbox/face_transfer.py), Rocketbox Male_Adult_07
+  // for Naël (« Axel B » of the proposals page) and Female_Adult_01 for Inaya (« Kaila A »)
+  {
+    id: 'nael',
+    coach: 'homme',
+    name: 'Naël',
+    nickname: 'Le Faucon',
+    style: 'Contreur rapide, toujours en mouvement',
+    bio: 'Appuis légers, main avant basse, regard qui guette : Naël laisse venir, esquive et répond aussitôt.',
+    portrait: './coaches/nael/portrait.webp',
+    height: '1,80 m',
+    guard: 'Mobile, main avant basse, menton rentré derrière l’épaule',
+    strengths: ['Contres', 'Jeu de jambes', 'Vitesse de bras'],
+  },
+  {
+    id: 'inaya',
+    coach: 'femme',
+    name: 'Inaya',
+    nickname: 'La Panthère',
+    style: 'Explosive, coups de pied à distance',
+    bio: 'De profil, sur l’avant des pieds, jambe avant légère : Inaya garde la distance et frappe des jambes avant d’entrer.',
+    portrait: './coaches/inaya/portrait.webp',
+    height: '1,73 m',
+    guard: 'De profil, sur l’avant des pieds, mains hautes',
+    strengths: ['Coups de pied', 'Gestion de la distance', 'Explosivité'],
+  },
 ];
 
 /** every coach, in the order of the choice screen */
-export const ALL_COACHES: ChampionCoach[] = [CHAMPIONS.homme, EXTRA_COACHES[0], CHAMPIONS.femme, EXTRA_COACHES[1]];
+export const ALL_COACHES: ChampionCoach[] = [CHAMPIONS.homme, EXTRA_COACHES[0], EXTRA_COACHES[2], CHAMPIONS.femme, EXTRA_COACHES[1], EXTRA_COACHES[3]];
 
 export const championById = (id: string | null | undefined) => ALL_COACHES.find((c) => c.id === id);
 

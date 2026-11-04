@@ -2304,3 +2304,48 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright `outfit-loading`, `emblems` (affichage hors ligne), `coachs-v160`, `coach-3d-recovery` : 13 RÉUSSIS.
   - Android réel : NON EXÉCUTÉ.
 - **Validation** : Youssef, 03/11 18:19 « Je valide ».
+
+## 2026-11-03 · 1.11.0 · Deux nouveaux coachs : Naël et Inaya
+
+- **Demande** : Youssef, 03/11 23:03 « Axel B / Kaila A / Mais créé 2 joueurs supplémentaires, ne remplace pas les autres / Nomme les différemment / Coloré leurs vêtements différemment des autres / Même moteur 3d derrière ». Puis 23:45 « Applique les corrections que tu as déjà identifiées sur les nouveaux coachs ».
+- **Résultat** : six coachs. Kadir, Axel, Amara et Kaila sont inchangés. Deux coachs sont ajoutés :
+  - Naël « Le Faucon » : visage de l'avatar Rocketbox Male_Adult_07 (planche « Axel B ») ;
+  - Inaya « La Panthère » : visage de Female_Adult_01 (planche « Kaila A »), avec ses cheveux.
+  - Ils utilisent le même moteur (`PhotoCoach`), le même squelette et les mêmes mouvements. Chacun a sa garde, son teint et ses couleurs de tenue (palettes `nael` et `inaya` dans `outfits.py`).
+- **Méthode** :
+  - `tools/generator/rocketbox/face_transfer.py` pose la tête du donneur sur le corps sportif de Kadir ou d'Amara, cuit la texture du visage et accorde le teint du corps ;
+  - `extra_textures.py` refait la tenue peinte sur la peau ;
+  - `convert.py`, `split_eyes.mjs` et `smooth_weights.py` sont appliqués comme pour Kadir ; 7 tenues sont faites par coach.
+- **Constats après vérification et corrections** :
+  - Tache de peau sur le short de kick-boxing de Naël :
+    - constat : un seul point de la cuisse restait affiché sous le short. Le générateur calculait sa clé au millimètre sur la valeur mise à l'échelle par Blender (106,50001 mm), alors que l'appli la calcule sur la valeur du fichier (106,4999 mm). Les triangles de ce point traversaient le tissu ;
+    - correction : `outfits.py` prend la clé sur la valeur float32 du fichier, arrondie comme `Math.round`. Les 14 tenues ont été reconstruites ; il ne manque plus aucun point (avant : 1 à 5 par tenue) ;
+    - captures : `docs/v1110/captures/nael-shorts-avant.jpg` et `nael-short-kick-apres.png`.
+  - Même défaut chez Kadir et Amara : 1 à 4 points par tenue (mesure sur les fichiers livrés). Ces fichiers n'ont pas été reconstruits dans ce lot.
+  - Chez Axel et Kaila, la plupart des clés ne correspondent à aucun point du fichier. À vérifier dans un lot dédié (la peau est peut-être masquée autrement).
+  - Aine d'Inaya en garde : le bassin à -2° écrasait la peau (0,62 contre 0,65 au moins). Il est maintenant à -4°, comme celui d'Amara. Test réussi.
+  - Écarts encore mesurés en garde, par rapport à la 1.9.0 du corps de base :
+    - aisselle de Naël : écrasement 0,060 contre 0,068 au moins ;
+    - coude d'Inaya : pli 79° contre 76° au plus ;
+    - ils restent avec la garde même de Kadir ou d'Amara, donc ils viennent du corps (export « _facial ») ;
+    - aucune différence n'est visible sur les captures de bureau (`docs/v1110/captures/garde-plis-kadir-nael-amara-inaya.jpg`) ;
+    - décision de Youssef (03/11 23:54, « Accepter, écart documenté ») : leurs mesures 1.11.0 deviennent leur référence (`docs/v1110/deformations-1.11.0.json`), elles ne pourront plus se dégrader.
+  - Choix du coach en 360×640 : avec six fiches, la page dépassait de 15 px. La hauteur réservée au nom passe de 48 à 58 px. Test réussi.
+- **Limites** :
+  - même corps que Kadir et Amara (musculature un peu différente : SHAPE_SCALE 1,2 et 1,4) et même taille ;
+  - repli sans WebGL : modèle généré de Kadir ou d'Amara ;
+  - Naël a des cheveux peints, comme Kadir, car ses mèches en cartes faisaient des taches sombres ;
+  - captures faites sur ordinateur en rendu logiciel, **pas sur téléphone Android**.
+- **Fichiers** :
+  - générateur : `tools/generator/rocketbox/{face_transfer,extra_textures}.py` (nouveaux), `convert.py`, `outfits.py`, `regen_outfits.sh` ;
+  - fichiers des coachs : `public/coaches/{nael,inaya}/` ;
+  - code : `src/domain/coaches/{catalog,looks,motion}.ts`, `src/three/{photoMaterials.ts,CoachModel.tsx}`, `src/ui/styles.css` ;
+  - documents : `src/domain/releases.ts`, `docs/LICENCES.md`.
+- **Tests** :
+  - TypeScript (`npx tsc -b`) : TEST RÉUSSI.
+  - Build (`vite build`, titre v1.11.0) : TEST RÉUSSI.
+  - Vitest complet : 1037 RÉUSSIS, 1 ignoré (déjà ignoré avant). Nouveau test : chaque point de peau caché de Naël et Inaya existe dans leur corps. Tests étendus aux six coachs (tenues, gants, matériaux, sol, déformations, visage, respiration).
+  - Playwright ciblé (`coachs-v160`, `coach-render`, `outfit-loading`, `coach-3d-recovery`) : 15 RÉUSSIS, après la correction des fiches en 360×640.
+  - Playwright complet : NON EXÉCUTÉ.
+  - Téléphone Android réel : NON EXÉCUTÉ.
+- **Validation** : en attente du « je valide » de Youssef (aucune fusion ni publication avant).

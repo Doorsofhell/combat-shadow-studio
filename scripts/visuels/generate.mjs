@@ -146,7 +146,7 @@ for (const a of ART) {
 }
 
 // 1.5: Axel (1.94 m) and Kaila (1.65 m), the MakeHuman coaches, framed on their own height
-const PORTRAIT = { 'mma-kadir': ['1.04', '0.86'], 'mma-amara': ['1.04', '0.86'], axel: ['1.16', '0.97'], kaila: ['0.99', '0.82'] };
+const PORTRAIT = { 'mma-kadir': ['1.04', '0.86'], 'mma-amara': ['1.04', '0.86'], axel: ['1.16', '0.97'], kaila: ['0.99', '0.82'], nael: ['1.04', '0.86'], inaya: ['1.04', '0.86'] };
 for (const [c, [span, fy]] of Object.entries(PORTRAIT)) {
   if (!want('portraits', c) || !inD('mma')) continue;
   const png = `${CACHE}/portraits/${c}.png`;

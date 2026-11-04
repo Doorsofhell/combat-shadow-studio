@@ -80,3 +80,23 @@ describe('tenues des coachs Ultra-réalistes', () => {
     });
   });
 });
+
+// 1.11 (Naël, kick-boxing): one skin point of the thigh got another millimetre key than the one the app computes
+// (Blender's float32 cm -> m scale put it on the other side of a half) and stayed drawn: its triangles pierced the
+// short as a skin patch. For the coaches built since, every hidden key is a real point of the shipped body.
+describe.each(['nael', 'inaya'])('%s : peau masquée, chaque point retrouvé', (coach) => {
+  const body = glb(`public/coaches/${coach}/photo.glb`);
+  const all = new Set<string>();
+  for (const m of body.json.meshes)
+    for (const p of m.primitives) {
+      const f = body.floats(p.attributes.POSITION);
+      for (let i = 0; i < f.length; i += 3) all.add(`${Math.round(f[i] * 1000)},${Math.round(f[i + 1] * 1000)},${Math.round(f[i + 2] * 1000)}`);
+    }
+  test.each(OUTFITS)('%s', (o) => {
+    const { json } = glb(`public/coaches/${coach}/tenues/${o}.glb`);
+    const carrier = json.nodes.find((n) => n.extras?.hideBody)!;
+    expect(Number(carrier.extras!.hideScale)).toBe(1000);
+    const missing = [...hiddenKeys(carrier.extras!.hideBody as string)].filter((k) => !all.has(k));
+    expect(missing, missing.slice(0, 5).join(' ')).toEqual([]);
+  });
+});
