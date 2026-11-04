@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { MeshStandardMaterial, ShaderLib, Texture } from 'three';
 import { photoMaterial, SKIN_LOOK } from '../photoMaterials';
 
-// 1.16 (Youssef 04/11 13:52 « peux-tu la bronzer un tout petit peu ? », 13:53 « non juste bronzage »): Inaya's skin
+// 1.17 (Youssef 04/11 13:52 « peux-tu la bronzer un tout petit peu ? », 13:53 « non juste bronzage »): Inaya's skin
 // albedo is graded slightly darker and warmer; the other coaches keep their painted skin, untouched.
 describe('bronzage léger d’Inaya', () => {
   test('Inaya : un peu plus foncée et plus chaude, dans des limites modestes', () => {

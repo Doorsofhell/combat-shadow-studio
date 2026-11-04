@@ -49,12 +49,22 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
-      version: '1.16.0',
+      version: '1.17.0',
       releaseDate: '2026-11-04',
       title: 'Inaya légèrement bronzée',
       isMajor: false,
       changes: [
         { category: 'coachs', text: 'La peau d’Inaya est un peu plus dorée, sur le visage comme sur le corps. Ses cheveux et ses tenues ne changent pas.' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
+      version: '1.16.0',
+      releaseDate: '2026-11-04',
+      title: 'Visages plus vivants',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Kadir, Amara, Naël et Inaya ont de vraies expressions du visage : les paupières se ferment entièrement quand ils clignent des yeux, et pendant une frappe les sourcils se froncent, les yeux se plissent, les joues remontent et les lèvres soufflent.' },
       ],
       links: [{ label: 'Changer de coach', to: '/coach' }],
     },

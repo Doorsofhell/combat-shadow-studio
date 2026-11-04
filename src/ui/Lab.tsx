@@ -34,10 +34,11 @@ export function Lab() {
   const motionId = tech?.motion ?? q.get('motion') ?? 'garde';
   const tRef = useRef(Number(q.get('t') ?? '0'));
   // 1.9 the face of a fixed image: still (no blink, eyes ahead), or an imposed expression: effort=0..1, blink=0..1;
-  // face=live animates it as in the app
+  // face=live animates it as in the app; 1.16 expr=JawOpen:1,MouthSmileLeft:0.5 imposes expressions (face.ts)
   useMemo(() => {
     const num = (k: string) => (q.get(k) !== null ? Number(q.get(k)) : undefined);
-    (globalThis as { __cssFace?: object }).__cssFace = q.get('face') === 'live' ? {} : { still: true, effort: num('effort'), blink: num('blink') };
+    const expr = q.get('expr') ? Object.fromEntries(q.get('expr')!.split(',').map((kv) => [kv.split(':')[0], Number(kv.split(':')[1] ?? 1)])) : undefined;
+    (globalThis as { __cssFace?: object }).__cssFace = q.get('face') === 'live' ? {} : { still: true, effort: num('effort'), blink: num('blink'), expr };
   }, [q]);
   const envelope = useRef<Envelope | null>(null);
   const origin = useRef({ x: 0, z: 0, yaw: 0 });

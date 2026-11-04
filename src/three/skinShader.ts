@@ -29,7 +29,7 @@ export interface SkinLook {
   /** scattering colour (per channel factor of the wrap, red first) */
   tint: [number, number, number];
   /**
-   * 1.16 colour grade of the albedo (Youssef 04/11 13:52 « peux-tu la bronzer un tout petit peu ? », Inaya):
+   * 1.17 colour grade of the albedo (Youssef 04/11 13:52 « peux-tu la bronzer un tout petit peu ? », Inaya):
    * sat = saturation around the luminance (1 = as painted), gain = brightness of the albedo, warm = shift towards
    * red-orange (0 = none). Left out, nothing changes.
    */
