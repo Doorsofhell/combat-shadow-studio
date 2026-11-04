@@ -1542,7 +1542,8 @@ def top_square(color, accent=None, low=None, name='haut-carre'):
 
 # 1.13 proposals for Inaya's top (INAYA_TOP): bandeau (1.12), carree (square-neck sports bra), crop (square-neck crop
 # top to the navel), debardeur (square-neck tank top to the waistband)
-INAYA_TOP = os.environ.get('INAYA_TOP', '')
+# 1.14 (Youssef, 04/11, decision « C. Crop top »): Inaya wears the crop top in every striking discipline
+INAYA_TOP = os.environ.get('INAYA_TOP', 'crop' if os.environ.get('PALETTE') == 'inaya' else '')
 
 
 def female_top(color, accent=None):
@@ -1551,7 +1552,9 @@ def female_top(color, accent=None):
     if INAYA_TOP == 'carree':
         return top_square(color, accent)
     if INAYA_TOP == 'crop':
-        return top_square(color, accent, low=hipZ + 0.13, name='haut-crop')
+        # 1.14 (Youssef, 04/11: « crop top un peu court laissant voir les muscles du ventre »): its bottom sits 4 cm
+        # under a sports bra's, on the lower ribs, so the abdominals stay bare
+        return top_square(color, accent, low=bra_low() - float(os.environ.get('CROP_DROP', '0.04')), name='haut-crop')
     if INAYA_TOP == 'debardeur':
         return top_square(color, accent, low=hipZ + 0.05, name='haut-debardeur')
     return None

@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.14.0',
+      releaseDate: '2026-11-04',
+      title: 'Nouvelle tenue d’Inaya',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Inaya porte un crop top moulant en boxe, kick-boxing, muay-thaï et MMA : plus de bretelles déchirées au cou, et les abdominaux restent visibles.' },
+        { category: 'coachs', text: 'Les bords de ses shorts et de son haut sont nets, et la tache claire sous son chignon a disparu.' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.13.0',
       releaseDate: '2026-11-04',
       title: 'Nouvel écran de choix du coach',

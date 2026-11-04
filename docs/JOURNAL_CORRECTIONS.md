@@ -2400,3 +2400,28 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet : NON EXÉCUTÉ.
   - Téléphone Android réel : NON EXÉCUTÉ.
 - **Validation** : en attente du « je valide » de Youssef (aucune fusion ni publication avant).
+
+## 2026-11-04 · v1.14.0 · Tenue d'Inaya : crop top, ourlets nets, nuque
+
+- **Demande** (Youssef, 04/11 10:06, deux captures en MMA) : « Mets à Inaya une brassière moulante pleine pour masquer les fissures. Il faut une tenue adéquate qui lui aille. Fais-moi quelques propositions. » Quatre propositions comparées (https://claude.ai/artifact/FKHmhpsp4rwd98EDeHE5k7), choix « C. Crop top » (11:03), puis « crop top un peu court laissant voir les muscles du ventre » (11:05).
+- **Constat après vérification** :
+  - **Fissures au cou** : le corps de sport d'Inaya porte un haut noué derrière la nuque, sculpté dans le corps lui-même (corrigé en 1.12 par une peau dessinée des deux côtés). En MMA et en muay-thaï, la brassière gardait ses bretelles, qui passaient sur ce relief : un vêtement copié sur la peau copie ce pli, d'où les déchirures. En boxe et en kick-boxing, le bandeau de la 1.12 n'avait pas ce défaut.
+  - **Bords effilochés** : la tranche des vêtements (leur épaisseur, 2 à 3 mm) était lissée comme une surface arrondie ; ses normales mélangeaient l'extérieur et l'intérieur du tissu et l'ourlet se lisait comme un bourrelet ondulé. La ligne de coupe elle-même est régulière (mesurée à 1 mm près).
+  - **Encoches sur les bretelles** (vues pendant les essais) : des bretelles posées loin du cou (12 à 16 cm de l'axe) étaient recouvertes en garde par la peau du deltoïde, qui monte quand le bras se lève ; et près de l'articulation, la moitié de la peau sous la bretelle restait dessinée.
+  - **Carré clair sous le chignon** : repéré sur le modèle à 1,60 m (outil `__labPick` du Lab). Sur les deux bords de la texture de la tête, là où ses moitiés se rejoignent derrière la tête, une bande de la peau du visage d'origine (à côté de son oreille, 5 % de la largeur) tombait sur les cheveux juste sous le chignon : un carré clair coupé au milieu par la couture.
+- **Correction** :
+  - `tools/generator/rocketbox/outfits.py` : nouveau haut à encolure carrée (`square_field`, `top_square`) avec bretelles entre 11,2 et 14,2 cm de l'axe, à l'écart du relief au cou et du deltoïde ; crop top pour Inaya en boxe, kick-boxing, muay-thaï et MMA (`INAYA_TOP`, `crop` par défaut avec la palette d'Inaya), son bas 4 cm sous celui d'une brassière, sur les dernières côtes : les abdominaux restent visibles ;
+  - toute la peau sous le haut est masquée (y compris près des coutures de texture) ; poids du haut relâchés le long du tissu ;
+  - tranche des ourlets coupés par un champ dessinée à plat (bord net) et bords libres relâchés le long d'eux-mêmes ;
+  - `tools/generator/rocketbox/extra_textures.py` : la bande de peau des deux bords de la texture de la tête est remplacée par les cheveux voisins, en miroir. Les positions du corps sont identiques à la 1.13 (vérifié point par point), donc la peau masquée par les tenues reste juste (0 clé manquante sur les 7 tenues) ;
+  - `src/ui/Lab.tsx` : `window.__labPick(x, y)` dit quel maillage, quel matériau et quel point de texture sont dessinés à un endroit d'une capture (outil de diagnostic, Lab seulement).
+- **Fichiers** : `public/coaches/inaya/photo.glb`, `public/coaches/inaya/tenues/{boxe,kickboxing,muaythai,mma}.glb` (+ normales du tissu dans `_tex`), les deux générateurs ci-dessus, `src/ui/Lab.tsx`, `src/domain/releases.ts`, `package.json`.
+- **Limites** : de dos en garde, une petite dent peut rester en bas de la bretelle droite ; la limite des cheveux sur la nuque reste un peu irrégulière ; les ourlets nets ne concernent pour l'instant que les tenues d'Inaya (les autres coachs gardent leurs fichiers de la 1.13).
+- **Captures** : `docs/v1140/captures/inaya-crop-top.jpg`, `inaya-nuque-avant-apres.jpg` (ordinateur, rendu logiciel, **pas sur téléphone Android**).
+- **Tests** :
+  - TypeScript (`npx tsc -b`) : TEST RÉUSSI.
+  - Vitest complet : 1044 RÉUSSIS, 1 ignoré. Nouveau `tenue-inaya-v1140.test.ts` (crop top dans les 4 disciplines de frappe, plus de brassière à bretelles, bas du haut au-dessus de Spine1, rien à moins de 11 cm de l'axe au-dessus de la poitrine). `realisme-v1100.test.ts` « brassières : aucune partie sur les bras » applique la même limite au crop top d'Inaya (le test cherchait la pièce par son nom « haut-brassiere » : la règle n'est pas assouplie, elle couvre le nouveau haut).
+  - Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS.
+  - Playwright complet : NON EXÉCUTÉ.
+  - Téléphone Android réel : NON EXÉCUTÉ.
+- **Validation** : en attente du « je valide » de Youssef (aucune fusion ni publication avant).

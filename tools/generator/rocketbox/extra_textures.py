@@ -221,6 +221,23 @@ if who == 'inaya':
     if sel_.any():
         raw_strands = raw_strands * (0.9 * blond / np.maximum(raw_strands[sel_].mean(0), 1e-3))
     head = head * (1 - nm_) + raw_strands * nm_
+    # 1.14 (« zone claire et ligne sur la nuque, sous le chignon », picked on the model: 1.60 m, texture u 0.01-0.03 and
+    # 0.97-0.99, v 0.23): the two edges of the head's atlas where its halves meet behind the head hold a strip of the
+    # donor's skin (next to its ear), about 5 % of the width. On the sports head that strip is the hair right under
+    # the bun: a light square split down the middle by the seam. Filled with the hair beside it, mirrored across the
+    # strip's inner edge, so both halves meet on the same strands
+    sx = int(0.055 * HW)
+    r0, r1 = int(0.18 * HH), int(0.31 * HH)
+    # a fixed rectangle (the strip is the same on every build: the sports head's UV layout), feathered at its ends
+    rows = np.ones(r1 - r0, dtype=np.float32)
+    f_ = int(0.01 * HH)
+    rows[:f_] = np.linspace(0, 1, f_)
+    rows[-f_:] = np.linspace(1, 0, f_)
+    sk = rows[:, None, None]
+    for left in (True, False):
+        band = head[r0:r1, :sx] if left else head[r0:r1, HW - sx:]
+        src = (head[r0:r1, sx:2 * sx] if left else head[r0:r1, HW - 2 * sx:HW - sx])[:, ::-1].copy()
+        band[:] = band * (1 - sk) + src * sk
 head = bleed(head)
 body = bleed(body)
 save(head, f'{pre}_head_color.png')
