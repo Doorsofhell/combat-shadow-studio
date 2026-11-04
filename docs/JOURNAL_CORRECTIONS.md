@@ -2536,4 +2536,4 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS.
   - Playwright complet : NON EXÉCUTÉ.
   - Téléphone Android réel : NON EXÉCUTÉ.
-- **Validation** : en attente du « je valide » de Youssef (PR sans fusion, rien publié).
+- **Validation** : « je valide » de Youssef le 04/11 à 20:25 ; PR #54 fusionnée (d32dd57), publiée en 1.18.0 sur GitHub Pages (titre vérifié).
