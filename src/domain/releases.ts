@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.16.0',
+      releaseDate: '2026-11-04',
+      title: 'Visages plus vivants',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Kadir, Amara, Naël et Inaya ont de vraies expressions du visage : les paupières se ferment entièrement quand ils clignent des yeux, et pendant une frappe les sourcils se froncent, les yeux se plissent, les joues remontent et les lèvres soufflent.' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.15.0',
       releaseDate: '2026-11-04',
       title: 'Buste d’Inaya corrigé',

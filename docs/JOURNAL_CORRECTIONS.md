@@ -2456,3 +2456,40 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet : NON EXÉCUTÉ.
   - Téléphone Android réel : NON EXÉCUTÉ.
 - **Validation** : en attente du « je valide » de Youssef (aucune fusion ni publication avant).
+
+## 2026-11-04 · v1.16.0 · Visages plus vivants (expressions Rocketbox)
+
+- **Demande** : Youssef, 04/11 14:09, a demandé si j'avais examiné les dépôts Microsoft-Rocketbox, MoveBox et Headbox. À 14:16, après ma proposition, il a écrit « applique ta proposition », puis à 14:19 « applique juste proposition que je valide en avance de phase ».
+- **Constat après vérification** :
+  - Chaque avatar Rocketbox « facial » porte 175 expressions du visage sous forme de formes de maillage : 15 visèmes, 52 ARKit, 48 FACS et 42 VIVE, toutes sous licence MIT comme les avatars. Elles ont été créées par l'équipe Headbox.
+  - `convert.py` les supprimait, parce que ses modificateurs ne s'appliquent pas en leur présence. Les GLB des coachs n'avaient donc aucune expression (0 cible de morphose).
+  - Les visages bougeaient seulement par quelques os, de quelques millimètres.
+  - MoveBox (outils Unity de capture de mouvement, partie vidéo sous licence de recherche) et Headbox (sans licence, dépendances OpenFace non commerciales) ne sont pas utilisés.
+- **Correction** :
+  - `tools/generator/rocketbox/morph_extract.py` (nouveau) lit 25 expressions ARKit sur l'avatar d'origine. Pour Naël et Inaya, il part du fichier .blend après la greffe du visage. Le maillage est subdivisé comme dans `convert.py`. Les écarts sont écrits en mètres, dans les axes glTF.
+  - `tools/generator/rocketbox/morph_apply.py` (nouveau) pose ces expressions sur le `photo.glb` livré, sans reconstruire le coach :
+    - chaque point prend l'écart du point source le plus proche, à moins de 2 mm ;
+    - les cibles sont creuses (seuls les points qui bougent sont stockés) ;
+    - leurs noms vont dans `extras.targetNames`.
+  - Effet sur Kadir, Amara, Naël et Inaya : environ 320 Ko de plus par coach, et le corps ne bouge avec aucune expression.
+  - `src/three/face.ts` : quand le modèle porte les expressions, elles remplacent les os des paupières, des sourcils, de la bouche et de la mâchoire. Les yeux tournent toujours avec leurs os.
+    - Clignement : `EyeBlink`.
+    - Effort d'une frappe : sourcils froncés, yeux plissés, joues remontées, nez un peu froncé, lèvres pincées.
+    - Souffle de la frappe : lèvres arrondies et entrouvertes, avec un léger retard.
+    - Aucune expression ne va au-delà de 0,9.
+  - `dropStillMorphs` retire les expressions des parties qui ne bougent pas (le corps et les globes oculaires). Sans cela, three.js garderait une texture inutile en mémoire graphique, d'environ 6 Mo pour le corps.
+  - `src/ui/Lab.tsx` : `?expr=JawOpen:1,…` impose des expressions pour les captures.
+  - Axel et Kaila (MakeHuman) n'ont pas ces expressions : ils gardent les os, jusqu'au lot 4 (refaits sur le corps Rocketbox).
+- **Fichiers** : `tools/generator/rocketbox/morph_{extract,apply}.py`, `public/coaches/{mma-kadir,mma-amara,nael,inaya}/photo.glb`, `src/three/face.ts`, `src/three/PhotoCoach.tsx`, `src/ui/Lab.tsx`, `src/domain/releases.ts`, `package.json`.
+- **Captures** : `docs/v1160/captures/expressions-avant-apres.jpg` (Kadir et Inaya : clignement et effort, avant et après) et `expressions-amara.jpg` (repos, clignement, effort, bouche ouverte, sourire, souffle). Ordinateur, rendu logiciel, **pas sur téléphone Android**.
+- **Limite** : la différence au repos est nulle (voulu). Pendant une frappe, elle est visible surtout de près. En plan large, la tête fait quelques centimètres à l'écran.
+- **Tests** :
+  - nouveau `src/three/__tests__/expressions-v1160.test.ts` (26) : les 25 expressions sont présentes sur les 4 coachs ; le clignement descend de 4 à 15 mm ; la mâchoire s'ouvre de moins de 2,5 cm ; le corps reste immobile ; chaque modèle pèse moins de 3,5 Mo ; les poids des expressions sont bornés ; le moteur pilote bien les expressions.
+  - `face.test.ts` (30, os du visage) : TEST RÉUSSI, inchangé.
+  - TypeScript : TEST RÉUSSI.
+  - Vitest complet : 1071 RÉUSSIS, 1 ignoré (déjà ignoré avant).
+  - Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS.
+  - Playwright `training-layout` et `coach-3d-recovery` : 17 RÉUSSIS et 1 ÉCHOUÉ, `training-layout:329` (caméra Auto : « direct vu presque à hauteur d'homme »). Ce test **échoue de la même façon sans ce lot** : vérifié sur la base 1.15.0, avec les modifications mises de côté. Il n'est donc pas causé par ce lot et n'a pas été modifié.
+  - Playwright complet : NON EXÉCUTÉ.
+  - Téléphone Android réel : NON EXÉCUTÉ.
+- **Validation** : validée d'avance par Youssef (14:19). Le bronzage d'Inaya (PR #52) n'est pas inclus et attend son « je valide ».
