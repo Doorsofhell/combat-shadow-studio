@@ -25,7 +25,26 @@ export interface ChampionCoach {
   guard: string;
   /** what the coach shows best, taken from the motion profile and the bio (no invented numbers) */
   strengths: string[];
+  /** 1.13 (Youssef 2026-11-04, option B « écran de sélection »): weight of the 3D model in kg, from the volume of its
+   * mesh at the density of the body (1,06); absent when it could not be measured */
+  weightKg?: number;
+  /** 1.13: style profile out of 10 for the selection screen's bars. Not a measure: read from the coach's style, guard
+   * and strengths above (shown as « profil de style » in the app) */
+  skills: Record<SkillId, number>;
 }
+
+/** 1.13: the bars of the selection screen, in their order */
+export const SKILLS = [
+  { id: 'poings', label: 'Poings' },
+  { id: 'pieds', label: 'Pieds' },
+  { id: 'lutte', label: 'Lutte' },
+  { id: 'sol', label: 'Sol' },
+  { id: 'vitesse', label: 'Vitesse' },
+  { id: 'defense', label: 'Défense' },
+  { id: 'endurance', label: 'Endurance' },
+] as const;
+export type SkillId = (typeof SKILLS)[number]['id'];
+const sk = (poings: number, pieds: number, lutte: number, sol: number, vitesse: number, defense: number, endurance: number): Record<SkillId, number> => ({ poings, pieds, lutte, sol, vitesse, defense, endurance });
 
 export const CHAMPIONS: Record<CoachId, ChampionCoach> = {
   homme: {
@@ -39,6 +58,8 @@ export const CHAMPIONS: Record<CoachId, ChampionCoach> = {
     height: '1,80 m',
     guard: 'Basse, buste au-dessus des genoux, mains ouvertes devant pour saisir',
     strengths: ['Changements de niveau', 'Pression constante', 'Lutte et contrôle'],
+    skills: sk(6, 5, 9, 8, 6, 7, 9),
+    weightKg: 91,
   },
   femme: {
     id: 'mma-amara',
@@ -51,6 +72,8 @@ export const CHAMPIONS: Record<CoachId, ChampionCoach> = {
     height: '1,73 m',
     guard: 'Haute et de profil, poings fermés, droite chargée',
     strengths: ['Puissance des frappes', 'Précision', 'Enchaînements'],
+    skills: sk(9, 6, 5, 5, 7, 6, 7),
+    weightKg: 61,
   },
 };
 
@@ -71,6 +94,7 @@ export const EXTRA_COACHES: ChampionCoach[] = [
     height: '1,94 m',
     guard: 'Droite et haute, bras un peu relâchés',
     strengths: ['Allonge', 'Frappes de loin', 'Économie de mouvement'],
+    skills: sk(8, 7, 4, 4, 6, 7, 6),
   },
   {
     id: 'kaila',
@@ -83,6 +107,7 @@ export const EXTRA_COACHES: ChampionCoach[] = [
     height: '1,65 m',
     guard: 'Basse et large, buste vers l’avant, mains ouvertes prêtes à saisir',
     strengths: ['Centre de gravité bas', 'Avancée constante', 'Saisies'],
+    skills: sk(6, 5, 9, 7, 5, 6, 8),
   },
   // 1.11 (Youssef 2026-11-03 23:03: « créé 2 joueurs supplémentaires, ne remplace pas les autres, nomme-les
   // différemment, colore leurs vêtements différemment, même moteur 3D »): the Rocketbox sports bodies of Kadir and
@@ -99,6 +124,8 @@ export const EXTRA_COACHES: ChampionCoach[] = [
     height: '1,80 m',
     guard: 'Mobile, main avant basse, menton rentré derrière l’épaule',
     strengths: ['Contres', 'Jeu de jambes', 'Vitesse de bras'],
+    skills: sk(8, 6, 5, 5, 9, 8, 7),
+    weightKg: 87,
   },
   {
     id: 'inaya',
@@ -111,6 +138,8 @@ export const EXTRA_COACHES: ChampionCoach[] = [
     height: '1,73 m',
     guard: 'De profil, sur l’avant des pieds, mains hautes',
     strengths: ['Coups de pied', 'Gestion de la distance', 'Explosivité'],
+    skills: sk(6, 9, 4, 4, 8, 7, 7),
+    weightKg: 65,
   },
 ];
 

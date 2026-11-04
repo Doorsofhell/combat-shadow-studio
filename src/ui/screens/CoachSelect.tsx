@@ -1,5 +1,4 @@
-import { ALL_COACHES, CHAMPIONS, championFor, type ChampionCoach } from '../../domain/coaches/catalog';
-import { useState } from 'react';
+import { ALL_COACHES, CHAMPIONS, SKILLS, championById, championFor, type ChampionCoach } from '../../domain/coaches/catalog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { PageHead } from '../components';
@@ -23,74 +22,97 @@ export function pickChampion(c: ChampionCoach) {
   st.update({ coach: c.coach, champion: c.id });
 }
 
+const heightM = (h: string) => Number(h.replace(/[^0-9,]/g, '').replace(',', '.'));
+const pct = (x: number, lo: number, hi: number) => Math.max(4, Math.min(100, ((x - lo) / (hi - lo)) * 100));
+
 /**
- * The coaches in a grid; nothing is selected until the user taps one. Without props: the stored choice.
- * 1.9 (Youssef 2026-10-29: « diminue la taille des fiches coach pour que cela tienne sur une page, un clic sur la
- * fiche doit la faire pivoter sur un mode plus de détails »): compact cards; a tap chooses the coach and turns its
- * card over (surnom, taille, garde, style, points forts); a second tap turns it back.
+ * 1.13 (Youssef 2026-11-04, option B: « des barres comme des barres de progression pour les habiletés, poids,
+ * taille, poings, pieds, lutte »): a fighting-game selection screen. The chosen coach's sheet on top (portrait, name,
+ * nickname, style, height and weight bars) and its style profile in bars of ten, under the six coaches in a row (on
+ * top, so the row does not move when the sheet appears during the first launch); a tap on one chooses it and shows
+ * its sheet. Height and weight are measured on the 3D models; the bars of ten are a style
+ * profile, said so on screen. Without props: the stored choice.
  */
 export function CoachPicker({ value, onChange }: { value?: string | null; onChange?: (c: ChampionCoach) => void }) {
   const stored = useChosenCoach();
   const current = value === undefined ? stored : value;
-  const [turned, setTurned] = useState<string | null>(null);
+  const c = ALL_COACHES.find((x) => x.id === current) ?? null;
   return (
-    <div className="coach-pick" role="radiogroup" aria-label="Choix du coach">
-      {ALL_COACHES.map((c) => {
-        const on = current === c.id;
-        const back = turned === c.id;
-        return (
-          <button
-            key={c.id}
-            type="button"
-            role="radio"
-            aria-checked={on}
-            aria-expanded={back}
-            aria-label={`${c.name} « ${c.nickname} »${back ? ', détails affichés' : ''}`}
-            className={`coach-card ${on ? 'on' : ''} ${back ? 'turned' : ''}`}
-            onClick={() => {
-              (onChange ?? pickChampion)(c);
-              setTurned(back ? null : c.id);
-            }}
-            data-testid={c.id === CHAMPIONS.homme.id ? 'coach-homme' : c.id === CHAMPIONS.femme.id ? 'coach-femme' : `coach-${c.id}`}
-          >
-            <span className="coach-flip">
-              <span className="coach-face front" aria-hidden={back}>
-                <img src={c.portrait} alt="" loading="eager" />
-                <span className="lbl">
-                  {c.name}
-                  <span className="nick">« {c.nickname} »</span>
+    <div className="coach-sel">
+      <div className="coach-pick" role="radiogroup" aria-label="Choix du coach">
+        {ALL_COACHES.map((x) => {
+          const on = current === x.id;
+          return (
+            <button
+              key={x.id}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              aria-label={`${x.name} « ${x.nickname} »`}
+              className={`coach-card ${on ? 'on' : ''}`}
+              onClick={() => (onChange ?? pickChampion)(x)}
+              data-testid={x.id === CHAMPIONS.homme.id ? 'coach-homme' : x.id === CHAMPIONS.femme.id ? 'coach-femme' : `coach-${x.id}`}
+            >
+              <img src={x.portrait} alt="" loading="eager" />
+              <span className="lbl">{x.name}</span>
+              {on && (
+                <span className="tick" aria-hidden>
+                  <AppIcon id="check" size={12} />
                 </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+      {c ? (
+        <section className="coach-sheet" data-testid={`coach-details-${c.id}`} aria-live="polite" aria-label={`Fiche de ${c.name}`}>
+          <img src={c.portrait} alt="" />
+          <div className="who">
+            <span className="name">{c.name}</span>
+            <span className="nick">« {c.nickname} »</span>
+            <span className="style">{c.style}</span>
+            <span className="gab">
+              <span className="row">
+                <b>Taille</b>
+                <span>{c.height}</span>
               </span>
-              <span className="coach-face back" aria-hidden={!back} data-testid={`coach-details-${c.id}`}>
-                <span className="lbl">
-                  {c.name}
-                  <span className="nick">« {c.nickname} »</span>
-                </span>
-                <span className="facts">
-                  <span>
-                    <b>Taille</b> {c.height}
-                  </span>
-                  <span>
-                    <b>Style</b> {c.style}
-                  </span>
-                  <span>
-                    <b>Garde</b> {c.guard}
-                  </span>
-                  <span>
-                    <b>Points forts</b> {c.strengths.join(' · ')}
-                  </span>
-                </span>
-                <span className="again">Touche pour revenir</span>
+              <span className="bar" aria-hidden>
+                <span style={{ width: `${pct(heightM(c.height), 1.5, 2.0)}%` }} />
+              </span>
+              <span className="row">
+                <b>Poids</b>
+                <span>{c.weightKg ? `${c.weightKg} kg` : 'non mesuré'}</span>
+              </span>
+              <span className="bar" aria-hidden>
+                {c.weightKg ? <span style={{ width: `${pct(c.weightKg, 45, 105)}%` }} /> : null}
               </span>
             </span>
-            {on && (
-              <span className="tick" aria-hidden>
-                <AppIcon id="check" size={16} />
-              </span>
-            )}
-          </button>
-        );
-      })}
+          </div>
+          <div className="skills" aria-label="Profil de style sur 10">
+            <span className="cap">
+              Profil de style <i>(indicatif, sur 10)</i>
+            </span>
+            {SKILLS.map((k) => {
+              const v = c.skills[k.id];
+              return (
+                <span className="skill" key={k.id}>
+                  <span className="k">{k.label}</span>
+                  <span className="cells" aria-hidden>
+                    {Array.from({ length: 10 }, (_, i) => (
+                      <span key={i} className={i < v ? (v >= 8 ? 'top' : 'on') : ''} />
+                    ))}
+                  </span>
+                  <span className="v">{v}</span>
+                </span>
+              );
+            })}
+          </div>
+        </section>
+      ) : (
+        <section className="coach-sheet empty" data-testid="coach-details-none">
+          Touche un coach pour voir sa fiche.
+        </section>
+      )}
     </div>
   );
 }
@@ -106,7 +128,7 @@ export function CoachSelect() {
       <PageHead title="Choisis ton coach" eyebrow="Coach" back={!first} />
       <CoachPicker />
       <button type="button" className="btn primary block lg" disabled={!chosen} onClick={() => (first ? nav('/', { replace: true }) : nav(-1))} data-testid="coach-valider">
-        {chosen ? 'Valider' : 'Choisis un coach pour continuer'}
+        {chosen ? `Valider ${championById(chosen)?.name ?? ''}` : 'Choisis un coach pour continuer'}
       </button>
     </div>
   );

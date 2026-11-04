@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.13.0',
+      releaseDate: '2026-11-04',
+      title: 'Nouvel écran de choix du coach',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Choisis ton coach comme dans un jeu de combat : les six en haut, et la fiche du coach choisi avec sa taille, son poids et sept barres (poings, pieds, lutte, sol, vitesse, défense, endurance).' },
+        { category: 'coachs', text: 'La taille et le poids sont mesurés sur le modèle 3D. Les barres sont un profil de style indicatif, tiré du style de chaque coach.' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.12.0',
       releaseDate: '2026-11-04',
       title: 'Inaya plus nette au cou et aux cheveux',

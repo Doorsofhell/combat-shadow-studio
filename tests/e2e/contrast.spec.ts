@@ -25,6 +25,8 @@ const SCREENS = [
   ['createur-editeur', '/#/createur/nouveau?d=boxe'],
   ['programmes', '/#/programmes'],
   ['coach-editeur', '/#/combattant'],
+  // 1.13: the coach selection screen (bars, gold and red cells, « non mesuré »)
+  ['choix-coach', '/#/coach'],
   ['progres', '/#/stats'],
   ['historique', '/#/historique'],
   ['reglages', '/#/reglages'],

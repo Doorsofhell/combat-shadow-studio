@@ -2379,3 +2379,24 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet : NON EXÉCUTÉ.
   - Téléphone Android réel : NON EXÉCUTÉ.
 - **Validation** : en attente du « je valide » de Youssef (aucune fusion ni publication avant).
+
+## 2026-11-04 · v1.13.0 · Lot 2 : écran de choix du coach (option B)
+
+- **Demande** (Youssef, 04/11 00:11 puis 00:24) : « je veux que les cartes coach soient plus une espèce de barres comme des barres de progression pour des habiletés, poids, taille, poings, pieds, lutte… », puis « Option B » (écran de sélection façon jeu de combat, maquette https://claude.ai/artifact/AQdBa3SABDgrkNFYrTVVsf).
+- **Changement** :
+  - les fiches qui se retournaient sont remplacées par un écran de sélection : les six coachs en une rangée en haut, la fiche du coach choisi dessous (portrait, nom, surnom, style, barres de taille et de poids, sept barres sur 10), puis « Valider Naël » ;
+  - la rangée est en haut (dans la maquette elle était en bas) : au premier lancement, la fiche apparaît sous la rangée sans la déplacer ;
+  - même écran dans « Changer de coach », au premier lancement et dans Réglages > Mon coach.
+- **Données** (`src/domain/coaches/catalog.ts`) :
+  - taille et poids mesurés sur les modèles 3D (poids = volume du maillage × 1,06) : Kadir 91 kg, Naël 87 kg, Amara 61 kg, Inaya 65 kg. Pour Axel et Kaila, la mesure n'a pas abouti : l'écran affiche « non mesuré », jamais un chiffre inventé ;
+  - les sept barres (poings, pieds, lutte, sol, vitesse, défense, endurance) sont un **profil de style** que j'ai déduit du style, de la garde et des points forts de chaque coach. Ce n'est pas une mesure, et l'écran l'indique (« Profil de style (indicatif, sur 10) »).
+- **Fichiers** : `src/ui/screens/CoachSelect.tsx`, `src/ui/styles.css`, `src/domain/coaches/catalog.ts`, `src/domain/releases.ts`, `package.json`.
+- **Captures** : `docs/v1130/captures/` (360×640, 400×820, premier lancement ; ordinateur, **pas sur téléphone Android**).
+- **Tests** :
+  - TypeScript (`npx tsc -b`) : TEST RÉUSSI.
+  - Vitest complet : 1040 RÉUSSIS, 1 ignoré. Nouveau `skills-v1130.test.ts` (7 barres de 1 à 10 pour les six, poids mesurés seulement, profils tous différents).
+  - Playwright `coachs-v160` : 4 RÉUSSIS. Le test des fiches qui se retournent est remplacé par celui du nouvel écran (même exigence : tout tient sur un écran en 360×640 et 400×820 ; en plus : « non mesuré » pour Axel, 91 kg pour Kadir, les sept barres et « indicatif »).
+  - Contraste WCAG AA (`contrast.spec`, écran `/coach` ajouté), thèmes clair et sombre : 3 RÉUSSIS.
+  - Playwright complet : NON EXÉCUTÉ.
+  - Téléphone Android réel : NON EXÉCUTÉ.
+- **Validation** : en attente du « je valide » de Youssef (aucune fusion ni publication avant).
