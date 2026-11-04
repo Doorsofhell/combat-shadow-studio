@@ -13,6 +13,9 @@ const TOLERANCE = 3;
 const photos = [
   { id: 'mma-kadir', rig: new CoachRig(loadSkeleton('homme', 'coaches/mma-kadir/photo.glb')), offsets: COACH_STANCES['mma-kadir'] },
   { id: 'mma-amara', rig: new CoachRig(loadSkeleton('femme', 'coaches/mma-amara/photo.glb')), offsets: COACH_STANCES['mma-amara'] },
+  // 1.11: same Rocketbox bodies with a grafted face (face bones moved to the donor's face), their own guards
+  { id: 'nael', rig: new CoachRig(loadSkeleton('homme', 'coaches/nael/photo.glb')), offsets: COACH_STANCES.nael },
+  { id: 'inaya', rig: new CoachRig(loadSkeleton('femme', 'coaches/inaya/photo.glb')), offsets: COACH_STANCES.inaya },
 ];
 
 describe('coachs photo-réalistes (Rocketbox)', () => {

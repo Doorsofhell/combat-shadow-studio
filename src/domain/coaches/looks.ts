@@ -64,4 +64,30 @@ export const COACH_LOOKS: Record<string, FighterLook> = {
     };
     l.gear = { ...l.gear, hands: 'gants-mma', handsPaint: paint('#16171a', '#d4af37') };
   }),
+  // 1.11 Naël « Le Faucon » (Rocketbox face Male_Adult_07): fair skin, short light brown hair; outfits in blue
+  nael: look('homme', (l) => {
+    l.skin = '#d9b39a';
+    l.eyes = '#5b6f86';
+    l.hair = { style: 'court', color: '#5a3e2b', length: 0.1, meches: 0.8, flow: 0.2 };
+    l.beard = { style: 'aucune', color: '#5a3e2b' };
+    l.bodyHair = 0.2;
+    l.outfit = { ...l.outfit, bottom: 'short-mma-court', bottomPaint: paint('#1d4e89', '#f4f4f5', 'bande'), top: 'aucun', shoes: 'pieds-nus' };
+    l.gear = { ...l.gear, hands: 'gants-mma', handsPaint: paint('#16171a', '#1d4e89') };
+  }),
+  // Inaya « La Panthère » (Rocketbox face Female_Adult_01): fair skin, blond ponytail; outfits in plum and orange
+  inaya: look('femme', (l) => {
+    l.skin = '#e8c6ad';
+    l.eyes = '#4b6a80';
+    l.hair = { style: 'tresses', color: '#cfae74', length: 0.5, meches: 0.6, flow: 0.2 };
+    l.beard = { style: 'aucune', color: '#cfae74' };
+    l.outfit = {
+      ...l.outfit,
+      bottom: 'short-mma-court',
+      bottomPaint: paint('#5b2a6e', '#e36414', 'bande'),
+      top: 'brassiere',
+      topPaint: paint('#5b2a6e'),
+      shoes: 'pieds-nus',
+    };
+    l.gear = { ...l.gear, hands: 'gants-mma', handsPaint: paint('#16171a', '#e36414') };
+  }),
 };

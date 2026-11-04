@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.11.0',
+      releaseDate: '2026-11-03',
+      title: 'Deux nouveaux coachs : Naël et Inaya',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Naël « Le Faucon », contreur rapide toujours en mouvement, et Inaya « La Panthère », explosive et redoutable des jambes, rejoignent Kadir, Axel, Amara et Kaila : six coachs au choix.' },
+        { category: 'coachs', text: 'Leurs tenues ont leurs propres couleurs : bleu roi, blanc et émeraude pour Naël, prune et orange pour Inaya, judogi bleu pour les deux.' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.10.1',
       releaseDate: '2026-11-03',
       title: 'Mises à jour plus rapides',

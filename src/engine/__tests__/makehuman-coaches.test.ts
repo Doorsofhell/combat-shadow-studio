@@ -74,8 +74,9 @@ describe('coachs MakeHuman : Axel et Kaila', () => {
     }
   });
 
-  test('catalogue : quatre coachs, choix gardé par type de corps, tenue propre à chaque discipline', () => {
-    expect(ALL_COACHES.map((c) => c.id)).toEqual(['mma-kadir', 'axel', 'mma-amara', 'kaila']);
+  test('catalogue : six coachs, choix gardé par type de corps, tenue propre à chaque discipline', () => {
+    // 1.11: Naël and Inaya added after the coaches of their body type (Youssef: « ne remplace pas les autres »)
+    expect(ALL_COACHES.map((c) => c.id)).toEqual(['mma-kadir', 'axel', 'nael', 'mma-amara', 'kaila', 'inaya']);
     expect(championFor('homme', 'axel').id).toBe('axel');
     expect(championFor('femme', 'kaila').id).toBe('kaila');
     // a choice that does not match the body type falls back to Kadir or Amara; no choice: Kadir or Amara as before

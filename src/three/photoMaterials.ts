@@ -87,6 +87,10 @@ export const SKIN_LOOK: Record<string, SkinLook> = {
   'mma-amara': { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, wrap: 0.45, shadowLift: 0.34 },
   axel: { ...DEFAULT_SKIN, relief: 1.5, pores: 0.06, wrap: 0.5, shadowLift: 0.3 },
   kaila: { ...DEFAULT_SKIN, relief: 1.35, pores: 0.05, wrap: 0.55, shadowLift: 0.32, tint: [1, 0.52, 0.38] },
+  // 1.11 Naël and Inaya: Rocketbox photo skins like Kadir and Amara (same relief maps); lighter skins, the
+  // scattering a little warmer as on Kaila
+  nael: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, wrap: 0.5, shadowLift: 0.34, tint: [1, 0.55, 0.42] },
+  inaya: { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, wrap: 0.55, shadowLift: 0.32, tint: [1, 0.52, 0.38] },
 };
 
 export function skinLookFor(url: string): SkinLook {

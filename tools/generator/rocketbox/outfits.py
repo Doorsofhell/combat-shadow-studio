@@ -1802,7 +1802,14 @@ def hide_hands():
 C = {
     'homme': dict(boxe=('#B3122A', '#D4AF37'), kick=('#16181D', '#B3122A'), thai=('#C8102E', '#F4F4F5'), mma=('#3A3D43', '#1A1B1F'), gi='#1E2A44', judo='#F7F6F2', belt='#121212', glove='#B3122A', glove2='#16181D', rash='#1F2937'),
     'femme': dict(boxe=('#16181D', '#D4AF37'), kick=('#B3122A', '#16181D'), thai=('#1D2B57', '#D4AF37'), mma=('#141519', '#202126'), gi='#F2F0EA', judo='#F7F6F2', belt='#121212', glove='#16181D', glove2='#B3122A', rash='#B3122A'),
-}[sex]
+    # 1.11 (Youssef 2026-11-03: « colore leurs vêtements différemment des autres »): Naël in royal blue, white and
+    # emerald, Inaya in plum and orange; the gi colours stay those the rules allow (judo white or blue, BJJ white,
+    # blue or black): blue judogi for both (the four others wear white), black BJJ gi for Naël, blue for Inaya.
+    # No white tight kick-boxing shorts: on white, a spot of thigh skin showed through at the front in the guard
+    # (hidden by the dark shorts of the others), so Naël's white is on the loose boxing shorts
+    'nael': dict(boxe=('#F4F4F5', '#1D4E89'), kick=('#1D4E89', '#F4F4F5'), thai=('#0F6B57', '#D4AF37'), mma=('#24344D', '#101521'), gi='#17181C', judo='#1B3F8B', belt='#121212', glove='#1D4E89', glove2='#F4F4F5', rash='#1D4E89', praj='#F4F4F5', mmag=('#1D4E89', '#F4F4F5', '#F4F4F5')),
+    'inaya': dict(boxe=('#5B2A6E', '#E36414'), kick=('#E36414', '#16181D'), thai=('#F4F4F5', '#5B2A6E'), mma=('#3A1730', '#241020'), gi='#1B3F8B', judo='#1B3F8B', belt='#121212', glove='#5B2A6E', glove2='#E36414', rash='#5B2A6E', praj='#E36414', mmag=('#5B2A6E', '#E36414', '#E36414')),
+}[os.environ.get('PALETTE') or sex]
 
 
 def outfit(name):
@@ -1835,7 +1842,7 @@ def outfit(name):
             add(bra_v2(C['thai'][0], C['thai'][1]))
         for s in ('Left', 'Right'):
             parts.extend(boxing_glove_v2(s, C['glove'], C['thai'][1], thai=True))
-            parts.extend(prajioud_v2(s, '#B3122A' if female else '#D4AF37'))
+            parts.extend(prajioud_v2(s, C.get('praj', '#B3122A' if female else '#D4AF37')))
         hide |= hide_hands()
     elif name == 'mma':
         # 1.9 (Youssef's references, 2026-10-29): vale-tudo short to mid-thigh (charcoal for him, black for her),
@@ -1844,7 +1851,10 @@ def outfit(name):
         if female:
             # geom: the racer back cut by planes on Amara too (her weight cut left a torn edge on the back)
             add(bra_v2(C['mma'][0]))
-        add(mma_gloves('#16181D', '#E9E9E6', '#E9E9E6') if not female else mma_gloves('#16181D', '#2B2D33'))
+        if 'mmag' in C:
+            add(mma_gloves(*C['mmag']))
+        else:
+            add(mma_gloves('#16181D', '#E9E9E6', '#E9E9E6') if not female else mma_gloves('#16181D', '#2B2D33'))
     elif name == 'bjj-nogi':
         add(top('rash-long', C['rash']))
         add(pants('#16181D', 'nogi', legging=True) if female else shorts('compression', '#16181D', '#B3122A'))
@@ -1953,6 +1963,43 @@ def neck_tie(color):
 HQ = 1000
 
 
+def _file_positions():
+    """1.11: the body points exactly as the shipped file stores them (float32, glTF axes). The app rounds those
+    values; Blender's import scales them (cm -> m) in float32 and a point at x.5 mm could land on the other side of
+    the half (Naël, kick-boxing: one skin point left drawn, its triangles pierced the short as a patch on the thigh)"""
+    raw = open(src, 'rb').read()
+    jl = struct.unpack('<I', raw[12:16])[0]
+    J = json.loads(raw[20:20 + jl])
+    b0 = 20 + jl + 8
+    pts = []
+    for m in J['meshes']:
+        for pr in m['primitives']:
+            a = J['accessors'][pr['attributes']['POSITION']]
+            v = J['bufferViews'][a['bufferView']]
+            off = b0 + v.get('byteOffset', 0) + a.get('byteOffset', 0)
+            pts.append(np.frombuffer(raw, dtype='<f4', count=a['count'] * 3, offset=off).reshape(-1, 3))
+    F = np.concatenate(pts)
+    kd = KDTree(len(F))
+    for k, f in enumerate(F):
+        kd.insert(Vector((float(f[0]), float(-f[2]), float(f[1]))), k)
+    kd.balance()
+    return F, kd
+
+
+_FP = []
+
+
+def file_key(c):
+    """key of a body point as the app computes it: Math.round(value * scale), on the file's own float32 value"""
+    if not _FP:
+        _FP.append(_file_positions())
+    F, kd = _FP[0]
+    _, k, d = kd.find(c)
+    f = F[k] if d < 1e-5 else np.array((c.x, c.z, -c.y), dtype=np.float32)
+    # Math.round: halves go up (Python's round() sends them to the even number)
+    return tuple(math.floor(float(x) * HQ + 0.5) for x in f)
+
+
 def export(name, parts, hide):
     for o in parts:
         # every garment is skinned to the coach's skeleton
@@ -1968,8 +2015,7 @@ def export(name, parts, hide):
     # body vertices drawn no more under this outfit, in glTF axes, millimetres
     q = bytearray()
     for i in sorted(hide):
-        c = P[i]  # the shipped body is in metres, at rest, in the world (glTF: x, z, -y)
-        q += struct.pack('<hhh', round(c.x * HQ), round(c.z * HQ), round(-c.y * HQ))
+        q += struct.pack('<hhh', *file_key(P[i]))
     parts[0]['hideBody'] = base64.b64encode(bytes(q)).decode()
     parts[0]['hideScale'] = HQ
     parts[0]['outfit'] = name

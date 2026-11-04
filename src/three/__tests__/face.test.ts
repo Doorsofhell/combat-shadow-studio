@@ -13,6 +13,8 @@ const COACHES = [
   ['mma-amara', 'femme'],
   ['axel', 'homme'],
   ['kaila', 'femme'],
+  ['nael', 'homme'],
+  ['inaya', 'femme'],
 ] as const;
 
 function bone(root: Object3D, name: string) {

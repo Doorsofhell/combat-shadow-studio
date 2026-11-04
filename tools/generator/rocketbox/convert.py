@@ -2,13 +2,28 @@
 import bpy, sys, os
 src, out, texdir = sys.argv[1:4]
 maxsize = int(sys.argv[4]) if len(sys.argv) > 4 else 2048
-bpy.ops.wm.read_factory_settings(use_empty=True)
-bpy.ops.import_scene.fbx(filepath=src)
+if src.endswith('.blend'):
+    # 1.11: a coach made by face_transfer.py (donor face grafted on the sports body), already imported
+    bpy.ops.wm.open_mainfile(filepath=src)
+else:
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.import_scene.fbx(filepath=src)
 for o in list(bpy.data.objects):
     if o.type not in ('MESH', 'ARMATURE'):
         bpy.data.objects.remove(o)
 arm = [o for o in bpy.data.objects if o.type == 'ARMATURE'][0]
 mesh = [o for o in bpy.data.objects if o.type == 'MESH'][0]
+# the facial FBX (Sports_*_01_facial) carries 175 expression shape keys: the app does not use them and the
+# modifiers below cannot be applied with them, so only the basis is kept (same rest shape)
+if mesh.data.shape_keys:
+    for kb in list(mesh.data.shape_keys.key_blocks)[1:]:
+        mesh.shape_key_remove(kb)
+    mesh.shape_key_remove(mesh.data.shape_keys.key_blocks[0])
+# material slots with no face left (the donor's head and body after face_transfer.py) are dropped
+used = {p.material_index for p in mesh.data.polygons}
+for i in reversed(range(len(mesh.data.materials))):
+    if i not in used:
+        mesh.data.materials.pop(index=i)
 M = {'Pelvis': 'Hips', 'Spine': 'Spine', 'Spine1': 'Spine1', 'Spine2': 'Spine2', 'Neck': 'Neck', 'Head': 'Head',
      'REye': 'RightEye', 'LEye': 'LeftEye'}
 for s, S in (('L', 'Left'), ('R', 'Right')):

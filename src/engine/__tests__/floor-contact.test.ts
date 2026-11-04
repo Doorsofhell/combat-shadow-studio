@@ -20,7 +20,7 @@ import { styleOf } from '../audit';
  */
 const DOC = resolve(__dirname, '../../../docs/audit-biomecanique/MESURES_SOL.md');
 const PRESS = 0.03;
-const COACHES = ['mma-kadir', 'mma-amara', 'axel', 'kaila'] as const;
+const COACHES = ['mma-kadir', 'mma-amara', 'axel', 'kaila', 'nael', 'inaya'] as const;
 
 interface Worst {
   part: string;
