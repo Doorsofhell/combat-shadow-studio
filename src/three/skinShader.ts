@@ -28,6 +28,14 @@ export interface SkinLook {
   tintVar: number;
   /** scattering colour (per channel factor of the wrap, red first) */
   tint: [number, number, number];
+  /**
+   * 1.17 colour grade of the albedo (Youssef 04/11 13:52 « peux-tu la bronzer un tout petit peu ? », Inaya):
+   * sat = saturation around the luminance (1 = as painted), gain = brightness of the albedo, warm = shift towards
+   * red-orange (0 = none). Left out, nothing changes.
+   */
+  sat?: number;
+  gain?: number;
+  warm?: number;
 }
 
 export const DEFAULT_SKIN: SkinLook = { relief: 1.3, wrap: 0.5, shadowLift: 0.32, pores: 0.05, roughVar: 0.12, tintVar: 0.05, tint: [1, 0.5, 0.36] };
@@ -39,6 +47,12 @@ uniform float cssShadowLiftK;
 uniform float cssPores;
 uniform float cssRoughVar;
 uniform float cssTintVar;
+uniform vec3 cssGrade;
+vec3 cssGradeRgb(vec3 c) {
+  float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+  c = mix(vec3(l), c, cssGrade.x) * cssGrade.y;
+  return c * (1.0 + cssGrade.z * vec3(0.6, 0.05, -0.45));
+}
 float cssHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float cssNoise(vec2 p) {
   vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
@@ -71,6 +85,7 @@ export function applySkinShader(m: Material, look: SkinLook, detail: boolean) {
     cssPores: { value: detail ? look.pores : 0 },
     cssRoughVar: { value: look.roughVar },
     cssTintVar: { value: look.tintVar },
+    cssGrade: { value: new Vector3(look.sat ?? 1, look.gain ?? 1, look.warm ?? 0) },
   };
   m.userData.cssSkin = uniforms;
   m.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
@@ -80,6 +95,7 @@ export function applySkinShader(m: Material, look: SkinLook, detail: boolean) {
     f = f.replace(
       '#include <map_fragment>',
       `#include <map_fragment>
+  diffuseColor.rgb = cssGradeRgb(diffuseColor.rgb);
 #ifdef USE_MAP
   // tint: slow variations (blotches a few centimetres wide), warmer or cooler
   float cssT = cssNoise(vMapUv * 38.0) * 0.65 + cssNoise(vMapUv * 97.0) * 0.35;

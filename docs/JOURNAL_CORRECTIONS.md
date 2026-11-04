@@ -2493,3 +2493,21 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet : NON EXÉCUTÉ.
   - Téléphone Android réel : NON EXÉCUTÉ.
 - **Validation** : validée d'avance par Youssef (14:19). Le bronzage d'Inaya (PR #52) n'est pas inclus et attend son « je valide ».
+## 2026-11-04 · v1.17.0 · Inaya légèrement bronzée
+
+- **Demande** : Youssef, 04/11 13:52, « peux-tu la bronzer un tout petit peu ? », puis 13:53 « non juste bronzage » (la demande « plus pulpeuse » est abandonnée).
+- **Constat** : la peau d'Inaya vient de la texture photo de Sports_Female_01 (Rocketbox), très claire et rosée ; rien dans le shader de la peau ne permettait de régler sa teinte par coach.
+- **Correction** :
+  - `src/three/skinShader.ts` : nouveau réglage facultatif de la couleur de la peau par coach (`sat` saturation, `gain` luminosité, `warm` glissement vers l'orangé), appliqué à la couleur de la texture avant l'éclairage. Sans réglage, rien ne change.
+  - `src/three/photoMaterials.ts` : Inaya `sat: 1.12, gain: 0.8, warm: 0.12`. Trois niveaux ont été comparés en capture ; celui-ci donne un hâle doré léger. Mesure sur le ventre, lumière de l'appli : bleu 92,7 → 72,6, vert 126,5 → 110,6, rouge 193,6 → 187,1 (sur 255).
+  - Les cheveux (dont la nuque peinte) et les tenues ont d'autres matières : inchangés. Les autres coachs : inchangés.
+- **Fichiers** : `src/three/skinShader.ts`, `src/three/photoMaterials.ts`, `src/domain/releases.ts`, `package.json`.
+- **Captures** : `docs/v1170/captures/inaya-bronzage-avant-apres.jpg` (avant / après, lumière vive puis lumière de l'appli). Ordinateur, rendu logiciel, **pas sur téléphone Android**.
+- **Tests** :
+  - nouveau `src/three/__tests__/bronzage-inaya-v1170.test.ts` : réglage d'Inaya modeste, autres coachs sans réglage, réglage transmis au shader.
+  - TypeScript (`npx tsc -b`) : TEST RÉUSSI.
+  - Vitest complet : 1048 RÉUSSIS, 1 ignoré (déjà ignoré avant).
+  - Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS.
+  - Playwright complet : NON EXÉCUTÉ.
+  - Téléphone Android réel : NON EXÉCUTÉ.
+- **Validation** : « je valide » de Youssef le 04/11 à 14:54 ; publiée en 1.17.0 (numérotée 1.16.0 au départ, la 1.16.0 étant passée avant).
