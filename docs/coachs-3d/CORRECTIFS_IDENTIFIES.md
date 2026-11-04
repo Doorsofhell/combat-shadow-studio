@@ -13,9 +13,9 @@ Légende du statut : À FAIRE · EN COURS · FAIT · ABANDONNÉ (avec la raison)
 
 | # | Correctif | Défaut corrigé (constat vérifié) | Fichiers | Coût estimé | Statut |
 |---|---|---|---|---|---|
-| 1 | Tonemapping « Neutral » à la place d'ACES (à valider en A/B) | ACES par défaut de React Three Fiber : il ternit et décale les teintes de peau | `src/three/CoachStage.tsx` | 0,5 j | À FAIRE |
+| 1 | Tonemapping « Neutral » à la place d'ACES (à valider en A/B) | ACES par défaut de React Three Fiber : il ternit et décale les teintes de peau | `src/three/CoachStage.tsx` | 0,5 j | **ABANDONNÉ** (04/11) : essayé puis retiré. Mesuré sur Inaya et Kadir (Lab, lumières app et vive) : écart de luminance moyenne < 1 %, saturation 0,514 contre 0,512, 7 pixels sur 187 000 différant de plus de 15/255. Avec l'exposition qui garde la même luminosité, Neutral et ACES donnent la même image sur ces scènes sans hautes lumières : aucun gain visible |
 | 2 | Occlusion ambiante cuite dans les plis anatomiques (couleurs de sommet), dans les deux qualités | Pas d'ombres en mode Auto sur téléphone (`CoachStage.tsx` l. 317), aucune AO : corps à plat | `tools/generator/rocketbox/`, `src/three/photoMaterials.ts` | 1 j | À FAIRE |
-| 3 | Normales soudées entre corps et tête (nuque) | Corps et tête sont deux maillages : ligne d'ombrage à la nuque | `tools/generator/rocketbox/`, `public/coaches/*/photo.glb` | 0,5 j | À FAIRE |
+| 3 | Normales soudées entre corps et tête (nuque) | Corps et tête sont deux maillages : ligne d'ombrage à la nuque | `tools/generator/rocketbox/`, `public/coaches/*/photo.glb` | 0,5 j | **ABANDONNÉ** (04/11) : constat erroné. Vérifié dans les GLB : les normales du corps et de la tête sont déjà identiques à la nuque (0,0° d'écart sur 136 points pour Inaya, 56 pour Kadir). Les seules normales cassées restantes sont au bout des doigts (Amara, Inaya) et, chez Amara seule, au bord du maillot sculpté : traitées par le n° 4 |
 | 4 | Retrait du maillot sculpté dans le corps (Inaya, puis Amara : même corps Sports_Female_01) | Effet « emboîté » du buste : la 1.15 a lissé les pièces du maillot, sans les retirer | `tools/generator/rocketbox/flatten_halter.py` (remplacé), `extra_textures.py`, `outfits.py`, `morph_apply.py` | 2-3 j | À FAIRE |
 | 5 | Os de torsion (bras, avant-bras, cuisse) et lissage des poids | Toute la pronation se concentre dans quelques rangées de peau (`rig.ts` l. 681-686 : 55 % sur l'avant-bras, 100 % sur la main) | `tools/generator/rocketbox/convert.py`, `src/engine/rig.ts` | 2-3 j | À FAIRE |
 | 6 | Correctifs automatiques pilotés par les angles (épaule, coude, hanche, genou), corps et tenues | Plis de 102 à 135° et triangles écrasés à 2 % de leur aire à l'aine et au genou (`docs/v1100/MESURES_DEFORMATIONS.md`) | Blender (nouveau script), module après `CoachRig.apply`, `deformation-v1100.test.ts` | 3-4 j | À FAIRE |
@@ -31,3 +31,4 @@ multicouches, amélioration de l'étirement CPU de CME (à remplacer par le n° 
 ## Historique des mises à jour
 
 - 2026-11-04 : liste créée (11 correctifs, tous À FAIRE).
+- 2026-11-04 : n° 1 et n° 3 vérifiés puis abandonnés (pas de gain mesurable, défaut absent). Suite : n° 2.
