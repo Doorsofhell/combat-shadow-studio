@@ -2425,3 +2425,34 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet : NON EXÉCUTÉ.
   - Téléphone Android réel : NON EXÉCUTÉ.
 - **Validation** : en attente du « je valide » de Youssef (aucune fusion ni publication avant).
+
+## 2026-11-04 · v1.15.0 · Buste d'Inaya : plus d'effet « emboîté » ni de traces
+
+- **Demande** (Youssef, 04/11 12:07) : « Il faut absolument que tu me corriges Inaya, son haut du corps. On dirait qu'il est emboîté. Il y a des traces. Vérifie, contrôle, trouve le moyen de corriger. »
+- **Constat après vérification** (captures du Lab avec et sans tenue, face, 3/4, dos, garde, frappe ; outil `__labPick` pour savoir quel maillage et quel point de texture sont dessinés à un endroit) :
+  - **Le bikini du corps d'origine est sculpté dans le corps.** Le corps de sport Rocketbox d'Inaya porte un haut de maillot (deux bonnets, une bande dans le dos, une bretelle autour du cou, deux petits nœuds). Ce n'est pas une peinture : ce sont 8 morceaux de la surface du corps (2 355 points), soudés à la peau par leurs bords. Repeint couleur peau en 1.12, il restait visible par sa **forme** (bords en relief jusqu'à 4,8 mm, bretelle qui se détache du cou) et par sa **couleur** : une seule teinte de peau posée sur tout le maillot traçait un contour le long de chaque bord. Au-dessus du crop top, on voyait donc les lignes de l'ancien maillot sur la poitrine, le cou et le dos, d'où l'impression d'un buste rapporté.
+  - **La peau autour garde l'ombre de l'ancien maillot**, photographiée dans la texture d'origine : une ligne le long de la bande du dos et autour de la base du cou.
+  - **Nuque** : le « I » clair et la zone claire sous le chignon sont des morceaux du **visage donneur** (l'arête du nez, le dessous du nez et les lèvres) que l'atlas de texture du visage place sur les bords où ses deux moitiés se rejoignent derrière la tête (texture u < 0,1 et u > 0,9, v 0,32 à 0,53 ; sur le modèle, nuque de 1,50 à 1,56 m). Les cheveux au-dessus étaient un assemblage de morceaux (chevron clair, étoile sombre au centre).
+- **Correction** :
+  - `tools/generator/rocketbox/flatten_halter.py` (nouveau) : les morceaux du maillot et 5 rangées de peau autour sont lissés (méthode de Taubin : pas de rétrécissement, la poitrine garde son volume), les points de même position (corps et tête) bougent ensemble, normales recalculées. Les poids de la peau ne changent pas (vérifié : ceux du maillot suivent déjà la peau voisine). Relief local maximal des points du maillot : 4,8 mm → 1,9 mm.
+  - La peau autour des épaules (à moins de 15 cm des articulations des bras) n'est pas lissée : le premier essai, qui la lissait, rendait le pli des aisselles plus marqué en garde (`deformation-v1100.test.ts` : 26,8° contre 25,9° permis). Les points du maillot eux-mêmes restent lissés.
+  - `tools/generator/rocketbox/extra_textures.py` : le maillot et 2 rangées de peau autour (sur le corps et sur la tête) sont repeints avec la couleur de la peau qui les entoure, diffusée sur le maillage depuis leurs bords ; même chose pour la carte de relief (normal map). Plus de contour ni d'ombre de bretelle.
+  - Nuque : les mèches entre le chignon et la naissance des cheveux (1,535 m) sont redessinées d'un seul tenant (mêmes mèches que le chignon, teinte de ses cheveux, en miroir pour que les deux moitiés se rejoignent), et la peau sous la naissance est floutée (plus de traits du visage) et ramenée à la teinte du cou.
+  - Les 7 tenues d'Inaya sont régénérées sur le corps corrigé (les tenues masquent la peau par position de ses points) : 0 clé manquante sur les 7.
+  - `src/ui/Lab.tsx` : `__labPick` donne aussi le numéro du triangle.
+- **Fichiers** : `public/coaches/inaya/photo.glb`, `public/coaches/inaya/tenues/*.glb`, `tools/generator/rocketbox/{flatten_halter,extra_textures}.py`, `src/test/glbRead.ts`, `src/ui/Lab.tsx`, `src/domain/releases.ts`, `package.json`.
+- **Limites** :
+  - sans tenue, de dos, une ligne fine reste à l'emplacement de la bande du maillot : à cet endroit la surface fait un pli (elle rentre puis ressort de 3 mm sur 8 mm) que le lissage n'efface pas. Avec les tenues de boxe, kick-boxing, muay-thaï et MMA, cette zone est sous le crop top ; en JJB et judo, sous le kimono ou le rashguard. Une relaxation plus forte (essayée) creusait le dos de plusieurs centimètres : abandonnée ;
+  - un trait très fin reste à la base du cou, de dos (même pli, sur la bretelle autour du cou) ;
+  - sur la poitrine en garde, quelques tirets sombres d'un pixel, déjà présents en 1.14 : le maillage est fermé à cet endroit (vérifié, aucune fente), probablement l'ombre portée ; non corrigé ;
+  - la mesure des angles entre triangles voisins du maillot donne plus d'arêtes vives après lissage (59 au-dessus de 90° contre 11) : ce sont de petits triangles très étirés du maillot d'origine, sans effet visible sur les captures, où le contour est nettement moins marqué.
+- **Captures** : `docs/v1150/captures/inaya-buste-tenue.jpg` (garde, 3/4, dos en MMA) et `inaya-buste-sans-tenue.jpg` (face, dos, nuque). Ordinateur, rendu logiciel, **pas sur téléphone Android**.
+- **Tests** :
+  - nouveau `src/three/__tests__/buste-inaya-v1150.test.ts` : relief local des points de l'ancien maillot sous 2,5 mm. Il **échoue sur le modèle 1.14** (4,74 mm), il réussit sur la 1.15 (vérifié dans les deux sens).
+  - `deformation-v1100.test.ts` (plis aux articulations en garde, par rapport à la 1.11) : ÉCHOUÉ au premier essai (aisselles d'Inaya, voir ci-dessus), puis RÉUSSI après la correction ; le test n'a pas été modifié.
+  - TypeScript (`npx tsc -b`) : TEST RÉUSSI.
+  - Vitest complet : 1045 RÉUSSIS, 1 ignoré (déjà ignoré avant).
+  - Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS.
+  - Playwright complet : NON EXÉCUTÉ.
+  - Téléphone Android réel : NON EXÉCUTÉ.
+- **Validation** : en attente du « je valide » de Youssef (aucune fusion ni publication avant).

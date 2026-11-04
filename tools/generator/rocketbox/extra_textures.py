@@ -79,7 +79,7 @@ def bleed(a, px=32, known=None):
     acc = a * known[..., None]
     r = 1
     while r <= px:
-        num = np.stack([blur(acc[..., c], r) for c in range(3)], -1)
+        num = np.stack([blur(acc[..., c], r) for c in range(a.shape[-1])], -1)
         den = blur(k, r)
         fill = (k < 0.5) & (den > 1e-3)
         out[fill] = num[fill] / den[fill][:, None]
@@ -119,6 +119,137 @@ def upper_mask(shape, above, v_min=0.0, v_max=1.0):
     return np.asarray(im, dtype=np.float32) / 255
 
 
+def halter_skin(body, head):
+    """the body texture with the bikini's UV islands painted with the colour of the skin around them, and their mask"""
+    import json, struct
+    from collections import defaultdict
+    path = os.environ.get('HEAD_UV_GLB', os.path.join(os.path.dirname(__file__), '../../../public/coaches/inaya/photo.glb'))
+    raw = open(path, 'rb').read()
+    jl = struct.unpack('<I', raw[12:16])[0]
+    J = json.loads(raw[20:20 + jl])
+    b0 = 20 + jl + 8
+
+    def acc(i, dt, n):
+        a = J['accessors'][i]
+        v = J['bufferViews'][a['bufferView']]
+        return np.frombuffer(raw, dtype=dt, count=a['count'] * n, offset=b0 + v.get('byteOffset', 0) + a.get('byteOffset', 0)).reshape(-1, n)
+
+    def prim(key):
+        pr = next(p for m in J['meshes'] for p in m['primitives'] if J['materials'][p['material']]['name'].endswith(key))
+        ia = J['accessors'][pr['indices']]
+        return (acc(pr['attributes']['POSITION'], '<f4', 3), acc(pr['attributes']['TEXCOORD_0'], '<f4', 2),
+                acc(pr['indices'], '<u4' if ia['componentType'] == 5125 else '<u2', 1).reshape(-1, 3).astype(int))
+
+    Pb, Tb, Fb = prim('_body')
+    Ph, Th, Fh = prim('_head')
+    # the bikini pieces: body islands (connected by their indices) at the bottom middle of the texture, above the
+    # waist, and the small pieces welded to them (same rule as flatten_halter.py)
+    par = np.arange(len(Pb))
+
+    def f(x):
+        while par[x] != x:
+            par[x] = par[par[x]]
+            x = par[x]
+        return x
+
+    for a, b, c in Fb:
+        r = f(a)
+        par[f(b)] = r
+        par[f(c)] = r
+    lab = np.array([f(i) for i in range(len(Pb))])
+    comps = {c: np.where(lab == c)[0] for c in np.unique(lab)}
+    bik = {c for c, ix in comps.items() if Tb[ix, 1].min() > 0.78 and Pb[ix, 1].min() > 1.15}
+    key = lambda v: (round(float(v[0]), 4), round(float(v[1]), 4), round(float(v[2]), 4))
+    gid = {}
+    gb = np.array([gid.setdefault(key(v), len(gid)) for v in Pb])
+    gh = np.array([gid.setdefault(key(v), len(gid)) for v in Ph])
+    for c, ix in comps.items():
+        if c not in bik and len(ix) <= 60 and Pb[ix, 1].min() >= 1.15 and any(set(gb[ix]) & set(gb[comps[b]]) for b in bik):
+            bik.add(c)
+    inb = np.isin(lab, list(bik))
+    n = len(gid)
+    # colour of each point from the skin textures (slightly blurred); a point belongs to the bikini when no skin
+    # point lies at its place
+    sb, sh = blur(body, 3), blur(head, 3)
+
+    def sample(img, T):
+        H, W = img.shape[:2]
+        return img[np.clip((T[:, 1] * H).astype(int), 0, H - 1), np.clip((T[:, 0] * W).astype(int), 0, W - 1)]
+
+    col = np.zeros((n, body.shape[-1]))
+    cnt = np.zeros(n)
+    skinb = ~inb
+    np.add.at(col, gb[skinb], sample(sb, Tb[skinb]))
+    np.add.at(cnt, gb[skinb], 1)
+    np.add.at(col, gh, sample(sh, Th))
+    np.add.at(cnt, gh, 1)
+    known = cnt > 0
+    col[known] /= cnt[known][:, None]
+    nb = defaultdict(set)
+    for F, g in ((Fb, gb), (Fh, gh)):
+        G = g[F]
+        for a, b in ((0, 1), (1, 2), (2, 0)):
+            for x, y in zip(G[:, a], G[:, b]):
+                nb[x].add(y)
+                nb[y].add(x)
+    # the skin just around the bikini holds the photo's shadow of its edges (a dark line under the back band):
+    # two rings of body skin are repainted with it, from the skin beyond
+    region = set(gb[inb])
+    ring = set(region)
+    for _ in range(int(os.environ.get('HALTER_RINGS', '2'))):
+        ring = {y for x in ring for y in nb[x]} - region
+        region |= ring
+    # the head's skin welded to the neck strap holds its shadow too (a line round the base of the neck): its two
+    # rings are repainted the same way, on the head texture
+    free = sorted(region)
+    known = cnt > 0
+    known[free] = False
+    col[free] = col[known].mean(0)
+    nbl = {g: np.array(sorted(nb[g] - {g})) for g in free}
+    for _ in range(600):
+        new = {g: col[nbl[g]].mean(0) for g in free}
+        for g, c in new.items():
+            col[g] = c
+
+    def paint(img, T, F, g):
+        """the triangles of the region painted with the colours of their points (barycentric), a little skin grain,
+        a margin around them, and their mask"""
+        H, W = img.shape[:2]
+        out = img.copy()
+        mask = np.zeros((H, W), np.float32)
+        inr = np.isin(g, free)
+        for t in F[inr[F].all(1)]:
+            uv = T[t] * [W, H]
+            c = col[g[t]]
+            x0, y0 = np.floor(uv.min(0)).astype(int) - 1
+            x1, y1 = np.ceil(uv.max(0)).astype(int) + 1
+            x0, y0, x1, y1 = max(x0, 0), max(y0, 0), min(x1, W - 1), min(y1, H - 1)
+            if x1 < x0 or y1 < y0:
+                continue
+            yy, xx = np.mgrid[y0:y1 + 1, x0:x1 + 1]
+            p = np.stack([xx + 0.5, yy + 0.5], -1)
+            a, b, cc = uv
+            m = np.array([b - a, cc - a]).T
+            if abs(np.linalg.det(m)) < 1e-9:
+                continue
+            l = np.linalg.solve(m, (p - a).reshape(-1, 2).T).T.reshape(p.shape)
+            w = np.stack([1 - l[..., 0] - l[..., 1], l[..., 0], l[..., 1]], -1)
+            ins = (w >= -0.02).all(-1)
+            out[yy[ins], xx[ins]] = (w[ins] @ c).astype(np.float32)
+            mask[yy[ins], xx[ins]] = 1
+        grain = 1 + 0.035 * (blur(rng.random((H, W), dtype=np.float32), 1) - 0.5) * 4
+        out[..., :3] = out[..., :3] * np.where(mask[..., None] > 0, grain[..., None], 1)
+        # the margin around each island (sampled at the seams and by the mip levels) takes the same colours
+        out = bleed(np.where(mask[..., None] > 0, out, 0), px=16, known=mask)
+        grown = np.clip(blur((blur(mask, 3) > 0.01).astype(np.float32), 1.5) * 2, 0, 1)
+        return img * (1 - grown[..., None]) + out * grown[..., None], grown
+
+    nb_, gb_ = paint(body, Tb, Fb, gb)
+    nh_, gh_ = paint(head, Th, Fh, gh)
+    print('bikini repeint :', len(bik), 'pièces,', int(inb.sum()), 'points,', len(free), 'interpolés (corps et cou)')
+    return nb_, gb_, nh_, gh_
+
+
 name = os.path.basename(ftdir.rstrip('/'))
 head = load(os.path.join(ftdir, f'{name}_head_color.png'))
 body = load(os.path.join(ftdir, f'{name}_body_color.png'))
@@ -137,18 +268,17 @@ else:
     # is a part of the body mesh itself (its own UV island, bottom middle of the texture), its straps run up to the
     # neck, outside every 3D bra of the outfits. That island takes the chest's skin colour (its own folds kept, softer),
     # so a strap no longer shows; every outfit has its own 3D top over the chest
-    top = upper_mask(body.shape[:2], 1.1, v_min=0.78)
-    grown = np.clip(blur(top, 2) * 4, 0, 1)
-    up = upper_mask(body.shape[:2], 1.15, v_max=0.6)
-    chest = body[(up > 0.5) & (body.sum(-1) > 0.3)]
-    tone = np.median(chest, 0)
-    Lt = lum(body)
-    ref = float(np.median(Lt[top > 0.5])) if (top > 0.5).any() else 0.1
-    # only its broad shading: the flower print of the old fabric must not show through (blurred luminance)
-    Lt = blur(Lt, 6)
-    shade = np.clip(1 + 0.35 * (Lt - ref) / max(ref, 0.03), 0.85, 1.1)
-    skin = tone[None, None, :] * shade[..., None] * (1 + 0.03 * (rng.random(Lt.shape, dtype=np.float32) - 0.5))[..., None]
-    body = body * (1 - grown[..., None]) + skin * grown[..., None]
+    # 1.15 (Youssef 04/11 12:07 « on dirait qu'il est emboîté, il y a des traces »): one skin tone over the whole
+    # island still drew the bikini's outline, a step of colour along every edge (back band, straps, cups). The
+    # island now takes the colour of the skin around it: the colours at its edge (body and head skin welded to it)
+    # are spread over its points (harmonic interpolation on the mesh), then painted on its triangles
+    # the normal map too: flat over the island (1.12) it lit the old band as a light strip on the curved back; it now
+    # takes the relief of the skin around, interpolated the same way
+    nmb = np.asarray(Image.open(os.path.join(basetex, 'f021_body_normal.tga')).convert('RGB'), dtype=np.float32) / 255
+    nmh = np.asarray(Image.open(os.path.join(basetex, 'f021_head_normal.tga')).convert('RGB'), dtype=np.float32) / 255
+    both, grown, bothh, grownh = halter_skin(np.concatenate([body, nmb], -1), np.concatenate([head, nmh], -1))
+    body, halter_normal = both[..., :3], both[..., 3:]
+    head, halter_head_normal = bothh[..., :3], bothh[..., 3:]
     pink = pink * (1 - grown)
     body = fabric(body, pink, (0.055, 0.055, 0.06))
 
@@ -238,6 +368,41 @@ if who == 'inaya':
         band = head[r0:r1, :sx] if left else head[r0:r1, HW - sx:]
         src = (head[r0:r1, sx:2 * sx] if left else head[r0:r1, HW - 2 * sx:HW - sx])[:, ::-1].copy()
         band[:] = band * (1 - sk) + src * sk
+    # 1.15 (Youssef 04/11 12:07 « il y a des traces »; picked on the model: nape 1.50 to 1.56 m = head atlas edges,
+    # v 0.32 to 0.53): lower on the same edges the donor's atlas holds pieces of its face (the bridge of the nose, the
+    # philtrum and the lips). Under the hairline they drew a light « I » across the strands (v 0.37 to 0.44) and a
+    # light patch with faint features on the nape (v 0.445 to 0.54). The skin of the nape: its own colour blurred (no
+    # features left), brought to the tone of the neck's skin below it
+    r0, r1, sx = int(0.44 * HH), int(0.545 * HH), int(0.085 * HW)
+    neck = body[(grown > 0.5) & (v > 0.80) & (v < 0.83)]
+    for left in (True, False):
+        cols = slice(0, sx) if left else slice(HW - sx, HW)
+        zone = head[r0:r1, cols].copy()
+        soft = blur(zone, 30)
+        if len(neck):
+            soft = soft * (np.median(neck, 0) / np.maximum(np.median(soft.reshape(-1, 3), 0), 1e-3))
+        soft = soft * (1 + 0.03 * (blur(rng.random(soft.shape[:2], dtype=np.float32), 1) - 0.5) * 4)[..., None]
+        h_, w_ = zone.shape[:2]
+        fy = np.clip(np.minimum(np.arange(h_), h_ - 1 - np.arange(h_)) / (0.012 * HH), 0, 1)
+        xr = np.arange(w_) if not left else (w_ - 1 - np.arange(w_))
+        fx = np.clip(xr / (0.012 * HW), 0, 1)  # feathered on the inner side only (the seam side stays filled)
+        k = (fy[:, None] * fx[None, :])[..., None]
+        head[r0:r1, cols] = zone * (1 - k) + soft * k
+    # the strands of the nape (from the bun down to the hairline, 1.535 m) are redrawn as one piece: the donor's
+    # atlas there is a patchwork (a light chevron, a dark star where its pieces meet, the « I »). Same strands as the
+    # bun, tinted to her blonde, mirrored across the seam so both halves meet on the same strands; the hairline is
+    # faded over 1.5 cm
+    im = Image.new('L', (HW, HH), 0)
+    d = ImageDraw.Draw(im)
+    for t in I:
+        c = P[t].mean(0)
+        if c[2] < -0.05 and 1.52 < c[1] < 1.63 and abs(c[0]) < 0.075 and not (T[t, 0].mean() > 0.5 and T[t, 1].mean() > 0.62):
+            d.polygon([(float(T[k, 0] * HW), float(T[k, 1] * HH)) for k in t], fill=int(255 * np.clip((c[1] - 1.528) / 0.015, 0, 1)))
+    hairm = blur(np.asarray(im, dtype=np.float32) / 255, 3)
+    sym = raw_strands.copy()
+    sym[:, HW // 2:] = raw_strands[:, :HW - HW // 2][:, ::-1]
+    sym = sym * (0.95 * blond / np.maximum(sym[hairm > 0.5].mean(0), 1e-3)) if (hairm > 0.5).any() else sym
+    head = head * (1 - hairm[..., None]) + sym * hairm[..., None]
 head = bleed(head)
 body = bleed(body)
 save(head, f'{pre}_head_color.png')
@@ -250,8 +415,12 @@ if who == 'inaya':
     nm = Image.open(os.path.join(basetex, f'{pre}_body_normal.tga')).convert('RGB')
     g = np.asarray(Image.fromarray((grown * 255).astype(np.uint8)).resize(nm.size, Image.BILINEAR), dtype=np.float32)[..., None] / 255
     a = np.asarray(nm, dtype=np.float32)
-    a = a * (1 - g) + np.array([128, 128, 255], np.float32) * g
+    a = a * (1 - g) + halter_normal * 255 * g
     Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)).save(os.path.join(out, f'{pre}_body_normal.tga'))
+    a = np.asarray(Image.open(os.path.join(basetex, f'{pre}_head_normal.tga')).convert('RGB'), dtype=np.float32)
+    g = grownh[..., None]
+    a = a * (1 - g) + halter_head_normal * 255 * g
+    Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)).save(os.path.join(out, f'{pre}_head_normal.tga'))
 for p in glob.glob(os.path.join(donortex, '*_opacity_color.tga')):
     shutil.copy(p, os.path.join(out, 'Hair_opacity_color.tga'))  # face_transfer.py renames the material
 print('ok', who, out, sorted(os.listdir(out)))

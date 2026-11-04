@@ -240,6 +240,7 @@ function LabProbe({ rig }: { rig: MutableRefObject<CoachRig | null> }) {
         material: ((h.object as Mesh).material as Material | undefined)?.name,
         uv: h.uv ? [+h.uv.x.toFixed(4), +h.uv.y.toFixed(4)] : null,
         point: h.point.toArray().map((v) => +v.toFixed(3)),
+        face: h.faceIndex ?? null,
       }));
     };
   }, [camera, size, rig, scene]);

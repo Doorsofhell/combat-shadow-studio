@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.15.0',
+      releaseDate: '2026-11-04',
+      title: 'Buste d’Inaya corrigé',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Le haut du corps d’Inaya ne paraît plus emboîté : les contours et les traces de l’ancien maillot de bain sur sa poitrine, son cou et son dos ont disparu.' },
+        { category: 'corrections', text: 'Sa nuque, sous le chignon, n’a plus de taches claires ni de marques : ses cheveux y sont tirés d’un seul tenant.' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.14.0',
       releaseDate: '2026-11-04',
       title: 'Nouvelle tenue d’Inaya',

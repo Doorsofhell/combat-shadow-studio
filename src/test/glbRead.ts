@@ -25,6 +25,8 @@ export interface SkinnedPart {
   joints: string[][];
   weights: number[][];
   index: number[];
+  /** 1.15 texture coordinates of each point (empty when the part has none) */
+  uvs: number[][];
   /** weight of a bone at a point (0 when it does not influence it) */
   weightOf(i: number, bone: string): number;
 }
@@ -83,6 +85,7 @@ export function readGlb(path: string) {
         joints: J,
         weights: W,
         index,
+        uvs: p.attributes.TEXCOORD_0 !== undefined ? read(p.attributes.TEXCOORD_0) : [],
         weightOf: (i, bone) => J[i].reduce((s, j, k) => s + (j === bone ? W[i][k] : 0), 0),
       });
     }
