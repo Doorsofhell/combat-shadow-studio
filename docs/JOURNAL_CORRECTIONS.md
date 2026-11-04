@@ -2511,3 +2511,29 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet : NON EXÉCUTÉ.
   - Téléphone Android réel : NON EXÉCUTÉ.
 - **Validation** : « je valide » de Youssef le 04/11 à 14:54 ; publiée en 1.17.0 (numérotée 1.16.0 au départ, la 1.16.0 étant passée avant).
+## 2026-11-04 · v1.18.0 · Buste d'Inaya : maillot sculpté retiré (correctif n° 4)
+
+- **Demande** : Youssef, 04/11 16:07, « passe aux corrections avec un gain max les moins coûteuses » ; correctif n° 4 de `docs/coachs-3d/CORRECTIFS_IDENTIFIES.md`.
+- **Constat après vérification** (captures du Lab sans tenue, carte de relief et texture coupées) : le haut de maillot du corps Rocketbox Sports_Female_01 n'est pas peint, il est modelé dans la surface même du corps (8 morceaux : bonnets, bretelle autour du cou, bande du dos, nœuds). Le lissage de la 1.15 avait gardé sa forme : un cordon autour du cou, un bourrelet en travers du dos (3,7 mm de bosse), le contour des bonnets et de la sous-bande. Leurs bords sont repliés vers l'intérieur comme des ourlets (305 triangles tournés vers l'intérieur du torse), d'où des traits fins sur la peau.
+- **Méthode** : `tools/generator/rocketbox/fair_bikini.py` (nouveau), appliqué au `photo.glb` livré :
+  - le torse est lu comme un relief autour d'un axe vertical (axe du cou pour le cou). Les points de la bretelle, de la bande du dos et du contour des bonnets prennent le rayon d'une surface lisse (spline « plaque mince ») calée sur la peau voisine. Ils ne bougent que le long du rayon : la forme du torse est gardée, la forme du vêtement disparaît ;
+  - le centre des bonnets ne bouge pas : la poitrine garde son volume (point le plus avancé inchangé, 108,3 mm) ;
+  - les bords des morceaux sont recollés à la surface voisine, puis 412 triangles d'ourlet tournés vers l'intérieur sont retirés et 83 petites pointes sont ramenées à 1,5 mm de leurs voisins ;
+  - la peau à moins de 15 cm des épaules n'est pas touchée : avec 10 à 13 cm, le pli de l'aisselle en garde dépassait la limite du test des déformations (26,1° pour 25,9° permis). Le bout des bretelles près des épaules reste donc tel qu'en 1.17 ;
+  - mêmes points, mêmes coordonnées de texture, mêmes poids de peau ; les expressions du visage restent valides (visage inchangé). Déplacement moyen 3,6 mm, maximum 21 mm.
+  - `tools/generator/rocketbox/outfits.py` : les expressions (1.16) empêchaient de régénérer les tenues (Blender refuse d'appliquer un modificateur à un maillage qui a des clés de forme) ; elles sont retirées à l'import, les tenues n'en ont pas besoin. Les 7 tenues d'Inaya sont régénérées (elles masquent le corps par position).
+- **Amara** (même corps) : essayé, **non appliqué**. Son maillot est peint en noir dans la texture : sans sa forme, il devient un maillot peint déformé, avec un nœud abîmé entre les bonnets (`docs/v1180/captures/amara-essai-non-retenu.jpg`). Il faudrait d'abord repeindre sa peau à cet endroit, comme pour Inaya en 1.12 : choix laissé à Youssef.
+- **Fichiers** : `tools/generator/rocketbox/fair_bikini.py`, `tools/generator/rocketbox/outfits.py`, `public/coaches/inaya/photo.glb`, `public/coaches/inaya/tenues/*.glb`, `src/three/__tests__/buste-inaya-v1180.test.ts`, `src/domain/releases.ts`, `package.json`, `docs/coachs-3d/CORRECTIFS_IDENTIFIES.md`.
+- **Captures** : `docs/v1180/captures/inaya-buste-avant-apres.jpg` (face et dos, avant / après), `inaya-mouvements-sans-tenue.jpg` et `inaya-mouvements-tenue-mma.jpg` (direct, crochet arrière, garde ; avant en haut, après en bas). Ordinateur, rendu logiciel, **pas sur téléphone Android**.
+- **Limites** : un trait léger reste au bout de la bretelle près de l'épaule droite (zone non touchée) ; les petites marques sombres peintes sur le haut des épaules viennent de la texture, inchangées.
+- **Tests** :
+  - nouveau `src/three/__tests__/buste-inaya-v1180.test.ts` (3) : triangles tournés vers l'intérieur du torse 305 → 20 (limite 25 : 17 au bout des bretelles près des épaules, 3 dans le creux de la poitrine) ; bosse de la bande du dos 3,7 mm → sous 2 mm ; volume de la poitrine gardé. Vérifié : 2 des 3 tests ÉCHOUENT sur le modèle de la 1.17.
+  - `buste-inaya-v1150.test.ts` (relief local sous 2,5 mm) : TEST RÉUSSI, 1,84 mm, inchangé.
+  - `deformation-v1100.test.ts` : TEST RÉUSSI, inchangé (il a fait choisir la marge de 15 cm aux épaules).
+  - `expressions-v1160.test.ts` : TEST RÉUSSI.
+  - TypeScript (`npx tsc -b`) : TEST RÉUSSI.
+  - Vitest complet : 1077 RÉUSSIS, 1 ignoré (déjà ignoré avant).
+  - Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS.
+  - Playwright complet : NON EXÉCUTÉ.
+  - Téléphone Android réel : NON EXÉCUTÉ.
+- **Validation** : en attente du « je valide » de Youssef (PR sans fusion, rien publié).
