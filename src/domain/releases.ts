@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.12.0',
+      releaseDate: '2026-11-04',
+      title: 'Inaya plus nette au cou et aux cheveux',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Inaya : plus de lambeaux noirs ni de fentes claires au cou et aux épaules, son chignon est blond comme ses cheveux et les mèches raides qui en sortaient ont disparu.' },
+        { category: 'corrections', text: 'Naël et Inaya : les bords de leur peau ne bavent plus en noir quand on les voit de loin sur téléphone.' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.11.0',
       releaseDate: '2026-11-03',
       title: 'Deux nouveaux coachs : Naël et Inaya',

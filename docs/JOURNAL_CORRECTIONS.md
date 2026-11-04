@@ -2349,3 +2349,32 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet : NON EXÉCUTÉ.
   - Téléphone Android réel : NON EXÉCUTÉ.
 - **Validation** : en attente du « je valide » de Youssef (aucune fusion ni publication avant).
+
+## 2026-11-04 · v1.12.0 · Lot 1 des retours du 04/11 : cou et torse d'Inaya, finitions de Naël et Inaya
+
+- **Demande** (Youssef, 04/11 00:24, photo d'Inaya vue de dessus en tenue de kick-boxing) : « corriger la jonction cou, torse de Inaya … regarde aussi ce que tu peux corriger d'autres sur les 2 nouveaux coachs ».
+- **Constats après vérification** :
+  - le corps « Sports_Female_01 » porte un haut de bikini noir à bretelles nouées au cou. Ce haut fait partie de la surface du corps (son propre îlot de texture, en bas au milieu) et il n'y a pas de peau dessous. Ses bretelles passaient au-dessus des brassières : ce sont les lambeaux noirs de la photo ;
+  - ces bretelles se tiennent 6 à 40 mm au-dessus de la peau du cou, qui remonte les rejoindre. Vue de dessus ou de dos, l'œil voit dans ce pli, dont la paroi intérieure est tournée vers l'arrière et n'était pas dessinée : on voyait le fond (traits blancs, bleu foncé sur le téléphone). La couture tête/corps, elle, est exacte (132 points sur 132) ;
+  - la carte de relief gardait le bord des bretelles et les coutures des bonnets (reflets clairs) ; l'imprimé fleuri du tissu restait visible sous la peinture ;
+  - les textures cuites s'arrêtaient au bord de chaque îlot, noir au-delà : sur téléphone, les petits niveaux de texture mélangeaient ce noir à la peau le long des coutures (Naël et Inaya) ;
+  - le chignon vient du corps de sport, mais la texture de la tête vient du visage donneur : à cet endroit elle contient des morceaux sans rapport (bouts de visage, peau claire). Les mèches en cartes du donneur sortaient raides du chignon.
+- **Corrections** :
+  - `extra_textures.py` : l'îlot du haut de bikini prend la couleur de la peau de la poitrine (ombrage large gardé, imprimé effacé) et sa carte de relief devient plate ; marge de couleur autour de chaque îlot (`bleed`) ; le chignon et la nuque sous le chignon sont remplis avec les mèches blondes du donneur ;
+  - `tools/generator/rocketbox/both_sides.py` (nouveau) + `photoMaterials.ts` : la peau du corps d'Inaya est dessinée des deux côtés (`bothSides` dans le fichier), ce qui ferme les fentes ;
+  - mèches en cartes retirées pour Inaya (`NO_HAIR_CARDS=1`), comme pour Naël ;
+  - Inaya reconstruite et ses 7 tenues régénérées : aucun point de peau cachée manquant.
+- **Méthodes essayées et abandonnées** (le défaut revenait ou empirait) : recoller le bord des bretelles sur la peau (150 à 280 triangles retournés), poser toute la bretelle sur la peau du cou (453 triangles retournés), supprimer les bretelles au-dessus de la peau du cou (vrais trous), doubler les triangles à l'envers (sans effet, le défaut n'était pas là).
+- **Reste à corriger (non résolu)** :
+  - les brassières de boxe et de kick-boxing restent déchirées au cou : elles sont copiées sur deux couches (les bretelles du bikini et la peau du cou dessous), qui se croisent. Amara a le même défaut, masqué par son haut noir ;
+  - un petit carré plus clair reste à la base du chignon ;
+  - le contour des anciennes bretelles se devine encore légèrement sur la peau.
+- **Fichiers** : `tools/generator/rocketbox/{extra_textures,both_sides}.py`, `src/three/photoMaterials.ts`, `public/coaches/{inaya,nael}/`, `src/domain/releases.ts`, `package.json`.
+- **Captures** : `docs/v1120/captures/inaya-cou-avant-apres.jpg` (ordinateur, rendu logiciel, **pas sur téléphone Android**).
+- **Tests** :
+  - TypeScript (`npx tsc -b`) : TEST RÉUSSI.
+  - Vitest complet : 1037 RÉUSSIS, 1 ignoré (déjà ignoré avant).
+  - Playwright ciblé (`coachs-v160`) : 4 RÉUSSIS.
+  - Playwright complet : NON EXÉCUTÉ.
+  - Téléphone Android réel : NON EXÉCUTÉ.
+- **Validation** : en attente du « je valide » de Youssef (aucune fusion ni publication avant).
