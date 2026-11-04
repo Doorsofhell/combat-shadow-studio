@@ -1,6 +1,7 @@
 import { championById, championFor, championLook, championStance } from '../domain/coaches/catalog';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
+import { Raycaster, Vector2, type Material, type Mesh } from 'three';
 import { CoachModel } from '../three/CoachModel';
 import { outfitFor, type OutfitId, type OutfitStatus } from '../three/outfit';
 import { StudioStage } from '../three/StudioStage';
@@ -218,7 +219,7 @@ export function Lab() {
 /** 1.3.2 window.__labJoints(names): where bones of the coach fall on the canvas (CSS pixels), for the marks drawn on
  * the illustrations (scripts/visuels: zones to protect, joints, muscles) */
 function LabProbe({ rig }: { rig: MutableRefObject<CoachRig | null> }) {
-  const { camera, size } = useThree();
+  const { camera, size, scene } = useThree();
   useEffect(() => {
     (window as unknown as { __labJoints?: unknown }).__labJoints = (names: string[]) =>
       Object.fromEntries(
@@ -229,6 +230,18 @@ function LabProbe({ rig }: { rig: MutableRefObject<CoachRig | null> }) {
           return [n, [((p.x + 1) / 2) * size.width, ((1 - p.y) / 2) * size.height]];
         }),
       );
-  }, [camera, size, rig]);
+    // 1.14 window.__labPick(x, y): what is drawn at a canvas point (mesh, material, texture coordinates, height), to
+    // find which part of a model a defect seen on a capture belongs to
+    (window as unknown as { __labPick?: unknown }).__labPick = (x: number, y: number) => {
+      const r = new Raycaster();
+      r.setFromCamera(new Vector2((x / size.width) * 2 - 1, 1 - (y / size.height) * 2), camera);
+      return r.intersectObject(scene, true).slice(0, 4).map((h) => ({
+        mesh: h.object.name,
+        material: ((h.object as Mesh).material as Material | undefined)?.name,
+        uv: h.uv ? [+h.uv.x.toFixed(4), +h.uv.y.toFixed(4)] : null,
+        point: h.point.toArray().map((v) => +v.toFixed(3)),
+      }));
+    };
+  }, [camera, size, rig, scene]);
   return null;
 }

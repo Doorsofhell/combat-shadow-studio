@@ -178,7 +178,8 @@ describe('brassières : aucune partie sur les bras', () => {
     for (const o of ['boxe', 'kickboxing', 'muaythai', 'mma'])
       test(`${c} ${o}`, () => {
         const { parts, bind } = readGlb(file(c, o));
-        const bra = parts.filter((p) => p.name.startsWith('haut-brassiere'));
+        // 1.14: Inaya's striking top is the crop top (haut-crop), held to the same rule
+        const bra = parts.filter((p) => /^haut-(brassiere|crop)/.test(p.name));
         expect(bra.length).toBeGreaterThan(0);
         const sx = Math.max(Math.abs(bind.get('LeftArm')!.x), Math.abs(bind.get('RightArm')!.x));
         let worst = 0;
