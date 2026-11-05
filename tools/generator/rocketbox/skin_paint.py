@@ -270,6 +270,8 @@ for k, r in R.items():
         dbg[pad] = (0, 0, 255)
         Image.fromarray(dbg).save(os.path.join(os.environ['DEBUG'], f'mask_{k}.png'))
     save(out, f'f021_{k}_color.png')
+    # 1.20 where the old bikini was repainted, for detail_from.py (convert.py reads only _color and _normal)
+    Image.fromarray((unknown & covered).astype(np.uint8) * 255).save(os.path.join(texdir, f'f021_{k}_repeint.png'))
     # normal map: flat over the unknown texels
     nmp = os.path.join(texdir, f'f021_{k}_normal.tga')
     nm = np.asarray(Image.open(nmp).convert('RGB'), dtype=np.float32) / 255

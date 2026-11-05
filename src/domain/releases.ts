@@ -55,6 +55,7 @@ export const RELEASES: readonly Release[] = (
       isMajor: false,
       changes: [
         { category: 'coachs', text: 'Le cou d’Inaya est refait : plus large à la base, avec ses muscles et ses clavicules, et la peau du corps a la même teinte que le visage.' },
+        { category: 'coachs', text: 'Les muscles d’Inaya sont mieux dessinés (abdos, bras, jambes, dos), avec le même relief que ceux d’Amara.' },
         { category: 'coachs', text: 'Les visages des coachs vivent entre deux coups : regard, sourcils, lèvres et respiration bougent doucement, et l’effort se lit davantage pendant les frappes.' },
         { category: 'corrections', text: 'Le logo CS du haut d’Inaya ne disparaît plus pendant les mouvements.' },
       ],

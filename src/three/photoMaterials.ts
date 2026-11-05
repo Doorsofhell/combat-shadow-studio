@@ -90,7 +90,9 @@ export const SKIN_LOOK: Record<string, SkinLook> = {
   // 1.11 Naël and Inaya: Rocketbox photo skins like Kadir and Amara (same relief maps); lighter skins, the
   // scattering a little warmer as on Kaila
   nael: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, wrap: 0.5, shadowLift: 0.34, tint: [1, 0.55, 0.42] },
-  inaya: { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, wrap: 0.55, shadowLift: 0.32, tint: [1, 0.52, 0.38], sat: 1.12, gain: 0.8, warm: 0.12 },
+  // 1.20 (Youssef 05/11 14:09, Amara's muscles « bien dessinés »): Inaya's wrapped light was wider than Amara's
+  // (0.55 for 0.45) and softened the shadows between the muscles; same as Amara now
+  inaya: { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, wrap: 0.45, shadowLift: 0.32, tint: [1, 0.52, 0.38], sat: 1.12, gain: 0.8, warm: 0.12 },
 };
 
 export function skinLookFor(url: string): SkinLook {
