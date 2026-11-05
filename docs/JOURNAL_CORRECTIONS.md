@@ -2537,3 +2537,29 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet : NON EXÉCUTÉ.
   - Téléphone Android réel : NON EXÉCUTÉ.
 - **Validation** : « je valide » de Youssef le 04/11 à 20:25 ; PR #54 fusionnée (d32dd57), publiée en 1.18.0 sur GitHub Pages (titre vérifié).
+## 2026-11-05 · v1.19.0 · Inaya refaite sur un corps propre, tenues roses avec le logo CS
+
+- **Demande** : Youssef, 05/11 : « Repartir de zéro, puis améliorer » ; « je ne veux pas de jointure entre la tête et le reste du corps » ; « fais la coach sexy » ; 08:00 « je veux une musculature marquée de coach sportive sexy » ; 08:02 « change la couleur et met des logos de l'application (CS) comme marque de vêtements, utilise-le si nécessaire pour masquer des irrégularités » ; 08:04 effacer complètement les anciens vêtements du corps nu ; 08:06 « léger fil blanc à la place des anciennes bretelles » ; 08:10 marque du nœud et bande au milieu du dos « pas très naturel ».
+- **Constats après vérification** :
+  - le fil blanc des épaules était une vraie fente entre la tête et le corps : `smooth_weights.py` lissait les poids de chaque partie séparément, si bien que les points communs à la tête et au corps recevaient des poids différents et s'écartaient en mouvement (Kadir, Amara, Naël vérifiés : écart de poids max 0,03, pas de fente) ;
+  - les traits sombres le long de l'ancien bikini venaient des mipmaps du téléphone qui lisaient le noir autour des îlots de texture ; la bande claire de la nuque venait de la texture de la tête, qui dessinait aussi la bretelle ;
+  - les deux petites marques claires du dos (ancien nœud) et le creux de la poitrine : des morceaux de la bande repliés sur la peau, dont quelques petites faces retournées ;
+  - la génération du corps ne donnait pas le même résultat d'un lancement à l'autre (ensembles d'éléments Blender parcourus dans l'ordre de la mémoire) : elle est maintenant reproductible (même fichier à chaque lancement).
+- **Méthode** :
+  - `tools/generator/rocketbox/clean_torso.py` (nouveau) : part du corps Rocketbox d'origine. Fusion des ourlets doublés, surface du maillot recalée sur la peau voisine (bande, cou, bord des bonnets), membrane sur le nœud du dos et le creux de la poitrine, retrait des faces en double et refermeture des petits trous, petites faces repliées ramenées à un point (les plus grandes perdent seulement leur arête la plus courte), normales recalculées sur la zone refaite. Éléments triés par numéro avant chaque fusion : génération reproductible.
+  - `tools/generator/rocketbox/skin_paint.py` (nouveau) : repeint toute la peau de l'ancien maillot (corps et bas du cou de la tête) à partir de la peau voisine, grain de peau compris, avec un remplissage complet autour des îlots de texture (plus de bord sombre sur téléphone). Écart de couleur au raccord tête / corps : 1,3 / 255 en moyenne.
+  - `tools/generator/rocketbox/smooth_weights.py` : toutes les parties de peau sont lissées ensemble, les points communs à la tête et au corps gardent le même poids (plus de fente aux épaules).
+  - musculature marquée : forme athlétique 1.4.
+  - `tools/generator/rocketbox/outfits.py` : palette rose (#D6336C) et noir (#17171C) pour Inaya (gi bleu). Logo CS en relief (police Inter Black, licence SIL OFL) posé sur la poitrine, dans le dos et sur la cuisse ; lettres foncées sur un tissu clair (muay-thaï blanc). Le logo de la cuisse prend les poids de peau de la face exacte du short qu'il touche : avec ceux du point le plus proche, il se cassait quand la jambe pliait. Bretelles du crop top posées sur les trapèzes (à 11 cm de l'axe, la peau de l'épaule laissait des jours blancs en garde). Ourlets adoucis.
+- **Fichiers** : `tools/generator/rocketbox/clean_torso.py`, `skin_paint.py`, `smooth_weights.py`, `outfits.py`, `extra_textures.py`, `public/coaches/inaya/photo.glb`, `public/coaches/inaya/tenues/*.glb` (+ `_tex`), `src/three/__tests__/tenue-inaya-v1140.test.ts`, `buste-inaya-v1150.test.ts`, `docs/audit-biomecanique/MESURES_SOL.md`, `docs/v1100/MESURES_DEFORMATIONS.md`, `src/domain/releases.ts`, `package.json`.
+- **Captures** : `docs/v1190/captures/` (corps sans tenue face et dos, 8 tenues en garde, logo de la cuisse). Ordinateur, rendu logiciel, **pas sur téléphone Android**.
+- **Tests réécrits (raison documentée dans chaque fichier, aucun supprimé)** :
+  - `tenue-inaya-v1140` : la règle « aucune bretelle à moins de 11 cm de l'axe » protégeait du licou du corps d'origine, qui n'existe plus. Nouvelle règle, même but (pas de bretelle autour du cou) : rien à moins de 7 cm de l'axe au-dessus de la poitrine et rien au-delà de 13 cm près du cou.
+  - `buste-inaya-v1150` : borne de contrôle du nombre de points de l'ancien bikini 2000 → 1400 (les 150+ points doublés des ourlets sont fusionnés ; 1518 points). La limite de qualité (relief sous 2,5 mm) est inchangée et respectée.
+- **Écart à décider** : `deformation-v1100`, Inaya en garde, pli aisselles / omoplates 28,1° pour 25,9° permis (référence 1.11.0). Cause : épaules plus musclées (forme 1.4). Proposé à Youssef : accepter jusqu'au lot n° 6 (coudes et aisselles), qui le corrige. **ÉCHOUÉ tant que la décision n'est pas prise.**
+- **Tests** :
+  - `buste-inaya-v1180` (3) : TEST RÉUSSI ; `buste-inaya-v1150` : TEST RÉUSSI ; `tenue-inaya-v1140` (4) : TEST RÉUSSI ; `floor-contact` : mesures régénérées (`AUDIT_UPDATE=1`), TEST RÉUSSI ; `pose.test` : TEST RÉUSSI.
+  - Vitest complet : 1074 RÉUSSIS, 1 ignoré (déjà ignoré avant), 3 ÉCHOUÉS au premier passage : `floor-contact` (mesures à régénérer, fait), `session.test` (synchronisation, RÉUSSI relancé seul : instable sous charge), `deformation-v1100` (écart ci-dessus).
+  - TypeScript (`npx tsc -b`) : TEST RÉUSSI.
+  - Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS. Playwright complet : NON EXÉCUTÉ.
+  - Téléphone Android réel : NON EXÉCUTÉ.

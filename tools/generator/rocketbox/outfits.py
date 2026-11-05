@@ -402,18 +402,37 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
     # each point then took its own skin normal for the lift above and the edge came out in small waves, read as a
     # frayed hem. The free edges are relaxed along themselves (each point toward the middle of its two neighbours
     # on the edge), which keeps the line's course and removes the waves
-    if iso is not None:
-        bnb = {}
-        for e in bm_.edges:
-            if e.is_boundary:
-                a_, b_ = e.verts
-                bnb.setdefault(a_, []).append(b_)
-                bnb.setdefault(b_, []).append(a_)
-        loop = [v for v, nn in bnb.items() if len(nn) == 2]
-        for _ in range(int(os.environ.get('HEM_RELAX', '6'))):
-            new = {v: v.co * 0.5 + (bnb[v][0].co + bnb[v][1].co) * 0.25 for v in loop}
-            for v, c in new.items():
-                v.co = c
+    # 1.19 (Youssef 05/11, Inaya « le haut est toujours pas bon », hems in saw teeth on Inaya and Amara alike): the
+    # hems cut by planes (shorts, waistbands, sleeves) are relaxed the same way, each point then put back on its
+    # plane: every point of the edge took the push of its own closest skin point, the edge waved in and out
+    bnb = {}
+    for e in bm_.edges:
+        if e.is_boundary:
+            a_, b_ = e.verts
+            bnb.setdefault(a_, []).append(b_)
+            bnb.setdefault(b_, []).append(a_)
+    loop = [v for v, nn in bnb.items() if len(nn) == 2]
+    plane_of = {}
+    if iso is None and cuts:
+        for v in loop:
+            q = MW @ v.co
+            ds = sorted((abs((q - pt).dot(nr)), k) for k, (pt, nr) in enumerate(cuts))
+            if ds[0][0] < 0.002:
+                plane_of[v] = cuts[ds[0][1]]
+    relax_n = int(os.environ.get('HEM_RELAX', '14'))
+    if os.environ.get('HEM_PLANE_RELAX', '1') == '0' and iso is None:
+        relax_n = 0
+    for it in range(2 * relax_n):
+        # Taubin steps (a plain relaxation shrinks a closed loop: the hem of a short sank into the thigh), more of
+        # them than in 1.13: the field-cut hems still read in small teeth on Inaya and Amara (05/11)
+        k = 0.5 if it % 2 == 0 else -0.53
+        new = {v: v.co + k * ((bnb[v][0].co + bnb[v][1].co) * 0.5 - v.co) for v in loop}
+        for v, c in new.items():
+            if v in plane_of:
+                pt, nr = plane_of[v]
+                q = MW @ c
+                c = MWI @ (q - nr * (q - pt).dot(nr))
+            v.co = c
     if mats:
         o.data.materials.clear()
         for m in mats:
@@ -1429,6 +1448,13 @@ def bra_v2(color, accent=None, bandeau=False):
     return [o], cov
 
 
+# 1.19: with the bikini gone from Inaya's body (clean_torso.py), the crop's straps sit on the trapezius (7.5 to 11.2 cm
+# from the axis) instead of out on the deltoid, where they slid off when the guard rises
+_SQ = ('0.075', '0.112', '0.012', '0.012') if os.environ.get('PALETTE') == 'inaya' else ('0.112', '0.142', '0.004', '0.002')
+for _k, _v in zip(('SQ_IN', 'SQ_OUT', 'SQ_HIDE', 'SQ_EDGE'), _SQ):
+    os.environ.setdefault(_k, _v)
+
+
 def square_field(low, strap=(float(os.environ.get("SQ_IN", "0.112")), float(os.environ.get("SQ_OUT", "0.142")))):
     """1.13 (Youssef, 04/11: « une brassière moulante pleine pour masquer les fissures », Inaya): a full top with a
     square neckline and wide straps set out on the shoulders. The halter straps of the sports body run up from the
@@ -1537,7 +1563,9 @@ def top_square(color, accent=None, low=None, name='haut-carre'):
     # the skin under the straps: shell() keeps the skin drawn near any free edge of the copy, and the body's texture
     # seams over the shoulder blade leave such edges inside the strap (half its skin stayed drawn, and came through
     # in teeth when the guard rises). Everything 4 mm inside the field is hidden
-    cov = set(cov) | {i for i in range(len(P)) if keep(i) and F(P[i]) < -0.004}
+    # 1.19: 12 mm for Inaya's crop (the straps moved in on the shoulders, the skin at their edges showed the white
+    # background when the guard rises: skin hidden but no cloth over it)
+    cov = set(cov) | {i for i in range(len(P)) if keep(i) and F(P[i]) < -float(os.environ.get('SQ_HIDE', '0.004'))}
     if os.environ.get('SQ_DBG'):
         reg = [i for i in range(len(P)) if 0.135 < abs(P[i].x) < 0.155 and 1.33 < P[i].z < 1.47 and P[i].y > 0]
         print('SQDBG region', len(reg), 'covered', sum(1 for i in reg if i in cov), 'keep', sum(1 for i in reg if keep(i)),
@@ -1968,6 +1996,155 @@ def hide_hands():
     return {i for i in range(len(P)) if w(i, *HANDS) > 0.5}
 
 
+# ---------------------------------------------------------------- brand logo
+# 1.19 (Youssef 05/11: « met des logos de l'application (CS) comme marque de vêtements, utilise-le si nécessaire pour
+# masquer des irrégularités »): the app's mark (public/icons/icon.svg: a red slash, « CS » in white, a bar under it)
+# printed on the garments as thin geometry laid on the cloth (no texture: the outfits export their images as JPEG,
+# which has no transparency). The letters come from Inter Black (free font, SIL OFL), turned into a mesh, cut in a
+# 3 mm grid so they follow the cloth, put on the garment by rays along the view direction, 0.8 mm off it, and skinned
+# with the weights of the closest point of the garment.
+LOGO_FONT = os.environ.get('LOGO_FONT', '/usr/share/fonts/opentype/inter/Inter-Black.otf')
+LOGO = os.environ.get('LOGO', '1' if os.environ.get('PALETTE') == 'inaya' else '0') == '1'
+
+
+def _flat_mat(name, color, rough=0.55):
+    if name in MATS:
+        return MATS[name]
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    c = [int(color[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+    lin = [x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+    b_ = m.node_tree.nodes['Principled BSDF']
+    b_.inputs['Base Color'].default_value = (*lin, 1)
+    b_.inputs['Roughness'].default_value = rough
+    MATS[name] = m
+    return m
+
+
+def logo_mesh(width, letters='#FFFFFF', slash='#C8102E'):
+    """the mark in a local frame: x to the right, y up, centred, `width` metres wide; material 0 letters, 1 slash"""
+    from mathutils.bvhtree import BVHTree  # noqa: F401 (keeps the import with its use below)
+    font = bpy.data.fonts.load(LOGO_FONT, check_existing=True) if os.path.exists(LOGO_FONT) else None
+    cu = bpy.data.curves.new('logo-txt', 'FONT')
+    cu.body = 'CS'
+    if font:
+        cu.font = font
+    cu.align_x, cu.align_y = 'CENTER', 'CENTER'
+    cu.space_character = 0.92
+    t = bpy.data.objects.new('logo-txt', cu)
+    bpy.context.collection.objects.link(t)
+    dg = bpy.context.evaluated_depsgraph_get()
+    tm = bpy.data.meshes.new_from_object(t.evaluated_get(dg))
+    bpy.data.objects.remove(t)
+    bm_ = bmesh.new()
+    bm_.from_mesh(tm)
+    for f in bm_.faces:
+        f.material_index = 0
+    xs = [v.co.x for v in bm_.verts]
+    ys = [v.co.y for v in bm_.verts]
+    w0, h0 = max(xs) - min(xs), max(ys) - min(ys)
+    cx, cy = (max(xs) + min(xs)) / 2, (max(ys) + min(ys)) / 2
+    for v in bm_.verts:
+        v.co = Vector(((v.co.x - cx) / w0, (v.co.y - cy) / w0, 0))
+    hh = h0 / w0  # height of the letters for a width of 1
+    # the slash behind the letters (from the icon: bottom left to top right) and the bar under them
+    def quad(pts, mi):
+        vs = [bm_.verts.new(Vector((x, y, 0))) for x, y in pts]
+        f = bm_.faces.new(vs)
+        f.material_index = mi
+    sl = 0.62 * hh
+    quad([(-0.62, -sl - 0.06), (-0.40, -sl - 0.06), (0.62, sl + 0.06), (0.40, sl + 0.06)], 1)
+    quad([(-0.45, -hh / 2 - 0.14), (0.45, -hh / 2 - 0.14), (0.45, -hh / 2 - 0.08), (-0.45, -hh / 2 - 0.08)], 0)
+    # the letters above the slash: lift them a hair (the projection keeps the order: letters are put 0.3 mm higher)
+    bmesh.ops.triangulate(bm_, faces=bm_.faces[:])
+    # 3 mm grid so the flat mark bends with the cloth
+    step = 0.003 / width
+    for k in range(-int(1 / step), int(1 / step) + 1):
+        bmesh.ops.bisect_plane(bm_, geom=bm_.verts[:] + bm_.edges[:] + bm_.faces[:], plane_co=(k * step, 0, 0), plane_no=(1, 0, 0))
+        bmesh.ops.bisect_plane(bm_, geom=bm_.verts[:] + bm_.edges[:] + bm_.faces[:], plane_co=(0, k * step, 0), plane_no=(0, 1, 0))
+    bmesh.ops.triangulate(bm_, faces=bm_.faces[:])
+    for v in bm_.verts:
+        v.co *= width
+    me_ = bpy.data.meshes.new('logo')
+    bm_.to_mesh(me_)
+    bm_.free()
+    bpy.data.meshes.remove(tm)
+    me_.materials.append(_flat_mat(f'logo-lettres-{letters}', letters, 0.5))
+    me_.materials.append(_flat_mat(f'logo-trait-{slash}', slash, 0.5))
+    return me_
+
+
+def logo_on(garment, name, centre, view, width, up=Vector((0, 0, 1)), letters='#FFFFFF', slash='#C8102E', lift=0.0008):
+    """prints the mark on `garment` (an object of this file, skinned by vertex groups), centred where the ray from
+    `centre` + view * 0.25 towards -view meets it; view: the direction the print faces (world)"""
+    from mathutils.bvhtree import BVHTree
+    dg = bpy.context.evaluated_depsgraph_get()
+    gm = garment.evaluated_get(dg).to_mesh()
+    gw = garment.matrix_world
+    verts = [gw @ v.co for v in gm.vertices]
+    tree = BVHTree.FromPolygons(verts, [tuple(p.vertices) for p in gm.polygons])
+    kd = KDTree(len(verts))
+    for k, q in enumerate(verts):
+        kd.insert(q, k)
+    kd.balance()
+    groups = {g.index: g.name for g in garment.vertex_groups}
+    vw = [{groups[g.group]: g.weight for g in v.groups if g.weight > 1e-4} for v in gm.vertices]
+    view = view.normalized()
+    xr = up.cross(view).normalized()  # print's right, seen from outside
+    yu = view.cross(xr).normalized()
+    me_ = logo_mesh(width, letters, slash)
+    o = bpy.data.objects.new(name, me_)
+    bpy.context.collection.objects.link(o)
+    from mathutils.interpolate import poly_3d_calc
+    miss = 0
+    keep_pos = []
+    keep_w = []
+    for v in me_.vertices:
+        a = centre + xr * v.co.x + yu * v.co.y + view * 0.25
+        hit, nrm, fi, d = tree.ray_cast(a, -view, 0.5)
+        if hit is None:
+            miss += 1
+            keep_pos.append(None)
+            keep_w.append(None)
+            continue
+        if nrm.dot(view) < 0:
+            nrm = -nrm
+        keep_pos.append(hit + nrm * lift)
+        poly = gm.polygons[fi]
+        bw = poly_3d_calc([verts[i] for i in poly.vertices], hit)
+        keep_w.append([(poly.vertices[j], bw[j]) for j in range(len(bw))])
+    pos = [q for q in keep_pos if q is not None]
+    if not pos:
+        bpy.data.objects.remove(o)
+        garment.evaluated_get(dg).to_mesh_clear()
+        return None
+    # the letters lie 0.4 mm above the slash that passes behind them
+    top_v = {i for p_ in me_.polygons if p_.material_index == 0 for i in p_.vertices}
+    for v, q in zip(me_.vertices, keep_pos):
+        v.co = q if q is not None else pos[0]
+        if v.index in top_v and q is not None:
+            v.co = v.co + view * 0.0004
+    # skin: the weights of the garment at the point hit, interpolated over its face (1.19: the weights of the
+    # nearest garment point made the mark move apart from the coarse faces of the shorts, which hid parts of it
+    # once the thigh bent)
+    for v, bw in zip(me_.vertices, keep_w):
+        acc = {}
+        if bw is None:
+            _, k, _ = kd.find(v.co)
+            bw = [(k, 1.0)]
+        for k, b in bw:
+            for gname, wt in vw[k].items():
+                acc[gname] = acc.get(gname, 0.0) + wt * b
+        for gname, wt in acc.items():
+            if wt > 1e-4:
+                vg = o.vertex_groups.get(gname) or o.vertex_groups.new(name=gname)
+                vg.add([v.index], wt, 'REPLACE')
+    garment.evaluated_get(dg).to_mesh_clear()
+    o.data.update()
+    print('logo', name, len(me_.vertices), 'points', miss, 'hors du vêtement')
+    return o
+
+
 # ---------------------------------------------------------------- outfits (6 disciplines x 2 coaches)
 # colours: the app's palette (anthracite #1F2937, deep red #B3122A, gold #D4AF37, white) for the coaches, a
 # different combination for each coach so they never wear the same outfit
@@ -1980,7 +2157,8 @@ C = {
     # No white tight kick-boxing shorts: on white, a spot of thigh skin showed through at the front in the guard
     # (hidden by the dark shorts of the others), so Naël's white is on the loose boxing shorts
     'nael': dict(boxe=('#F4F4F5', '#1D4E89'), kick=('#1D4E89', '#F4F4F5'), thai=('#0F6B57', '#D4AF37'), mma=('#24344D', '#101521'), gi='#17181C', judo='#1B3F8B', belt='#121212', glove='#1D4E89', glove2='#F4F4F5', rash='#1D4E89', praj='#F4F4F5', mmag=('#1D4E89', '#F4F4F5', '#F4F4F5')),
-    'inaya': dict(boxe=('#5B2A6E', '#E36414'), kick=('#E36414', '#16181D'), thai=('#F4F4F5', '#5B2A6E'), mma=('#3A1730', '#241020'), gi='#1B3F8B', judo='#1B3F8B', belt='#121212', glove='#5B2A6E', glove2='#E36414', rash='#5B2A6E', praj='#E36414', mmag=('#5B2A6E', '#E36414', '#E36414')),
+    # 1.19 (Youssef 05/11 « change la couleur »): carbon black and raspberry pink, the CS mark printed in white and pink
+    'inaya': dict(boxe=('#D6336C', '#17171C'), kick=('#17171C', '#D6336C'), thai=('#F4F4F5', '#D6336C'), mma=('#17171C', '#D6336C'), gi='#1B3F8B', judo='#1B3F8B', belt='#121212', glove='#D6336C', glove2='#17171C', rash='#D6336C', praj='#D6336C', mmag=('#17171C', '#D6336C', '#D6336C'), logo='#D6336C'),
 }[os.environ.get('PALETTE') or sex]
 # 1.12 (Youssef, 04/11, decision « Brassière sans bretelles au cou »): Inaya's boxing and kick-boxing tops are bandeaus;
 # her sports body's halter straps run round the neck and a strapped bra copied over them came out torn there
@@ -2059,7 +2237,40 @@ def outfit(name):
         add(jacket('#1C2230', 'costume'))
         parts.extend(skirt('#1C2230', 'costume', hipZ + 0.03, 0.16))
         add(pants('#1C2230', 'arbitre'))
+    if LOGO:
+        parts.extend(brand_logos(parts))
     return parts, hide
+
+
+def brand_logos(parts):
+    """1.19: the CS mark on the top (front, under the bust; back, over the middle of the back where Inaya's body
+    kept the trace of the bikini's knot) and on the left leg of the shorts or trousers"""
+    out = []
+    accent = C.get('logo', '#C8102E')
+    if any(g.name.startswith('veste') for g in parts):
+        return []  # gi: no print (and the rash under it is hidden)
+    def ink(g):
+        # white letters on a dark cloth, carbon on a light one (white muay-thai kit: the mark vanished)
+        m = g.data.materials[0] if g.data.materials else None
+        col = m.node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value if m and m.use_nodes else (0, 0, 0, 1)
+        lum = 0.2126 * col[0] + 0.7152 * col[1] + 0.0722 * col[2]
+        return '#17171C' if lum > 0.45 else '#FFFFFF'
+
+    for g in parts:
+        n = g.name
+        if n.startswith('haut-') or n.startswith('rash-'):
+            low = bra_low() - (0.04 if 'crop' in n else 0)
+            out.append(logo_on(g, f'logo-{n}-avant', Vector((0, 0, low + 0.035)), Vector((0, -1, 0)), 0.05, letters=ink(g), slash=accent))
+            out.append(logo_on(g, f'logo-{n}-dos', Vector((0, 0, float(os.environ.get('LOGO_BACK_Z', str(chestZ - 0.035))))), Vector((0, 1, 0)), 0.075, letters=ink(g), slash=accent))
+        elif n.startswith('short-') or n.startswith('pantalon') or n.startswith('legging'):
+            s_ = 'Left'
+            k, u = H[f'{s_}Leg'], H[f'{s_}UpLeg']
+            # on the front of the thigh, a little to the outside, facing forward (seen from the side it crossed the
+            # curve of the thigh and read garbled)
+            c = k + (u - k) * 0.6
+            sx = 1 if c.x > 0 else -1
+            out.append(logo_on(g, f'logo-{n}', Vector((c.x + 0.015 * sx, 0, c.z)), Vector((0.25 * sx, -1, 0)), 0.04, letters=ink(g), slash=accent, lift=0.0025))
+    return [o for o in out if o is not None]
 
 
 def neck_ring(z):

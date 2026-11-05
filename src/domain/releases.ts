@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.19.0',
+      releaseDate: '2026-11-05',
+      title: 'Inaya refaite, tenues roses CS',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Inaya est refaite à partir d’un corps propre : plus aucune trace de l’ancien maillot (cou, dos, poitrine), plus de fine ligne claire entre la tête et les épaules, et une musculature marquée de coach sportive.' },
+        { category: 'ameliorations', text: 'Les tenues d’Inaya passent en rose et noir, avec le logo CS de l’appli comme marque, sur la poitrine, dans le dos et sur la cuisse. Les bretelles du haut sont posées sur les trapèzes.' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.18.0',
       releaseDate: '2026-11-04',
       title: 'Buste d’Inaya plus naturel',
