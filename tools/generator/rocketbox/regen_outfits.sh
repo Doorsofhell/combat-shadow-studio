@@ -19,7 +19,9 @@ for c in $(echo "$COACHES" | tr ',' ' '); do
     *) pal= ;;
   esac
   case $c in
-    axel|kaila) env="MH_BODY=1 DECIMATE=1" ;;
+    axel) env="MH_BODY=1 DECIMATE=1" ;;
+    # 1.22 Kaila's MMA kit: the pink to turquoise gradient of Youssef's photo (outfits.py MMAF_KITS)
+    kaila) env="MH_BODY=1 DECIMATE=1 MMAF=degrade" ;;
     *) env="" ;;
   esac
   mkdir -p "$WORK/$c"

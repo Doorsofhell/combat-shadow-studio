@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.22.0',
+      releaseDate: '2026-11-05',
+      title: 'Nouvelle tenue MMA des coachs femmes',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Amara, Inaya et Kaila ont une nouvelle tenue MMA : short 2-en-1 (cuissard et surshort à ceinture froncée) et brassière à large bande élastique. Amara en noir et or, Inaya en rose et noir, Kaila en dégradé rose et turquoise.' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.21.0',
       releaseDate: '2026-11-05',
       title: 'Les améliorations d’Inaya pour tous',

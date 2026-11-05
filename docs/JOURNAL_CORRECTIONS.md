@@ -2617,3 +2617,25 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS. Playwright complet : NON EXÉCUTÉ.
   - Téléphone Android réel : NON EXÉCUTÉ.
 - **Validation** : « je valide » de Youssef le 05/11 à 15:54 ; PR #57 fusionnée (08b2a56), publiée en 1.21.0 sur GitHub Pages (titre vérifié).
+
+## 2026-11-05 · v1.22.0 · Nouvelle tenue MMA des coachs femmes
+
+- **Demande** : Youssef, 05/11 18:07 (6 photos de tenues MMA femmes : brassières à large bande noire, short 2-en-1, dégradé rose / turquoise) : « pour les coachs femme, je voudrais une tenue dans les styles des photos » ; 18:09 « MMA seulement ». Couleurs non précisées : choix annoncé (Amara noir et or, Inaya rose et noir, Kaila dégradé rose vers turquoise). Aucune marque copiée, logo CS seulement.
+- **Méthode** (`tools/generator/rocketbox/outfits.py`) :
+  - nouveau `shorts('surshort')`, le surshort ample d'un short 2-en-1. Il est porté sur le cuissard vale-tudo, s'arrête à 66 % de la cuisse et se tient à 10 mm de la peau (le cuissard est à 6,7 mm). La jambe est un peu évasée (2 cm au plus), avec de légers plis et une ceinture froncée (relief élastique plus marqué). Sa taille passe 8 mm au-dessus de celle du cuissard ;
+  - brassière à large bande élastique (3,5 cm, `bra_v2(band=)`) ; Inaya garde son crop top, avec bande noire ;
+  - dégradés : `grad_fabric()` et `paint_grad()`, couleur portée par les coins des faces (glTF COLOR_0), interpolée sur la hauteur ;
+  - kits par coach : `MMAF_KITS` (`MMAF=degrade` pour Kaila dans `regen_outfits.sh`) ;
+  - logo : sur le surshort seulement (celui du cuissard serait dessous), plus haut sur la cuisse ; sur la brassière, au-dessus de la large bande.
+- **Constats en cours de lot et corrections** :
+  - dents sous les bandes de couleur : les points de la ligne de coupe étaient poussés hors de leur plan, ce que les bandes noires sur noir d'avant cachaient. Ils sont remis sur le plan, comme sur les corps MakeHuman (`_ONCUT`, pour cette tenue seulement) ;
+  - le haut du cuissard dépassait de la ceinture du surshort : les deux tailles étaient montées à la même ligne peinte. Le surshort monte maintenant 8 mm plus haut.
+- **Défauts connus** : le surshort n'a pas de tissu simulé, il suit les cuisses. Sur un high kick, il se froisse à l'entrejambe. Les bords du haut de la brassière restent un peu ondulés, comme avant.
+- **Fichiers** : `tools/generator/rocketbox/outfits.py`, `regen_outfits.sh`, `public/coaches/{mma-amara,inaya,kaila}/tenues/mma.glb` (+ `_tex`), `src/domain/releases.ts`, `package.json`.
+- **Captures** : `rapports/tenue-mma-femmes-v122/` (garde, dos, high kick, genou, pour les 3 coachs ; gros plan des bandes d'Amara). Ordinateur, rendu logiciel, **pas sur téléphone Android**.
+- **Tests** :
+  - Vitest complet : 1085 RÉUSSIS, 1 ignoré, 0 ÉCHOUÉ (dont `outfit-v043` budget d'appels de dessin, `outfit-loading`).
+  - TypeScript : TEST RÉUSSI.
+  - Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS. Playwright complet : NON EXÉCUTÉ.
+  - Téléphone Android : NON EXÉCUTÉ.
+- Point de restauration : branche `restauration/avant-v122`.
