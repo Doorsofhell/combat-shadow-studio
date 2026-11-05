@@ -2569,3 +2569,4 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - TypeScript (`npx tsc -b`) : TEST RÉUSSI.
   - Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS. Playwright complet : NON EXÉCUTÉ.
   - Téléphone Android réel : NON EXÉCUTÉ.
+- **Validation** : « je valide » de Youssef le 05/11 à 12:46 (la demande « un bonnet de plus » de 12:45 a été annulée par lui à 12:46, rien n'en est livré) ; PR #55 fusionnée (edf1053), publiée en 1.19.0 sur GitHub Pages.
