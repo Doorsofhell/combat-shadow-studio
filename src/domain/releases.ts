@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.22.1',
+      releaseDate: '2026-11-05',
+      title: 'Short MMA des coachs femmes au high kick',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: "Au high kick, le short d'Amara, Inaya et Kaila ne se froisse plus à l'aine : le short de dessus est ajusté à l'entrejambe." },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.22.0',
       releaseDate: '2026-11-05',
       title: 'Nouvelle tenue MMA des coachs femmes',

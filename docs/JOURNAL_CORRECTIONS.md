@@ -2639,3 +2639,17 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS. Playwright complet : NON EXÉCUTÉ.
   - Téléphone Android : NON EXÉCUTÉ.
 - Point de restauration : branche `restauration/avant-v122`.
+- **Validation** : « je valide » de Youssef le 05/11 à 19:03 ; PR #58 fusionnée (bdcc382). GitHub Pages : 4 déploiements de ce commit en échec côté GitHub (délai dépassé, artefact en double, puis « Deployment cancelled »), le site reste en 1.21.0 ; la 1.22.0 part en ligne avec la 1.22.1.
+
+## 2026-11-05 · v1.22.1 · Short MMA des coachs femmes au high kick
+
+- **Demande** : Youssef, 05/11 19:05 : « essaye de régler le froissement lors du high kick » (défaut connu signalé à la livraison de la 1.22.0).
+- **Constat après vérification** (captures du high kick image par image, couches colorées pour les distinguer) : les taches grises à l'aine étaient le surshort replié sur lui-même. À l'entrejambe, il se tenait à 10 mm de la peau pour passer au-dessus du cuissard ; quand la hanche se plie fort, ce tissu éloigné de la peau se replie (la peau, elle, est masquée dessous). Sur la jambe qui frappe, le cuissard apparaît sous le surshort, ce qui est normal pour un short 2-en-1 court.
+- **Méthode** (`tools/generator/rocketbox/outfits.py`) :
+  - le cuissard s'arrête 1,5 cm au-dessus de l'ourlet du surshort (`shorts(..., under=True)`, `UNDER_OVERLAP`) : sous le surshort, seules ses jambes restent ; la peau reste masquée sur toute sa zone d'avant ;
+  - sans cuissard dessous, le surshort est ajusté à l'entrejambe : 4 mm de la peau au lieu de 10, sans évasement ni plis, sur 9 cm de part et d'autre du milieu (`SUR_CROTCH`, `SUR_SNUG`), au-dessus du haut du cuissard seulement ;
+  - essais abandonnés : lissage des pondérations du surshort (aucun effet visible) ; jambe du surshort pondérée entièrement sur la cuisse (elle suivait mieux la jambe, mais ouvrait un trou à l'entrejambe de Kaila et sous les fessiers d'Amara en garde).
+- **Tenues régénérées** : MMA d'Amara, Inaya et Kaila (`regen_outfits.sh mma mma-amara,inaya,kaila`).
+- **Défaut restant** : un fin pli reste visible au milieu de l'entrejambe au sommet du high kick.
+- **Tests** : Vitest 1085 RÉUSSIS, 1 ignoré, 0 ÉCHOUÉ ; TypeScript RÉUSSI ; Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS ; Playwright complet NON EXÉCUTÉ ; téléphone Android NON EXÉCUTÉ.
+- Point de restauration : `feature/combat-shadow-v030` à bdcc382 (1.22.0).

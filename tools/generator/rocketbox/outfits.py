@@ -34,6 +34,11 @@ VT_HEM = float(os.environ.get('VT_HEM', '0.42'))
 # 1.22 women's MMA kit (Youssef 05/11 18:07, photos): over-short hem (share of the thigh from the knee) and flare
 SUR_HEM = float(os.environ.get('SUR_HEM', '0.66'))
 SUR_FLARE = float(os.environ.get('SUR_FLARE', '0.02'))
+# 1.22.1 the high kick: the liner ends 1.5 cm inside the over-short's hem (< 0: liner whole); the over-short snug at
+# the crotch (half-width of the snug zone, push taken off: 4 mm instead of 10 mm, no flare, no folds)
+UNDER_OVERLAP = float(os.environ.get('UNDER_OVERLAP', '0.015'))
+SUR_CROTCH = float(os.environ.get('SUR_CROTCH', '0.09'))
+SUR_SNUG = float(os.environ.get('SUR_SNUG', '0.006'))
 # colours: a tuple is a gradient (top colour, bottom colour) carried by the points
 MMAF_KITS = {
     # Amara: black and gold
@@ -1143,7 +1148,7 @@ def collar(color, kind):
 BAND_RELIEF = float(os.environ.get('BAND_RELIEF', '0.15'))
 
 
-def shorts(kind, color, band, n_leg=None):
+def shorts(kind, color, band, n_leg=None, under=False):
     """kind: boxe (loose, to just above the knee, high waistband), kick (fitted, short), thai (short, very wide,
     high waistband), mma (board short, side slits, to the knee), compression"""
     # the photo body has its underwear painted down to mid-thigh: every short reaches below it
@@ -1187,8 +1192,14 @@ def shorts(kind, color, band, n_leg=None):
             if P[i].z > hipZ + 0.02:
                 return 0.010 + (0.002 if P[i].z > waist - bandH else 0)
             s = leg_of(i)
-            crotch = max(0.0, 1 - abs(P[i].x) / 0.05)
-            return loose(i, f'{s}UpLeg', f'{s}Leg', 0.010, lambda u: SUR_FLARE * u ** 1.3 * (1 - 0.6 * crotch)) + N[i] * folds(i, 0.002)
+            # 1.22.1 the inside of the legs close to the crotch: snug (the loose cloth there folded on itself at a high kick)
+            crotch = max(0.0, 1 - abs(P[i].x) / SUR_CROTCH)
+            c2 = crotch * crotch * (3 - 2 * crotch)
+            # only above the liner's top (the liner, 6.7 mm out, ends there under the over-short)
+            if UNDER_OVERLAP >= 0:
+                t = min(1.0, max(0.0, (P[i].z - (hemz(i) + UNDER_OVERLAP)) / 0.02))
+                c2 *= t * t * (3 - 2 * t)
+            return loose(i, f'{s}UpLeg', f'{s}Leg', 0.010 - SUR_SNUG * c2, lambda u: SUR_FLARE * u ** 1.3 * (1 - c2)) + N[i] * folds(i, 0.002 * (1 - c2))
         if kind == 'vale-tudo':
             # a flat waistband (a raised one made lumps on the Rocketbox body). 1.10: the 3 mm of extra room at the
             # hem made the leg flare (Youssef's audit: « jambes légèrement évasées »); the hem is now cut exactly by
@@ -1217,6 +1228,14 @@ def shorts(kind, color, band, n_leg=None):
     # cuts left a wavy waistband on the MakeHuman bodies); the band's lower line stays a straight plane cut
     hz = {s: H[f'{s}Leg'].z + hem * (H[f'{s}UpLeg'].z - H[f'{s}Leg'].z) for s in ('Left', 'Right')}
     F = lambda q: max(q.z - waist, hz['Left' if q.x > 0 else 'Right'] - q.z)
+    if under:
+        # 1.22.1 (Youssef 05/11 19:05: « essaye de régler le froissement lors du high kick »): the liner under the
+        # over-short is only its legs, from its hem to 1.5 cm inside the over-short's. Whole, it kept the over-short
+        # 10 mm off the skin at the crotch: that loose cloth folded on itself when the hip bent at a high kick (grey
+        # patches in the groin); without the liner there, the over-short is snug at the crotch (push above)
+        hz_sur = {s: H[f'{s}Leg'].z + SUR_HEM * (H[f'{s}UpLeg'].z - H[f'{s}Leg'].z) + UNDER_OVERLAP for s in ('Left', 'Right')}
+        F0 = F
+        F = lambda q: max(F0(q), q.z - hz_sur['Left' if q.x > 0 else 'Right'])
     keep_g = lambda i: P[i].z < waist + 0.03 and P[i].z > min(hz.values()) - 0.04 and w(i, *ARMS) < 0.2
     cuts = [(Vector((0, 0, waist - bandH)), Vector((0, 0, 1)))]
     # fine jersey for the fitted cuts (2.5 mm with its rim), 3.5 mm for the loose ones
@@ -1224,6 +1243,10 @@ def shorts(kind, color, band, n_leg=None):
     o, cov = shell(f'short-{kind}', keep_g, push, thick, mats, lambda c, ids: 1 if c.z > waist - bandH else 0, cuts=cuts, iso=F,
                    hem=0.004 if thick < 0.003 else 0.006)
     smooth(o, 1)
+    if under:
+        # the skin stays hidden over the whole liner's region, as before (what the cut part covered is under the
+        # over-short)
+        cov = set(cov) | {i for i in range(len(P)) if keep_g(i) and F0(P[i]) < -0.002}
     if isinstance(color, tuple):
         paint_grad(o, color, min(hz.values()), waist - bandH)
     return [o], cov
@@ -2322,7 +2345,7 @@ def outfit(name):
             # over-short) and a sports bra with a wide elastic under-band, colours per coach (MMAF_KITS)
             k = MMAF_KITS[MMAF]
             _ONCUT[0] = True
-            add(shorts('vale-tudo', k['liner'], k['linerband']))
+            add(shorts('vale-tudo', k['liner'], k['linerband'], under=UNDER_OVERLAP >= 0))
             add(shorts('surshort', k['over'], k['overband']))
             add(female_top(k['top'], k['topband']) or bra_v2(k['top'], k['topband'], band=0.035))
             _ONCUT[0] = False
