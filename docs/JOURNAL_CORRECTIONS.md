@@ -2672,4 +2672,5 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright `coach-render`, `training-layout`, `coachs-v160`, `outfit-loading` : 20 RÉUSSIS, 1 ÉCHOUÉ. L'échec (`training-layout:329`, caméra Auto, élévation 23° au lieu de moins de 12°) échoue aussi sans cette modification, sur la 1.22.1 : il n'est pas causé par ce lot.
   - Téléphone Android : NON EXÉCUTÉ.
 - Point de restauration : `feature/combat-shadow-v030` à daa427b (1.22.1).
+- **Validation** : « je valide » de Youssef le 05/11 à 20:31 ; PR #60 fusionnée (f680426), publiée en 1.23.0 sur GitHub Pages (titre vérifié).
 
