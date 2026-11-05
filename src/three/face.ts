@@ -115,6 +115,7 @@ const MM = 0.001;
 const UP = new Vector3(0, 1, 0);
 const FWD = new Vector3(0, 0, 1);
 const tmpQ = new Quaternion();
+const tmpQ2 = new Quaternion();
 const tmpV = new Vector3();
 
 function find(root: Object3D, name: string): Bone | null {
@@ -205,6 +206,16 @@ export class FaceAnimator {
   private breathPhase = -Math.PI / 2;
   private peak = 0;
   private gaze = { yaw: 0, pitch: 0, toYaw: 0, toPitch: 0, next: 0.8 };
+  /** 1.23 the head's own small life (axes in the bone's space); what was applied last frame, to take it off again
+   * when the body pose of the frame did not rewrite the head (paused motion) */
+  private head: { bone: Bone; yaw: Vector3; pitch: Vector3; roll: Vector3; out: Quaternion; d: Quaternion; follow: number; followP: number } | null = null;
+  private headPhase = [0, 0, 0];
+  /** grows from 0 over the first second: the head starts from the pose, never with a jump */
+  private headAmp = 0;
+  /** 1.23 the shoulders rise on the breath in (clavicle bones, axis in the bone's space, side sign) */
+  private shoulders: { bone: Bone; axis: Vector3; side: number; out: Quaternion; d: Quaternion }[] = [];
+  /** the body's breath (Breath: -1 out .. 1 in), when the coach has one; the face's own cycle otherwise */
+  private bodyBreath: number | null = null;
 
   /** the model must be in its rest pose (restoreReferencePose) and its world matrices up to date */
   constructor(root: Object3D, seed = 1) {
@@ -259,6 +270,17 @@ export class FaceAnimator {
           // a smile lifts the corner and draws it out and back
           smile: toParent(corner, UP.clone().multiplyScalar(2 * MM).addScaledVector(lat, 1.5 * MM * sign).addScaledVector(FWD, -1 * MM)),
         });
+    }
+    const headBone = find(root, 'Head');
+    if (headBone) {
+      const fwd = new Vector3().crossVectors(lat, UP).normalize();
+      this.head = { bone: headBone, yaw: toBone(headBone, UP), pitch: toBone(headBone, lat), roll: toBone(headBone, fwd), out: new Quaternion(), d: new Quaternion(), follow: 0, followP: 0 };
+      this.headPhase = [this.rand() * 6.28, this.rand() * 6.28, this.rand() * 6.28];
+      for (const [n, side] of [['LeftShoulder', 1], ['RightShoulder', -1]] as const) {
+        const b = find(root, n);
+        const sideOf = b ? Math.sign(b.getWorldPosition(new Vector3()).sub(headBone.getWorldPosition(new Vector3())).dot(lat)) || side : side;
+        if (b) this.shoulders.push({ bone: b, axis: toBone(b, fwd), side: sideOf, out: new Quaternion(), d: new Quaternion() });
+      }
     }
     const mid = find(root, 'Face_MMiddleEyebrow');
     if (mid) this.movers.push({ bone: mid, ...rest(mid), d: toParent(mid, UP.clone().multiplyScalar(-4 * MM)), kind: 'mid' });
@@ -341,7 +363,8 @@ export class FaceAnimator {
       const k = Math.min(1, dt / 0.9);
       for (const key of ['focus', 'brow', 'press', 'smile', 'side'] as const) this.idle[key] += (I[key] - this.idle[key]) * k;
       this.breathPhase += dt * 2 * Math.PI * (0.25 + 0.2 * this.effort);
-      this.idle.breath = 0.5 + 0.5 * Math.sin(this.breathPhase);
+      // 1.23 the face breathes with the chest (the same cycle, the nostrils and lips open on the way in)
+      this.idle.breath = this.bodyBreath !== null ? Math.max(0, Math.min(1, 0.5 + 0.5 * this.bodyBreath)) : 0.5 + 0.5 * Math.sin(this.breathPhase);
     }
     const rest = 1 - this.effort;
     const idle = still ? null : this.idle;
@@ -361,9 +384,11 @@ export class FaceAnimator {
     // gaze: a new fixation point every 0.6 to 2.4 s, a few degrees around straight ahead; quick saccade
     const g = this.gaze;
     if (!still && this.t >= g.next) {
-      g.toYaw = (this.rand() - 0.5) * 0.14;
-      g.toPitch = (this.rand() - 0.5) * 0.07;
-      g.next = this.t + 0.6 + this.rand() * 1.8;
+      // 1.23 now and then a real glance aside (up to 12°), held a little longer; the head follows it in part
+      const away = this.rand() < 0.18;
+      g.toYaw = (this.rand() - 0.5) * (away ? 0.42 : 0.14);
+      g.toPitch = (this.rand() - 0.5) * (away ? 0.12 : 0.07);
+      g.next = this.t + (away ? 0.9 + this.rand() * 0.9 : 0.6 + this.rand() * 1.8);
     }
     if (still) g.toYaw = g.toPitch = 0;
     const s = Math.min(1, dt / 0.04);
@@ -372,6 +397,8 @@ export class FaceAnimator {
     for (const e of this.eyes) {
       e.bone.quaternion.copy(e.q).multiply(tmpQ.setFromAxisAngle(e.yaw, g.yaw)).multiply(tmpQ.setFromAxisAngle(e.pitch, g.pitch + 0.03 * close));
     }
+
+    this.moveHead(dt, still, rest);
 
     for (const m of this.movers) {
       let k = this.effort;
@@ -410,6 +437,66 @@ export class FaceAnimator {
         }
       }
     }
+  }
+
+  /**
+   * 1.23 (Youssef 05/11 20:03: « les visages sont trop figés… sans trop de développement »): the motion engine
+   * holds the head exactly on the opponent, so between strikes the face was a mask on a still head. A slow drift of
+   * the head (three sines, up to 2.7° of turn, 1.6° of nod, 1° of tilt) and a share of each glance; it gives way to
+   * the strike's effort and is nil on still images
+   */
+  private moveHead(dt: number, still: boolean, rest: number) {
+    const h = this.head;
+    if (!h) return;
+    const q = h.bone.quaternion;
+    // the engine rewrote the head this frame unless it still holds what was left last frame
+    const same = Math.abs(q.x - h.out.x) + Math.abs(q.y - h.out.y) + Math.abs(q.z - h.out.z) + Math.abs(q.w - h.out.w) < 1e-6;
+    if (same) q.multiply(tmpQ.copy(h.d).invert());
+    if (still) {
+      h.d.identity();
+      h.out.copy(q);
+      for (const sh of this.shoulders) {
+        const sq = sh.bone.quaternion;
+        if (Math.abs(sq.x - sh.out.x) + Math.abs(sq.y - sh.out.y) + Math.abs(sq.z - sh.out.z) + Math.abs(sq.w - sh.out.w) < 1e-6) sq.multiply(tmpQ.copy(sh.d).invert());
+        sh.d.identity();
+        sh.out.copy(sq);
+      }
+      return;
+    }
+    const t = this.t;
+    const [a, b, c] = this.headPhase;
+    const deg = Math.PI / 180;
+    // the head turns after the eyes, slowly (a glance of 12° brings it round 3.6° in about a second)
+    h.follow += (this.gaze.yaw - h.follow) * Math.min(1, dt / 0.8);
+    h.followP += (this.gaze.pitch - h.followP) * Math.min(1, dt / 0.8);
+    this.headAmp += (1 - this.headAmp) * Math.min(1, dt / 1.2);
+    const amp = rest * rest * this.headAmp * this.headAmp;
+    const yaw = amp * (deg * 1.8 * Math.sin(0.37 * t + a) + deg * 0.9 * Math.sin(0.91 * t + b) + 0.3 * h.follow);
+    const pitch = amp * (deg * 1.1 * Math.sin(0.29 * t + b) + deg * 0.5 * Math.sin(0.77 * t + c) + 0.25 * h.followP);
+    const roll = amp * deg * (0.7 * Math.sin(0.23 * t + c) + 0.3 * Math.sin(0.61 * t + a));
+    h.d
+      .setFromAxisAngle(h.yaw, yaw)
+      .multiply(tmpQ.setFromAxisAngle(h.pitch, pitch))
+      .multiply(tmpQ2.setFromAxisAngle(h.roll, roll));
+    q.multiply(h.d);
+    h.out.copy(q);
+    // 1.23 (Youssef 20:04: « respiration aussi, c'est très important dans les disciplines traitées »): the shoulders
+    // rise a little on the breath in (up to 1.6°, more when the coach is out of breath after strikes)
+    const inhale = this.bodyBreath ?? Math.sin(this.breathPhase);
+    for (const sh of this.shoulders) {
+      const sq = sh.bone.quaternion;
+      const same2 = Math.abs(sq.x - sh.out.x) + Math.abs(sq.y - sh.out.y) + Math.abs(sq.z - sh.out.z) + Math.abs(sq.w - sh.out.w) < 1e-6;
+      if (same2) sq.multiply(tmpQ.copy(sh.d).invert());
+      const lift = deg * (1.1 + 0.5 * this.effort) * Math.max(0, inhale) * (1 - 0.7 * this.effort);
+      sh.d.setFromAxisAngle(sh.axis, lift * sh.side);
+      sq.multiply(sh.d);
+      sh.out.copy(sq);
+    }
+  }
+
+  /** 1.23 the body's breath of this frame (Breath.amount.x: -1 breathed out .. 1 breathed in) */
+  setBreath(v: number | null) {
+    this.bodyBreath = v;
   }
 
   /** for the tests: current blink and effort */

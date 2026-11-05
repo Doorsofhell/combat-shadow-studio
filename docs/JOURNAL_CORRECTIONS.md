@@ -2654,3 +2654,22 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests** : Vitest 1085 RÉUSSIS, 1 ignoré, 0 ÉCHOUÉ ; TypeScript RÉUSSI ; Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS ; Playwright complet NON EXÉCUTÉ ; téléphone Android NON EXÉCUTÉ.
 - Point de restauration : `feature/combat-shadow-v030` à bdcc382 (1.22.0).
 - **Validation** : « je valide » de Youssef le 05/11 à 19:59 ; PR #59 fusionnée (daa427b), publiée en 1.22.1 sur GitHub Pages (titre vérifié). La 1.22.0 est partie en ligne avec elle.
+
+## 2026-11-05 · v1.23.0 · Visages plus vivants et respiration visible
+
+- **Demande** : Youssef, 05/11 20:03 : « je trouve toujours que les visages sont trop figés, il faut que tu trouves le moyen sans trop de développement pour que ça paraisse plus naturel » ; 20:04 : « respiration aussi, c'est très important dans les disciplines traitées ».
+- **Constat après vérification** : le visage avait déjà ses clignements, de petits mouvements des yeux (±4°) et son humeur au repos (1.20, 1.21). Mais le moteur garde la tête exactement tournée vers l'adversaire, si bien que, entre deux coups, le visage était un masque posé sur une tête immobile. La respiration ne gonflait le thorax que de 4 mm (3 mm au ventre), invisible à l'écran, et les narines et les lèvres suivaient un rythme à part, sans lien avec celui de la poitrine.
+- **Méthode** (sans nouveau modèle ni nouvelle animation) :
+  - `src/three/face.ts` (`moveHead`) : la tête dérive lentement par-dessus la pose du moteur (trois sinus : jusqu'à 2,7° de rotation, 1,6° d'inclinaison avant, 1° de côté). Elle suit en partie le regard, lentement (constante de 0,8 s), s'efface pendant l'effort d'un coup, démarre à 0 sans à-coup et reste nulle en image fixe. Ce qui a été ajouté à l'image précédente est retiré quand le moteur n'a pas réécrit la tête (mouvement en pause), donc rien ne s'accumule ;
+  - regard : un vrai coup d'œil de côté (jusqu'à 12°) une fois sur cinq environ, tenu un peu plus longtemps ;
+  - respiration (`src/three/breath.ts`) : 6 mm au thorax et 5 mm au ventre (au lieu de 4 et 3), jusqu'à 1,5 fois plus profonde quand le coach est essoufflé après des coups ;
+  - épaules : elles montent à l'inspiration (clavicules, jusqu'à 1,6°), moins pendant un coup ;
+  - le visage respire au rythme de la poitrine (`FaceAnimator.setBreath`, appelé par `PhotoCoach`).
+- **Tests** :
+  - Vitest : 1085 RÉUSSIS, 1 ignoré, 0 ÉCHOUÉ.
+  - `breath.test` : seuil d'amplitude relevé de 2–3,5 % à 3,5–5 % de la portée Spine2–Neck, puisque l'amplitude plus grande est la demande elle-même. Le test des sauts du visage (`face.test`, moins de 0,5 mm par image) est inchangé et réussit : la tête suit le regard lentement.
+  - TypeScript : RÉUSSI.
+  - Playwright `coach-render`, `training-layout`, `coachs-v160`, `outfit-loading` : 20 RÉUSSIS, 1 ÉCHOUÉ. L'échec (`training-layout:329`, caméra Auto, élévation 23° au lieu de moins de 12°) échoue aussi sans cette modification, sur la 1.22.1 : il n'est pas causé par ce lot.
+  - Téléphone Android : NON EXÉCUTÉ.
+- Point de restauration : `feature/combat-shadow-v030` à daa427b (1.22.1).
+

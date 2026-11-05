@@ -131,6 +131,7 @@ export function PhotoCoach({
     onFrame(rig, Math.min(dt, 0.05));
     // fixed images (Lab, portraits) ask for a still face, or impose an expression: window.__cssFace
     const fo = (globalThis as { __cssFace?: FaceOptions }).__cssFace;
+    face.setBreath(fo?.still ? null : breath.amount.value.x);
     face.update(Math.min(dt, 0.05), fo);
     // still images (Lab, portraits): the chest at rest, so two captures of the same instant are the same
     breath.update(fo?.still ? 0 : dt, face.state.effort);
