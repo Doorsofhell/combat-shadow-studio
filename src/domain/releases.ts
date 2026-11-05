@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.20.0',
+      releaseDate: '2026-11-05',
+      title: 'Inaya : cou naturel, visage vivant',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Le cou d’Inaya est refait : plus large à la base, avec ses muscles et ses clavicules, et la peau du corps a la même teinte que le visage.' },
+        { category: 'coachs', text: 'Les visages des coachs vivent entre deux coups : regard, sourcils, lèvres et respiration bougent doucement, et l’effort se lit davantage pendant les frappes.' },
+        { category: 'corrections', text: 'Le logo CS du haut d’Inaya ne disparaît plus pendant les mouvements.' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.19.0',
       releaseDate: '2026-11-05',
       title: 'Inaya refaite, tenues roses CS',

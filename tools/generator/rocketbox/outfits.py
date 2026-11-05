@@ -2106,7 +2106,7 @@ def logo_mesh(width, letters='#FFFFFF', slash='#C8102E'):
     return me_
 
 
-def logo_on(garment, name, centre, view, width, up=Vector((0, 0, 1)), letters='#FFFFFF', slash='#C8102E', lift=0.0008):
+def logo_on(garment, name, centre, view, width, up=Vector((0, 0, 1)), letters='#FFFFFF', slash='#C8102E', lift=0.0015):
     """prints the mark on `garment` (an object of this file, skinned by vertex groups), centred where the ray from
     `centre` + view * 0.25 towards -view meets it; view: the direction the print faces (world)"""
     from mathutils.bvhtree import BVHTree
@@ -2131,6 +2131,7 @@ def logo_on(garment, name, centre, view, width, up=Vector((0, 0, 1)), letters='#
     miss = 0
     keep_pos = []
     keep_w = []
+    keep_n = []
     for v in me_.vertices:
         a = centre + xr * v.co.x + yu * v.co.y + view * 0.25
         hit, nrm, fi, d = tree.ray_cast(a, -view, 0.5)
@@ -2138,6 +2139,7 @@ def logo_on(garment, name, centre, view, width, up=Vector((0, 0, 1)), letters='#
             miss += 1
             keep_pos.append(None)
             keep_w.append(None)
+            keep_n.append(None)
             continue
         if nrm.dot(view) < 0:
             nrm = -nrm
@@ -2145,6 +2147,8 @@ def logo_on(garment, name, centre, view, width, up=Vector((0, 0, 1)), letters='#
         poly = gm.polygons[fi]
         bw = poly_3d_calc([verts[i] for i in poly.vertices], hit)
         keep_w.append([(poly.vertices[j], bw[j]) for j in range(len(bw))])
+        sn = sum((gw.to_3x3() @ gm.vertices[poly.vertices[j]].normal * bw[j] for j in range(len(bw))), Vector())
+        keep_n.append(sn.normalized() if sn.length > 1e-9 else nrm)
     pos = [q for q in keep_pos if q is not None]
     if not pos:
         bpy.data.objects.remove(o)
@@ -2171,6 +2175,11 @@ def logo_on(garment, name, centre, view, width, up=Vector((0, 0, 1)), letters='#
             if wt > 1e-4:
                 vg = o.vertex_groups.get(gname) or o.vertex_groups.new(name=gname)
                 vg.add([v.index], wt, 'REPLACE')
+    # 1.20 (Youssef, 05/11: « le logo CS sur la brassière disparaît et réapparaît pendant les mouvements »).
+    # Verified: the breathing of the app (src/three/breath.ts) moves every point along its own normal; the mark's
+    # points had the flat normal of the print while the cloth under it is curved, so at each breath the cloth came
+    # out over the letters. The mark now takes the cloth's normals at the points it lies on: both move together
+    o.data.normals_split_custom_set_from_vertices([n if n is not None else Vector((0, 0, 1)) for n in keep_n])
     garment.evaluated_get(dg).to_mesh_clear()
     o.data.update()
     print('logo', name, len(me_.vertices), 'points', miss, 'hors du vêtement')

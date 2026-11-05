@@ -136,6 +136,24 @@ for k, r in R.items():
     print(f"{k} : {(r['flag'] > 0).sum()} texels couverts, {(r['flag'] == 2).sum()} à refaire, {near.sum()} autour, "
           f"{r['dens']:.1f} px/cm")
 
+# 1.20 (Youssef, 05/11 13:42: « son cou n'est pas naturel, tout le corps doit être harmonieux »). Measured on the
+# rendered model: the face is warmer and darker than the neck and the chest (cheek 213/157/118, neck 230/187/152,
+# chest 234/200/167; Amara, same body: 145/76/49, 155/92/58, 175/111/76): the head of the face's texture and the
+# body's do not share one tone, so the face read as a mask over a pale neck. The body's texture takes, channel by
+# channel, HARMO of the gap between its mean skin (chest and belly) and the mean of the face (cheeks, forehead)
+HARMO = float(os.environ.get('HARMO', '0.7'))
+if HARMO > 0:
+    rb, rh = R['body'], R['head']
+    bsel = rb['known'] & (rb['pos'][..., 2] > 100) & (rb['pos'][..., 2] < 135)
+    hsel = rh['known'] & (rh['pos'][..., 2] > 156) & (rh['pos'][..., 1] < -4)
+    bm_, hm_ = TEX['body'][bsel].mean(0), TEX['head'][hsel].mean(0)
+    gain = 1 + HARMO * (hm_ / np.maximum(bm_, 1e-3) - 1)
+    TEX['body'] = np.clip(TEX['body'] * gain, 0, 1)
+    # the head's own skin below the jaw (the neck) is graded the same, fading in from the jaw line to the neck
+    hz = rh['pos'][..., 2]
+    t_ = np.clip((158 - np.nan_to_num(hz, nan=200)) / 6, 0, 1)[..., None] * (rh['flag'] > 0)[..., None]
+    TEX['head'] = np.clip(TEX['head'] * (1 + (gain - 1) * t_), 0, 1)
+    print('peau du corps accordée au visage : gain', np.round(gain, 3), 'corps', np.round(bm_ * 255), 'visage', np.round(hm_ * 255))
 # colour per point: mean of the known texels around it (weight = barycentric weight squared), both textures
 acc = np.zeros((NV, 3))
 wsum = np.zeros(NV)

@@ -200,11 +200,21 @@ if len(lo):
             d = (X[i, :2] - ax) / max(R[i], 1e-6)
             Y[i, :2] = ax + d * r
         X = Y
-for it in range(int(os.environ.get('SMOOTH_NECK', '80'))):
+for it in range(int(os.environ.get('SMOOTH', '12'))):
     Y = X.copy()
-    for i in (idx if it < int(os.environ.get('SMOOTH', '12')) else hi):
+    for i in (lo if os.environ.get('NECK_PLAIN', '0') != '1' else idx):
         Y[i] = X[i] + 0.5 * (X[nbr[i]].mean(0) - X[i])
     X = Y
+# the strap round the neck: 1.20 (Youssef, 05/11 13:42: « son cou n'est pas naturel », capture). Verified: a plain
+# smoothing of 80 passes there shrank the base of the neck and the slope of the trapezius (width at the Neck joint
+# 13.5 cm against 21.8 cm on Amara, same body; 9.9 against 12 cm a little higher): Taubin passes (one smoothing step,
+# one step back) remove the cord without shrinking the surface
+for it in range(int(os.environ.get('SMOOTH_NECK', '80'))):
+    for k in (0.5, -0.53):
+        Y = X.copy()
+        for i in hi:
+            Y[i] = X[i] + k * (X[nbr[i]].mean(0) - X[i])
+        X = Y
 # rim of the cups: Taubin smoothing (no shrinking), so the raised outline melts into the breast
 ridx = np.array(sorted(rim))
 rnb = {i: [w.index for e in bm.verts[i].link_edges for w in e.verts if w.index != i] for i in ridx}
@@ -461,6 +471,67 @@ for _round in range(4):
             e.is_boundary and all(110 < v.co.z < 150 and abs(v.co.x) < 25 for v in e.verts) for e in bm.edges):
         break
 print('bords libres', sum(1 for e in bm.edges if e.is_boundary), ', arêtes à 3 faces', sum(1 for e in bm.edges if len(e.link_faces) > 2))
+# 1.20 (Youssef, 05/11 13:42: « son cou n'est pas naturel, tout le corps doit être harmonieux et ultra réaliste »):
+# after the strap was removed the neck was a smooth tube between broad, muscular shoulders (shape 1.4), with no
+# muscle drawn on it. The neck is sculpted like an athlete's: a little fuller at its base, the two
+# sternocleidomastoid cords from behind the ears down to the notch of the sternum, the upper trapezius rising
+# from the shoulders into the back of the neck, the collarbones with the hollow above them. Body and head points move together (one mesh): no seam opens
+NECK_SCULPT = float(os.environ.get('NECK_SCULPT', '1.8'))
+if NECK_SCULPT > 0:
+    def seg_d(p, a, b):
+        ab = b - a
+        t = max(0.0, min(1.0, (p - a).dot(ab) / ab.length_squared))
+        return (p - (a + ab * t)).length, t
+    nv = [v for v in bm.verts if 134 < v.co.z < 158 and abs(v.co.x) < 22]
+    # neck axis per height: middle of the skin within 8 cm of the vertical through the neck
+    core = [v.co for v in nv if abs(v.co.x) < 8 and 144 < v.co.z < 150]
+    ay = sum(c.y for c in core) / len(core)
+    def axis_at(z):
+        ring = [v.co for v in nv if abs(v.co.z - z) < 0.8 and abs(v.co.x) < 8 and abs(v.co.y - ay) < 9]
+        return Vector((sum(c.x for c in ring) / len(ring), sum(c.y for c in ring) / len(ring), z)) if ring else Vector((0, ay, z))
+    AX = {z: axis_at(z) for z in range(134, 159)}
+    moves = []
+    for v in nv:
+        c = AX[int(round(min(158, max(134, v.co.z))))]
+        r = Vector((v.co.x - c.x, v.co.y - c.y, 0))
+        rl = r.length
+        if rl < 1e-6:
+            continue
+        rn = r / rl
+        d = Vector()
+        # fuller base: up to +6 % of the radius at 142 cm, nothing at 136 and 154 cm, only on the neck itself
+        if rl < 9:
+            zt = max(0.0, 1 - abs(v.co.z - 142.5) / 7.0)
+            d += rn * (rl * 0.06 * zt * zt * (3 - 2 * zt)) * max(0.0, min(1.0, (9 - rl) / 2))
+        # sternocleidomastoid: 2.5 mm cords, 1.1 cm wide
+        for sx in (1, -1):
+            a = Vector((sx * 4.6, ay + 1.5, 152.0))
+            b = Vector((sx * 1.3, ay - 5.2, 139.5))
+            dd, t = seg_d(v.co, a, b)
+            if dd < 3.5 and v.co.y < ay + 3:
+                d += rn * (0.25 * math.exp(-(dd / 1.1) ** 2) * math.sin(math.pi * min(1.0, 0.15 + t * 0.85)))
+        # upper trapezius: from the back of the neck to the top of the shoulder, raised 4 mm, 2 cm wide
+        for sx in (1, -1):
+            a = Vector((sx * 3.0, ay + 3.0, 148.0))
+            b = Vector((sx * 15.5, ay + 0.5, 140.5))
+            dd, t = seg_d(v.co, a, b)
+            if dd < 6 and v.co.y > ay - 3:
+                d += Vector((0, 0.15, 1.0)).normalized() * (0.4 * math.exp(-(dd / 2.0) ** 2) * math.sin(math.pi * min(1.0, 0.1 + t * 0.9)))
+        # collarbones: a 3 mm ridge from the notch of the sternum to the shoulder, with the hollow above it
+        for sx in (1, -1):
+            a = Vector((sx * 2.2, ay - 6.3, 138.3))
+            b = Vector((sx * 15.0, ay - 1.5, 141.0))
+            dd, t = seg_d(v.co, a, b)
+            if dd < 5 and v.co.y < ay - 1:
+                fade = math.sin(math.pi * min(1.0, 0.12 + t * 0.88))
+                up_ = v.co.z - (a.z + (b.z - a.z) * t)
+                d += Vector((0, -1, 0.2)).normalized() * fade * (0.3 * math.exp(-(dd / 0.9) ** 2)
+                                                               - 0.25 * math.exp(-(((up_ - 1.9) / 1.0) ** 2 + 0.0)) * (1 if up_ > 0.6 else 0))
+        moves.append((v, d * NECK_SCULPT))
+    for v, d in moves:
+        v.co += d
+    bm.normal_update()
+    print(f'cou sculpté : {len(moves)} points, déplacement max {max(d.length for _, d in moves):.2f} cm, {sum(1 for _, d in moves if d.length > 0.1)} points à plus de 1 mm')
 # 1.19 (Youssef, 05/11: « pour le corps nu, je veux que les tétons soient visibles », « pas visibles sous les
 # vêtements, il faut que ce soit naturel »): the cups of the old bikini had flattened the tip of each breast. A soft
 # nipple is raised there (3 mm, 0.65 cm wide, along the normal); skin_paint.py paints the areola round it. The
@@ -489,6 +560,10 @@ bm.normal_update()
 # rebuilt skin, they drew thin bright lines on the shoulders and the back (first pass of 1.19, 05/11). Round the rebuilt
 # points the sharp edges are cleared and the normals follow the surface; elsewhere the original normals are kept.
 redo = {v for v in redo if v.is_valid}
+# 1.20: the sculpted neck too (above 147 cm it kept its original normals, so the new muscles did not shade)
+if NECK_SCULPT > 0:
+    _sc = {v for v, d in moves if d.length > 1e-3 and v.is_valid}
+    redo |= _sc | {w for v in _sc for e in v.link_edges for w in e.verts}
 for e in bm.edges:
     if e.verts[0] in redo or e.verts[1] in redo:
         e.smooth = True
@@ -498,7 +573,13 @@ bm.to_mesh(me.data)
 me.data.update()
 dm = me.data
 cn = dm.attributes['cn_orig']
-cn = [tuple(dm.vertices[l.vertex_index].normal) if l.vertex_index in redo_i else tuple(cn.data[i].vector)
+# points split along a texture or material seam (head / body) share one normal, or the seam would draw a line
+_vn = {}
+_key = lambda co: (round(co.x, 3), round(co.y, 3), round(co.z, 3))
+for i in redo_i:
+    _vn.setdefault(_key(dm.vertices[i].co), []).append(dm.vertices[i].normal.copy())
+_vn = {k: (sum(n, Vector()) / len(n)).normalized() for k, n in _vn.items()}
+cn = [tuple(_vn[_key(dm.vertices[l.vertex_index].co)]) if l.vertex_index in redo_i else tuple(cn.data[i].vector)
       for i, l in enumerate(dm.loops)]
 dm.normals_split_custom_set(cn)
 dm.attributes.remove(dm.attributes['cn_orig'])

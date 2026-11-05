@@ -148,3 +148,49 @@ describe('le moteur du visage pilote les expressions', () => {
     expect(m.morphTargetInfluences!.every((v) => v === 0)).toBe(true);
   });
 });
+
+/**
+ * 1.20 (Youssef 05/11 13:42 « les expressions du visage sont toujours trop figées »): at rest, between strikes, the
+ * face lives: look, brows, lips and breathing change slowly, by small amounts, and never when the model stands still.
+ */
+describe('1.20 le visage vit au repos', () => {
+  test('les poids au repos restent petits et le coup reprend le dessus', () => {
+    const idle = { focus: 1, brow: 1, press: 0, smile: 1, side: 1, breath: 1 };
+    const w = expressionWeights(0, 0, 0, idle);
+    expect(w.BrowInnerUp!).toBeGreaterThan(0.2);
+    expect(w.MouthSmileLeft! + w.MouthSmileRight!).toBeGreaterThan(0.2);
+    expect(w.MouthSmileLeft!).not.toBeCloseTo(w.MouthSmileRight!, 2);
+    for (const [k, v] of Object.entries(w)) expect(v!, k).toBeLessThanOrEqual(0.4);
+    const hit = expressionWeights(0, 1, 1, idle);
+    expect(hit.BrowInnerUp).toBe(0);
+    expect(hit.MouthSmileLeft).toBe(0);
+    for (const [k, v] of Object.entries(hit)) expect(v!, k).toBeLessThanOrEqual(0.9);
+  });
+  test('en 12 s sans coup, les expressions changent, lentement', async () => {
+    const { FaceAnimator } = await import('../face');
+    const { Object3D } = await import('three');
+    const root = new Object3D();
+    const m = new Mesh(new BufferGeometry());
+    m.morphTargetDictionary = Object.fromEntries(FACE_EXPRESSIONS.map((e, i) => [`AK_${i}_${e}`, i]));
+    m.morphTargetInfluences = FACE_EXPRESSIONS.map(() => 0);
+    root.add(m);
+    const face = new FaceAnimator(root, 7);
+    const at = (e: (typeof FACE_EXPRESSIONS)[number]) => m.morphTargetInfluences![FACE_EXPRESSIONS.indexOf(e)];
+    const watched = ['BrowDownLeft', 'MouthPressLeft', 'NoseSneerLeft', 'JawOpen'] as const;
+    const seen = watched.map(() => ({ lo: 1, hi: 0 }));
+    let jump = 0;
+    let prev = watched.map(() => 0);
+    for (let f = 0; f < 12 * 60; f++) {
+      face.update(1 / 60);
+      const now = watched.map((e) => at(e));
+      if (f > 0) jump = Math.max(jump, ...now.map((v, i) => Math.abs(v - prev[i])));
+      now.forEach((v, i) => { seen[i].lo = Math.min(seen[i].lo, v); seen[i].hi = Math.max(seen[i].hi, v); });
+      prev = now;
+    }
+    seen.forEach((s, i) => expect(s.hi - s.lo, watched[i]).toBeGreaterThan(0.03));
+    // no jerk from one frame to the next (blinks aside, which are not watched here)
+    expect(jump).toBeLessThan(0.05);
+    face.update(1 / 60, { still: true, effort: 0 });
+    expect(m.morphTargetInfluences!.every((v) => v === 0)).toBe(true);
+  });
+});
