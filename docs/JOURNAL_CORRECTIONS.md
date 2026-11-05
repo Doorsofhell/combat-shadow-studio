@@ -2594,3 +2594,4 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS. Playwright complet : NON EXÉCUTÉ.
   - Après le lot 4 : Vitest 1079 RÉUSSIS, 1 ignoré ; TypeScript RÉUSSI ; Playwright ciblé 9 RÉUSSIS.
   - Logo vérifié sur 5 poses de garde, crochet et uppercut ; muscles comparés face, profil et dos à Amara (ordinateur, rendu logiciel). Téléphone Android réel : NON EXÉCUTÉ.
+- **Validation** : « je valide » de Youssef le 05/11 à 15:01 ; PR #56 fusionnée (154d18f), publiée en 1.20.0 sur GitHub Pages (titre vérifié).
