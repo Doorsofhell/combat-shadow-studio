@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.23.0',
+      releaseDate: '2026-11-05',
+      title: 'Visages plus vivants et respiration visible',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: "Entre deux coups, la tête des coachs bouge un peu et suit leurs coups d'œil, au lieu de rester figée." },
+        { category: 'coachs', text: "La respiration se voit : la poitrine et le ventre se gonflent davantage, les épaules montent à l'inspiration, et le souffle est plus profond après une série de coups." },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.22.1',
       releaseDate: '2026-11-05',
       title: 'Short MMA des coachs femmes au high kick',
