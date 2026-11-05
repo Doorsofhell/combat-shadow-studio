@@ -9,6 +9,7 @@ export type DiagKind =
   | 'demarrage' // a 3D stage is created: quality, coach, model
   | 'gpu' // what the device reports about its graphics (once per stage)
   | 'modele' // a coach model finished loading
+  | 'salle' // 1.24 the discipline's room could not load (the coach stays on the plain stage)
   | 'qualite' // the quality level changes (and why)
   | 'contexte-perdu'
   | 'contexte-restaure'

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { Component, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import {
   DoubleSide,
@@ -25,7 +25,9 @@ import { ROOM_EYE, ROOM_RADIUS, roomDir, swingAngle, type RoomData, type RoomSpe
 export function RoomScene({ spec, sharp }: { spec: RoomSpec; sharp: boolean }) {
   const dir = roomDir(spec.id);
   const data = JSON.parse(useLoader(FileLoader, `${dir}salle.json`) as string) as RoomData;
-  const [pano, mask] = useLoader(TextureLoader, [`${dir}${sharp ? 'fond.webp' : 'fond-2k.webp'}`, `${dir}lumieres.webp`]) as Texture[];
+  // a 512 copy of the picture lights the coach (prefiltered on the device: the light is soft anyway, and a bigger
+  // copy costs much more to prefilter on a phone); the 4096 picture is only drawn when « Haute » is chosen
+  const [pano, mask, env2k] = useLoader(TextureLoader, [`${dir}${sharp ? 'fond.webp' : 'fond-2k.webp'}`, `${dir}lumieres.webp`, `${dir}lumiere-coach.webp`]) as Texture[];
   const sprites = useLoader(TextureLoader, data.sprites.map((s) => `${dir}sprite-${s}.webp`)) as Texture[];
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
@@ -71,8 +73,10 @@ export function RoomScene({ spec, sharp }: { spec: RoomSpec; sharp: boolean }) {
 
   // the picture lights and reflects on the coach
   useEffect(() => {
+    env2k.colorSpace = SRGBColorSpace;
+    env2k.mapping = EquirectangularReflectionMapping;
     const pmrem = new PMREMGenerator(gl);
-    const env = pmrem.fromEquirectangular(pano);
+    const env = pmrem.fromEquirectangular(env2k);
     const prev = { env: scene.environment, k: scene.environmentIntensity };
     scene.environment = env.texture;
     scene.environmentIntensity = spec.env;
@@ -82,7 +86,7 @@ export function RoomScene({ spec, sharp }: { spec: RoomSpec; sharp: boolean }) {
       env.dispose();
       pmrem.dispose();
     };
-  }, [gl, scene, pano, spec.env]);
+  }, [gl, scene, env2k, spec.env]);
 
   useEffect(
     () => () => {
@@ -179,4 +183,21 @@ export function RoomLights({ spec, shadows }: { spec: RoomSpec; shadows: boolean
       {spec.rim2 && <directionalLight position={spec.rim2.pos} intensity={spec.rim2.intensity} color={spec.rim2.color} />}
     </>
   );
+}
+
+/**
+ * A room that cannot load (first visit offline, a missing file) is left out: the coach stays on the plain stage and
+ * the session goes on. The failure is written in the 3D journal once.
+ */
+export class RoomBoundary extends Component<{ children: ReactNode; onError?: (e: Error) => void }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(e: Error) {
+    this.props.onError?.(e);
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
 }

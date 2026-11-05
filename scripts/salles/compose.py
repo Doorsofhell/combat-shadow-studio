@@ -6,7 +6,8 @@ focus while the floor under the coach stays sharp, and a fine grain. It also wri
 app uses to make each light breathe and flicker a little.
 
 Usage: python3 -I scripts/salles/compose.py <render dir> <public/salles dir> [room ...]
-Writes <public>/<room>/: fond.webp (4096×2048), fond-2k.webp (2048×1024), lumieres.webp (1024×512, grey),
+Writes <public>/<room>/: fond.webp (4096×2048), fond-2k.webp (2048×1024), lumiere-coach.webp (512×256, lights the
+coach), lumieres.webp (1024×512, grey),
 sprite-*.webp, salle.json. The result depends only on the render and the room (fixed seed).
 """
 import json
@@ -88,6 +89,8 @@ def compose(src: Path, dst: Path, room: str):
     pic = Image.fromarray((img * 255 + 0.5).astype(np.uint8))
     pic.resize((4096, 2048), Image.LANCZOS).save(out / 'fond.webp', quality=82, method=6)
     pic.resize((2048, 1024), Image.LANCZOS).save(out / 'fond-2k.webp', quality=82, method=6)
+    # a small copy for the light and reflections on the coach (prefiltered on the device: cheap at this size)
+    pic.resize((512, 256), Image.LANCZOS).save(out / 'lumiere-coach.webp', quality=90, method=6)
     # mask of the lights (what glows), soft, for the flicker in the app
     mask = np.clip((lum - 0.55) / 0.45, 0, 1)
     mask = gblur(mask[..., None], 6 * s)[..., 0]

@@ -33,6 +33,13 @@ await page.evaluate(async (salle) => {
   await put('u:local:css-profile', JSON.stringify({ state: { profile: { ...DEFAULT_PROFILE, completed: true, coach: 'homme' } }, version: 0 }));
   await put('u:local:css-settings', JSON.stringify({ state: { settings: { ...DEFAULT_SETTINGS, salleImmersive: salle } }, version: 3 }));
 }, SALLE).catch((e) => console.log('seed', e.message));
+// the setting through its switch (what a person does), so the saved settings stay in the store's own format
+await page.goto("about:blank");
+await page.goto(`${base}#/reglages/affichage`);
+const sw = page.getByRole('switch', { name: /Salle immersive/ });
+await sw.waitFor({ state: 'attached', timeout: 60_000 });
+if ((await sw.isChecked()) !== SALLE) await sw.click({ force: true });
+await page.waitForTimeout(800);
 for (const d of list) {
   await page.goto('about:blank');
   await page.goto(`${base}#/entrainement?ex=${d}-debutant-01&mode=technique`);

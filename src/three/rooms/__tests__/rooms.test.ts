@@ -26,6 +26,7 @@ describe('salles immersives', () => {
         expect(size('fond.webp')).toBeLessThan(2.5 * 1024 * 1024);
         expect(size('fond-2k.webp')).toBeLessThan(900 * 1024);
         expect(size('lumieres.webp')).toBeLessThan(200 * 1024);
+        expect(size('lumiere-coach.webp')).toBeLessThan(100 * 1024);
         for (const s of data!.sprites) expect(size(`sprite-${s}.webp`)).toBeLessThan(300 * 1024);
         // the picture is a 2:1 panorama (WebP header: width and height after 'VP8 ' / 'VP8L' / 'VP8X')
         expect(data!.eye).toBe(1.4);

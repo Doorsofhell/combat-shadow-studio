@@ -22,6 +22,19 @@ async function seed(page: Page) {
   }, { ...DEFAULT_PROFILE, completed: true, coach: 'homme' });
 }
 
+/** the saved settings (IndexedDB): the switch writes them asynchronously, a navigation too early would cut the write */
+const stored = (page: Page) =>
+  page.evaluate(
+    () =>
+      new Promise<string>((res) => {
+        const r = indexedDB.open('keyval-store');
+        r.onsuccess = () => {
+          const q = r.result.transaction('keyval').objectStore('keyval').get('css-settings');
+          q.onsuccess = () => res(String(q.result ?? ''));
+        };
+      }),
+  );
+
 async function training(page: Page, ex: string) {
   await page.goto('about:blank');
   await page.goto(`/#/entrainement?ex=${ex}&mode=technique`);
@@ -47,6 +60,7 @@ test('chaque discipline dans sa salle, et l’interrupteur ramène le fond uni',
   await expect(sw).toBeChecked();
   await sw.click({ force: true });
   await expect(sw).not.toBeChecked();
+  await expect.poll(() => stored(page)).toContain('"salleImmersive":false');
   await training(page, 'boxe-debutant-01');
   await expect(page.locator('[data-room]').first()).toHaveAttribute('data-room', 'aucune');
   expect(await page.evaluate(() => (window as unknown as { __cssRoom?: unknown }).__cssRoom)).toBeUndefined();

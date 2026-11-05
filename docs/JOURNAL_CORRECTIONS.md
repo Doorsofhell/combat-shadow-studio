@@ -2673,3 +2673,27 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Téléphone Android : NON EXÉCUTÉ.
 - Point de restauration : `feature/combat-shadow-v030` à daa427b (1.22.1).
 
+
+## 2026-11-05 · v1.24.0 · Salles immersives par discipline
+
+- **Demande** : Youssef veut que chaque discipline s'entraîne dans sa propre salle, avec une ambiance et une lumière
+  qui mettent le coach en valeur, puis précise : « une ambiance réaliste pas 3D, une image… avec des éléments
+  naturels de type mouvement, balancement, lumière ».
+- **Constat** : l'entraînement montrait le coach sur un fond uni bleu-gris (« Lumière vive »), le même pour les six
+  disciplines. Aucun service de génération d'images par IA n'est joignable depuis l'environnement de travail.
+- **Correction** :
+  - six salles modélisées et rendues en photo 360° avec Blender (sans asset téléchargé, sans marque, sans texte) :
+    boxe (salle à l'ancienne et ring), kick-boxing (salle de nuit, baies vitrées), MMA (académie et cage), muay-thaï
+    (camp en bois de nuit), judo (dojo de jour), BJJ (académie, tapis gris) ;
+  - le panorama est posé sur un dôme à sol plat : le sol reste sous les pieds du coach quand la caméra tourne, et la
+    même image éclaire et se reflète sur le coach ;
+  - lumière propre à chaque salle sur le coach (clé, contre-jour coloré), fond toujours plus sombre que lui ;
+  - éléments vivants : sacs suspendus qui se balancent comme des pendules, lampes qui respirent doucement ;
+  - réglage « Salle immersive » (Réglages › Affichage 3D), activé par défaut ; désactivé, fond uni d'avant ;
+  - une salle qui ne se charge pas (hors ligne, fichier manquant) est ignorée : le coach reste affiché ;
+  - images non préchargées à l'installation : téléchargées à la première séance de la discipline puis gardées.
+- **Fichiers** : `src/three/rooms/` (rooms.ts, RoomScene.tsx), `src/three/CoachStage.tsx`, `src/three/StudioStage.tsx`,
+  `src/store/settings.ts`, `src/ui/screens/Settings.tsx`, `vite.config.ts`, `public/salles/`, `scripts/salles/`,
+  `scripts/dev/shot-salles.mjs`, `docs/v1240/SALLES.md` et captures avant/après `docs/v1240/captures/`.
+- **Tests** : voir le rapport de la PR (unitaires `src/three/rooms/__tests__/rooms.test.ts`, navigateur
+  `tests/e2e/salles.spec.ts` et suites voisines).

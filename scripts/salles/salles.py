@@ -19,7 +19,8 @@ import bpy  # noqa: I001
 from mathutils import Vector
 
 QUICK = os.environ.get('QUICK') == '1'
-PW, PH = (1024, 512) if QUICK else (4096, 2048)
+PW = 1024 if QUICK else int(os.environ.get('RES', '4096'))
+PH = PW // 2
 SAMPLES = 16 if QUICK else int(os.environ.get('SAMPLES', '96'))
 EYE = 1.4  # height of the panorama camera (GroundedSkybox height in the app)
 
@@ -375,29 +376,29 @@ def boxe():
     sc = reset()
     floor = pbr('parquet', '#5a4029', 0.45, kind='planks', scale=3.0, var=0.3, bump=0.25, coat=0.15)
     ceil = pbr('plafond', '#141414', 0.9, scale=3)
-    room_shell(9, 12, 5.2, floor, lambda ax: pbr('brique', '#6a3326', 0.85, kind='brick', scale=4, var=0.3, bump=0.4, axes=ax), ceil)
+    room_shell(9, 15, 5.2, floor, lambda ax: pbr('brique', '#6a3326', 0.85, kind='brick', scale=4, var=0.3, bump=0.4, axes=ax), ceil)
     # wainscot and a skirting
-    for y, rz, L in ((12 - 0.02, 0, 18), (-12 + 0.02, 0, 18)):
+    for y, rz, L in ((15 - 0.02, 0, 18), (-15 + 0.02, 0, 18)):
         box((L, 0.06, 1.1), (0, y, 0.55), pbr('lambris', '#1e2a2e', 0.6, scale=4), 0.01)
     for x in (9 - 0.02, -9 + 0.02):
-        box((0.06, 24, 1.1), (x, 0, 0.55), pbr('lambris', '#1e2a2e', 0.6, scale=4), 0.01)
+        box((0.06, 30, 1.1), (x, 0, 0.55), pbr('lambris', '#1e2a2e', 0.6, scale=4), 0.01)
     # the ring at the back
-    canvas = pbr('toile', '#b9bcc2', 0.9, scale=14, var=0.12, bump=0.05)
+    canvas = pbr('toile', '#8d939e', 0.9, scale=14, var=0.12, bump=0.05)
     apron = pbr('jupe', '#1b2236', 0.75, scale=8, var=0.15)
     rope_m = pbr('corde', '#e9e7e2', 0.45, scale=30, var=0.08, bump=0.02)
     red = pbr('coin-rouge', '#9e1622', 0.5, scale=10, var=0.12)
     blue = pbr('coin-bleu', '#183a8c', 0.5, scale=10, var=0.12)
     white = pbr('coin-blanc', '#d8d6d0', 0.5, scale=10, var=0.1)
     steel = pbr('acier', '#9a9ca0', 0.3, metal=1.0, var=0.1, bump=0.0)
-    ring(0, 7.0, 5.0, 0.9, 0.0, (red, white, blue, white), rope_m, canvas, apron, steel)
+    ring(0, 10.5, 5.0, 0.9, 0.0, (red, white, blue, white), rope_m, canvas, apron, steel)
     # ring lights: a truss with four spots
     truss = pbr('truss', '#202224', 0.4, metal=1.0, var=0.1, bump=0)
-    for x, y in ((-2.2, 4.8), (2.2, 4.8), (-2.2, 9.2), (2.2, 9.2)):
+    for x, y in ((-2.2, 8.3), (2.2, 8.3), (-2.2, 12.7), (2.2, 12.7)):
         rod((x, y, 4.6), (x, y, 5.2), 0.02, truss)
-    for a, b in (((-2.2, 4.8), (2.2, 4.8)), ((2.2, 4.8), (2.2, 9.2)), ((2.2, 9.2), (-2.2, 9.2)), ((-2.2, 9.2), (-2.2, 4.8))):
+    for a, b in (((-2.2, 8.3), (2.2, 8.3)), ((2.2, 8.3), (2.2, 12.7)), ((2.2, 12.7), (-2.2, 12.7)), ((-2.2, 12.7), (-2.2, 8.3))):
         rod((*a, 4.6), (*b, 4.6), 0.04, truss)
-    for x, y in ((-1.2, 5.8), (1.2, 5.8), (-1.2, 8.2), (1.2, 8.2)):
-        area((x, y, 4.5), (0, 7, 0.9), 420, 0.5, '#fff1dc')
+    for x, y in ((-1.2, 9.3), (1.2, 9.3), (-1.2, 11.7), (1.2, 11.7)):
+        area((x, y, 4.5), (0, 10.5, 0.9), 260, 0.5, '#fff1dc')
         box((0.5, 0.5, 0.06), (x, y, 4.55), glow('spot', '#fff4e6', 25), name='spot')
     # pendant lamps over the training floor (warm), sconces on the side walls
     shade = pbr('tole', '#1c2b22', 0.45, metal=0.6, scale=5, var=0.2)
@@ -530,18 +531,24 @@ def kickboxing():
     for sx in (-1, 1):
         box((1.0, 14, 0.012), (sx * 4.5, 0, 0.006), red)
         box((10, 1.0, 0.012), (0, sx * 7.5, 0.006), red)
-    # back wall: three tall windows on a city at night (far lights out of focus, a deep blue sky)
+    # back wall: three tall windows on a city at night (far lights out of focus, a deep blue sky); the solid wall of
+    # the shell is replaced by pieces around the openings
+    wallm = bpy.data.objects['mur-fond'].data.materials[0]
+    bpy.data.objects.remove(bpy.data.objects['mur-fond'], do_unlink=True)
+    box((18, 0.2, 1.28), (0, 12.1, 0.64), wallm, name='mur-fond')
+    box((18, 0.2, 0.88), (0, 12.1, 4.36), wallm, name='mur-fond')
+    for x0, x1 in ((-9, -6.8), (-3.2, -1.8), (1.8, 3.2), (6.8, 9)):
+        box((x1 - x0, 0.2, 2.64), ((x0 + x1) / 2, 12.1, 2.6), wallm, name='mur-fond')
     for x in (-5, 0, 5):
-        box((3.6, 0.05, 2.6), (x, 11.97, 2.6), pbr('verre', '#05070a', 0.05, metal=0.0, var=0.05, bump=0), name='vitre')
         for k in range(5):
             box((0.06, 0.08, 2.7), (x - 1.8 + k * 0.9, 11.93, 2.6), pbr('menuiserie', '#0b0b0c', 0.4))
         box((3.7, 0.1, 0.08), (x, 11.93, 1.28), pbr('menuiserie', '#0b0b0c', 0.4))
         box((3.7, 0.1, 0.08), (x, 11.93, 3.92), pbr('menuiserie', '#0b0b0c', 0.4))
-    box((20, 0.1, 4), (0, 16, 1.8), glow('ciel', '#0d1a33', 1.2), name='ciel')
+    box((30, 0.1, 8), (0, 16, 2.0), glow('ciel', '#0b1730', 1.3), name='ciel')
     import random
     rnd = random.Random(7)
     for _ in range(140):
-        sphere(rnd.uniform(0.04, 0.12), (rnd.uniform(-9, 9), rnd.uniform(14, 15.8), rnd.uniform(0.6, 3.4)), glow('ville', rnd.choice(['#ffcf8a', '#ffd9a8', '#9fc4ff', '#ff9a6a']), rnd.uniform(4, 14)))
+        sphere(rnd.uniform(0.02, 0.06), (rnd.uniform(-9, 9), rnd.uniform(14, 15.8), rnd.uniform(0.3, 2.6)), glow('ville', rnd.choice(['#ffcf8a', '#ffd9a8', '#9fc4ff', '#ff9a6a']), rnd.uniform(3, 9)))
     # red LED lines along the ceiling edges, white linear lights over the floor
     for x in (-8.9, 8.9):
         box((0.04, 23, 0.04), (x, 0, 4.7), glow('led-rouge', '#ff2b3a', 6), name='led')
@@ -614,7 +621,11 @@ def muaythai():
         z = 3.1 + 0.25 * math.sin(x * 1.7 + y)
         sphere(0.06, (x, y, z), bulb, name='ampoule')
         rod((x, y, z + 0.06), (x, y, 4.45), 0.005, cable, verts=6)
-        point((x, y, z - 0.02), 70, '#ffb35c', 0.05)
+        point((x, y, z - 0.02), 260, '#ffb35c', 0.05)
+    # two caged work lights over the mats, two over the ring
+    for x, y, k in ((-1.5, 0, 260), (1.5, 0, 260), (-1.6, 6.6, 300), (1.6, 6.6, 300)):
+        area((x, y, 4.3), (x, y, 0), k, 0.6, '#ffcf96')
+        box((0.5, 0.3, 0.08), (x, y, 4.36), glow('lampe', '#ffd9a8', 8), name='lampe')
     # moonlight from outside, and dark vegetation around the shed
     bpy.ops.object.light_add(type='SUN', location=(0, 0, 10))
     sun = bpy.context.object
@@ -669,7 +680,7 @@ def judo():
     box((L, Wd, 0.1), (0, 0, -0.11), floor, name='sol')
     dark = pbr('bois-fonce', '#3b2a1e', 0.55, kind='planks', axes='xz', scale=4, var=0.3, bump=0.2)
     wood = pbr('bois', '#6b4a2e', 0.55, kind='planks', axes='xz', scale=4, var=0.3, bump=0.2)
-    paper = pbr('shoji', '#efe6d4', 0.9, scale=40, var=0.06, bump=0.02, emit='#fff1d8', emit_k=1.6)
+    paper = pbr('shoji', '#efe6d4', 0.9, scale=40, var=0.06, bump=0.02, emit='#fff1d8', emit_k=0.45)
     hx, hy = L / 2, Wd / 2
     # walls: posts every 2 m, wooden panel up to 0.9 m, shoji above, a beam on top
     for side in ('N', 'S', 'E', 'W'):
@@ -698,7 +709,7 @@ def judo():
         box((2 * half, 0.22, 0.3) if along_x else (0.22, 2 * half, 0.3), (0, fixed, Hh - 0.1) if along_x else (fixed, 0, Hh - 0.1), dark)
         # daylight behind the screens
         lp = (0, fixed * 1.25, 2.0) if along_x else (fixed * 1.25, 0, 2.0)
-        area(lp, (0, 0, 1.0), 900, 2 * half, '#fff0d6', shape='RECTANGLE', size_y=2.4)
+        area(lp, (0, 0, 1.0), 350, 2 * half, '#fff0d6', shape='RECTANGLE', size_y=2.4)
     # the alcove (tokonoma) on the back wall, a plain scroll and a low table
     box((1.8, 0.75, 0.2), (1, hy - 0.4, 0.1), dark, 0.01)
     box((1.84, 0.06, Hh), (1, hy + 0.05, Hh / 2), pbr('enduit', '#d8cfbf', 0.9, scale=6, var=0.08))
@@ -719,10 +730,10 @@ def judo():
 
 
 def bjj():
-    """a modern jiu-jitsu academy: blue mats with a black border, padded black walls, a rack of belts on the wall,
+    """a modern jiu-jitsu academy: grey mats with a black border (the blue gi stands out on them), padded black walls, a rack of belts on the wall,
     bright ceiling panels"""
     sc = reset()
-    mats_ = pbr('tapis-bleu', '#1f3f78', 0.75, kind='brick', brick=(1.0, 2.0, 0.005), b2=0.95, scale=3, var=0.1, bump=0.12)
+    mats_ = pbr('tapis-gris', '#6a6e75', 0.75, kind='brick', brick=(1.0, 2.0, 0.005), b2=0.95, scale=3, var=0.1, bump=0.12)
     border = pbr('tapis-noir', '#121315', 0.75, kind='brick', brick=(1.0, 2.0, 0.005), b2=0.95, scale=3, var=0.1, bump=0.12)
     ceil = pbr('plafond', '#1a1c1f', 0.9, scale=2)
     room_shell(9, 11, 4.2, border, lambda ax: pbr('mur', '#5a5d62', 0.9, scale=1.4, var=0.25, bump=0.15, axes=ax), ceil)
@@ -744,13 +755,13 @@ def bjj():
         box((0.05, 0.014, 0.12), (x, 10.825, 1.45), pbr('barrette', '#111111' if c != '#141414' else '#9e1622', 0.6))
     # stacked crash mats and kettlebells along the right wall
     for k in range(4):
-        box((1.2, 2.0, 0.15), (7.9, 6.5, 0.08 + k * 0.155), pbr('matelas', ['#1f3f78', '#121315'][k % 2], 0.7, scale=5, var=0.1), 0.03)
+        box((1.2, 2.0, 0.15), (7.9, 6.5, 0.08 + k * 0.155), pbr('matelas', ['#6a6e75', '#121315'][k % 2], 0.7, scale=5, var=0.1), 0.03)
     for k in range(5):
         sphere(0.12 + 0.015 * k, (8.2, -6 + k * 0.45, 0.13 + 0.015 * k), pbr('fonte', '#1b1b1c', 0.45, metal=0.5, scale=10, var=0.2))
     # LED panels
     for x in (-4.5, 0, 4.5):
         for y in (-7, -2.5, 2, 6.5):
-            box((1.2, 1.2, 0.04), (x, y, 4.15), glow('led', '#f3f6ff', 10), name='panneau')
+            box((1.2, 1.2, 0.04), (x, y, 4.15), glow('led', '#f3f6ff', 5), name='panneau')
             area((x, y, 4.1), (x, y, 0), 110, 1.2, '#f3f6ff')
     sc.world.node_tree.nodes['Background'].inputs[1].default_value = 0.3
     return sc, [], {'key': '#ffffff', 'haze': '#121722'}
