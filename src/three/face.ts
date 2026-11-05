@@ -104,6 +104,11 @@ interface Mover {
   q: Quaternion;
   /** displacement per unit of effort, in the parent's space */
   d: Vector3;
+  /** 1.21 the face at rest on the bone faces (Axel, Kaila): which feature, its side (1 left, -1 right), and for a
+   * mouth corner the displacement of a smile */
+  kind?: 'inner' | 'outer' | 'mid' | 'corner';
+  side?: number;
+  smile?: Vector3;
 }
 
 const MM = 0.001;
@@ -194,10 +199,10 @@ export class FaceAnimator {
   private blinkAt = -1;
   private effort = 0;
   /** 1.20 the face at rest (FaceIdle): current values, targets, time of the next change, breathing phase */
-  private idle: FaceIdle = { focus: 0.5, brow: 0, press: 0.3, smile: 0, side: 0, breath: 0 };
+  private idle: FaceIdle = { focus: 0, brow: 0, press: 0, smile: 0, side: 0, breath: 0 };
   private idleTo: FaceIdle = { focus: 0.5, brow: 0, press: 0.3, smile: 0, side: 0, breath: 0 };
   private idleNext = 0;
-  private breathPhase = 0;
+  private breathPhase = -Math.PI / 2;
   private peak = 0;
   private gaze = { yaw: 0, pitch: 0, toYaw: 0, toPitch: 0, next: 0.8 };
 
@@ -242,12 +247,21 @@ export class FaceAnimator {
       const outer = find(root, `Face_${s}OuterEyebrow`);
       const corner = find(root, `Face_${s}MouthCorner`);
       const sign = s === 'L' ? 1 : -1;
-      if (inner) this.movers.push({ bone: inner, ...rest(inner), d: toParent(inner, UP.clone().multiplyScalar(-6 * MM).addScaledVector(lat, -3 * MM * sign)) });
-      if (outer) this.movers.push({ bone: outer, ...rest(outer), d: toParent(outer, UP.clone().multiplyScalar(-4 * MM)) });
-      if (corner) this.movers.push({ bone: corner, ...rest(corner), d: toParent(corner, lat.clone().multiplyScalar(2.5 * MM * sign).addScaledVector(FWD, -1.5 * MM)) });
+      if (inner) this.movers.push({ bone: inner, ...rest(inner), d: toParent(inner, UP.clone().multiplyScalar(-6 * MM).addScaledVector(lat, -3 * MM * sign)), kind: 'inner', side: sign });
+      if (outer) this.movers.push({ bone: outer, ...rest(outer), d: toParent(outer, UP.clone().multiplyScalar(-4 * MM)), kind: 'outer', side: sign });
+      if (corner)
+        this.movers.push({
+          bone: corner,
+          ...rest(corner),
+          d: toParent(corner, lat.clone().multiplyScalar(2.5 * MM * sign).addScaledVector(FWD, -1.5 * MM)),
+          kind: 'corner',
+          side: sign,
+          // a smile lifts the corner and draws it out and back
+          smile: toParent(corner, UP.clone().multiplyScalar(2 * MM).addScaledVector(lat, 1.5 * MM * sign).addScaledVector(FWD, -1 * MM)),
+        });
     }
     const mid = find(root, 'Face_MMiddleEyebrow');
-    if (mid) this.movers.push({ bone: mid, ...rest(mid), d: toParent(mid, UP.clone().multiplyScalar(-4 * MM)) });
+    if (mid) this.movers.push({ bone: mid, ...rest(mid), d: toParent(mid, UP.clone().multiplyScalar(-4 * MM)), kind: 'mid' });
     const jaw = find(root, 'Face_MJaw');
     if (jaw) this.jaw = { bone: jaw, q: rest(jaw).q, axis: toBone(jaw, lat) };
     for (const n of ['LeftHand', 'RightHand', 'LeftFoot', 'RightFoot']) {
@@ -310,7 +324,28 @@ export class FaceAnimator {
     }
     if (still) blink = 0;
     if (opts.blink !== undefined) blink = opts.blink;
-    const squint = 0.45 * this.effort;
+    // 1.20 the face at rest: a new mood every 2 to 5 s, reached over about a second; breathing 15 a minute,
+    // faster after effort (1.21: also on the faces driven by bones, Axel and Kaila)
+    if (!still) {
+      const I = this.idleTo;
+      if (this.t >= this.idleNext) {
+        const r = this.rand();
+        I.focus = 0.35 + 0.65 * this.rand();
+        I.brow = this.rand() < 0.3 ? 0.4 + 0.6 * this.rand() : 0;
+        // pressed lips most of the time, a faint smile now and then, otherwise relaxed
+        I.press = r < 0.45 ? 0.5 + 0.5 * this.rand() : 0;
+        I.smile = r > 0.8 ? 0.5 + 0.5 * this.rand() : 0;
+        I.side = this.rand() * 2 - 1;
+        this.idleNext = this.t + 2 + this.rand() * 3;
+      }
+      const k = Math.min(1, dt / 0.9);
+      for (const key of ['focus', 'brow', 'press', 'smile', 'side'] as const) this.idle[key] += (I[key] - this.idle[key]) * k;
+      this.breathPhase += dt * 2 * Math.PI * (0.25 + 0.2 * this.effort);
+      this.idle.breath = 0.5 + 0.5 * Math.sin(this.breathPhase);
+    }
+    const rest = 1 - this.effort;
+    const idle = still ? null : this.idle;
+    const squint = 0.45 * this.effort + (idle ? 0.12 * idle.focus * rest : 0);
     const close = Math.max(blink, squint);
     for (const { top, bottom } of this.lids) {
       for (const [lid, k] of [
@@ -339,34 +374,32 @@ export class FaceAnimator {
     }
 
     for (const m of this.movers) {
-      m.bone.position.copy(m.p).addScaledVector(m.d, this.effort);
+      let k = this.effort;
+      m.bone.position.copy(m.p);
+      if (idle) {
+        // at rest, the same features as the expressions of the other coaches, smaller: brows a little lowered by
+        // focus, the inner brows lifted now and then, the mouth corners in a faint uneven smile
+        if (m.kind === 'inner') k += (0.3 * idle.focus - 0.6 * idle.brow) * rest;
+        else if (m.kind === 'outer' || m.kind === 'mid') k += 0.3 * idle.focus * rest;
+        else if (m.kind === 'corner' && m.smile) {
+          const lead = 1 + 0.35 * idle.side * (m.side ?? 0);
+          m.bone.position.addScaledVector(m.smile, 0.5 * idle.smile * (1 - idle.press) * rest * lead);
+          k += 0.25 * idle.press * rest;
+        }
+      }
+      m.bone.position.addScaledVector(m.d, k);
       m.bone.quaternion.copy(m.q);
     }
-    // the jaw sets and opens a crack on the exhale of the strike (2.5° at full effort)
-    if (this.jaw) this.jaw.bone.quaternion.copy(this.jaw.q).multiply(tmpQ.setFromAxisAngle(this.jaw.axis, (2.5 * Math.PI * this.effort) / 180));
+    // the jaw sets and opens a crack on the exhale of the strike (2.5° at full effort); 1.21 at rest it follows the
+    // breathing (up to 0.8°)
+    if (this.jaw) {
+      const a = 2.5 * this.effort + (idle ? 0.8 * idle.breath * rest : 0);
+      this.jaw.bone.quaternion.copy(this.jaw.q).multiply(tmpQ.setFromAxisAngle(this.jaw.axis, (a * Math.PI) / 180));
+    }
     if (this.morphs.length) {
       // the exhale follows the effort with a short delay and lasts a little longer (breath out as the strike lands)
       const ex = still ? 0 : this.effort;
       this.exhale += (ex - this.exhale) * Math.min(1, dt / (ex > this.exhale ? 0.09 : 0.25));
-      // 1.20 the face at rest: a new mood every 2 to 5 s, reached over about a second; breathing 15 a minute,
-      // faster after effort
-      if (!still) {
-        const I = this.idleTo;
-        if (this.t >= this.idleNext) {
-          const r = this.rand();
-          I.focus = 0.35 + 0.65 * this.rand();
-          I.brow = this.rand() < 0.3 ? 0.4 + 0.6 * this.rand() : 0;
-          // pressed lips most of the time, a faint smile now and then, otherwise relaxed
-          I.press = r < 0.45 ? 0.5 + 0.5 * this.rand() : 0;
-          I.smile = r > 0.8 ? 0.5 + 0.5 * this.rand() : 0;
-          I.side = this.rand() * 2 - 1;
-          this.idleNext = this.t + 2 + this.rand() * 3;
-        }
-        const k = Math.min(1, dt / 0.9);
-        for (const key of ['focus', 'brow', 'press', 'smile', 'side'] as const) this.idle[key] += (I[key] - this.idle[key]) * k;
-        this.breathPhase += dt * 2 * Math.PI * (0.25 + 0.2 * this.effort);
-        this.idle.breath = 0.5 + 0.5 * Math.sin(this.breathPhase);
-      }
       const w = opts.expr ?? expressionWeights(blink, this.effort, this.exhale, still ? undefined : this.idle);
       for (const { mesh, idx } of this.morphs) {
         const inf = mesh.morphTargetInfluences!;
