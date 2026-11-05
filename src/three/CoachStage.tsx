@@ -29,6 +29,8 @@ import { stabilityLevel, stepDown, stepUp, type StabilityLevel } from './safe3d'
 import { log3d } from './diag3d';
 import { StageGuardContext } from '../ui/components/StageGuard';
 import type { FighterLook } from '../editor/look';
+import { RoomScene } from './rooms/RoomScene';
+import { roomFor } from './rooms/rooms';
 
 export const STYLE_OF: Record<DisciplineId, StanceStyle> = {
   boxe: 'boxing',
@@ -193,7 +195,10 @@ export function CoachStage(props: CoachStageProps) {
   // other screens lay their own text and buttons over the stage, made for the theme's background)
   const vive = light === 'vive' && style === 'realiste' && render === 'premium';
   const viveBg = vive && backdrop === 'theme';
-  const stageDark = viveBg || (backdrop !== 'studio' && menuTheme === 'dark');
+  // 1.23 Salles immersives: on the training stage, each discipline in its own room (rooms.ts), unless turned off
+  const roomOn = useSettings((s) => s.settings.salleImmersive);
+  const room = backdrop === 'theme' && roomOn && !arActive ? roomFor(discipline) : null;
+  const stageDark = !!room || viveBg || (backdrop !== 'studio' && menuTheme === 'dark');
   // v0.31: discipline outfit of the Ultra-réaliste coaches; a failure is said, never silently replaced
   const outfitOn = useSettings((s) => s.settings.coachOutfit);
   const bjjOutfit = useSettings((s) => s.settings.bjjOutfit);
@@ -320,13 +325,14 @@ export function CoachStage(props: CoachStageProps) {
       onCreated={onCreated}
       shadows={realShadows ? 'soft' : false}
       data-coach={shownCoach}
+      data-room={room?.id ?? 'aucune'}
       dpr={startDpr}
       frameloop={hidden ? 'never' : 'always'}
       // v0.31: antialiasing stays on in every quality (multisampling costs little on phone graphics chips, and its
       // absence gave the staircase edges of the light quality)
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       camera={{ position: [0, 1.1, 5], fov: 30 }}
-      style={{ background: arActive ? 'transparent' : viveBg ? VIVID_BG : backdrop === 'theme' ? 'transparent' : backdrop === 'dark' ? 'var(--scene)' : '#fff', touchAction: 'none' }}
+      style={{ background: arActive ? 'transparent' : room ? room.background : viveBg ? VIVID_BG : backdrop === 'theme' ? 'transparent' : backdrop === 'dark' ? 'var(--scene)' : '#fff', touchAction: 'none' }}
     >
       {quality === 'auto' && (
         <PerformanceMonitor
@@ -356,9 +362,16 @@ export function CoachStage(props: CoachStageProps) {
             shadows={realShadows}
             realistic={style === 'realiste'}
             vive={vive}
+            room={room}
           />
         )}
-        {style === 'realiste' && render === 'premium' && q === 'haute' && <StudioEnvironment intensity={vive ? 0.7 : 0.12} />}
+        {room && (
+          // its own boundary: the coach never waits for the room's pictures
+          <Suspense fallback={null}>
+            <RoomScene key={room.id} spec={room} sharp={q === 'haute' && (quality === 'haute' || !TOUCH) && level === 0} />
+          </Suspense>
+        )}
+        {!room && style === 'realiste' && render === 'premium' && q === 'haute' && <StudioEnvironment intensity={vive ? 0.7 : 0.12} />}
         {ar && <ArScene bridge={ar} active={arActive} coachGroup={coachGroup} follow={follow} />}
         {/* the coach stays mounted when switching to AR: same model, same player, same animation */}
         <group ref={coachGroup}>

@@ -41,12 +41,12 @@ export default defineConfig({
         // 1.10.1 (Youssef, 03/11 « je ne vois toujours pas la 1.10 ») : the coaches and their outfits (108 Mo) are no
         // longer kept ahead. Every update had to download all changed models before the new version could start
         // (71 Mo for 1.10); closed before the end, the phone stayed on the old one. They are kept on first use instead.
-        globIgnores: ['**/tenues/arbitre*', 'coaches/*/**', 'models/**'],
+        globIgnores: ['**/tenues/arbitre*', 'coaches/*/**', 'models/**', 'salles/**'],
         runtimeCaching: [
           {
             // network first (a model changed by an update is fetched again; unchanged ones answer 304), the kept
             // copy after 4 s or offline
-            urlPattern: ({ url }) => /\/(coaches|models)\//.test(url.pathname),
+            urlPattern: ({ url }) => /\/(coaches|models|salles)\//.test(url.pathname),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'css-modeles',

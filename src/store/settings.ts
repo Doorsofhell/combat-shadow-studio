@@ -55,6 +55,12 @@ export interface Settings {
    * 0.49 (without this field) get Vive through `merge`.
    */
   coachLight: 'studio' | 'vive';
+  /**
+   * 1.23 Salles immersives (Youssef, 2026-11-05): the training stage shows the discipline's room (photo-like
+   * panorama, swinging bags, its own light on the coach) instead of the plain background. On by default; saves from
+   * before 1.23 get it through `merge` (DEFAULT_SETTINGS first)
+   */
+  salleImmersive: boolean;
   cameraAngle: number;
   /** teaching camera mode; auto picks the best angle for each technique */
   cameraMode: import('../domain/camera').CameraMode;
@@ -140,6 +146,7 @@ export const DEFAULT_SETTINGS: Settings = {
   coachStyle: 'realiste',
   coachRender: 'premium',
   coachLight: 'vive',
+  salleImmersive: true,
   cameraAngle: 35,
   cameraMode: 'auto',
   cues: { trajectoire: true, hanches: true, pivot: true, articulations: true, pieds: true, garde: false, comparaison: false },
