@@ -2653,3 +2653,4 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Défaut restant** : un fin pli reste visible au milieu de l'entrejambe au sommet du high kick.
 - **Tests** : Vitest 1085 RÉUSSIS, 1 ignoré, 0 ÉCHOUÉ ; TypeScript RÉUSSI ; Playwright `outfit-loading`, `coachs-v160`, `coach-render` : 9 RÉUSSIS ; Playwright complet NON EXÉCUTÉ ; téléphone Android NON EXÉCUTÉ.
 - Point de restauration : `feature/combat-shadow-v030` à bdcc382 (1.22.0).
+- **Validation** : « je valide » de Youssef le 05/11 à 19:59 ; PR #59 fusionnée (daa427b), publiée en 1.22.1 sur GitHub Pages (titre vérifié). La 1.22.0 est partie en ligne avec elle.
