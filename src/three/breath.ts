@@ -54,8 +54,9 @@ export class Breath {
       cssBreath: this.amount,
       cssBreathChest: { value: new Vector4(chest.x, chest.y, chest.z, 0.95 * s) },
       cssBreathBelly: { value: new Vector4(s0.x, s0.y, s0.z, 0.75 * s) },
-      // about 4 mm at the chest and 3 mm at the belly for a 15 cm Spine2-Neck span
-      cssBreathAmp: { value: new Vector4(0.027 * s, 0.02 * s, 0, 0) },
+      // about 4 mm at the chest and 3 mm at the belly for a 15 cm Spine2-Neck span; 1.23 (Youssef 20:04,
+      // « respiration aussi, c'est très important »): 6 and 5 mm, scaled up again when out of breath (cssBreath.z)
+      cssBreathAmp: { value: new Vector4(0.04 * s, 0.033 * s, 0, 0) },
     };
   }
 
@@ -71,9 +72,11 @@ export class Breath {
     this.exhale = Math.max(0, this.exhale - d / 0.35);
     const sinP = Math.sin(this.phase);
     const v = this.amount.value;
+    // 1.23 out of breath after strikes: deeper breaths (up to 1.5 times), back to calm over a few breaths
+    const deep = 1 + 0.5 * Math.min(1, (this.rate - 0.23) / 0.27);
     // the chest leads, the belly follows a quarter of a breath later; the exhale empties both
-    v.x = sinP * (1 - this.exhale) - this.exhale;
-    v.y = Math.sin(this.phase - 0.9) * (1 - this.exhale) - 0.6 * this.exhale;
+    v.x = deep * sinP * (1 - this.exhale) - this.exhale;
+    v.y = deep * Math.sin(this.phase - 0.9) * (1 - this.exhale) - 0.6 * this.exhale;
   }
 }
 
