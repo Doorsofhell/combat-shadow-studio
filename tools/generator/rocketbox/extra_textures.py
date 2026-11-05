@@ -276,7 +276,13 @@ else:
     # takes the relief of the skin around, interpolated the same way
     nmb = np.asarray(Image.open(os.path.join(basetex, 'f021_body_normal.tga')).convert('RGB'), dtype=np.float32) / 255
     nmh = np.asarray(Image.open(os.path.join(basetex, 'f021_head_normal.tga')).convert('RGB'), dtype=np.float32) / 255
-    both, grown, bothh, grownh = halter_skin(np.concatenate([body, nmb], -1), np.concatenate([head, nmh], -1))
+    if os.environ.get('HALTER_SKIN', '1') == '0':
+        # 1.19: the bikini top is removed from the low-poly body (clean_torso.py) and its islands repainted from the
+        # skin around by skin_paint.py, after this script: nothing to do here
+        both, bothh = np.concatenate([body, nmb], -1), np.concatenate([head, nmh], -1)
+        grown, grownh = np.zeros(body.shape[:2], np.float32), np.zeros(head.shape[:2], np.float32)
+    else:
+        both, grown, bothh, grownh = halter_skin(np.concatenate([body, nmb], -1), np.concatenate([head, nmh], -1))
     body, halter_normal = both[..., :3], both[..., 3:]
     head, halter_head_normal = bothh[..., :3], bothh[..., 3:]
     pink = pink * (1 - grown)

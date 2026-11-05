@@ -75,7 +75,9 @@ describe('Inaya : buste sans le relief du bikini d’origine', () => {
   test('le relief local des points de l’ancien bikini reste sous 2,5 mm (4,8 mm en 1.14)', () => {
     const { parts } = readGlb('public/coaches/inaya/photo.glb');
     const r = relief(parts);
-    expect(r.count, 'points de l’ancien bikini trouvés').toBeGreaterThan(2000);
+    // sanity bound on the selection, not on quality: 1.19 merged the 150+ doubled points of the old hems
+    // (clean_torso.py, MERGE), so the same area now holds 1518 points (2000+ before)
+    expect(r.count, 'points de l’ancien bikini trouvés').toBeGreaterThan(1400);
     expect(r.max * 1000, `relief max ${(r.max * 1000).toFixed(2)} mm`).toBeLessThan(2.5);
   });
 });
