@@ -44,20 +44,48 @@ export type FaceExpression = (typeof FACE_EXPRESSIONS)[number];
  * down and together, eyes narrowed, cheeks raised, nose wrinkled a little, lips pressed (the jaw sets). Exhale: the
  * short breath of the strike, lips rounded and parted. Kept moderate: a set face, not a grimace.
  */
-export function expressionWeights(blink: number, effort: number, exhale: number): Partial<Record<FaceExpression, number>> {
+/**
+ * 1.20 (Youssef, 05/11 13:42: « les expressions du visage sont toujours trop figées »): between two strikes the face
+ * had nothing but blinks and glances. The life of a face at rest, all slow (seconds) and small:
+ * - focus: the look of a fighter reading the opponent, brows lowered a little, eyes narrowed;
+ * - brow: the inner brows lift now and then;
+ * - mouth: lips pressed (determination) or a faint, uneven smile; side: which corner leads (-1 left .. 1 right);
+ * - breath: the breathing cycle (0 out .. 1 in): the nostrils open and the lips part a little on the way in.
+ */
+export interface FaceIdle {
+  focus: number;
+  brow: number;
+  press: number;
+  smile: number;
+  side: number;
+  breath: number;
+}
+
+export function expressionWeights(blink: number, effort: number, exhale: number, idle?: FaceIdle): Partial<Record<FaceExpression, number>> {
   const e = effort;
-  const lid = Math.max(blink, 0.3 * e);
-  const press = 0.45 * e * (1 - exhale);
+  const i = idle ?? { focus: 0, brow: 0, press: 0, smile: 0, side: 0, breath: 0 };
+  // the face at rest gives way to the strike's effort
+  const rest = 1 - e;
+  const f = i.focus * rest;
+  const lid = Math.max(blink, 0.3 * e + 0.12 * f);
+  const press = 0.5 * e * (1 - exhale) + 0.3 * i.press * rest;
+  const smile = 0.28 * i.smile * rest * (1 - i.press);
+  const sl = smile * (1 - 0.35 * Math.max(0, i.side));
+  const sr = smile * (1 + 0.35 * Math.min(0, i.side));
+  const nose = 0.35 * e + 0.12 * i.breath * rest;
   return {
     EyeBlinkLeft: lid, EyeBlinkRight: lid,
-    EyeSquintLeft: 0.9 * e, EyeSquintRight: 0.9 * e,
-    CheekSquintLeft: 0.5 * e, CheekSquintRight: 0.5 * e,
-    BrowDownLeft: 0.9 * e, BrowDownRight: 0.9 * e,
-    NoseSneerLeft: 0.3 * e, NoseSneerRight: 0.3 * e,
+    EyeSquintLeft: 0.9 * e + 0.3 * f, EyeSquintRight: 0.9 * e + 0.3 * f,
+    CheekSquintLeft: 0.55 * e + 0.6 * sl, CheekSquintRight: 0.55 * e + 0.6 * sr,
+    BrowDownLeft: 0.9 * e + 0.3 * f, BrowDownRight: 0.9 * e + 0.3 * f,
+    BrowInnerUp: 0.35 * i.brow * rest,
+    NoseSneerLeft: nose, NoseSneerRight: nose,
     MouthPressLeft: press, MouthPressRight: press,
-    MouthStretchLeft: 0.2 * e, MouthStretchRight: 0.2 * e,
-    MouthFunnel: 0.45 * exhale,
-    JawOpen: 0.14 * exhale,
+    MouthSmileLeft: sl, MouthSmileRight: sr,
+    MouthStretchLeft: 0.3 * e, MouthStretchRight: 0.3 * e,
+    // the exhale of the strike: lips rounded and the jaw open (a sharp breath out, « tss »), more than before
+    MouthFunnel: 0.6 * exhale,
+    JawOpen: 0.3 * exhale + 0.05 * i.breath * rest,
   };
 }
 interface Lid {
@@ -165,6 +193,11 @@ export class FaceAnimator {
   private nextBlink = 1.5;
   private blinkAt = -1;
   private effort = 0;
+  /** 1.20 the face at rest (FaceIdle): current values, targets, time of the next change, breathing phase */
+  private idle: FaceIdle = { focus: 0.5, brow: 0, press: 0.3, smile: 0, side: 0, breath: 0 };
+  private idleTo: FaceIdle = { focus: 0.5, brow: 0, press: 0.3, smile: 0, side: 0, breath: 0 };
+  private idleNext = 0;
+  private breathPhase = 0;
   private peak = 0;
   private gaze = { yaw: 0, pitch: 0, toYaw: 0, toPitch: 0, next: 0.8 };
 
@@ -257,7 +290,7 @@ export class FaceAnimator {
       v = Math.max(v, p.distanceTo(this.last[i]) / dt);
       this.last[i].copy(p);
     });
-    const target = Math.min(1, Math.max(0, (v - 1.6) / 3.5));
+    const target = Math.min(1, Math.max(0, (v - 1.3) / 3.2));
     // quick onset, slower release: the face sets as the strike leaves and relaxes after it
     this.effort += (target - this.effort) * Math.min(1, dt / (target > this.effort ? 0.05 : 0.35));
     if (opts.effort !== undefined) this.effort = opts.effort;
@@ -315,7 +348,26 @@ export class FaceAnimator {
       // the exhale follows the effort with a short delay and lasts a little longer (breath out as the strike lands)
       const ex = still ? 0 : this.effort;
       this.exhale += (ex - this.exhale) * Math.min(1, dt / (ex > this.exhale ? 0.09 : 0.25));
-      const w = opts.expr ?? expressionWeights(blink, this.effort, this.exhale);
+      // 1.20 the face at rest: a new mood every 2 to 5 s, reached over about a second; breathing 15 a minute,
+      // faster after effort
+      if (!still) {
+        const I = this.idleTo;
+        if (this.t >= this.idleNext) {
+          const r = this.rand();
+          I.focus = 0.35 + 0.65 * this.rand();
+          I.brow = this.rand() < 0.3 ? 0.4 + 0.6 * this.rand() : 0;
+          // pressed lips most of the time, a faint smile now and then, otherwise relaxed
+          I.press = r < 0.45 ? 0.5 + 0.5 * this.rand() : 0;
+          I.smile = r > 0.8 ? 0.5 + 0.5 * this.rand() : 0;
+          I.side = this.rand() * 2 - 1;
+          this.idleNext = this.t + 2 + this.rand() * 3;
+        }
+        const k = Math.min(1, dt / 0.9);
+        for (const key of ['focus', 'brow', 'press', 'smile', 'side'] as const) this.idle[key] += (I[key] - this.idle[key]) * k;
+        this.breathPhase += dt * 2 * Math.PI * (0.25 + 0.2 * this.effort);
+        this.idle.breath = 0.5 + 0.5 * Math.sin(this.breathPhase);
+      }
+      const w = opts.expr ?? expressionWeights(blink, this.effort, this.exhale, still ? undefined : this.idle);
       for (const { mesh, idx } of this.morphs) {
         const inf = mesh.morphTargetInfluences!;
         inf.fill(0);

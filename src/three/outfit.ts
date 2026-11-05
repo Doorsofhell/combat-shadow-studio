@@ -209,8 +209,20 @@ export function useOutfit(
 /** fabric look: satin and knit get a soft sheen, leather a light clear coat (in high quality only). 1.10: the
  * physical material starts from all the source's properties (photoMaterials.ts physicalFrom): double faces of the
  * loose garments, roughness and occlusion maps, alpha were lost before in high quality */
+/** materials of the printed marks of the garments (tools/generator/rocketbox/outfits.py, logo_on) */
+export function isPrint(name: string) {
+  return name.startsWith('logo-');
+}
+
 function dress(src: Material, quality: 'haute' | 'basse'): Material {
   const m = src as MeshStandardMaterial;
+  // 1.20: the printed mark (CS logo) lies 1.5 mm above its cloth; on a phone's depth buffer, seen from a few metres,
+  // that is too little and the cloth flickered over it. It is drawn a little in front of what lies at its depth
+  if (isPrint(m.name)) {
+    m.polygonOffset = true;
+    m.polygonOffsetFactor = -2;
+    m.polygonOffsetUnits = -4;
+  }
   if (m.map) m.map.colorSpace = SRGBColorSpace;
   for (const t of [m.map, m.normalMap, m.roughnessMap]) if (t) t.anisotropy = 4;
   const sheen = Number(m.userData?.css_sheen ?? 0);
