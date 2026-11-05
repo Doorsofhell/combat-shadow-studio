@@ -18,7 +18,7 @@ Avant 1.8.0 : cuisses et tibias jusqu’à −20 cm (sprawl), doigts jusqu’à 
 | bjj sit-out | -1.4 (LeftHandMiddle3) | -1.1 (LeftToeBase) | -1.1 (RightToeBase) | -0.8 (RightToeBase) | -1.3 (LeftHandMiddle3) | -1.1 (RightFoot) |
 | judo uchikomi-ko-uchi-gari | -0.8 (RightToeBase) | -0.7 (RightFoot) | -1.0 (RightToeBase) | -1.1 (RightToeBase) | -0.7 (RightToeBase) | -1.0 (RightFoot) |
 | judo uchikomi-o-uchi-gari | -1.2 (RightToeBase) | -0.7 (RightToeBase) | -0.6 (RightToeBase) | -0.6 (RightToeBase) | -1.2 (RightToeBase) | -0.7 (RightToeBase) |
-| judo ukemi-ushiro | -2.8 (LeftArm) | -1.2 (Spine2) | -2.1 (Spine2) | -1.2 (Spine2) | -2.4 (RightForeArm) | -1.0 (RightToeBase) |
+| judo ukemi-ushiro | -2.8 (LeftArm) | -1.2 (Spine2) | -2.1 (Spine2) | -1.2 (Spine2) | -2.4 (RightForeArm) | -1.3 (LeftArm) |
 | judo ukemi-yoko | -0.7 (RightArm) | -1.0 (RightToeBase) | -0.7 (Spine2) | -1.1 (Spine2) | -0.5 (RightToeBase) | -1.0 (RightToeBase) |
 | mma descente-sol | -1.1 (LeftHandMiddle3) | -1.3 (LeftHandMiddle3) | -0.5 (LeftToeBase) | -0.3 (RightToeBase) | -0.4 (RightToeBase) | -1.4 (LeftHandMiddle3) |
 | mma entree-lutte | -0.5 (RightToeBase) | -1.0 (RightToeBase) | -0.1 (LeftToeBase) | -0.1 (RightToeBase) | -0.5 (RightToeBase) | -1.0 (RightToeBase) |

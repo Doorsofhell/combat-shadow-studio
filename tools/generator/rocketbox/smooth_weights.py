@@ -13,6 +13,10 @@ sphere's edge so the result joins the untouched weights continuously; then the f
 
   python3 tools/generator/rocketbox/smooth_weights.py public/coaches/mma-kadir/photo.glb epaules=0.15:12 coudes=0.06:4
 
+  1.19 Inaya (marked musculature, shape 1.4): epaules=0.27:45 (with 0.15:12 her armpit folded 28° in guard and 42° arms
+  raised; 0.27:45 gives 20° and 32°, under her 1.11.0 reference + 4°; wider or longer crushed the elbow or armpit
+  triangles below the test's floor)
+
 zones: epaules (LeftArm/RightArm), coudes (ForeArm), genoux (Leg), aines (UpLeg); value radius_m:iterations.
 numpy only. Every other byte of the file is kept.
 """

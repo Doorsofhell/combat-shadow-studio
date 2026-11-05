@@ -75,6 +75,10 @@ def save(a, name):
     Image.fromarray((np.clip(a, 0, 1) * 255 + 0.5).astype(np.uint8)).save(os.path.join(texdir, name))
 
 
+# nipples stored by clean_torso.py (cm, same space as the points)
+_nip = next((list(o_.data.get('css_nipples', [])) for o_ in bpy.data.objects if o_.type == 'MESH' and o_.data.get('css_nipples')), [])
+NIP = np.array(_nip).reshape(-1, 3) if _nip else None
+AREOLA_R = float(os.environ.get('AREOLA_R', '1.9'))  # cm
 TEX = {k: load(f'f021_{k}_color.png') for k in ('body', 'head')}
 H, W = TEX['body'].shape[:2]
 
@@ -203,6 +207,38 @@ for k, r in R.items():
     covered = r['flag'] > 0
     edge[~covered] = 0
     out = img * (1 - edge[..., None]) + new * edge[..., None]
+    if k == 'body' and NIP is not None:
+        # 1.19: areola and nipple (clean_torso.py raises the nipple and stores where): a soft, slightly pink brown
+        # disc 1.9 cm in radius that fades into the skin, darker and a little rosier on the nipple, with fine bumps
+        cov_ = r['flag'] > 0
+        py_, px_ = np.nonzero(cov_)
+        pp = r['pos'][py_, px_]
+        for c_ in NIP:
+            d_ = np.linalg.norm(pp - c_, axis=1)
+            m_ = d_ < AREOLA_R * 1.6
+            if not m_.any():
+                continue
+            dd = d_[m_]
+            # irregular rim (a real areola is not a perfect disc) and a wide soft fade into the skin
+            ang = np.arctan2(pp[m_][:, 2] - c_[2], pp[m_][:, 0] - c_[0])
+            rim = AREOLA_R * (1 + 0.06 * np.sin(ang * 3 + 0.5) + 0.04 * np.sin(ang * 7))
+            a_ = np.clip((rim - dd) / (AREOLA_R * 0.55), 0, 1) ** 2 * 0.95
+            n_ = np.clip((0.42 - dd) / 0.22, 0, 1)
+            ring_ = np.exp(-((dd - 0.5) / 0.12) ** 2) * 0.5
+            yy_, xx_ = py_[m_], px_[m_]
+            base = out[yy_, xx_]
+            # muted rosy brown (the coach's skin grade warms it again in the app): no orange
+            lum = base.mean(1, keepdims=True)
+            grey = base * 0.6 + lum * 0.4
+            tint = grey * np.array([0.83, 0.72, 0.73])
+            tip = grey * np.array([0.76, 0.63, 0.65])
+            bumps = 1 + 0.035 * np.sin(xx_ * 1.7) * np.sin(yy_ * 1.9)
+            col = base * (1 - a_[:, None]) + tint * bumps[:, None] * a_[:, None]
+            col = col * (1 - n_[:, None]) + tip * n_[:, None]
+            # a light shadow where the nipple stands off the areola
+            col = col * (1 - 0.12 * ring_[:, None])
+            out[yy_, xx_] = col
+        print('aréoles peintes', len(NIP))
     # padding: texels outside every island take the colour of the nearest covered texel
     d, (iy, ix) = distance_transform_edt(~covered, return_indices=True)
     pad = (~covered) & (d <= PAD)

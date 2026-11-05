@@ -1005,6 +1005,11 @@ def belt(color, z, extra=0.03):
     return parts
 
 
+# 1.19 (Youssef, 05/11: « les kimonos, je les voudrais moins bouffis, plus cintrés mais pas collés »): share of the
+# gi's loose volume kept (sleeves, trousers, skirt, room round the trunk); 1 = the cut of the other coaches
+GI_FIT = float(os.environ.get('GI_FIT', '0.6' if os.environ.get('PALETTE') == 'inaya' else '1'))
+
+
 def skirt(color, kind, top_z, length):
     """lower part of a gi jacket: a sleeve of cloth around the hips (not one tube per leg), open at the front where
     the two sides overlap; each front panel follows its thigh a little so a kick lifts it instead of piercing it"""
@@ -1014,6 +1019,9 @@ def skirt(color, kind, top_z, length):
     n = 6
     # v0.32: closer to the body (the old 2.5 to 4.5 cm made a padded, inflated skirt)
     pad0, pad1 = (0.014, 0.016) if kind == 'judo' else (0.011, 0.012)
+    if kind != 'costume':
+        # only the flare towards the hem: at the top the skirt covers the trousers' waist (9 mm off the skin)
+        pad1 = pad1 * GI_FIT
     for k in range(n + 1):
         z = top_z - length * k / n
         cx, cy, rad = ring_profile(z, dz=0.015, pad=pad0 + pad1 * k / n)
@@ -1113,6 +1121,11 @@ def collar(color, kind):
     return parts
 
 
+# 1.19 (Youssef, 05/11, capture of the MMA short from behind): the ribs of the elastic waistband read as crumpled,
+# striped cloth over the curve of the glutes; Inaya's bands are smoother (relief and tone of the knit lowered)
+BAND_RELIEF = float(os.environ.get('BAND_RELIEF', '0.15' if os.environ.get('PALETTE') == 'inaya' else '0.5'))
+
+
 def shorts(kind, color, band, n_leg=None):
     """kind: boxe (loose, to just above the knee, high waistband), kick (fitted, short), thai (short, very wide,
     high waistband), mma (board short, side slits, to the knee), compression"""
@@ -1165,7 +1178,7 @@ def shorts(kind, color, band, n_leg=None):
     # v0.32 (« matières trop brillantes ou plastifiées »): satin keeps a soft sheen but is no longer wet-looking,
     # polyester is matt; the satin relief is shallower (it drew wavy lines)
     sheenK = {'boxe': ('satin', 0.6, 0.35, 0.3), 'thai': ('satin', 0.58, 0.4, 0.3), 'kick': ('serge', 0.62, 0.2, 0.4), 'mma': ('flat', 0.68, 0.1, 1.0), 'compression': ('jersey', 0.6, 0.1, 0.5), 'vale-tudo': ('jersey', 0.66, 0.18, 0.7)}[kind]
-    mats = [fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3]), fabric(f'ceinture-{kind}-{band}', band, 'elastique', rough=0.65, strength=0.5, tone=0.1)]
+    mats = [fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3]), fabric(f'ceinture-{kind}-{band}', band, 'elastique', rough=0.65, strength=BAND_RELIEF, tone=0.1 if BAND_RELIEF >= 0.5 else 0.03)]
     # 1.10: waist and hems are the zero line of a field (exact, smooth edges whatever the body's triangles; the plane
     # cuts left a wavy waistband on the MakeHuman bodies); the band's lower line stays a straight plane cut
     hz = {s: H[f'{s}Leg'].z + hem * (H[f'{s}UpLeg'].z - H[f'{s}Leg'].z) for s in ('Left', 'Right')}
@@ -1235,7 +1248,19 @@ def top(kind, color, accent=None, geom=False):
         nk = H['Neck']
         cuts += [(Vector((0, 0, z)), Vector((0, 0, 1))) for z in (nk.z - 0.13, chestZ + 0.02, nk.z - 0.02)]
         cuts += [(Vector((x, 0, 0)), Vector((1, 0, 0))) for x in (-0.1, -0.06, -0.05, 0.05, 0.06, 0.1)]
-    o, cov = shell(f'haut-{kind}', keep, lambda i: 0.0035 if kind != 'debardeur' else 0.006, 0.003, mats,
+    def tpush(i):
+        if kind == 'debardeur':
+            return 0.006
+        # 1.19 (Youssef, 05/11, capture of the no-gi kit): the waistband of the leggings worn under the long rash
+        # guard (2.5 mm off the skin, 3 mm thick) came through its hem as black teeth; the rash guard now stands
+        # 8 mm off the skin over its lowest 6 cm, easing back to 3.5 mm above
+        # (the short one stays close: it is worn under the gi jacket)
+        if kind == 'rash-long':
+            t = max(0.0, min(1.0, (lowZ + 0.09 - P[i].z) / 0.03))
+            return 0.0035 + 0.0045 * t * t * (3 - 2 * t)
+        return 0.0035
+
+    o, cov = shell(f'haut-{kind}', keep, tpush, 0.003, mats,
                    (lambda c, ids: 1 if w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ else 0) if accent else None, cuts=cuts)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
@@ -1623,11 +1648,12 @@ def pants(color, kind, legging=False):
             return 0.006
         s = leg_of(i)
         # v0.32: about half the old volume (it read as padded); folds, and the cloth gathers above the ankle
+        g = GI_FIT if kind in ('judo', 'bjj') else 1.0
         if P[i].z > H[f'{s}Leg'].z:
-            v = loose(i, f'{s}UpLeg', f'{s}Leg', 0.006, lambda u: (0.016 + 0.006 * u) if judo else (0.012 + 0.004 * u))
+            v = loose(i, f'{s}UpLeg', f'{s}Leg', 0.006, lambda u: g * ((0.016 + 0.006 * u) if judo else (0.012 + 0.004 * u)))
         else:
-            v = loose(i, f'{s}Leg', f'{s}Foot', 0.006, lambda u: (0.022 + 0.01 * u) if judo else (0.016 + 0.008 * u))
-        return v + N[i] * (folds(i, 0.004) + bunch(P[i].z, ankleZ + 0.06, 0.14, 0.006))
+            v = loose(i, f'{s}Leg', f'{s}Foot', 0.006, lambda u: g * ((0.022 + 0.01 * u) if judo else (0.016 + 0.008 * u)))
+        return v + N[i] * (folds(i, 0.004 * (0.5 + 0.5 * g)) + bunch(P[i].z, ankleZ + 0.06, 0.14, 0.006 * g))
 
     if legging:
         mats = [fabric(f'pantalon-{color}-{kind}', color, 'jersey', rough=0.6, strength=0.5)]
@@ -1665,17 +1691,23 @@ def jacket(color, kind):
             return u < 0.82
         return True
 
+    g = GI_FIT if kind in ('judo', 'bjj') else 1.0
+
     def push(i):
         s = 'Left' if P[i].x > 0 else 'Right'
         if w(i, f'{s}ForeArm') > 0.3:
             c, u = axis_point(i, f'{s}ForeArm', f'{s}Hand')
-            v = loose(i, f'{s}ForeArm', f'{s}Hand', 0.006, lambda u: (0.016 + 0.012 * u) if judo else (0.01 + 0.006 * u))
-            return v + N[i] * (folds(i, 0.003) + (0.004 * (0.5 + 0.5 * math.sin(u * 2 * math.pi * 3)) if u < 0.35 else 0))
+            v = loose(i, f'{s}ForeArm', f'{s}Hand', 0.006, lambda u: g * ((0.016 + 0.012 * u) if judo else (0.01 + 0.006 * u)))
+            return v + N[i] * (folds(i, 0.003) + (0.004 * g * (0.5 + 0.5 * math.sin(u * 2 * math.pi * 3)) if u < 0.35 else 0))
         if w(i, f'{s}Arm') > 0.4:
-            return loose(i, f'{s}Arm', f'{s}ForeArm', 0.005, lambda u: 0.007 if judo else 0.004) + N[i] * folds(i, 0.003)
+            return loose(i, f'{s}Arm', f'{s}ForeArm', 0.005, lambda u: g * (0.007 if judo else 0.004)) + N[i] * folds(i, 0.003)
         # the short rash guard worn under the gi (Amara) stays under the jacket: the folds only push outwards there
         if female:
-            return (0.011 if judo else 0.009) + abs(folds(i, 0.004 if judo else 0.003))
+            # 1.19 fitted (GI_FIT < 1): the room tapers in at the waist, between the chest and the belt; never under
+            # 7 mm, the rash guard under it is 6.5 mm off the skin
+            # 1.19 fitted (GI_FIT < 1): the room round the trunk is kept (the rash guard under it, the collar and the
+            # trousers' waist need it; less made them come through), only its folds are flatter
+            return (0.011 if judo else 0.009) + abs(folds(i, (0.004 if judo else 0.003) * (0.6 + 0.4 * g)))
         return (0.008 if judo else 0.006) + folds(i, 0.004 if judo else 0.003)
 
     mats = [gi_fabric(color, kind)]

@@ -19,7 +19,7 @@ Method:
 - the skin weights of the merged points are those of the kept point (same bones on both sides of a hem).
 The texture islands of the pieces still hold the bikini's colour: skin_paint.py repaints them from the skin around.
 """
-import bpy, bmesh, sys, os
+import bpy, bmesh, sys, os, math
 import numpy as np
 from mathutils import Vector
 from scipy.spatial import cKDTree
@@ -461,6 +461,28 @@ for _round in range(4):
             e.is_boundary and all(110 < v.co.z < 150 and abs(v.co.x) < 25 for v in e.verts) for e in bm.edges):
         break
 print('bords libres', sum(1 for e in bm.edges if e.is_boundary), ', arêtes à 3 faces', sum(1 for e in bm.edges if len(e.link_faces) > 2))
+# 1.19 (Youssef, 05/11: « pour le corps nu, je veux que les tétons soient visibles », « pas visibles sous les
+# vêtements, il faut que ce soit naturel »): the cups of the old bikini had flattened the tip of each breast. A soft
+# nipple is raised there (3 mm, 0.65 cm wide, along the normal); skin_paint.py paints the areola round it. The
+# tops stand 3.5 mm or more off the skin and hide the skin under them: nothing shows through the clothes
+NIP_H = float(os.environ.get('NIP_H', '0.3'))
+NIP_R = float(os.environ.get('NIP_R', '0.65'))
+bm.normal_update()
+NIPPLES = []
+for sx in (1, -1):
+    cand = [v for v in bm.verts if 115 < v.co.z < 133 and 5 < sx * v.co.x < 16 and v.co.y < 0]
+    # the tip of the breast seen along its axis, turned 20° outward (the straight-ahead apex sits against the
+    # cleavage, 6.8 cm off the middle)
+    ax_ = Vector((sx * math.sin(math.radians(20)), -math.cos(math.radians(20)), 0))
+    apex = max(cand, key=lambda v: v.co.dot(ax_))
+    NIPPLES.append(apex.co.copy())
+    nrm = apex.normal.copy()
+    for v in cand:
+        d = (v.co - apex.co).length
+        if d < NIP_R * 3:
+            v.co += nrm * NIP_H * math.exp(-(d / NIP_R) ** 2)
+print('tétons', [tuple(round(c, 1) for c in q) for q in NIPPLES])
+me.data['css_nipples'] = [c for q in NIPPLES for c in q]
 bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
 bm.normal_update()
 # normals: the Rocketbox mesh carries custom normals and sharp edges along the bikini's folded hems; kept on the
