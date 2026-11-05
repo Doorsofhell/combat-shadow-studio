@@ -82,6 +82,11 @@ for (const pref of ['Jour', 'Nuit'] as const) {
     await page.getByRole('radio', { name: pref }).click();
     await page.goto('/#/reglages/affichage');
     await page.getByRole('radiogroup', { name: 'Lumière du coach' }).getByRole('radio', { name: 'Studio' }).click();
+    // 1.24: the discipline's room replaces the plain background (tests/e2e/salles.spec.ts); the theme's studio is
+    // checked with the room turned off, as a person who prefers the plain background would
+    const room = page.getByRole('switch', { name: /Salle immersive/ });
+    await room.click({ force: true });
+    await expect(room).not.toBeChecked();
     // written to IndexedDB asynchronously: leave once it is stored
     await expect
       .poll(() =>
@@ -96,7 +101,7 @@ for (const pref of ['Jour', 'Nuit'] as const) {
             }),
         ),
       )
-      .toContain('"coachLight":"studio"');
+      .toMatch(/"coachLight":"studio".*"salleImmersive":false|"salleImmersive":false.*"coachLight":"studio"/);
     await page.goto('about:blank');
     await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
     const tr = page.locator('.training');
