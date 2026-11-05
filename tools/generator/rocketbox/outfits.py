@@ -1007,7 +1007,8 @@ def belt(color, z, extra=0.03):
 
 # 1.19 (Youssef, 05/11: « les kimonos, je les voudrais moins bouffis, plus cintrés mais pas collés »): share of the
 # gi's loose volume kept (sleeves, trousers, skirt, room round the trunk); 1 = the cut of the other coaches
-GI_FIT = float(os.environ.get('GI_FIT', '0.6' if os.environ.get('PALETTE') == 'inaya' else '1'))
+# 1.21 (Youssef 05/11 15:14: « applique toutes les améliorations effectuées sur Inaya sur les autres coachs »): all coaches
+GI_FIT = float(os.environ.get('GI_FIT', '0.6'))
 
 
 def skirt(color, kind, top_z, length):
@@ -1123,7 +1124,8 @@ def collar(color, kind):
 
 # 1.19 (Youssef, 05/11, capture of the MMA short from behind): the ribs of the elastic waistband read as crumpled,
 # striped cloth over the curve of the glutes; Inaya's bands are smoother (relief and tone of the knit lowered)
-BAND_RELIEF = float(os.environ.get('BAND_RELIEF', '0.15' if os.environ.get('PALETTE') == 'inaya' else '0.5'))
+# 1.21: every coach (Inaya's 1.19 setting)
+BAND_RELIEF = float(os.environ.get('BAND_RELIEF', '0.15'))
 
 
 def shorts(kind, color, band, n_leg=None):
@@ -2036,7 +2038,8 @@ def hide_hands():
 # 3 mm grid so they follow the cloth, put on the garment by rays along the view direction, 0.8 mm off it, and skinned
 # with the weights of the closest point of the garment.
 LOGO_FONT = os.environ.get('LOGO_FONT', '/usr/share/fonts/opentype/inter/Inter-Black.otf')
-LOGO = os.environ.get('LOGO', '1' if os.environ.get('PALETTE') == 'inaya' else '0') == '1'
+# 1.21: the CS mark on every coach's kit (Inaya's since 1.19)
+LOGO = os.environ.get('LOGO', '1') == '1'
 
 
 def _flat_mat(name, color, rough=0.55):
@@ -2197,7 +2200,7 @@ C = {
     # blue or black): blue judogi for both (the four others wear white), black BJJ gi for Naël, blue for Inaya.
     # No white tight kick-boxing shorts: on white, a spot of thigh skin showed through at the front in the guard
     # (hidden by the dark shorts of the others), so Naël's white is on the loose boxing shorts
-    'nael': dict(boxe=('#F4F4F5', '#1D4E89'), kick=('#1D4E89', '#F4F4F5'), thai=('#0F6B57', '#D4AF37'), mma=('#24344D', '#101521'), gi='#17181C', judo='#1B3F8B', belt='#121212', glove='#1D4E89', glove2='#F4F4F5', rash='#1D4E89', praj='#F4F4F5', mmag=('#1D4E89', '#F4F4F5', '#F4F4F5')),
+    'nael': dict(boxe=('#F4F4F5', '#1D4E89'), kick=('#1D4E89', '#F4F4F5'), thai=('#0F6B57', '#D4AF37'), mma=('#24344D', '#101521'), gi='#17181C', judo='#1B3F8B', belt='#121212', glove='#1D4E89', glove2='#F4F4F5', rash='#1D4E89', praj='#F4F4F5', mmag=('#1D4E89', '#F4F4F5', '#F4F4F5'), logo='#D4AF37'),
     # 1.19 (Youssef 05/11 « change la couleur »): carbon black and raspberry pink, the CS mark printed in white and pink
     'inaya': dict(boxe=('#D6336C', '#17171C'), kick=('#17171C', '#D6336C'), thai=('#F4F4F5', '#D6336C'), mma=('#17171C', '#D6336C'), gi='#1B3F8B', judo='#1B3F8B', belt='#121212', glove='#D6336C', glove2='#17171C', rash='#D6336C', praj='#D6336C', mmag=('#17171C', '#D6336C', '#D6336C'), logo='#D6336C'),
 }[os.environ.get('PALETTE') or sex]
@@ -2311,7 +2314,52 @@ def brand_logos(parts):
             c = k + (u - k) * 0.6
             sx = 1 if c.x > 0 else -1
             out.append(logo_on(g, f'logo-{n}', Vector((c.x + 0.015 * sx, 0, c.z)), Vector((0.25 * sx, -1, 0)), 0.04, letters=ink(g), slash=accent, lift=0.0025))
-    return [o for o in out if o is not None]
+    return merge_prints([o for o in out if o is not None])
+
+
+def merge_prints(objs):
+    """1.21 (all coaches wear the mark now): each print was two materials (letters, slash), so up to 6 more draw calls
+    per outfit, over the phones' budget (outfit-v043 test). All the prints of an outfit become one mesh with one
+    material, the two colours carried by the points (glTF COLOR_0): one draw call"""
+    if not objs:
+        return []
+    def lin(hexc):
+        c = [int(hexc[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+        return [x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+    for o in objs:
+        me_ = o.data
+        cols = [lin(m.name.rsplit('-', 1)[1]) for m in me_.materials]
+        at = me_.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
+        for p_ in me_.polygons:
+            col = cols[p_.material_index]
+            for vi in p_.vertices:
+                at.data[vi].color = (*col, 1)
+        for p_ in me_.polygons:
+            p_.material_index = 0
+        while len(me_.materials) > 1:
+            me_.materials.pop(index=len(me_.materials) - 1)
+    name = 'logo-cs'
+    m = MATS.get(name)
+    if m is None:
+        m = bpy.data.materials.new(name)
+        m.use_nodes = True
+        nt = m.node_tree
+        b_ = nt.nodes['Principled BSDF']
+        b_.inputs['Roughness'].default_value = 0.5
+        ca = nt.nodes.new('ShaderNodeVertexColor')
+        ca.layer_name = 'Col'
+        nt.links.new(ca.outputs['Color'], b_.inputs['Base Color'])
+        MATS[name] = m
+    for o in objs:
+        o.data.materials[0] = m
+    if len(objs) > 1:
+        bpy.ops.object.select_all(action='DESELECT')
+        for o in objs:
+            o.select_set(True)
+        bpy.context.view_layer.objects.active = objs[0]
+        bpy.ops.object.join()
+    objs[0].name = 'logo-cs'
+    return [objs[0]]
 
 
 def neck_ring(z):

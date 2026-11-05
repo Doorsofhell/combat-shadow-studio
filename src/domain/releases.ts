@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.21.0',
+      releaseDate: '2026-11-05',
+      title: 'Les améliorations d’Inaya pour tous',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Toutes les tenues des coachs profitent des finitions d’Inaya : ourlets nets, rash-guard qui ne laisse plus voir le legging, ceinture élastique plus lisse, kimonos plus cintrés, et le logo CS sur la poitrine, le dos et la cuisse.' },
+        { category: 'coachs', text: 'Axel et Kaila ont eux aussi un visage vivant au repos : sourcils, paupières, coins de la bouche et respiration bougent doucement.' },
+        { category: 'coachs', text: 'Les muscles de Naël sont éclairés comme ceux de Kadir, les ombres entre les muscles se lisent mieux.' },
+      ],
+      links: [{ label: 'Changer de coach', to: '/coach' }],
+    },
+    {
       version: '1.20.0',
       releaseDate: '2026-11-05',
       title: 'Inaya : cou naturel, visage vivant',

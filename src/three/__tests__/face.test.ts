@@ -89,4 +89,31 @@ describe.each(COACHES)('%s', (id, sex) => {
     }
     expect(blinks).toBeGreaterThanOrEqual(3);
   });
+
+  // 1.21 (Youssef 05/11 15:14: toutes les améliorations d'Inaya sur les autres coachs): the face at rest of 1.20
+  // (expressions-v1160) also on the faces driven by bones: brows and mouth corners move a little, slowly
+  test('1.21 au repos, sourcils et coins de la bouche bougent un peu, lentement, et reviennent au repos en image fixe', () => {
+    const { root, face } = fresh();
+    const watch = [bone(root, 'Face_LInnerEyebrow'), bone(root, 'Face_LMouthCorner')];
+    // world positions (metres): the bones' own spaces are scaled
+    const rest = watch.map((b) => world(b));
+    const local = watch.map((b) => b.position.clone());
+    const range = watch.map(() => 0);
+    let jump = 0;
+    let prev = watch.map((b) => world(b));
+    for (let i = 0; i < 12 * 60; i++) {
+      face.update(1 / 60);
+      watch.forEach((b, j) => {
+        const w = world(b);
+        range[j] = Math.max(range[j], w.distanceTo(rest[j]));
+        jump = Math.max(jump, w.distanceTo(prev[j]));
+        prev[j] = w;
+      });
+    }
+    range.forEach((r, j) => expect(r, watch[j].name).toBeGreaterThan(0.0004));
+    range.forEach((r, j) => expect(r, watch[j].name).toBeLessThan(0.008));
+    expect(jump).toBeLessThan(0.0005);
+    face.update(1 / 60, { still: true, effort: 0 });
+    watch.forEach((b, j) => expect(b.position.distanceTo(local[j])).toBeLessThan(1e-6));
+  });
 });
