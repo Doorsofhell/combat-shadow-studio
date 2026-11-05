@@ -31,6 +31,19 @@ GEOM_BRA = MH_BODY = os.environ.get('MH_BODY') == '1'
 # 1.9: hem of the vale-tudo short, as a share of the thigh from the knee (0.5 = mid-thigh); the Rocketbox photo bodies
 # have underwear painted down to mid-thigh, the short must cover it
 VT_HEM = float(os.environ.get('VT_HEM', '0.42'))
+# 1.22 women's MMA kit (Youssef 05/11 18:07, photos): over-short hem (share of the thigh from the knee) and flare
+SUR_HEM = float(os.environ.get('SUR_HEM', '0.66'))
+SUR_FLARE = float(os.environ.get('SUR_FLARE', '0.02'))
+# colours: a tuple is a gradient (top colour, bottom colour) carried by the points
+MMAF_KITS = {
+    # Amara: black and gold
+    'noir-or': dict(top='#141519', topband='#D4AF37', liner='#141519', linerband='#141519', over='#141519', overband='#D4AF37'),
+    # Inaya: her pink and black
+    'inaya': dict(top='#D6336C', topband='#17171C', liner='#17171C', linerband='#17171C', over='#17171C', overband='#D6336C'),
+    # Kaila: pink to turquoise like the photo, black band and over-short
+    'degrade': dict(top=('#EC6FA6', '#63D2C6'), topband='#17171C', liner=('#63D2C6', '#EC6FA6'), linerband='#17171C', over='#17171C', overband='#17171C'),
+}
+MMAF = os.environ.get('MMAF', 'inaya' if os.environ.get('PALETTE') == 'inaya' else 'noir-or') if os.environ.get('MMAF', '1') != '0' else ''
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=src)
@@ -370,7 +383,9 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
     # MH_BODY: the points of a cut stay on it after the push (on the tilted skin of the lower back the push along the
     # normal moved them off the plane, the smoothing then pulled them up and down: a toothed colour band)
     on_cut = {}
-    if MH_BODY:
+    # 1.22 also on the Rocketbox bodies for the women's MMA kit (its bands are a contrasting colour: gold or pink
+    # on black, their lower line came out in teeth that the black-on-black bands of before hid)
+    if MH_BODY or _ONCUT[0]:
         for v in bm_.verts:
             q = MW @ v.co
             for k, (pt, nr) in enumerate(cuts):
@@ -1134,8 +1149,10 @@ def shorts(kind, color, band, n_leg=None):
     # the photo body has its underwear painted down to mid-thigh: every short reaches below it
     # 1.9 (Youssef's MMA coach references, 2026-10-29): vale-tudo = fitted compression short to mid-thigh, thin
     # flat waistband, matt jersey
-    hem = {'boxe': 0.3, 'kick': 0.3, 'thai': 0.32, 'mma': 0.18, 'compression': 0.3, 'vale-tudo': VT_HEM}[kind]
-    waist = hipZ + {'boxe': 0.13, 'kick': 0.11, 'thai': 0.13, 'mma': 0.11, 'compression': 0.1, 'vale-tudo': 0.1}[kind]
+    # 1.22 (Youssef 05/11 18:07, photos of women's MMA kits: « une tenue dans les styles des photos »): surshort, the
+    # short loose over-short of a 2-in-1 MMA short, worn over the vale-tudo liner; high on the thigh, gathered waist
+    hem = {'boxe': 0.3, 'kick': 0.3, 'thai': 0.32, 'mma': 0.18, 'compression': 0.3, 'vale-tudo': VT_HEM, 'surshort': SUR_HEM}[kind]
+    waist = hipZ + {'boxe': 0.13, 'kick': 0.11, 'thai': 0.13, 'mma': 0.11, 'compression': 0.1, 'vale-tudo': 0.1, 'surshort': 0.105}[kind]
     # 1.10: the waistband covers the underwear painted on the skin (Kadir's showed as a brown band above his
     # vale-tudo short in 1.9), 8 mm over its top at most 6 cm higher than the cut asked
     if 'top' not in _PAINT:
@@ -1144,7 +1161,11 @@ def shorts(kind, color, band, n_leg=None):
         print('sous-vêtement peint, haut', None if _PAINT['top'] is None else round(_PAINT['top'], 3), 'bassin', round(hipZ, 3))
     if _PAINT['top'] is not None:
         waist = max(waist, min(waist + 0.06, _PAINT['top'] + 0.008))
-    bandH = {'boxe': 0.07, 'kick': 0.04, 'thai': 0.08, 'mma': 0.04, 'compression': 0.025, 'vale-tudo': 0.035}[kind]
+    if kind == 'surshort':
+        # 1.22 its waistband covers the liner's (both were raised to the same painted line: the liner's rim came
+        # through the top of the gathered band)
+        waist += 0.008
+    bandH = {'boxe': 0.07, 'kick': 0.04, 'thai': 0.08, 'mma': 0.04, 'compression': 0.025, 'vale-tudo': 0.035, 'surshort': 0.045}[kind]
 
     def hemz(i):
         s = leg_of(i)
@@ -1160,6 +1181,14 @@ def shorts(kind, color, band, n_leg=None):
     def push(i):
         # MH_BODY: the glutes of a MakeHuman body rise close to the waistband; the loose leg push there lifted the
         # cloth over the band (black teeth on the band)
+        if kind == 'surshort':
+            # over the liner (4.2 mm off the skin, 2.5 mm thick, so 6.7 mm out): 10 mm at the waist, the gathered
+            # band 2 mm more, the legs loose (up to 2.2 cm more at the hem), soft folds
+            if P[i].z > hipZ + 0.02:
+                return 0.010 + (0.002 if P[i].z > waist - bandH else 0)
+            s = leg_of(i)
+            crotch = max(0.0, 1 - abs(P[i].x) / 0.05)
+            return loose(i, f'{s}UpLeg', f'{s}Leg', 0.010, lambda u: SUR_FLARE * u ** 1.3 * (1 - 0.6 * crotch)) + N[i] * folds(i, 0.002)
         if kind == 'vale-tudo':
             # a flat waistband (a raised one made lumps on the Rocketbox body). 1.10: the 3 mm of extra room at the
             # hem made the leg flare (Youssef's audit: « jambes légèrement évasées »); the hem is now cut exactly by
@@ -1179,8 +1208,11 @@ def shorts(kind, color, band, n_leg=None):
 
     # v0.32 (« matières trop brillantes ou plastifiées »): satin keeps a soft sheen but is no longer wet-looking,
     # polyester is matt; the satin relief is shallower (it drew wavy lines)
-    sheenK = {'boxe': ('satin', 0.6, 0.35, 0.3), 'thai': ('satin', 0.58, 0.4, 0.3), 'kick': ('serge', 0.62, 0.2, 0.4), 'mma': ('flat', 0.68, 0.1, 1.0), 'compression': ('jersey', 0.6, 0.1, 0.5), 'vale-tudo': ('jersey', 0.66, 0.18, 0.7)}[kind]
-    mats = [fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3]), fabric(f'ceinture-{kind}-{band}', band, 'elastique', rough=0.65, strength=BAND_RELIEF, tone=0.1 if BAND_RELIEF >= 0.5 else 0.03)]
+    sheenK = {'boxe': ('satin', 0.6, 0.35, 0.3), 'thai': ('satin', 0.58, 0.4, 0.3), 'kick': ('serge', 0.62, 0.2, 0.4), 'mma': ('flat', 0.68, 0.1, 1.0), 'compression': ('jersey', 0.6, 0.1, 0.5), 'vale-tudo': ('jersey', 0.66, 0.18, 0.7), 'surshort': ('serge', 0.64, 0.15, 0.35)}[kind]
+    body_mat = grad_fabric(f'short-{kind}-degrade', sheenK[0], sheenK[1], sheenK[3], sheenK[2]) if isinstance(color, tuple) else fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3])
+    # 1.22 the gathered waist of the surshort: the elastic relief stronger (its ruffles), the colour a little darker in the hollows
+    band_rel = 0.9 if kind == 'surshort' else BAND_RELIEF
+    mats = [body_mat, fabric(f'ceinture-{kind}-{band}', band, 'elastique', rough=0.65, strength=band_rel, tone=0.1 if band_rel >= 0.5 else 0.03)]
     # 1.10: waist and hems are the zero line of a field (exact, smooth edges whatever the body's triangles; the plane
     # cuts left a wavy waistband on the MakeHuman bodies); the band's lower line stays a straight plane cut
     hz = {s: H[f'{s}Leg'].z + hem * (H[f'{s}UpLeg'].z - H[f'{s}Leg'].z) for s in ('Left', 'Right')}
@@ -1188,10 +1220,12 @@ def shorts(kind, color, band, n_leg=None):
     keep_g = lambda i: P[i].z < waist + 0.03 and P[i].z > min(hz.values()) - 0.04 and w(i, *ARMS) < 0.2
     cuts = [(Vector((0, 0, waist - bandH)), Vector((0, 0, 1)))]
     # fine jersey for the fitted cuts (2.5 mm with its rim), 3.5 mm for the loose ones
-    thick = 0.0025 if kind in ('vale-tudo', 'compression', 'kick') else 0.0035
+    thick = 0.0025 if kind in ('vale-tudo', 'compression', 'kick') else 0.003 if kind == 'surshort' else 0.0035
     o, cov = shell(f'short-{kind}', keep_g, push, thick, mats, lambda c, ids: 1 if c.z > waist - bandH else 0, cuts=cuts, iso=F,
                    hem=0.004 if thick < 0.003 else 0.006)
     smooth(o, 1)
+    if isinstance(color, tuple):
+        paint_grad(o, color, min(hz.values()), waist - bandH)
     return [o], cov
 
 
@@ -1454,7 +1488,7 @@ def bra_low():
     return _BRA_LOW[0]
 
 
-def bra_v2(color, accent=None, bandeau=False):
+def bra_v2(color, accent=None, bandeau=False, band=0.02):
     """1.10 racer-back sports bra cut by bra_field() (smooth edges), thin jersey (2.2 mm), its under-band in the
     accent colour when there is one (straight line 2 cm above the bottom). bandeau (1.12): the band alone"""
     F = bra_field(straps=not bandeau)
@@ -1462,14 +1496,17 @@ def bra_v2(color, accent=None, bandeau=False):
     low = bra_low()
     def keep(i):
         return low - 0.02 < P[i].z < nk.z + 0.01 and w(i, 'Head') < 0.2 and w(i, *HANDS) < 0.3 and F(P[i]) < 0.03
-    mats = [fabric(f'haut-brassiere-{color}', color, 'jersey', rough=0.62, strength=0.45, sheen=0.12)]
+    grad = isinstance(color, tuple)
+    mats = [grad_fabric('haut-brassiere-degrade', 'jersey', 0.62, 0.45, 0.12) if grad else fabric(f'haut-brassiere-{color}', color, 'jersey', rough=0.62, strength=0.45, sheen=0.12)]
     cuts = []
     if accent:
         mats.append(fabric(f'liseré-{accent}', accent, 'elastique', rough=0.6, strength=0.8))
-        cuts.append((Vector((0, 0, low + 0.02)), Vector((0, 0, 1))))
+        cuts.append((Vector((0, 0, low + band)), Vector((0, 0, 1))))
     # 5.5 mm off the skin: at 3.8 the chest pushed through under the front strap when the arm reaches out (Kaila's jab)
     o, cov = shell('haut-brassiere', keep, lambda i: 0.0055, 0.0022, mats,
-                   (lambda c, ids: 1 if c.z < low + 0.02 else 0) if accent else None, hem=0.008, cuts=cuts, iso=F)
+                   (lambda c, ids: 1 if c.z < low + band else 0) if accent else None, hem=0.008, cuts=cuts, iso=F)
+    if grad:
+        paint_grad(o, color, low + band, nk.z - 0.05)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
     return [o], cov
@@ -2209,6 +2246,42 @@ C = {
 BANDEAU = os.environ.get('PALETTE') == 'inaya'
 
 
+_ONCUT = [False]
+
+
+def grad_fabric(name, kind, rough, strength, sheen=0.0):
+    """1.22 a fabric whose colour is carried by the points (glTF COLOR_0, see paint_grad): a gradient"""
+    m = fabric(name, '#FFFFFF', kind, rough=rough, strength=strength, sheen=sheen)
+    if not m.get('css_grad'):
+        nt = m.node_tree
+        ca = nt.nodes.new('ShaderNodeVertexColor')
+        ca.layer_name = 'Col'
+        nt.links.new(ca.outputs['Color'], nt.nodes['Principled BSDF'].inputs['Base Color'])
+        m['css_grad'] = 1
+    return m
+
+
+def paint_grad(o, cols, z0, z1):
+    """1.22 colours of a gradient garment by height: cols[0] at z1 and above, cols[1] at z0 and below, smooth in
+    between; per face corner, so the faces of another material (a band) stay white (no tint)"""
+    def lin(hexc):
+        c = [int(hexc[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+        return [x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+    a, b = lin(cols[0]), lin(cols[1])
+    me_ = o.data
+    at = me_.color_attributes.new('Col', 'FLOAT_COLOR', 'CORNER')
+    mw = o.matrix_world
+    grad_idx = [k for k, m in enumerate(me_.materials) if m and m.get('css_grad')]
+    for p_ in me_.polygons:
+        for li in p_.loop_indices:
+            if p_.material_index not in grad_idx:
+                at.data[li].color = (1, 1, 1, 1)
+                continue
+            z = (mw @ me_.vertices[me_.loops[li].vertex_index].co).z
+            t = _ss(z0, z1, z)
+            at.data[li].color = (*[b[j] + (a[j] - b[j]) * t for j in range(3)], 1)
+
+
 def outfit(name):
     parts, hide = [], set()
 
@@ -2244,8 +2317,18 @@ def outfit(name):
     elif name == 'mma':
         # 1.9 (Youssef's references, 2026-10-29): vale-tudo short to mid-thigh (charcoal for him, black for her),
         # plain black racer-back bra, open gloves black with a white strap and palm (him) or all black (her)
-        add(shorts('vale-tudo', *C['mma']))
-        if female:
+        if female and MMAF:
+            # 1.22 (Youssef 05/11 18:07-18:09, photos, « MMA seulement »): 2-in-1 short (liner and gathered
+            # over-short) and a sports bra with a wide elastic under-band, colours per coach (MMAF_KITS)
+            k = MMAF_KITS[MMAF]
+            _ONCUT[0] = True
+            add(shorts('vale-tudo', k['liner'], k['linerband']))
+            add(shorts('surshort', k['over'], k['overband']))
+            add(female_top(k['top'], k['topband']) or bra_v2(k['top'], k['topband'], band=0.035))
+            _ONCUT[0] = False
+        else:
+            add(shorts('vale-tudo', *C['mma']))
+        if female and not MMAF:
             # geom: the racer back cut by planes on Amara too (her weight cut left a torn edge on the back)
             add(female_top(C['mma'][0]) or bra_v2(C['mma'][0]))
         if 'mmag' in C:
@@ -2304,14 +2387,20 @@ def brand_logos(parts):
         n = g.name
         if n.startswith('haut-') or n.startswith('rash-'):
             low = bra_low() - (0.04 if 'crop' in n else 0)
-            out.append(logo_on(g, f'logo-{n}-avant', Vector((0, 0, low + 0.035)), Vector((0, -1, 0)), 0.05, letters=ink(g), slash=accent))
-            out.append(logo_on(g, f'logo-{n}-dos', Vector((0, 0, float(os.environ.get('LOGO_BACK_Z', str(chestZ - 0.035))))), Vector((0, 1, 0)), 0.075, letters=ink(g), slash=accent))
+            # 1.22 the wide under-band of the women's MMA bra (3.5 cm): both marks above it, on the plain cloth
+            wide = 0.025 if (MMAF and n.startswith('haut-brassiere') and len(g.data.materials) > 1) else 0.0
+            out.append(logo_on(g, f'logo-{n}-avant', Vector((0, 0, low + 0.035 + wide)), Vector((0, -1, 0)), 0.05, letters=ink(g), slash=accent))
+            out.append(logo_on(g, f'logo-{n}-dos', Vector((0, 0, float(os.environ.get('LOGO_BACK_Z', str(chestZ - 0.035))) + wide)), Vector((0, 1, 0)), 0.075, letters=ink(g), slash=accent))
         elif n.startswith('short-') or n.startswith('pantalon') or n.startswith('legging'):
+            # 1.22 2-in-1 short: the mark on the over-short only (the liner's would lie under it), higher on the thigh
+            over = any(q.name.startswith('short-surshort') for q in parts)
+            if over and not n.startswith('short-surshort'):
+                continue
             s_ = 'Left'
             k, u = H[f'{s_}Leg'], H[f'{s_}UpLeg']
             # on the front of the thigh, a little to the outside, facing forward (seen from the side it crossed the
             # curve of the thigh and read garbled)
-            c = k + (u - k) * 0.6
+            c = k + (u - k) * (0.8 if over else 0.6)
             sx = 1 if c.x > 0 else -1
             out.append(logo_on(g, f'logo-{n}', Vector((c.x + 0.015 * sx, 0, c.z)), Vector((0.25 * sx, -1, 0)), 0.04, letters=ink(g), slash=accent, lift=0.0025))
     return merge_prints([o for o in out if o is not None])
