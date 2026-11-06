@@ -157,7 +157,12 @@ export function useOutfit(
               const own = g.clone();
               const pos = g.getAttribute('position');
               const idx = g.index ? Array.from(g.index.array) : Array.from({ length: pos.count }, (_, i) => i);
-              const r = maskedIndex(pos.array, idx, keys, h.scale);
+              // 1.26: the points read one by one (Axel's and Kaila's bodies store them interleaved with their
+              // normals and texture coordinates: read as a plain array, only a third of their hidden points were found
+              // and the skin came through their clothes, Youssef 2026-11-06 « les bottes avec des trous »)
+              const flat = new Float32Array(pos.count * 3);
+              for (let v = 0; v < pos.count; v++) flat.set([pos.getX(v), pos.getY(v), pos.getZ(v)], v * 3);
+              const r = maskedIndex(flat, idx, keys, h.scale);
               matched += r.matched;
               own.setIndex(new BufferAttribute(pos.count > 65535 ? new Uint32Array(r.index) : new Uint16Array(r.index), 1));
               b.geometry = own;

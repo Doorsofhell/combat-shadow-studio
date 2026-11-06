@@ -55,7 +55,7 @@ export const RELEASES: readonly Release[] = (
       isMajor: false,
       changes: [
         { category: 'ameliorations', text: "Les vêtements ont leurs ombres : plis, dessous de la ceinture et du col, taille, manches. Le kimono blanc n'est plus tout plat, même sur téléphone." },
-        { category: 'corrections', text: "Ceintures et cols nets (plus de hachures), bottes de boxe sans trous, brassières sans logo, et la petite fente sur le côté des shorts de MMA." },
+        { category: 'corrections', text: "Ceintures et cols nets (plus de hachures), bottes de boxe sans trous, brassières sans logo, et la petite fente sur le côté des shorts de MMA. Chez Axel et Kaila, la peau ne traverse plus leurs tenues pendant les mouvements." },
         { category: 'ameliorations', text: "Les salles vivent sous tous les angles : poussière qui flotte dans la lumière, une lampe qui hoquette de temps en temps, lampes suspendues qui se balancent, ombres de branches sur les fenêtres et les shoji du dojo, phares de voitures la nuit en kick-boxing." },
         { category: 'corrections', text: "Le coach apparaît avec sa salle et non plus avant elle ; la cage MMA est droite, et le coach a de nouveau son ombre au sol quand tu tournes la caméra." },
       ],

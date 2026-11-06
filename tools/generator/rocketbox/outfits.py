@@ -1908,7 +1908,10 @@ def shoes_v2(color, accent):
             q_ = pts[sel]
             c_ = (q_[:, :2].max(0) + q_[:, :2].min(0)) / 2
             cx.append(c_[0]); cy.append(c_[1])
-            rx.append((q_[:, 0].max() - q_[:, 0].min()) / 2 + 0.0045); ry.append((q_[:, 1].max() - q_[:, 1].min()) / 2 + 0.0045)
+            # 1.26: 11 mm of room round the shin of the MakeHuman bodies (their large skin faces cut the curve of the
+            # shin: a corner stood out of the 4.5 mm shaft just under the collar, Axel)
+            mg = 0.011 if MH_BODY else 0.0045
+            rx.append((q_[:, 0].max() - q_[:, 0].min()) / 2 + mg); ry.append((q_[:, 1].max() - q_[:, 1].min()) / 2 + mg)
         cx, cy, rx, ry = (sm_(np.array(a)) for a in (cx, cy, rx, ry))
 
         def field(g):
@@ -2007,7 +2010,11 @@ def shoes_v2(color, accent):
         # tibia at the front), its skin stood out of the measured ellipse by more than 6 mm, through the 5 mm wall of
         # the opening: skin-coloured holes on the front of the shaft. Every point of the foot and shin under the
         # shoe's straight top is now hidden, wherever it lies (the shoe is closed everywhere below it)
-        cov |= {i for k2, i in enumerate(mine) if P[i].z < top_z - 0.009}
+        # (every point of that leg under the top, not only those weighted mostly to the foot and shin: on Axel's
+        # MakeHuman body part of the shin is weighted to other bones and stayed drawn)
+        low = [i for i in range(len(P)) if leg_of(i) == s and P[i].z < top_z - 0.009]
+        dl = field(np.array([P[i][:] for i in low]))
+        cov |= {i for k2, i in enumerate(low) if dl[k2] < 0.03}
         print('chaussure', s, len(me_.polygons), 'triangles')
         parts.append(o)
     return parts, cov
@@ -2585,21 +2592,17 @@ HQ = 1000
 def _file_positions():
     """1.11: the body points exactly as the shipped file stores them (float32, glTF axes). The app rounds those
     values; Blender's import scales them (cm -> m) in float32 and a point at x.5 mm could land on the other side of
-    the half (Naël, kick-boxing: one skin point left drawn, its triangles pierced the short as a patch on the thigh)"""
-    raw = open(src, 'rb').read()
-    jl = struct.unpack('<I', raw[12:16])[0]
-    J = json.loads(raw[20:20 + jl])
-    b0 = 20 + jl + 8
-    pts = []
-    for m in J['meshes']:
-        for pr in m['primitives']:
-            a = J['accessors'][pr['attributes']['POSITION']]
-            v = J['bufferViews'][a['bufferView']]
-            off = b0 + v.get('byteOffset', 0) + a.get('byteOffset', 0)
-            pts.append(np.frombuffer(raw, dtype='<f4', count=a['count'] * 3, offset=off).reshape(-1, 3))
-    F = np.concatenate(pts)
-    kd = KDTree(len(F))
-    for k, f in enumerate(F):
+    the half (Naël, kick-boxing: one skin point left drawn, its triangles pierced the short as a patch on the thigh).
+    1.26 (Youssef, 2026-11-06: « les bottes avec des trous »): each stored point is found from where the skeleton at
+    rest puts it. On the MakeHuman bodies (Axel, Kaila) the bind pose is not the rest pose: Blender imports the skin
+    posed at rest, about 1 cm from the stored points, so only 8 % of the hidden points of every garment matched a
+    point of the file and the skin under their clothes stayed drawn (the shin through the boxing shoes)"""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from skinmap import skinned_points
+    F, S = skinned_points(src)
+    F = F.astype(np.float32)
+    kd = KDTree(len(S))
+    for k, f in enumerate(S):
         kd.insert(Vector((float(f[0]), float(-f[2]), float(f[1]))), k)
     kd.balance()
     return F, kd
@@ -2608,13 +2611,18 @@ def _file_positions():
 _FP = []
 
 
+def file_key_i(i):
+    """key of body point i (see _file_positions)"""
+    return file_key(P[i])
+
+
 def file_key(c):
     """key of a body point as the app computes it: Math.round(value * scale), on the file's own float32 value"""
     if not _FP:
         _FP.append(_file_positions())
     F, kd = _FP[0]
     _, k, d = kd.find(c)
-    f = F[k] if d < 1e-5 else np.array((c.x, c.z, -c.y), dtype=np.float32)
+    f = F[k] if d < 1e-4 else np.array((c.x, c.z, -c.y), dtype=np.float32)
     # Math.round: halves go up (Python's round() sends them to the even number)
     return tuple(math.floor(float(x) * HQ + 0.5) for x in f)
 
@@ -2723,7 +2731,7 @@ def export(name, parts, hide):
     # body vertices drawn no more under this outfit, in glTF axes, millimetres
     q = bytearray()
     for i in sorted(hide):
-        q += struct.pack('<hhh', *file_key(P[i]))
+        q += struct.pack('<hhh', *file_key_i(i))
     parts[0]['hideBody'] = base64.b64encode(bytes(q)).decode()
     parts[0]['hideScale'] = HQ
     parts[0]['outfit'] = name

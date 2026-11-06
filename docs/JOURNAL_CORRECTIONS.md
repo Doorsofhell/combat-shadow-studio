@@ -2773,6 +2773,11 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     rainures, d'où le hachuré qui scintille ;
   - bottes de boxe : sur les tibias qui ne sont pas ronds (arête du tibia), la peau dépassait de plus de 6 mm de
     l'ellipse mesurée et n'était pas masquée : taches couleur peau à l'avant de la tige (Axel, Amara) ;
+  - en cherchant pourquoi Axel gardait ses trous : chez Axel et Kaila (corps MakeHuman), la peau sous **toutes**
+    leurs tenues n'était masquée qu'à un tiers environ. Leur fichier range les points entrelacés avec les normales et
+    les coordonnées de texture ; le générateur et l'app lisaient ces données comme une simple suite de positions, et
+    Blender pose leur peau au repos du squelette, à 1 cm des points enregistrés : la plupart des points à cacher ne
+    correspondaient à rien et la peau traversait les vêtements en mouvement ;
   - ombres : les vêtements étaient éclairés comme si rien n'était autour d'eux (kimono blanc tout plat, ceinture qui
     semble collée) ; sur téléphone les ombres portées sont coupées (qualité auto) ;
   - shorts de MMA : pas de fente (retirée en v0.32 car découpée le long des triangles, bords déchirés) ;
@@ -2792,10 +2797,16 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
       ombres portées ; ce qui est sous un autre vêtement reste clair (sinon taches grises là où il dépasse) ;
     - ceintures et cols : canaux de piqûres doux, continus et peu profonds, grain plus calme, plus de teinte dans
       les creux ;
-    - bottes : toute la peau du pied et du tibia sous le haut de la tige est masquée ;
+    - bottes : toute la peau du pied et du tibia sous le haut de la tige est masquée ; 11 mm de jeu autour du tibia
+      des corps MakeHuman (leurs grandes faces coupaient la courbe du tibia sous le col) ;
+    - points de peau à cacher : chaque point enregistré est retrouvé là où le squelette au repos le pose
+      (`tools/generator/rocketbox/skinmap.py`, qui lit aussi les données entrelacées) : 100 % des points trouvés pour
+      les 6 coachs (Axel et Kaila : 8 % avant) ;
     - shorts de MMA (vale-tudo, sur-short, short MMA du no-gi) : fente de 5 cm sur le côté extérieur de chaque
       jambe, en pointe, découpée par le champ comme l'ourlet (bords nets) ;
     - brassières des coachs femmes sans logo (le logo des shorts et des rashguards reste).
+  - `src/three/outfit.ts` : les points du corps sont lus un par un (données entrelacées d'Axel et Kaila) avant de
+    cacher la peau sous la tenue ;
   - `src/three/CoachStage.tsx` : la salle se charge tout de suite ; le coach reste caché jusqu'à la première image
     de sa salle (ou son échec, ou 5 s au plus) : ils apparaissent ensemble.
   - `scripts/salles/salles.py` : pour l'image des distances seulement, chaque pan de grillage devient un plan plein
@@ -2810,7 +2821,8 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
       du dojo (judo) ;
     - la nuit, les phares d'une voiture passent derrière les vitres puis sur le plafond (kick-boxing) ;
     - les lampes respirent un peu plus (10 % au lieu de 7 %).
-- **Fichiers** : `tools/generator/rocketbox/outfits.py`, `public/coaches/*/tenues/*.glb`, `scripts/salles/salles.py`,
+- **Fichiers** : `tools/generator/rocketbox/outfits.py`, `tools/generator/rocketbox/skinmap.py`, `src/three/outfit.ts`,
+  `public/coaches/*/tenues/*.glb`, `scripts/salles/salles.py`,
   `public/salles/mma/profondeur.png`, `src/three/CoachStage.tsx`, `src/three/StudioStage.tsx`,
   `src/three/rooms/` (rooms.ts, RoomScene.tsx, life.ts, RoomDust.tsx, `__tests__/life.test.ts`),
   `src/boot/assetSizes.json`, `src/ui/Lab.tsx` (`__labMats`), `scripts/dev/shot-finitions.mjs`,
