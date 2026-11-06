@@ -98,6 +98,14 @@ function patchJsonModels(loader: GLTFLoader) {
 
 const DRACO = './draco/';
 
+/**
+ * 1.25 chargement au démarrage: the coach's photo avatar is read once while the start screen shows (« Pesée
+ * officielle »), so the first 3D screen draws it at once. Same cache key as PhotoCoach (url, Draco, loader set-up).
+ */
+export function preloadPhotoCoach(coachId: string) {
+  useGLTF.preload(`./coaches/${coachId}/photo.${EXT}`, DRACO, true, patchJsonModels);
+}
+
 export function preloadCoaches() {
   for (const c of ['homme', 'femme'] as const) useGLTF.preload(coachUrl(c, 'realiste'), DRACO, true, patchJsonModels);
 }

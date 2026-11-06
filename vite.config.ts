@@ -44,6 +44,18 @@ export default defineConfig({
         globIgnores: ['**/tenues/arbitre*', 'coaches/*/**', 'models/**', 'salles/**'],
         runtimeCaching: [
           {
+            // 1.25: the coaches and the rooms are downloaded by the start screen (src/boot), which also replaces
+            // a file changed by an update (its size differs); afterwards the kept copy answers at once, with no
+            // network round trip (Youssef 2026-11-06: « aucune latence lors du choix des coachs »)
+            urlPattern: ({ url }) => /\/(coaches|salles)\//.test(url.pathname) && !url.pathname.includes('/arbitre'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'css-modeles',
+              expiration: { maxEntries: 600, purgeOnQuotaError: true },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
             // network first (a model changed by an update is fetched again; unchanged ones answer 304), the kept
             // copy after 4 s or offline
             urlPattern: ({ url }) => /\/(coaches|models|salles)\//.test(url.pathname),

@@ -1,10 +1,13 @@
 import { Component, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import {
+  BufferAttribute,
+  BufferGeometry,
   DoubleSide,
   EquirectangularReflectionMapping,
   FileLoader,
   Group,
+  ImageBitmapLoader,
   LinearFilter,
   Mesh,
   MeshBasicMaterial,
@@ -15,7 +18,7 @@ import {
   TextureLoader,
 } from 'three';
 import { GroundedSkybox } from 'three/examples/jsm/objects/GroundedSkybox.js';
-import { ROOM_EYE, ROOM_RADIUS, roomDir, swingAngle, type RoomData, type RoomSpec } from './rooms';
+import { ROOM_EYE, ROOM_RADIUS, decodeDepth, roomDir, roomMesh, swingAngle, type RoomData, type RoomSpec } from './rooms';
 
 /**
  * The room of a discipline around the coach (see rooms.ts): the photo-like panorama on a ground-projected dome, its
@@ -29,6 +32,8 @@ export function RoomScene({ spec, sharp }: { spec: RoomSpec; sharp: boolean }) {
   // copy costs much more to prefilter on a phone); the 4096 picture is only drawn when « Haute » is chosen
   const [pano, mask, env2k] = useLoader(TextureLoader, [`${dir}${sharp ? 'fond.webp' : 'fond-2k.webp'}`, `${dir}lumieres.webp`, `${dir}lumiere-coach.webp`]) as Texture[];
   const sprites = useLoader(TextureLoader, data.sprites.map((s) => `${dir}sprite-${s}.webp`)) as Texture[];
+  // 1.25: the distances of what the picture shows, read exactly (no colour conversion)
+  const depthPic = useLoader(ImageBitmapLoader, `${dir}profondeur.png`, (l) => (l as ImageBitmapLoader).setOptions({ imageOrientation: 'none', premultiplyAlpha: 'none', colorSpaceConversion: 'none' })) as ImageBitmap;
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
 
@@ -42,7 +47,7 @@ export function RoomScene({ spec, sharp }: { spec: RoomSpec; sharp: boolean }) {
     s.position.y = ROOM_EYE;
     // the panorama looks along +Y in Blender (-z in three.js), its centre is +x on the dome
     s.rotation.y = Math.PI / 2;
-    s.renderOrder = -1;
+    s.renderOrder = -2;
     s.name = 'salle';
     const m = s.material as MeshBasicMaterial;
     m.fog = false;
@@ -70,6 +75,76 @@ export function RoomScene({ spec, sharp }: { spec: RoomSpec; sharp: boolean }) {
     };
     return s;
   }, [pano, mask, spec.flicker]);
+
+  // 1.25: the dome only fills what the relief leaves (small gaps along edges): drawn after it at the far end of the
+  // depth range, so the graphics chip skips it wherever the relief is already drawn (a phone draws the room once)
+  const backdrop = useMemo(() => {
+    const m = sky.material as MeshBasicMaterial;
+    const base = m.onBeforeCompile;
+    const far = m.clone();
+    far.depthTest = true;
+    far.depthWrite = false;
+    far.onBeforeCompile = (sh, r) => {
+      base.call(m, sh, r);
+      sh.vertexShader = sh.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\n  gl_Position.z = gl_Position.w;');
+    };
+    far.customProgramCacheKey = () => 'salle-fond-loin';
+    const b = new Mesh(sky.geometry, far);
+    b.position.copy(sky.position);
+    b.rotation.copy(sky.rotation);
+    b.renderOrder = -1;
+    b.frustumCulled = false;
+    b.name = 'salle-fond';
+    b.raycast = () => {};
+    return b;
+  }, [sky]);
+
+  // 1.25: the room at its real size: the picture on a mesh pushed out to the distances (rooms.ts roomMesh); the dome
+  // (backdrop) fills the small gaps along the edges
+  const room = useMemo(() => {
+    const c = document.createElement('canvas');
+    c.width = depthPic.width;
+    c.height = depthPic.height;
+    const ctx = c.getContext('2d', { willReadFrequently: true })!;
+    ctx.drawImage(depthPic, 0, 0);
+    const dp = decodeDepth(ctx.getImageData(0, 0, c.width, c.height).data, c.width, c.height);
+    const m = roomMesh(dp);
+    const g = new BufferGeometry();
+    g.setAttribute('position', new BufferAttribute(m.pos, 3));
+    g.setAttribute('uv', new BufferAttribute(m.uv, 2));
+    g.setIndex(m.index);
+    g.computeBoundingSphere();
+    // its own material: it writes depth (the room hides itself where it should), same picture and breathing lamps
+    const skyMat = sky.material as MeshBasicMaterial;
+    const mat = new MeshBasicMaterial({ map: skyMat.map, side: DoubleSide, toneMapped: false, fog: false });
+    mat.onBeforeCompile = skyMat.onBeforeCompile;
+    const mesh = new Mesh(g, mat);
+    mesh.renderOrder = -2;
+    mesh.frustumCulled = false;
+    mesh.name = 'salle-relief';
+    mesh.raycast = () => {};
+    return mesh;
+  }, [depthPic, sky]);
+  // the room is drawn first; then the depth is cleared so the coach is always drawn over it (a part of the room that
+  // stands between the camera and the coach never hides him)
+  const clear = useMemo(() => {
+    const m = new Mesh(new PlaneGeometry(0.001, 0.001), new MeshBasicMaterial({ colorWrite: false, depthWrite: false }));
+    m.renderOrder = -0.5;
+    m.frustumCulled = false;
+    m.onBeforeRender = (r) => r.clearDepth();
+    m.raycast = () => {};
+    return m;
+  }, []);
+  useEffect(
+    () => () => {
+      room.geometry.dispose();
+      (backdrop.material as MeshBasicMaterial).dispose();
+      (room.material as MeshBasicMaterial).dispose();
+      clear.geometry.dispose();
+      (clear.material as MeshBasicMaterial).dispose();
+    },
+    [room, clear, backdrop],
+  );
 
   // the picture lights and reflects on the coach
   useEffect(() => {
@@ -99,11 +174,11 @@ export function RoomScene({ spec, sharp }: { spec: RoomSpec; sharp: boolean }) {
   // probe for the end-to-end tests: which room is drawn, and how many bags swing
   useEffect(() => {
     const w = window as unknown as { __cssRoom?: object };
-    w.__cssRoom = { id: spec.id, props: data.props.length, sharp };
+    w.__cssRoom = { id: spec.id, props: data.props.length, sharp, relief: (room.geometry.index?.count ?? 0) / 3 };
     return () => {
       if ((w.__cssRoom as { id?: string } | undefined)?.id === spec.id) w.__cssRoom = undefined;
     };
-  }, [spec.id, data.props.length, sharp]);
+  }, [spec.id, data.props.length, sharp, room]);
 
   const bags = useRef<Group>(null);
   useFrame(({ camera }, dt) => {
@@ -134,7 +209,9 @@ export function RoomScene({ spec, sharp }: { spec: RoomSpec; sharp: boolean }) {
 
   return (
     <>
-      <primitive object={sky} />
+      <primitive object={backdrop} />
+      <primitive object={room} />
+      <primitive object={clear} />
       <group ref={bags} name="salle-sacs">
         {props.map(({ key, p, tex }) => (
           // the pivot is the top of the picture (the chain's hold); the bag hangs below it

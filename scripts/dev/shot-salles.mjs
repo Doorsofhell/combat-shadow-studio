@@ -47,6 +47,7 @@ for (const d of list) {
   if (SALLE) await page.waitForFunction(() => window.__cssRoom, null, { timeout: 120_000 }).catch(() => console.log('pas de salle', d));
   await page.waitForTimeout(Number(process.env.WAIT ?? 6000));
   const room = await page.evaluate(() => document.querySelector('canvas')?.closest('[data-room]')?.getAttribute('data-room'));
+  console.log(d, 'salle', JSON.stringify(await page.evaluate(() => window.__cssRoom)), 'caméra', JSON.stringify(await page.evaluate(() => window.__cssCamera)));
   await page.screenshot({ path: `${OUT}/${d}-${SALLE ? 'salle' : 'avant'}.png`, timeout: 180_000 });
   console.log('ok', d, room);
 }

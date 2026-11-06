@@ -15,6 +15,7 @@ import { useNavStore } from './nav/store';
 import { Home } from './screens/Home';
 import { Onboarding } from './screens/Onboarding';
 import { CoachSelect } from './screens/CoachSelect';
+import { BootGate } from '../boot/BootScreen';
 import { initAccount } from '../account/session';
 import { STUDIO_BG, THEME_BG, applyTheme } from './theme/theme';
 import { useResolvedTheme } from './theme/useTheme';
@@ -176,62 +177,66 @@ export function App() {
       <AudioSync />
       <DisplaySync />
       <ThemeColor />
-      {/* 1.0.0: the tabs of the space shown (Apprendre, Progrès), above its page */}
-      <SectionTabs />
-      <Gate>
-        <Suspense fallback={<Loading />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/bienvenue" element={<Onboarding />} />
-            <Route path="/coach" element={<CoachSelect />} />
-            <Route path="/combattant" element={<CoachStudio />} />
-            <Route path="/entrainer" element={<Train />} />
-            <Route path="/discipline/:id" element={<DisciplinePage />} />
-            <Route path="/entrainement" element={<Training />} />
-            <Route path="/techniques" element={<Library />} />
-            <Route path="/techniques/:id" element={<TechniquePage />} />
-            <Route path="/partenaire/:id" element={<PartnerPage />} />
-            <Route path="/programmes" element={<Programs />} />
-            <Route path="/programmes/:id" element={<ProgramPage />} />
-            <Route path="/createur" element={<CreatorList />} />
-            <Route path="/createur/nouveau" element={<CreatorEditor key="nouveau" />} />
-            <Route path="/createur/:id/modifier" element={<CreatorEditor />} />
-            <Route path="/createur/:id" element={<CreatorSheet />} />
-            <Route path="/champions" element={<Champions />} />
-            <Route path="/champions/c/:championId" element={<ChampionPage />} />
-            <Route path="/champions/:id" element={<ComboPage />} />
-            <Route path="/stats" element={<Stats />} />
-            <Route path="/stats/activite" element={<ActivityDetail />} />
-            <Route path="/stats/techniques" element={<TechniquesDetail />} />
-            <Route path="/stats/disciplines" element={<DisciplinesDetail />} />
-            <Route path="/stats/enchainements" element={<CombosDetail />} />
-            <Route path="/historique" element={<History />} />
-            <Route path="/objectifs" element={<Goals />} />
-            <Route path="/reglages" element={<SettingsPage />} />
-            <Route path="/reglages/:section" element={<SettingsPage />} />
-            <Route path="/confidentialite" element={<Privacy />} />
-            <Route path="/chrono" element={<ChronoScreen />} />
-            <Route path="/favoris" element={<Favorites />} />
-            <Route path="/encyclopedie" element={<EncyclopediaHome />} />
-            <Route path="/encyclopedie/liste" element={<EncyclopediaList />} />
-            <Route path="/encyclopedie/terme/:id" element={<EncyclopediaTerm />} />
-            <Route path="/encyclopedie/az" element={<EncyclopediaAz />} />
-            <Route path="/encyclopedie/favoris" element={<EncyclopediaFavorites />} />
-            <Route path="/premium" element={<PremiumPage />} />
-            <Route path="/connexion" element={<SignIn />} />
-            <Route path="/profil" element={<ProfilePage />} />
-            <Route path="/coach-ia" element={<CoachHistory />} />
-            <Route path="/coach-ia/historique" element={<Navigate to="/coach-ia" replace />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </Gate>
-      <ScrollMemory />
-      {/* v0.32 navigation dynamique: one bottom bar, its sheets (Navigation générale, Nouveautés) and the Coach IA
-          panel they open; no floating button any more */}
-      <BottomBar />
-      <NavSheets />
-      <CoachBubble />
+      {/* 1.25: the start screen (chrono du round) downloads the coaches and the rooms before anything shows, the
+          bottom bar included (its buttons follow the screen, which is not there yet) */}
+      <BootGate fallback={<Loading />}>
+        {/* 1.0.0: the tabs of the space shown (Apprendre, Progrès), above its page */}
+        <SectionTabs />
+        <Gate>
+          <Suspense fallback={<Loading />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/bienvenue" element={<Onboarding />} />
+              <Route path="/coach" element={<CoachSelect />} />
+              <Route path="/combattant" element={<CoachStudio />} />
+              <Route path="/entrainer" element={<Train />} />
+              <Route path="/discipline/:id" element={<DisciplinePage />} />
+              <Route path="/entrainement" element={<Training />} />
+              <Route path="/techniques" element={<Library />} />
+              <Route path="/techniques/:id" element={<TechniquePage />} />
+              <Route path="/partenaire/:id" element={<PartnerPage />} />
+              <Route path="/programmes" element={<Programs />} />
+              <Route path="/programmes/:id" element={<ProgramPage />} />
+              <Route path="/createur" element={<CreatorList />} />
+              <Route path="/createur/nouveau" element={<CreatorEditor key="nouveau" />} />
+              <Route path="/createur/:id/modifier" element={<CreatorEditor />} />
+              <Route path="/createur/:id" element={<CreatorSheet />} />
+              <Route path="/champions" element={<Champions />} />
+              <Route path="/champions/c/:championId" element={<ChampionPage />} />
+              <Route path="/champions/:id" element={<ComboPage />} />
+              <Route path="/stats" element={<Stats />} />
+              <Route path="/stats/activite" element={<ActivityDetail />} />
+              <Route path="/stats/techniques" element={<TechniquesDetail />} />
+              <Route path="/stats/disciplines" element={<DisciplinesDetail />} />
+              <Route path="/stats/enchainements" element={<CombosDetail />} />
+              <Route path="/historique" element={<History />} />
+              <Route path="/objectifs" element={<Goals />} />
+              <Route path="/reglages" element={<SettingsPage />} />
+              <Route path="/reglages/:section" element={<SettingsPage />} />
+              <Route path="/confidentialite" element={<Privacy />} />
+              <Route path="/chrono" element={<ChronoScreen />} />
+              <Route path="/favoris" element={<Favorites />} />
+              <Route path="/encyclopedie" element={<EncyclopediaHome />} />
+              <Route path="/encyclopedie/liste" element={<EncyclopediaList />} />
+              <Route path="/encyclopedie/terme/:id" element={<EncyclopediaTerm />} />
+              <Route path="/encyclopedie/az" element={<EncyclopediaAz />} />
+              <Route path="/encyclopedie/favoris" element={<EncyclopediaFavorites />} />
+              <Route path="/premium" element={<PremiumPage />} />
+              <Route path="/connexion" element={<SignIn />} />
+              <Route path="/profil" element={<ProfilePage />} />
+              <Route path="/coach-ia" element={<CoachHistory />} />
+              <Route path="/coach-ia/historique" element={<Navigate to="/coach-ia" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </Gate>
+        <ScrollMemory />
+        {/* v0.32 navigation dynamique: one bottom bar, its sheets (Navigation générale, Nouveautés) and the Coach IA
+            panel they open; no floating button any more */}
+        <BottomBar />
+        <NavSheets />
+        <CoachBubble />
+      </BootGate>
       <Toaster />
     </HashRouter>
   );
