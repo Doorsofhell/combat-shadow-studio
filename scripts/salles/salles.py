@@ -18,6 +18,10 @@ from pathlib import Path
 import bpy  # noqa: I001
 from mathutils import Vector
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import equipement as EQ  # noqa: E402
+from equipement import at  # noqa: E402
+
 QUICK = os.environ.get('QUICK') == '1'
 PW = 1024 if QUICK else int(os.environ.get('RES', '4096'))
 PH = PW // 2
@@ -247,7 +251,7 @@ def industrial_lamp(x, y, z, colour, k, shade_m, cable_m, top):
     sol.thickness = 0.01
     shade.data.materials.append(shade_m)
     sphere(0.07, (x, y, z + 0.02), glow('ampoule', colour, 30), name='ampoule')
-    rod((x, y, z + 0.26), (x, y, top), 0.006, cable_m, verts=6, name='cable')
+    rod((x, y, z + 0.26), (x, y, top), 0.006, cable_m, verts=6, name='fin-cable')
     point((x, y, z - 0.02), k, colour, 0.06)
 
 
@@ -266,6 +270,14 @@ def ring(cx, cy, side, height, rot, posts, rope_m, canvas_m, apron_m, steel_m, n
         cyl(0.06, 1.6, w(x * 1.03, y * 1.03, height + 0.8), steel_m, name='ring-poteau')
         box((0.24, 0.24, 1.3), w(x, y, height + 0.85), pad_m, 0.05, rz=rot, name='ring-coussin')
     zs = [0.4, 0.75, 1.1, 1.45][:n_ropes] if n_ropes == 4 else [0.45, 0.85, 1.25]
+    # 1.27 (Youssef, 06/11, capture of the Thai ring: ropes huge, blurred, torn): in the depth picture each side of
+    # the ring is a solid plane from the canvas to the top rope, like the fence of the cage (render_depth)
+    for i in range(4):
+        a, b = corners[i], corners[(i + 1) % 4]
+        mid = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
+        along_x = abs(b[0] - a[0]) > abs(b[1] - a[1])
+        pl = box((side, 0.02, zs[-1] + 0.06), w(mid[0], mid[1], height + (zs[-1] + 0.06) / 2), None, rz=rot + (0 if along_x else math.pi / 2), name='ring-plan')
+        pl.hide_render = True
     for z in zs:
         for i in range(4):
             a, b = corners[i], corners[(i + 1) % 4]
@@ -364,14 +376,17 @@ def render_depth(sc, out_dir, width=1024):
     # picture, so its distances flickered between the fence and the far side of the cage and the relief tore what is
     # seen through it. For the distances only, each fence panel is a solid plane: what is seen through the fence lies
     # on it, flat and straight, like the fence itself
-    fence = [o for o in sc.objects if o.name.startswith('cage-grillage') and not o.hide_render]
-    planes = [o for o in sc.objects if o.name.startswith('cage-plan')]
+    # 1.27: the ring's ropes the same way (ring-plan), and every thin thing (cables, ropes, bands, named 'fin-') is
+    # left out: a cord thinner than a pixel tore the relief around it
+    fence = [o for o in sc.objects if o.name.startswith(('cage-grillage', 'ring-corde', 'fin-')) and not o.hide_render]
+    planes = [o for o in sc.objects if o.name.startswith(('cage-plan', 'ring-plan'))]
     keep_scale = [tuple(o.scale) for o in planes]
     for o in fence:
         o.hide_render = True
     for o in planes:
         o.hide_render = False
-        o.scale.y = 0.01
+        if o.name.startswith('cage-plan'):
+            o.scale.y = 0.01
     sc.render.image_settings.color_management = 'OVERRIDE'
     sc.render.image_settings.view_settings.view_transform = 'Standard'
     sc.render.image_settings.display_settings.display_device = 'sRGB'
@@ -437,6 +452,29 @@ def render_sprite(sc, out_dir, name, objs, all_objs, px_per_m=220):
     return {'w': w, 'h': h, 'center': [c.x, c.y, c.z]}
 
 
+EQ.bind(globals())
+
+
+def render_views(sc, out_dir):
+    cam = bpy.data.cameras.new('vue')
+    cam.lens = 22
+    o = bpy.data.objects.new('vue', cam)
+    sc.collection.objects.link(o)
+    sc.camera = o
+    sc.render.resolution_x, sc.render.resolution_y = 1280, 720
+    sc.cycles.samples = int(os.environ.get('SAMPLES', '24'))
+    sc.view_settings.exposure = float(os.environ.get('EXPO', '1.5'))
+    views = {'face': ((0, -5, 1.5), (0, 6, 1.3)), 'gauche': ((2, 0, 1.6), (-9, 2, 1.2)), 'droite': ((-2, 0, 1.6), (9, 2, 1.2)),
+             'arriere': ((0, 4, 1.6), (0, -12, 1.2)), 'fond-gauche': ((2, -3, 1.6), (-9, 9, 1.0)), 'fond-droite': ((-2, -3, 1.6), (9, 9, 1.0))}
+    for k, (p, t) in views.items():
+        o.location = p
+        o.rotation_mode = 'QUATERNION'
+        o.rotation_quaternion = (Vector(t) - Vector(p)).to_track_quat('-Z', 'Y')
+        sc.render.image_settings.file_format = 'JPEG'
+        sc.render.filepath = str(out_dir / f'vue-{k}.jpg')
+        bpy.ops.render.render(write_still=True)
+
+
 def to_three(p):
     """Blender (x, y, z), z up → three.js (x, y, z), y up (the glTF convention)"""
     return [round(p[0], 3), round(p[2], 3), round(-p[1], 3)]
@@ -449,7 +487,9 @@ def boxe():
     """an old boxing gym: brick walls, worn wooden floor, a ring under its own lights at the back, pendant lamps,
     heavy bags on both sides"""
     sc = reset()
-    floor = pbr('parquet', '#5a4029', 0.45, kind='planks', scale=3.0, var=0.3, bump=0.25, coat=0.15)
+    # 1.27 (Youssef: « le sol adéquat, se rapprocher de la réalité »): black sports rubber laid in rolls, as in most
+    # boxing gyms (fine granules, a faint joint every 1.25 m one way only), instead of the parquet
+    floor = EQ.floor_mat('caoutchouc-boxe', '#1c1c1e', 'caoutchouc', tile=(40.0, 1.25), seam=0.0012, rough=0.82)
     ceil = pbr('plafond', '#141414', 0.9, scale=3)
     room_shell(9, 15, 5.2, floor, lambda ax: pbr('brique', '#6a3326', 0.85, kind='brick', scale=4, var=0.3, bump=0.4, axes=ax), ceil)
     # wainscot and a skirting
@@ -486,9 +526,72 @@ def boxe():
     band = pbr('sangle', '#141414', 0.5, scale=20, var=0.1)
     chain = pbr('chaine', '#6a6c70', 0.35, metal=1.0, bump=0)
     bags = []
-    for i, (x, y) in enumerate(((-6.2, -2.0), (-6.2, 1.4), (6.2, -2.0), (6.2, 1.4), (-5.4, -6.5), (5.4, -6.5))):
-        m = leather_red if i % 3 == 1 else leather
-        bags.append(('sac-cuir-rouge' if m is leather_red else 'sac-cuir', heavy_bag(f'sac{i}', x, y, 2.1, 1.2, 0.18, m, band, chain)))
+    # 1.27: heavy bags of several sizes (Youssef: « plusieurs sacs lourds de tailles différentes »): standard, long,
+    # and a short wide uppercut bag
+    for i, (x, y, L, r, red_) in enumerate(((-6.2, -2.0, 1.2, 0.18, False), (-6.2, 1.4, 1.5, 0.19, True), (6.2, -2.0, 0.85, 0.24, False),
+                                            (6.2, 1.4, 1.2, 0.18, False), (-5.4, -6.5, 1.5, 0.19, False), (5.4, -6.5, 1.2, 0.18, True))):
+        m = leather_red if red_ else leather
+        nm = ('sac-cuir-rouge' if red_ else 'sac-cuir') + ('' if L == 1.2 else '-long' if L > 1.2 else '-court')
+        bags.append((nm, heavy_bag(f'sac{i}', x, y, L + 0.9, L, r, m, band, chain)))
+    # 1.27 equipment of a boxing gym, along the walls (the floor around the coach stays clear)
+    # speed bag on the right wall, double-end bag between the bags and the ring
+    with at(8.35, 4.6, 0, -math.pi / 2):
+        EQ.speed_bag_platform(top=1.95)
+    with at(4.4, 5.6):
+        EQ.double_end_bag(5.2)
+    # glove rack on the left wall (under the windows' end)
+    with at(-8.72, 7.6, 0, math.pi / 2):
+        lv = EQ.shelf(2.4, 0.42, (0.42, 0.92, 1.42))
+        cols = [('#9e1622', '#f2f2f0'), ('#141414', '#9e1622'), ('#1d3a8c', '#f2f2f0'), ('#c9a24a', '#141414')]
+        for j, z in enumerate(lv):
+            for k in range(4):
+                c, cu = cols[(k + j) % 4]
+                with at(-0.84 + k * 0.56, -0.02, z):
+                    EQ.glove_pair(c, cu)
+    # skipping ropes hanging on the left wall
+    with at(-8.98, -8.6, 0, math.pi / 2):
+        EQ.jump_ropes(['#141414', '#9e1622', '#1d3a8c', '#141414', '#c9a24a'], top=1.85)
+    # headgear, hand wraps and mouthguards (in boxes), towels: a shelf on the right wall
+    with at(8.72, 8.2, 0, -math.pi / 2):
+        lv = EQ.shelf(2.0, 0.42, (0.42, 0.92, 1.42))
+        for k, c in enumerate(('#9e1622', '#141414', '#1d3a8c')):
+            with at(-0.62 + k * 0.62, 0, lv[2]):
+                EQ.headgear(c)
+        with at(-0.45, 0, lv[1]):
+            EQ.open_crate(0.6, 0.32, 0.12)
+            for k in range(10):
+                with at(-0.24 + (k % 5) * 0.12, -0.07 + (k // 5) * 0.14, 0.012):
+                    EQ.wraps_roll(['#141414', '#9e1622', '#f2f2f0', '#1d3a8c', '#c9a24a'][k % 5])
+        with at(0.45, 0, lv[1]):
+            EQ.open_crate(0.5, 0.32, 0.1)
+            for k in range(8):
+                with at(-0.18 + (k % 4) * 0.12, -0.07 + (k // 4) * 0.14, 0.012):
+                    EQ.mouthguard_box(['#e8e8e8', '#9e1622', '#1d3a8c', '#141414'][k % 4])
+        for k in range(3):
+            with at(-0.55 + k * 0.55, 0, lv[0]):
+                EQ.folded_stack(['#f2f0ea', '#e8e4da', '#f2f0ea', '#d8d2c4'][: 3 + k % 2], w=0.34, d=0.26, t=0.06)
+    # the corner: stool, bucket, towel; the gong by the other corner
+    with at(3.4, 7.5, 0, 0.3):
+        EQ.corner_stool()
+        with at(0, 0, 0.585):
+            EQ.towel_folded()
+    with at(3.95, 7.15):
+        EQ.bucket()
+    with at(-3.75, 7.4, 0, 0.35):
+        EQ.gong()
+    # round timer above the ring, fight posters on the walls, a clock
+    with at(0, 14.92, 3.3):
+        EQ.wall_timer(1.4, '03:00')
+    for k, (x, y, rz, pal) in enumerate(((-5.6, 14.97, 0, ('#d9c9a3', '#1a1a1a', '#9e1622')), (5.6, 14.97, 0, ('#c9a24a', '#141414', '#1d3a8c')),
+                                         (8.97, -9.6, -math.pi / 2, ('#e8dcc0', '#2a1a14', '#9e1622')), (8.97, -11.2, -math.pi / 2, ('#1d2a3a', '#e8e4da', '#c9a24a')))):
+        with at(x, y, 1.45, rz):
+            EQ.picture(EQ.poster_png(f'affiche-boxe-{k}', 30 + k, pal), 0.6, 0.9, name='affiche')
+    with at(-8.97, -4.0, 2.2, math.pi / 2):
+        EQ.wall_clock(0.24)
+    # a long mirror on the right wall, behind the bags (shadow boxing in front of it)
+    box((0.02, 6.0, 2.0), (8.955, -2.2, 1.35), pbr('miroir', '#d8dcdf', 0.02, metal=1.0, var=0.0, bump=0.0), name='miroir')
+    for z in (0.34, 2.36):
+        box((0.04, 6.04, 0.04), (8.95, -2.2, z), pbr('cadre', '#101010', 0.5))
     # a few objects on the floor along the walls: benches and a medicine-ball rack
     wood = pbr('banc', '#5b3d26', 0.55, kind='wood', scale=3)
     for x in (-8.3, 8.3):
@@ -512,18 +615,20 @@ def mma():
     """a modern MMA academy: black mats around the coach, the cage at the back under cold light, concrete walls with
     LED lines, heavy bags along the side"""
     sc = reset()
-    mats_ = pbr('tapis', '#1a1b1e', 0.7, scale=3, var=0.18, bump=0.05)
+    # 1.27 (Youssef: « pas l'espèce de carrelage… un tatami, un sol dédié »): black combat tatami over the whole room
+    # (pressed surface, faint joints of 2 × 1 m mats) with a red tatami band round the training area; the room is
+    # 4 m longer and the cage stands 2 m further back (« la cage présente des défauts »: too close, it tore)
+    mats_ = EQ.floor_mat('tatami-mma', '#18191c', 'tatami', tile=(2.0, 1.0), seam=0.0015, rough=0.72)
     ceil = pbr('plafond', '#0e0f11', 0.9, scale=2)
-    room_shell(10, 13, 5.5, mats_, lambda ax: pbr('beton', '#3c3e42', 0.85, scale=1.5, var=0.35, bump=0.2, axes=ax), ceil)
-    # mat seams (1 m tiles)
-    seam = pbr('joint', '#0b0b0c', 0.8, bump=0)
-    for k in range(-9, 10):
-        box((0.012, 26, 0.004), (k, 0, 0.002), seam)
-    for k in range(-12, 13):
-        box((20, 0.012, 0.004), (0, k, 0.002), seam)
+    room_shell(10, 15, 5.5, mats_, lambda ax: pbr('beton', '#3c3e42', 0.85, scale=1.5, var=0.35, bump=0.2, axes=ax), ceil)
+    red_t = EQ.floor_mat('tatami-mma-rouge', '#6e1119', 'tatami', tile=(2.0, 1.0), seam=0.0015, rough=0.72)
+    for sx in (-1, 1):
+        box((1.0, 15.0, 0.012), (sx * 6.0, -2.0, 0.006), red_t, name='tatami-bord')
+        # between the side bands (they overlapped at the corners: two faces in one plane drew black squares)
+        box((11.0, 1.0, 0.012), (0, -2.0 + sx * 7.0, 0.006), red_t, name='tatami-bord')
     # cage: octagon at the back
     n, r, h, fh = 8, 3.9, 0.6, 1.8
-    cy = 8.2
+    cy = 10.2
     base = pbr('socle', '#16171a', 0.7, scale=6)
     canvas = pbr('toile-cage', '#2b2d31', 0.85, scale=10, var=0.15)
     pad = pbr('mousse', '#121214', 0.5, scale=8, var=0.12, coat=0.3)
@@ -574,11 +679,11 @@ def mma():
         box((1.2, 1.2, 0.05), (x, y, 5.4), glow('led', '#eaf1ff', 12), name='panneau')
         area((x, y, 5.35), (x, y, 0), 260, 1.2, '#eef3ff')
     for k in range(-4, 5):
-        box((0.04, 0.03, 3.4), (k * 2.2, 12.97, 2.4), glow('ligne', '#9fc0ff', 4), name='led-mur')
+        box((0.04, 0.03, 3.4), (k * 2.2, 14.97, 2.4), glow('ligne', '#9fc0ff', 4), name='led-mur')
         box((0.03, 0.04, 3.4), (9.97, k * 2.6, 2.4), glow('ligne', '#9fc0ff', 4), name='led-mur')
         box((0.03, 0.04, 3.4), (-9.97, k * 2.6, 2.4), glow('ligne', '#9fc0ff', 4), name='led-mur')
     # a red band along the walls at 1 m
-    box((20, 0.03, 0.12), (0, 12.98, 1.0), pbr('bande', '#7a1119', 0.5), name='bande')
+    box((20, 0.03, 0.12), (0, 14.98, 1.0), pbr('bande', '#7a1119', 0.5), name='bande')
     # light over the training area (the coach): two long soft boxes
     for x in (-2.4, 2.4):
         box((0.3, 3.2, 0.06), (x, 0, 5.4), glow('led', '#eaf1ff', 10), name='panneau')
@@ -593,6 +698,57 @@ def mma():
     bags = []
     for i, (x, y) in enumerate(((-7.0, -3.0), (-7.0, 0.6), (-7.0, 4.0), (7.0, -3.0), (7.0, 0.6), (7.0, 4.0))):
         bags.append(('sac-noir', heavy_bag(f'sac{i}', x, y, 2.35, 1.5, 0.19, leather, band, chain)))
+    # 1.27 equipment of a complete fight gym, along the walls
+    # grappling dummies: one on its back on the mats by the cage, one sitting against the left wall
+    with at(-5.4, 5.6, 0, 0.5):
+        EQ.dummy('couche', '#2a2a2c', '#3a3a3c')
+    with at(-9.55, 8.4, 0, math.pi / 2):
+        EQ.dummy('assis', '#5a1418', '#2a2a2c')
+    # shelves on the right wall: MMA gloves, shin guards, headgear
+    with at(9.62, 7.4, 0, -math.pi / 2):
+        lv = EQ.shelf(2.6, 0.45, (0.42, 0.92, 1.42), c='#1d1d1f')
+        for k in range(4):
+            with at(-0.96 + k * 0.64, 0, lv[2]):
+                EQ.mma_glove_pair(['#141414', '#7a1119', '#141414', '#2a2d33'][k], ['#f2f2f0', '#141414', '#7a1119', '#f2f2f0'][k])
+        for k in range(4):
+            for sx in (-1, 1):
+                with at(-0.96 + k * 0.64 + sx * 0.08, 0, lv[1]):
+                    EQ.shin_guard(['#141414', '#141414', '#7a1119', '#2a2d33'][k], '#f2f2f0' if k % 2 else '#7a1119')
+        for k in range(3):
+            with at(-0.8 + k * 0.8, 0, lv[0]):
+                EQ.headgear(['#141414', '#7a1119', '#141414'][k], '#0a0a0a')
+    # focus mitts and Thai pads on a low rack
+    with at(9.62, 11.2, 0, -math.pi / 2):
+        lv = EQ.shelf(1.8, 0.45, (0.42, 0.92), c='#1d1d1f')
+        for k in range(4):
+            with at(-0.66 + k * 0.44, 0, lv[1]):
+                EQ.focus_mitt('#141414', '#7a1119')
+        for k in range(3):
+            with at(-0.55 + k * 0.55, 0, lv[0]):
+                EQ.thai_pad('#141414', '#7a1119')
+    # strike shields standing against the right wall, a recovery bench
+    for k in range(3):
+        with at(9.72, -6.6 + k * 0.52, 0, -math.pi / 2):
+            EQ.kick_shield('#141414' if k != 1 else '#7a1119', '#7a1119' if k != 1 else '#141414')
+    with at(9.45, -2.2, 0, -math.pi / 2):
+        EQ.bench(1.6)
+    # conditioning corner on the left: battle ropes, kettlebells, medicine balls
+    with at(-9.96, -7.4, 0, math.pi / 2):
+        EQ.battle_ropes(5.0)
+    for k, r_ in enumerate((0.09, 0.1, 0.11, 0.12, 0.13)):
+        with at(-9.5, 1.8 + k * 0.42):
+            EQ.kettlebell(r_, '#1b1b1c', ['#c9a24a', '#2a5db0', '#7a1119', '#2a8a4a', '#e8e8e8'][k])
+    for k, c in enumerate(('#2a2a2c', '#5a1418', '#1d2a3a')):
+        with at(-9.45, -1.6 + k * 0.5):
+            EQ.medicine_ball(0.16 + 0.015 * k, c)
+    # round timer above the cage, two posters, a clock
+    with at(0, 14.9, 3.9):
+        EQ.wall_timer(1.5, '05:00')
+    for k, (x, pal) in enumerate(((-6.6, ('#141519', '#e8e4da', '#7a1119')), (6.6, ('#7a1119', '#141414', '#e8e4da')))):
+        with at(x, 14.97, 1.6):
+            EQ.picture(EQ.poster_png(f'affiche-mma-{k}', 50 + k, pal), 0.7, 1.05, name='affiche')
+    with at(-9.97, 11.8, 2.6, math.pi / 2):
+        EQ.wall_clock(0.26)
     sc.world.node_tree.nodes['Background'].inputs[1].default_value = 0.3
     return sc, bags, {'key': '#f4f7ff', 'mist': (7, 28), 'haze': '#141a24'}
 
@@ -602,9 +758,10 @@ def kickboxing():
     rows of heavy bags on both sides"""
     sc = reset()
     ceil = pbr('plafond', '#101012', 0.9, scale=2)
-    floor = pbr('tapis', '#18181a', 0.75, kind='brick', brick=(1.0, 1.0, 0.004), b2=0.9, scale=3, var=0.15, bump=0.1)
+    # 1.27: combat tatami (no tiles), a red tatami band round the training area
+    floor = EQ.floor_mat('tatami-kb', '#19191b', 'tatami', tile=(2.0, 1.0), seam=0.0015, rough=0.72)
     room_shell(9, 12, 4.8, floor, lambda ax: pbr('enduit', '#2e2f33', 0.9, scale=1.4, var=0.3, bump=0.25, axes=ax), ceil)
-    red = pbr('bord', '#7d151c', 0.7, kind='brick', brick=(1.0, 1.0, 0.004), b2=0.9, scale=3, var=0.15, bump=0.1)
+    red = EQ.floor_mat('tatami-kb-rouge', '#701219', 'tatami', tile=(2.0, 1.0), seam=0.0015, rough=0.72)
     for sx in (-1, 1):
         box((1.0, 14, 0.012), (sx * 4.5, 0, 0.006), red)
         box((10, 1.0, 0.012), (0, sx * 7.5, 0.006), red)
@@ -635,17 +792,58 @@ def kickboxing():
         for y in (-6, 0, 6):
             box((0.2, 2.6, 0.05), (x, y, 4.75), glow('tube', '#f3f1ea', 9), name='tube')
             area((x, y, 4.7), (x, y, 0), 150, 0.2, '#f6f2ea', shape='RECTANGLE', size_y=2.6)
-    # a glove shelf on the right wall (pairs of gloves as soft rounded shapes) and a speed-ball platform on the left
-    shelf = pbr('etagere', '#2b2b2d', 0.5, metal=0.6, bump=0)
-    box((0.35, 4.0, 0.04), (8.8, -3, 1.5), shelf)
-    rnd2 = random.Random(3)
-    for k in range(8):
-        c = rnd2.choice(['#7a1018', '#101010', '#1a2f6b', '#6b6b6b'])
-        for j in (-0.09, 0.09):
-            o = sphere(0.11, (8.78, -4.7 + k * 0.48 + j, 1.64), pbr('gant', c, 0.4, scale=10, var=0.15, coat=0.3))
-            o.scale = (1.0, 0.8, 1.25)
+    # 1.27 equipment of a striking gym, along the walls
+    # protective gear rack on the right wall: gloves, headgear and shin guards, mitts
+    with at(8.72, -3.0, 0, -math.pi / 2):
+        lv = EQ.shelf(3.6, 0.42, (0.42, 0.92, 1.42), c='#1d1d1f')
+        for k in range(6):
+            with at(-1.5 + k * 0.6, -0.02, lv[2]):
+                EQ.glove_pair(['#7a1018', '#101010', '#1a2f6b', '#7a1018', '#101010', '#6b6b6b'][k], '#f2f2f0' if k % 2 else '#101010')
+        for k in range(3):
+            with at(-1.3 + k * 0.6, 0, lv[1]):
+                EQ.headgear(['#7a1018', '#101010', '#1a2f6b'][k])
+        for k in range(3):
+            for sx in (-1, 1):
+                with at(0.4 + k * 0.45 + sx * 0.08, 0, lv[1]):
+                    EQ.shin_guard(['#f2f2f0', '#101010', '#7a1018'][k], '#7a1018' if k != 2 else '#f2f2f0')
+        for k in range(6):
+            with at(-1.45 + k * 0.58, 0, lv[0]):
+                EQ.focus_mitt('#101010' if k % 2 else '#7a1018', '#f2f2f0')
+    # resistance bands on the right wall, an interval timer high on the left wall
+    with at(8.98, 3.6, 0, -math.pi / 2):
+        EQ.resistance_bands(['#b3122a', '#1d3a8c', '#141414', '#2a8a4a', '#e8c21a'], top=1.85)
+    with at(-8.9, -1.0, 3.2, math.pi / 2):
+        EQ.wall_timer(1.3, '01:45', c='#3dff6a')
+    # pads and strike shields on the left wall
+    with at(-8.72, -6.6, 0, math.pi / 2):
+        lv = EQ.shelf(1.8, 0.42, (0.42, 0.92), c='#1d1d1f')
+        for k in range(3):
+            with at(-0.55 + k * 0.55, 0, lv[1]):
+                EQ.thai_pad('#101010' if k != 1 else '#7a1018', '#7a1018' if k != 1 else '#101010')
+        for k in range(3):
+            with at(-0.55 + k * 0.55, 0, lv[0]):
+                EQ.focus_mitt('#101010', '#7a1018')
+    for k in range(3):
+        with at(-8.82, -8.6 + k * 0.5, 0, math.pi / 2):
+            EQ.kick_shield('#101010' if k != 1 else '#7a1018', '#7a1018' if k != 1 else '#101010')
+    # free-standing bags and a kicking target on its stand
+    for sx in (-1, 1):
+        with at(sx * 7.5, 5.6):
+            EQ.freestanding_bag('#141414', '#1d1d1f', '#7a1119' if sx < 0 else '#f2f2f0')
+    with at(7.5, -8.6, 0, -0.8):
+        EQ.kick_target_stand('#7a1018')
+    # agility ladder and cones along the left wall, in front
+    with at(-7.9, -6.0, 0.0, 0):
+        EQ.agility_ladder(4.0)
+    with at(-6.9, -10.6, 0, math.pi / 2):
+        EQ.cones(5, step=0.65)
+    # a speed-ball platform on the left
     box((0.9, 0.9, 0.06), (-8.5, 5, 2.4), pbr('plateforme', '#3a2a1c', 0.5, kind='planks', scale=3))
     sphere(0.12, (-8.3, 5, 2.18), pbr('poire', '#6b1218', 0.35, scale=10, coat=0.4))
+    # posters on the side walls
+    for k, (x, y, rz, pal) in enumerate(((-8.98, 2.6, math.pi / 2, ('#141519', '#e8e4da', '#b3122a')), (8.98, 6.4, -math.pi / 2, ('#b3122a', '#141414', '#e8e4da')))):
+        with at(x, y, 1.5, rz):
+            EQ.picture(EQ.poster_png(f'affiche-kb-{k}', 70 + k, pal), 0.6, 0.9, name='affiche')
     leather = pbr('vinyle', '#141414', 0.35, scale=10, var=0.2, bump=0.08, coat=0.35)
     band = pbr('sangle', '#7a1119', 0.5, scale=20, var=0.1)
     chain = pbr('chaine', '#6a6c70', 0.35, metal=1.0, bump=0)
@@ -664,24 +862,29 @@ def muaythai():
     sc = reset()
     concrete = pbr('beton', '#4a4038', 0.85, scale=1.2, var=0.35, bump=0.3)
     box((40, 40, 0.1), (0, 0, -0.05), concrete, name='sol')
-    # rubber mats under the coach
-    box((7, 7, 0.02), (0, 0, 0.01), pbr('tapis', '#2a2420', 0.8, kind='brick', brick=(1.0, 1.0, 0.004), b2=0.85, scale=3, var=0.2), name='tapis')
+    # 1.27: one thick training mat under the coach (canvas cover, rounded edges), no tiles
+    box((7, 7, 0.05), (0, 0, 0.025), EQ.floor_mat('tapis-mt', '#1f2a3d', 'toile', tile=(20.0, 20.0), seam=0.0, rough=0.8), bevel=0.02, name='tapis')
     wood = pbr('bois', '#4a3020', 0.6, kind='planks', axes='yz', scale=4, var=0.35, bump=0.3)
     beam = pbr('poutre', '#3a2618', 0.65, kind='planks', axes='xz', scale=4, var=0.35, bump=0.3)
     tin = pbr('tole', '#2b2a28', 0.5, metal=0.7, scale=2, var=0.4, bump=0.2)
     # frame: posts every 4 m on a 16 x 20 m shed, beams, a sloped tin roof
+    # 1.27: the shed is 5 m longer and the ring stands 3 m further back (« le ring présente des défauts »: 4 m behind
+    # the coach, its ropes filled the picture and tore); a plank wall closes the back, where the camp hangs its
+    # belts, posters, fans and clock
     for x in (-8, -4, 0, 4, 8):
-        for y in (-10, -5, 0, 5, 10):
-            if abs(x) == 8 or abs(y) == 10:
+        for y in (-10, -5, 0, 5, 10, 15):
+            if abs(x) == 8 or y in (-10, 15):
                 box((0.22, 0.22, 4.6), (x, y, 2.3), wood, 0.01)
-    for y in (-10, -5, 0, 5, 10):
+    for y in (-10, -5, 0, 5, 10, 15):
         box((16.4, 0.22, 0.3), (0, y, 4.55), beam, 0.01)
     for x in (-8, 8):
-        box((0.22, 20.4, 0.3), (x, 0, 4.55), beam, 0.01)
+        box((0.22, 25.4, 0.3), (x, 2.5, 4.55), beam, 0.01)
     for sx in (-1, 1):
-        r = box((8.8, 21, 0.03), (sx * 4.3, 0, 5.3), tin, name='toit')
+        r = box((8.8, 26, 0.03), (sx * 4.3, 2.5, 5.3), tin, name='toit')
         r.rotation_euler.y = sx * math.radians(-12)
-    box((0.3, 21, 0.3), (0, 0, 6.2), beam)
+    box((0.3, 26, 0.3), (0, 2.5, 6.2), beam)
+    planks = pbr('planches', '#3e2a1c', 0.7, kind='planks', axes='xz', brick=(2.4, 0.18, 0.006), scale=4, var=0.35, bump=0.3)
+    box((16, 0.08, 3.3), (0, 15.05, 1.65), planks, name='mur-fond')
     # ring at the back, ropes wrapped in red, white and blue cloth
     canvas = pbr('toile', '#a8946f', 0.9, scale=14, var=0.15, bump=0.06)
     apron = pbr('jupe', '#5a1a16', 0.75, scale=8, var=0.2)
@@ -690,17 +893,17 @@ def muaythai():
     blue = pbr('coin-bleu', '#183a8c', 0.5, scale=10, var=0.12)
     white = pbr('coin-blanc', '#d8d6d0', 0.5, scale=10, var=0.1)
     steel = pbr('acier', '#8a8c90', 0.35, metal=1.0, var=0.1, bump=0.0)
-    ring(0, 6.6, 5.2, 0.7, 0.0, (red, white, blue, white), None, canvas, apron, steel, n_ropes=4, wrap=wr)
+    ring(0, 9.6, 5.2, 0.7, 0.0, (red, white, blue, white), None, canvas, apron, steel, n_ropes=4, wrap=wr)
     # hanging bulbs with their cables (warm), two over the ring
     cable = pbr('cable', '#0c0c0c', 0.6, bump=0)
     bulb = glow('ampoule', '#ffb766', 40)
-    for x, y in ((-3, -3), (3, -3), (-3, 2), (3, 2), (0, -6.5), (-5.5, -7.5), (5.5, -7.5), (-1.5, 6.6), (1.5, 6.6), (-5.6, 4.5), (5.6, 4.5)):
+    for x, y in ((-3, -3), (3, -3), (-3, 2), (3, 2), (0, -6.5), (-5.5, -7.5), (5.5, -7.5), (-1.5, 9.6), (1.5, 9.6), (-5.6, 4.5), (5.6, 4.5)):
         z = 3.1 + 0.25 * math.sin(x * 1.7 + y)
         sphere(0.06, (x, y, z), bulb, name='ampoule')
-        rod((x, y, z + 0.06), (x, y, 4.45), 0.005, cable, verts=6)
+        rod((x, y, z + 0.06), (x, y, 4.45), 0.005, cable, verts=6, name='fin-cable')
         point((x, y, z - 0.02), 260, '#ffb35c', 0.05)
     # two caged work lights over the mats, two over the ring
-    for x, y, k in ((-1.5, 0, 260), (1.5, 0, 260), (-1.6, 6.6, 300), (1.6, 6.6, 300)):
+    for x, y, k in ((-1.5, 0, 260), (1.5, 0, 260), (-1.6, 9.6, 300), (1.6, 9.6, 300)):
         area((x, y, 4.3), (x, y, 0), k, 0.6, '#ffcf96')
         box((0.5, 0.3, 0.08), (x, y, 4.36), glow('lampe', '#ffd9a8', 8), name='lampe')
     # moonlight from outside, and dark vegetation around the shed
@@ -715,8 +918,10 @@ def muaythai():
     for _ in range(90):
         a = rnd.uniform(0, 2 * math.pi)
         r = rnd.uniform(13, 19)
-        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=rnd.uniform(1.0, 2.6), location=(r * math.cos(a), r * math.sin(a), rnd.uniform(0.4, 3.2)))
+        # 1.27: round the longer shed (centre 2.5 m back), never inside it; smooth foliage instead of facets
+        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=3, radius=rnd.uniform(1.0, 2.6), location=(r * math.cos(a), 2.5 + 1.15 * r * math.sin(a), rnd.uniform(0.4, 3.2)))
         o = bpy.context.object
+        bpy.ops.object.shade_smooth()
         o.scale = (1, 1, rnd.uniform(0.6, 1.2))
         d = o.modifiers.new('d', 'DISPLACE')
         t = bpy.data.textures.new('n', 'CLOUDS')
@@ -727,7 +932,7 @@ def muaythai():
     for _ in range(14):
         a = rnd.uniform(0, 2 * math.pi)
         r = rnd.uniform(14, 18)
-        x, y = r * math.cos(a), r * math.sin(a)
+        x, y = r * math.cos(a), 2.5 + 1.15 * r * math.sin(a)
         rod((x, y, 0), (x + rnd.uniform(-1, 1), y + rnd.uniform(-1, 1), rnd.uniform(6, 9)), 0.18, pbr('palmier', '#2a2118', 0.8, scale=8, var=0.4, bump=0.5))
     # long Thai bags (red and black), hanging along the sides
     red_b = pbr('cuir-rouge', '#701419', 0.45, scale=12, var=0.25, bump=0.12, coat=0.2)
@@ -738,6 +943,52 @@ def muaythai():
     for i, (x, y) in enumerate(((-6.2, -3.5), (-6.2, -0.5), (-6.2, 2.5), (6.2, -3.5), (6.2, -0.5), (6.2, 2.5))):
         m = red_b if i % 2 == 0 else black_b
         bags.append(('sac-thai-rouge' if m is red_b else 'sac-thai-noir', heavy_bag(f'sac{i}', x, y, 2.45, 1.8, 0.17, m, band, chain)))
+    # 1.27 equipment of a Thai camp
+    # a long bench on the left: Thai pads, stacked shin guards, focus mitts, wraps, water bottles
+    with at(-7.2, 6.4, 0, math.pi / 2):
+        EQ.wooden_bench(2.8, '#4a3020')
+        for k in range(3):
+            with at(-1.1 + k * 0.3, 0, 0.455):
+                EQ.thai_pad(['#9a1c22', '#1a1716', '#1d3a8a'][k], '#d8cfbf', lying=False)
+        for k in range(3):
+            with at(-0.15 + k * 0.05, 0.02, 0.455 + k * 0.06):
+                before = set(bpy.data.objects)
+                EQ.shin_guard(['#9a1c22', '#1a1716', '#ddd6c8'][k])
+                EQ.tilt(before, rx=math.pi / 2, about=(0, 0, 0.05))
+        with at(0.55, 0, 0.455):
+            EQ.focus_mitt('#9a1c22', '#ddd6c8')
+        with at(0.85, 0.02, 0.455):
+            EQ.wraps_roll('#9a1c22')
+        with at(0.95, -0.05, 0.455):
+            EQ.wraps_roll('#ddd6c8')
+        for k in range(3):
+            with at(1.1 + k * 0.09, 0.06, 0.455):
+                EQ.water_bottle(['#2f6fb5', '#e8e8e8', '#2a8a4a'][k])
+    # low-kick shields leaning on the back wall, weighted ropes on a post
+    for k in range(2):
+        with at(-6.6 + k * 0.5, 14.92, 0, 0):
+            EQ.low_kick_shield(['#9a1c22', '#1a1716'][k], '#ddd6c8')
+    with at(-7.86, 0.0, 0, math.pi / 2):
+        EQ.jump_ropes(['#1a1716', '#9a1c22', '#1a1716'], spacing=0.06, top=1.9)
+    # the back wall: championship belts, trophies on a shelf, posters, a clock, wall fans
+    for k, x in enumerate((-4.6, -3.2)):
+        with at(x, 14.99, 2.3):
+            EQ.champion_belt('#1a1716' if k else '#9a1c22')
+    with at(4.6, 14.95, 0):
+        box((1.8, 0.3, 0.04), (0, -0.15, 2.05), pbr('etagere', '#3a2618', 0.55, kind='planks', scale=4))
+        for k in range(4):
+            with at(-0.65 + k * 0.43, -0.15, 2.07):
+                EQ.trophy(0.32 + 0.08 * (k % 2))
+    for k, x in enumerate((-1.6, 1.8)):
+        with at(x, 14.99, 2.2):
+            EQ.picture(EQ.poster_png(f'affiche-mt-{k}', 90 + k, (('#e0c27a', '#2a1a10', '#9a1c22'), ('#1d3a8a', '#ece4d2', '#d4af37'))[k]), 0.55, 0.82, name='affiche')
+    with at(0.1, 15.0, 2.75):
+        EQ.wall_clock(0.24)
+    for sx in (-1, 1):
+        with at(sx * 6.9, 14.98, 2.75):
+            EQ.wall_fan(0.28)
+        with at(sx * 7.87, 5.0, 3.2, -sx * math.pi / 2):
+            EQ.wall_fan(0.26)
     sc.world.node_tree.nodes['Background'].inputs[0].default_value = (0.004, 0.006, 0.012, 1)
     return sc, bags, {'key': '#ffc98a', 'haze': '#2a180a'}
 
@@ -787,12 +1038,69 @@ def judo():
         # daylight behind the screens
         lp = (0, fixed * 1.25, 2.0) if along_x else (fixed * 1.25, 0, 2.0)
         area(lp, (0, 0, 1.0), 350, 2 * half, '#fff0d6', shape='RECTANGLE', size_y=2.4)
-    # the alcove (tokonoma) on the back wall, a plain scroll and a low table
+    # the alcove (tokonoma) on the back wall: 1.27 a brush circle (ensō) on its scroll, a low table
     box((1.8, 0.75, 0.2), (1, hy - 0.4, 0.1), dark, 0.01)
     box((1.84, 0.06, Hh), (1, hy + 0.05, Hh / 2), pbr('enduit', '#d8cfbf', 0.9, scale=6, var=0.08))
-    box((0.5, 0.02, 1.3), (1, hy - 0.03, 1.7), pbr('rouleau', '#ece4d2', 0.85, scale=20, var=0.06))
-    box((0.56, 0.035, 0.04), (1, hy - 0.03, 2.37), dark)
-    box((0.56, 0.035, 0.04), (1, hy - 0.03, 1.04), dark)
+
+    def scroll(x, y, z, png, rz=0.0):
+        with at(x, y, z, rz):
+            EQ.picture(png, 0.46, 1.27, frame=0, name='rouleau', rough=0.85)
+            box((0.56, 0.035, 0.04), (0, 0, 1.3), dark)
+            box((0.56, 0.035, 0.04), (0, 0, -0.03), dark)
+
+    scroll(1, hy - 0.03, 1.04, EQ.enso_png('enso', 5))
+    # 1.27 equipment of a dojo
+    # calligraphies on the back wall (« jūdō », « seiryoku zen'yō »), two portraits of masters of the past above them
+    scroll(-0.65, hy - 0.1, 1.0, EQ.kanji_png('kanji-judo', '柔道', 7))
+    scroll(5.0, hy - 0.1, 1.0, EQ.kanji_png('kanji-seiryoku', '精力善用', 9))
+    for k, x in enumerate((3.2, 6.1)):
+        with at(x, hy - 0.1, 2.35):
+            EQ.picture(EQ.portrait_png(f'portrait-{k}', 11 + k), 0.36, 0.46, frame_c='#2a1a10', frame=0.035, name='portrait')
+    # belts of every grade on a board, left of the alcove
+    with at(-3.6, hy - 0.1, 0):
+        EQ.belt_board(['#f4f3ee', '#e8c21a', '#e07a1a', '#2a8a4a', '#1d4fb0', '#5a3a22', '#141414', ('#b3122a', '#f4f3ee'), '#b3122a'], w=2.6)
+    # judogi on a rack (left), throwing dummies (right), uchikomi bands on the right wall posts
+    rail = pbr('portant', '#2a2a2c', 0.4, metal=0.8, bump=0)
+    with at(-6.1, -3.2, 0, math.pi / 2):
+        for sx in (-1, 1):
+            rod((sx * 1.1, 0, 0), (sx * 1.1, 0, 1.72), 0.016, rail)
+            box((0.05, 0.5, 0.03), (sx * 1.1, 0, 0.015), rail)
+        rod((-1.1, 0, 1.7), (1.1, 0, 1.7), 0.014, rail)
+        for k in range(4):
+            with at(-0.78 + k * 0.52, 0, 0.08):
+                EQ.gi_hanging(['#f4f3ee', '#1b3f8b', '#f4f3ee', '#f4f3ee'][k], ['#141414', '#141414', '#5a3a22', '#1d4fb0'][k])
+    with at(5.7, -4.4, 0, -math.pi / 2 + 0.4):
+        EQ.dummy('debout', '#c9b48a', '#b39a6e')
+    with at(5.2, 3.0, 0, -0.6):
+        EQ.dummy('couche', '#3a2a20', '#2a2018')
+    for y in (-2, 0, 2):
+        with at(6.9, y, 0, -math.pi / 2):
+            EQ.uchikomi_bands('#b3122a' if y else '#141414', top=1.5)
+    # spare tatami stacked, a technique board on its easel
+    with at(-5.9, 5.9, 0, 0.12):
+        EQ.tatami_stack(6, tatami)
+    with at(-5.6, 2.2, 0, math.pi / 2 - 0.35):
+        before = set(bpy.data.objects)
+        EQ.whiteboard(EQ.board_png('tableau-judo', 13), 1.2, 0.8, z=0.95)
+        EQ.tilt(before, rx=-0.12, about=(0, 0, 0))
+        for sx in (-1, 1):
+            rod((sx * 0.5, 0.05, 0), (sx * 0.45, -0.02, 1.85), 0.018, dark)
+        rod((0, 0.05, 1.85), (0, 0.5, 0), 0.018, dark)
+    # wooden benches and a shoe rack (sandals) along the entrance wall
+    for x in (-0.6, 2.4):
+        with at(x, -hy + 0.35, 0, math.pi):
+            EQ.wooden_bench(2.2, '#5a3a22')
+    with at(-4.6, -hy + 0.3, 0, math.pi):
+        box((1.8, 0.36, 0.04), (0, 0, 0.42), dark)
+        box((1.8, 0.36, 0.04), (0, 0, 0.12), dark)
+        for sx in (-1, 1):
+            box((0.04, 0.36, 0.46), (sx * 0.88, 0, 0.23), dark)
+        for k in range(4):
+            with at(-0.62 + k * 0.42, 0, 0.44):
+                EQ.zori_pair(['#2a2a2a', '#7a1018', '#1d3a8c', '#2a2a2a'][k])
+        for k in range(3):
+            with at(-0.5 + k * 0.5, 0, 0.14):
+                EQ.zori_pair('#2a2a2a')
     # ceiling: wooden boards and beams
     box((L, Wd, 0.06), (0, 0, Hh + 0.2), pbr('plafond', '#5a3f28', 0.7, kind='planks', scale=3, var=0.3, bump=0.1))
     for k in range(-3, 4):
@@ -810,8 +1118,9 @@ def bjj():
     """a modern jiu-jitsu academy: grey mats with a black border (the blue gi stands out on them), padded black walls, a rack of belts on the wall,
     bright ceiling panels"""
     sc = reset()
-    mats_ = pbr('tapis-gris', '#6a6e75', 0.75, kind='brick', brick=(1.0, 2.0, 0.005), b2=0.95, scale=3, var=0.1, bump=0.12)
-    border = pbr('tapis-noir', '#121315', 0.75, kind='brick', brick=(1.0, 2.0, 0.005), b2=0.95, scale=3, var=0.1, bump=0.12)
+    # 1.27: grappling tatami (pressed surface, faint joints), no tiles
+    mats_ = EQ.floor_mat('tatami-jjb', '#62666e', 'tatami', tile=(2.0, 1.0), seam=0.0015, rough=0.74)
+    border = EQ.floor_mat('tatami-jjb-noir', '#141517', 'tatami', tile=(2.0, 1.0), seam=0.0015, rough=0.74)
     ceil = pbr('plafond', '#1a1c1f', 0.9, scale=2)
     room_shell(9, 11, 4.2, border, lambda ax: pbr('mur', '#5a5d62', 0.9, scale=1.4, var=0.25, bump=0.15, axes=ax), ceil)
     box((14, 18, 0.03), (0, 0, 0.015), mats_, name='tapis')
@@ -840,6 +1149,58 @@ def bjj():
         for y in (-7, -2.5, 2, 6.5):
             box((1.2, 1.2, 0.04), (x, y, 4.15), glow('led', '#f3f6ff', 5), name='panneau')
             area((x, y, 4.1), (x, y, 0), 110, 1.2, '#f3f6ff')
+    # 1.27 equipment of a grappling academy
+    # submission dummies: on its back on the mats, sitting against the left wall
+    with at(5.4, 8.4, 0, 0.35):
+        EQ.dummy('couche', '#1d2a44', '#141414')
+    with at(-8.78, 6.2, 0, math.pi / 2):
+        EQ.dummy('assis', '#141414', '#2a2a2c')
+    # folded kimonos and rashguards on shelves (left wall)
+    with at(-8.7, -1.6, 0, math.pi / 2):
+        lv = EQ.shelf(2.6, 0.42, (0.42, 0.92, 1.42), c='#2a2a2c')
+        gis = [['#f2f0ea'] * 4, ['#1d3f8b'] * 3, ['#17181c'] * 4]
+        for j, z in enumerate(lv[1:]):
+            for k in range(3):
+                with at(-0.85 + k * 0.85, 0, z):
+                    EQ.folded_stack(gis[(k + j) % 3][: 3 + (k + j) % 2])
+        for k in range(4):
+            with at(-0.96 + k * 0.64, 0, lv[0]):
+                EQ.folded_stack([['#b3122a', '#17181c'], ['#1d3f8b', '#17181c', '#1d3f8b'], ['#17181c', '#e8e8e8'], ['#5b2a8c', '#17181c']][k], w=0.3, d=0.24, t=0.035)
+    # foam rollers, mobility balls and medicine balls along the right wall
+    for k, c in enumerate(('#1d3f8b', '#17181c', '#b3122a', '#17181c', '#2a8a4a')):
+        with at(8.45, 1.0 + k * 0.2):
+            EQ.foam_roller(c)
+    for k, (y, r_, c) in enumerate(((-1.6, 0.32, '#1d3f8b'), (-2.4, 0.28, '#17181c'))):
+        with at(8.3, y):
+            EQ.swiss_ball(r_, c)
+    for k, c in enumerate(('#2a2a2c', '#5a1418', '#1d2a3a')):
+        with at(8.45, 3.2 + k * 0.45):
+            EQ.medicine_ball(0.15, c)
+    # bench and shoe cubbies by the entrance (front wall)
+    with at(-5.6, -10.6, 0, math.pi):
+        EQ.wooden_bench(2.2, '#3a3a3c')
+    with at(-2.4, -10.72, 0, math.pi):
+        cells = EQ.cubbies(4, 2, c='#2a2a2c')
+        for k, (x, z) in enumerate(cells):
+            if k % 3 != 2:
+                with at(x, 0, z):
+                    EQ.shoe_pair(['#17181c', '#f2f0ea', '#1d3f8b', '#b3122a'][k % 4])
+    # technique board and competition posters on the back wall (above the padding)
+    with at(3.4, 10.88, 0):
+        EQ.whiteboard(EQ.board_png('tableau-jjb', 17), 1.8, 1.1, z=1.8)
+    for k, x in enumerate((0.7, 6.5)):
+        with at(x, 10.88, 1.85):
+            EQ.picture(EQ.poster_png(f'affiche-jjb-{k}', 110 + k, (('#1d3f8b', '#f2f0ea', '#e8c21a'), ('#17181c', '#e8e8e8', '#b3122a'))[k]), 0.62, 0.92, name='affiche')
+    # the upper walls: kimonos hanging on hooks (left), a flag of Brazil, a round timer (right)
+    for k in range(5):
+        with at(-8.86, 2.0 + k * 1.05, 0.55, math.pi / 2):
+            EQ.gi_hanging(['#f2f0ea', '#1d3f8b', '#17181c', '#f2f0ea', '#1d3f8b'][k], ['#141414', '#5b2a8c', '#141414', '#1d4fb0', '#5a3a22'][k])
+    with at(8.9, 2.0, 2.0, -math.pi / 2):
+        EQ.picture(EQ.flag_png('drapeau-bresil'), 1.8, 1.26, frame=0, name='drapeau', rough=0.85)
+    with at(8.88, -4.0, 2.4, -math.pi / 2):
+        EQ.wall_timer(1.2, '06:00')
+    with at(-2.0, -10.9, 2.3, math.pi):
+        EQ.wall_clock(0.26)
     sc.world.node_tree.nodes['Background'].inputs[1].default_value = 0.3
     return sc, [], {'key': '#ffffff', 'haze': '#121722'}
 
@@ -856,6 +1217,12 @@ def main():
         sc, bags, meta = ROOMS[name]()
         pano_camera(sc)
         all_objs = list(sc.objects)
+        if os.environ.get('VIEWS') == '1':
+            # 1.27 check pictures: ordinary photos of the room from where the training camera stands (in front of the
+            # coach) and toward each side, to look at the equipment closer than the panorama shows it
+            render_views(sc, d)
+            print('ok', name, 'views', flush=True)
+            continue
         if os.environ.get('DEPTH_ONLY') == '1':
             # only the depth picture of an existing render (the bags are not in the panorama)
             for _sprite, objs in bags:
