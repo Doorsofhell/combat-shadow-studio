@@ -33,6 +33,9 @@ GEOM_BRA = MH_BODY = os.environ.get('MH_BODY') == '1'
 VT_HEM = float(os.environ.get('VT_HEM', '0.42'))
 # 1.22 women's MMA kit (Youssef 05/11 18:07, photos): over-short hem (share of the thigh from the knee) and flare
 SUR_HEM = float(os.environ.get('SUR_HEM', '0.66'))
+# 1.26 side slit of the MMA shorts: height and half width at the hem (metres)
+SLIT_H = float(os.environ.get('SLIT_H', '0.05'))
+SLIT_W = float(os.environ.get('SLIT_W', '0.011'))
 SUR_FLARE = float(os.environ.get('SUR_FLARE', '0.02'))
 # 1.22.1 the high kick: the liner ends 1.5 cm inside the over-short's hem (< 0: liner whole); the over-short snug at
 # the crotch (half-width of the snug zone, push taken off: 4 mm instead of 10 mm, no flare, no folds)
@@ -209,17 +212,19 @@ def cotton(size=512, grains=0.25, slub=1.2, cells=(96, 64), depth=0.6):
 
 def stitched(size=256, lines=8, base=None):
     """strip of cloth (belt, collar): u along the strip (one texture every 5 cm), v across it (0 to 1). Parallel
-    rows of stitches sunk into a fine grain, like the stitched rows of a real belt or gi collar"""
+    rows of stitches sunk into a fine grain, like the stitched rows of a real belt or gi collar.
+    1.26 (Youssef, 2026-11-06: « des ceintures hachurées et des cols hachurés pas nets »): the rows were thin
+    (0.5 mm) dashed grooves 3 to 4 mm apart; seen from a few metres on a phone, a pixel covers several of them and
+    they shimmered as hatching. Now soft, continuous, shallow channels (the stitched look without the fine lines),
+    a calmer grain, and the rounded folded edges kept"""
     y, x = np.mgrid[0:size, 0:size] / size
-    h = (base if base is not None else rice(size, 24, 12)) * 0.35 + 0.65
+    h = (base if base is not None else rice(size, 24, 12)) * 0.15 + 0.85
     for k in range(lines):
         v = (k + 0.5) / lines
-        groove = np.exp(-(((y - v) / 0.012) ** 2))
-        dash = 0.6 + 0.4 * (np.sin(2 * np.pi * x * 16) > -0.3)
-        h = h - groove * dash * 0.55
+        h = h - np.exp(-(((y - v) / (0.22 / lines)) ** 2)) * 0.18
     # the two folded edges of the strip are rounded
-    h = h - (np.exp(-((y / 0.05) ** 2)) + np.exp(-(((1 - y) / 0.05) ** 2))) * 0.3
-    return h
+    h = h - (np.exp(-((y / 0.08) ** 2)) + np.exp(-(((1 - y) / 0.08) ** 2))) * 0.35
+    return blur(h, 1.5)
 
 
 def elastic(size=256, ribs=32):
@@ -264,8 +269,8 @@ def fabric(name, color, kind, rough=0.7, strength=2.0, sheen=0.0, coat=0.0, tone
         return MATS[name]
     gens = {'weave': weave, 'knit': knit, 'satin': satin, 'grain': grain, 'flat': lambda: noise(256, 3) * 0.2,
             'judogi': lambda: cotton(512, 0.22, 1.4, (96, 64), 0.6), 'perle': lambda: cotton(512, 0.18, 1.0, (128, 80), 0.9),
-            'ceinture': lambda: stitched(256, 9), 'col-judo': lambda: stitched(256, 7, rice(256, 24, 12, 0.6)),
-            'col-bjj': lambda: stitched(256, 4, rice(256, 32, 16, 0.9)), 'serge': serge,
+            'ceinture': lambda: stitched(256, 5), 'col-judo': lambda: stitched(256, 5, rice(256, 24, 12, 0.6)),
+            'col-bjj': lambda: stitched(256, 3, rice(256, 32, 16, 0.9)), 'serge': serge,
             'elastique': elastic, 'jersey': lambda: knit(512, 150), 'cuir': pebble}
     h = gens[kind]()
     nimg = save_png(f'{name}_n', height_to_normal(h, strength))
@@ -1000,7 +1005,7 @@ def belt(color, z, extra=0.03):
     """v0.32 flat belt (4 cm, 5 mm thick, rows of stitches) wound round the jacket, square knot at the front and its
     two ends hanging down (Youssef, 2026-10-22: « ceinture plate, correctement nouée, avec deux extrémités »)"""
     cx, cy, rad = ring_profile(z, pad=extra)
-    m = fabric(f'ceinture-{color}', color, 'ceinture', rough=0.75, strength=1.6, tone=0.25)
+    m = fabric(f'ceinture-{color}', color, 'ceinture', rough=0.8, strength=0.8, tone=0.06)
     seg = 72
     ring = []
     for j in range(seg + 1):
@@ -1093,7 +1098,7 @@ def collar(color, kind):
     """thick collar and lapels: from the back of the neck, over the shoulders, crossing on the chest (left over
     right) down to the belt. v0.32: a stiff stitched band (judogi 5.5 cm wide, 1.2 cm thick, 7 rows; BJJ 4.2 cm,
     1 cm, 4 rows), no longer a thin ribbon"""
-    m = fabric(f'col-{color}-{kind}', color, 'col-judo' if kind == 'judo' else 'col-bjj', rough=0.9, strength=0.9, tone=0.08)
+    m = fabric(f'col-{color}-{kind}', color, 'col-judo' if kind == 'judo' else 'col-bjj', rough=0.9, strength=0.6, tone=0.03)
     parts = []
     nk = H['Neck']
     wd = 0.055 if kind == 'judo' else 0.042
@@ -1179,8 +1184,8 @@ def shorts(kind, color, band, n_leg=None, under=False):
     def keep(i):
         if P[i].z > waist or w(i, *ARMS) > 0.2 or P[i].z < hemz(i):
             return False
-        # v0.32: the MMA side slit is gone (cut along the skin's triangles, it came out torn, Youssef 2026-10-22:
-        # « bordures irrégulières »); the hem is straight like the other shorts
+        # v0.32: the MMA side slit cut along the skin's triangles came out torn (Youssef 2026-10-22: « bordures
+        # irrégulières »); 1.26 brings it back, cut by the field (see slit below)
         return True
 
     def push(i):
@@ -1228,6 +1233,26 @@ def shorts(kind, color, band, n_leg=None, under=False):
     # cuts left a wavy waistband on the MakeHuman bodies); the band's lower line stays a straight plane cut
     hz = {s: H[f'{s}Leg'].z + hem * (H[f'{s}UpLeg'].z - H[f'{s}Leg'].z) for s in ('Left', 'Right')}
     F = lambda q: max(q.z - waist, hz['Left' if q.x > 0 else 'Right'] - q.z)
+    if kind in ('vale-tudo', 'surshort', 'mma') and not under and SLIT_H > 0:
+        # 1.26 (Youssef, 2026-11-06, two photos of MMA shorts: « les shorts de MMA doivent avoir la petite fente »):
+        # a short slit on the outer side of each leg, from the hem up, narrowing to a point. Cut by the field like
+        # the hem (smooth edges; the v0.32 slit, cut along the skin's triangles, came out torn). What lies under it
+        # stays drawn: the skin, or the liner of a 2-in-1 short
+        F1 = F
+
+        def slit(q):
+            s_ = 'Left' if q.x > 0 else 'Right'
+            sx = 1 if H[f'{s_}UpLeg'].x > 0 else -1
+            a, b = H[f'{s_}UpLeg'], H[f'{s_}Leg']
+            t = (q.z - b.z) / (a.z - b.z)
+            cx, cy = b.x + (a.x - b.x) * t, b.y + (a.y - b.y) * t
+            dx, dy = q.x - cx, q.y - cy
+            r = math.hypot(dx, dy)
+            ang = abs(math.atan2(dy, dx * sx))
+            zz = q.z - hz[s_]
+            return min(SLIT_W * (1 - zz / SLIT_H) - ang * r, SLIT_H - zz)
+
+        F = lambda q: max(F1(q), slit(q))
     if under:
         # 1.22.1 (Youssef 05/11 19:05: « essaye de régler le froissement lors du high kick »): the liner under the
         # over-short is only its legs, from its hem to 1.5 cm inside the over-short's. Whole, it kept the over-short
@@ -1978,7 +2003,11 @@ def shoes_v2(color, accent):
         dpts = field(np.array([P[i][:] for i in mine]))
         # (up to 3 mm under the straight top: the leg skin no longer shows inside the opening; and the skin that
         # pokes a few millimetres through the shaft at the Achilles tendon is hidden too, it showed as orange drips)
-        cov |= {i for k2, i in enumerate(mine) if dpts[k2] < 0.006 and P[i].z < top_z - 0.009}
+        # 1.26 (Youssef, 2026-11-06: « les bottes avec des trous »): where the shin is not round (the edge of the
+        # tibia at the front), its skin stood out of the measured ellipse by more than 6 mm, through the 5 mm wall of
+        # the opening: skin-coloured holes on the front of the shaft. Every point of the foot and shin under the
+        # shoe's straight top is now hidden, wherever it lies (the shoe is closed everywhere below it)
+        cov |= {i for k2, i in enumerate(mine) if P[i].z < top_z - 0.009}
         print('chaussure', s, len(me_.polygons), 'triangles')
         parts.append(o)
     return parts, cov
@@ -2408,6 +2437,9 @@ def brand_logos(parts):
 
     for g in parts:
         n = g.name
+        if n.startswith('haut-') and female:
+            # 1.26 (Youssef, 2026-11-06: « retire aussi le logo sur les brassières des coachs femmes »): plain bras
+            continue
         if n.startswith('haut-') or n.startswith('rash-'):
             low = bra_low() - (0.04 if 'crop' in n else 0)
             # 1.22 the wide under-band of the women's MMA bra (3.5 cm): both marks above it, on the plain cloth
@@ -2587,7 +2619,96 @@ def file_key(c):
     return tuple(math.floor(float(x) * HQ + 0.5) for x in f)
 
 
+# 1.26 (Youssef, 2026-11-06: « je voudrais aussi des effets d'ombre … il faut que ça soit NET »): the clothes were lit
+# as if nothing stood near them (a white gi read flat, a belt seemed glued on the jacket). Each garment now carries
+# its ambient occlusion in its point colours (glTF COLOR_0, multiplied by its colour on every phone, with or without
+# the shadow maps): darker in the folds, under the belt and the collar, at the waistband, inside the cuffs and where
+# the cloth meets the skin. Measured once here, on the outfit at rest, with the body and every other garment around.
+AO = os.environ.get('AO', '1') == '1'
+AO_DIST = float(os.environ.get('AO_DIST', '0.15'))
+AO_K = float(os.environ.get('AO_K', '0.9'))
+AO_MIN = float(os.environ.get('AO_MIN', '0.35'))
+AO_RAYS = int(os.environ.get('AO_RAYS', '24'))
+AO_COVER = float(os.environ.get('AO_COVER', '0.03'))
+
+
+def _ao_dirs(n):
+    """n directions over the hemisphere around +z, cosine weighted (Fibonacci spiral)"""
+    out = []
+    g = math.pi * (3 - math.sqrt(5))
+    for k in range(n):
+        r = math.sqrt((k + 0.5) / n)
+        a = k * g
+        out.append(Vector((r * math.cos(a), r * math.sin(a), math.sqrt(max(0.0, 1 - r * r)))))
+    return out
+
+
+def bake_ao(parts):
+    from mathutils.bvhtree import BVHTree
+    verts, polys = [p_.copy() for p_ in P], [tuple(p_.vertices) for p_ in me.polygons]
+    for o in parts:
+        mw = o.matrix_world
+        base = len(verts)
+        verts += [mw @ v.co for v in o.data.vertices]
+        polys += [tuple(base + i for i in p_.vertices) for p_ in o.data.polygons]
+    tree = BVHTree.FromPolygons(verts, polys, epsilon=0.0)
+    dirs = _ao_dirs(AO_RAYS)
+    rng_ = np.random.default_rng(5)
+    for o in parts:
+        me_ = o.data
+        mw = o.matrix_world
+        nm = mw.to_3x3().inverted().transposed()
+        nv = len(me_.vertices)
+        ao = np.ones(nv)
+        for vi, v in enumerate(me_.vertices):
+            p_ = mw @ v.co
+            n_ = (nm @ v.normal).normalized()
+            # a frame round the normal, turned at random per point (no banding between neighbours)
+            t_ = n_.orthogonal().normalized()
+            t_.rotate(Matrix.Rotation(rng_.random() * 2 * math.pi, 3, n_))
+            b_ = n_.cross(t_)
+            o_ = p_ + n_ * 0.0015
+            # under another garment (the trousers under the skirt of the gi, the jacket under the belt) or the inside
+            # of the cloth: not seen, left bright, so that where it pokes through a fold it does not show as a grey
+            # stain on the white cloth (first 1.26 bake)
+            if tree.ray_cast(o_, n_, AO_COVER)[0] is not None:
+                continue
+            occ = 0.0
+            for d in dirs:
+                dw = t_ * d.x + b_ * d.y + n_ * d.z
+                hit = tree.ray_cast(o_, dw, AO_DIST)
+                if hit[0] is not None:
+                    occ += 1 - hit[3] / AO_DIST
+            ao[vi] = 1 - occ / len(dirs)
+        # one pass over the neighbours: the ray noise smoothed, the shadow stays where it is
+        nb = [[] for _ in range(nv)]
+        for e in me_.edges:
+            a, b = e.vertices
+            nb[a].append(b)
+            nb[b].append(a)
+        ao = np.array([(ao[i] * 2 + sum(ao[j] for j in nb[i])) / (2 + len(nb[i])) for i in range(nv)])
+        shade = np.clip(1 - AO_K * (1 - ao), AO_MIN, 1)
+        col = me_.color_attributes.get('Col')
+        if col is None:
+            col = me_.color_attributes.new('Col', 'FLOAT_COLOR', 'CORNER')
+            for c in col.data:
+                c.color = (1, 1, 1, 1)
+        if col.domain == 'POINT':
+            for vi, c in enumerate(col.data):
+                k = shade[vi]
+                c.color = (c.color[0] * k, c.color[1] * k, c.color[2] * k, c.color[3])
+        else:
+            for li, l in enumerate(me_.loops):
+                c = col.data[li]
+                k = shade[l.vertex_index]
+                c.color = (c.color[0] * k, c.color[1] * k, c.color[2] * k, c.color[3])
+        me_.color_attributes.active_color = col
+        print('ombre', o.name, nv, 'points, moyenne', round(float(shade.mean()), 3), 'min', round(float(shade.min()), 3))
+
+
 def export(name, parts, hide):
+    if AO:
+        bake_ao(parts)
     for o in parts:
         # every garment is skinned to the coach's skeleton
         if o.parent != arm:
@@ -2611,7 +2732,8 @@ def export(name, parts, hide):
     body.select_set(False)
     out = os.path.join(outdir, f'{name}.glb')
     bpy.ops.export_scene.gltf(filepath=out, export_format='GLB', export_image_format='JPEG', export_jpeg_quality=85, export_animations=False,
-                              export_skins=True, export_yup=True, use_selection=True, export_extras=True, export_apply=False)
+                              export_skins=True, export_yup=True, use_selection=True, export_extras=True, export_apply=False,
+                              export_vertex_color='ACTIVE' if AO else 'MATERIAL')
     print('wrote', out, os.path.getsize(out), 'parts', len(parts), 'hidden body vertices', len(hide))
     for o in parts:
         bpy.data.objects.remove(o)

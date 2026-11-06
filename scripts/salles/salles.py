@@ -360,6 +360,18 @@ def render_depth(sc, out_dir, width=1024):
     lamps = [o for o in sc.objects if o.type == 'LIGHT' and not o.hide_render]
     for o in lamps:
         o.hide_render = True
+    # 1.26 (Youssef, 2026-11-06: « la cage MMA est déformée »): the wire mesh is thinner than a pixel of this
+    # picture, so its distances flickered between the fence and the far side of the cage and the relief tore what is
+    # seen through it. For the distances only, each fence panel is a solid plane: what is seen through the fence lies
+    # on it, flat and straight, like the fence itself
+    fence = [o for o in sc.objects if o.name.startswith('cage-grillage') and not o.hide_render]
+    planes = [o for o in sc.objects if o.name.startswith('cage-plan')]
+    keep_scale = [tuple(o.scale) for o in planes]
+    for o in fence:
+        o.hide_render = True
+    for o in planes:
+        o.hide_render = False
+        o.scale.y = 0.01
     sc.render.image_settings.color_management = 'OVERRIDE'
     sc.render.image_settings.view_settings.view_transform = 'Standard'
     sc.render.image_settings.display_settings.display_device = 'sRGB'
@@ -370,6 +382,11 @@ def render_depth(sc, out_dir, width=1024):
     bpy.ops.render.render(write_still=True)
     for o in lamps:
         o.hide_render = False
+    for o in fence:
+        o.hide_render = False
+    for o, k in zip(planes, keep_scale):
+        o.hide_render = True
+        o.scale = k
     vl.material_override = None
     sc.cycles.samples, sc.cycles.use_denoising, sc.view_settings.view_transform, sc.view_settings.look, sc.render.resolution_x, sc.render.resolution_y, sc.render.filter_size = keep
     bg.inputs[0].default_value, bg.inputs[1].default_value = keep_bg[0], keep_bg[1]
@@ -531,6 +548,7 @@ def mma():
         cells = int(size / (0.12 if QUICK else 0.075))
         bpy.ops.mesh.primitive_grid_add(x_subdivisions=cells, y_subdivisions=cells, size=size, location=(mid.x, mid.y, h + fh / 2 + 0.1))
         g = bpy.context.object
+        g.name = 'cage-grillage'
         bm = bmesh.new()
         bm.from_mesh(g.data)
         bmesh.ops.rotate(bm, verts=bm.verts, cent=(0, 0, 0), matrix=Matrix.Rotation(math.radians(45), 3, 'Z'))
@@ -542,6 +560,7 @@ def mma():
         g.data.materials.append(wire)
         bpy.ops.mesh.primitive_cube_add(size=1, location=(mid.x, mid.y, h + fh / 2 + 0.1))
         cut = bpy.context.object
+        cut.name = 'cage-plan'
         cut.scale = (d.length, 0.4, fh - 0.2)
         cut.rotation_euler.z = math.atan2(d.y, d.x)
         bo = g.modifiers.new('cut', 'BOOLEAN')

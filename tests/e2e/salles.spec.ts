@@ -73,3 +73,18 @@ test('les autres écrans gardent leur scène sans salle (accueil)', async ({ pag
   const stage = page.locator('[data-room]');
   if (await stage.count()) await expect(stage.first()).toHaveAttribute('data-room', 'aucune');
 });
+
+test('le coach apparaît avec sa salle, jamais avant elle (1.25.1)', async ({ page }) => {
+  // Youssef, 2026-11-06, on his phone: « le coach s'est affiché en premier puis est apparu la salle »
+  test.setTimeout(240_000);
+  await seed(page);
+  for (const ex of ['boxe-debutant-01', 'judo-debutant-01']) {
+    await training(page, ex);
+    await page.waitForFunction(() => {
+      const s = (window as unknown as { __cssStage?: { roomAt?: number; coachAt?: number } }).__cssStage;
+      return !!s?.roomAt && !!s?.coachAt;
+    }, null, { timeout: 120_000 });
+    const s = await page.evaluate(() => (window as unknown as { __cssStage: { roomAt: number; coachAt: number } }).__cssStage);
+    expect(s.coachAt, ex).toBeGreaterThanOrEqual(s.roomAt);
+  }
+});

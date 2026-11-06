@@ -268,7 +268,7 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
     <>
       {mood ? <MoodLights /> : room ? <RoomLights spec={room} shadows={shadows} /> : <StageLights dark={dark} shadows={shadows} realistic={realistic} vive={vive} />}
       {children}
-      {!mood && <ContactShadows position={[0, 0.001, 0]} opacity={dark ? 0.75 : 0.42} scale={6} blur={2.4} far={1.6} resolution={hi ? 512 : 256} color={dark ? '#000000' : '#3a3530'} />}
+      {!mood && <ContactShadows position={[0, 0.001, 0]} opacity={room ? 0.92 : dark ? 0.75 : 0.42} scale={6} blur={2.4} far={1.6} resolution={hi ? 512 : 256} color={dark ? '#000000' : '#3a3530'} />}
       {orbit && <OrbitControls ref={controls} enablePan={false} enableDamping={false} minDistance={1.2} maxDistance={12} minPolarAngle={0.15} maxPolarAngle={1.75} />}
     </>
   );

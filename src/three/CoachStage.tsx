@@ -198,14 +198,26 @@ export function CoachStage(props: CoachStageProps) {
   // 1.23 Salles immersives: on the training stage, each discipline in its own room (rooms.ts), unless turned off
   const roomOn = useSettings((s) => s.settings.salleImmersive);
   const room = backdrop === 'theme' && roomOn && !arActive ? roomFor(discipline) : null;
-  // the coach comes first: the room loads once he is on screen (a moment later), so a slow phone never waits for it
-  const [roomReady, setRoomReady] = useState(false);
-  const rigShown = useRef(false);
-  useEffect(() => {
-    if (!room || roomReady || !rigShown.current) return;
-    const id = setTimeout(() => setRoomReady(true), ROOM_DELAY_MS);
-    return () => clearTimeout(id);
+  // 1.25.1 (Youssef, 2026-11-06: « le coach s'est affiché en premier puis est apparu la salle »): since 1.25 the room
+  // is on the phone before the first session, so it no longer waits for the coach. The coach is shown with his
+  // room: he stays hidden until the room has drawn its first image, or failed, or ROOM_WAIT_MS have passed (a slow
+  // phone never keeps the coach away for long)
+  useState(() => {
+    (window as unknown as { __cssStage?: object }).__cssStage = {};
   });
+  const [roomUp, setRoomUp] = useState<string | null>(null);
+  const [roomLate, setRoomLate] = useState<string | null>(null);
+  const roomId = room?.id ?? null;
+  useEffect(() => {
+    if (!roomId) return;
+    const id = setTimeout(() => setRoomLate(roomId), ROOM_WAIT_MS);
+    return () => clearTimeout(id);
+  }, [roomId]);
+  const onRoomShown = useCallback((id: string) => {
+    setRoomUp(id);
+    stageProbe().roomAt = performance.now();
+  }, []);
+  const coachShown = !roomId || roomUp === roomId || roomLate === roomId;
   const stageDark = !!room || viveBg || (backdrop !== 'studio' && menuTheme === 'dark');
   // v0.31: discipline outfit of the Ultra-réaliste coaches; a failure is said, never silently replaced
   const outfitOn = useSettings((s) => s.settings.coachOutfit);
@@ -277,7 +289,6 @@ export function CoachStage(props: CoachStageProps) {
       rigRef.current = { rig, lib };
       log3d('modele', `${championRef.current?.id ?? 'coach généré'} prêt`);
       setRigState(rig);
-      rigShown.current = true;
       updateEnvelope();
       const p = new ComboPlayer(rig, lib, southpawRef.current, proxy);
       player.current = p;
@@ -374,18 +385,25 @@ export function CoachStage(props: CoachStageProps) {
             room={room}
           />
         )}
-        {room && roomReady && (
-          // its own boundary: the coach never waits for the room's pictures
-          <RoomBoundary key={room.id} onError={(e) => log3d('salle', `salle ${room.id} non chargée : ${e.message}`)}>
+        {room && (
+          // its own boundary: a room that fails never keeps the coach away (he is shown at once)
+          <RoomBoundary
+            key={room.id}
+            onError={(e) => {
+              log3d('salle', `salle ${room.id} non chargée : ${e.message}`);
+              setRoomLate(room.id);
+            }}
+          >
             <Suspense fallback={null}>
-              <RoomScene spec={room} sharp={quality === 'haute' && q === 'haute' && level === 0} />
+              <RoomScene spec={room} sharp={quality === 'haute' && q === 'haute' && level === 0} onShown={onRoomShown} />
             </Suspense>
           </RoomBoundary>
         )}
         {!room && style === 'realiste' && render === 'premium' && q === 'haute' && <StudioEnvironment intensity={vive ? 0.7 : 0.12} />}
         {ar && <ArScene bridge={ar} active={arActive} coachGroup={coachGroup} follow={follow} />}
         {/* the coach stays mounted when switching to AR: same model, same player, same animation */}
-        <group ref={coachGroup}>
+        <group ref={coachGroup} visible={coachShown}>
+          {coachShown && <CoachProbe />}
           <CoachModel
             key={`${champion?.id ?? shownCoach}-${discipline}-${render}${render === 'precedent' ? `-${style}` : ''}`}
             coach={shownCoach}
@@ -409,8 +427,25 @@ export function CoachStage(props: CoachStageProps) {
 }
 
 const CALM_MIN = 10;
-/** 1.24 wait after the coach appears before the room starts loading */
-const ROOM_DELAY_MS = 1200;
+/** 1.25.1 longest wait for the room before the coach is shown anyway */
+const ROOM_WAIT_MS = 5000;
+
+/** probe for the end-to-end tests: when the room and the coach were first drawn on the training stage */
+function stageProbe() {
+  const w = window as unknown as { __cssStage?: { roomAt?: number; coachAt?: number } };
+  return (w.__cssStage ??= {});
+}
+
+/** writes down the first image where the coach is drawn */
+function CoachProbe() {
+  const done = useRef(false);
+  useFrame(() => {
+    if (done.current) return;
+    done.current = true;
+    stageProbe().coachAt ??= performance.now();
+  });
+  return null;
+}
 
 /** every minute in the journal: images per second and what the graphics memory holds; and a stopped animation */
 function DiagProbe({ animAt }: { animAt: { current: number } }) {
