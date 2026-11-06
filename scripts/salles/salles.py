@@ -318,6 +318,64 @@ def render_pano(sc, out_dir):
     bpy.ops.render.render(write_still=True)
 
 
+DMAX = 60.0  # metres: farthest distance kept in the depth picture (the sky and beyond count as this far)
+
+
+def render_depth(sc, out_dir, width=1024):
+    """1.25: distance from the panorama camera to what each pixel shows, as a 16-bit grey picture (0 = here,
+    65535 = DMAX). The app lays the panorama on a mesh pushed out to these distances, so the room keeps its real size
+    and perspective when the training camera stands 5 m in front of the coach instead of at his place."""
+    cam = sc.camera.location  # (matrix_world is not updated before the first render)
+    m = bpy.data.materials.new('distance')
+    m.use_nodes = True
+    nt = m.node_tree
+    nt.nodes.clear()
+    geo = nt.nodes.new('ShaderNodeNewGeometry')
+    dist = nt.nodes.new('ShaderNodeVectorMath')
+    dist.operation = 'DISTANCE'
+    dist.inputs[1].default_value = cam
+    scale = nt.nodes.new('ShaderNodeMath')
+    scale.operation = 'DIVIDE'
+    scale.inputs[1].default_value = DMAX
+    emit = nt.nodes.new('ShaderNodeEmission')
+    out = nt.nodes.new('ShaderNodeOutputMaterial')
+    nt.links.new(geo.outputs['Position'], dist.inputs[0])
+    nt.links.new(dist.outputs['Value'], scale.inputs[0])
+    nt.links.new(scale.outputs['Value'], emit.inputs['Color'])
+    nt.links.new(emit.outputs['Emission'], out.inputs['Surface'])
+    vl = sc.view_layers[0]
+    keep = (sc.cycles.samples, sc.cycles.use_denoising, sc.view_settings.view_transform, sc.view_settings.look, sc.render.resolution_x, sc.render.resolution_y, sc.render.filter_size)
+    bg = sc.world.node_tree.nodes['Background']
+    keep_bg = (tuple(bg.inputs[0].default_value), bg.inputs[1].default_value)
+    vl.material_override = m
+    sc.cycles.samples = 1
+    sc.cycles.use_denoising = False
+    sc.render.filter_size = 0.01
+    sc.view_settings.view_transform = 'Standard'
+    sc.view_settings.look = 'None'
+    sc.render.resolution_x, sc.render.resolution_y = width, width // 2
+    bg.inputs[0].default_value = (1, 1, 1, 1)
+    bg.inputs[1].default_value = 1.0
+    # lights would add to the emission: hidden for this picture
+    lamps = [o for o in sc.objects if o.type == 'LIGHT' and not o.hide_render]
+    for o in lamps:
+        o.hide_render = True
+    sc.render.image_settings.color_management = 'OVERRIDE'
+    sc.render.image_settings.view_settings.view_transform = 'Standard'
+    sc.render.image_settings.display_settings.display_device = 'sRGB'
+    sc.render.image_settings.linear_colorspace_settings.name = 'Linear Rec.709'
+    sc.render.image_settings.file_format = 'OPEN_EXR'
+    sc.render.image_settings.color_depth = '32'
+    sc.render.filepath = str(out_dir / 'depth.exr')
+    bpy.ops.render.render(write_still=True)
+    for o in lamps:
+        o.hide_render = False
+    vl.material_override = None
+    sc.cycles.samples, sc.cycles.use_denoising, sc.view_settings.view_transform, sc.view_settings.look, sc.render.resolution_x, sc.render.resolution_y, sc.render.filter_size = keep
+    bg.inputs[0].default_value, bg.inputs[1].default_value = keep_bg[0], keep_bg[1]
+    sc.render.image_settings.color_management = 'FOLLOW_SCENE'
+
+
 def render_sprite(sc, out_dir, name, objs, all_objs, px_per_m=220):
     """one prop alone, lit by the whole room (the rest stays in the light paths but out of the picture), seen from
     the coach's place, on a transparent background"""
@@ -779,6 +837,14 @@ def main():
         sc, bags, meta = ROOMS[name]()
         pano_camera(sc)
         all_objs = list(sc.objects)
+        if os.environ.get('DEPTH_ONLY') == '1':
+            # only the depth picture of an existing render (the bags are not in the panorama)
+            for _sprite, objs in bags:
+                for ob in objs:
+                    ob.hide_render = True
+            render_depth(sc, d)
+            print('ok', name, 'depth', flush=True)
+            continue
         props = []
         done = {}
         for sprite, objs in bags:
@@ -796,6 +862,7 @@ def main():
             # centre of the picture and its size in metres; the app swings it around its top (the chain)
             props.append({'sprite': sprite, 'at': to_three((bc.x, bc.y, (bottom + top) / 2)), 'w': round(sz['w'], 3), 'h': round(sz['h'], 3)})
         render_pano(sc, d)
+        render_depth(sc, d)
         (d / 'salle.json').write_text(json.dumps({'room': name, 'eye': EYE, 'props': props, 'key': meta['key'], 'haze': meta['haze']}, indent=1))
         print('ok', name, flush=True)
 

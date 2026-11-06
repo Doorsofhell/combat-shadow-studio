@@ -132,6 +132,8 @@ test('texte agrandi : tout reste visible, ou bascule explicite', async ({ page }
   await page.setViewportSize({ width: 393, height: 851 });
   for (const zoom of ['115%', '130%']) {
     await open(page, `/#/entrainement?ex=mma-expert-07&mode=technique`);
+    // 1.25: the start screen may show first (files to download): wait for the session screen itself
+    await expect(page.getByTestId('exercise-name')).toBeVisible();
     await page.evaluate((z) => (document.documentElement.style.fontSize = z), zoom);
     await page.waitForTimeout(400);
     await checkFits(page, `police ${zoom}`);
@@ -140,11 +142,16 @@ test('texte agrandi : tout reste visible, ou bascule explicite', async ({ page }
   await page.evaluate(() => (document.documentElement.style.fontSize = '220%'));
   await page.setViewportSize({ width: 360, height: 640 });
   await page.waitForTimeout(500);
-  const mode = await page.evaluate(() => {
-    const root = document.querySelector('.training') as HTMLElement;
-    return { overflow: root.classList.contains('overflow'), clipped: root.scrollHeight > root.clientHeight && getComputedStyle(root).overflowY === 'hidden' };
-  });
-  expect(mode.clipped).toBe(false);
+  // 1.25: the room of the discipline arrives about then and keeps the page busy for a moment: the switch to the
+  // scrolling layout is awaited (same rule: nothing may stay clipped)
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const root = document.querySelector('.training') as HTMLElement;
+        return root.scrollHeight > root.clientHeight && getComputedStyle(root).overflowY === 'hidden';
+      }),
+    )
+    .toBe(false);
 });
 
 test('mode Décomposer et pause : rien ne déborde', async ({ page }) => {

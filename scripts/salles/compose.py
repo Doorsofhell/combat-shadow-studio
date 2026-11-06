@@ -11,6 +11,7 @@ coach), lumieres.webp (1024×512, grey),
 sprite-*.webp, salle.json. The result depends only on the render and the room (fixed seed).
 """
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -54,7 +55,46 @@ def hexrgb(h):
     return np.array([int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)], np.float32)
 
 
+def depth_png(exr: Path, png: Path):
+    import bpy  # only to read the EXR
+
+    im = bpy.data.images.load(str(exr))
+    w, h = im.size
+    a = np.array(im.pixels[:], np.float32).reshape(h, w, 4)[::-1, :, 0]
+    bpy.data.images.remove(im)
+    # thin things in front of far ones (ring ropes, cage mesh, a post) and what is seen between them become one
+    # surface at the near distance: the mesh stays whole there instead of tearing (a minimum over about 2.5°, kept
+    # only where something is much nearer: the floor and the walls, which change slowly, keep their exact distance)
+    k = max(1, round(w / 1024 * 3))
+    m = a.copy()
+    for dy in range(-k, k + 1):
+        sh = np.roll(a, dy, axis=0) if dy else a
+        if dy > 0:
+            sh[:dy] = a[:dy]
+        elif dy < 0:
+            sh[dy:] = a[dy:]
+        for dx in range(-k, k + 1):
+            m = np.minimum(m, np.roll(sh, dx, axis=1))
+    near = a - m > 0.15 * a
+    zone = near.copy()
+    for dy in range(-2 * k, 2 * k + 1):
+        for dx in range(-2 * k, 2 * k + 1):
+            zone |= np.roll(np.roll(near, dy, axis=0), dx, axis=1)
+    b = np.where(near, m, a)
+    a = np.where(zone, gblur(b[..., None], 2.0)[..., 0], a)
+    q = np.clip(np.round(a * 65535), 0, 65535).astype(np.uint16)
+    rgb = np.zeros((h, w, 3), np.uint8)
+    rgb[..., 0] = q >> 8
+    rgb[..., 1] = q & 255
+    Image.fromarray(rgb).save(png, optimize=True)
+
+
 def compose(src: Path, dst: Path, room: str):
+    if os.environ.get('DEPTH_ONLY') == '1':
+        # only the distances of an existing room (salles.py with DEPTH_ONLY=1)
+        depth_png(src / 'depth.exr', dst / room / 'profondeur.png')
+        print('ok', room, 'profondeur', flush=True)
+        return
     meta = json.loads((src / 'salle.json').read_text())
     im = Image.open(src / 'pano.png')
     arr = np.asarray(im, np.float32)
@@ -96,6 +136,10 @@ def compose(src: Path, dst: Path, room: str):
     mask = gblur(mask[..., None], 6 * s)[..., 0]
     mask = np.clip(mask * 1.6, 0, 1)
     Image.fromarray((mask * 255).astype(np.uint8), mode='L').resize((1024, 512), Image.LANCZOS).save(out / 'lumieres.webp', quality=85, method=6)
+    # 1.25: the distances (depth.exr from salles.py) as an 8-bit PNG that keeps 16 bits: high byte in red, low byte
+    # in green, so the browser reads them exactly (src/three/rooms/rooms.ts decodeDepth)
+    if (src / 'depth.exr').exists():
+        depth_png(src / 'depth.exr', out / 'profondeur.png')
     sprites = []
     for p in sorted(src.glob('sprite-*.png')):
         sp = Image.open(p).convert('RGBA')
@@ -108,7 +152,7 @@ def compose(src: Path, dst: Path, room: str):
 
 def main():
     src, dst = Path(sys.argv[1]), Path(sys.argv[2])
-    rooms = sys.argv[3:] or sorted(p.name for p in src.iterdir() if (p / 'pano.png').exists())
+    rooms = sys.argv[3:] or sorted(p.name for p in src.iterdir() if (p / 'pano.png').exists() or (p / 'depth.exr').exists())
     for r in rooms:
         compose(src / r, dst, r)
 

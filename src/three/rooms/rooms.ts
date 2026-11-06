@@ -153,3 +153,82 @@ export function swingAngle(t: number, length: number, seed: number): number {
   const amp = (0.5 + 2.5 * (0.5 + 0.5 * Math.sin(t * (0.16 + 0.05 * (seed % 3)) + phase * 1.7)) ** 2) * (Math.PI / 180);
   return amp * Math.sin(w * t + phase);
 }
+
+/** farthest distance of the depth picture (scripts/salles/salles.py DMAX) */
+export const DEPTH_MAX = 60;
+/** what is farther than this is drawn at this distance (inside the camera's far plane) */
+export const ROOM_FAR = 40;
+
+/** depth picture of a room: distance in metres per pixel, rows from the top */
+export interface RoomDepth {
+  w: number;
+  h: number;
+  d: Float32Array;
+}
+
+/** the 8-bit PNG keeps 16 bits per pixel: high byte in red, low byte in green (compose.py) */
+export function decodeDepth(rgba: Uint8ClampedArray | Uint8Array, w: number, h: number): RoomDepth {
+  const d = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) d[i] = ((rgba[i * 4] * 256 + rgba[i * 4 + 1]) / 65535) * DEPTH_MAX;
+  return { w, h, d };
+}
+
+/**
+ * direction of a pixel of the panorama (u from the left, r from the top, both 0 to 1), as the dome shows it
+ * (GroundedSkybox: sphere mirrored in z, turned a quarter around y in RoomScene): the centre of the picture is -z
+ */
+export function panoDir(u: number, r: number): [number, number, number] {
+  const th = Math.PI * r;
+  const ph = 2 * Math.PI * u;
+  return [-Math.sin(ph) * Math.sin(th), Math.cos(th), Math.cos(ph) * Math.sin(th)];
+}
+
+function sample(dp: RoomDepth, u: number, r: number) {
+  const x = ((u * dp.w - 0.5) % dp.w + dp.w) % dp.w;
+  const y = Math.min(dp.h - 1, Math.max(0, r * dp.h - 0.5));
+  const x0 = Math.floor(x), y0 = Math.floor(y);
+  const x1 = (x0 + 1) % dp.w, y1 = Math.min(dp.h - 1, y0 + 1);
+  const fx = x - x0, fy = y - y0;
+  const at = (xx: number, yy: number) => dp.d[yy * dp.w + xx];
+  // nearest across an edge (a post in front of a far wall): no point floating half way between them
+  const v = [at(x0, y0), at(x1, y0), at(x0, y1), at(x1, y1)];
+  const lo = Math.min(...v), hi = Math.max(...v);
+  if (hi > lo * 1.15) return v[(fx < 0.5 ? 0 : 1) + (fy < 0.5 ? 0 : 2)];
+  return (v[0] * (1 - fx) + v[1] * fx) * (1 - fy) + (v[2] * (1 - fx) + v[3] * fx) * fy;
+}
+
+/**
+ * 1.25 (Youssef, 2026-11-06: « ajuster les arrière-fonds à la taille des coachs »): the panorama is laid on a mesh
+ * pushed out to the real distance of what each pixel shows, from where it was taken (the coach's place, eye high).
+ * Seen from the training camera, 5 m in front of the coach, the ring at the back is then as small as it should be,
+ * instead of the size it has from the coach's place. Triangles across an edge (a post in front of a far wall) are
+ * left out: they would stretch; the dome behind fills those small gaps.
+ */
+export function roomMesh(dp: RoomDepth, eye = ROOM_EYE, cols = 192, rows = 96) {
+  const pos = new Float32Array((cols + 1) * (rows + 1) * 3);
+  const uv = new Float32Array((cols + 1) * (rows + 1) * 2);
+  const dist = new Float32Array((cols + 1) * (rows + 1));
+  for (let j = 0; j <= rows; j++)
+    for (let i = 0; i <= cols; i++) {
+      const k = j * (cols + 1) + i;
+      const u = i / cols, r = j / rows;
+      const dd = Math.min(ROOM_FAR, Math.max(0.05, sample(dp, u, r)));
+      const [x, y, z] = panoDir(u, r);
+      pos.set([x * dd, eye + y * dd, z * dd], k * 3);
+      uv.set([u, 1 - r], k * 2);
+      dist[k] = dd;
+    }
+  const index: number[] = [];
+  const ok = (a: number, b: number, c: number) => {
+    const hi = Math.max(dist[a], dist[b], dist[c]);
+    const lo = Math.min(dist[a], dist[b], dist[c]);
+    return hi < lo * 2.2;
+  };
+  for (let j = 0; j < rows; j++)
+    for (let i = 0; i < cols; i++) {
+      const a = j * (cols + 1) + i, b = a + 1, c = a + cols + 1, d = c + 1;
+      if (ok(a, c, b)) index.push(a, c, b);
+      if (ok(b, c, d)) index.push(b, c, d);
+    }
+  return { pos, uv, index };
+}

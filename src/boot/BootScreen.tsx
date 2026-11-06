@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ALL_COACHES, championFor } from '../domain/coaches/catalog';
 import { useProfile } from '../store/profile';
 import { useSettings } from '../store/settings';
-import { bootMessage, bootPlan, runBoot, type BootItem, type BootProgress } from './preload';
+import { bootMessage, bootPlan, isKept, keepInCache, runBoot, type BootItem, type BootProgress } from './preload';
 import './boot.css';
 
 /**
@@ -19,6 +19,8 @@ const loaded = new Set<string>();
 const BELL_MS = 700;
 /** a person on a very slow line can go in before the end (the screens then load what is missing, as before) */
 const SKIP_AFTER_MS = 12_000;
+/** when everything is already on the phone the check takes a fraction of a second: no chrono shown for that */
+const SHOW_AFTER_MS = 350;
 
 const JSON_MODELS = import.meta.env.VITE_COACH_FORMAT === 'json';
 const PHOTO = import.meta.env.VITE_PHOTO_COACH !== '0';
@@ -86,6 +88,7 @@ function BootScreen({ plan, coachId, overlay = false, onDone }: { plan: BootItem
   const [bell, setBell] = useState(false);
   const [skip, setSkip] = useState(false);
   const [gone, setGone] = useState(false);
+  const [shown, setShown] = useState(false);
   const finished = useRef(false);
   const doneRef = useRef(onDone);
   doneRef.current = onDone;
@@ -103,7 +106,14 @@ function BootScreen({ plan, coachId, overlay = false, onDone }: { plan: BootItem
       }, BELL_MS);
     };
     const skipTimer = window.setTimeout(() => setSkip(true), SKIP_AFTER_MS);
-    void runBoot(plan, setP, { signal: ctl.signal }).then(async ({ failed }) => {
+    const showTimer = window.setTimeout(() => setShown(true), SHOW_AFTER_MS);
+    let fetched = 0;
+    const cached = async (x: BootItem) => {
+      const kept = await isKept(x, JSON_MODELS);
+      if (!kept) fetched++;
+      return kept;
+    };
+    void runBoot(plan, setP, { signal: ctl.signal, store: navigator.serviceWorker?.controller ? undefined : keepInCache, cached }).then(async ({ failed }) => {
       if (ctl.signal.aborted) return;
       for (const x of plan) if (!failed.includes(x.url)) loaded.add(x.url);
       // « Pesée officielle »: the 3D code and the coach read once, so the first 3D screen opens at once
@@ -115,17 +125,27 @@ function BootScreen({ plan, coachId, overlay = false, onDone }: { plan: BootItem
         /* the 3D screens load it themselves */
       }
       if (ctl.signal.aborted) return;
+      // nothing had to be downloaded (the next launches): the app opens straight away, no bell
+      if (!fetched) {
+        finished.current = true;
+        setGone(true);
+        doneRef.current?.();
+        return;
+      }
       setP((q) => ({ ...q, ratio: 1, message: bootMessage('pret') }));
       finish();
     });
     return () => {
       ctl.abort();
       window.clearTimeout(skipTimer);
+      window.clearTimeout(showTimer);
       window.clearTimeout(bellTimer);
     };
   }, [plan, coachId]);
 
   if (gone) return null;
+  // the first instants: the same plain ground as the first paint, the chrono only if it lasts
+  if (!shown && !bell) return <div className={`boot-screen${overlay ? ' is-overlay' : ''}`} aria-hidden="true" />;
   const pct = Math.round(p.ratio * 100);
   const C = 2 * Math.PI * 45;
   return (
@@ -136,7 +156,7 @@ function BootScreen({ plan, coachId, overlay = false, onDone }: { plan: BootItem
             <circle cx="50" cy="50" r="45" className="boot-track" />
             <circle cx="50" cy="50" r="45" className="boot-arc" strokeDasharray={C} strokeDashoffset={C * (1 - p.ratio)} />
           </svg>
-          <img src="./icons/icon.svg" alt="" className="boot-logo" />
+          <img src="./icons/logo-transparent.svg" alt="" className="boot-logo" />
         </div>
         <div className="boot-round" data-testid="boot-round">{bell ? 'DING !' : 'ROUND 1'}</div>
         <div className="boot-msg" aria-live="polite" data-testid="boot-message">

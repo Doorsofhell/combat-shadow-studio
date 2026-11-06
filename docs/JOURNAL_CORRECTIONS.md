@@ -2725,8 +2725,28 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - un fichier qui ne vient pas (hors ligne, erreur) ne bloque rien : l'app s'ouvre ; « Entrer sans attendre »
     apparaît après 12 s ;
   - liste des tailles `src/boot/assetSizes.json` (générée par `scripts/boot-sizes.mjs`, un test vérifie qu'elle suit
-    les fichiers).
+    les fichiers) ;
+  - ouvertures suivantes : un fichier déjà gardé à la bonne taille n'est pas retéléchargé ; un fichier changé par une
+    mise à jour (taille différente) est retiré du cache et retéléchargé sur l'écran de démarrage ; les coachs et les
+    salles sont ensuite servis directement par le cache de l'app, sans aller-retour réseau (vite.config.ts) ;
+  - le logo est droit et sans son carré noir (Youssef, 07:53 : « il n'est pas droit… il doit aussi être
+    transparent »), `public/icons/logo-transparent.svg` ; à 100 % il pulse au lieu de pencher ;
+  - la barre du bas n'apparaît qu'avec l'écran (elle montrait « Reprendre » sous le chrono avant que l'accueil ne
+    dise « Commencer »).
+- **Salles à l'échelle des coachs** (Youssef, 07:00, capture du muay-thaï : « ajuster les arrière-fonds pour que ça
+  soit ajusté à la taille des coachs ») :
+  - *constat* : l'image 360° est prise depuis la place du coach et posée sur un dôme de 30 m ; la caméra de
+    l'entraînement est 4 à 6 m devant lui, donc tout ce qui est derrière le coach (cordes du ring, cage) paraissait
+    1,5 à 2 fois trop grand, et flou car agrandi ;
+  - *correction* : Blender rend aussi la distance de chaque point de l'image (`salles.py` render_depth,
+    `compose.py` → `profondeur.png`, 16 bits dans une image 8 bits) ; l'app pose l'image sur un relief poussé à ces
+    distances (`rooms.ts` roomMesh) : le sol est à plat sous le coach, les murs, le ring et la cage à leur vraie
+    distance, donc à la bonne taille vue de la caméra ; les cordes et grillages fins forment une seule surface (pas
+    de déchirure) ; le coach est toujours dessiné par-dessus la salle ;
+  - captures avant/après des six salles : `docs/v1250/captures/salle-*-avant.png` et `salle-*-apres.png`.
 - **Fichiers** : `src/boot/` (preload.ts, BootScreen.tsx, boot.css, assetSizes.json), `src/ui/App.tsx`,
-  `src/three/CoachModel.tsx` (preloadPhotoCoach), `scripts/boot-sizes.mjs`, `tests/e2e/boot.spec.ts`,
-  `src/domain/releases.ts`, `package.json`.
+  `src/three/CoachModel.tsx` (preloadPhotoCoach), `src/three/rooms/` (rooms.ts, RoomScene.tsx, tests),
+  `public/salles/*/profondeur.png`, `public/icons/logo-transparent.svg`, `scripts/salles/`, `scripts/boot-sizes.mjs`,
+  `scripts/dev/shot-boot.mjs`, `vite.config.ts`, `tests/e2e/boot.spec.ts`, `tests/e2e/contrast.spec.ts` (attend les
+  champs au lieu de les compter tout de suite), `src/domain/releases.ts`, `package.json`.
 - **Tests** : voir le rapport de la PR.

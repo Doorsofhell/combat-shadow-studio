@@ -57,6 +57,7 @@ export const RELEASES: readonly Release[] = (
         { category: 'fonctionnalites', text: "À l'ouverture, le chrono du round se remplit pendant que l'app prépare tout : les 6 coachs, toutes leurs tenues et les 6 salles. Les messages suivent ce qui se prépare (ouverture des salles, laçage des gants…) et la cloche sonne quand tout est prêt." },
         { category: 'ameliorations', text: "Changer de coach ou de discipline ne fait plus attendre : tout est déjà sur le téléphone. La première ouverture télécharge environ 100 Mo, les suivantes ne reprennent que ce qu'une mise à jour a changé." },
         { category: 'ameliorations', text: 'Sans réseau, l’app s’ouvre quand même avec ce qui est déjà sur le téléphone. Si la connexion est très lente, « Entrer sans attendre » apparaît.' },
+        { category: 'ameliorations', text: "Les salles sont à la bonne échelle à côté du coach : le ring, la cage et les murs sont à leur vraie distance, au lieu de paraître trop grands et flous derrière lui." },
       ],
       links: [],
     },

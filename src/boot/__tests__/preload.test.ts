@@ -92,6 +92,34 @@ describe('chargement au démarrage (1.25) : avancement', () => {
     expect(new Set(seen.map((s) => s.message)).size).toBeGreaterThan(1);
   });
 
+  it('chaque fichier reçu est gardé (cache de l’app) avec son contenu entier', async () => {
+    const plan = [
+      { url: 'a', bytes: 3000, step: 'coach' as const },
+      { url: 'b', bytes: 500, step: 'salle' as const },
+    ];
+    const kept: Record<string, number> = {};
+    await runBoot(plan, () => undefined, {
+      fetch: async (u) => new Response(body(plan.find((x) => x.url === u)!.bytes)),
+      store: async (u, r) => (kept[u] = (await r.arrayBuffer()).byteLength),
+    });
+    expect(kept).toEqual({ a: 3000, b: 500 });
+  });
+
+  it('ce qui est déjà sur le téléphone n’est pas retéléchargé (ouvertures suivantes)', async () => {
+    const plan = [
+      { url: 'garde', bytes: 5000, step: 'coach' as const },
+      { url: 'neuf', bytes: 1000, step: 'tenue' as const },
+    ];
+    const asked: string[] = [];
+    let last: BootProgress | null = null;
+    await runBoot(plan, (p) => (last = p), {
+      fetch: async (u) => (asked.push(u), new Response(body(1000))),
+      cached: async (x) => x.url === 'garde',
+    });
+    expect(asked).toEqual(['neuf']);
+    expect(last).toMatchObject({ ratio: 1, done: 2 });
+  });
+
   it('hors ligne ou fichier absent : les autres continuent, rien ne bloque', async () => {
     const plan = [
       { url: 'ok', bytes: 100, step: 'salle' as const },

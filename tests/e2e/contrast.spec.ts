@@ -194,6 +194,8 @@ test('contraste des états : survol, appui, champ vide', async ({ page }) => {
   // 1.2.0: the fields with a placeholder are in Mes infos › Âge, taille, poids
   await page.goto('/#/profil?ouvert=corps');
   await page.waitForLoadState('networkidle');
+  // 1.25: the start screen (chrono du round) rings its bell before the page shows: wait for the fields themselves
+  await expect(page.locator('input[placeholder]').first()).toBeVisible();
   expect(await page.locator('input[placeholder]').count()).toBeGreaterThan(0);
   // placeholders: same AA rule as the text typed in the field
   const ph = await page.evaluate(() => {

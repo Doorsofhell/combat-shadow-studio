@@ -55,17 +55,16 @@
   position: absolute;
   inset: 0;
   margin: auto;
-  width: 47%;
-  height: 47%;
-  border-radius: 22%;
+  width: 52%;
+  height: 52%;
 }
 .is-bell .boot-logo {
   animation: boot-bell 0.35s ease-out 2;
 }
+/* the bell: the logo pulses, it stays straight so it reads */
 @keyframes boot-bell {
-  0%, 100% { transform: rotate(0); }
-  30% { transform: rotate(-7deg) scale(1.04); }
-  70% { transform: rotate(6deg) scale(1.04); }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
 }
 .boot-round {
   font-weight: 700;

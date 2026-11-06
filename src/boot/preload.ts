@@ -91,6 +91,37 @@ function outfitsOf(d: DisciplineId, p: BootPlanInput): OutfitId[] {
   return [o, o === 'bjj' ? 'bjj-nogi' : 'bjj'];
 }
 
+/** the app's cache of models and pictures (vite.config.ts, runtimeCaching css-modeles) */
+export const MODEL_CACHE = 'css-modeles';
+
+/**
+ * Keeps a downloaded file in the app's cache. Needed on the very first launch: the service worker only takes the
+ * page in hand after it, so it has not kept anything yet; on the next launches it keeps the files itself.
+ */
+export async function keepInCache(url: string, r: Response) {
+  if (typeof caches === 'undefined') return;
+  const c = await caches.open(MODEL_CACHE);
+  await c.put(new URL(url, location.href).href, r);
+}
+
+/**
+ * Whether a file is already kept on the phone at the size this version expects. A file of another size (changed by
+ * an update) is removed from the cache so that it is downloaded again now, on the start screen, not later in the
+ * middle of a session. The JSON-wrapped models of the claude.ai page have no exact expected size: kept is enough.
+ */
+export async function isKept(x: BootItem, json = false) {
+  if (typeof caches === 'undefined') return false;
+  const c = await caches.open(MODEL_CACHE);
+  const url = new URL(x.url, location.href).href;
+  const r = await c.match(url);
+  if (!r) return false;
+  const len = Number(r.headers.get('content-length') ?? NaN);
+  if (json && x.url.endsWith('.json')) return true;
+  if (len === x.bytes) return true;
+  await c.delete(url);
+  return false;
+}
+
 const GLOVES: DisciplineId[] = ['boxe', 'kickboxing', 'muaythai'];
 const MATS: DisciplineId[] = ['judo', 'bjj'];
 
@@ -128,7 +159,18 @@ type Fetch = (url: string) => Promise<Response>;
  * Downloads the plan, three files at a time. A file that cannot be downloaded (offline, server error) does not stop
  * the others: it is counted as done and listed, the screen it belongs to loads it again later as before.
  */
-export async function runBoot(plan: BootItem[], onProgress: (p: BootProgress) => void, opts: { fetch?: Fetch; concurrency?: number; signal?: AbortSignal } = {}) {
+export async function runBoot(
+  plan: BootItem[],
+  onProgress: (p: BootProgress) => void,
+  opts: {
+    fetch?: Fetch;
+    concurrency?: number;
+    signal?: AbortSignal;
+    store?: (url: string, r: Response) => Promise<unknown>;
+    /** already on the phone, same size: not downloaded again */
+    cached?: (x: BootItem) => Promise<boolean>;
+  } = {},
+) {
   const doFetch: Fetch = opts.fetch ?? ((u) => fetch(u, { signal: opts.signal }));
   const total = plan.reduce((a, x) => a + x.bytes, 0);
   const got = new Array(plan.length).fill(0) as number[];
@@ -158,8 +200,15 @@ export async function runBoot(plan: BootItem[], onProgress: (p: BootProgress) =>
       start(x);
       report();
       try {
+        if (opts.cached && (await opts.cached(x).catch(() => false))) {
+          got[i] = x.bytes;
+          finished++;
+          report();
+          continue;
+        }
         const r = await doFetch(x.url);
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const copy = opts.store ? r.clone() : null;
         const reader = r.body?.getReader();
         if (reader) {
           for (;;) {
@@ -169,6 +218,7 @@ export async function runBoot(plan: BootItem[], onProgress: (p: BootProgress) =>
             report();
           }
         } else await r.arrayBuffer();
+        if (copy && opts.store) await opts.store(x.url, copy).catch(() => undefined);
       } catch {
         if (opts.signal?.aborted) return;
         failed.push(x.url);
