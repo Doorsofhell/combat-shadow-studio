@@ -2830,7 +2830,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `src/domain/releases.ts`, `package.json`.
 - **Tests** : voir le rapport de la PR.
 
-## 2026-11-06 · (version fixée à la publication, après le lot des salles) · Combinaisons des programmes fédéraux
+## 2026-11-06 · v1.27.0 · Combinaisons des programmes fédéraux
 
 - **Demande** : Youssef, 6 novembre 2026 : « enrichir le catalogue, tous niveaux, toutes disciplines, que des
   combinaisons d'entraînement vérifiées et validées par les fédérations ou des entraîneurs », puis « tu peux les
