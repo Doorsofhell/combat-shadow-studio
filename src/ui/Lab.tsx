@@ -244,6 +244,16 @@ function LabProbe({ rig }: { rig: MutableRefObject<CoachRig | null> }) {
         face: h.faceIndex ?? null,
       }));
     };
+    // 1.26 window.__labMats(): the garments' materials (point colours used, colour), to check the baked shadows
+    (window as unknown as { __labMats?: unknown }).__labMats = () => {
+      const out: object[] = [];
+      scene.traverse((o) => {
+        if (!o.name.startsWith('tenue:')) return;
+        const m = (o as Mesh).material as Material & { vertexColors?: boolean; type: string };
+        out.push({ mesh: o.name, type: m.type, vertexColors: m.vertexColors, color: !!(o as Mesh).geometry.getAttribute('color') });
+      });
+      return out;
+    };
   }, [camera, size, rig, scene]);
   return null;
 }

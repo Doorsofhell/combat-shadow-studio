@@ -2750,3 +2750,82 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `scripts/dev/shot-boot.mjs`, `vite.config.ts`, `tests/e2e/boot.spec.ts`, `tests/e2e/contrast.spec.ts` (attend les
   champs au lieu de les compter tout de suite), `src/domain/releases.ts`, `package.json`.
 - **Tests** : voir le rapport de la PR.
+- **Validation** : Youssef « je valide » (2026-11-06 09:10) ; PR #62 fusionnée dans `feature/combat-shadow-v030`
+  (4378103), lien public vérifié (titre v1.25.0).
+
+## 2026-11-06 · v1.26.0 · Finitions nettes des tenues et salles vivantes
+
+- **Demandes** (Youssef, 2026-11-06) :
+  - 07:03 « des ceintures hachurées et des cols hachurés pas nets, les bottes avec des trous… il faudra que les
+    finitions soient nettes » ; 09:13 « je voudrais aussi des effets d'ombre ; les shorts de MMA doivent avoir la
+    petite fente » (deux photos de shorts) ; « retire aussi le logo sur les brassières des coachs femmes ; il faut
+    que ça soit NET » ;
+  - 09:15 (téléphone, 1.25) « le coach s'est affiché en premier puis est apparu la salle » ;
+  - 09:18 « il n'y a rien de vivant dans les scènes… des lumières qui clignotent légèrement, des sacs qui se
+    balancent, sur les fenêtres des ombres qui se déplacent ; sois créatif mais reste ultra réaliste » ; 09:24 : les
+    sacs se voient en kick-boxing, en boxe seulement en tournant la caméra ; « la cage MMA est déformée et quand je
+    bouge l'écran on dirait que le coach flotte dans le vide » ; « il faut des éléments vivants quel que soit l'angle
+    de vue ».
+- **Constats après vérification** (captures du labo et de l'écran d'entraînement, `scripts/dev/shot-finitions.mjs`,
+  `scripts/dev/shot-salles.mjs`) :
+  - ceintures et cols : le relief de piqûres était fait de rainures fines (0,5 mm) en pointillés tous les 3 à 4 mm,
+    plus une teinte plus sombre dans les creux ; vu à quelques mètres sur un téléphone, un pixel couvre plusieurs
+    rainures, d'où le hachuré qui scintille ;
+  - bottes de boxe : sur les tibias qui ne sont pas ronds (arête du tibia), la peau dépassait de plus de 6 mm de
+    l'ellipse mesurée et n'était pas masquée : taches couleur peau à l'avant de la tige (Axel, Amara) ;
+  - en cherchant pourquoi Axel gardait ses trous : chez Axel et Kaila (corps MakeHuman), la peau sous **toutes**
+    leurs tenues n'était masquée qu'à un tiers environ. Leur fichier range les points entrelacés avec les normales et
+    les coordonnées de texture ; le générateur et l'app lisaient ces données comme une simple suite de positions, et
+    Blender pose leur peau au repos du squelette, à 1 cm des points enregistrés : la plupart des points à cacher ne
+    correspondaient à rien et la peau traversait les vêtements en mouvement ;
+  - ombres : les vêtements étaient éclairés comme si rien n'était autour d'eux (kimono blanc tout plat, ceinture qui
+    semble collée) ; sur téléphone les ombres portées sont coupées (qualité auto) ;
+  - shorts de MMA : pas de fente (retirée en v0.32 car découpée le long des triangles, bords déchirés) ;
+  - brassières : le logo CS devant et dans le dos ;
+  - salle après le coach : la 1.24 attendait 1,2 s après l'apparition du coach avant de charger la salle, pour ne
+    jamais retarder le coach ; depuis la 1.25 la salle est déjà sur le téléphone, ce délai ne sert plus ;
+  - cage MMA : le grillage est plus fin qu'un pixel de l'image des distances, qui hésitait entre le grillage et le
+    fond de la cage : le relief déchirait ce qu'on voit à travers ;
+  - « coach qui flotte » : l'ombre du coach au sol (ContactShadows, vue d'en dessous) voyait aussi les murs, le ring
+    et la cage du relief de la salle, qui la remplissaient : plus d'ombre au sol sous le coach ;
+  - salles : les lampes ne respiraient que de 7 %, les sacs sont sur les côtés (hors du champ en vue de face).
+- **Corrections** :
+  - `tools/generator/rocketbox/outfits.py` (les 42 tenues des 6 coachs regénérées, `regen_outfits.sh`) :
+    - ombres : chaque vêtement porte son occlusion ambiante dans les couleurs de ses points (glTF COLOR_0, 24 rayons
+      par point jusqu'à 15 cm, corps et autres vêtements autour) : plus sombre dans les plis, sous la ceinture et le
+      col, à la taille, dans les manches, au contact de la peau ; visible sur tous les téléphones, avec ou sans
+      ombres portées ; ce qui est sous un autre vêtement reste clair (sinon taches grises là où il dépasse) ;
+    - ceintures et cols : canaux de piqûres doux, continus et peu profonds, grain plus calme, plus de teinte dans
+      les creux ;
+    - bottes : toute la peau du pied et du tibia sous le haut de la tige est masquée ; 11 mm de jeu autour du tibia
+      des corps MakeHuman (leurs grandes faces coupaient la courbe du tibia sous le col) ;
+    - points de peau à cacher : chaque point enregistré est retrouvé là où le squelette au repos le pose
+      (`tools/generator/rocketbox/skinmap.py`, qui lit aussi les données entrelacées) : 100 % des points trouvés pour
+      les 6 coachs (Axel et Kaila : 8 % avant) ;
+    - shorts de MMA (vale-tudo, sur-short, short MMA du no-gi) : fente de 5 cm sur le côté extérieur de chaque
+      jambe, en pointe, découpée par le champ comme l'ourlet (bords nets) ;
+    - brassières des coachs femmes sans logo (le logo des shorts et des rashguards reste).
+  - `src/three/outfit.ts` : les points du corps sont lus un par un (données entrelacées d'Axel et Kaila) avant de
+    cacher la peau sous la tenue ;
+  - `src/three/CoachStage.tsx` : la salle se charge tout de suite ; le coach reste caché jusqu'à la première image
+    de sa salle (ou son échec, ou 5 s au plus) : ils apparaissent ensemble.
+  - `scripts/salles/salles.py` : pour l'image des distances seulement, chaque pan de grillage devient un plan plein
+    (ce qu'on voit à travers est posé dessus, droit) ; `public/salles/mma/profondeur.png` refaite.
+  - `src/three/rooms/` : la salle sur sa propre couche (`ROOM_LAYER`), hors de l'ombre au sol du coach, plus
+    marquée dans les salles (0,92) ; salles vivantes (`life.ts`, shader du relief, `RoomDust.tsx`) :
+    - poussière fine qui flotte dans la lumière autour du coach, dans toutes les salles, vue de tous les côtés ;
+    - une lampe hoquette de temps en temps (2 à 4 baisses en 0,7 s, toutes les 7 à 13 s) et la lumière du coach
+      baisse un peu avec elle quand elle est proche ;
+    - les flaques de lumière des lampes suspendues se balancent au sol (boxe, muay-thaï) ;
+    - ombres de branches qui se balancent et de nuages qui passent sur les fenêtres (boxe, kick-boxing) et les shoji
+      du dojo (judo) ;
+    - la nuit, les phares d'une voiture passent derrière les vitres puis sur le plafond (kick-boxing) ;
+    - les lampes respirent un peu plus (10 % au lieu de 7 %).
+- **Fichiers** : `tools/generator/rocketbox/outfits.py`, `tools/generator/rocketbox/skinmap.py`, `src/three/outfit.ts`,
+  `public/coaches/*/tenues/*.glb`, `scripts/salles/salles.py`,
+  `public/salles/mma/profondeur.png`, `src/three/CoachStage.tsx`, `src/three/StudioStage.tsx`,
+  `src/three/rooms/` (rooms.ts, RoomScene.tsx, life.ts, RoomDust.tsx, `__tests__/life.test.ts`),
+  `src/boot/assetSizes.json`, `src/ui/Lab.tsx` (`__labMats`), `scripts/dev/shot-finitions.mjs`,
+  `scripts/dev/shot-salles.mjs` (FRAMES, DRAGS), `tests/e2e/salles.spec.ts` (coach avec sa salle),
+  `src/domain/releases.ts`, `package.json`.
+- **Tests** : voir le rapport de la PR.

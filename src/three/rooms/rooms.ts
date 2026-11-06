@@ -39,6 +39,8 @@ export interface RoomSpec {
 export const ROOM_EYE = 1.4;
 /** radius of the dome the picture is laid on: larger than any camera distance (OrbitControls max 12) */
 export const ROOM_RADIUS = 30;
+/** 1.26 layer of what belongs to the room: drawn by the camera, left out of the coach's floor shadow (ContactShadows) */
+export const ROOM_LAYER = 1;
 
 export const ROOMS: Partial<Record<DisciplineId, RoomSpec>> = {
   boxe: {

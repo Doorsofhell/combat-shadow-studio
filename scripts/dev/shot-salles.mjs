@@ -50,5 +50,23 @@ for (const d of list) {
   console.log(d, 'salle', JSON.stringify(await page.evaluate(() => window.__cssRoom)), 'caméra', JSON.stringify(await page.evaluate(() => window.__cssCamera)));
   await page.screenshot({ path: `${OUT}/${d}-${SALLE ? 'salle' : 'avant'}.png`, timeout: 180_000 });
   console.log('ok', d, room);
+  // 1.26 FRAMES=3: more pictures of the same view, 1.5 s apart (what moves in the room)
+  for (let k = 1; k <= Number(process.env.FRAMES ?? 0); k++) {
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: `${OUT}/${d}-t${k}.png`, timeout: 180_000 });
+  }
+  // 1.26 DRAGS="150,-300": turn the camera by dragging over the stage (the room seen from other angles)
+  let nd = 0;
+  for (const dx of (process.env.DRAGS ?? '').split(',').filter(Boolean).map(Number)) {
+    const box = await page.locator('.tr-stage canvas').boundingBox();
+    const x = box.x + box.width / 2, y = box.y + box.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    for (let k = 1; k <= 10; k++) await page.mouse.move(x + (dx * k) / 10, y, { steps: 2 });
+    await page.mouse.up();
+    await page.waitForTimeout(2500);
+    console.log(d, 'drag', dx, JSON.stringify(await page.evaluate(() => window.__cssCamera)));
+    await page.screenshot({ path: `${OUT}/${d}-drag${++nd}.png`, timeout: 180_000 });
+  }
 }
 await browser.close();
