@@ -23,6 +23,12 @@ test('Réglages > Affichage : « Lumière du coach » Vive par défaut (fond som
   await page.goto('/#/reglages/affichage');
   const light = page.getByRole('radiogroup', { name: 'Lumière du coach' });
   await expect(light.getByRole('radio', { name: 'Vive (fond sombre)' })).toHaveAttribute('aria-checked', 'true');
+  // 1.24: the discipline's room replaces the plain background (tests/e2e/salles.spec.ts); the plain backgrounds of
+  // the coach light are checked with the room turned off, as a person who prefers them would
+  const room = page.getByRole('switch', { name: /Salle immersive/ });
+  await room.click({ force: true });
+  await expect(room).not.toBeChecked();
+  await expect.poll(() => stored(page)).toContain('"salleImmersive":false');
   // the default Vive: a dark background under the coach during training
   await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=libre');
   const stage = page.locator('canvas').first().locator('xpath=../..');

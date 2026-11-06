@@ -336,6 +336,12 @@ export function SettingsPage() {
               ]}
             />
           </PanelRow>
+          <Toggle
+            label="Salle immersive"
+            hint="Pendant l’entraînement, le coach s’entraîne dans une salle propre à sa discipline, avec sa lumière. Désactivée : fond uni."
+            on={settings.salleImmersive}
+            onChange={(v) => set({ salleImmersive: v })}
+          />
           {settings.coachStyle === 'realiste' && settings.coachRender === 'premium' && (
             <PanelRow label="Lumière du coach" column>
               <Segmented

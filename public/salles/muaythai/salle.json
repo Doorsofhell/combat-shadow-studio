@@ -1,0 +1,72 @@
+{
+ "room": "muaythai",
+ "eye": 1.4,
+ "props": [
+  {
+   "sprite": "sac-thai-rouge",
+   "at": [
+    -6.2,
+    1.7,
+    3.5
+   ],
+   "w": 0.375,
+   "h": 2.652
+  },
+  {
+   "sprite": "sac-thai-noir",
+   "at": [
+    -6.2,
+    1.7,
+    0.5
+   ],
+   "w": 0.375,
+   "h": 2.652
+  },
+  {
+   "sprite": "sac-thai-rouge",
+   "at": [
+    -6.2,
+    1.7,
+    -2.5
+   ],
+   "w": 0.375,
+   "h": 2.652
+  },
+  {
+   "sprite": "sac-thai-noir",
+   "at": [
+    6.2,
+    1.7,
+    3.5
+   ],
+   "w": 0.375,
+   "h": 2.652
+  },
+  {
+   "sprite": "sac-thai-rouge",
+   "at": [
+    6.2,
+    1.7,
+    0.5
+   ],
+   "w": 0.375,
+   "h": 2.652
+  },
+  {
+   "sprite": "sac-thai-noir",
+   "at": [
+    6.2,
+    1.7,
+    -2.5
+   ],
+   "w": 0.375,
+   "h": 2.652
+  }
+ ],
+ "key": "#ffc98a",
+ "haze": "#2a180a",
+ "sprites": [
+  "sac-thai-noir",
+  "sac-thai-rouge"
+ ]
+}

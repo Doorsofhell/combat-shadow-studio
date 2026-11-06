@@ -5,6 +5,8 @@ import { Box3, PerspectiveCamera, Vector3 } from 'three';
 import { FOV, centerOnSpheres, fitDistance, fitSpheres } from './framing';
 import type { Envelope } from '../engine';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
+import { RoomLights } from './rooms/RoomScene';
+import type { RoomSpec } from './rooms/rooms';
 
 /** where the camera should look from, in scene terms (azimuth already oriented for the guard) */
 export interface StageView {
@@ -55,6 +57,8 @@ export interface StudioStageProps {
   realistic?: boolean;
   /** studio visuals (scripts/visuels): dark photo-studio lights, no floor shadow (the picture is laid on its own room) */
   mood?: boolean;
+  /** 1.23 the discipline's room: its own key and rim lights on the coach (rooms.ts) */
+  room?: RoomSpec | null;
 }
 
 /**
@@ -153,7 +157,7 @@ const corner = new Vector3();
  * (computed from the real animation), from the requested angle, and glides to a new angle
  * instead of cutting. In free mode the user turns around the coach with a finger.
  */
-export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 1, focusY, follow, envelope, origin, orbit = false, free = false, onUserOrbit, dark = false, shadows = false, realistic = false, vive = false, mood = false }: StudioStageProps) {
+export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 1, focusY, follow, envelope, origin, orbit = false, free = false, onUserOrbit, dark = false, shadows = false, realistic = false, vive = false, mood = false, room = null }: StudioStageProps) {
   const { camera, size } = useThree();
   const controls = useRef<OrbitControlsImpl>(null);
   const cur = useRef<{ az: number; el: number; dist: number; target: Vector3 } | null>(null);
@@ -262,7 +266,7 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
   const hi = quality === 'haute';
   return (
     <>
-      {mood ? <MoodLights /> : <StageLights dark={dark} shadows={shadows} realistic={realistic} vive={vive} />}
+      {mood ? <MoodLights /> : room ? <RoomLights spec={room} shadows={shadows} /> : <StageLights dark={dark} shadows={shadows} realistic={realistic} vive={vive} />}
       {children}
       {!mood && <ContactShadows position={[0, 0.001, 0]} opacity={dark ? 0.75 : 0.42} scale={6} blur={2.4} far={1.6} resolution={hi ? 512 : 256} color={dark ? '#000000' : '#3a3530'} />}
       {orbit && <OrbitControls ref={controls} enablePan={false} enableDamping={false} minDistance={1.2} maxDistance={12} minPolarAngle={0.15} maxPolarAngle={1.75} />}

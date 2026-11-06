@@ -84,3 +84,22 @@ describe('1.4.0 pulsation pendant la séance', () => {
     expect(bad.settings.pulseIntensity).toBe(0.7);
   });
 });
+
+describe('réglages : salle immersive (1.24)', () => {
+  const merge = useSettings.persist.getOptions().merge!;
+  type S = ReturnType<typeof useSettings.getState>;
+
+  it('activée par défaut pour une nouvelle installation', () => {
+    expect(DEFAULT_SETTINGS.salleImmersive).toBe(true);
+  });
+
+  it('un profil existant sans ce réglage passe à activé, un choix enregistré est gardé', () => {
+    const old = merge({ settings: { voice: false, coachLight: 'studio' } }, useSettings.getState()) as S;
+    expect(old.settings.salleImmersive).toBe(true);
+    expect(old.settings.coachLight).toBe('studio');
+    const off = merge({ settings: { salleImmersive: false } }, useSettings.getState()) as S;
+    expect(off.settings.salleImmersive).toBe(false);
+    const broken = merge({ settings: { salleImmersive: 'oui' as unknown as boolean } }, useSettings.getState()) as S;
+    expect(broken.settings.salleImmersive).toBe(true);
+  });
+});

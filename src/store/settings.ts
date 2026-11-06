@@ -55,6 +55,12 @@ export interface Settings {
    * 0.49 (without this field) get Vive through `merge`.
    */
   coachLight: 'studio' | 'vive';
+  /**
+   * 1.23 Salles immersives (Youssef, 2026-11-05): the training stage shows the discipline's room (photo-like
+   * panorama, swinging bags, its own light on the coach) instead of the plain background. On by default; saves from
+   * before 1.23 get it through `merge` (DEFAULT_SETTINGS first)
+   */
+  salleImmersive: boolean;
   cameraAngle: number;
   /** teaching camera mode; auto picks the best angle for each technique */
   cameraMode: import('../domain/camera').CameraMode;
@@ -140,6 +146,7 @@ export const DEFAULT_SETTINGS: Settings = {
   coachStyle: 'realiste',
   coachRender: 'premium',
   coachLight: 'vive',
+  salleImmersive: true,
   cameraAngle: 35,
   cameraMode: 'auto',
   cues: { trajectoire: true, hanches: true, pivot: true, articulations: true, pieds: true, garde: false, comparaison: false },
@@ -200,7 +207,7 @@ export const useSettings = create<SettingsState>()(
       merge: (saved, current) => {
         const s = (saved as { settings?: Partial<Settings> })?.settings ?? {};
         const size = COACH_PANEL_SIZES.includes(s.coachPanelSize as CoachPanelSize) ? s.coachPanelSize : DEFAULT_SETTINGS.coachPanelSize;
-        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachStyle: 'realiste', coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) }, cardio: { ...DEFAULT_SETTINGS.cardio, ...(s.cardio ?? {}) }, chrono: cleanSetup(s.chrono), consignes: s.consignes === 'point' ? 'point' : 'enchainees', consigneSec: CONSIGNE_SECS.includes(s.consigneSec as number) ? s.consigneSec! : DEFAULT_SETTINGS.consigneSec, pulse: PULSE_STYLES.includes(s.pulse as PulseStyle) ? s.pulse! : DEFAULT_SETTINGS.pulse, pulseIntensity: typeof s.pulseIntensity === 'number' && s.pulseIntensity >= 0.3 && s.pulseIntensity <= 1 ? s.pulseIntensity : DEFAULT_SETTINGS.pulseIntensity } };
+        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachStyle: 'realiste', coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) }, cardio: { ...DEFAULT_SETTINGS.cardio, ...(s.cardio ?? {}) }, chrono: cleanSetup(s.chrono), consignes: s.consignes === 'point' ? 'point' : 'enchainees', consigneSec: CONSIGNE_SECS.includes(s.consigneSec as number) ? s.consigneSec! : DEFAULT_SETTINGS.consigneSec, pulse: PULSE_STYLES.includes(s.pulse as PulseStyle) ? s.pulse! : DEFAULT_SETTINGS.pulse, pulseIntensity: typeof s.pulseIntensity === 'number' && s.pulseIntensity >= 0.3 && s.pulseIntensity <= 1 ? s.pulseIntensity : DEFAULT_SETTINGS.pulseIntensity, salleImmersive: typeof s.salleImmersive === 'boolean' ? s.salleImmersive : DEFAULT_SETTINGS.salleImmersive } };
       },
     },
   ),

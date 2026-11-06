@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.24.0',
+      releaseDate: '2026-11-05',
+      title: 'Une salle pour chaque discipline',
+      isMajor: true,
+      changes: [
+        { category: 'fonctionnalites', text: "Pendant l'entraînement, le coach s'entraîne dans une salle propre à sa discipline : salle de boxe à l'ancienne avec son ring, académie de MMA avec sa cage, salle de kick-boxing de nuit, camp de muay-thaï en bois, dojo traditionnel pour le judo et académie de jiu-jitsu." },
+        { category: 'ameliorations', text: 'Chaque salle a sa propre lumière sur le coach et ses reflets ; les sacs suspendus se balancent doucement et les lampes respirent.' },
+        { category: 'ameliorations', text: 'Réglages › Affichage 3D › « Salle immersive » ramène le fond uni si tu le préfères.' },
+      ],
+      links: [{ label: 'Réglages de l’affichage 3D', to: '/reglages/affichage' }],
+    },
+    {
       version: '1.23.0',
       releaseDate: '2026-11-05',
       title: 'Visages plus vivants et respiration visible',
