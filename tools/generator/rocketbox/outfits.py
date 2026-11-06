@@ -2065,6 +2065,89 @@ def shin_guards(color, accent='#B3122A'):
     return [o], cov
 
 
+def mma_shin_guards(color, accent):
+    """1.27 MMA shin-and-instep guards (Youssef, 2026-11-06, three photos of sock-style guards: « des protège-tibias
+    bien faits comme les autres, pas de bavures »): one stretch sleeve from under the knee down over the ankle and
+    the instep, the heel left bare in a rounded opening, the toes free; a padded plate in front of the shin, a thin
+    pad on the instep, an elastic band in the accent colour round the top. Every edge is cut by a field (iso), so
+    the outline is a smooth line whatever the size of the body's triangles: under the knee, round the heel, across
+    the foot before the toes, along the sides of the foot above the sole"""
+    top_z = kneeZ - 0.07
+    band_z = top_z - 0.03
+    frames = {}
+    for s in ('Left', 'Right'):
+        O = H[f'{s}Foot'].copy()
+        f = H[f'{s}ToeBase'] - H[f'{s}Foot']
+        f.z = 0
+        toe = f.length
+        f.normalize()
+        mine = [i for i in range(len(P)) if leg_of(i) == s and P[i].z < ankleZ + 0.05]
+        ground = min(P[i].z for i in mine)
+        heel = min((P[i] - O).dot(f) for i in mine)
+        frames[s] = (O, f, toe, ground, heel)
+
+    def field(q):
+        s = 'Left' if q.x > 0 else 'Right'
+        O, f, toe, ground, heel = frames[s]
+        u = (q - O).dot(f)
+        top = q.z - top_z
+        # across the foot, 2.5 cm before the toe joint (the toes stay free)
+        front = u - (toe - 0.025)
+        # along the sides of the foot, 1.4 cm above the floor (the sole stays bare)
+        sole = (ground + 0.014) - q.z
+        # the heel: a rounded opening behind the ankle
+        hu, hz = heel + 0.005, ground
+        e = ((u - hu) / 0.075) ** 2 + ((q.z - hz) / (ankleZ - ground + 0.005)) ** 2
+        hole = (1.0 - e) * 0.03
+        return max(top, front, sole, hole)
+
+    def keep(i):
+        s = leg_of(i)
+        return w(i, f'{s}Leg', f'{s}Foot', f'{s}ToeBase') > 0.5 and P[i].z < top_z + 0.03
+
+    def centre(i):
+        s = leg_of(i)
+        c, _ = axis_point(i, f'{s}Leg', f'{s}Foot')
+        return c
+
+    def push(i):
+        front = max(0.0, N[i].dot(FWD))
+        z = P[i].z
+        if z < ankleZ + 0.02:
+            # instep: a thin pad on the top of the foot, the sides snug
+            return 0.0035 + 0.003 * max(0.0, N[i].z)
+        lat = P[i].x - centre(i).x
+        quilt = 0.5 + 0.5 * math.cos(lat / 0.026 * 2 * math.pi)
+        # the plate fades out toward the ankle and under the knee band
+        fade = min(1.0, (z - ankleZ - 0.02) / 0.05, max(0.0, (band_z - 0.01 - z) / 0.03))
+        return 0.0035 + (0.008 + 0.003 * quilt) * front ** 0.8 * max(0.0, fade)
+
+    def mat_of(c, ids):
+        return 1 if c.z > band_z else 0
+
+    sleeve = fabric(f'protection-mma-{color}', color, 'knit', rough=0.75, strength=0.9)
+    band = fabric(f'elastique-{accent}', accent, 'knit', rough=0.8, strength=1.3)
+    cuts = [(Vector((0, 0, band_z)), Vector((0, 0, 1)))]
+    _ONCUT[0] = True
+    # a longer relaxation of the free edges than the shorts': the top band crosses the fine skin of the MakeHuman
+    # bodies at the knee and kept small waves with the usual 14 steps (Kaila, 06/11)
+    keep_relax = os.environ.get('HEM_RELAX')
+    os.environ['HEM_RELAX'] = os.environ.get('SHIN_RELAX', '40')
+    try:
+        o, cov = shell('protege-tibias-mma', keep, push, 0.005, [sleeve, band], mat_of, cuts=cuts, iso=field)
+    finally:
+        _ONCUT[0] = False
+        if keep_relax is None:
+            os.environ.pop('HEM_RELAX', None)
+        else:
+            os.environ['HEM_RELAX'] = keep_relax
+    # the top band took some of the thigh's weight from the skin under it (MakeHuman bodies most): when the knee
+    # bent, its points followed the thigh one by one and the edge came out frilled. The sleeve follows the shin only
+    for s_ in ('Left', 'Right'):
+        fold_weights(o, [f'{s_}UpLeg'], f'{s_}Leg')
+    return [o], cov
+
+
 def mma_gloves(color, accent='#B3122A', palm=None):
     def keep(i):
         s = 'Left' if P[i].x > 0 else 'Right'
@@ -2394,6 +2477,10 @@ def outfit(name):
             add(mma_gloves(*C['mmag']))
         else:
             add(mma_gloves('#16181D', '#E9E9E6', '#E9E9E6') if not female else mma_gloves('#16181D', '#2B2D33'))
+        # 1.27 (Youssef 06/11): shin-and-instep guards, in the gloves' colours
+        if os.environ.get('MMA_SHIN', '1') == '1':
+            g = C['mmag'][:2] if 'mmag' in C else (('#16181D', '#E9E9E6') if not female else ('#16181D', '#2B2D33'))
+            add(mma_shin_guards(*g))
     elif name == 'bjj-nogi':
         add(top('rash-long', C['rash']))
         add(pants('#16181D', 'nogi', legging=True) if female else shorts('compression', '#16181D', '#B3122A'))

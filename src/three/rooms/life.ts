@@ -12,7 +12,7 @@ import type { DisciplineId } from '../../domain/types';
  * - pools: the light a hanging lamp throws on the floor sways with it (a pendulum on its cable);
  * - windows: soft shadows of branches swaying and of clouds passing over the windows or the paper screens;
  * - sweep: at night, the headlights of a passing car run across the ceiling and through the windows;
- * - dust: fine dust floats in the light around the coach (every room, seen from every side).
+ * (1.27: the floating dust of 1.26 is gone, Youssef 2026-11-06: « supprime la poussière, ça fait trop ».)
  * The functions below are pure (time in seconds): the tests check their range, the shader and the lights use them.
  */
 export type V3 = [number, number, number];
@@ -26,8 +26,6 @@ export interface RoomLife {
   windows?: { min: V3; max: V3 }[];
   /** ceiling height crossed by passing headlights, and the plane of the windows they come through (z) */
   sweep?: { ceiling: number; windowZ: number };
-  /** colour of the dust in the light */
-  dust: string;
 }
 
 export const LIFE: Record<DisciplineId, RoomLife> = {
@@ -47,7 +45,6 @@ export const LIFE: Record<DisciplineId, RoomLife> = {
       { at: [3.2, 3.5, -2.5], cable: 1.7 },
     ],
     windows: [{ min: [-9.2, 2.85, -5.4], max: [-8.7, 4.35, 5.4] }],
-    dust: '#ffd9a8',
   },
   kickboxing: {
     lamps: [
@@ -60,7 +57,6 @@ export const LIFE: Record<DisciplineId, RoomLife> = {
     ],
     windows: [{ min: [-7, 1.2, -17], max: [7, 4, -11.9] }],
     sweep: { ceiling: 4.8, windowZ: -12 },
-    dust: '#f3eee8',
   },
   muaythai: {
     lamps: [
@@ -79,7 +75,6 @@ export const LIFE: Record<DisciplineId, RoomLife> = {
       { at: [-1.5, 3.1, -6.6], cable: 1.35 },
       { at: [1.5, 3.1, -6.6], cable: 1.35 },
     ],
-    dust: '#ffc98a',
   },
   mma: {
     lamps: [
@@ -94,7 +89,6 @@ export const LIFE: Record<DisciplineId, RoomLife> = {
       [-1.6, 5.4, -9.8],
       [1.6, 5.4, -9.8],
     ],
-    dust: '#dfe8ff',
   },
   judo: {
     lamps: [],
@@ -104,7 +98,6 @@ export const LIFE: Record<DisciplineId, RoomLife> = {
       { min: [-7, 0.95, -8.3], max: [7, 3.3, -7.7] },
       { min: [-7, 0.95, 7.7], max: [7, 3.3, 8.3] },
     ],
-    dust: '#fff1d8',
   },
   bjj: {
     lamps: [
@@ -121,7 +114,6 @@ export const LIFE: Record<DisciplineId, RoomLife> = {
       [0, 4.15, -6.5],
       [4.5, 4.15, -6.5],
     ],
-    dust: '#e6eeff',
   },
 };
 
