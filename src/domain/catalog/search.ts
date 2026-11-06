@@ -1,6 +1,7 @@
 import { TECHNIQUE_BY_ID } from '../techniques';
 import type { DisciplineId, LevelId } from '../types';
 import type { Catalog, CatalogCombo, CatalogGoal, CatalogGuard, CatalogStatus } from './types';
+import { isValidated } from './types';
 import { isPlayable3D } from './validate';
 
 export type LengthBand = '2-3' | '4-5' | '6-7' | '8-10';
@@ -23,6 +24,8 @@ export interface CatalogQuery {
   tag?: string;
   goal?: CatalogGoal;
   status?: CatalogStatus;
+  /** Catalogue validé (2026-11-06) : seulement les fiches appuyées sur une source vérifiable (vérifiée, programme fédéral, adaptée) */
+  validated?: boolean;
 }
 
 /** minuscules sans accents, pour une recherche tolérante */
@@ -32,9 +35,17 @@ export const fold = (s: string) =>
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase();
 
+/**
+ * À qui la fiche est créditée : le champion (fiches inspirées) ou l’organisme et le grade du programme
+ * (ex. « FFBoxe · Gant jaune »).
+ */
+export function comboCredit(c: CatalogCombo, cat: Pick<Catalog, 'championById'> & Partial<Pick<Catalog, 'orgById'>>): string {
+  if (c.program) return `${cat.orgById?.get(c.program.org)?.name ?? c.program.org} · ${c.program.grade}`;
+  return cat.championById.get(c.champion)?.name ?? c.champion;
+}
+
 function haystack(c: CatalogCombo, cat: Catalog) {
-  const ch = cat.championById.get(c.champion);
-  return fold([c.name, c.objective, ch?.name ?? '', c.tags.join(' '), ...c.sequence.map((id) => TECHNIQUE_BY_ID.get(id)?.name ?? id)].join(' '));
+  return fold([c.name, c.objective, comboCredit(c, cat), c.program?.document ?? '', c.tags.join(' '), ...c.sequence.map((id) => TECHNIQUE_BY_ID.get(id)?.name ?? id)].join(' '));
 }
 
 const hayCache = new WeakMap<CatalogCombo, string>();
@@ -53,6 +64,7 @@ export function searchCombos(cat: Catalog, q: CatalogQuery, list: CatalogCombo[]
     if (q.tag && !c.tags.includes(q.tag)) return false;
     if (q.goal && c.goal !== q.goal) return false;
     if (q.status && c.status !== q.status) return false;
+    if (q.validated && !isValidated(c.status)) return false;
     if (words.length) {
       let h = hayCache.get(c);
       if (!h) hayCache.set(c, (h = haystack(c, cat)));
@@ -65,13 +77,14 @@ export function searchCombos(cat: Catalog, q: CatalogQuery, list: CatalogCombo[]
 export interface CatalogCounts {
   total: number;
   verifiee: number;
+  programme: number;
   adaptee: number;
   inspiree: number;
   playable: number;
 }
 
 export function catalogCounts(list: CatalogCombo[]): CatalogCounts {
-  const n: CatalogCounts = { total: list.length, verifiee: 0, adaptee: 0, inspiree: 0, playable: 0 };
+  const n: CatalogCounts = { total: list.length, verifiee: 0, programme: 0, adaptee: 0, inspiree: 0, playable: 0 };
   for (const c of list) {
     n[c.status]++;
     if (isPlayable3D(c)) n.playable++;

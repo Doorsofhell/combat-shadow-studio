@@ -8,7 +8,7 @@ import { TECHNIQUE_BY_ID, techniquesFor } from '../../domain/techniques';
 import { sequenceView, stageAzimuth } from '../../domain/camera';
 import type { Catalog, CatalogChampion, CatalogCombo, CatalogGoal, CatalogStatus } from '../../domain/catalog/types';
 import { DISTANCE_LABEL, GOAL_LABEL, GUARD_LABEL, STANCE_LABEL, STATUS_HELP, STATUS_LABEL, tagLabel } from '../../domain/catalog/types';
-import { LENGTH_BANDS, allTags, catalogCounts, dailyPick, randomPick, recentCombos, searchCombos } from '../../domain/catalog/search';
+import { LENGTH_BANDS, allTags, catalogCounts, comboCredit, dailyPick, randomPick, recentCombos, searchCombos } from '../../domain/catalog/search';
 import type { CatalogQuery, LengthBand } from '../../domain/catalog/search';
 import { isPlayable3D } from '../../domain/catalog/validate';
 import { comboDna, focusTechniques } from '../../domain/catalog/dna';
@@ -28,8 +28,8 @@ import { PremiumMarker } from '../premium/PremiumMarker';
 const DISC_NAME = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.name])) as Record<DisciplineId, string>;
 const DISC_SHORT = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.short])) as Record<DisciplineId, string>;
 const LEVEL_NAME = Object.fromEntries(LEVELS.map((l) => [l.id, l.name])) as Record<LevelId, string>;
-const STATUS_CLASS: Record<CatalogStatus, string> = { verifiee: 'badge gold', adaptee: 'badge red', inspiree: 'badge' };
-const STATUS_ICON: Record<CatalogStatus, 'verified' | 'adapted' | 'inspired'> = { verifiee: 'verified', adaptee: 'adapted', inspiree: 'inspired' };
+const STATUS_CLASS: Record<CatalogStatus, string> = { verifiee: 'badge gold', programme: 'badge gold', adaptee: 'badge red', inspiree: 'badge' };
+const STATUS_ICON: Record<CatalogStatus, 'verified' | 'adapted' | 'inspired'> = { verifiee: 'verified', programme: 'verified', adaptee: 'adapted', inspiree: 'inspired' };
 const PAGE = 40;
 
 // ------------------------------------------------------------------ chargement
@@ -121,7 +121,6 @@ function PlayButton({ c }: { c: CatalogCombo }) {
  * (same actions, same test ids), so no button is shown twice on the screen.
  */
 function QuickStart({ eyebrow, combo, catalog, testId = 'cat-quick', onOther, onToday }: { eyebrow: string; combo: CatalogCombo; catalog: Catalog; testId?: string; onOther?: () => void; onToday?: () => void }) {
-  const ch = catalog.championById.get(combo.champion);
   const start = useQuickTrain();
   return (
     <section className="card quick-start" data-testid={testId} aria-label="Démarrage rapide">
@@ -132,7 +131,7 @@ function QuickStart({ eyebrow, combo, catalog, testId = 'cat-quick', onOther, on
         {combo.name}
       </Link>
       <span className="small muted">
-        {ch?.name ?? combo.champion} · {DISC_SHORT[combo.discipline]} · {combo.sequence.length} mouvements · {LEVEL_NAME[combo.level]}
+        {comboCredit(combo, catalog)} · {DISC_SHORT[combo.discipline]} · {combo.sequence.length} mouvements · {LEVEL_NAME[combo.level]}
       </span>
       {/* v0.32: the card's own actions are back on the card (content actions; the floating pill is gone) */}
       <div className="qs-actions">
@@ -157,15 +156,48 @@ function QuickStart({ eyebrow, combo, catalog, testId = 'cat-quick', onOther, on
   );
 }
 
+/**
+ * Catalogue validé (2026-11-06) : d’où vient une fiche de programme fédéral, en clair pour un débutant (organisme, document, page,
+ * exercice, l’enchaînement tel qu’il est écrit, ce qui change quand on le travaille seul).
+ */
+function ProgramSource({ c, catalog }: { c: CatalogCombo; catalog: Catalog }) {
+  const p = c.program!;
+  const org = catalog.orgById.get(p.org);
+  return (
+    <dl className="program-source small" data-testid="cat-program">
+      <dt>Programme</dt>
+      <dd>
+        {org?.fullName ?? p.org} ({org?.name ?? p.org}), {p.grade}
+      </dd>
+      <dt>Document</dt>
+      <dd>
+        <a href={p.url} target="_blank" rel="noreferrer noopener">
+          {p.document}
+        </a>
+        , page {p.page}
+      </dd>
+      <dt>Exercice</dt>
+      <dd>{p.exercise}</dd>
+      <dt>Tel qu’il est écrit</dt>
+      <dd>
+        <q>{p.quote}</q>
+      </dd>
+      <dt>Travail seul</dt>
+      <dd>{p.solo}</dd>
+      <dt>Lu le</dt>
+      <dd>{new Date(`${p.consulted}T12:00:00`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</dd>
+    </dl>
+  );
+}
+
 function ComboRow({ c, catalog, extra }: { c: CatalogCombo; catalog: Catalog; extra?: React.ReactNode }) {
-  const ch = catalog.championById.get(c.champion);
   return (
     <div className="panel-row">
       <TechThumb id={keyTechnique(c.sequence)} size="sm" />
       <Link to={`/champions/${c.id}`} className="grow" style={{ color: 'inherit', textDecoration: 'none' }} data-testid={`cat-${c.id}`}>
         <b style={{ display: 'block' }}>{c.name}</b>
         <span className="hint">
-          {ch?.name ?? c.champion} · {DISC_SHORT[c.discipline]} · {c.sequence.length} mouvements · {LEVEL_NAME[c.level]}
+          {comboCredit(c, catalog)} · {DISC_SHORT[c.discipline]} · {c.sequence.length} mouvements · {LEVEL_NAME[c.level]}
         </span>
         <span className="row" style={{ gap: 6, marginTop: 4 }}>
           <StatusBadge status={c.status} />
@@ -210,15 +242,14 @@ function StatusLine({ list }: { list: CatalogCombo[] }) {
   const n = useMemo(() => catalogCounts(list), [list]);
   // 1.1.0 (Youssef, 2026-10-27: « dans l'ADN de la bibliothèque, retire nombre inspiré et tous jouables en 3D »):
   // only the verified and adapted sheets are counted here; their meaning is a question of « Rechercher »
-  const statuses = (['verifiee', 'adaptee'] as CatalogStatus[]).filter((x) => n[x] > 0);
+  const statuses = (['verifiee', 'programme', 'adaptee'] as CatalogStatus[]).filter((x) => n[x] > 0);
   if (!statuses.length) return null;
   return (
     <span className="dna-status small">
       {statuses.map((x) => (
         <span key={x} className="dna-chip">
           <AppIcon id={STATUS_ICON[x]} size={14} />
-          {n[x].toLocaleString('fr-FR')} {STATUS_LABEL[x].toLowerCase()}
-          {n[x] > 1 ? 's' : ''}
+          {n[x].toLocaleString('fr-FR')} {x === 'programme' ? `fiche${n[x] > 1 ? 's' : ''} de programme fédéral` : `${STATUS_LABEL[x].toLowerCase()}${n[x] > 1 ? 's' : ''}`}
         </span>
       ))}
     </span>
@@ -284,6 +315,7 @@ export function Champions() {
               <DisciplineCard key={d.id} id={d.id} to={`/champions?vue=champions&d=${d.id}`} testId={`legend-disc-${d.id}`} compact selected={view === 'champions' && q.get('d') === d.id} />
             ))}
           </div>
+          <ProgramsCard catalog={catalog} />
           <DnaCard list={catalog.combos} title="ADN de la bibliothèque" sub={<span className="muted"> · {catalog.champions.length} légendes</span>} testId="cat-summary" />
           <div className="utabs" role="tablist" aria-label="Sections de la bibliothèque">
             {VIEWS.map((v) => (
@@ -302,6 +334,51 @@ export function Champions() {
         </>
       )}
     </div>
+  );
+}
+
+/**
+ * Catalogue validé (Youssef, 2026-11-06 : « bien les classer ») : les combinaisons des programmes officiels, rangées par
+ * fédération et par discipline, avec leurs grades dans l’ordre du programme. Un tap ouvre la liste filtrée.
+ */
+function ProgramsCard({ catalog }: { catalog: Catalog }) {
+  const groups = useMemo(() => {
+    const m = new Map<string, { org: string; discipline: DisciplineId; grades: string[]; n: number }>();
+    for (const c of catalog.combos) {
+      if (!c.program) continue;
+      const k = `${c.program.org}|${c.discipline}`;
+      const g = m.get(k) ?? { org: c.program.org, discipline: c.discipline, grades: [], n: 0 };
+      g.n++;
+      if (!g.grades.includes(c.program.grade)) g.grades.push(c.program.grade);
+      m.set(k, g);
+    }
+    return [...m.values()];
+  }, [catalog]);
+  if (!groups.length) return null;
+  const gradeRange = (g: string[]) => (g.length > 1 ? `${g[0]} à ${g[g.length - 1].replace(/^(Gant|Prajeet) /, '')}` : g[0]).toLowerCase();
+  return (
+    <section className="card stack" data-testid="cat-programs" aria-label="Combinaisons des programmes fédéraux">
+      <span className="eyebrow gold">
+        <AppIcon id="verified" size={14} /> Programmes des fédérations
+      </span>
+      <p className="small muted" style={{ margin: 0 }}>
+        Des enchaînements écrits dans les programmes officiels de passage de grade, avec leur source sur chaque fiche.
+      </p>
+      {groups.map((g) => (
+        <Link key={`${g.org}-${g.discipline}`} className="panel-row" style={{ color: 'inherit', textDecoration: 'none' }} to={`/champions?vue=explorer&d=${g.discipline}&valide=1`} data-testid={`cat-programs-${g.org}-${g.discipline}`}>
+          <DisciplineIcon id={g.discipline} size={28} />
+          <span className="grow">
+            <b style={{ display: 'block' }}>
+              {catalog.orgById.get(g.org)?.name ?? g.org} · {DISC_NAME[g.discipline]}
+            </b>
+            <span className="hint">
+              {g.n} fiche{g.n > 1 ? 's' : ''} · {gradeRange(g.grades)}
+            </span>
+          </span>
+          <AppIcon id="chevron" size={18} />
+        </Link>
+      ))}
+    </section>
   );
 }
 
@@ -335,6 +412,7 @@ function Explorer({ catalog }: { catalog: Catalog }) {
     tag: get('tag'),
     goal: get('but') as CatalogGoal | undefined,
     status: get('statut') as CatalogStatus | undefined,
+    validated: q.get('valide') === '1',
   };
   const setMany = (p: Record<string, string | null | undefined>) => {
     const n = new URLSearchParams(q);
@@ -349,7 +427,7 @@ function Explorer({ catalog }: { catalog: Catalog }) {
   const results = useMemo(() => searchCombos(catalog, query), [catalog, q.toString()]); // eslint-disable-line react-hooks/exhaustive-deps
   const tags = useMemo(() => allTags(catalog.combos), [catalog]);
   const techs = query.discipline ? techniquesFor(query.discipline) : [...TECHNIQUE_BY_ID.values()];
-  const active = ['champion', 'tech', 'niveau', 'garde', 'long', 'tag', 'but', 'statut'].filter((k) => q.get(k)).length;
+  const active = ['champion', 'tech', 'niveau', 'garde', 'long', 'tag', 'but', 'statut', 'valide'].filter((k) => q.get(k)).length;
   const champs = catalog.champions.filter((c) => !query.discipline || c.disciplines.includes(query.discipline)).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 
   return (
@@ -367,6 +445,16 @@ function Explorer({ catalog }: { catalog: Catalog }) {
         ))}
       </div>
       <div className="row">
+        {/* Catalogue validé (2026-11-06) : les fiches appuyées sur une source vérifiable (programme fédéral…) ; elles sont déjà en tête de liste */}
+        <button
+          className="chip"
+          aria-pressed={query.validated}
+          onClick={() => set('valide', query.validated ? null : '1')}
+          title="Seulement les combinaisons tirées d’une source vérifiable : programme officiel d’une fédération, combat ou document cité"
+          data-testid="cat-validated"
+        >
+          <AppIcon id="verified" size={14} /> Validées
+        </button>
         <button className="btn sm secondary" onClick={() => setShowFilters(!showFilters)} aria-expanded={showFilters}>
           <AppIcon id="filters" size={18} /> Filtres{active ? ` (${active})` : ''}
         </button>
@@ -375,7 +463,7 @@ function Explorer({ catalog }: { catalog: Catalog }) {
             className="btn sm ghost"
             onClick={() => {
               const n = new URLSearchParams(q);
-              for (const k of ['champion', 'tech', 'niveau', 'garde', 'long', 'tag', 'but', 'statut']) n.delete(k);
+              for (const k of ['champion', 'tech', 'niveau', 'garde', 'long', 'tag', 'but', 'statut', 'valide']) n.delete(k);
               setQ(n, { replace: true });
             }}
           >
@@ -470,7 +558,7 @@ function Explorer({ catalog }: { catalog: Catalog }) {
               <label htmlFor="cat-status">Statut</label>
               <select id="cat-status" className="input" value={query.status ?? ''} onChange={(e) => set('statut', e.target.value)}>
                 <option value="">Tous</option>
-                {(['verifiee', 'adaptee', 'inspiree'] as CatalogStatus[]).map((s) => (
+                {(['verifiee', 'programme', 'adaptee', 'inspiree'] as CatalogStatus[]).map((s) => (
                   <option key={s} value={s}>
                     {STATUS_LABEL[s]}
                   </option>
@@ -748,6 +836,7 @@ export function ComboPage() {
     );
 
   const ch = catalog.championById.get(c.champion);
+  const credit = comboCredit(c, catalog);
   const view = sequenceView(c.sequence);
   const viewAz = Math.round(stageAzimuth(view, c.discipline, false));
   const playable = isPlayable3D(c);
@@ -771,7 +860,7 @@ export function ComboPage() {
 
   return (
     <div className="page">
-      <PageHead title={c.name} eyebrow={`${ch?.name ?? c.champion} · ${DISC_NAME[c.discipline]}`} />
+      <PageHead title={c.name} eyebrow={`${credit} · ${DISC_NAME[c.discipline]}`} />
 
       {/* 0.25 (Youssef, 2026-10-20): training first, no scrolling. Default mode « libre », « Changer » opens the others. */}
       <section className="card quick-start" data-testid="cat-start" aria-label="S’entraîner sur cette fiche">
@@ -833,7 +922,7 @@ export function ComboPage() {
 
       <div className={`note ${c.status === 'inspiree' ? 'warn' : ''}`} data-testid="cat-status">
         <b>Statut : {STATUS_LABEL[c.status]}.</b> {STATUS_HELP[c.status]}
-        <div className="small" style={{ marginTop: 6 }}>
+        {c.program ? <ProgramSource c={c} catalog={catalog} /> : <div className="small" style={{ marginTop: 6 }}>
           Source : {c.source.note}
           {c.source.reference && <> — {c.source.reference}</>}
           {c.source.timestamp && <> ({c.source.timestamp})</>}
@@ -845,7 +934,7 @@ export function ComboPage() {
               </a>
             </>
           )}
-        </div>
+        </div>}
       </div>
 
       <section className="section">
