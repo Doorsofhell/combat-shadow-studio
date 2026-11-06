@@ -2829,3 +2829,40 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `scripts/dev/shot-salles.mjs` (FRAMES, DRAGS), `tests/e2e/salles.spec.ts` (coach avec sa salle),
   `src/domain/releases.ts`, `package.json`.
 - **Tests** : voir le rapport de la PR.
+
+## 2026-11-06 · v1.27.0 · Combinaisons des programmes fédéraux
+
+- **Demande** : Youssef, 6 novembre 2026 : « enrichir le catalogue, tous niveaux, toutes disciplines, que des
+  combinaisons d'entraînement vérifiées et validées par les fédérations ou des entraîneurs », puis « tu peux les
+  rajouter, bien les classer et bien préciser », « je ne veux pas quelque chose de brouillon ». Décision : les
+  1 496 fiches inspirées restent, les fiches validées passent en tête.
+- **Constat après vérification** : les 1 496 fiches de la bibliothèque (catalogue 1.1.0) étaient toutes « inspirées »,
+  aucune ne reposait sur une source vérifiable. Parmi les documents officiels lus, seuls ceux de la FFBoxe (gants
+  blanc à rouge) et de la FFKMDA pour le muay-thaï (prajeets jaune à vert) écrivent des enchaînements précis ; le
+  kick-boxing et le judo ne donnent que des règles, le BJJ et le MMA n'ont pas de programme public lisible.
+- **Correction** :
+  - nouveau statut « Programme fédéral » : la fiche porte l'organisme, le document, le lien, la page, l'exercice,
+    l'enchaînement tel qu'il est écrit, ce qui change quand on le travaille seul et la date de lecture ; une fiche
+    sans l'un de ces champs est refusée ;
+  - 30 fiches : 23 en boxe anglaise (FFBoxe) et 7 en muay-thaï (FFKMDA), dans un fichier séparé
+    `public/catalog/programmes-v1.json` produit par `scripts/build-programmes.mjs` ; le catalogue des fiches inspirées
+    n'est pas modifié ;
+  - Légendes : carte « Programmes des fédérations » (par fédération et discipline, grades dans l'ordre), fiches
+    validées en tête de toutes les listes, bouton « Validées », encart « d'où vient cette combinaison » sur la fiche ;
+  - Coach IA : le statut est expliqué (Légendes › statuts) et cité quand il propose une fiche de programme ;
+  - registre complet des sources et des enchaînements écartés (geste absent du moteur, côté non précisé,
+    partenaire nécessaire) : `docs/catalogue-valide/SOURCES.md`.
+- **Fichiers** : `src/domain/catalog/{types,validate,loader,search}.ts`, `src/ui/screens/Champions.tsx`,
+  `src/ui/styles.css`, `src/coach/{engine,appGuide}.ts`, `scripts/build-programmes.mjs`,
+  `public/catalog/programmes-v1.json`, `docs/catalogue-valide/SOURCES.md`, `docs/CATALOGUE.md`.
+- **Tests** :
+  - `src/domain/__tests__/programmes.test.ts` (12 tests : référence complète, séquence identique à la citation quand
+    le document écrit les bras, jouable en 3D dans les deux gardes, aucun doublon, niveaux par grade, fiches
+    inspirées inchangées, validées en tête, filtre, recherche) : TEST RÉUSSI ;
+  - suite Vitest complète : TEST RÉUSSI ;
+  - `tests/e2e/catalogue-valide.spec.ts` (carte, liste, filtre, fiche, accessibilité axe, fiche inspirée inchangée) :
+    TEST RÉUSSI ;
+  - suite Playwright complète : voir la pull request.
+- **Limites** : les illustrations des PDF n'ont pas pu être lues ; l'uppercut au buste, la parade du bras avant et le
+  swing manquent au moteur (enchaînements correspondants écartés, listés) ; aucune vidéo n'a servi de source.
+- **Restauration** : `restauration/avant-catalogue-valide`

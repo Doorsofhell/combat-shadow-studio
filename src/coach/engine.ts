@@ -8,7 +8,7 @@
  */
 import { EXERCISES, EXERCISE_BY_ID } from '../domain/exercises';
 import { TECHNIQUES, TECHNIQUE_BY_ID } from '../domain/techniques';
-import type { CatalogChampion, CatalogCombo } from '../domain/catalog/types';
+import type { CatalogChampion, CatalogCombo, CatalogOrg } from '../domain/catalog/types';
 import { KB_STYLES, kbRuling, type KbStyle } from '../domain/kickboxingStyles';
 import { LEVELS } from '../domain/types';
 import type { DisciplineId, Exercise, Guard, LevelId, Technique } from '../domain/types';
@@ -40,7 +40,7 @@ export interface CoachContext {
   goals?: string[];
   preferences?: { detail?: DetailLevel };
   /** bibliothèque des champions si elle est chargée (useCatalog) ; sinon seuls les exercices sont proposés */
-  catalog?: { combos: CatalogCombo[]; championById?: Map<string, CatalogChampion> } | null;
+  catalog?: { combos: CatalogCombo[]; championById?: Map<string, CatalogChampion>; orgById?: Map<string, CatalogOrg> } | null;
   /** technique de la réponse précédente, pour « et au ralenti ? » */
   lastTechniqueId?: string;
   /** rotation des suggestions (ex. nombre de suggestions déjà faites) */
@@ -455,7 +455,9 @@ function suggestCombo(p: ParsedQuestion, ctx: CoachContext): CoachAnswer {
     const status =
       combo.status === 'verifiee'
         ? `séquence relevée en combat${champ ? ` (${champ})` : ''}`
-        : combo.status === 'adaptee'
+        : combo.status === 'programme' && combo.program
+          ? `enchaînement du programme officiel ${ctx.catalog?.orgById?.get(combo.program.org)?.name ?? ''} (${combo.program.grade}), travaillé seul`
+          : combo.status === 'adaptee'
           ? `adaptée d’une séquence documentée${champ ? ` (${champ})` : ''}`
           : `inspirée du style${champ ? ` de ${champ}` : ''}, pas une séquence réellement exécutée en combat`;
     lines.push(`• Bibliothèque des champions : « ${combo.name} » — ${status}.`);

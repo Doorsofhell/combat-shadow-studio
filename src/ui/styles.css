@@ -4161,3 +4161,29 @@ html.stage-fs-open body {
     transition: none;
   }
 }
+
+/* Catalogue validé (2026-11-06) : source d'une fiche de programme fédéral (fiche Légendes) */
+.program-source {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 12px;
+  margin: 8px 0 0;
+}
+.program-source dt {
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.program-source dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 420px) {
+  .program-source {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .program-source dd {
+    margin-bottom: 6px;
+  }
+}
