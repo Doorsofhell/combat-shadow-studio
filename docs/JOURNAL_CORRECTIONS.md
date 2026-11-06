@@ -2697,3 +2697,36 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `scripts/dev/shot-salles.mjs`, `docs/v1240/SALLES.md` et captures avant/après `docs/v1240/captures/`.
 - **Tests** : voir le rapport de la PR (unitaires `src/three/rooms/__tests__/rooms.test.ts`, navigateur
   `tests/e2e/salles.spec.ts` et suites voisines).
+- **Validation** : Youssef « Je valide » le 2026-11-06 06:52 ; PR #61 fusionnée (dbc2dcf), lien public vérifié
+  (titre v1.24.0). Tests de la PR : `theme.spec:79` (Jour, Nuit) adapté comme `moteur-lumiere:20` (salle coupée
+  avant de vérifier le fond uni, assertions inchangées), RÉUSSI. `navigation.spec:178` (attend 1.9.0 en tête des
+  Nouveautés) et `coach-suggest.spec:99` ÉCHOUENT aussi sur la base sans les salles : antérieurs, non liés.
+
+
+## 2026-11-06 · v1.25.0 · Chargement au démarrage (« le chrono du round »)
+
+- **Demande** : Youssef veut un écran de chargement à l'ouverture avec le logo de l'app et des messages de salle de
+  combat (« ouverture des salles, nettoyage du ring… »), pour tout charger au démarrage et ne plus attendre au
+  chargement des coachs ; il choisit l'option A « le chrono du round » parmi quatre maquettes, puis précise : « tout
+  charger pendant le chargement de l'application, je ne veux aucune latence lors du choix des coachs ».
+- **Constat** : au démarrage seul le logo fixe s'affichait ; le coach, sa tenue et la salle se téléchargeaient à
+  l'ouverture de chaque écran 3D (jusqu'à 30 Mo pour un coach et ses tenues), d'où l'attente, et de nouveau à
+  chaque changement de coach.
+- **Correction** :
+  - écran « chrono du round » : logo CS dans un cercle de chrono qui se remplit avec les octets réellement reçus
+    (pas de minuteur simulé), « ROUND 1 » puis « DING ! » en doré quand tout est prêt, version affichée ;
+  - messages liés au fichier en cours : salles (« Ouverture des salles… », « Allumage des projecteurs… »,
+    « Nettoyage du ring… », « Mise en place des tatamis… »), coachs (« Les coachs s'échauffent… »), tenues
+    (« Laçage des gants… », « Bandage des mains… », « Ceinture bien nouée… »), « Pesée officielle… », « Le coach
+    t'attend ! » ;
+  - téléchargés : le coach choisi d'abord avec ses tenues et les six salles, puis les cinq autres coachs avec toutes
+    leurs tenues (les deux tenues de jiu-jitsu), environ 100 Mo la première fois ; gardés par le cache de l'app, les
+    ouvertures suivantes ne reprennent que ce qu'une mise à jour a changé ;
+  - un fichier qui ne vient pas (hors ligne, erreur) ne bloque rien : l'app s'ouvre ; « Entrer sans attendre »
+    apparaît après 12 s ;
+  - liste des tailles `src/boot/assetSizes.json` (générée par `scripts/boot-sizes.mjs`, un test vérifie qu'elle suit
+    les fichiers).
+- **Fichiers** : `src/boot/` (preload.ts, BootScreen.tsx, boot.css, assetSizes.json), `src/ui/App.tsx`,
+  `src/three/CoachModel.tsx` (preloadPhotoCoach), `scripts/boot-sizes.mjs`, `tests/e2e/boot.spec.ts`,
+  `src/domain/releases.ts`, `package.json`.
+- **Tests** : voir le rapport de la PR.

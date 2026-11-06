@@ -1,0 +1,112 @@
+/* 1.25 chargement au démarrage, « le chrono du round »: same ground and logo as the first paint (index.html) */
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  justify-items: center;
+  gap: 12px;
+  padding: calc(env(safe-area-inset-top, 0px) + 24px) max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 28px) max(16px, env(safe-area-inset-left, 0px));
+  background: radial-gradient(120% 70% at 50% 38%, #1a1f27 0%, #0b0f14 70%);
+  color: #eef0f3;
+  font-family: Rajdhani, 'Arial Narrow', sans-serif;
+  text-align: center;
+}
+.boot-screen.is-overlay {
+  background: rgba(11, 15, 20, 0.94);
+}
+.boot-stage {
+  align-self: center;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+.boot-round {
+  margin-bottom: 8px;
+}
+.boot-ring {
+  position: relative;
+  width: min(46vw, 190px);
+  aspect-ratio: 1;
+}
+.boot-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.boot-track,
+.boot-arc {
+  fill: none;
+  stroke-width: 6;
+}
+.boot-track {
+  stroke: #1f252d;
+}
+.boot-arc {
+  stroke: #c8102e;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.25s linear, stroke 0.2s;
+}
+.is-bell .boot-arc {
+  stroke: #d4af37;
+}
+.boot-logo {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 47%;
+  height: 47%;
+  border-radius: 22%;
+}
+.is-bell .boot-logo {
+  animation: boot-bell 0.35s ease-out 2;
+}
+@keyframes boot-bell {
+  0%, 100% { transform: rotate(0); }
+  30% { transform: rotate(-7deg) scale(1.04); }
+  70% { transform: rotate(6deg) scale(1.04); }
+}
+.boot-round {
+  font-weight: 700;
+  font-size: 34px;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+}
+.is-bell .boot-round {
+  color: #d4af37;
+}
+.boot-msg {
+  font-weight: 600;
+  font-size: 19px;
+  letter-spacing: 0.03em;
+  min-height: 1.4em;
+}
+.boot-pct {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.12em;
+  color: #9aa3ae;
+  font-variant-numeric: tabular-nums;
+}
+.boot-skip {
+  font: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  color: #eef0f3;
+  background: transparent;
+  border: 1px solid #39414c;
+  border-radius: 999px;
+  padding: 8px 18px;
+  min-height: 44px;
+}
+.boot-ver {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 12px;
+  color: #6b7480;
+  letter-spacing: 0.06em;
+}
+@media (prefers-reduced-motion: reduce) {
+  .is-bell .boot-logo { animation: none; }
+  .boot-arc { transition: none; }
+}

@@ -15,6 +15,7 @@ import { useNavStore } from './nav/store';
 import { Home } from './screens/Home';
 import { Onboarding } from './screens/Onboarding';
 import { CoachSelect } from './screens/CoachSelect';
+import { BootGate } from '../boot/BootScreen';
 import { initAccount } from '../account/session';
 import { STUDIO_BG, THEME_BG, applyTheme } from './theme/theme';
 import { useResolvedTheme } from './theme/useTheme';
@@ -161,9 +162,14 @@ function Loading() {
 
 function Gate({ children }: { children: React.ReactNode }) {
   const hydrated = useProfile((s) => s.hydrated);
+  if (!hydrated) return <Loading />;
+  // 1.25: the start screen (chrono du round) downloads the coaches and the rooms before the first screen
+  return <BootGate fallback={<Loading />}><GateRoutes>{children}</GateRoutes></BootGate>;
+}
+
+function GateRoutes({ children }: { children: React.ReactNode }) {
   const profile = useProfile((s) => s.profile);
   const loc = useLocation();
-  if (!hydrated) return <Loading />;
   const free = loc.pathname.startsWith('/bienvenue') || loc.pathname.startsWith('/coach') || loc.pathname.startsWith('/confidentialite') || loc.pathname.startsWith('/connexion');
   if (!free && !profile.completed) return <Navigate to="/bienvenue" replace />;
   if (!free && !profile.coach) return <Navigate to="/coach?first=1" replace />;
