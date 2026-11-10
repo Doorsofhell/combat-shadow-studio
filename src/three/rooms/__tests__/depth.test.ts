@@ -113,6 +113,26 @@ describe('salles à l’échelle des coachs (1.25)', () => {
     });
   }
 
+  // 1.27 (Youssef, 06/11, phone captures: the Thai ring's ropes huge, blurred and torn, the MMA cage bent): the ring
+  // and the cage stand far enough behind the coach, and seen straight ahead at eye height their front side is one
+  // whole surface (no jump from a rope to the far wall between two neighbouring points of the relief)
+  it.each([
+    ['muaythai', 6.5],
+    ['mma', 6.0],
+  ])('%s : le ring ou la cage, loin derrière le coach et d’une seule pièce', (id, min) => {
+    const dp = depthOf(id);
+    const row = Math.round(dp.h / 2) * dp.w;
+    const span = Math.round(dp.w * (12 / 360));
+    let prev = 0;
+    for (let i = dp.w / 2 - span; i <= dp.w / 2 + span; i++) {
+      const d = dp.d[row + i];
+      expect(d, `colonne ${i}`).toBeGreaterThan(min);
+      expect(d, `colonne ${i}`).toBeLessThan(12);
+      if (prev) expect(Math.max(d, prev) / Math.min(d, prev), `colonne ${i}`).toBeLessThan(1.05);
+      prev = d;
+    }
+  });
+
   it('la profondeur se lit au millimètre près (16 bits dans une image 8 bits)', () => {
     const rgba = new Uint8Array([1, 2, 0, 255, 255, 255, 0, 255]);
     const d = decodeDepth(rgba, 2, 1);
