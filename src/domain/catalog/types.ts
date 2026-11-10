@@ -9,10 +9,49 @@ export const CATALOG_SCHEMA = 1;
 
 /**
  * verifiee : observée dans un combat réel, avec référence et horodatage ;
+ * programme (Youssef 2026-11-06 : « que des combinaisons vérifiées et validées par les fédérations ») :
+ *   enchaînement écrit mot pour mot dans un document officiel de fédération (document, page, exercice et
+ *   citation exacte obligatoires, voir CatalogProgram), travaillé ici seul, dans le vide ;
  * adaptee : dérivée d’une séquence documentée (référence obligatoire) ;
  * inspiree : combinaison originale qui reprend des traits généraux du style du champion.
  */
-export type CatalogStatus = 'verifiee' | 'adaptee' | 'inspiree';
+export type CatalogStatus = 'verifiee' | 'programme' | 'adaptee' | 'inspiree';
+
+/** statuts qui reposent sur une source vérifiable (filtre « Validées », tri en tête de liste) */
+export const VALIDATED_STATUSES: CatalogStatus[] = ['verifiee', 'programme', 'adaptee'];
+export const isValidated = (s: CatalogStatus) => VALIDATED_STATUSES.includes(s);
+
+/** organisme qui publie un programme (fédération) : remplace le « champion » des fiches de programme */
+export interface CatalogOrg {
+  id: string;
+  /** sigle affiché (ex. « FFBoxe ») */
+  name: string;
+  /** nom complet (ex. « Fédération française de boxe ») */
+  fullName: string;
+  url: string;
+  disciplines: DisciplineId[];
+}
+
+/**
+ * D’où vient une fiche « programme » : chaque champ est relu sur le document officiel. `quote` est
+ * l’enchaînement tel qu’il est écrit (abréviations comprises) ; `solo` dit ce qui change quand on le
+ * travaille seul (pas de partenaire, pas de cible).
+ */
+export interface CatalogProgram {
+  org: string;
+  document: string;
+  url: string;
+  /** grade du programme (ex. « Gant jaune », « Prajeet orange ») */
+  grade: string;
+  /** numéro de page imprimé */
+  page: number;
+  /** exercice du document (ex. « APT 1 — enchaînement imposé ») */
+  exercise: string;
+  quote: string;
+  solo: string;
+  /** date de lecture du document (AAAA-MM-JJ) */
+  consulted: string;
+}
 export type CatalogGuard = 'orthodoxe' | 'gaucher' | 'les-deux';
 export type CatalogDistance = 'longue' | 'moyenne' | 'courte' | 'corps-a-corps' | 'sol';
 export type CatalogGoal = 'technique' | 'cardio' | 'puissance' | 'defense' | 'deplacement';
@@ -55,9 +94,12 @@ export interface CatalogCombo {
   id: string;
   name: string;
   discipline: DisciplineId;
+  /** champion (fiches inspirées) ou organisme (fiches « programme », id d’un CatalogOrg) */
   champion: string;
   status: CatalogStatus;
   source: CatalogSource;
+  /** fiches « programme » seulement : la référence exacte dans le document officiel */
+  program?: CatalogProgram;
   guard: CatalogGuard;
   level: LevelId;
   distance: CatalogDistance;
@@ -80,24 +122,30 @@ export interface CatalogFile {
   updatedAt: string;
   champions: CatalogChampion[];
   combos: CatalogCombo[];
+  /** Catalogue validé (2026-11-06) : organismes des fiches « programme » (fichier programmes-v1.json) */
+  orgs?: CatalogOrg[];
 }
 
 /** catalogue prêt à l’emploi : base + fiches importées, avec index */
 export interface Catalog extends CatalogFile {
   comboById: Map<string, CatalogCombo>;
   championById: Map<string, CatalogChampion>;
+  orgById: Map<string, CatalogOrg>;
   /** identifiants des fiches venant d’un import utilisateur */
   imported: Set<string>;
 }
 
 export const STATUS_LABEL: Record<CatalogStatus, string> = {
   verifiee: 'Vérifiée',
+  programme: 'Programme fédéral',
   adaptee: 'Adaptée',
   inspiree: 'Inspirée',
 };
 
 export const STATUS_HELP: Record<CatalogStatus, string> = {
   verifiee: 'Séquence observée dans un combat réel : la référence du combat et le moment exact sont indiqués.',
+  programme:
+    'Enchaînement inspiré du programme officiel d’une fédération : il est écrit tel quel dans son document (exercice et page indiqués). Ici, tu le travailles seul, dans le vide.',
   adaptee: 'Séquence dérivée d’un enchaînement documenté (combat ou source pédagogique citée), adaptée au travail solo.',
   inspiree:
     'Combinaison originale qui reprend des traits généraux et largement connus du style du champion. Ce n’est pas une séquence qu’il a réellement exécutée en combat.',

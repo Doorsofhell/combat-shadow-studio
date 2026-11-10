@@ -32,12 +32,22 @@ La bibliothèque propose des fiches d’entraînement (« combinaisons ») class
 - Aucune photo ni représentation des champions : seuls leur nom et une description générale de leur style sont utilisés.
 - Écran : l’« ADN de combat » (fleur de style, `src/domain/catalog/dna.ts`) remplace les cases de compteurs.
 
+## Fiches de programme fédéral (6 novembre 2026)
+
+30 fiches tirées des programmes officiels de passage de grade : 23 en boxe anglaise (FFBoxe, gants blanc à rouge) et 7 en muay-thaï (FFKMDA, prajeets jaune à vert). Elles vivent dans `public/catalog/programmes-v1.json` (généré par `scripts/build-programmes.mjs`, jamais par le générateur des fiches inspirées) et sont ajoutées au chargement (`mergeCatalogFiles`). Si ce fichier manque, la bibliothèque s’ouvre sans elles.
+
+- Statut `programme` : `champion` est l’identifiant de l’organisme (`orgs` du fichier) et `program` donne le document, le lien, la page, l’exercice, la citation exacte, le travail seul et la date de lecture. Validation : `programProblems`.
+- Les fiches validées (`verifiee`, `programme`, `adaptee`) passent en tête de toutes les listes ; le bouton « Validées » (`?valide=1`) les isole.
+- Une même séquence peut exister en fiche inspirée et en fiche de programme : les deux restent (crédits et statuts distincts).
+- Registre des sources et des enchaînements écartés : `docs/catalogue-valide/SOURCES.md`.
+
 ## Statuts : règle d’honnêteté
 
 | Statut | Signification | Exigences vérifiées à l’import |
 | --- | --- | --- |
 | `verifiee` | Séquence observée dans un combat réel | `source.kind = "combat"`, `source.reference` (combat identifié) **et** `source.timestamp` (moment exact) |
 | `adaptee` | Dérivée d’une séquence documentée, adaptée au travail solo | `source.kind = "combat"` ou `"document"` et `source.reference` |
+| `programme` | Enchaînement écrit dans le programme officiel d’une fédération, travaillé seul | `source.kind = "document"`, `source.reference`, `source.url` et `program` complet (document, page, exercice, citation, date de lecture) |
 | `inspiree` | Combinaison originale reprenant des traits généraux du style | `source.kind = "profil-style"` |
 
 **Aucune attribution n’est inventée.** Il n’a pas été possible de vérifier des images de combat lors de la création du catalogue : toutes les fiches livrées sont donc `inspiree`. Leur source le dit explicitement (« séquence originale, non relevée en combat ») et l’écran l’explique à côté du badge. Les profils de style restent volontairement généraux et peu contestables (ex. Tyson : peek-a-boo, mouvements de tête, crochets et uppercuts ; Mayweather : shoulder roll, pull counter, check hook, jab au corps ; Saenchai : teeps, coups de pied changés ; Khabib : changements de niveau et entrées en lutte). La garde habituelle (`stance`) n’est indiquée que lorsqu’elle est largement connue.

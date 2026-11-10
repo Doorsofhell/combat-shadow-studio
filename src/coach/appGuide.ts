@@ -453,15 +453,16 @@ export const APP_GUIDE: GuideEntry[] = [
   },
   {
     id: 'legendes-statuts',
-    title: 'Vérifiée, Adaptée, Inspirée',
-    keywords: ['statut', 'statuts', 'verifiee', 'adaptee', 'inspiree', 'que signifient les statuts', 'sequence reelle', 'vraiment fait en combat'],
+    title: 'Vérifiée, Programme fédéral, Adaptée, Inspirée',
+    keywords: ['statut', 'statuts', 'verifiee', 'adaptee', 'inspiree', 'programme federal', 'federation', 'validees', 'ffboxe', 'ffkmda', 'que signifient les statuts', 'sequence reelle', 'vraiment fait en combat'],
     screens: ['legendes', 'legende-fiche'],
     answer:
       'Chaque combinaison des Légendes a un statut :\n' +
       '• Vérifiée : séquence observée dans un combat réel, avec la référence du combat et le moment exact.\n' +
+      '• Programme fédéral : un enchaînement écrit dans le programme officiel d’une fédération (FFBoxe, FFKMDA). La fiche donne le document, la page et l’exercice. Tu le travailles seul, dans le vide.\n' +
       '• Adaptée : dérivée d’un enchaînement documenté, adaptée au travail solo.\n' +
       '• Inspirée : une combinaison originale qui reprend des traits connus du style du champion, pas une séquence qu’il a réellement faite en combat.\n' +
-      'Les fiches livrées avec l’application sont toutes « Inspirées » : tu travailles un style, pas la copie d’un combat.',
+      'Le bouton « Validées » ne montre que les fiches appuyées sur une source vérifiable ; elles sont aussi en tête de liste. Les autres sont « Inspirées » : tu travailles un style, pas la copie d’un combat.',
     action: { to: '/champions', label: 'Ouvrir Légendes' },
   },
 

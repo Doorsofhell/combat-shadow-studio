@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.28.0',
+      releaseDate: '2026-11-10',
+      title: 'Combinaisons des fédérations',
+      isMajor: false,
+      changes: [
+        { category: 'fonctionnalites', text: "30 combinaisons tirées des programmes officiels de passage de grade : 23 en boxe anglaise (FFBoxe, gants blanc à rouge) et 7 en muay-thaï (FFKMDA, prajeets jaune à vert). Chaque fiche dit d'où elle vient : document, page, exercice et enchaînement tel qu'il est écrit." },
+        { category: 'ameliorations', text: "Légendes : la carte « Programmes des fédérations », les fiches validées en tête de liste et le bouton « Validées ». Les autres fiches restent, marquées « Inspirée »." },
+      ],
+      links: [{ label: 'Voir les combinaisons validées', to: '/champions?vue=explorer&valide=1' }],
+    },
+    {
       version: '1.27.0',
       releaseDate: '2026-11-06',
       title: 'De vraies salles d’entraînement',
