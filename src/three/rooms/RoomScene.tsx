@@ -24,7 +24,6 @@ import {
 import { GroundedSkybox } from 'three/examples/jsm/objects/GroundedSkybox.js';
 import { ROOM_EYE, ROOM_LAYER, ROOM_RADIUS, decodeDepth, roomDir, roomMesh, swingAngle, type RoomData, type RoomSpec } from './rooms';
 import { LIFE, stutterAt, sweepAt, swayOf } from './life';
-import { RoomDust } from './RoomDust';
 
 /**
  * The room of a discipline around the coach (see rooms.ts): the photo-like panorama on a ground-projected dome, its
@@ -296,7 +295,6 @@ export function RoomScene({ spec, sharp, onShown }: { spec: RoomSpec; sharp: boo
       <primitive object={backdrop} />
       <primitive object={room} />
       <primitive object={clear} />
-      <RoomDust color={life.dust} />
       <group ref={bags} name="salle-sacs">
         {props.map(({ key, p, tex }) => (
           // the pivot is the top of the picture (the chain's hold); the bag hangs below it

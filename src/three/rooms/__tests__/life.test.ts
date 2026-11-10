@@ -7,10 +7,11 @@ import { ROOMS } from '../rooms';
  * réaliste »): something moves in every room, gently.
  */
 describe('salles vivantes', () => {
-  it('chaque salle a sa vie : poussière partout, et lampes, fenêtres ou phares selon la salle', () => {
+  it('chaque salle a sa vie : lampes, fenêtres ou phares selon la salle', () => {
     for (const id of Object.keys(ROOMS) as (keyof typeof LIFE)[]) {
       const l = LIFE[id];
-      expect(l.dust, id).toMatch(/^#[0-9a-f]{6}$/i);
+      // 1.27: no more floating dust (Youssef: « supprime la poussière, ça fait trop »)
+      expect('dust' in l, id).toBe(false);
       const moving = l.lamps.length + (l.pools?.length ?? 0) + (l.windows?.length ?? 0) + (l.sweep ? 1 : 0);
       expect(moving, id).toBeGreaterThan(0);
     }

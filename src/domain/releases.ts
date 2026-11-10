@@ -49,8 +49,8 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
-      version: '1.27.0',
-      releaseDate: '2026-11-06',
+      version: '1.28.0',
+      releaseDate: '2026-11-10',
       title: 'Combinaisons des fédérations',
       isMajor: false,
       changes: [
@@ -58,6 +58,20 @@ export const RELEASES: readonly Release[] = (
         { category: 'ameliorations', text: "Légendes : la carte « Programmes des fédérations », les fiches validées en tête de liste et le bouton « Validées ». Les autres fiches restent, marquées « Inspirée »." },
       ],
       links: [{ label: 'Voir les combinaisons validées', to: '/champions?vue=explorer&valide=1' }],
+    },
+    {
+      version: '1.27.0',
+      releaseDate: '2026-11-06',
+      title: 'De vraies salles d’entraînement',
+      isMajor: true,
+      changes: [
+        { category: 'ameliorations', text: "Chaque salle est équipée comme une vraie salle de sa discipline : gants, casques et protections sur des étagères, paos et boucliers, mannequins de grappling et de projection, kettlebells, cordes ondulatoires, chronos muraux, affiches, ceintures de champion, judogis suspendus, calligraphies au dojo… Tout est rangé le long des murs : l'espace autour du coach reste libre." },
+        { category: 'ameliorations', text: "Des sols de vraies salles : caoutchouc sportif en boxe anglaise, tatamis de combat en MMA, kick-boxing et JJB, tapis épais au camp de muay-thaï. Fini l'effet carrelage." },
+        { category: 'corrections', text: "Le ring de muay-thaï et la cage de MMA sont plus loin derrière le coach et restent droits quand tu tournes la caméra : plus de cordes géantes et floues ni d'éclats autour." },
+        { category: 'coachs', text: "En MMA, les coachs portent des protège-tibias qui couvrent aussi le dessus du pied, talon libre, aux couleurs de leurs gants, avec des bords nets." },
+        { category: 'ameliorations', text: 'La poussière qui flottait dans les salles est retirée.' },
+      ],
+      links: [],
     },
     {
       version: '1.26.0',

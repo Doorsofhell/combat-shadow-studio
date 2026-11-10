@@ -2829,8 +2829,70 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `scripts/dev/shot-salles.mjs` (FRAMES, DRAGS), `tests/e2e/salles.spec.ts` (coach avec sa salle),
   `src/domain/releases.ts`, `package.json`.
 - **Tests** : voir le rapport de la PR.
+- **Validation** : Youssef « je valide » (2026-11-06 10:58) ; PR #63 fusionnée dans `feature/combat-shadow-v030`
+  (d230f5b), lien public vérifié (titre v1.26.0).
 
-## 2026-11-06 · v1.27.0 · Combinaisons des programmes fédéraux
+## 2026-11-06 · v1.27.0 · De vraies salles d'entraînement, sols dédiés, protège-tibias MMA
+- **Demandes de Youssef (06/11, 11:12 à 11:22)** : « supprime la poussière, ça fait trop » ; « pour le MMA, rajoute
+  aux coachs des protège-tibias bien faits comme les autres (pas de bavures) » (3 photos, rangées dans
+  `maquettes/references-2026-11-06/`) ; « transforme chaque salle en un véritable environnement d'entraînement
+  professionnel » avec une liste d'équipements par discipline, « pas trop chargé, premium mais immersif », « pas
+  minimaliste quand même » ; « au sol il ne faut pas laisser l'espèce de carrelage… un tatami, un sol dédié » ;
+  « pour la boxe anglaise, le sol adéquat, à toi de me dire » ; deux captures de téléphone : « le ring et la cage
+  présentent des défauts ».
+- **Constats après vérification** :
+  - sol « carrelage » : le sol des salles était un motif de dalles de 1 m aux joints marqués (MMA : un quadrillage
+    de joints posés en relief ; kick-boxing et JJB : dalles « brique » ; muay-thaï : dalles de caoutchouc) ;
+  - ring de muay-thaï (capture 12:17) : cordes énormes, floues, avec des éclats noirs. Le ring était à 4 m derrière
+    le coach ; ses cordes, plus fines qu'un pixel de l'image des distances, faisaient passer le relief de la corde
+    au fond d'un point à l'autre : triangles étirés ou retirés (les éclats) ;
+  - cage MMA (capture 12:20) : même cause sur les barres du haut, aux coins, et le grillage avant mêlé au fond ;
+  - le nouveau test « ring ou cage d'une seule pièce » échoue sur les images de distances de la 1.26.
+- **Corrections** :
+  - poussière retirée (`RoomDust.tsx` supprimé, `life.ts` sans couleur de poussière ; le test vérifie qu'elle n'existe
+    plus) ;
+  - `tools/generator/rocketbox/outfits.py` `mma_shin_guards` : protège-tibias de MMA des 6 coachs, une chaussette
+    rembourrée du dessous du genou jusqu'au cou-de-pied, talon dégagé par une ouverture arrondie, orteils et semelle
+    libres, plastron matelassé devant le tibia, bande élastique en haut aux couleurs des gants ; tous les bords
+    découpés par un champ (lignes lisses), bord libre lissé plus longtemps (40 pas), le protège-tibias ne suit que
+    le tibia et le pied (sinon le bord du haut se froissait quand le genou pliait, Kaila) ;
+  - `scripts/salles/equipement.py` (nouveau) : une cinquantaine d'équipements modelés (aucun fichier téléchargé,
+    aucune marque, aucun texte lisible) et des images faites sur place (affiches de combat, tableaux techniques,
+    calligraphies, portraits sépia, drapeau du Brésil, cadran d'horloge) ;
+  - `scripts/salles/salles.py`, salle par salle, tout rangé le long des murs (l'espace du coach reste libre) :
+    - boxe anglaise : sol caoutchouc sportif noir en rouleaux, sacs lourds de 3 tailles, poire de vitesse,
+      double-end, râtelier de gants, cordes à sauter, étagère casques / bandages / protège-dents en bacs /
+      serviettes, tabouret de coin, seau, serviette, gong, chrono de round, 4 affiches, horloge, grand miroir ;
+    - MMA : tatamis noirs (joints discrets) et bande rouge, cage reculée de 2 m (salle allongée de 4 m), mannequins
+      de grappling (au sol, assis contre le mur), étagères gants MMA / protège-tibias / casques, pattes d'ours et
+      paos, boucliers debout, cordes ondulatoires, kettlebells, médecine-balls, banc de récupération, chrono,
+      affiches, horloge ;
+    - muay-thaï : hangar allongé de 5 m, ring reculé de 3 m, mur de planches au fond, tapis épais d'une pièce sous
+      le coach, paos thaïs, protège-tibias empilés, pattes d'ours, bandes, bouteilles d'eau sur un banc, boucliers
+      de low-kick, cordes à sauter sur un poteau, ceintures de champion, trophées, affiches, horloge, ventilateurs
+      muraux, végétation hors du hangar et plus douce ;
+    - kick-boxing : tatamis et bande rouge, rack de protections (gants, casques, protège-tibias, pattes d'ours),
+      paos et boucliers, sacs autoportants, cible de pied sur support, élastiques, échelle d'agilité et plots,
+      chrono à intervalles (vert), affiches ;
+    - JJB : tatamis gris et bord noir, mannequins de soumission, kimonos et rashguards pliés sur étagères, kimonos
+      suspendus, rouleaux de massage, ballons de mobilité, médecine-balls, banc et casiers à chaussures, tableau
+      technique, affiches, drapeau du Brésil, chrono, horloge ;
+    - judo : judogis sur portant, tableau des ceintures de tous les grades, mannequins de projection (debout,
+      au sol), élastiques d'uchikomi sur les poteaux, tatamis empilés, tableau technique sur chevalet, bancs et
+      râtelier à sandales, ensō dans le tokonoma, calligraphies « 柔道 » et « 精力善用 », deux portraits sépia de
+      maîtres (personne en particulier) ;
+  - relief sans déchirure : dans l'image des distances, chaque côté du ring est une surface pleine (comme le grillage
+    de la cage en 1.26) et tout ce qui est fin (câbles, cordes, élastiques) est laissé de côté ;
+  - `src/three/rooms/life.ts` : lampes du ring et de la cage déplacées avec eux ;
+  - `scripts/salles/salles.py` `VIEWS=1` : photos de contrôle de chaque salle sous 6 angles.
+- **Fichiers** : `tools/generator/rocketbox/outfits.py`, `public/coaches/*/tenues/mma.glb`,
+  `scripts/salles/equipement.py`, `scripts/salles/salles.py`, `public/salles/*/`, `src/three/rooms/` (RoomScene.tsx,
+  life.ts, RoomDust.tsx supprimé, `__tests__/life.test.ts`, `__tests__/depth.test.ts`),
+  `src/three/__tests__/protege-tibias-v1270.test.ts`, `scripts/dev/shot-finitions.mjs`, `src/boot/assetSizes.json`,
+  `src/domain/releases.ts`, `package.json`.
+- **Tests** : voir le rapport de la PR.
+
+## 2026-11-10 · v1.28.0 · Combinaisons des programmes fédéraux
 
 - **Demande** : Youssef, 6 novembre 2026 : « enrichir le catalogue, tous niveaux, toutes disciplines, que des
   combinaisons d'entraînement vérifiées et validées par les fédérations ou des entraîneurs », puis « tu peux les
@@ -2862,7 +2924,8 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - suite Vitest complète : TEST RÉUSSI ;
   - `tests/e2e/catalogue-valide.spec.ts` (carte, liste, filtre, fiche, accessibilité axe, fiche inspirée inchangée) :
     TEST RÉUSSI ;
-  - suite Playwright complète : voir la pull request.
+  - suite Playwright complète (sur la base 1.26.0) : 291 réussis, 2 échoués déjà connus et sans lien avec ce lot
+    (`navigation.spec.ts:178` périmé, attend 1.9.0 ; `coaching-hud.spec.ts:60` instable sous charge) : voir la PR #64.
 - **Limites** : les illustrations des PDF n'ont pas pu être lues ; l'uppercut au buste, la parade du bras avant et le
   swing manquent au moteur (enchaînements correspondants écartés, listés) ; aucune vidéo n'a servi de source.
 - **Restauration** : `restauration/avant-catalogue-valide`
