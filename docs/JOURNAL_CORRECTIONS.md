@@ -3076,3 +3076,61 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   un retour hors de l'application avant l'enregistrement du choix ; il revient maintenant à l'accueil.
 - **Captures** : `docs/v1320/captures/`.
 - **Restauration** : état 1.31.0 (commit 94dc75d).
+
+## 2026-11-11 · 1.33.0 · Visages plus expressifs et cou droit en garde (Kadir et tous les coachs)
+
+- **Demande** (Youssef, 11/11 13:06) : « le visage de Kadir n'est pas du tout expressif, je pensais que les
+  expressions de visage ont été appliquées à tous les coachs. Pour moi son cou ne fait pas naturel ». Constat et
+  options présentés avec captures (https://claude.ai/artifact/3wz3D45rnh4NntjCQEyekW), option « V1 + cou B » choisie
+  le même jour à 16:23.
+- **Constat après vérification** :
+  - les expressions existent bien chez Kadir : son modèle porte les 25 expressions (sourcils, paupières, joues, nez,
+    bouche, mâchoire) avec la même amplitude que Naël ; Amara et Inaya aussi ; Axel et Kaila les ont par les os du
+    visage ;
+  - elles ne se voyaient pas : au repos le visage n'utilisait que 15 à 30 % de chaque expression, l'effort ne durait
+    qu'environ un tiers de seconde par coup, et la barbe et la moustache de Kadir cachent sa bouche (le sourire
+    d'origine ne déplace le coin des lèvres que de 4 mm à 100 %) ;
+  - le cou : en garde le buste penche vers l'avant (26° en MMA), le cou suivait le buste à 55 % puis la tête se
+    redressait pour regarder l'adversaire : le cou partait en avant et la tête dépassait devant les épaules (très
+    visible de profil). Les trapèzes de Kadir ont aussi été épaissis d'environ 2 cm à la nuque en octobre (non
+    modifié dans ce lot, option C non retenue) ;
+  - le rendu Anime n'existe plus depuis la 1.9.0 : captures en Ultra-réaliste seulement.
+- **Correction** :
+  - visage : repos environ 2,5 fois plus marqué (regard concentré, sourcils, lèvres pincées ou léger sourire), effort
+    de la frappe 2 fois plus marqué (sourcils froncés et yeux plissés à fond), souffle visible à l'impact (lèvres
+    arrondies, mâchoire entrouverte, au plus à mi-course), chaque poids plafonné à 1 ; même renfort, un peu plus
+    doux, pour les visages par os d'Axel et Kaila ;
+  - cou : quand le buste est assez droit, le cou perd 80 % de son inclinaison (sa rotation vers l'adversaire est
+    gardée) et le menton se rentre de 4,6° ; penché ou au sol (au-delà de 37° à 53° d'inclinaison du buste) le cou
+    suit le tronc comme avant. Les clavicules des modèles Rocketbox sont accrochées à l'os du cou : elles gardent la
+    place que l'ancien cou leur donnait, donc épaules, bras, mains et garde ne bougent pas (vérifié à moins de 2 mm) ;
+  - Lab : `?cou=ancien` montre l'ancien cou pour les captures avant/après.
+- **Fichiers** : `src/three/face.ts`, `src/engine/rig.ts`, `src/ui/Lab.tsx`, `src/domain/releases.ts`,
+  `package.json`, tests `src/engine/__tests__/neck-v133.test.ts` (nouveau),
+  `src/three/__tests__/expressions-v1160.test.ts` ; documents de mesures régénérés (`docs/audit-biomecanique/
+  MESURES_{MOTEUR,FLUIDITE,TORSIONS}.md`, `docs/v1100/MESURES_DEFORMATIONS.md`), pictogrammes
+  (`src/ui/pictos/techniquePictos.json`, la tête bouge de quelques millimètres).
+- **Tests** :
+  - nouveau `neck-v133.test.ts` (25 tests : 6 coachs × 4 gardes, cou plus droit, tête moins en avant, bras et mains
+    inchangés à moins de 2 mm ; au sol le cou suit le tronc) : TEST RÉUSSI ;
+  - `expressions-v1160.test.ts` : deux contrôles modifiés pour suivre le choix de Youssef (avant : aucun poids au
+    repos au-dessus de 0,4 et aucun au-dessus de 0,9 à la frappe, ce qui rendait le visage invisible ; après : le
+    repos se voit, la frappe fronce à fond, la bouche reste sans grimace, mâchoire à mi-course au plus, tout ≤ 1) :
+    TEST RÉUSSI ;
+  - mesures du moteur : rotation totale du cou inchangée (73°, limite 80°) ; torsion propre de l'os du cou 35°
+    (30° avant) et de la tête 41° (35° avant), réparties sur deux os ; déformations de la peau aux articulations
+    sans dégradation (6 coachs) : TEST RÉUSSI ;
+  - suite Vitest complète (1186 tests) : 1185 TEST RÉUSSI, 1 ignoré ;
+  - suite Playwright complète (296 tests) sur la branche avant remise sur la 1.32.0 : 293 TEST RÉUSSI, 2 ignorés
+    (Firebase), 1 ÉCHOUÉ : `coaching-hud.spec.ts:60` (le bandeau n'a pas le temps de montrer la deuxième répétition
+    sur cette machine) ; il échoue de la même façon sur la 1.32.0 seule, reconstruite et rejouée le même jour : sans
+    lien avec ce lot ;
+  - après remise sur la 1.32.0 (parue entre-temps) : Vitest complet rejoué, 1185 TEST RÉUSSI, 1 ignoré ; Playwright
+    ciblé (`coach-render`, `coach-3d-recovery`, `coachs-v160`, `ecran-coach-v140`, `coaching-hud`, `navigation`,
+    `boot`, `coach-studio`, `outfit-loading`, `moteur-lumiere` : 68 tests) : 66 TEST RÉUSSI, 2 ÉCHOUÉ :
+    `coaching-hud:60` (ci-dessus) et `coachs-v160:98` (ÉCHOUÉ sous charge, TEST RÉUSSI rejoué seul) ; suite
+    Playwright complète sur la version remise à jour : NON EXÉCUTÉ ;
+  - appareil Android réel : NON EXÉCUTÉ.
+- **Captures** : `docs/v1330/captures/` (cou de trois quarts et de profil avant/après, visage avant/après au repos et
+  à la frappe, Axel à la frappe, Amara en garde de boxe avant/après).
+- **Restauration** : `restauration/avant-v133` (1.30.0, commit b3dc797) ; la 1.32.0 est le commit f9d9bf3 de `feature/combat-shadow-v030`.
