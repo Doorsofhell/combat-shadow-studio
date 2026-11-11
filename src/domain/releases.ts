@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.33.1',
+      releaseDate: '2026-11-11',
+      title: 'Crochets et uppercuts : le bassin entraîne le buste',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Crochets et uppercuts plus naturels : les pieds et le bassin amorcent la rotation, puis les épaules et la poitrine rattrapent le mouvement juste avant la frappe. Le poing accélère en dernier.' },
+        { category: 'corrections', text: 'Rotation du tronc mieux répartie dans le temps, sans changer la cible du coup, la posture à l’impact ni les limites articulaires.' },
+      ],
+      links: [{ label: 'Voir les techniques', to: '/entrainer' }],
+    },
+    {
       version: '1.33.0',
       releaseDate: '2026-11-11',
       title: 'Visages plus expressifs, cou plus naturel',
