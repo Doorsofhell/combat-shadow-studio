@@ -40,6 +40,10 @@ export function Lab() {
     const expr = q.get('expr') ? Object.fromEntries(q.get('expr')!.split(',').map((kv) => [kv.split(':')[0], Number(kv.split(':')[1] ?? 1)])) : undefined;
     (globalThis as { __cssFace?: object }).__cssFace = q.get('face') === 'live' ? {} : { still: true, effort: num('effort'), blink: num('blink'), expr };
   }, [q]);
+  useMemo(() => {
+    // 1.33 cou=ancien: the neck of 1.32 and before (src/engine/rig.ts), for before/after captures
+    (globalThis as { __cssOldNeck?: boolean }).__cssOldNeck = q.get('cou') === 'ancien';
+  }, [q]);
   const envelope = useRef<Envelope | null>(null);
   const origin = useRef({ x: 0, z: 0, yaw: 0 });
   const view = useMemo<StageView | undefined>(() => {

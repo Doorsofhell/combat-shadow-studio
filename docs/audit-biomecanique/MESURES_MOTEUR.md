@@ -18,7 +18,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Pas avant (`pas-avant`) | deplacement | 34,5 | 51 % | 0,21 | 3,0 (LeftToeBase) | 6° | 0,64 |
 | Pont (upa) (`pont`) | sol | 33,8 | 46 % | 0,00 | 2,3 (LeftToeBase) | 11° | 3,78 |
 | Pas arrière (`pas-arriere`) | deplacement | 33,0 | 51 % | 0,21 | 3,0 (LeftToeBase) | 6° | 0,64 |
-| Pas latéral gauche (`pas-gauche`) | deplacement | 31,4 | 51 % | 0,21 | 3,0 (LeftToeBase) | 6° | 0,58 |
+| Pas latéral gauche (`pas-gauche`) | deplacement | 31,3 | 51 % | 0,21 | 3,0 (LeftToeBase) | 6° | 0,58 |
 | Pas latéral droit (`pas-droite`) | deplacement | 30,3 | 51 % | 0,21 | 3,0 (LeftToeBase) | 6° | 0,58 |
 | Relevé depuis les genoux (`releve-genoux`) | sol | 28,7 | 54 % | 1,01 | -0,1 (LeftToeBase) | 4° | 5,69 |
 | Check hook (crochet pivot) (`check-hook`) | poing | 23,6 | 57 % | 0,26 | 3,0 (LeftToeBase) | 20° | 1,93 |
@@ -34,7 +34,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Switch kick (`switch-kick`) | pied | 16,8 | 10 % | 0,74 | 3,0 (RightToeBase) | 20° | 15,79 |
 | Front kick arrière (`front-kick-arriere`) | pied | 16,5 | 23 % | 0,68 | 3,0 (LeftToeBase) | 6° | 0,09 |
 | Teep (`teep-avant`) | pied | 16,5 | 23 % | 0,68 | 3,0 (LeftToeBase) | 4° | 0,03 |
-| Uchikomi de ko-uchi-gari (solo) (`uchikomi-ko-uchi-gari`) | projection | 15,7 | 26 % | 0,43 | 2,3 (RightToeBase) | 2° | 8,52 |
+| Uchikomi de ko-uchi-gari (solo) (`uchikomi-ko-uchi-gari`) | projection | 15,7 | 26 % | 0,43 | 2,3 (RightToeBase) | 2° | 8,53 |
 | Yoko-ukemi (chute latérale, version basse) (`ukemi-yoko`) | chute | 15,4 | 59 % | 0,00 | 2,2 (RightToeBase) | 4° | 1,97 |
 | Check jambe arrière (`check-arriere`) | defense | 15,2 | 21 % | 0,46 | 3,0 (LeftToeBase) | 6° | 0,86 |
 | Uchikomi d’o-uchi-gari (solo) (`uchikomi-o-uchi-gari`) | projection | 15,0 | 31 % | 0,67 | -0,1 (RightToeBase) | 2° | 5,61 |
@@ -42,7 +42,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Ayumi-ashi (pas marchés) (`ayumi-ashi`) | deplacement | 13,8 | 43 % | 0,37 | 3,0 (LeftToeBase) | 4° | 1,31 |
 | Teep arrière (`teep-arriere`) | pied | 12,1 | 21 % | 0,68 | 3,0 (LeftToeBase) | 4° | 0,09 |
 | Entrée en double-leg (solo) (`entree-lutte`) | lutte | 8,2 | 44 % | 0,00 | 3,0 (LeftToeBase) | 9° | 6,94 |
-| Uchikomi de seoi-nage (solo) (`uchikomi-seoi`) | projection | 8,2 | 43 % | 0,00 | 3,0 (LeftToeBase) | 15° | 7,76 |
+| Uchikomi de seoi-nage (solo) (`uchikomi-seoi`) | projection | 8,1 | 43 % | 0,00 | 3,0 (LeftToeBase) | 15° | 7,76 |
 | Entrée en single-leg (solo) (`single-leg`) | lutte | 8,0 | 44 % | 0,00 | 3,0 (LeftToeBase) | 9° | 6,48 |
 | Roundhouse jambe avant (`roundhouse-avant`) | pied | 7,6 | 21 % | 0,58 | 3,0 (LeftToeBase) | 11° | 0,05 |
 | High kick gauche (`high-kick-avant`) | pied | 7,5 | 21 % | 0,58 | 3,0 (LeftToeBase) | 11° | 0,05 |
@@ -51,9 +51,9 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Middle kick gauche (`middle-kick-avant`) | pied | 6,8 | 18 % | 0,69 | 3,0 (LeftToeBase) | 11° | 0,00 |
 | Défense d’entrée en lutte (`defense-lutte`) | lutte | 6,7 | 82 % | 0,00 | 3,0 (LeftToeBase) | 4° | 5,79 |
 | Feinte de lutte (`feinte-lutte`) | feinte | 6,3 | 82 % | 0,00 | 3,0 (LeftToeBase) | 4° | 0,00 |
-| Uchikomi d’o-goshi (solo) (`uchikomi-o-goshi`) | projection | 6,0 | 43 % | 0,00 | 3,0 (RightToeBase) | 16° | 6,93 |
+| Uchikomi d’o-goshi (solo) (`uchikomi-o-goshi`) | projection | 5,9 | 43 % | 0,00 | 3,0 (RightToeBase) | 16° | 6,93 |
 | High kick droit (`high-kick-arriere`) | pied | 5,1 | 3 % | 0,64 | 3,0 (LeftToeBase) | 23° | 0,20 |
-| Esquive extérieure (`esquive-droite`) | defense | 5,1 | 75 % | 0,00 | 3,0 (LeftToeBase) | 16° | 0,00 |
+| Esquive extérieure (`esquive-droite`) | defense | 5,0 | 75 % | 0,00 | 3,0 (LeftToeBase) | 16° | 0,00 |
 | Middle kick droit (`middle-kick-arriere`) | pied | 5,0 | 2 % | 0,64 | 3,0 (LeftToeBase) | 23° | 0,20 |
 | Low kick droit (`low-kick-arriere`) | pied | 4,8 | 2 % | 0,64 | 3,0 (LeftToeBase) | 22° | 0,21 |
 | Roundhouse kick (`roundhouse-arriere`) | pied | 4,4 | 2 % | 0,52 | 3,0 (LeftToeBase) | 23° | 0,03 |
@@ -64,18 +64,17 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Jab au corps (`jab-corps`) | poing | 3,5 | 54 % | 0,00 | 3,0 (LeftToeBase) | 19° | 0,00 |
 | Rétention de garde (solo) (`retention-garde`) | sol | 2,7 | 15 % | 0,00 | 2,3 (LeftToeBase) | 11° | 3,60 |
 | Relevé technique (`releve-technique`) | sol | 1,8 | 5 % | 0,00 | 0,1 (LeftToeBase) | 23° | 11,10 |
-| Sit-out (`sit-out`) | sol | 1,6 | 5 % | 0,00 | 0,6 (LeftToeBase) | 12° | 14,52 |
+| Sit-out (`sit-out`) | sol | 1,6 | 3 % | 0,00 | 0,6 (LeftToeBase) | 12° | 14,52 |
 | Posture debout de grappling (`garde-bjj`) | garde | 1,3 | 100 % | 0,00 | 3,0 (LeftToeBase) | 2° | 0,00 |
 | Overhand (`overhand`) | poing | 1,2 | 25 % | 0,00 | 3,0 (LeftToeBase) | 21° | 0,00 |
 | Genou circulaire dans le clinch (`genou-circulaire-clinch`) | clinch | 1,0 | 2 % | 0,50 | 3,0 (LeftToeBase) | 29° | 0,01 |
 | Genou circulaire (`genou-circulaire-arriere`) | genou | 1,0 | 2 % | 0,50 | 3,0 (LeftToeBase) | 29° | 0,01 |
 | Genou dans le clinch (`genou-clinch`) | clinch | 0,9 | 2 % | 0,50 | 3,0 (LeftToeBase) | 12° | 0,01 |
 | Genou direct (`genou-direct-arriere`) | genou | 0,7 | 2 % | 0,50 | 3,0 (LeftToeBase) | 12° | 0,01 |
-| Jab (`jab`) | poing | 0,7 | 25 % | 0,00 | 3,0 (LeftToeBase) | 20° | 0,00 |
-| Crochet gauche au corps (`crochet-avant-corps`) | poing | 0,7 | 26 % | 0,00 | 3,0 (LeftToeBase) | 25° | 0,00 |
-| Blocage haut (`blocage-haut`) | defense | 0,7 | 64 % | 0,00 | 3,0 (LeftToeBase) | 6° | 0,00 |
+| Jab (`jab`) | poing | 0,7 | 23 % | 0,00 | 3,0 (LeftToeBase) | 20° | 0,00 |
+| Crochet gauche au corps (`crochet-avant-corps`) | poing | 0,6 | 25 % | 0,00 | 3,0 (LeftToeBase) | 25° | 0,00 |
+| Blocage haut (`blocage-haut`) | defense | 0,6 | 61 % | 0,00 | 3,0 (LeftToeBase) | 6° | 0,00 |
 | Tai-sabaki (rotation du corps) (`tai-sabaki`) | deplacement | 0,1 | 0 % | 0,00 | 3,0 (LeftToeBase) | 14° | 7,21 |
-| Changement de base (`changement-base`) | sol | 0,0 | 0 % | 0,00 | 1,4 (LeftToeBase) | 11° | 14,39 |
 | Position de garde (`garde`) | garde | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 6° | 0,00 |
 | Direct arrière (`direct`) | poing | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 17° | 0,00 |
 | Direct au corps (`direct-corps`) | poing | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 18° | 0,00 |
@@ -101,6 +100,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Feinte d’épaule (`feinte-epaule`) | feinte | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 6° | 0,00 |
 | Descente contrôlée au sol (`descente-sol`) | sol | 0,0 | 0 % | 0,00 | 1,7 (LeftToeBase) | 11° | 6,66 |
 | Sortie de hanche (shrimp) (`sortie-hanche`) | sol | 0,0 | 0 % | 0,00 | 3,0 (RightToeBase) | 28° | 4,32 |
+| Changement de base (`changement-base`) | sol | 0,0 | 0 % | 0,00 | 1,4 (LeftToeBase) | 11° | 14,39 |
 | Shizen-tai (posture naturelle) (`shizen-tai`) | garde | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 2° | 0,00 |
 | Kuzushi (déséquilibre, solo) (`kuzushi`) | projection | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 7° | 3,46 |
 | Kumi-kata (prise de garde, solo) (`kumikata`) | garde | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 8° | 0,00 |

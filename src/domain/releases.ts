@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.33.0',
+      releaseDate: '2026-11-11',
+      title: 'Visages plus expressifs, cou plus naturel',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Les visages des coachs se lisent mieux : regard concentré entre deux coups, sourcils froncés et yeux plissés à la frappe, souffle visible à l’impact.' },
+        { category: 'coachs', text: 'En garde, le cou reste droit et le menton rentré : la tête est au-dessus des épaules au lieu de partir vers l’avant. Les bras et la garde ne changent pas.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.32.0',
       releaseDate: '2026-11-11',
       title: 'Choix du coach en grand',

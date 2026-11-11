@@ -10,11 +10,11 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 
 ## Total, 6 styles de garde
 
-528 animations, 2202 poses clés intérieures. Arrêts parasites : **2182 avant, 637 après**.
+528 animations, 2202 poses clés intérieures. Arrêts parasites : **2181 avant, 637 après**.
 
 | Style | Animations | Arrêts avant | Arrêts après |
 |---|---|---|---|
-| boxing | 88 | 360 | 102 |
+| boxing | 88 | 359 | 102 |
 | kickboxing | 88 | 362 | 105 |
 | mma | 88 | 363 | 106 |
 | muaythai | 88 | 366 | 106 |
@@ -56,14 +56,14 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `sortie-angle` | 2 | 1 | 0 | 0,6 | 0,6 | 7,3 | 6,8 | – | – |
 | `check-hook` | 4 | 3 | 0 | 2,7 | 2,7 | 9,3 | 8,3 | 2,8 | 2,8 |
 | `shoulder-roll` | 2 | 0 | 0 | 0,0 | 0,0 | 8,9 | 8,9 | – | – |
-| `low-kick-arriere` | 7 | 17 | 4 | 5,7 | 5,7 | 12,1 | 12,1 | 6,1 | 6,1 |
+| `low-kick-arriere` | 7 | 17 | 4 | 5,7 | 5,7 | 12,2 | 12,2 | 6,1 | 6,1 |
 | `low-kick-avant` | 7 | 15 | 3 | 5,4 | 5,4 | 10,0 | 10,0 | 5,8 | 5,8 |
 | `middle-kick-arriere` | 7 | 16 | 3 | 8,2 | 8,2 | 17,1 | 17,1 | 8,8 | 8,8 |
 | `middle-kick-avant` | 7 | 15 | 4 | 7,6 | 7,6 | 13,8 | 13,8 | 8,1 | 8,1 |
 | `high-kick-arriere` | 7 | 14 | 3 | 9,7 | 9,7 | 18,3 | 18,3 | 10,4 | 10,4 |
 | `high-kick-avant` | 7 | 15 | 4 | 10,8 | 10,8 | 22,6 | 22,6 | 11,7 | 11,7 |
 | `roundhouse-arriere` | 7 | 14 | 3 | 9,5 | 9,5 | 23,7 | 23,7 | 10,3 | 10,3 |
-| `roundhouse-avant` | 7 | 15 | 2 | 8,7 | 8,7 | 18,4 | 18,4 | 9,4 | 9,4 |
+| `roundhouse-avant` | 7 | 14 | 2 | 8,7 | 8,7 | 18,4 | 18,4 | 9,4 | 9,4 |
 | `teep-avant` | 4 | 2 | 0 | 6,2 | 6,2 | 17,5 | 17,5 | 6,7 | 6,7 |
 | `teep-arriere` | 4 | 2 | 2 | 6,2 | 6,2 | 17,5 | 17,5 | 6,7 | 6,7 |
 | `front-kick-avant` | 4 | 4 | 0 | 6,0 | 6,0 | 12,9 | 12,9 | 6,4 | 6,4 |
