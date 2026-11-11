@@ -66,7 +66,7 @@ export const APP_GUIDE: GuideEntry[] = [
     ],
     answer:
       'Combat Shadow Studio t’aide à t’entraîner seul, en shadow : ton coach en 3D (Kadir, Axel, Amara ou Kaila) montre chaque mouvement et tu le fais en même temps, face à l’écran.\n' +
-      'En bas, une barre flottante de quatre places : Accueil, Entraîner, Progrès et Compte. Dans Entraîner, tout est en tuiles : tes six disciplines, « Apprends » (techniques, légendes, encyclopédie) et « Tes outils ». La loupe en haut à droite ouvre la recherche, à côté du ⋮ qui ouvre les options de l’écran. Juste au-dessus de la barre, le gros bouton de l’action principale.\n' +
+      'Dans la barre du bas, qui flotte au-dessus de la page, quatre places : Accueil, Entraîner, Progrès et Compte. Dans Entraîner, tout est en tuiles : tes six disciplines, « Apprends » (techniques, légendes, encyclopédie) et « Tes outils ». La loupe en haut à droite ouvre la recherche, à côté du ⋮ qui ouvre les options de l’écran. Juste au-dessus de la barre, le gros bouton de l’action principale.\n' +
       'Pour te lancer, touche le gros bouton « Reprendre » sur l’accueil (« Commencer » avant ta première séance). Et si tu as une question, technique ou sur l’application, touche la loupe « Rechercher » en haut à droite : tu trouves ce que tu cherches dans l’app, ou tu me poses la question.',
     action: { to: '/entrainer', label: 'Aller à Entraîner' },
   },

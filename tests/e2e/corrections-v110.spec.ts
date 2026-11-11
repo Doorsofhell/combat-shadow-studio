@@ -56,9 +56,11 @@ test('loupe A : « Rechercher » dans la barre, la photo et le ⋮ en haut à dr
     await page.goto(`/#${p}`);
     await expect(bar(page)).toBeVisible();
     await expect(bar(page).getByTestId('app-search')).toBeVisible();
-    const avatar = await bar(page).getByTestId('nav-profil').boundingBox();
-    expect(avatar!.x + avatar!.width).toBeGreaterThan(393 - 70);
-    expect(avatar!.y).toBeLessThan(80);
+    // 1.29.0: the magnifier is at the top right (the photo of the profile is the place Compte of the bar)
+    const loupe = await bar(page).getByTestId('app-search').boundingBox();
+    expect(loupe!.x + loupe!.width).toBeGreaterThan(393 - 70);
+    expect(loupe!.y).toBeLessThan(80);
+    await expect(bar(page).locator('.nav-tab').getByTestId('nav-me')).toBeVisible();
     // the title of the page never runs under the photo or the ⋮
     const h = page.locator('.page-head h1, .sec-tabs-in').first();
     if (await h.count()) {
@@ -77,7 +79,7 @@ test('loupe A : « Rechercher » dans la barre, la photo et le ⋮ en haut à dr
 
 test('sans défilement : les 6 disciplines et le chrono de combat tiennent dans l’écran', async ({ page }) => {
   await seedProfile(page);
-  await page.goto('/#/entrainer');
+  await page.goto('/#/entrainer?espace=seances');
   await page.getByTestId('space-disciplines').click();
   await expect(page.locator('[data-testid^="disc-"]')).toHaveCount(6);
   for (const d of await page.locator('[data-testid^="disc-"]').all()) await expect(d).toBeInViewport({ ratio: 1 });

@@ -11,11 +11,24 @@ test.use({ viewport: { width: 393, height: 851 } });
 // long journeys through the whole app (the 3D coach loads on several screens)
 test.describe.configure({ timeout: 300_000 });
 
-const tab = (page: Page, id: string) => page.getByTestId(`tab-${id}`).click();
-const PLACE: Record<string, string> = { accueil: 'accueil', entrainer: 'entrainer', techniques: 'apprendre', stats: 'progres', profil: 'profil' };
-/** one of the five places of the bar (by its place, not its test id: a screen action may share it); 1.1.0: Profil is
- * the photo at the top right */
-const place = (page: Page, id: string) => bar(page).locator(`:is(.nav-tab, .nav-avatar)[data-tab="${PLACE[id]}"]`).click();
+/** 1.29.0: on the hub of Entraîner the tabs of the space are tiles (Enchaînements is the tile Créateur) */
+const HUB_TILE: Record<string, string> = { programmes: 'hub-programmes', enchainements: 'hub-createur', favoris: 'hub-favoris' };
+const tab = async (page: Page, id: string) => {
+  if (HUB_TILE[id] && /#\/entrainer$/.test(page.url())) return page.getByTestId(HUB_TILE[id]).click();
+  return page.getByTestId(`tab-${id}`).click();
+};
+const PLACE_URL: Record<string, RegExp> = { accueil: /#\/$/, entrainer: /#\/entrainer$/, stats: /#\/stats$/, profil: /#\/profil$/ };
+const PLACE: Record<string, string> = { accueil: 'accueil', entrainer: 'entrainer', stats: 'progres', profil: 'profil' };
+/** one of the four places of the bar (by its place, not its test id: a screen action may share it); 1.29.0: Apprendre
+ * (« techniques ») is reached from the tiles of Entraîner */
+const place = async (page: Page, id: string) => {
+  if (id === 'techniques') {
+    await bar(page).locator('.nav-tab[data-tab="entrainer"]').click();
+    return page.getByTestId('hub-techniques').click();
+  }
+  await bar(page).locator(`.nav-tab[data-tab="${PLACE[id]}"]`).click();
+  await expect(page).toHaveURL(PLACE_URL[id]);
+};
 
 test('plan, lignes 1 à 7 : l’ancien accueil (Reprendre, raccourcis, objectif, progression, Pour toi, favoris, légendes, programmes)', async ({ page }) => {
   await seedProfile(page);
@@ -49,9 +62,10 @@ test('plan, lignes 8 à 13 : Entraîner (démarrage rapide, discipline, programm
   await seedProfile(page);
   await page.goto('/#/');
   await place(page, 'entrainer');
-  // Démarrage rapide, in the lead
+  // Démarrage rapide, in the lead of « Mes séances » (1.29.0: the first page of Entraîner is the hub of tiles)
+  await page.getByTestId('hub-seances').click();
   await expect(page.locator('[data-testid^="quick-"]').first()).toBeVisible();
-  // the sheet of a discipline (Séance tab, « Disciplines » space): modes, exercises, start
+  // the sheet of a discipline (« Disciplines » space, still there; also a tile of the hub): modes, exercises, start
   await page.getByTestId('space-disciplines').click();
   await page.getByTestId('disc-boxe').click();
   await expect(page).toHaveURL(/#\/discipline\/boxe/);
@@ -76,12 +90,11 @@ test('plan, lignes 8 à 13 : Entraîner (démarrage rapide, discipline, programm
   await expect(page).toHaveURL(/#\/createur\/nouveau/);
   // Chrono seul: Entraîner > Séance > Chrono (1.1.0: third choice of Séance)
   await place(page, 'entrainer');
-  await page.getByTestId('space-chrono').click();
+  await page.getByTestId('hub-chrono').click();
   await expect(page).toHaveURL(/#\/chrono$/);
   // the session: Démarrer, Pause, then Décomposer, Caméra and Ralenti (in « Plus »)
   await place(page, 'entrainer');
-  await page.getByTestId('space-disciplines').click();
-  await page.getByTestId('disc-boxe').click();
+  await page.getByTestId('hub-disc-boxe').click();
   await page.locator('[data-testid^="ex-"]').first().click();
   await page.getByTestId('go-training').click();
   await expect(page).toHaveURL(/#\/entrainement/);

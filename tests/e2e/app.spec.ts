@@ -22,21 +22,20 @@ test('premier lancement : questionnaire, choix obligatoire du coach, données co
   // 0.24: the coach chosen is Amara (stored choice 'femme')
   await expect(page.getByTestId('fighter-name')).toHaveText('Amara');
   // bottom navigation (1.0.0 refonte ergonomique): five fixed places, the actions of the screen above them, « Plus »
-  await expect(page.getByTestId('bottom-bar').locator('.nav-tab')).toHaveCount(5);
-  // 1.1.0 (loupe A): « Rechercher » is the fifth place, the profile is the photo at the top right
-  await expect(page.getByTestId('bottom-bar').locator('.nav-tab').nth(4)).toHaveAttribute('data-testid', 'app-search');
-  await expect(page.getByTestId('nav-profil')).toBeVisible();
+  // 1.29.0 (barre flottante): four places, Compte (the profile) is the fourth, « Rechercher » is the magnifier at the
+  // top right
+  await expect(page.getByTestId('bottom-bar').locator('.nav-tab')).toHaveCount(4);
+  await expect(page.getByTestId('bottom-bar').locator('.nav-tab').nth(3)).toHaveAttribute('data-testid', 'nav-profil');
+  await expect(page.getByTestId('app-search')).toBeVisible();
   await page.getByTestId('nav-entrainer').click();
-  // 0.33: the disciplines are the second space of Entraîner
-  await page.getByTestId('space-disciplines').click();
-  await expect(page.getByTestId('disc-boxe')).toBeVisible();
+  // 1.29.0: the disciplines are tiles of the first page of Entraîner
+  await expect(page.getByTestId('hub-disc-boxe')).toBeVisible();
 });
 
 test('entraînement : démarrage, pause qui arrête le chronomètre, reprise, statistiques', async ({ page }) => {
   await onboard(page, 'homme');
   await page.getByTestId('nav-entrainer').click();
-  await page.getByTestId('space-disciplines').click();
-  await page.getByTestId('disc-boxe').click();
+  await page.getByTestId('hub-disc-boxe').click();
   await page.getByTestId('ex-boxe-debutant-08').click();
   await page.getByTestId('go-training').click();
   await expect(page.getByTestId('exercise-name')).toContainText('Jab');

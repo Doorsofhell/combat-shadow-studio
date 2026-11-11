@@ -1298,9 +1298,6 @@ html[data-chrono-run] .nav-topright {
 .nav-tab.on {
   background: var(--surface-2);
 }
-.nav-tab.on .nav-ico svg {
-  stroke: var(--red-ink);
-}
 .nav-tab:focus-visible {
   border-radius: 999px;
 }
@@ -1309,11 +1306,36 @@ html[data-chrono-run] .nav-topright {
   height: 22px;
   font-size: 9px;
 }
-.nav-kebab.nav-search svg {
+/* the magnifier: the same glass disc as the ⋮ next to it (48 dp target) */
+.nav-loupe {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  backdrop-filter: blur(18px) saturate(1.3);
+  color: var(--ink);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-topright {
+  gap: 6px;
+}
+.nav-loupe svg {
+  width: 22px;
+  height: 22px;
   stroke-width: 2.2;
 }
-.nav-kebab.nav-search.on {
+.nav-loupe.on {
   background: var(--soft);
+}
+.nav-loupe:focus-visible {
+  outline: 2px solid var(--nav-accent);
+  outline-offset: 2px;
 }
 @media (max-height: 520px) {
   .nav-bottom {

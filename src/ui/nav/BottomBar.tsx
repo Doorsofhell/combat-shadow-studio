@@ -259,7 +259,7 @@ export function BottomBar() {
       )}
       <button
         type="button"
-        className={`nav-kebab nav-search ${searchOn ? 'on' : ''}`}
+        className={`nav-loupe ${searchOn ? 'on' : ''}`}
         aria-label="Rechercher ou demander au coach"
         aria-haspopup="dialog"
         aria-expanded={searchOn}
@@ -280,9 +280,33 @@ export function BottomBar() {
       {topRight}
       <div className="nav-dock changing" ref={dockRef} role="toolbar" aria-label="Actions de l’écran">
         {inRow && (secondary.length > 0 || backSlot || (hasMore && menuSlot)) && (
-          <div className={`nav-row ${secondary.length >= 3 ? 'many' : ''}`}>
+          <div className={`nav-row ${secondary.length + (tabs ? 1 : 0) >= 3 ? 'many' : ''}`}>
             {backSlot && button(backSlot, 1, 'back')}
             {secondary.map(({ slot, place }) => button(slot, place, 'secondary'))}
+            {/* 1.29.0: on the full-screen tools that keep the places (chronometer, fighter studio) the top right is
+                theirs: the magnifier joins their row of actions */}
+            {tabs && (
+              <button
+                type="button"
+                className={`nav-btn nav-secondary ${searchOn ? 'active' : ''}`}
+                aria-label="Rechercher ou demander au coach"
+                aria-haspopup="dialog"
+                aria-expanded={searchOn}
+                data-role="global"
+                data-icon="search"
+                data-action="search"
+                data-testid="app-search"
+                onClick={() => {
+                  haptic();
+                  openSearch();
+                }}
+              >
+                <span className="nav-ico">
+                  <NavIcon id="search" />
+                </span>
+                <small>Rechercher</small>
+              </button>
+            )}
             {primaryItem && button(primaryItem.slot, primaryItem.place, 'primary')}
             {hasMore && menuSlot && button(menuSlot, slots.indexOf(menuSlot) + 1, 'more')}
           </div>
