@@ -23,7 +23,7 @@ import type { CoachId, DisciplineId } from '../domain/types';
 import { TECHNIQUE_BY_ID } from '../domain/techniques';
 import { useActiveFighter } from '../store/fighters';
 import { useProfile } from '../store/profile';
-import { championFor, championLook, championModel, championStance } from '../domain/coaches/catalog';
+import { championById, championFor, championLook, championModel, championStance } from '../domain/coaches/catalog';
 import { useResolvedTheme } from '../ui/theme/useTheme';
 import { stabilityLevel, stepDown, stepUp, type StabilityLevel } from './safe3d';
 import { log3d } from './diag3d';
@@ -102,6 +102,8 @@ export interface CoachStageProps {
    * theme and pearl grey in the light one, with the dark lighting in the dark theme
    */
   backdrop?: 'studio' | 'dark' | 'theme';
+  /** 1.32.0 (choix du coach « La vedette »): shows this coach of the catalogue instead of the one the user chose */
+  champion?: string;
   /** look to show instead of the active fighter (fighter creator preview) */
   look?: FighterLook;
 }
@@ -121,7 +123,7 @@ export function CoachStage(props: CoachStageProps) {
   // render ("précédent") keeps the generic coach and the custom fighter
   // 1.5: the coach the user chose for that body type (Axel, Kaila), else Kadir or Amara
   const chosen = useProfile((s) => s.profile.champion);
-  const champion = render === 'premium' && !props.look ? championFor(coach, chosen) : null;
+  const champion = render === 'premium' && !props.look ? ((props.champion ? championById(props.champion) : undefined) ?? championFor(coach, chosen)) : null;
   // one look object per coach and discipline: a new object on each render would re-dress the model
   const dressed = useMemo(() => (champion ? championLook(champion, discipline) : null), [champion, discipline]);
   const look = props.look ?? dressed ?? fighter?.look ?? null;

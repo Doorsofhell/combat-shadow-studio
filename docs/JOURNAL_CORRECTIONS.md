@@ -3042,3 +3042,37 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `account`, `premium`, `app`, `profile-photo`, `aucune-perte-v100`.
 - **Captures** : `docs/v1310/captures/`.
 - **Restauration** : `feature/combat-shadow-v030` avant fusion (1.30.0, commit b3dc797).
+
+## 2026-11-11 · v1.32.0 · Choix du coach « La vedette »
+
+- **Demande** (Youssef, 2026-11-11) : « Franchement je n'aime pas trop le choix des coachs », « La présentation genre
+  jeux vidéo ». Trois maquettes proposées, choix « A » (La vedette), puis « je veux faire bouger en une icône, pas
+  texte, pour que ça prenne moins de place ».
+- **Constat après vérification** : l'écran montrait six petites vignettes, une fiche avec un portrait fixe et des
+  barres « profil de style sur 10 » qui étaient des estimations, pas des mesures ; un toucher sur une vignette
+  changeait tout de suite de coach, sans confirmation.
+- **Méthode de correction** : un écran de sélection à nous (aucun jeu copié), avec le moteur 3D déjà utilisé partout.
+- **Ce qui change** :
+  - le coach regardé est en grand et en 3D, sous un halo rouge et or, dans la tenue de la discipline principale ; on
+    le fait tourner du doigt ;
+  - flèches, bande des six vignettes (tête et épaules) ou balayage de la fiche pour passer d'un coach à l'autre, sans
+    recréer la scène 3D (un seul contexte graphique, important sur téléphone) ;
+  - une icône ronde de lecture, sans texte, joue les trois premières techniques de la discipline (jab, direct, jab au
+    corps en boxe) ; la même icône, en pause, ramène en garde ;
+  - sa fiche : surnom, nom, style, points forts, taille mesurée sur le modèle 3D, poids seulement s'il est mesuré ;
+  - rien n'est enregistré avant « Choisir X » ; le coach actuel porte « Ton coach » et le bouton dit « Garder X » ;
+  - en rendu « Précédent » (sans 3D premium), le portrait remplace la scène et l'icône de lecture n'est pas montrée ;
+  - le choix compact (premier lancement, Réglages › Mon coach) : les barres « sur 10 » estimées sont remplacées par
+    la garde et les points forts ; Réglages gagne « Voir les coachs en grand » ; « Mon coach » de Compte ouvre
+    le nouvel écran.
+- **Fichiers** : `src/ui/screens/CoachSelect.tsx`, `src/three/CoachStage.tsx` (propriété `champion`),
+  `src/ui/styles.css`, `src/ui/screens/Settings.tsx`, `src/ui/screens/account/Profile.tsx`, `src/coach/appGuide.ts`,
+  `src/domain/releases.ts`, `package.json`.
+- **Tests** : unitaires 1160 RÉUSSI ; écran (Playwright) 288 RÉUSSI, 2 NON EXÉCUTÉ (Firebase), 6 ÉCHOUÉ dans la suite
+  complète : 4 déjà en échec avant ce lot (`coaching-hud:60`, `consignes-v130:27`, `training-layout:117`,
+  `coach-suggest:245`) et 2 dus à la charge de la machine (`chrono-seul:96`, `coach-suggest:99`) ; ces deux-là et
+  `coach-suggest:245` repassés seuls : RÉUSSI. `coachs-v160` adapté sans retirer de contrôle.
+- **Anomalie trouvée par les tests et corrigée** : écran ouvert directement (lien, rechargement), « Choisir » faisait
+  un retour hors de l'application avant l'enregistrement du choix ; il revient maintenant à l'accueil.
+- **Captures** : `docs/v1320/captures/`.
+- **Restauration** : état 1.31.0 (commit 94dc75d).

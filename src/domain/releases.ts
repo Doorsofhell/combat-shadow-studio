@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.32.0',
+      releaseDate: '2026-11-11',
+      title: 'Choix du coach en grand',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Choix du coach : le coach est en grand et en 3D, dans la tenue de ta discipline. Fais-le tourner du doigt.' },
+        { category: 'ameliorations', text: 'Passe d’un coach à l’autre avec les flèches, les six vignettes ou en balayant sa fiche. L’icône ronde de lecture le fait bouger.' },
+        { category: 'ameliorations', text: 'Rien ne change tant que tu n’as pas touché « Choisir ». Les barres « sur 10 », qui étaient des estimations, sont remplacées par sa garde et ses points forts.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.31.0',
       releaseDate: '2026-11-11',
       title: 'Nouvelle page Compte',

@@ -4532,3 +4532,280 @@ html.stage-fs-open body {
     min-height: 150px;
   }
 }
+
+/* ==========================================================================
+   1.32.0 (Youssef, 2026-11-11, maquette A « La vedette »): the choice of the coach as a fighting-game selection
+   screen of our own. The coach in 3D under a red and gold halo, its sheet, the strip of six, one button. The scene
+   is always dark (the stage of the coach), the sheet follows the theme.
+   ========================================================================== */
+.page.coach-star {
+  gap: 8px;
+  height: 100dvh;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 10px);
+}
+/* the stage goes up to the top of the screen, under the Retour chip */
+html[data-back-chip] .page.coach-star.coach-select:not(:has(> .page-head:first-child)),
+.page.coach-star.coach-select {
+  padding-top: 0;
+}
+.star-stage {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 120px;
+  margin: 0 calc(-1 * var(--gutter));
+  overflow: hidden;
+  background: var(--scene);
+}
+/* the 3D stage needs a sized box (as the hero of the home) */
+.star-3d {
+  position: absolute;
+  inset: 0;
+}
+.star-halo {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 9% at 50% 93%, rgba(212, 175, 55, 0.42), transparent 70%),
+    radial-gradient(85% 55% at 50% 22%, rgba(225, 29, 47, 0.24), transparent 72%),
+    linear-gradient(to bottom, transparent 84%, var(--bg));
+}
+:root[data-theme='light'] .star-halo {
+  background:
+    radial-gradient(60% 9% at 50% 93%, rgba(212, 175, 55, 0.5), transparent 70%),
+    radial-gradient(85% 55% at 50% 22%, rgba(225, 29, 47, 0.12), transparent 72%),
+    linear-gradient(to bottom, transparent 84%, var(--bg));
+}
+.star-ghost {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  top: calc(env(safe-area-inset-top) + 58px);
+  text-align: center;
+  pointer-events: none;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(4rem, 26vw, 8rem);
+  line-height: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--ink) 8%, transparent);
+}
+.star-still {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 10%;
+}
+.star-mine {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(env(safe-area-inset-top) + 20px);
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #d4af37;
+  color: #111214;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+.star-arrow {
+  appearance: none;
+  position: absolute;
+  z-index: 3;
+  top: 46%;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(11, 15, 20, 0.62);
+  color: #f4f4f5;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.star-arrow.l {
+  left: 8px;
+}
+.star-arrow.r {
+  right: 8px;
+}
+.coach-star :is(.star-arrow, .star-see) svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.star-info {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  touch-action: pan-y;
+}
+.star-nick {
+  color: var(--gold);
+  font-weight: 800;
+  font-size: 0.875rem;
+}
+:root[data-theme='light'] .star-nick {
+  color: color-mix(in srgb, var(--gold) 55%, #000);
+}
+.star-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.4rem, 12vw, 3.4rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+.star-style {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.coach-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.coach-chips i {
+  font-style: normal;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 10%, transparent);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.star-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.star-who {
+  min-width: 0;
+}
+.star-facts {
+  margin-left: 6px;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.8125rem;
+}
+.star-see {
+  appearance: none;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  color: var(--ink);
+  cursor: pointer;
+}
+.star-see[aria-pressed='true'] {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.star-strip {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.star-thumb {
+  appearance: none;
+  position: relative;
+  width: 48px;
+  height: 56px;
+  padding: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: #05070a;
+  opacity: 0.7;
+  transform: skewX(-6deg);
+  cursor: pointer;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease;
+}
+/* the portraits are full-length: the strip shows the head and the shoulders */
+.star-thumb img {
+  position: absolute;
+  width: 320%;
+  max-width: none;
+  height: auto;
+  left: -94%;
+  top: -28%;
+  transform: skewX(6deg);
+}
+.star-thumb.on {
+  opacity: 1;
+  border-color: var(--gold);
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.55);
+}
+.star-thumb.mine::after {
+  content: '';
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d4af37;
+}
+.star-arrow:focus-visible,
+.star-thumb:focus-visible,
+.star-see:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.star-cta {
+  flex: none;
+}
+/* the compact picker (first launch, Réglages): the real facts in place of the former bars */
+.coach-facts {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.8125rem;
+}
+.coach-facts .cap {
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  margin-top: 3px;
+}
+@media (max-height: 700px) {
+  .page.coach-star {
+    gap: 6px;
+  }
+  .star-name {
+    font-size: 2.2rem;
+  }
+  .star-thumb {
+    width: 42px;
+    height: 50px;
+  }
+  .star-ghost {
+    font-size: 4.5rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .star-thumb {
+    transition: none;
+  }
+}

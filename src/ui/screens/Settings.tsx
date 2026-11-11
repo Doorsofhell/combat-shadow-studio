@@ -186,6 +186,7 @@ export function SettingsPage() {
           <SetItem id="coach" icon="fighter" title="Mon coach" summary={`${coach.name} · Ultra-réaliste`}>
             <p className="small muted">Ton coach montre chaque mouvement en 3D. Tu peux en changer à tout moment, tes statistiques sont conservées.</p>
             <CoachPicker />
+            <SetLink to="/coach" label="Voir les coachs en grand" hint="En 3D, avec leur garde et leurs points forts" />
           </SetItem>
           <SetItem id="voix" icon="audio" title="Voix et sons" summary={`${settings.voice ? 'Voix activée' : 'Voix coupée'} · voix ${pct(settings.voiceVolume)} · effets ${pct(settings.effectsVolume)}`}>
         <Toggle label="Voix du coach" on={settings.voice} onChange={(v) => set({ voice: v })} />
