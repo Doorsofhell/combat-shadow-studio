@@ -7,7 +7,7 @@ import type { GLTFLoader } from 'three-stdlib';
 import { Color, Material, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, SRGBColorSpace, Texture } from 'three';
 import { restoreReferencePose, setLegLength } from './pose';
 import { PhotoCoach } from './PhotoCoach';
-import type { OutfitId, OutfitStatus } from './outfit';
+import { preloadOutfit, type OutfitId, type OutfitStatus } from './outfit';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { CoachRig } from '../engine';
 import { CoachMeta, Customizer } from './customize';
@@ -104,6 +104,16 @@ const DRACO = './draco/';
  */
 export function preloadPhotoCoach(coachId: string) {
   useGLTF.preload(`./coaches/${coachId}/photo.${EXT}`, DRACO, true, patchJsonModels);
+}
+
+/**
+ * 1.34 (Youssef, 2026-11-11: « que ça ne mette pas de temps à s'afficher lorsqu'on change de coach »): a coach and the
+ * outfit of the discipline read ahead of time, while the coach screen shows another one; choosing it is then
+ * immediate (no reading or decoding left, only the first image).
+ */
+export function prewarmCoach(coachId: string, outfit: OutfitId | null) {
+  preloadPhotoCoach(coachId);
+  if (outfit) preloadOutfit(`./coaches/${coachId}/tenues/${outfit}.${EXT}`, patchJsonModels);
 }
 
 export function preloadCoaches() {

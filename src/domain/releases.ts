@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.34.0',
+      releaseDate: '2026-11-11',
+      title: 'Démarrage rapide',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Le chrono « Round 1 » ne retélécharge plus les coachs à chaque ouverture : une fois tout chargé, l’appli s’ouvre en moins d’une seconde.' },
+        { category: 'ameliorations', text: 'Les modèles 3D des coachs sont compressés sans aucune perte : le premier chargement passe de 96 à 66 Mo.' },
+        { category: 'ameliorations', text: 'Sur l’écran Coach, les autres coachs et leur tenue sont préparés à l’avance : ils s’affichent plus vite quand tu changes.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.33.2',
       releaseDate: '2026-11-12',
       title: 'Frappes plus vivantes : anticipation et recul',

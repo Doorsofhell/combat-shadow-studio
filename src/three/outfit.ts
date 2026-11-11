@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BufferAttribute, Material, Mesh, MeshStandardMaterial, Object3D, Skeleton, SkinnedMesh, Bone, SRGBColorSpace } from 'three';
-import { GLTFLoader } from 'three-stdlib';
+import { GLTFLoader, MeshoptDecoder, type GLTF } from 'three-stdlib';
 import type { DisciplineId } from '../domain/types';
 import { log3d } from './diag3d';
 import { physicalFrom } from './photoMaterials';
@@ -13,6 +13,40 @@ import { physicalFrom } from './photoMaterials';
  * cannot show through, even when a joint bends far.
  */
 export type OutfitId = DisciplineId | 'bjj-nogi';
+
+/**
+ * 1.34 (Youssef, 2026-11-11: « que ça ne mette pas de temps à s'afficher lorsqu'on change de coach »): an outfit file
+ * is read once and kept, so putting it on again (coming back to a coach, the same outfit on another screen) or after
+ * preloadOutfit() does not read and decode it again. Each wearing builds its own garments over the shared geometry
+ * (useOutfit), the kept model itself is never changed. The last few are kept (about 3 Mo each in memory).
+ */
+const OUTFITS_KEPT = 14;
+const outfitModels = new Map<string, Promise<GLTF>>();
+
+export function loadOutfitModel(url: string, extendLoader: (l: GLTFLoader) => void): Promise<GLTF> {
+  const kept = outfitModels.get(url);
+  if (kept) {
+    // most recently used last
+    outfitModels.delete(url);
+    outfitModels.set(url, kept);
+    return kept;
+  }
+  const loader = new GLTFLoader();
+  // 1.34: the models of a build are compressed (tools/build/bootModels.ts, EXT_meshopt_compression)
+  loader.setMeshoptDecoder(typeof MeshoptDecoder === 'function' ? (MeshoptDecoder as () => unknown)() : MeshoptDecoder);
+  extendLoader(loader);
+  const p = loader.loadAsync(url);
+  outfitModels.set(url, p);
+  // a failed read is not kept: the next attempt reads the file again
+  p.catch(() => outfitModels.get(url) === p && outfitModels.delete(url));
+  while (outfitModels.size > OUTFITS_KEPT) outfitModels.delete(outfitModels.keys().next().value as string);
+  return p;
+}
+
+/** reads an outfit ahead of time (the coach screen, the other coaches): wearing it later is then immediate */
+export function preloadOutfit(url: string, extendLoader: (l: GLTFLoader) => void) {
+  loadOutfitModel(url, extendLoader).catch(() => undefined);
+}
 
 export const OUTFIT_LABEL: Record<OutfitId, string> = {
   boxe: 'boxe anglaise',
@@ -103,11 +137,8 @@ export function useOutfit(
       setStatus({ state: 'erreur', outfit, message, scene, url });
     };
     const timer = setTimeout(() => fail('délai de 20 s dépassé'), 20_000);
-    const loader = new GLTFLoader();
-    extendLoader(loader);
-    const attempt = (tries: number) =>
-      loader.load(
-        url,
+    const attempt = (tries: number): void =>
+      void loadOutfitModel(url, extendLoader).then(
         (gltf) => {
           if (!live) return;
           const bones = new Map<string, Bone>();
@@ -183,7 +214,6 @@ export function useOutfit(
           // preparation still shows the outfit, three then uploads it on the first image as before
           (prepare ? prepare(added) : Promise.resolve()).then(worn, worn);
         },
-        undefined,
         (err) => {
           if (!live) return;
           if (tries > 0) return attempt(tries - 1);
