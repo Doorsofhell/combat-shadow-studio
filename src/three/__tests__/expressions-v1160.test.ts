@@ -95,10 +95,15 @@ describe('poids des expressions', () => {
     expect(w.EyeBlinkRight).toBe(1);
     for (const [k, v] of Object.entries(w)) if (!k.startsWith('EyeBlink')) expect(v, k).toBe(0);
   });
-  test('l’effort fronce sans grimace : aucune expression à fond (0,9 au plus)', () => {
+  // 1.33 (Youssef 11/11, option « V1 » choisie sur captures: « le visage de Kadir n'est pas du tout expressif »): the
+  // avatars' expressions are small, so the strike now takes brows and eyes to their full expression (1.20 kept every
+  // weight under 0.9, too faint to be seen); the mouth stays short of a grimace (jaw half open at most)
+  test('l’effort fronce nettement, la bouche reste sans grimace', () => {
     const w = expressionWeights(0, 1, 1);
-    expect(w.BrowDownLeft).toBeGreaterThan(0.3);
-    for (const [k, v] of Object.entries(w)) expect(v!, k).toBeLessThanOrEqual(0.9);
+    expect(w.BrowDownLeft).toBe(1);
+    expect(w.EyeSquintLeft).toBe(1);
+    expect(w.JawOpen!).toBeLessThanOrEqual(0.6);
+    for (const [k, v] of Object.entries(w)) expect(v!, k).toBeLessThanOrEqual(1);
   });
 });
 
@@ -154,17 +159,21 @@ describe('le moteur du visage pilote les expressions', () => {
  * face lives: look, brows, lips and breathing change slowly, by small amounts, and never when the model stands still.
  */
 describe('1.20 le visage vit au repos', () => {
-  test('les poids au repos restent petits et le coup reprend le dessus', () => {
+  // 1.33 (option « V1 » choisie par Youssef le 11/11): the face at rest is about 2.5 times stronger than in 1.20,
+  // where it stayed under 0.4 and could not be seen; it still gives way to the strike
+  test('les poids au repos se voient et le coup reprend le dessus', () => {
     const idle = { focus: 1, brow: 1, press: 0, smile: 1, side: 1, breath: 1 };
     const w = expressionWeights(0, 0, 0, idle);
-    expect(w.BrowInnerUp!).toBeGreaterThan(0.2);
-    expect(w.MouthSmileLeft! + w.MouthSmileRight!).toBeGreaterThan(0.2);
+    expect(w.BrowInnerUp!).toBeGreaterThan(0.6);
+    expect(w.BrowDownLeft!).toBeGreaterThan(0.6);
+    expect(w.MouthSmileLeft! + w.MouthSmileRight!).toBeGreaterThan(0.8);
     expect(w.MouthSmileLeft!).not.toBeCloseTo(w.MouthSmileRight!, 2);
-    for (const [k, v] of Object.entries(w)) expect(v!, k).toBeLessThanOrEqual(0.4);
+    for (const [k, v] of Object.entries(w)) expect(v!, k).toBeLessThanOrEqual(1);
     const hit = expressionWeights(0, 1, 1, idle);
     expect(hit.BrowInnerUp).toBe(0);
     expect(hit.MouthSmileLeft).toBe(0);
-    for (const [k, v] of Object.entries(hit)) expect(v!, k).toBeLessThanOrEqual(0.9);
+    expect(hit.JawOpen!).toBeLessThanOrEqual(0.6);
+    for (const [k, v] of Object.entries(hit)) expect(v!, k).toBeLessThanOrEqual(1);
   });
   test('en 12 s sans coup, les expressions changent, lentement', async () => {
     const { FaceAnimator } = await import('../face');

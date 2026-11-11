@@ -61,32 +61,43 @@ export interface FaceIdle {
   breath: number;
 }
 
+/** 1.33 strength of the face at rest and of the strike's effort, relative to 1.20 (also used by the bone faces) */
+export const FACE_GAIN = { rest: 2.5, effort: 2 } as const;
 export function expressionWeights(blink: number, effort: number, exhale: number, idle?: FaceIdle): Partial<Record<FaceExpression, number>> {
   const e = effort;
   const i = idle ?? { focus: 0, brow: 0, press: 0, smile: 0, side: 0, breath: 0 };
   // the face at rest gives way to the strike's effort
   const rest = 1 - e;
   const f = i.focus * rest;
-  const lid = Math.max(blink, 0.3 * e + 0.12 * f);
-  const press = 0.5 * e * (1 - exhale) + 0.3 * i.press * rest;
-  const smile = 0.28 * i.smile * rest * (1 - i.press);
+  // 1.33 (Youssef 11/11: « le visage de Kadir n'est pas du tout expressif »): the avatars' own expressions are small
+  // (a full smile moves the mouth corner 4 mm), so the face at rest is now about 2.5 times stronger and the strike's
+  // effort twice as strong as in 1.20; every weight stays within 0..1 (FaceAnimator clamps them)
+  const R = FACE_GAIN.rest;
+  const E = FACE_GAIN.effort;
+  const lid = Math.max(blink, 0.2 * E * e + 0.12 * R * f);
+  const press = 0.5 * E * e * (1 - exhale) + 0.3 * R * i.press * rest;
+  const smile = 0.28 * R * i.smile * rest * (1 - i.press);
   const sl = smile * (1 - 0.35 * Math.max(0, i.side));
   const sr = smile * (1 + 0.35 * Math.min(0, i.side));
-  const nose = 0.35 * e + 0.12 * i.breath * rest;
-  return {
+  const nose = 0.35 * E * e + 0.12 * i.breath * rest;
+  const brow = 0.9 * E * e + 0.3 * R * f;
+  const squint = 0.9 * E * e + 0.3 * R * f;
+  const w: Partial<Record<FaceExpression, number>> = {
     EyeBlinkLeft: lid, EyeBlinkRight: lid,
-    EyeSquintLeft: 0.9 * e + 0.3 * f, EyeSquintRight: 0.9 * e + 0.3 * f,
-    CheekSquintLeft: 0.55 * e + 0.6 * sl, CheekSquintRight: 0.55 * e + 0.6 * sr,
-    BrowDownLeft: 0.9 * e + 0.3 * f, BrowDownRight: 0.9 * e + 0.3 * f,
-    BrowInnerUp: 0.35 * i.brow * rest,
+    EyeSquintLeft: squint, EyeSquintRight: squint,
+    CheekSquintLeft: 0.55 * E * e + 0.6 * sl, CheekSquintRight: 0.55 * E * e + 0.6 * sr,
+    BrowDownLeft: brow, BrowDownRight: brow,
+    BrowInnerUp: 0.35 * R * i.brow * rest,
     NoseSneerLeft: nose, NoseSneerRight: nose,
     MouthPressLeft: press, MouthPressRight: press,
     MouthSmileLeft: sl, MouthSmileRight: sr,
-    MouthStretchLeft: 0.3 * e, MouthStretchRight: 0.3 * e,
-    // the exhale of the strike: lips rounded and the jaw open (a sharp breath out, « tss »), more than before
-    MouthFunnel: 0.6 * exhale,
-    JawOpen: 0.3 * exhale + 0.05 * i.breath * rest,
+    MouthStretchLeft: 0.3 * E * e, MouthStretchRight: 0.3 * E * e,
+    // the exhale of the strike: lips rounded and the jaw open (a sharp breath out, « tss »), well visible since 1.33
+    MouthFunnel: 1.0 * exhale,
+    JawOpen: 0.55 * exhale + 0.05 * i.breath * rest,
   };
+  for (const k of Object.keys(w) as FaceExpression[]) w[k] = Math.min(1, w[k]!);
+  return w;
 }
 interface Lid {
   bone: Bone;
@@ -368,7 +379,7 @@ export class FaceAnimator {
     }
     const rest = 1 - this.effort;
     const idle = still ? null : this.idle;
-    const squint = 0.45 * this.effort + (idle ? 0.12 * idle.focus * rest : 0);
+    const squint = 0.45 * this.effort + (idle ? 0.24 * idle.focus * rest : 0);
     const close = Math.max(blink, squint);
     for (const { top, bottom } of this.lids) {
       for (const [lid, k] of [
@@ -401,17 +412,18 @@ export class FaceAnimator {
     this.moveHead(dt, still, rest);
 
     for (const m of this.movers) {
-      let k = this.effort;
+      // 1.33 stronger, as the expressions above (the bone faces of Axel and Kaila: effort ×1.6, rest ×2)
+      let k = 1.6 * this.effort;
       m.bone.position.copy(m.p);
       if (idle) {
         // at rest, the same features as the expressions of the other coaches, smaller: brows a little lowered by
         // focus, the inner brows lifted now and then, the mouth corners in a faint uneven smile
-        if (m.kind === 'inner') k += (0.3 * idle.focus - 0.6 * idle.brow) * rest;
-        else if (m.kind === 'outer' || m.kind === 'mid') k += 0.3 * idle.focus * rest;
+        if (m.kind === 'inner') k += FACE_GAIN.rest * 0.8 * (0.3 * idle.focus - 0.6 * idle.brow) * rest;
+        else if (m.kind === 'outer' || m.kind === 'mid') k += FACE_GAIN.rest * 0.8 * 0.3 * idle.focus * rest;
         else if (m.kind === 'corner' && m.smile) {
           const lead = 1 + 0.35 * idle.side * (m.side ?? 0);
-          m.bone.position.addScaledVector(m.smile, 0.5 * idle.smile * (1 - idle.press) * rest * lead);
-          k += 0.25 * idle.press * rest;
+          m.bone.position.addScaledVector(m.smile, FACE_GAIN.rest * 0.8 * 0.5 * idle.smile * (1 - idle.press) * rest * lead);
+          k += FACE_GAIN.rest * 0.8 * 0.25 * idle.press * rest;
         }
       }
       m.bone.position.addScaledVector(m.d, k);
@@ -420,7 +432,7 @@ export class FaceAnimator {
     // the jaw sets and opens a crack on the exhale of the strike (2.5° at full effort); 1.21 at rest it follows the
     // breathing (up to 0.8°)
     if (this.jaw) {
-      const a = 2.5 * this.effort + (idle ? 0.8 * idle.breath * rest : 0);
+      const a = 4 * this.effort + (idle ? 0.8 * idle.breath * rest : 0);
       this.jaw.bone.quaternion.copy(this.jaw.q).multiply(tmpQ.setFromAxisAngle(this.jaw.axis, (a * Math.PI) / 180));
     }
     if (this.morphs.length) {
