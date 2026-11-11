@@ -32,6 +32,8 @@ export class Breath {
   private rate = 0.23;
   private exhale = 0;
   private lastEffort = 0;
+  private elapsed = 0;
+  private visibleEffort = 0;
 
   /**
    * uniforms for one skinned mesh (the body or a garment): centres and amplitudes read from its own bind pose, as
@@ -56,7 +58,7 @@ export class Breath {
       cssBreathBelly: { value: new Vector4(s0.x, s0.y, s0.z, 0.75 * s) },
       // about 4 mm at the chest and 3 mm at the belly for a 15 cm Spine2-Neck span; 1.23 (Youssef 20:04,
       // « respiration aussi, c'est très important »): 6 and 5 mm, scaled up again when out of breath (cssBreath.z)
-      cssBreathAmp: { value: new Vector4(0.04 * s, 0.033 * s, 0, 0) },
+      cssBreathAmp: { value: new Vector4(0.055 * s, 0.043 * s, 0, 0) },
     };
   }
 
@@ -65,7 +67,12 @@ export class Breath {
     // faster with sustained work, slowly back to rest
     const target = 0.23 + 0.27 * Math.min(1, effort);
     this.rate += (target - this.rate) * Math.min(1, d / (target > this.rate ? 1.5 : 6));
-    this.phase = (this.phase + d * this.rate * Math.PI * 2) % (Math.PI * 2);
+    this.elapsed += d;
+    // Slow, deterministic variations keep the rhythm organic without per-frame randomness.
+    const variation = 1 + 0.045 * Math.sin(this.elapsed * 0.37) + 0.025 * Math.sin(this.elapsed * 0.91);
+    this.phase = (this.phase + d * this.rate * variation * Math.PI * 2) % (Math.PI * 2);
+    // Retain exertion for a short recovery period: facial effort alone drops too quickly.
+    this.visibleEffort += (Math.min(1, effort) - this.visibleEffort) * Math.min(1, d / (effort > this.visibleEffort ? 0.7 : 7));
     // a strike's peak: a short, sharp exhale (rises when the effort jumps)
     if (effort > 0.6 && this.lastEffort <= 0.6) this.exhale = 1;
     this.lastEffort = effort;
@@ -73,7 +80,7 @@ export class Breath {
     const sinP = Math.sin(this.phase);
     const v = this.amount.value;
     // 1.23 out of breath after strikes: deeper breaths (up to 1.5 times), back to calm over a few breaths
-    const deep = 1 + 0.5 * Math.min(1, (this.rate - 0.23) / 0.27);
+    const deep = 1 + 0.5 * Math.max(this.visibleEffort, Math.min(1, (this.rate - 0.23) / 0.27));
     // the chest leads, the belly follows a quarter of a breath later; the exhale empties both
     v.x = deep * sinP * (1 - this.exhale) - this.exhale;
     v.y = deep * Math.sin(this.phase - 0.9) * (1 - this.exhale) - 0.6 * this.exhale;
@@ -93,8 +100,8 @@ const VERT_BODY = /* glsl */ `
 {
   vec3 cssDc = (position - cssBreathChest.xyz) / cssBreathChest.w;
   vec3 cssDb = (position - cssBreathBelly.xyz) / cssBreathBelly.w;
-  float cssWc = exp(-dot(cssDc, cssDc) * 1.6);
-  float cssWb = exp(-dot(cssDb, cssDb) * 2.0);
+  float cssWc = exp(-dot(cssDc, cssDc) * 1.15);
+  float cssWb = exp(-dot(cssDb, cssDb) * 1.7);
   transformed += normalize(normal) * (cssBreathAmp.x * cssWc * cssBreath.x + cssBreathAmp.y * cssWb * cssBreath.y);
 }
 `;
