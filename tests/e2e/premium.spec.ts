@@ -36,7 +36,7 @@ test('Réglages › Premium : la page v0.45, l’offre et aucun paiement possibl
   await page.goto('/#/');
   // 1.0.0: the tile Premium at the top of Réglages (Profil › Réglages), formerly Menu › Premium à vie
   await page.getByTestId('nav-profil').click();
-  await page.getByTestId('tab-reglages').click();
+  await page.getByTestId('compte-reglages').click();
   await page.getByTestId('reglages-premium').click();
   await expect(page).toHaveURL(/#\/premium$/);
   const p = page.getByTestId('premium-page');

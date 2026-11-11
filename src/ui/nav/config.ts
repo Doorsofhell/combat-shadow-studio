@@ -328,6 +328,10 @@ export const BAR_PLACES: readonly BarPlace[] = TABS.filter((t) => t.id !== 'appr
  */
 export const isTrainHub = (screen: NavScreen | null, search = ''): boolean => screen === 'entrainer' && !new URLSearchParams(search).get('espace');
 
+/** 1.31.0 (nouvelle ergonomie, lot 3): the first page of Compte is a hub too (big name, quick tiles); the tabs
+ * « Mes infos / Réglages » show on Réglages, where « Mes infos » leads back */
+export const isHubScreen = (screen: NavScreen | null, search = ''): boolean => screen === 'profil' || isTrainHub(screen, search);
+
 /** the place of the bar lit for a space */
 export const barPlaceOf = (section: TabId | null): TabId | null => (section === 'apprendre' ? 'entrainer' : section);
 

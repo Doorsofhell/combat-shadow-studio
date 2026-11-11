@@ -49,8 +49,8 @@ test('compte : mode invité, profil modifié conservé, export, suppression des 
   // profile from the photo
   // 1.0.0 (refonte ergonomique): Profil › Réglages (formerly Menu › Paramètres)
   // 1.2.0: Profil › Mes infos, one list whose rows open in place
+  // 1.31.0: the place Compte opens « Mes infos » directly (the name in big letters at the top)
   await page.getByTestId('nav-profil').click();
-  await page.getByTestId('tab-infos').click();
   await expect(page.getByTestId('profile-name')).toHaveText('Yan');
   await openSetting(page, 'compte');
   await expect(page.getByText('Les comptes en ligne ne sont pas activés dans cette version. Tout reste sur cet appareil.')).toBeVisible();

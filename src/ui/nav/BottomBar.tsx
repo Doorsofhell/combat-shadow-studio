@@ -5,7 +5,7 @@ import { LATEST_RELEASE, hasUnseenRelease } from '../../domain/releases';
 import { usePhoto } from '../../store/photo';
 import { initials, useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { backInRow, BAR_PLACES, barPlaceOf, isTrainHub, sectionTabsFor, NAV_CONFIG, NAV_PARENT, NO_TABS, PRIMARY, ROOT_SCREENS, SECTION, dockSlots, isRootPath, navScreen, slotRole, type NavScreen, type NavSlot, type Tab } from './config';
+import { backInRow, BAR_PLACES, barPlaceOf, isHubScreen, isTrainHub, sectionTabsFor, NAV_CONFIG, NAV_PARENT, NO_TABS, PRIMARY, ROOT_SCREENS, SECTION, dockSlots, isRootPath, navScreen, slotRole, type NavScreen, type NavSlot, type Tab } from './config';
 import { pushLayer } from './layers';
 import { NavIcon } from './NavIcon';
 import { leave, useNavStore } from './store';
@@ -158,7 +158,7 @@ export function BottomBar() {
   // 1.1.0 (Youssef, 2026-10-27: « Retirer plus / coach IA car désormais il est dans la barre de recherche », then the
   // magnifier as a place of the bar, proposition A): the Coach IA is reached from Rechercher; « Plus » (or the ⋮ at
   // the top right) holds only what the screen gives
-  const tabsShown = !!sectionTabsFor(screen) && isRootPath(loc.pathname) && !hub;
+  const tabsShown = !!sectionTabsFor(screen) && isRootPath(loc.pathname) && !isHubScreen(screen, loc.search);
   // in the session the bar's places are hidden: « Plus » holds « Rechercher » there. 1.1.1 (Youssef, 2026-10-28:
   // « si uniquement rechercher le retirer car en doublon »): where the places show (chronometer, fighter studio), the
   // magnifier is already in the bar, so « Plus » appears only when the screen has something of its own

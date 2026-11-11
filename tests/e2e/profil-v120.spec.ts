@@ -20,13 +20,20 @@ test('la photo ouvre deux onglets seulement : Mes infos et Réglages', async ({ 
   await page.goto('/#/');
   await avatar(page);
   await expect(page).toHaveURL(/#\/profil$/);
+  // 1.31.0 (nouvelle ergonomie, lot 3): Compte opens on « Mes infos » with the name in big letters and four quick
+  // tiles; the two tabs show on Réglages, and lead back
+  await expect(page.getByTestId('profile-name')).toBeVisible();
+  await expect(page.getByTestId('infos-list')).toBeVisible();
+  await expect(page.locator('.acc-q')).toHaveCount(4);
+  await page.getByTestId('compte-reglages').click();
+  await expect(page).toHaveURL(/#\/reglages$/);
+  await expect(page.getByTestId('reglages-list')).toBeVisible();
   await expect(page.getByTestId('tab-infos')).toBeVisible();
   await expect(page.getByTestId('tab-reglages')).toBeVisible();
   await expect(page.getByTestId('tab-coach')).toHaveCount(0);
   await expect(page.getByTestId('tab-coach-ia')).toHaveCount(0);
-  await page.getByTestId('tab-reglages').click();
-  await expect(page).toHaveURL(/#\/reglages$/);
-  await expect(page.getByTestId('reglages-list')).toBeVisible();
+  await page.getByTestId('tab-infos').click();
+  await expect(page).toHaveURL(/#\/profil$/);
 });
 
 test('Mes infos : chaque ligne se déploie et montre son contenu, une seule à la fois', async ({ page }) => {
@@ -93,7 +100,7 @@ test('Retour Android referme d’abord la ligne ouverte, puis quitte la page', a
   await seedProfile(page);
   await page.goto('/#/');
   await avatar(page);
-  await page.getByTestId('tab-reglages').click();
+  await page.getByTestId('compte-reglages').click();
   await expect(page).toHaveURL(/#\/reglages$/);
   await openSetting(page, 'voix');
   await openSetting(page, 'rounds');
