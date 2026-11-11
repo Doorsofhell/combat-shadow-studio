@@ -219,7 +219,7 @@ test.describe('393×851', () => {
     expect(versions).toContain('0.32.0');
     expect(versions).toContain('0.31.0');
     expect(versions).toContain('1.0.0');
-    await expect(news.locator('[data-version="1.9.0"]')).toContainText('Version 1.9.0 · la plus récente');
+    await expect(news.locator(`[data-version="${RELEASES[0].version}"]`)).toContainText(`Version ${RELEASES[0].version} · la plus récente`);
     await expect(news).not.toContainText('fictive');
     // seen: the dots go away at once
     await expect(page.getByTestId('menu-dot')).toHaveCount(0);

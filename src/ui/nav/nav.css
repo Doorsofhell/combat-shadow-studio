@@ -1348,3 +1348,19 @@ html[data-chrono-run] .nav-topright {
 .nav-tabs {
   align-self: center;
 }
+/* the floating bar is exactly as tall as the former one (66 px with the room around it): the screens that fill
+   the height (the six disciplines, the chronometer, the dashboards) keep their measures. 48 dp places, a thin pill. */
+.nav-bottom {
+  --nav-pad-b: 8px;
+  padding-top: 4px;
+}
+.nav-bottom.no-tabs {
+  --nav-pad-b: 6px;
+  padding-top: 10px;
+}
+.nav-tabs {
+  padding: 2px;
+}
+.nav-tab {
+  min-height: 48px;
+}

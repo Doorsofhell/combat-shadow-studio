@@ -12,7 +12,8 @@ import { bar, openSetting, seedProfile } from './nav-helpers';
 test.use({ viewport: { width: 393, height: 851 } });
 test.describe.configure({ timeout: 180_000 });
 
-const avatar = (page: Page) => bar(page).locator('.nav-avatar').click();
+// 1.29.0 (barre flottante): the photo of the profile is the place Compte of the bar (it was at the top right)
+const avatar = (page: Page) => bar(page).locator('.nav-tab[data-tab="profil"]').click();
 
 test('la photo ouvre deux onglets seulement : Mes infos et Réglages', async ({ page }) => {
   await seedProfile(page);
