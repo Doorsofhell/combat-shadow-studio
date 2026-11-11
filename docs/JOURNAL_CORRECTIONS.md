@@ -3068,6 +3068,11 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Fichiers** : `src/ui/screens/CoachSelect.tsx`, `src/three/CoachStage.tsx` (propriété `champion`),
   `src/ui/styles.css`, `src/ui/screens/Settings.tsx`, `src/ui/screens/account/Profile.tsx`, `src/coach/appGuide.ts`,
   `src/domain/releases.ts`, `package.json`.
-- **Tests** : voir la demande de fusion ; `coachs-v160` adapté sans retirer de contrôle.
+- **Tests** : unitaires 1160 RÉUSSI ; écran (Playwright) 288 RÉUSSI, 2 NON EXÉCUTÉ (Firebase), 6 ÉCHOUÉ dans la suite
+  complète : 4 déjà en échec avant ce lot (`coaching-hud:60`, `consignes-v130:27`, `training-layout:117`,
+  `coach-suggest:245`) et 2 dus à la charge de la machine (`chrono-seul:96`, `coach-suggest:99`) ; ces deux-là et
+  `coach-suggest:245` repassés seuls : RÉUSSI. `coachs-v160` adapté sans retirer de contrôle.
+- **Anomalie trouvée par les tests et corrigée** : écran ouvert directement (lien, rechargement), « Choisir » faisait
+  un retour hors de l'application avant l'enregistrement du choix ; il revient maintenant à l'accueil.
 - **Captures** : `docs/v1320/captures/`.
 - **Restauration** : état 1.31.0 (commit 94dc75d).
