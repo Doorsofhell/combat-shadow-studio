@@ -255,6 +255,10 @@ function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
     d.chest.yaw += deg(-3 * sg);
     d.hips.y -= (body ? 0.08 : H.dip * 0.5) * s;
   });
+  // v1.33.1: the feet and pelvis start the unwinding before the shoulders. The striking hand
+  // stays in its guarded chest-space pose, then the thorax and fist catch up near impact.
+  // Keep all impact poses, target geometry and joint-solving unchanged.
+  const drive = driveToward(wind, hit, { pelvis: 0.72, chest: 0.26, hips: 0.58, feet: 0.68 });
   const t1 = H.windT;
   const t2 = side === 'L' ? 0.2 : 0.23;
   const t3 = t2 + 0.22;
@@ -265,6 +269,7 @@ function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
       // the fist leaves the guard from rest and keeps accelerating until the impact: no flow through this key,
       // which would spend its speed early (fluidity.test: speed at impact)
       { t: t1, pose: wind, ease: 'load', hold: true },
+      { t: t1 + (t2 - t1) * 0.48, pose: drive, ease: 'load' },
       { t: t2, pose: hit, ease: 'strike' },
       { t: t2 + 0.03, pose: hit, ease: 'linear' },
       { t: t3, pose: g, ease: 'inOut' },
@@ -319,7 +324,9 @@ function uppercut(a: Author, side: 'L' | 'R'): Motion {
   const t3 = 0.48;
   // v0.32: measured on both coaches, the fist reached its top speed before the hips (the arm lifted the body).
   // The legs push and the hips turn first, the fist still low, then it rises: legs, hips, shoulders, fist [S3].
-  const drive = driveToward(dip, hit);
+  // v1.33.1: an earlier hip turn, with the chest intentionally late during the drive.
+  // The unchanged impact pose lets the thorax catch up at contact.
+  const drive = driveToward(dip, hit, { pelvis: 0.78, chest: 0.26, hips: 0.55, feet: 0.7 });
   return {
     id: `uppercut-${side === 'L' ? 'avant' : 'arriere'}`,
     keys: [
