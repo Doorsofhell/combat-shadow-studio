@@ -3017,3 +3017,26 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Captures** : `docs/v1300/captures/` (nuit et jour, 360×640 et 393×851, avant et après une première séance).
 - **Restauration** : `feature/combat-shadow-v030` avant fusion (1.29.0, commit c663c88).
 - **Suite** : lot 3 Compte, puis correction du Retour en plein écran et en séance.
+
+## 2026-11-11 · v1.31.0 · Nouvelle ergonomie, lot 3 : page Compte
+
+- **Demande** (Youssef, 2026-11-11) : suite de la nouvelle ergonomie après validation et publication de la 1.30.0
+  (« Je valide »). Maquette validée le même jour.
+- **Ce qui change** :
+  - en haut de Compte : le nom en grand, la photo à droite (toujours modifiable d'un toucher), la discipline
+    principale et le niveau réel dessous, puis l'état du compte ;
+  - quatre accès rapides : « Mon coach » (Réglages, ligne Mon coach ouverte), « Réglages », « Coach IA »,
+    « Nouveautés » (avec la pastille tant que la version n'est pas vue) ;
+  - deux cartes : « Premium à vie » et « Objectif de la semaine » (anneau et chiffres réels, ou « Aucun objectif
+    fixé ») ;
+  - tout le profil reste dessous, dans la même liste (rien de supprimé) ;
+  - les onglets « Mes infos / Réglages » ne sont plus en haut de Compte (les tuiles les remplacent) ; ils restent
+    sur Réglages, où « Mes infos » ramène à Compte.
+- **Écart avec la maquette, signalé** : pas de carte « Compte » séparée, l'état du compte est sous le nom et la ligne
+  « Compte » reste dans la liste (une carte de plus aurait fait doublon).
+- **Fichiers** : `src/ui/screens/account/{Profile.tsx,account.css}`, `src/ui/nav/{config.ts,SectionTabs.tsx,
+  BottomBar.tsx}`, `src/coach/appGuide.ts`, `src/domain/releases.ts`, `package.json`.
+- **Tests** : voir la demande de fusion ; tests adaptés sans retirer de contrôle : `navigation`, `profil-v120`,
+  `account`, `premium`, `app`, `profile-photo`.
+- **Captures** : `docs/v1310/captures/`.
+- **Restauration** : `feature/combat-shadow-v030` avant fusion (1.30.0, commit b3dc797).

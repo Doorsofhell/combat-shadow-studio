@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.31.0',
+      releaseDate: '2026-11-11',
+      title: 'Nouvelle page Compte',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Compte : ton nom en grand, ta photo à droite, ta discipline et ton niveau dessous.' },
+        { category: 'ameliorations', text: 'Quatre accès rapides : « Mon coach », « Réglages », « Coach IA » et « Nouveautés », puis Premium et ton objectif de la semaine avec tes vrais chiffres.' },
+        { category: 'ameliorations', text: 'Tout ton profil reste dessous, dans la même liste. Les onglets « Mes infos » et « Réglages » restent sur la page Réglages.' },
+      ],
+      links: [{ label: 'Voir Compte', to: '/profil' }],
+    },
+    {
       version: '1.30.0',
       releaseDate: '2026-11-11',
       title: 'Nouvel accueil',

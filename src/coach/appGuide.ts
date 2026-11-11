@@ -600,8 +600,8 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['mon profil', 'le profil', 'page profil', 'modifier mon profil', 'pseudo', 'changer mon pseudo', 'changer de niveau', 'modifier mon niveau', 'discipline principale', 'changer ma garde', 'taille du texte', 'texte plus grand', 'agrandir le texte', 'reduire les animations', 'questionnaire', 'refaire le questionnaire', 'm appeler par mon pseudo'],
     screens: ['profil'],
     answer:
-      'Ton profil s’ouvre avec ta photo (ou tes initiales) en haut à droite de chaque écran, onglet « Mes infos ».\n' +
-      'C’est une liste en groupes (Moi, Ma pratique, Mon parcours) : touche une ligne pour l’ouvrir. Tu y changes ton pseudo, ta taille et ton poids, tes disciplines et ta discipline principale, ta garde, ton rythme et tes objectifs.\n' +
+      'Ton profil s’ouvre avec la place « Compte » de la barre du bas (ta photo ou tes initiales). En haut : ton nom, ta discipline et ton niveau, puis quatre accès rapides (« Mon coach », « Réglages », « Coach IA », « Nouveautés »), Premium et ton objectif de la semaine.\n' +
+      'Dessous, « Mes infos » est une liste en groupes (Moi, Ma pratique, Mon parcours) : touche une ligne pour l’ouvrir. Tu y changes ton pseudo, ta taille et ton poids, tes disciplines et ta discipline principale, ta garde, ton rythme et tes objectifs.\n' +
       'La taille du texte, la réduction des animations et « M’appeler par mon pseudo » sont dans Réglages (Apparence et Coach IA).\n' +
       'Ton niveau se choisit aussi sur la page de chaque discipline, et « Questionnaire et niveaux » dans les réglages refait l’évaluation de départ.',
     action: { to: '/profil', label: 'Ouvrir mon profil' },

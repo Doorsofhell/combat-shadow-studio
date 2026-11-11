@@ -11,7 +11,7 @@ const PNG = Buffer.from(
 test('photo de profil : ajouter, cadrer, garder après rechargement, supprimer', async ({ page }) => {
   await seedProfile(page);
   await page.goto('/#/profil?ouvert=identite'); // 1.2.0: Mes infos › Identité holds « Ajouter une photo »
-  const avatar = page.locator('.acc-hero .acc-avatar');
+  const avatar = page.locator('.acc-who .acc-avatar');
   // no 3D fighter in this seed: the initials are shown
   const before = await avatar.getAttribute('data-avatar');
   expect(before).not.toBe('photo');
@@ -31,13 +31,13 @@ test('photo de profil : ajouter, cadrer, garder après rechargement, supprimer',
   expect(src!.length).toBeLessThan(120_000);
 
   await page.reload();
-  await expect(page.locator('.acc-hero .acc-avatar')).toHaveAttribute('data-avatar', 'photo');
+  await expect(page.locator('.acc-who .acc-avatar')).toHaveAttribute('data-avatar', 'photo');
 
   await page.getByTestId('photo-open').click();
   await page.getByTestId('photo-delete').click();
-  await expect(page.locator('.acc-hero .acc-avatar')).toHaveAttribute('data-avatar', before!);
+  await expect(page.locator('.acc-who .acc-avatar')).toHaveAttribute('data-avatar', before!);
   await page.reload();
-  await expect(page.locator('.acc-hero .acc-avatar')).toHaveAttribute('data-avatar', before!);
+  await expect(page.locator('.acc-who .acc-avatar')).toHaveAttribute('data-avatar', before!);
 });
 
 test('sans comptes configurés : seul le mode invité est proposé, aucun bouton inactif', async ({ page }) => {

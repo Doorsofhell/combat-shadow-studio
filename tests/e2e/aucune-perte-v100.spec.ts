@@ -15,6 +15,8 @@ test.describe.configure({ timeout: 300_000 });
 const HUB_TILE: Record<string, string> = { programmes: 'hub-programmes', enchainements: 'hub-createur', favoris: 'hub-favoris' };
 const tab = async (page: Page, id: string) => {
   if (HUB_TILE[id] && /#\/entrainer$/.test(page.url())) return page.getByTestId(HUB_TILE[id]).click();
+  // 1.31.0 (nouvelle ergonomie, lot 3): on Compte, « Réglages » is a quick tile and « Mes infos » is the page itself
+  if (/#\/profil$/.test(page.url())) return id === 'infos' ? undefined : page.getByTestId(`compte-${id}`).click();
   return page.getByTestId(`tab-${id}`).click();
 };
 const PLACE_URL: Record<string, RegExp> = { accueil: /#\/$/, entrainer: /#\/entrainer$/, stats: /#\/stats$/, profil: /#\/profil$/ };
@@ -197,7 +199,7 @@ test('plan, lignes 20 à 27 : Profil (photo, IMC, connexion, coach, Coach IA, r�
   if (await signIn.count()) {
     await signIn.click();
     await expect(page).toHaveURL(/#\/connexion$/);
-  } else await expect(page.getByText('Mode invité', { exact: true })).toBeVisible();
+  } else await expect(page.getByTestId('profile-status')).toContainText('Mode invité');
   // Mon coach: Kadir and Amara (1.2.0: Réglages › Mon coach)
   await place(page, 'profil');
   await tab(page, 'reglages');

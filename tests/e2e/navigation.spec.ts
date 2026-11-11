@@ -174,9 +174,13 @@ test.describe('393×851', () => {
     await expect(page).toHaveURL(/#\/historique$/);
     // Paramètres (Réglages): tab of Profil (lot 2); 1.2.0: Mon coach and Coach IA are rows of Réglages; Premium: a row
     await bar(page).getByTestId('nav-profil').click();
-    await expect(page.getByTestId('section-tabs').locator('button')).toHaveText(['Mes infos', 'Réglages']);
-    await page.getByTestId('tab-reglages').click();
+    // 1.31.0 (nouvelle ergonomie, lot 3): the first page of Compte has four quick tiles instead of the tabs; the tabs
+    // « Mes infos / Réglages » show on Réglages
+    await expect(page.getByTestId('section-tabs')).toHaveCount(0);
+    for (const id of ['compte-coach', 'compte-reglages', 'compte-coach-ia', 'compte-news', 'compte-premium', 'compte-goal']) await expect(page.getByTestId(id), id).toBeVisible();
+    await page.getByTestId('compte-reglages').click();
     await expect(page).toHaveURL(/#\/reglages$/);
+    await expect(page.getByTestId('section-tabs').locator('button')).toHaveText(['Mes infos', 'Réglages']);
     await openSetting(page, 'coach');
     await expect(page.getByTestId('coach-homme')).toBeVisible();
     await openSetting(page, 'coach-ia');
@@ -198,8 +202,10 @@ test.describe('393×851', () => {
     // no popup on its own
     await expect(page.getByTestId('news-sheet')).toHaveCount(0);
     await bar(page).getByTestId('nav-profil').click();
+    // 1.31.0: on Compte the dot is on the tile « Nouveautés »; on Réglages it is on its tab, as before
+    await expect(page.getByTestId('compte-news-dot')).toBeVisible();
+    await page.getByTestId('compte-reglages').click();
     await expect(page.getByTestId('reglages-dot')).toBeVisible();
-    await page.getByTestId('tab-reglages').click();
     await expect(page.getByTestId('news-dot')).toBeVisible();
     await page.getByTestId('reglages-nouveautes').click();
     const news = page.getByTestId('news-sheet');
@@ -406,8 +412,8 @@ test.describe('393×851', () => {
   test('Profil et Paramètres : Réglages, Affichage (la caméra y est)', async ({ page }) => {
     await seedProfile(page);
     await page.goto('/#/profil');
-    // 1.0.0 (lot 2): Réglages is a tab of Profil
-    await page.getByTestId('tab-reglages').click();
+    // 1.0.0 (lot 2): Réglages is a tab of Profil; 1.31.0: a quick tile of Compte
+    await page.getByTestId('compte-reglages').click();
     await expect(page).toHaveURL(/#\/reglages$/);
     // 1.1.0: « Caméra » left Réglages; the camera settings are on the page « Affichage »
     // 1.3.0: no ⋮ on Réglages any more: Affichage is its row (the address /reglages/affichage still opens it)

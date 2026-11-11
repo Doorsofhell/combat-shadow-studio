@@ -88,7 +88,7 @@ test('réglages et confidentialité accessibles depuis l’accueil', async ({ pa
   await onboard(page, 'homme');
   // 1.0.0 (refonte ergonomique): Profil › Réglages (formerly Menu › Paramètres)
   await page.getByTestId('nav-profil').click();
-  await page.getByTestId('tab-reglages').click();
+  await page.getByTestId('compte-reglages').click();
   await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
   // 1.2.0: Réglages › Données et confidentialité
   await page.getByTestId('set-donnees').click();

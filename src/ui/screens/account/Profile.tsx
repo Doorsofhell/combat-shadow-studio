@@ -206,7 +206,7 @@ export function ProfilePage() {
         <button type="button" className="acc-q" onClick={openNews} data-testid="compte-news" aria-label={unseen ? 'Nouveautés, nouvelle version' : 'Nouveautés'}>
           <NavIcon id="sparkle" />
           Nouveautés
-          {unseen && <span className="menu-dot" aria-hidden />}
+          {unseen && <span className="acc-dot" aria-hidden data-testid="compte-news-dot" />}
         </button>
       </nav>
 
