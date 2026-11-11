@@ -34,6 +34,9 @@ import { DisciplineLabel, EmptyState, FilterChips, PageHead, SectionHead } from 
 import { ExerciseSheet } from './Discipline';
 import { AppIcon, DisciplineIcon, LevelIcon } from '../icons';
 import { DisciplineEmblem } from '../emblems';
+import { DisciplineArtwork } from '../components/DisciplineArtwork';
+import { NavIcon } from '../nav/NavIcon';
+import type { NavIconId } from '../nav/icons';
 import { useHydrated } from '../../store/useHydrated';
 import './train.css';
 
@@ -104,26 +107,30 @@ const levelName = (l: LevelId) => LEVELS.find((x) => x.id === l)!.name;
  */
 export function Train() {
   const [q, setQ] = useSearchParams();
-  const saved = useSettings((s) => s.settings.trainSpace);
   const setSettings = useSettings((s) => s.set);
   const asked = q.get('espace') as Space | null;
-  const space: Space = asked === 'seances' || asked === 'disciplines' ? asked : saved === 'programmes' ? 'seances' : saved;
+  const space: Space | null = asked === 'seances' || asked === 'disciplines' ? asked : null;
   const choose = (s: Space) => {
     setSettings({ trainSpace: s });
-    if (asked) setQ({}, { replace: true });
+    setQ({ espace: s }, { replace: true });
   };
   const profile = useProfile((s) => s.profile);
   const rec = useMemo(() => recommend(profile), [profile]);
   const [open, setOpen] = useState<string | null>(null);
   const openEx = open ? EXERCISE_BY_ID.get(open) : undefined;
   const quick = rec.exercises.slice(0, 2);
-  // v0.32 bar: « Démarrer » opens the recommended session (first card of « Démarrage rapide »)
-  useNavActions({ start: quick[0] && { run: () => setOpen(quick[0].id), ariaLabel: `Démarrer : ${quick[0].name}` } });
+  // v0.32 bar: « Démarrer » opens the recommended session (first card of « Démarrage rapide »); not on the hub
+  useNavActions({ start: space && quick[0] ? { run: () => setOpen(quick[0].id), ariaLabel: `Démarrer : ${quick[0].name}` } : undefined });
 
   if (q.get('espace') === 'programmes') return <Navigate to="/programmes" replace />;
+  // 1.29.0: the first page is the hub of tiles; Séances and Disciplines (unchanged) are behind « Mes séances »
+  if (!space) return <TrainHub />;
   return (
     <div className={`page train-page ${space === 'disciplines' ? 'fit' : ''}`}>
-      <PageHead title="Entraîner" eyebrow="Ton centre d’entraînement" back={false} />
+      <PageHead title="Mes séances" eyebrow="Entraîner" back={false} />
+      <Link to="/entrainer" className="hub-back" data-testid="hub-back">
+        <AppIcon id="back" size={16} /> Toutes les tuiles
+      </Link>
       <TrainSpaces active={space} onChoose={choose} />
 
       <div role="tabpanel" id={`panel-${space}`} aria-labelledby={`tab-${space}`} className="train-panel" key={space}>
@@ -132,6 +139,84 @@ export function Train() {
       </div>
 
       {openEx && <ExerciseSheet ex={openEx} onClose={() => setOpen(null)} />}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------------------------- 1.29.0 hub
+
+const HUB_LEARN: { id: string; label: string; to: string; icon: NavIconId }[] = [
+  { id: 'techniques', label: 'Techniques', to: '/techniques', icon: 'layers' },
+  { id: 'legendes', label: 'Légendes', to: '/champions', icon: 'star' },
+  { id: 'encyclopedie', label: 'Encyclopédie', to: '/encyclopedie', icon: 'book' },
+];
+const HUB_TOOLS: { id: string; label: string; to: string; icon: NavIconId }[] = [
+  { id: 'createur', label: 'Créateur', to: '/createur', icon: 'plus' },
+  { id: 'programmes', label: 'Programmes', to: '/programmes', icon: 'calendar' },
+  { id: 'chrono', label: 'Chrono', to: '/chrono', icon: 'stopwatch' },
+  { id: 'favoris', label: 'Favoris', to: '/favoris', icon: 'heart' },
+];
+
+/** the disciplines of the hub: the main one first, then the other ones practised, then the rest (catalogue order) */
+export function hubDisciplines(main: DisciplineId, practised: readonly DisciplineId[]): DisciplineId[] {
+  const all = DISCIPLINES.map((d) => d.id);
+  const mine = all.filter((d) => d !== main && practised.includes(d));
+  return [main, ...mine, ...all.filter((d) => d !== main && !mine.includes(d))];
+}
+
+/**
+ * 1.29.0 (Youssef, 2026-11-11, maquette « Ergonomie nouvelle barre », écran 2, validée): everything of Entraîner on
+ * one screen of tiles, without scrolling on a phone. The main discipline and the next one as two big tiles with
+ * their official picture, the four others smaller; « Apprends » holds the former place Apprendre of the bar
+ * (Techniques, Légendes, Encyclopédie); « Tes outils » the former tabs of Entraîner and the chronometer. Nothing
+ * is lost: « Mes séances » opens the former first page (reprise, démarrage rapide, mes enchaînements).
+ */
+function TrainHub() {
+  const profile = useProfile((s) => s.profile);
+  const order = hubDisciplines(profile.mainDiscipline, profile.disciplines);
+  const tile = (id: DisciplineId, big: boolean) => {
+    const d = DISCIPLINES.find((x) => x.id === id)!;
+    return (
+      <Link key={id} to={`/discipline/${id}`} className={`hub-tile hub-disc ${big ? "big dark-scope" : ""}`} data-testid={`hub-disc-${id}`} aria-label={`${d.name}, niveau ${levelName(profile.levels[id])}`}>
+        {big ? <DisciplineArtwork id={id} format="cover" eager /> : <DisciplineArtwork id={id} format="avatar" size="sm" eager />}
+        {big && id === profile.mainDiscipline && <span className="hub-tag">La tienne</span>}
+        <span className="hub-name">{d.name}</span>
+        {big && <span className="hub-sub">{levelName(profile.levels[id])}</span>}
+      </Link>
+    );
+  };
+  const link = (t: { id: string; label: string; to: string; icon: NavIconId }) => (
+    <Link key={t.id} to={t.to} className="hub-tile hub-link" data-testid={`hub-${t.id}`}>
+      <NavIcon id={t.icon} />
+      <span className="hub-name">{t.label}</span>
+    </Link>
+  );
+  return (
+    <div className="page train-page train-hub" data-testid="train-hub">
+      <PageHead title="Entraîner" back={false} />
+      <Link to="/entrainer?espace=seances" className="hub-row" data-testid="hub-seances">
+        <span className="hub-row-ico" aria-hidden>
+          <NavIcon id="play" />
+        </span>
+        <span className="hub-row-text">
+          <b>Mes séances</b>
+          <small>Reprise, démarrage rapide, mes enchaînements</small>
+        </span>
+        <NavIcon id="chevron" />
+      </Link>
+      <section className="hub-sec" aria-labelledby="hub-h-disc">
+        <h2 id="hub-h-disc">Choisis ta discipline</h2>
+        <div className="hub-grid g2">{order.slice(0, 2).map((id) => tile(id, true))}</div>
+        <div className="hub-grid g4">{order.slice(2).map((id) => tile(id, false))}</div>
+      </section>
+      <section className="hub-sec" aria-labelledby="hub-h-learn">
+        <h2 id="hub-h-learn">Apprends</h2>
+        <div className="hub-grid g3">{HUB_LEARN.map(link)}</div>
+      </section>
+      <section className="hub-sec" aria-labelledby="hub-h-tools">
+        <h2 id="hub-h-tools">Tes outils</h2>
+        <div className="hub-grid g4">{HUB_TOOLS.map(link)}</div>
+      </section>
     </div>
   );
 }

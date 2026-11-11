@@ -149,8 +149,10 @@ describe('guide de l’application : contenu', () => {
     for (const p of ['7 jours', '30 jours', '90 jours', '12 mois', 'Perso']) expect(by('screen-progres')).toContain(p);
     // every button named by the guide is a real word of the bar (NAV_CONFIG, the session's states) or a real command
     // « Sur cet écran » of a screen (labels read from the screens)
-    // 1.1.0: « Rechercher » is a place of the bar (BAR_PLACES), no longer a screen action
-    const barLabels = [...Object.values(NAV_CONFIG).flat().map((x) => x.label), ...Object.values(TOGGLE).map((x) => x.label), ...BAR_PLACES.map((x) => x.label)];
+    // 1.1.0: « Rechercher » is no longer a screen action; 1.29.0: it is the magnifier at the top right of every
+    // screen (BottomBar, data-testid app-search), next to the four places of the floating bar (BAR_PLACES)
+    expect(readFileSync(resolve(process.cwd(), 'src/ui/nav/BottomBar.tsx'), 'utf8')).toContain('aria-label="Rechercher ou demander au coach"');
+    const barLabels = [...Object.values(NAV_CONFIG).flat().map((x) => x.label), ...Object.values(TOGGLE).map((x) => x.label), ...BAR_PLACES.map((x) => x.label), 'Rechercher'];
     const screenSrc = ['src/ui/screens/Home.tsx', 'src/ui/screens/Library.tsx', 'src/ui/screens/Training.tsx', 'src/ui/screens/Champions.tsx', 'src/ui/screens/progress/Dashboard.tsx'].map((f) => readFileSync(resolve(process.cwd(), f), 'utf8')).join('\n');
     const commandLabels = [...screenSrc.matchAll(/label: [`']([^`'(]+?)[\s(]*[`'$]/g)].map((m) => m[1].trim());
     for (const w of ['Démarrer', 'Pause', 'Reprendre', 'Décomposer', 'Caméra', 'Rechercher', 'Filtres', 'Technique', 'S’entraîner', 'Ralenti', 'Maîtrise', 'Période', 'Statistiques', 'Historique', 'Disciplines', 'Légende', 'Parcours', 'Techniques', 'Favoris']) {
@@ -171,7 +173,7 @@ describe('guide de l’application : contenu', () => {
     expect(NAV_CONFIG.accueil.some((x) => x.label === 'Reprendre')).toBe(true);
     expect(by('screen-accueil')).toContain('« Reprendre »');
     // 1.1.0 (loupe A): the search is « Rechercher », a place of the bar; the options of a screen are in ⋮
-    expect(by('barre-actions')).toContain('« Rechercher » dans la barre');
+    expect(by('barre-actions')).toContain('« Rechercher » en haut à droite');
     expect(by('barre-actions')).toContain('⋮');
     expect(askCoach('C’est quoi les boutons du bas ?', ctx('techniques')).sources[0]?.id).toBe('app:barre-actions');
     // the Coach IA opens from the search on every screen (1.1.0: no longer in « Plus »); the pill and bubble are gone

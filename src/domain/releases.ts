@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.29.0',
+      releaseDate: '2026-11-11',
+      title: 'Nouvelle barre et Entraîner en tuiles',
+      isMajor: true,
+      changes: [
+        { category: 'ameliorations', text: 'La barre du bas flotte au-dessus de la page et passe à quatre places : Accueil, Entraîner, Progrès et Compte (ton profil et les réglages).' },
+        { category: 'ameliorations', text: "Entraîner tient sur un seul écran de tuiles : tes six disciplines, « Apprends » (Techniques, Légendes, Encyclopédie) et « Tes outils » (Créateur, Programmes, Chrono, Favoris). « Mes séances » ouvre la reprise, le démarrage rapide et tes enchaînements." },
+        { category: 'ameliorations', text: 'La loupe « Rechercher ou demander au coach » est en haut à droite de chaque écran.' },
+      ],
+      links: [{ label: 'Voir Entraîner', to: '/entrainer' }],
+    },
+    {
       version: '1.28.0',
       releaseDate: '2026-11-10',
       title: 'Combinaisons des fédérations',

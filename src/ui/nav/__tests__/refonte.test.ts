@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { BAR_PLACES, MENU_ENTRIES, NAV_CONFIG, PRIMARY, ROOT_SCREENS, SECTION, SECTION_TABS, TABS, backInRow, dockSlots, navScreen, sectionTabsFor, type NavScreen } from '../config';
+import { BAR_PLACES, barPlaceOf, isTrainHub, MENU_ENTRIES, NAV_CONFIG, PRIMARY, ROOT_SCREENS, SECTION, SECTION_TABS, TABS, backInRow, dockSlots, navScreen, sectionTabsFor, type NavScreen } from '../config';
 
 // 1.0.0 (refonte ergonomique, Youssef 2026-10-27): « Aucune perte de contenu. Réorganisation, logique et intelligente »
 const screens = Object.keys(NAV_CONFIG) as NavScreen[];
@@ -107,12 +107,25 @@ describe('1.0.0 lot 3 : accueil et recherche', () => {
     expect(PRIMARY.accueil).toBe('resume');
     expect(dockSlots('accueil', '/').map((d) => d.slot.action)).toEqual(['resume']);
   });
-  it('1.1.0 (loupe A) : « Rechercher » est une place de la barre sur chaque écran à places, jamais en séance', () => {
-    // the magnifier took the place of Profil; Profil is the photo at the top right
-    expect(BAR_PLACES.map((p) => p.label)).toEqual(['Accueil', 'Entraîner', 'Apprendre', 'Progrès', 'Rechercher']);
+  it('1.29.0 (barre flottante) : quatre places, « Rechercher » en haut à droite de chaque écran à places, jamais en séance', () => {
+    // 1.1.0: the magnifier was a place of the bar and Profil the photo at the top right; 1.29.0 (Youssef, 2026-11-11,
+    // maquette validée): Compte (Profil) is back in the bar, the magnifier is at the top right, and Apprendre is
+    // reached from the tiles of Entraîner, whose place it lights
+    expect(BAR_PLACES.map((p) => p.label)).toEqual(['Accueil', 'Entraîner', 'Progrès', 'Compte']);
+    expect(BAR_PLACES.map((p) => p.to)).toEqual(['/', '/entrainer', '/stats', '/profil']);
+    for (const s of ['techniques', 'legendes', 'encyclopedie', 'fiche'] as NavScreen[]) expect(barPlaceOf(SECTION[s]), s).toBe('entrainer');
+    // the hub of Entraîner: no big button, no tabs; the former first page keeps them
+    expect(isTrainHub('entrainer', '')).toBe(true);
+    expect(isTrainHub('entrainer', '?espace=seances')).toBe(false);
+    expect(isTrainHub('programmes', '')).toBe(false);
+    // nothing lost: every tab of Entraîner and of Apprendre has its tile on the hub
+    const hub = readFileSync('src/ui/screens/Train.tsx', 'utf8');
+    for (const t of [...SECTION_TABS.entrainer!, ...SECTION_TABS.apprendre!]) expect(hub, t.to).toContain(t.to === '/entrainer' ? "to=\"/entrainer?espace=seances\"" : `to: '${t.to}'`);
+    expect(hub).toContain("to: '/chrono'");
     const bar = readFileSync('src/ui/nav/BottomBar.tsx', 'utf8');
     expect(bar).toContain('data-testid="app-search"');
-    expect(bar).toContain('data-testid="nav-profil"');
+    // Compte is drawn from BAR_PLACES (data-testid nav-profil, from its path), with the photo or the initials
+    expect(bar).toContain('data-testid="nav-me"');
     // no screen keeps its own search slot: the bar's search covers the screen first (useSearchScope)
     for (const [s, slots] of Object.entries(NAV_CONFIG)) expect(slots.some((x) => x.action === 'search'), s).toBe(false);
     // the session hides the bar (in-row screens)
