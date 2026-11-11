@@ -191,7 +191,7 @@ export function ProfilePage() {
       </header>
 
       <nav className="acc-quick" aria-label="Accès rapides">
-        <Link to="/reglages/coach" className="acc-q" data-testid="compte-coach">
+        <Link to="/coach" className="acc-q" data-testid="compte-coach">
           <NavIcon id="user" />
           Mon coach
         </Link>

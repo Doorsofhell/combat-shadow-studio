@@ -261,11 +261,12 @@ export const APP_GUIDE: GuideEntry[] = [
   {
     id: 'choose-coach',
     title: 'Choisir son coach',
-    keywords: ['changer de coach', 'choisir mon coach', 'choisir un coach', 'choix du coach', 'autre coach', 'mon coach', 'kadir', 'amara', 'axel', 'kaila', 'coach homme', 'coach femme'],
+    keywords: ['changer de coach', 'choisir mon coach', 'choisir un coach', 'choix du coach', 'autre coach', 'mon coach', 'kadir', 'amara', 'axel', 'kaila', 'nael', 'inaya', 'coach homme', 'coach femme'],
     screens: ['coach-choix'],
     answer:
-      'Tu as quatre coachs : Kadir « L’Aigle », lutteur patient à la pression constante ; Axel « Aura-Stone », grand frappeur sec au regard de pierre ; Amara « La Lionne », frappeuse puissante à la garde haute ; Kaila « La Valkyrie », compacte et puissante, toujours vers l’avant. Tous montrent les mêmes techniques.\n' +
-      'Pour changer : « Changer de coach » sur l’accueil, Réglages puis « Mon coach », ou « Options » pendant une séance. Tes statistiques sont conservées.',
+      'Tu as six coachs : Kadir « L’Aigle », lutteur patient à la pression constante ; Axel « Aura-Stone », grand frappeur sec au regard de pierre ; Naël « Le Faucon », contreur rapide ; Amara « La Lionne », frappeuse puissante à la garde haute ; Kaila « La Valkyrie », compacte et puissante, toujours vers l’avant ; Inaya « La Panthère », explosive, qui frappe des jambes à distance. Tous montrent les mêmes techniques.\n' +
+      'L’écran de choix montre le coach en grand et en 3D : fais-le tourner du doigt, passe au suivant avec les flèches, les six vignettes ou en balayant sa fiche, et touche l’icône ronde de lecture pour le voir bouger. Rien ne change tant que tu n’as pas touché « Choisir ».\n' +
+      'Pour l’ouvrir : « Changer de coach » sur l’accueil, « Mon coach » dans Compte, Réglages puis « Mon coach », ou « Options » pendant une séance. Tes statistiques sont conservées.',
     action: { to: '/coach', label: 'Choisir mon coach' },
   },
   {
