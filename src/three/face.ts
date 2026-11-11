@@ -207,7 +207,7 @@ export class FaceAnimator {
   private last: Vector3[] = [];
   private rand: () => number;
   private t = 0;
-  private nextBlink = 1.5;
+  private nextBlink = 3;
   private blinkAt = -1;
   private effort = 0;
   /** 1.20 the face at rest (FaceIdle): current values, targets, time of the next change, breathing phase */
@@ -347,7 +347,7 @@ export class FaceAnimator {
     // blinks: 0.07 s closing, 0.12 s opening
     if (!still && this.blinkAt < 0 && this.t >= this.nextBlink) {
       this.blinkAt = this.t;
-      this.nextBlink = this.t + 2 + this.rand() * 4 + (this.rand() < 0.15 ? -1.7 : 0);
+      this.nextBlink = this.t + 3 + this.rand() * 3;
     }
     let blink = 0;
     if (this.blinkAt >= 0) {
@@ -483,8 +483,8 @@ export class FaceAnimator {
     h.followP += (this.gaze.pitch - h.followP) * Math.min(1, dt / 0.8);
     this.headAmp += (1 - this.headAmp) * Math.min(1, dt / 1.2);
     const amp = rest * rest * this.headAmp * this.headAmp;
-    const yaw = amp * (deg * 1.8 * Math.sin(0.37 * t + a) + deg * 0.9 * Math.sin(0.91 * t + b) + 0.3 * h.follow);
-    const pitch = amp * (deg * 1.1 * Math.sin(0.29 * t + b) + deg * 0.5 * Math.sin(0.77 * t + c) + 0.25 * h.followP);
+    const yaw = amp * (deg * 2.2 * Math.sin(0.37 * t + a) + deg * 1.0 * Math.sin(0.91 * t + b) + 0.35 * h.follow);
+    const pitch = amp * (deg * 1.4 * Math.sin(0.29 * t + b) + deg * 0.6 * Math.sin(0.77 * t + c) + 0.3 * h.followP);
     const roll = amp * deg * (0.7 * Math.sin(0.23 * t + c) + 0.3 * Math.sin(0.61 * t + a));
     h.d
       .setFromAxisAngle(h.yaw, yaw)
