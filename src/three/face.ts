@@ -75,8 +75,9 @@ export function expressionWeights(blink: number, effort: number, exhale: number,
   const R = FACE_GAIN.rest;
   const E = FACE_GAIN.effort;
   const lid = Math.max(blink, 0.2 * E * e + 0.12 * R * f);
-  const press = 0.5 * E * e * (1 - exhale) + 0.3 * R * i.press * rest;
-  const smile = 0.28 * R * i.smile * rest * (1 - i.press);
+  // Avoid an over-compressed grimace when the fighter exhales.
+  const press = 0.18 * e * (1 - exhale) + 0.14 * i.press * rest;
+  const smile = 0.22 * i.smile * rest * (1 - i.press);
   const sl = smile * (1 - 0.35 * Math.max(0, i.side));
   const sr = smile * (1 + 0.35 * Math.min(0, i.side));
   const nose = 0.35 * E * e + 0.12 * i.breath * rest;
@@ -89,12 +90,15 @@ export function expressionWeights(blink: number, effort: number, exhale: number,
     BrowDownLeft: brow, BrowDownRight: brow,
     BrowInnerUp: 0.35 * R * i.brow * rest,
     NoseSneerLeft: nose, NoseSneerRight: nose,
+    // A light lip seal keeps the teeth concealed except for a short exhale.
+    MouthClose: 0.22 * (1 - exhale),
     MouthPressLeft: press, MouthPressRight: press,
     MouthSmileLeft: sl, MouthSmileRight: sr,
-    MouthStretchLeft: 0.3 * E * e, MouthStretchRight: 0.3 * E * e,
-    // the exhale of the strike: lips rounded and the jaw open (a sharp breath out, « tss »), well visible since 1.33
-    MouthFunnel: 1.0 * exhale,
-    JawOpen: 0.55 * exhale + 0.05 * i.breath * rest,
+    MouthStretchLeft: 0.06 * e, MouthStretchRight: 0.06 * e,
+    // Brief exhale through slightly parted lips; large concurrent morphs expose the
+    // source model's mouth interior and can create a rigid, toothy grimace.
+    MouthFunnel: 0.24 * exhale,
+    JawOpen: 0.14 * exhale,
   };
   for (const k of Object.keys(w) as FaceExpression[]) w[k] = Math.min(1, w[k]!);
   return w;
@@ -429,10 +433,10 @@ export class FaceAnimator {
       m.bone.position.addScaledVector(m.d, k);
       m.bone.quaternion.copy(m.q);
     }
-    // the jaw sets and opens a crack on the exhale of the strike (2.5° at full effort); 1.21 at rest it follows the
+    // the jaw sets and opens a crack on the exhale of the strike (2° at full effort); at rest it follows the
     // breathing (up to 0.8°)
     if (this.jaw) {
-      const a = 4 * this.effort + (idle ? 0.8 * idle.breath * rest : 0);
+      const a = 2 * this.effort + (idle ? 0.3 * idle.breath * rest : 0);
       this.jaw.bone.quaternion.copy(this.jaw.q).multiply(tmpQ.setFromAxisAngle(this.jaw.axis, (a * Math.PI) / 180));
     }
     if (this.morphs.length) {
