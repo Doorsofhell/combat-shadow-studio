@@ -104,8 +104,10 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
     { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' },
     // 0.34 (Youssef, 2026-10-22): Progrès right after Entraîner
     { icon: 'chart', label: 'Progrès', action: 'nav:/stats' },
-    // 1.0.0 (lot 3, maquette v4): the big button « Reprendre »; Chrono is a tile of the page
-    { icon: 'play', label: 'Reprendre', action: 'resume' },
+    // 1.0.0 (lot 3, maquette v4): the big button « Reprendre »; Chrono is a tile of the page. 1.30.0 (nouvelle
+    // ergonomie, lot 2): the action is « Commencer », drawn by the page in the coach's card (no PRIMARY: the bar
+    // keeps only its places on the home)
+    { icon: 'play', label: 'Commencer', action: 'resume' },
     { icon: 'user', label: 'Profil', action: 'nav:/profil' },
     MENU,
   ],
@@ -409,7 +411,6 @@ export function backInRow(screen: NavScreen, pathname = ''): boolean {
 
 /** the big button of the screen (the action most people come for); the other actions stay next to it */
 export const PRIMARY: Partial<Record<NavScreen, NavAction>> = {
-  accueil: 'resume',
   entrainer: 'start',
   discipline: 'start',
   programme: 'start',

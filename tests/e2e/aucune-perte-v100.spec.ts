@@ -34,10 +34,11 @@ test('plan, lignes 1 à 7 : l’ancien accueil (Reprendre, raccourcis, objectif,
   await seedProfile(page);
   await page.goto('/#/');
   // Reprendre: the big button of the home, and the « Reprendre » card with the discipline
-  await expect(bar(page).getByTestId('home-cta')).toBeVisible();
+  // 1.30.0: « Commencer » is in the coach's card of the page (it is the former tile « Séance rapide »)
+  await expect(page.getByTestId('home-cta')).toBeVisible();
   await expect(page.getByTestId('resume-last')).toBeVisible();
   // Séance rapide, Technique du jour (and Chrono seul): the shortcuts; Programme recommandé and Pour toi: under them
-  for (const id of ['tile-quick', 'tile-daily', 'tile-chrono', 'home-prog', 'home-foryou']) await expect(page.getByTestId(id), id).toBeVisible();
+  for (const id of ['tile-daily', 'tile-chrono', 'home-prog', 'home-foryou']) await expect(page.getByTestId(id), id).toBeVisible();
   // Objectif de la semaine: on the home, its detail in Progrès > Objectifs
   await page.getByTestId('home-goal').click();
   await expect(page).toHaveURL(/#\/objectifs$/);

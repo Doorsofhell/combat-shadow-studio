@@ -9,7 +9,7 @@ import { bar, seedProfile } from './nav-helpers';
 test('un simple mot : les résultats, et « Demander au coach » en première ligne, qui répond dans la même fenêtre', async ({ page }) => {
   await seedProfile(page);
   await page.goto('/#/');
-  await bar(page).getByTestId('app-search').click();
+  await page.getByTestId('app-search').click();
   await page.getByTestId('search-input').fill('garde');
   await expect(page.getByTestId('search-hit').first()).toBeVisible();
   await expect(page.getByTestId('search-coach')).toHaveCount(0);
@@ -38,7 +38,7 @@ test('une question : réponse courte en tête avec « Lire la suite », ses acti
   await page.getByRole('switch', { name: /Garder l’historique/ }).check({ force: true });
   await expect(page.getByRole('switch', { name: /Garder l’historique/ })).toBeChecked();
   await page.goto('/#/');
-  await bar(page).getByTestId('app-search').click();
+  await page.getByTestId('app-search').click();
   await page.getByTestId('search-input').fill('Comment corriger mon jab ?');
   await expect(page.getByTestId('search-coach')).toBeVisible();
   // asked on purpose (Entrée): kept in the history
@@ -66,7 +66,7 @@ test('une question : réponse courte en tête avec « Lire la suite », ses acti
 test('une action de la réponse ferme la recherche et ouvre l’écran', async ({ page }) => {
   await seedProfile(page);
   await page.goto('/#/');
-  await bar(page).getByTestId('app-search').click();
+  await page.getByTestId('app-search').click();
   await page.getByTestId('search-input').fill('Comment corriger mon jab ?');
   const first = page.getByTestId('search-coach-action').first();
   await expect(first).toBeVisible();
@@ -79,7 +79,7 @@ test('une action de la réponse ferme la recherche et ouvre l’écran', async (
 test('✦ avec la barre vide ouvre le Coach IA en grand ; plus de gros bouton noir', async ({ page }) => {
   await seedProfile(page);
   await page.goto('/#/');
-  await bar(page).getByTestId('app-search').click();
+  await page.getByTestId('app-search').click();
   await expect(page.getByTestId('search-ask')).toHaveCount(0);
   await expect(page.getByTestId('search-coach')).toHaveCount(0);
   await page.getByTestId('search-ai').click();

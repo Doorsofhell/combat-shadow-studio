@@ -22,7 +22,8 @@ const TAB_LABELS = ['Accueil', 'Entraîner', 'Progrès', 'Compte'];
 // lit (Profil: the photo at the top right), Retour (chip, row or none)
 const SCREENS: [string, string, string[][], string[] | null, string | null, string | null, 'chip' | 'row' | null][] = [
   // 1.0.0 (lot 3): the big button « Reprendre » (« Commencer » before the first session); Chrono is a tile of the page
-  ['/', 'accueil', [['play', 'Commencer']], null, 'resume', 'Accueil', null],
+  // 1.30.0 (nouvelle ergonomie, lot 2): « Commencer » is in the coach's card of the page, the bar keeps its places
+  ['/', 'accueil', [], null, null, 'Accueil', null],
   ['/entrainement?ex=boxe-debutant-01&mode=technique', 'entrainement', [RETOUR, ['scan', 'Décomposer'], ['camera', 'Caméra'], ['play', 'Démarrer'], PLUS], null, 'toggle', null, 'row'],
   ['/techniques?d=boxe', 'techniques', [], ['Filtres', 'Technique'], null, 'Entraîner', null],
   ['/techniques/jab?d=boxe', 'fiche', [RETOUR, ['play', 'S’entraîner']], ['Ralenti', 'Maîtrise'], 'train', 'Entraîner', 'chip'],
@@ -61,8 +62,10 @@ test.describe('393×851', () => {
       // Compte is a place of the bar; the magnifier is at the top right, or in the row of the chronometer; in the
       // session both are hidden (« Rechercher » is in « Plus »)
       await expect(bar(page).getByTestId('nav-profil')).toHaveCount(screen === 'entrainement' ? 0 : 1);
-      await expect(bar(page).getByTestId('app-search')).toHaveCount(screen === 'entrainement' ? 0 : 1);
-      await expect(bar(page).locator('.nav-topright').getByTestId('app-search')).toHaveCount(back === 'row' ? 0 : 1);
+      // 1.30.0: on the home the search is the big bar of the page itself
+      await expect(bar(page).getByTestId('app-search')).toHaveCount(screen === 'entrainement' || screen === 'accueil' ? 0 : 1);
+      await expect(bar(page).locator('.nav-topright').getByTestId('app-search')).toHaveCount(back === 'row' || screen === 'accueil' ? 0 : 1);
+      if (screen === 'accueil') await expect(page.locator('.page.home').getByTestId('app-search')).toHaveCount(1);
       // the five places, the same everywhere except the hands-free session
       const tabs = bar(page).locator('.nav-tab');
       if (screen === 'entrainement') await expect(tabs).toHaveCount(0);
@@ -300,7 +303,7 @@ test.describe('393×851', () => {
     await expect(await menuItem(page, 'open-selected')).toBeDisabled();
     await closeMenu(page);
     // search (1.1.0: the place « Rechercher » of the bar, the techniques of the screen first)
-    await bar(page).getByTestId('app-search').click();
+    await page.getByTestId('app-search').click();
     await page.getByTestId('search-input').fill('crochet');
     await expect(page.getByTestId('search-own-hit').first()).toBeVisible();
     await page.getByTestId('search-own-hit').first().click();
@@ -429,7 +432,7 @@ test.describe('393×851', () => {
     await expect(bar(page)).toHaveAttribute('data-screen', 'fiche');
     // Séance rapide opens the recommended exercise of the main discipline
     await page.goto('/#/');
-    await page.getByTestId('tile-quick').click();
+    await page.getByTestId('home-cta').click();
     await expect(bar(page)).toHaveAttribute('data-screen', /^(discipline|entrainer)$/);
   });
 

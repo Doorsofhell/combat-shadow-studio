@@ -103,8 +103,8 @@ describe('bibliothèque d’icônes : intégration dans les écrans', () => {
     expect(main.map((m) => m.label)).toEqual(['Accueil', 'Entraîner', 'Progrès', 'Techniques', 'Légendes']);
     expect(MENU_ENTRIES.map((m) => m.label)).not.toContain('Coach');
     // 0.48: « Chrono » in place of Techniques in the bar; 1.0.0 (lot 3, maquette v4): on the home that place is the
-    // big button « Reprendre » and Chrono a tile of the page
-    expect(NAV_CONFIG.accueil.map((s) => s.label)).toEqual(['Entraîner', 'Progrès', 'Reprendre', 'Profil', 'Menu']);
+    // big button « Reprendre » and Chrono a tile of the page; 1.30.0: that action is « Commencer », in the coach's card
+    expect(NAV_CONFIG.accueil.map((s) => s.label)).toEqual(['Entraîner', 'Progrès', 'Commencer', 'Profil', 'Menu']);
   });
 });
 

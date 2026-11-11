@@ -56,7 +56,7 @@ test('Coach IA : par « Rechercher » sur chaque écran (dans « Plus » en séa
       await openMenu(page);
       await expect(page.getByTestId('cmd-search'), s).toBeVisible();
       await page.getByTestId('cmd-search').click();
-    } else await bar(page).getByTestId('app-search').click();
+    } else await page.getByTestId('app-search').click();
     // 1.7.0: the ✦ of the bar (the big « Demander au Coach IA » button is gone)
     await expect(page.getByTestId('search-ai'), s).toBeVisible();
     await expect(page.getByTestId('cmd-coach-ia'), s).toHaveCount(0);

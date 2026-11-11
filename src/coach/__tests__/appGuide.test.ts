@@ -165,13 +165,16 @@ describe('guide de l’application : contenu', () => {
     }
     // 1.0.0 (lot 3): the former commands of the home are its tiles (words of the page) and its big button
     const homeSrc = readFileSync(resolve(process.cwd(), 'src/ui/screens/Home.tsx'), 'utf8');
-    for (const w of ['Séance rapide', 'Technique du jour']) {
+    // 1.30.0 (nouvelle ergonomie, lot 2): the words of the new home (« Séance rapide » became « Commencer », in the
+    // coach's card; « Reprendre ta séance » is the first shortcut)
+    for (const w of ['Technique du jour', 'Reprendre ta séance', 'Que veux-tu travailler ?', 'Pour toi']) {
       expect(homeSrc, w).toContain(`>${w}<`);
-      expect(by('barre-actions'), w).toContain(`« ${w} »`);
       expect(by('screen-accueil'), w).toContain(`« ${w} »`);
     }
-    expect(NAV_CONFIG.accueil.some((x) => x.label === 'Reprendre')).toBe(true);
-    expect(by('screen-accueil')).toContain('« Reprendre »');
+    for (const w of ['Technique du jour', 'Commencer']) expect(by('barre-actions'), w).toContain(`« ${w} »`);
+    expect(homeSrc).toMatch(/Commencer\s*<\/button>/);
+    expect(NAV_CONFIG.accueil.some((x) => x.label === 'Commencer')).toBe(true);
+    expect(by('screen-accueil')).toContain('« Commencer »');
     // 1.1.0 (loupe A): the search is « Rechercher », a place of the bar; the options of a screen are in ⋮
     expect(by('barre-actions')).toContain('« Rechercher » en haut à droite');
     expect(by('barre-actions')).toContain('⋮');

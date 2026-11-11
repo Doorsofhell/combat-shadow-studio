@@ -61,7 +61,7 @@ export async function menuCommand(page: Page, testId: string) {
 export async function openCoachIA(page: Page) {
   // 1.1.0 (loupe A): « Rechercher » is a place of the bar; in the session and the chronometer it is in « Plus »
   await expect(bar(page)).toBeVisible();
-  if ((await bar(page).getByTestId('app-search').count()) === 0) await menuCommand(page, 'cmd-search');
+  if ((await page.getByTestId('app-search').count()) === 0) await menuCommand(page, 'cmd-search');
   else await page.getByTestId('app-search').click();
   // 1.7.0: the ✦ of the bar, with the field empty, opens the panel
   await page.getByTestId('search-ai').click();

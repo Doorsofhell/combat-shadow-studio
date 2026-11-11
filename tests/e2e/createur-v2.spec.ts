@@ -64,7 +64,7 @@ test('liste : tuiles avec pictogrammes, dates réelles, « Non analysé » pour 
   const used = await page.getByTestId('combo-tiles').locator('> li').evaluateAll((ls) => ls.map((l) => l.getAttribute('data-testid')));
   expect(used).toEqual(['tile-ancien', 'tile-kb']);
   // 1.1.0: « Rechercher » (bar) filters the list of the screen with Entrée; the words stay as a chip to clear
-  await bar(page).getByTestId('app-search').click();
+  await page.getByTestId('app-search').click();
   await page.getByTestId('search-input').fill('middle');
   await expect(page.getByTestId('search-apply')).toBeVisible();
   await page.getByTestId('search-input').press('Enter');

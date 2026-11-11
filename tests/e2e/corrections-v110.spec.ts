@@ -71,7 +71,7 @@ test('loupe A : « Rechercher » dans la barre, la photo et le ⋮ en haut à dr
   }
   // the search of a screen starts with its own content: Encyclopédie › Équipements
   await page.goto('/#/encyclopedie/liste?f=equipements');
-  await bar(page).getByTestId('app-search').click();
+  await page.getByTestId('app-search').click();
   await page.getByTestId('search-input').fill('gant');
   await expect(page.getByTestId('search-own-hit').first()).toBeVisible();
   await expect(page.getByTestId('search-apply')).toBeVisible();
@@ -132,7 +132,7 @@ test('Légendes : « Que signifient les statuts ? » est une question de la rech
   await page.goto('/#/champions');
   await expect(bar(page)).toHaveAttribute('data-screen', 'legendes');
   await expect(page.getByText(/Que signifient les statuts/)).toHaveCount(0);
-  await bar(page).getByTestId('app-search').click();
+  await page.getByTestId('app-search').click();
   await expect(page.getByTestId('search-question')).toHaveText(/Que signifient les statuts/);
   await page.getByTestId('search-question').click();
   // 1.7.0 (proposition A): the answer shows at the top of the search
