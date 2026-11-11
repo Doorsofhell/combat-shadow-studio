@@ -1,4 +1,4 @@
-import { lazy, useCallback, useEffect, useMemo, useRef } from 'react';
+import { lazy, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
@@ -79,13 +79,6 @@ export function Home() {
   const daily = useMemo(() => techniqueOfTheDay(filterTechniques(techniquesFor(main), main, kbStyle)), [main, kbStyle]);
   const mastery = useGoals((s) => s.mastery);
   const toReview = useMemo(() => techniquesFor(main).filter((t) => mastery[t.id] === 'a-revoir').length, [main, mastery]);
-  const tabs = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    // the tab of the discipline is brought into view without moving the page
-    const row = tabs.current;
-    const on = row?.querySelector<HTMLElement>('[aria-pressed="true"]');
-    if (row && on) row.scrollLeft = Math.max(0, on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2);
-  }, [main]);
   const goalMin = weeklyGoal;
   const goalSessions = useGoals((s) => s.goals.weeklySessions);
   const weekMin = Math.round(weekSec / 60);
@@ -108,10 +101,11 @@ export function Home() {
       </header>
 
       {/* the six disciplines: one touch changes the discipline of the page (and of the coach) */}
-      <div className="home-dtabs" ref={tabs} role="group" aria-label="Ta discipline" data-testid="disc-tabs">
+      <div className="home-dtabs" role="group" aria-label="Ta discipline" data-testid="disc-tabs">
         {DISCIPLINES.map((d) => (
           <button key={d.id} type="button" className={`home-dtab ${d.id === main ? 'on' : ''}`} aria-pressed={d.id === main} data-testid={`pick-${d.id}`} onClick={() => d.id !== main && update({ mainDiscipline: d.id })}>
-            <DisciplineIcon id={d.id} size={22} />
+            {/* the six names fit the width of a small phone: only the discipline of the page shows its icon */}
+            {d.id === main && <DisciplineIcon id={d.id} size={22} />}
             {d.short}
           </button>
         ))}

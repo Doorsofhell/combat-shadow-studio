@@ -185,6 +185,13 @@ for (const theme of ['clair', 'sombre'] as const) {
     await seedProfile(page);
     await page.goto('/#/');
     await expect(page.locator('.home-row')).toHaveCount(2);
+    // the six discipline tabs are all inside the small screen, none cut at the edge
+    const tabs = await page.locator('.home-dtab').evaluateAll((bs) => bs.map((b) => [b.getBoundingClientRect().left, b.getBoundingClientRect().right]));
+    expect(tabs).toHaveLength(6);
+    for (const [l, r] of tabs) {
+      expect(l).toBeGreaterThanOrEqual(0);
+      expect(r).toBeLessThanOrEqual(360);
+    }
     const g = await page.evaluate(() => ({ overflow: document.documentElement.scrollWidth - innerWidth, theme: document.documentElement.dataset.theme }));
     expect(g.overflow).toBeLessThanOrEqual(0);
     expect(g.theme).toBe(theme === 'clair' ? 'light' : 'dark');

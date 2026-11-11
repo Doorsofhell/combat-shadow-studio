@@ -2992,7 +2992,8 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     objectif), programme recommandé, autre idée de séance, « À revoir » (seulement s'il y a des techniques à revoir),
     Créer, Coach IA ;
   - réponses du Coach IA sur l'accueil et note des Nouveautés mises à jour.
-- **Écarts avec la maquette, signalés** : les six disciplines sont en onglets (la maquette en montrait trois) ;
+- **Écarts avec la maquette, signalés** : les six disciplines sont en onglets, toutes visibles (la maquette en
+  montrait trois) ;
   la pastille « Séance rapide » n'est pas répétée puisque « Commencer » fait la même chose ; « Changer de coach »
   est en haut à droite de la carte pour ne pas toucher « Commencer » sur les petits écrans.
 - **Fichiers** : `src/ui/screens/Home.tsx`, `src/ui/styles.css`, `src/ui/nav/{config.ts,BottomBar.tsx}`,
@@ -3003,9 +3004,15 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     fermait) : `accueil-recherche` (onglets, raccourcis, pastilles, « Commencer », anneau de l'objectif, contraste et
     tenue en 360×640 nuit et jour), `navigation`, `aucune-perte-v100`, `consignes-v130`, `nav-helpers`, et côté
     Vitest `refonte.test`, `nav.test`, `icons.test`, `appGuide.test` ;
-  - suite Playwright complète : résultat reporté dans la demande de fusion ;
-  - `consignes-v130.spec.ts:27` : ÉCHOUÉ sur cette machine, sans lien avec ce lot (échoue de la même façon sur la
-    1.29.0 reconstruite à l'identique, vérifié le même jour) ;
+  - suite Playwright complète (296 tests) : 286 TEST RÉUSSI, 2 ignorés (Firebase), 8 ÉCHOUÉ au premier passage ;
+    - 4 liés à ce lot, corrigés puis rejoués sur la version finale, TEST RÉUSSI : contraste nuit et jour (un onglet
+      de discipline coupé au bord de l'écran : les six onglets tiennent maintenant dans la largeur, sans défilement,
+      seul celui de la discipline choisie montre son icône) ; `coach-bubble:127` et `coach-panel-size:55` (le test
+      touchait la recherche pendant le chargement de l'écran suivant, aide de test corrigée) ;
+    - `coach-suggest.spec.ts:245` : ÉCHOUÉ sous charge, TEST RÉUSSI rejoué seul ;
+    - 3 sans lien avec ce lot, ÉCHOUÉ : `consignes-v130.spec.ts:27` (échoue de la même façon sur la 1.29.0
+      reconstruite à l'identique, vérifié le même jour), `coaching-hud.spec.ts:60` (instable sous charge, déjà
+      connu), `training-layout.spec.ts:117` (dépasse le temps imparti sur cette machine, déjà connu) ;
   - appareil Android réel : NON EXÉCUTÉ.
 - **Captures** : `docs/v1300/captures/` (nuit et jour, 360×640 et 393×851, avant et après une première séance).
 - **Restauration** : `feature/combat-shadow-v030` avant fusion (1.29.0, commit c663c88).

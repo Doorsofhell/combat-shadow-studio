@@ -4205,7 +4205,8 @@ html.stage-fs-open body {
 }
 .home-dtabs {
   display: flex;
-  gap: 4px;
+  justify-content: space-between;
+  gap: 0;
   overflow-x: auto;
   scrollbar-width: none;
   margin: 0 calc(-1 * var(--gutter));
@@ -4223,7 +4224,9 @@ html.stage-fs-open body {
   align-items: center;
   gap: 6px;
   min-height: 48px;
-  padding: 0 10px;
+  min-width: 44px;
+  justify-content: center;
+  padding: 0 5px;
   border: 0;
   border-bottom: 3px solid transparent;
   background: none;
@@ -4231,7 +4234,7 @@ html.stage-fs-open body {
   font: inherit;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.15rem;
+  font-size: clamp(0.95rem, 4.4vw, 1.15rem);
   text-transform: uppercase;
   letter-spacing: 0.02em;
   cursor: pointer;
