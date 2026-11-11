@@ -3036,7 +3036,9 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   « Compte » reste dans la liste (une carte de plus aurait fait doublon).
 - **Fichiers** : `src/ui/screens/account/{Profile.tsx,account.css}`, `src/ui/nav/{config.ts,SectionTabs.tsx,
   BottomBar.tsx}`, `src/coach/appGuide.ts`, `src/domain/releases.ts`, `package.json`.
-- **Tests** : voir la demande de fusion ; tests adaptés sans retirer de contrôle : `navigation`, `profil-v120`,
-  `account`, `premium`, `app`, `profile-photo`.
+- **Tests** : unitaires 1160 RÉUSSI ; écran (Playwright) 293 RÉUSSI sur 296, 3 ÉCHOUÉ déjà en échec avant ce lot et
+  sans lien (`coaching-hud:60`, `consignes-v130:27`, `training-layout:117`) ; suite passée en deux parties après une
+  coupure de la machine (162 puis 134). Tests adaptés sans retirer de contrôle : `navigation`, `profil-v120`,
+  `account`, `premium`, `app`, `profile-photo`, `aucune-perte-v100`.
 - **Captures** : `docs/v1310/captures/`.
 - **Restauration** : `feature/combat-shadow-v030` avant fusion (1.30.0, commit b3dc797).
