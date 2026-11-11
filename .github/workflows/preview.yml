@@ -8,6 +8,7 @@ on:
       - feature/combat-shadow-v025
       - feature/combat-shadow-v029
       - feature/combat-shadow-v030
+      - claude/project-thread-o7lrt8
   workflow_dispatch:
 
 permissions:
