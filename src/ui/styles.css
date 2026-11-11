@@ -4187,3 +4187,348 @@ html.stage-fs-open body {
     margin-bottom: 6px;
   }
 }
+
+/* ==========================================================================
+   1.30.0 (nouvelle ergonomie, lot 2; maquette validée le 2026-11-11): the home in one screen. Discipline tabs, the
+   big action bar (search + chronometer), two shortcuts, the coach in its card with « Commencer », round shortcuts
+   « Pour toi ». Theme tokens only (Nuit and Jour).
+   ========================================================================== */
+.page.home-v2 {
+  gap: 10px;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  padding-top: var(--space-2, 8px);
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 12px);
+}
+.home-v2 .home-head {
+  min-height: 28px;
+}
+.home-dtabs {
+  display: flex;
+  justify-content: space-between;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--line);
+  flex: none;
+}
+.home-dtabs::-webkit-scrollbar {
+  display: none;
+}
+.home-dtab {
+  appearance: none;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 48px;
+  min-width: 44px;
+  justify-content: center;
+  padding: 0 5px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(0.95rem, 4.4vw, 1.15rem);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.home-dtab.on {
+  color: var(--ink);
+  border-bottom-color: var(--red);
+}
+.home-dtab:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+  border-radius: 8px;
+}
+.home-ask {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  min-height: 56px;
+  padding: 4px 4px 4px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+.home-ask-go {
+  appearance: none;
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  font-size: 1.02rem;
+  text-align: left;
+  cursor: pointer;
+}
+.home-ask-go span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.home-ask-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+.home-v2 :is(.home-ask, .home-row, .home-round, .home-go) svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.home-ask-go:focus-visible,
+.home-ask-chip:focus-visible,
+.home-row:focus-visible,
+.home-round:focus-visible,
+.home-go:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.home-list {
+  flex: none;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.home-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 6px 12px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.home-row + .home-row {
+  border-top: 1px solid var(--line);
+}
+.home-row > svg:last-child {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+}
+.home-row-ico {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--surface);
+}
+.home-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.home-row-text small {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.home-coach {
+  flex: 1 1 auto;
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.home-coach-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 12px 6px;
+}
+.home-coach-head .hero-name {
+  font-size: 1.35rem;
+}
+.home-v2 .hero.home-hero {
+  flex: 1 1 auto;
+  margin: 0;
+  height: auto;
+  min-height: 140px;
+  max-height: none;
+}
+.home-coach-chg {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.home-go {
+  appearance: none;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  min-height: 52px;
+  padding: 0 20px 0 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--disc);
+  color: var(--on-disc);
+  font: inherit;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--disc) 30%, transparent);
+  cursor: pointer;
+}
+.home-go svg {
+  fill: currentColor !important;
+}
+.home-go:active,
+.home-round:active i {
+  transform: scale(0.96);
+}
+.home-foryou {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.home-foryou h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+.home-rounds {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 2px var(--gutter);
+}
+.home-rounds::-webkit-scrollbar {
+  display: none;
+}
+.home-round {
+  flex: none;
+  width: 68px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink);
+  text-decoration: none;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+.home-round i {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--ink) 9%, transparent);
+  font-style: normal;
+  transition: transform 0.12s ease;
+}
+.home-round.red i {
+  color: var(--red-ink);
+}
+.home-round.gold i {
+  color: var(--gold);
+}
+/* the weekly goal: the ring fills with the real share done */
+.home-ring[role='progressbar'] {
+  background:
+    radial-gradient(closest-side, var(--bg) 84%, transparent 86%),
+    conic-gradient(var(--red) calc(var(--p) * 360deg), color-mix(in srgb, var(--ink) 16%, transparent) 0);
+}
+.home-round.gold .home-ring[role='progressbar'] {
+  background:
+    radial-gradient(closest-side, var(--bg) 84%, transparent 86%),
+    conic-gradient(var(--gold) 360deg, transparent 0);
+}
+
+/* short or narrow phones: everything still fits in one screen, the coach keeps the most room */
+@media (max-width: 380px) {
+  .home-ask-go {
+    font-size: 0.9rem;
+    gap: 8px;
+    padding: 0 4px 0 6px;
+  }
+  .home-ask-chip {
+    padding: 0 12px;
+  }
+}
+@media (max-height: 700px) {
+  .page.home-v2 {
+    gap: 8px;
+  }
+  .home-row {
+    min-height: 48px;
+    padding-block: 2px;
+  }
+  .home-row-ico {
+    width: 34px;
+    height: 34px;
+  }
+  .home-coach {
+    min-height: 150px;
+    position: relative;
+  }
+  .home-coach-head {
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    bottom: 14px;
+    max-width: 42%;
+    padding: 0 12px;
+    pointer-events: none;
+  }
+  .home-coach-head .eyebrow {
+    display: none;
+  }
+  .home-v2 .hero.home-hero {
+    min-height: 150px;
+  }
+}

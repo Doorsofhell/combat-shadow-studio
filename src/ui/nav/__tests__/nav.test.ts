@@ -81,9 +81,10 @@ describe('barre : cinq places, mêmes icônes, libellés et ordre que la maquett
     const labels = keep110(all, all, ref);
     const swap = ref === 'home';
     // 1.0.0 (refonte, lot 3, maquette v4): on the home that place (Chrono since 0.48) is the big button
-    // « Reprendre »; Chrono is a tile of the page
+    // « Reprendre »; Chrono is a tile of the page. 1.30.0 (nouvelle ergonomie, lot 2): that action is « Commencer »,
+    // drawn in the coach's card of the page
     const icons = swap ? chronoForTechniques(refCase(ref), labels, 'play') : keep110(refCase(ref), all, ref);
-    const words = swap ? chronoForTechniques(labels, labels, 'Reprendre') : labels;
+    const words = swap ? chronoForTechniques(labels, labels, 'Commencer') : labels;
     expect(slots.map((s) => s.icon)).toEqual(progresAfterTrain(icons, labels));
     expect(slots.map((s) => s.label)).toEqual(progresAfterTrain(words, labels));
   });

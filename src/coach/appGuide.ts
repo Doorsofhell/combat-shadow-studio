@@ -67,7 +67,7 @@ export const APP_GUIDE: GuideEntry[] = [
     answer:
       'Combat Shadow Studio t’aide à t’entraîner seul, en shadow : ton coach en 3D (Kadir, Axel, Amara ou Kaila) montre chaque mouvement et tu le fais en même temps, face à l’écran.\n' +
       'Dans la barre du bas, qui flotte au-dessus de la page, quatre places : Accueil, Entraîner, Progrès et Compte. Dans Entraîner, tout est en tuiles : tes six disciplines, « Apprends » (techniques, légendes, encyclopédie) et « Tes outils ». La loupe en haut à droite ouvre la recherche, à côté du ⋮ qui ouvre les options de l’écran. Juste au-dessus de la barre, le gros bouton de l’action principale.\n' +
-      'Pour te lancer, touche le gros bouton « Reprendre » sur l’accueil (« Commencer » avant ta première séance). Et si tu as une question, technique ou sur l’application, touche la loupe « Rechercher » en haut à droite : tu trouves ce que tu cherches dans l’app, ou tu me poses la question.',
+      'Pour te lancer, touche « Commencer » sur l’accueil, dans la carte de ton coach. Et si tu as une question, technique ou sur l’application, touche la loupe « Rechercher » en haut à droite (sur l’accueil, c’est la grande barre « Que veux-tu travailler ? ») : tu trouves ce que tu cherches dans l’app, ou tu me poses la question.',
     action: { to: '/entrainer', label: 'Aller à Entraîner' },
   },
   {
@@ -99,7 +99,7 @@ export const APP_GUIDE: GuideEntry[] = [
       '• Fiche d’une technique : « S’entraîner », « Ralenti » (au quart de la vitesse) et « Maîtrise » (la marque comme assimilée ; touche encore pour la retirer).\n' +
       '• Progrès : « Période », « Statistiques » et « Historique ».\n' +
       '• Légendes : « Disciplines » et « Légende » ; sur la fiche d’une légende, « Parcours », « Techniques » et « Favoris ».\n' +
-      'Sur l’accueil, trois tuiles : « Séance rapide », « Technique du jour » et « Chrono seul », et le gros bouton « Reprendre ». Les autres gestes d’un écran sont aussi dans le ⋮ : par exemple « Au hasard » et « À revoir » dans les techniques ; pendant une séance, ils sont dans « Plus » : « Exercice suivant », « Comment faire ? », « Options » et « Rechercher ».\n' +
+      'Sur l’accueil : la grande barre de recherche avec « Chrono », les raccourcis « Reprendre ta séance » et « Technique du jour », et le bouton « Commencer » dans la carte de ton coach. Les autres gestes d’un écran sont aussi dans le ⋮ : par exemple « Au hasard » et « À revoir » dans les techniques ; pendant une séance, ils sont dans « Plus » : « Exercice suivant », « Comment faire ? », « Options » et « Rechercher ».\n' +
       'Pour me parler, touche la loupe « Rechercher » en haut à droite et écris ta question : ma réponse s’affiche en haut, et les résultats de l’application juste en dessous. Pour un simple mot, touche « Demander au coach » ou l’étoile ✦ dans le champ (« Demander au Coach IA ») ; avec le champ vide, l’étoile ouvre ma fenêtre en grand. Le même champ trouve aussi les techniques, les mots de l’encyclopédie, les programmes et les réglages, et d’abord ce qui est sur l’écran où tu es (par exemple les équipements). Les anciens boutons flottants (pilule et bulle) n’existent plus.',
   },
   {
@@ -109,11 +109,12 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['accueil'],
     answer:
       'L’accueil ne garde que ce qui sert à démarrer.\n' +
-      '• En haut, « Reprendre » avec ta dernière discipline et ta dernière séance. Touche-la pour choisir ta discipline parmi les six.\n' +
+      '• Tout en haut, tes six disciplines en onglets : touche un onglet pour changer de discipline.\n' +
+      '• La grande barre « Que veux-tu travailler ? » ouvre la recherche (tu peux aussi m’y poser une question). À côté, « Chrono » ouvre le chrono seul.\n' +
+      '• Deux raccourcis : « Reprendre ta séance » (ta dernière séance ; avant la première, ta discipline) et « Technique du jour ».\n' +
       '• Ton coach t’attend en garde ; « Changer de coach » permet de passer de Kadir à Amara.\n' +
-      '• Trois tuiles : « Séance rapide » (l’exercice recommandé pour ton niveau), « Technique du jour » et « Chrono seul ».\n' +
-      '• Ton objectif de la semaine, avec tes vrais chiffres ; touche-le pour le régler dans Progrès › Objectifs. Dessous, un programme recommandé et une idée « Pour toi ».\n' +
-      'Le gros bouton « Reprendre » relance ta dernière séance (« Commencer » avant la première). Tes statistiques sont dans Progrès, tes favoris dans Entraîner › Favoris.',
+      '• En bas, « Pour toi » : ton objectif de la semaine avec tes vrais chiffres (touche-le pour le régler), un programme, une autre idée de séance, tes techniques à revoir, le créateur et le Coach IA.\n' +
+      'Dans la carte de ton coach, « Commencer » ouvre l’exercice recommandé pour ton niveau. Tes statistiques sont dans Progrès, tes favoris dans Entraîner › Favoris.',
   },
 
   // ------------------------------------------------------------------ s’entraîner
@@ -125,7 +126,7 @@ export const APP_GUIDE: GuideEntry[] = [
       'commencer un entrainement', 'lancer un exercice', 'commencer un exercice', 'demarrer un exercice', 'bouton demarrer', 'bouton s entrainer',
     ],
     answer:
-      'Le plus simple : sur l’accueil, touche la tuile « Séance rapide ». La fiche de l’exercice recommandé s’ouvre. Le gros bouton « Reprendre » relance ta dernière séance.\n' +
+      'Le plus simple : sur l’accueil, touche « Commencer » dans la carte de ton coach. La fiche de l’exercice recommandé s’ouvre. Le raccourci « Reprendre ta séance » relance ta dernière séance.\n' +
       'Tu peux aussi aller dans l’onglet Entraîner, choisir une discipline puis un exercice.\n' +
       'Sur la fiche, choisis un mode (Libre, Technique, Cardio ou Rounds) puis touche « S’entraîner ». Dans le studio, touche « Démarrer » : après un court décompte, le coach enchaîne les mouvements et tu les fais avec lui.\n' +
       'Si tu débutes, prends le mode Technique : c’est plus lent et commenté.',

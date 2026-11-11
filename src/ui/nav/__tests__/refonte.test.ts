@@ -103,9 +103,12 @@ describe('refonte 1.0.0 : le contenu de l’ancien Menu est redistribué, rien n
 
 // lot 3 (maquette v4): « Rechercher ou demander au coach » replaces the Coach IA bubble
 describe('1.0.0 lot 3 : accueil et recherche', () => {
-  it('Accueil : le gros bouton « Reprendre », plus de Chrono au-dessus de la barre (tuile de la page)', () => {
-    expect(PRIMARY.accueil).toBe('resume');
-    expect(dockSlots('accueil', '/').map((d) => d.slot.action)).toEqual(['resume']);
+  it('Accueil : plus de Chrono au-dessus de la barre ; 1.30.0 : « Commencer » est dans la carte du coach, la barre ne garde que ses places', () => {
+    // 1.0.0: the big button « Reprendre » was above the bar; 1.30.0 (nouvelle ergonomie, lot 2, maquette validée le
+    // 2026-11-11): the page carries « Commencer » (coach card) and « Reprendre ta séance » (shortcut)
+    expect(PRIMARY.accueil).toBeUndefined();
+    const home = readFileSync('src/ui/screens/Home.tsx', 'utf8');
+    for (const id of ['home-cta', 'resume-last', 'tile-daily', 'tile-chrono', 'app-search', 'home-goal', 'home-prog', 'home-foryou']) expect(home, id).toContain(`data-testid="${id}"`);
   });
   it('1.29.0 (barre flottante) : quatre places, « Rechercher » en haut à droite de chaque écran à places, jamais en séance', () => {
     // 1.1.0: the magnifier was a place of the bar and Profil the photo at the top right; 1.29.0 (Youssef, 2026-11-11,

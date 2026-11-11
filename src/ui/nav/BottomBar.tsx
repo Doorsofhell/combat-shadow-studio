@@ -239,7 +239,8 @@ export function BottomBar() {
   const hasOptions = options.length > 0 || (!inRow && hasMore && !NO_KEBAB.has(screen));
   const searchOn = sheet === 'search';
   // not on the full-screen tools (session, chronometer, fighter studio): their own buttons sit at the top right
-  const topRight = tabs && !inRow && (
+  // 1.30.0: on the home the search is the big bar of the page itself
+  const topRight = tabs && !inRow && screen !== 'accueil' && (
     <div className={`nav-topright ${tabsShown ? 'in-tabs' : ''}`} data-testid="nav-topright">
       {hasOptions && menuSlot && (
         <button

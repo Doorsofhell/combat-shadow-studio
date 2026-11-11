@@ -2973,3 +2973,47 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Restauration** : `feature/combat-shadow-v030` avant fusion (1.28.0, commit 21a3fed).
 - **Suite** : lot 2 Accueil, lot 3 Compte, puis correction du Retour en plein écran et en séance (constat fait, mise
   de côté à la demande de Youssef).
+
+## 2026-11-11 · v1.30.0 · Nouvelle ergonomie, lot 2 : nouvel accueil
+
+- **Demande** (Youssef, 2026-11-11) : poursuite de la nouvelle ergonomie après validation et publication de la
+  1.29.0 (« Je valide »). Maquette validée le même jour (« Oui pour tout »). Rien n'est copié des captures de
+  référence : seuls les principes d'organisation sont repris, dans le thème de l'appli.
+- **Ce qui change** (un seul écran, sans défilement, de 360×640 aux grands téléphones) :
+  - les six disciplines en onglets tout en haut : un toucher change la discipline (l'ancienne feuille « Choisir la
+    discipline » disparaît, les onglets la remplacent) ;
+  - la grande barre « Que veux-tu travailler ? » ouvre la recherche (« Rechercher ou demander au coach ») ; « Chrono »
+    est à côté. La loupe en haut à droite n'est donc plus répétée sur l'accueil ;
+  - deux raccourcis : « Reprendre ta séance » (dernière séance ; avant la première : « Ta discipline ») et
+    « Technique du jour » ;
+  - le coach dans sa carte, avec « Changer de coach » et le bouton « Commencer » (ouvre l'exercice recommandé,
+    l'ancienne tuile « Séance rapide ») ; la barre du bas ne garde que ses quatre places ;
+  - « Pour toi », en pastilles rondes : objectif de la semaine (anneau rempli avec les vrais chiffres, rien si aucun
+    objectif), programme recommandé, autre idée de séance, « À revoir » (seulement s'il y a des techniques à revoir),
+    Créer, Coach IA ;
+  - réponses du Coach IA sur l'accueil et note des Nouveautés mises à jour.
+- **Écarts avec la maquette, signalés** : les six disciplines sont en onglets, toutes visibles (la maquette en
+  montrait trois) ;
+  la pastille « Séance rapide » n'est pas répétée puisque « Commencer » fait la même chose ; « Changer de coach »
+  est en haut à droite de la carte pour ne pas toucher « Commencer » sur les petits écrans.
+- **Fichiers** : `src/ui/screens/Home.tsx`, `src/ui/styles.css`, `src/ui/nav/{config.ts,BottomBar.tsx}`,
+  `src/coach/appGuide.ts`, `src/domain/releases.ts`, `package.json`.
+- **Tests** :
+  - suite Vitest complète (1160 tests) : TEST RÉUSSI ;
+  - tests adaptés au nouvel accueil, sans retirer de contrôle sauf celui de la feuille supprimée (le Retour qui la
+    fermait) : `accueil-recherche` (onglets, raccourcis, pastilles, « Commencer », anneau de l'objectif, contraste et
+    tenue en 360×640 nuit et jour), `navigation`, `aucune-perte-v100`, `consignes-v130`, `nav-helpers`, et côté
+    Vitest `refonte.test`, `nav.test`, `icons.test`, `appGuide.test` ;
+  - suite Playwright complète (296 tests) : 286 TEST RÉUSSI, 2 ignorés (Firebase), 8 ÉCHOUÉ au premier passage ;
+    - 4 liés à ce lot, corrigés puis rejoués sur la version finale, TEST RÉUSSI : contraste nuit et jour (un onglet
+      de discipline coupé au bord de l'écran : les six onglets tiennent maintenant dans la largeur, sans défilement,
+      seul celui de la discipline choisie montre son icône) ; `coach-bubble:127` et `coach-panel-size:55` (le test
+      touchait la recherche pendant le chargement de l'écran suivant, aide de test corrigée) ;
+    - `coach-suggest.spec.ts:245` : ÉCHOUÉ sous charge, TEST RÉUSSI rejoué seul ;
+    - 3 sans lien avec ce lot, ÉCHOUÉ : `consignes-v130.spec.ts:27` (échoue de la même façon sur la 1.29.0
+      reconstruite à l'identique, vérifié le même jour), `coaching-hud.spec.ts:60` (instable sous charge, déjà
+      connu), `training-layout.spec.ts:117` (dépasse le temps imparti sur cette machine, déjà connu) ;
+  - appareil Android réel : NON EXÉCUTÉ.
+- **Captures** : `docs/v1300/captures/` (nuit et jour, 360×640 et 393×851, avant et après une première séance).
+- **Restauration** : `feature/combat-shadow-v030` avant fusion (1.29.0, commit c663c88).
+- **Suite** : lot 3 Compte, puis correction du Retour en plein écran et en séance.

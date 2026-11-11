@@ -66,7 +66,7 @@ test('filtres combinés : sous-catégorie, discipline et recherche ; aucun résu
   await expect(page).toHaveURL(/d=muaythai/);
   await expect(results(page).filter({ hasText: 'Teep' })).toHaveCount(1);
   // 1.1.0: « Rechercher » (bar) filters this list with Entrée
-  await bar(page).getByTestId('app-search').click();
+  await page.getByTestId('app-search').click();
   await page.getByTestId('search-input').fill('zzzz');
   await expect(page.getByTestId('search-apply')).toBeVisible();
   await page.getByTestId('search-input').press('Enter');
@@ -83,7 +83,7 @@ test('recherche : nom international, synonyme, accents et tirets', async ({ page
     ['mata leão', 'etranglement-arriere'],
   ]) {
     await page.goto('/#/encyclopedie');
-    await bar(page).getByTestId('app-search').click();
+    await page.getByTestId('app-search').click();
     await page.getByTestId('search-input').fill(q);
     await expect(page.getByTestId('search-apply')).toBeVisible();
     await page.getByTestId('search-input').press('Enter');

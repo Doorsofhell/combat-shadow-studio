@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.30.0',
+      releaseDate: '2026-11-11',
+      title: 'Nouvel accueil',
+      isMajor: true,
+      changes: [
+        { category: 'ameliorations', text: 'Accueil sur un seul écran : tes six disciplines en onglets tout en haut, puis la grande barre « Que veux-tu travailler ? » avec le chrono à côté.' },
+        { category: 'ameliorations', text: 'Deux raccourcis, « Reprendre ta séance » et « Technique du jour », puis ton coach dans sa carte avec le bouton « Commencer ».' },
+        { category: 'ameliorations', text: '« Pour toi » : des pastilles rondes vers ton objectif de la semaine, un programme, une autre idée de séance, tes techniques à revoir, le créateur et le Coach IA.' },
+      ],
+      links: [{ label: "Voir l'accueil", to: '/' }],
+    },
+    {
       version: '1.29.0',
       releaseDate: '2026-11-11',
       title: 'Nouvelle barre et Entraîner en tuiles',
