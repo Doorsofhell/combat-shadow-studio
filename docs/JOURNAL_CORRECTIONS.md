@@ -3172,6 +3172,11 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   de build).
 - **Tests** : `src/boot/__tests__/demarrage-v134.test.ts` (6 : coach gardé reconnu sans taille annoncée, mise à jour
   retéléchargée, fichiers des anciennes versions, empreinte seulement pour un fichier complet, empreintes du plan,
-  compression sans perte sur 4 modèles) : TEST RÉUSSI. Unitaires 1166 RÉUSSI.
+  compression sans perte sur 4 modèles) : TEST RÉUSSI. Unitaires 1166 RÉUSSI. Écran (Playwright, avec les modèles
+  compressés) : 290 RÉUSSI, 2 NON EXÉCUTÉ (Firebase), 4 ÉCHOUÉ dans la suite complète : 3 déjà en échec avant ce lot
+  (`coach-suggest:245`, `coaching-hud:60`, `training-layout:117`) et `corrections-v110:53` dû à la charge de la
+  machine, repassé seul : RÉUSSI. `boot.spec` (4) : RÉUSSI.
+- **Contrôle visuel** : écran Coach construit avec les modèles compressés, Amara puis Kaila habillées, aucune erreur
+  de tenue (`docs/v1340/captures/`).
 - **Restauration** : branche `restauration/avant-demarrage-v134` (état 1.32.0, commit f9d9bf3).
 
