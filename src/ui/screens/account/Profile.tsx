@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { DISCIPLINES, DisciplineId, LEVELS, LevelId } from '../../../domain/types';
 import { Difficulty, Profile, SPORT_GOALS, ageFrom, displayName, initials, useProfile } from '../../../store/profile';
 import { formatDuration, sessionCount, sum, useStats, weekKey } from '../../../store/stats';
@@ -27,8 +27,12 @@ import { useSyncPrefs } from '../../../account/syncPrefs';
 import { buildFullExport } from '../../../account/export';
 import { passwordProblem, emailLooksValid } from '../../../account/auth/types';
 import type { SignInMethod } from '../../../account/auth/types';
-import { DisciplineLabel, Chip, ConfirmDialog, PageHead, PanelRow, Segmented, SetGroup, SetItem, SetLink, SettingsList, Sheet, StatTile, Toggle, toast } from '../../components';
-import { AppIcon } from '../../icons';
+import { DisciplineLabel, Chip, ConfirmDialog, PanelRow, Segmented, SetGroup, SetItem, SetLink, SettingsList, Sheet, StatTile, Toggle, toast } from '../../components';
+import { AppIcon, DisciplineIcon } from '../../icons';
+import { NavIcon } from '../../nav/NavIcon';
+import { openNews } from '../../nav/BottomBar';
+import { hasUnseenRelease } from '../../../domain/releases';
+import { useSettings } from '../../../store/settings';
 import { PasswordField } from './SignIn';
 import { BmiCard } from './BmiCard';
 import { PhotoSheet } from './PhotoSheet';
@@ -123,6 +127,14 @@ export function ProfilePage() {
   const thisWeek = weekKey(new Date().toISOString());
   const weekSec = sum(sessions.filter((s) => weekKey(s.start) === thisWeek));
   const practised = profile.disciplines.length ? profile.disciplines : [profile.mainDiscipline];
+  // the weekly goal, real figures only (the same reading as the home)
+  const goals = useGoals((s) => s.goals);
+  const unseen = hasUnseenRelease(useSettings((s) => s.settings.newsSeenVersion));
+  const week = sessions.filter((s) => weekKey(s.start) === thisWeek);
+  const weekMin = Math.round(weekSec / 60);
+  const goalOn = goals.weeklyMinutes > 0 || goals.weeklySessions > 0;
+  const goalRatio = goals.weeklyMinutes > 0 ? weekMin / goals.weeklyMinutes : goals.weeklySessions > 0 ? sessionCount(week) / goals.weeklySessions : 0;
+  const goalText = goals.weeklyMinutes > 0 ? `${weekMin} / ${goals.weeklyMinutes} min` : `${sessionCount(week)} / ${goals.weeklySessions} séance${goals.weeklySessions > 1 ? 's' : ''}`;
   const birthAge = ageFrom(profile.birthDate);
   const age = birthAge ?? profile.age;
   const discName = (d: DisciplineId) => DISCIPLINES.find((x) => x.id === d)!.name;
@@ -152,26 +164,72 @@ export function ProfilePage() {
 
   return (
     <div className="page">
-      <PageHead title="Profil" eyebrow={status === 'signedIn' ? 'Compte' : 'Mode invité'} fallback="/reglages" />
-
-      <div className="card acc-hero">
+      {/* 1.31.0 (nouvelle ergonomie, lot 3; maquette validée le 2026-11-11): the name in big letters, the photo at
+          the right, the real level under the name; four quick tiles; cards (Premium, the weekly goal with its real
+          figure); then the whole profile as before, in its list (nothing removed) */}
+      <header className="acc-who">
+        <div className="grow" style={{ minWidth: 0 }}>
+          <h1 className="acc-name" data-testid="profile-name">
+            {name}
+          </h1>
+          <span className="acc-badge" data-testid="profile-level">
+            <DisciplineIcon id={profile.mainDiscipline} size={16} />
+            {discName(profile.mainDiscipline)} · {levelName(profile.mainDiscipline)}
+          </span>
+          <div className="small muted" data-testid="profile-status">
+            {status === 'signedIn' && user ? user.email : 'Mode invité, données sur cet appareil'}
+            {status === 'signedIn' && user && !user.emailVerified && <span className="badge red" style={{ marginLeft: 8 }}>E-mail à vérifier</span>}
+          </div>
+          {fighter && <div className="small muted">Combattant : {fighter.name}</div>}
+        </div>
         <button type="button" className="acc-avatar-btn" onClick={() => setDialog('photo')} aria-label="Modifier la photo de profil" data-testid="avatar-edit">
           <Avatar profile={profile} />
           <span className="acc-avatar-pen" aria-hidden>
             <AppIcon id="edit" size={14} />
           </span>
         </button>
-        <div className="grow" style={{ minWidth: 0 }}>
-          <div className="acc-name" data-testid="profile-name">
-            {name}
-          </div>
-          <div className="small muted">
-            {status === 'signedIn' && user ? user.email : 'Sans compte, données sur cet appareil'}
-            {status === 'signedIn' && user && !user.emailVerified && <span className="badge red" style={{ marginLeft: 8 }}>E-mail à vérifier</span>}
-          </div>
-          {fighter && <div className="small muted">Combattant : {fighter.name}</div>}
-        </div>
-      </div>
+      </header>
+
+      <nav className="acc-quick" aria-label="Accès rapides">
+        <Link to="/reglages/coach" className="acc-q" data-testid="compte-coach">
+          <NavIcon id="user" />
+          Mon coach
+        </Link>
+        <Link to="/reglages" className="acc-q" data-testid="compte-reglages">
+          <NavIcon id="settings" />
+          Réglages
+        </Link>
+        <Link to="/coach-ia" className="acc-q" data-testid="compte-coach-ia">
+          <NavIcon id="coach" />
+          Coach IA
+        </Link>
+        <button type="button" className="acc-q" onClick={openNews} data-testid="compte-news" aria-label={unseen ? 'Nouveautés, nouvelle version' : 'Nouveautés'}>
+          <NavIcon id="sparkle" />
+          Nouveautés
+          {unseen && <span className="menu-dot" aria-hidden />}
+        </button>
+      </nav>
+
+      <Link to="/premium" className="acc-card prem" data-testid="compte-premium">
+        <span className="acc-card-text">
+          <b>Premium à vie</b>
+          <small>Voir ce qui est prévu</small>
+        </span>
+        <NavIcon id="diamond" />
+      </Link>
+      <Link to="/objectifs" className="acc-card" data-testid="compte-goal" aria-label={goalOn ? `Objectif de la semaine : ${goalText}` : 'Objectif de la semaine : aucun objectif fixé'}>
+        <span className="acc-card-text">
+          <b>Objectif de la semaine</b>
+          <small className={goalOn ? 'num-figure' : undefined}>{goalOn ? goalText : 'Aucun objectif fixé. Touche pour en choisir un.'}</small>
+        </span>
+        {goalOn ? (
+          <i className={`acc-ring ${goalRatio >= 1 ? 'gold' : ''}`} style={{ ['--p' as string]: Math.min(1, goalRatio) }} role="progressbar" aria-label="Objectif hebdomadaire" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(1, goalRatio) * 100)}>
+            {Math.round(Math.min(1, goalRatio) * 100)} %
+          </i>
+        ) : (
+          <NavIcon id="chevron" />
+        )}
+      </Link>
 
       {err && (
         <div className="note err" role="alert">
