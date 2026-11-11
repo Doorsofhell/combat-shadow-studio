@@ -15,34 +15,38 @@ import { bar, barSlots, closeMenu, expectChecked, menuCommand, menuItem, openCoa
  */
 const RETOUR = ['back', 'Retour'];
 const PLUS = ['grid', 'Plus'];
-const TAB_LABELS = ['Accueil', 'Entraîner', 'Apprendre', 'Progrès', 'Rechercher'];
+// 1.29.0 (barre flottante, Youssef 2026-11-11): four places; Apprendre lights Entraîner (its tiles lead there), Compte
+// is the former Profil, « Rechercher » is the magnifier at the top right (in the row on the chronometer)
+const TAB_LABELS = ['Accueil', 'Entraîner', 'Progrès', 'Compte'];
 // path, screen, the buttons in the bar in reading order, the options of the ⋮ (null: no ⋮), the big button, the place
 // lit (Profil: the photo at the top right), Retour (chip, row or none)
 const SCREENS: [string, string, string[][], string[] | null, string | null, string | null, 'chip' | 'row' | null][] = [
   // 1.0.0 (lot 3): the big button « Reprendre » (« Commencer » before the first session); Chrono is a tile of the page
   ['/', 'accueil', [['play', 'Commencer']], null, 'resume', 'Accueil', null],
   ['/entrainement?ex=boxe-debutant-01&mode=technique', 'entrainement', [RETOUR, ['scan', 'Décomposer'], ['camera', 'Caméra'], ['play', 'Démarrer'], PLUS], null, 'toggle', null, 'row'],
-  ['/techniques?d=boxe', 'techniques', [], ['Filtres', 'Technique'], null, 'Apprendre', null],
-  ['/techniques/jab?d=boxe', 'fiche', [RETOUR, ['play', 'S’entraîner']], ['Ralenti', 'Maîtrise'], 'train', 'Apprendre', 'chip'],
+  ['/techniques?d=boxe', 'techniques', [], ['Filtres', 'Technique'], null, 'Entraîner', null],
+  ['/techniques/jab?d=boxe', 'fiche', [RETOUR, ['play', 'S’entraîner']], ['Ralenti', 'Maîtrise'], 'train', 'Entraîner', 'chip'],
   ['/stats', 'progres', [], ['Période', 'Statistiques', 'Historique'], null, 'Progrès', null],
-  ['/champions', 'legendes', [], ['Disciplines', 'Légende'], null, 'Apprendre', null],
+  ['/champions', 'legendes', [], ['Disciplines', 'Légende'], null, 'Entraîner', null],
   // 1.0.0 (lot 2): Mon coach and Réglages are tabs of Profil at the top of the screen, not repeated
   // 1.2.0: Mon coach is a row of Réglages, no longer a tab: « Coach » of the bar is in the ⋮ (it opens that row)
   // 1.3.0 (Youssef, 2026-10-28: « Retire les … en haut à droite car tous les menus proposés sont déjà dans les pages
   // principales Mes infos et Réglages »): no ⋮ on Mes infos and Réglages
-  ['/profil', 'profil', [], null, null, 'Profil', null],
+  ['/profil', 'profil', [], null, null, 'Compte', null],
   // 1.1.0: « Caméra » left Réglages (it opened the same page as Affichage)
-  ['/reglages', 'parametres', [], null, null, 'Profil', null],
+  ['/reglages', 'parametres', [], null, null, 'Compte', null],
   // 1.1.1 (Youssef, 2026-10-28: « Plus si uniquement rechercher le retirer car en doublon »): the magnifier is in the
   // bar here, so no « Plus » holding only « Rechercher »
-  ['/chrono', 'chrono', [RETOUR, ['options', 'Réglages'], ['play', 'Démarrer']], null, 'toggle', 'Entraîner', 'row'],
+  ['/chrono', 'chrono', [RETOUR, ['options', 'Réglages'], ['search', 'Rechercher'], ['play', 'Démarrer']], null, 'toggle', 'Entraîner', 'row'],
+  // 1.29.0: the hub of tiles of Entraîner, no big button and no ⋮
+  ['/entrainer', 'entrainer', [], null, null, 'Entraîner', null],
 ];
 
 test.describe('393×851', () => {
   test.use({ viewport: { width: 393, height: 851 } });
 
   for (const [path, screen, slots, options, primary, lit, back] of SCREENS) {
-    test(`« ${screen} » : cinq places fixes, actions de l’écran et gros bouton`, async ({ page }) => {
+    test(`« ${screen} » : places fixes, actions de l’écran et gros bouton`, async ({ page }) => {
       await seedProfile(page);
       await page.goto(`/#${path}`);
       await expect(bar(page)).toHaveAttribute('data-screen', screen);
@@ -54,14 +58,17 @@ test.describe('393×851', () => {
         expect(words).toEqual(options);
         await closeMenu(page);
       } else await expect(bar(page).locator('.nav-kebab')).toHaveCount(0);
-      // the photo of the profile at the top right, out of the full-screen session and chronometer
-      await expect(bar(page).getByTestId('nav-profil')).toHaveCount(back === 'row' ? 0 : 1);
+      // Compte is a place of the bar; the magnifier is at the top right, or in the row of the chronometer; in the
+      // session both are hidden (« Rechercher » is in « Plus »)
+      await expect(bar(page).getByTestId('nav-profil')).toHaveCount(screen === 'entrainement' ? 0 : 1);
+      await expect(bar(page).getByTestId('app-search')).toHaveCount(screen === 'entrainement' ? 0 : 1);
+      await expect(bar(page).locator('.nav-topright').getByTestId('app-search')).toHaveCount(back === 'row' ? 0 : 1);
       // the five places, the same everywhere except the hands-free session
       const tabs = bar(page).locator('.nav-tab');
       if (screen === 'entrainement') await expect(tabs).toHaveCount(0);
       else await expect(tabs.locator('small')).toHaveText(TAB_LABELS);
-      if (lit === 'Profil') await expect(bar(page).getByTestId('nav-profil')).toHaveAttribute('aria-current', 'page');
-      else if (lit) await expect(bar(page).locator('.nav-tab[aria-current="page"] small')).toHaveText(lit);
+      if (lit === 'Compte') await expect(bar(page).getByTestId('nav-profil')).toHaveAttribute('aria-current', 'page');
+      if (lit) await expect(bar(page).locator('.nav-tab[aria-current="page"] small')).toHaveText(lit);
       // one big button at most, the main action of the screen
       const big = bar(page).locator('.nav-primary');
       await expect(big).toHaveCount(primary ? 1 : 0);
@@ -134,18 +141,22 @@ test.describe('393×851', () => {
     const places: [string, RegExp, string][] = [
       ['nav-accueil', /#\/$/, 'accueil'],
       ['nav-entrainer', /#\/entrainer$/, 'entrainer'],
-      ['nav-techniques', /#\/techniques$/, 'techniques'],
       ['nav-stats', /#\/stats$/, 'progres'],
       ['nav-profil', /#\/profil$/, 'profil'],
     ];
-    // 1.1.0: Profil is the photo at the top right, « Rechercher » the fifth place
+    // 1.29.0: four places; Compte is the profile
     for (const [id, re, screen] of places) {
       await bar(page).getByTestId(id).click();
       await expect(page).toHaveURL(re);
       await expect(bar(page)).toHaveAttribute('data-screen', screen);
     }
     // Légendes and Encyclopédie: tabs of Apprendre
-    await bar(page).getByTestId('nav-techniques').click();
+    // 1.29.0: Techniques, Légendes and Encyclopédie are the tiles « Apprends » of Entraîner
+    await bar(page).getByTestId('nav-entrainer').click();
+    for (const t of ['legendes', 'encyclopedie']) await expect(page.getByTestId(`hub-${t}`)).toBeVisible();
+    await page.getByTestId('hub-techniques').click();
+    await expect(page).toHaveURL(/#\/techniques$/);
+    await expect(bar(page)).toHaveAttribute('data-screen', 'techniques');
     await expect(page.getByTestId('section-tabs').locator('button')).toHaveText(['Techniques', 'Légendes', 'Encyclopédie']);
     await page.getByTestId('tab-legendes').click();
     await expect(bar(page)).toHaveAttribute('data-screen', 'legendes');
@@ -180,7 +191,7 @@ test.describe('393×851', () => {
     await page.goto('/#/');
     // the dot is on Profil (Réglages lives there)
     await expect(page.getByTestId('menu-dot')).toBeVisible();
-    await expect(bar(page).getByTestId('nav-profil')).toHaveAttribute('aria-label', 'Profil, nouvelle version à découvrir');
+    await expect(bar(page).getByTestId('nav-profil')).toHaveAttribute('aria-label', 'Compte, nouvelle version à découvrir');
     // no popup on its own
     await expect(page.getByTestId('news-sheet')).toHaveCount(0);
     await bar(page).getByTestId('nav-profil').click();
@@ -191,7 +202,9 @@ test.describe('393×851', () => {
     const news = page.getByTestId('news-sheet');
     await expect(news).toBeVisible();
     const versions = await news.locator('[data-version]').evaluateAll((a) => a.map((x) => x.getAttribute('data-version')));
-    expect(versions[0]).toBe('1.9.0');
+    // the newest note first (the former fixed « 1.9.0 » went stale with every release)
+    expect(versions[0]).toBe(RELEASES[0].version);
+    expect(versions).toContain('1.9.0');
     expect(versions).toContain('1.8.0');
     expect(versions).toContain('1.6.0');
     expect(versions).toContain('1.6.1');
@@ -206,7 +219,7 @@ test.describe('393×851', () => {
     expect(versions).toContain('0.32.0');
     expect(versions).toContain('0.31.0');
     expect(versions).toContain('1.0.0');
-    await expect(news.locator('[data-version="1.9.0"]')).toContainText('Version 1.9.0 · la plus récente');
+    await expect(news.locator(`[data-version="${RELEASES[0].version}"]`)).toContainText(`Version ${RELEASES[0].version} · la plus récente`);
     await expect(news).not.toContainText('fictive');
     // seen: the dots go away at once
     await expect(page.getByTestId('menu-dot')).toHaveCount(0);

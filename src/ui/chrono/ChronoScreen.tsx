@@ -269,7 +269,7 @@ export function ChronoScreen() {
           active="chrono"
           onChoose={(sp) => {
             set({ trainSpace: sp });
-            navigate('/entrainer');
+            navigate(`/entrainer?espace=${sp}`);
           }}
         />
         <div className="chrono-tiles">

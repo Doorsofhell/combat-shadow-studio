@@ -5,7 +5,7 @@ import { LATEST_RELEASE, hasUnseenRelease } from '../../domain/releases';
 import { usePhoto } from '../../store/photo';
 import { initials, useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { backInRow, BAR_PLACES, sectionTabsFor, NAV_CONFIG, NAV_PARENT, NO_TABS, PRIMARY, ROOT_SCREENS, SECTION, TABS, dockSlots, isRootPath, navScreen, slotRole, type NavScreen, type NavSlot, type Tab } from './config';
+import { backInRow, BAR_PLACES, barPlaceOf, isTrainHub, sectionTabsFor, NAV_CONFIG, NAV_PARENT, NO_TABS, PRIMARY, ROOT_SCREENS, SECTION, dockSlots, isRootPath, navScreen, slotRole, type NavScreen, type NavSlot, type Tab } from './config';
 import { pushLayer } from './layers';
 import { NavIcon } from './NavIcon';
 import { leave, useNavStore } from './store';
@@ -149,15 +149,16 @@ export function BottomBar() {
 
   if (!screen || !profile.completed) return null;
   const slots = NAV_CONFIG[screen];
-  const primary = PRIMARY[screen];
-  const dock = dockSlots(screen, loc.pathname);
+  const hub = isTrainHub(screen, loc.search);
+  const primary = hub ? undefined : PRIMARY[screen];
+  const dock = hub ? [] : dockSlots(screen, loc.pathname);
   const tabs = !NO_TABS.has(screen);
   const section = SECTION[screen];
   const inRow = backInRow(screen, loc.pathname);
   // 1.1.0 (Youssef, 2026-10-27: « Retirer plus / coach IA car désormais il est dans la barre de recherche », then the
   // magnifier as a place of the bar, proposition A): the Coach IA is reached from Rechercher; « Plus » (or the ⋮ at
   // the top right) holds only what the screen gives
-  const tabsShown = !!sectionTabsFor(screen) && isRootPath(loc.pathname);
+  const tabsShown = !!sectionTabsFor(screen) && isRootPath(loc.pathname) && !hub;
   // in the session the bar's places are hidden: « Plus » holds « Rechercher » there. 1.1.1 (Youssef, 2026-10-28:
   // « si uniquement rechercher le retirer car en doublon »): where the places show (chronometer, fighter studio), the
   // magnifier is already in the bar, so « Plus » appears only when the screen has something of its own
@@ -182,7 +183,8 @@ export function BottomBar() {
   const goTab = (t: Tab) => {
     haptic();
     const p = loc.pathname.replace(/\/+$/, '') || '/';
-    if (p === t.to) return;
+    // 1.29.0: from « Mes séances » (/entrainer?espace=…), the place Entraîner goes back to its hub of tiles
+    if (p === t.to && !(t.id === 'entrainer' && loc.search)) return;
     leave(() => nav(t.to));
   };
 
@@ -236,7 +238,6 @@ export function BottomBar() {
   const options = inRow || NO_KEBAB.has(screen) ? [] : secondary;
   const hasOptions = options.length > 0 || (!inRow && hasMore && !NO_KEBAB.has(screen));
   const searchOn = sheet === 'search';
-  const profileOn = section === 'profil';
   // not on the full-screen tools (session, chronometer, fighter studio): their own buttons sit at the top right
   const topRight = tabs && !inRow && (
     <div className={`nav-topright ${tabsShown ? 'in-tabs' : ''}`} data-testid="nav-topright">
@@ -259,17 +260,17 @@ export function BottomBar() {
       )}
       <button
         type="button"
-        className={`nav-avatar ${profileOn ? 'on' : ''}`}
-        aria-current={profileOn ? 'page' : undefined}
-        aria-label={unseen ? 'Profil, nouvelle version à découvrir' : 'Profil'}
-        data-tab="profil"
-        data-testid="nav-profil"
-        onClick={() => goTab(TABS.find((t) => t.id === 'profil')!)}
+        className={`nav-loupe ${searchOn ? 'on' : ''}`}
+        aria-label="Rechercher ou demander au coach"
+        aria-haspopup="dialog"
+        aria-expanded={searchOn}
+        data-testid="app-search"
+        onClick={() => {
+          haptic();
+          openSearch();
+        }}
       >
-        <span className="nav-me" data-testid="nav-me">
-          {photo ? <img src={photo} alt="" /> : me}
-        </span>
-        {unseen && <i className="nav-dot" data-testid="menu-dot" aria-hidden />}
+        <NavIcon id="search" />
       </button>
     </div>
   );
@@ -280,9 +281,33 @@ export function BottomBar() {
       {topRight}
       <div className="nav-dock changing" ref={dockRef} role="toolbar" aria-label="Actions de l’écran">
         {inRow && (secondary.length > 0 || backSlot || (hasMore && menuSlot)) && (
-          <div className={`nav-row ${secondary.length >= 3 ? 'many' : ''}`}>
+          <div className={`nav-row ${secondary.length + (tabs ? 1 : 0) >= 3 ? 'many' : ''}`}>
             {backSlot && button(backSlot, 1, 'back')}
             {secondary.map(({ slot, place }) => button(slot, place, 'secondary'))}
+            {/* 1.29.0: on the full-screen tools that keep the places (chronometer, fighter studio) the top right is
+                theirs: the magnifier joins their row of actions */}
+            {tabs && (
+              <button
+                type="button"
+                className={`nav-btn nav-secondary ${searchOn ? 'active' : ''}`}
+                aria-label="Rechercher ou demander au coach"
+                aria-haspopup="dialog"
+                aria-expanded={searchOn}
+                data-role="global"
+                data-icon="search"
+                data-action="search"
+                data-testid="app-search"
+                onClick={() => {
+                  haptic();
+                  openSearch();
+                }}
+              >
+                <span className="nav-ico">
+                  <NavIcon id="search" />
+                </span>
+                <small>Rechercher</small>
+              </button>
+            )}
             {primaryItem && button(primaryItem.slot, primaryItem.place, 'primary')}
             {hasMore && menuSlot && button(menuSlot, slots.indexOf(menuSlot) + 1, 'more')}
           </div>
@@ -292,45 +317,30 @@ export function BottomBar() {
       {tabs && (
         <nav className="nav-tabs" aria-label="Navigation principale">
           {BAR_PLACES.map((t) => {
-            if (t.id === 'recherche') {
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  className={`nav-tab ${searchOn ? 'on' : ''}`}
-                  aria-label="Rechercher ou demander au coach"
-                  aria-haspopup="dialog"
-                  aria-expanded={searchOn}
-                  data-tab="recherche"
-                  data-testid="app-search"
-                  onClick={() => {
-                    haptic();
-                    openSearch();
-                  }}
-                >
-                  <span className="nav-ico">
-                    <NavIcon id="search" />
-                  </span>
-                  <small>{t.label}</small>
-                </button>
-              );
-            }
-            const on = section === t.id && !searchOn;
+            const on = barPlaceOf(section) === t.id && !searchOn;
+            const isMe = t.id === 'profil';
             return (
               <button
                 key={t.id}
                 type="button"
                 className={`nav-tab ${on ? 'on' : ''}`}
                 aria-current={on ? 'page' : undefined}
-                aria-label={t.label}
+                aria-label={isMe && unseen ? 'Compte, nouvelle version à découvrir' : t.label}
                 data-tab={t.id}
                 data-testid={`nav-${t.to === '/' ? 'accueil' : t.to.slice(1)}`}
-                onClick={() => goTab(t as Tab)}
+                onClick={() => goTab(t)}
               >
                 <span className="nav-ico">
-                  <NavIcon id={t.icon} />
+                  {isMe ? (
+                    <span className="nav-me" data-testid="nav-me">
+                      {photo ? <img src={photo} alt="" /> : me}
+                    </span>
+                  ) : (
+                    <NavIcon id={t.icon} />
+                  )}
                 </span>
                 <small>{t.label}</small>
+                {isMe && unseen && <i className="nav-dot" data-testid="menu-dot" aria-hidden />}
               </button>
             );
           })}

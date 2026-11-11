@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { bar, closeMenu, menuItem, seedProfile, tapAction } from './nav-helpers';
+import { bar, closeMenu, menuItem, openLearn, seedProfile, tapAction } from './nav-helpers';
 
 // v0.46 (Youssef, 2026-10-23, « Création de l'Encyclopédie du combat — Version 1.0 » §17): access from the Menu, the
 // eight families, filters, search, A–Z, favourites kept after a reload, Retour keeps the filters, links both ways with
@@ -14,7 +14,7 @@ const results = (page: Page) => page.getByTestId('enc-results').getByTestId('enc
 
 test('Apprendre ouvre l’Encyclopédie (onglet, 1.0.0 ; formerly in the Menu), sans Premium', async ({ page }) => {
   await page.goto('/#/');
-  await page.getByTestId('nav-techniques').click();
+  await openLearn(page, 'techniques');
   const entry = page.getByTestId('tab-encyclopedie');
   await expect(entry).toHaveText('Encyclopédie');
   await entry.click();

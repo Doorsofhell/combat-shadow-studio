@@ -33,6 +33,15 @@ export async function seedProfile(page: Page, extra: Record<string, unknown> = {
 
 export const bar = (page: Page) => page.getByTestId('bottom-bar');
 
+/**
+ * 1.29.0 (barre flottante, Youssef 2026-11-11): Apprendre is no longer a place of the bar; its three spaces are tiles
+ * of Entraîner (« Apprends »). This opens one the way a person does: Entraîner, then the tile.
+ */
+export async function openLearn(page: Page, tile: 'techniques' | 'legendes' | 'encyclopedie' = 'techniques') {
+  await bar(page).getByTestId('nav-entrainer').click();
+  await page.getByTestId(`hub-${tile}`).click();
+}
+
 /** opens « Plus » (1.0.0; formerly the Menu), 1.1.0: the ⋮ at the top right out of the session: the commands of the screen */
 export async function openMenu(page: Page) {
   // 1.0.0 (lot 4): a running session is hands-free, « Plus » comes back with the pause

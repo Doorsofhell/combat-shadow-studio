@@ -1,6 +1,6 @@
 import { expect, Page, test } from '@playwright/test';
 import { DEFAULT_PROFILE } from '../../src/store/profile';
-import { bar, openCoachIA, openMenu } from './nav-helpers';
+import { bar, openCoachIA, openLearn, openMenu } from './nav-helpers';
 
 /**
  * 0.24 (Youssef, 2026-10-20 10:52): the AI coach is a bubble at the bottom right; Légendes has its own tab.
@@ -106,7 +106,7 @@ test('Coach IA à l’entraînement : pause, démo sur le lecteur, ralenti, sans
 test('Légendes : un onglet d’Apprendre (1.0.0, formerly in the Menu)', async ({ page }) => {
   await seed(page);
   await page.goto('/#/');
-  await page.getByTestId('nav-techniques').click();
+  await openLearn(page, 'techniques');
   await page.getByTestId('tab-legendes').click();
   await expect(page).toHaveURL(/#\/champions/);
   // 1.0.0 (refonte, lot 2, replaces the 0.36 rule): Techniques = Techniques, Combinaisons; Légendes is a tab of

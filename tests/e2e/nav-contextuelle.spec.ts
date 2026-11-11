@@ -94,7 +94,7 @@ async function parts(page: Page) {
   const c = await contrasts(page);
   const kinds = await bar(page)
     .locator('button')
-    .evaluateAll((bs) => bs.map((b) => (b.classList.contains('nav-tab') ? 'tab' : b.classList.contains('nav-primary') ? 'primary' : b.closest('.nav-backchip') ? 'back' : b.classList.contains('nav-kebab') ? 'kebab' : b.classList.contains('nav-avatar') ? 'avatar' : 'action')));
+    .evaluateAll((bs) => bs.map((b) => (b.classList.contains('nav-tab') ? 'tab' : b.classList.contains('nav-primary') ? 'primary' : b.closest('.nav-backchip') ? 'back' : b.classList.contains('nav-loupe') ? 'loupe' : b.classList.contains('nav-kebab') ? 'kebab' : b.classList.contains('nav-avatar') ? 'avatar' : 'action')));
   return l.map((x, i) => ({ ...x, kind: kinds[i], contrast: c[i], on: false }));
 }
 
@@ -107,28 +107,32 @@ for (const [theme, scheme] of [['Jour', 'light'], ['Nuit', 'dark']] as const) {
       await page.addInitScript((t) => localStorage.setItem('css-theme', t), theme === 'Jour' ? 'clair' : 'sombre');
       await seedProfile(page);
       // a sheet of technique: Retour, S’entraîner (big button); 1.1.0 (loupe A): Ralenti and Maîtrise in the ⋮ at the top
-      // right, next to the photo of the profile; « Rechercher » is the fifth place
+      // right, next to the magnifier of « Rechercher » (1.29.0: four places in a floating bar, Compte is the fourth)
       await page.goto('/#/techniques/jab?d=boxe');
       await expect(bar(page)).toHaveAttribute('data-screen', 'fiche');
       await page.waitForTimeout(400);
       let l = await parts(page);
-      expect(l.map((x) => x.kind)).toEqual(['back', 'kebab', 'avatar', 'primary', 'tab', 'tab', 'tab', 'tab', 'tab']);
+      expect(l.map((x) => x.kind)).toEqual(['back', 'kebab', 'loupe', 'primary', 'tab', 'tab', 'tab', 'tab']);
       // the photo has no word of its own (its label is its aria-label); the others must be readable
       for (const x of l.filter((y) => y.kind !== 'avatar')) expect(x.contrast, `${x.label} contraste`).toBeGreaterThanOrEqual(4.5);
       const tabs = l.filter((x) => x.kind === 'tab');
       const lit = await bar(page).locator('.nav-tab').evaluateAll((bs) => bs.map((b) => b.getAttribute('aria-current') === 'page'));
-      expect(lit).toEqual([false, false, true, false, false]);
-      for (const x of tabs) {
-        expect(noBg(x.bg), `${x.label} fond ${x.bg}`).toBe(true);
+      // 1.29.0: a sheet of technique belongs to Apprendre, reached from the tiles of Entraîner, whose place is lit
+      expect(lit).toEqual([false, true, false, false]);
+      for (const [i, x] of tabs.entries()) {
+        // the place lit sits on its own neutral pill (floating bar); the others have no background
+        expect(noBg(x.bg), `${x.label} fond ${x.bg}`).toBe(!lit[i]);
+        // never red: the pill is a cool surface of the theme (red never above green or blue)
+        if (lit[i]) expect(Number(x.bg.split(',')[0]), `${x.label} pastille ${x.bg}`).toBeLessThanOrEqual(Math.min(...x.bg.split(',').slice(1, 3).map(Number)) + 4);
         expect(grey(x.color), `${x.label} couleur ${x.color}`).toBe(true);
       }
-      // the place lit (Apprendre): more contrasted, bolder; the others the same neutral grey
+      // the place lit (Entraîner): more contrasted, bolder; the others the same neutral grey
       const others = tabs.filter((_, i) => !lit[i]);
       expect(new Set(others.map((x) => x.color)).size).toBe(1);
-      expect(tabs[2].color).not.toBe(others[0].color);
-      expect(tabs[2].contrast).toBeGreaterThan(others[0].contrast);
+      expect(tabs[1].color).not.toBe(others[0].color);
+      expect(tabs[1].contrast).toBeGreaterThan(others[0].contrast);
       // the actions: a glass background of their own, a grey (text) colour
-      const acts = l.filter((x) => x.kind === 'kebab' || x.kind === 'back');
+      const acts = l.filter((x) => x.kind === 'kebab' || x.kind === 'back' || x.kind === 'loupe');
       for (const x of acts) {
         expect(noBg(x.bg), `${x.label} sans fond`).toBe(false);
         expect(grey(x.color), `${x.label} couleur ${x.color}`).toBe(true);

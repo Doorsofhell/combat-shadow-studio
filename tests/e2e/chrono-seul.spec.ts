@@ -45,7 +45,7 @@ test('« Chrono » : tuile de l’Accueil, choix de Séance dans Entraîner, ouv
   await expect(bar(page).locator('[data-action="nav:/chrono"]')).toHaveCount(0);
   await expect(page.getByTestId('tile-chrono')).toContainText('Chrono');
   // 1.1.0: on Entraîner, Chrono is the third choice of Séance (Séances / Disciplines / Chrono), not a tab
-  await page.goto('/#/entrainer');
+  await page.goto('/#/entrainer?espace=seances');
   await expect(bar(page).locator('[data-action="nav:/chrono"]')).toHaveCount(0);
   await expect(page.getByTestId('tab-chrono')).toHaveCount(0);
   await expect(page.getByTestId('space-chrono')).toContainText('Chrono');
@@ -59,7 +59,8 @@ test('« Chrono » : tuile de l’Accueil, choix de Séance dans Entraîner, ouv
   // 1.0.0: the chronometer belongs to Entraîner, whose place is lit; Techniques is the place Apprendre
   await expect(bar(page).locator('.nav-tab[aria-current="page"]')).toHaveAttribute('data-tab', 'entrainer');
   await expect(bar(page).locator('[data-action="nav:/chrono"]')).toHaveCount(0);
-  await expect(bar(page).getByTestId('nav-techniques')).toBeVisible();
+  // 1.29.0: four places; Techniques is a tile of Entraîner
+  await expect(bar(page).locator('.nav-tab')).toHaveCount(4);
   // and the segment Chrono of Séance is the one shown
   await expect(page.getByTestId('space-chrono')).toHaveAttribute('aria-selected', 'true');
 });

@@ -2929,3 +2929,47 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Limites** : les illustrations des PDF n'ont pas pu être lues ; l'uppercut au buste, la parade du bras avant et le
   swing manquent au moteur (enchaînements correspondants écartés, listés) ; aucune vidéo n'a servi de source.
 - **Restauration** : `restauration/avant-catalogue-valide`
+
+## 2026-11-11 · v1.29.0 · Nouvelle ergonomie, lot 1 : barre flottante à 4 places, Entraîner en tuiles
+
+- **Demande** : Youssef, 2026-11-11 : revoir l'ergonomie de l'appli à la manière des applis de VTC (barre flottante,
+  grande barre d'action, tuiles). Maquette « Ergonomie nouvelle barre » validée le jour même (« Oui pour tout »), puis
+  « Commence par l'ergonomie ». Rien n'est copié des captures de référence : ni image, ni couleur, ni logo.
+- **Constat** : l'accueil demandait de lire avant d'agir, Entraîner était une longue page à faire défiler derrière
+  trois onglets, et la barre du bas avait cinq places dont une (Apprendre) faisait doublon avec Entraîner.
+- **Correction** :
+  - barre du bas flottante, en forme de pastille, à quatre places : Accueil, Entraîner, Progrès, Compte (le profil,
+    avec la photo ou les initiales) ; elle a exactement la hauteur de l'ancienne (66 px), donc les écrans qui
+    remplissent la hauteur gardent leurs mesures ;
+  - la loupe « Rechercher ou demander au coach » est en haut à droite de chaque écran, à la place de la photo ; sur
+    le chrono, elle est dans la rangée d'actions ; en séance elle reste dans « Plus » ;
+  - Entraîner s'ouvre sur un seul écran de tuiles, sans défilement : les six disciplines (la principale et la
+    suivante en grand, avec le visuel officiel), « Apprends » (Techniques, Légendes, Encyclopédie) et « Tes outils »
+    (Créateur, Programmes, Chrono, Favoris) ;
+  - aucune perte : « Mes séances » ouvre l'ancienne première page (reprise, démarrage rapide, mes enchaînements,
+    espaces Séances / Disciplines / Chrono inchangés) ; la place Entraîner ramène aux tuiles ;
+  - Techniques, Légendes et Encyclopédie gardent leurs onglets et allument la place Entraîner ;
+  - réponses du Coach IA sur la navigation et note des Nouveautés mises à jour.
+- **Écart avec la maquette, signalé** : les anciens espaces Séances et Disciplines sont conservés derrière « Mes
+  séances » au lieu de disparaître, pour ne rien perdre tant que l'accueil (lot 2) ne porte pas la reprise et le
+  démarrage rapide.
+- **Fichiers** : `src/ui/nav/{config.ts,BottomBar.tsx,SectionTabs.tsx,nav.css}`, `src/ui/screens/{Train.tsx,train.css}`,
+  `src/ui/chrono/ChronoScreen.tsx`, `src/coach/appGuide.ts`, `src/domain/releases.ts`, `package.json`.
+- **Tests** :
+  - suite Vitest complète (1160 tests) : TEST RÉUSSI ;
+  - `src/ui/nav/__tests__/refonte.test.ts` : quatre places, Apprendre allume Entraîner, chaque onglet d'Entraîner et
+    d'Apprendre a sa tuile : TEST RÉUSSI ;
+  - suite Playwright complète (296 tests, jouée en deux moitiés après un redémarrage de la machine, puis les tests
+    touchés rejoués) : 294 TEST RÉUSSI ; 2 ÉCHOUÉ sans lien avec ce lot : `coaching-hud.spec.ts:60` (instable sous
+    charge, déjà connu) et `training-layout.spec.ts:117` (dépasse le temps imparti sur cette machine : il échoue de
+    la même façon sur la 1.28.0 reconstruite à l'identique, vérifié le même jour) ;
+  - tests adaptés à la nouvelle barre, sans retirer de contrôle : `navigation`, `nav-contextuelle`, `app`,
+    `aucune-perte-v100`, `accueil-recherche`, `chrono-seul`, `corrections-v110`, `consignes-v130`, `profil-v120`,
+    `coach-bubble`, `encyclopedie`, `entrainer-techniques`, `train-resume` ; le test des Nouveautés, périmé depuis la
+    1.10 (il attendait « 1.9.0 » en tête), suit maintenant la dernière version ;
+  - contraste WCAG AA (axe-core et pixels rendus) sur le nouvel écran Entraîner, nuit et jour : TEST RÉUSSI ;
+  - appareil Android réel : NON EXÉCUTÉ.
+- **Captures** : `docs/v1290/captures/` (nuit et jour).
+- **Restauration** : `feature/combat-shadow-v030` avant fusion (1.28.0, commit 21a3fed).
+- **Suite** : lot 2 Accueil, lot 3 Compte, puis correction du Retour en plein écran et en séance (constat fait, mise
+  de côté à la demande de Youssef).

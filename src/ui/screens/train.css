@@ -517,3 +517,184 @@
     grid-template-rows: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* ==========================================================================
+   1.29.0 — Entraîner en tuiles (maquette « Ergonomie nouvelle barre », écran 2): one screen, no scrolling on a
+   phone; the height left by the head and the floating bar is shared between the rows of tiles.
+   ========================================================================== */
+.train-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: calc(100dvh - var(--nav-h, 76px) - env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+.train-hub .hub-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.train-hub .hub-sec h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.hub-grid {
+  display: grid;
+  gap: 8px;
+}
+.hub-grid.g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.hub-grid.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.hub-grid.g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.hub-tile {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 76px;
+  padding: 8px 4px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+  text-align: center;
+  font-weight: 600;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s;
+}
+.hub-tile:active { transform: scale(0.97); }
+.hub-tile:focus-visible, .hub-row:focus-visible, .hub-back:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.hub-tile .hub-name {
+  position: relative;
+  font-size: 0.8125rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.hub-link svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: var(--red-ink);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hub-disc.big {
+  min-height: 112px;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 10px 12px;
+  text-align: left;
+  background: #141a22;
+  color: #f4f4f5;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+.hub-disc.big .disc-art.cover {
+  position: absolute;
+  inset: 0;
+}
+.hub-disc.big .disc-art.cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hub-disc.big::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(8, 11, 15, 0.92), rgba(8, 11, 15, 0.15) 70%);
+}
+.hub-disc.big .hub-name, .hub-disc.big .hub-sub, .hub-disc.big .hub-tag { z-index: 1; }
+.hub-disc.big .hub-name {
+  font-family: var(--font-display);
+  font-size: 1.1875rem;
+  font-weight: 700;
+}
+.hub-disc.big .hub-sub {
+  position: relative;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #d1d5db;
+  margin-top: -4px;
+}
+.hub-tag {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--red);
+  color: var(--on-red, #fff);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+.hub-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  text-decoration: none;
+}
+.hub-row svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hub-row-ico {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--surface);
+}
+.hub-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.hub-row-text small { color: var(--muted); }
+.hub-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  color: var(--muted);
+  font-weight: 600;
+  text-decoration: none;
+}
+/* tall phones: the tiles take the room left, so the screen is filled without scrolling */
+@media (min-height: 760px) {
+  .train-hub .hub-sec { gap: 10px; padding-top: 12px; }
+  .hub-tile { min-height: 84px; }
+  .hub-disc.big { min-height: 128px; }
+}
+.hub-grid.g4 .hub-tile .hub-name {
+  font-size: 0.75rem;
+  overflow-wrap: normal;
+}
+@media (min-height: 800px) {
+  .hub-tile { min-height: 92px; }
+  .hub-disc.big { min-height: 148px; }
+}

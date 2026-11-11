@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
 import { hasUnseenRelease } from '../../domain/releases';
-import { isRootPath, navScreen, sectionTabsFor } from './config';
+import { isRootPath, isTrainHub, navScreen, sectionTabsFor } from './config';
 import { haptic } from './BottomBar';
 import { leave, useNavStore } from './store';
 import { swipeBlocked, swipeDirection, swipeTab } from './swipe';
@@ -20,7 +20,7 @@ export function SectionTabs() {
   const nav = useNavigate();
   const completed = useProfile((s) => s.profile.completed);
   const screen = navScreen(loc.pathname, loc.search);
-  const tabs = screen && completed && isRootPath(loc.pathname) ? sectionTabsFor(screen) : null;
+  const tabs = screen && completed && isRootPath(loc.pathname) && !isTrainHub(screen, loc.search) ? sectionTabsFor(screen) : null;
   const unseen = hasUnseenRelease(useSettings((s) => s.settings.newsSeenVersion));
   const ref = useRef<HTMLElement>(null);
   useLayoutEffect(() => {

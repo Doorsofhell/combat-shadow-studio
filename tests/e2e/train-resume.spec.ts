@@ -27,7 +27,7 @@ test.describe('Entraîner : ses espaces', () => {
   // stay the two spaces of the Séance tab
   test('Séances par défaut, Disciplines, Programmes en onglet ; le dernier espace est retenu', async ({ page }) => {
     await seedProfile(page);
-    await page.goto('/#/entrainer');
+    await page.goto('/#/entrainer?espace=seances');
     const tabs = page.getByRole('tablist', { name: 'Espaces d’entraînement' });
     // 1.1.0: Séances, Disciplines and Chrono (the chronometer moved here from the tabs of Entraîner)
     await expect(tabs.getByRole('tab')).toHaveCount(3);
@@ -123,7 +123,7 @@ test.describe('Entraîner : ses espaces', () => {
     const remaining = await page.getByTestId('phase-time').textContent().catch(() => null);
     // fermeture de l’application : on recharge une page vide puis l’écran Entraîner
     await page.goto('about:blank');
-    await page.goto('/#/entrainer');
+    await page.goto('/#/entrainer?espace=seances');
     await page.getByTestId('space-seances').click();
     const card = page.getByTestId('resume-card');
     await expect(card).toHaveAttribute('data-state', 'reprendre');
@@ -147,7 +147,7 @@ test.describe('Entraîner : ses espaces', () => {
     // sortie contrôlée : la carte propose toujours la reprise, avec plus de temps
     await bar(page).locator('[data-slot="1"]').click();
     await page.getByRole('dialog', { name: 'Quitter la séance ?' }).getByRole('button', { name: 'Quitter' }).click();
-    await page.goto('/#/entrainer');
+    await page.goto('/#/entrainer?espace=seances');
     await expect(page.getByTestId('resume-card')).toHaveAttribute('data-state', 'reprendre');
     expect(toSec(await page.getByTestId('resume-done').textContent().then((t) => (t ?? '').replace(/(\d+) min (\d+)/, '$1:$2').replace(/(\d+) s/, '0:$1')))).toBeGreaterThan(t0);
   });

@@ -311,8 +311,23 @@ export const TABS: readonly Tab[] = [
  * Profil (still a space, TABS) is the photo at the top right of every screen, Rechercher opens « Rechercher ou
  * demander au coach » (no page of its own)
  */
-export type BarPlace = Tab | { id: 'recherche'; label: string; icon: NavIconId; to: '' };
-export const BAR_PLACES: readonly BarPlace[] = [...TABS.filter((t) => t.id !== 'profil'), { id: 'recherche', label: 'Rechercher', icon: 'search', to: '' }];
+/**
+ * 1.29.0 (Youssef, 2026-11-11, maquette « Ergonomie nouvelle barre » validée : « Oui pour tout ») : the bar floats
+ * above the page as one pill of four places, Accueil / Entraîner / Progrès / Compte. Apprendre (still a space, TABS,
+ * with its tabs Techniques / Légendes / Encyclopédie) is reached from the tiles of Entraîner and lights that place;
+ * Compte is the former Profil space; Rechercher is the magnifier at the top right of every screen.
+ */
+export type BarPlace = Tab;
+export const BAR_PLACES: readonly BarPlace[] = TABS.filter((t) => t.id !== 'apprendre').map((t) => (t.id === 'profil' ? { ...t, label: 'Compte' } : t));
+/**
+ * 1.29.0: the first page of Entraîner is a hub of tiles (the six disciplines, Apprends, Tes outils); the former
+ * spaces Séances and Disciplines stay behind « Mes séances » (?espace=…). The hub has no big button and no tabs of
+ * its own: each thing has its tile.
+ */
+export const isTrainHub = (screen: NavScreen | null, search = ''): boolean => screen === 'entrainer' && !new URLSearchParams(search).get('espace');
+
+/** the place of the bar lit for a space */
+export const barPlaceOf = (section: TabId | null): TabId | null => (section === 'apprendre' ? 'entrainer' : section);
 
 /** the space each screen belongs to: its place is lit in the bar */
 export const SECTION: Record<NavScreen, TabId | null> = {

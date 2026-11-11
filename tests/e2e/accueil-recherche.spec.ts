@@ -94,11 +94,12 @@ test('Accueil : toucher la discipline la change parmi les six, sans rien effacer
 
 test('Rechercher : une place de la barre sur chaque écran, dans « Plus » en séance ; trouve et ouvre', async ({ page }) => {
   await seedProfile(page);
-  // 1.1.0 (loupe A): « Rechercher » is the fifth place of the bar, on every screen with the places
+  // 1.29.0 (barre flottante): « Rechercher » is the magnifier at the top right of every screen with the places
   for (const path of ['/', '/entrainer', '/profil', '/techniques/jab?d=boxe', '/techniques?d=boxe', '/stats']) {
     await page.goto(`/#${path}`);
     await expect(bar(page).getByTestId('app-search'), path).toBeVisible();
-    await expect(bar(page).locator('.nav-tab').nth(4), path).toHaveAttribute('data-testid', 'app-search');
+    await expect(bar(page).locator('.nav-topright').getByTestId('app-search'), path).toHaveCount(1);
+    await expect(bar(page).locator('.nav-tab'), path).toHaveCount(4);
   }
   await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
   await expect(bar(page)).toHaveAttribute('data-screen', 'entrainement');

@@ -26,7 +26,7 @@ async function seedCombo(page: Page) {
 
 test('Séances : carte du Créateur avant Mes enchaînements, état vide compact, ordre des blocs', async ({ page }) => {
   await seedProfile(page);
-  await page.goto('/#/entrainer');
+  await page.goto('/#/entrainer?espace=seances');
   const card = page.getByTestId('creator-card');
   await expect(card).toBeVisible();
   await expect(card.getByRole('heading')).toHaveText('Crée tes propres enchaînements');
@@ -49,12 +49,12 @@ test('Séances : carte du Créateur avant Mes enchaînements, état vide compact
 test('Mes enchaînements : un enchaînement enregistré se lance et « Gérer » ouvre le Créateur', async ({ page }) => {
   await seedProfile(page);
   await seedCombo(page);
-  await page.goto('/#/entrainer');
+  await page.goto('/#/entrainer?espace=seances');
   await expect(page.getByTestId('combos-empty')).toHaveCount(0);
   await expect(page.getByTestId('combo-e2e-combo')).toContainText('Mon un-deux');
   await page.getByTestId('manage-combos').click();
   await expect(page).toHaveURL(/#\/createur/);
-  await page.goto('/#/entrainer');
+  await page.goto('/#/entrainer?espace=seances');
   await page.getByTestId('combo-e2e-combo').click();
   await expect(page).toHaveURL(/#\/entrainement\?perso=e2e-combo/);
   await expect(page.getByTestId('exercise-name')).toBeVisible();
