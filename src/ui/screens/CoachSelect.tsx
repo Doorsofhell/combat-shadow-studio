@@ -194,7 +194,9 @@ export function CoachSelect() {
   const mine = chosen === c.id;
   const done = () => {
     if (!mine) pickChampion(c);
-    if (first) nav('/', { replace: true });
+    // back to the screen the user came from; opened directly (a link, a reload), there is none in the app: the home
+    const inApp = ((window.history.state as { idx?: number } | null)?.idx ?? 0) > 0;
+    if (first || !inApp) nav('/', { replace: true });
     else nav(-1);
   };
   const live3d = settings.coachRender === 'premium';
