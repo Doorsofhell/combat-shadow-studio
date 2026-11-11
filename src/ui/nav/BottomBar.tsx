@@ -183,7 +183,8 @@ export function BottomBar() {
   const goTab = (t: Tab) => {
     haptic();
     const p = loc.pathname.replace(/\/+$/, '') || '/';
-    if (p === t.to) return;
+    // 1.29.0: from « Mes séances » (/entrainer?espace=…), the place Entraîner goes back to its hub of tiles
+    if (p === t.to && !(t.id === 'entrainer' && loc.search)) return;
     leave(() => nav(t.to));
   };
 

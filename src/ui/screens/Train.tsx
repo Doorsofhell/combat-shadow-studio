@@ -127,10 +127,17 @@ export function Train() {
   if (!space) return <TrainHub />;
   return (
     <div className={`page train-page ${space === 'disciplines' ? 'fit' : ''}`}>
-      <PageHead title="Mes séances" eyebrow="Entraîner" back={false} />
-      <Link to="/entrainer" className="hub-back" data-testid="hub-back">
-        <AppIcon id="back" size={16} /> Toutes les tuiles
-      </Link>
+      {/* the six disciplines fill the screen without scrolling (.fit): their head stays as it was */}
+      {space === 'disciplines' ? (
+        <PageHead title="Entraîner" eyebrow="Ton centre d’entraînement" back={false} />
+      ) : (
+        <>
+          <PageHead title="Mes séances" eyebrow="Entraîner" back={false} />
+          <Link to="/entrainer" className="hub-back" data-testid="hub-back">
+            <AppIcon id="back" size={16} /> Toutes les tuiles
+          </Link>
+        </>
+      )}
       <TrainSpaces active={space} onChoose={choose} />
 
       <div role="tabpanel" id={`panel-${space}`} aria-labelledby={`tab-${space}`} className="train-panel" key={space}>
