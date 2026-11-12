@@ -38,6 +38,8 @@ jobs:
           done
           cat /tmp/vite-review.log
           exit 1
+      - name: Verify offscreen contact-sheet composer
+        run: command -v ffmpeg && ffmpeg -version | head -1
       - name: Render seven actual outfits, four live poses each
         run: node scripts/dev/capture-amara-review-v1379.mjs
       - name: Upload visual review ZIP
