@@ -82,6 +82,181 @@ for o in bpy.data.objects:
     if o.type == 'MESH' and o.data.shape_keys:
         o.shape_key_clear()
 MW = body.matrix_world.copy()
+
+
+def smooth_old_bikini(o, rings=3, radius=0.015):
+    """1.37.7 (Youssef 12/11: « on voit aussi les anciens dessous », bords déchirés et trous sur toutes les tenues
+    d'Amara). Verified finding: unlike Inaya (clean_torso.py, 1.19), Amara's body still carries the halter bikini of
+    Sports_Female_01 sculpted in the skin itself (4416 faces of texture islands v < 0.22 above 1.15 m: raised cup
+    outlines, neck strap, back band, folded hems). Every garment is a copy of that skin, so it copied the ridges (the
+    band across the back of the rash guard, the cup outline on the chest) and its cut lines crossed the folded hems
+    (torn edges, holes). Here, ONLY in this script's working copy (the shipped photo.glb is never written), the
+    bikini region and a few rows round it are flattened: each point's distance to the trunk's axis (one centre per
+    1 cm slice) goes through a morphological opening (min then max over a sphere of `radius`): a ridge or a cord
+    narrower than 2 x radius goes, the breasts, the trunk and every hollow keep their shape. A light smoothing
+    follows. Garments are then built on that clean surface; the skin they cover is hidden by the app as before."""
+    from mathutils.kdtree import KDTree as _KD
+    me_ = o.data
+    mats_ = [m.name.lower() for m in me_.materials]
+    uv_ = me_.uv_layers.active.data
+    MW_ = o.matrix_world
+    sc = max(MW_.to_scale())
+    Xw = np.array([(MW_ @ v.co)[:] for v in me_.vertices], dtype=np.float64)
+    gname = {g.index: g.name for g in o.vertex_groups}
+    limb = np.zeros(len(Xw))
+    for v in me_.vertices:
+        limb[v.index] = sum(g.weight for g in v.groups if any(k in gname[g.group] for k in ('Arm', 'Hand', 'Head')))
+    key = np.round(Xw * 1e5).astype(np.int64)
+    _, rep = np.unique(key, axis=0, return_inverse=True)
+    rep = rep.ravel()
+    nb = {}
+    for e in me_.edges:
+        a_, b_ = e.vertices
+        nb.setdefault(rep[a_], set()).add(rep[b_])
+        nb.setdefault(rep[b_], set()).add(rep[a_])
+    core = set()
+    for p in me_.polygons:
+        if 'body' in mats_[p.material_index] and max(uv_[l].uv[1] for l in p.loop_indices) < 0.22 \
+                and Xw[list(p.vertices), 2].min() > 1.15:
+            core |= {rep[i] for i in p.vertices}
+    if not core:
+        return 0
+    region = set(core)
+    for _ in range(rings):
+        region |= {j for i in list(region) for j in nb.get(i, ())}
+    sel = np.array([rep[i] in region for i in range(len(Xw))])
+    # the trunk's axis, slice by slice (arms and head left out)
+    zlo, zhi = Xw[sel, 2].min() - 0.03, Xw[sel, 2].max() + 0.03
+    trunk = (limb < 0.3) & (Xw[:, 2] > zlo) & (Xw[:, 2] < zhi)
+    bins = np.floor((Xw[:, 2] - zlo) / 0.01).astype(int)
+    cen = {}
+    for bi in np.unique(bins[trunk]):
+        m = trunk & (bins == bi)
+        lo, hi = Xw[m, :2].min(axis=0), Xw[m, :2].max(axis=0)
+        cen[bi] = (lo + hi) / 2
+    # one smooth axis (a quadratic in z fitted on the slices' centres): centres taken slice by slice jumped by a few
+    # millimetres from one slice to the next and the opening compared distances to different axes (a 1.4 mm ridge
+    # stayed across the back)
+    zb = np.array(sorted(cen))
+    zc = zlo + (zb + 0.5) * 0.01
+    cxy = np.array([cen[b_] for b_ in zb])
+    fit = [np.polyfit(zc, cxy[:, k], 2) for k in (0, 1)]
+
+    def centre(i):
+        z_ = min(max(Xw[i, 2], zc[0]), zc[-1])
+        return np.array([np.polyval(fit[0], z_), np.polyval(fit[1], z_)])
+    work = np.where(trunk | sel)[0]
+    C = np.array([centre(i) for i in work])
+    D = Xw[work, :2] - C
+    R = np.linalg.norm(D, axis=1)
+    kd = _KD(len(work))
+    for k, i in enumerate(work):
+        kd.insert(Xw[i], k)
+    kd.balance()
+    near = [np.array([j for (_, j, _) in kd.find_range(Xw[i], radius)]) for i in work]
+    rmin = np.array([R[n].min() for n in near])
+    ropen = np.array([rmin[n].max() for n in near])
+    # light smoothing of the opened distances (the opening leaves small flats)
+    for _ in range(2):
+        ropen = np.array([ropen[n].mean() for n in near])
+    newR = np.where(sel[work], np.minimum(R, ropen), R)
+    # the thin parts (the back band, the neck cord, the cup outlines) lie across skin points far apart on this mesh
+    # (2.5 cm rows on the back), and the skin itself rolls up to them in folds: the opening above compares them with
+    # each other and left a 3 to 5 mm ridge. Each point of the region takes, if lower, the distance given by a
+    # quadratic surface fitted on its neighbours within 2.5 cm, the points standing more than 0.3 mm above it
+    # dropped and the fit made again (8 times) (a lower envelope: a thin ridge goes, the curve of the breasts and of the
+    # back stays, the quadratic follows it)
+    fitted = 0
+    in_sel = sel[work]
+    FR = float(os.environ.get('BIKINI_FIT_R', '0.04'))
+    for k in np.where(in_sel)[0]:
+        q = Xw[work[k]]
+        nbs = np.array([j for (_, j, _) in kd.find_range(q, FR) if j != k])
+        if len(nbs) < 14:
+            continue
+        rad = D[k] / max(R[k], 1e-9)
+        tan = np.array([-rad[1], rad[0]])
+        du = (Xw[work[nbs], :2] - q[:2]) @ tan
+        dz = Xw[work[nbs], 2] - q[2]
+        if not (dz.min() < -0.006 and dz.max() > 0.006 and du.min() < -0.006 and du.max() > 0.006):
+            continue
+        A = np.c_[np.ones(len(nbs)), du, dz, du * du, du * dz, dz * dz]
+        y = R[nbs]
+        keep = np.ones(len(nbs), bool)
+        for _ in range(int(os.environ.get('BIKINI_FIT_IT', '8'))):
+            if keep.sum() < 10:
+                break
+            coef = np.linalg.lstsq(A[keep], y[keep], rcond=None)[0]
+            res = y - A @ coef
+            keep = res < float(os.environ.get('BIKINI_FIT_TOL', '0.0003'))
+        if keep.sum() >= 10 and coef[0] < newR[k] - 0.0003:
+            newR[k] = coef[0]
+            fitted += 1
+    print('1.37.7 bikini : points posés sur la peau voisine', fitted)
+    if os.environ.get('BIKINI_DEBUG'):
+        for k in np.where(in_sel)[0]:
+            q = Xw[work[k]]
+            if abs(q[0]) < 0.002 and abs(q[2] - 1.2212) < 0.001:
+                print('DBG', np.round(q, 4), 'R', round(R[k], 4), 'newR', round(newR[k], 4))
+    # where the bikini lies OVER a layer of skin (its knot and band in the middle of the back: two surfaces 3 to 5 mm
+    # apart) the garment copied both, and the lower copy showed through the upper one as a small bow: that skin goes
+    # 4 mm further in, under the cloth's own thickness
+    is_core = np.array([rep[i] in core for i in work])
+    under_n = 0
+    for k in np.where(~is_core)[0]:
+        if any(is_core[j] and R[j] > R[k] + 0.0015 for (_, j, _) in kd.find_range(Xw[work[k]], 0.008)):
+            newR[k] = R[k] - float(os.environ.get('BIKINI_UNDER', '0.004'))
+            sel[work[k]] = True
+            UNDER_SKIN.add(int(work[k]))
+            under_n += 1
+    print('1.37.7 peau sous le bikini enfoncée :', under_n)
+    U = D / np.maximum(R, 1e-9)[:, None] * newR[:, None] + C
+    moved = np.abs(newR - R)
+    X2 = Xw.copy()
+    X2[work, 0], X2[work, 1] = U[:, 0], U[:, 1]
+    # the folded hems of the bikini (rows of points a fraction of a millimetre apart) are now pressed onto the skin
+    # but still folded: their thin faces turn over and drew a dark crease through the garments. The points that moved
+    # and two rows round them are relaxed along the surface (welded seams move together)
+    n_ = rep.max() + 1
+    U3 = np.zeros((n_, 3))
+    np.add.at(U3, rep, X2)
+    U3 /= np.bincount(rep, minlength=n_)[:, None]
+    mv = np.zeros(len(Xw), bool)
+    mv[work[(moved > 0.0005) & sel[work]]] = True
+    relax = {rep[i] for i in np.where(mv)[0]}
+    for _ in range(2):
+        relax |= {j for i in list(relax) for j in nb.get(i, ())}
+    relax = np.array(sorted(r for r in relax if r in region))
+    nbl = [np.array(sorted(nb.get(i, ()))) for i in relax]
+    for it in range(2 * int(os.environ.get('BIKINI_RELAX', '12'))):
+        k = 0.5 if it % 2 == 0 else -0.53
+        avg = np.array([U3[l].mean(axis=0) if len(l) else U3[i] for i, l in zip(relax, nbl)])
+        U3[relax] = U3[relax] + k * (avg - U3[relax])
+    X2 = U3[rep]
+    BIKINI_MOVED.update(int(i) for i in np.where(np.linalg.norm(X2 - Xw, axis=1) > 0.0003)[0])
+    MWI_ = MW_.inverted()
+    for i in work:
+        if sel[i]:
+            me_.vertices[i].co = MWI_ @ Vector(X2[i])
+    me_.update()
+    print('1.37.7 ancien bikini aplani : points', len(core), '+', len(region) - len(core), 'autour, déplacement max (m)',
+          round(float(moved.max()), 4), 'moyen', round(float(moved[sel[work]].mean()), 4))
+    return len(core)
+
+
+import numpy as np
+# 1.37.7: the Amara-only adjustments of 1.37.4-1.37.6 (raised square neckline, 9 mm push, crotch opening of the MMA
+# short, plane-projected bands, wider straps) were compensating for the old bikini sculpted in her skin; with it
+# flattened (smooth_old_bikini) they made the torn edges, holes and the dark piece between the thighs seen on 12/11.
+# Kept behind AMARA_PATCHES=1 for comparison; by default Amara is cut exactly like Inaya.
+AMARA_PATCHES = COACH_ID == 'mma-amara' and os.environ.get('AMARA_PATCHES', '0') == '1'
+CLEAN_BIKINI = os.environ.get('CLEAN_BIKINI', '1' if COACH_ID == 'mma-amara' else '0') == '1'
+BIKINI_MOVED = set()
+UNDER_SKIN = set()
+# the body points as the shipped file stores them: the hidden-skin keys (file_key_i) must name THOSE points
+P_SHIPPED = [MW @ v.co for v in body.data.vertices]
+if CLEAN_BIKINI:
+    smooth_old_bikini(body, int(os.environ.get('BIKINI_RINGS', '3')), float(os.environ.get('BIKINI_RADIUS', '0.015')))
 MWI = MW.inverted()
 NM = MW.to_3x3().inverted().transposed()
 AW = arm.matrix_world
@@ -98,6 +273,23 @@ KD = KDTree(len(P))
 for i_, p_ in enumerate(P):
     KD.insert(p_, i_)
 KD.balance()
+if BIKINI_MOVED:
+    # 1.37.7: the folded hems of the old bikini, pressed flat, keep their collapsed faces, whose normals point
+    # anywhere: every garment is pushed along the skin's normal, so the cloth over them formed a ridge (the line
+    # across the back of the rash guard and the gi). Their normals are the mean of the skin's within 2 cm
+    _N2 = {}
+    for i_ in BIKINI_MOVED:
+        acc = Vector()
+        for (_, j_, _) in KD.find_range(P[i_], 0.02):
+            if j_ not in BIKINI_MOVED:
+                acc += N[j_]
+        if acc.length > 1e-6:
+            _N2[i_] = acc.normalized()
+    for i_, n_ in _N2.items():
+        N[i_] = n_
+    print('1.37.7 normales recalculées sur l\'ancien bikini :', len(_N2))
+# 1.37.7: body points within 4 cm of the old bikini (where the cloth and the shipped skin can differ)
+NEAR_MOVED = {j_ for i_ in BIKINI_MOVED for (_, j_, _) in KD.find_range(P[i_], 0.04)} if BIKINI_MOVED else set()
 
 
 def w(i, *names):
@@ -382,6 +574,11 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
                 return ok[i]
         return ok[KD.find(c)[1]]
 
+    if UNDER_SKIN and os.environ.get('BIKINI_DROP_UNDER', '0') == '1':
+        # 1.37.7: the skin lying under the old bikini's band and knot (a second surface, see smooth_old_bikini) is
+        # not copied: the cloth over the band is enough, the copy of both made a ridge across the back. Off by default: it opened holes (measured 12/11)
+        under = [f for f in bm_.faces if all(KD.find(MW @ v.co)[1] in UNDER_SKIN for v in f.verts)]
+        bmesh.ops.delete(bm_, geom=under, context='FACES')
     if iso is not None:
         bmesh.ops.delete(bm_, geom=[f for f in bm_.faces if not ok[KD.find(MW @ f.calc_center_median())[1]]], context='FACES')
         bmesh.ops.delete(bm_, geom=[v for v in bm_.verts if not v.link_faces], context='VERTS')
@@ -401,6 +598,15 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
     # crotch boundaries. Closing those on Kadir created large black bridge
     # triangles when he spread his legs. Protect just the latter while keeping
     # the generic pinhole repair (Nael and Inaya are entirely unaffected).
+    if BIKINI_MOVED:
+        # 1.37.7: on the old bikini the two sides of a texture seam were pressed flat apart by up to a few
+        # millimetres: the weld above missed them and left slits (the back of the rash guard, captures 12/11)
+        bv = [v for v in bm_.verts if v.is_boundary
+              and any(j in BIKINI_MOVED for (_, j, _) in KD.find_range(MW @ v.co, 0.01))]
+        if bv:
+            n0 = len(bm_.verts)
+            bmesh.ops.remove_doubles(bm_, verts=bv, dist=float(os.environ.get('BIKINI_WELD', '0.004')) / max(MW.to_scale()))
+            print('1.37.7', name, 'couture de l\'ancien bikini soudée :', n0 - len(bm_.verts), 'points')
     fill_edges = [e for e in bm_.edges if e.is_boundary]
     if KADIR_MMA_CROTCH and name == 'short-vale-tudo':
         def crotch_seam_edge(edge):
@@ -412,10 +618,61 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
         print('Kadir MMA: crotch seam boundary edges kept open:', len(ignored))
     if fill_edges:
         bmesh.ops.holes_fill(bm_, edges=fill_edges, sides=10)
+    if BIKINI_MOVED:
+        # 1.37.7: over the old bikini's band and knot the copy leaves small holes with more than 10 sides (its
+        # pressed folds); the skin under them stayed drawn and came through as slits (captures 12/11). A closed loop
+        # there shorter than 8 cm is filled whatever its number of sides
+        loops, seen = [], set()
+        for e in [e for e in bm_.edges if e.is_boundary]:
+            if e in seen:
+                continue
+            loop, stack = [], [e]
+            while stack:
+                x = stack.pop()
+                if x in seen:
+                    continue
+                seen.add(x)
+                loop.append(x)
+                for v in x.verts:
+                    stack += [y for y in v.link_edges if y.is_boundary and y not in seen]
+            loops.append(loop)
+        small = []
+        for loop in loops:
+            if os.environ.get('BIKINI_DEBUG'):
+                c_ = MW @ loop[0].verts[0].co
+                if c_.y > 0.05 and abs(c_.x) < 0.1 and 1.15 < c_.z < 1.3:
+                    print('loop', name, len(loop), round(sum(x.calc_length() for x in loop) * max(MW.to_scale()), 4), tuple(round(t, 3) for t in c_))
+            if sum(x.calc_length() for x in loop) * max(MW.to_scale()) > 0.08:
+                continue
+            if all(any(j in BIKINI_MOVED for (_, j, _) in KD.find_range(MW @ v.co, 0.015)) for x in loop for v in x.verts):
+                small += loop
+        if small:
+            bmesh.ops.holes_fill(bm_, edges=small, sides=0)
+            print('1.37.7', name, 'trous bouchés sur l\'ancien bikini :', len(small), 'arêtes')
     bm_.normal_update()
     # body vertices under the garment: every body vertex of the region, but those near the garment's free edges
     # (the skin stays drawn where the cloth ends)
     edge_pts = [MW @ v.co for e in bm_.edges if e.is_boundary for v in e.verts]
+    if BIKINI_MOVED:
+        # 1.37.7: a crack the old bikini's folds leave in the copy (a few edges, under 4 cm) is not a free edge of
+        # the garment: the skin under it stays hidden (drawn, it came through the cloth as a slit)
+        bset, short = {e for e in bm_.edges if e.is_boundary}, set()
+        while bset:
+            e0 = bset.pop()
+            chain, stack = [e0], [e0]
+            while stack:
+                x = stack.pop()
+                for v in x.verts:
+                    for y in v.link_edges:
+                        if y in bset:
+                            bset.discard(y)
+                            chain.append(y)
+                            stack.append(y)
+            if sum(x.calc_length() for x in chain) * max(MW.to_scale()) < 0.04:
+                short.update(chain)
+        if short:
+            edge_pts = [MW @ v.co for e in bm_.edges if e.is_boundary and e not in short for v in e.verts]
+            print('1.37.7', name, 'fentes de l\'ancien bikini sans bord libre :', len(short), 'arêtes')
     ekd = KDTree(max(1, len(edge_pts)))
     for k_, q_ in enumerate(edge_pts):
         ekd.insert(q_, k_)
@@ -440,6 +697,11 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
                 if abs((q - pt).dot(nr)) < 0.0003:
                     on_cut[v.index] = k
                     break
+    # 1.37.7: which side of a colour line a face lies on is decided HERE, before the push: the thin faces the cut
+    # leaves along the line have their centre a fraction of a millimetre from it, and the push along the skin's
+    # normal (which leans on the curve of the hips and the back) carried some across. They took the other colour:
+    # the black and yellow « teeth » under every waistband (Amara and Inaya alike, Youssef 12/11)
+    face_c = {f: MW @ f.calc_center_median() for f in bm_.faces}
     for v in bm_.verts:
         i = v[lay]
         d = push(i)
@@ -501,12 +763,65 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
         for m in mats:
             o.data.materials.append(m)
         for f in bm_.faces:
-            c = MW @ f.calc_center_median()
+            c = face_c.get(f) or MW @ f.calc_center_median()
             f.material_index = mat_of(c, [v[lay] for v in f.verts]) if mat_of else 0
     bm_.to_mesh(o.data)
     bm_.free()
     o.data.attributes.remove(o.data.attributes['src']) if 'src' in o.data.attributes else None
     smooth(o, 2, cuts, border=float(os.environ.get("SMOOTH_BORDER", "0.35")) if iso is not None else 1.0)
+    if BIKINI_MOVED and int(os.environ.get('BIKINI_CLOTH_SMOOTH', '40')) > 0:
+        # 1.37.7: over the old bikini's pressed folds the copy keeps rows of sliver faces; they shaded as a thin line
+        # across the back. The cloth there (not its free edges) is relaxed a little more
+        me_o = o.data
+        import bmesh as _bm
+        _b = _bm.new()
+        _b.from_mesh(me_o)
+        bnd = {v.index for v in _b.verts if v.is_boundary}
+        _b.free()
+        vg = o.vertex_groups.new(name='css-bikini')
+        ids = [v.index for v in me_o.vertices if v.index not in bnd and KD.find(MW @ v.co)[2] < 0.03
+               and any(j in BIKINI_MOVED for (_, j, _) in KD.find_n(MW @ v.co, 3))]
+        if ids:
+            vg.add(ids, 1.0, 'REPLACE')
+            m_ = o.modifiers.new('SmoothBikini', 'SMOOTH')
+            m_.factor = 0.5
+            m_.iterations = int(os.environ.get('BIKINI_CLOTH_SMOOTH', '40'))
+            m_.vertex_group = 'css-bikini'
+            apply(o, m_)
+        o.vertex_groups.remove(o.vertex_groups['css-bikini'])
+    if BIKINI_MOVED and float(os.environ.get('BIKINI_CLEAR', '0.004')) > 0:
+        # 1.37.7 (captures 12/11): the cloth follows the flattened body, the app draws the shipped one. Where a
+        # shipped skin face stays drawn (one of its points is not hidden: the edge of a back opening) and still holds
+        # the old band's height, its triangle came through the cloth as a slit. The cloth over such a face is kept
+        # BIKINI_CLEAR outside it
+        from mathutils.bvhtree import BVHTree
+        clear = float(os.environ.get('BIKINI_CLEAR', '0.004'))
+        drawn = [list(p_.vertices) for p_ in body.data.polygons if not all(i in covered for i in p_.vertices)
+                 and any(i in NEAR_MOVED for i in p_.vertices)]
+        if drawn and os.environ.get('BIKINI_DEBUG'):
+            zs = sorted(P_SHIPPED[f_[0]].z for f_ in drawn)
+            print('drawn', name, len(drawn), 'z', zs[0], zs[len(zs) // 2], zs[-1], 'covered', len(covered))
+            for f_ in drawn:
+                for i in f_:
+                    if i not in covered and abs(P[i].x) < 0.08 and 1.18 < P[i].z < 1.26 and P[i].y > 0.05:
+                        print(' back', i, tuple(round(c, 3) for c in P[i]), 'ok', ok[i], 'edge', round(ekd.find(P[i])[2], 4) if edge_pts else None, 'garm', round(garment.find(P[i])[2], 4), 'moved', i in BIKINI_MOVED, 'under', i in UNDER_SKIN)
+                        break
+        if drawn:
+            bvh = BVHTree.FromPolygons(P_SHIPPED, drawn)
+            moved = 0
+            for v in o.data.vertices:
+                q = MW @ v.co
+                hit = bvh.find_nearest(q, 0.03)
+                if hit[0] is None:
+                    continue
+                loc, nrm = hit[0], hit[1]
+                if nrm.dot(N[KD.find(q)[1]]) < 0:
+                    nrm = -nrm
+                d = (q - loc).dot(nrm)
+                if d < clear and (q - loc - nrm * d).length < float(os.environ.get('BIKINI_CLEAR_SIDE', '0.01')):
+                    v.co = MWI @ (q + nrm * (clear - d))
+                    moved += 1
+            print('1.37.7', name, 'tissu écarté de la peau livrée encore dessinée :', moved)
     if thick:
         sol = o.modifiers.new('Solidify', 'SOLIDIFY')
         sol.thickness = thick / max(MW.to_scale())
@@ -1267,6 +1582,11 @@ def shorts(kind, color, band, n_leg=None, under=False):
             if MH_BODY:
                 t = min(1.0, max(0.0, (P[i].z - (waist - bandH)) / 0.015 + 0.5))
                 return 0.004 + 0.006 * t * t * (3 - 2 * t)
+            if CLEAN_BIKINI:
+                # 1.37.7: the 6 mm step of the waistband taken by each point's closest skin point alternated along
+                # the band's lower line (yellow teeth on Amara's boxing and Thai shorts): a soft 1 cm ramp
+                t = min(1.0, max(0.0, (P[i].z - (waist - bandH - 0.008)) / 0.01))
+                return 0.004 + 0.006 * t * t * (3 - 2 * t)
             return 0.004 + (0.006 if P[i].z > waist - bandH else 0)
         s = leg_of(i)
         if kind in ('kick', 'compression', 'vale-tudo'):
@@ -1319,6 +1639,18 @@ def shorts(kind, color, band, n_leg=None, under=False):
         hz_sur = {s: H[f'{s}Leg'].z + SUR_HEM * (H[f'{s}UpLeg'].z - H[f'{s}Leg'].z) + UNDER_OVERLAP for s in ('Left', 'Right')}
         F0 = F
         F = lambda q: max(F0(q), q.z - hz_sur['Left' if q.x > 0 else 'Right'])
+        if CLEAN_BIKINI:
+            # 1.37.7: Amara's lower crotch puts the liner's top across it: its two leg tubes are parted along the
+            # middle (12 mm each side, under the over-short): the thin panel that joined them stretched into the dark strand.
+            # The skin of that strip stays hidden (LINER_GAP_SKIN=1 draws it: its large crotch triangles, stretched by
+            # the guard, then came through the inside of the thigh, captures 12/11)
+            F1u = F
+            # only at the crotch itself (its lowest midline point and 3 cm under it): lower, the gap took the inner
+            # side of each thigh away and the skin showed down the liner (captures 12/11)
+            _kz = (H['LeftLeg'].z + H['LeftUpLeg'].z) * 0.5
+            apex = min((q.z for q in P if abs(q.x) < 0.003 and _kz < q.z < H['Hips'].z), default=-1.0)
+            gap_lo = apex - float(os.environ.get('LINER_GAP_DEPTH', '0.03'))
+            F = lambda q: max(F1u(q), min(float(os.environ.get('LINER_GAP', '0.012')) - abs(q.x), q.z - gap_lo))
     # v1.37.6: A small web of very narrow polygons was measured at the
     # midline of Amara's MMA over-short near its inner hems (z ~= 0.81 m).
     # The model-derived shorts copied skin topology in that region. Excise
@@ -1326,7 +1658,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
     # rather than deleting faces after Solidify (which leaves torn open rims).
     # The cut follows the athlete's own morphology. Its top is far below the
     # front pelvis, where full garment coverage must be retained.
-    if COACH_ID == 'mma-amara' and kind in ('surshort', 'vale-tudo'):
+    if AMARA_PATCHES and kind in ('surshort', 'vale-tudo'):
         oldF = F
         if kind == 'surshort':
             cut_top = min(hz.values()) + 0.032
@@ -1350,7 +1682,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
     # transitions, particularly behind her moving hips. The previous plane
     # projection was only enabled for the MMA two-layer short.
     old_oncut = _ONCUT[0]
-    if COACH_ID == 'mma-amara':
+    if AMARA_PATCHES:
         _ONCUT[0] = True
     try:
         o, cov = shell(f'short-{kind}', keep_g, push, thick, mats, lambda c, ids: 1 if c.z > waist - bandH else 0, cuts=cuts, iso=F,
@@ -1358,7 +1690,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
     finally:
         _ONCUT[0] = old_oncut
     smooth(o, 1)
-    if COACH_ID == 'mma-amara' and kind in ('surshort', 'vale-tudo'):
+    if AMARA_PATCHES and kind in ('surshort', 'vale-tudo'):
         # Exported into glTF extras and inspected independently by Blender CI.
         o['cssCrotchGapCut'] = round(cut_top, 5)
         o['cssCrotchGapHalfWidth'] = round(clearance, 5)
@@ -1396,10 +1728,35 @@ def shorts(kind, color, band, n_leg=None, under=False):
         print('Kadir MMA: crotch skin weights stabilised:', moved_vertices)
         if not moved_vertices:
             raise RuntimeError('Kadir MMA: zero crotch vertices stabilised; check source body')
+    if under and CLEAN_BIKINI and os.environ.get('LINER_RIGID', '0') == '1':
+        # 1.37.7 (Amara, thin dark strand between the thighs at a high kick, measured in the Lab with __labStretch: the
+        # liner's faces 0.73 -> 0.78 m at the inner thigh stretched to 13 cm). Amara's crotch is lower than Inaya's,
+        # so the liner's top reaches it: its points there were held half by the pelvis, half by the leg. The liner is
+        # only its two leg tubes, under the over-short: each follows its own thigh entirely
+        moved = 0
+        for v in o.data.vertices:
+            q = o.matrix_world @ v.co
+            leg = o.vertex_groups.get('LeftUpLeg' if q.x > 0 else 'RightUpLeg')
+            other = o.vertex_groups.get('RightUpLeg' if q.x > 0 else 'LeftUpLeg')
+            tot = 0.0
+            for g in list(v.groups):
+                gname = o.vertex_groups[g.group].name
+                if g.weight > 0 and (gname in ('Hips', 'Spine') or g.group == other.index):
+                    tot += g.weight
+                    o.vertex_groups[g.group].remove([v.index])
+            if tot > 0:
+                cur = next((g.weight for g in v.groups if g.group == leg.index), 0.0)
+                leg.add([v.index], cur + tot, 'REPLACE')
+                moved += 1
+        print('1.37.7 Amara : sous-short tenu par chaque cuisse, points', moved)
+    if under and CLEAN_BIKINI:
+        o['cssLinerGap'] = float(os.environ.get('LINER_GAP', '0.012'))
     if under:
         # the skin stays hidden over the whole liner's region, as before (what the cut part covered is under the
         # over-short)
-        cov = set(cov) | {i for i in range(len(P)) if keep_g(i) and F0(P[i]) < -0.002}
+        cov = set(cov) | {i for i in range(len(P)) if keep_g(i) and F0(P[i]) < -0.002
+                          and not (CLEAN_BIKINI and os.environ.get('LINER_GAP_SKIN', '0') == '1' and abs(P[i].x) < float(os.environ.get('LINER_GAP', '0.012')) + 0.004
+                                   and P[i].z > gap_lo - 0.004)}
     if isinstance(color, tuple):
         paint_grad(o, color, min(hz.values()), waist - bandH)
     return [o], cov
@@ -1705,9 +2062,9 @@ if INAYA_FEMALE_PATTERN:
     # a narrow athletic range to keep straps off the deltoid in the guard.
     ratio = max(0.90, min(1.12, shoulder / 0.17))
     _SQ = (str(round(0.070 * ratio, 5)),
-           str(round((0.136 if COACH_ID == 'mma-amara' else 0.112) * ratio, 5)),
-           '0.005' if COACH_ID == 'mma-amara' else '0.012',
-           '0.004' if COACH_ID == 'mma-amara' else '0.012')
+           str(round((0.136 if AMARA_PATCHES else 0.112) * ratio, 5)),
+           '0.005' if AMARA_PATCHES else '0.012',
+           '0.004' if AMARA_PATCHES else '0.012')
     print('v1.37.4 Amara: patron Inaya, shoulder half-span', round(shoulder, 4), 'strap scale', round(ratio, 4))
 else:
     _SQ = ('0.075', '0.112', '0.012', '0.012') if os.environ.get('PALETTE') == 'inaya' else ('0.112', '0.142', '0.004', '0.002')
@@ -1746,7 +2103,7 @@ def square_field(low, strap=(float(os.environ.get("SQ_IN", "0.112")), float(os.e
         # low neckline copied from the narrow Rocketbox bikini. Move the
         # chest coverage ~7 cm up while leaving the clavicle and neck bare.
         # The back/armholes remain open for free punches and pivots.
-        if COACH_ID == 'mma-amara':
+        if AMARA_PATCHES:
             front_top = nk.z - 0.078
             back_top = cz + 0.020
             T = back_top + (front_top - back_top) * front
@@ -1763,7 +2120,10 @@ def square_field(low, strap=(float(os.environ.get("SQ_IN", "0.112")), float(os.e
                      arm_clear(q) - float(os.environ.get("SQ_ARM", "0.022")))
             return _smin(body_, st, 0.014)
         # Unmodified reference cut: Inaya and all non-Amara characters.
-        T = (cz + 0.004) + ((nk.z - 0.15) - (cz + 0.004)) * front
+        # 1.37.7: Amara keeps the higher front asked in 1.37.6 (« brassière trop décolletée »): the front of the
+        # neckline 7.8 cm under the neck joint instead of 15 cm; the back, straps and armholes stay Inaya's
+        front_top = nk.z - float(os.environ.get('NECK_FRONT', '0.078')) if CLEAN_BIKINI else nk.z - 0.15
+        T = (cz + 0.004) + (front_top - (cz + 0.004)) * front
         T -= 0.05 * _ss(0.15, 0.19, ax) * (1 - 0.6 * front)
         body_ = max(q.z - T, low - q.z, arm_clear(q))
         st = max(strap[0] - ax, ax - strap[1], low - q.z, arm_clear(q) - float(os.environ.get("SQ_ARM", "0.022")))
@@ -1832,7 +2192,7 @@ def top_square(color, accent=None, low=None, name='haut-carre'):
         # The uncleaned Rocketbox sports-bra surface had protruding seams;
         # after v1.37.5 retouch, keep Amara's crop well clear of residual
         # geometry during guard/punches without changing Inaya's approved fit.
-        base = 0.009 if COACH_ID == 'mma-amara' else 0.0055
+        base = 0.009 if AMARA_PATCHES else 0.0055
         return base + float(os.environ.get("SQ_PUSH", "0.0035")) * _ss(chestZ - 0.03, chestZ + 0.03, q.z) * _ss(0.105, 0.12, abs(q.x))
     o, cov = shell(name, keep, push, 0.0022, mats,
                    (lambda c, ids: 1 if c.z < low + 0.02 else 0) if accent else None, hem=0.006, cuts=cuts, iso=F,
@@ -1842,7 +2202,7 @@ def top_square(color, accent=None, low=None, name='haut-carre'):
     # each point of the decimated top takes the weights of its closest skin point: along the strap's outer edge
     # those alternate between the arm and the shoulder blade, and the edge came out in teeth when the guard rises.
     # Relaxed over the garment (the skin under it is smoothed the same way by smooth_weights.py)
-    relax_weights(o, int(os.environ.get('SQ_SMOOTH', '16' if COACH_ID == 'mma-amara' else '12')))  # v1.37.5: stable Amara straps during punching
+    relax_weights(o, int(os.environ.get('SQ_SMOOTH', '16' if AMARA_PATCHES else '12')))  # v1.37.5: stable Amara straps during punching
     # the skin under the straps: shell() keeps the skin drawn near any free edge of the copy, and the body's texture
     # seams over the shoulder blade leave such edges inside the strap (half its skin stayed drawn, and came through
     # in teeth when the guard rises). Everything 4 mm inside the field is hidden
@@ -2875,8 +3235,8 @@ _FP = []
 
 
 def file_key_i(i):
-    """key of body point i (see _file_positions)"""
-    return file_key(P[i])
+    """key of body point i (see _file_positions); 1.37.7: its shipped position (P may hold the flattened bikini)"""
+    return file_key(P_SHIPPED[i])
 
 
 def file_key(c):
@@ -3000,11 +3360,19 @@ def export(name, parts, hide):
     parts[0]['outfit'] = name
     # Assets can now be verified as freshly regenerated: unchanged legacy GLBs must
     # never pass the v1.37.2 deployment gate with old cutouts.
-    parts[0]['generatorVersion'] = '1.37.6' if COACH_ID == 'mma-amara' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
+    parts[0]['generatorVersion'] = '1.37.7' if COACH_ID == 'mma-amara' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
     if COACH_ID == 'mma-amara':
-        parts[0]['sportsTopCut'] = 'covered-square-1376'
-        if name == 'mma':
-            parts[0]['shortCrotchGeometry'] = 'separate-leg-openings-1376'
+        if AMARA_PATCHES:
+            parts[0]['sportsTopCut'] = 'covered-square-1376'
+            if name == 'mma':
+                parts[0]['shortCrotchGeometry'] = 'separate-leg-openings-1376'
+        else:
+            # 1.37.7: Inaya's crop with the higher front of 1.37.6; the MMA liner parted at the middle
+            parts[0]['sportsTopCut'] = 'inaya-crop-high-front-1377'
+            if name == 'mma':
+                parts[0]['shortCrotchGeometry'] = 'liner-split-1377'
+    if CLEAN_BIKINI:
+        parts[0]['oldBikiniFlattened'] = True
     if INAYA_FEMALE_PATTERN:
         parts[0]['clothingReference'] = 'inaya'
         parts[0]['clothingMorphology'] = COACH_ID

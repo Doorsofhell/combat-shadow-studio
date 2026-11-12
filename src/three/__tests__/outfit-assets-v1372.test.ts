@@ -25,7 +25,7 @@ describe('1.37.2 — modèles vestimentaires reconstruits et validés', () => {
         // Its exact binary hashes are checked in outfit-rollback-v1373.test.ts.
         if (coach !== 'mma-kadir') {
           const carrier = glb.nodes.find(n => n.extras?.generatorVersion);
-          const expected = coach === 'mma-amara' ? '1.37.6' : '1.37.2';
+          const expected = coach === 'mma-amara' ? '1.37.7' : '1.37.2';
           expect(carrier?.extras?.generatorVersion, `${coach}/${outfit} doit être généré avec ${expected}`).toBe(expected);
         }
       });

@@ -30,7 +30,7 @@ function gitHash(b: Buffer) {
   return createHash('sha1').update(Buffer.from(`blob ${b.length}\0`)).update(b).digest('hex');
 }
 
-describe('v1.37.6 — Inaya référence immuable et Amara morphologie adaptée', () => {
+describe('v1.37.7 — Inaya référence immuable et Amara morphologie adaptée', () => {
   for (const outfit of OUTFITS) {
     test(`Inaya/${outfit} conservée à l’octet près`, () => {
       const { b } = binary(`public/coaches/inaya/tenues/${outfit}.glb`);
@@ -39,10 +39,13 @@ describe('v1.37.6 — Inaya référence immuable et Amara morphologie adaptée',
     test(`Amara/${outfit} reconstruite sur son propre squelette`, () => {
       const { gltf } = binary(`public/coaches/mma-amara/tenues/${outfit}.glb`);
       expect(gltf.skins.length).toBeGreaterThan(0);
-      expect(gltf.nodes.some((n) => n.extras?.generatorVersion === '1.37.6' &&
+      // 1.37.7: the 1.37.6 square cut (holes, torn edges) is replaced by Inaya's crop with the higher front, built
+      // on Amara's skin with the old sculpted bikini flattened first (see docs/JOURNAL_CORRECTIONS.md, v1.37.7)
+      expect(gltf.nodes.some((n) => n.extras?.generatorVersion === '1.37.7' &&
         n.extras?.clothingReference === 'inaya' &&
         n.extras?.clothingMorphology === 'mma-amara' &&
-        n.extras?.sportsTopCut === 'covered-square-1376')).toBe(true);
+        n.extras?.sportsTopCut === 'inaya-crop-high-front-1377' &&
+        n.extras?.oldBikiniFlattened === true)).toBe(true);
     });
   }
 
@@ -56,10 +59,13 @@ describe('v1.37.6 — Inaya référence immuable et Amara morphologie adaptée',
   test('MMA : short intérieur et surshort conservés, sans copier les GLB d’Inaya', () => {
     const { gltf } = binary('public/coaches/mma-amara/tenues/mma.glb');
     for (const part of ['short-vale-tudo', 'short-surshort']) {
-      expect(gltf.nodes.some((n) => n.name?.includes(part) && n.mesh !== undefined &&
-        typeof n.extras?.cssCrotchGapCut === 'number' &&
-        typeof n.extras?.cssCrotchGapHalfWidth === 'number')).toBe(true);
+      expect(gltf.nodes.some((n) => n.name?.includes(part) && n.mesh !== undefined)).toBe(true);
     }
-    expect(gltf.nodes.some((n) => n.extras?.shortCrotchGeometry === 'separate-leg-openings-1376')).toBe(true);
+    // 1.37.7: the over-short is whole again (the 1.37.6 central cut left a loose dark piece between the thighs);
+    // only the liner, under it, is parted at the middle (the thin panel that stretched into a strand at a high kick)
+    expect(gltf.nodes.some((n) => n.name?.includes('short-surshort') && n.extras?.cssCrotchGapCut !== undefined)).toBe(false);
+    expect(gltf.nodes.some((n) => n.name?.includes('short-vale-tudo') &&
+      typeof n.extras?.cssLinerGap === 'number' && (n.extras.cssLinerGap as number) >= 0.008)).toBe(true);
+    expect(gltf.nodes.some((n) => n.extras?.shortCrotchGeometry === 'liner-split-1377')).toBe(true);
   });
 });
