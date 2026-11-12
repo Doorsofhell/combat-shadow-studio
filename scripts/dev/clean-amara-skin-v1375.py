@@ -35,10 +35,10 @@ def glb_read(path):
         offset += 8
         chunks[typ] = raw[offset:offset+n]
         offset += n
-    if b"JSON" not in chunks or b"BIN\\x00" not in chunks:
+    if b"JSON" not in chunks or b"BIN\x00" not in chunks:
         raise RuntimeError("Missing JSON/BIN GLB chunk")
     gltf = json.loads(chunks[b"JSON"])
-    return gltf, chunks[b"BIN\\x00"], raw
+    return gltf, chunks[b"BIN\x00"], raw
 
 def skin_image(gltf, binary, material_name):
     mid = next(i for i, m in enumerate(gltf["materials"]) if m.get("name") == material_name)
@@ -52,7 +52,7 @@ def skin_image(gltf, binary, material_name):
     return img, image_id, bv_id
 
 def git_blob(data):
-    return hashlib.sha1(b"blob " + str(len(data)).encode() + b"\\x00" + data).hexdigest()
+    return hashlib.sha1(b"blob " + str(len(data)).encode() + b"\x00" + data).hexdigest()
 
 def anatomy_masks(path, sizes):
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -174,7 +174,7 @@ def patch_binary(gltf, binary, new_images):
     out = bytearray(struct.pack("<4sII", b"glTF", 2, 12+8+len(jsonbytes)+8+len(newbin)))
     out.extend(struct.pack("<I4s", len(jsonbytes), b"JSON"))
     out.extend(jsonbytes)
-    out.extend(struct.pack("<I4s", len(newbin), b"BIN\\x00"))
+    out.extend(struct.pack("<I4s", len(newbin), b"BIN\x00"))
     out.extend(newbin)
     return bytes(out)
 
@@ -203,7 +203,7 @@ def glb_read_bytes(raw):
         pos += 8
         chunks[typ] = raw[pos:pos+n]
         pos += n
-    return json.loads(chunks[b"JSON"]), chunks[b"BIN\\x00"], raw
+    return json.loads(chunks[b"JSON"]), chunks[b"BIN\x00"], raw
 
 def main():
     a, a_bin, old = glb_read(PATH)
