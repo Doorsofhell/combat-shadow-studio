@@ -1,4 +1,4 @@
-"""Geometry gate for Amara v1.37.7 (run in Blender: blender --background --python this.py).
+"""Geometry gate for Amara v1.37.7, updated for 1.38.0 (body cleaned at its source, see point 3) (run in Blender: blender --background --python this.py).
 
 1. The four striking tops cover the upper chest (the higher front asked in 1.37.6), as in v1376.
 2. The old bikini sculpted in Amara's skin no longer shows through the long tops: along the back, between the
@@ -72,21 +72,12 @@ def mma_shorts():
     sur = mesh("short-surshort")
     if sur.get("cssCrotchGapCut") is not None:
         raise RuntimeError("over-short still cut at the crotch (1.37.6)")
+    # 1.38.0: on the body cleaned at its source the liner is Inaya's, whole (the parted liner of 1.37.7 showed as a
+    # flap inside the thigh in guard)
     liner = mesh("short-vale-tudo")
-    gap = liner.get("cssLinerGap")
-    if not isinstance(gap, (int, float)) or gap < 0.008:
-        raise RuntimeError(f"liner gap missing or too narrow: {gap}")
-    zs = [(liner.matrix_world @ v.co).z for v in liner.data.vertices]
-    crotch = max(zs) - 0.02
-    # a face joins the legs when it has points on both sides of the middle (the inner side of each thigh, which
-    # reaches the middle on Amara, is not one)
-    def joins(f):
-        xs = [(liner.matrix_world @ liner.data.vertices[i].co).x for i in f.vertices]
-        return min(xs) < -0.002 and max(xs) > 0.002
-    bad = [f.index for f in liner.data.polygons if joins(f) and (liner.matrix_world @ f.center).z < crotch]
-    if bad:
-        raise RuntimeError(f"liner: {len(bad)} faces still join the two legs at the middle")
-    print(f"OK mma: over-short whole, liner parted ({gap * 1000:.0f} mm each side)", flush=True)
+    if liner.get("cssLinerGap") is not None:
+        raise RuntimeError("liner still parted (1.37.7)")
+    print("OK mma: over-short and liner whole", flush=True)
 
 
 def main():

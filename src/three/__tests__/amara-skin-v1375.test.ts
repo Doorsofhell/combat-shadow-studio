@@ -19,6 +19,8 @@ describe('Amara torso retouch v1.37.5', () => {
     const photo = gltfOf('public/coaches/mma-amara/photo.glb');
     expect(photo.asset.extras?.css_clean_torso).toBe('1.37.5');
     expect(photo.asset.extras?.css_clean_reference).toBe('inaya-texture-pattern');
+    // 1.38.0: the geometry itself is cleaned (torso_from_clean.py), the 1.37.5 paint markers stay
+    expect(photo.asset.extras?.css_clean_geometry).toBe('1.38.0');
     expect(photo.skins.length).toBeGreaterThan(0);
     const targets = photo.meshes.flatMap(m => m.primitives.flatMap(p => p.targets ?? []));
     expect(targets.length).toBeGreaterThanOrEqual(20);

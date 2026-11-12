@@ -250,7 +250,11 @@ import numpy as np
 # flattened (smooth_old_bikini) they made the torn edges, holes and the dark piece between the thighs seen on 12/11.
 # Kept behind AMARA_PATCHES=1 for comparison; by default Amara is cut exactly like Inaya.
 AMARA_PATCHES = COACH_ID == 'mma-amara' and os.environ.get('AMARA_PATCHES', '0') == '1'
-CLEAN_BIKINI = os.environ.get('CLEAN_BIKINI', '1' if COACH_ID == 'mma-amara' else '0') == '1'
+# 1.38: Amara's body itself is clean now (torso_from_clean.py): nothing to flatten here any more (CLEAN_BIKINI=1 only
+# for a body that still carries the bikini). What stays hers: the higher front of the tops (asked in 1.37.6), the soft
+# waistband ramp and the parted MMA liner (AMARA_CUT)
+CLEAN_BIKINI = os.environ.get('CLEAN_BIKINI', '0') == '1'
+AMARA_CUT = COACH_ID == 'mma-amara'
 BIKINI_MOVED = set()
 UNDER_SKIN = set()
 # the body points as the shipped file stores them: the hidden-skin keys (file_key_i) must name THOSE points
@@ -1582,7 +1586,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
             if MH_BODY:
                 t = min(1.0, max(0.0, (P[i].z - (waist - bandH)) / 0.015 + 0.5))
                 return 0.004 + 0.006 * t * t * (3 - 2 * t)
-            if CLEAN_BIKINI:
+            if AMARA_CUT:
                 # 1.37.7: the 6 mm step of the waistband taken by each point's closest skin point alternated along
                 # the band's lower line (yellow teeth on Amara's boxing and Thai shorts): a soft 1 cm ramp
                 t = min(1.0, max(0.0, (P[i].z - (waist - bandH - 0.008)) / 0.01))
@@ -1639,7 +1643,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
         hz_sur = {s: H[f'{s}Leg'].z + SUR_HEM * (H[f'{s}UpLeg'].z - H[f'{s}Leg'].z) + UNDER_OVERLAP for s in ('Left', 'Right')}
         F0 = F
         F = lambda q: max(F0(q), q.z - hz_sur['Left' if q.x > 0 else 'Right'])
-        if CLEAN_BIKINI:
+        if AMARA_CUT:
             # 1.37.7: Amara's lower crotch puts the liner's top across it: its two leg tubes are parted along the
             # middle (12 mm each side, under the over-short): the thin panel that joined them stretched into the dark strand.
             # The skin of that strip stays hidden (LINER_GAP_SKIN=1 draws it: its large crotch triangles, stretched by
@@ -1650,7 +1654,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
             _kz = (H['LeftLeg'].z + H['LeftUpLeg'].z) * 0.5
             apex = min((q.z for q in P if abs(q.x) < 0.003 and _kz < q.z < H['Hips'].z), default=-1.0)
             gap_lo = apex - float(os.environ.get('LINER_GAP_DEPTH', '0.03'))
-            F = lambda q: max(F1u(q), min(float(os.environ.get('LINER_GAP', '0.012')) - abs(q.x), q.z - gap_lo))
+            F = lambda q: max(F1u(q), min(float(os.environ.get('LINER_GAP', '0')) - abs(q.x), q.z - gap_lo))
     # v1.37.6: A small web of very narrow polygons was measured at the
     # midline of Amara's MMA over-short near its inner hems (z ~= 0.81 m).
     # The model-derived shorts copied skin topology in that region. Excise
@@ -1728,7 +1732,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
         print('Kadir MMA: crotch skin weights stabilised:', moved_vertices)
         if not moved_vertices:
             raise RuntimeError('Kadir MMA: zero crotch vertices stabilised; check source body')
-    if under and CLEAN_BIKINI and os.environ.get('LINER_RIGID', '0') == '1':
+    if under and AMARA_CUT and os.environ.get('LINER_RIGID', '0') == '1':
         # 1.37.7 (Amara, thin dark strand between the thighs at a high kick, measured in the Lab with __labStretch: the
         # liner's faces 0.73 -> 0.78 m at the inner thigh stretched to 13 cm). Amara's crotch is lower than Inaya's,
         # so the liner's top reaches it: its points there were held half by the pelvis, half by the leg. The liner is
@@ -1749,13 +1753,13 @@ def shorts(kind, color, band, n_leg=None, under=False):
                 leg.add([v.index], cur + tot, 'REPLACE')
                 moved += 1
         print('1.37.7 Amara : sous-short tenu par chaque cuisse, points', moved)
-    if under and CLEAN_BIKINI:
-        o['cssLinerGap'] = float(os.environ.get('LINER_GAP', '0.012'))
+    if under and AMARA_CUT and float(os.environ.get('LINER_GAP', '0')) > 0:
+        o['cssLinerGap'] = float(os.environ.get('LINER_GAP', '0'))
     if under:
         # the skin stays hidden over the whole liner's region, as before (what the cut part covered is under the
         # over-short)
         cov = set(cov) | {i for i in range(len(P)) if keep_g(i) and F0(P[i]) < -0.002
-                          and not (CLEAN_BIKINI and os.environ.get('LINER_GAP_SKIN', '0') == '1' and abs(P[i].x) < float(os.environ.get('LINER_GAP', '0.012')) + 0.004
+                          and not (AMARA_CUT and os.environ.get('LINER_GAP_SKIN', '0') == '1' and abs(P[i].x) < float(os.environ.get('LINER_GAP', '0')) + 0.004
                                    and P[i].z > gap_lo - 0.004)}
     if isinstance(color, tuple):
         paint_grad(o, color, min(hz.values()), waist - bandH)
@@ -2122,7 +2126,7 @@ def square_field(low, strap=(float(os.environ.get("SQ_IN", "0.112")), float(os.e
         # Unmodified reference cut: Inaya and all non-Amara characters.
         # 1.37.7: Amara keeps the higher front asked in 1.37.6 (« brassière trop décolletée »): the front of the
         # neckline 7.8 cm under the neck joint instead of 15 cm; the back, straps and armholes stay Inaya's
-        front_top = nk.z - float(os.environ.get('NECK_FRONT', '0.078')) if CLEAN_BIKINI else nk.z - 0.15
+        front_top = nk.z - float(os.environ.get('NECK_FRONT', '0.078')) if AMARA_CUT else nk.z - 0.15
         T = (cz + 0.004) + (front_top - (cz + 0.004)) * front
         T -= 0.05 * _ss(0.15, 0.19, ax) * (1 - 0.6 * front)
         body_ = max(q.z - T, low - q.z, arm_clear(q))
@@ -3360,17 +3364,19 @@ def export(name, parts, hide):
     parts[0]['outfit'] = name
     # Assets can now be verified as freshly regenerated: unchanged legacy GLBs must
     # never pass the v1.37.2 deployment gate with old cutouts.
-    parts[0]['generatorVersion'] = '1.37.7' if COACH_ID == 'mma-amara' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
+    parts[0]['generatorVersion'] = '1.38.0' if COACH_ID == 'mma-amara' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
     if COACH_ID == 'mma-amara':
         if AMARA_PATCHES:
             parts[0]['sportsTopCut'] = 'covered-square-1376'
             if name == 'mma':
                 parts[0]['shortCrotchGeometry'] = 'separate-leg-openings-1376'
         else:
-            # 1.37.7: Inaya's crop with the higher front of 1.37.6; the MMA liner parted at the middle
+            # 1.38: Inaya's crop with the higher front of 1.37.6, on the body cleaned at its source; the MMA short
+            # is Inaya's as it is (the parted liner of 1.37.7, LINER_GAP, showed as a flap inside the thigh)
             parts[0]['sportsTopCut'] = 'inaya-crop-high-front-1377'
+            parts[0]['bodyCleanAtSource'] = True
             if name == 'mma':
-                parts[0]['shortCrotchGeometry'] = 'liner-split-1377'
+                parts[0]['shortCrotchGeometry'] = 'inaya-whole-1380'
     if CLEAN_BIKINI:
         parts[0]['oldBikiniFlattened'] = True
     if INAYA_FEMALE_PATTERN:

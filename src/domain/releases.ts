@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.38.0',
+      releaseDate: '2026-11-12',
+      title: 'Amara : un buste sans l’ancien bikini',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Amara : le bikini sculpté dans le corps d’origine est retiré du buste lui-même (cordon du cou, bande et nœuds du dos, contour des bonnets), comme pour Inaya. Visage, coiffure et silhouette inchangés.' },
+        { category: 'corrections', text: 'Hauts d’Amara (boxe, kick-boxing, muay-thaï, MMA, haut de JJB, kimonos) : plus de nœud ni de bande visibles au milieu de la poitrine et dans le dos.' },
+        { category: 'corrections', text: 'Short MMA d’Amara : plus de pièce visible à l’intérieur de la cuisse.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.37.8',
       releaseDate: '2026-11-12',
       title: 'Amara : relief musculaire affiné',

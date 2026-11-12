@@ -3544,3 +3544,66 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Intégrité** : aucun fichier GLB, aucune animation, aucun os, aucun générateur Blender et aucune interface modifiés ; aucune régénération des shorts ou du haut de sport.
 - **Réversibilité** : branche isolée `fix/amara-skin-relief-v1378` créée depuis la base 1.37.7 ; revenir à cette base rétablit exactement le rendu antérieur.
 - **Contrôle attendu avant publication** : test ciblé `amara-skin-v1378.test.ts`, version et tests de vêtements ; comparaison des captures Amara avant/après sous éclairage et angle identiques (face, profil, dos, garde, high kick) ; inspection sur Android. Une modification du relief visuel ne corrige pas les défauts géométriques de vêtements.
+
+## 2026-11-12 · v1.38.0 · Amara : corps nettoyé à la source (plus d'ancien bikini sous les tenues)
+
+- **Signalement** (Youssef, 12/11 20:17, quatre captures du téléphone sur la 1.37.7) : « Y a toujours beaucoup
+  d'anomalies sur Amara ». Short de boxe avec une pièce sombre à l'entrejambe, haut de muay-thaï fripé avec un nœud
+  au milieu de la poitrine, haut de JJB avec un col effiloché, un nœud devant et dans le dos et une bande sous la
+  poitrine. Judo « toujours épais et pas fluide ».
+- **Constat vérifié** (Lab, gros plans à 600 px comme sur le téléphone, comparaison avec Inaya) :
+  - les défauts existent bien ; la relecture de la 1.37.7 avait été faite sur des captures trop petites et trop
+    lointaines, elle ne les montrait pas ;
+  - cause commune : le corps livré d'Amara portait encore la géométrie du bikini d'origine (bonnets, nœud central,
+    cordon du cou, bande et nœud du dos). La 1.37.7 l'aplanissait seulement sous chaque tenue : le tissu suivait un
+    relief resté irrégulier. Inaya, nettoyée à la source en 1.19, n'a aucun de ces défauts avec les mêmes tenues ;
+  - le cuissard séparé du short MMA (1.37.7) faisait un rabat visible à l'intérieur de la cuisse ;
+  - le kimono épais et raide est le même sur Inaya : il vient de la recette du kimono, pas du corps d'Amara.
+- **Choix de Youssef** (carte de décision, 12/11) : « A : nettoyer le corps d'Amara ».
+- **Correction** :
+  - `torso_from_clean.py` (nouveau) : le corps d'Amara reprend le maillage propre d'Inaya (même base Rocketbox,
+    même dépliage). Hors de la zone du bikini, chaque point garde exactement la position, la normale et les poids
+    d'Amara. Dans la zone (îlots du bikini, anneaux voisins, cordon du cou sur la tête), la surface d'Inaya est
+    posée avec l'écart Amara−Inaya interpolé depuis le bord, puis lissée ; les poids de peau y sont étalés et
+    détendus (3 passes) et la tête partage le même champ au cou, pour que la couture ne s'ouvre pas en mouvement.
+    Les 25 expressions et les 81 os sont repris tels quels. Un corps déjà nettoyé est refusé (marqueur
+    `css_clean_geometry`) ;
+  - `torso_textures.py` (nouveau) : la peau propre d'Inaya est greffée dans la zone avec une correction de teinte
+    par canal (écart moyen 0,8/255) ; images réencodées (couleur q93, normales q82) : `photo.glb` 3,49 Mo au lieu
+    de 4,94 Mo ;
+  - `outfits.py` : plus d'aplanissement du bikini pour Amara (`CLEAN_BIKINI` 0 par défaut), coupe `AMARA_CUT`
+    (encolure un peu plus haute, bande souple), cuissard MMA entier (`LINER_GAP` 0 par défaut, comme Inaya) ;
+    les sept tenues d'Amara sont reconstruites sur le corps propre (Blender 5.3, module bpy).
+  - Visage, cheveux, taille, membres et largeur du buste inchangés (avant du buste : +1,4 mm). Les bonnets prennent
+    la forme lisse d'Inaya.
+- **Restauration** : branche `restauration/avant-corps-amara-v138` (= 1.37.8, `fae7f97`).
+- **Base** : lot préparé sur la 1.37.7, puis reposé sur la 1.37.8 de Youssef (réglage de peau d'Amara dans
+  `photoMaterials.ts`, gardé tel quel ; son test `amara-skin-v1378.test.ts` : TEST RÉUSSI).
+- **Fichiers** : `tools/generator/rocketbox/torso_from_clean.py`, `torso_textures.py`, `outfits.py`,
+  `public/coaches/mma-amara/photo.glb`, `public/coaches/mma-amara/tenues/*.glb` (7), tests ci-dessous,
+  `src/boot/assetSizes.json`, `src/domain/releases.ts`, `package.json`.
+- **Tests modifiés (raison écrite)** :
+  - `outfit-amara-v1374.test.ts`, `outfit-assets-v1372.test.ts`, `validate-outfit-build-v1372.py` : ils exigeaient
+    les marqueurs de la 1.37.7 (bikini aplani sous la tenue, cuissard séparé d'au moins 8 mm), c'est-à-dire la
+    méthode qui laissait les défauts signalés. Ils exigent maintenant la 1.38.0 : `bodyCleanAtSource`, cuissard
+    entier (`inaya-whole-1380`, aucun `cssLinerGap`) ;
+  - `check-amara-garments-v1377.py` : même raison pour le cuissard (il doit être entier) ; la couverture de poitrine
+    et la bosse maximale du dos (≤ 2,5 mm) sont gardées : 1,86 à 1,96 mm mesurés ;
+  - `amara-skin-v1375.test.ts` : ajoute l'exigence du marqueur `css_clean_geometry` 1.38.0 (test renforcé) ;
+  - `docs/v1100/MESURES_DEFORMATIONS.md` (7 lignes d'Amara) et `docs/audit-biomecanique/MESURES_SOL.md` :
+    documents de mesures régénérés par leurs tests, car le corps mesuré a changé. Les seuils ne sont pas modifiés
+    (pli d'aisselle : garde 34, crochet 42, limites 38,2 et 44,16).
+- **Résultats** :
+  - `npx vitest run` : 1 343 réussis, 8 échoués, 1 ignoré. TEST RÉUSSI pour les tenues, les déformations, le
+    contrat humain, les expressions et « modèle léger < 3,5 Mo », qui échouait depuis la 1.37.5 et repasse. Les
+    8 échecs existaient avant ce lot (moteur de frappe : `audit`, `extension-v032`, `fluidity` ×3,
+    `hooks-biomeca` ×2, `torsion-range`) et ne touchent aucun fichier modifié ici ;
+  - `check-amara-garments-v1377.py` (Blender) : TEST RÉUSSI ;
+  - `npm run build` : TEST RÉUSSI ;
+  - `npx playwright test` : NON EXÉCUTÉ (suite complète ~40 min en logiciel) ; vérification visuelle faite au Lab
+    avec Playwright, gros plans avant/après dans `captures/corps-amara-v138/` ;
+  - téléphone Android : NON EXÉCUTÉ.
+- **Limites connues** : kimonos de judo et de JJB encore épais et raides (même recette qu'Inaya, lot séparé
+  proposé : kimono drapé) ; petite encoche sombre à l'entrejambe du short de boxe (présente aussi chez Inaya) ;
+  une ligne claire très légère reste visible dos nu, là où passait la bande (jamais visible sous une tenue).
+- **Workflow** : `amara-v1377.yml` contrôle toujours les tenues livrées au push, sans les reconstruire.
