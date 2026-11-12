@@ -24,6 +24,17 @@ ONLY = os.environ.get('ONLY', '').split(',') if os.environ.get('ONLY') else None
 TEX = os.path.join(outdir, '_tex')
 os.makedirs(TEX, exist_ok=True)
 female = sex == 'femme'
+
+# v1.37.2 — fixed design references, NOT shared raw GLBs:
+# A coach keeps his/her own body and skin weights. The same proportions/cut
+# are authored from Nael (men) or Inaya (women), evaluated on each own rig.
+MMA_SHORT_REFERENCE = 'inaya' if female else 'nael'
+KADIR_MMA_CROTCH = os.path.basename(os.path.dirname(src)) == 'mma-kadir'
+MMA_SHORT_CUTS = {
+    'nael': dict(liner_hem=0.42, liner_waist=0.100),
+    'inaya': dict(liner_hem=0.42, liner_waist=0.100, over_hem=0.66,
+                  over_waist=0.105, over_flare=0.012),
+}
 # MakeHuman coaches (tools/generator/makehuman), MH_BODY=1: their quads are larger than the Rocketbox triangles, so
 # every edge that followed the skin's points came out as a saw edge: the sports bra is cut by planes from positions
 # (not from the skin weights) and the waistband rises over 1.5 cm instead of one step
@@ -381,7 +392,21 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
     bmesh.ops.remove_doubles(bm_, verts=bm_.verts[:], dist=0.0005 / max(MW.to_scale()))
     # v0.32: small holes left by the body mesh (navel, a seam the weld missed) are closed; the real openings of a
     # garment (neck, sleeves, legs: dozens of edges) are kept
-    bmesh.ops.holes_fill(bm_, edges=[e for e in bm_.edges if e.is_boundary], sides=10)
+    # A few open body seam loops are genuine small holes; others are natural
+    # crotch boundaries. Closing those on Kadir created large black bridge
+    # triangles when he spread his legs. Protect just the latter while keeping
+    # the generic pinhole repair (Nael and Inaya are entirely unaffected).
+    fill_edges = [e for e in bm_.edges if e.is_boundary]
+    if KADIR_MMA_CROTCH and name == 'short-vale-tudo':
+        def crotch_seam_edge(edge):
+            points = [MW @ v.co for v in edge.verts]
+            return all(abs(q.x) < 0.115 and (hipZ - 0.19) < q.z < (hipZ + 0.03)
+                       for q in points)
+        ignored = [e for e in fill_edges if crotch_seam_edge(e)]
+        fill_edges = [e for e in fill_edges if not crotch_seam_edge(e)]
+        print('Kadir MMA: crotch seam boundary edges kept open:', len(ignored))
+    if fill_edges:
+        bmesh.ops.holes_fill(bm_, edges=fill_edges, sides=10)
     bm_.normal_update()
     # body vertices under the garment: every body vertex of the region, but those near the garment's free edges
     # (the skin stays drawn where the cloth ends)
@@ -1172,8 +1197,14 @@ def shorts(kind, color, band, n_leg=None, under=False):
     # flat waistband, matt jersey
     # 1.22 (Youssef 05/11 18:07, photos of women's MMA kits: « une tenue dans les styles des photos »): surshort, the
     # short loose over-short of a 2-in-1 MMA short, worn over the vale-tudo liner; high on the thigh, gathered waist
-    hem = {'boxe': 0.3, 'kick': 0.3, 'thai': 0.32, 'mma': 0.18, 'compression': 0.3, 'vale-tudo': VT_HEM, 'surshort': SUR_HEM}[kind]
-    waist = hipZ + {'boxe': 0.13, 'kick': 0.11, 'thai': 0.13, 'mma': 0.11, 'compression': 0.1, 'vale-tudo': 0.1, 'surshort': 0.105}[kind]
+    # One cut per reference, with each wearer's own hip/thigh measurements.
+    # The feminine Inaya cut follows her waist and hips with a fitted liner and
+    # a short flowing outer layer; both retain their athletic mobility.
+    blueprint = MMA_SHORT_CUTS[MMA_SHORT_REFERENCE]
+    hem = {'boxe': 0.3, 'kick': 0.3, 'thai': 0.32, 'mma': 0.18, 'compression': 0.3,
+           'vale-tudo': blueprint['liner_hem'], 'surshort': blueprint.get('over_hem', SUR_HEM)}[kind]
+    waist = hipZ + {'boxe': 0.13, 'kick': 0.11, 'thai': 0.13, 'mma': 0.11, 'compression': 0.1,
+                    'vale-tudo': blueprint['liner_waist'], 'surshort': blueprint.get('over_waist', 0.105)}[kind]
     # 1.10: the waistband covers the underwear painted on the skin (Kadir's showed as a brown band above his
     # vale-tudo short in 1.9), 8 mm over its top at most 6 cm higher than the cut asked
     if 'top' not in _PAINT:
@@ -1216,7 +1247,12 @@ def shorts(kind, color, band, n_leg=None, under=False):
             if UNDER_OVERLAP >= 0:
                 t = min(1.0, max(0.0, (P[i].z - (hemz(i) + UNDER_OVERLAP)) / 0.02))
                 c2 *= t * t * (3 - 2 * t)
-            return loose(i, f'{s}UpLeg', f'{s}Leg', 0.010 - SUR_SNUG * c2, lambda u: SUR_FLARE * u ** 1.3 * (1 - c2)) + N[i] * folds(i, 0.002 * (1 - c2))
+            # Inaya reference: the inner layer contours the thigh while the
+            # outer layer releases gradually from the hip to the hem. The flare
+            # is suppressed near the crotch to avoid inflated / angular panels.
+            female_flare = blueprint.get('over_flare', SUR_FLARE)
+            return loose(i, f'{s}UpLeg', f'{s}Leg', 0.010 - SUR_SNUG * c2,
+                         lambda u: female_flare * u ** 1.3 * (1 - c2)) + N[i] * folds(i, 0.002 * (1 - c2))
         if kind == 'vale-tudo':
             # a flat waistband (a raised one made lumps on the Rocketbox body). 1.10: the 3 mm of extra room at the
             # hem made the leg flare (Youssef's audit: « jambes légèrement évasées »); the hem is now cut exactly by
@@ -1285,6 +1321,40 @@ def shorts(kind, color, band, n_leg=None, under=False):
     o, cov = shell(f'short-{kind}', keep_g, push, thick, mats, lambda c, ids: 1 if c.z > waist - bandH else 0, cuts=cuts, iso=F,
                    hem=0.004 if thick < 0.003 else 0.006)
     smooth(o, 1)
+    # Kadir has a different source hip topology from the Nael reference. At the
+    # inner crotch seam, alternating opposite-leg weights pull a few triangles
+    # into long needles as the stance spreads. A local blend with Hips removes
+    # the divergent forces without changing the male Nael silhouette or the
+    # other outfits. The easing reaches zero outside the narrow seam.
+    if KADIR_MMA_CROTCH and kind == 'vale-tudo':
+        hips_group = o.vertex_groups.get('Hips')
+        left = o.vertex_groups.get('LeftUpLeg')
+        right = o.vertex_groups.get('RightUpLeg')
+        if not all((hips_group, left, right)):
+            raise RuntimeError('Kadir MMA: missing hips or upper-leg skinning group')
+        moved_vertices = 0
+        for vertex in o.data.vertices:
+            q = o.matrix_world @ vertex.co
+            x = max(0.0, min(1.0, (0.110 - abs(q.x)) / 0.075))
+            zlo = max(0.0, min(1.0, (q.z - (hipZ - 0.20)) / 0.07))
+            zhi = max(0.0, min(1.0, ((hipZ + 0.035) - q.z) / 0.06))
+            fade = 0.45 * x * x * (3 - 2 * x) * zlo * zhi
+            if fade < 0.0005:
+                continue
+            weights = {g.group: g.weight for g in vertex.groups}
+            moved = 0.0
+            for group in (left, right):
+                original = weights.get(group.index, 0.0)
+                if original > 0:
+                    delta = original * fade
+                    group.add([vertex.index], original - delta, 'REPLACE')
+                    moved += delta
+            if moved > 0:
+                hips_group.add([vertex.index], weights.get(hips_group.index, 0.0) + moved, 'REPLACE')
+                moved_vertices += 1
+        print('Kadir MMA: crotch skin weights stabilised:', moved_vertices)
+        if not moved_vertices:
+            raise RuntimeError('Kadir MMA: zero crotch vertices stabilised; check source body')
     if under:
         # the skin stays hidden over the whole liner's region, as before (what the cut part covered is under the
         # over-short)

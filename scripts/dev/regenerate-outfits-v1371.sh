@@ -8,7 +8,22 @@ command -v blender >/dev/null || { echo "::error::Blender est absent"; exit 1; }
 command -v python3 >/dev/null || { echo "::error::Python est absent"; exit 1; }
 SCRIPT=tools/generator/rocketbox/outfits.py
 VALIDATOR=scripts/dev/validate-outfit-build-v1372.py
-OUTFITS=(boxe kickboxing muaythai mma bjj bjj-nogi judo)
+# The approved templates are shipped 1.37.2 GLBs: NEVER rebuild them here.
+# Only the two follower coaches receive a retargeted MMA short.
+OUTFITS=(mma)
+export ONLY=mma
+REFERENCE_NAEL='e4d1e0e46de56ea8a702d776f055a0b4fe2d9478'
+REFERENCE_INAYA='0237f76c9fc0db9e154efa5321cb0c17ace813b4'
+verify_references() {
+  local n i
+  n=$(git hash-object public/coaches/nael/tenues/mma.glb)
+  i=$(git hash-object public/coaches/inaya/tenues/mma.glb)
+  if [ "$n" != "$REFERENCE_NAEL" ] || [ "$i" != "$REFERENCE_INAYA" ]; then
+    echo "::error::Les GLB de référence Naël/Inaya ont changé ; publication refusée."
+    return 1
+  fi
+}
+verify_references
 mkdir -p logs
 
 build_one() {
@@ -51,12 +66,11 @@ build_one() {
   fi
 
   # Fail fast on the first wrong model. Never wait for 28 opaque Vitest failures.
-  python3 "$VALIDATOR" "$id" "$dst"
-  echo "===== $id : 7 tenues vérifiées ====="
+  python3 "$VALIDATOR" "$id" "$dst" mma
+  echo "===== $id : short MMA régénéré et vérifié ====="
 }
 
 build_one mma-kadir homme default
 build_one mma-amara femme default
-build_one nael homme nael
-build_one inaya femme inaya
-echo "28 tenues v1.37.2 réellement régénérées et contrôlées."
+verify_references
+echo "Shorts MMA Kadir/Amara reconstruits ; modèles de référence Naël/Inaya préservés."

@@ -3405,3 +3405,13 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - Validation des **28 GLB** : `generatorVersion=1.37.2` inscrit dans les extras glTF, test imposant la présence de cette version dans chaque fichier. Sans régénération complète, la publication est bloquée.
 - Le workflow Blender génère, teste et publie lui-même GitHub Pages pour ne plus dépendre d’un déclenchement ignoré après un push `GITHUB_TOKEN`.
 - Reste à contrôler visuellement : tenue MMA d’Inaya et Amara, rotations 3/4, garde, low kick/high kick et flexions ; la géométrie ne sera déclarée corrigée qu’après revue des nouveaux GLB.
+
+
+## v1.37.2 — correctif de référence des shorts MMA (12/11/2026)
+
+- **Références validées et gelées** : le short MMA de Naël pour les hommes et celui d'Inaya pour les femmes. Ces deux GLB ne sont pas remplacés ; les tests et le script Blender vérifient leurs empreintes Git.
+- **Adaptation individuelle** : Kadir et Amara conservent leurs propres morphologies et squelettes. Le générateur applique les proportions de coupe de la référence correspondante, sans copier des os ou des poids de peau d'un autre coach.
+- **Kadir** : protection du maillage de l'entrejambe contre la fermeture automatique des petites boucles de bord et transition locale vers les poids du bassin pour éviter les longues pointes noires lorsque les jambes s'écartent. Naël n'est pas modifié.
+- **Coupe féminine** : conserver la silhouette sportive d'Inaya, taille et hanches ajustées, cuissard intérieur près du corps et surshort souple ; les couleurs propres à Amara restent inchangées.
+- **Livraison ciblée** : seuls les deux GLB MMA de Kadir et Amara sont régénérés. Les 28 tenues existantes restent couvertes par les tests de validité ; les tests de références empêchent tout remplacement accidentel de Naël/Inaya.
+- **Validation visuelle restant nécessaire** : stance élargie de Kadir, déplacements, low kick, high kick, dos et profil. Tests automatiques ≠ contrôle d'aspect.
