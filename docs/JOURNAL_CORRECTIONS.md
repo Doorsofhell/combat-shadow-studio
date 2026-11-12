@@ -3178,5 +3178,11 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   machine, repassé seul : RÉUSSI. `boot.spec` (4) : RÉUSSI.
 - **Contrôle visuel** : écran Coach construit avec les modèles compressés, Amara puis Kaila habillées, aucune erreur
   de tenue (`docs/v1340/captures/`).
-- **Restauration** : branche `restauration/avant-demarrage-v134` (état 1.32.0, commit f9d9bf3).
+- **Remise sur la 1.33.2** (Youssef, 12/11 00:55 : « il faut repartir des dernières versions 1.33 ») : lot reposé sur
+  la 1.33.2 (commit cc58c17, branche `claude/project-thread-o7lrt8`). Unitaires : 1294 RÉUSSI, 25 ÉCHOUÉ, les mêmes
+  25 que sur la 1.33.2 seule (moteur : documents de mesures, fluidité, crochets, torsions ; respiration) : NON
+  APPLICABLE à ce lot. Écran ciblé (démarrage, salles, coachs, tenues, rendu, navigation) : 44 RÉUSSI. Mesures
+  identiques : 1er lancement 66,5 Mo ; ouvertures suivantes 0 Mo, 0,2 à 0,3 s, avec ou sans compression du serveur.
+- **Restauration** : branche `restauration/avant-demarrage-v134` (état 1.32.0, commit f9d9bf3) ; état 1.33.2 : commit
+  cc58c17.
 
