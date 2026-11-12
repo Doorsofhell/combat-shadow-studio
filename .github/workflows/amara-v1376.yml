@@ -1,0 +1,114 @@
+name: Tenues 1.37.6 - Amara haut couvrant et short MMA corrigé
+
+on:
+  push:
+    branches:
+      - claude/project-thread-o7lrt8
+    paths:
+      - package.json
+      - tools/generator/rocketbox/outfits.py
+      - scripts/dev/regenerate-amara-v1376.sh
+      - scripts/dev/check-amara-garments-v1376.py
+      - scripts/dev/validate-outfit-build-v1372.py
+      - .github/workflows/amara-v1376.yml
+      - src/domain/releases.ts
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  rebuild-amara:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout active branch and accepted reference models
+        uses: actions/checkout@v4
+        with:
+          ref: claude/project-thread-o7lrt8
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Install Blender and NumPy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender fonts-inter python3-numpy
+          blender --background --python-exit-code 42 --python-expr "import numpy; print(numpy.__version__)"
+
+      - name: Rebuild only Amara's seven outfits
+        run: |
+          set -o pipefail
+          python3 -m py_compile tools/generator/rocketbox/outfits.py scripts/dev/check-amara-garments-v1376.py
+          bash scripts/dev/regenerate-amara-v1376.sh
+
+      - name: Validate actual top coverage and MMA crotch geometry in Blender
+        run: blender --background --threads 2 --python-exit-code 42 --python scripts/dev/check-amara-garments-v1376.py
+
+      - name: Preserve Blender regeneration logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amara-v1376-blender-diagnostics
+          path: logs/amara-v1376.log
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Install Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install app dependencies
+        run: npm ci
+
+      - name: Recompute size and cache manifest
+        run: node scripts/boot-sizes.mjs
+
+      - name: Test all garments, validated skin, reference coaches and versioning
+        run: |
+          npm run test -- src/three/__tests__/amara-skin-v1375.test.ts src/three/__tests__/outfit-amara-v1374.test.ts src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit-rollback-v1373.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-materials-v1371.test.ts src/domain/release-version.test.ts src/boot/__tests__/preload.test.ts
+
+      - name: Load existing public web configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in VITE_FIREBASE_API_KEY VITE_FIREBASE_AUTH_DOMAIN VITE_FIREBASE_PROJECT_ID VITE_FIREBASE_APP_ID; do
+            val=$(grep -E "^[[:space:]]+${key}:" .github/workflows/preview.yml | head -1 | sed -E "s/^[[:space:]]+${key}:[[:space:]]*//")
+            test -n "$val" || { echo "::error::Public config missing: $key"; exit 1; }
+            echo "$key=$val" >> "$GITHUB_ENV"
+          done
+
+      - name: Build v1.37.6 with verified GLBs
+        run: npm run build
+
+      - name: Commit the seven verified Amara outfits and updated manifest only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- public/coaches/mma-amara/tenues/*.glb src/boot/assetSizes.json
+          if ! git diff --cached --quiet; then
+            git commit -m "assets(v1.37.6): correct Amara coverage and separate MMA leg mesh"
+            git push origin HEAD:claude/project-thread-o7lrt8
+          fi
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload built site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Publish verified 1.37.6
+        uses: actions/deploy-pages@v4
+        id: deployment
