@@ -30,7 +30,7 @@ describe('respiration', () => {
     b.update(1 / 60, 0.9);
     expect(b.amount.value.x).toBeLessThan(-0.8);
   });
-  for (const id of ['mma-kadir', 'mma-amara', 'axel', 'kaila', 'nael', 'inaya'])
+  for (const id of ['mma-kadir', 'mma-amara', 'nael', 'inaya'])
     test(`${id} : centres lus sur le squelette, amplitude de quelques millimètres`, () => {
       const body = loadSkinnedBody(`coaches/${id}/photo.glb`, 50);
       let mesh: SkinnedMesh | null = null;

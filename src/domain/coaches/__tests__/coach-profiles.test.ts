@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { existsSync } from 'node:fs';
-import { loadSkeleton } from '../../../test/skeleton';
+import { loadSkeleton, testModelPath } from '../../../test/skeleton';
 import { CoachRig } from '../../../engine/rig';
 import { measureAnkles, type AnkleWorst } from '../../../test/ankles';
 import { getLibrary } from '../../../engine/library';
@@ -20,9 +20,10 @@ import { COACH_LOOKS } from '../looks';
  * and the guard keeps the centre of mass between the feet.
  */
 const D = 180 / Math.PI;
-const STYLE: Record<string, 'mma'> = { 'mma-kadir': 'mma', 'mma-amara': 'mma', axel: 'mma', kaila: 'mma', nael: 'mma', inaya: 'mma' };
-// 1.11: Naël and Inaya have no generated model, their own skeleton is the one of their photo avatar
-const skeletonFile = (id: string) => (existsSync(`public/coaches/${id}/model.glb`) ? `coaches/${id}/model.glb` : `coaches/${id}/photo.glb`);
+const STYLE: Record<string, 'mma'> = { 'mma-kadir': 'mma', 'mma-amara': 'mma', nael: 'mma', inaya: 'mma' };
+// 1.11: Naël and Inaya have no generated model, their own skeleton is the one of their photo avatar (1.37: the generated
+// skeletons of Kadir and Amara are kept for the tests in tests/fixtures/modeles-generes/)
+const skeletonFile = (id: string) => (existsSync(testModelPath(`coaches/${id}/model.glb`)) ? `coaches/${id}/model.glb` : `coaches/${id}/photo.glb`);
 const fields = ['dorsi', 'plantar', 'inversion', 'eversion', 'rotation'] as const;
 
 describe('gardes propres aux coachs', () => {

@@ -15,8 +15,6 @@ const COACHES = [
   ['mma-amara', 'femme'],
   ['nael', 'homme'],
   ['inaya', 'femme'],
-  ['axel', 'homme'],
-  ['kaila', 'femme'],
 ] as const;
 
 function bone(root: Object3D, name: string) {
@@ -42,7 +40,7 @@ function withExpressions(root: Object3D) {
 describe.each(COACHES)('%s', (id, sex) => {
   const setup = () => {
     const root = loadSkeleton(sex, `coaches/${id}/photo.glb`);
-    const morph = id === 'axel' || id === 'kaila' ? null : withExpressions(root);
+    const morph = withExpressions(root);
     const face = new FaceAnimator(root, 11, humanProfileFor(id));
     return { root, face, morph, hand: bone(root, 'RightHand') };
   };

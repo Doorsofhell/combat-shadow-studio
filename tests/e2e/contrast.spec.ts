@@ -24,7 +24,6 @@ const SCREENS = [
   // 0.38 Créateur V2: the editor of a new sequence
   ['createur-editeur', '/#/createur/nouveau?d=boxe'],
   ['programmes', '/#/programmes'],
-  ['coach-editeur', '/#/combattant'],
   // 1.13: the coach selection screen (bars, gold and red cells, « non mesuré »)
   ['choix-coach', '/#/coach'],
   ['progres', '/#/stats'],

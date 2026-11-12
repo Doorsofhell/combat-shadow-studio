@@ -1,15 +1,13 @@
-import { useSettings } from '../../store/settings';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Profile, SPORT_GOALS, useProfile } from '../../store/profile';
 import { useAccount } from '../../account/session';
 import { useFighters } from '../../store/fighters';
 import { DISCIPLINES, DisciplineId, LEVELS, LevelId } from '../../domain/types';
-import type { HairStyle } from '../../editor/look';
 import { recommend } from '../../domain/recommend';
 import { CoachPicker } from './CoachSelect';
 import { championFor, type ChampionCoach } from '../../domain/coaches/catalog';
-import { DisciplineLabel, DisciplineCard, LevelSelector, OptionGrid } from '../components';
+import { DisciplineLabel, DisciplineCard, LevelSelector } from '../components';
 import { chooseCoach } from '../components/fighter';
 import { AppIcon } from '../icons';
 
@@ -22,59 +20,21 @@ const EXPERIENCE: { id: Profile['experience']; label: string; sub: string }[] = 
   { id: 'competition', label: 'Compétition', sub: 'Combats officiels' },
 ];
 
-const SKINS = [
-  { id: '#f1c8a8', label: 'Très claire' },
-  { id: '#d8a07c', label: 'Claire' },
-  { id: '#b97a56', label: 'Mate' },
-  { id: '#8d5a3b', label: 'Brune' },
-  { id: '#5e3a24', label: 'Foncée' },
-  { id: '#3b2416', label: 'Très foncée' },
-];
-
-const HAIR_COLORS = [
-  { id: '#1c1512', label: 'Noir' },
-  { id: '#4a2f1e', label: 'Brun' },
-  { id: '#8a5a32', label: 'Châtain' },
-  { id: '#c9a063', label: 'Blond' },
-  { id: '#9b3b22', label: 'Roux' },
-  { id: '#b9b6b0', label: 'Gris' },
-];
-
-const HAIR_STYLES: Record<'homme' | 'femme', { id: HairStyle; label: string }[]> = {
-  homme: [
-    { id: 'rase', label: 'Rasé' },
-    { id: 'court', label: 'Court' },
-    { id: 'degrade', label: 'Dégradé' },
-    { id: 'crete', label: 'Crête' },
-    { id: 'afro', label: 'Afro' },
-    { id: 'tresses', label: 'Tresses' },
-  ],
-  femme: [
-    { id: 'chignon', label: 'Chignon' },
-    { id: 'queue', label: 'Queue' },
-    { id: 'tresses', label: 'Tresses' },
-    { id: 'afro', label: 'Afro' },
-    { id: 'court', label: 'Court' },
-  ],
-};
-
-const STEPS = ['Bienvenue', 'Coach', 'Apparence', 'Garde', 'Discipline', 'Niveau', 'Objectifs', 'C’est parti'];
+const STEPS = ['Bienvenue', 'Coach', 'Garde', 'Discipline', 'Niveau', 'Objectifs', 'C’est parti'];
 
 function num(v: string) {
   const n = Number(v.replace(',', '.'));
   return v.trim() === '' || !Number.isFinite(n) ? undefined : n;
 }
 
-/** First launch, 7 short steps (8 with the fallback render). Answers stay on this device. */
+/** First launch, 7 short steps. Answers stay on this device. */
 export function Onboarding() {
   const stored = useProfile((s) => s.profile);
   const update = useProfile((s) => s.update);
   const fighter = useFighters((s) => s.fighters.find((f) => f.id === s.activeId) ?? null);
   const nav = useNavigate();
-  const premium = useSettings((s) => s.settings.coachRender === 'premium');
   const [step, setStep] = useState(0);
   const [p, setP] = useState<Profile>({ ...stored });
-  const [name, setName] = useState('');
   const accountsOn = useAccount((s) => s.capabilities.email && s.status === 'guest');
   const set = (x: Partial<Profile>) => setP((o) => ({ ...o, ...x }));
   const coach = fighter?.look.sex ?? p.coach;
@@ -84,24 +44,19 @@ export function Onboarding() {
     chooseCoach(c.coach, true);
     set({ coach: c.coach, champion: c.id });
   };
-  const editLook = (fn: (l: NonNullable<typeof fighter>['look']) => NonNullable<typeof fighter>['look']) => {
-    if (fighter) useFighters.getState().update(fighter.id, fn(fighter.look));
-  };
-  // 0.24: the coach is Kadir or Amara, whose look is fixed: the "Apparence" step (custom fighter) is
-  // skipped (it stays reachable only with the fallback render)
-  const skipLook = premium;
-  const shown = skipLook ? STEPS.filter((x) => x !== 'Apparence') : STEPS;
-  const shownIdx = skipLook && step > 2 ? step - 1 : step;
+  // 0.24: the coach is Kadir or Amara, whose look is fixed; 1.37: the « Apparence » step (custom fighter, kept
+  // for the fallback render « Précédente ») is removed with that render
+  const shown = STEPS;
+  const shownIdx = step;
   const next = () => {
-    if (step === 2 && fighter && name.trim()) useFighters.getState().rename(fighter.id, name);
-    setStep(skipLook && step === 1 ? 3 : step + 1);
+    setStep(step + 1);
     window.scrollTo(0, 0);
   };
   const finish = () => {
     update({ ...p, coach: coach ?? p.coach, completed: true });
     nav('/', { replace: true });
   };
-  const rec = step === 7 ? recommend(p) : null;
+  const rec = step === 6 ? recommend(p) : null;
 
   return (
     <div className="page no-nav ob">
@@ -173,37 +128,8 @@ export function Onboarding() {
           </>
         )}
 
-        {step === 2 && fighter && (
-          <>
-            <h2>Ton combattant</h2>
-            <p className="small muted">Une première personnalisation rapide. Tu pourras tout personnaliser plus tard dans l’onglet Coach.</p>
-            <div className="field">
-              <label htmlFor="fname">Nom</label>
-              <input id="fname" className="input" value={name} maxLength={24} onChange={(e) => setName(e.target.value)} placeholder={fighter.name} autoComplete="off" />
-            </div>
-            <div className="stack" style={{ gap: 8 }}>
-              <span className="label">Teint</span>
-              <OptionGrid min={84} label="Teint" value={fighter.look.skin} onChange={(v) => editLook((l) => ({ ...l, skin: v }))} options={SKINS.map((s) => ({ ...s, swatch: s.id }))} />
-            </div>
-            <div className="stack" style={{ gap: 8 }}>
-              <span className="label">Coupe de cheveux</span>
-              <OptionGrid min={84} label="Coupe de cheveux" value={fighter.look.hair.style} onChange={(v) => editLook((l) => ({ ...l, hair: { ...l.hair, style: v } }))} options={HAIR_STYLES[fighter.look.sex]} />
-            </div>
-            <div className="stack" style={{ gap: 8 }}>
-              <span className="label">Couleur des cheveux</span>
-              <OptionGrid
-                min={84}
-                label="Couleur des cheveux"
-                value={fighter.look.hair.color}
-                onChange={(v) => editLook((l) => ({ ...l, hair: { ...l.hair, color: v }, beard: { ...l.beard, color: v } }))}
-                options={HAIR_COLORS.map((s) => ({ ...s, swatch: s.id }))}
-              />
-            </div>
-          </>
-        )}
-        {step === 2 && !fighter && <p className="muted">Préparation de ton combattant…</p>}
 
-        {step === 3 && (
+        {step === 2 && (
           <>
             <h2>Ta garde</h2>
             <div className="choice-grid" role="radiogroup" aria-label="Garde">
@@ -220,7 +146,7 @@ export function Onboarding() {
           </>
         )}
 
-        {step === 4 && (
+        {step === 3 && (
           <>
             <h2>Ta discipline principale</h2>
             <p className="small muted">Toutes les disciplines restent accessibles ; celle-ci sert à te proposer des exercices.</p>
@@ -232,7 +158,7 @@ export function Onboarding() {
           </>
         )}
 
-        {step === 5 && (
+        {step === 4 && (
           <>
             <h2>Ton niveau</h2>
             <div className="choice-grid" role="radiogroup" aria-label="Expérience des sports de combat">
@@ -268,7 +194,7 @@ export function Onboarding() {
           </>
         )}
 
-        {step === 6 && (
+        {step === 5 && (
           <>
             <h2>Tes objectifs</h2>
             <div className="choice-grid">
@@ -327,7 +253,7 @@ export function Onboarding() {
           </>
         )}
 
-        {step === 7 && rec && (
+        {step === 6 && rec && (
           <>
             <h1 className="ob-hero">
               Prêt,
@@ -370,7 +296,7 @@ export function Onboarding() {
 
       <div className="ob-foot">
         {step > 0 && (
-          <button type="button" className="btn secondary" onClick={() => setStep(skipLook && step === 3 ? 1 : step - 1)}>
+          <button type="button" className="btn secondary" onClick={() => setStep(step - 1)}>
             Retour
           </button>
         )}

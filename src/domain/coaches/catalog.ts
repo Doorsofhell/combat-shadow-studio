@@ -78,37 +78,11 @@ export const CHAMPIONS: Record<CoachId, ChampionCoach> = {
 };
 
 /**
- * 1.5 (Youssef 2026-10-28: « 2 coachs supplémentaires mieux aboutis », built from MakeHuman, all assets CC0, see
- * tools/generator/makehuman): Axel and Kaila. The stored coach stays 'homme' | 'femme' (the body type the rest of the app
- * reads); the profile's `champion` names which coach of that body type is shown.
+ * Coaches added to Kadir and Amara. 1.5 added Axel and Kaila (MakeHuman); 1.37 (Youssef, 2026-11-12: « supprime les
+ * deux coachs qui ne sont pas faits en Microsoft ») removes them, their files are kept in « backup CS/ ». A profile
+ * that chose one of them gets Kadir or Amara (championFor), see RETIRED_COACHES in src/store/profile.ts.
  */
 export const EXTRA_COACHES: ChampionCoach[] = [
-  {
-    id: 'axel',
-    coach: 'homme',
-    name: 'Axel',
-    nickname: 'Aura-Stone',
-    style: 'Frappeur longiligne, regard de pierre',
-    bio: 'Grand, sec, posture droite et bras relâchés : Axel ne gaspille rien et frappe de loin, sans prévenir.',
-    portrait: './coaches/axel/portrait.webp',
-    height: '1,94 m',
-    guard: 'Droite et haute, bras un peu relâchés',
-    strengths: ['Allonge', 'Frappes de loin', 'Économie de mouvement'],
-    skills: sk(8, 7, 4, 4, 6, 7, 6),
-  },
-  {
-    id: 'kaila',
-    coach: 'femme',
-    name: 'Kaila',
-    nickname: 'La Valkyrie',
-    style: 'Puissante et compacte, toujours vers l’avant',
-    bio: 'Centre de gravité bas, mains ouvertes prêtes à saisir : Kaila avance sans cesse et impose son rythme.',
-    portrait: './coaches/kaila/portrait.webp',
-    height: '1,65 m',
-    guard: 'Basse et large, buste vers l’avant, mains ouvertes prêtes à saisir',
-    strengths: ['Centre de gravité bas', 'Avancée constante', 'Saisies'],
-    skills: sk(6, 5, 9, 7, 5, 6, 8),
-  },
   // 1.11 (Youssef 2026-11-03 23:03: « créé 2 joueurs supplémentaires, ne remplace pas les autres, nomme-les
   // différemment, colore leurs vêtements différemment, même moteur 3D »): the Rocketbox sports bodies of Kadir and
   // Amara with a Rocketbox face grafted on (tools/generator/rocketbox/face_transfer.py), Rocketbox Male_Adult_07
@@ -144,7 +118,7 @@ export const EXTRA_COACHES: ChampionCoach[] = [
 ];
 
 /** every coach, in the order of the choice screen */
-export const ALL_COACHES: ChampionCoach[] = [CHAMPIONS.homme, EXTRA_COACHES[0], EXTRA_COACHES[2], CHAMPIONS.femme, EXTRA_COACHES[1], EXTRA_COACHES[3]];
+export const ALL_COACHES: ChampionCoach[] = [CHAMPIONS.homme, EXTRA_COACHES[0], CHAMPIONS.femme, EXTRA_COACHES[1]];
 
 export const championById = (id: string | null | undefined) => ALL_COACHES.find((c) => c.id === id);
 

@@ -25,8 +25,8 @@ const DOC = resolve(__dirname, '../../../docs/v042-crochets/MESURES_CROCHETS.md'
 const BODIES = [
   { id: 'Kadir (Ultra-réaliste)', sex: 'homme', file: 'coaches/mma-kadir/photo.glb', profile: 'mma-kadir' },
   { id: 'Amara (Ultra-réaliste)', sex: 'femme', file: 'coaches/mma-amara/photo.glb', profile: 'mma-amara' },
-  { id: 'Kadir (Anime)', sex: 'homme', file: 'coaches/mma-kadir/model.glb', profile: 'mma-kadir' },
-  { id: 'Amara (Anime)', sex: 'femme', file: 'coaches/mma-amara/model.glb', profile: 'mma-amara' },
+  { id: 'Kadir (modèle généré)', sex: 'homme', file: 'coaches/mma-kadir/model.glb', profile: 'mma-kadir' },
+  { id: 'Amara (modèle généré)', sex: 'femme', file: 'coaches/mma-amara/model.glb', profile: 'mma-amara' },
   { id: 'Coach homme générique', sex: 'homme', file: undefined, profile: undefined },
   { id: 'Coach femme générique', sex: 'femme', file: undefined, profile: undefined },
 ] as const;

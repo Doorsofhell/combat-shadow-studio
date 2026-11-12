@@ -16,7 +16,7 @@ import { stageAzimuth, techniqueView } from '../domain/camera';
 import { analyseMotion } from '../engine';
 import { sequenceEnvelope, type Envelope } from '../engine';
 import { STYLE_OF } from '../three/CoachStage';
-import { defaultLook, recommendedGear, type FighterLook } from '../editor/look';
+import type { FighterLook } from '../editor/look';
 import type { StageView } from '../three/StudioStage';
 import { COACH_LOOKS } from '../domain/coaches/looks';
 import { coachProfile } from '../domain/coaches/motion';
@@ -25,8 +25,10 @@ import { coachProfile } from '../domain/coaches/motion';
 export function Lab() {
   const q = useMemo(() => new URLSearchParams(location.hash.split('?')[1] ?? ''), []);
   // champion=<coach id>: a champion-inspired coach, its own model and its fixed look
-  const champion = q.get('champion') && COACH_LOOKS[q.get('champion')!] ? q.get('champion')! : null;
-  const coach = (champion ? COACH_LOOKS[champion].sex : (q.get('coach') ?? 'homme')) as CoachId;
+  // 1.37: always a champion coach (the generated coach of coach=homme|femme is removed): coach= picks Kadir or Amara
+  const asked = q.get('champion') && COACH_LOOKS[q.get('champion')!] ? q.get('champion')! : null;
+  const champion = asked ?? championFor((q.get('coach') ?? 'homme') as CoachId).id;
+  const coach = COACH_LOOKS[champion].sex as CoachId;
   // tech=<technique id>&d=<discipline>: the technique at its key moment, from its teaching angle
   const tech = q.get('tech') ? TECHNIQUE_BY_ID.get(q.get('tech')!) : undefined;
   const disc = (q.get('d') ?? tech?.disciplines[0] ?? 'boxe') as DisciplineId;
@@ -84,43 +86,17 @@ export function Lab() {
   const onOutfit = useCallback((st: OutfitStatus) => report(0, st), [report]);
   const onOutfit2 = useCallback((st: OutfitStatus) => report(1, st), [report]);
   const southpaw = q.get('garde') === 'gaucher';
-  // art=1: official discipline artwork (discipline gear, collection palette: anthracite, red, gold)
-  const look = useMemo<FighterLook | null>(() => {
-    // with d=<discipline> or a technique: the coach dressed for that discipline, as in the app
-    if (champion) return q.get('d') || tech ? championLook(championById(champion) ?? championFor(coach), disc) : COACH_LOOKS[champion];
-    if (!q.get('art')) {
-      // top=<garment>&bottom=<garment>: clothing checks on the default look
-      if (!q.get('top') && !q.get('bottom')) return null;
-      const l = defaultLook(coach);
-      return { ...l, outfit: { ...l.outfit, top: (q.get('top') ?? l.outfit.top) as never, bottom: (q.get('bottom') ?? l.outfit.bottom) as never } };
-    }
-    const l = defaultLook(coach);
-    const g = recommendedGear(disc);
-    const red = '#a3121f';
-    const gold = '#b8932f';
-    const ink = '#1b1d22';
-    return {
-      ...l,
-      outfit: { ...l.outfit, bottom: g.bottom, shoes: g.shoes, bottomPaint: { color: disc === 'muaythai' ? red : ink, color2: gold, pattern: 'bande' } },
-      gear: {
-        ...l.gear,
-        hands: g.hands,
-        shins: g.shins,
-        feet: g.feet,
-        handsPaint: { color: red, color2: gold, pattern: 'uni' },
-        shinsPaint: { color: '#f2efe6', color2: red, pattern: 'uni' },
-        feetPaint: { color: '#f2efe6', color2: red, pattern: 'uni' },
-      },
-    };
-  }, [q, coach, disc, champion]);
+  // with d=<discipline> or a technique: the coach dressed for that discipline, as in the app (1.37: the art=, top= and
+  // bottom= looks of the generated coach are removed with it)
+  const look = useMemo<FighterLook>(
+    () => (q.get('d') || tech ? championLook(championById(champion) ?? championFor(coach), disc) : COACH_LOOKS[champion]),
+    [q, tech, coach, disc, champion],
+  );
   // mood=1: lights of the studio visuals (scripts/visuels), with alpha=1 for a transparent picture
-  // render=precedent: the v0.22 render (fallback), for before/after captures; look= is ignored since 1.9
-  // (Ultra-réaliste only, the Anime and Manga looks are removed)
-  const labStyle = 'realiste' as const;
-  const render = q.get('render') === 'precedent' ? 'precedent' : 'premium';
   // 1.10 light=app|vive|sombre: the lights of the training stage in high quality (CoachStage: realistic studio with
   // soft shadows and the room reflections at 0.12; « Lumière vive » at 0.7; the dark stage), for before/after
-  // captures under the real lighting; without it the Lab keeps its even light (older scripts)
+  // captures under the real lighting; without it the Lab keeps its own studio light (1.37: the even light of the drawn
+  // looks is removed)
   const light = (['app', 'vive', 'sombre'] as const).find((l) => l === q.get('light')) ?? null;
   const sampler = useRef<MotionSampler | null>(null);
   const sampler2 = useRef<MotionSampler | null>(null);
@@ -202,21 +178,20 @@ export function Lab() {
             zoom={Number(q.get('zoom') ?? '1')}
             focusY={q.get('fy') ? Number(q.get('fy')) : undefined}
             mood={!!q.get('mood')}
-            realistic={!!light}
             vive={light === 'vive'}
             dark={light === 'sombre' || light === 'vive'}
             shadows={!!light}
           >
             <group position={places ? [places[0].x, 0, places[0].z] : undefined} rotation={places ? [0, places[0].yaw, 0] : undefined}>
-              <CoachModel coach={coach} style={labStyle} render={render} quality="haute" look={look} model={champion ? `./coaches/${champion}/model` : undefined} onRig={onRig} onFrame={onFrame} outfit={outfit} onOutfit={onOutfit} />
+              <CoachModel coach={coach} quality="haute" look={look} model={`./coaches/${champion}/model`} onRig={onRig} onFrame={onFrame} outfit={outfit} onOutfit={onOutfit} />
             </group>
             {champion2 && (
               <group position={places ? [places[1].x, 0, places[1].z] : undefined} rotation={places ? [0, places[1].yaw, 0] : undefined} visible={!!places}>
-                <CoachModel coach={coach2} style={labStyle} render={render} quality="haute" look={look2} model={`./coaches/${champion2}/model`} onRig={onRig2} onFrame={onFrame2} outfit={outfit2} onOutfit={onOutfit2} />
+                <CoachModel coach={coach2} quality="haute" look={look2} model={`./coaches/${champion2}/model`} onRig={onRig2} onFrame={onFrame2} outfit={outfit2} onOutfit={onOutfit2} />
               </group>
             )}
             <LabProbe rig={rigRef} />
-            {labStyle === 'realiste' && render === 'premium' && <StudioEnvironment intensity={q.get('mood') ? 0.06 : light === 'vive' ? 0.7 : light ? 0.12 : 0.35} />}
+            <StudioEnvironment intensity={q.get('mood') ? 0.06 : light === 'vive' ? 0.7 : light ? 0.12 : 0.35} />
           </StudioStage>
         </Suspense>
       </Canvas>

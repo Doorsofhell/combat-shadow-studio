@@ -216,7 +216,7 @@ export const PREMIUM_BENEFITS: readonly { label: string; features: EntitlementId
   { label: 'Création illimitée d’enchaînements personnalisés', features: ['unlimited_combos', 'advanced_combo_builder'] },
   { label: 'Coaching 3D complet', features: ['advanced_breakdown', 'advanced_voice'] },
   { label: 'Toutes les disciplines et techniques', features: ['all_disciplines', 'advanced_techniques'] },
-  // 1.9: « et rendus » dropped with the Anime look (Youssef, 2026-10-29)
+  // 1.9: « et rendus » dropped with the drawn look (Youssef, 2026-10-29)
   { label: 'Tous les combattants', features: ['all_fighters'] },
   { label: 'Tous les programmes et niveaux', features: ['all_programs', 'advanced_techniques'] },
   { label: 'Statistiques et comparaisons avancées', features: ['advanced_statistics'] },

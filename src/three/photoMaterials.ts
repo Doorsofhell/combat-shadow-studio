@@ -78,17 +78,14 @@ export type PhotoLook = SkinLook;
 /**
  * 1.10 per coach (Youssef: « calibrez les paramètres par coach », « n'appliquez pas une amplification globale »):
  * 1.9 drew every skin's anatomy 1.5 times deeper. The Rocketbox photo skins (Kadir, Amara) already carry the
- * muscles in their photo and their normal map: 1.2 and 1.15. The MakeHuman skins (Axel, Kaila) are smoother, their
- * relief comes from our anatomy bake (normal scale 0.6 in the file): 1.5 and 1.35. Pores stronger where the skin
- * texture has none of its own (MakeHuman), scattering a little warmer on the lighter skin (Kaila).
+ * muscles in their photo and their normal map: 1.2 and 1.15. (The MakeHuman skins of Axel and Kaila, removed in 1.37,
+ * had 1.5 and 1.35.)
  */
 export const SKIN_LOOK: Record<string, SkinLook> = {
   'mma-kadir': { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, wrap: 0.45, shadowLift: 0.36 },
   'mma-amara': { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, wrap: 0.45, shadowLift: 0.34 },
-  axel: { ...DEFAULT_SKIN, relief: 1.5, pores: 0.06, wrap: 0.5, shadowLift: 0.3 },
-  kaila: { ...DEFAULT_SKIN, relief: 1.35, pores: 0.05, wrap: 0.55, shadowLift: 0.32, tint: [1, 0.52, 0.38] },
   // 1.11 Naël and Inaya: Rocketbox photo skins like Kadir and Amara (same relief maps); lighter skins, the
-  // scattering a little warmer as on Kaila
+  // scattering a little warmer
   // 1.21 same light as Kadir (Inaya got Amara's in 1.20): the wider wrap softened the shadows between the muscles
   nael: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, wrap: 0.45, shadowLift: 0.34, tint: [1, 0.55, 0.42] },
   // 1.20 (Youssef 05/11 14:09, Amara's muscles « bien dessinés »): Inaya's wrapped light was wider than Amara's

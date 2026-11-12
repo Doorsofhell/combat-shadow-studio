@@ -11,8 +11,6 @@ import { FaceAnimator } from '../face';
 const COACHES = [
   ['mma-kadir', 'homme'],
   ['mma-amara', 'femme'],
-  ['axel', 'homme'],
-  ['kaila', 'femme'],
   ['nael', 'homme'],
   ['inaya', 'femme'],
 ] as const;

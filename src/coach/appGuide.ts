@@ -65,7 +65,7 @@ export const APP_GUIDE: GuideEntry[] = [
       'par ou commencer', 'par ou je commence', 'je commence par quoi', 'comment commencer', 'je debute', 'premiere fois',
     ],
     answer:
-      'Combat Shadow Studio t’aide à t’entraîner seul, en shadow : ton coach en 3D (Kadir, Axel, Amara ou Kaila) montre chaque mouvement et tu le fais en même temps, face à l’écran.\n' +
+      'Combat Shadow Studio t’aide à t’entraîner seul, en shadow : ton coach en 3D (Kadir, Naël, Amara ou Inaya) montre chaque mouvement et tu le fais en même temps, face à l’écran.\n' +
       'Dans la barre du bas, qui flotte au-dessus de la page, quatre places : Accueil, Entraîner, Progrès et Compte. Dans Entraîner, tout est en tuiles : tes six disciplines, « Apprends » (techniques, légendes, encyclopédie) et « Tes outils ». La loupe en haut à droite ouvre la recherche, à côté du ⋮ qui ouvre les options de l’écran. Juste au-dessus de la barre, le gros bouton de l’action principale.\n' +
       'Pour te lancer, touche « Commencer » sur l’accueil, dans la carte de ton coach. Et si tu as une question, technique ou sur l’application, touche la loupe « Rechercher » en haut à droite (sur l’accueil, c’est la grande barre « Que veux-tu travailler ? ») : tu trouves ce que tu cherches dans l’app, ou tu me poses la question.',
     action: { to: '/entrainer', label: 'Aller à Entraîner' },
@@ -249,7 +249,7 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['entrainement'],
     answer:
       'Dans le studio, « Options » (dans « Plus ») ouvre les options de la séance :\n' +
-      '• le coach (Kadir, Axel, Amara ou Kaila) et le rendu ;\n' +
+      '• le coach (Kadir, Naël, Amara ou Inaya) ;\n' +
       '• ta garde : orthodoxe (gauche devant) ou gaucher (droite devant) ;\n' +
       '• l’angle de caméra ;\n' +
       '• les repères au sol : position et orientation des pieds, pied avant ou arrière, direction du pivot, trajectoires ;\n' +
@@ -261,21 +261,21 @@ export const APP_GUIDE: GuideEntry[] = [
   {
     id: 'choose-coach',
     title: 'Choisir son coach',
-    keywords: ['changer de coach', 'choisir mon coach', 'choisir un coach', 'choix du coach', 'autre coach', 'mon coach', 'kadir', 'amara', 'axel', 'kaila', 'nael', 'inaya', 'coach homme', 'coach femme'],
+    keywords: ['changer de coach', 'choisir mon coach', 'choisir un coach', 'choix du coach', 'autre coach', 'mon coach', 'kadir', 'amara', 'nael', 'inaya', 'coach homme', 'coach femme'],
     screens: ['coach-choix'],
     answer:
-      'Tu as six coachs : Kadir « L’Aigle », lutteur patient à la pression constante ; Axel « Aura-Stone », grand frappeur sec au regard de pierre ; Naël « Le Faucon », contreur rapide ; Amara « La Lionne », frappeuse puissante à la garde haute ; Kaila « La Valkyrie », compacte et puissante, toujours vers l’avant ; Inaya « La Panthère », explosive, qui frappe des jambes à distance. Tous montrent les mêmes techniques.\n' +
-      'L’écran de choix montre le coach en grand et en 3D : fais-le tourner du doigt, passe au suivant avec les flèches, les six vignettes ou en balayant sa fiche, et touche l’icône ronde de lecture pour le voir bouger. Rien ne change tant que tu n’as pas touché « Choisir ».\n' +
+      'Tu as quatre coachs : Kadir « L’Aigle », lutteur patient à la pression constante ; Naël « Le Faucon », contreur rapide ; Amara « La Lionne », frappeuse puissante à la garde haute ; Inaya « La Panthère », explosive, qui frappe des jambes à distance. Tous montrent les mêmes techniques.\n' +
+      'L’écran de choix montre le coach en grand et en 3D : fais-le tourner du doigt, passe au suivant avec les flèches, les quatre vignettes ou en balayant sa fiche, et touche l’icône ronde de lecture pour le voir bouger. Rien ne change tant que tu n’as pas touché « Choisir ».\n' +
       'Pour l’ouvrir : « Changer de coach » sur l’accueil, « Mon coach » dans Compte, Réglages puis « Mon coach », ou « Options » pendant une séance. Tes statistiques sont conservées.',
     action: { to: '/coach', label: 'Choisir mon coach' },
   },
   {
     id: 'render',
     title: 'Le rendu des combattants',
-    keywords: ['rendu', 'rendu des combattants', 'style anime', 'anime', 'ultra realiste', 'realiste', 'look du coach', 'apparence du coach', 'graphismes', 'style graphique', 'manga', 'encre', 'dessin anime'],
+    keywords: ['rendu', 'rendu des combattants', 'ultra realiste', 'realiste', 'look du coach', 'apparence du coach', 'graphismes', 'style graphique', 'style dessine', 'dessin', 'choisir le style'],
     answer:
       'Les coachs s’affichent en Ultra-réaliste : peau, cheveux, regard et vêtements proches d’un vrai combattant, avec un visage qui cligne des yeux et se crispe dans l’effort.\n' +
-      'Le style Anime a été retiré dans la version 1.9 : il n’y a plus de choix de look. Si ton appareil peine, baisse la qualité dans Réglages, « Affichage 3D ».',
+      'C’est le seul rendu de l’application : les anciens styles dessinés ont été retirés, il n’y a donc pas de look à choisir. Si ton appareil peine, baisse la qualité dans Réglages, « Affichage 3D ».',
     action: { to: '/reglages', label: 'Ouvrir les réglages' },
   },
 

@@ -31,8 +31,10 @@ describe('contrat des personnages 3D', () => {
     for (const d of dirs) expect(HUMAN_PROFILES[d], `${d} : modèle sans profil humain`).toBeDefined();
   });
 
-  test('la liste des anciens modèles autorisés en mode dégradé est figée (Axel, Kaila)', () => {
-    expect([...LEGACY_DEGRADED].sort()).toEqual(['axel', 'kaila']);
+  // 1.37: Axel and Kaila (MakeHuman, bones only) are removed: no coach may run the degraded face any more
+  test('plus aucun modèle autorisé en mode dégradé : tous les coachs ont le contrat complet', () => {
+    expect([...LEGACY_DEGRADED]).toEqual([]);
+    for (const p of Object.values(HUMAN_PROFILES)) expect(p.contract, p.id).toBe('complet');
     for (const p of Object.values(HUMAN_PROFILES))
       if (p.contract !== 'complet') {
         expect(LEGACY_DEGRADED as readonly string[], `${p.id} : un nouveau coach doit respecter le contrat complet`).toContain(p.id);
@@ -70,10 +72,11 @@ describe('contrat des personnages 3D', () => {
     expect(humanProfileFor('nael').id).toBe('nael');
   });
 
-  test('les modèles générés de secours sont reconnus « aucun » (comportement du corps seulement, documenté)', () => {
-    for (const id of ['mma-kadir', 'mma-amara', 'axel', 'kaila']) {
-      const f = resolve(PUBLIC, `coaches/${id}/model.glb`);
-      if (!existsSync(f)) continue;
+  // 1.37: the generated models are no longer in the app; their skeletons, kept for the tests, still read as « aucun »
+  test('un modèle sans visage (squelettes générés gardés pour les tests) est reconnu « aucun »', () => {
+    for (const id of ['mma-kadir', 'mma-amara']) {
+      const f = resolve(__dirname, '../../../../tests/fixtures/modeles-generes', `coaches/${id}/model.glb`);
+      expect(existsSync(f), f).toBe(true);
       const { bones, morphs } = glbNames(readFileSync(f));
       expect(['aucun', 'minimal']).toContain(faceCapabilities(bones, morphs).level);
     }

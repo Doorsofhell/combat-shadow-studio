@@ -20,8 +20,6 @@ const COACHES = [
   ['mma-amara', 'femme'],
   ['nael', 'homme'],
   ['inaya', 'femme'],
-  ['axel', 'homme'],
-  ['kaila', 'femme'],
 ] as const;
 const STYLES: StanceStyle[] = ['boxing', 'mma', 'muaythai', 'kickboxing'];
 

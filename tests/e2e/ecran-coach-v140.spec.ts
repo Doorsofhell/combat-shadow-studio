@@ -22,7 +22,6 @@ const SCREENS: { path: string; id: string; context: string; commands: string[]; 
   { path: '/', id: 'hero-stage', context: 'accueil', commands: ['fullscreen', 'sound'], angles: false },
   { path: '/techniques/jab?d=boxe', id: 'technique-stage', context: 'fiche', commands: ['speed-tool', 'fullscreen', 'sound'], angles: true },
   { path: '/entrainement?ex=boxe-debutant-02&mode=technique', id: 'training-stage', context: 'seance', commands: ['speed-tool', 'fullscreen', 'sound'], angles: true },
-  { path: '/combattant', id: 'studio-stage', context: 'apercu', commands: ['fullscreen'], angles: false },
 ];
 
 test('le même module partout : un toucher montre les commandes du coach, le toucher suivant les cache', async ({ page }) => {

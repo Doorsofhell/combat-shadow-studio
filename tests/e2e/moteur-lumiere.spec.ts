@@ -48,25 +48,24 @@ test('Réglages > Affichage : « Lumière du coach » Vive par défaut (fond som
 });
 
 test('préférences existantes : Studio enregistré reste Studio ; une sauvegarde d’avant 0.49 passe en Vive', async ({ page }) => {
-  await seedProfile(page, {}, { coachStyle: 'realiste', coachRender: 'premium', coachLight: 'studio' });
+  await seedProfile(page, {}, { coachLight: 'studio' });
   await page.goto('/#/reglages/affichage');
   await expect(page.getByRole('radiogroup', { name: 'Lumière du coach' }).getByRole('radio', { name: 'Studio' })).toHaveAttribute('aria-checked', 'true');
   await page.goto('about:blank');
-  await seedProfile(page, {}, { coachStyle: 'realiste', coachRender: 'premium' });
+  await seedProfile(page, {}, { voice: true });
   await page.goto('/#/reglages/affichage');
   await expect(page.getByRole('radiogroup', { name: 'Lumière du coach' }).getByRole('radio', { name: 'Vive (fond sombre)' })).toHaveAttribute('aria-checked', 'true');
 });
 
-// 1.9: the Anime look is removed (Youssef, 2026-10-29); a device that saved it opens in Ultra-réaliste and
-// gets the light option, the previous 3D render still has none
-test('1.9 : un ancien réglage Anime ouvre en Ultra-réaliste, avec l’option de lumière', async ({ page }) => {
-  await seedProfile(page, {}, { coachStyle: 'encre', coachRender: 'premium' });
-  await page.goto('/#/reglages/affichage');
-  await expect(page.getByRole('radiogroup', { name: 'Lumière du coach' })).toBeVisible();
-});
-
-test('la version précédente du rendu 3D n’a pas d’option de lumière', async ({ page }) => {
-  await seedProfile(page, {}, { coachStyle: 'realiste', coachRender: 'precedent' });
-  await page.goto('/#/reglages/affichage');
-  await expect(page.getByRole('radiogroup', { name: 'Lumière du coach' })).toHaveCount(0);
-});
+// 1.9 then 1.37 (one render only, « Précédente » removed): every older save opens the Ultra-réaliste coach and gets the
+// light option (the 1.9 test « la version précédente du rendu 3D n'a pas d'option de lumière » has no object any more)
+for (const old of [
+  { coachStyle: 'encre', coachRender: 'premium' },
+  { coachStyle: 'realiste', coachRender: 'precedent' },
+])
+  test(`1.37 : un ancien réglage ${old.coachStyle} / ${old.coachRender} ouvre en Ultra-réaliste, avec l’option de lumière`, async ({ page }) => {
+    await seedProfile(page, {}, old);
+    await page.goto('/#/reglages/affichage');
+    await expect(page.getByRole('radiogroup', { name: 'Lumière du coach' })).toBeVisible();
+    await expect(page.getByText('Version du rendu 3D')).toHaveCount(0);
+  });

@@ -15,7 +15,7 @@ import { NavPanel, usePanel } from '../../nav/NavSheets';
 import { fold } from '../../nav/selection';
 import { useNavActions } from '../../nav/store';
 import { TechniquePicto } from '../../pictos/TechniquePicto';
-import { useLeaveGuard } from '../coach/useLeaveGuard';
+import { useLeaveGuard } from './useLeaveGuard';
 import { saveCombo } from './actions';
 import { ScoreRing, masteryKey } from './shared';
 import './creator.css';

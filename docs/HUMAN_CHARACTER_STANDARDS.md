@@ -63,13 +63,10 @@ Un nouveau coach doit atteindre le niveau **`complet`** :
 Chaîne Rocketbox : `tools/generator/rocketbox/morph_extract.py` puis `morph_apply.py` après **chaque**
 reconstruction d'un `photo.glb`.
 
-Niveaux inférieurs (anciens modèles seulement, liste `LEGACY_DEGRADED` figée) :
-
-- **os** : pas de morph targets ; paupières, sourcils, coins de la bouche, mâchoire et yeux par os
-  (Axel et Kaila, MakeHuman). Regard, clignements, respiration, états, effort fonctionnent ; le sourire et
-  la bouche sont plus limités. Mode dégradé documenté dans leur profil (`degradedReason`).
-- **aucun** : modèles générés de secours (`model.glb`, build `VITE_PHOTO_COACH=0`) : seulement la vie du corps
-  du moteur d'animation et la respiration.
+Niveaux inférieurs : depuis la 1.37.0, aucun coach de l'application ne les utilise. La liste `LEGACY_DEGRADED`
+est vide et ne doit plus jamais recevoir de coach (Axel et Kaila, MakeHuman, niveau « os », et les modèles
+générés de secours, niveau « aucun », ont été retirés et rangés dans `backup CS/`). Le moteur sait toujours
+reconnaître ces niveaux (`src/three/human/capabilities.ts`).
 
 ## 3. Comportements humains obligatoires
 
@@ -142,7 +139,6 @@ Tests qui appliquent ces critères :
 
 ## 8. Limites connues
 
-- Axel et Kaila : pas de morph targets (modèles MakeHuman) ; bouche limitée aux coins et à la mâchoire.
 - Les gants de garde haute masquent souvent la bouche d'Amara et d'Inaya de face.
 - Le regard vise un adversaire supposé devant le coach à hauteur de ses yeux (il n'y a pas d'adversaire réel
   dans la scène, sauf en duo).

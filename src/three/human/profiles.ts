@@ -23,7 +23,8 @@ export interface HumanProfile {
 }
 
 /** older models allowed a degraded face (facial bones only, no expressions). Never add a new coach here. */
-export const LEGACY_DEGRADED = ['axel', 'kaila'] as const;
+// 1.37: empty, Axel and Kaila (MakeHuman, bones only) are removed; every coach of the app has the complete face
+export const LEGACY_DEGRADED: readonly string[] = [];
 
 const p = (id: string, traits: Partial<BehaviorTraits> = {}, blinkRate = 1, contract: HumanProfile['contract'] = 'complet', degradedReason?: string): HumanProfile => ({
   id,
@@ -33,8 +34,6 @@ const p = (id: string, traits: Partial<BehaviorTraits> = {}, blinkRate = 1, cont
   blinkRate,
 });
 
-const BONES_ONLY = 'Modèle MakeHuman (1.9) : os du visage seulement (paupières, sourcils, coins de la bouche, mâchoire, yeux), pas de morph targets ; regard, clignements, respiration, effort et états fonctionnent, sourire et bouche plus limités.';
-
 export const HUMAN_PROFILES: Record<string, HumanProfile> = {
   // Kadir, lutteur patient : visage posé, sourit peu
   'mma-kadir': p('mma-kadir', { expressiveness: 1, warmth: 0.8, stamina: 1.2 }, 0.95),
@@ -42,8 +41,6 @@ export const HUMAN_PROFILES: Record<string, HumanProfile> = {
   'mma-amara': p('mma-amara', { expressiveness: 1.1, warmth: 1, stamina: 1 }, 1),
   nael: p('nael', { expressiveness: 1, warmth: 1.1, stamina: 1 }, 1.05),
   inaya: p('inaya', { expressiveness: 1.05, warmth: 1, stamina: 1.1 }, 1),
-  axel: p('axel', { expressiveness: 1, warmth: 1, stamina: 1 }, 1, 'os', BONES_ONLY),
-  kaila: p('kaila', { expressiveness: 1, warmth: 1, stamina: 1 }, 1, 'os', BONES_ONLY),
 };
 
 /** standard profile, given automatically to a model the registry does not know (its tests will still fail) */

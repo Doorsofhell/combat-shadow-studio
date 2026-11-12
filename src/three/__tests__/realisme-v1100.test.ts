@@ -10,7 +10,7 @@ import { DEFAULT_SKIN, SKIN_SHADER_OK } from '../skinShader';
  * accessoires »), checked on the shipped files of the four coaches. Spatial checks: which bone moves which part
  * of a garment, measured where the part is (a list of bone names alone did not see the inverted glove weights).
  */
-const COACHES = ['mma-kadir', 'mma-amara', 'axel', 'kaila', 'nael', 'inaya'];
+const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya'];
 const file = (c: string, o: string) => `public/coaches/${c}/tenues/${o}.glb`;
 
 describe('gants de boxe et de thaï : poids répartis selon la position', () => {
@@ -155,18 +155,19 @@ describe('peau : diffusion, ombres adoucies, pores, relief calibré par coach', 
   test('les morceaux de shader remplacés existent dans cette version de three.js', () => expect(SKIN_SHADER_OK).toBe(true));
   test('relief calibré par coach, jamais l’ancienne amplification uniforme de 1,5 pour tous', () => {
     const r = COACHES.map((c) => SKIN_LOOK[c].relief);
-    expect(new Set(r).size).toBeGreaterThan(2);
-    expect(SKIN_LOOK['mma-kadir'].relief).toBeLessThan(1.5);
-    expect(SKIN_LOOK['mma-amara'].relief).toBeLessThan(1.5);
+    // 1.37: four coaches, two skin families (Kadir and Naël, Amara and Inaya): more than one value; before, with the
+    // MakeHuman skins of Axel and Kaila, more than two. Every coach (not only Kadir and Amara) stays under 1.5
+    expect(new Set(r).size).toBeGreaterThan(1);
+    for (const c of COACHES) expect(SKIN_LOOK[c].relief, c).toBeLessThan(1.5);
   });
   for (const q of ['haute', 'basse'] as const)
     test(`peau ${q} : shader ajouté, pores en haute qualité seulement`, () => {
-      const m = photoMaterial(new MeshStandardMaterial({ name: 'Skin', map: new Texture() }), 'peau', q, SKIN_LOOK.kaila);
+      const m = photoMaterial(new MeshStandardMaterial({ name: 'Skin', map: new Texture() }), 'peau', q, SKIN_LOOK.inaya);
       const shader = { uniforms: {}, fragmentShader: (m.type === 'MeshPhysicalMaterial' ? ShaderLib.physical : ShaderLib.standard).fragmentShader, vertexShader: '' };
       m.onBeforeCompile(shader as never, undefined as never);
       expect(shader.fragmentShader).toContain('cssWrapIrr( geometryNormal');
       expect(shader.fragmentShader).toContain('cssShadowLift(');
-      expect((shader.uniforms as Record<string, { value: number }>).cssPores.value).toBe(q === 'haute' ? SKIN_LOOK.kaila.pores : 0);
+      expect((shader.uniforms as Record<string, { value: number }>).cssPores.value).toBe(q === 'haute' ? SKIN_LOOK.inaya.pores : 0);
       expect(m.customProgramCacheKey()).toContain('css-skin');
     });
 });
@@ -174,7 +175,7 @@ describe('peau : diffusion, ombres adoucies, pores, relief calibré par coach', 
 // 1.10: the racer-back bra once reached the forearms (Rocketbox rest pose: forearms at chest height), a sheet of
 // cloth thrown round the arms in motion (Amara, mma). Every point of every bra stays between the shoulder joints.
 describe('brassières : aucune partie sur les bras', () => {
-  for (const c of ['mma-amara', 'kaila', 'inaya'])
+  for (const c of ['mma-amara', 'inaya'])
     for (const o of ['boxe', 'kickboxing', 'muaythai', 'mma'])
       test(`${c} ${o}`, () => {
         const { parts, bind } = readGlb(file(c, o));

@@ -43,7 +43,7 @@ const PLACES: { label: string; to: string; hint?: string; words?: string[] }[] =
   { label: 'Thème Nuit, Jour, Auto', to: '/reglages', hint: 'Réglages', words: ['theme', 'sombre', 'clair', 'mode nuit', 'mode jour'] },
   { label: 'Voix et sons', to: '/reglages/voix', hint: 'Réglages', words: ['voix', 'son', 'volume', 'gong', 'audio'] },
   { label: 'Rounds par défaut', to: '/reglages/rounds', hint: 'Réglages', words: ['duree', 'repos', 'round'] },
-  { label: 'Affichage 3D', to: '/reglages/affichage', hint: 'Réglages', words: ['qualite', 'tenue', 'rendu', 'lumiere', 'anime'] },
+  { label: 'Affichage 3D', to: '/reglages/affichage', hint: 'Réglages', words: ['qualite', 'tenue', 'rendu', 'lumiere'] },
   { label: 'Caméra', to: '/reglages/affichage?focus=camera', hint: 'Réglages', words: ['camera', 'vue', 'angle'] },
   { label: 'Exporter, importer, effacer', to: '/reglages/donnees', hint: 'Réglages', words: ['donnees', 'sauvegarde', 'export'] },
   { label: 'Confidentialité', to: '/confidentialite', hint: 'Réglages', words: ['vie privee', 'donnees personnelles'] },
