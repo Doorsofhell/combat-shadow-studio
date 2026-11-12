@@ -1,0 +1,68 @@
+name: Amara 1.37.9 - 7 true 3D visual review sheets
+
+on:
+  push:
+    branches:
+      - fix/amara-garment-finish-v1379
+    paths:
+      - scripts/dev/capture-amara-review-v1379.mjs
+      - .github/workflows/amara-review-sheets-v1379.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: amara-visual-review-v1379
+  cancel-in-progress: true
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Build the exact v1.37.9 preview
+        run: npm run build
+      - name: Start preview server
+        run: |
+          nohup npx vite preview --host 127.0.0.1 --port 4173 --strictPort > /tmp/vite-review.log 2>&1 &
+          for n in $(seq 1 40); do
+            curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/vite-review.log
+          exit 1
+      - name: Install offscreen contact-sheet composer
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          ffmpeg -version | head -1
+      - name: Render seven actual outfits, four live poses each
+        run: node scripts/dev/capture-amara-review-v1379.mjs
+      - name: Upload visual review ZIP
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: revue-amara-7-tenues-4-poses-v1379
+          path: captures/revue-amara-v1379/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Commit review pictures only to this unpublished branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- captures/revue-amara-v1379/*.jpg captures/revue-amara-v1379/diagnostic.json
+          if ! git diff --cached --quiet; then
+            git commit -m "captures(v1.37.9): seven real Amara outfit review sheets [skip ci]"
+            git push origin HEAD:fix/amara-garment-finish-v1379
+          fi

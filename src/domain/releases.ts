@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.37.9',
+      releaseDate: '2026-11-12',
+      title: 'Amara : finitions textiles plus naturelles',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Amara : tissus des hauts de sport moins brillants, trame textile plus lisible et matières des shorts et ceintures adoucies.' },
+        { category: 'ameliorations', text: 'Réglage uniquement sur ses vêtements : décolleté, géométrie, rig, animations, tenues d’Inaya, Naël et Kadir inchangés.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.37.8',
       releaseDate: '2026-11-12',
       title: 'Amara : relief musculaire affiné',
