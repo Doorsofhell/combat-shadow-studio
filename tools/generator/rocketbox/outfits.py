@@ -2068,6 +2068,8 @@ def bra_v2(color, accent=None, bandeau=False, band=0.02):
         return low - 0.02 < P[i].z < nk.z + 0.01 and w(i, 'Head') < 0.2 and w(i, *HANDS) < 0.3 and F(P[i]) < 0.03
     grad = isinstance(color, tuple)
     mats = [grad_fabric('haut-brassiere-degrade', 'jersey', 0.62, 0.45, 0.12) if grad else fabric(f'haut-brassiere-{color}', color, 'jersey', rough=0.62, strength=0.45, sheen=0.12)]
+    if AMARA_MMA_REF:
+        mats[0] = grad_fabric('haut-brassiere-amara-ref-1379', 'jersey', 0.85, 0.42, 0.045)
     cuts = []
     if accent:
         mats.append(fabric(f'liseré-{accent}', accent, 'elastique', rough=0.6, strength=0.8))
@@ -2077,6 +2079,9 @@ def bra_v2(color, accent=None, bandeau=False, band=0.02):
                    (lambda c, ids: 1 if c.z < low + band else 0) if accent else None, hem=0.008, cuts=cuts, iso=F)
     if grad:
         paint_grad(o, color, low + band, nk.z - 0.05)
+    if AMARA_MMA_REF:
+        paint_mma_compression(o, low + band, nk.z, band, top=True)
+        o['cssTopStyle'] = 'scoop-racerback-reference-1379'
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
     return [o], cov
@@ -3031,9 +3036,15 @@ def outfit(name):
             # over-short) and a sports bra with a wide elastic under-band, colours per coach (MMAF_KITS)
             k = MMAF_KITS[MMAF]
             _ONCUT[0] = True
-            add(shorts('vale-tudo', k['liner'], k['linerband'], under=UNDER_OVERLAP >= 0))
-            add(shorts('surshort', k['over'], k['overband']))
-            add(female_top(k['top'], k['topband']) or bra_v2(k['top'], k['topband'], band=0.035))
+            if AMARA_MMA_REF:
+                # User reference: fitted MMA compression boxer, rounded scoop bra, no loose over-short.
+                # Brand colours adapted to Amara; no copied third-party logos or textures.
+                add(shorts('vale-tudo', '#132027', '#D4AF37', under=False))
+                add(bra_v2('#12282D', '#D4AF37', band=0.030))
+            else:
+                add(shorts('vale-tudo', k['liner'], k['linerband'], under=UNDER_OVERLAP >= 0))
+                add(shorts('surshort', k['over'], k['overband']))
+                add(female_top(k['top'], k['topband']) or bra_v2(k['top'], k['topband'], band=0.035))
             _ONCUT[0] = False
         else:
             add(shorts('vale-tudo', *C['mma']))
@@ -3099,7 +3110,11 @@ def brand_logos(parts):
     for g in parts:
         n = g.name
         if n.startswith('haut-') and female:
-            # 1.26 (Youssef, 2026-11-06: « retire aussi le logo sur les brassières des coachs femmes »): plain bras
+            # Previous sports bras remain logo-free. Reference Amara gets the studio's own mark,
+            # NOT commercial logos shown on user-provided reference pictures.
+            if AMARA_MMA_REF and n.startswith('haut-brassiere'):
+                out.append(logo_on(g, f'logo-{n}-reference', Vector((0, 0, bra_low() + 0.105)),
+                                   Vector((0, -1, 0)), 0.100, letters='#F2F2EE', slash='#D4AF37'))
             continue
         if n.startswith('haut-') or n.startswith('rash-'):
             low = bra_low() - (0.04 if 'crop' in n else 0)
@@ -3391,7 +3406,7 @@ def export(name, parts, hide):
     parts[0]['outfit'] = name
     # Assets can now be verified as freshly regenerated: unchanged legacy GLBs must
     # never pass the v1.37.2 deployment gate with old cutouts.
-    parts[0]['generatorVersion'] = '1.37.7' if COACH_ID == 'mma-amara' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
+    parts[0]['generatorVersion'] = '1.37.9' if AMARA_MMA_REF and name == 'mma' else '1.37.7' if COACH_ID == 'mma-amara' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
     if COACH_ID == 'mma-amara':
         if AMARA_PATCHES:
             parts[0]['sportsTopCut'] = 'covered-square-1376'
@@ -3401,7 +3416,10 @@ def export(name, parts, hide):
             # 1.37.7: Inaya's crop with the higher front of 1.37.6; the MMA liner parted at the middle
             parts[0]['sportsTopCut'] = 'inaya-crop-high-front-1377'
             if name == 'mma':
-                parts[0]['shortCrotchGeometry'] = 'liner-split-1377'
+                parts[0]['shortCrotchGeometry'] = 'compression-open-hem-1379' if AMARA_MMA_REF else 'liner-split-1377'
+                if AMARA_MMA_REF:
+                    parts[0]['sportsTopCut'] = 'scoop-racerback-reference-1379'
+                    parts[0]['clothingStyle'] = 'female-compression-reference-1379'
     if CLEAN_BIKINI:
         parts[0]['oldBikiniFlattened'] = True
     if INAYA_FEMALE_PATTERN:
