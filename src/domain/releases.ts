@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.36.0',
+      releaseDate: '2026-11-12',
+      title: 'Kadir : la bouche se lit mieux',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'La moustache et la petite touffe sous la lèvre de Kadir sont allégées : son sourire et l’expiration de la frappe se voient mieux. Sa barbe du menton, ses narines et ses lèvres ne changent pas.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.35.0',
       releaseDate: '2026-11-12',
       title: 'Coachs plus humains : regard, bouche et comportement',
