@@ -3396,3 +3396,12 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Générateur Blender modifié** : simplification sélective plus faible (82 % de conservation sur les vêtements souples, contre 40 %), ourlets bas des rashguards découpés par iso-surface plane avec marge de coupe, 10 rangées et 64 segments pour les pans de veste, meilleur suivi du bassin dans le dos, volume légèrement augmenté des pantalons de gi.
 - **À faire avant de déclarer les coupes corrigées sur le site** : régénérer les GLB des quatre coachs, inspecter les 28 tenues, exécuter la batterie de tests et publier les assets générés. Sans régénération des GLB, seule la partie runtime change l’image.
 - **Non modifiés** : visages, corps, squelette moteur, trajectoires des techniques.
+
+
+## v1.37.2 — 12/11/2026 — Géométrie MMA et chaîne de livraison
+
+- Captures Inaya/Amara : bretelles et dessous de brassière irréguliers, ceinture surshort décollée, superposition cuissard/surshort et bordures triangulaires.
+- `outfits.py` : hausse de la préservation du maillage pour les hauts `haut-crop` et `haut-carre` (auparavant exclus par le filtre `haut-rash-/haut-brassiere`), plus de lissage des poids des bretelles, moins de flare et suppression de la fente procédurale source de pointes du surshort, ceinture rapprochée de la peau en maintenant le dégagement du liner.
+- Validation des **28 GLB** : `generatorVersion=1.37.2` inscrit dans les extras glTF, test imposant la présence de cette version dans chaque fichier. Sans régénération complète, la publication est bloquée.
+- Le workflow Blender génère, teste et publie lui-même GitHub Pages pour ne plus dépendre d’un déclenchement ignoré après un push `GITHUB_TOKEN`.
+- Reste à contrôler visuellement : tenue MMA d’Inaya et Amara, rotations 3/4, garde, low kick/high kick et flexions ; la géométrie ne sera déclarée corrigée qu’après revue des nouveaux GLB.
