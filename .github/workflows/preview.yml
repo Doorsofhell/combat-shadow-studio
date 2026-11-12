@@ -43,6 +43,11 @@ jobs:
       - name: Verify punch feel and chaining (v1.33.2)
         run: npm run test -- src/engine/__tests__/punch-feel-v1332.test.ts src/engine/__tests__/torso-chain-v1331.test.ts src/engine/__tests__/hooks-chains.test.ts
 
+      - name: Verify outfits v1.37.1
+        run: |
+          python3 -m py_compile tools/generator/rocketbox/outfits.py
+          npm run test -- src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts
+
       - name: Build application
         run: npm run build
         env:
