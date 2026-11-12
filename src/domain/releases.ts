@@ -49,6 +49,19 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.37.7',
+      releaseDate: '2026-11-12',
+      title: 'Amara : tenues propres dans les six disciplines',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Amara : l’ancien bikini resté sculpté dans son corps ne se voit plus à travers ses vêtements (bande et nœud dans le dos du haut de JJB et des kimonos, bords des hauts de sport).' },
+        { category: 'corrections', text: 'Hauts de boxe, kick-boxing, muay-thaï et MMA d’Amara : plus de trous ni de bords déchirés, décolleté remonté conservé.' },
+        { category: 'corrections', text: 'Short MMA d’Amara : plus de pièce sombre entre les cuisses ni de fil tendu pendant le high kick.' },
+        { category: 'corrections', text: 'Ceintures des shorts : la limite entre la couleur de la ceinture et celle du short est nette (plus de petites dents).' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.37.6',
       releaseDate: '2026-11-12',
       title: 'Amara : brassière plus couvrante et short MMA sans filet',

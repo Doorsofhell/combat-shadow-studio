@@ -3455,3 +3455,67 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Short MMA** : découpe iso géométrique au centre du bas du surshort et du cuissard intérieur ; les deux ouvertures des jambes sont définies séparément puis refermées par Solidify, sans triangles effilochés créés en supprimant des faces après export.
 - **Portée** : reconstruction des sept tenues d’Amara depuis son `photo.glb` nettoyé en v1.37.5. Inaya (modèle femme), Naël (modèle homme), Kadir (modèles 1.37.0 restaurés), corps et animations inchangés.
 - **Contrôles ajoutés** : chaque haut de combat doit couvrir la zone centrale haute de poitrine ; absence de faces dans le volume de filet interdit des deux couches MMA ; tous les contrôles GLB, versions et références sont maintenus. Validation visuelle indispensable après déploiement : garde, low kick, high kick et vues face/profil/dos.
+
+
+## v1.37.7 — 12/11/2026 — Amara : tenues des six disciplines refaites sur un corps sans ancien bikini
+
+- **Signalement (Youssef, 12/11 16:29-16:41)** : sur la fiche d'Amara en MMA, haut aux bords déchirés et troué à la
+  poitrine et à l'emmanchure, ourlets de short en dents de scie, pièce sombre entre les cuisses. Haut de JJB (no-gi)
+  « vraiment moche, on voit les anciens dessous ». Captures boxe et kick-boxing : carré du dos irrégulier, ceintures
+  à dents. « Sur des versions antérieures, les tenues d'Amara étaient meilleures. »
+- **Constat vérifié** :
+  - historique du dépôt : les sept tenues d'Amara rendues dans le Lab pour 1.26 (`26aea21`), 1.37.2, 1.37.4, 1.37.5
+    et 1.37.6, mêmes vues (face, hanches, dos, profil, un coup par discipline). La 1.37.0/1.26 était plus propre en
+    MMA (short entier, pas de trous) ; toutes montraient déjà la bande de l'ancien bikini dans le dos du haut de JJB ;
+  - cause principale : le corps d'Amara (`photo.glb`) porte encore le haut de bikini de Sports_Female_01 **sculpté
+    dans la peau** (4 416 faces des îlots de texture v < 0,22 au-dessus de 1,15 m : bonnets à bord relevé, cordon du
+    cou, bande et nœud du dos, ourlets repliés, et sous la bande une seconde couche de peau). Inaya en a été
+    débarrassée en 1.19 (`clean_torso.py`), Amara jamais : la 1.37.5 n'a repeint que la couleur. Chaque vêtement
+    étant une copie de la peau, il recopiait ces reliefs (bosse mesurée dans le dos des hauts longs : 5,1 à 7,1 mm,
+    contre 1,3 à 1,5 mm pour Inaya) ;
+  - les retouches propres à Amara des 1.37.4 à 1.37.6 (encolure carrée relevée, tissu écarté à 9 mm, bretelles
+    élargies, découpe centrale des deux couches du short MMA) compensaient ce relief et ont créé les trous, les bords
+    déchirés et la pièce sombre entre les cuisses ;
+  - « dents » jaunes ou noires sous les ceintures (Amara et Inaya) : la couleur de chaque triangle était décidée
+    après la poussée du tissu ; les triangles fins le long de la ligne de couleur passaient de l'autre côté ;
+  - fil sombre entre les cuisses au high kick (déjà en 1.37.0) : mesuré dans le Lab (`window.__labStretch`), des
+    faces du cuissard intérieur passaient de 0,5 cm au repos à 13 cm ; l'entrejambe d'Amara est plus bas que celui
+    d'Inaya, le haut du cuissard le traversait.
+- **Correction** (`tools/generator/rocketbox/outfits.py`) :
+  - `smooth_old_bikini()` : uniquement dans la copie de travail du script (le `photo.glb` livré n'est pas modifié),
+    le relief du bikini est aplani (ouverture morphologique sur la distance à un axe du tronc lissé, puis surface
+    quadratique ajustée par enveloppe basse sur 4 cm, relâchement des plis) ; la peau sous la bande est rentrée de
+    4 mm ; les normales y sont moyennées ; les clés de peau masquée restent celles des points livrés (`P_SHIPPED`) ;
+    le tissu y est lissé (40 passes, bords exclus) ;
+  - Amara est coupée exactement comme Inaya : retouches 1.37.4-1.37.6 désactivées (`AMARA_PATCHES=1` pour les
+    retrouver), sauf le **décolleté remonté** demandé en 1.37.6 (devant de l'encolure 7,8 cm sous le cou), dos,
+    bretelles et emmanchures d'Inaya ;
+  - couleur des faces décidée avant la poussée ; rampe douce de 1 cm sous la ceinture au lieu d'une marche de 6 mm ;
+  - short MMA : surshort entier ; le cuissard intérieur (sous le surshort) est séparé au milieu (12 mm de chaque
+    côté) et la peau de cette bande reste dessinée.
+  - Lab : `window.__labStretch(ratio, min)` liste les triangles qu'une pose étire (pour trouver un fil vu sur une
+    capture).
+- **Restauration** : branche `restauration/avant-tenues-amara-v1377` (= 1.37.6, `bddba70`).
+- **Fichiers** : `tools/generator/rocketbox/outfits.py`, `public/coaches/mma-amara/tenues/*.glb` (7),
+  `scripts/dev/check-amara-garments-v1377.py`, `src/ui/Lab.tsx`, tests ci-dessous, `src/boot/assetSizes.json`,
+  `src/domain/releases.ts`, `package.json`.
+- **Tests modifiés (raison écrite)** : `outfit-amara-v1374.test.ts` et `outfit-assets-v1372.test.ts` exigeaient les
+  marqueurs de la 1.37.6 (`covered-square-1376`, découpe centrale du surshort), c'est-à-dire la géométrie qui
+  produisait les défauts signalés. Ils exigent maintenant la 1.37.7 : `inaya-crop-high-front-1377`,
+  `oldBikiniFlattened`, surshort sans découpe et cuissard séparé d'au moins 8 mm. Le contrôle Blender
+  `check-amara-garments-v1377.py` garde la couverture de poitrine de la 1.37.6 et ajoute la mesure de bosse dans le
+  dos (≤ 2,5 mm ; 1.37.6 : ÉCHOUÉ à 5,1-7,1 mm ; 1.37.7 : 2,0-2,3 mm) et la séparation du cuissard.
+- **Génération** : Blender 5.3 (module bpy) en local ; les sept GLB d'Amara sont livrés construits, Inaya, Naël et
+  Kadir inchangés (empreintes vérifiées par les tests).
+- **Limites** : une petite trace reste mesurable dans le dos des hauts longs (2 mm contre 1,5 mm chez Inaya) ; les
+  ourlets fins gardent de légères ondulations, comme chez Inaya ; pas de test sur téléphone Android.
+- **Résultats** :
+  - `npx vitest run` : 1 338 réussis, 9 échoués, 1 ignoré. TEST RÉUSSI pour tous les tests de tenues
+    (`outfit-*`), de version et de contrat humain. Les 9 échecs existaient avant ce lot et ne touchent aucun fichier
+    modifié ici : 8 contrôles du moteur de frappe (`audit`, `extension-v032`, `fluidity`, `hooks-biomeca`,
+    `torsion-range`) et `expressions-v1160` « modèle léger < 3,5 Mo » (le `photo.glb` d'Amara pèse 4,94 Mo depuis la
+    1.37.5, `b725c8b` ; ce lot ne le modifie pas) ;
+  - `check-amara-garments-v1377.py` (Blender) : TEST RÉUSSI sur la 1.37.7, ÉCHOUÉ sur la 1.37.6 (attendu) ;
+  - `npm run build` : TEST RÉUSSI ;
+  - `npx playwright test` : NON EXÉCUTÉ (suite complète ~40 min en logiciel ; vérification visuelle faite dans le
+    Lab avec Playwright, captures `captures/tenues-amara-v1377/`).

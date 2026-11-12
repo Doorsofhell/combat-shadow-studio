@@ -1,7 +1,7 @@
 import { championById, championFor, championLook, championStance } from '../domain/coaches/catalog';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { Raycaster, Vector2, type Material, type Mesh } from 'three';
+import { Raycaster, Vector2, Vector3, type Material, type Mesh, type SkinnedMesh } from 'three';
 import { CoachModel } from '../three/CoachModel';
 import { outfitFor, type OutfitId, type OutfitStatus } from '../three/outfit';
 import { StudioStage } from '../three/StudioStage';
@@ -225,6 +225,35 @@ function LabProbe({ rig }: { rig: MutableRefObject<CoachRig | null> }) {
         point: h.point.toArray().map((v) => +v.toFixed(3)),
         face: h.faceIndex ?? null,
       }));
+    };
+    // 1.37.7 window.__labStretch(ratio, min): the garment triangles the current pose stretches (posed longest edge
+    // over rest longest edge > ratio and > min metres), with their rest points, to find a strand seen on a capture
+    (window as unknown as { __labStretch?: unknown }).__labStretch = (ratio = 3, min = 0.04) => {
+      const out: object[] = [];
+      scene.updateMatrixWorld(true);
+      scene.traverse((o) => {
+        const sm = o as SkinnedMesh;
+        if (!o.name.startsWith('tenue:') || !sm.isSkinnedMesh) return;
+        const g = sm.geometry;
+        const pos = g.getAttribute('position');
+        const idx = g.getIndex();
+        const n = idx ? idx.count : pos.count;
+        const posed: Vector3[] = [];
+        const rest: Vector3[] = [];
+        for (let i = 0; i < pos.count; i++) {
+          rest.push(new Vector3().fromBufferAttribute(pos, i));
+          posed.push(sm.getVertexPosition(i, new Vector3()).applyMatrix4(sm.matrixWorld));
+        }
+        const restW = rest.map((v) => v.clone().applyMatrix4(sm.matrixWorld));
+        for (let f = 0; f < n; f += 3) {
+          const ids = [0, 1, 2].map((k) => (idx ? idx.getX(f + k) : f + k));
+          const le = (a: Vector3[]) => Math.max(...[0, 1, 2].map((k) => a[ids[k]].distanceTo(a[ids[(k + 1) % 3]])));
+          const lp = le(posed);
+          const lr = le(restW);
+          if (lp > min && lp > ratio * lr) out.push({ mesh: o.name, face: f / 3, posed: +lp.toFixed(3), rest: +lr.toFixed(4), points: ids.map((i) => rest[i].toArray().map((v) => +v.toFixed(4))) });
+        }
+      });
+      return out;
     };
     // 1.26 window.__labMats(): the garments' materials (point colours used, colour), to check the baked shadows
     (window as unknown as { __labMats?: unknown }).__labMats = () => {
