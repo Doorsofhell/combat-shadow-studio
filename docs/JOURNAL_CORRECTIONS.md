@@ -3445,3 +3445,13 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Shorts** : les coupes du bandeau jaune d'Amara sont désormais projetées sur le plan de séparation des matières dans toutes les disciplines, pas uniquement MMA.
 - **Livraison** : v1.37.5 package + lock + Nouveautés, sept nouveaux GLB d'Amara générés à partir de photo.glb corrigé, tests des 28 tenues, baseline Kadir restaurée, Inaya et Naël non modifiés, build + Pages seulement si contrôles réussis.
 - **Validation visuelle** : décolleté frontal, bretelles, nuque, ceinture jaune de dos, garde/direct et changements de pose ; l'absence complète de relief de l'ancien bikini sculpté n'est pas démontrée par la seule retouche de texture.
+
+
+## v1.37.6 — 12/11/2026 — Décolleté couvrant et filet MMA d’Amara
+
+- **Constat utilisateur** : le crop-top de combat d’Amara laisse apparaître une trop grande partie de la poitrine et ses contours sont peu harmonieux, dans plusieurs disciplines. Petit filet sombre persistant entre les cuisses du short MMA, y compris après nettoyage de la texture du corps en v1.37.5.
+- **Audit maillage GLB** : le surshort MMA actuel comporte des triangles très étroits à proximité de l’entrejambe et de l’ourlet central (env. z=0,814 m). Aucun grand triangle unique ne relie les jambes à travers x=0 ; cela désigne un problème de découpe/géométrie locale, et non une simple matière.
+- **Haut de sport** : patron Inaya conservé, mais coupe Amara spécifique : ligne supérieure centrale relevée d’environ 7 cm, bord latéral moins échancré, bretelles élargies, continuité de tissu sur la poitrine et liberté de rotation des épaules maintenue.
+- **Short MMA** : découpe iso géométrique au centre du bas du surshort et du cuissard intérieur ; les deux ouvertures des jambes sont définies séparément puis refermées par Solidify, sans triangles effilochés créés en supprimant des faces après export.
+- **Portée** : reconstruction des sept tenues d’Amara depuis son `photo.glb` nettoyé en v1.37.5. Inaya (modèle femme), Naël (modèle homme), Kadir (modèles 1.37.0 restaurés), corps et animations inchangés.
+- **Contrôles ajoutés** : chaque haut de combat doit couvrir la zone centrale haute de poitrine ; absence de faces dans le volume de filet interdit des deux couches MMA ; tous les contrôles GLB, versions et références sont maintenus. Validation visuelle indispensable après déploiement : garde, low kick, high kick et vues face/profil/dos.
