@@ -36,8 +36,21 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y blender fonts-inter
+      - name: Blender environment and Python syntax
+        run: |
+          blender --version | head -n 2
+          python3 -m py_compile tools/generator/rocketbox/outfits.py scripts/dev/validate-outfit-build-v1372.py
+
       - name: Regenerate all Rocketbox outfits
         run: bash scripts/dev/regenerate-outfits-v1371.sh
+      - name: Publish Blender diagnostic logs (even on failure)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blender-v1372-generation-logs
+          path: logs/outfits-*.log
+          if-no-files-found: warn
+          retention-days: 14
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
