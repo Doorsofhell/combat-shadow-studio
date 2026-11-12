@@ -37,6 +37,13 @@ branche `restauration/...` sur GitHub. Retour arrière : `git checkout restaurat
 Captures de référence : `/mnt/project-files/combat-shadow-studio/reference/<date>/` (17 écrans × 3 formats :
 360×740, 412×915, 800×400), produites par `node scripts/dev/shot-screens.mjs <dossier> [url] [light|dark]`.
 
+## Changement de périmètre 1.37.0 (12 novembre 2026)
+
+Retirés à la demande de Youssef (« ne garder que les coachs ultra-réalistes ») : rendus dessinés (code mort depuis
+1.9), réglage « Version du rendu 3D », coach généré et créateur de combattant (« Mon combattant », /combattant),
+coachs Axel et Kaila. Tout est rangé dans `backup CS/v1.37-ultra-realiste/`. Les lignes ci-dessous qui en parlent
+décrivent l'état de référence d'origine (historique).
+
 ## État de référence (17 octobre 2026, V2)
 
 ### Opérationnel (couvert par des tests automatiques)
@@ -107,7 +114,7 @@ Captures de référence : `/mnt/project-files/combat-shadow-studio/reference/<da
 | Données utilisateur | Aucune perte | `migration*.test`, `store.test`, `account.spec` | – |
 | Performances | Pas de dégradation non justifiée | taille des fichiers du build | – |
 | Coach IA | Réponses hors ligne, pause, ralenti | `coach.test`, `training-layout.spec` | – |
-| Coachs 3D | Chevilles dans les amplitudes, style choisi mémorisé, séance conservée au changement de style, combattant jamais sous les boutons, ancien rendu disponible | `ankle-range.test`, `customize.test`, `coach-render.spec`, `coach-studio.spec` | planches `docs/captures-coachs/` |
+| Coachs 3D | (1.37.0) Un seul rendu Ultra-réaliste, quatre coachs Rocketbox ; anciens réglages (style, « Précédente ») et anciens choix Axel / Kaila convertis sans perte ; chevilles dans les amplitudes ; vignettes du choix de coach sur une ligne, rotation gauche-droite seulement | `ankle-range.test`, `settings-style.test`, `contract.test`, `coach-render.spec`, `coachs-v160.spec`, `moteur-lumiere.spec` | captures de la PR 1.37.0 |
 | Réalité augmentée | Démarrage, refus, arrêt caméra | `ar.test` | non applicable sans appareil |
 
 Commandes : `npx tsc -b`, `npx vitest run`, `npx vite build` puis

@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
  * bien faits comme les autres, pas de bavures »): every coach's MMA outfit carries shin-and-instep guards
  * (tools/generator/rocketbox/outfits.py mma_shin_guards), checked on the shipped files.
  */
-const COACHES = ['mma-kadir', 'mma-amara', 'axel', 'kaila', 'nael', 'inaya'];
+const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya'];
 
 interface Gltf {
   nodes: { name?: string; mesh?: number; skin?: number }[];

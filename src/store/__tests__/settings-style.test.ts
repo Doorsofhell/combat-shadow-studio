@@ -1,33 +1,45 @@
 import { describe, expect, test } from 'vitest';
 import { DEFAULT_SETTINGS, useSettings } from '../settings';
 
-describe('style du coach', () => {
-  // v0.29: the default became « Ultra-réaliste » (Youssef, PROMPT MAÎTRE v0.29.0); it was « Encre » from 0.14
-  test('« Ultra-réaliste » est le style par défaut d’une nouvelle installation', () => {
-    expect(DEFAULT_SETTINGS.coachStyle).toBe('realiste');
+/**
+ * 1.37 (Youssef, 2026-11-12: « ne garder que les coachs ultra-réalistes ») — one render only: the look (coachStyle,
+ * Ultra-réaliste only since 1.9) and the render version (coachRender, « Précédente (secours) ») are no longer settings.
+ * Replaces the 1.9 tests « style par défaut » and « un style enregistré devient Ultra-réaliste »: there is no style left
+ * to default to; the saves of every older version must still open, without these fields and with the rest kept.
+ * The values below are the ones the older versions really saved (the only place they are still written).
+ */
+const OLD_SAVES = [
+  { coachStyle: 'encre', coachRender: 'premium', seeThroughGear: true, voice: false },
+  { coachStyle: 'manga', coachRender: 'precedent', voice: false },
+  { coachStyle: 'realiste', coachRender: 'precedent', voice: false },
+];
+
+describe('un seul rendu de coach (1.37)', () => {
+  test('ni style ni version de rendu dans les réglages d’une nouvelle installation', () => {
+    expect('coachStyle' in DEFAULT_SETTINGS).toBe(false);
+    expect('coachRender' in DEFAULT_SETTINGS).toBe(false);
+    expect('seeThroughGear' in DEFAULT_SETTINGS).toBe(false);
   });
 
-  // 1.9 (Youssef, 2026-10-29: « supprime définitivement le rendu Anime »): the saved Anime / Manga looks are no
-  // longer kept (the 0.29 test « le style déjà enregistré est gardé » is replaced by this one)
-  test('1.9 : un style Anime ou Manga enregistré devient Ultra-réaliste, les autres réglages sont gardés', () => {
-    const { migrate, merge } = useSettings.persist.getOptions();
-    for (const [old, v] of [['encre', 2], ['manga', 2], ['encre', 1], ['manga', 0]] as const) {
-      const m = migrate!({ settings: { coachStyle: old, voice: false } }, v) as { settings: { coachStyle: string; voice: boolean } };
-      expect(m.settings.coachStyle).toBe('realiste');
-      expect(m.settings.voice).toBe(false);
-    }
+  test('les réglages enregistrés par toutes les anciennes versions perdent ces champs et gardent le reste', () => {
+    const { migrate, merge, version } = useSettings.persist.getOptions();
+    expect(version).toBe(4);
+    for (const old of OLD_SAVES)
+      for (const v of [0, 1, 2, 3]) {
+        const m = migrate!({ settings: { ...old } }, v) as { settings: Record<string, unknown> };
+        expect(m.settings, `version ${v}`).not.toHaveProperty('coachStyle');
+        expect(m.settings).not.toHaveProperty('coachRender');
+        expect(m.settings).not.toHaveProperty('seeThroughGear');
+        expect(m.settings.voice).toBe(false);
+      }
+    // even a save that skipped the migration
     const cur = useSettings.getState();
-    // even a value that skipped the migration is drawn in Ultra-réaliste
-    const a = merge!({ settings: { coachStyle: 'encre', voice: false } }, cur) as typeof cur;
-    expect(a.settings.coachStyle).toBe('realiste');
-    const b = merge!({ settings: { voice: false } }, cur) as typeof cur;
-    expect(b.settings.coachStyle).toBe('realiste');
-    expect(b.settings.voice).toBe(false);
-  });
-
-  test('anciens réglages : un choix « réaliste » est gardé', () => {
-    const migrate = useSettings.persist.getOptions().migrate!;
-    const b = migrate({ settings: { coachStyle: 'realiste' } }, 0) as { settings: { coachStyle: string } };
-    expect(b.settings.coachStyle).toBe('realiste');
+    for (const old of OLD_SAVES) {
+      const a = merge!({ settings: { ...old } }, cur) as typeof cur;
+      expect(a.settings).not.toHaveProperty('coachStyle');
+      expect(a.settings).not.toHaveProperty('coachRender');
+      expect(a.settings.voice).toBe(false);
+      expect(a.settings.coachLight).toBe(DEFAULT_SETTINGS.coachLight);
+    }
   });
 });

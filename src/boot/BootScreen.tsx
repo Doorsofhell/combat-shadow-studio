@@ -43,7 +43,7 @@ function usePlan(ready: boolean): BootItem[] | null {
   const chosen = useProfile((s) => s.profile.champion);
   const preferred = useProfile((s) => s.profile.disciplines);
   const st = useSettings((s) => s.settings);
-  const photo = PHOTO && st.coachRender === 'premium';
+  const photo = PHOTO;
   const coachId = photo && coach ? championFor(coach, chosen).id : null;
   return useMemo(() => {
     if (!ready) return null;

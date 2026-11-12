@@ -69,7 +69,7 @@ export interface Profile {
   limitations: string;
   mainDiscipline: DisciplineId;
   coach: CoachId | null;
-  /** 1.5: which coach of that body type (ALL_COACHES id: mma-kadir, axel, mma-amara, kaila); absent = Kadir or Amara */
+  /** 1.5: which coach of that body type (ALL_COACHES id: mma-kadir, nael, mma-amara, inaya); absent = Kadir or Amara */
   champion?: string | null;
   coachAi: CoachAiPrefs;
   /** the questionnaire answers stay on this device unless the user exports them or turns on sync */
@@ -105,6 +105,9 @@ export function ageFrom(birthDate: string | undefined, today = new Date()): numb
   return a >= 0 && a < 130 ? a : undefined;
 }
 
+/** coaches removed from the app (1.37: Axel and Kaila, MakeHuman); a saved choice of one of them is cleared */
+export const RETIRED_COACHES: readonly string[] = ['axel', 'kaila'];
+
 /** fills the fields added by newer versions with their default value */
 export function normalizeProfile(saved: Partial<Profile> | undefined): Profile {
   const s = saved ?? {};
@@ -121,6 +124,8 @@ export function normalizeProfile(saved: Partial<Profile> | undefined): Profile {
   };
   const age = ageFrom(p.birthDate);
   if (age !== undefined) p.age = age;
+  // 1.37: Axel and Kaila are removed, a profile that chose one of them gets Kadir or Amara (same body type)
+  if (p.champion && RETIRED_COACHES.includes(p.champion)) p.champion = null;
   return p;
 }
 

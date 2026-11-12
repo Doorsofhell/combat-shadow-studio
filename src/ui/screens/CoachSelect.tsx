@@ -10,7 +10,7 @@ import { NavIcon } from '../nav/NavIcon';
 import { chooseCoach } from '../components/fighter';
 import { AppIcon } from '../icons';
 
-/** 1.5: the four coaches (Kadir, Axel, Amara, Kaila). The stored coach stays 'homme' / 'femme', the profile's
+/** the four coaches (Kadir, Naël, Amara, Inaya; 1.37: Axel and Kaila removed). The stored coach stays 'homme' / 'femme', the profile's
  * `champion` names the coach of that body type. */
 export const COACHES = ALL_COACHES.map((c) => ({ id: c.id, coach: c.coach, name: `${c.name}\u00a0«\u00a0${c.nickname}\u00a0»`, desc: c.style, img: c.portrait }));
 
@@ -127,7 +127,7 @@ const testIdOf = (c: ChampionCoach) => (c.id === CHAMPIONS.homme.id ? 'coach-hom
  * 1.32.0 (Youssef, 2026-11-11: « je n'aime pas trop le choix des coachs », « la présentation genre jeux vidéo »,
  * maquette A « La vedette » chosen): a fighting-game selection screen of our own. The coach looked at stands in real
  * 3D under a red and gold halo (it turns under the finger), in the outfit of the user's discipline; the arrows, the
- * strip of six portraits or a swipe on the sheet change it; « Le voir bouger » plays a technique of the discipline;
+ * strip of portraits (one per coach) or a swipe on the sheet change it; « Le voir bouger » plays a technique of the discipline;
  * nothing changes before « Choisir ». Only real facts: guard and strengths of the catalogue, height and weight
  * measured on the 3D models (the weight only when it is measured).
  */
@@ -199,7 +199,6 @@ export function CoachSelect() {
     if (first || !inApp) nav('/', { replace: true });
     else nav(-1);
   };
-  const live3d = settings.coachRender === 'premium';
   // 1.34 (Youssef, 2026-11-11: « que ça ne mette pas de temps à s'afficher lorsqu'on change de coach »): once the
   // first coach shows, the other five and their outfit for the discipline are read in turn, neighbours first, so the
   // arrows, the strip and a swipe show them at once (their files are already on the phone since the start screen)
@@ -212,7 +211,7 @@ export function CoachSelect() {
     [],
   );
   useEffect(() => {
-    if (!ready || !live3d || warmed.current) return;
+    if (!ready || warmed.current) return;
     warmed.current = true;
     const order = [1, -1, 2, -2, 3].map((d) => ALL_COACHES[(i + d + ALL_COACHES.length) % ALL_COACHES.length].id).filter((id, k, a) => id !== c.id && a.indexOf(id) === k);
     void Promise.all([import('../../three/CoachModel'), import('../../three/outfit')]).then(([m, o]) => {
@@ -222,7 +221,7 @@ export function CoachSelect() {
     });
     // only once per visit of the screen: the coaches looked at afterwards are already read
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, live3d]);
+  }, [ready]);
   return (
     <div className="page coach-select coach-star" data-testid="coach-star" data-coach={c.id}>
       <h1 className="sr-only">Choisis ton coach</h1>
@@ -231,15 +230,11 @@ export function CoachSelect() {
         <span className="star-ghost" aria-hidden>
           {c.name}
         </span>
-        {live3d ? (
-          <Suspense fallback={<img className="star-still" src={c.portrait} alt="" />}>
-            <div className="star-3d">
-              <CoachStage backdrop="dark" coach={c.coach} champion={c.id} discipline={disc} southpaw={profile.guard === 'gaucher'} cameraAngle={35} free quality={settings.quality} events={NO_EVENTS} onPlayer={onPlayer} />
-            </div>
-          </Suspense>
-        ) : (
-          <img className="star-still" src={c.portrait} alt="" />
-        )}
+        <Suspense fallback={<img className="star-still" src={c.portrait} alt="" />}>
+          <div className="star-3d">
+            <CoachStage backdrop="dark" coach={c.coach} champion={c.id} discipline={disc} southpaw={profile.guard === 'gaucher'} cameraAngle={35} free turnOnly quality={settings.quality} events={NO_EVENTS} onPlayer={onPlayer} />
+          </div>
+        </Suspense>
         {mine && (
           <span className="star-mine" data-testid="star-mine">
             Ton coach
@@ -265,7 +260,7 @@ export function CoachSelect() {
             </span>
             <div className="star-name">{c.name}</div>
           </div>
-          {live3d && demo.length > 0 && (
+          {demo.length > 0 && (
             // Youssef, 2026-11-11: « je veux faire bouger en une icône, pas texte, pour que ça prenne moins de place »
             <button type="button" className="star-see" onClick={toggleMove} aria-pressed={moving} disabled={!ready} aria-label={moving ? 'Revenir en garde' : 'Le voir bouger'} title={moving ? 'Revenir en garde' : 'Le voir bouger'} data-testid="star-move">
               <NavIcon id={moving ? 'pause' : 'play'} />
@@ -280,7 +275,7 @@ export function CoachSelect() {
         </div>
       </section>
 
-      <div className="star-strip" role="radiogroup" aria-label="Les six coachs">
+      <div className="star-strip" role="radiogroup" aria-label="Les coachs">
         {ALL_COACHES.map((x) => {
           const on = x.id === c.id;
           return (

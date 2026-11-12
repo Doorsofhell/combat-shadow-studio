@@ -63,7 +63,7 @@ const ENTRY_QUESTIONS: Record<string, [string, CoachScreen?]> = {
   ar: ['C’est quoi la réalité augmentée ?', 'entrainement'],
   'options-entrainement': ['Comment afficher les repères au sol ?', 'entrainement'],
   'choose-coach': ['Comment changer de coach ?', 'accueil'],
-  render: ['Comment choisir le style Anime ou Ultra-réaliste ?', 'reglages'], // 1.9: the answer says Anime is gone
+  render: ['Comment choisir le style dessiné ou Ultra-réaliste ?', 'reglages'], // a user may still ask for the old drawn look
   'screen-techniques': ['Comment trouver une technique ?', 'techniques'],
   'screen-technique': ['À quoi sert cet écran ?', 'technique'],
   mastery: ['Comment je marque une technique ?', 'techniques'],
@@ -138,8 +138,12 @@ describe('guide de l’application : contenu', () => {
     // the two coaches really offered, and the render answer up to date
     expect(by('choose-coach')).toMatch(/Kadir/);
     expect(by('choose-coach')).toMatch(/Amara/);
-    // 1.9: one render only, the answer says the Anime look was removed (and offers no choice)
-    expect(by('render')).toMatch(/Anime a été retiré/);
+    // 1.9: one render only (1.37: the answer says the drawn looks were removed, and offers no choice)
+    expect(by('render')).toMatch(/seul rendu/);
+    expect(by('render')).toMatch(/styles dessinés ont été retirés/);
+    // 1.37: only the four Microsoft Rocketbox coaches
+    expect(by('choose-coach')).toMatch(/quatre coachs/);
+    expect(by('choose-coach')).not.toMatch(/Axel|Kaila/);
     expect(by('render')).toMatch(/Ultra-réaliste/);
     // the five tabs of the bottom bar, as App.tsx names them
     // v0.32 navigation dynamique: the places of « Navigation générale » are named in the answer about the bar

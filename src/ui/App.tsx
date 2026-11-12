@@ -54,7 +54,6 @@ const Privacy = lazy(() => import('./screens/Privacy').then((m) => ({ default: m
 const Champions = lazy(() => import('./screens/Champions').then((m) => ({ default: m.Champions })));
 const ComboPage = lazy(() => import('./screens/Champions').then((m) => ({ default: m.ComboPage })));
 const ChampionPage = lazy(() => import('./screens/Champions').then((m) => ({ default: m.ChampionPage })));
-const CoachStudio = lazy(() => import('./screens/CoachStudio').then((m) => ({ default: m.CoachStudio })));
 const SignIn = lazy(() => import('./screens/account/SignIn').then((m) => ({ default: m.SignIn })));
 const ProfilePage = lazy(() => import('./screens/account/Profile').then((m) => ({ default: m.ProfilePage })));
 const CoachHistory = lazy(() => import('./screens/CoachHistory').then((m) => ({ default: m.CoachHistory })));
@@ -188,7 +187,6 @@ export function App() {
               <Route path="/" element={<Home />} />
               <Route path="/bienvenue" element={<Onboarding />} />
               <Route path="/coach" element={<CoachSelect />} />
-              <Route path="/combattant" element={<CoachStudio />} />
               <Route path="/entrainer" element={<Train />} />
               <Route path="/discipline/:id" element={<DisciplinePage />} />
               <Route path="/entrainement" element={<Training />} />

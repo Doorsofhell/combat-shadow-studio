@@ -108,13 +108,13 @@ test('après le démarrage, choisir un autre coach ne télécharge rien et ne re
   });
   await page.goto('about:blank');
   await page.goto('/#/coach');
-  await page.getByTestId('coach-axel').click();
+  await page.getByTestId('coach-nael').click();
   await page.getByTestId('coach-valider').click();
   await expect(page.getByTestId('boot-screen')).toHaveCount(0);
   await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
   await expect(page.locator('.tr-stage canvas')).toBeVisible();
   await expect(page.getByTestId('boot-screen')).toHaveCount(0);
-  // Axel drawn in his boxing outfit, from the phone
-  await expect.poll(() => page.evaluate(() => performance.getEntriesByType('resource').filter((e) => /coaches\/axel\/(photo|tenues\/boxe)\.glb$/.test(e.name)).length), { timeout: 60_000 }).toBeGreaterThanOrEqual(2);
+  // Naël drawn in his boxing outfit, from the phone (1.37: was Axel, removed)
+  await expect.poll(() => page.evaluate(() => performance.getEntriesByType('resource').filter((e) => /coaches\/nael\/(photo|tenues\/boxe)\.glb$/.test(e.name)).length), { timeout: 60_000 }).toBeGreaterThanOrEqual(2);
   expect(net).toEqual([]);
 });

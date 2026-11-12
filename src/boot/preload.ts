@@ -31,7 +31,7 @@ export interface BootItem {
 }
 
 export interface BootPlanInput {
-  /** the coach's folder (catalog id: mma-kadir, axel…), null when no coach is chosen yet: downloaded first */
+  /** the coach's folder (catalog id: mma-kadir, nael…), null when no coach is chosen yet: downloaded first */
   coachId: string | null;
   /** every coach of the choice screen (Youssef, 2026-11-06: « tout charger… aucune latence lors du choix des
    * coachs »): downloaded after the chosen one; empty when the photo coaches are not drawn */

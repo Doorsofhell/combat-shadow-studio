@@ -12,7 +12,7 @@ import type { StanceStyle } from '../author';
  * upright and the chin tucks a little: the head sits over the shoulders. The shoulders and arms do not move (the
  * Rocketbox clavicles hang from the neck bone), and lying or bent over the neck still follows the trunk.
  */
-const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'axel', 'kaila'] as const;
+const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya'] as const;
 const STYLES: StanceStyle[] = ['boxing', 'kickboxing', 'mma', 'muaythai'];
 
 function pose(id: string, style: StanceStyle, motion: string, at: number, oldNeck: boolean) {

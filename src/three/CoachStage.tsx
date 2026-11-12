@@ -21,7 +21,6 @@ import type { StudyPlayer } from '../engine';
 import type { StanceStyle } from '../engine';
 import type { CoachId, DisciplineId } from '../domain/types';
 import { TECHNIQUE_BY_ID } from '../domain/techniques';
-import { useActiveFighter } from '../store/fighters';
 import { useProfile } from '../store/profile';
 import { championById, championFor, championLook, championModel, championStance } from '../domain/coaches/catalog';
 import { useResolvedTheme } from '../ui/theme/useTheme';
@@ -103,10 +102,10 @@ export interface CoachStageProps {
    * theme and pearl grey in the light one, with the dark lighting in the dark theme
    */
   backdrop?: 'studio' | 'dark' | 'theme';
+  /** 1.37: the finger turns the coach left and right only (coach choice) */
+  turnOnly?: boolean;
   /** 1.32.0 (choix du coach « La vedette »): shows this coach of the catalogue instead of the one the user chose */
   champion?: string;
-  /** look to show instead of the active fighter (fighter creator preview) */
-  look?: FighterLook;
 }
 
 /**
@@ -117,21 +116,17 @@ export interface CoachStageProps {
 export function CoachStage(props: CoachStageProps) {
   const menuTheme = useResolvedTheme();
   const { coach, discipline, southpaw, cameraAngle, view, free, onUserOrbit, frameIds, quality, events, onPlayer, onRigReady, study, studyActive = false, zoom, ar, arActive = false, backdrop = 'studio' } = props;
-  const fighter = useActiveFighter();
-  const render = useSettings((s) => s.settings.coachRender);
   const light = useSettings((s) => s.settings.coachLight);
-  // 0.24: the coach is Kadir or Amara, on their own model, dressed for the discipline; the fallback
-  // render ("précédent") keeps the generic coach and the custom fighter
-  // 1.5: the coach the user chose for that body type (Axel, Kaila), else Kadir or Amara
+  // 0.24: the coach is Kadir or Amara, on their own model, dressed for the discipline (1.37: always, the generated
+  // coach of the creator and of the « Précédente » render is removed)
+  // 1.5: the coach the user chose for that body type (Naël, Inaya), else Kadir or Amara
   const chosen = useProfile((s) => s.profile.champion);
-  const champion = render === 'premium' && !props.look ? ((props.champion ? championById(props.champion) : undefined) ?? championFor(coach, chosen)) : null;
+  const champion = (props.champion ? championById(props.champion) : undefined) ?? championFor(coach, chosen);
   // one look object per coach and discipline: a new object on each render would re-dress the model
-  const dressed = useMemo(() => (champion ? championLook(champion, discipline) : null), [champion, discipline]);
-  const look = props.look ?? dressed ?? fighter?.look ?? null;
-  const shownCoach = champion ? champion.coach : (look?.sex ?? coach);
+  const look = useMemo(() => championLook(champion, discipline), [champion, discipline]);
+  const shownCoach = champion.coach;
   const championRef = useRef(champion);
   championRef.current = champion;
-  const ghostGear = useSettings((s) => s.settings.seeThroughGear) && studyActive;
   const lookRef = useRef<FighterLook | null | undefined>(null);
   lookRef.current = look;
   // v0.29 (Youssef's phone, 2026-10-21: the coach vanished, then « Affichage 3D indisponible » at every launch).
@@ -193,10 +188,9 @@ export function CoachStage(props: CoachStageProps) {
     document.addEventListener('visibilitychange', on);
     return () => document.removeEventListener('visibilitychange', on);
   }, []);
-  const style = useSettings((s) => s.settings.coachStyle);
   // v0.49 « Lumière vive » (CME-3D lab): realistic look only; its dark background on the training stage only (the
   // other screens lay their own text and buttons over the stage, made for the theme's background)
-  const vive = light === 'vive' && style === 'realiste' && render === 'premium';
+  const vive = light === 'vive';
   const viveBg = vive && backdrop === 'theme';
   // 1.23 Salles immersives: on the training stage, each discipline in its own room (rooms.ts), unless turned off
   const roomOn = useSettings((s) => s.settings.salleImmersive);
@@ -232,8 +226,8 @@ export function CoachStage(props: CoachStageProps) {
   // after a graphics incident, stability comes first even when the high quality was chosen (for a while)
   const q: 'haute' | 'basse' = level > 0 || slow ? 'basse' : quality === 'auto' ? 'haute' : quality;
   useEffect(() => {
-    log3d('demarrage', `coach ${shownCoach} · ${discipline} · rendu ${render}/${style} · qualité ${quality} → ${q}${level ? ` (niveau de stabilité ${level})` : ''}${slow ? ' (appareil lent)' : ''}`);
-  }, [shownCoach, discipline, render, style, quality, q, level, slow]);
+    log3d('demarrage', `coach ${shownCoach} · ${discipline} · rendu ultra-réaliste · qualité ${quality} → ${q}${level ? ` (niveau de stabilité ${level})` : ''}${slow ? ' (appareil lent)' : ''}`);
+  }, [shownCoach, discipline, quality, q, level, slow]);
   const player = useRef<ComboPlayer | null>(null);
   const rigRef = useRef<{ rig: CoachRig; lib: MotionLibrary } | null>(null);
   const [rigState, setRigState] = useState<CoachRig | null>(null);
@@ -355,7 +349,7 @@ export function CoachStage(props: CoachStageProps) {
   const budget = budgetFor(q, level);
   const [startDpr] = useState(() => stageDpr(typeof innerWidth === 'number' ? innerWidth : 400, typeof innerHeight === 'number' ? innerHeight * 0.6 : 400, typeof devicePixelRatio === 'number' ? devicePixelRatio : 1, budget));
   const onResolution = useCallback((dpr: number, w: number, h: number) => log3d('qualite', `résolution ${dpr} px par point (${Math.round(w * dpr)}×${Math.round(h * dpr)}, écran ${typeof devicePixelRatio === 'number' ? devicePixelRatio : 1})`), []);
-  const realShadows = style === 'realiste' && render === 'premium' && q === 'haute' && !arActive && !(quality === 'auto' && TOUCH);
+  const realShadows = q === 'haute' && !arActive && !(quality === 'auto' && TOUCH);
   return (
     <Canvas
       onCreated={onCreated}
@@ -387,6 +381,7 @@ export function CoachStage(props: CoachStageProps) {
             cameraAngle={cameraAngle}
             view={view}
             free={free}
+            turnOnly={props.turnOnly}
             onUserOrbit={onUserOrbit}
             quality={q}
             follow={follow}
@@ -396,7 +391,6 @@ export function CoachStage(props: CoachStageProps) {
             zoom={zoom}
             dark={stageDark}
             shadows={realShadows}
-            realistic={style === 'realiste'}
             vive={vive}
             room={room}
           />
@@ -415,20 +409,17 @@ export function CoachStage(props: CoachStageProps) {
             </Suspense>
           </RoomBoundary>
         )}
-        {!room && style === 'realiste' && render === 'premium' && q === 'haute' && <StudioEnvironment intensity={vive ? 0.7 : 0.12} />}
+        {!room && q === 'haute' && <StudioEnvironment intensity={vive ? 0.7 : 0.12} />}
         {ar && <ArScene bridge={ar} active={arActive} coachGroup={coachGroup} follow={follow} />}
         {/* the coach stays mounted when switching to AR: same model, same player, same animation */}
         <group ref={coachGroup} visible={coachShown}>
           {coachShown && <CoachProbe />}
           <CoachModel
-            key={`${champion?.id ?? shownCoach}-${discipline}-${render}${render === 'precedent' ? `-${style}` : ''}`}
+            key={`${champion.id}-${discipline}`}
             coach={shownCoach}
-            style={style}
-            render={render}
             quality={q}
             look={look}
-            model={champion ? championModel(champion) : undefined}
-            ghostGear={ghostGear}
+            model={championModel(champion)}
             onRig={onRig}
             onFrame={onFrame}
             human={human}

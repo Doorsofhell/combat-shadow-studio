@@ -221,7 +221,8 @@ test('plan, lignes 20 à 27 : Profil (photo, IMC, connexion, coach, Coach IA, r�
   for (const [id, inside] of [
     ['voix', 'Tester la voix'],
     ['rounds', 'Durée du round'],
-    ['affichage', 'Version du rendu 3D'],
+    // 1.37: « Version du rendu 3D » is removed (one render left); « Lumière du coach » is the 3D row of Affichage
+    ['affichage', 'Lumière du coach'],
     ['donnees', 'Exporter mes données'],
   ] as const) {
     await openSetting(page, id);

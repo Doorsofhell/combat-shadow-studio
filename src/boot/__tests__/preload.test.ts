@@ -7,7 +7,7 @@ import { ALL_COACHES } from '../../domain/coaches/catalog';
 
 const sizes = SIZES as Record<string, number>;
 const IDS = ALL_COACHES.map((c) => c.id);
-const base = { coachId: 'axel', coaches: [] as string[], outfits: true, bjjOutfit: 'gi' as const, rooms: true, sharpRooms: false };
+const base = { coachId: 'nael', coaches: [] as string[], outfits: true, bjjOutfit: 'gi' as const, rooms: true, sharpRooms: false };
 
 describe('chargement au démarrage (1.25) : ce qui est téléchargé', () => {
   it('la liste des tailles suit les fichiers de public/ (sinon : node scripts/boot-sizes.mjs)', () => {
@@ -18,8 +18,8 @@ describe('chargement au démarrage (1.25) : ce qui est téléchargé', () => {
 
   it('le coach choisi d’abord, avec ses tenues et les 6 salles, puis tous les autres coachs et leurs tenues', () => {
     const own = bootPlan(base);
-    expect(own[0]).toMatchObject({ url: './coaches/axel/photo.glb', step: 'coach' });
-    expect(own.filter((x) => x.step === 'tenue').map((x) => x.url).sort()).toEqual([...DISCIPLINES, 'bjj-nogi'].map((o) => `./coaches/axel/tenues/${o}.glb`).sort());
+    expect(own[0]).toMatchObject({ url: './coaches/nael/photo.glb', step: 'coach' });
+    expect(own.filter((x) => x.step === 'tenue').map((x) => x.url).sort()).toEqual([...DISCIPLINES, 'bjj-nogi'].map((o) => `./coaches/nael/tenues/${o}.glb`).sort());
     for (const d of DISCIPLINES) {
       expect(own.some((x) => x.url === `./salles/${d}/fond-2k.webp`)).toBe(true);
       expect(own.some((x) => x.url === `./salles/${d}/salle.json`)).toBe(true);
@@ -52,8 +52,8 @@ describe('chargement au démarrage (1.25) : ce qui est téléchargé', () => {
     const plan = bootPlan({ ...base, preferred: ['judo'] });
     expect(plan.find((x) => x.discipline)?.discipline).toBe('judo');
     const json = bootPlan({ ...base, json: true });
-    expect(json[0].url).toBe('./coaches/axel/photo.json');
-    expect(json[0].bytes).toBeGreaterThan(sizes['coaches/axel/photo.glb']);
+    expect(json[0].url).toBe('./coaches/nael/photo.json');
+    expect(json[0].bytes).toBeGreaterThan(sizes['coaches/nael/photo.glb']);
     expect(json.some((x) => x.url.endsWith('.webp'))).toBe(true);
   });
 

@@ -407,8 +407,8 @@ export function isRootPath(pathname: string): boolean {
 export const NO_TABS: ReadonlySet<NavScreen> = new Set<NavScreen>(['entrainement']);
 /** full-screen screens whose top belongs to them: Retour joins the row of actions instead of the top left */
 export const BACK_IN_ROW: ReadonlySet<NavScreen> = new Set<NavScreen>(['entrainement', 'chrono']);
-/** the same for pages the bar knows only as « autre »: the fighter studio's 3D stage starts at the very top */
-const BACK_IN_ROW_PATHS: ReadonlySet<string> = new Set(['/combattant']);
+/** the same for pages the bar knows only as « autre » (1.37: none left since the fighter studio is removed) */
+const BACK_IN_ROW_PATHS: ReadonlySet<string> = new Set<string>();
 export function backInRow(screen: NavScreen, pathname = ''): boolean {
   return BACK_IN_ROW.has(screen) || BACK_IN_ROW_PATHS.has(pathname.replace(/\/+$/, ''));
 }

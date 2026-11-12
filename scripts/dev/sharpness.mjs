@@ -27,7 +27,7 @@ for (const c of CASES) {
           };
         });
       await put('u:local:css-profile', { state: { profile: { completed: true, coach, mainDiscipline: 'muaythai' } }, version: 0 });
-      await put('u:local:css-settings', { state: { settings: { quality, coachStyle: 'realiste', coachRender: 'premium' } }, version: 2 });
+      await put('u:local:css-settings', { state: { settings: { quality } }, version: 4 });
       localStorage.setItem('css-3d-level', JSON.stringify({ level: Number(level), at: Date.now() }));
       localStorage.removeItem('css-3d-diag');
     },

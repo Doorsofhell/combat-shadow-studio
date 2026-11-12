@@ -10,7 +10,6 @@ import { DISCIPLINES, DisciplineId, LevelId, Technique } from '../../domain/type
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
 import { useGoals } from '../../store/goals';
-import { useActiveFighter } from '../../store/fighters';
 import type { ComboPlayer, PlayerEvents } from '../../engine';
 import { playerSteps } from '../training/plan';
 import { say } from '../../audio/voice';
@@ -224,8 +223,6 @@ export function TechniquePage() {
   const t = id ? TECHNIQUE_BY_ID.get(id) : undefined;
   const profile = useProfile((s) => s.profile);
   const settings = useSettings((s) => s.settings);
-  const fighter = useActiveFighter();
-  const render = useSettings((st) => st.settings.coachRender);
   const fav = useGoals((s) => (t ? s.favTechniques.includes(t.id) : false));
   const toggleFav = useGoals((s) => s.toggleTechnique);
   const d = ((q.get('d') as DisciplineId) && t?.disciplines.includes(q.get('d') as DisciplineId) ? q.get('d') : t?.disciplines[0]) as DisciplineId;
@@ -371,7 +368,7 @@ export function TechniquePage() {
         stage={
           <CoachStage
             backdrop="dark"
-            coach={(render === 'premium' ? null : fighter?.look.sex) ?? profile.coach ?? 'homme'}
+            coach={profile.coach ?? 'homme'}
             discipline={d}
             southpaw={profile.guard === 'gaucher'}
             cameraAngle={cam}

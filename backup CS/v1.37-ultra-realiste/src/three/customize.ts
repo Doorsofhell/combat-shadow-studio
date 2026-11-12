@@ -293,7 +293,6 @@ export interface CustomUniforms {
   /** 1: hair, beard and brows are hair cards (realistic, v0.29): the skin keeps a smooth shade under them */
   uGroom: { value: number };
   uGroomFace: { value: Vector3 };
-  uFlat: { value: number };
   uTatN: { value: number };
   uTatA: { value: Vector3[] };
   uTatU: { value: Vector3[] };
@@ -332,7 +331,6 @@ export function makeUniforms(meta: CoachMeta): CustomUniforms {
     uFaceOn: { value: 0 },
     uGroom: { value: 0 },
     uGroomFace: { value: new Vector3() },
-    uFlat: { value: 0 },
     uTatN: { value: 0 },
     uTatA: { value: arr(() => new Vector3()) },
     uTatU: { value: arr(() => new Vector3()) },
@@ -390,7 +388,6 @@ uniform sampler2D uMasks;
 uniform sampler2D uFace;
 uniform float uFaceOn;
 uniform float uGroom;
-uniform float uFlat;
 uniform int uTatN;
 uniform vec3 uTatA[${MAX_TATTOOS}];
 uniform vec3 uTatU[${MAX_TATTOOS}];
@@ -419,9 +416,6 @@ const SKIN_FRAGMENT_BODY = /* glsl */ `
   // muscle definition: deepen the baked occlusion where the user asks for it
   float lum = dot(base, W) / max(dot(uSkinRef, W), 0.01);
   c *= max(0.35, 1.0 + (lum - 1.0) * vDef * 1.4);
-  // Anime: flat skin tone, the light and shade come from the cel shading (the texture's baked
-  // occlusion is what showed as stains); a trace of it keeps the lips and the creases
-  c = mix(c, uSkinTone * mix(1.0, lum, 0.2) * mix(vec3(1.0), base / max(dot(base, W), 0.01) * dot(uSkinRef, W) / max(uSkinRef, vec3(0.01)), 0.35), uFlat);
   vec4 mk = texture2D(uMasks, vMapUv);
   // per-texel grain of the painted hair; with hair cards the skin only keeps a smooth shade under them
   float n = mix(cssHash(floor(vMapUv * 2048.0)), 0.5, uGroom);
@@ -430,8 +424,7 @@ const SKIN_FRAGMENT_BODY = /* glsl */ `
   float beard = uBeard.x * mix(mk.b * beardRegion(vRest), groomBeard(vRest), uGroom);
   // under the beard cards: a shaving shadow, not a solid paint
   c = mix(c, uBeardColor * (0.7 + 0.6 * n), clamp(beard * (0.55 + 0.45 * n) * mix(1.0, 0.9, uGroom), 0.0, 1.0));
-  // Anime: body hair as a light flat shade, not a speckle (it read as stains on the chest)
-  c = mix(c, uHairColor, mk.a * uBodyHair * mix(step(0.6, n), 0.22, uFlat) * 0.8);
+  c = mix(c, uHairColor, mk.a * uBodyHair * step(0.6, n) * 0.8);
   if (uFaceOn > 0.5) {
     // face paint: g shadow, b warm tint, a eyebrow (hair colour, hair-like grain), r ink lines
     vec4 fc = texture2D(uFace, vMapUv);
@@ -1257,14 +1250,11 @@ function maskReader(tex: Texture | null, ch = 0): ((u: number, v: number) => num
 // ----------------------------------------------------------------------------- customiser
 
 export interface CustomizerOptions {
-  toon: (name: string, color: Color) => Material;
+  /** material of the added clothes and gear (physically based, the drawn looks are removed in 1.37) */
+  material: (name: string, color: Color) => Material;
   outline: (width: number) => Material;
-  /** v0.22 clothes (fallback render): no drape, no hem strip, skin drawn under the clothes */
-  legacy?: boolean;
   /** face paint of a champion coach (same UV layout as the skin) */
   face?: Texture | null;
-  /** 0-1: how much the skin texture's light and shade is flattened to the plain skin tone (Anime) */
-  flat?: number;
   /** hair cards (realistic look of the champion coaches, v0.29) */
   groom?: { atlas: Texture; rects: AtlasRects; style: string; density?: number } | null;
   /** realistic skin (v0.29): micro-relief, mottling, oily T-zone, light through the skin */
@@ -1327,11 +1317,9 @@ export class Customizer {
     this.bun = bun;
     this.eyes = eyes;
     this.map = mapBody(body, meta);
-    if (!this.opt.legacy) thinInkNearEyes(body, meta);
     this.specs = garmentSpecs(this.map);
     this.u = makeUniforms(meta);
     this.u.uMasks.value = masks;
-    this.u.uFlat.value = opt.flat ?? 0;
     if (opt.face) {
       this.u.uFace.value = opt.face;
       this.u.uFaceOn.value = 1;
@@ -1379,8 +1367,7 @@ export class Customizer {
             sh.vertexShader.replace('vRest = transformed;', 'vRest = transformed;').replace('#include <begin_vertex>', HAIR_VERTEX + '\nvHairUv = uv;');
           // the hairline follows the painted mask per pixel, not the edge of the shell's triangles
           // (otherwise a saw-tooth edge shows on the forehead and the temples)
-          if (!this.opt.legacy)
-            sh.fragmentShader =
+          sh.fragmentShader =
               'uniform sampler2D uMasks;\nvarying vec2 vHairUv;\n' +
               sh.fragmentShader.replace('void main() {', 'void main() {\n  if (texture2D(uMasks, vHairUv).r < 0.5) discard;');
         });
@@ -1452,9 +1439,9 @@ export class Customizer {
     const g = look.gear;
     this.layer('bottom', o.bottom === 'aucun' ? null : o.bottom, this.specs.bottom, o.bottomPaint);
     // a top worn over shorts lies over their waistband instead of crossing it
-    const under = o.bottom === 'aucun' || this.opt.legacy ? null : this.specs.bottom[o.bottom];
-    this.layer('top', o.top === 'aucun' ? null : o.top, under ? layered(this.specs.top, under) : this.specs.top, o.topPaint, this.opt.legacy ? '' : o.bottom);
-    if (!this.opt.legacy) this.hideUnder('bottom', o.top === 'aucun' ? null : (this.specs.top[o.top] ?? null));
+    const under = o.bottom === 'aucun' ? null : this.specs.bottom[o.bottom];
+    this.layer('top', o.top === 'aucun' ? null : o.top, under ? layered(this.specs.top, under) : this.specs.top, o.topPaint, o.bottom);
+    this.hideUnder('bottom', o.top === 'aucun' ? null : (this.specs.top[o.top] ?? null));
     this.layer('shoes', o.shoes === 'pieds-nus' ? null : o.shoes, this.specs.shoes, o.shoesPaint);
     if (g.hands === 'gants-boxe') {
       this.layer('hands', null, this.specs.hands, g.handsPaint);
@@ -1499,25 +1486,25 @@ export class Customizer {
     if (this.hidden.delete(slot)) this.updateHidden();
     if (!type || !specs[type]) return;
     const spec = specs[type];
-    if (spec.hidesBody && !this.opt.legacy) {
+    if (spec.hidesBody) {
       const h = new Float32Array(this.map.count);
       for (let i = 0; i < h.length; i++) h[i] = spec.cover(i) - (spec.hideMargin ?? HIDE_MARGIN);
       this.hidden.set(slot, h);
       this.updateHidden();
     }
-    const geo = buildShell(this.body.geometry, this.map, this.opt.legacy ? { ...spec, drape: 0, hem: false } : spec);
+    const geo = buildShell(this.body.geometry, this.map, spec);
     if (!geo) return;
     const uniforms = this.paintUniforms(paint, spec);
     let minY = Infinity;
     const P = geo.getAttribute('position');
     for (let i = 0; i < P.count; i++) minY = Math.min(minY, P.getY(i));
     uniforms.uHemY.value = minY;
-    const mat = this.opt.toon(`css-${type}`, new Color(1, 1, 1));
+    const mat = this.opt.material(`css-${type}`, new Color(1, 1, 1));
     // both faces on the bottoms: where the hip folds (front of the hip in guard) a few shell triangles
     // turn their back to the camera; drawn one-sided they left a hole onto the background, since the
     // skin under the garment is not drawn. Not on the tops: the inner face of the thin straps showed
     // as jagged black patches over the shoulders
-    if (!this.opt.legacy && slot === 'bottom') mat.side = DoubleSide;
+    if (slot === 'bottom') mat.side = DoubleSide;
     mat.polygonOffset = true;
     mat.polygonOffsetFactor = -1;
     mat.polygonOffsetUnits = -2;
@@ -1613,7 +1600,7 @@ export class Customizer {
   private boxingGloves() {
     const out: Mesh[] = [];
     for (const side of ['Left', 'Right'] as const) {
-      const m = attachToBone(this.body, `${side}Hand`, gloveGeometry(this.map.bone, side), this.opt.toon('css-glove', new Color(1, 1, 1)));
+      const m = attachToBone(this.body, `${side}Hand`, gloveGeometry(this.map.bone, side), this.opt.material('css-glove', new Color(1, 1, 1)));
       if (m) out.push(m);
     }
     return out;
@@ -1626,7 +1613,7 @@ export class Customizer {
     g.rotateX(Math.PI / 2);
     g.rotateY(Math.PI);
     g.translate(0, meta.lipsY + 0.02, meta.faceZ + 0.03);
-    const m = attachToBone(this.body, 'Head', g, this.opt.toon('css-bar', new Color(1, 1, 1)));
+    const m = attachToBone(this.body, 'Head', g, this.opt.material('css-bar', new Color(1, 1, 1)));
     return m ? [m] : [];
   }
 
@@ -1636,7 +1623,7 @@ export class Customizer {
     g.rotateX(Math.PI / 2);
     g.rotateY(Math.PI);
     g.translate(0, meta.lipsY, meta.faceZ - 0.022);
-    const m = attachToBone(this.body, 'Head', g, this.opt.toon('css-mouth', new Color(1, 1, 1)));
+    const m = attachToBone(this.body, 'Head', g, this.opt.material('css-mouth', new Color(1, 1, 1)));
     return m ? [m] : [];
   }
 
@@ -1795,7 +1782,7 @@ export class Customizer {
     const geo = new BufferGeometry();
     geo.setAttribute('position', new BufferAttribute(new Float32Array(pos), 3));
     geo.computeVertexNormals();
-    const m = attachToBone(this.body, 'Head', geo, this.opt.toon('css-hairlock', new Color(1, 1, 1)));
+    const m = attachToBone(this.body, 'Head', geo, this.opt.material('css-hairlock', new Color(1, 1, 1)));
     if (!m) return [];
     (m.material as MeshLambertMaterial).side = DoubleSide;
     return [m];
@@ -1806,7 +1793,7 @@ export class Customizer {
     const c = v3(meta.headLow).lerp(v3(meta.headTop), 0.5);
     const top = v3(meta.headTop);
     const r = top.y - c.y;
-    const mat = () => this.opt.toon('css-hairpiece', new Color(1, 1, 1));
+    const mat = () => this.opt.material('css-hairpiece', new Color(1, 1, 1));
     const out: Mesh[] = [];
     const add = (g: BufferGeometry) => {
       const m = attachToBone(this.body, 'Head', g, mat());

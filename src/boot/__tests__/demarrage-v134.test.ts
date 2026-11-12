@@ -42,7 +42,7 @@ describe('1.34 : un fichier gardé sur le téléphone est reconnu par son emprei
   });
 
   it('serveur qui compresse (aucune taille annoncée) : le coach gardé n’est plus retéléchargé à chaque ouverture', async () => {
-    const x = item('./coaches/axel/photo.glb', 2000, 'abc123');
+    const x = item('./coaches/nael/photo.glb', 2000, 'abc123');
     // first launch: downloaded whole, kept by the service worker as the server sent it (no Content-Length)
     await (await c.open('css-modeles')).put(abs(x.url), new Response(new Uint8Array(2000)));
     noteKept(x);
@@ -55,10 +55,10 @@ describe('1.34 : un fichier gardé sur le téléphone est reconnu par son emprei
   });
 
   it('une mise à jour du modèle (autre empreinte) : l’ancien est retiré et retéléchargé sur l’écran de démarrage', async () => {
-    const old = item('./coaches/axel/photo.glb', 2000, 'ancien');
+    const old = item('./coaches/nael/photo.glb', 2000, 'ancien');
     await (await c.open('css-modeles')).put(abs(old.url), new Response(new Uint8Array(2000), { headers: { 'content-length': '2000' } }));
     noteKept(old);
-    const now = item('./coaches/axel/photo.glb', 2000, 'nouveau');
+    const now = item('./coaches/nael/photo.glb', 2000, 'nouveau');
     expect(await isKept(now)).toBe(false);
     expect(await (await c.open('css-modeles')).match(abs(now.url))).toBeUndefined();
   });
@@ -90,7 +90,7 @@ describe('1.34 : un fichier gardé sur le téléphone est reconnu par son emprei
   });
 
   it('chaque fichier du plan porte l’empreinte de ce qui est servi', () => {
-    const plan = bootPlan({ coachId: 'axel', coaches: ['nael'], outfits: true, bjjOutfit: 'gi', rooms: true, sharpRooms: true });
+    const plan = bootPlan({ coachId: 'nael', coaches: ['inaya'], outfits: true, bjjOutfit: 'gi', rooms: true, sharpRooms: true });
     expect(plan.length).toBeGreaterThan(30);
     for (const x of plan) expect(x.v, x.url).toMatch(/^[0-9a-f]{12}$/);
     // outside a build the files are served as they are in public/
@@ -110,7 +110,7 @@ describe('1.34 : modèles compressés au build, sans aucune perte', () => {
     const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.decoder': MeshoptDecoder });
     const hash = (b?: Uint8Array | null) => (b ? createHash('sha1').update(b).digest('hex') : '-');
     // a body (with its face expressions) and outfits of both rigs (Rocketbox, MakeHuman)
-    for (const rel of ['coaches/mma-kadir/photo.glb', 'coaches/mma-kadir/tenues/judo.glb', 'coaches/axel/tenues/mma.glb', 'coaches/inaya/tenues/boxe.glb']) {
+    for (const rel of ['coaches/mma-kadir/photo.glb', 'coaches/mma-kadir/tenues/judo.glb', 'coaches/nael/tenues/mma.glb', 'coaches/inaya/tenues/boxe.glb']) {
       const src = readFileSync(`public/${rel}`);
       const out = await compressModel(src);
       expect(out.byteLength, rel).toBeLessThan(src.byteLength);

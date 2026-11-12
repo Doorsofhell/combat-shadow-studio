@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.37.0',
+      releaseDate: '2026-11-12',
+      title: 'Uniquement des coachs ultra-réalistes',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Quatre coachs, tous ultra-réalistes : Kadir, Naël, Amara et Inaya. Axel et Kaila sont retirés ; si tu les avais choisis, tu retrouves Kadir ou Amara, le reste de ton profil est gardé.' },
+        { category: 'ameliorations', text: 'Choix du coach : les vignettes se partagent toute la largeur de l’écran sur une seule ligne, et le coach en grand ne tourne plus que vers la gauche et la droite.' },
+        { category: 'ameliorations', text: 'Un seul rendu 3D : le réglage « Version du rendu 3D » et l’ancien écran « Mon combattant » disparaissent. Le premier téléchargement des coachs est plus léger (environ 62 Mo au lieu de 100).' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.36.0',
       releaseDate: '2026-11-12',
       title: 'Kadir : la bouche se lit mieux',

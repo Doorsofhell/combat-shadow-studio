@@ -343,31 +343,17 @@ export function SettingsPage() {
             on={settings.salleImmersive}
             onChange={(v) => set({ salleImmersive: v })}
           />
-          {settings.coachStyle === 'realiste' && settings.coachRender === 'premium' && (
-            <PanelRow label="Lumière du coach" column>
-              <Segmented
-                label="Lumière du coach"
-                value={settings.coachLight}
-                onChange={(v) => set({ coachLight: v })}
-                options={[
-                  { id: 'studio', label: 'Studio' },
-                  { id: 'vive', label: 'Vive (fond sombre)' },
-                ]}
-              />
-              <p className="small muted">« Vive » reprend la lumière du labo CME : plus claire, avec un contour bleuté, et un fond sombre pendant l’entraînement.</p>
-            </PanelRow>
-          )}
-          <PanelRow label="Version du rendu 3D" column>
+          <PanelRow label="Lumière du coach" column>
             <Segmented
-              label="Version du rendu 3D"
-              value={settings.coachRender}
-              onChange={(v) => set({ coachRender: v })}
+              label="Lumière du coach"
+              value={settings.coachLight}
+              onChange={(v) => set({ coachLight: v })}
               options={[
-                { id: 'premium', label: 'Nouvelle (0.24)' },
-                { id: 'precedent', label: 'Précédente (secours)' },
+                { id: 'studio', label: 'Studio' },
+                { id: 'vive', label: 'Vive (fond sombre)' },
               ]}
             />
-            <p className="small muted">La version précédente reste disponible tant que la nouvelle n’est pas validée sur ton téléphone.</p>
+            <p className="small muted">« Vive » reprend la lumière du labo CME : plus claire, avec un contour bleuté, et un fond sombre pendant l’entraînement.</p>
           </PanelRow>
           <div id="reglage-camera" data-testid="settings-camera" />
           <PanelRow label="Caméra par défaut" column>

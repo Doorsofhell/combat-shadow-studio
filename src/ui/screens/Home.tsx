@@ -2,7 +2,6 @@ import { lazy, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { useActiveFighter } from '../../store/fighters';
 import { sessionCount, sum, useStats, weekKey } from '../../store/stats';
 import { useGoals } from '../../store/goals';
 import { DISCIPLINES, LEVELS, TrainingMode } from '../../domain/types';
@@ -11,7 +10,6 @@ import { recommend } from '../../domain/recommend';
 import { championFor } from '../../domain/coaches/catalog';
 import type { ComboPlayer, PlayerEvents } from '../../engine';
 import { MODE_LABEL } from '../training/plan';
-import { defaultFighterName } from '../components/fighter';
 import { DisciplineIcon } from '../icons';
 import { haptic, openSearch } from '../nav/BottomBar';
 import { NavIcon } from '../nav/NavIcon';
@@ -38,17 +36,15 @@ function StageFallback() {
 export function Home() {
   const profile = useProfile((s) => s.profile);
   const settings = useSettings((s) => s.settings);
-  const fighter = useActiveFighter();
   const sessions = useStats((s) => s.sessions);
   const weeklyGoal = useGoals((s) => s.goals.weeklyMinutes);
   const nav = useNavigate();
   const rec = useMemo(() => recommend(profile), [profile]);
   const disc = DISCIPLINES.find((d) => d.id === profile.mainDiscipline)!;
   const level = LEVELS.find((l) => l.id === profile.levels[disc.id])!;
-  const premium = settings.coachRender === 'premium';
-  // 0.24: the coach on stage is Kadir or Amara; the fallback render keeps the custom fighter
-  const coach = premium ? (profile.coach ?? 'homme') : (fighter?.look.sex ?? profile.coach ?? 'homme');
-  const name = premium ? championFor(profile.coach, profile.champion).name : (fighter?.name ?? defaultFighterName(profile.coach));
+  // 0.24: the coach on stage is Kadir or Amara (1.37: always, the fallback render with the custom fighter is gone)
+  const coach = profile.coach ?? 'homme';
+  const name = championFor(profile.coach, profile.champion).name;
 
   const thisWeek = weekKey(new Date().toISOString());
   const week = sessions.filter((s) => weekKey(s.start) === thisWeek);

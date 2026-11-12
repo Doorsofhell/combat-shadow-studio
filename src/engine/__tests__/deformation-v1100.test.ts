@@ -23,7 +23,7 @@ import { analyseMotion } from '../study';
  * Results written to docs/v1100/MESURES_DEFORMATIONS.md. Limits: a few known extremes of the old skin weights are
  * allowed, every coach must stay under them, and the 1.10 corrections must not raise any.
  */
-const COACHES = ['mma-kadir', 'mma-amara', 'axel', 'kaila', 'nael', 'inaya'] as const;
+const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya'] as const;
 const POSES: [string, string, number][] = [
   ['garde', 'garde', 0],
   ['jab', 'jab', 1],
@@ -170,12 +170,5 @@ describe('déformations aux articulations (peau des quatre coachs)', () => {
       expect(x, label).toBeLessThan(b * 0.85);
     }
   });
-  test('aisselles de Kaila : peau moins étirée en garde et bras levés', () => {
-    for (const id of ['kaila'])
-      for (const label of ['garde', 'bras levés (blocage haut)']) {
-        const x = all[id][label]['aisselles, omoplates'].stretch;
-        const b = base[id][label]['aisselles, omoplates'].stretch;
-        expect(x, `${id} ${label}`).toBeLessThan(b * 0.85);
-      }
-  });
+  // 1.37: the test « aisselles de Kaila » is removed with Kaila (kept in « backup CS/ »)
 });

@@ -12,7 +12,7 @@ import { mkdirSync } from 'node:fs';
  */
 const [OUT, plan = 'all'] = process.argv.slice(2);
 const BASE = process.env.BASE ?? 'http://localhost:4180';
-const COACHES = (process.env.COACHES ?? 'mma-kadir,mma-amara,axel,kaila').split(',');
+const COACHES = (process.env.COACHES ?? 'mma-kadir,mma-amara,nael,inaya').split(',');
 const OUTFITS = (process.env.OUTFITS ?? 'boxe,kickboxing,muaythai,mma,bjj,bjj-nogi,judo').split(',');
 const LIGHTS = (process.env.LIGHTS ?? 'app').split(',');
 const W = Number(process.env.W ?? 360);

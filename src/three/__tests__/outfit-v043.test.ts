@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { Vector3 } from 'three';
-import { gloveGeometry } from '../customize';
 
 /**
  * v0.43 equipment (Youssef, 2026-10-23, « REFONTE RÉALISTE DES ÉQUIPEMENTS 3D »), checked on the shipped files
@@ -125,36 +124,4 @@ describe.each(COACHES)('équipements v0.43, %s', (coach) => {
   });
 });
 
-describe('gant Anime (forme sculptée partagée)', () => {
-  // a right hand in the bind pose, glTF axes: arm along -x, back of the hand up
-  const bones = {
-    RightForeArm: new Vector3(-0.3, 1.4, 0),
-    RightHand: new Vector3(-0.55, 1.4, 0),
-    RightHandMiddle1: new Vector3(-0.645, 1.4, 0),
-    RightHandIndex1: new Vector3(-0.64, 1.4, 0.025),
-    RightHandPinky1: new Vector3(-0.63, 1.4, -0.03),
-  };
-  test('taille d’un gant d’entraînement et faces tournées vers l’extérieur', () => {
-    const g = gloveGeometry(bones, 'Right');
-    g.computeBoundingBox();
-    const s = new Vector3();
-    g.boundingBox!.getSize(s);
-    // about 30 cm from the cuff to the striking face, 13 to 18 cm wide with the thumb
-    expect(s.x).toBeGreaterThan(0.27);
-    expect(s.x).toBeLessThan(0.34);
-    expect(Math.max(s.y, s.z)).toBeGreaterThan(0.11);
-    expect(Math.max(s.y, s.z)).toBeLessThan(0.18);
-    // signed volume > 0: the triangles turn outward (a mirrored hand would show inside out)
-    const p = g.getAttribute('position');
-    const ix = g.index!;
-    let vol = 0;
-    const a = new Vector3(), b = new Vector3(), c = new Vector3();
-    for (let t = 0; t < ix.count; t += 3) {
-      a.fromBufferAttribute(p, ix.getX(t));
-      b.fromBufferAttribute(p, ix.getX(t + 1));
-      c.fromBufferAttribute(p, ix.getX(t + 2));
-      vol += a.dot(b.cross(c)) / 6;
-    }
-    expect(vol).toBeGreaterThan(0.0005);
-  });
-});
+// 1.37: the test of the sculpted glove of the generated coach is removed with it (kept in « backup CS/ »)

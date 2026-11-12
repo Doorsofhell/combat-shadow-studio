@@ -3295,3 +3295,96 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Captures** : `docs/v1360/captures/`.
 - **Restauration** : `restauration/avant-barbe-kadir` (1.35.0, commit a09ac11) ; le modèle d'origine est aussi dans
   l'historique git.
+
+## 2026-11-12 · v1.37.0 · Uniquement des coachs ultra-réalistes
+
+- **Demande** : Youssef, 12/11, « ne garder que les coachs ultra-réalistes » (retirer les styles manga, encre et
+  toon, le réglage de style, et ne garder qu'un seul pipeline de matériaux standard/physique) ; puis, dans le même
+  fil : supprimer l'écran caché « Mon combattant » (choix « Le supprimer »), ranger tout ce qui est retiré dans
+  `backup CS/` gardé sur GitHub, retirer Axel et Kaila (« Oui »), et sur l'écran de choix du coach : vignettes sur
+  une seule ligne avec une largeur qui s'adapte au nombre de coachs (choix « A. Portrait seul, largeur partagée »),
+  sans toucher au grand espace du coach, dont la rotation est limitée à gauche et à droite.
+- **Constat vérifié** :
+  - les styles dessinés (`src/three/manga.ts` : `TOON_FRAGMENT`, `INK_FRAGMENT`, coque inversée, `applyManga`,
+    `toonMaterial`, `inkMaterial`, `outlineMaterial`) étaient du code mort depuis la 1.9 : seuls des tests les
+    importaient ; le réglage `coachStyle` n'avait plus d'effet visible ;
+  - il restait des coachs non réalistes à deux endroits : le rendu « Précédente (secours) » (réglage `coachRender`,
+    modèle MakeHuman généré et personnalisé par `customize.ts`) et l'écran caché `/combattant` ;
+  - Axel et Kaila étaient les deux seuls coachs MakeHuman (les quatre autres sont Microsoft Rocketbox, MIT) ;
+  - les squelettes des modèles générés servent encore aux tests du moteur d'animation (équilibre, sol, fluidité) :
+    les supprimer aurait affaibli ces tests ;
+  - au démarrage, le plan de chargement comptait 94 fichiers pour 100,4 Mo.
+- **Correction** :
+  - `src/three/CoachModel.tsx` ne charge plus que le coach photo (`PhotoCoach`, matériaux `MeshStandard` /
+    `MeshPhysical`) ; `GeneratedCoach`, ses matériaux et ses caches sont retirés ;
+  - `StudioStage` garde un seul éclairage (celui du rendu réaliste) ; `CoachStage` ne lit plus de style ni de
+    version de rendu ;
+  - réglages : `coachStyle`, `coachRender` et `seeThroughGear` retirés ; migration v4 (`dropRetired`) qui les
+    efface des anciennes sauvegardes sans toucher au reste (voix, coach, lumière…) ;
+  - écrans : bloc « Version du rendu 3D » des Réglages, étape « Apparence » de l'accueil, puce « Protections
+    transparentes » de l'analyse et route `/combattant` retirés (une adresse `/combattant` ramène à l'accueil) ;
+  - Axel et Kaila retirés du catalogue, des looks, des postures, des peaux et des profils humains ; un profil qui
+    les avait choisis revient sur Kadir ou Amara (`RETIRED_COACHES` dans `src/store/profile.ts`) ;
+    `LEGACY_DEGRADED` est maintenant vide ;
+  - choix du coach : vignettes portrait sur une ligne, largeur partagée (`flex: 1 1 0`, 120 px au plus), le grand
+    espace du coach est inchangé ; sa rotation est verrouillée en hauteur (nouvelle option `turnOnly`), seul le
+    glissement gauche/droite le fait tourner ;
+  - Coach IA, recherche et textes : plus de mention des styles dessinés ni des six coachs ;
+  - tout ce qui est retiré est rangé dans `backup CS/v1.37-ultra-realiste/` avec un `README.md` (liste et raison),
+    plus les versions 1.36.0 des 20 fichiers dont du code a été retiré (`originaux-1.36.0/`) ;
+  - les quatre modèles générés mesurés par les tests du moteur sont déplacés dans `tests/fixtures/modeles-generes/`
+    (hors application) ; `testModelPath()` dans `src/test/skeleton.ts` les retrouve ;
+  - `src/boot/assetSizes.json` régénéré : **78 fichiers, 62,5 Mo** au premier lancement (avant : 94 fichiers,
+    100,4 Mo) ; dossier `dist/` : 140 → 68 Mo ; JavaScript : 2 952 → 2 808 Ko.
+- **Mots restants « ink / encre / manga » (exceptions justifiées)** :
+  - jetons CSS `--ink`, `--red-ink`… : couleurs de texte, sans rapport avec le rendu des coachs ;
+  - couleurs `INK` des icônes de discipline, classe `danger-ink`, mot « unanime » de l'encyclopédie ;
+  - valeurs `'encre'`, `'manga'`, `'precedent'` gardées dans les tests de migration (`settings-style.test.ts`,
+    `coach-render.spec.ts`, `moteur-lumiere.spec.ts`) : elles existent vraiment dans les anciennes sauvegardes ;
+  - historique : notes de versions anciennes (`releases.ts`), documents datés `docs/v0xx…`, ce journal.
+- **Fichiers** : `src/three/CoachModel.tsx`, `CoachStage.tsx`, `StudioStage.tsx`, `photoMaterials.ts`,
+  `src/three/human/profiles.ts`, `src/store/settings.ts`, `src/store/profile.ts`, `src/domain/coaches/` (catalog,
+  looks, motion), `src/ui/screens/` (Settings, Onboarding, Home, Library, CoachSelect, BootScreen, Study),
+  `src/ui/Lab.tsx`, `src/App.tsx`, `src/ui/nav/config.ts`, `src/ui/styles.css`, `src/coach/appGuide.ts`,
+  `src/domain/search.ts`, `src/domain/releases.ts`, `src/boot/assetSizes.json`, `package.json`,
+  `package-lock.json`, scripts de captures, `tools/generator/README.md` (nouveau), `README.md`, `CLAUDE.md`,
+  `docs/HUMAN_CHARACTER_STANDARDS.md`, `docs/LICENCES.md`, `docs/ETAT.md`, `docs/NON_REGRESSION.md`,
+  `backup CS/`, `tests/fixtures/modeles-generes/`.
+- **Tests retirés (rangés dans `backup CS/`, ils ne testaient que ce qui est retiré)** :
+  - `src/three/__tests__/customize.test.ts`, `groom.test.ts`, `models.test.ts` (personnalisation, cheveux en
+    cartes et métadonnées du coach généré) ;
+  - `src/engine/__tests__/makehuman-coaches.test.ts` (Axel et Kaila) ;
+  - `tests/e2e/coach-studio.spec.ts` (écran « Mon combattant ») ;
+  - dans `editor.test.ts`, les tests de génération aléatoire et de tatouages (le test de `normalizeLook` reste) ;
+  - dans `outfit-v043.test.ts`, le bloc « gant » (gant sculpté du coach généré) ;
+  - dans `deformation-v1100.test.ts`, le test « aisselles de Kaila ».
+- **Tests modifiés (sans affaiblir ce qu'ils vérifient pour les coachs restants)** :
+  - listes de coachs ramenées à quatre (Kadir, Amara, Naël, Inaya) dans les tests du moteur humain, du sol, de la
+    respiration, des protège-tibias, des déformations, du réalisme et des compétences ;
+  - `realisme-v1100` : « plus de deux reliefs de peau distincts » devient « plus d'un » (il ne reste que deux
+    familles de peau) et le test vérifie maintenant que **chaque** coach reste sous 1,5 ;
+  - `contract.test` : `LEGACY_DEGRADED` doit être vide et chaque profil `complet` ;
+  - `settings-style.test`, `coach-render.spec`, `moteur-lumiere.spec` : vérifient la migration des anciennes
+    sauvegardes (styles et version de rendu effacés, voix et coach gardés) ;
+  - `coachs-v160.spec` : quatre coachs, profil avec Axel ou Kaila rouvert sur Kadir ou Amara, et nouveau test 1.37 :
+    vignettes sur une ligne, de même largeur, et glisser vertical sans effet sur la caméra ;
+  - `appGuide.test`, `preload.test`, `demarrage-v134`, `boot.spec`, `profil-v120`, `contrast`, `ecran-coach-v140` :
+    Naël ou Inaya à la place d'Axel ou Kaila, plus d'entrée `/combattant` ;
+  - `docs/audit-biomecanique/MESURES_SOL.md` régénéré : seules les colonnes et lignes d'Axel et Kaila disparaissent.
+- **Tests** :
+  - suite Vitest complète : 1269 TEST RÉUSSI, 1 ignoré, 8 ÉCHOUÉ ; ce sont exactement les 8 échecs déjà présents sur
+    la 1.36.0 rejouée seule le même jour (moteur de frappe : `audit.test` document de mesures,
+    `extension-v032` uppercut arrière, `fluidity` ×3, `hooks-biomeca` ×2, `torsion-range` document) ; aucun nouvel
+    échec ;
+  - compilation `npm run build` : TEST RÉUSSI ;
+  - Playwright suite complète (293 tests, 55 min) : 286 TEST RÉUSSI, 2 ignorés (Firebase), 5 ÉCHOUÉ :
+    - `aucune-perte-v100:180` cherchait le réglage retiré « Version du rendu 3D » : la ligne vérifie maintenant
+      « Lumière du coach » dans la même section Affichage, rejoué : TEST RÉUSSI ;
+    - `coach-suggest:207` et `consignes-v130:27` : échouent aussi sur la 1.36.0 rejouée seule le même jour (déjà
+      présents, sans lien avec ce lot) ;
+    - `coaching-hud:60` et `training-layout:117` : déjà connus (journal 1.35.0, échouent aussi sur la 1.33.2) ;
+  - captures avant/après du choix du coach (360×640) : contrôle visuel fait ;
+  - appareil Android réel : NON EXÉCUTÉ.
+- **Captures** : `docs/v1370/captures/`.
+- **Restauration** : branche `restauration/avant-ultra-realiste-v137` (1.36.0, commit 2343eee) ; tout le contenu
+  retiré est aussi dans `backup CS/v1.37-ultra-realiste/`.

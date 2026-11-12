@@ -4718,16 +4718,23 @@ html[data-back-chip] .page.coach-star.coach-select:not(:has(> .page-head:first-c
   border-color: var(--gold);
   color: var(--gold);
 }
+/* 1.37 (Youssef, 2026-11-12): one row whatever the number of coaches; each portrait takes an equal share of the width
+   (at most 120 px), the height stays the one of 1.32 so the big 3D stage keeps all its room */
 .star-strip {
   flex: none;
   display: flex;
   justify-content: center;
   gap: 6px;
+  width: 100%;
+  padding: 0 8px;
+  box-sizing: border-box;
 }
 .star-thumb {
   appearance: none;
   position: relative;
-  width: 48px;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 120px;
   height: 56px;
   padding: 0;
   border-radius: 10px;
@@ -4739,15 +4746,17 @@ html[data-back-chip] .page.coach-star.coach-select:not(:has(> .page-head:first-c
   cursor: pointer;
   transition: opacity 0.15s ease, box-shadow 0.15s ease;
 }
-/* the portraits are full-length: the strip shows the head and the shoulders */
+/* the portraits are full-length: the strip shows the head and the shoulders, whatever the width of the portrait */
 .star-thumb img {
   position: absolute;
-  width: 320%;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   max-width: none;
-  height: auto;
-  left: -94%;
-  top: -28%;
-  transform: skewX(6deg);
+  object-fit: cover;
+  object-position: 44% 6%;
+  transform: skewX(6deg) scale(2.1);
+  transform-origin: 44% 9%;
 }
 .star-thumb.on {
   opacity: 1;
@@ -4797,7 +4806,6 @@ html[data-back-chip] .page.coach-star.coach-select:not(:has(> .page-head:first-c
     font-size: 2.2rem;
   }
   .star-thumb {
-    width: 42px;
     height: 50px;
   }
   .star-ghost {

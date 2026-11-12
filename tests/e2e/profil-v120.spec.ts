@@ -68,7 +68,7 @@ test('Réglages : tout l’ancien contenu (Réglages, Mon coach, Coach IA, donn�
   await expect(page.getByTestId('reglages-nouveautes')).toBeVisible();
   await openSetting(page, 'coach');
   // 1.9: no look choice any more (settings-coach-look removed with the Anime look)
-  for (const id of ['coach-homme', 'coach-femme']) await expect(page.getByTestId(id), id).toBeVisible();
+  for (const id of ['coach-homme', 'coach-femme', 'coach-nael', 'coach-inaya']) await expect(page.getByTestId(id), id).toBeVisible();
   await openSetting(page, 'voix');
   await expect(page.getByRole('button', { name: 'Tester la voix' })).toBeVisible();
   await openSetting(page, 'rounds');

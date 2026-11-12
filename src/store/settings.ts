@@ -38,17 +38,6 @@ export interface Settings {
   impactSounds: boolean;
   quality: 'auto' | 'haute' | 'basse';
   /**
-   * look of the coaches: Ultra-réaliste only since 1.9 (Youssef, 2026-10-29: « supprime définitivement le rendu
-   * Anime »). The ink/anime look (default from v0.14 to v0.28) and the cel-shaded manga look are gone; the
-   * field stays so the saved settings keep their shape
-   */
-  coachStyle: 'realiste';
-  /**
-   * v0.23 render of the coaches (one model for both looks, clean cel shading) or the previous render,
-   * kept as a fallback until the new one is validated on the devices
-   */
-  coachRender: 'premium' | 'precedent';
-  /**
    * v0.49 light of the realistic coaches: the photo studio of v0.29 or the bright light of the CME-3D lab
    * (Youssef 2026-10-27: CME's coaches « mieux aboutis », same model, brighter staging). 1.0.0: Vive is the
    * default (Youssef, 2026-10-27 19:55 « Lumière vive OK »); a saved choice is kept as it is, saves from before
@@ -66,8 +55,6 @@ export interface Settings {
   cameraMode: import('../domain/camera').CameraMode;
   /** visual teaching marks of the "Décomposer" mode */
   cues: Record<CueId, boolean>;
-  /** gear drawn see-through in the "Décomposer" mode so joints stay visible (saved look unchanged) */
-  seeThroughGear: boolean;
   groundMarks: Record<GroundMarkId, boolean>;
   defaultRoundSec: number;
   defaultRestSec: number;
@@ -142,15 +129,11 @@ export const DEFAULT_SETTINGS: Settings = {
   techniqueTips: true,
   impactSounds: false,
   quality: 'auto',
-  // v0.29 (Youssef, PROMPT MAÎTRE v0.29.0): Ultra-réaliste for a new installation or a save without a choice
-  coachStyle: 'realiste',
-  coachRender: 'premium',
   coachLight: 'vive',
   salleImmersive: true,
   cameraAngle: 35,
   cameraMode: 'auto',
   cues: { trajectoire: true, hanches: true, pivot: true, articulations: true, pieds: true, garde: false, comparaison: false },
-  seeThroughGear: false,
   groundMarks: { pieds: false, orientation: false, avantArriere: false, pivot: false, trajectoire: false },
   defaultRoundSec: 180,
   defaultRestSec: 60,
@@ -181,6 +164,15 @@ interface SettingsState {
   set: (p: Partial<Settings>) => void;
 }
 
+/** fields of older saves that are no longer settings (1.37: coachStyle, coachRender, and seeThroughGear: the see-through
+ * gear of the « Décomposer » mode only worked on the generated coach) */
+const RETIRED = ['coachStyle', 'coachRender', 'seeThroughGear'];
+export function dropRetired(s: Partial<Settings>): Partial<Settings> {
+  const out: Record<string, unknown> = { ...s };
+  for (const k of RETIRED) delete out[k];
+  return out as Partial<Settings>;
+}
+
 export const useSettings = create<SettingsState>()(
   persist(
     (setState) => ({
@@ -191,23 +183,21 @@ export const useSettings = create<SettingsState>()(
     {
       name: 'css-settings',
       storage: createJSONStorage(() => idbStorage),
-      // v1 (0.14.0): the ink style becomes the default; 'manga' was the default before, so it moves to 'encre'
-      // (an explicit 'realiste' choice is kept)
-      // v2 (0.29.0): Ultra-réaliste becomes the default for new installations; a saved look is kept as it is
-      // (« conserver les préférences déjà choisies par les utilisateurs existants »)
-      // v3 (1.9.0): the Anime (« encre ») and Manga looks are removed: every saved look becomes Ultra-réaliste,
-      // the other settings are kept
-      version: 3,
-      migrate: (saved, version) => {
+      // v1 to v3 (0.14.0, 0.29.0, 1.9.0): the choice between the drawn looks and Ultra-réaliste, then Ultra-réaliste only
+      // v4 (1.37.0, Youssef 2026-11-12 « ne garder que les coachs ultra-réalistes »): one render only, the look
+      // (coachStyle) and the render version (coachRender, « Précédente (secours) ») are no longer settings: both
+      // fields are dropped from the saved settings, everything else is kept
+      version: 4,
+      migrate: (saved) => {
         const st = (saved ?? {}) as { settings?: Partial<Settings> };
-        if (version < 3 && st.settings) st.settings = { ...st.settings, coachStyle: 'realiste' };
+        if (st.settings) st.settings = dropRetired(st.settings);
         return st as unknown as SettingsState;
       },
       // settings saved by an older version get the new fields with their default value
       merge: (saved, current) => {
-        const s = (saved as { settings?: Partial<Settings> })?.settings ?? {};
+        const s = dropRetired((saved as { settings?: Partial<Settings> })?.settings ?? {});
         const size = COACH_PANEL_SIZES.includes(s.coachPanelSize as CoachPanelSize) ? s.coachPanelSize : DEFAULT_SETTINGS.coachPanelSize;
-        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachStyle: 'realiste', coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) }, cardio: { ...DEFAULT_SETTINGS.cardio, ...(s.cardio ?? {}) }, chrono: cleanSetup(s.chrono), consignes: s.consignes === 'point' ? 'point' : 'enchainees', consigneSec: CONSIGNE_SECS.includes(s.consigneSec as number) ? s.consigneSec! : DEFAULT_SETTINGS.consigneSec, pulse: PULSE_STYLES.includes(s.pulse as PulseStyle) ? s.pulse! : DEFAULT_SETTINGS.pulse, pulseIntensity: typeof s.pulseIntensity === 'number' && s.pulseIntensity >= 0.3 && s.pulseIntensity <= 1 ? s.pulseIntensity : DEFAULT_SETTINGS.pulseIntensity, salleImmersive: typeof s.salleImmersive === 'boolean' ? s.salleImmersive : DEFAULT_SETTINGS.salleImmersive } };
+        return { ...current, settings: { ...DEFAULT_SETTINGS, theme: readSavedTheme(), ...s, coachPanelSize: size!, groundMarks: { ...DEFAULT_SETTINGS.groundMarks, ...(s.groundMarks ?? {}) }, cardio: { ...DEFAULT_SETTINGS.cardio, ...(s.cardio ?? {}) }, chrono: cleanSetup(s.chrono), consignes: s.consignes === 'point' ? 'point' : 'enchainees', consigneSec: CONSIGNE_SECS.includes(s.consigneSec as number) ? s.consigneSec! : DEFAULT_SETTINGS.consigneSec, pulse: PULSE_STYLES.includes(s.pulse as PulseStyle) ? s.pulse! : DEFAULT_SETTINGS.pulse, pulseIntensity: typeof s.pulseIntensity === 'number' && s.pulseIntensity >= 0.3 && s.pulseIntensity <= 1 ? s.pulseIntensity : DEFAULT_SETTINGS.pulseIntensity, salleImmersive: typeof s.salleImmersive === 'boolean' ? s.salleImmersive : DEFAULT_SETTINGS.salleImmersive } };
       },
     },
   ),

@@ -237,9 +237,6 @@ export function StudyPanel({
               {CUE_LABEL[c]}
             </button>
           ))}
-          <button className={`chip ${settings.seeThroughGear ? 'on' : ''}`} onClick={() => set({ seeThroughGear: !settings.seeThroughGear })}>
-            Protections transparentes
-          </button>
         </div>
       )}
     </div>
