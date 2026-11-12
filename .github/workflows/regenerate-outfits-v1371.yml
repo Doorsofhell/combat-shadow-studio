@@ -46,7 +46,7 @@ jobs:
       - name: Regenerate boot asset size manifest
         run: node scripts/boot-sizes.mjs
       - name: Verify old Kadir geometry and all other garment tests
-        run: npm run test -- src/three/__tests__/outfit-rollback-v1373.test.ts src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-materials-v1371.test.ts src/boot/__tests__/preload.test.ts
+        run: npm run test -- src/three/__tests__/outfit-rollback-v1373.test.ts src/domain/release-version.test.ts src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-materials-v1371.test.ts src/boot/__tests__/preload.test.ts
       - name: Build v1.37.3 with fingerprinted original Kadir models
         run: npm run build
         env:
