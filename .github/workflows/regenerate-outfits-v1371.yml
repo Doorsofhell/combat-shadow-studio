@@ -1,4 +1,4 @@
-name: Tenues 1.37.1 - Régénérer les GLB
+name: Tenues 1.37.2 - Régénérer et publier les GLB
 
 on:
   push:
@@ -7,19 +7,25 @@ on:
     paths:
       - tools/generator/rocketbox/outfits.py
       - scripts/dev/regenerate-outfits-v1371.sh
+      - .github/workflows/regenerate-outfits-v1371.yml
   workflow_dispatch:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
-  group: generate-outfits-v1371
+  group: github-pages
   cancel-in-progress: false
 
 jobs:
   regenerate:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,16 +45,39 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Verify outfit GLBs
-        run: npm run test -- src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-materials-v1371.test.ts
+      - name: Verify all 28 newly generated outfit GLBs
+        run: npm run test -- src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-materials-v1371.test.ts
+      - name: Build application with freshly regenerated GLBs
+        run: npm run build
+        env:
+          # v0.37 comptes : configuration web publique du projet Firebase « Combat Shadow Studio » (forfait Spark).
+          # Ce sont des identifiants publics (présents dans toute application web Firebase), pas des secrets :
+          # l'accès est protégé par Firebase Authentication et les règles Firestore (firestore.rules).
+          VITE_FIREBASE_API_KEY: AIzaSyDBWzZTC4QHV445rRtbrJ-fLJLfUWCujV8
+          VITE_FIREBASE_AUTH_DOMAIN: combat-shadow-studio.firebaseapp.com
+          VITE_FIREBASE_PROJECT_ID: combat-shadow-studio
+          VITE_FIREBASE_APP_ID: 1:48532638871:web:2f135f723753e52b2cedd2
+
       - name: Commit only validated GLBs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -- public/coaches/*/tenues/*.glb
           if ! git diff --cached --quiet; then
-            git commit -m "assets(outfits): regenerate 28 v1.37.1 garments after quality checks"
+            git commit -m "assets(outfits): regenerate 28 v1.37.2 garments after quality checks"
             git push origin HEAD:claude/project-thread-o7lrt8
           else
             echo "GLB inchangés"
           fi
+
+      # A GITHUB_TOKEN push does NOT trigger preview.yml. Deploy here instead,
+      # otherwise the site would keep the old models even after GitHub receives the GLBs.
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload freshly built website
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - name: Deploy regenerated assets to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

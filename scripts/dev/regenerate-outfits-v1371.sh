@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# v1.37.1: rebuild the 28 production outfit GLBs against the four shipped Rocketbox bodies.
+# v1.37.2: rebuild the 28 production outfit GLBs against the four shipped Rocketbox bodies.
 # Must be run with Blender (bpy) installed; never touch the coaches' photo.glb/rig.
 set -euo pipefail
 command -v blender >/dev/null || { echo "Blender requis pour régénérer les tenues" >&2; exit 1; }
@@ -23,4 +23,4 @@ build_one mma-kadir homme default
 build_one mma-amara femme default
 build_one nael homme nael
 build_one inaya femme inaya
-echo "28 tenues régénérées."
+echo "28 tenues régénérées (générateur v1.37.2)."

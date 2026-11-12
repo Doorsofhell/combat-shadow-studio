@@ -36,7 +36,7 @@ SUR_HEM = float(os.environ.get('SUR_HEM', '0.66'))
 # 1.26 side slit of the MMA shorts: height and half width at the hem (metres)
 SLIT_H = float(os.environ.get('SLIT_H', '0.05'))
 SLIT_W = float(os.environ.get('SLIT_W', '0.011'))
-SUR_FLARE = float(os.environ.get('SUR_FLARE', '0.02'))
+SUR_FLARE = float(os.environ.get('SUR_FLARE', '0.012'))  # v1.37.2: less triangular flaring at thigh
 # 1.22.1 the high kick: the liner ends 1.5 cm inside the over-short's hem (< 0: liner whole); the over-short snug at
 # the crotch (half-width of the snug zone, push taken off: 4 mm instead of 10 mm, no flare, no folds)
 UNDER_OVERLAP = float(os.environ.get('UNDER_OVERLAP', '0.015'))
@@ -332,8 +332,12 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
     # 1.37.1: 40 % of the body triangles before the cuts was too aggressive for hems,
     # groins and kimono sleeves (saw-teeth and triangular panels). Keep more geometry
     # there; other hard-surface pieces retain the mobile-friendly budget.
-    detail = name.startswith(('short-', 'haut-rash-', 'haut-brassiere', 'pantalon-', 'veste-'))
-    dec.ratio = float(os.environ.get('DECIMATE_DETAIL', '0.82')) if detail else float(os.environ.get('DECIMATE', '0.4'))
+    detail = name.startswith(('short-', 'haut-', 'pantalon-', 'veste-'))
+    # v1.37.2: this includes 'haut-crop' / 'haut-carre' (Inaya's MMA top),
+    # previously accidentally excluded: the coarse mesh tore its armholes.
+    critical = name.startswith(('haut-crop', 'haut-carre', 'haut-brassiere', 'short-surshort', 'short-vale-tudo'))
+    ratio = ('DECIMATE_MMA', '0.96') if critical else ('DECIMATE_DETAIL', '0.86') if detail else ('DECIMATE', '0.4')
+    dec.ratio = min(1.0, max(0.1, float(os.environ.get(*ratio))))
     apply(o, dec)
     bm_ = bmesh.new()
     bm_.from_mesh(o.data)
@@ -1199,10 +1203,11 @@ def shorts(kind, color, band, n_leg=None, under=False):
         # MH_BODY: the glutes of a MakeHuman body rise close to the waistband; the loose leg push there lifted the
         # cloth over the band (black teeth on the band)
         if kind == 'surshort':
-            # over the liner (4.2 mm off the skin, 2.5 mm thick, so 6.7 mm out): 10 mm at the waist, the gathered
-            # band 2 mm more, the legs loose (up to 2.2 cm more at the hem), soft folds
+            # v1.37.2: the previous 10–12 mm belt clearance made a pink
+            # floating ring around the waist. Retain enough clearance for the
+            # 6.7 mm inner liner, without lifting the band away from the hips.
             if P[i].z > hipZ + 0.02:
-                return 0.010 + (0.002 if P[i].z > waist - bandH else 0)
+                return 0.008 + (0.001 if P[i].z > waist - bandH else 0)
             s = leg_of(i)
             # 1.22.1 the inside of the legs close to the crotch: snug (the loose cloth there folded on itself at a high kick)
             crotch = max(0.0, 1 - abs(P[i].x) / SUR_CROTCH)
@@ -1234,13 +1239,18 @@ def shorts(kind, color, band, n_leg=None, under=False):
     sheenK = {'boxe': ('satin', 0.6, 0.35, 0.3), 'thai': ('satin', 0.58, 0.4, 0.3), 'kick': ('serge', 0.62, 0.2, 0.4), 'mma': ('flat', 0.68, 0.1, 1.0), 'compression': ('jersey', 0.78, 0.06, 0.34), 'vale-tudo': ('jersey', 0.8, 0.06, 0.4), 'surshort': ('serge', 0.64, 0.15, 0.35)}[kind]
     body_mat = grad_fabric(f'short-{kind}-degrade', sheenK[0], sheenK[1], sheenK[3], sheenK[2]) if isinstance(color, tuple) else fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3])
     # 1.22 the gathered waist of the surshort: the elastic relief stronger (its ruffles), the colour a little darker in the hollows
-    band_rel = 0.9 if kind == 'surshort' else BAND_RELIEF
+    # Reduce deep corrugations: the contrasting waistband should read as
+    # flexible elastic, not a row of detached stiff rectangles.
+    band_rel = 0.35 if kind == 'surshort' else BAND_RELIEF
     mats = [body_mat, fabric(f'ceinture-{kind}-{band}', band, 'elastique', rough=0.65, strength=band_rel, tone=0.1 if band_rel >= 0.5 else 0.03)]
     # 1.10: waist and hems are the zero line of a field (exact, smooth edges whatever the body's triangles; the plane
     # cuts left a wavy waistband on the MakeHuman bodies); the band's lower line stays a straight plane cut
     hz = {s: H[f'{s}Leg'].z + hem * (H[f'{s}UpLeg'].z - H[f'{s}Leg'].z) for s in ('Left', 'Right')}
     F = lambda q: max(q.z - waist, hz['Left' if q.x > 0 else 'Right'] - q.z)
-    if kind in ('vale-tudo', 'surshort', 'mma') and not under and SLIT_H > 0:
+    # The v1.26 procedural side slit on the female over-short creates a
+    # pointed torn flap when its two moving layers cross. Keep a clean hem
+    # here until a dedicated reinforced slit mesh is available.
+    if kind in ('vale-tudo', 'mma') and not under and SLIT_H > 0:
         # 1.26 (Youssef, 2026-11-06, two photos of MMA shorts: « les shorts de MMA doivent avoir la petite fente »):
         # a short slit on the outer side of each leg, from the hem up, narrowing to a point. Cut by the field like
         # the hem (smooth edges; the v0.32 slit, cut along the skin's triangles, came out torn). What lies under it
@@ -1677,14 +1687,14 @@ def top_square(color, accent=None, low=None, name='haut-carre'):
         q = P[i]
         return 0.0055 + float(os.environ.get("SQ_PUSH", "0.0035")) * _ss(chestZ - 0.03, chestZ + 0.03, q.z) * _ss(0.105, 0.12, abs(q.x))
     o, cov = shell(name, keep, push, 0.0022, mats,
-                   (lambda c, ids: 1 if c.z < low + 0.02 else 0) if accent else None, hem=0.008, cuts=cuts, iso=F,
+                   (lambda c, ids: 1 if c.z < low + 0.02 else 0) if accent else None, hem=0.006, cuts=cuts, iso=F,
                    edge_skin=float(os.environ.get('SQ_EDGE', '0.002')))
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
     # each point of the decimated top takes the weights of its closest skin point: along the strap's outer edge
     # those alternate between the arm and the shoulder blade, and the edge came out in teeth when the guard rises.
     # Relaxed over the garment (the skin under it is smoothed the same way by smooth_weights.py)
-    relax_weights(o, int(os.environ.get('SQ_SMOOTH', '8')))
+    relax_weights(o, int(os.environ.get('SQ_SMOOTH', '12')))  # v1.37.2: smooth skin-weight jumps across straps
     # the skin under the straps: shell() keeps the skin drawn near any free edge of the copy, and the body's texture
     # seams over the shoulder blade leave such edges inside the strap (half its skin stayed drawn, and came through
     # in teeth when the guard rises). Everything 4 mm inside the field is hidden
@@ -2837,6 +2847,9 @@ def export(name, parts, hide):
     parts[0]['hideBody'] = base64.b64encode(bytes(q)).decode()
     parts[0]['hideScale'] = HQ
     parts[0]['outfit'] = name
+    # Assets can now be verified as freshly regenerated: unchanged legacy GLBs must
+    # never pass the v1.37.2 deployment gate with old cutouts.
+    parts[0]['generatorVersion'] = '1.37.2'
     for o in bpy.context.view_layer.objects:
         o.select_set(o in parts or o == arm)
     body.select_set(False)
