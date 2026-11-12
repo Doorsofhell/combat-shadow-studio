@@ -12,7 +12,7 @@ VERSION = "1.37.2"
 OUTFITS = ("boxe", "kickboxing", "muaythai", "mma", "bjj", "bjj-nogi", "judo")
 
 
-def validate(path: pathlib.Path) -> None:
+def validate(path: pathlib.Path, expected_version: str = VERSION) -> None:
     if not path.is_file() or path.stat().st_size < 1000:
         raise ValueError(f"{path}: absent ou fichier trop petit")
     with path.open("rb") as f:
@@ -30,24 +30,27 @@ def validate(path: pathlib.Path) -> None:
         for node in data.get("nodes", [])
         if isinstance(node.get("extras"), dict)
     ]
-    if VERSION not in versions:
+    if expected_version not in versions:
         raise ValueError(f"{path}: generatorVersion absent ou incorrect ({versions}); modèle ancien ou export Blender incomplet")
     if not any(node.get("mesh") is not None for node in data.get("nodes", [])):
         raise ValueError(f"{path}: pas de maillage porté")
-    print(f"OK {path} : GLB {file_size} octets, generatorVersion={VERSION}", flush=True)
+    print(f"OK {path} : GLB {file_size} octets, generatorVersion={expected_version}", flush=True)
 
 
 def main() -> int:
-    if len(sys.argv) not in (3, 4):
-        raise SystemExit("usage: validate-outfit-build-v1372.py COACH OUTDIR [OUTFITS]")
+    if len(sys.argv) not in (3, 4, 5):
+        raise SystemExit("usage: validate-outfit-build-v1372.py COACH OUTDIR [OUTFITS] [GENERATOR_VERSION]")
     coach = sys.argv[1]
     directory = pathlib.Path(sys.argv[2])
-    selected = tuple(sys.argv[3].split(",")) if len(sys.argv) == 4 else OUTFITS
+    selected = tuple(sys.argv[3].split(",")) if len(sys.argv) >= 4 else OUTFITS
+    expected_version = sys.argv[4] if len(sys.argv) == 5 else VERSION
+    if expected_version not in ("1.37.2", "1.37.4"):
+        raise SystemExit("Unknown generatorVersion; check the release contract")
     if not selected or any(name not in OUTFITS for name in selected):
         raise SystemExit("Invalid outfit selection")
     for outfit in selected:
         try:
-            validate(directory / f"{outfit}.glb")
+            validate(directory / f"{outfit}.glb", expected_version)
         except Exception as exc:
             print(f"::error title=Régénération {coach}/{outfit}::{exc}", file=sys.stderr, flush=True)
             return 1

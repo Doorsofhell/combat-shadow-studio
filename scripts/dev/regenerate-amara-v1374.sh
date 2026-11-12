@@ -46,6 +46,6 @@ if ! ONLY=boxe,kickboxing,muaythai,mma,bjj,bjj-nogi,judo blender --background --
   exit 42
 fi
 
-python3 "$VALIDATOR" mma-amara "$DST"
+python3 "$VALIDATOR" mma-amara "$DST" "boxe,kickboxing,muaythai,mma,bjj,bjj-nogi,judo" "1.37.4"
 check_refs
 echo "Amara : sept tenues reconstruites sur le patron Inaya ; trois autres coachs inchangés."
