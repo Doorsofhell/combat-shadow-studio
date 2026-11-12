@@ -83,7 +83,9 @@ export type PhotoLook = SkinLook;
  */
 export const SKIN_LOOK: Record<string, SkinLook> = {
   'mma-kadir': { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, wrap: 0.45, shadowLift: 0.36 },
-  'mma-amara': { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, wrap: 0.45, shadowLift: 0.34 },
+  // 1.37.8: only Amara, shader-only: clearer muscle highlights without any mesh, garment or rig change.
+  // Keep colour, pores and skin texture identical; small gain to normal-map relief and local contrast.
+  'mma-amara': { ...DEFAULT_SKIN, relief: 1.21, pores: 0.03, wrap: 0.43, shadowLift: 0.33 },
   // 1.11 Naël and Inaya: Rocketbox photo skins like Kadir and Amara (same relief maps); lighter skins, the
   // scattering a little warmer
   // 1.21 same light as Kadir (Inaya got Amara's in 1.20): the wider wrap softened the shadows between the muscles

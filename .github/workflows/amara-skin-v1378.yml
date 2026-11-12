@@ -1,0 +1,30 @@
+name: v1.37.8 - Amara skin-only regression checks
+
+on:
+  push:
+    branches:
+      - fix/amara-skin-relief-v1378
+  pull_request:
+    branches:
+      - claude/project-thread-o7lrt8
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  amara-skin-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Targeted tests (skin, garments, other coaches, release)
+        run: |
+          npm run test -- src/three/__tests__/amara-skin-v1378.test.ts src/three/__tests__/amara-skin-v1375.test.ts src/three/__tests__/outfit-amara-v1374.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit-rollback-v1373.test.ts src/three/__tests__/outfit-materials-v1371.test.ts src/domain/release-version.test.ts
+      - name: TypeScript and production bundle
+        run: npm run build

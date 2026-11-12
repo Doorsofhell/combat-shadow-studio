@@ -3535,3 +3535,12 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - `npm run build` : TEST RÉUSSI ;
   - `npx playwright test` : NON EXÉCUTÉ (suite complète ~40 min en logiciel ; vérification visuelle faite dans le
     Lab avec Playwright, captures `captures/tenues-amara-v1377/`).
+
+
+## v1.37.8 — 12/11/2026 — Amara : premier gain visuel ciblé, sans changement de géométrie
+
+- **Objectif** : le gain visuel le plus rapide et le plus isolable, sur Amara uniquement, avant toute nouvelle correction géométrique de vêtements.
+- **Changement** (`src/three/photoMaterials.ts`) : relief de la normal map d'Amara 1,15 → 1,21 ; diffusion de lumière (`wrap`) 0,45 → 0,43 ; remontée des ombres (`shadowLift`) 0,34 → 0,33. Couleur, texture, pores, matériaux des tenues et paramètres des autres coachs inchangés.
+- **Intégrité** : aucun fichier GLB, aucune animation, aucun os, aucun générateur Blender et aucune interface modifiés ; aucune régénération des shorts ou du haut de sport.
+- **Réversibilité** : branche isolée `fix/amara-skin-relief-v1378` créée depuis la base 1.37.7 ; revenir à cette base rétablit exactement le rendu antérieur.
+- **Contrôle attendu avant publication** : test ciblé `amara-skin-v1378.test.ts`, version et tests de vêtements ; comparaison des captures Amara avant/après sous éclairage et angle identiques (face, profil, dos, garde, high kick) ; inspection sur Android. Une modification du relief visuel ne corrige pas les défauts géométriques de vêtements.
