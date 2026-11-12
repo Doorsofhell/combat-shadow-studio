@@ -48,7 +48,7 @@ jobs:
       - name: Verify outfits v1.37.2 — actual regenerated GLBs required
         run: |
           python3 -m py_compile tools/generator/rocketbox/outfits.py
-          npm run test -- src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-references-v1372.test.ts
+          npm run test -- src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit-rollback-v1373.test.ts
 
       - name: Build application
         run: npm run build
