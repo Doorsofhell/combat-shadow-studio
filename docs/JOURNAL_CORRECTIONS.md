@@ -3509,6 +3509,17 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   Kadir inchangés (empreintes vérifiées par les tests).
 - **Limites** : une petite trace reste mesurable dans le dos des hauts longs (2 mm contre 1,5 mm chez Inaya) ; les
   ourlets fins gardent de légères ondulations, comme chez Inaya ; pas de test sur téléphone Android.
+- **Relecture des captures finales (même jour)**, deux défauts trouvés avant livraison, puis corrigés :
+  - fentes de peau dans le dos des hauts courts (MMA, boxe…) : vérifié au Lab (`__labPick`, qui donne maintenant
+    aussi les points du triangle touché), de grands triangles de la peau livrée, encore dessinés au bord de
+    l'ouverture du dos, gardaient la hauteur de l'ancienne bande et traversaient le tissu posé sur le corps aplani.
+    Correction : le tissu au-dessus d'une peau encore dessinée près de l'ancien bikini est tenu 4 mm au-dessus d'elle
+    (`BIKINI_CLEAR`) ; les deux bords d'une couture de texture de l'ancien bikini, écartés par l'aplanissement, sont
+    soudés (4 mm) ; une fente de moins de 4 cm qu'elles laissent n'est pas un bord libre (la peau dessous reste cachée) ;
+  - peau visible à l'intérieur de la cuisse dans le short MMA en garde : la séparation du cuissard ne se fait plus
+    que sur les 3 cm sous l'entrejambe, et la peau de cette bande reste cachée (dessinée, ses grands triangles
+    étirés par la garde passaient devant le cuissard). Le contrôle Blender vérifie maintenant qu'aucune face du
+    cuissard ne relie les deux jambes.
 - **Résultats** :
   - `npx vitest run` : 1 338 réussis, 9 échoués, 1 ignoré. TEST RÉUSSI pour tous les tests de tenues
     (`outfit-*`), de version et de contrat humain. Les 9 échecs existaient avant ce lot et ne touchent aucun fichier

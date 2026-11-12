@@ -78,7 +78,12 @@ def mma_shorts():
         raise RuntimeError(f"liner gap missing or too narrow: {gap}")
     zs = [(liner.matrix_world @ v.co).z for v in liner.data.vertices]
     crotch = max(zs) - 0.02
-    bad = [f.index for f in liner.data.polygons if abs((liner.matrix_world @ f.center).x) < 0.006 and (liner.matrix_world @ f.center).z < crotch]
+    # a face joins the legs when it has points on both sides of the middle (the inner side of each thigh, which
+    # reaches the middle on Amara, is not one)
+    def joins(f):
+        xs = [(liner.matrix_world @ liner.data.vertices[i].co).x for i in f.vertices]
+        return min(xs) < -0.002 and max(xs) > 0.002
+    bad = [f.index for f in liner.data.polygons if joins(f) and (liner.matrix_world @ f.center).z < crotch]
     if bad:
         raise RuntimeError(f"liner: {len(bad)} faces still join the two legs at the middle")
     print(f"OK mma: over-short whole, liner parted ({gap * 1000:.0f} mm each side)", flush=True)

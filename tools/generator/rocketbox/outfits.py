@@ -288,6 +288,8 @@ if BIKINI_MOVED:
     for i_, n_ in _N2.items():
         N[i_] = n_
     print('1.37.7 normales recalculées sur l\'ancien bikini :', len(_N2))
+# 1.37.7: body points within 4 cm of the old bikini (where the cloth and the shipped skin can differ)
+NEAR_MOVED = {j_ for i_ in BIKINI_MOVED for (_, j_, _) in KD.find_range(P[i_], 0.04)} if BIKINI_MOVED else set()
 
 
 def w(i, *names):
@@ -596,6 +598,15 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
     # crotch boundaries. Closing those on Kadir created large black bridge
     # triangles when he spread his legs. Protect just the latter while keeping
     # the generic pinhole repair (Nael and Inaya are entirely unaffected).
+    if BIKINI_MOVED:
+        # 1.37.7: on the old bikini the two sides of a texture seam were pressed flat apart by up to a few
+        # millimetres: the weld above missed them and left slits (the back of the rash guard, captures 12/11)
+        bv = [v for v in bm_.verts if v.is_boundary
+              and any(j in BIKINI_MOVED for (_, j, _) in KD.find_range(MW @ v.co, 0.01))]
+        if bv:
+            n0 = len(bm_.verts)
+            bmesh.ops.remove_doubles(bm_, verts=bv, dist=float(os.environ.get('BIKINI_WELD', '0.004')) / max(MW.to_scale()))
+            print('1.37.7', name, 'couture de l\'ancien bikini soudée :', n0 - len(bm_.verts), 'points')
     fill_edges = [e for e in bm_.edges if e.is_boundary]
     if KADIR_MMA_CROTCH and name == 'short-vale-tudo':
         def crotch_seam_edge(edge):
@@ -607,10 +618,61 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
         print('Kadir MMA: crotch seam boundary edges kept open:', len(ignored))
     if fill_edges:
         bmesh.ops.holes_fill(bm_, edges=fill_edges, sides=10)
+    if BIKINI_MOVED:
+        # 1.37.7: over the old bikini's band and knot the copy leaves small holes with more than 10 sides (its
+        # pressed folds); the skin under them stayed drawn and came through as slits (captures 12/11). A closed loop
+        # there shorter than 8 cm is filled whatever its number of sides
+        loops, seen = [], set()
+        for e in [e for e in bm_.edges if e.is_boundary]:
+            if e in seen:
+                continue
+            loop, stack = [], [e]
+            while stack:
+                x = stack.pop()
+                if x in seen:
+                    continue
+                seen.add(x)
+                loop.append(x)
+                for v in x.verts:
+                    stack += [y for y in v.link_edges if y.is_boundary and y not in seen]
+            loops.append(loop)
+        small = []
+        for loop in loops:
+            if os.environ.get('BIKINI_DEBUG'):
+                c_ = MW @ loop[0].verts[0].co
+                if c_.y > 0.05 and abs(c_.x) < 0.1 and 1.15 < c_.z < 1.3:
+                    print('loop', name, len(loop), round(sum(x.calc_length() for x in loop) * max(MW.to_scale()), 4), tuple(round(t, 3) for t in c_))
+            if sum(x.calc_length() for x in loop) * max(MW.to_scale()) > 0.08:
+                continue
+            if all(any(j in BIKINI_MOVED for (_, j, _) in KD.find_range(MW @ v.co, 0.015)) for x in loop for v in x.verts):
+                small += loop
+        if small:
+            bmesh.ops.holes_fill(bm_, edges=small, sides=0)
+            print('1.37.7', name, 'trous bouchés sur l\'ancien bikini :', len(small), 'arêtes')
     bm_.normal_update()
     # body vertices under the garment: every body vertex of the region, but those near the garment's free edges
     # (the skin stays drawn where the cloth ends)
     edge_pts = [MW @ v.co for e in bm_.edges if e.is_boundary for v in e.verts]
+    if BIKINI_MOVED:
+        # 1.37.7: a crack the old bikini's folds leave in the copy (a few edges, under 4 cm) is not a free edge of
+        # the garment: the skin under it stays hidden (drawn, it came through the cloth as a slit)
+        bset, short = {e for e in bm_.edges if e.is_boundary}, set()
+        while bset:
+            e0 = bset.pop()
+            chain, stack = [e0], [e0]
+            while stack:
+                x = stack.pop()
+                for v in x.verts:
+                    for y in v.link_edges:
+                        if y in bset:
+                            bset.discard(y)
+                            chain.append(y)
+                            stack.append(y)
+            if sum(x.calc_length() for x in chain) * max(MW.to_scale()) < 0.04:
+                short.update(chain)
+        if short:
+            edge_pts = [MW @ v.co for e in bm_.edges if e.is_boundary and e not in short for v in e.verts]
+            print('1.37.7', name, 'fentes de l\'ancien bikini sans bord libre :', len(short), 'arêtes')
     ekd = KDTree(max(1, len(edge_pts)))
     for k_, q_ in enumerate(edge_pts):
         ekd.insert(q_, k_)
@@ -727,6 +789,39 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
             m_.vertex_group = 'css-bikini'
             apply(o, m_)
         o.vertex_groups.remove(o.vertex_groups['css-bikini'])
+    if BIKINI_MOVED and float(os.environ.get('BIKINI_CLEAR', '0.004')) > 0:
+        # 1.37.7 (captures 12/11): the cloth follows the flattened body, the app draws the shipped one. Where a
+        # shipped skin face stays drawn (one of its points is not hidden: the edge of a back opening) and still holds
+        # the old band's height, its triangle came through the cloth as a slit. The cloth over such a face is kept
+        # BIKINI_CLEAR outside it
+        from mathutils.bvhtree import BVHTree
+        clear = float(os.environ.get('BIKINI_CLEAR', '0.004'))
+        drawn = [list(p_.vertices) for p_ in body.data.polygons if not all(i in covered for i in p_.vertices)
+                 and any(i in NEAR_MOVED for i in p_.vertices)]
+        if drawn and os.environ.get('BIKINI_DEBUG'):
+            zs = sorted(P_SHIPPED[f_[0]].z for f_ in drawn)
+            print('drawn', name, len(drawn), 'z', zs[0], zs[len(zs) // 2], zs[-1], 'covered', len(covered))
+            for f_ in drawn:
+                for i in f_:
+                    if i not in covered and abs(P[i].x) < 0.08 and 1.18 < P[i].z < 1.26 and P[i].y > 0.05:
+                        print(' back', i, tuple(round(c, 3) for c in P[i]), 'ok', ok[i], 'edge', round(ekd.find(P[i])[2], 4) if edge_pts else None, 'garm', round(garment.find(P[i])[2], 4), 'moved', i in BIKINI_MOVED, 'under', i in UNDER_SKIN)
+                        break
+        if drawn:
+            bvh = BVHTree.FromPolygons(P_SHIPPED, drawn)
+            moved = 0
+            for v in o.data.vertices:
+                q = MW @ v.co
+                hit = bvh.find_nearest(q, 0.03)
+                if hit[0] is None:
+                    continue
+                loc, nrm = hit[0], hit[1]
+                if nrm.dot(N[KD.find(q)[1]]) < 0:
+                    nrm = -nrm
+                d = (q - loc).dot(nrm)
+                if d < clear and (q - loc - nrm * d).length < float(os.environ.get('BIKINI_CLEAR_SIDE', '0.01')):
+                    v.co = MWI @ (q + nrm * (clear - d))
+                    moved += 1
+            print('1.37.7', name, 'tissu écarté de la peau livrée encore dessinée :', moved)
     if thick:
         sol = o.modifiers.new('Solidify', 'SOLIDIFY')
         sol.thickness = thick / max(MW.to_scale())
@@ -1547,9 +1642,15 @@ def shorts(kind, color, band, n_leg=None, under=False):
         if CLEAN_BIKINI:
             # 1.37.7: Amara's lower crotch puts the liner's top across it: its two leg tubes are parted along the
             # middle (12 mm each side, under the over-short): the thin panel that joined them stretched into the dark strand.
-            # The skin of that strip stays drawn (it was hidden: the background showed through the gap)
+            # The skin of that strip stays hidden (LINER_GAP_SKIN=1 draws it: its large crotch triangles, stretched by
+            # the guard, then came through the inside of the thigh, captures 12/11)
             F1u = F
-            F = lambda q: max(F1u(q), float(os.environ.get('LINER_GAP', '0.012')) - abs(q.x))
+            # only at the crotch itself (its lowest midline point and 3 cm under it): lower, the gap took the inner
+            # side of each thigh away and the skin showed down the liner (captures 12/11)
+            _kz = (H['LeftLeg'].z + H['LeftUpLeg'].z) * 0.5
+            apex = min((q.z for q in P if abs(q.x) < 0.003 and _kz < q.z < H['Hips'].z), default=-1.0)
+            gap_lo = apex - float(os.environ.get('LINER_GAP_DEPTH', '0.03'))
+            F = lambda q: max(F1u(q), min(float(os.environ.get('LINER_GAP', '0.012')) - abs(q.x), q.z - gap_lo))
     # v1.37.6: A small web of very narrow polygons was measured at the
     # midline of Amara's MMA over-short near its inner hems (z ~= 0.81 m).
     # The model-derived shorts copied skin topology in that region. Excise
@@ -1654,7 +1755,8 @@ def shorts(kind, color, band, n_leg=None, under=False):
         # the skin stays hidden over the whole liner's region, as before (what the cut part covered is under the
         # over-short)
         cov = set(cov) | {i for i in range(len(P)) if keep_g(i) and F0(P[i]) < -0.002
-                          and not (CLEAN_BIKINI and abs(P[i].x) < float(os.environ.get('LINER_GAP', '0.012')) + 0.004)}
+                          and not (CLEAN_BIKINI and os.environ.get('LINER_GAP_SKIN', '0') == '1' and abs(P[i].x) < float(os.environ.get('LINER_GAP', '0.012')) + 0.004
+                                   and P[i].z > gap_lo - 0.004)}
     if isinstance(color, tuple):
         paint_grad(o, color, min(hz.values()), waist - bandH)
     return [o], cov

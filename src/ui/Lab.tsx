@@ -224,6 +224,7 @@ function LabProbe({ rig }: { rig: MutableRefObject<CoachRig | null> }) {
         uv: h.uv ? [+h.uv.x.toFixed(4), +h.uv.y.toFixed(4)] : null,
         point: h.point.toArray().map((v) => +v.toFixed(3)),
         face: h.faceIndex ?? null,
+        verts: h.face ? [h.face.a, h.face.b, h.face.c] : null,
       }));
     };
     // 1.37.7 window.__labStretch(ratio, min): the garment triangles the current pose stretches (posed longest edge
