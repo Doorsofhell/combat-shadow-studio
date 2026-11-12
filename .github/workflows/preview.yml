@@ -24,6 +24,9 @@ concurrency:
 
 jobs:
   deploy:
+    # The dedicated rollback workflow restores binary GLBs before deploying 1.37.3.
+    # Do not race it with a stale source-only preview on this special release.
+    if: ${{ !contains(github.event.head_commit.message, '[asset-rollback-v1373]') }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -48,7 +51,7 @@ jobs:
       - name: Verify outfits v1.37.2 — actual regenerated GLBs required
         run: |
           python3 -m py_compile tools/generator/rocketbox/outfits.py
-          npm run test -- src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-references-v1372.test.ts
+          npm run test -- src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit-rollback-v1373.test.ts src/domain/release-version.test.ts
 
       - name: Build application
         run: npm run build

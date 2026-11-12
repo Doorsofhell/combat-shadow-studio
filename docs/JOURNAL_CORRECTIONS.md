@@ -3415,3 +3415,12 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Coupe féminine** : conserver la silhouette sportive d'Inaya, taille et hanches ajustées, cuissard intérieur près du corps et surshort souple ; les couleurs propres à Amara restent inchangées.
 - **Livraison ciblée** : seuls les deux GLB MMA de Kadir et Amara sont régénérés. Les 28 tenues existantes restent couvertes par les tests de validité ; les tests de références empêchent tout remplacement accidentel de Naël/Inaya.
 - **Validation visuelle restant nécessaire** : stance élargie de Kadir, déplacements, low kick, high kick, dos et profil. Tests automatiques ≠ contrôle d'aspect.
+
+
+## v1.37.3 — 12/11/2026 — Rollback de la régression des shorts de Kadir
+
+- **Constat confirmé** : les sept GLB de tenues de Kadir ont été régénérés depuis la v1.37.0, alors que son `photo.glb` est resté strictement identique. Les triangles noirs apparus à l’entrejambe touchent toutes ses tenues, pas seulement le MMA ; le correctif local précédent n’a pas suffi.
+- **Stratégie sûre** : restaurer *exclusivement les sept tenues complètes de Kadir* (pas uniquement les morceaux de shorts, pour préserver la cohérence du squelette et des masques de peau) depuis le commit v1.37.0 `bcb49f9281` rapporté comme visuellement sain par l’utilisateur. Les coupes et matériaux 3D de Kadir reviennent temporairement à cette version ; le rendu runtime des tissus reste celui de la version actuelle.
+- **Autres coachs non modifiés** : Naël et Inaya restent modèles de référence, Amara conserve ses vêtements existants, les quatre corps et le moteur de combat ne changent pas.
+- **Garantie de publication** : script `restore-kadir-v1373.sh`, empreintes SHA exactes des sept GLB, mise à jour `assetSizes.json`, tests de version des 28 vêtements et test de non-régression spécifique ; publication Pages uniquement après compilation et tests réussis.
+- **Limite** : contrôle visuel du short de Kadir (face, profil, dos, garde écartée, high kick) nécessaire après déploiement pour conclure sur le rendu.

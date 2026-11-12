@@ -21,8 +21,12 @@ describe('1.37.2 — modèles vestimentaires reconstruits et validés', () => {
     for (const outfit of OUTFITS) {
       test(`${coach}/${outfit} contient des assets v1.37.2`, () => {
         const glb = parse(`public/coaches/${coach}/tenues/${outfit}.glb`);
-        const carrier = glb.nodes.find(n => n.extras?.generatorVersion);
-        expect(carrier?.extras?.generatorVersion, `${coach}/${outfit} doit être régénéré, pas seulement afficher la nouvelle version`).toBe('1.37.2');
+        // 1.37.3: Kadir uses the verified 1.37.0 geometry to undo the shorts regression.
+        // Its exact binary hashes are checked in outfit-rollback-v1373.test.ts.
+        if (coach !== 'mma-kadir') {
+          const carrier = glb.nodes.find(n => n.extras?.generatorVersion);
+          expect(carrier?.extras?.generatorVersion, `${coach}/${outfit} doit être régénéré`).toBe('1.37.2');
+        }
       });
     }
   }
