@@ -49,6 +49,19 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.37.5',
+      releaseDate: '2026-11-12',
+      title: 'Amara : décolleté et finitions des vêtements',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Retouche ciblée de l’ancienne couleur de bikini incrustée dans la texture corporelle d’Amara : décolleté, poitrine et nuque. Sa couleur de peau reste préservée.' },
+        { category: 'corrections', text: 'Haut de sport : bretelles et décolleté moins irréguliers, tissu éloigné des anciennes coutures 3D pour réduire les taches et traversées pendant les frappes.' },
+        { category: 'corrections', text: 'Shorts : séparation de la ceinture jaune recalée sur un plan géométrique pour un bord plus net, notamment dans le dos.' },
+        { category: 'ameliorations', text: 'Corps et animations : squelette, données de maillage et expressions faciales conservés à l’identique ; les sept tenues d’Amara sont reconstruites et contrôlées.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.37.4',
       releaseDate: '2026-11-12',
       title: 'Amara : les sept tenues harmonisées sur Inaya',
