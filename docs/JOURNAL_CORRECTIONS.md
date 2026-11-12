@@ -3520,6 +3520,11 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     que sur les 3 cm sous l'entrejambe, et la peau de cette bande reste cachée (dessinée, ses grands triangles
     étirés par la garde passaient devant le cuissard). Le contrôle Blender vérifie maintenant qu'aucune face du
     cuissard ne relie les deux jambes.
+- **Workflow GitHub** (choix de Youssef, 12/11 19:45 « Le remplacer ») : `amara-v1376.yml` est rangé dans
+  `backup CS/workflows/`. Le nouveau `amara-v1377.yml` contrôle au push les tenues livrées (contrôle Blender 1.37.7,
+  tests de tenues, build, publication) sans les reconstruire : les GLB relus sur captures sont ceux qui partent. La
+  reconstruction (`scripts/dev/regenerate-amara-v1377.sh`) se lance à la main (`workflow_dispatch`, `rebuild`), car
+  le Blender d'Ubuntu n'est pas celui de la relecture.
 - **Résultats** :
   - `npx vitest run` : 1 338 réussis, 9 échoués, 1 ignoré. TEST RÉUSSI pour tous les tests de tenues
     (`outfit-*`), de version et de contrat humain. Les 9 échecs existaient avant ce lot et ne touchent aucun fichier

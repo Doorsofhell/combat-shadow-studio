@@ -6,7 +6,7 @@
    has no bump over 2.5 mm above the line of its neighbours 7.5 mm up and down (the band of the bikini made a
    5 to 7 mm ridge there in 1.37.6; Inaya's approved tops measure 1.5 mm).
 3. MMA: the over-short is whole (no 1.37.6 central cut, which left a loose piece between the thighs) and the
-   liner under it is parted at the middle (no face within 6 mm of the middle below the crotch).
+   liner under it is parted at the middle (no face joining both legs below the crotch).
 
 Bind pose only: a live check of the poses (captures) is still needed.
 """

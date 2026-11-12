@@ -27,3 +27,9 @@ Restent dans le dépôt, hors application : les squelettes de quatre modèles g�
 (`tests/fixtures/modeles-generes/`), que les tests du moteur d'animation mesurent encore.
 
 Pour revenir entièrement à la 1.36.0 : branche `restauration/avant-ultra-realiste-v137`.
+
+## workflows (version 1.37.7, 12/11/2026)
+
+| Retiré | Pourquoi |
+|---|---|
+| `.github/workflows/amara-v1376.yml` | À chaque push, il reconstruisait les tenues d'Amara avec la recette 1.37.6 et exigeait la découpe centrale du short MMA. Remplacé par `amara-v1377.yml` (choix de Youssef, 12/11 19:45) : au push, il contrôle les tenues 1.37.7 relues sur captures ; la reconstruction se fait à la demande. |
