@@ -7,7 +7,7 @@
       "name": "01-garde-face",
       "file": "captures/amara-mma-prototype/01-garde-face.jpg",
       "stretch": {
-        "all": 938,
+        "all": 826,
         "short": 278,
         "sample": [
           {
@@ -132,7 +132,7 @@
       "name": "02-garde-dos",
       "file": "captures/amara-mma-prototype/02-garde-dos.jpg",
       "stretch": {
-        "all": 938,
+        "all": 826,
         "short": 278,
         "sample": [
           {
@@ -257,7 +257,7 @@
       "name": "03-low-kick",
       "file": "captures/amara-mma-prototype/03-low-kick.jpg",
       "stretch": {
-        "all": 1078,
+        "all": 966,
         "short": 425,
         "sample": [
           {
@@ -382,7 +382,7 @@
       "name": "04-high-kick",
       "file": "captures/amara-mma-prototype/04-high-kick.jpg",
       "stretch": {
-        "all": 1038,
+        "all": 926,
         "short": 383,
         "sample": [
           {
@@ -507,7 +507,7 @@
       "name": "05-high-kick-profil",
       "file": "captures/amara-mma-prototype/05-high-kick-profil.jpg",
       "stretch": {
-        "all": 1038,
+        "all": 926,
         "short": 383,
         "sample": [
           {
@@ -632,7 +632,7 @@
       "name": "06-brassiere-profil",
       "file": "captures/amara-mma-prototype/06-brassiere-profil.jpg",
       "stretch": {
-        "all": 938,
+        "all": 826,
         "short": 278,
         "sample": [
           {
