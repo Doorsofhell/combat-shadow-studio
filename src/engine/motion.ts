@@ -27,6 +27,8 @@ export interface Motion {
   chainAt?: number;
   /** times of contact with the imaginary target, for sounds and counting */
   impacts: number[];
+  /** v1.33.2: subtle anticipation / recoil only on authored punches, never on kicks, throws or idle. */
+  punchFeel?: boolean;
   /** change of stance origin at the end of the motion (steps, pivots) */
   travel?: { x: number; z: number; yaw: number };
   startState: BodyState;
@@ -157,6 +159,26 @@ function rotationVector(q0: Quaternion, q1: Quaternion) {
 const ZERO = new Vector3();
 const _q = new Quaternion();
 const _v = new Vector3();
+const PUNCH_UP = new Vector3(0, 1, 0);
+const PUNCH_ANGLE = Math.PI / 180;
+
+/** Smooth bell, including zero slope at each end: no jump at impact or between chained moves. */
+function punchPulse(t: number, start: number, peak: number, end: number): number {
+  if (t <= start || t >= end || peak <= start || peak >= end) return 0;
+  const u = t < peak ? (t - start) / (peak - start) : (end - t) / (end - peak);
+  return u * u * (3 - 2 * u);
+}
+
+/** v1.33.2: 2.5 frames at 60 fps before contact, then a small recoil which ends before the crossfade. */
+export function punchAccents(t: number, impact: number, chainAt: number) {
+  const leadPeak = impact - 2.5 / 60;
+  return {
+    lead: punchPulse(t, Math.max(0, leadPeak - 0.085), leadPeak, impact),
+    load: punchPulse(t, 0, impact * 0.35, impact - 0.03),
+    recoil: punchPulse(t, impact + 0.035, impact + 0.035 + Math.max(0, chainAt - impact - 0.035) * 0.7, chainAt),
+  };
+}
+
 
 /** adds the flow of both ends of a segment to a value (cubic Hermite terms, zero at the keys) */
 function flowOffset(fa: Vector3 | undefined, fb: Vector3 | undefined, h: number, s: number, out: Vector3) {
@@ -173,6 +195,7 @@ export class MotionSampler {
   private keys: CachedKey[];
   private hipOffset: Record<'L' | 'R', Vector3>;
   readonly duration: number;
+  private punchDirection: number;
 
   /**
    * flow: keep velocities through the key poses (off only to measure the difference);
@@ -196,6 +219,9 @@ export class MotionSampler {
       footR: rig.resolveFoot(k.pose.footR, 'R'),
     }));
     this.duration = duration(motion);
+    const startYaw = motion.keys[0].pose.pelvis.yaw;
+    const impactYaw = motion.keys.find((k) => k.t >= (motion.impacts[0] ?? Infinity))?.pose.pelvis.yaw ?? startYaw;
+    this.punchDirection = Math.sign(Math.atan2(Math.sin(impactYaw - startYaw), Math.cos(impactYaw - startYaw))) || 1;
     const hipsRest = rig.metrics.hipsRest;
     this.hipOffset = {
       L: (rig.restOf('LeftUpLeg') ?? hipsRest).clone().sub(hipsRest),
@@ -267,6 +293,33 @@ export class MotionSampler {
    * same pose.
    */
   sample(t: number): ResolvedPose {
+    return this.motion.punchFeel ? this.addPunchFeel(this.sampleCore(t), t) : this.sampleCore(t);
+  }
+
+  /** Punch accents are purely additive: authored poses and impact timing remain unchanged. */
+  private addPunchFeel(p: ResolvedPose, t: number): ResolvedPose {
+    const impact = this.motion.impacts[0];
+    if (impact === undefined) return p;
+    const { lead, load, recoil } = punchAccents(t, impact, chainPoint(this.motion));
+    if (lead === 0 && load === 0 && recoil === 0) return p;
+    const yaw = this.punchDirection * PUNCH_ANGLE * (2.5 * lead - 2.0 * recoil);
+    if (Math.abs(yaw) > 1e-8) {
+      // Keep the chest facing its authored target while the pelvis winds up or rebounds.
+      // The compensating relative chest rotation avoids pulling the striking hand off-target.
+      const trunk = p.pelvis.clone().multiply(p.chest);
+      p.pelvis.premultiply(new Quaternion().setFromAxisAngle(PUNCH_UP, yaw));
+      p.chest.copy(p.pelvis.clone().invert().multiply(trunk));
+    }
+    // Weight briefly moves over the rear support, then rebounds a few millimetres.
+    // Both feet remain authored/planted; move the hands with the torso, not across it.
+    const dz = -(0.006 * load + 0.008 * recoil) * (this.rig.metrics.height / 1.8);
+    p.hips.z += dz;
+    p.handL.pos.z += dz;
+    p.handR.pos.z += dz;
+    return p;
+  }
+
+  private sampleCore(t: number): ResolvedPose {
     if (!this.chain) return this.atTime(t);
     const w = this.chainWeight(t);
     if (w <= 0) return this.atTime(t);
