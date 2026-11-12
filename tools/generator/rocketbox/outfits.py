@@ -329,7 +329,11 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
     # lighter for phones: a garment needs far fewer points than the skin it covers. Decimated before the cuts, so
     # the hems and colour bands stay straight (weights are kept by the decimation)
     dec = o.modifiers.new('Decimate', 'DECIMATE')
-    dec.ratio = float(os.environ.get('DECIMATE', '0.4'))
+    # 1.37.1: 40 % of the body triangles before the cuts was too aggressive for hems,
+    # groins and kimono sleeves (saw-teeth and triangular panels). Keep more geometry
+    # there; other hard-surface pieces retain the mobile-friendly budget.
+    detail = name.startswith(('short-', 'haut-rash-', 'haut-brassiere', 'pantalon-', 'veste-'))
+    dec.ratio = float(os.environ.get('DECIMATE_DETAIL', '0.82')) if detail else float(os.environ.get('DECIMATE', '0.4'))
     apply(o, dec)
     bm_ = bmesh.new()
     bm_.from_mesh(o.data)
@@ -1040,9 +1044,10 @@ def skirt(color, kind, top_z, length):
     """lower part of a gi jacket: a sleeve of cloth around the hips (not one tube per leg), open at the front where
     the two sides overlap; each front panel follows its thigh a little so a kick lifts it instead of piercing it"""
     bm_ = bmesh.new()
-    seg = 48
+    # 1.37.1: more vertical sections; the old six rows showed rectangular plates on the back.
+    seg = 64
     rows = []
-    n = 6
+    n = 10
     # v0.32: closer to the body (the old 2.5 to 4.5 cm made a padded, inflated skirt)
     pad0, pad1 = (0.014, 0.016) if kind == 'judo' else (0.011, 0.012)
     if kind != 'costume':
@@ -1077,7 +1082,9 @@ def skirt(color, kind, top_z, length):
         down = max(0.0, min(1.0, (top_z - p.z) / length))
         s = 'Left' if p.x > 0 else 'Right'
         front = max(0.0, -p.y / 0.15)
-        t = min(0.65, down * (0.35 + 0.4 * min(1.0, front)))
+        # Back skirt hangs from the hips; it must not follow the thighs and fold into
+        # rectangular patches when the coach bends. Front panels retain a little leg follow.
+        t = min(0.45, down * 0.48 * min(1.0, front))
         return {'Hips': 1 - t, f'{s}UpLeg': t}
 
     weighted(o, ww)
@@ -1224,7 +1231,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
 
     # v0.32 (« matières trop brillantes ou plastifiées »): satin keeps a soft sheen but is no longer wet-looking,
     # polyester is matt; the satin relief is shallower (it drew wavy lines)
-    sheenK = {'boxe': ('satin', 0.6, 0.35, 0.3), 'thai': ('satin', 0.58, 0.4, 0.3), 'kick': ('serge', 0.62, 0.2, 0.4), 'mma': ('flat', 0.68, 0.1, 1.0), 'compression': ('jersey', 0.6, 0.1, 0.5), 'vale-tudo': ('jersey', 0.66, 0.18, 0.7), 'surshort': ('serge', 0.64, 0.15, 0.35)}[kind]
+    sheenK = {'boxe': ('satin', 0.6, 0.35, 0.3), 'thai': ('satin', 0.58, 0.4, 0.3), 'kick': ('serge', 0.62, 0.2, 0.4), 'mma': ('flat', 0.68, 0.1, 1.0), 'compression': ('jersey', 0.78, 0.06, 0.34), 'vale-tudo': ('jersey', 0.8, 0.06, 0.4), 'surshort': ('serge', 0.64, 0.15, 0.35)}[kind]
     body_mat = grad_fabric(f'short-{kind}-degrade', sheenK[0], sheenK[1], sheenK[3], sheenK[2]) if isinstance(color, tuple) else fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3])
     # 1.22 the gathered waist of the surshort: the elastic relief stronger (its ruffles), the colour a little darker in the hollows
     band_rel = 0.9 if kind == 'surshort' else BAND_RELIEF
@@ -1283,7 +1290,10 @@ def top(kind, color, accent=None, geom=False):
     sleeve = {'brassiere': 0, 'debardeur': 0, 'rash-court': 0.45, 'rash-long': 0.93}[kind]
 
     def keep(i):
-        if P[i].z < lowZ or w(i, 'Head') > 0.2 or w(i, *HANDS) > 0.5 or P[i].z > H['Neck'].z + 0.01:
+        # The iso hem below trims the extra 3 cm exactly at lowZ. Without this
+        # margin, early vertex pruning tears the hem into the body's triangle grid.
+        floor = lowZ - (0.03 if kind.startswith('rash-') else 0)
+        if P[i].z < floor or w(i, 'Head') > 0.2 or w(i, *HANDS) > 0.5 or P[i].z > H['Neck'].z + 0.01:
             return False
         if w(i, 'Neck') > (0.25 if kind != 'brassiere' else 0.15):
             return False
@@ -1317,7 +1327,7 @@ def top(kind, color, accent=None, geom=False):
                 return False
         return True
 
-    mats = [fabric(f'haut-{kind}-{color}', color, 'jersey', rough=0.6, strength=0.5, sheen=0.15)]
+    mats = [fabric(f'haut-{kind}-{color}', color, 'jersey', rough=0.79, strength=0.35, sheen=0.05)]
     if accent:
         mats.append(fabric(f'liseré-{accent}', accent, 'elastique', rough=0.6, strength=0.8))
     cuts = [(Vector((0, 0, lowZ)), Vector((0, 0, 1)))]
@@ -1344,8 +1354,11 @@ def top(kind, color, accent=None, geom=False):
             return 0.0035 + 0.0045 * t * t * (3 - 2 * t)
         return 0.0035
 
+    # Planar isosurface for the rashguard hem: exactly horizontal around the entire
+    # waist rather than a zigzag following the skin's last surviving triangles.
+    hem_field = (lambda q: lowZ - q.z) if kind.startswith('rash-') else None
     o, cov = shell(f'haut-{kind}', keep, tpush, 0.003, mats,
-                   (lambda c, ids: 1 if w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ else 0) if accent else None, cuts=cuts)
+                   (lambda c, ids: 1 if w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ else 0) if accent else None, cuts=cuts, iso=hem_field)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
     return [o], cov
@@ -1735,7 +1748,9 @@ def pants(color, kind, legging=False):
             return 0.006
         s = leg_of(i)
         # v0.32: about half the old volume (it read as padded); folds, and the cloth gathers above the ankle
-        g = GI_FIT if kind in ('judo', 'bjj') else 1.0
+        # The trousers need extra room around the knees and groin; the fitted jacket
+        # setting must not turn judogi trousers into leggings.
+        g = min(1.0, GI_FIT + 0.18) if kind in ('judo', 'bjj') else 1.0
         if P[i].z > H[f'{s}Leg'].z:
             v = loose(i, f'{s}UpLeg', f'{s}Leg', 0.006, lambda u: g * ((0.016 + 0.006 * u) if judo else (0.012 + 0.004 * u)))
         else:
