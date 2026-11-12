@@ -3266,3 +3266,32 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - appareil Android réel : NON EXÉCUTÉ (coût mesuré par test et aucune dépendance ajoutée).
 - **Captures** : `docs/v1350/captures/` (6 coachs de face, trois quarts et profil, avant/après ; états de Naël et Kaila).
 - **Restauration** : `restauration/avant-humanisation-v134` (1.33.2, commit cc58c17).
+
+## 2026-11-12 · v1.36.0 · Kadir : barbe allégée autour de la bouche
+
+- **Demande** : Youssef, 12/11 09:41 « Ok pour barbe de Kadir » (option V2 proposée le 11/11 avec la 1.33.0 :
+  sa moustache et sa touffe sous la lèvre cachaient la bouche, donc les expressions). C'est la raison écrite exigée
+  par la règle 7 de `CLAUDE.md` pour toucher à la barbe d'un coach.
+- **Constat vérifié** : dans la texture du visage de Kadir (`m021_head_color`, 2048 px, dans
+  `public/coaches/mma-kadir/photo.glb`), les poils sombres couvrent la lèvre supérieure (x 905–1145, y 740–790) et
+  une touffe dense sous la lèvre inférieure (x 975–1065, y 872–920) ; au sourire et à l'expiration, la ligne des
+  lèvres se perd dedans.
+- **Correction** :
+  - nouveau `tools/generator/rocketbox/beard_trim.py` : dans une zone en ellipse adoucie autour de la bouche, les
+    pixels de poils (plus sombres que la peau autour, peu rouges) sont remplacés à 85 % par la peau voisine (moyenne
+    des pixels non-poils, grain fin conservé) : il reste une ombre de barbe d'un jour ;
+  - exclus : les lèvres et leur ligne de fermeture, les narines, la barbe du menton (sous y 945) et les joues ;
+  - seule l'image change (géométrie, poids de peau et 25 expressions intacts) ; le fichier le note
+    (`images[].extras.beardTrim = 0.85`) et le script refuse une seconde passe ;
+  - `src/boot/assetSizes.json` régénéré (`photo.glb` de Kadir : 2 845 404 → 3 073 808 octets, JPEG qualité 92).
+- **Fichiers** : `tools/generator/rocketbox/beard_trim.py` (nouveau), `public/coaches/mma-kadir/photo.glb`,
+  `src/boot/assetSizes.json`, `src/domain/releases.ts`, `package.json`, `package-lock.json`.
+- **Tests** :
+  - suite Vitest complète (1407 tests) : 1398 TEST RÉUSSI, 1 ignoré, 8 ÉCHOUÉ (les mêmes 8 du moteur de frappe
+    1.33.1/1.33.2 que sur la 1.35.0 seule) ; tests du moteur humain `src/three/human/__tests__/` : TEST RÉUSSI ;
+  - compilation `npm run build` : TEST RÉUSSI ;
+  - captures Lab avant/après (repos, sourire, expiration, trois quarts) : contrôle visuel fait ;
+  - appareil Android réel : NON EXÉCUTÉ.
+- **Captures** : `docs/v1360/captures/`.
+- **Restauration** : `restauration/avant-barbe-kadir` (1.35.0, commit a09ac11) ; le modèle d'origine est aussi dans
+  l'historique git.
