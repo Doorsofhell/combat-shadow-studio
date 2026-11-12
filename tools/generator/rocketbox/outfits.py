@@ -25,6 +25,8 @@ TEX = os.path.join(outdir, '_tex')
 os.makedirs(TEX, exist_ok=True)
 female = sex == 'femme'
 COACH_ID = os.path.basename(os.path.dirname(src))
+# Experimental Amara MMA only; disabled unless explicitly requested in Blender.
+AMARA_MMA_REF = COACH_ID == 'mma-amara' and os.environ.get('AMARA_MMA_REF', '0') == '1'
 # v1.37.4: Inaya's approved female clothing is the construction reference.
 # Every other female coach is rebuilt on HER OWN mesh and rig with the same patterns.
 # The 1.37.4 workflow rebuilds Amara only; Inaya, Naël and Kadir are never touched.
@@ -616,6 +618,11 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
         ignored = [e for e in fill_edges if crotch_seam_edge(e)]
         fill_edges = [e for e in fill_edges if not crotch_seam_edge(e)]
         print('Kadir MMA: crotch seam boundary edges kept open:', len(ignored))
+    if AMARA_MMA_REF and name == 'short-vale-tudo':
+        # Do not re-bridge the narrow inner-leg seam with holes_fill.
+        limit = hipZ - 0.08
+        fill_edges = [e for e in fill_edges if not all(abs((MW @ v.co).x) < 0.032 and
+                      (MW @ v.co).z < limit for v in e.verts)]
     if fill_edges:
         bmesh.ops.holes_fill(bm_, edges=fill_edges, sides=10)
     if BIKINI_MOVED:
@@ -1527,6 +1534,9 @@ def shorts(kind, color, band, n_leg=None, under=False):
                     'vale-tudo': blueprint['liner_waist'], 'surshort': blueprint.get('over_waist', 0.105)}[kind]
     # 1.10: the waistband covers the underwear painted on the skin (Kadir's showed as a brown band above his
     # vale-tudo short in 1.9), 8 mm over its top at most 6 cm higher than the cut asked
+    if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
+        hem = 0.53  # short fitted boxer, upper third of thigh
+        waist = hipZ + 0.105
     if 'top' not in _PAINT:
         tops = [r[1] for r in (painted_cloth_range(hipZ - 0.05, hipZ + 0.2, b) for b in (True, False)) if r]
         _PAINT['top'] = max(tops) if tops else None
@@ -1538,6 +1548,8 @@ def shorts(kind, color, band, n_leg=None, under=False):
         # through the top of the gathered band)
         waist += 0.008
     bandH = {'boxe': 0.07, 'kick': 0.04, 'thai': 0.08, 'mma': 0.04, 'compression': 0.025, 'vale-tudo': 0.035, 'surshort': 0.045}[kind]
+    if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
+        bandH = 0.045  # reference: soft, wide flexible waistband
 
     def hemz(i):
         s = leg_of(i)
@@ -1599,6 +1611,9 @@ def shorts(kind, color, band, n_leg=None, under=False):
     # polyester is matt; the satin relief is shallower (it drew wavy lines)
     sheenK = {'boxe': ('satin', 0.6, 0.35, 0.3), 'thai': ('satin', 0.58, 0.4, 0.3), 'kick': ('serge', 0.62, 0.2, 0.4), 'mma': ('flat', 0.68, 0.1, 1.0), 'compression': ('jersey', 0.78, 0.06, 0.34), 'vale-tudo': ('jersey', 0.8, 0.06, 0.4), 'surshort': ('serge', 0.64, 0.15, 0.35)}[kind]
     body_mat = grad_fabric(f'short-{kind}-degrade', sheenK[0], sheenK[1], sheenK[3], sheenK[2]) if isinstance(color, tuple) else fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3])
+    if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
+        # Original jersey and per-corner patterned colour panels: no external commercial asset.
+        body_mat = grad_fabric('short-vale-tudo-amara-ref-1379', 'jersey', 0.86, 0.38, 0.045)
     # 1.22 the gathered waist of the surshort: the elastic relief stronger (its ruffles), the colour a little darker in the hollows
     # Reduce deep corrugations: the contrasting waistband should read as
     # flexible elastic, not a row of detached stiff rectangles.
@@ -1611,7 +1626,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
     # The v1.26 procedural side slit on the female over-short creates a
     # pointed torn flap when its two moving layers cross. Keep a clean hem
     # here until a dedicated reinforced slit mesh is available.
-    if kind in ('vale-tudo', 'mma') and not under and SLIT_H > 0:
+    if kind in ('vale-tudo', 'mma') and not under and SLIT_H > 0 and not (AMARA_MMA_REF and kind == 'vale-tudo'):
         # 1.26 (Youssef, 2026-11-06, two photos of MMA shorts: « les shorts de MMA doivent avoir la petite fente »):
         # a short slit on the outer side of each leg, from the hem up, narrowing to a point. Cut by the field like
         # the hem (smooth edges; the v0.32 slit, cut along the skin's triangles, came out torn). What lies under it
@@ -1651,6 +1666,17 @@ def shorts(kind, color, band, n_leg=None, under=False):
             apex = min((q.z for q in P if abs(q.x) < 0.003 and _kz < q.z < H['Hips'].z), default=-1.0)
             gap_lo = apex - float(os.environ.get('LINER_GAP_DEPTH', '0.03'))
             F = lambda q: max(F1u(q), min(float(os.environ.get('LINER_GAP', '0.012')) - abs(q.x), q.z - gap_lo))
+    if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
+        # Close-fitting reference short: separate leg hem rings without a long dark bridging web.
+        # Narrow slit limited below the anatomical crotch: never open the pelvis / front panel.
+        kz = (H['LeftLeg'].z + H['LeftUpLeg'].z) * 0.5
+        apex = min((q.z for q in P if abs(q.x) < 0.003 and kz < q.z < H['Hips'].z),
+                   default=hipZ - 0.19)
+        cut_top = apex - 0.004
+        crotch_gap = 0.014
+        original_F = F
+        F = lambda q: max(original_F(q), min(crotch_gap - abs(q.x), cut_top - q.z))
+        print('Amara MMA reference cut: leg separation', round(cut_top, 4), crotch_gap)
     # v1.37.6: A small web of very narrow polygons was measured at the
     # midline of Amara's MMA over-short near its inner hems (z ~= 0.81 m).
     # The model-derived shorts copied skin topology in that region. Excise
@@ -1759,6 +1785,11 @@ def shorts(kind, color, band, n_leg=None, under=False):
                                    and P[i].z > gap_lo - 0.004)}
     if isinstance(color, tuple):
         paint_grad(o, color, min(hz.values()), waist - bandH)
+    if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
+        paint_mma_compression(o, waist, min(hz.values()), bandH, top=False)
+        o['cssCompressionStyle'] = 'fitted-one-layer-reference-1379'
+        o['cssLegSeparationHalfWidth'] = crotch_gap
+        o['cssNoOvershort'] = True
     return [o], cov
 
 
