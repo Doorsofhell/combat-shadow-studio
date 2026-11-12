@@ -50,6 +50,7 @@ jobs:
       - name: Repair Amara's baked-in bikini texture without touching the rig
         run: |
           set -o pipefail
+          mkdir -p logs
           blender --background --threads 2 --python-exit-code 42 --python scripts/dev/clean-amara-skin-v1375.py 2>&1 | tee logs/amara-skin-v1375.log
 
       - name: Rebuild Amara's seven outfits from the cleaned body
