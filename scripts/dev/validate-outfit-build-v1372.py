@@ -38,11 +38,14 @@ def validate(path: pathlib.Path) -> None:
 
 
 def main() -> int:
-    if len(sys.argv) != 3:
-        raise SystemExit("usage: validate-outfit-build-v1372.py COACH OUTDIR")
+    if len(sys.argv) not in (3, 4):
+        raise SystemExit("usage: validate-outfit-build-v1372.py COACH OUTDIR [OUTFITS]")
     coach = sys.argv[1]
     directory = pathlib.Path(sys.argv[2])
-    for outfit in OUTFITS:
+    selected = tuple(sys.argv[3].split(",")) if len(sys.argv) == 4 else OUTFITS
+    if not selected or any(name not in OUTFITS for name in selected):
+        raise SystemExit("Invalid outfit selection")
+    for outfit in selected:
         try:
             validate(directory / f"{outfit}.glb")
         except Exception as exc:
