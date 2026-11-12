@@ -1,4 +1,5 @@
 name: Amara MMA - internal image review
+# review refresh 2026-11-12: inspect refined scoop-neck and warm-white waistband
 
 on:
   push:
