@@ -157,12 +157,16 @@ export function useOutfit(
             if (m.userData?.hideBody) hide = { keys: m.userData.hideBody as string, scale: Number(m.userData.hideScale ?? 1000) };
             if (m.isSkinnedMesh) meshes.push(m);
           });
+          // A missing bone must fail explicitly: silently reusing a bone from the
+          // imported outfit skeleton produces displaced sleeves/waistbands during motion.
+          const missing = [...new Set(meshes.flatMap((m) => m.skeleton.bones.map((b) => b.name).filter((n) => !bones.has(n))))];
+          if (missing.length) return fail(`os de tenue absents du coach : ${missing.slice(0, 5).join(', ')}`);
           for (const m of meshes) {
             const skel = new Skeleton(
               m.skeleton.bones.map((b) => bones.get(b.name) ?? b),
               m.skeleton.boneInverses,
             );
-            const mesh = new SkinnedMesh(m.geometry, dress(m.material as Material, quality));
+            const mesh = new SkinnedMesh(m.geometry, dressOutfitMaterial(m.material as Material, quality));
             mesh.name = `tenue:${m.name}`;
             mesh.position.copy(m.position);
             mesh.quaternion.copy(m.quaternion);
@@ -249,8 +253,10 @@ export function isPrint(name: string) {
   return name.startsWith('logo-');
 }
 
-function dress(src: Material, quality: 'haute' | 'basse'): Material {
-  const m = src as MeshStandardMaterial;
+export function dressOutfitMaterial(src: Material, quality: 'haute' | 'basse'): Material {
+  // Always clone before changing anything: the cached GLB and its materials are
+  // shared between coaches and quality modes. Mutating the source caused leakage.
+  const m = (src as MeshStandardMaterial).clone();
   // 1.20: the printed mark (CS logo) lies 1.5 mm above its cloth; on a phone's depth buffer, seen from a few metres,
   // that is too little and the cloth flickered over it. It is drawn a little in front of what lies at its depth
   if (isPrint(m.name)) {
@@ -260,15 +266,26 @@ function dress(src: Material, quality: 'haute' | 'basse'): Material {
   }
   if (m.map) m.map.colorSpace = SRGBColorSpace;
   for (const t of [m.map, m.normalMap, m.roughnessMap]) if (t) t.anisotropy = 4;
+  const fabric = String(m.userData?.css_fabric ?? '').toLowerCase();
+  const knit = fabric === 'jersey' || /(?:haut-rash|short-(?:compression|vale-tudo)|pantalon-.*legging)/i.test(m.name);
+  // 1.37.1: the rashguards, leggings and compression shorts looked like vinyl.
+  // Correct the shipped materials immediately, even before re-exporting the GLBs.
+  if (knit) {
+    m.roughness = Math.max(0.8, m.roughness);
+    m.metalness = 0;
+    m.normalScale.multiplyScalar(0.65);
+  }
   const sheen = Number(m.userData?.css_sheen ?? 0);
   const coat = Number(m.userData?.css_coat ?? 0);
-  if (quality === 'basse' || (!sheen && !coat)) return m.clone();
-  return physicalFrom(m, {
+  if (quality === 'basse' || (!sheen && !coat)) return m;
+  const physical = physicalFrom(m, {
     metalness: 0,
-    sheen,
-    sheenRoughness: 0.45,
-    sheenColor: m.color.clone().lerp(m.color.clone().set('#ffffff'), 0.4),
-    clearcoat: coat,
+    sheen: knit ? Math.min(sheen, 0.06) : sheen,
+    sheenRoughness: knit ? 0.85 : 0.45,
+    sheenColor: m.color.clone().lerp(m.color.clone().set('#ffffff'), knit ? 0.15 : 0.4),
+    clearcoat: knit ? 0 : coat,
     clearcoatRoughness: 0.35,
   });
+  m.dispose();
+  return physical;
 }

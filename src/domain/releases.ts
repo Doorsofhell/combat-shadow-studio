@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.37.1',
+      releaseDate: '2026-11-12',
+      title: 'Tenues : textile plus mat et nouvelles coupes préparées',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Rashguards, leggings et shorts de compression : aspect moins plastique et lumière plus douce dans les deux qualités graphiques.' },
+        { category: 'corrections', text: 'Chargement des vêtements sécurisé : un squelette incompatible est signalé plutôt que de déformer silencieusement la tenue.' },
+        { category: 'ameliorations', text: 'Générateur Blender préparé pour des ourlets de rashguard plus réguliers, des shorts mieux découpés et des pans de kimono plus souples ; les nouveaux modèles GLB nécessitent une régénération avant d’être visibles.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.37.0',
       releaseDate: '2026-11-12',
       title: 'Uniquement des coachs ultra-réalistes',

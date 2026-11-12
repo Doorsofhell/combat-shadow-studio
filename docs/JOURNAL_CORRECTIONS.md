@@ -3388,3 +3388,11 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Captures** : `docs/v1370/captures/`.
 - **Restauration** : branche `restauration/avant-ultra-realiste-v137` (1.36.0, commit 2343eee) ; tout le contenu
   retiré est aussi dans `backup CS/v1.37-ultra-realiste/`.
+
+
+## v1.37.1 — 12/11/2026 — Première passe sur les vêtements
+
+- **Runtime appliqué sur les GLB existants** : copies indépendantes des matériaux (évite les mutations entre coachs), rendu jersey/compression moins brillant et validation des os avant liaison d’une tenue.
+- **Générateur Blender modifié** : simplification sélective plus faible (82 % de conservation sur les vêtements souples, contre 40 %), ourlets bas des rashguards découpés par iso-surface plane avec marge de coupe, 10 rangées et 64 segments pour les pans de veste, meilleur suivi du bassin dans le dos, volume légèrement augmenté des pantalons de gi.
+- **À faire avant de déclarer les coupes corrigées sur le site** : régénérer les GLB des quatre coachs, inspecter les 28 tenues, exécuter la batterie de tests et publier les assets générés. Sans régénération des GLB, seule la partie runtime change l’image.
+- **Non modifiés** : visages, corps, squelette moteur, trajectoires des techniques.
