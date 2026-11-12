@@ -2996,6 +2996,56 @@ def paint_grad(o, cols, z0, z1):
             at.data[li].color = (*[b[j] + (a[j] - b[j]) * t for j in range(3)], 1)
 
 
+def paint_mma_compression(o, waist, hem_z, band_h, top=False):
+    """Reference-inspired MMA fabric, original artwork (not copied textures).
+    Uses only GLTF vertex colours on a fitted garment — no extra geometry or skin weights.
+    Sharp but anti-aliased diagonal panel, subdued polygonal technical-knit pattern.
+    """
+    def linear(hex_color):
+        raw = [int(hex_color[i:i + 2], 16) / 255.0 for i in (1, 3, 5)]
+        return np.array([x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in raw])
+    def blend(a, b, t):
+        return a * (1 - t) + b * t
+    carbon = linear('#132027')
+    petrol = linear('#174049')
+    slate = linear('#293139')
+    ivory = linear('#E5E7E3')
+    gold = linear('#CBA85C')
+    me_ = o.data
+    col = me_.color_attributes.get('Col') or me_.color_attributes.new('Col', 'FLOAT_COLOR', 'CORNER')
+    mw = o.matrix_world
+    painted = 0
+    for poly in me_.polygons:
+        mat = me_.materials[poly.material_index]
+        uses_vertex_colour = bool(mat and mat.get('css_grad'))
+        for li in poly.loop_indices:
+            if not uses_vertex_colour:
+                col.data[li].color = (1, 1, 1, 1)
+                continue
+            q = mw @ me_.vertices[me_.loops[li].vertex_index].co
+            # Slightly varied blocks: technical fabric, original deterministic pattern.
+            pattern = 0.5 + 0.25 * math.sin(41 * q.x + 29 * q.z) + 0.25 * math.sin(53 * q.y - 18 * q.z)
+            base = blend(carbon, petrol, max(0.0, min(0.44, pattern * 0.44)))
+            if top:
+                side = _ss(0.095, 0.135, abs(q.x))
+                base = blend(base, slate, 0.45 * side)
+            else:
+                # Angular warm-white panel across the front/outer right thigh.
+                # No triangle cutting at the border, so high kicks cannot tear the trim.
+                xline = 0.120 + 0.35 * (q.z - hem_z)
+                side = _ss(xline - 0.008, xline + 0.008, q.x)
+                front = _ss(0.10, -0.012, q.y)
+                below_belt = 1 - _ss(waist - 0.060, waist - 0.020, q.z)
+                patch = side * front * below_belt
+                base = blend(base, ivory, patch)
+                stripe = max(0.0, 1 - abs(q.x - xline) / 0.015) * front * below_belt
+                base = blend(base, gold, stripe * 0.55 * (1 - patch))
+            col.data[li].color = (*[float(c) for c in base], 1)
+            painted += 1
+    me_.color_attributes.active_color = col
+    print('Amara MMA custom fabric:', painted, 'coloured corners;', 'bra' if top else 'short')
+
+
 def outfit(name):
     parts, hide = [], set()
 
