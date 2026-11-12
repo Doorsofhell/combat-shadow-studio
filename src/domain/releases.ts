@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.37.2',
+      releaseDate: '2026-11-12',
+      title: 'Tenues MMA : découpes et superpositions revues',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Brassières et hauts MMA féminins : davantage de géométrie conservée sur les bretelles et emmanchures pour réduire les déchirures et les bordures irrégulières.' },
+        { category: 'corrections', text: 'Shorts MMA à deux couches : surshort moins évasé, ceinture rapprochée du bassin et bordures latérales simplifiées pour supprimer les pans pointus.' },
+        { category: 'ameliorations', text: 'Validation des 28 tenues reconstruites avant publication : la version 1.37.2 n’est publiée qu’avec des fichiers 3D effectivement régénérés et testés.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.37.1',
       releaseDate: '2026-11-12',
       title: 'Tenues : textile plus mat et nouvelles coupes préparées',
