@@ -1,0 +1,54 @@
+name: Tenues 1.37.1 - Régénérer les GLB
+
+on:
+  push:
+    branches:
+      - claude/project-thread-o7lrt8
+    paths:
+      - tools/generator/rocketbox/outfits.py
+      - scripts/dev/regenerate-outfits-v1371.sh
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generate-outfits-v1371
+  cancel-in-progress: false
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          ref: claude/project-thread-o7lrt8
+      - name: Install Blender
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender fonts-inter
+      - name: Regenerate all Rocketbox outfits
+        run: bash scripts/dev/regenerate-outfits-v1371.sh
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify outfit GLBs
+        run: npm run test -- src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-materials-v1371.test.ts
+      - name: Commit only validated GLBs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- public/coaches/*/tenues/*.glb
+          if ! git diff --cached --quiet; then
+            git commit -m "assets(outfits): regenerate 28 v1.37.1 garments after quality checks"
+            git push origin HEAD:claude/project-thread-o7lrt8
+          else
+            echo "GLB inchangés"
+          fi
