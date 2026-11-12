@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.33.2',
+      releaseDate: '2026-11-12',
+      title: 'Frappes plus vivantes : anticipation et recul',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Coups de poing plus naturels : le bassin prend une légère avance environ 2 à 3 images avant l’impact, puis le corps accompagne le retour en garde avec un petit recul.' },
+        { category: 'ameliorations', text: 'Le poids se reporte discrètement vers l’arrière avant la frappe ; les pieds restent en appui et les enchaînements conservent leurs fondus fluides.' },
+        { category: 'corrections', text: 'Les nouveaux mouvements s’effacent exactement à l’impact et avant la transition vers le coup suivant : même cible, même timing, sans toucher au solveur.' },
+      ],
+      links: [{ label: 'Voir les techniques', to: '/entrainer' }],
+    },
+    {
       version: '1.33.1',
       releaseDate: '2026-11-11',
       title: 'Crochets et uppercuts : le bassin entraîne le buste',
