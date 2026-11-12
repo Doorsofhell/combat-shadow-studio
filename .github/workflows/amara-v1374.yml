@@ -1,0 +1,107 @@
+name: Tenues 1.37.4 - Amara sur le patron Inaya
+
+on:
+  push:
+    branches:
+      - claude/project-thread-o7lrt8
+    paths:
+      - package.json
+      - tools/generator/rocketbox/outfits.py
+      - scripts/dev/regenerate-amara-v1374.sh
+      - .github/workflows/amara-v1374.yml
+      - src/domain/releases.ts
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  rebuild-amara:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout current reference branch
+        uses: actions/checkout@v4
+        with:
+          ref: claude/project-thread-o7lrt8
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Install Blender and NumPy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender fonts-inter python3-numpy
+          blender --background --python-exit-code 42 --python-expr "import numpy; print(numpy.__version__)"
+
+      - name: Generate seven Amara GLBs on her own skeleton
+        run: |
+          python3 -m py_compile tools/generator/rocketbox/outfits.py
+          bash scripts/dev/regenerate-amara-v1374.sh
+
+      - name: Preserve generator diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amara-v1374-blender-diagnostics
+          path: logs/amara-v1374.log
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Refresh source-size manifest
+        run: node scripts/boot-sizes.mjs
+
+      - name: Run reference, morphometry, regression and release checks
+        run: npm run test -- src/three/__tests__/outfit-amara-v1374.test.ts src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit-rollback-v1373.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-materials-v1371.test.ts src/domain/release-version.test.ts src/boot/__tests__/preload.test.ts
+
+      - name: Reuse public web configuration already in Preview workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in VITE_FIREBASE_API_KEY VITE_FIREBASE_AUTH_DOMAIN VITE_FIREBASE_PROJECT_ID VITE_FIREBASE_APP_ID; do
+            val=$(grep -E "^[[:space:]]+${key}:" .github/workflows/preview.yml | head -1 | sed -E "s/^[[:space:]]+${key}:[[:space:]]*//")
+            test -n "$val" || { echo "::error::Configuration web absente: $key"; exit 1; }
+            echo "$key=$val" >> "$GITHUB_ENV"
+          done
+
+      - name: Build version 1.37.4 with newly generated 3D assets
+        run: npm run build
+
+      - name: Commit only Amara GLBs and model-size manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- public/coaches/mma-amara/tenues/*.glb src/boot/assetSizes.json
+          if ! git diff --cached --quiet; then
+            git commit -m "assets(v1.37.4): rebuild Amara's seven outfits from Inaya's patron"
+            git push origin HEAD:claude/project-thread-o7lrt8
+          fi
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload verified 1.37.4 site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy
+        uses: actions/deploy-pages@v4
+        id: deployment
