@@ -1323,8 +1323,17 @@ def shorts(kind, color, band, n_leg=None, under=False):
     cuts = [(Vector((0, 0, waist - bandH)), Vector((0, 0, 1)))]
     # fine jersey for the fitted cuts (2.5 mm with its rim), 3.5 mm for the loose ones
     thick = 0.0025 if kind in ('vale-tudo', 'compression', 'kick') else 0.003 if kind == 'surshort' else 0.0035
-    o, cov = shell(f'short-{kind}', keep_g, push, thick, mats, lambda c, ids: 1 if c.z > waist - bandH else 0, cuts=cuts, iso=F,
-                   hem=0.004 if thick < 0.003 else 0.006)
+    # v1.37.5: yellow Thai/boxing waistbands on Amara had serrated colour
+    # transitions, particularly behind her moving hips. The previous plane
+    # projection was only enabled for the MMA two-layer short.
+    old_oncut = _ONCUT[0]
+    if COACH_ID == 'mma-amara':
+        _ONCUT[0] = True
+    try:
+        o, cov = shell(f'short-{kind}', keep_g, push, thick, mats, lambda c, ids: 1 if c.z > waist - bandH else 0, cuts=cuts, iso=F,
+                       hem=0.004 if thick < 0.003 else 0.006)
+    finally:
+        _ONCUT[0] = old_oncut
     smooth(o, 1)
     # Kadir has a different source hip topology from the Nael reference. At the
     # inner crotch seam, alternating opposite-leg weights pull a few triangles
@@ -1668,7 +1677,9 @@ if INAYA_FEMALE_PATTERN:
     # Inaya's template was measured at ~17 cm shoulder half-span; stay in
     # a narrow athletic range to keep straps off the deltoid in the guard.
     ratio = max(0.90, min(1.12, shoulder / 0.17))
-    _SQ = (str(round(0.075 * ratio, 5)), str(round(0.112 * ratio, 5)), '0.012', '0.012')
+    _SQ = (str(round(0.075 * ratio, 5)), str(round(0.112 * ratio, 5)),
+           '0.006' if COACH_ID == 'mma-amara' else '0.012',
+           '0.005' if COACH_ID == 'mma-amara' else '0.012')
     print('v1.37.4 Amara: patron Inaya, shoulder half-span', round(shoulder, 4), 'strap scale', round(ratio, 4))
 else:
     _SQ = ('0.075', '0.112', '0.012', '0.012') if os.environ.get('PALETTE') == 'inaya' else ('0.112', '0.142', '0.004', '0.002')
@@ -1771,7 +1782,11 @@ def top_square(color, accent=None, low=None, name='haut-carre'):
     # 9 mm off the skin there (5.5 elsewhere), or the skin's edge came through it in teeth
     def push(i):
         q = P[i]
-        return 0.0055 + float(os.environ.get("SQ_PUSH", "0.0035")) * _ss(chestZ - 0.03, chestZ + 0.03, q.z) * _ss(0.105, 0.12, abs(q.x))
+        # The uncleaned Rocketbox sports-bra surface had protruding seams;
+        # after v1.37.5 retouch, keep Amara's crop well clear of residual
+        # geometry during guard/punches without changing Inaya's approved fit.
+        base = 0.009 if COACH_ID == 'mma-amara' else 0.0055
+        return base + float(os.environ.get("SQ_PUSH", "0.0035")) * _ss(chestZ - 0.03, chestZ + 0.03, q.z) * _ss(0.105, 0.12, abs(q.x))
     o, cov = shell(name, keep, push, 0.0022, mats,
                    (lambda c, ids: 1 if c.z < low + 0.02 else 0) if accent else None, hem=0.006, cuts=cuts, iso=F,
                    edge_skin=float(os.environ.get('SQ_EDGE', '0.002')))
@@ -1780,7 +1795,7 @@ def top_square(color, accent=None, low=None, name='haut-carre'):
     # each point of the decimated top takes the weights of its closest skin point: along the strap's outer edge
     # those alternate between the arm and the shoulder blade, and the edge came out in teeth when the guard rises.
     # Relaxed over the garment (the skin under it is smoothed the same way by smooth_weights.py)
-    relax_weights(o, int(os.environ.get('SQ_SMOOTH', '12')))  # v1.37.2: smooth skin-weight jumps across straps
+    relax_weights(o, int(os.environ.get('SQ_SMOOTH', '16' if COACH_ID == 'mma-amara' else '12')))  # v1.37.5: stable Amara straps during punching
     # the skin under the straps: shell() keeps the skin drawn near any free edge of the copy, and the body's texture
     # seams over the shoulder blade leave such edges inside the strap (half its skin stayed drawn, and came through
     # in teeth when the guard rises). Everything 4 mm inside the field is hidden
@@ -2938,7 +2953,7 @@ def export(name, parts, hide):
     parts[0]['outfit'] = name
     # Assets can now be verified as freshly regenerated: unchanged legacy GLBs must
     # never pass the v1.37.2 deployment gate with old cutouts.
-    parts[0]['generatorVersion'] = '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
+    parts[0]['generatorVersion'] = '1.37.5' if COACH_ID == 'mma-amara' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
     if INAYA_FEMALE_PATTERN:
         parts[0]['clothingReference'] = 'inaya'
         parts[0]['clothingMorphology'] = COACH_ID
