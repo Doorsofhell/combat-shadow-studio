@@ -18,7 +18,9 @@ permissions:
 
 concurrency:
   group: github-pages
-  cancel-in-progress: true
+  # The Blender workflow deploys the rebuilt GLBs after this quick preview;
+  # never cancel it with a race between competing pages deploys.
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -43,10 +45,10 @@ jobs:
       - name: Verify punch feel and chaining (v1.33.2)
         run: npm run test -- src/engine/__tests__/punch-feel-v1332.test.ts src/engine/__tests__/torso-chain-v1331.test.ts src/engine/__tests__/hooks-chains.test.ts
 
-      - name: Verify outfits v1.37.1
+      - name: Verify outfits v1.37.2 — actual regenerated GLBs required
         run: |
           python3 -m py_compile tools/generator/rocketbox/outfits.py
-          npm run test -- src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts
+          npm run test -- src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-assets-v1372.test.ts
 
       - name: Build application
         run: npm run build
