@@ -29,10 +29,25 @@ build_one() {
   echo "===== Génération $id ($sex, $palette) ====="
   # Blender normally returns status 0 for certain Python exceptions.
   # --python-exit-code propagates them so the workflow fails at the cause.
+  local failed=0
   if [ "$palette" = "default" ]; then
-    blender --background --threads 2 --python-exit-code 42 --python "$SCRIPT" -- "$src" "$dst" "$sex" 2>&1 | tee "$log"
+    blender --background --threads 2 --python-exit-code 42 --python "$SCRIPT" -- "$src" "$dst" "$sex" 2>&1 | tee "$log" || failed=1
   else
-    PALETTE="$palette" blender --background --threads 2 --python-exit-code 42 --python "$SCRIPT" -- "$src" "$dst" "$sex" 2>&1 | tee "$log"
+    PALETTE="$palette" blender --background --threads 2 --python-exit-code 42 --python "$SCRIPT" -- "$src" "$dst" "$sex" 2>&1 | tee "$log" || failed=1
+  fi
+  if [ "$failed" -ne 0 ]; then
+    echo "::error title=Blender $id::Échec de génération Python ; consulter les dernières lignes et l'artifact de logs."
+    tail -n 65 "$log"
+    if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+      {
+        echo "### Échec Blender — $id"
+        echo "Le script Python s'est interrompu. Extrait de fin du journal :"
+        echo '~~~text'
+        tail -n 65 "$log"
+        echo '~~~'
+      } >> "$GITHUB_STEP_SUMMARY"
+    fi
+    return 42
   fi
 
   # Fail fast on the first wrong model. Never wait for 28 opaque Vitest failures.
