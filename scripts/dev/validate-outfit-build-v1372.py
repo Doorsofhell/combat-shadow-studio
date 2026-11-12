@@ -44,7 +44,7 @@ def main() -> int:
     directory = pathlib.Path(sys.argv[2])
     selected = tuple(sys.argv[3].split(",")) if len(sys.argv) >= 4 else OUTFITS
     expected_version = sys.argv[4] if len(sys.argv) == 5 else VERSION
-    if expected_version not in ("1.37.2", "1.37.4", "1.37.5"):
+    if expected_version not in ("1.37.2", "1.37.4", "1.37.5", "1.37.6"):
         raise SystemExit("Unknown generatorVersion; check the release contract")
     if not selected or any(name not in OUTFITS for name in selected):
         raise SystemExit("Invalid outfit selection")

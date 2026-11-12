@@ -49,6 +49,19 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.37.6',
+      releaseDate: '2026-11-12',
+      title: 'Amara : brassière plus couvrante et short MMA sans filet',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Amara : décolleté des tenues de boxe, kick-boxing, muay-thaï et MMA remonté, poitrine mieux couverte et bretelles élargies tout en conservant sa morphologie.' },
+        { category: 'corrections', text: 'Short MMA d’Amara : suppression de la petite jonction géométrique entre les cuisses par une découpe indépendante des deux couches (surshort et cuissard intérieur).' },
+        { category: 'ameliorations', text: 'Nouveaux contrôles de maillage : vérification dans Blender de la couverture centrale de la poitrine et de la séparation des jambes, au-delà de la simple présence des fichiers.' },
+        { category: 'ameliorations', text: 'Inaya reste la référence féminine et conserve ses tenues ; Naël et Kadir restent inchangés. Le corps et les animations d’Amara sont conservés.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.37.5',
       releaseDate: '2026-11-12',
       title: 'Amara : décolleté et finitions des vêtements',
