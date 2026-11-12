@@ -1,0 +1,30 @@
+name: v1.37.9 - Amara garment-only fabric checks
+
+on:
+  push:
+    branches:
+      - fix/amara-garment-finish-v1379
+  pull_request:
+    branches:
+      - claude/project-thread-o7lrt8
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  garment-finish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Finishes, geometry baseline and version checks
+        run: |
+          npm run test -- src/three/__tests__/outfit-amara-finish-v1379.test.ts src/three/__tests__/outfit-amara-v1374.test.ts src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit-rollback-v1373.test.ts src/three/__tests__/amara-skin-v1378.test.ts src/domain/release-version.test.ts
+      - name: TypeScript and production build
+        run: npm run build
