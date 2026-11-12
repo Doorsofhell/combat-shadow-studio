@@ -48,7 +48,7 @@ jobs:
           blender --version | head -n 2
           python3 -m py_compile tools/generator/rocketbox/outfits.py scripts/dev/validate-outfit-build-v1372.py
 
-      - name: Regenerate all Rocketbox outfits
+      - name: Regenerate reference-aligned MMA outfits
         run: bash scripts/dev/regenerate-outfits-v1371.sh
       - name: Publish Blender diagnostic logs (even on failure)
         if: always()
@@ -65,7 +65,7 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Verify all 28 newly generated outfit GLBs
+      - name: Verify all outfits and preserved reference models
         run: npm run test -- src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-materials-v1371.test.ts
       - name: Build application with freshly regenerated GLBs
         run: npm run build
