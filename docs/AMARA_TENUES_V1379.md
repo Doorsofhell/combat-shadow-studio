@@ -22,6 +22,18 @@ Des vêtements sportifs féminins soignés et crédibles : décolleté esthétiq
 - Nettoyer uniquement les ourlets irréguliers réellement constatés sur comparatifs ; conserver le repérage de la limite de couleur avant déformation (v1.37.7).
 - Éviter tout lissage global des poids, des os ou des vêtements.
 
+## Nouvelle exigence absolue — aucune trace du maillot d'origine
+Le maillot de base Rocketbox (bonnets, cordon du cou, bande du dos, nœuds et parties imprimées sur la peau) **ne doit jamais être visible par-dessus ou à travers un vêtement neuf**, quels que soient la discipline, l'angle, la qualité graphique ou la posture. Cela n'impose pas de fermer le décolleté : la peau visible doit être naturelle, pas un ancien textile incrusté.
+
+**Point technique découvert** : la v1.37.5 a retouché les couleurs, mais la v1.37.7 n'a aplani le volume de l'ancien bikini que sur le *maillage de travail servant à fabriquer les vêtements* ; le `photo.glb` effectivement porté conserve le relief de l'ancien bikini. Les tests historiques vérifient les habits, pas que tous les triangles du bikini original sont effectivement cachés par `hideBody`.
+
+**Blocages à corriger avant validation définitive :**
+- vérifier les zones résiduelles de la texture d'origine dans le torse et la nuque, sans effacer la peau réelle ;
+- analyser les intersections géométriques avec le `photo.glb` livré, sans découpe aveugle pouvant créer des trous ;
+- mesurer dans les sept tenues les faces de bikini d'origine encore visibles après application de `hideBody` ; `scripts/dev/audit-amara-original-swimsuit.py` produit un rapport en lecture seule, avant durcissement du seuil ;
+- vérifier les bords et l'entrejambe sur des poses animées : aucun triangle étiré, aucune pièce sombre ;
+- figer un test automatique bloquant **après correction** de la source et des masques, plus une vérification visuelle.
+
 ## Validation bloquante
 1. Exactement la même caméra, lumière, pose et discipline avant/après : face, dos, profil, trois-quarts.
 2. Poses obligatoires : repos, garde, jab/direct, crochet, low kick, high kick, pivot ; qualité haute et basse.
