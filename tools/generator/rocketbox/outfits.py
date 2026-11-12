@@ -24,6 +24,9 @@ ONLY = os.environ.get('ONLY', '').split(',') if os.environ.get('ONLY') else None
 TEX = os.path.join(outdir, '_tex')
 os.makedirs(TEX, exist_ok=True)
 female = sex == 'femme'
+# Only Kadir exhibits the crotch spikes shown in the 1.37.2 screenshot;
+# Nael uses a different body mesh and must retain his existing underwear geometry.
+KADIR_MMA = os.path.basename(os.path.dirname(src)) == 'mma-kadir'
 # MakeHuman coaches (tools/generator/makehuman), MH_BODY=1: their quads are larger than the Rocketbox triangles, so
 # every edge that followed the skin's points came out as a saw edge: the sports bra is cut by planes from positions
 # (not from the skin weights) and the waistband rises over 1.5 cm instead of one step
@@ -381,7 +384,21 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
     bmesh.ops.remove_doubles(bm_, verts=bm_.verts[:], dist=0.0005 / max(MW.to_scale()))
     # v0.32: small holes left by the body mesh (navel, a seam the weld missed) are closed; the real openings of a
     # garment (neck, sleeves, legs: dozens of edges) are kept
-    bmesh.ops.holes_fill(bm_, edges=[e for e in bm_.edges if e.is_boundary], sides=10)
+    # Kadir v1.37.2: an automatically filled small hole between the two thigh
+    # seams can bridge unrelated triangles and become a black spike when his
+    # hips rotate. Protect the groin opening, without changing Nael or any
+    # other garment. Genuine isolated pinholes elsewhere are still repaired.
+    edges_to_fill = [e for e in bm_.edges if e.is_boundary]
+    if KADIR_MMA and name == 'short-vale-tudo':
+        def near_kadir_groin(edge):
+            return any(abs((MW @ v.co).x) < 0.12 and
+                       hipZ - 0.20 < (MW @ v.co).z < hipZ + 0.035
+                       for v in edge.verts)
+        protected = [e for e in edges_to_fill if near_kadir_groin(e)]
+        edges_to_fill = [e for e in edges_to_fill if not near_kadir_groin(e)]
+        print('Kadir MMA: protected crotch boundary edges', len(protected))
+    if edges_to_fill:
+        bmesh.ops.holes_fill(bm_, edges=edges_to_fill, sides=10)
     bm_.normal_update()
     # body vertices under the garment: every body vertex of the region, but those near the garment's free edges
     # (the skin stays drawn where the cloth ends)
@@ -1285,6 +1302,40 @@ def shorts(kind, color, band, n_leg=None, under=False):
     o, cov = shell(f'short-{kind}', keep_g, push, thick, mats, lambda c, ids: 1 if c.z > waist - bandH else 0, cuts=cuts, iso=F,
                    hem=0.004 if thick < 0.003 else 0.006)
     smooth(o, 1)
+    if KADIR_MMA and kind == 'vale-tudo':
+        # In Kadir's source mesh, neighbouring crotch vertices sometimes
+        # alternate almost entirely between LeftUpLeg and RightUpLeg. When
+        # the stance spreads, the seams pull against each other into needles.
+        # Transfer a *local, smoothly faded* share of those leg weights to
+        # Hips so the centre of the shorts follows the pelvis; keep the
+        # thigh weights outside this narrow region. Do not touch Nael.
+        hips_group = o.vertex_groups.get('Hips')
+        leg_groups = [o.vertex_groups.get(n) for n in ('LeftUpLeg', 'RightUpLeg')]
+        if hips_group is None or any(g is None for g in leg_groups):
+            raise RuntimeError('Kadir MMA: unable to stabilise crotch weights; missing bone group')
+        stabilised = 0
+        for vertex in o.data.vertices:
+            q = o.matrix_world @ vertex.co
+            lateral = max(0.0, min(1.0, (0.105 - abs(q.x)) / 0.065))
+            lower = max(0.0, min(1.0, (q.z - (hipZ - 0.20)) / 0.09))
+            upper = max(0.0, min(1.0, ((hipZ + 0.035) - q.z) / 0.055))
+            amount = 0.65 * lateral * lateral * (3 - 2 * lateral) * lower * upper
+            if amount < 0.001:
+                continue
+            weights = {v.group: v.weight for v in vertex.groups}
+            moved = 0.0
+            for g in leg_groups:
+                previous = weights.get(g.index, 0.0)
+                delta = previous * amount
+                if delta > 1e-6:
+                    g.add([vertex.index], previous - delta, 'REPLACE')
+                    moved += delta
+            if moved:
+                hips_group.add([vertex.index], weights.get(hips_group.index, 0.0) + moved, 'REPLACE')
+                stabilised += 1
+        print('Kadir MMA: stabilised crotch vertices', stabilised)
+        if stabilised == 0:
+            raise RuntimeError('Kadir MMA: crotch stabilisation unexpectedly matched zero vertices')
     if under:
         # the skin stays hidden over the whole liner's region, as before (what the cut part covered is under the
         # over-short)
