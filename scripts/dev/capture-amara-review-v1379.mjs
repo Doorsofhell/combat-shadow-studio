@@ -1,5 +1,6 @@
 import { chromium } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
 
 const base = process.env.CAPTURE_BASE || 'http://127.0.0.1:4173';
 const output = 'captures/revue-amara-v1379';
@@ -45,32 +46,30 @@ try {
         stretch: typeof window.__labStretch === 'function' ? window.__labStretch(3, 0.04).length : null,
       }));
       if (state.outfit !== 'portee') throw new Error(outfit + '/' + pose.name + ': outfit not worn');
-      const screenshot = await page.screenshot({ type: 'png' });
-      shots.push({ ...pose, png: screenshot.toString('base64'), stretch: state.stretch });
+      // Save the ACTUAL Three.js screenshot immediately: no giant base64 images in Chromium.
+      // Composing giant data URLs after WebGL caused Page.captureScreenshot to fail on GitHub Actions.
+      await page.evaluate((label) => {
+        const tag = document.createElement('div');
+        tag.textContent = label + ' — AMARA — CAPTURE DE DIAGNOSTIC NON VALIDÉE';
+        tag.style.cssText = 'position:fixed;left:0;right:0;top:0;background:rgba(17,24,39,.9);' +
+          'color:white;font:700 12px Arial;padding:9px 12px;z-index:2147483647;pointer-events:none';
+        document.body.appendChild(tag);
+      }, pose.label);
+      const filepath = `${output}/amara-${outfit}-${pose.name}.jpg`;
+      await page.screenshot({ path: filepath, type: 'jpeg', quality: 87 });
+      shots.push({ ...pose, filepath, stretch: state.stretch });
       diagnostics.push({ outfit, pose: pose.name, outfitState: state.outfit, largeStretchTriangles: state.stretch });
       console.log('CAPTURE', outfit, pose.name, 'stretched triangles:', state.stretch);
     }
-    const panel = await browser.newPage({ viewport: { width: 1480, height: 750 }, deviceScaleFactor: 1 });
-    const escaped = (s) => s.replaceAll('&', '&amp;').replaceAll('<', '&lt;');
-    const html = `<!doctype html><html><head><meta charset="utf-8"><style>
-      *{box-sizing:border-box}body{margin:0;background:#131820;color:#e9edf4;font:15px Arial,sans-serif}
-      header{height:81px;padding:14px 19px;display:flex;align-items:center;justify-content:space-between}
-      h1{font-size:25px;margin:0 0 5px}p{font-size:12px;margin:0;color:#abb9cf}
-      .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 10px}
-      .panel{background:#fff;overflow:hidden;border-radius:6px}
-      .caption{height:29px;padding:7px 9px;background:#253147;color:white;font-weight:bold;font-size:13px}
-      img{display:block;width:100%;height:590px;object-fit:contain;background:#d9dfe8}
-      footer{padding:8px 16px;color:#eaa6a2;font-size:12px}
-    </style></head><body><header><div><h1>AMARA — ${escaped(label)}</h1>
-    <p>Contrôle réel du moteur 3D / branche 1.37.9 / 4 poses / vêtements existants</p></div>
-    <div>À INSPECTER — PAS ENCORE VALIDÉ</div></header><div class="strip">
-    ${shots.map(s=>`<div class="panel"><div class="caption">${escaped(s.label)} · triangles étirés &gt;3× : ${s.stretch ?? '?'}</div>
-    <img src="data:image/png;base64,${s.png}" /></div>`).join('')}
-    </div><footer>Rechercher : ancien bikini, trous au buste ou aux aisselles, coutures, filets entre les cuisses, stretch en kick. 
-    JJB et judo : le kick est uniquement un stress test du vêtement.</footer></body></html>`;
-    await panel.setContent(html, { waitUntil: 'load' });
-    await panel.screenshot({ path: `${output}/amara-${outfit}.jpg`, type: 'jpeg', quality: 88 });
-    await panel.close();
+    // Compose four already saved JPEGs with ffmpeg, not via a second WebGL-heavy browser page.
+    // Contact sheet is 4x360px wide: guard front/back and low/high kicks, same camera & light.
+    execFileSync('ffmpeg', [
+      '-y', '-loglevel', 'error',
+      ...shots.flatMap(s => ['-i', s.filepath]),
+      '-filter_complex', 'hstack=inputs=4',
+      '-q:v', '3',
+      `${output}/amara-${outfit}.jpg`,
+    ], { stdio: 'inherit' });
     console.log('SHEET', `${output}/amara-${outfit}.jpg`);
   }
   await page.close();
