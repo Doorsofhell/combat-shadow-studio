@@ -101,6 +101,7 @@ function straight(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
   });
   return {
     id: `${side === 'L' ? 'jab' : 'direct'}${low ? '-corps' : ''}`,
+    punchFeel: true,
     keys: [
       { t: 0, pose: g },
       { t: t1 * 0.5, pose: drive, ease: 'load' },
@@ -264,6 +265,7 @@ function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
   const t3 = t2 + 0.22;
   return {
     id: `crochet-${side === 'L' ? 'avant' : 'arriere'}${body ? '-corps' : ''}`,
+    punchFeel: true,
     keys: [
       { t: 0, pose: g },
       // the fist leaves the guard from rest and keeps accelerating until the impact: no flow through this key,
@@ -329,6 +331,7 @@ function uppercut(a: Author, side: 'L' | 'R'): Motion {
   const drive = driveToward(dip, hit, { pelvis: 0.78, chest: 0.26, hips: 0.55, feet: 0.7 });
   return {
     id: `uppercut-${side === 'L' ? 'avant' : 'arriere'}`,
+    punchFeel: true,
     keys: [
       { t: 0, pose: g },
       { t: t1, pose: dip, ease: 'load' },
@@ -372,6 +375,7 @@ function overhand(a: Author): Motion {
   hit.handR = a.hand('world', a.reach(hit, 'R', add(C, { y: -0.02 * s }), 0.92), v3(-0.6, 0.8, -0.2), 0.95);
   return {
     id: 'overhand',
+    punchFeel: true,
     keys: [
       { t: 0, pose: g },
       { t: 0.14, pose: load, ease: 'load' },

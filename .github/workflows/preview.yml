@@ -40,6 +40,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify punch feel and chaining (v1.33.2)
+        run: npm run test -- src/engine/__tests__/punch-feel-v1332.test.ts src/engine/__tests__/torso-chain-v1331.test.ts src/engine/__tests__/hooks-chains.test.ts
+
       - name: Build application
         run: npm run build
         env:
