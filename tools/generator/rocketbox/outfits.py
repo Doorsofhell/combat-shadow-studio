@@ -1358,6 +1358,10 @@ def shorts(kind, color, band, n_leg=None, under=False):
     finally:
         _ONCUT[0] = old_oncut
     smooth(o, 1)
+    if COACH_ID == 'mma-amara' and kind in ('surshort', 'vale-tudo'):
+        # Exported into glTF extras and inspected independently by Blender CI.
+        o['cssCrotchGapCut'] = round(cut_top, 5)
+        o['cssCrotchGapHalfWidth'] = round(clearance, 5)
     # Kadir has a different source hip topology from the Nael reference. At the
     # inner crotch seam, alternating opposite-leg weights pull a few triangles
     # into long needles as the stance spreads. A local blend with Hips removes
