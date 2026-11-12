@@ -40,7 +40,7 @@ check_refs
 for outfit in "${OUTFITS[@]}"; do rm -f "$DST/$outfit.glb"; done
 
 echo "Référence : Inaya. Morphologie, palette et squelette : Amara."
-if ! PALETTE=default ONLY=boxe,kickboxing,muaythai,mma,bjj,bjj-nogi,judo blender --background --threads 2 --python-exit-code 42 --python "$SCRIPT" -- "$SRC" "$DST" femme 2>&1 | tee logs/amara-v1374.log; then
+if ! ONLY=boxe,kickboxing,muaythai,mma,bjj,bjj-nogi,judo blender --background --threads 2 --python-exit-code 42 --python "$SCRIPT" -- "$SRC" "$DST" femme 2>&1 | tee logs/amara-v1374.log; then
   echo "::error::Erreur Blender sur Amara v1.37.4"
   tail -n 80 logs/amara-v1374.log
   exit 42
