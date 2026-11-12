@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.37.8',
+      releaseDate: '2026-11-12',
+      title: 'Amara : relief musculaire affiné',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Amara : relief de la peau et contraste des volumes musculaires légèrement accentués, sans changement du corps, des animations ni des tenues.' },
+        { category: 'ameliorations', text: 'Réglage de rendu limité à Amara ; Kadir, Naël et Inaya conservent exactement leur apparence et leurs paramètres.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.37.7',
       releaseDate: '2026-11-12',
       title: 'Amara : tenues propres dans les six disciplines',
