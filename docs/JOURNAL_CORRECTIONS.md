@@ -3424,3 +3424,13 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Autres coachs non modifiés** : Naël et Inaya restent modèles de référence, Amara conserve ses vêtements existants, les quatre corps et le moteur de combat ne changent pas.
 - **Garantie de publication** : script `restore-kadir-v1373.sh`, empreintes SHA exactes des sept GLB, mise à jour `assetSizes.json`, tests de version des 28 vêtements et test de non-régression spécifique ; publication Pages uniquement après compilation et tests réussis.
 - **Limite** : contrôle visuel du short de Kadir (face, profil, dos, garde écartée, high kick) nécessaire après déploiement pour conclure sur le rendu.
+
+
+## v1.37.4 — 12/11/2026 — Patron vestimentaire féminin Inaya → Amara
+
+- **Référence validée** : les sept fichiers GLB originaux d'Inaya sont figés par SHA dans le script de génération et testés à l'octet près ; aucune copie brute de ces modèles vers Amara.
+- **Source du changement** : dans `outfits.py`, `INAYA_TOP` était actif seulement pour `PALETTE=inaya` ; Amara conservait une autre brassière dans les disciplines de frappe. Les profils `SQ_IN`, `SQ_OUT`, `SQ_HIDE` et `SQ_EDGE` différaient aussi.
+- **Correctif** : le patron crop-top carré d'Inaya est appliqué aux disciplines de frappe d'Amara ; largeur et placement des bretelles ajustés à la largeur des épaules d'Amara. Ses formes corporelles, ses poids d'animation, sa palette noir/or et les équipements de chaque discipline sont préservés.
+- **Toutes les tenues** : régénération des sept GLB d'Amara (boxe, kickboxing, muaythai, MMA, BJJ, BJJ no-gi et judo) sur son propre `photo.glb`, sans modifier Inaya, Naël ni Kadir. Les coupes de bas déjà communes restent dans leur logique féminine ; pas de substitution arbitraire des matériaux.
+- **Tests** : GLB 1.37.4 avec `clothingReference=inaya`, `clothingMorphology=mma-amara` ; vérification des crop-tops de frappe, des pièces MMA et des empreintes Inaya. Version `1.37.4` dans application et Nouveautés.
+- **Validation restante** : inspection visuelle des détails aux épaules, à l'entrejambe, à la ceinture, de face, dos, garde, low kick et high kick. Aucun test automatisé ne garantit à lui seul l'absence de clipping.
