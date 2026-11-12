@@ -1,0 +1,35 @@
+name: Audit Amara torso v1.37.5
+
+on:
+  push:
+    branches:
+      - claude/project-thread-o7lrt8
+    paths:
+      - scripts/dev/inspect-amara-torso-v1375.py
+      - .github/workflows/audit-amara-torso-v1375.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-torso:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender and embedded NumPy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender python3-numpy
+      - name: Compare photo bodies without changing them
+        run: |
+          python3 -m py_compile scripts/dev/inspect-amara-torso-v1375.py
+          blender --background --threads 2 --python-exit-code 42 --python scripts/dev/inspect-amara-torso-v1375.py
+      - name: Upload region statistics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amara-torso-audit-v1375
+          path: logs/amara-torso-audit.json
+          if-no-files-found: warn
