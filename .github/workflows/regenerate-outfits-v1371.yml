@@ -32,10 +32,17 @@ jobs:
         with:
           persist-credentials: true
           ref: claude/project-thread-o7lrt8
-      - name: Install Blender
+      - name: Install Blender and glTF Python dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y blender fonts-inter
+          # Ubuntu's distro Blender 5.0.1 does not necessarily depend on NumPy,
+          # but the bundled io_scene_gltf2 import/export add-on requires it.
+          sudo apt-get install -y blender fonts-inter python3-numpy
+
+      - name: Verify NumPy inside Blender before loading coach models
+        run: |
+          blender --version | head -n 2
+          blender --background --python-exit-code 42 --python-expr "import sys, numpy; print('Blender Python:', sys.version); print('NumPy:', numpy.__version__, numpy.__file__)"
       - name: Blender environment and Python syntax
         run: |
           blender --version | head -n 2
