@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.37.3',
+      releaseDate: '2026-11-12',
+      title: 'Kadir : retour aux tenues stables, correction de régression',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Kadir : restauration de ses sept tenues 3D de la v1.37.0 pour éliminer la régression des triangles et pointes à l’entrejambe apparue après leur régénération.' },
+        { category: 'ameliorations', text: 'Contrôles de non-régression : chaque tenue de Kadir est comparée aux fichiers validés, sans modifier son corps, les autres coachs ni leurs vêtements.' },
+        { category: 'ameliorations', text: 'Cache et chargement : les empreintes des modèles restaurés sont recalculées lors de la publication afin de télécharger les bons vêtements après mise à jour.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.37.2',
       releaseDate: '2026-11-12',
       title: 'Tenues MMA : découpes et superpositions revues',
