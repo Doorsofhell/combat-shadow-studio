@@ -3186,3 +3186,83 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Restauration** : branche `restauration/avant-demarrage-v134` (état 1.32.0, commit f9d9bf3) ; état 1.33.2 : commit
   cc58c17.
 
+## 2026-11-12 · 1.33.1 à 1.33.2 · Lots de Youssef faits hors de ce suivi (reprise de traçabilité)
+
+- **Contenu** (PR #73 à #77 sur `claude/project-thread-o7lrt8`, faits par Youssef avec un autre assistant) :
+  respiration plus visible et irrégulière (#73), clignements toutes les 3 à 6 s et tête plus vivante au repos (#74),
+  bouche plus naturelle avec un léger joint des lèvres et moins de dents visibles (#75), crochets et uppercuts menés
+  par le bassin (1.33.1, #76), anticipation et recul des coups de poing (1.33.2, #77).
+- **Constat à la reprise** (suite Vitest complète rejouée sur la 1.33.2 seule, commit cc58c17) : 25 tests ÉCHOUÉ,
+  1288 TEST RÉUSSI, 1 ignoré. Les lots de visage et de respiration n'avaient pas mis à jour les anciens contrôles
+  (`expressions-v1160` : 5, `face.test` 1.21 : 6, `breath.test` : 6) ; les lots de frappe font échouer des contrôles
+  du moteur : `fluidity.test` (plus d'arrêts qu'avant, vitesse à l'impact non conservée à 3 %), `hooks-biomeca`
+  (« pas d'armé »), `extension-v032` (uppercut arrière : jambes, hanches, épaules, puis poing) et les documents de
+  mesures non régénérés (`audit`, `fluidity`, `hooks-biomeca`, `torsion-range`).
+- **Suite** : les contrôles du visage et de la respiration sont mis à jour dans la 1.35.0 (ci-dessous) pour suivre
+  ces choix ; les contrôles du moteur de frappe restent ÉCHOUÉ et sont signalés à Youssef (ils relèvent des lots
+  1.33.1 et 1.33.2, à reprendre à part).
+
+## 2026-11-12 · 1.35.0 · Humanisation des coachs : moteur commun de comportement et règles permanentes
+
+- **Demande** (Youssef, 11/11) : auditer et corriger bouche, regard, expressions et comportement de tous les coachs,
+  créer un moteur commun « Human Behavior & Facial Expression Engine », inscrire les règles pour tous les futurs
+  personnages dans le dépôt (CLAUDE.md, document dédié, tests). Repris de la 1.33.2 (commit cc58c17), dernière
+  version poussée par Youssef. Numéro 1.35.0 : la 1.34.0 est déjà prise par deux branches en attente.
+- **Coachs audités** (dépôt réel) : Kadir, Amara, Naël, Inaya (Rocketbox : 28 os du visage et 25 expressions ARKit
+  en morph targets) ; Axel, Kaila (MakeHuman : 11 os du visage, aucune expression) ; modèles générés de secours
+  `model.glb` (aucun os du visage).
+- **Constat après vérification** :
+  - regard : en garde la tête est inclinée vers le bas (menton rentré et buste penché) et les yeux, fixes dans la
+    tête, regardaient 10 à 20° sous l'horizon, vers le sol (mesuré sur les 6 squelettes, 4 gardes) ;
+  - Axel et Kaila : quand l'œil monte, l'iris passait sous la paupière (la paupière ne suivait pas l'œil) ;
+  - grimace d'effort fantôme : le passage de la pose de départ à la garde, à la première image, était mesuré comme
+    une frappe (jusqu'à 0,8 d'effort : sourcils froncés, yeux plissés pendant près d'une seconde) ; une rafale
+    d'images très rapprochées faisait de même ;
+  - bouche : sans le léger joint des lèvres ajouté en 1.33.x (#75), la bouche des modèles Rocketbox reste
+    entrouverte et montre les dents (vérifié sur captures, Kadir et Naël) : ce joint est gardé et protégé par un test ;
+    pas de teinte grise ou bleutée des lèvres constatée dans l'éclairage de l'app ;
+  - comportement : pas d'états (préparation, fatigue, récupération, encouragement) ; le visage ne savait pas si la
+    séance jouait, était en pause ou au repos.
+- **Correction** :
+  - moteur commun `src/three/human/` : `behavior.ts` (8 états : neutre, concentration, préparation, effort, frappe
+    puissante, fatigue, récupération, encouragement ; humeur du visage atteinte en douceur, fatigue qui monte avec
+    les frappes et redescend au repos, encouragement de 1,8 s après chaque répétition), `capabilities.ts` (niveau du
+    modèle lu dans ses os et ses morphs), `profiles.ts` (registre des 6 coachs, traits individuels, liste figée des
+    anciens modèles autorisés en mode dégradé : Axel, Kaila) ;
+  - `FaceAnimator` (`src/three/face.ts`) utilise ce moteur : regard posé sur l'adversaire (devant le coach, à hauteur
+    de ses yeux) quelle que soit l'inclinaison de la tête, au plus 30° de côté et 23° en hauteur, au-delà (sol,
+    rotation) les yeux suivent la tête ; la paupière supérieure suit l'œil ; clignements irréguliers (parfois doubles,
+    souvent avec un coup d'œil, plus fréquents fatigué) ; coups d'œil jamais vers le sol ni en préparation/frappe ;
+    petit hochement de tête à l'encouragement ; bouche qui s'entrouvre à l'expiration seulement quand le coach est
+    essoufflé ; effort mesuré dans l'espace du coach, pas pendant les 0,3 premières secondes, temps entre images
+    borné à 1/120 s, sauts de pose au-delà de 25 m/s ignorés ; image fixe : regard droit immédiat ;
+  - `CoachStage` transmet lecture, pause, repos, phase de la technique et répétitions terminées ; `ComboPlayer`
+    expose `isResting` ; `PhotoCoach` crée le moteur avec le profil de chaque coach ; Lab : `?etat=<état>` ;
+  - règles permanentes : `CLAUDE.md` (nouveau) et `docs/HUMAN_CHARACTER_STANDARDS.md` (contrat des modèles,
+    capacités obligatoires, comportements, intégration, critères bloquants, performance, non-régression, limites).
+  - Rien n'est changé aux visages, coiffures, barbes, morphologies, tenues ni aux techniques (le moteur humain ne
+    touche ni aux membres, ni au bassin, ni au buste).
+- **Fichiers** : `src/three/human/{behavior,capabilities,profiles}.ts` (nouveaux), `src/three/face.ts`,
+  `src/three/PhotoCoach.tsx`, `src/three/CoachModel.tsx`, `src/three/CoachStage.tsx`, `src/engine/player.ts`,
+  `src/ui/Lab.tsx`, `src/domain/releases.ts`, `package.json`, `CLAUDE.md`, `docs/HUMAN_CHARACTER_STANDARDS.md`.
+- **Tests** :
+  - nouveaux `src/three/human/__tests__/` : `contract.test.ts` (12 : registre, capacités de chaque modèle, liste des
+    modèles dégradés figée), `gaze.test.ts` (24 : 6 coachs × 4 gardes, regard à moins de 2,5° de l'horizon, avant
+    3 à 20° vers le bas), `behavior.test.ts` (9), `face-behavior.test.ts` (42 : bouche au repos, retour au neutre
+    après une frappe en moins de 1,5 s, clignements irréguliers, pas de grimace au démarrage, pause, moins de
+    0,15 ms par image) : TEST RÉUSSI ;
+  - contrôles anciens mis à jour pour suivre les choix 1.33.x de Youssef (aucun n'est supprimé) :
+    `expressions-v1160` (le repos garde le joint des lèvres ≤ 0,22 ; sourire au repos retenu ; la mâchoire ne bouge
+    plus au repos, contrôlé à 0), `breath.test` (amplitude ≤ 6 % au lieu de 5 % : 5,5 % depuis #73), `face.test` 1.21
+    (sourcils et coins de la bouche mesurés dans le repère de la tête : la dérive de la tête, plus visible depuis #74,
+    était comptée comme un mouvement du visage) : TEST RÉUSSI ;
+  - suite Vitest complète (1401 tests) : 1392 TEST RÉUSSI, 1 ignoré, 8 ÉCHOUÉ (moteur de frappe 1.33.1/1.33.2,
+    identiques sur la 1.33.2 seule, voir l'entrée précédente ; la 1.33.2 seule : 25 ÉCHOUÉ) ;
+  - compilation `npm run build` : TEST RÉUSSI ;
+  - Playwright ciblé (11 fichiers : coach-render, coach-3d-recovery, coachs-v160, ecran-coach-v140, coaching-hud,
+    training-layout, train-resume, outfit-loading, moteur-lumiere, coach-studio, boot ; 58 tests) : 56 TEST RÉUSSI,
+    2 ÉCHOUÉ (`coaching-hud:60`, déjà connu ; `training-layout:117`, délai de 120 s dépassé) qui échouent aussi sur
+    la 1.33.2 seule rejouée le même jour ; suite Playwright complète : NON EXÉCUTÉ ;
+  - appareil Android réel : NON EXÉCUTÉ (coût mesuré par test et aucune dépendance ajoutée).
+- **Captures** : `docs/v1350/captures/` (6 coachs de face, trois quarts et profil, avant/après ; états de Naël et Kaila).
+- **Restauration** : `restauration/avant-humanisation-v134` (1.33.2, commit cc58c17).

@@ -95,16 +95,21 @@ describe.each(COACHES)('%s', (id, sex) => {
   test('1.21 au repos, sourcils et coins de la bouche bougent un peu, lentement, et reviennent au repos en image fixe', () => {
     const { root, face } = fresh();
     const watch = [bone(root, 'Face_LInnerEyebrow'), bone(root, 'Face_LMouthCorner')];
-    // world positions (metres): the bones' own spaces are scaled
-    const rest = watch.map((b) => world(b));
+    // world positions (metres): the bones' own spaces are scaled. 1.34: seen in the frame of the head (the head's own
+    // drift, made more visible in 1.33.x #74, moved the brows in the world and was counted as a facial movement)
+    const head = bone(root, 'Head');
+    head.updateWorldMatrix(true, false);
+    const headRest = head.matrixWorld.clone();
+    const inHead = (b: Bone) => world(b).applyMatrix4(head.matrixWorld.clone().invert()).applyMatrix4(headRest);
+    const rest = watch.map((b) => inHead(b));
     const local = watch.map((b) => b.position.clone());
     const range = watch.map(() => 0);
     let jump = 0;
-    let prev = watch.map((b) => world(b));
+    let prev = watch.map((b) => inHead(b));
     for (let i = 0; i < 12 * 60; i++) {
       face.update(1 / 60);
       watch.forEach((b, j) => {
-        const w = world(b);
+        const w = inHead(b);
         range[j] = Math.max(range[j], w.distanceTo(rest[j]));
         jump = Math.max(jump, w.distanceTo(prev[j]));
         prev[j] = w;

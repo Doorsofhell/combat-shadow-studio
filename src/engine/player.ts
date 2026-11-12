@@ -121,6 +121,11 @@ export class ComboPlayer {
     return this.playing;
   }
 
+  /** 1.34 resting in guard between two repetitions (the coach's behaviour: recovery, fatigue) */
+  get isResting() {
+    return this.playing && this.restLeft > 0;
+  }
+
   get repetitions() {
     return this.rep;
   }

@@ -31,6 +31,7 @@ import { StageGuardContext } from '../ui/components/StageGuard';
 import type { FighterLook } from '../editor/look';
 import { RoomBoundary, RoomScene } from './rooms/RoomScene';
 import { roomFor } from './rooms/rooms';
+import { newSignals } from './human/behavior';
 
 export const STYLE_OF: Record<DisciplineId, StanceStyle> = {
   boxe: 'boxing',
@@ -246,15 +247,21 @@ export function CoachStage(props: CoachStageProps) {
   onRigReadyRef.current = onRigReady;
   const studyActiveRef = useRef(studyActive);
   studyActiveRef.current = studyActive;
+  // 1.34 what the coach's behaviour engine reads of the session each frame (src/three/human/behavior.ts)
+  const human = useMemo(newSignals, []);
   const proxy = useMemo<PlayerEvents>(
     () => ({
       onStep: (...a) => eventsRef.current.onStep?.(...a),
       onImpact: (...a) => eventsRef.current.onImpact?.(...a),
-      onRep: (...a) => eventsRef.current.onRep?.(...a),
+      onRep: (...a) => {
+        // a repetition completed: a short encouragement on the coach's face
+        human.cheer++;
+        eventsRef.current.onRep?.(...a);
+      },
       onRest: (...a) => eventsRef.current.onRest?.(...a),
       onMove: (...a) => eventsRef.current.onMove?.(...a),
     }),
-    [],
+    [human],
   );
   const southpawRef = useRef(southpaw);
   if (southpawRef.current !== southpaw) {
@@ -307,6 +314,10 @@ export function CoachStage(props: CoachStageProps) {
       try {
         const st = study?.current;
         if (studyActiveRef.current && st?.motion) {
+          // the technique studied step by step: no session behaviour (concentration)
+          human.playing = false;
+          human.resting = false;
+          human.phase = null;
           rig.apply(st.update(dt));
           follow.current.set(0, 0, 0);
           origin.current = { x: 0, z: 0, yaw: 0 };
@@ -314,6 +325,9 @@ export function CoachStage(props: CoachStageProps) {
           const p = player.current;
           if (!p) return;
           rig.apply(p.update(dt));
+          human.playing = p.isPlaying;
+          human.resting = p.isResting;
+          human.phase = p.phaseNow()?.phase ?? null;
           follow.current.set(p.origin.x, 0, p.origin.z);
           origin.current = p.origin;
         }
@@ -324,7 +338,7 @@ export function CoachStage(props: CoachStageProps) {
         animErr.current = now;
       }
     },
-    [study],
+    [study, human],
   );
 
   // in study mode the camera frames the studied technique only
@@ -417,6 +431,7 @@ export function CoachStage(props: CoachStageProps) {
             ghostGear={ghostGear}
             onRig={onRig}
             onFrame={onFrame}
+            human={human}
             outfit={outfit}
             onOutfit={onOutfit}
           />
