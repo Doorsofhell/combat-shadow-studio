@@ -2155,6 +2155,20 @@ def square_field(low, strap=(float(os.environ.get("SQ_IN", "0.112")), float(os.e
             st = max(strap[0] - ax, ax - strap[1], low - q.z,
                      arm_clear(q) - float(os.environ.get("SQ_ARM", "0.022")))
             return _smin(body_, st, 0.014)
+        if AMARA_MMA_REF:
+            # The provided MMA reference shows a low rounded U, wide side support
+            # and a broad athletic back (NOT the thin Y racerback of bra_field).
+            # Alter only this prototype: Inaya and the six other Amara outfits keep
+            # their accepted original pattern.
+            curve = 0.049 * _ss(0.018, 0.113, ax)
+            front_top = nk.z - 0.135 + curve
+            back_top = cz + 0.010
+            T = back_top + (front_top - back_top) * front
+            T -= 0.022 * _ss(0.153, 0.190, ax) * (1 - 0.6 * front)
+            body_ = max(q.z - T, low - q.z, arm_clear(q))
+            st = max(strap[0] - ax, ax - strap[1], low - q.z,
+                     arm_clear(q) - float(os.environ.get('SQ_ARM', '0.022')))
+            return _smin(body_, st, 0.012)
         # Unmodified reference cut: Inaya and all non-Amara characters.
         # 1.37.7: Amara keeps the higher front asked in 1.37.6 (« brassière trop décolletée »): the front of the
         # neckline 7.8 cm under the neck joint instead of 15 cm; the back, straps and armholes stay Inaya's
@@ -2217,6 +2231,8 @@ def top_square(color, accent=None, low=None, name='haut-carre'):
     def keep(i):
         return low - 0.02 < P[i].z < nk.z + 0.01 and w(i, 'Head') < 0.2 and w(i, *HANDS) < 0.3 and F(P[i]) < 0.03
     mats = [fabric(f'{name}-{color}', color, 'jersey', rough=0.62, strength=0.45, sheen=0.12)]
+    if AMARA_MMA_REF and name == 'haut-brassiere':
+        mats[0] = grad_fabric('haut-brassiere-amara-ref-1379', 'jersey', 0.86, 0.38, 0.045)
     cuts = []
     if accent:
         mats.append(fabric(f'liseré-{accent}', accent, 'elastique', rough=0.6, strength=0.8))
@@ -2235,6 +2251,9 @@ def top_square(color, accent=None, low=None, name='haut-carre'):
                    edge_skin=float(os.environ.get('SQ_EDGE', '0.002')))
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
+    if AMARA_MMA_REF and name == 'haut-brassiere':
+        paint_mma_compression(o, low, nk.z, 0.02, top=True)
+        o['cssTopStyle'] = 'scoop-racerback-reference-1379'
     # each point of the decimated top takes the weights of its closest skin point: along the strap's outer edge
     # those alternate between the arm and the shoulder blade, and the edge came out in teeth when the guard rises.
     # Relaxed over the garment (the skin under it is smoothed the same way by smooth_weights.py)
@@ -3089,8 +3108,8 @@ def outfit(name):
             if AMARA_MMA_REF:
                 # User reference: fitted MMA compression boxer, rounded scoop bra, no loose over-short.
                 # Brand colours adapted to Amara; no copied third-party logos or textures.
-                add(shorts('vale-tudo', '#132027', '#D4AF37', under=False))
-                add(bra_v2('#12282D', '#D4AF37', band=0.030))
+                add(shorts('vale-tudo', '#132027', '#E2E3DF', under=False))
+                add(top_square('#12282D', '#1D2930', low=bra_low(), name='haut-brassiere'))
             else:
                 add(shorts('vale-tudo', k['liner'], k['linerband'], under=UNDER_OVERLAP >= 0))
                 add(shorts('surshort', k['over'], k['overband']))
@@ -3162,9 +3181,6 @@ def brand_logos(parts):
         if n.startswith('haut-') and female:
             # Previous sports bras remain logo-free. Reference Amara gets the studio's own mark,
             # NOT commercial logos shown on user-provided reference pictures.
-            if AMARA_MMA_REF and n.startswith('haut-brassiere'):
-                out.append(logo_on(g, f'logo-{n}-reference', Vector((0, 0, bra_low() + 0.105)),
-                                   Vector((0, -1, 0)), 0.100, letters='#F2F2EE', slash='#D4AF37'))
             continue
         if n.startswith('haut-') or n.startswith('rash-'):
             low = bra_low() - (0.04 if 'crop' in n else 0)
