@@ -2847,6 +2847,9 @@ def export(name, parts, hide):
     parts[0]['hideBody'] = base64.b64encode(bytes(q)).decode()
     parts[0]['hideScale'] = HQ
     parts[0]['outfit'] = name
+    # Assets can now be verified as freshly regenerated: unchanged legacy GLBs must
+    # never pass the v1.37.2 deployment gate with old cutouts.
+    parts[0]['generatorVersion'] = '1.37.2'
     for o in bpy.context.view_layer.objects:
         o.select_set(o in parts or o == arm)
     body.select_set(False)
