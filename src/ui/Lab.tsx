@@ -38,7 +38,10 @@ export function Lab() {
   useMemo(() => {
     const num = (k: string) => (q.get(k) !== null ? Number(q.get(k)) : undefined);
     const expr = q.get('expr') ? Object.fromEntries(q.get('expr')!.split(',').map((kv) => [kv.split(':')[0], Number(kv.split(':')[1] ?? 1)])) : undefined;
-    (globalThis as { __cssFace?: object }).__cssFace = q.get('face') === 'live' ? {} : { still: true, effort: num('effort'), blink: num('blink'), expr };
+    // 1.34 etat=<state>: the face of a behaviour state (neutre, concentration, preparation, effort, frappe, fatigue,
+    // recuperation, encouragement), src/three/human/behavior.ts
+    const state = q.get('etat') ?? undefined;
+    (globalThis as { __cssFace?: object }).__cssFace = q.get('face') === 'live' ? { state } : { still: true, effort: num('effort'), blink: num('blink'), expr, state };
   }, [q]);
   useMemo(() => {
     // 1.33 cou=ancien: the neck of 1.32 and before (src/engine/rig.ts), for before/after captures

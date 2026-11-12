@@ -8,6 +8,7 @@ import { Color, Material, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, MeshSta
 import { restoreReferencePose, setLegLength } from './pose';
 import { PhotoCoach } from './PhotoCoach';
 import { preloadOutfit, type OutfitId, type OutfitStatus } from './outfit';
+import type { HumanSignals } from './human/behavior';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { CoachRig } from '../engine';
 import { CoachMeta, Customizer } from './customize';
@@ -205,6 +206,8 @@ export interface CoachModelProps {
   /** v0.31: discipline outfit of the Ultra-réaliste coaches (null: none) and its loading state */
   outfit?: OutfitId | null;
   onOutfit?: (s: OutfitStatus) => void;
+  /** 1.34 signals of the session for the coach's behaviour (src/three/human/behavior.ts) */
+  human?: HumanSignals;
 }
 
 interface TexEntry {
@@ -272,6 +275,7 @@ export function CoachModel(props: CoachModelProps) {
         shadows={quality === 'haute'}
         onRig={props.onRig}
         onFrame={props.onFrame}
+        human={props.human}
         draco={DRACO}
         extendLoader={patchJsonModels}
       />

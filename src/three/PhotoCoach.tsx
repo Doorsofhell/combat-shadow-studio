@@ -9,6 +9,8 @@ import { hairFadeAttribute, photoMaterial, photoPart, skinLookFor } from './phot
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { restoreReferencePose, setLegLength } from './pose';
 import { dropStillMorphs, FaceAnimator, type FaceOptions } from './face';
+import type { HumanSignals } from './human/behavior';
+import { humanProfileFor } from './human/profiles';
 import { CoachRig } from '../engine';
 import { useOutfit, type OutfitId, type OutfitStatus } from './outfit';
 
@@ -32,6 +34,7 @@ export function PhotoCoach({
   onFrame,
   draco,
   extendLoader,
+  human,
 }: {
   url: string;
   /** v0.31: the discipline outfit (src/three/outfit.ts) */
@@ -46,6 +49,8 @@ export function PhotoCoach({
   shadows: boolean;
   onRig: (rig: CoachRig) => void;
   onFrame: (rig: CoachRig, dt: number) => void;
+  /** 1.34 what the session tells the coach's behaviour (playing, paused, resting, phase): src/three/human/behavior.ts */
+  human?: HumanSignals;
 }) {
   const gltf = useGLTF(url, draco, true, extendLoader);
   // 1.10: breathing of the chest and belly, on the skin and on the garments (src/three/breath.ts)
@@ -73,7 +78,8 @@ export function PhotoCoach({
   // 1.9: blinks, gaze and the effort of the strikes on the facial bones (src/three/face.ts); after the rig's pose
   const face = useMemo(() => {
     restoreReferencePose(scene);
-    return new FaceAnimator(scene, url.length);
+    // 1.34 every coach gets the common behaviour engine, with its own profile (src/three/human/profiles.ts)
+    return new FaceAnimator(scene, url.length, humanProfileFor(url));
   }, [scene, url]);
   const rig = useMemo(() => {
     restoreReferencePose(scene);
@@ -127,12 +133,13 @@ export function PhotoCoach({
   const ready = !expected || (dressed.outfit === expected && (dressed.state === 'portee' || dressed.state === 'erreur'));
   scene.visible = ready;
   if (import.meta.env.DEV) (globalThis as { __photoScene?: Object3D }).__photoScene = scene;
+  if (import.meta.env.DEV) (globalThis as { __faceAnim?: FaceAnimator }).__faceAnim = face;
   useFrame((_, dt) => {
     onFrame(rig, Math.min(dt, 0.05));
     // fixed images (Lab, portraits) ask for a still face, or impose an expression: window.__cssFace
     const fo = (globalThis as { __cssFace?: FaceOptions }).__cssFace;
     face.setBreath(fo?.still ? null : breath.amount.value.x);
-    face.update(Math.min(dt, 0.05), fo);
+    face.update(Math.min(dt, 0.05), fo, human);
     // still images (Lab, portraits): the chest at rest, so two captures of the same instant are the same
     breath.update(fo?.still ? 0 : dt, face.state.effort);
     if (fo?.still) breath.amount.value.set(0, 0, 0, 0);

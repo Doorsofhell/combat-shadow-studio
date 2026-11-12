@@ -44,7 +44,8 @@ describe('respiration', () => {
       // 1.23 (Youssef 05/11 20:04: « respiration aussi, c'est très important »): 3.5 to 5 % of the Spine2-Neck span
       // (about 5 to 8 mm; it was 2 to 3 %, 3 to 5 mm, too discreet to be seen)
       expect(amp / span).toBeGreaterThan(0.035);
-      expect(amp / span).toBeLessThan(0.05);
+      // 1.33.x (#73, lot de Youssef « respiration plus visible »): 5.5 % since, still a few millimetres (under 6 %)
+      expect(amp / span).toBeLessThan(0.06);
       const m = new MeshStandardMaterial();
       applyBreath(m, u);
       const shader = { uniforms: {}, vertexShader: ShaderLib.standard.vertexShader, fragmentShader: '' };

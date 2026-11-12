@@ -1,4 +1,7 @@
 import { Bone, Mesh, Object3D, Quaternion, Vector3 } from 'three';
+import { BehaviorEngine, HUMAN_STATES, NEUTRAL_MOOD, type HumanSignals, type HumanState, type Mood } from './human/behavior';
+import { faceCapabilities, type FaceCapabilities } from './human/capabilities';
+import { DEFAULT_PROFILE, type HumanProfile } from './human/profiles';
 
 /**
  * 1.9 (Youssef, 2026-10-29: « l'expression des visages est trop statique, fait quelque chose »): a living face for
@@ -28,6 +31,8 @@ export interface FaceOptions {
   blink?: number;
   /** imposed expression weights (Lab ?expr=), ARKit names without their number: { JawOpen: 1 } */
   expr?: Record<string, number>;
+  /** 1.34 imposed behaviour state (Lab ?etat=): its mood is shown at once */
+  state?: HumanState;
 }
 
 /** the expressions used, by ARKit name (the model's targets are named AK_nn_<name>) */
@@ -63,21 +68,26 @@ export interface FaceIdle {
 
 /** 1.33 strength of the face at rest and of the strike's effort, relative to 1.20 (also used by the bone faces) */
 export const FACE_GAIN = { rest: 2.5, effort: 2 } as const;
-export function expressionWeights(blink: number, effort: number, exhale: number, idle?: FaceIdle): Partial<Record<FaceExpression, number>> {
+/**
+ * 1.34 mood: the behaviour state's mood (src/three/human/behavior.ts). Without one, the face is the 1.33 face.
+ */
+export function expressionWeights(blink: number, effort: number, exhale: number, idle?: FaceIdle, mood: Mood = NEUTRAL_MOOD): Partial<Record<FaceExpression, number>> {
   const e = effort;
   const i = idle ?? { focus: 0, brow: 0, press: 0, smile: 0, side: 0, breath: 0 };
   // the face at rest gives way to the strike's effort
   const rest = 1 - e;
-  const f = i.focus * rest;
+  const f = i.focus * rest * mood.focus;
+  // 1.34 the mouth parts a little on the breath out, only when out of breath (fatigue, recovery), never at rest
+  const pant = mood.mouthBreath * (1 - i.breath) * rest;
   // 1.33 (Youssef 11/11: « le visage de Kadir n'est pas du tout expressif »): the avatars' own expressions are small
   // (a full smile moves the mouth corner 4 mm), so the face at rest is now about 2.5 times stronger and the strike's
   // effort twice as strong as in 1.20; every weight stays within 0..1 (FaceAnimator clamps them)
   const R = FACE_GAIN.rest;
   const E = FACE_GAIN.effort;
-  const lid = Math.max(blink, 0.2 * E * e + 0.12 * R * f);
+  const lid = Math.max(blink, 0.2 * E * e + 0.12 * R * f + 0.22 * mood.heavy * rest);
   // Avoid an over-compressed grimace when the fighter exhales.
-  const press = 0.18 * e * (1 - exhale) + 0.14 * i.press * rest;
-  const smile = 0.22 * i.smile * rest * (1 - i.press);
+  const press = 0.18 * e * (1 - exhale) + 0.14 * i.press * rest * (1 - mood.mouthBreath) + 0.12 * mood.press * rest;
+  const smile = 0.22 * i.smile * rest * (1 - i.press) + 0.3 * mood.smile * rest;
   const sl = smile * (1 - 0.35 * Math.max(0, i.side));
   const sr = smile * (1 + 0.35 * Math.min(0, i.side));
   const nose = 0.35 * E * e + 0.12 * i.breath * rest;
@@ -88,17 +98,20 @@ export function expressionWeights(blink: number, effort: number, exhale: number,
     EyeSquintLeft: squint, EyeSquintRight: squint,
     CheekSquintLeft: 0.55 * E * e + 0.6 * sl, CheekSquintRight: 0.55 * E * e + 0.6 * sr,
     BrowDownLeft: brow, BrowDownRight: brow,
-    BrowInnerUp: 0.35 * R * i.brow * rest,
+    BrowInnerUp: 0.35 * R * i.brow * rest + 0.35 * mood.browUp * rest,
     NoseSneerLeft: nose, NoseSneerRight: nose,
     // A light lip seal keeps the teeth concealed except for a short exhale.
-    MouthClose: 0.22 * (1 - exhale),
+    MouthClose: 0.22 * (1 - exhale) * (1 - pant),
     MouthPressLeft: press, MouthPressRight: press,
     MouthSmileLeft: sl, MouthSmileRight: sr,
     MouthStretchLeft: 0.06 * e, MouthStretchRight: 0.06 * e,
     // Brief exhale through slightly parted lips; large concurrent morphs expose the
     // source model's mouth interior and can create a rigid, toothy grimace.
     MouthFunnel: 0.24 * exhale,
-    JawOpen: 0.14 * exhale,
+    JawOpen: 0.14 * exhale + 0.1 * pant,
+    // 1.34 preparation: the eyes open a little, attentive
+    EyeWideLeft: 0.25 * mood.alert * rest,
+    EyeWideRight: 0.25 * mood.alert * rest,
   };
   for (const k of Object.keys(w) as FaceExpression[]) w[k] = Math.min(1, w[k]!);
   return w;
@@ -132,6 +145,9 @@ const FWD = new Vector3(0, 0, 1);
 const tmpQ = new Quaternion();
 const tmpQ2 = new Quaternion();
 const tmpV = new Vector3();
+const tmpV3 = new Vector3();
+const tmpV4 = new Vector3();
+const tmpV5 = new Vector3();
 
 function find(root: Object3D, name: string): Bone | null {
   let hit: Bone | null = null;
@@ -201,13 +217,25 @@ export class FaceAnimator {
   /** false when the model has no facial bones (the generated models): update() does nothing */
   readonly active: boolean;
   private lids: { top: Lid; bottom: Lid }[] = [];
-  private eyes: { bone: Bone; q: Quaternion; yaw: Vector3; pitch: Vector3 }[] = [];
+  /** fwd: the line of sight at rest, in the bone's own space */
+  private eyes: { bone: Bone; q: Quaternion; yaw: Vector3; pitch: Vector3; fwd: Vector3 }[] = [];
+  /** 1.34 what the model can do (src/three/human/capabilities.ts) */
+  readonly capabilities: FaceCapabilities;
+  /** 1.34 the behaviour state and the mood of the face (src/three/human/behavior.ts) */
+  readonly behavior: BehaviorEngine;
+  readonly profile: HumanProfile;
+  /** 1.34 gaze on the opponent: the model, the way it faces at rest (in its own space), the share of the aim */
+  private root: Object3D;
+  private facing = new Vector3(0, 0, 1);
+  private aim = { w: 0, yaw: 0, pitch: 0 };
   private movers: Mover[] = [];
   private jaw: { bone: Bone; q: Quaternion; axis: Vector3 } | null = null;
   private ends: Object3D[] = [];
   /** meshes with the expressions, and the index of each expression in their morphTargetInfluences */
   private morphs: { mesh: Mesh; idx: Partial<Record<FaceExpression, number>> }[] = [];
   private exhale = 0;
+  /** 1.34 the hands and feet were read once (the first image measures no speed) */
+  private primed = false;
   private last: Vector3[] = [];
   private rand: () => number;
   private t = 0;
@@ -233,20 +261,26 @@ export class FaceAnimator {
   private bodyBreath: number | null = null;
 
   /** the model must be in its rest pose (restoreReferencePose) and its world matrices up to date */
-  constructor(root: Object3D, seed = 1) {
+  constructor(root: Object3D, seed = 1, profile: HumanProfile = DEFAULT_PROFILE) {
     this.rand = rng(seed);
+    this.root = root;
+    this.profile = profile;
+    this.behavior = new BehaviorEngine(profile.traits);
     root.updateMatrixWorld(true);
     const lat = new Vector3(1, 0, 0);
     const le = find(root, 'LeftEye');
     const re = find(root, 'RightEye');
     if (le && re) lat.copy(le.getWorldPosition(new Vector3())).sub(re.getWorldPosition(new Vector3())).normalize();
+    // the way the model faces at rest (its left to its right, crossed with up), kept in the model's own space
+    const facingW = new Vector3().crossVectors(lat, UP).normalize();
+    this.facing.copy(facingW).applyQuaternion(root.getWorldQuaternion(new Quaternion()).invert()).normalize();
     for (const s of ['L', 'R'] as Side[]) {
       const eye = s === 'L' ? le : re;
       const top = find(root, `Face_${s}EyeBlinkTop`);
       const bot = find(root, `Face_${s}EyeBlinkBottom`);
       if (eye) {
         const r = rest(eye);
-        this.eyes.push({ bone: eye, q: r.q, yaw: toBone(eye, UP), pitch: toBone(eye, lat) });
+        this.eyes.push({ bone: eye, q: r.q, yaw: toBone(eye, UP), pitch: toBone(eye, lat), fwd: toBone(eye, facingW) });
       }
       if (top && bot && eye) {
         const ec = eye.getWorldPosition(new Vector3());
@@ -324,34 +358,63 @@ export class FaceAnimator {
       this.jaw = null;
     }
     this.active = this.lids.length > 0 || this.eyes.length > 0 || this.morphs.length > 0;
+    // 1.34 capabilities, read from the same names as the contract tests read in the GLB files
+    const bones: string[] = [];
+    const morphNames: string[] = [];
+    root.traverse((o) => {
+      if ((o as Bone).isBone) bones.push(o.name);
+      const d = (o as Mesh).morphTargetDictionary;
+      if (d) morphNames.push(...Object.keys(d));
+    });
+    this.capabilities = faceCapabilities(bones, morphNames);
   }
 
   /**
    * after the body pose of the frame. still: no blink nor saccade (fixed images: Lab, portraits, illustrations);
    * effort / blink: imposed values (Lab ?effort= &blink=), the measured ones otherwise
    */
-  update(dt: number, opts: FaceOptions = {}) {
+  update(dt: number, opts: FaceOptions = {}, signals?: HumanSignals) {
     const still = !!opts.still;
     if (!this.active || dt <= 0) return;
     this.t += dt;
-    // effort from the speed of the fastest hand or foot (a punch reaches 6 to 10 m/s, a step 1 to 2)
+    // effort from the speed of the fastest hand or foot (a punch reaches 6 to 10 m/s, a step 1 to 2). 1.34: measured
+    // in the model's own space (moving the whole coach on the stage or in AR is no strike), and not on the first
+    // image nor after a gap (the jump from the rest pose to the guard read as a strike: the coach appeared with a
+    // grimace that took a second to go)
     let v = 0;
+    // the first 0.3 s: the model goes from its rest pose to the guard as the animation starts, no strike there
+    const fresh = !this.primed || dt > 0.2 || this.t < 0.3;
     this.ends.forEach((b, i) => {
-      const p = b.getWorldPosition(tmpV);
-      v = Math.max(v, p.distanceTo(this.last[i]) / dt);
+      const p = this.root.worldToLocal(b.getWorldPosition(tmpV));
+      // the time between images is floored at 1/120 s: a burst of nearly simultaneous images (slow graphics) turned
+      // the last tenth of a millimetre of a pose into metres per second
+      if (!fresh) v = Math.max(v, p.distanceTo(this.last[i]) / Math.max(dt, 1 / 120));
       this.last[i].copy(p);
     });
+    // faster than any limb (25 m/s): a jump of the pose (a cut to another technique, a reset), not a strike
+    if (v > 25) v = 0;
+    this.primed = true;
     const target = Math.min(1, Math.max(0, (v - 1.3) / 3.2));
     // quick onset, slower release: the face sets as the strike leaves and relaxes after it
     this.effort += (target - this.effort) * Math.min(1, dt / (target > this.effort ? 0.05 : 0.35));
     if (opts.effort !== undefined) this.effort = opts.effort;
+    // 1.34 the behaviour state and its mood (an imposed state is shown at once, for the captures)
+    const B = this.behavior;
+    const forced = opts.state && (HUMAN_STATES as readonly string[]).includes(opts.state) ? opts.state : undefined;
+    if (forced) {
+      B.update(10, this.effort, { playing: true, resting: false, phase: null, cheer: 0, forced });
+    } else if (!still) B.update(dt, this.effort, signals);
+    const mood = still && !forced ? NEUTRAL_MOOD : B.mood;
+    const tempo = B.tempo;
     if (this.effort > 0.75 && this.peak < 0.75 && !still && this.blinkAt < 0 && this.rand() < 0.5) this.blinkAt = this.t;
     this.peak = this.effort;
 
-    // blinks: 0.07 s closing, 0.12 s opening
+    // blinks: 0.07 s closing, 0.12 s opening; every 3 to 6 s (1.33.0), more often when tired, less when focused;
+    // 1.34 irregular: now and then a double blink, and a blink often goes with a glance aside
     if (!still && this.blinkAt < 0 && this.t >= this.nextBlink) {
       this.blinkAt = this.t;
-      this.nextBlink = this.t + 3 + this.rand() * 3;
+      const rate = Math.max(0.3, tempo.blink * this.profile.blinkRate);
+      this.nextBlink = this.rand() < 0.14 ? this.t + 0.32 + 0.12 * this.rand() : this.t + (3 + this.rand() * 3) / rate;
     }
     let blink = 0;
     if (this.blinkAt >= 0) {
@@ -383,37 +446,51 @@ export class FaceAnimator {
     }
     const rest = 1 - this.effort;
     const idle = still ? null : this.idle;
-    const squint = 0.45 * this.effort + (idle ? 0.24 * idle.focus * rest : 0);
-    const close = Math.max(blink, squint);
-    for (const { top, bottom } of this.lids) {
-      for (const [lid, k] of [
-        [top, close],
-        [bottom, Math.max(blink, squint * 1.4)],
-      ] as const) {
-        lid.bone.position.copy(lid.p).addScaledVector(lid.close, k);
-        lid.bone.quaternion.copy(lid.q);
-        if (lid.axis) lid.bone.quaternion.multiply(tmpQ.setFromAxisAngle(lid.axis, lid.angle * k));
-      }
-    }
+    const focus = idle ? idle.focus * mood.focus : 0;
+    const squint = 0.45 * this.effort + 0.24 * focus * rest;
+    // 1.34 heavier lids when tired
+    const close = Math.max(blink, squint, 0.3 * mood.heavy * rest);
 
-    // gaze: a new fixation point every 0.6 to 2.4 s, a few degrees around straight ahead; quick saccade
+    // gaze: a new fixation point every 0.6 to 2.4 s, a few degrees around the opponent; quick saccade
     const g = this.gaze;
     if (!still && this.t >= g.next) {
-      // 1.23 now and then a real glance aside (up to 12°), held a little longer; the head follows it in part
-      const away = this.rand() < 0.18;
+      // 1.23 now and then a real glance aside (up to 12°), held a little longer; the head follows it in part.
+      // 1.34 never while preparing or striking, more often when recovering; never down to the floor
+      const away = this.rand() < 0.18 * tempo.glance;
       g.toYaw = (this.rand() - 0.5) * (away ? 0.42 : 0.14);
       g.toPitch = (this.rand() - 0.5) * (away ? 0.12 : 0.07);
+      if (away) g.toPitch = Math.abs(g.toPitch) * 0.5;
+      if (away && this.blinkAt < 0 && this.rand() < 0.35) this.blinkAt = this.t;
       g.next = this.t + (away ? 0.9 + this.rand() * 0.9 : 0.6 + this.rand() * 1.8);
     }
-    if (still) g.toYaw = g.toPitch = 0;
+    // a still image looks straight at the opponent at once (two captures of the same instant are the same)
+    if (still) g.toYaw = g.toPitch = g.yaw = g.pitch = 0;
     const s = Math.min(1, dt / 0.04);
     g.yaw += (g.toYaw - g.yaw) * s;
     g.pitch += (g.toPitch - g.pitch) * s;
-    for (const e of this.eyes) {
-      e.bone.quaternion.copy(e.q).multiply(tmpQ.setFromAxisAngle(e.yaw, g.yaw)).multiply(tmpQ.setFromAxisAngle(e.pitch, g.pitch + 0.03 * close));
-    }
 
-    this.moveHead(dt, still, rest);
+    // 1.34 the head first (its small life, a nod of encouragement), then the eyes, which aim from where it is
+    this.moveHead(dt, still, rest, mood);
+    this.aimEyes(dt);
+    for (const e of this.eyes) {
+      e.bone.quaternion
+        .copy(e.q)
+        .multiply(tmpQ.setFromAxisAngle(e.yaw, g.yaw + this.aim.yaw))
+        .multiply(tmpQ.setFromAxisAngle(e.pitch, g.pitch + this.aim.pitch + 0.03 * close));
+    }
+    // the lids; 1.34 the upper lid follows the eye as it turns up or down (a raised look opens the eye: without it the
+    // iris went under the lid when the eyes looked up at the opponent), the lower one a little
+    const look = g.pitch + this.aim.pitch;
+    for (const { top, bottom } of this.lids) {
+      for (const [lid, k, follow] of [
+        [top, close, 0.8],
+        [bottom, Math.max(blink, squint * 1.4), 0.3],
+      ] as const) {
+        lid.bone.position.copy(lid.p).addScaledVector(lid.close, k);
+        lid.bone.quaternion.copy(lid.q);
+        if (lid.axis) lid.bone.quaternion.multiply(tmpQ.setFromAxisAngle(lid.axis, lid.angle * k + follow * look * (1 - k)));
+      }
+    }
 
     for (const m of this.movers) {
       // 1.33 stronger, as the expressions above (the bone faces of Axel and Kaila: effort ×1.6, rest ×2)
@@ -422,37 +499,79 @@ export class FaceAnimator {
       if (idle) {
         // at rest, the same features as the expressions of the other coaches, smaller: brows a little lowered by
         // focus, the inner brows lifted now and then, the mouth corners in a faint uneven smile
-        if (m.kind === 'inner') k += FACE_GAIN.rest * 0.8 * (0.3 * idle.focus - 0.6 * idle.brow) * rest;
-        else if (m.kind === 'outer' || m.kind === 'mid') k += FACE_GAIN.rest * 0.8 * 0.3 * idle.focus * rest;
+        if (m.kind === 'inner') k += FACE_GAIN.rest * 0.8 * (0.3 * focus - 0.6 * idle.brow - 0.6 * mood.browUp) * rest;
+        else if (m.kind === 'outer' || m.kind === 'mid') k += FACE_GAIN.rest * 0.8 * 0.3 * focus * rest;
         else if (m.kind === 'corner' && m.smile) {
           const lead = 1 + 0.35 * idle.side * (m.side ?? 0);
-          m.bone.position.addScaledVector(m.smile, FACE_GAIN.rest * 0.8 * 0.5 * idle.smile * (1 - idle.press) * rest * lead);
-          k += FACE_GAIN.rest * 0.8 * 0.25 * idle.press * rest;
+          const smile = 0.5 * idle.smile * (1 - idle.press) + 0.7 * mood.smile;
+          m.bone.position.addScaledVector(m.smile, FACE_GAIN.rest * 0.8 * smile * rest * lead);
+          k += FACE_GAIN.rest * 0.8 * (0.25 * idle.press + 0.2 * mood.press) * rest;
         }
       }
       m.bone.position.addScaledVector(m.d, k);
       m.bone.quaternion.copy(m.q);
     }
     // the jaw sets and opens a crack on the exhale of the strike (2° at full effort); at rest it follows the
-    // breathing (up to 0.8°)
+    // breathing (up to 0.8°); 1.34 out of breath, the mouth parts on the breath out (up to 2.5° more)
     if (this.jaw) {
-      const a = 2 * this.effort + (idle ? 0.3 * idle.breath * rest : 0);
+      const a = 2 * this.effort + (idle ? (0.3 * idle.breath + 2.5 * mood.mouthBreath * (1 - idle.breath)) * rest : 0);
       this.jaw.bone.quaternion.copy(this.jaw.q).multiply(tmpQ.setFromAxisAngle(this.jaw.axis, (a * Math.PI) / 180));
     }
     if (this.morphs.length) {
       // the exhale follows the effort with a short delay and lasts a little longer (breath out as the strike lands)
       const ex = still ? 0 : this.effort;
       this.exhale += (ex - this.exhale) * Math.min(1, dt / (ex > this.exhale ? 0.09 : 0.25));
-      const w = opts.expr ?? expressionWeights(blink, this.effort, this.exhale, still ? undefined : this.idle);
+      const w = opts.expr ?? expressionWeights(blink, this.effort, this.exhale, still ? undefined : this.idle, mood);
+      // 1.34 a raised look opens the eyes (the upper lid follows the eye: positive pitch is down)
+      if (!opts.expr && look < 0) {
+        const up = Math.min(0.45, -1.4 * look) * (1 - blink);
+        w.EyeWideLeft = (w.EyeWideLeft ?? 0) + up;
+        w.EyeWideRight = (w.EyeWideRight ?? 0) + up;
+      }
       for (const { mesh, idx } of this.morphs) {
         const inf = mesh.morphTargetInfluences!;
         inf.fill(0);
-        for (const [k, v] of Object.entries(w)) {
+        for (const k in w) {
           const i = idx[k as FaceExpression];
-          if (i !== undefined) inf[i] = Math.max(0, Math.min(1, v ?? 0));
+          if (i !== undefined) inf[i] = Math.max(0, Math.min(1, w[k as FaceExpression] ?? 0));
         }
       }
     }
+  }
+
+  /**
+   * 1.34 (Youssef 11/11: « orienter naturellement le regard vers l'adversaire… éliminer les regards dirigés vers le
+   * sol »): in guard the head is pitched down (chin tucked, trunk leaning: 10 to 15°) and the eyes, fixed in the
+   * head, looked at the floor two metres ahead. The eyes now aim at the opponent, in front of the coach at the
+   * height of its own eyes, from wherever the head is: they look up from under the brows as a fighter does, and the
+   * head's small movements no longer drag the look around (the eyes hold the target as real eyes do). Within
+   * 30° across and 23° up or down; further (on the ground, spinning, a glance aside of the whole body) the aim fades
+   * out over 0.2 s and the eyes follow the head.
+   */
+  private aimEyes(dt: number) {
+    const a = this.aim;
+    if (!this.eyes.length) return;
+    let yaw = 0;
+    let pitch = 0;
+    for (const e of this.eyes) {
+      const parent = e.bone.parent!;
+      const wq = parent.getWorldQuaternion(tmpQ).multiply(e.q);
+      // the opponent: in front of the coach (the way the model faces), at the height of its eyes: a level line
+      const d = tmpV3.copy(this.facing).applyQuaternion(this.root.getWorldQuaternion(tmpQ2)).setY(0).normalize().applyQuaternion(wq.invert());
+      const side = tmpV4.crossVectors(e.yaw, e.fwd);
+      const up = tmpV5.crossVectors(e.pitch, e.fwd);
+      const df = d.dot(e.fwd);
+      const ds = d.dot(side);
+      yaw += Math.atan2(ds, df);
+      pitch += Math.atan2(d.dot(up), Math.hypot(df, ds));
+    }
+    yaw /= this.eyes.length;
+    pitch /= this.eyes.length;
+    const reach = Math.max(Math.abs(yaw) / 0.52, Math.abs(pitch) / 0.4);
+    const w = Math.min(1, Math.max(0, 1.6 - reach));
+    a.w += (w - a.w) * Math.min(1, dt / 0.2);
+    a.yaw = a.w * Math.max(-0.52, Math.min(0.52, yaw));
+    a.pitch = a.w * Math.max(-0.4, Math.min(0.4, pitch));
   }
 
   /**
@@ -461,7 +580,7 @@ export class FaceAnimator {
    * the head (three sines, up to 2.7° of turn, 1.6° of nod, 1° of tilt) and a share of each glance; it gives way to
    * the strike's effort and is nil on still images
    */
-  private moveHead(dt: number, still: boolean, rest: number) {
+  private moveHead(dt: number, still: boolean, rest: number, mood: Mood = NEUTRAL_MOOD) {
     const h = this.head;
     if (!h) return;
     const q = h.bone.quaternion;
@@ -488,7 +607,9 @@ export class FaceAnimator {
     this.headAmp += (1 - this.headAmp) * Math.min(1, dt / 1.2);
     const amp = rest * rest * this.headAmp * this.headAmp;
     const yaw = amp * (deg * 2.2 * Math.sin(0.37 * t + a) + deg * 1.0 * Math.sin(0.91 * t + b) + 0.35 * h.follow);
-    const pitch = amp * (deg * 1.4 * Math.sin(0.29 * t + b) + deg * 0.6 * Math.sin(0.77 * t + c) + 0.3 * h.followP);
+    // 1.34 encouragement: a small nod (down and back, 2.5°, twice), gone with the state
+    const nod = mood.nod * deg * 2.5 * Math.pow(Math.max(0, Math.sin(2 * Math.PI * 1.3 * this.behavior.age)), 2);
+    const pitch = amp * (deg * 1.4 * Math.sin(0.29 * t + b) + deg * 0.6 * Math.sin(0.77 * t + c) + 0.3 * h.followP) + nod;
     const roll = amp * deg * (0.7 * Math.sin(0.23 * t + c) + 0.3 * Math.sin(0.61 * t + a));
     h.d
       .setFromAxisAngle(h.yaw, yaw)

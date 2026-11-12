@@ -86,14 +86,21 @@ describe.each(ROCKETBOX)('%s : expressions du visage', (id) => {
 });
 
 describe('poids des expressions', () => {
-  test('au repos, visage neutre', () => {
-    for (const v of Object.values(expressionWeights(0, 0, 0))) expect(v).toBe(0);
+  // 1.33.x (#75, lot de Youssef « bouche plus naturelle ») then 1.34 (vérifié sur captures: sans ce joint, la bouche
+  // des modèles Rocketbox reste entrouverte et montre les dents): at rest the only weight is the light lip seal
+  test('au repos, visage neutre : seulement le léger joint des lèvres', () => {
+    for (const [k, v] of Object.entries(expressionWeights(0, 0, 0))) {
+      if (k === 'MouthClose') {
+        expect(v).toBeGreaterThan(0);
+        expect(v).toBeLessThanOrEqual(0.22);
+      } else expect(v, k).toBe(0);
+    }
   });
   test('un clignement ferme les deux yeux, rien d’autre', () => {
     const w = expressionWeights(1, 0, 0);
     expect(w.EyeBlinkLeft).toBe(1);
     expect(w.EyeBlinkRight).toBe(1);
-    for (const [k, v] of Object.entries(w)) if (!k.startsWith('EyeBlink')) expect(v, k).toBe(0);
+    for (const [k, v] of Object.entries(w)) if (!k.startsWith('EyeBlink') && k !== 'MouthClose') expect(v, k).toBe(0);
   });
   // 1.33 (Youssef 11/11, option « V1 » choisie sur captures: « le visage de Kadir n'est pas du tout expressif »): the
   // avatars' expressions are small, so the strike now takes brows and eyes to their full expression (1.20 kept every
@@ -150,7 +157,9 @@ describe('le moteur du visage pilote les expressions', () => {
     face.update(1 / 60, { still: true, effort: 1 });
     expect(inf('BrowDownLeft')).toBeGreaterThan(0.3);
     face.update(1 / 60, { still: true, effort: 0 });
-    expect(m.morphTargetInfluences!.every((v) => v === 0)).toBe(true);
+    // back to rest: nothing but the light lip seal (1.33.x)
+    expect(m.morphTargetInfluences!.every((v, i) => v === 0 || FACE_EXPRESSIONS[i] === 'MouthClose')).toBe(true);
+    expect(inf('MouthClose')).toBeLessThanOrEqual(0.22);
   });
 });
 
@@ -166,7 +175,9 @@ describe('1.20 le visage vit au repos', () => {
     const w = expressionWeights(0, 0, 0, idle);
     expect(w.BrowInnerUp!).toBeGreaterThan(0.6);
     expect(w.BrowDownLeft!).toBeGreaterThan(0.6);
-    expect(w.MouthSmileLeft! + w.MouthSmileRight!).toBeGreaterThan(0.8);
+    // 1.33.x (#75, « bouche plus naturelle »): the faint smile at rest is restrained (it was up to 0.9 a side)
+    expect(w.MouthSmileLeft! + w.MouthSmileRight!).toBeGreaterThan(0.3);
+    expect(Math.max(w.MouthSmileLeft!, w.MouthSmileRight!)).toBeLessThan(0.25);
     expect(w.MouthSmileLeft!).not.toBeCloseTo(w.MouthSmileRight!, 2);
     for (const [k, v] of Object.entries(w)) expect(v!, k).toBeLessThanOrEqual(1);
     const hit = expressionWeights(0, 1, 1, idle);
@@ -185,13 +196,16 @@ describe('1.20 le visage vit au repos', () => {
     root.add(m);
     const face = new FaceAnimator(root, 7);
     const at = (e: (typeof FACE_EXPRESSIONS)[number]) => m.morphTargetInfluences![FACE_EXPRESSIONS.indexOf(e)];
-    const watched = ['BrowDownLeft', 'MouthPressLeft', 'NoseSneerLeft', 'JawOpen'] as const;
+    // 1.33.x / 1.34: the jaw no longer moves at rest (mouth closed and relaxed), the eyes' squint does
+    const watched = ['BrowDownLeft', 'MouthPressLeft', 'NoseSneerLeft', 'EyeSquintLeft'] as const;
+    let jaw = 0;
     const seen = watched.map(() => ({ lo: 1, hi: 0 }));
     let jump = 0;
     let prev = watched.map(() => 0);
     for (let f = 0; f < 12 * 60; f++) {
       face.update(1 / 60);
       const now = watched.map((e) => at(e));
+      if (f > 30) jaw = Math.max(jaw, at('JawOpen'));
       if (f > 0) jump = Math.max(jump, ...now.map((v, i) => Math.abs(v - prev[i])));
       now.forEach((v, i) => { seen[i].lo = Math.min(seen[i].lo, v); seen[i].hi = Math.max(seen[i].hi, v); });
       prev = now;
@@ -199,7 +213,9 @@ describe('1.20 le visage vit au repos', () => {
     seen.forEach((s, i) => expect(s.hi - s.lo, watched[i]).toBeGreaterThan(0.03));
     // no jerk from one frame to the next (blinks aside, which are not watched here)
     expect(jump).toBeLessThan(0.05);
+    expect(jaw, 'bouche entrouverte au repos').toBe(0);
     face.update(1 / 60, { still: true, effort: 0 });
-    expect(m.morphTargetInfluences!.every((v) => v === 0)).toBe(true);
+    const left = FACE_EXPRESSIONS.filter((e, i) => m.morphTargetInfluences![i] !== 0 && e !== 'MouthClose');
+    expect(left).toEqual([]);
   });
 });

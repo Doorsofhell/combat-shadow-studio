@@ -49,6 +49,20 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.35.0',
+      releaseDate: '2026-11-12',
+      title: 'Coachs plus humains : regard, bouche et comportement',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Les coachs regardent enfin leur adversaire : en garde, leurs yeux ne fixent plus le sol mais le regard en face, et la paupière suit l’œil.' },
+        { category: 'corrections', text: 'Plus de grimace d’effort à l’apparition du coach : le passage de la pose de départ à la garde n’est plus pris pour une frappe.' },
+        { category: 'ameliorations', text: 'Huit états naturels et passagers : neutre, concentration, préparation, effort, frappe puissante, fatigue, récupération et encouragement après chaque répétition (léger sourire, petit hochement de tête).' },
+        { category: 'ameliorations', text: 'Clignements irréguliers (parfois doubles, avec les coups d’œil), bouche fermée et détendue au repos qui ne s’entrouvre qu’à l’expiration ou quand le coach est essoufflé.' },
+        { category: 'ameliorations', text: 'Un seul moteur de comportement pour les six coachs, avec des règles obligatoires et des tests pour tous les futurs personnages.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.34.0',
       releaseDate: '2026-11-11',
       title: 'Démarrage rapide',
