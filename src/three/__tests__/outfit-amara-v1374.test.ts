@@ -41,7 +41,8 @@ describe('v1.37.6 — Inaya référence immuable et Amara morphologie adaptée',
       expect(gltf.skins.length).toBeGreaterThan(0);
       expect(gltf.nodes.some((n) => n.extras?.generatorVersion === '1.37.6' &&
         n.extras?.clothingReference === 'inaya' &&
-        n.extras?.clothingMorphology === 'mma-amara')).toBe(true);
+        n.extras?.clothingMorphology === 'mma-amara' &&
+        n.extras?.sportsTopCut === 'covered-square-1376')).toBe(true);
     });
   }
 
@@ -55,7 +56,10 @@ describe('v1.37.6 — Inaya référence immuable et Amara morphologie adaptée',
   test('MMA : short intérieur et surshort conservés, sans copier les GLB d’Inaya', () => {
     const { gltf } = binary('public/coaches/mma-amara/tenues/mma.glb');
     for (const part of ['short-vale-tudo', 'short-surshort']) {
-      expect(gltf.nodes.some((n) => n.name?.includes(part) && n.mesh !== undefined)).toBe(true);
+      expect(gltf.nodes.some((n) => n.name?.includes(part) && n.mesh !== undefined &&
+        typeof n.extras?.cssCrotchGapCut === 'number' &&
+        typeof n.extras?.cssCrotchGapHalfWidth === 'number')).toBe(true);
     }
+    expect(gltf.nodes.some((n) => n.extras?.shortCrotchGeometry === 'separate-leg-openings-1376')).toBe(true);
   });
 });
