@@ -49,6 +49,19 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.37.4',
+      releaseDate: '2026-11-12',
+      title: 'Amara : les sept tenues harmonisées sur Inaya',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Inaya devient la référence officielle des patrons féminins. Ses sept tenues originales sont préservées à l’identique.' },
+        { category: 'coachs', text: 'Amara porte désormais les mêmes styles et coupes de hauts qu’Inaya, dont le crop-top à encolure carrée en boxe, kick-boxing, muay-thaï et MMA, ajusté à ses épaules et à son buste.' },
+        { category: 'corrections', text: 'Les sept tenues d’Amara sont reconstruites sur sa propre morphologie et son squelette ; sa palette noir et or reste conservée.' },
+        { category: 'ameliorations', text: 'Contrôles : sept modèles féminins générés, métadonnées de référence et d’adaptation, et non-régression des tenues d’Inaya, Naël et Kadir.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.37.3',
       releaseDate: '2026-11-12',
       title: 'Kadir : retour aux tenues stables, correction de régression',
