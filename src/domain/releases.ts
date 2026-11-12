@@ -57,6 +57,8 @@ export const RELEASES: readonly Release[] = (
         { category: 'corrections', text: 'Brassières et hauts MMA féminins : davantage de géométrie conservée sur les bretelles et emmanchures pour réduire les déchirures et les bordures irrégulières.' },
         { category: 'corrections', text: 'Shorts MMA à deux couches : surshort moins évasé, ceinture rapprochée du bassin et bordures latérales simplifiées pour supprimer les pans pointus.' },
         { category: 'ameliorations', text: 'Validation des 28 tenues reconstruites avant publication : la version 1.37.2 n’est publiée qu’avec des fichiers 3D effectivement régénérés et testés.' },
+        { category: 'corrections', text: 'Shorts MMA harmonisés : Naël sert de référence pour les hommes et Inaya pour les femmes. Chaque tenue est ajustée aux proportions et au squelette du coach.' },
+        { category: 'ameliorations', text: 'Coupe féminine sportive : taille et hanches bien ajustées, cuissard intérieur près du corps et surshort souple. Les deux modèles de référence sont conservés sans modification.' },
       ],
       links: [{ label: 'Voir les coachs', to: '/coach' }],
     },
