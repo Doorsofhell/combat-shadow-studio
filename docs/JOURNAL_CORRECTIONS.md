@@ -3434,3 +3434,14 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Toutes les tenues** : régénération des sept GLB d'Amara (boxe, kickboxing, muaythai, MMA, BJJ, BJJ no-gi et judo) sur son propre `photo.glb`, sans modifier Inaya, Naël ni Kadir. Les coupes de bas déjà communes restent dans leur logique féminine ; pas de substitution arbitraire des matériaux.
 - **Tests** : GLB 1.37.4 avec `clothingReference=inaya`, `clothingMorphology=mma-amara` ; vérification des crop-tops de frappe, des pièces MMA et des empreintes Inaya. Version `1.37.4` dans application et Nouveautés.
 - **Validation restante** : inspection visuelle des détails aux épaules, à l'entrejambe, à la ceinture, de face, dos, garde, low kick et high kick. Aucun test automatisé ne garantit à lui seul l'absence de clipping.
+
+
+## v1.37.5 — 12/11/2026 — Amara : ancien bikini incrusté, crop et ceinture
+
+- **Audit Blender vérifié** (run GitHub Actions #43247741065) : Amara photo.glb contient dans les zones échantillonnées de décolleté, poitrine et nuque 64,4 %, 74,9 % et 33,1 % de textures très sombres ; Inaya nettoyée : 0 %. La tache noire ne vient donc pas seulement de l'épaisseur du crop-top bleu.
+- **Retouche corporelle ciblée** : comparaison des atlas UV d'Amara et d'Inaya ; remise en couleur des pixels noirs uniquement sur les îlots anatomiques du torse et du bas du cou, avec calibration par les pixels de peau saine propres à Amara. Aucun transfert global du teint d'Inaya.
+- **Intégrité 3D** : remplacement exclusif des images de couleur encodées dans photo.glb. L'ensemble des bufferViews géométriques, joints, skins, morph targets et animations est conservé bit à bit, contrôlé dans le script de reconstruction.
+- **Crop** : débordement légèrement augmenté au-dessus du relief de l'ancien bikini, lissage des poids des bretelles d'Amara (sans modifier le patron original d'Inaya) et recouvrement des zones de bord.
+- **Shorts** : les coupes du bandeau jaune d'Amara sont désormais projetées sur le plan de séparation des matières dans toutes les disciplines, pas uniquement MMA.
+- **Livraison** : v1.37.5 package + lock + Nouveautés, sept nouveaux GLB d'Amara générés à partir de photo.glb corrigé, tests des 28 tenues, baseline Kadir restaurée, Inaya et Naël non modifiés, build + Pages seulement si contrôles réussis.
+- **Validation visuelle** : décolleté frontal, bretelles, nuque, ceinture jaune de dos, garde/direct et changements de pose ; l'absence complète de relief de l'ancien bikini sculpté n'est pas démontrée par la seule retouche de texture.
