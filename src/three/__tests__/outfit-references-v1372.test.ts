@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 
 /** The validated gender-specific reference assets are immutable in this fix.
- * Kadir and Amara receive new GLBs skinned on their own rigs; copying either
- * source GLB directly would use the wrong bone inverse bind matrices.
+ * Reference meshes cannot be assigned to another coach's skeleton.
+ * In v1.37.3 Kadir's own, previously approved GLBs are restored verbatim.
  */
 const references = [
   {
@@ -32,12 +32,11 @@ describe('MMA short reference models — v1.37.2', () => {
     });
   }
 
-  test('the generation script rebuilds only the follower coaches', () => {
-    const script = readFileSync('scripts/dev/regenerate-outfits-v1371.sh', 'utf8');
-    expect(script).toContain('export ONLY=mma');
-    expect(script).toContain('build_one mma-kadir homme default');
-    expect(script).toContain('build_one mma-amara femme default');
-    expect(script).not.toContain('build_one nael homme nael');
-    expect(script).not.toContain('build_one inaya femme inaya');
+  test('the recovery script operates on Kadir only', () => {
+    const script = readFileSync('scripts/dev/restore-kadir-v1373.sh', 'utf8');
+    expect(script).toContain('BASELINE=bcb49f9281');
+    expect(script).toContain('OUT=public/coaches/mma-kadir/tenues');
+    expect(script).not.toContain('build_one nael');
+    expect(script).not.toContain('build_one inaya');
   });
 });
