@@ -1319,6 +1319,29 @@ def shorts(kind, color, band, n_leg=None, under=False):
         hz_sur = {s: H[f'{s}Leg'].z + SUR_HEM * (H[f'{s}UpLeg'].z - H[f'{s}Leg'].z) + UNDER_OVERLAP for s in ('Left', 'Right')}
         F0 = F
         F = lambda q: max(F0(q), q.z - hz_sur['Left' if q.x > 0 else 'Right'])
+    # v1.37.6: A small web of very narrow polygons was measured at the
+    # midline of Amara's MMA over-short near its inner hems (z ~= 0.81 m).
+    # The model-derived shorts copied skin topology in that region. Excise
+    # only the lower central crotch of BOTH MMA layers as an exact ISO cut,
+    # rather than deleting faces after Solidify (which leaves torn open rims).
+    # The cut follows the athlete's own morphology. Its top is far below the
+    # front pelvis, where full garment coverage must be retained.
+    if COACH_ID == 'mma-amara' and kind in ('surshort', 'vale-tudo'):
+        oldF = F
+        if kind == 'surshort':
+            cut_top = min(hz.values()) + 0.032
+            clearance = 0.032
+        else:
+            # The fitted lower liner ends just beneath the over-short.
+            # Its central skin bridge must not project into the leg gap.
+            cut_top = min(hz_sur.values()) - 0.008 if under else min(hz.values()) + 0.025
+            clearance = 0.027
+        def no_groin_web(q):
+            gap = min(clearance - abs(q.x), cut_top - q.z)
+            return max(oldF(q), gap)
+        F = no_groin_web
+        print('v1.37.6 Amara MMA crotch opening', kind,
+              'half-width', clearance, 'top', round(cut_top, 4))
     keep_g = lambda i: P[i].z < waist + 0.03 and P[i].z > min(hz.values()) - 0.04 and w(i, *ARMS) < 0.2
     cuts = [(Vector((0, 0, waist - bandH)), Vector((0, 0, 1)))]
     # fine jersey for the fitted cuts (2.5 mm with its rim), 3.5 mm for the loose ones
@@ -1677,9 +1700,10 @@ if INAYA_FEMALE_PATTERN:
     # Inaya's template was measured at ~17 cm shoulder half-span; stay in
     # a narrow athletic range to keep straps off the deltoid in the guard.
     ratio = max(0.90, min(1.12, shoulder / 0.17))
-    _SQ = (str(round(0.075 * ratio, 5)), str(round(0.112 * ratio, 5)),
-           '0.006' if COACH_ID == 'mma-amara' else '0.012',
-           '0.005' if COACH_ID == 'mma-amara' else '0.012')
+    _SQ = (str(round(0.070 * ratio, 5)),
+           str(round((0.136 if COACH_ID == 'mma-amara' else 0.112) * ratio, 5)),
+           '0.005' if COACH_ID == 'mma-amara' else '0.012',
+           '0.004' if COACH_ID == 'mma-amara' else '0.012')
     print('v1.37.4 Amara: patron Inaya, shoulder half-span', round(shoulder, 4), 'strap scale', round(ratio, 4))
 else:
     _SQ = ('0.075', '0.112', '0.012', '0.012') if os.environ.get('PALETTE') == 'inaya' else ('0.112', '0.142', '0.004', '0.002')
@@ -1714,11 +1738,30 @@ def square_field(low, strap=(float(os.environ.get("SQ_IN", "0.112")), float(os.e
     def field(q):
         ax = abs(q.x)
         front = _ss(yc + 0.02, yc - 0.035, q.y)
-        # square neckline: straight across the front 15 cm under the neck joint, at the chest joint behind
+        # v1.37.6: Amara needs a functional sports crop, not the earlier
+        # low neckline copied from the narrow Rocketbox bikini. Move the
+        # chest coverage ~7 cm up while leaving the clavicle and neck bare.
+        # The back/armholes remain open for free punches and pivots.
+        if COACH_ID == 'mma-amara':
+            front_top = nk.z - 0.078
+            back_top = cz + 0.020
+            T = back_top + (front_top - back_top) * front
+            # Minor side taper, not the previous 5 cm scoop that exposed cups.
+            T -= 0.010 * _ss(0.17, 0.205, ax) * (1 - 0.35 * front)
+            arm_gap = arm_clear(q)
+            # Below the upper chest, prevent the arm clearance cut from
+            # punching holes through the bust's lateral coverage. It is
+            # faded out before the deltoid/shoulder articulation.
+            bust = front * (1 - _ss(cz + 0.065, cz + 0.115, q.z))
+            arm_gap -= 0.010 * bust
+            body_ = max(q.z - T, low - q.z, arm_gap)
+            st = max(strap[0] - ax, ax - strap[1], low - q.z,
+                     arm_clear(q) - float(os.environ.get("SQ_ARM", "0.022")))
+            return _smin(body_, st, 0.014)
+        # Unmodified reference cut: Inaya and all non-Amara characters.
         T = (cz + 0.004) + ((nk.z - 0.15) - (cz + 0.004)) * front
         T -= 0.05 * _ss(0.15, 0.19, ax) * (1 - 0.6 * front)
         body_ = max(q.z - T, low - q.z, arm_clear(q))
-        # over the shoulder the strap passes 5 cm from the arm's axis (6.8 cm cut it in two near the joint)
         st = max(strap[0] - ax, ax - strap[1], low - q.z, arm_clear(q) - float(os.environ.get("SQ_ARM", "0.022")))
         return _smin(body_, st, 0.012)
     return field
@@ -2953,7 +2996,11 @@ def export(name, parts, hide):
     parts[0]['outfit'] = name
     # Assets can now be verified as freshly regenerated: unchanged legacy GLBs must
     # never pass the v1.37.2 deployment gate with old cutouts.
-    parts[0]['generatorVersion'] = '1.37.5' if COACH_ID == 'mma-amara' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
+    parts[0]['generatorVersion'] = '1.37.6' if COACH_ID == 'mma-amara' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
+    if COACH_ID == 'mma-amara':
+        parts[0]['sportsTopCut'] = 'covered-square-1376'
+        if name == 'mma':
+            parts[0]['shortCrotchGeometry'] = 'separate-leg-openings-1376'
     if INAYA_FEMALE_PATTERN:
         parts[0]['clothingReference'] = 'inaya'
         parts[0]['clothingMorphology'] = COACH_ID
