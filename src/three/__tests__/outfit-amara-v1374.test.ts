@@ -30,7 +30,7 @@ function gitHash(b: Buffer) {
   return createHash('sha1').update(Buffer.from(`blob ${b.length}\0`)).update(b).digest('hex');
 }
 
-describe('v1.37.5 — Inaya référence immuable et Amara morphologie adaptée', () => {
+describe('v1.37.6 — Inaya référence immuable et Amara morphologie adaptée', () => {
   for (const outfit of OUTFITS) {
     test(`Inaya/${outfit} conservée à l’octet près`, () => {
       const { b } = binary(`public/coaches/inaya/tenues/${outfit}.glb`);
@@ -39,7 +39,7 @@ describe('v1.37.5 — Inaya référence immuable et Amara morphologie adaptée',
     test(`Amara/${outfit} reconstruite sur son propre squelette`, () => {
       const { gltf } = binary(`public/coaches/mma-amara/tenues/${outfit}.glb`);
       expect(gltf.skins.length).toBeGreaterThan(0);
-      expect(gltf.nodes.some((n) => n.extras?.generatorVersion === '1.37.5' &&
+      expect(gltf.nodes.some((n) => n.extras?.generatorVersion === '1.37.6' &&
         n.extras?.clothingReference === 'inaya' &&
         n.extras?.clothingMorphology === 'mma-amara')).toBe(true);
     });
