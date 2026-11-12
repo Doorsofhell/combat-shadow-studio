@@ -5,7 +5,6 @@ on:
     branches:
       - prototype/amara-mma-compression-reference
     paths:
-      - .github/workflows/amara-mma-reference-prototype.yml
       - tools/generator/rocketbox/outfits.py
       - scripts/dev/regenerate-amara-mma-reference-v1379.sh
       - scripts/dev/validate-amara-mma-reference-v1379.py
@@ -85,6 +84,8 @@ jobs:
             # The design-document branch can advance while Blender screenshots are rendering.
             # Rebase only this isolated prototype commit; never force-push.
             git fetch origin prototype/amara-mma-compression-reference
+            # Generator also writes auxiliary _tex files; none are part of the approved GLB commit.
+            git restore --worktree -- .
             git rebase origin/prototype/amara-mma-compression-reference
             git push origin HEAD:prototype/amara-mma-compression-reference
           fi
