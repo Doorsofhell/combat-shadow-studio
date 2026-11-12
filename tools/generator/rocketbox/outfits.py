@@ -26,9 +26,9 @@ os.makedirs(TEX, exist_ok=True)
 female = sex == 'femme'
 COACH_ID = os.path.basename(os.path.dirname(src))
 # v1.37.4: Inaya's approved female clothing is the construction reference.
-# Amara is rebuilt on her OWN mesh and rig, with those same patterns.
-# Neither Inaya nor any male model is rebuilt in this release.
-AMARA_INAYA_PATTERN = female and COACH_ID == 'mma-amara'
+# Every other female coach is rebuilt on HER OWN mesh and rig with the same patterns.
+# The 1.37.4 workflow rebuilds Amara only; Inaya, Naël and Kadir are never touched.
+INAYA_FEMALE_PATTERN = female and COACH_ID != 'inaya'
 
 # v1.37.2 — fixed design references, NOT shared raw GLBs:
 # A coach keeps his/her own body and skin weights. The same proportions/cut
@@ -1663,7 +1663,7 @@ def bra_v2(color, accent=None, bandeau=False, band=0.02):
 # v1.37.4: Inaya's closer-to-neck strap pattern is shared by Amara.
 # Correct the actual strap width for Amara's shoulder bones, not by copying
 # Inaya's skin weights or inverse bind matrices.
-if AMARA_INAYA_PATTERN:
+if INAYA_FEMALE_PATTERN:
     shoulder = max(abs(H['LeftArm'].x), abs(H['RightArm'].x))
     # Inaya's template was measured at ~17 cm shoulder half-span; stay in
     # a narrow athletic range to keep straps off the deltoid in the guard.
@@ -1800,7 +1800,7 @@ def top_square(color, accent=None, low=None, name='haut-carre'):
 # Inaya uses the same crop-top cut for all striking disciplines. Previously
 # Amara silently fell back to bra_v2 (a different garment), even with the
 # same colour palette. Her top now uses Inaya's pattern on Amara's torso.
-INAYA_TOP = os.environ.get('INAYA_TOP', 'crop' if os.environ.get('PALETTE') == 'inaya' or AMARA_INAYA_PATTERN else '')
+INAYA_TOP = os.environ.get('INAYA_TOP', 'crop' if os.environ.get('PALETTE') == 'inaya' or INAYA_FEMALE_PATTERN else '')
 
 
 def female_top(color, accent=None):
@@ -2499,7 +2499,7 @@ C = {
 }[os.environ.get('PALETTE') or sex]
 # 1.12 (Youssef, 04/11, decision « Brassière sans bretelles au cou »): Inaya's boxing and kick-boxing tops are bandeaus;
 # her sports body's halter straps run round the neck and a strapped bra copied over them came out torn there
-BANDEAU = os.environ.get('PALETTE') == 'inaya' or AMARA_INAYA_PATTERN
+BANDEAU = os.environ.get('PALETTE') == 'inaya' or INAYA_FEMALE_PATTERN
 
 
 _ONCUT = [False]
@@ -2938,8 +2938,8 @@ def export(name, parts, hide):
     parts[0]['outfit'] = name
     # Assets can now be verified as freshly regenerated: unchanged legacy GLBs must
     # never pass the v1.37.2 deployment gate with old cutouts.
-    parts[0]['generatorVersion'] = '1.37.4' if AMARA_INAYA_PATTERN else '1.37.2'
-    if AMARA_INAYA_PATTERN:
+    parts[0]['generatorVersion'] = '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
+    if INAYA_FEMALE_PATTERN:
         parts[0]['clothingReference'] = 'inaya'
         parts[0]['clothingMorphology'] = COACH_ID
     for o in bpy.context.view_layer.objects:
