@@ -6,6 +6,12 @@ Le numéro du moteur (`ENGINE_VERSION`, `src/engine/index.ts`) est indépendant 
 - **mineure** (1.x.0) : un ajout (une technique, un outil, un réglage) qui ne casse rien ;
 - **majeure** (x.0.0) : un changement que l'application doit suivre.
 
+## 1.0.2 · 2026-11-12 (application v1.33.2)
+
+- Anticipation procédurale des coups de poing uniquement (jabs, directs, crochets, uppercuts, overhand). Le bassin tourne jusqu’à 2,5° supplémentaires avec un pic 2,5 images à 60 FPS avant l’impact, puis revient exactement à la pose prévue au contact ; le buste conserve sa cible par contre-rotation.
+- Report d’appui de 6 mm au maximum avant impact, puis petit recul de 8 mm et retour du bassin de 2° au maximum après la frappe. Le recul est ramené à zéro avant le point de fondu de l’enchaînement ; pieds et solveur inchangés.
+- Enveloppes continues (pente nulle aux limites), indépendantes du taux de rafraîchissement ; mêmes poses de clés, cible et timing des coups.
+
 ## 1.0.1 · 2026-11-11 (application v1.33.1)
 
 - Crochets et uppercuts : nouvelle phase intermédiaire d’entraînement du bassin. Dans les clés du mouvement, le pelvis avance plus tôt que la poitrine (72–78 % contre 26 % à la phase de propulsion), puis le thorax et le poing rattrapent à l’impact.
