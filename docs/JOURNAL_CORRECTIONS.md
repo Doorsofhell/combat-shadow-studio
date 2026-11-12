@@ -3134,3 +3134,55 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Captures** : `docs/v1330/captures/` (cou de trois quarts et de profil avant/après, visage avant/après au repos et
   à la frappe, Axel à la frappe, Amara en garde de boxe avant/après).
 - **Restauration** : `restauration/avant-v133` (1.30.0, commit b3dc797) ; la 1.32.0 est le commit f9d9bf3 de `feature/combat-shadow-v030`.
+
+## 2026-11-11 · v1.34.0 · Démarrage rapide (tout reste chargé au démarrage)
+
+- **Demande** (Youssef, 11/11 16:37, captures du chrono « ROUND 1 » à 57 % puis 91 % en v1.30.0) : « Pourquoi le
+  démarrage est devenu si lent ? », puis (18:39) « que toute la 3D des coachs et des salles soit chargée au démarrage
+  pour que ça ne mette pas de temps à s'afficher lorsqu'on change de coach ».
+- **Constat après vérification** (mesures sur la 1.31.0 construite, navigateur Chromium sans écran) :
+  - depuis la 1.25.0, l'écran de démarrage télécharge 96,5 Mo avant l'accueil (6 coachs × modèle + 7 tenues, 6 salles) ;
+    la 1.24.0 ouvrait l'accueil tout de suite (environ 6 Mo en arrière-plan) ;
+  - un fichier gardé sur le téléphone était reconnu par la taille annoncée par le serveur (`Content-Length`). Un serveur
+    qui compresse à la volée n'annonce pas cette taille : l'appli jetait les 54 modèles et retéléchargeait 90 Mo à
+    **chaque** ouverture, chrono compris (reproduit avec un serveur local qui compresse ; sans compression : 0 Mo,
+    0,3 s). Les fichiers des coachs et des salles n'ont pas changé entre la 1.28 et la 1.30, ce qui va dans le même
+    sens que les captures. Ce que fait GitHub Pages n'a pas pu être vérifié d'ici (site bloqué par le réseau de
+    l'environnement) ;
+  - les modèles sont à 90 % de la géométrie (9 Mo d'images sur 98,6 Mo) ;
+  - changement de coach : environ 1 s de lecture et de décodage du modèle à chaque nouveau coach, puis l'envoi à la
+    carte graphique.
+- **Méthode de correction** (option « tout charger, mais plus léger », choisie par Youssef) :
+  - chaque fichier du démarrage est reconnu par une empreinte de son contenu, notée quand il a été reçu en entier
+    (`css-modeles-versions`) ; un fichier gardé par une version plus ancienne garde l'ancienne règle de taille une
+    fois, puis son empreinte est notée ; le téléchargement demande au serveur si le fichier a changé (`no-cache`) ;
+  - les modèles des coachs sont compressés au moment du build (EXT_meshopt_compression, **sans quantification ni
+    réordonnancement** : chaque point, normale, poids, couleur, image et matière reste identique ; seul le premier coin
+    de certains triangles change, même triangle, même sens). Les fichiers de `public/` ne changent pas, pour les tests
+    et les générateurs ;
+  - les tenues lues sont gardées en mémoire (14 au plus) ; sur l'écran Coach, une fois le premier coach affiché, les
+    5 autres et leur tenue de la discipline sont lus à l'avance, voisins d'abord, un toutes les 250 ms.
+- **Résultats mesurés** (serveur local) : premier lancement 96,5 → 66,5 Mo (52,4 Mo transférés si le serveur
+  compresse) ; ouvertures suivantes avec un serveur qui compresse : 90 Mo → 0 Mo, chrono → pas de chrono, 0,2 à 0,3 s
+  jusqu'à l'accueil. Le changement de coach n'a pas pu être chiffré de façon fiable ici : sans carte graphique, le
+  navigateur de test tourne à 5 images/s ; la lecture du modèle (environ 1 s par coach) est maintenant faite à l'avance.
+- **Fichiers** : `tools/build/bootModels.ts` (nouveau), `vite.config.ts`, `src/boot/preload.ts`,
+  `src/boot/BootScreen.tsx`, `src/boot/bootAssets.d.ts`, `src/three/outfit.ts`, `src/three/CoachModel.tsx`,
+  `src/ui/screens/CoachSelect.tsx`, `src/domain/releases.ts`, `package.json` (gltf-transform, meshoptimizer en outils
+  de build).
+- **Tests** : `src/boot/__tests__/demarrage-v134.test.ts` (6 : coach gardé reconnu sans taille annoncée, mise à jour
+  retéléchargée, fichiers des anciennes versions, empreinte seulement pour un fichier complet, empreintes du plan,
+  compression sans perte sur 4 modèles) : TEST RÉUSSI. Unitaires 1166 RÉUSSI. Écran (Playwright, avec les modèles
+  compressés) : 290 RÉUSSI, 2 NON EXÉCUTÉ (Firebase), 4 ÉCHOUÉ dans la suite complète : 3 déjà en échec avant ce lot
+  (`coach-suggest:245`, `coaching-hud:60`, `training-layout:117`) et `corrections-v110:53` dû à la charge de la
+  machine, repassé seul : RÉUSSI. `boot.spec` (4) : RÉUSSI.
+- **Contrôle visuel** : écran Coach construit avec les modèles compressés, Amara puis Kaila habillées, aucune erreur
+  de tenue (`docs/v1340/captures/`).
+- **Remise sur la 1.33.2** (Youssef, 12/11 00:55 : « il faut repartir des dernières versions 1.33 ») : lot reposé sur
+  la 1.33.2 (commit cc58c17, branche `claude/project-thread-o7lrt8`). Unitaires : 1294 RÉUSSI, 25 ÉCHOUÉ, les mêmes
+  25 que sur la 1.33.2 seule (moteur : documents de mesures, fluidité, crochets, torsions ; respiration) : NON
+  APPLICABLE à ce lot. Écran ciblé (démarrage, salles, coachs, tenues, rendu, navigation) : 44 RÉUSSI. Mesures
+  identiques : 1er lancement 66,5 Mo ; ouvertures suivantes 0 Mo, 0,2 à 0,3 s, avec ou sans compression du serveur.
+- **Restauration** : branche `restauration/avant-demarrage-v134` (état 1.32.0, commit f9d9bf3) ; état 1.33.2 : commit
+  cc58c17.
+

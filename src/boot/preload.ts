@@ -1,5 +1,6 @@
 import type { DisciplineId } from '../domain/types';
 import { outfitFor, type OutfitId } from '../three/outfit';
+import ASSETS from 'virtual:boot-assets';
 import SIZES from './assetSizes.json';
 
 /**
@@ -23,6 +24,8 @@ export interface BootItem {
   url: string;
   /** expected size in bytes (scripts/boot-sizes.mjs), used before the server says it */
   bytes: number;
+  /** 1.34: fingerprint of the bytes served (tools/build/bootModels.ts), how a file kept on the phone is recognised */
+  v?: string;
   step: BootStep;
   discipline?: DisciplineId;
 }
@@ -44,14 +47,16 @@ export interface BootPlanInput {
   preferred?: DisciplineId[];
 }
 
+/** 1.34: what the server sends (compressed models in a build) and its fingerprint; the sizes of public/ otherwise */
+const served = ASSETS as Record<string, [number, string]>;
 const sizes = SIZES as Record<string, number>;
 
 function item(rel: string, step: BootStep, json: boolean, discipline?: DisciplineId): BootItem | null {
-  const known = sizes[rel];
+  const known = served[rel]?.[0] ?? sizes[rel];
   if (known === undefined) return null;
   const model = rel.endsWith('.glb');
   // a GLB wrapped in JSON is base64: 4 bytes for 3
-  return { url: `./${json && model ? rel.replace(/\.glb$/, '.json') : rel}`, bytes: model && json ? Math.ceil((known * 4) / 3) : known, step, discipline };
+  return { url: `./${json && model ? rel.replace(/\.glb$/, '.json') : rel}`, bytes: model && json ? Math.ceil((known * 4) / 3) : known, v: served[rel]?.[1], step, discipline };
 }
 
 /** the files of the start screen, in the order they are downloaded */
@@ -105,9 +110,37 @@ export async function keepInCache(url: string, r: Response) {
 }
 
 /**
- * Whether a file is already kept on the phone at the size this version expects. A file of another size (changed by
- * an update) is removed from the cache so that it is downloaded again now, on the start screen, not later in the
- * middle of a session. The JSON-wrapped models of the claude.ai page have no exact expected size: kept is enough.
+ * 1.34: the fingerprint of each file kept on the phone, written when it has been downloaded whole. Before, a kept file
+ * was recognised by the size the server announced (Content-Length): a server that compresses on the fly announces
+ * none (or the compressed one), so every coach was thrown away and downloaded again at each launch (90 Mo).
+ */
+const VERSIONS_KEY = 'css-modeles-versions';
+
+function readVersions(): Record<string, string> {
+  try {
+    return JSON.parse(localStorage.getItem(VERSIONS_KEY) ?? '{}') as Record<string, string>;
+  } catch {
+    return {};
+  }
+}
+
+/** notes that a file of the plan is now kept on the phone whole, in the version this app expects */
+export function noteKept(x: BootItem) {
+  if (!x.v) return;
+  try {
+    const all = readVersions();
+    all[new URL(x.url, location.href).href] = x.v;
+    localStorage.setItem(VERSIONS_KEY, JSON.stringify(all));
+  } catch {
+    /* private mode: the size check below still applies */
+  }
+}
+
+/**
+ * Whether a file is already kept on the phone in the version this app expects. A file kept in another version
+ * (changed by an update) is removed from the cache so that it is downloaded again now, on the start screen, not later
+ * in the middle of a session. Without a fingerprint noted (a file kept by an older version), the size announced by the
+ * server when it was kept decides, as before. The JSON-wrapped models of the claude.ai page: kept is enough.
  */
 export async function isKept(x: BootItem, json = false) {
   if (typeof caches === 'undefined') return false;
@@ -115,9 +148,14 @@ export async function isKept(x: BootItem, json = false) {
   const url = new URL(x.url, location.href).href;
   const r = await c.match(url);
   if (!r) return false;
-  const len = Number(r.headers.get('content-length') ?? NaN);
   if (json && x.url.endsWith('.json')) return true;
-  if (len === x.bytes) return true;
+  const noted = readVersions()[url];
+  if (x.v && noted === x.v) return true;
+  const len = Number(r.headers.get('content-length') ?? NaN);
+  if (!noted && len === x.bytes) {
+    noteKept(x);
+    return true;
+  }
   await c.delete(url);
   return false;
 }
@@ -167,11 +205,15 @@ export async function runBoot(
     concurrency?: number;
     signal?: AbortSignal;
     store?: (url: string, r: Response) => Promise<unknown>;
-    /** already on the phone, same size: not downloaded again */
+    /** already on the phone, same version: not downloaded again */
     cached?: (x: BootItem) => Promise<boolean>;
+    /** 1.34: a file received whole (and kept by the app or its service worker) */
+    received?: (x: BootItem) => void;
   } = {},
 ) {
-  const doFetch: Fetch = opts.fetch ?? ((u) => fetch(u, { signal: opts.signal }));
+  // 1.34: « no-cache » asks the server whether the file changed (a short « not modified » when not): a copy of an older
+  // version left in the browser's own cache is never noted as this version's file
+  const doFetch: Fetch = opts.fetch ?? ((u) => fetch(u, { signal: opts.signal, cache: 'no-cache' }));
   const total = plan.reduce((a, x) => a + x.bytes, 0);
   const got = new Array(plan.length).fill(0) as number[];
   const failed: string[] = [];
@@ -219,6 +261,7 @@ export async function runBoot(
           }
         } else await r.arrayBuffer();
         if (copy && opts.store) await opts.store(x.url, copy).catch(() => undefined);
+        opts.received?.(x);
       } catch {
         if (opts.signal?.aborted) return;
         failed.push(x.url);

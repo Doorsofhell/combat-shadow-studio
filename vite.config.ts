@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import pkg from './package.json' with { type: 'json' };
+import { bootModels } from './tools/build/bootModels.ts';
 
 /** the version is shown in the page title of every build (%VITE_APP_VERSION% in index.html) */
 process.env.VITE_APP_VERSION = pkg.version;
@@ -13,6 +14,8 @@ export default defineConfig({
   base: './',
   plugins: [
     react(),
+    // 1.34: the coaches' models compressed in the build, and the fingerprint of each file of the start screen
+    bootModels(),
     VitePWA({
       disable: NATIVE,
       registerType: 'autoUpdate',

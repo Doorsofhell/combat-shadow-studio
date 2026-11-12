@@ -1,5 +1,5 @@
 import { ALL_COACHES, CHAMPIONS, championFor, type ChampionCoach } from '../../domain/coaches/catalog';
-import { Suspense, lazy, useCallback, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
@@ -200,6 +200,29 @@ export function CoachSelect() {
     else nav(-1);
   };
   const live3d = settings.coachRender === 'premium';
+  // 1.34 (Youssef, 2026-11-11: « que ça ne mette pas de temps à s'afficher lorsqu'on change de coach »): once the
+  // first coach shows, the other five and their outfit for the discipline are read in turn, neighbours first, so the
+  // arrows, the strip and a swipe show them at once (their files are already on the phone since the start screen)
+  const warmed = useRef(false);
+  const mounted = useRef(true);
+  useEffect(
+    () => () => {
+      mounted.current = false;
+    },
+    [],
+  );
+  useEffect(() => {
+    if (!ready || !live3d || warmed.current) return;
+    warmed.current = true;
+    const order = [1, -1, 2, -2, 3].map((d) => ALL_COACHES[(i + d + ALL_COACHES.length) % ALL_COACHES.length].id).filter((id, k, a) => id !== c.id && a.indexOf(id) === k);
+    void Promise.all([import('../../three/CoachModel'), import('../../three/outfit')]).then(([m, o]) => {
+      const outfit = o.outfitFor(disc, settings.coachOutfit, settings.bjjOutfit);
+      // one every 250 ms, so the screen stays fluid while they are read
+      order.forEach((id, k) => setTimeout(() => mounted.current && m.prewarmCoach(id, outfit), 250 * (k + 1)));
+    });
+    // only once per visit of the screen: the coaches looked at afterwards are already read
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, live3d]);
   return (
     <div className="page coach-select coach-star" data-testid="coach-star" data-coach={c.id}>
       <h1 className="sr-only">Choisis ton coach</h1>

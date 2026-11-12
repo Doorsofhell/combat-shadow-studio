@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ALL_COACHES, championFor } from '../domain/coaches/catalog';
 import { useProfile } from '../store/profile';
 import { useSettings } from '../store/settings';
-import { bootMessage, bootPlan, isKept, keepInCache, runBoot, type BootItem, type BootProgress } from './preload';
+import { bootMessage, bootPlan, isKept, keepInCache, noteKept, runBoot, type BootItem, type BootProgress } from './preload';
 import './boot.css';
 
 /**
@@ -113,7 +113,7 @@ function BootScreen({ plan, coachId, overlay = false, onDone }: { plan: BootItem
       if (!kept) fetched++;
       return kept;
     };
-    void runBoot(plan, setP, { signal: ctl.signal, store: navigator.serviceWorker?.controller ? undefined : keepInCache, cached }).then(async ({ failed }) => {
+    void runBoot(plan, setP, { signal: ctl.signal, store: navigator.serviceWorker?.controller ? undefined : keepInCache, cached, received: noteKept }).then(async ({ failed }) => {
       if (ctl.signal.aborted) return;
       for (const x of plan) if (!failed.includes(x.url)) loaded.add(x.url);
       // « Pesée officielle »: the 3D code and the coach read once, so the first 3D screen opens at once
