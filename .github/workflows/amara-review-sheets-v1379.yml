@@ -12,6 +12,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: amara-visual-review-v1379
+  cancel-in-progress: true
+
 jobs:
   screenshots:
     runs-on: ubuntu-latest
@@ -38,8 +42,11 @@ jobs:
           done
           cat /tmp/vite-review.log
           exit 1
-      - name: Verify offscreen contact-sheet composer
-        run: command -v ffmpeg && ffmpeg -version | head -1
+      - name: Install offscreen contact-sheet composer
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          ffmpeg -version | head -1
       - name: Render seven actual outfits, four live poses each
         run: node scripts/dev/capture-amara-review-v1379.mjs
       - name: Upload visual review ZIP
