@@ -43,3 +43,10 @@ Le maillot de base Rocketbox (bonnets, cordon du cou, bande du dos, nœuds et pa
 
 ## Critère de livraison
 Le lot A est un correctif optique immédiat et réversible. Les lots B et C restent à implémenter après comparaison des captures, car une retouche aveugle de géométrie serait une régression potentielle.
+
+
+## Mesures d'audit sur la base v1.37.8 (12/11/2026)
+
+Le nouveau contrôle lit le fichier `photo.glb` d'Amara, retrouve les **4 416 triangles de l'îlot UV du bikini sculpté** et applique, comme `src/three/outfit.ts`, le masque `hideBody` de chaque tenue. Comptage des triangles de l'îlot bikini **encore dessinés** : boxe, kick-boxing, muay-thaï, MMA = **1 044** chacun (71 partiellement masqués, 973 non masqués) ; JJB no-gi = **581** ; JJB et judo = **449** chacun. Le contrôle mesure une source de fuite potentielle, pas une visibilité prouvée à l'écran pour chacun de ces triangles.
+
+**Décision bloquante** : le contrôle fonctionne désormais en mode strict dans le workflow `amara-garments-v1379.yml` : la CI doit échouer tant que les sept tenues ne masquent pas **l'ancien bikini sculpté** ou que la géométrie et la texture de ce bikini n'ont pas été remplacées par la vraie peau. Il ne faut **pas simplement ajouter les 1 044 triangles au masque** : cela pourrait effacer la peau que le décolleté doit montrer et créer des trous. La correction durable doit enlever l'ancien vêtement de la source visible tout en conservant la morphologie, le rig, les morph targets et les fichiers tenues approuvés. Une validation visuelle animée est obligatoire avant toute fusion ou déploiement.
