@@ -3048,6 +3048,10 @@ def paint_mma_compression(o, waist, hem_z, band_h, top=False):
             if top:
                 side = _ss(0.095, 0.135, abs(q.x))
                 base = blend(base, slate, 0.45 * side)
+                # Smooth fitted under-band, 24 mm high, using the existing colour layer.
+                # No extra material boundary or triangles that can open while kicking.
+                hem_band = 1.0 - _ss(hem_z + 0.013, hem_z + 0.035, q.z)
+                base = blend(base, linear('#111A21'), 0.95 * hem_band)
             else:
                 # Angular warm-white panel across the front/outer right thigh.
                 # No triangle cutting at the border, so high kicks cannot tear the trim.
@@ -3109,7 +3113,9 @@ def outfit(name):
                 # User reference: fitted MMA compression boxer, rounded scoop bra, no loose over-short.
                 # Brand colours adapted to Amara; no copied third-party logos or textures.
                 add(shorts('vale-tudo', '#132027', '#E2E3DF', under=False))
-                add(top_square('#12282D', '#1D2930', low=bra_low(), name='haut-brassiere'))
+                # No cut plane for a second under-band material: it fractured the border
+                # on the chest/back. Paint the dark elastic softly on the SAME shell.
+                add(top_square('#12282D', None, low=bra_low(), name='haut-brassiere'))
             else:
                 add(shorts('vale-tudo', k['liner'], k['linerband'], under=UNDER_OVERLAP >= 0))
                 add(shorts('surshort', k['over'], k['overband']))
