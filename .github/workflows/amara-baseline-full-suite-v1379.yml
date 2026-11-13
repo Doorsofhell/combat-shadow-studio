@@ -1,0 +1,38 @@
+name: Diagnostic - current live 1.37.8 full-suite baseline
+
+on:
+  push:
+    branches: [prototype/amara-mma-compression-reference]
+    paths:
+      - .github/workflows/amara-baseline-full-suite-v1379.yml
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/project-thread-o7lrt8
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Run unaltered production 1.37.8 suite, explicitly report baseline failures
+        run: |
+          set +e
+          npm run test > /tmp/live-baseline-suite.log 2>&1
+          status=$?
+          echo "PRODUCTION_BASELINE_TEST_EXIT=$status"
+          sed -r 's/\x1B\[[0-9;]*[mK]//g' /tmp/live-baseline-suite.log | grep -E "Test Files|Tests +|FAIL |Failed Tests" | tail -45
+          cp /tmp/live-baseline-suite.log baseline-suite-v1378.txt
+          exit 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: production-v1378-full-suite-baseline
+          path: baseline-suite-v1378.txt
+          retention-days: 14
