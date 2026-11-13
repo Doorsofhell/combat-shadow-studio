@@ -1768,10 +1768,12 @@ def top(kind, color, accent=None, geom=False, nogi=False):
     """kind: brassiere (sports bra), debardeur (tank top), rash-court, rash-long"""
     lowZ = {'brassiere': chestZ - 0.07 if female else chestZ - 0.05, 'debardeur': hipZ + 0.06, 'rash-court': hipZ + 0.04, 'rash-long': hipZ + 0.04}[kind]
     if nogi:
-        # Keep the hem slightly below the waistband top. Raising it to
-        # hipZ + 0.065 exposed a dark strip between the coloured elastic
-        # and the shorts in the fifth-generation rendered preview.
-        lowZ = hipZ + 0.040
+        # The MMA waistband occupies [hipZ + 0.07, hipZ + 0.11] before
+        # painted-underwear adjustments. End the rashguard 12 mm *inside*
+        # that band instead of leaving an exposed 30 mm strip of skin.
+        # The hem is inset towards the body below so the waistband sits
+        # above it in depth and remains fully visible.
+        lowZ = hipZ + 0.082
     sleeve = {'brassiere': 0, 'debardeur': 0, 'rash-court': 0.45, 'rash-long': 0.93}[kind]
 
     def keep(i):
@@ -1834,6 +1836,10 @@ def top(kind, color, accent=None, geom=False, nogi=False):
         cuts += [(Vector((0, 0, z)), Vector((0, 0, 1))) for z in (nk.z - 0.13, chestZ + 0.02, nk.z - 0.02)]
         cuts += [(Vector((x, 0, 0)), Vector((1, 0, 0))) for x in (-0.1, -0.06, -0.05, 0.05, 0.06, 0.1)]
     def tpush(i):
+        if nogi:
+            # Underlap the waistband, rather than intersecting its outer
+            # surface. The 2.5 mm fabric thickness is handled by shell().
+            return 0.0015 if P[i].z < hipZ + 0.115 else 0.0035
         if kind == 'debardeur':
             return 0.006
         # 1.19 (Youssef, 05/11, capture of the no-gi kit): the waistband of the leggings worn under the long rash
