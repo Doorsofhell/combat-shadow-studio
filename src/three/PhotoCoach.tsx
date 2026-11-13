@@ -2,13 +2,14 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import type { GLTFLoader } from 'three-stdlib';
-import { Material, Mesh, MeshStandardMaterial, Object3D, type SkinnedMesh } from 'three';
+import { Material, Mesh, MeshStandardMaterial, Object3D, Vector3, type SkinnedMesh } from 'three';
 import { applyBreath, Breath } from './breath';
 import { Sway } from './sway';
 import { hairFadeAttribute, photoMaterial, photoPart, skinLookFor } from './photoMaterials';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { restoreReferencePose, setLegLength } from './pose';
 import { dropStillMorphs, FaceAnimator, type FaceOptions } from './face';
+import { applyWrinkles } from './human/wrinkles';
 import { bakeAmaraCleanSurface } from './amaraCleanSurface';
 import type { HumanSignals } from './human/behavior';
 import { humanProfileFor } from './human/profiles';
@@ -83,7 +84,15 @@ export function PhotoCoach({
   const face = useMemo(() => {
     restoreReferencePose(scene);
     // 1.34 every coach gets the common behaviour engine, with its own profile (src/three/human/profiles.ts)
-    return new FaceAnimator(scene, url.length, humanProfileFor(url));
+    const f = new FaceAnimator(scene, url.length, humanProfileFor(url));
+    // 1.40 expression wrinkles on the skin (src/three/human/wrinkles.ts), the same for every coach
+    if (f.wrinkles)
+      scene.traverse((o) => {
+        const m = o as Mesh;
+        const mat = m.isMesh ? (m.material as Material) : null;
+        if (mat?.userData.cssSkin && !mat.userData.cssWrinkles) applyWrinkles(mat, f.wrinkles!.uniforms);
+      });
+    return f;
   }, [scene, url]);
   const rig = useMemo(() => {
     restoreReferencePose(scene);
@@ -138,12 +147,16 @@ export function PhotoCoach({
   scene.visible = ready;
   if (import.meta.env.DEV) (globalThis as { __photoScene?: Object3D }).__photoScene = scene;
   if (import.meta.env.DEV) (globalThis as { __faceAnim?: FaceAnimator }).__faceAnim = face;
+  const viewerPos = useMemo(() => new Vector3(), []);
   useFrame((_, dt) => {
     onFrame(rig, Math.min(dt, 0.05));
     // fixed images (Lab, portraits) ask for a still face, or impose an expression: window.__cssFace
     const fo = (globalThis as { __cssFace?: FaceOptions }).__cssFace;
     face.setBreath(fo?.still ? null : breath.amount.value.x);
+    // 1.40 the coach looks at the student (the camera) when the camera is in front of it
+    face.setViewer(camera.getWorldPosition(viewerPos));
     face.update(Math.min(dt, 0.05), fo, human);
+    face.updateWrinkles(camera);
     // still images (Lab, portraits): the chest at rest, so two captures of the same instant are the same
     breath.update(fo?.still ? 0 : dt, face.state.effort);
     if (fo?.still) breath.amount.value.set(0, 0, 0, 0);

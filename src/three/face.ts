@@ -3,6 +3,8 @@ import { BehaviorEngine, HUMAN_STATES, NEUTRAL_MOOD, type HumanSignals, type Hum
 import { faceCapabilities, type FaceCapabilities } from './human/capabilities';
 import { DEFAULT_PROFILE, type HumanProfile } from './human/profiles';
 import { MicroLife } from './human/micro';
+import { FaceWrinkles } from './human/wrinkles';
+import type { Camera } from 'three';
 
 /**
  * 1.9 (Youssef, 2026-10-29: « l'expression des visages est trop statique, fait quelque chose »): a living face for
@@ -69,6 +71,25 @@ export interface FaceIdle {
 
 /** 1.33 strength of the face at rest and of the strike's effort, relative to 1.20 (also used by the bone faces) */
 export const FACE_GAIN = { rest: 2.5, effort: 2 } as const;
+
+/**
+ * 1.40 (Youssef 13/11 18:35: « les visages sont toujours trop crispés… sois force de proposition »): the face at rest
+ * of a coach. Up to 1.39 the rest was a face of concentration (brows lowered, eyes narrowed: the « actuel » base).
+ * focus: share of that concentration kept at rest; w: expressions added at rest (gone during the strike).
+ */
+export type FaceBaseId = 'actuel' | 'calme' | 'doux' | 'vif';
+export const FACE_BASES: Record<FaceBaseId, { focus: number; w: Partial<Record<FaceExpression, number>> }> = {
+  actuel: { focus: 1, w: {} },
+  // relaxed: brows neutral, lids a little heavy, a hint of narrowing
+  calme: { focus: 0.15, w: { EyeBlinkLeft: 0.1, EyeBlinkRight: 0.1, EyeSquintLeft: 0.04, EyeSquintRight: 0.04 } },
+  // relaxed and kind: the inner brows barely raised, the corners of the mouth soft
+  doux: { focus: 0.15, w: { EyeBlinkLeft: 0.08, EyeBlinkRight: 0.08, BrowInnerUp: 0.14, MouthSmileLeft: 0.08, MouthSmileRight: 0.07, CheekSquintLeft: 0.05, CheekSquintRight: 0.04 } },
+  // relaxed and awake: eyes a little more open
+  vif: { focus: 0.25, w: { EyeWideLeft: 0.1, EyeWideRight: 0.1, BrowInnerUp: 0.07 } },
+};
+/** the base used when nothing else is asked (Lab ?visage= overrides it) */
+// 1.40 (Youssef 13/11 19:03, « applique les choix conseillés »): calme on the four coaches
+export const FACE_BASE_DEFAULT: FaceBaseId = 'calme';
 /**
  * 1.34 mood: the behaviour state's mood (src/three/human/behavior.ts). Without one, the face is the 1.33 face.
  */
@@ -149,6 +170,8 @@ const tmpV = new Vector3();
 const tmpV3 = new Vector3();
 const tmpV4 = new Vector3();
 const tmpV5 = new Vector3();
+const tmpV6 = new Vector3();
+const tmpQ3 = new Quaternion();
 
 function find(root: Object3D, name: string): Bone | null {
   let hit: Bone | null = null;
@@ -229,6 +252,17 @@ export class FaceAnimator {
   private root: Object3D;
   private facing = new Vector3(0, 0, 1);
   private aim = { w: 0, yaw: 0, pitch: 0 };
+  /**
+   * 1.40 (Youssef 13/11 19:04: « regarde en face comme si le coach regarde son élève »): where the student is (the
+   * camera, in the world), set each frame by the scene; the share of the look given to the student (eye contact)
+   * and how far the student is from the opponent's line, seen from the head (rad), for the head to take its share
+   */
+  private viewer: Vector3 | null = null;
+  private contact = { w: 0, yaw: 0, pitch: 0 };
+  /** 1.40 eye contact held 3 to 6 s, then the eyes leave the student for 0.5 to 1.2 s (a thought) and come back */
+  private contactNext = 4;
+  private contactBack = 0;
+  private lastState: string | null = null;
   private movers: Mover[] = [];
   private jaw: { bone: Bone; q: Quaternion; axis: Vector3 } | null = null;
   private ends: Object3D[] = [];
@@ -249,10 +283,26 @@ export class FaceAnimator {
   private idleNext = 0;
   private breathPhase = -Math.PI / 2;
   private peak = 0;
-  private gaze = { yaw: 0, pitch: 0, toYaw: 0, toPitch: 0, next: 0.8 };
+  private gaze = { yaw: 0, pitch: 0, toYaw: 0, toPitch: 0, next: 0.8, away: false };
   /** 1.23 the head's own small life (axes in the bone's space); what was applied last frame, to take it off again
    * when the body pose of the frame did not rewrite the head (paused motion) */
-  private head: { bone: Bone; yaw: Vector3; pitch: Vector3; roll: Vector3; out: Quaternion; d: Quaternion; follow: number; followP: number } | null = null;
+  private head: {
+    bone: Bone;
+    yaw: Vector3;
+    pitch: Vector3;
+    roll: Vector3;
+    out: Quaternion;
+    d: Quaternion;
+    follow: number;
+    followP: number;
+    /** 1.40 first stage of the head's follow (the head starts after the eyes, then accelerates: an S-shaped turn) */
+    leadY: number;
+    leadP: number;
+    /** 1.40 small re-settling of the head (neck adjustments): current offset, target, next one (s) */
+    adj: Vector3;
+    adjTo: Vector3;
+    adjNext: number;
+  } | null = null;
   private headPhase = [0, 0, 0];
   /** grows from 0 over the first second: the head starts from the pose, never with a jump */
   private headAmp = 0;
@@ -266,6 +316,10 @@ export class FaceAnimator {
   /** 1.39 this blink: closing and opening times (s) and how far the lids go (a blink is not always complete) */
   private blinkShape = { close: 0.07, open: 0.12, depth: 1 };
   private lastU = Infinity;
+  /** 1.40 expression wrinkles (src/three/human/wrinkles.ts): null without a head and two eyes */
+  readonly wrinkles: FaceWrinkles | null = null;
+  /** 1.40 the expression weights applied this frame (the wrinkles follow them) */
+  private applied: Partial<Record<FaceExpression, number>> = {};
 
   /** the model must be in its rest pose (restoreReferencePose) and its world matrices up to date */
   constructor(root: Object3D, seed = 1, profile: HumanProfile = DEFAULT_PROFILE) {
@@ -331,7 +385,7 @@ export class FaceAnimator {
     const headBone = find(root, 'Head');
     if (headBone) {
       const fwd = new Vector3().crossVectors(lat, UP).normalize();
-      this.head = { bone: headBone, yaw: toBone(headBone, UP), pitch: toBone(headBone, lat), roll: toBone(headBone, fwd), out: new Quaternion(), d: new Quaternion(), follow: 0, followP: 0 };
+      this.head = { bone: headBone, yaw: toBone(headBone, UP), pitch: toBone(headBone, lat), roll: toBone(headBone, fwd), out: new Quaternion(), d: new Quaternion(), follow: 0, followP: 0, leadY: 0, leadP: 0, adj: new Vector3(), adjTo: new Vector3(), adjNext: 1.5 };
       this.headPhase = [this.rand() * 6.28, this.rand() * 6.28, this.rand() * 6.28];
       for (const [n, side] of [['LeftShoulder', 1], ['RightShoulder', -1]] as const) {
         const b = find(root, n);
@@ -339,6 +393,7 @@ export class FaceAnimator {
         if (b) this.shoulders.push({ bone: b, axis: toBone(b, fwd), side: sideOf, out: new Quaternion(), d: new Quaternion() });
       }
     }
+    if (headBone && le && re) this.wrinkles = new FaceWrinkles(headBone, le, re);
     const mid = find(root, 'Face_MMiddleEyebrow');
     if (mid) this.movers.push({ bone: mid, ...rest(mid), d: toParent(mid, UP.clone().multiplyScalar(-4 * MM)), kind: 'mid' });
     const jaw = find(root, 'Face_MJaw');
@@ -483,6 +538,7 @@ export class FaceAnimator {
       if (away) g.toPitch = Math.abs(g.toPitch) * 0.5;
       if (away && this.blinkAt < 0 && this.rand() < 0.35) this.blinkAt = this.t;
       g.next = this.t + (away ? 0.9 + this.rand() * 0.9 : 0.6 + this.rand() * 1.8);
+      g.away = away;
     }
     // a still image looks straight at the opponent at once (two captures of the same instant are the same)
     if (still) g.toYaw = g.toPitch = g.yaw = g.pitch = 0;
@@ -493,12 +549,15 @@ export class FaceAnimator {
     // 1.39 the micro-life of the face: only live, given way to the strike, no micro-expression while preparing or
     // striking (the states without glances)
     const M = this.micro;
-    if (!still) M.update(dt, { rest, breath: this.idle.breath, calm: tempo.glance > 0 ? 1 : 0, strength: this.profile.traits.expressiveness });
+    // 1.40 the coach's encouragement (after a repetition) comes with one of its soft smiles
+    if (!still && B.state === 'encouragement' && this.lastState !== 'encouragement') M.startSmile(1.2 * this.profile.traits.warmth);
+    this.lastState = B.state;
+    if (!still) M.update(dt, { rest, breath: this.idle.breath, calm: tempo.glance > 0 ? 1 : 0, strength: this.profile.traits.expressiveness, warmth: this.profile.traits.warmth });
     const my = still ? 0 : M.eye.yaw;
     const mp = still ? 0 : M.eye.pitch;
     // 1.34 the head first (its small life, a nod of encouragement), then the eyes, which aim from where it is
     this.moveHead(dt, still, rest, mood);
-    this.aimEyes(dt);
+    this.aimEyes(dt, still);
     for (const e of this.eyes) {
       e.bone.quaternion
         .copy(e.q)
@@ -548,7 +607,15 @@ export class FaceAnimator {
       // the exhale follows the effort with a short delay and lasts a little longer (breath out as the strike lands)
       const ex = still ? 0 : this.effort;
       this.exhale += (ex - this.exhale) * Math.min(1, dt / (ex > this.exhale ? 0.09 : 0.25));
-      const w = opts.expr ?? expressionWeights(blink, this.effort, this.exhale, still ? undefined : this.idle, mood);
+      const baseId = (globalThis as { __cssFaceBase?: FaceBaseId }).__cssFaceBase ?? this.profile.faceBase ?? FACE_BASE_DEFAULT;
+      const base = FACE_BASES[baseId] ?? FACE_BASES.actuel;
+      const idleNow = still ? undefined : base.focus === 1 ? this.idle : { ...this.idle, focus: this.idle.focus * base.focus };
+      const w = opts.expr ?? expressionWeights(blink, this.effort, this.exhale, idleNow, mood);
+      if (!opts.expr && !still)
+        for (const [k, v] of Object.entries(base.w) as [FaceExpression, number][]) {
+          if (blink > 0 && k.startsWith('EyeBlink')) w[k] = Math.max(w[k] ?? 0, blink);
+          else w[k] = (w[k] ?? 0) + v * rest;
+        }
       if (!opts.expr && !still) {
         // 1.39 the micro-life on top (it may also take a little off: a frown that lets go)
         for (const [k, v] of Object.entries(M.w) as [FaceExpression, number][]) {
@@ -574,6 +641,7 @@ export class FaceAnimator {
           w[wideK] = (w[wideK] ?? 0) + (up - give);
         }
       }
+      this.applied = w;
       for (const { mesh, idx } of this.morphs) {
         const inf = mesh.morphTargetInfluences!;
         inf.fill(0);
@@ -594,27 +662,68 @@ export class FaceAnimator {
    * 30° across and 23° up or down; further (on the ground, spinning, a glance aside of the whole body) the aim fades
    * out over 0.2 s and the eyes follow the head.
    */
-  private aimEyes(dt: number) {
+  private aimEyes(dt: number, still = false) {
     const a = this.aim;
     if (!this.eyes.length) return;
     let yaw = 0;
     let pitch = 0;
+    let vYaw = 0;
+    let vPitch = 0;
+    let vFront = 1;
+    const viewer = still ? null : this.viewer;
     for (const e of this.eyes) {
       const parent = e.bone.parent!;
-      const wq = parent.getWorldQuaternion(tmpQ).multiply(e.q);
+      const inv = parent.getWorldQuaternion(tmpQ3).multiply(e.q).invert();
       // the opponent: in front of the coach (the way the model faces), at the height of its eyes: a level line
-      const d = tmpV3.copy(this.facing).applyQuaternion(this.root.getWorldQuaternion(tmpQ2)).setY(0).normalize().applyQuaternion(wq.invert());
+      const d = tmpV3.copy(this.facing).applyQuaternion(this.root.getWorldQuaternion(tmpQ2)).setY(0).normalize().applyQuaternion(inv);
       const side = tmpV4.crossVectors(e.yaw, e.fwd);
       const up = tmpV5.crossVectors(e.pitch, e.fwd);
       const df = d.dot(e.fwd);
       const ds = d.dot(side);
       yaw += Math.atan2(ds, df);
       pitch += Math.atan2(d.dot(up), Math.hypot(df, ds));
+      if (viewer) {
+        // 1.40 the student: from this eye to the camera
+        const v = tmpV6.copy(viewer).sub(e.bone.getWorldPosition(tmpV)).normalize().applyQuaternion(inv);
+        const vf = v.dot(e.fwd);
+        const vs = v.dot(side);
+        vYaw += Math.atan2(vs, vf);
+        vPitch += Math.atan2(v.dot(up), Math.hypot(vf, vs));
+        vFront = Math.min(vFront, vf);
+      }
     }
-    yaw /= this.eyes.length;
-    pitch /= this.eyes.length;
+    const n = this.eyes.length;
+    yaw /= n;
+    pitch /= n;
+    // 1.40 eye contact with the student when the camera is in front of the coach (within about 50° of the opponent's
+    // line, the head turning a share of the way): broken by the glances aside, as a person thinking looks away for a
+    // moment and comes back; out of reach (camera at the side, behind, above), the eyes stay on the opponent
+    const C = this.contact;
+    let cw = 0;
+    if (viewer) {
+      vYaw /= n;
+      vPitch /= n;
+      const oy = vYaw - yaw;
+      const op = vPitch - pitch;
+      const fit = (x: number, lo: number, hi: number) => Math.min(1, Math.max(0, (hi - Math.abs(x)) / (hi - lo)));
+      // the pauses: a person never holds eye contact without a break
+      if (this.t >= this.contactNext) {
+        this.contactBack = this.t + 0.5 + 0.7 * this.micro.rand01();
+        this.contactNext = this.contactBack + 3 + 3 * this.micro.rand01();
+      }
+      const pause = this.t < this.contactBack;
+      cw = vFront > 0 && !this.gaze.away && !pause ? fit(oy, 0.7, 0.95) * fit(op, 0.4, 0.55) : 0;
+      C.yaw = oy;
+      C.pitch = op;
+    }
+    C.w += (cw - C.w) * Math.min(1, dt / 0.12);
+    if (still) C.w = 0;
+    yaw += (vYaw - yaw) * C.w;
+    pitch += (vPitch - pitch) * C.w;
+    // full aim within 30° across and 23° up or down, fading out beyond (1.34 to 1.39 began fading from 60 % of the
+    // range: in the leaning guards the eyes stopped short of the opponent)
     const reach = Math.max(Math.abs(yaw) / 0.52, Math.abs(pitch) / 0.4);
-    const w = Math.min(1, Math.max(0, 1.6 - reach));
+    const w = Math.min(1, Math.max(0, 2.2 - 1.2 * reach));
     a.w += (w - a.w) * Math.min(1, dt / 0.2);
     a.yaw = a.w * Math.max(-0.52, Math.min(0.52, yaw));
     a.pitch = a.w * Math.max(-0.4, Math.min(0.4, pitch));
@@ -647,16 +756,38 @@ export class FaceAnimator {
     const t = this.t;
     const [a, b, c] = this.headPhase;
     const deg = Math.PI / 180;
-    // the head turns after the eyes, slowly (a glance of 12° brings it round 3.6° in about a second)
-    h.follow += (this.gaze.yaw - h.follow) * Math.min(1, dt / 0.8);
-    h.followP += (this.gaze.pitch - h.followP) * Math.min(1, dt / 0.8);
+    // 1.40 (Youssef 13/11, « la tête et le regard ensemble », lot validé 17:13): the eyes move first, the head follows
+    // them about a tenth of a second later and takes a share of the look: about half of a real glance aside, a fifth
+    // of the small fixations around the opponent. Two smoothing stages make the turn start softly and end softly
+    // (1.23 to 1.39: 35 % of every glance, starting at once, one slow stage). The eyes keep their target as the head
+    // comes round (aimEyes measures the opponent from where the head is).
+    const g = this.gaze;
+    const share = g.away ? 0.55 : 0.2;
+    // 1.40 eye contact: the head turns a share of the way toward the student (40 % across, 30 % up or down)
+    const C = this.contact;
+    const cy = 0.4 * C.w * Math.max(-0.6, Math.min(0.6, C.yaw));
+    const cp = 0.3 * C.w * Math.max(-0.3, Math.min(0.3, C.pitch));
+    h.leadY += (g.yaw * share + cy - h.leadY) * Math.min(1, dt / 0.14);
+    h.leadP += (g.pitch * share * 0.6 + cp - h.leadP) * Math.min(1, dt / 0.14);
+    h.follow += (h.leadY - h.follow) * Math.min(1, dt / 0.24);
+    h.followP += (h.leadP - h.followP) * Math.min(1, dt / 0.24);
+    // 1.40 the neck re-settles now and then: a quick small adjustment of the head (under a degree), that then eases
+    // away over a few seconds; never during a strike (amp)
+    if (t >= h.adjNext) {
+      const R = () => this.micro.rand01() - 0.5;
+      h.adjTo.set(R() * 1.4 * deg, R() * 1.1 * deg, R() * 0.9 * deg);
+      h.adjNext = t + 2 + 3.5 * this.micro.rand01();
+    }
+    h.adjTo.multiplyScalar(1 - Math.min(1, dt / 2.5));
+    h.adj.lerp(h.adjTo, Math.min(1, dt / 0.11));
     this.headAmp += (1 - this.headAmp) * Math.min(1, dt / 1.2);
     const amp = rest * rest * this.headAmp * this.headAmp;
-    const yaw = amp * (deg * 2.2 * Math.sin(0.37 * t + a) + deg * 1.0 * Math.sin(0.91 * t + b) + 0.35 * h.follow);
+    const yaw = amp * (deg * 2.2 * Math.sin(0.37 * t + a) + deg * 1.0 * Math.sin(0.91 * t + b) + h.follow + h.adj.x);
     // 1.34 encouragement: a small nod (down and back, 2.5°, twice), gone with the state
     const nod = mood.nod * deg * 2.5 * Math.pow(Math.max(0, Math.sin(2 * Math.PI * 1.3 * this.behavior.age)), 2);
-    const pitch = amp * (deg * 1.4 * Math.sin(0.29 * t + b) + deg * 0.6 * Math.sin(0.77 * t + c) + 0.3 * h.followP) + nod;
-    const roll = amp * deg * (0.7 * Math.sin(0.23 * t + c) + 0.3 * Math.sin(0.61 * t + a));
+    const pitch = amp * (deg * 1.4 * Math.sin(0.29 * t + b) + deg * 0.6 * Math.sin(0.77 * t + c) + h.followP + h.adj.y) + nod;
+    // 1.40 a turning head tilts a little with the turn (a fifth of it), as a real neck does
+    const roll = amp * (deg * (0.7 * Math.sin(0.23 * t + c) + 0.3 * Math.sin(0.61 * t + a)) + 0.2 * h.follow + h.adj.z);
     h.d
       .setFromAxisAngle(h.yaw, yaw)
       .multiply(tmpQ.setFromAxisAngle(h.pitch, pitch))
@@ -675,6 +806,26 @@ export class FaceAnimator {
       sq.multiply(sh.d);
       sh.out.copy(sq);
     }
+  }
+
+  /** 1.40 after update(): the wrinkles follow this frame's expressions and the camera */
+  updateWrinkles(camera: Camera) {
+    this.wrinkles?.update(camera, this.morphs.length ? this.applied : {});
+  }
+
+  /** 1.40 for the tests and the Lab: the expression weights applied this frame */
+  get weights(): Readonly<Partial<Record<FaceExpression, number>>> {
+    return this.applied;
+  }
+
+  /** 1.40 where the student is (the camera's world position), or null: the eyes then stay on the opponent */
+  setViewer(p: Vector3 | null) {
+    this.viewer = p ? (this.viewer ?? new Vector3()).copy(p) : null;
+  }
+
+  /** 1.40 for the tests and the Lab: the share of the look given to the student (0..1) */
+  get eyeContact() {
+    return this.contact.w;
   }
 
   /** 1.23 the body's breath of this frame (Breath.amount.x: -1 breathed out .. 1 breathed in) */

@@ -48,6 +48,14 @@ export function Lab() {
   useMemo(() => {
     // 1.33 cou=ancien: the neck of 1.32 and before (src/engine/rig.ts), for before/after captures
     (globalThis as { __cssOldNeck?: boolean }).__cssOldNeck = q.get('cou') === 'ancien';
+    // 1.40 menton=<rad>: extra chin tuck of the leaning guards (src/engine/rig.ts CHIN_TUCK_LEAN), for the comparisons
+    (globalThis as { __cssChinTuck?: number }).__cssChinTuck = q.get('menton') !== null ? Number(q.get('menton')) : undefined;
+    // 1.40 epaules=<m>: rise of the shoulders in the leaning guards (src/engine/rig.ts SHRUG_LEAN)
+    (globalThis as { __cssShrug?: number }).__cssShrug = q.get('epaules') !== null ? Number(q.get('epaules')) : undefined;
+    // 1.40 nuque=<rad>: the neck leaning back in the leaning guards (src/engine/rig.ts NECK_BACK_LEAN)
+    (globalThis as { __cssNeckBack?: number }).__cssNeckBack = q.get('nuque') !== null ? Number(q.get('nuque')) : undefined;
+    // 1.40 visage=actuel|calme|doux|vif: the face at rest (src/three/face.ts FACE_BASES), for the comparisons
+    (globalThis as { __cssFaceBase?: string }).__cssFaceBase = q.get('visage') ?? undefined;
   }, [q]);
   const envelope = useRef<Envelope | null>(null);
   const origin = useRef({ x: 0, z: 0, yaw: 0 });

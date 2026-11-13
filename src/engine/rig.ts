@@ -118,6 +118,26 @@ const wrapAngle = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 /** 1.33 the neck in an upright guard: share of the way from the trunk to the vertical, and extra chin tuck (rad) */
 export const NECK_UPRIGHT = 0.8;
 export const NECK_TUCK = 0.05;
+/**
+ * 1.40 (Youssef 13/11 18:35, captures de profil en garde MMA: « les cous ne font pas naturel… uniquement dans cette
+ * position »): with the trunk leaning forward (MMA 26°, muay-thaï), the head was still raised to a vertical face: the
+ * chin stood out in front of the shoulders over a long, stretched throat. A fighter leaning in tucks the chin and
+ * looks at the opponent from under the brows. Extra chin tuck (rad) at full lean, reached between 12° and 26° of lean.
+ */
+export const CHIN_TUCK_LEAN = 0.05;
+/**
+ * 1.40 rise of the shoulders (m) at full lean (Lab ?epaules=). Option C of the comparison (3 cm, chosen by Youssef
+ * 13/11 19:03) is measured but left at 0: it moved the shoulders of the guard by 3 cm (neck-v133.test: under 2 mm)
+ * and folded the skin of the armpits more than 1.9/1.11 (deformation-v1100.test: Amara high kick +5°, Kadir jab,
+ * Naël guard, Inaya high kick). The neck leaning back (NECK_BACK_LEAN) brings the head over the shoulders instead.
+ */
+export const SHRUG_LEAN = 0;
+/**
+ * 1.40 the neck leans back (rad) at full lean, past the vertical, so the head sits back over the shoulders: the chin
+ * comes in without pitching the face further down (a deeper chin pitch made the eyes look up from under the brows,
+ * 23° in MMA, which reads as a hard, tense stare)
+ */
+export const NECK_BACK_LEAN = 0.12;
 
 export class CoachRig {
   readonly metrics: Metrics;
@@ -533,27 +553,42 @@ export class CoachRig {
     // before (fades out between 37° and 53° of trunk lean). Lab ?cou=ancien shows the previous neck.
     const trunkUp = UP.clone().applyQuaternion(trunk).dot(UP);
     const upright = (globalThis as { __cssOldNeck?: boolean }).__cssOldNeck ? 0 : clamp((trunkUp - 0.6) / 0.2, 0, 1);
-    const tuck = quatFromRot({ yaw: 0, pitch: NECK_TUCK * upright, roll: 0 });
-    const headQ0 = lookQ.clone().slerp(level, 0.75).multiply(quatFromRot(p.head));
+    const leanAngle = Math.acos(clamp(trunkUp, -1, 1));
+    const leanK = (globalThis as { __cssOldNeck?: boolean }).__cssOldNeck ? 0 : clamp((leanAngle - 0.21) / 0.24, 0, 1) * upright;
+    const tuck = quatFromRot({ yaw: 0, pitch: NECK_TUCK * upright + ((globalThis as { __cssChinTuck?: number }).__cssChinTuck ?? CHIN_TUCK_LEAN) * leanK, roll: 0 });
+    // 1.40 leaning in, the head keeps a little more of its level (75 % → 95 %): the neck leaning back brings the chin
+    // in, so the face no longer needs to point down, and the eyes look ahead instead of up from under the brows
+    const headQ0 = lookQ.clone().slerp(level, 0.75 + 0.2 * leanK).multiply(quatFromRot(p.head));
     const headQ = headQ0.clone().multiply(tuck);
     const neck = this.bones.get('Neck');
     const head = this.bones.get('Head');
     if (neck) {
-      const before = trunk.clone().slerp(headQ0, 0.45);
+      // (from the head as levelled up to 1.39: the clavicles, and so the guard, keep their place)
+      const before = trunk.clone().slerp(lookQ.clone().slerp(level, 0.75).multiply(quatFromRot(p.head)), 0.45);
       // upright: the turn the neck had before is kept (it shares the look toward the opponent with the head as in
       // 1.32), only its lean is taken off, 80 % of it
       const turn = new Quaternion().setFromAxisAngle(UP, yawOfQuat(before));
       const lean = turn.clone().invert().multiply(before);
-      const straight = turn.multiply(lean.slerp(new Quaternion(), NECK_UPRIGHT));
+      const neckBack = ((globalThis as { __cssNeckBack?: number }).__cssNeckBack ?? NECK_BACK_LEAN) * leanK;
+      const fwd = new Vector3(0, 0, 1).applyQuaternion(turn);
+      const back = new Quaternion().setFromAxisAngle(new Vector3().crossVectors(UP, fwd.negate()).normalize(), neckBack);
+      const straight = back.multiply(turn.multiply(lean.slerp(new Quaternion(), NECK_UPRIGHT + (1 - NECK_UPRIGHT) * leanK)));
       // the Rocketbox clavicles hang from the neck bone: they keep the place the previous neck gave them, so the
       // shoulders, the arms and the guard stay exactly as before (only the neck and the head change)
       const clavicles = SIDES.map((s) => this.bones.get(`${sideName(s)}Shoulder`)).filter((r): r is BoneRest => !!r && r.bone.parent === neck.bone);
       for (const r of clavicles) r.bone.position.copy(r.localPos);
       this.setWorldQ(neck, before.clone().multiply(neck.worldQ));
       const kept = clavicles.map((r) => r.bone.getWorldPosition(new Vector3()));
+      // 1.40 their turn too: the neck leaning back must not swing the shoulders (the arms hang from them)
+      const keptQ = clavicles.map((r) => r.bone.getWorldQuaternion(new Quaternion()));
       this.setWorldQ(neck, before.slerp(straight, upright).multiply(neck.worldQ));
+      // 1.40 leaning in, the shoulders rise a little toward the ears (the trapezius covers the base of the neck, as a
+      // fighter protects it); the arms are solved after this, so the hands stay where the technique puts them
+      const shrug = ((globalThis as { __cssShrug?: number }).__cssShrug ?? SHRUG_LEAN) * leanK;
       clavicles.forEach((r, i) => {
+        if (shrug > 0) kept[i].y += shrug;
         r.bone.position.copy(neck.bone.worldToLocal(kept[i]));
+        r.bone.quaternion.copy(neck.bone.getWorldQuaternion(new Quaternion()).invert().multiply(keptQ[i]));
         r.bone.updateMatrixWorld(true);
       });
     }

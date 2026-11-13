@@ -381,7 +381,9 @@ export function CoachStage(props: CoachStageProps) {
             cameraAngle={cameraAngle}
             view={view}
             free={free}
-            turnOnly={props.turnOnly}
+            // 1.40 (Youssef 13/11 18:35: « interdire dans les salles de sport les rotations haut et bas, juste droite gauche
+            // comme dans l'écran coach »): the room is a photograph around the coach, seen from above or below it stretches
+            turnOnly={props.turnOnly || !!room}
             onUserOrbit={onUserOrbit}
             quality={q}
             follow={follow}

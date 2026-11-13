@@ -3704,3 +3704,93 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   micro-vie effacée ; clignements variés et parfois incomplets ; reflet présent dans les deux qualités.
 - **Tests existants** : aucun modifié ni affaibli.
 - **Restauration** : branche `restauration/avant-visages-v1390` (= 1.38.0 publiée, `f398408`).
+- **Résultats** :
+  - `npx vitest run` : 1 416 réussis, 9 échoués, 1 ignoré. Les 9 échecs sont ceux de la 1.38.0 (8 contrôles du moteur
+    de frappe et « modèle léger < 3,5 Mo » d'Amara) : aucun nouveau. `micro-life.test.ts` : TEST RÉUSSI (17) ;
+  - `npx playwright test` (suite complète, 293) : 287 réussis, 2 ignorés, 4 échoués. Relancés seuls :
+    `chrono-seul:96` et `coach-suggest:99` TEST RÉUSSI (instables sous charge, connus) ; `coach-suggest:207` et
+    `coaching-hud:60` ÉCHOUÉ, et ÉCHOUÉ aussi sur la 1.38.0 (machine trop lente, connus) : aucun lié au visage ;
+  - `npm run build` : TEST RÉUSSI ; captures avant/après au Lab : `captures/visages-v1390/` ;
+  - test sur téléphone Android : NON EXÉCUTÉ.
+- **Publication** : PR #104 fusionnée (`61b1306`) dans `claude/project-thread-o7lrt8`, GitHub Pages redéployé.
+
+## 2026-11-13 · v1.40.0 · La tête suit le regard, rides d'expression (les quatre coachs)
+
+- **Demande** : Youssef, 13/11 17:13, après la liste des pistes pour donner plus de vie au visage : « Ça me va. Je
+  veux que tu te lances après » (points retenus : la tête et le regard ensemble ; des rides qui apparaissent avec
+  l'expression).
+- **Constat vérifié** (code et Lab, base 1.39.0) :
+  - la tête prenait 35 % de chaque déplacement du regard, dès la première image, par un seul lissage lent (0,8 s) :
+    elle démarrait en même temps que les yeux, sans l'accélération d'un vrai mouvement de tête ; aucun réajustement
+    de la tête en dehors de la lente dérive ;
+  - la peau restait lisse quelle que soit l'expression (sourcils levés sur un front lisse, yeux plissés sans pattes
+    d'oie) : aucune ride n'existait dans les textures ni dans le shader de la peau.
+- **Correction** (moteur commun, aucune logique propre à un coach ; tenues, corps, coiffures, techniques inchangés) :
+  - tête (`src/three/face.ts`, `moveHead`) : les yeux partent d'abord, la tête suit environ un dixième de seconde
+    plus tard par deux lissages (départ et arrivée doux) ; elle prend 55 % d'un vrai regard de côté et 20 % des
+    petites fixations autour de l'adversaire ; elle s'incline un peu en tournant (un cinquième de la rotation) ;
+    toutes les 2 à 5,5 s, petit réajustement de la tête (moins d'un degré et demi) qui s'efface en quelques
+    secondes. Rien en image fixe ni pendant la frappe. Les yeux gardent leur cible pendant que la tête tourne ;
+  - rides (`src/three/human/wrinkles.ts`, nouveau) : dans le shader de la peau, un léger relief (0,6 mm au plus)
+    et un léger ombrage du pli, dans un repère lié au visage (origine entre les yeux, unité = écart des yeux) :
+    lignes du front avec le sourcil levé, deux plis verticaux entre les sourcils au froncement, pattes d'oie avec
+    les yeux plissés, les joues ou le sourire. Leur force vient des expressions appliquées à chaque image
+    (`FaceAnimator.updateWrinkles`) : visage neutre = peau lisse. Les lignes trop fines pour l'écran (coach vu de
+    loin) s'effacent au lieu de scintiller. Pas de texture ni de fichier ajouté.
+- **Fichiers** : `src/three/face.ts`, `src/three/human/wrinkles.ts` (nouveau), `src/three/PhotoCoach.tsx`,
+  `src/three/human/__tests__/head-wrinkles-v140.test.ts` (nouveau), `package.json`, `src/domain/releases.ts`,
+  `captures/visages-v1400/`.
+- **Tests ajoutés** (`head-wrinkles-v140.test.ts`, 19 contrôles, les quatre coachs) : les yeux partent d'abord, la
+  tête atteint la moitié de sa part au moins 0,1 s plus tard et prend 45 à 60 % d'un regard de côté ; réajustements
+  de tête présents et sous 1,5° ; en image fixe la tête ne bouge pas ; repère des rides centré entre les yeux et
+  tournant avec la tête ; visage neutre sans ride, chaque ride liée à son expression, bornée à 1 ; en séance, rides
+  présentes mais légères en moyenne ; shader de peau enchaîné (peau, puis rides) avec sa clé de programme.
+- **Tests existants** : aucun modifié ni affaibli.
+- **Suite du lot (même version 1.40.0, non publiée entre-temps)** :
+  - **Demandes** : Youssef, 13/11 18:35 (4 captures de profil en garde MMA) : « interdis dans les salles de sport les
+    rotations haut et bas, juste droite gauche », « les cous ne font pas naturel… uniquement dans cette position »,
+    « les visages sont toujours trop crispés… dédouble d'effort et sois force de proposition » ; 18:48 « Go » pour la
+    page de comparaison ; 19:03 « Applique les choix conseillés » (visage Calme, cou C, rides du front et regard
+    moins par en dessous) ; 19:04 « regarde en face comme si le coach regarde son élève, quelques petits sourires
+    doux… sans que ça soit mécanique ou répétitif ».
+  - **Constat vérifié** (Lab, base 1.39.0, vue de profil az 65 comme les captures) : en garde MMA le buste penche
+    de 26° ; la tête était redressée pour garder le visage vertical, le menton partait en avant d'un cou étiré. Au
+    repos le visage gardait un fond de concentration (sourcils froncés vers 0,3, yeux plissés). Le regard en garde
+    montait de 15° vers l'adversaire (tête baissée), ce qui ouvrait les yeux en grand : regard par en dessous, dur.
+    Les rides du front apparaissaient dès la moindre dérive des sourcils. Les yeux ne regardaient jamais la caméra.
+    Dans les salles, la caméra tournait aussi vers le haut et le bas. Page de comparaison (4 réglages × 4 coachs,
+    3 options de cou) : https://claude.ai/artifact/N5PV4SiqovXEkEyeqgrciV.
+  - **Corrections** (moteur commun, réglages dans les profils ; tenues, corps, coiffures, techniques inchangés) :
+    - visage au repos « calme » par défaut (`FACE_BASES`, `FACE_BASE_DEFAULT` dans `src/three/face.ts`) : 15 % de la
+      concentration d'avant, paupières un peu relâchées ; Lab `visage=actuel|calme|doux|vif` ;
+    - regard vers l'élève : la scène donne la position de la caméra (`FaceAnimator.setViewer`), les yeux la
+      regardent quand elle est devant le coach (jusqu'à environ 50° de l'axe de l'adversaire), la tête tourne de
+      40 % du chemin ; contact tenu 3 à 6 s puis interrompu 0,5 à 1,2 s, et par les regards de côté ; caméra de
+      côté, derrière ou au-dessus : les yeux restent sur l'adversaire. Visée des yeux pleine jusqu'aux limites
+      (30° de côté, 23° en hauteur) au lieu de s'atténuer dès 60 % ;
+    - sourires doux (`src/three/human/micro.ts`) : trois sortes (bouche, sourire des yeux, demi-sourire d'un côté),
+      jamais deux pareils de suite, force, durée et côté tirés à chaque fois, toutes les 8 à 22 s pour un coach de
+      chaleur 1 (plus souvent pour un coach plus chaleureux : trait `warmth` des profils, Naël 1,1, Kadir 0,8),
+      au moins 6 s entre deux ; jamais pendant la préparation ou la frappe ; l'encouragement après une répétition
+      s'accompagne d'un de ces sourires ;
+    - rides du front seulement sur un vrai haussement des sourcils (au-delà de 0,2) (`wrinkles.ts`) ;
+    - cou en garde penchée (`src/engine/rig.ts`) : la nuque se redresse entièrement et recule un peu
+      (`NECK_BACK_LEAN` 0,12 rad), le menton rentre légèrement (`CHIN_TUCK_LEAN` 0,05), la tête garde mieux son
+      niveau (75 % → 95 %) : la tête revient au-dessus des épaules sans baisser le visage, le regard ne monte plus
+      que de 13° en MMA (15° avant). Les clavicules gardent leur place et leur orientation : garde, épaules et mains
+      inchangées. Lab `menton=`, `epaules=`, `nuque=` ;
+    - **épaules remontées de l'option C non appliquées** (`SHRUG_LEAN` = 0, mesuré) : elles déplaçaient les épaules
+      de la garde de 3 cm (`neck-v133.test` : moins de 2 mm) et pliaient davantage la peau des aisselles que les
+      références 1.9/1.11 (`deformation-v1100.test` : high kick d'Amara +5°, jab de Kadir, garde de Naël, high kick
+      d'Inaya). Critère bloquant : déformation ; la nuque qui recule remplace cet effet ;
+    - salles de sport : la caméra ne tourne plus qu'à gauche et à droite (`CoachStage.tsx`, `turnOnly` dès qu'une
+      salle est affichée), comme l'écran coach.
+  - **Tests ajoutés** : `src/three/human/__tests__/visage-naturel-v140.test.ts` (12 contrôles : sourires variés,
+    jamais deux pareils de suite, intervalles irréguliers, retour au neutre, aucun pendant la frappe, plus fréquents
+    chez un coach chaleureux ; rides du front seulement au-delà de 0,2 ; par coach : visage calme par défaut,
+    froncement moyen < 0,15, lèvres jamais pincées, regard sur l'élève plus de 60 % du temps avec des pauses, aucun
+    contact avec une caméra derrière) ; `tests/e2e/salles.spec.ts` : dans une salle, glisser sur la scène change
+    l'azimut et jamais l'élévation (moins de 1°).
+  - **Tests existants** : aucun modifié ni affaibli. `src/ui/pictos/techniquePictos.json` régénéré
+    (`PICTOS_WRITE=1`) : point de la tête déplacé de 0,1 unité au plus par la nouvelle tenue de tête.
+- **Restauration** : branche `restauration/avant-visages-v1400` (= contenu de la 1.39.0 publiée, `61b1306`).
