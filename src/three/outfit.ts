@@ -166,7 +166,7 @@ export function useOutfit(
               m.skeleton.bones.map((b) => bones.get(b.name) ?? b),
               m.skeleton.boneInverses,
             );
-            const mesh = new SkinnedMesh(m.geometry, dressOutfitMaterial(m.material as Material, quality));
+            const mesh = new SkinnedMesh(m.geometry, dressOutfitMaterial(m.material as Material, quality, isAmaraOutfitUrl(url)));
             mesh.name = `tenue:${m.name}`;
             mesh.position.copy(m.position);
             mesh.quaternion.copy(m.quaternion);
@@ -195,8 +195,14 @@ export function useOutfit(
               // 1.26: the points read one by one (Axel's and Kaila's bodies store them interleaved with their
               // normals and texture coordinates: read as a plain array, only a third of their hidden points were found
               // and the skin came through their clothes, Youssef 2026-11-06 « les bottes avec des trous »)
-              const flat = new Float32Array(pos.count * 3);
-              for (let v = 0; v < pos.count; v++) flat.set([pos.getX(v), pos.getY(v), pos.getZ(v)], v * 3);
+              // Amara's cleaned torso is a morph baked AFTER glTF load. Use the
+              // unchanged source POSITION for all seven existing hideBody masks,
+              // or skin triangles will reappear where the original maillot was.
+              const orig = g.userData?.cssOriginalMaskPositions as Float32Array | undefined;
+              const flat = orig?.length === pos.count * 3 ? orig : new Float32Array(pos.count * 3);
+              if (flat !== orig) {
+                for (let v = 0; v < pos.count; v++) flat.set([pos.getX(v), pos.getY(v), pos.getZ(v)], v * 3);
+              }
               const r = maskedIndex(flat, idx, keys, h.scale);
               matched += r.matched;
               own.setIndex(new BufferAttribute(pos.count > 65535 ? new Uint32Array(r.index) : new Uint16Array(r.index), 1));
@@ -253,7 +259,17 @@ export function isPrint(name: string) {
   return name.startsWith('logo-');
 }
 
-export function dressOutfitMaterial(src: Material, quality: 'haute' | 'basse'): Material {
+/** True only for a genuine Amara garment URL; prevents an outfit shared through the loader cache leaking finishes to others. */
+export function isAmaraOutfitUrl(url: string | null): boolean {
+  return !!url && /(?:^|\/)mma-amara\/tenues\/[^/]+\.glb(?:\?.*)?$/.test(url);
+}
+
+/**
+ * 1.37.9: fabric finish only, never geometry or skin weights.
+ * Deliberately small optical changes on Amara's personal material CLONE.
+ * Other coaches, logos, leather, gi cloth and the cached GLB materials remain identical.
+ */
+export function dressOutfitMaterial(src: Material, quality: 'haute' | 'basse', amara = false): Material {
   // Always clone before changing anything: the cached GLB and its materials are
   // shared between coaches and quality modes. Mutating the source caused leakage.
   const m = (src as MeshStandardMaterial).clone();
@@ -275,12 +291,31 @@ export function dressOutfitMaterial(src: Material, quality: 'haute' | 'basse'): 
     m.metalness = 0;
     m.normalScale.multiplyScalar(0.65);
   }
+  // Amara: a sports jersey should read as woven fabric rather than plastic,
+  // and the short's satin/twill should be less glossy. No cut, thickness,
+  // alpha, depth ordering, skinning or hidden-body changes (1.37.7 stays locked).
+  // Do not edit logos or non-textile parts; their source material is unchanged.
+  const fineTop = amara && !isPrint(m.name) && /^haut-(?:crop|rash|brassiere|debardeur)/i.test(m.name);
+  const outerShort = amara && !isPrint(m.name) && /^short-(?:boxe|kick|thai|mma|surshort)/i.test(m.name);
+  const waistband = amara && !isPrint(m.name) && /^ceinture-/i.test(m.name);
+  if (fineTop && knit) {
+    m.roughness = Math.max(m.roughness, 0.86);
+    m.normalScale.multiplyScalar(1.12); // small weave detail; v1.37.1 matte treatment is preserved
+  } else if (outerShort) {
+    m.roughness = Math.max(m.roughness, 0.76);
+    m.metalness = 0;
+    m.normalScale.multiplyScalar(0.84); // less harsh procedural ribs on curved leg panels
+  } else if (waistband) {
+    m.roughness = Math.max(m.roughness, 0.79);
+    m.metalness = 0;
+    m.normalScale.multiplyScalar(0.80); // elastic no longer resembles separate hard rectangles
+  }
   const sheen = Number(m.userData?.css_sheen ?? 0);
   const coat = Number(m.userData?.css_coat ?? 0);
   if (quality === 'basse' || (!sheen && !coat)) return m;
   const physical = physicalFrom(m, {
     metalness: 0,
-    sheen: knit ? Math.min(sheen, 0.06) : sheen,
+    sheen: knit ? Math.min(sheen, 0.06) : outerShort ? Math.min(sheen, 0.18) : sheen,
     sheenRoughness: knit ? 0.85 : 0.45,
     sheenColor: m.color.clone().lerp(m.color.clone().set('#ffffff'), knit ? 0.15 : 0.4),
     clearcoat: knit ? 0 : coat,

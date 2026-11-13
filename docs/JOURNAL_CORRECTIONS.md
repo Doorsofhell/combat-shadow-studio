@@ -3544,3 +3544,12 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Intégrité** : aucun fichier GLB, aucune animation, aucun os, aucun générateur Blender et aucune interface modifiés ; aucune régénération des shorts ou du haut de sport.
 - **Réversibilité** : branche isolée `fix/amara-skin-relief-v1378` créée depuis la base 1.37.7 ; revenir à cette base rétablit exactement le rendu antérieur.
 - **Contrôle attendu avant publication** : test ciblé `amara-skin-v1378.test.ts`, version et tests de vêtements ; comparaison des captures Amara avant/après sous éclairage et angle identiques (face, profil, dos, garde, high kick) ; inspection sur Android. Une modification du relief visuel ne corrige pas les défauts géométriques de vêtements.
+
+
+## v1.37.9 — 12/11/2026 — Amara : finitions textiles, première passe sans retouche de maillage
+
+- **Demande** : améliorer l'esthétique des tenues d'Amara, sans obligation de remonter ni de fermer le décolleté. L'élégance de la coupe et la tenue pendant les mouvements sont prioritaires.
+- **Première passe, sans risque de topologie** : uniquement dans `src/three/outfit.ts`, calibrage Amara des matériaux des hauts en jersey (matité et trame légère), des shorts (reflets plus discrets et relief plus doux) et des ceintures élastiques (relief adouci). Réglages appliqués aux clones des matériaux et seulement si le chemin de tenue appartient à `mma-amara`. Ni logo ni kimono modifiés.
+- **Intégrité** : aucun GLB, vêtement géométrique, corps, squelette, texture source, générateur Blender ou animation modifié ; `src/three/photoMaterials.ts` et le correctif peau 1.37.8 inchangés. Pas de changement de `hideBody` et pas de réapparition des découpes 1.37.6.
+- **Suite géométrique à valider sur captures** : `docs/AMARA_TENUES_V1379.md` décrit la coupe des hauts et les bords des shorts. Aucune correction géométrique n'est annoncée comme réalisée par le seul ajustement des matériaux.
+- **Référence et restauration** : branche `fix/amara-garment-finish-v1379` depuis la 1.37.8 ; référence de restauration à créer avant toute fusion. Comparaison requise : mêmes poses/lumières/angles, notamment garde et high kick.
