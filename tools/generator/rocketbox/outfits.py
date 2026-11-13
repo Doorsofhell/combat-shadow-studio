@@ -2233,7 +2233,9 @@ def mma_reference_underband():
     """
     low = bra_low()
     center_z = low + 0.010
-    cx, cy, rad = ring_profile(center_z, dz=0.016, pad=0.014)
+    # v1.37.9 final fit: the 14 mm prototype offset floated visibly off the back.
+    # The band now rests 7 mm from the cleaned torso, above the jersey surface.
+    cx, cy, rad = ring_profile(center_z, dz=0.016, pad=0.007)
     # Use a periodic low-pass, not the 'max' jag of the source torso radius.
     for _ in range(7):
         rad = [(rad[(i - 1) % 36] + 2 * rad[i] + rad[(i + 1) % 36]) / 4
@@ -2258,6 +2260,7 @@ def mma_reference_underband():
     o['cssBraBandConstruction'] = 'smooth-independent-torso-ring-1379'
     o['cssBraBandHeight'] = 0.044
     o['cssBraBandSegments'] = seg
+    o['cssBraBandOffset'] = 0.007
     print('Amara MMA: independent bra underband', len(o.data.vertices),
           'vertices', len(o.data.polygons), 'faces; centre', round(center_z, 4))
     return [o], set()

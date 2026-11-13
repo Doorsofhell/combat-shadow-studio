@@ -76,30 +76,6 @@
       "largeStretchTriangles": 1067
     },
     {
-      "outfit": "mma",
-      "pose": "garde-face",
-      "outfitState": "portee",
-      "largeStretchTriangles": 826
-    },
-    {
-      "outfit": "mma",
-      "pose": "garde-dos",
-      "outfitState": "portee",
-      "largeStretchTriangles": 826
-    },
-    {
-      "outfit": "mma",
-      "pose": "low-kick",
-      "outfitState": "portee",
-      "largeStretchTriangles": 966
-    },
-    {
-      "outfit": "mma",
-      "pose": "high-kick",
-      "outfitState": "portee",
-      "largeStretchTriangles": 926
-    },
-    {
       "outfit": "bjj",
       "pose": "garde-face",
       "outfitState": "portee",
@@ -170,6 +146,30 @@
       "pose": "high-kick",
       "outfitState": "portee",
       "largeStretchTriangles": 2948
+    },
+    {
+      "outfit": "mma",
+      "pose": "garde-face",
+      "outfitState": "portee",
+      "largeStretchTriangles": 826
+    },
+    {
+      "outfit": "mma",
+      "pose": "garde-dos",
+      "outfitState": "portee",
+      "largeStretchTriangles": 826
+    },
+    {
+      "outfit": "mma",
+      "pose": "low-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 966
+    },
+    {
+      "outfit": "mma",
+      "pose": "high-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 926
     }
   ]
 }
