@@ -49,6 +49,20 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.39.0',
+      releaseDate: '2026-11-13',
+      title: 'Coachs : visages vivants et détendus',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Visage des quatre coachs plus naturel : sourcils, paupières, joues et coins de la bouche bougent un peu, lentement, et pas exactement pareil à gauche et à droite ; les narines s’ouvrent à l’inspiration.' },
+        { category: 'ameliorations', text: 'De brèves micro-expressions vont et viennent (sourcil qui se lève, coin de bouche, regard qui se concentre, visage qui se relâche), toujours avec retour au calme.' },
+        { category: 'corrections', text: 'Visage moins crispé : le froncement de concentration est adouci et les lèvres ne sont plus pincées au repos ; la bouche reste fermée et détendue.' },
+        { category: 'ameliorations', text: 'Yeux plus vivants : petits mouvements naturels quand ils fixent l’adversaire, clignements de durée variable, parfois incomplets, et un reflet de lumière dans l’œil.' },
+        { category: 'ameliorations', text: 'Tenues, corps, coiffures, techniques et animations des coachs inchangés.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.38.0',
       releaseDate: '2026-11-13',
       title: 'Amara : brassière fine, short net, nuque sans ligne',

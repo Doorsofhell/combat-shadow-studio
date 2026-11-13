@@ -58,7 +58,8 @@ export const NEUTRAL_MOOD: Mood = { focus: 1, browUp: 0, press: 0, smile: 0, hea
 /** target mood of each state; kept small: a human face, not a mask nor a grimace */
 export const STATE_MOOD: Record<HumanState, Mood> = {
   neutre: { ...NEUTRAL_MOOD, focus: 0.6 },
-  concentration: { ...NEUTRAL_MOOD, focus: 1.15 },
+  // 1.39 (« pas de visage crispé »): 1.15 → 1, the frown of concentration was held for whole seconds
+  concentration: { ...NEUTRAL_MOOD, focus: 1 },
   preparation: { ...NEUTRAL_MOOD, focus: 1.3, press: 0.35, alert: 0.4 },
   effort: { ...NEUTRAL_MOOD, focus: 1.2 },
   frappe: { ...NEUTRAL_MOOD, focus: 1.3 },

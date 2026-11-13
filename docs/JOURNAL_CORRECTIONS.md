@@ -3665,3 +3665,42 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     `captures/amara-v1380/` ;
   - `npx playwright test` (suite complète) : NON EXÉCUTÉ (environ 40 min en rendu logiciel ; aucun écran ni
     parcours de l'appli n'est modifié) ; test sur téléphone Android : NON EXÉCUTÉ.
+
+## 2026-11-13 · v1.39.0 · Visages vivants et détendus (les quatre coachs)
+
+- **Demande** : Youssef, 13/11 16:55 : « le visage reste trop figé, elle ne fait pas du tout naturel. Sur elle et
+  tous les autres coachs » ; 17:04 : « Il faut que ça soit naturel, pas de lèvres ni visage crispé ».
+- **Constat vérifié** (Lab `face=live`, garde, gros plan, les quatre coachs, base 1.38.0 `f398408`, poids des
+  expressions relevés image par image) :
+  - le visage tient un masque : en concentration, froncement et plissement des yeux autour de 0,54 pendant des
+    secondes (écart type 0,05), gauche strictement égale à droite à chaque image ;
+  - la bouche est immobile : seul le joint des lèvres (0,22, fixe) ; les lèvres étaient en plus pincées près de la
+    moitié du temps (jusqu'à pleine force du « visage au repos ») ;
+  - le regard : l'œil reste parfaitement immobile entre deux saccades ; aucun reflet de lumière dans l'œil en gros
+    plan (yeux mats) ; quand l'œil regarde vers le haut, la paupière supérieure était à la fois abaissée (focus) et
+    ouverte (« yeux grands ») : regard fixe ;
+  - ce qui fonctionnait : clignements (toutes les 3 à 6 s), petite vie de la tête, expressions de frappe.
+- **Correction** (moteur commun, aucune logique propre à un coach ; tenues, corps, coiffures, techniques inchangés) :
+  - micro-vie du visage `src/three/human/micro.ts` (`MicroLife`) : sourcils, paupières, plissement, joues et coins
+    de la bouche bougent lentement (ondes de 2 à 9 s), moitié en commun, moitié propre à chaque côté ; narines qui
+    s'ouvrent à l'inspiration ; uniquement en direct, jamais en image fixe, effacée par l'effort de la frappe ;
+  - micro-expressions brèves (toutes les 2,5 à 7 s, au calme seulement, jamais en préparation ni en frappe) :
+    sourcil qui se lève, coin de bouche, regard qui se concentre, narines, visage qui se relâche ; montée 0,25 s,
+    retour au neutre 0,45 s. Aucune ne pince les lèvres ni n'ouvre la bouche ;
+  - visage détendu : focus du visage au repos 0,2 à 0,75 (au lieu de 0,35 à 1), humeur « concentration » 1 (au lieu
+    de 1,15), lèvres pincées rarement et légèrement, pincement plafonné à 0,2 hors frappe ;
+  - paupière : en regardant vers le haut, elle rend d'abord ce que le focus avait abaissé, puis s'ouvre ;
+  - yeux : micro-saccades de quelques dixièmes de degré toutes les 0,3 à 1 s et légère dérive ; clignements de durée
+    variable (fermeture 60 à 100 ms, ouverture 1,6 à 2,4 fois plus lente), un sur huit incomplet ;
+  - reflet de lumière dans l'œil (`eyeCatchlight`, `src/three/photoMaterials.ts`), deux qualités, quelques
+    instructions.
+- **Fichiers** : `src/three/human/micro.ts` (nouveau), `src/three/face.ts`, `src/three/human/behavior.ts`,
+  `src/three/photoMaterials.ts`, `src/three/human/__tests__/micro-life.test.ts` (nouveau), `package.json`,
+  `src/domain/releases.ts`.
+- **Tests ajoutés** (`micro-life.test.ts`, 17 contrôles, les quatre coachs) : chaque trait bouge en garde et la
+  gauche diffère de la droite sans à-coup ; pas de visage crispé (froncement moyen < 0,42, lèvres ≤ 0,2, bouche
+  fermée, mâchoire 0) en séance et en pause ; yeux jamais immobiles en direct, immobiles en image fixe ;
+  micro-expressions présentes, revenant au neutre, absentes en préparation/frappe, sans lèvres pincées ; frappe =
+  micro-vie effacée ; clignements variés et parfois incomplets ; reflet présent dans les deux qualités.
+- **Tests existants** : aucun modifié ni affaibli.
+- **Restauration** : branche `restauration/avant-visages-v1390` (= 1.38.0 publiée, `f398408`).
