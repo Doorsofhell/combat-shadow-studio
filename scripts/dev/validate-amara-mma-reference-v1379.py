@@ -17,6 +17,7 @@ nodes = [x for x in g.get('nodes', []) if x.get('mesh') is not None]
 names = [x.get('name', '') for x in nodes]
 assert sum(x.startswith('short-vale-tudo') for x in names) == 1, names
 assert sum(x.startswith('haut-brassiere') for x in names) == 1, names
+assert sum(x.startswith('bande-brassiere-mma') for x in names) == 1, names
 assert not any(x.startswith('short-surshort') for x in names), 'obsolete outer short reintroduced'
 assert not any(x.startswith('haut-crop') for x in names), 'old square crop still present'
 assert any('mma-shin' in x or 'tibia' in x for x in names), 'MMA protections unexpectedly absent'
@@ -26,6 +27,7 @@ assert any(e.get('generatorVersion') == '1.37.9' and e.get('clothingStyle') == '
 assert any(e.get('cssCompressionStyle') == 'fitted-one-layer-reference-1379'
            and e.get('cssNoOvershort') is True for e in metadata)
 assert any(e.get('cssTopStyle') == 'scoop-racerback-reference-1379' for e in metadata)
+assert any(e.get('cssBraBandCut') == 'continuous-planar-elastic-1379' for e in metadata)
 hides = [e for e in metadata if e.get('hideBody')]
 assert len(hides) == 1
 raw = base64.b64decode(hides[0]['hideBody'], validate=True)
