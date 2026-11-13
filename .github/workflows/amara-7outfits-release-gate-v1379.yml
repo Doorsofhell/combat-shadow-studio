@@ -39,7 +39,7 @@ jobs:
         run: node scripts/boot-sizes.mjs
       - name: All garment, morph, original no-outfit, startup and release tests
         run: |
-          npm run test -- src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-amara-v1374.test.ts src/three/__tests__/outfit-amara-finish-v1379.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit-rollback-v1373.test.ts src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/amara-photo-source-v1379.test.ts src/three/__tests__/amara-clean-surface-v1379.test.ts src/boot/__tests__/preload.test.ts src/three/__tests__/expressions-v1160.test.ts src/domain/release-version.test.ts
+          npm run test -- src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-amara-v1374.test.ts src/three/__tests__/outfit-amara-finish-v1379.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit-rollback-v1373.test.ts src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/amara-photo-source-v1379.test.ts src/three/__tests__/amara-clean-surface-v1379.test.ts src/boot/__tests__/preload.test.ts src/three/face-mouth.test.ts src/domain/release-version.test.ts
       - name: Production build (not published)
         run: |
           npm run build
