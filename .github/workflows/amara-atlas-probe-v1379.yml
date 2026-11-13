@@ -1,0 +1,32 @@
+name: Amara source texture atlas - read only reference
+
+on:
+  push:
+    branches:
+      - prototype/amara-mma-compression-reference
+    paths:
+      - scripts/dev/probe-amara-skin-atlas-v1379.py
+      - .github/workflows/amara-atlas-probe-v1379.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install pillow
+      - run: python scripts/dev/probe-amara-skin-atlas-v1379.py
+      - name: Retain source preview on prototype only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add captures/amara-skin-atlas-review/
+          git commit -m "review(am): skin source map and old bikini UV island [skip ci]" || exit 0
+          git fetch origin prototype/amara-mma-compression-reference
+          git rebase origin/prototype/amara-mma-compression-reference
+          git push origin HEAD:prototype/amara-mma-compression-reference
