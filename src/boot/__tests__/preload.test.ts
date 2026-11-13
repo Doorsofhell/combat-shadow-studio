@@ -15,6 +15,12 @@ describe('chargement au démarrage (1.25) : ce qui est téléchargé', () => {
     for (const [rel, n] of Object.entries(sizes)) expect(statSync(join('public', rel)).size, rel).toBe(n);
     for (const r of readdirSync('public/salles')) for (const f of readdirSync(join('public/salles', r))) expect(sizes[`salles/${r}/${f}`], `salles/${r}/${f}`).toBeDefined();
     for (const c of ALL_COACHES) expect(sizes[`coaches/${c.id}/photo.glb`], c.id).toBeGreaterThan(0);
+    // Both original (no outfit) and prepared (seven dressed looks) are cached
+    // with stable fingerprints; otherwise the clean body would be downloaded
+    // again every time Amara switches from no outfit into MMA.
+    expect(sizes['coaches/mma-amara/photo-clean.glb']).toBeGreaterThan(0);
+    expect(bootFiles()).toContain('coaches/mma-amara/photo-clean.glb');
+    expect(bootFiles().filter((x) => x.endsWith('/photo-clean.glb'))).toEqual(['coaches/mma-amara/photo-clean.glb']);
   });
 
   it('le coach choisi d’abord, avec ses tenues et les 6 salles, puis tous les autres coachs et leurs tenues', () => {
