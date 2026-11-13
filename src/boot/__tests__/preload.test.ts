@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import SIZES from '../assetSizes.json';
 import { DISCIPLINES, bootMessage, bootPlan, runBoot, type BootProgress } from '../preload';
 import { ALL_COACHES } from '../../domain/coaches/catalog';
+import { bootFiles } from '../../../tools/build/bootModels';
 
 const sizes = SIZES as Record<string, number>;
 const IDS = ALL_COACHES.map((c) => c.id);
