@@ -518,7 +518,7 @@ def new_obj(name, bm_):
     return o
 
 
-def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=None, edge_skin=0.006):
+def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=None, edge_skin=0.006, detail_ratio=None):
     """body faces whose vertices all satisfy keep(i), pushed out by push(i) (metres along the normal, or a
     Vector: free displacement), given a thickness. mats: list of materials, mat_of(face centre, vertex ids) -> index.
     cuts: (point, normal) planes the body is sliced along first, so hems and colour bands are straight lines
@@ -545,7 +545,7 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
     # previously accidentally excluded: the coarse mesh tore its armholes.
     critical = name.startswith(('haut-crop', 'haut-carre', 'haut-brassiere', 'short-surshort', 'short-vale-tudo'))
     ratio = ('DECIMATE_MMA', '0.96') if critical else ('DECIMATE_DETAIL', '0.86') if detail else ('DECIMATE', '0.4')
-    dec.ratio = min(1.0, max(0.1, float(os.environ.get(*ratio))))
+    dec.ratio = min(1.0, max(0.1, float(os.environ.get(*ratio)) if detail_ratio is None else float(detail_ratio)))
     apply(o, dec)
     bm_ = bmesh.new()
     bm_.from_mesh(o.data)
@@ -1509,7 +1509,7 @@ def collar(color, kind):
 BAND_RELIEF = float(os.environ.get('BAND_RELIEF', '0.15'))
 
 
-def shorts(kind, color, band, n_leg=None, under=False):
+def shorts(kind, color, band, n_leg=None, under=False, hem_override=None, nogi=False):
     """kind: boxe (loose, to just above the knee, high waistband), kick (fitted, short), thai (short, very wide,
     high waistband), mma (board short, side slits, to the knee), compression"""
     # the photo body has its underwear painted down to mid-thigh: every short reaches below it
@@ -1523,6 +1523,8 @@ def shorts(kind, color, band, n_leg=None, under=False):
     blueprint = MMA_SHORT_CUTS[MMA_SHORT_REFERENCE]
     hem = {'boxe': 0.3, 'kick': 0.3, 'thai': 0.32, 'mma': 0.18, 'compression': 0.3,
            'vale-tudo': blueprint['liner_hem'], 'surshort': blueprint.get('over_hem', SUR_HEM)}[kind]
+    if hem_override is not None:
+        hem = max(0.0, min(0.75, float(hem_override)))
     waist = hipZ + {'boxe': 0.13, 'kick': 0.11, 'thai': 0.13, 'mma': 0.11, 'compression': 0.1,
                     'vale-tudo': blueprint['liner_waist'], 'surshort': blueprint.get('over_waist', 0.105)}[kind]
     # 1.10: the waistband covers the underwear painted on the skin (Kadir's showed as a brown band above his
@@ -1551,6 +1553,13 @@ def shorts(kind, color, band, n_leg=None, under=False):
         return True
 
     def push(i):
+        if nogi and P[i].z > hipZ + 0.02:
+            # Continuous clearance at the elastic boundary: the legacy
+            # abrupt +6 mm jump created isolated protruding triangles.
+            # This branch is No-Gi only; other MMA outfits are unchanged.
+            t = min(1.0, max(0.0, (P[i].z - (waist - bandH - 0.012)) / 0.024))
+            t = t * t * (3 - 2 * t)
+            return 0.004 + 0.006 * t
         # MH_BODY: the glutes of a MakeHuman body rise close to the waistband; the loose leg push there lifted the
         # cloth over the band (black teeth on the band)
         if kind == 'surshort':
@@ -1603,7 +1612,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
     # Reduce deep corrugations: the contrasting waistband should read as
     # flexible elastic, not a row of detached stiff rectangles.
     band_rel = 0.35 if kind == 'surshort' else BAND_RELIEF
-    mats = [body_mat, fabric(f'ceinture-{kind}-{band}', band, 'elastique', rough=0.65, strength=band_rel, tone=0.1 if band_rel >= 0.5 else 0.03)]
+    mats = [body_mat, fabric(f'ceinture-{kind}-{band}', band, 'elastique', rough=0.65, strength=band_rel, tone=0 if nogi else (0.1 if band_rel >= 0.5 else 0.03))]
     # 1.10: waist and hems are the zero line of a field (exact, smooth edges whatever the body's triangles; the plane
     # cuts left a wavy waistband on the MakeHuman bodies); the band's lower line stays a straight plane cut
     hz = {s: H[f'{s}Leg'].z + hem * (H[f'{s}UpLeg'].z - H[f'{s}Leg'].z) for s in ('Left', 'Right')}
@@ -1762,10 +1771,56 @@ def shorts(kind, color, band, n_leg=None, under=False):
     return [o], cov
 
 
-def top(kind, color, accent=None, geom=False):
+def nogi_rashguard_texture(obj, base_hex, accent_hex, boundary_z):
+    """Paint a continuous colour boundary in world-height UV space.
+    No material splits or bmesh bisects at the shoulder/axilla."""
+    size = 1024
+    z0, z1 = hipZ - 0.05, H['Neck'].z + 0.04
+    def rgb(code):
+        return np.array([int(code[k:k + 2], 16) / 255.0 for k in (1, 3, 5)], dtype=np.float32)
+    base, accent = rgb(base_hex), rgb(accent_hex)
+    threshold = (boundary_z - z0) / max(0.001, z1 - z0)
+    v = (np.arange(size, dtype=np.float32) + 0.5) / size
+    # 2-pixel antialiasing, not a geometric step.
+    t = np.clip((v - threshold) * size / 2.0 + 0.5, 0, 1)
+    t = t * t * (3 - 2 * t)
+    row = base[None, :] * (1 - t[:, None]) + accent[None, :] * t[:, None]
+    pixels = np.broadcast_to(row[:, None, :], (size, size, 3)).copy()
+    img = save_png('nogi-rashguard-' + COACH_ID, pixels)
+    uv = obj.data.uv_layers.get('NoGiColour') or obj.data.uv_layers.new(name='NoGiColour')
+    for poly in obj.data.polygons:
+        for li in poly.loop_indices:
+            vertex = obj.data.vertices[obj.data.loops[li].vertex_index]
+            q = obj.matrix_world @ vertex.co
+            uv.data[li].uv = (0.5, max(0.001, min(0.999, (q.z - z0) / max(0.001, z1 - z0))))
+    mat = obj.data.materials[0]
+    nodes = mat.node_tree.nodes
+    bsdf = nodes.get('Principled BSDF')
+    tex = nodes.new('ShaderNodeTexImage')
+    tex.image = img
+    tex.interpolation = 'Linear'
+    tex.extension = 'EXTEND'
+    coord = nodes.new('ShaderNodeUVMap')
+    coord.uv_map = uv.name
+    mat.node_tree.links.new(coord.outputs['UV'], tex.inputs['Vector'])
+    mat.node_tree.links.new(tex.outputs['Color'], bsdf.inputs['Base Color'])
+
+
+def top(kind, color, accent=None, geom=False, nogi=False):
     """kind: brassiere (sports bra), debardeur (tank top), rash-court, rash-long"""
     lowZ = {'brassiere': chestZ - 0.07 if female else chestZ - 0.05, 'debardeur': hipZ + 0.06, 'rash-court': hipZ + 0.04, 'rash-long': hipZ + 0.04}[kind]
+    if nogi:
+        # The MMA waistband occupies [hipZ + 0.07, hipZ + 0.11] before
+        # painted-underwear adjustments. End the rashguard 12 mm *inside*
+        # that band instead of leaving an exposed 30 mm strip of skin.
+        # The hem is inset towards the body below so the waistband sits
+        # above it in depth and remains fully visible.
+        lowZ = hipZ + 0.082
     sleeve = {'brassiere': 0, 'debardeur': 0, 'rash-court': 0.45, 'rash-long': 0.93}[kind]
+    # No-Gi product reference: compact short sleeves ending above the elbow,
+    # with a full shoulder panel and no floating fabric at the armpit.
+    if nogi and kind == 'rash-court':
+        sleeve = 0.36
 
     def keep(i):
         # The iso hem below trims the extra 3 cm exactly at lowZ. Without this
@@ -1776,10 +1831,34 @@ def top(kind, color, accent=None, geom=False):
         if w(i, 'Neck') > (0.25 if kind != 'brassiere' else 0.15):
             return False
         armw = sum(w(i, f'{s}Arm', f'{s}ForeArm') for s in ('Left', 'Right'))
+        if nogi and kind == 'rash-court':
+            # Keep the shoulder/armpit transition intact: an abrupt 0.35
+            # skin-weight cutoff removed scattered torso triangles in the
+            # blended Rocketbox shoulder region. Only clip vertices which
+            # are actually beyond the short-sleeve end plane.
+            for side in ('Left', 'Right'):
+                a, b = H[f'{side}Arm'], H[f'{side}ForeArm']
+                axis = (b - a).normalized()
+                delta = P[i] - a
+                along = delta.dot(axis)
+                radial = (delta - axis * along).length
+                # The radius test keeps torso/underarm vertices out of the
+                # sleeve clipping logic; those belong to the body panel.
+                if radial < 0.16 and along > (b - a).length * sleeve * 2:
+                    return False
+            return True
         if armw > 0.35:
             if not sleeve:
                 return False
             s = 'Left' if P[i].x > 0 else 'Right'
+            if nogi and kind == 'rash-court':
+                # A consistent arm-axis cut avoids the abrupt 30% forearm
+                # skin-weight switch, which made triangular holes at the
+                # underarm on Rocketbox's blended shoulder weights.
+                # Keep the complete upper-arm surface until the sleeve plane;
+                # discard the forearm beyond it using position, not weights.
+                _, u = axis_point(i, f'{s}Arm', f'{s}ForeArm')
+                return u < sleeve * 2
             if w(i, f'{s}ForeArm') > 0.3:
                 _, u = axis_point(i, f'{s}ForeArm', f'{s}Hand')
                 return sleeve > 0.5 and u < (sleeve - 0.5) * 2
@@ -1816,11 +1895,16 @@ def top(kind, color, accent=None, geom=False):
         elif sleeve > 0.5:
             a, b = H[f'{s_}ForeArm'], H[f'{s_}Hand']
             cuts.append((a + (b - a) * (sleeve - 0.5) * 2, (b - a).normalized()))
+    # No colour-boundary bisects: the No-Gi panel is painted onto continuous UVs.
     if kind == 'brassiere' and (GEOM_BRA or geom):
         nk = H['Neck']
         cuts += [(Vector((0, 0, z)), Vector((0, 0, 1))) for z in (nk.z - 0.13, chestZ + 0.02, nk.z - 0.02)]
         cuts += [(Vector((x, 0, 0)), Vector((1, 0, 0))) for x in (-0.1, -0.06, -0.05, 0.05, 0.06, 0.1)]
     def tpush(i):
+        if nogi:
+            # Underlap the waistband, rather than intersecting its outer
+            # surface. The 2.5 mm fabric thickness is handled by shell().
+            return 0.0015 if P[i].z < hipZ + 0.115 else 0.0035
         if kind == 'debardeur':
             return 0.006
         # 1.19 (Youssef, 05/11, capture of the no-gi kit): the waistband of the leggings worn under the long rash
@@ -1836,7 +1920,10 @@ def top(kind, color, accent=None, geom=False):
     # waist rather than a zigzag following the skin's last surviving triangles.
     hem_field = (lambda q: lowZ - q.z) if kind.startswith('rash-') else None
     o, cov = shell(f'haut-{kind}', keep, tpush, 0.003, mats,
-                   (lambda c, ids: 1 if w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ else 0) if accent else None, cuts=cuts, iso=hem_field)
+                   (lambda c, ids: 1 if (False if nogi else False) or (not nogi and w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ) else 0) if accent else None, cuts=cuts, iso=hem_field,
+                   detail_ratio=0.98 if nogi else None)
+    if nogi and accent:
+        nogi_rashguard_texture(o, color, accent, chestZ + 0.10)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
     return [o], cov
@@ -3018,10 +3105,38 @@ def outfit(name):
             g = C['mmag'][:2] if 'mmag' in C else (('#16181D', '#E9E9E6') if not female else ('#16181D', '#2B2D33'))
             add(mma_shin_guards(*g))
     elif name == 'bjj-nogi':
-        add(top('rash-long', C['rash']))
-        add(pants('#16181D', 'nogi', legging=True) if female else shorts('compression', '#16181D', '#B3122A'))
-        if not female:
-            add(shorts('mma', '#16181D', '#B3122A'))
+        # 1.38.0: same No-Gi pattern and skinning, distinct colours per coach.
+        # Keep the generator's exportable fabric materials: procedural Wave
+        # nodes are not reliably exported by Blender's glTF/GLB exporter.
+        NOGI_PALETTES = {
+            'mma-kadir': ('#17191D', '#292D34', '#D73B42'),
+            'kadir': ('#17191D', '#292D34', '#D73B42'),
+            'mma-nael': ('#152943', '#111821', '#2F8CEB'),
+            'nael': ('#152943', '#111821', '#2F8CEB'),
+            'inaya': ('#48203F', '#19151C', '#EA4E92'),
+            'mma-inaya': ('#48203F', '#19151C', '#EA4E92'),
+            'mma-amara': ('#151419', '#1D1B20', '#D4AF37'),
+            'amara': ('#151419', '#1D1B20', '#D4AF37'),
+        }
+        top_color, short_color, accent_color = NOGI_PALETTES.get(
+            COACH_ID, ('#152943', '#151A22', '#2F8CEB'))
+        # Premium combatwear styling: fitted rashguard, contrasted shoulder /
+        # side panels and technical elastic waistband, without third-party marks.
+        # The accent is applied to actual exported mesh materials (not to a
+        # procedural Blender-only shader) so it survives glTF export.
+        nogi_top = top('rash-court', top_color, accent=accent_color, nogi=True)
+        nogi_short = shorts('mma', short_color, accent_color, hem_override=0.46, nogi=True)
+        add(nogi_top)
+        add(nogi_short)
+        for garment in (nogi_top, nogi_short):
+            if garment is None:
+                continue
+            for mesh in garment[0]:
+                if mesh is None or not hasattr(mesh, 'data'):
+                    continue
+                mesh['cssNoGiPalette'] = COACH_ID
+                mesh['cssNoGiAccent'] = accent_color
+                mesh['cssNoGiCollection'] = 'Shadow Flow - original combatwear'
     elif name in ('bjj', 'judo'):
         col = C['gi'] if name == 'bjj' else C['judo']
         if female:
@@ -3380,9 +3495,15 @@ def export(name, parts, hide):
         o.select_set(o in parts or o == arm)
     body.select_set(False)
     out = os.path.join(outdir, f'{name}.glb')
-    bpy.ops.export_scene.gltf(filepath=out, export_format='GLB', export_image_format='JPEG', export_jpeg_quality=85, export_animations=False,
-                              export_skins=True, export_yup=True, use_selection=True, export_extras=True, export_apply=False,
-                              export_vertex_color='ACTIVE' if AO else 'MATERIAL')
+    # Blender 4.0's glTF exporter does not accept export_vertex_color.
+    # Pass the legacy option only when it exists, without affecting other outfits.
+    gltf_options = dict(filepath=out, export_format='GLB', export_image_format='JPEG',
+                        export_jpeg_quality=85, export_animations=False, export_skins=True,
+                        export_yup=True, use_selection=True, export_extras=True, export_apply=False)
+    gltf_properties = bpy.ops.export_scene.gltf.get_rna_type().properties.keys()
+    if 'export_vertex_color' in gltf_properties:
+        gltf_options['export_vertex_color'] = 'ACTIVE' if AO else 'MATERIAL'
+    bpy.ops.export_scene.gltf(**gltf_options)
     print('wrote', out, os.path.getsize(out), 'parts', len(parts), 'hidden body vertices', len(hide))
     for o in parts:
         bpy.data.objects.remove(o)
