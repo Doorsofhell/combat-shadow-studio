@@ -1377,13 +1377,13 @@ def _TRUNK_BVH():
     return _TRUNK[0]
 
 
-def fitted_band(name, z0, z1, color, pad, thick=0.001, seg=96, relief=0.22, rough=0.82, close_top=None, close_bottom=None, mat=None, trunk_only=False):
+def fitted_band(name, z0, z1, color, pad, thick=0.001, seg=96, relief=0.22, rough=0.82, close_top=None, close_bottom=None, mat=None, trunk_only=False, taut=40, weights_from=None, row=0.006):
     """1.38 a thin elastic band round the trunk between the heights z0 and z1: a ring of quads whose every row takes
     the body's own outline at its height (ring_profile, 36 directions, smoothed round the ring and up the band), `pad`
     outside the skin. Its two edges are exact horizontal lines and its surface is regular whatever the triangles of
     the skin or of the garment under it; it is skinned like the skin it lies on (weights relaxed over the ring).
     Reusable for any coach: an under-band, a waistband, a hem binding"""
-    rows = max(4, int(round((z1 - z0) / 0.006)))
+    rows = max(4, int(round((z1 - z0) / row)))
     close = (z1 - z0) / rows * 1.001
     # the trunk's surface itself (arms left out), met by a ray from outside towards the axis in each direction: the
     # band lies on the real outline at each height, not on a hull of the points of a slice (a first version, built
@@ -1405,7 +1405,8 @@ def fitted_band(name, z0, z1, color, pad, thick=0.001, seg=96, relief=0.22, roug
         rad = [x if 0 < x < med * 1.7 else med for x in rad]
         # a taut elastic: it bridges a hollow (the spine's groove, under the bust) instead of going down into it
         t = rad[:]
-        for _ in range(40):
+        # (`taut`: how far it bridges; 40 = a taut belt, about 10 = a band that hugs the trunk, 1.40.2)
+        for _ in range(taut):
             sm = [(t[k - 1] + 2 * t[k] + t[(k + 1) % seg]) / 4 for k in range(seg)]
             t = [max(a, b) for a, b in zip(rad, sm)]
         for _ in range(3):
@@ -1475,9 +1476,30 @@ def fitted_band(name, z0, z1, color, pad, thick=0.001, seg=96, relief=0.22, roug
             tot = sum(kept.values())
             ww = {n: x / tot for n, x in kept.items()} if tot > 0.05 else {'Hips': 1.0}
         return ww
-    weighted(o, skin_weights)
-    relax_weights(o, int(os.environ.get('BAND_RELAX', '12')))
+    if weights_from is not None:
+        # 1.40.2: the band moves exactly like the cloth it finishes (each point takes the weights of the closest point
+        # of that garment). Skinned on its own from the skin, it and the cloth under it took slightly different
+        # weights: in motion the cloth came through the band in patches (a red band turning black, Youssef 13/11)
+        from mathutils import kdtree as _kd
+        src = weights_from
+        kd_ = _kd.KDTree(len(src.data.vertices))
+        for v_ in src.data.vertices:
+            kd_.insert(MW @ v_.co, v_.index)
+        kd_.balance()
+        names = {g_.index: g_.name for g_ in src.vertex_groups}
+        def cloth_weights(q):
+            v_ = src.data.vertices[kd_.find(q)[1]]
+            ww = {names[g_.group]: g_.weight for g_ in v_.groups if g_.weight > 0}
+            tot = sum(ww.values())
+            return {n: x / tot for n, x in ww.items()} if tot > 0 else skin_weights(q)
+        weighted(o, cloth_weights)
+        relax_weights(o, 2)
+    else:
+        weighted(o, skin_weights)
+        relax_weights(o, int(os.environ.get('BAND_RELAX', '12')))
     o['cssFittedBand'] = '1.38.0'
+    if weights_from is not None:
+        o['cssBandFollows'] = weights_from.name
     o['cssBandHeight'] = round(z1 - z0, 4)
     o['cssBandThickness'] = thick
     o['cssBandPad'] = round(pad, 4)
@@ -1973,7 +1995,11 @@ def shorts(kind, color, band, n_leg=None, under=False):
         base = 0.0042 if kind == 'vale-tudo' else 0.004
         wb = fitted_band(f'ceinture-short-{kind}', waist - bandH, waist + 0.006, band, close_top=0.0022, close_bottom=base + thick + 0.0004,
                          pad=base + thick + float(os.environ.get('BAND_LIFT', '0.0016')),
-                         mat=band_mat, trunk_only=os.environ.get('BAND_TRUNK', '0') == '1')
+                         mat=band_mat, trunk_only=os.environ.get('BAND_TRUNK', '0') == '1',
+                         # (1.40.2, tried: the short's own weights, weights_from=o. Its edges then stretch more at a
+                         # kick, 2.44 against 2.05 in amara-finish-v1380.test.ts: the short's weights are not relaxed.
+                         # Kept on the skin's relaxed weights; the app draws the band in front of the cloth)
+                         weights_from=o if os.environ.get('WAIST_FOLLOWS') == '1' else None)
         return [o, wb], cov
     return [o], cov
 
@@ -2509,12 +2535,34 @@ def top_square(color, accent=None, low=None, name='haut-carre'):
         print('SQDBG region', len(reg), 'covered', sum(1 for i in reg if i in cov), 'keep', sum(1 for i in reg if keep(i)),
               'Fneg', sum(1 for i in reg if F(P[i]) < -0.004), 'sample', [(round(P[i].x, 3), round(P[i].z, 3), round(F(P[i]), 4), keep(i)) for i in reg[:8]])
     if ring_band:
-        # the under-band: a fitted ring over the top's lower hem (3 mm under it, 2.3 cm over it)
-        bh = float(os.environ.get('BRA_BAND', '0.030'))
-        ub = fitted_band('bande-brassiere-mma' if name == 'haut-brassiere' else 'bande-brassiere', low - 0.006, low - 0.006 + bh,
-                         band_color or BAND_DARK, close_bottom=0.0022,
+        # 1.40.2 (Youssef 13/11 23:00: « une espèce de cercle autour de la taille un peu grosse et qui change de
+        # couleur à chaque mouvement. Il faut que ça soit moulant et bien dessiné »). In 1.38 the band was a second
+        # layer 1.6 mm over the whole lower part of the top, on a taut outline and skinned on its own: thick, and the
+        # black cloth under it came through the red band in motion (and on a phone's depth buffer). Now the band IS
+        # the top's lower edge: the cloth stops under the band's top edge, the band lies at the cloth's own level,
+        # hugs the trunk (taut 10) and takes the cloth's weights. 2.4 cm high (3 before)
+        bh = float(os.environ.get('BRA_BAND', '0.024'))
+        b0 = low - 0.004
+        cloth_lvl = float(os.environ.get('SQ_BASE', '0.0035')) + top_thick
+        ub = fitted_band('bande-brassiere-mma' if name == 'haut-brassiere' else 'bande-brassiere', b0, b0 + bh,
+                         band_color or BAND_DARK, close_bottom=0.0022, thick=0.0008,
                          mat=fabric(f'liseré-{band_color}', band_color, 'elastique', rough=0.6, strength=0.8) if band_color
-                         else fabric('bande-brassiere-mma-amara-lisse-1379', BAND_DARK, 'elastique', rough=0.87, strength=0.10, sheen=0.015), close_top=float(os.environ.get('SQ_BASE', '0.0035')) + top_thick + 0.0004, pad=float(os.environ.get('SQ_BASE', '0.0035')) + top_thick + float(os.environ.get('BAND_LIFT', '0.0016')))
+                         else fabric('bande-brassiere-mma-amara-lisse-1379', BAND_DARK, 'elastique', rough=0.87, strength=0.10, sheen=0.015),
+                         pad=cloth_lvl, taut=int(os.environ.get('BRA_TAUT', '10')), weights_from=o,
+                         # rows of 3 mm: the edge that comes down onto the skin is 3 mm high (6 before: with the
+                         # top lip it shaded the band like a roll), the rest of the band is flat
+                         row=0.003)
+        # the cloth under the band is removed up to 4 mm under the band's top edge (that strip stays, as a seam
+        # allowance: the skin never shows between the two)
+        zcut = b0 + bh - 0.004
+        bmc = bmesh.new()
+        bmc.from_mesh(o.data)
+        gone = [f_ for f_ in bmc.faces if all((MW @ v_.co).z < zcut for v_ in f_.verts)]
+        bmesh.ops.delete(bmc, geom=gone, context='FACES')
+        bmc.to_mesh(o.data)
+        bmc.free()
+        o['cssHemUnderBand'] = round(zcut, 4)
+        ub['cssBandLevel'] = 'cloth'
         return [o, ub], cov
     return [o], cov
 

@@ -3853,3 +3853,45 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   le navigateur de test (rendu logiciel) : NON CONCLUANT, ce rendu ne reproduit pas les pointillés du téléphone ;
   vérification à faire par Youssef sur son téléphone.
 - **Restauration** : v1.40.0 = commit 63b3742.
+
+
+## 2026-11-13 · v1.40.2 — Amara : bande de brassière plate et moulante, couleur stable en mouvement
+
+- **Signalement** (Youssef, 13/11 23:00, captures de téléphone Android) : « Sa brassière a une espèce de cercle autour de
+  la taille un peu grosse et qui change de couleur à chaque mouvement. Il faut que ça soit moulant et bien dessiné. »
+- **Constat vérifié** (1.40.1, captures du moteur `captures/amara-v1402/avant/`, genou direct en kick-boxing) :
+  1. la bande rouge fait bien un boudin : depuis la 1.38.0 c'était une **deuxième couche** posée 1,6 mm au-dessus du
+     bas du haut noir, sur un contour « élastique tendu », soit 7,7 mm de la peau, avec un bord rentrant de 6 mm
+     qui l'ombrait comme un rouleau ;
+  2. la couleur : sur la capture de téléphone la bande est noire là où elle doit être rouge. Le tissu noir du haut
+     restait sous toute la bande, à 1,6 mm, et les deux pièces n'avaient pas exactement les mêmes poids de peau : en
+     mouvement le tissu noir passe devant la bande par plaques, et le tampon de profondeur d'un téléphone ne sépare
+     pas deux surfaces aussi proches. Sur l'ordinateur de test la bande reste rouge : le changement de couleur
+     lui-même n'a pas pu être reproduit ici, la cause est déduite de la géométrie et de la capture.
+- **Correction** :
+  - `tools/generator/rocketbox/outfits.py` : la bande **est** maintenant le bord bas du haut. Le tissu du haut est
+    retiré sous la bande (il n'en reste que 4 mm sous son bord supérieur), la bande est au niveau du tissu
+    (5,9 mm de la peau au lieu de 7,7), haute de 24 mm (30 avant), elle épouse le tronc (`taut` 10 au lieu de 40),
+    son bord qui rejoint la peau fait 3 mm (rangs de 3 mm) et elle prend les poids du haut (`weights_from`) : les
+    deux pièces bougent comme une seule. `fitted_band()` reçoit pour cela `taut`, `weights_from`, `row`.
+  - `src/three/outfit.ts` : une bande ajustée (`cssFittedBand`) est dessinée un peu devant ce qui est à sa
+    profondeur (`polygonOffset`, comme le logo imprimé depuis la 1.20) : bande de brassière et ceinture du short.
+  - Les 4 tenues de frappe d'Amara sont reconstruites (boxe, kick-boxing, muay-thaï, MMA) ; JJB, judo, corps, visage
+    et autres coachs inchangés. La ceinture du short garde sa liaison de la 1.38.0 (essai « poids du short » écarté :
+    étirement 2,44 au lieu de 2,05 au high kick).
+- **Tests** : `outfit-amara-finish-v1379.test.ts` complété (bande au niveau du tissu, liée au haut, ≤ 25 mm,
+  décalage de profondeur). Aucun test modifié ni affaibli.
+- **Résultats** :
+  - tests 3D, démarrage et version (`src/three`, `src/boot`, `release-version`) : 500 réussis, 1 échoué
+    (`expressions-v1160` « modèle léger < 3,5 Mo », échec connu depuis la 1.37.5) : TEST RÉUSSI pour ce lot ;
+  - bandes en mouvement (`amara-finish-v1380.test.ts`) : TEST RÉUSSI, glissement de la bande de brassière 4 à 16 mm
+    (5 à 18 avant), étirement ≤ 1,15 ;
+  - contrôle Blender `check-amara-garments-v1377.py` : TEST RÉUSSI (bande 24 mm, 2 à 9 mm de la peau) ;
+  - `npm run build` : TEST RÉUSSI ;
+  - captures du moteur avant/après (`captures/amara-v1402/`) : 5 instants du genou direct, dos, profil, MMA, high
+    kick ;
+  - suite complète `npx vitest run` et `npx playwright test` : NON EXÉCUTÉES (aucun fichier du moteur ni écran
+    modifié) ; essai sur téléphone Android : NON EXÉCUTÉ ici, à confirmer par Youssef.
+- **Restauration** : branche `restauration/avant-bande-amara-v1402` (= 1.40.1 publiée).
+- **Précision sur les captures « après »** : elles ont été faites sur la construction juste avant la finale, qui n'en
+  diffère que par les poids de la ceinture du short (essai écarté ci-dessus) ; la bande de brassière y est identique.

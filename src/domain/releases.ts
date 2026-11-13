@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.40.2',
+      releaseDate: '2026-11-13',
+      title: 'Amara : bande de brassière plate et moulante',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'La bande sous la brassière d’Amara (boxe, kick-boxing, muay-thaï, MMA) ne fait plus un cercle épais : elle est plate, plus fine et suit le corps.' },
+        { category: 'corrections', text: 'Sa couleur ne change plus pendant les mouvements : le tissu du haut ne passe plus devant la bande, y compris sur téléphone.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.40.1',
       releaseDate: '2026-11-13',
       title: 'Visages : plus de traits sur le front et autour des yeux',
