@@ -20,6 +20,10 @@ jobs:
         with:
           persist-credentials: true
           fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --disable-pip-version-check numpy
       - name: Verify the exact clean-source workflow has succeeded
         env:
           GH_TOKEN: ${{ github.token }}
@@ -44,6 +48,7 @@ jobs:
           python scripts/dev/validate-amara-clean-morph-v1379.py "$orig" public/coaches/mma-amara/photo.glb
           changed=$(git diff --name-only -- public/coaches)
           test "$changed" = "public/coaches/mma-amara/photo.glb" || { echo "Other coaches or garments changed!"; exit 1; }
+          mkdir -p captures/amara-clean-surface-v1379
           cp -a /tmp/amara-clean-artifact/captures/amara-clean-surface-v1379/. captures/amara-clean-surface-v1379/
           test -s captures/amara-clean-surface-v1379/planche-4-poses.jpg
           test -s captures/amara-clean-surface-v1379/06-brassiere-profil.jpg
