@@ -17,8 +17,9 @@ jobs:
       - name: Install Blender and inspect source models
         run: |
           sudo apt-get update
-          sudo apt-get install -y blender
+          sudo apt-get install -y blender python3-numpy
           blender --version
+          blender -b --python-expr "import sys; import numpy; print('Blender Python:', sys.executable, 'NumPy:', numpy.__version__)"
           python3 --version
           df -h .
           find public/coaches -name photo.glb -type f -print | sort
