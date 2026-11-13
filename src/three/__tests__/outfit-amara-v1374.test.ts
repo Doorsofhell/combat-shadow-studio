@@ -41,31 +41,37 @@ describe('v1.37.7 — Inaya référence immuable et Amara morphologie adaptée',
       expect(gltf.skins.length).toBeGreaterThan(0);
       // 1.37.7: the 1.37.6 square cut (holes, torn edges) is replaced by Inaya's crop with the higher front, built
       // on Amara's skin with the old sculpted bikini flattened first (see docs/JOURNAL_CORRECTIONS.md, v1.37.7)
-      expect(gltf.nodes.some((n) => n.extras?.generatorVersion === '1.37.7' &&
-        n.extras?.clothingReference === 'inaya' &&
-        n.extras?.clothingMorphology === 'mma-amara' &&
-        n.extras?.sportsTopCut === 'inaya-crop-high-front-1377' &&
-        n.extras?.oldBikiniFlattened === true)).toBe(true);
+      if (outfit === 'mma') {
+        // 1.37.9 user-approved deliberate replacement: one body-rigged fitted
+        // compression short and a scoop-neck bra, not the old crop + overshort.
+        expect(gltf.nodes.some((n) => n.extras?.generatorVersion === '1.37.9' &&
+          n.extras?.clothingMorphology === 'mma-amara' &&
+          n.extras?.sportsTopCut === 'scoop-racerback-reference-1379' &&
+          n.extras?.clothingStyle === 'female-compression-reference-1379')).toBe(true);
+      } else {
+        expect(gltf.nodes.some((n) => n.extras?.generatorVersion === '1.37.7' &&
+          n.extras?.clothingReference === 'inaya' &&
+          n.extras?.clothingMorphology === 'mma-amara' &&
+          n.extras?.sportsTopCut === 'inaya-crop-high-front-1377' &&
+          n.extras?.oldBikiniFlattened === true)).toBe(true);
+      }
     });
   }
 
-  for (const outfit of ['boxe', 'kickboxing', 'muaythai', 'mma']) {
+  for (const outfit of ['boxe', 'kickboxing', 'muaythai']) {
     test(`Amara/${outfit} : haut crop féminin de référence`, () => {
       const { gltf } = binary(`public/coaches/mma-amara/tenues/${outfit}.glb`);
       expect(gltf.nodes.some((n) => n.name?.includes('haut-crop') && n.mesh !== undefined)).toBe(true);
     });
   }
 
-  test('MMA : short intérieur et surshort conservés, sans copier les GLB d’Inaya', () => {
+  test('MMA : short vale-tudo mono-couche et brassière U, pas de l’ancien surshort', () => {
     const { gltf } = binary('public/coaches/mma-amara/tenues/mma.glb');
-    for (const part of ['short-vale-tudo', 'short-surshort']) {
-      expect(gltf.nodes.some((n) => n.name?.includes(part) && n.mesh !== undefined)).toBe(true);
-    }
-    // 1.37.7: the over-short is whole again (the 1.37.6 central cut left a loose dark piece between the thighs);
-    // only the liner, under it, is parted at the middle (the thin panel that stretched into a strand at a high kick)
-    expect(gltf.nodes.some((n) => n.name?.includes('short-surshort') && n.extras?.cssCrotchGapCut !== undefined)).toBe(false);
-    expect(gltf.nodes.some((n) => n.name?.includes('short-vale-tudo') &&
-      typeof n.extras?.cssLinerGap === 'number' && (n.extras.cssLinerGap as number) >= 0.008)).toBe(true);
-    expect(gltf.nodes.some((n) => n.extras?.shortCrotchGeometry === 'liner-split-1377')).toBe(true);
+    expect(gltf.nodes.some((n) => n.name?.startsWith('short-vale-tudo') &&
+      n.extras?.cssNoOvershort === true && n.extras?.cssCompressionStyle === 'fitted-one-layer-reference-1379')).toBe(true);
+    expect(gltf.nodes.some((n) => n.name?.startsWith('haut-brassiere') &&
+      n.extras?.cssTopStyle === 'scoop-racerback-reference-1379')).toBe(true);
+    expect(gltf.nodes.some((n) => n.name?.includes('short-surshort'))).toBe(false);
+    expect(gltf.nodes.some((n) => n.name?.includes('haut-crop'))).toBe(false);
   });
 });
