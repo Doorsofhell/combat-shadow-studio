@@ -22,9 +22,21 @@ for pi,(a,b) in enumerate(zip(old['primitives'],new['primitives'])):
     print('TARGET',pi,'verts',len(x),'moved',moved,'maxDelta',float(np.linalg.norm(x,axis=1).max()))
     if pi==0:assert moved>100
     else:assert moved==0
-assert old_doc['images']==new_doc['images'] and old_doc['textures']==new_doc['textures']
+assert old_doc['textures']==new_doc['textures']
+assert len(old_doc['images'])==len(new_doc['images'])
+repaint=new['extras'].get('cssOriginalBikiniRepaint')=='body-skin-uv-1379'
+changed=[]
 for a,b in zip(old_doc['images'],new_doc['images']):
-    if 'bufferView' in a:
-        va=old_doc['bufferViews'][a['bufferView']];vb=new_doc['bufferViews'][b['bufferView']]
-        assert old_bin[va['byteOffset']:va['byteOffset']+va['byteLength']]==new_bin[vb['byteOffset']:vb['byteOffset']+vb['byteLength']]
-print('PASS: exact original mask coordinates, 25 facial targets and all 4 skin images retained')
+    assert a['name']==b['name'] and a.get('mimeType')==b.get('mimeType')
+    if 'bufferView' not in a:continue
+    va=old_doc['bufferViews'][a['bufferView']];vb=new_doc['bufferViews'][b['bufferView']]
+    ba=old_bin[va['byteOffset']:va['byteOffset']+va['byteLength']]
+    bb=new_bin[vb['byteOffset']:vb['byteOffset']+vb['byteLength']]
+    if a['name'] in ('f021_body_color','f021_body_normal') and repaint:
+        assert ba!=bb,'Repaint flag set but original bikini texture unchanged'
+        changed.append(a['name'])
+    else:
+        assert ba==bb,'Unapproved skin/head/eye texture change: '+a['name']
+if repaint:assert sorted(changed)==['f021_body_color','f021_body_normal']
+print('PASS: exact original mask coordinates, 25 facial targets, original HEAD images,',
+      'body texture repainted' if repaint else 'all skin textures unchanged')
