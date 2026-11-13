@@ -14,6 +14,7 @@ on:
       - src/three/PhotoCoach.tsx
       - src/three/outfit.ts
       - src/three/__tests__/amara-clean-surface-v1379.test.ts
+      - src/three/__tests__/outfit-amara-v1374.test.ts
   workflow_dispatch:
 
 permissions:
