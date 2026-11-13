@@ -1,0 +1,84 @@
+name: Amara MMA - clean real torso prototype, face and mask safe
+
+on:
+  push:
+    branches:
+      - prototype/amara-mma-compression-reference
+    paths:
+      - .github/workflows/amara-source-clean-v1379.yml
+      - scripts/dev/calc-amara-surface-v1379.py
+      - scripts/dev/append-amara-clean-morph-v1379.py
+      - scripts/dev/validate-amara-clean-morph-v1379.py
+      - scripts/dev/capture-amara-clean-surface-v1379.mjs
+      - src/three/amaraCleanSurface.ts
+      - src/three/PhotoCoach.tsx
+      - src/three/outfit.ts
+      - src/three/__tests__/amara-clean-surface-v1379.test.ts
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: clean-amara-body-v1379
+  cancel-in-progress: true
+
+jobs:
+  clean-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Blender / numeric geometry support
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y blender python3-numpy ffmpeg
+          blender --background --python-exit-code 42 --python-expr "import numpy; print('Baking source surface', numpy.__version__)"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --disable-pip-version-check numpy scipy
+      - name: Compute original-to-clean world deltas from body only
+        run: |
+          blender --background --threads 2 --python-exit-code 42 --python scripts/dev/calc-amara-surface-v1379.py -- public/coaches/mma-amara/photo.glb /tmp/amara-clean-deltas.npz
+      - name: Append morph (original POSITION, facial keys and every image unchanged)
+        run: |
+          python scripts/dev/append-amara-clean-morph-v1379.py public/coaches/mma-amara/photo.glb /tmp/amara-clean-deltas.npz /tmp/amara-photo-clean-v1379.glb
+          python scripts/dev/validate-amara-clean-morph-v1379.py public/coaches/mma-amara/photo.glb /tmp/amara-photo-clean-v1379.glb
+      - name: Preserve source as comparison and install the experimental clean morph
+        run: |
+          cp public/coaches/mma-amara/photo.glb /tmp/original-amara-photo.glb
+          cp /tmp/amara-photo-clean-v1379.glb public/coaches/mma-amara/photo.glb
+          python scripts/dev/audit-amara-original-swimsuit.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: New three.js baking tests + old material / face / mask tests
+        run: |
+          npm run test -- src/three/__tests__/amara-clean-surface-v1379.test.ts src/three/__tests__/outfit-amara-v1374.test.ts src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/amara-skin-v1378.test.ts
+      - name: Compile the actual experimental build
+        run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Launch WebGL preview, never deploy
+        run: |
+          nohup npx vite preview --host 127.0.0.1 --port 4173 --strictPort > /tmp/vite-clean.log 2>&1 &
+          for n in $(seq 1 40); do
+            curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/vite-clean.log
+          exit 1
+      - name: Six genuine WebGL review screenshots
+        run: node scripts/dev/capture-amara-clean-surface-v1379.mjs
+      - name: Upload isolated working GLB and snapshots for visual approval
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amara-clean-torso-v1379-review-only
+          path: |
+            public/coaches/mma-amara/photo.glb
+            captures/amara-clean-surface-v1379/
+          retention-days: 30
+          if-no-files-found: warn
