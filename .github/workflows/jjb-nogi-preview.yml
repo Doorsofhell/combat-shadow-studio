@@ -1,0 +1,54 @@
+name: Generate JJB No-Gi 3D previews (1.38.0)
+on:
+  push:
+    branches: [feature/jjb-nogi-v1380]
+    paths:
+      - 'tools/generator/rocketbox/outfits.py'
+      - '.github/workflows/jjb-nogi-preview.yml'
+  workflow_dispatch:
+jobs:
+  generate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Install Blender and inspect source models
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender
+          blender --version
+          find public/coaches -name photo.glb -type f -print | sort
+      - name: Generate JJB No-Gi for each available coach
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=0
+          while IFS= read -r source; do
+            coach="$(basename "$(dirname "$source")")"
+            sex="homme"
+            case "$coach" in
+              *amara*|*inaya*|*kaila*|*female*|*femme*) sex="femme" ;;
+            esac
+            output="jjb-nogi-preview/$coach/tenues"
+            mkdir -p "$output"
+            echo "::group::Generate $coach ($sex)"
+            ONLY=bjj-nogi blender -b -t 2 --python tools/generator/rocketbox/outfits.py -- "$source" "$output" "$sex"
+            test -s "$output/bjj-nogi.glb"
+            echo "::endgroup::"
+            count=$((count+1))
+          done < <(find public/coaches -name photo.glb -type f | sort)
+          if [ "$count" -eq 0 ]; then
+            echo "::error::No source photo.glb found. Check Git LFS / generated assets."
+            exit 1
+          fi
+          echo "Generated for $count coaches"
+      - name: Upload generated GLBs for visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shadow-flow-jjb-nogi-glbs
+          path: jjb-nogi-preview/
+          if-no-files-found: warn
+          retention-days: 7
