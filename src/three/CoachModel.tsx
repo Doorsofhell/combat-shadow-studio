@@ -8,6 +8,7 @@ import { Color, Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, SRGB
 import { restoreReferencePose, setLegLength } from './pose';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { CoachRig } from '../engine/rig';
+import { FacialLife } from './facialLife';
 import { applyManga, outlineMaterial, toonMaterial } from './manga';
 import { CoachMeta, Customizer } from './customize';
 import { FighterLook, defaultLook } from '../editor/look';
@@ -149,6 +150,8 @@ export function CoachModel({ coach, style, quality, look, ghostGear = false, onR
     restoreReferencePose(s); // records the reference pose before any animation
     return { scene: s, customizer: c };
   }, [gltf, quality, style, custom, meta, masks]);
+  const facialLife = useMemo(() => new FacialLife(scene, String(coach)), [scene, coach]);
+  useEffect(() => () => facialLife.dispose(), [facialLife]);
   const legLength = look?.body.legLength ?? 1;
   const rig = useMemo(() => {
     restoreReferencePose(scene);
@@ -166,7 +169,11 @@ export function CoachModel({ coach, style, quality, look, ghostGear = false, onR
     onRig(rig);
   }, [rig, onRig]);
 
-  useFrame((_, dt) => onFrame(rig, Math.min(dt, 0.05)));
+  useFrame((_, dt) => {
+    const delta = Math.min(dt, 0.05);
+    onFrame(rig, delta);
+    facialLife.update(delta);
+  });
 
   return <primitive object={scene} />;
 }
