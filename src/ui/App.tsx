@@ -1,15 +1,21 @@
-import { Suspense, lazy, useEffect } from 'react';
-import { HashRouter, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { CoachBubble } from './coach-ai/CoachBubble';
+import { Suspense, lazy, useEffect, useRef } from 'react';
+import { HashRouter, Navigate, Route, Routes, useLocation, useNavigationType } from 'react-router-dom';
 import { useProfile } from '../store/profile';
 import { useSettings } from '../store/settings';
 import { setEffectsVolume } from '../audio/sound';
 import { setVoiceEnabled, setVoiceVolume } from '../audio/voice';
 import { installNativeHandlers } from '../platform/native';
-import { IconChart, IconFighter, IconGlove, IconHome, IconLayers } from './icons';
 import { Toaster } from './components/Toast';
+import { BottomBar } from './nav/BottomBar';
+import { NavSheets } from './nav/NavSheets';
+import { SectionTabs } from './nav/SectionTabs';
+import { forgetLayers } from './nav/layers';
+import { useNavStore } from './nav/store';
 import { Home } from './screens/Home';
 import { Onboarding } from './screens/Onboarding';
 import { CoachSelect } from './screens/CoachSelect';
+import { BootGate } from '../boot/BootScreen';
 import { initAccount } from '../account/session';
 import { STUDIO_BG, THEME_BG, applyTheme } from './theme/theme';
 import { useResolvedTheme } from './theme/useTheme';
@@ -23,17 +29,31 @@ const DisciplinePage = lazy(() => import('./screens/Discipline').then((m) => ({ 
 const Library = lazy(() => import('./screens/Library').then((m) => ({ default: m.Library })));
 const TechniquePage = lazy(() => import('./screens/Library').then((m) => ({ default: m.TechniquePage })));
 const PartnerPage = lazy(() => import('./screens/Library').then((m) => ({ default: m.PartnerPage })));
+const Favorites = lazy(() => import('./screens/Favorites').then((m) => ({ default: m.Favorites })));
+const PremiumPage = lazy(() => import('./premium/PremiumPage').then((m) => ({ default: m.PremiumPage })));
+const ChronoScreen = lazy(() => import('./chrono/ChronoScreen').then((m) => ({ default: m.ChronoScreen })));
+const EncyclopediaHome = lazy(() => import('./encyclopedia/Encyclopedia').then((m) => ({ default: m.EncyclopediaHome })));
+const EncyclopediaList = lazy(() => import('./encyclopedia/Encyclopedia').then((m) => ({ default: m.EncyclopediaList })));
+const EncyclopediaTerm = lazy(() => import('./encyclopedia/Encyclopedia').then((m) => ({ default: m.EncyclopediaTerm })));
+const EncyclopediaAz = lazy(() => import('./encyclopedia/Encyclopedia').then((m) => ({ default: m.EncyclopediaAz })));
+const EncyclopediaFavorites = lazy(() => import('./encyclopedia/Encyclopedia').then((m) => ({ default: m.EncyclopediaFavorites })));
 const Programs = lazy(() => import('./screens/Programs').then((m) => ({ default: m.Programs })));
 const ProgramPage = lazy(() => import('./screens/Programs').then((m) => ({ default: m.ProgramPage })));
-const Builder = lazy(() => import('./screens/Builder').then((m) => ({ default: m.Builder })));
+const CreatorList = lazy(() => import('./screens/creator/CreatorList').then((m) => ({ default: m.CreatorList })));
+const CreatorSheet = lazy(() => import('./screens/creator/CreatorSheet').then((m) => ({ default: m.CreatorSheet })));
+const CreatorEditor = lazy(() => import('./screens/creator/CreatorEditor').then((m) => ({ default: m.CreatorEditor })));
 const Stats = lazy(() => import('./screens/Stats').then((m) => ({ default: m.Stats })));
+const Goals = lazy(() => import('./screens/Stats').then((m) => ({ default: m.Goals })));
+const ActivityDetail = lazy(() => import('./screens/Stats').then((m) => ({ default: m.ActivityDetail })));
+const TechniquesDetail = lazy(() => import('./screens/Stats').then((m) => ({ default: m.TechniquesDetail })));
+const DisciplinesDetail = lazy(() => import('./screens/Stats').then((m) => ({ default: m.DisciplinesDetail })));
+const CombosDetail = lazy(() => import('./screens/Stats').then((m) => ({ default: m.CombosDetail })));
 const History = lazy(() => import('./screens/Stats').then((m) => ({ default: m.History })));
 const SettingsPage = lazy(() => import('./screens/Settings').then((m) => ({ default: m.SettingsPage })));
 const Privacy = lazy(() => import('./screens/Privacy').then((m) => ({ default: m.Privacy })));
 const Champions = lazy(() => import('./screens/Champions').then((m) => ({ default: m.Champions })));
 const ComboPage = lazy(() => import('./screens/Champions').then((m) => ({ default: m.ComboPage })));
 const ChampionPage = lazy(() => import('./screens/Champions').then((m) => ({ default: m.ChampionPage })));
-const CoachStudio = lazy(() => import('./screens/CoachStudio').then((m) => ({ default: m.CoachStudio })));
 const SignIn = lazy(() => import('./screens/account/SignIn').then((m) => ({ default: m.SignIn })));
 const ProfilePage = lazy(() => import('./screens/account/Profile').then((m) => ({ default: m.ProfilePage })));
 const CoachHistory = lazy(() => import('./screens/CoachHistory').then((m) => ({ default: m.CoachHistory })));
@@ -69,7 +89,7 @@ function DisplaySync() {
 
 const isTraining = (p: string) => p.startsWith('/entrainement');
 
-/** menu theme (light, dark, automatic) and status bar colour; the training studio stays white */
+/** menu theme (light, dark, automatic) and status bar colour; the training studio follows the theme (0.27) */
 function ThemeColor() {
   const loc = useLocation();
   const pref = useSettings((x) => x.settings.theme);
@@ -83,40 +103,49 @@ function ThemeColor() {
       m.name = 'theme-color';
       document.head.appendChild(m);
     }
-    m.content = studio ? STUDIO_BG : THEME_BG[t];
-    document.documentElement.style.colorScheme = studio ? 'light' : t;
+    m.content = studio ? STUDIO_BG[t] : THEME_BG[t];
+    document.documentElement.style.colorScheme = t;
   }, [loc.pathname, pref, resolved]);
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [loc.pathname]);
   return null;
 }
 
-const NAV = [
-  { to: '/', label: 'Accueil', icon: <IconHome />, end: true, match: ['/'] },
-  { to: '/entrainer', label: 'Entraîner', icon: <IconGlove />, match: ['/entrainer', '/discipline', '/programmes'] },
-  { to: '/techniques', label: 'Techniques', icon: <IconLayers />, match: ['/techniques', '/createur', '/champions'] },
-  { to: '/combattant', label: 'Coach', icon: <IconFighter />, match: ['/combattant', '/coach', '/coach-ia'] },
-  { to: '/stats', label: 'Progrès', icon: <IconChart />, match: ['/stats', '/historique'] },
-];
-
-function Nav() {
+/**
+ * v0.32 smart back (section 11): a page reached with Retour (or the system back) finds its scroll position again;
+ * a new page starts at the top. Positions are kept per history entry for the session.
+ */
+const scrollByKey = new Map<string, number>();
+function ScrollMemory() {
   const loc = useLocation();
-  if (isTraining(loc.pathname) || loc.pathname.startsWith('/bienvenue')) return null;
-  const p = loc.pathname;
-  const activeIdx = NAV.findIndex((i) => (i.end ? p === '/' : i.match.some((m) => p === m || p.startsWith(`${m}/`))));
-  return (
-    <nav className="nav" aria-label="Navigation principale">
-      <div className="nav-inner">
-        {NAV.map((i, k) => (
-          <NavLink key={i.to} to={i.to} end={i.end} className={k === activeIdx ? 'active' : ''} aria-current={k === activeIdx ? 'page' : undefined} data-testid={`nav-${i.to.slice(1) || 'accueil'}`}>
-            <span className="pill">{i.icon}</span>
-            {i.label}
-          </NavLink>
-        ))}
-      </div>
-    </nav>
-  );
+  const type = useNavigationType();
+  const lastPath = useRef<string | null>(null);
+  useEffect(() => {
+    const key = loc.key;
+    const samePage = lastPath.current === loc.pathname;
+    lastPath.current = loc.pathname;
+    const save = () => scrollByKey.set(key, window.scrollY);
+    window.addEventListener('scroll', save, { passive: true });
+    let raf = 0;
+    // a filter or a search written in the URL keeps the page where it is, and its open panel
+    if (!samePage) {
+      const y = type === 'POP' ? scrollByKey.get(key) : undefined;
+      // a page change closes what the bar had open (a link followed from a sheet)
+      if (useNavStore.getState().sheet) useNavStore.getState().setSheet(null);
+      forgetLayers();
+      // the page may still be loading (lazy screens): restore once it is tall enough, else stay at the top
+      let tries = 0;
+      const restore = () => {
+        if (y === undefined) return window.scrollTo(0, 0);
+        if (document.documentElement.scrollHeight - window.innerHeight >= y || tries++ > 30) window.scrollTo(0, y);
+        else raf = requestAnimationFrame(restore);
+      };
+      restore();
+    }
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', save);
+    };
+  }, [loc.key, loc.pathname, type]);
+  return null;
 }
 
 function Loading() {
@@ -147,38 +176,65 @@ export function App() {
       <AudioSync />
       <DisplaySync />
       <ThemeColor />
-      <Gate>
-        <Suspense fallback={<Loading />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/bienvenue" element={<Onboarding />} />
-            <Route path="/coach" element={<CoachSelect />} />
-            <Route path="/combattant" element={<CoachStudio />} />
-            <Route path="/entrainer" element={<Train />} />
-            <Route path="/discipline/:id" element={<DisciplinePage />} />
-            <Route path="/entrainement" element={<Training />} />
-            <Route path="/techniques" element={<Library />} />
-            <Route path="/techniques/:id" element={<TechniquePage />} />
-            <Route path="/partenaire/:id" element={<PartnerPage />} />
-            <Route path="/programmes" element={<Programs />} />
-            <Route path="/programmes/:id" element={<ProgramPage />} />
-            <Route path="/createur" element={<Builder />} />
-            <Route path="/champions" element={<Champions />} />
-            <Route path="/champions/c/:championId" element={<ChampionPage />} />
-            <Route path="/champions/:id" element={<ComboPage />} />
-            <Route path="/stats" element={<Stats />} />
-            <Route path="/historique" element={<History />} />
-            <Route path="/reglages" element={<SettingsPage />} />
-            <Route path="/confidentialite" element={<Privacy />} />
-            <Route path="/connexion" element={<SignIn />} />
-            <Route path="/profil" element={<ProfilePage />} />
-            <Route path="/coach-ia" element={<CoachHistory />} />
-            <Route path="/coach-ia/historique" element={<Navigate to="/coach-ia" replace />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </Gate>
-      <Nav />
+      {/* 1.25: the start screen (chrono du round) downloads the coaches and the rooms before anything shows, the
+          bottom bar included (its buttons follow the screen, which is not there yet) */}
+      <BootGate fallback={<Loading />}>
+        {/* 1.0.0: the tabs of the space shown (Apprendre, Progrès), above its page */}
+        <SectionTabs />
+        <Gate>
+          <Suspense fallback={<Loading />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/bienvenue" element={<Onboarding />} />
+              <Route path="/coach" element={<CoachSelect />} />
+              <Route path="/entrainer" element={<Train />} />
+              <Route path="/discipline/:id" element={<DisciplinePage />} />
+              <Route path="/entrainement" element={<Training />} />
+              <Route path="/techniques" element={<Library />} />
+              <Route path="/techniques/:id" element={<TechniquePage />} />
+              <Route path="/partenaire/:id" element={<PartnerPage />} />
+              <Route path="/programmes" element={<Programs />} />
+              <Route path="/programmes/:id" element={<ProgramPage />} />
+              <Route path="/createur" element={<CreatorList />} />
+              <Route path="/createur/nouveau" element={<CreatorEditor key="nouveau" />} />
+              <Route path="/createur/:id/modifier" element={<CreatorEditor />} />
+              <Route path="/createur/:id" element={<CreatorSheet />} />
+              <Route path="/champions" element={<Champions />} />
+              <Route path="/champions/c/:championId" element={<ChampionPage />} />
+              <Route path="/champions/:id" element={<ComboPage />} />
+              <Route path="/stats" element={<Stats />} />
+              <Route path="/stats/activite" element={<ActivityDetail />} />
+              <Route path="/stats/techniques" element={<TechniquesDetail />} />
+              <Route path="/stats/disciplines" element={<DisciplinesDetail />} />
+              <Route path="/stats/enchainements" element={<CombosDetail />} />
+              <Route path="/historique" element={<History />} />
+              <Route path="/objectifs" element={<Goals />} />
+              <Route path="/reglages" element={<SettingsPage />} />
+              <Route path="/reglages/:section" element={<SettingsPage />} />
+              <Route path="/confidentialite" element={<Privacy />} />
+              <Route path="/chrono" element={<ChronoScreen />} />
+              <Route path="/favoris" element={<Favorites />} />
+              <Route path="/encyclopedie" element={<EncyclopediaHome />} />
+              <Route path="/encyclopedie/liste" element={<EncyclopediaList />} />
+              <Route path="/encyclopedie/terme/:id" element={<EncyclopediaTerm />} />
+              <Route path="/encyclopedie/az" element={<EncyclopediaAz />} />
+              <Route path="/encyclopedie/favoris" element={<EncyclopediaFavorites />} />
+              <Route path="/premium" element={<PremiumPage />} />
+              <Route path="/connexion" element={<SignIn />} />
+              <Route path="/profil" element={<ProfilePage />} />
+              <Route path="/coach-ia" element={<CoachHistory />} />
+              <Route path="/coach-ia/historique" element={<Navigate to="/coach-ia" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </Gate>
+        <ScrollMemory />
+        {/* v0.32 navigation dynamique: one bottom bar, its sheets (Navigation générale, Nouveautés) and the Coach IA
+            panel they open; no floating button any more */}
+        <BottomBar />
+        <NavSheets />
+        <CoachBubble />
+      </BootGate>
       <Toaster />
     </HashRouter>
   );

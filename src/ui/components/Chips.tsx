@@ -10,11 +10,12 @@ export function Chip({ on, onClick, children, testId, label }: { on?: boolean; o
 }
 
 /** Single-choice filter row (radiogroup), scrolls horizontally on small screens. */
-export function FilterChips<T extends string | number>({ options, value, onChange, label, scroll = false, testPrefix }: { options: { id: T; label: string }[]; value: T; onChange: (v: T) => void; label: string; scroll?: boolean; testPrefix?: string }) {
+export function FilterChips<T extends string | number>({ options, value, onChange, label, scroll = false, testPrefix }: { options: { id: T; label: string; icon?: ReactNode }[]; value: T; onChange: (v: T) => void; label: string; scroll?: boolean; testPrefix?: string }) {
   return (
     <div className={scroll ? 'chip-scroll' : 'row'} style={scroll ? undefined : { gap: 8 }} role="radiogroup" aria-label={label}>
       {options.map((o) => (
         <button key={String(o.id)} type="button" role="radio" aria-checked={o.id === value} className={`chip ${o.id === value ? 'on' : ''}`} onClick={() => onChange(o.id)} data-testid={testPrefix ? `${testPrefix}${o.id}` : undefined}>
+          {o.icon}
           {o.label}
         </button>
       ))}

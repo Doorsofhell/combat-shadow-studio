@@ -1,0 +1,75 @@
+{
+ "room": "boxe",
+ "eye": 1.4,
+ "props": [
+  {
+   "sprite": "sac-cuir",
+   "at": [
+    -6.2,
+    1.95,
+    2.0
+   ],
+   "w": 0.397,
+   "h": 2.652
+  },
+  {
+   "sprite": "sac-cuir-rouge-long",
+   "at": [
+    -6.2,
+    1.95,
+    -1.4
+   ],
+   "w": 0.419,
+   "h": 2.652
+  },
+  {
+   "sprite": "sac-cuir-court",
+   "at": [
+    6.2,
+    1.95,
+    2.0
+   ],
+   "w": 0.529,
+   "h": 2.652
+  },
+  {
+   "sprite": "sac-cuir",
+   "at": [
+    6.2,
+    1.95,
+    -1.4
+   ],
+   "w": 0.397,
+   "h": 2.652
+  },
+  {
+   "sprite": "sac-cuir-long",
+   "at": [
+    -5.4,
+    1.95,
+    6.5
+   ],
+   "w": 0.419,
+   "h": 2.652
+  },
+  {
+   "sprite": "sac-cuir-rouge",
+   "at": [
+    5.4,
+    1.95,
+    6.5
+   ],
+   "w": 0.397,
+   "h": 2.652
+  }
+ ],
+ "key": "#fff1dc",
+ "haze": "#2a2018",
+ "sprites": [
+  "sac-cuir-court",
+  "sac-cuir-long",
+  "sac-cuir-rouge-long",
+  "sac-cuir-rouge",
+  "sac-cuir"
+ ]
+}

@@ -2,11 +2,11 @@ import { TECHNIQUE_BY_ID } from '../techniques';
 import { isPlayable, validateSequence } from '../transitions';
 import type { DisciplineId, LevelId } from '../types';
 import { CATALOG_SCHEMA } from './types';
-import type { CatalogChampion, CatalogCombo, CatalogFile } from './types';
+import type { CatalogChampion, CatalogCombo, CatalogFile, CatalogOrg } from './types';
 
-const DISCIPLINES: DisciplineId[] = ['boxe', 'kickboxing', 'mma', 'muaythai'];
+const DISCIPLINES: DisciplineId[] = ['boxe', 'kickboxing', 'mma', 'muaythai', 'bjj', 'judo'];
 const LEVELS: LevelId[] = ['debutant', 'intermediaire', 'avance', 'expert'];
-const STATUSES = ['verifiee', 'adaptee', 'inspiree'];
+const STATUSES = ['verifiee', 'programme', 'adaptee', 'inspiree'];
 const GUARDS = ['orthodoxe', 'gaucher', 'les-deux'];
 const DISTANCES = ['longue', 'moyenne', 'courte', 'corps-a-corps', 'sol'];
 const GOALS = ['technique', 'cardio', 'puissance', 'defense', 'deplacement'];
@@ -50,12 +50,38 @@ export function isPlayable3D(c: Pick<CatalogCombo, 'discipline' | 'sequence'>): 
   return c.sequence.every((id) => TECHNIQUE_BY_ID.get(id)?.disciplines.includes(c.discipline)) && isPlayable(validateSequence(c.sequence, c.discipline));
 }
 
-/** honnêteté du statut : une fiche vérifiée ou adaptée doit citer sa source précisément */
-export function statusProblems(c: Pick<CatalogCombo, 'status' | 'source'>): string[] {
+const isHttps = (x: unknown) => isStr(x) && /^https:\/\//.test(x);
+const isDay = (x: unknown) => isStr(x) && /^\d{4}-\d{2}-\d{2}$/.test(x);
+
+/** référence d’une fiche « programme » : chaque champ est obligatoire (document, page, exercice, citation exacte) */
+export function programProblems(c: Pick<CatalogCombo, 'champion' | 'program'>): string[] {
+  const p = c.program;
+  if (!p || typeof p !== 'object') return ['une fiche de programme fédéral doit citer sa référence (program)'];
+  const out: string[] = [];
+  if (p.org !== c.champion) out.push('program.org doit être l’organisme de la fiche (champion)');
+  if (!isStr(p.document)) out.push('program.document manquant');
+  if (!isHttps(p.url)) out.push('program.url doit être un lien https vers le document');
+  if (!isStr(p.grade)) out.push('program.grade manquant');
+  if (typeof p.page !== 'number' || !Number.isInteger(p.page) || p.page < 1) out.push('program.page doit être un numéro de page imprimé');
+  if (!isStr(p.exercise)) out.push('program.exercise manquant');
+  if (!isStr(p.quote)) out.push('program.quote (citation exacte) manquante');
+  if (!isStr(p.solo)) out.push('program.solo (ce qui change en travail seul) manquant');
+  if (!isDay(p.consulted)) out.push('program.consulted : date de lecture AAAA-MM-JJ attendue');
+  return out;
+}
+
+/** honnêteté du statut : une fiche vérifiée, de programme ou adaptée doit citer sa source précisément */
+export function statusProblems(c: Pick<CatalogCombo, 'status' | 'source'> & Partial<Pick<CatalogCombo, 'champion' | 'program'>>): string[] {
   const s = c.source;
   const out: string[] = [];
   if (!s || !isStr(s.note) || !SOURCE_KINDS.includes(s.kind)) return ['source absente ou mal formée'];
-  if (c.status === 'verifiee') {
+  if (c.status !== 'programme' && c.program !== undefined) out.push('seule une fiche de programme fédéral porte une référence program');
+  if (c.status === 'programme') {
+    if (s.kind !== 'document') out.push('une fiche de programme fédéral vient d’un document (source.kind = "document")');
+    if (!isStr(s.reference)) out.push('une fiche de programme fédéral doit citer le document (source.reference)');
+    if (!isHttps(s.url)) out.push('une fiche de programme fédéral doit donner le lien du document (source.url)');
+    out.push(...programProblems({ champion: c.champion ?? '', program: c.program }));
+  } else if (c.status === 'verifiee') {
     if (s.kind !== 'combat') out.push('une fiche vérifiée doit venir d’un combat (source.kind = "combat")');
     if (!isStr(s.reference)) out.push('une fiche vérifiée doit citer le combat (source.reference)');
     if (!isStr(s.timestamp)) out.push('une fiche vérifiée doit indiquer le moment exact (source.timestamp)');
@@ -65,6 +91,18 @@ export function statusProblems(c: Pick<CatalogCombo, 'status' | 'source'>): stri
   } else if (c.status === 'inspiree' && s.kind !== 'profil-style') {
     out.push('une fiche inspirée a une source de type "profil-style"');
   }
+  return out;
+}
+
+export function validateOrg(o: unknown): string[] {
+  const c = o as Partial<CatalogOrg>;
+  const out: string[] = [];
+  if (!c || typeof c !== 'object') return ['organisme mal formé'];
+  if (!isStr(c.id) || !/^[a-z0-9-]+$/.test(c.id)) out.push('identifiant d’organisme invalide');
+  if (!isStr(c.name)) out.push('sigle manquant');
+  if (!isStr(c.fullName)) out.push('nom complet manquant');
+  if (!isHttps(c.url)) out.push('site https manquant');
+  if (!Array.isArray(c.disciplines) || !c.disciplines.length || !c.disciplines.every((d) => DISCIPLINES.includes(d))) out.push('disciplines invalides');
   return out;
 }
 
@@ -79,6 +117,9 @@ export function validateChampion(ch: unknown): string[] {
   if (!isStr(c.style)) out.push('description du style manquante');
   if (!isStrList(c.traits, 1, 8)) out.push('traits de style manquants');
   if (!isStr(c.source)) out.push('source du profil manquante');
+  if (c.country !== undefined && !isStr(c.country)) out.push('pays invalide');
+  if (c.era !== undefined && !isStr(c.era)) out.push('époque invalide');
+  if (c.funFact !== undefined && (!c.funFact || !isStr(c.funFact.text) || !isStr(c.funFact.url) || !/^https:\/\//.test(c.funFact.url))) out.push('anecdote invalide (texte et lien https attendus)');
   return out;
 }
 
@@ -86,7 +127,7 @@ export function validateChampion(ch: unknown): string[] {
  * Toutes les vérifications d’une fiche. `champions` permet de vérifier que le champion existe et
  * pratique la discipline de la fiche.
  */
-export function validateCombo(x: unknown, champions?: Map<string, CatalogChampion>): string[] {
+export function validateCombo(x: unknown, champions?: Map<string, CatalogChampion>, orgs?: Map<string, CatalogOrg>): string[] {
   const c = x as Partial<CatalogCombo>;
   if (!c || typeof c !== 'object') return ['fiche mal formée'];
   const out: string[] = [];
@@ -97,7 +138,14 @@ export function validateCombo(x: unknown, champions?: Map<string, CatalogChampio
     return out;
   }
   if (!isStr(c.champion)) out.push('champion manquant');
-  else if (champions) {
+  else if (c.status === 'programme') {
+    // une fiche de programme est créditée à un organisme, jamais à un champion
+    if (orgs) {
+      const o = orgs.get(c.champion);
+      if (!o) out.push(`organisme inconnu : ${c.champion}`);
+      else if (!o.disciplines.includes(c.discipline)) out.push(`${o.name} ne couvre pas la discipline ${c.discipline}`);
+    }
+  } else if (champions) {
     const ch = champions.get(c.champion);
     if (!ch) out.push(`champion inconnu : ${c.champion}`);
     else if (!ch.disciplines.includes(c.discipline)) out.push(`${ch.name} n’a pas de profil en ${c.discipline}`);
@@ -145,10 +193,18 @@ export function validateCatalogFile(data: unknown): CatalogReport {
     else if (champions.has(ch.id)) errors.push(`champion ${ch.id} : identifiant en double`);
     else champions.set(ch.id, ch);
   }
+  const orgs = new Map<string, CatalogOrg>();
+  if (f.orgs !== undefined && !Array.isArray(f.orgs)) errors.push('liste orgs mal formée');
+  for (const o of f.orgs ?? []) {
+    const p = validateOrg(o);
+    if (p.length) errors.push(...p.map((m) => `organisme ${(o as CatalogOrg)?.id ?? '?'} : ${m}`));
+    else if (orgs.has(o.id) || champions.has(o.id)) errors.push(`organisme ${o.id} : identifiant en double`);
+    else orgs.set(o.id, o);
+  }
   const ids = new Set<string>();
   const seqs = new Map<string, string>();
   for (const c of f.combos) {
-    const p = validateCombo(c, champions);
+    const p = validateCombo(c, champions, orgs);
     if (p.length) {
       errors.push(...p.map((m) => `${(c as CatalogCombo)?.id ?? '?'} : ${m}`));
       continue;

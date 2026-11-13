@@ -9,6 +9,7 @@
  */
 import { EXERCISE_BY_ID } from '../domain/exercises';
 import { TECHNIQUES, TECHNIQUE_BY_ID } from '../domain/techniques';
+import { isAppQuestion } from './appGuide';
 import { hasAny, hasPhrase, hasPrefix, normalize } from './text';
 
 export type CoachIntent =
@@ -26,6 +27,12 @@ export type CoachIntent =
   | 'safety'
   | 'off_topic'
   | 'unknown_technique'
+  /** question sur l’utilisation de l’application (écrans, boutons, réglages) */
+  | 'app_help'
+  /** ce que disent les règlements (styles de kick-boxing) sur une technique */
+  | 'rules'
+  /** style d’un champion de l’onglet Légendes (bibliothèque des champions) */
+  | 'legend'
   | 'unknown';
 
 export interface ParsedQuestion {
@@ -60,6 +67,24 @@ const SYNONYMS: [id: string, phrases: string[], generic?: boolean][] = [
   ['tai-sabaki', ['tai sabaki', 'taisabaki', 'rotation du corps']],
   ['kuzushi', ['kuzushi']],
   ['uchikomi-seoi', ['uchikomi', 'uchi komi', 'uchikomi de seoi nage', 'seoi nage', 'entree de seoi nage']],
+  // 0.28
+  ['ukemi-ushiro', ['ukemi', 'chute', 'chutes', 'brise chute', 'apprendre a tomber'], true],
+  ['ukemi-ushiro', ['ushiro ukemi', 'chute arriere', 'chute en arriere']],
+  ['ukemi-yoko', ['yoko ukemi', 'chute laterale', 'chute de cote', 'chute sur le cote']],
+  ['ayumi-ashi', ['ayumi ashi', 'pas marche', 'pas marches']],
+  ['kumikata', ['kumi kata', 'kumikata', 'prise de garde', 'saisir le judogi', 'manche et revers']],
+  ['uchikomi-o-goshi', ['o goshi', 'ogoshi', 'grande hanche', 'uchikomi d o goshi']],
+  ['uchikomi-o-soto-gari', ['o soto gari', 'osoto gari', 'grand fauchage exterieur', 'uchikomi d o soto gari']],
+  ['uchikomi-o-uchi-gari', ['o uchi gari', 'ouchi gari', 'grand fauchage interieur', 'uchikomi d o uchi gari']],
+  ['uchikomi-ko-uchi-gari', ['ko uchi gari', 'kouchi gari', 'petit fauchage interieur', 'uchikomi de ko uchi gari']],
+  ['sit-out', ['sit out', 'sitout', 'sortie assise']],
+  ['releve-genoux', ['releve depuis les genoux', 'se relever des genoux', 'step up', 'base de combat']],
+  ['single-leg', ['single leg', 'simple jambe']],
+  ['check-hook', ['check hook', 'crochet pivot', 'crochet en pivotant']],
+  ['shoulder-roll', ['shoulder roll', 'rouler l epaule', 'philly shell', 'roulement d epaule']],
+  ['switch-kick', ['switch kick', 'switch', 'changement de pied']],
+  ['garde-longue', ['garde longue', 'long guard']],
+  ['rattrapage-middle', ['attraper le middle', 'attraper un coup de pied', 'rattrapage', 'catch', 'attraper la jambe']],
   ['jab', ['jab', 'direct avant', 'direct du bras avant', 'direct gauche', 'coup droit avant']],
   ['direct', ['cross', 'direct', 'direct arriere', 'droit arriere', 'direct droit', 'direct du bras arriere', 'coup droit arriere']],
   ['crochet-avant', ['crochet gauche', 'crochet avant', 'crochet du bras avant', 'hook gauche', 'left hook', 'hook avant']],
@@ -124,9 +149,9 @@ const UNKNOWN_MOVES = [
   'tornado kick', 'coup de pied saute', 'flying knee', 'genou saute', 'genou volant', 'axe kick', 'hache', 'question mark kick',
   'crescent kick', 'coup de pied crochet', 'hook kick', 'spinning elbow', 'coude retourne', 'calf kick', 'oblique kick',
   'kimura', 'triangle', 'armbar', 'cle de bras', 'etranglement', 'guillotine', 'rear naked choke', 'rnc', 'clef de bras', 'soumission',
-  'single leg', 'suplex', 'balayage', 'sweep', 'mount', 'montee', 'ground and pound', 'kesa gatame', 'mae geri keage', 'ura mawashi',
+  'suplex', 'balayage', 'sweep', 'mount', 'montee', 'ground and pound', 'kesa gatame', 'mae geri keage', 'ura mawashi',
   'mawashi geri', 'yoko geri', 'ushiro geri', 'hadoken', 'coup de tete', 'headbutt', 'coup de boule', 'shovel hook', 'bolo punch', 'gazelle punch',
-  'cartwheel kick', 'twister', 'teep saute', 'cobra punch', 'spinning hook kick', 'switch kick',
+  'cartwheel kick', 'twister', 'teep saute', 'cobra punch', 'spinning hook kick',
 ];
 
 /** vocabulaire du domaine (pour distinguer « hors sujet » de « je ne sais pas ») */
@@ -248,6 +273,11 @@ const DIFF = ['difference', 'differences', 'differencier', 'different', 'differe
 const BALANCE = ['equilibre', 'desequilibre', 'stabilite', 'stable', 'tomber', 'je tombe', 'tenir sur une jambe', 'vaciller', 'perdre l equilibre'];
 const IMPROVE = ['ameliorer', 'ameliore', 'progresser', 'perfectionner', 'plus fort', 'plus vite', 'plus rapide', 'plus puissant', 'conseil', 'conseils', 'astuce', 'astuces', 'mieux', 'travailler mon', 'travailler ma', 'erreur', 'erreurs', 'optimiser', 'renforcer', 'gagner en', 'devenir meilleur'];
 const WHY = ['pourquoi', 'a quoi sert', 'ca sert a quoi', 'sert a quoi', 'interet', 'utilite', 'quel est le but', 'pour quelle raison', 'a quoi ca sert'];
+/** « est-il autorisé en K1 ? », « interdit en full contact ? » (avec une technique citée) */
+const RULES = ['autorise', 'autorisee', 'autorises', 'autorisees', 'permis', 'permise', 'permises', 'interdit', 'interdite', 'interdits', 'interdites', 'reglement', 'reglements', 'regle', 'regles', 'a le droit', 'on a le droit'];
+/** « quelle légende… », « le style de quel champion… » ; l’onglet lui-même reste une question sur l’application */
+const LEGEND = ['legende', 'legendes', 'champion', 'champions', 'championne'];
+const LEGEND_APP = ['onglet', 'statut', 'statuts', 'verifiee', 'adaptee', 'inspiree', 'fiche', 'fiches', 'favori', 'favoris', 'collection', 'collections', 'importer'];
 const EXPLAIN = ['comment', 'explique', 'expliquer', 'c est quoi', 'qu est ce', 'decris', 'decrire', 'que faut il', 'comment faire', 'comment on fait', 'qu est ce que', 'definition', 'details', 'detaille', 'ou placer', 'ou mettre', 'comment placer', 'comment utiliser'];
 
 /** analyse complète d’une question */
@@ -270,6 +300,10 @@ export function parseQuestion(raw: string, opts: { exerciseId?: string } = {}): 
   if (hasAny(text, SAFETY)) return r('safety');
   if (hasAny(text, CANT_SEE) || hasPrefix(text, ['corrig'])) return r('cant_see');
   if (unknownMoves.length && !techniques.length) return r('unknown_technique');
+  if (hasAny(text, LEGEND) && (techniques.length || hasAny(text, ['style', 'styles'])) && !hasAny(text, LEGEND_APP)) return r('legend');
+  // « comment ça marche ? », « où je trouve mes favoris ? », « à quoi sert ce bouton ? »
+  if (isAppQuestion(text, techniques.length > 0)) return r('app_help');
+  if (techniques.length && hasAny(text, RULES)) return r('rules');
   const actionWords = hasAny(text, SLOW) || hasAny(text, REPEAT) || hasAny(text, DEMO);
   if (hasAny(text, GREET) && !techniques.length && !actionWords && text.split(' ').length <= 6 && !hasAny(text, COMBO)) return r('smalltalk');
   const asksWhy = hasAny(text, WHY);

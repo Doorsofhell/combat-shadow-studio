@@ -3,19 +3,27 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { DISCIPLINES, DisciplineId, LEVELS, LevelId, TechniqueMode } from '../../domain/types';
 import { MODE_LABEL } from '../../domain/partner';
-import { IconChevron, IconStarFilled } from '../icons';
-import { DisciplineArtwork } from './DisciplineArtwork';
+import { STATUS_HELP, STATUS_LABEL, animationStatusOf } from '../../domain/animationStatus';
+import { AppIcon, DisciplineIcon, LevelIcon } from '../icons';
+import type { Mastery } from '../../store/goals';
 
-/** Premium discipline card: render of the coach, name in Rajdhani, current level. */
+/** Premium discipline card: the official discipline icon, name in Rajdhani, current level. */
 export function DisciplineCard({ id, level, to, onClick, selected, testId, tall, compact }: { id: DisciplineId; level?: LevelId; to?: string; onClick?: () => void; selected?: boolean; testId?: string; tall?: boolean; compact?: boolean }) {
   const d = DISCIPLINES.find((x) => x.id === id)!;
   const inner = (
     <>
-      <DisciplineArtwork id={id} format="cover" />
+      <span className="disc-emblem" aria-hidden>
+        <DisciplineIcon id={id} size={compact ? 76 : 104} />
+      </span>
       <span className="bar" aria-hidden />
       <span className="name">{d.name}</span>
       {!compact && <span className="sub">{d.tagline}</span>}
-      {level && <span className="lvl">Niveau : {LEVELS.find((l) => l.id === level)!.name}</span>}
+      {level && (
+        <span className="lvl">
+          <LevelIcon level={level} />
+          Niveau : {LEVELS.find((l) => l.id === level)!.name}
+        </span>
+      )}
     </>
   );
   const style = tall ? { minHeight: 240 } : undefined;
@@ -41,8 +49,37 @@ export function ModeBadge({ mode = 'solo' }: { mode?: TechniqueMode }) {
   );
 }
 
+/** state of the technique's animation (registry of automatic checks), with its meaning on hover / long press */
+export function AnimationBadge({ id }: { id: string }) {
+  const st = animationStatusOf(id);
+  if (!st) return null;
+  return (
+    <span className={`badge ${st.status === 'a-corriger' ? 'red' : st.status === 'validee' ? 'gold' : ''}`} title={STATUS_HELP[st.status]} data-testid="animation-status" data-status={st.status}>
+      Animation : {STATUS_LABEL[st.status].toLowerCase()}
+    </span>
+  );
+}
+
 /** One technique / exercise row card (link). */
-export function TechniqueCard({ to, title, description, glyph, thumb, favorite, meta, testId }: { to: string; title: string; description?: string; glyph?: string; thumb?: string; favorite?: boolean; meta?: ReactNode; testId?: string }) {
+export function TechniqueCard({ to, title, description, glyph, thumb, favorite, meta, testId, tile, mastery, selected }: { to: string; title: string; description?: string; glyph?: string; thumb?: string; favorite?: boolean; meta?: ReactNode; testId?: string; tile?: boolean; mastery?: Mastery; /** v0.32: the technique the bar's « Technique » button opens */ selected?: boolean }) {
+  // 0.24 catalogue: a large picture tile (the coach doing the move) with the name only; the
+  // description stays on the technique sheet
+  if (tile && thumb)
+    return (
+      <Link to={to} className={`tech-card tile ${selected ? 'selected' : ''}`} data-testid={testId} title={description} aria-current={selected ? 'true' : undefined} data-selected={selected || undefined}>
+        <TechThumb id={thumb} size="lg">
+          {/* option F: a coloured edge under the picture, named for screen readers */}
+          {mastery && <span className={`mastery-edge ${mastery}`} role="img" aria-label={mastery === 'acquise' ? 'Assimilée' : 'Encore du mal'} data-testid="mastery-edge" />}
+        </TechThumb>
+        <span className="body">
+          <span className="title">
+            {title}
+            {favorite && <AppIcon id="favorite" size={14} className="fav" label="Favori" style={{ marginLeft: 6, verticalAlign: -1 }} />}
+          </span>
+          {meta}
+        </span>
+      </Link>
+    );
   return (
     <Link to={to} className="tech-card" data-testid={testId}>
       {thumb ? (
@@ -55,12 +92,12 @@ export function TechniqueCard({ to, title, description, glyph, thumb, favorite, 
       <span className="body">
         <span className="title" style={{ display: 'block' }}>
           {title}
-          {favorite && <IconStarFilled className="fav" width={14} height={14} style={{ marginLeft: 6, verticalAlign: -1 }} aria-label="Favori" />}
+          {favorite && <AppIcon id="favorite" size={14} className="fav" label="Favori" style={{ marginLeft: 6, verticalAlign: -1 }} />}
         </span>
         {description && <span className="desc">{description}</span>}
         {meta}
       </span>
-      <IconChevron className="muted" />
+      <AppIcon id="chevron" className="muted" />
     </Link>
   );
 }
@@ -92,7 +129,7 @@ export function EntryCard({ to, icon, thumb, title, text, tone, testId }: { to: 
         <span className="title">{title}</span>
         {text && <span className="small muted">{text}</span>}
       </span>
-      <IconChevron />
+      <AppIcon id="chevron" />
     </Link>
   );
 }

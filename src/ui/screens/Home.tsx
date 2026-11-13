@@ -1,20 +1,23 @@
-import { TechThumb, keyTechnique, programTechnique } from '../components/TechThumb';
-import { Component, ReactNode, Suspense, lazy, useCallback, useMemo } from 'react';
+import { lazy, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { useActiveFighter } from '../../store/fighters';
-import { formatDuration, sessionCount, sum, useStats, weekKey } from '../../store/stats';
+import { sessionCount, sum, useStats, weekKey } from '../../store/stats';
 import { useGoals } from '../../store/goals';
-import { useCatalog, useCatalogUser } from '../../store/catalog';
 import { DISCIPLINES, LEVELS, TrainingMode } from '../../domain/types';
 import { EXERCISE_BY_ID } from '../../domain/exercises';
 import { recommend } from '../../domain/recommend';
-import type { ComboPlayer, PlayerEvents } from '../../engine/player';
+import { championFor } from '../../domain/coaches/catalog';
+import type { ComboPlayer, PlayerEvents } from '../../engine';
 import { MODE_LABEL } from '../training/plan';
-import { DisciplineArtwork, DisciplineCard, DisciplineLabel, EmptyState, EntryCard, ProgressBar, SectionHead, StatTile } from '../components';
-import { defaultFighterName } from '../components/fighter';
-import { IconChevron, IconClock, IconGear, IconPlay, IconRestart, IconTrend, IconUser } from '../icons';
+import { DisciplineIcon } from '../icons';
+import { haptic, openSearch } from '../nav/BottomBar';
+import { NavIcon } from '../nav/NavIcon';
+import { useKbStyle } from '../components/KickboxingStyle';
+import { techniquesFor } from '../../domain/techniques';
+import { filterTechniques } from '../../domain/kickboxingStyles';
+import { CoachScreen } from '../coach-screen/CoachScreen';
+import { techniqueOfTheDay } from '../../domain/quickPicks';
 
 /** the 3D bundle (three.js, R3F) stays out of the main chunk */
 const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
@@ -22,21 +25,9 @@ const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ de
 const RESUMABLE: TrainingMode[] = ['libre', 'technique', 'cardio', 'rounds'];
 const NO_EVENTS: PlayerEvents = {};
 
-/** keeps the home screen usable when WebGL is unavailable */
-class StageBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  render() {
-    if (this.state.failed) return <div className="hero-loading small">Affichage 3D indisponible sur cet appareil.</div>;
-    return this.props.children;
-  }
-}
-
 function StageFallback() {
   return (
-    <div className="hero-loading" role="status" aria-label="Chargement du combattant">
+    <div className="hero-loading" role="status" aria-label="Chargement du coach">
       <div className="stage-skeleton" />
     </div>
   );
@@ -45,25 +36,19 @@ function StageFallback() {
 export function Home() {
   const profile = useProfile((s) => s.profile);
   const settings = useSettings((s) => s.settings);
-  const fighter = useActiveFighter();
   const sessions = useStats((s) => s.sessions);
   const weeklyGoal = useGoals((s) => s.goals.weeklyMinutes);
-  const favEx = useGoals((s) => s.favExercises);
-  const favCombos = useCatalogUser((s) => s.favorites);
-  // the champions library is only loaded when the user has favourite combinations
-  const { catalog } = useCatalog(favCombos.length > 0);
-  const legendFavs = catalog ? favCombos.map((id) => catalog.comboById.get(id)).filter((c) => !!c).slice(0, 3) : [];
   const nav = useNavigate();
   const rec = useMemo(() => recommend(profile), [profile]);
   const disc = DISCIPLINES.find((d) => d.id === profile.mainDiscipline)!;
   const level = LEVELS.find((l) => l.id === profile.levels[disc.id])!;
-  const coach = fighter?.look.sex ?? profile.coach ?? 'homme';
-  const name = fighter?.name ?? defaultFighterName(profile.coach);
+  // 0.24: the coach on stage is Kadir or Amara (1.37: always, the fallback render with the custom fighter is gone)
+  const coach = profile.coach ?? 'homme';
+  const name = championFor(profile.coach, profile.champion).name;
 
   const thisWeek = weekKey(new Date().toISOString());
   const week = sessions.filter((s) => weekKey(s.start) === thisWeek);
   const weekSec = sum(week);
-  const totalSec = sum(sessions);
   const sorted = useMemo(() => [...sessions].sort((a, b) => b.start.localeCompare(a.start)), [sessions]);
   const last = sorted[0];
   const resume = last && EXERCISE_BY_ID.has(last.exerciseId) && RESUMABLE.includes(last.mode) ? `/entrainement?ex=${last.exerciseId}&mode=${last.mode}` : null;
@@ -80,27 +65,133 @@ export function Home() {
     if (recEx) nav(`/discipline/${recEx.discipline}?niveau=${recEx.level}&ex=${recEx.id}`);
     else nav('/entrainer');
   };
+  const update = useProfile((s) => s.update);
+
+  // 1.30.0 (nouvelle ergonomie, lot 2; maquette validée le 2026-11-11): the six disciplines are tabs at the top, the
+  // search is the big bar of the page with the chronometer, then two shortcuts, the coach in its card with
+  // « Commencer », and the round shortcuts « Pour toi » (only links to what exists, only real figures)
+  const [kbStyle] = useKbStyle();
+  const main = profile.mainDiscipline;
+  const daily = useMemo(() => techniqueOfTheDay(filterTechniques(techniquesFor(main), main, kbStyle)), [main, kbStyle]);
+  const mastery = useGoals((s) => s.mastery);
+  const toReview = useMemo(() => techniquesFor(main).filter((t) => mastery[t.id] === 'a-revoir').length, [main, mastery]);
+  const goalMin = weeklyGoal;
+  const goalSessions = useGoals((s) => s.goals.weeklySessions);
+  const weekMin = Math.round(weekSec / 60);
+  const weekSessions = sessionCount(week);
+  const lastDisc = last ? DISCIPLINES.find((d) => d.id === last.discipline) : undefined;
+  const goalOn = goalMin > 0 || goalSessions > 0;
+  const goalRatio = goalMin > 0 ? weekMin / goalMin : goalSessions > 0 ? weekSessions / goalSessions : 0;
+  const goalDone = goalOn && goalRatio >= 1;
+  const goalText = goalMin > 0 ? `${weekMin} / ${goalMin} min` : goalSessions > 0 ? `${weekSessions} / ${goalSessions}` : 'Objectif';
 
   return (
-    <div className="page" style={{ gap: 22 }}>
-      <header className="home-head">
-        <div className="grow">
-          <div className="brand">
-            Combat <b>Shadow</b> Studio
-          </div>
+    <div className="page home home-v2">
+      <header className="home-head row" style={{ gap: 8, alignItems: 'baseline', justifyContent: 'flex-start' }}>
+        <div className="brand">
+          Combat <b>Shadow</b> Studio
         </div>
-        <Link to="/combattant" className="btn icon ghost" aria-label="Mon profil et mon combattant" title="Profil">
-          <IconUser />
-        </Link>
-        <Link to="/reglages" className="btn icon ghost" aria-label="Réglages" title="Réglages" style={{ marginRight: -10 }} data-testid="open-settings">
-          <IconGear />
-        </Link>
+        <span className="small muted num-figure" data-testid="home-version">
+          v{import.meta.env.VITE_APP_VERSION}
+        </span>
       </header>
 
-      <section className="hero" aria-label={`${name}, ${disc.name}`}>
-        <div className="hero-stage" aria-hidden>
-          <StageBoundary>
-            <Suspense fallback={<StageFallback />}>
+      {/* the six disciplines: one touch changes the discipline of the page (and of the coach) */}
+      <div className="home-dtabs" role="group" aria-label="Ta discipline" data-testid="disc-tabs">
+        {DISCIPLINES.map((d) => (
+          <button key={d.id} type="button" className={`home-dtab ${d.id === main ? 'on' : ''}`} aria-pressed={d.id === main} data-testid={`pick-${d.id}`} onClick={() => d.id !== main && update({ mainDiscipline: d.id })}>
+            {/* the six names fit the width of a small phone: only the discipline of the page shows its icon */}
+            {d.id === main && <DisciplineIcon id={d.id} size={22} />}
+            {d.short}
+          </button>
+        ))}
+      </div>
+
+      {/* the big action bar: the search of the app (« Rechercher ou demander au coach »), the chronometer next to it */}
+      <div className="home-ask">
+        <button
+          type="button"
+          className="home-ask-go"
+          aria-label="Rechercher ou demander au coach"
+          aria-haspopup="dialog"
+          data-testid="app-search"
+          onClick={() => {
+            haptic();
+            openSearch();
+          }}
+        >
+          <NavIcon id="search" />
+          <span>Que veux-tu travailler ?</span>
+        </button>
+        <Link to="/chrono" className="home-ask-chip" data-testid="tile-chrono" aria-label="Chrono seul">
+          <NavIcon id="stopwatch" />
+          Chrono
+        </Link>
+      </div>
+
+      <div className="home-list">
+        {resume && last ? (
+          <Link to={resume} className="home-row" data-testid="resume-last" data-disc={last.discipline}>
+            <span className="home-row-ico" aria-hidden>
+              <NavIcon id="restore" />
+            </span>
+            <span className="home-row-text">
+              <b>Reprendre ta séance</b>
+              <small>
+                {last.exerciseName} · {MODE_LABEL[last.mode]}
+                {lastDisc ? ` · ${lastDisc.short}` : ''}
+              </small>
+            </span>
+            <NavIcon id="chevron" />
+          </Link>
+        ) : (
+          <Link to={`/discipline/${disc.id}`} className="home-row" data-testid="resume-last" data-disc={disc.id}>
+            <span className="home-row-ico" aria-hidden>
+              <NavIcon id="dumbbell" />
+            </span>
+            <span className="home-row-text">
+              <b>Ta discipline</b>
+              <small>
+                {disc.name} · {level.name}
+              </small>
+            </span>
+            <NavIcon id="chevron" />
+          </Link>
+        )}
+        {daily && (
+          <Link to={`/techniques/${daily.id}?d=${main}`} className="home-row" data-testid="tile-daily">
+            <span className="home-row-ico" aria-hidden>
+              <NavIcon id="star" />
+            </span>
+            <span className="home-row-text">
+              <b>Technique du jour</b>
+              <small>{daily.name}</small>
+            </span>
+            <NavIcon id="chevron" />
+          </Link>
+        )}
+      </div>
+
+      <section className="home-coach" aria-label={`${name}, ${disc.name}`}>
+        <div className="home-coach-head">
+          <span className="eyebrow">Ton coach</span>
+          <div className="hero-name" data-testid="fighter-name">
+            {name}
+          </div>
+        </div>
+        <div className="hero home-hero">
+          {/* 1.4.0: the coach screen of the app (the same module everywhere): a tap shows the sound and the
+              fullscreen in the zone of the coach; a double tap shows the coach on the whole screen */}
+          <CoachScreen
+            context="accueil"
+            className="hero-stage"
+            testId="hero-stage"
+            place="accueil"
+            stageClassName="hero-stage-3d"
+            stageHidden
+            fallback={<StageFallback />}
+            commands={{ sound: true }}
+            stage={
               <CoachStage
                 backdrop="dark"
                 coach={coach}
@@ -111,172 +202,66 @@ export function Home() {
                 events={NO_EVENTS}
                 onPlayer={onPlayer}
               />
-            </Suspense>
-          </StageBoundary>
+            }
+          />
+          <Link to="/coach" className="chip home-coach-chg" aria-label={`Changer de coach (${name})`}>
+            Changer de coach
+          </Link>
+          <button type="button" className="home-go" onClick={start} data-testid="home-cta" data-action="start" aria-label={recEx ? `Commencer : ${recEx.name}` : 'Commencer l’entraînement'}>
+            <NavIcon id="play" />
+            Commencer
+          </button>
         </div>
-        <div className="hero-fade" />
-        <div className="hero-info">
-          <div>
-            <div className="eyebrow disc-label">
-              <DisciplineArtwork id={disc.id} format="avatar" size="xs" />
-              <span>
-                {disc.name} · {level.name}
-              </span>
-            </div>
-            <div className="hero-name" data-testid="fighter-name">
-              {name}
-            </div>
-          </div>
-        </div>
-        <div className="hero-top">
-          <Link to="/combattant" className="chip" aria-label={`Personnaliser ${name}`}>
-            Personnaliser
+      </section>
+
+      <section className="home-foryou" aria-labelledby="home-h-foryou">
+        <h2 id="home-h-foryou">Pour toi</h2>
+        <div className="home-rounds">
+          {/* the weekly goal, real figures only; the details are in Progrès › Objectifs */}
+          <Link to="/objectifs" className={`home-round ${goalDone ? 'gold' : ''}`} data-testid="home-goal" aria-label={goalOn ? `Objectif de la semaine : ${goalText}` : 'Objectif de la semaine : aucun objectif fixé'}>
+            <i className="home-ring" style={{ ['--p' as string]: Math.min(1, goalRatio) }} role={goalOn ? 'progressbar' : undefined} aria-label={goalOn ? 'Objectif hebdomadaire' : undefined} aria-valuemin={goalOn ? 0 : undefined} aria-valuemax={goalOn ? 100 : undefined} aria-valuenow={goalOn ? Math.round(Math.min(1, goalRatio) * 100) : undefined}>
+              <NavIcon id="calendar" />
+            </i>
+            <span className={goalOn ? 'num-figure' : undefined}>{goalText}</span>
+          </Link>
+          {recProg && (
+            <Link to={`/programmes/${recProg.id}`} className="home-round red" data-testid="home-prog" aria-label={`Programme : ${recProg.name}`}>
+              <i>
+                <NavIcon id="layers" />
+              </i>
+              <span>Programme</span>
+            </Link>
+          )}
+          {rec.exercises[1] && (
+            <Link to={`/discipline/${rec.exercises[1].discipline}?niveau=${rec.exercises[1].level}&ex=${rec.exercises[1].id}`} className="home-round" data-testid="home-foryou" aria-label={`Autre idée de séance : ${rec.exercises[1].name}`}>
+              <i>
+                <NavIcon id="sparkle" />
+              </i>
+              <span>Autre idée</span>
+            </Link>
+          )}
+          {toReview > 0 && (
+            <Link to={`/techniques?d=${main}&cat=a-revoir`} className="home-round gold" data-testid="home-review" aria-label={`À revoir : ${toReview} technique${toReview > 1 ? 's' : ''}`}>
+              <i>
+                <NavIcon id="restore" />
+              </i>
+              <span>À revoir</span>
+            </Link>
+          )}
+          <Link to="/createur" className="home-round" data-testid="home-create">
+            <i>
+              <NavIcon id="plus" />
+            </i>
+            <span>Créer</span>
+          </Link>
+          <Link to="/coach-ia" className="home-round" data-testid="home-coach-ia">
+            <i>
+              <NavIcon id="coach" />
+            </i>
+            <span>Coach IA</span>
           </Link>
         </div>
       </section>
-
-      <div className="stack" style={{ gap: 10, marginTop: -6 }}>
-        <button type="button" className="btn primary block lg" onClick={start} data-testid="home-cta">
-          <IconPlay /> Commencer l’entraînement
-        </button>
-        {recEx && (
-          <p className="small muted" style={{ textAlign: 'center' }}>
-            Recommandé : <span style={{ color: 'var(--ink)' }}>{recEx.name}</span>
-          </p>
-        )}
-      </div>
-
-      {resume && last && (
-        <Link to={resume} className="card link ex-card" data-testid="resume-last">
-          <span className="icon-tile red" aria-hidden>
-            <IconRestart />
-          </span>
-          <span className="body">
-            <span className="eyebrow">Reprendre</span>
-            <span className="title">{last.exerciseName}</span>
-            <span className="small muted">
-              <DisciplineLabel id={last.discipline} name={DISCIPLINES.find((d) => d.id === last.discipline)?.name ?? ''} /> · {MODE_LABEL[last.mode]}
-            </span>
-          </span>
-          <IconChevron />
-        </Link>
-      )}
-
-      <section className="section" aria-labelledby="h-progress">
-        <SectionHead id="h-progress" title="Ta progression" action={<Link to="/stats">Tout voir</Link>} />
-        {sessions.length === 0 ? (
-          <EmptyState title="Aucune séance pour l’instant" text="Ton temps actif, tes séances et ta progression apparaîtront ici après ton premier entraînement." />
-        ) : (
-          <>
-            <div className="stat-tiles">
-              <StatTile value={Math.round(weekSec / 60)} unit="min" label="Cette semaine" />
-              <StatTile value={formatDuration(totalSec)} label="Temps cumulé" />
-              <StatTile value={sessionCount(sessions)} label="Séances" />
-            </div>
-            {weeklyGoal > 0 && (
-              <div className="card stack" style={{ gap: 8 }}>
-                <div className="row between">
-                  <span className="small">Objectif de la semaine</span>
-                  <span className="small num-figure">
-                    {Math.round(weekSec / 60)} / {weeklyGoal} min
-                  </span>
-                </div>
-                <ProgressBar value={weekSec / 60 / weeklyGoal} label="Objectif hebdomadaire" tone={weekSec / 60 >= weeklyGoal ? 'gold' : 'red'} />
-              </div>
-            )}
-            {last && (
-              <div className="card row nowrap" style={{ gap: 14 }}>
-                <span className="icon-tile" aria-hidden>
-                  <IconClock />
-                </span>
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span className="eyebrow" style={{ display: 'block' }}>
-                    Dernière séance
-                  </span>
-                  <span style={{ fontWeight: 600 }}>{last.exerciseName}</span>
-                  <span className="small muted" style={{ display: 'block' }}>
-                    {new Date(last.start).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} · {formatDuration(last.activeSec)} actives
-                  </span>
-                </span>
-              </div>
-            )}
-          </>
-        )}
-      </section>
-
-      {legendFavs.length > 0 && (
-        <section className="section" aria-labelledby="h-legend-fav">
-          <SectionHead id="h-legend-fav" title="Combinaisons favorites" action={<Link to="/champions">Légendes</Link>} />
-          <div className="stack" style={{ gap: 8 }}>
-            {legendFavs.map((c) => (
-              <Link key={c!.id} to={`/champions/${c!.id}`} className="card link ex-card">
-                <TechThumb id={keyTechnique(c!.sequence)} />
-                <span className="body">
-                  <span className="title">{c!.name}</span>
-                  <span className="small muted">{catalog?.championById.get(c!.champion)?.name ?? 'Combinaison des légendes'}</span>
-                </span>
-                <IconChevron />
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {favEx.length > 0 && (
-        <section className="section" aria-labelledby="h-fav">
-          <SectionHead id="h-fav" title="Favoris" action={<Link to="/techniques?tab=favoris">Tous</Link>} />
-          <div className="stack" style={{ gap: 8 }}>
-            {favEx
-              .map((id) => EXERCISE_BY_ID.get(id))
-              .filter((e) => !!e)
-              .slice(0, 3)
-              .map((e) => (
-                <Link key={e!.id} to={`/discipline/${e!.discipline}?niveau=${e!.level}&ex=${e!.id}`} className="card link ex-card">
-                  <TechThumb id={keyTechnique(e!.sequence)} />
-                  <span className="body">
-                    <span className="title">{e!.name}</span>
-                    <span className="small muted"><DisciplineLabel id={e!.discipline} name={DISCIPLINES.find((d) => d.id === e!.discipline)?.name ?? ''} /></span>
-                  </span>
-                  <IconChevron />
-                </Link>
-              ))}
-          </div>
-        </section>
-      )}
-
-      {recProg && (
-        <section className="section" aria-labelledby="h-prog">
-          <SectionHead id="h-prog" title="Programme recommandé" action={<Link to="/programmes">Programmes</Link>} />
-          <EntryCard to={`/programmes/${recProg.id}`} icon={<IconTrend />} thumb={programTechnique(recProg)} tone="red" title={recProg.name} text={`${recProg.durationMin} min · ${recProg.frequency}`} />
-        </section>
-      )}
-
-      <section className="section" aria-labelledby="h-disc">
-        <SectionHead id="h-disc" title="Disciplines" action={<Link to="/entrainer">Entraîner</Link>} />
-        <div className="disc-grid compact" data-testid="home-disciplines">
-          {DISCIPLINES.map((d) => (
-            <DisciplineCard key={d.id} id={d.id} to={`/discipline/${d.id}`} level={profile.levels[d.id]} compact testId={`home-disc-${d.id}`} />
-          ))}
-        </div>
-      </section>
-
-      {rec.exercises.length > 1 && (
-        <section className="section" aria-labelledby="h-rec">
-          <SectionHead id="h-rec" title="Pour toi aujourd’hui" action={<Link to={`/discipline/${disc.id}`}>{disc.short}</Link>} />
-          <div className="stack" style={{ gap: 8 }}>
-            {rec.exercises.slice(1, 4).map((e) => (
-              <Link key={e.id} to={`/discipline/${e.discipline}?niveau=${e.level}&ex=${e.id}`} className="card link ex-card">
-                <TechThumb id={keyTechnique(e.sequence)} />
-                <span className="body">
-                  <span className="eyebrow">{LEVELS.find((l) => l.id === e.level)!.name}</span>
-                  <span className="title">{e.name}</span>
-                </span>
-                <IconChevron />
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 }

@@ -12,6 +12,7 @@ const STATES: Record<string, [BodyState, BodyState]> = {
   'retention-garde': ['ground', 'ground'],
   'changement-base': ['ground', 'ground'],
   'releve-technique': ['ground', 'stand'],
+  'sit-out': ['ground', 'ground'],
 };
 
 export function statesOf(id: string): [BodyState, BodyState] {
@@ -23,7 +24,7 @@ export function rangeOf(t: Technique): Range {
   if (['coude', 'genou', 'clinch'].includes(t.category)) return 'courte';
   if (t.id.startsWith('uppercut')) return 'courte';
   if (t.category === 'pied') return 'long';
-  if (t.id === 'jab' || t.id === 'direct' || t.id === 'entree-lutte') return 'long';
+  if (t.id === 'jab' || t.id === 'direct' || t.id === 'entree-lutte' || t.id === 'single-leg') return 'long';
   if (t.category === 'poing') return 'moyenne';
   return 'neutre';
 }

@@ -9,8 +9,8 @@ async function onboard(page: Page, coach: 'homme' | 'femme') {
   await page.getByTestId(`coach-${coach}`).click();
   await expect(page.getByTestId('next')).toBeEnabled();
   await page.getByTestId('next').click();
-  // simplified customisation, guard, discipline, level, goals
-  for (let i = 0; i < 5; i++) await page.getByTestId('next').click();
+  // guard, discipline, level, goals (0.24: the "Apparence" step is gone, the coach is Kadir or Amara)
+  for (let i = 0; i < 4; i++) await page.getByTestId('next').click();
   await page.getByTestId('finish').click();
   await expect(page.getByTestId('home-cta')).toBeVisible();
 }
@@ -19,17 +19,23 @@ test('premier lancement : questionnaire, choix obligatoire du coach, données co
   await onboard(page, 'femme');
   await page.reload();
   await expect(page.getByTestId('home-cta')).toBeVisible();
-  await expect(page.getByTestId('fighter-name')).toHaveText('Ma combattante');
-  // bottom navigation: five destinations
-  await expect(page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link')).toHaveCount(5);
+  // 0.24: the coach chosen is Amara (stored choice 'femme')
+  await expect(page.getByTestId('fighter-name')).toHaveText('Amara');
+  // bottom navigation (1.0.0 refonte ergonomique): five fixed places, the actions of the screen above them, « Plus »
+  // 1.29.0 (barre flottante): four places, Compte (the profile) is the fourth, « Rechercher » is the magnifier at the
+  // top right
+  await expect(page.getByTestId('bottom-bar').locator('.nav-tab')).toHaveCount(4);
+  await expect(page.getByTestId('bottom-bar').locator('.nav-tab').nth(3)).toHaveAttribute('data-testid', 'nav-profil');
+  await expect(page.getByTestId('app-search')).toBeVisible();
   await page.getByTestId('nav-entrainer').click();
-  await expect(page.getByTestId('disc-boxe')).toBeVisible();
+  // 1.29.0: the disciplines are tiles of the first page of Entraîner
+  await expect(page.getByTestId('hub-disc-boxe')).toBeVisible();
 });
 
 test('entraînement : démarrage, pause qui arrête le chronomètre, reprise, statistiques', async ({ page }) => {
   await onboard(page, 'homme');
   await page.getByTestId('nav-entrainer').click();
-  await page.getByTestId('disc-boxe').click();
+  await page.getByTestId('hub-disc-boxe').click();
   await page.getByTestId('ex-boxe-debutant-08').click();
   await page.getByTestId('go-training').click();
   await expect(page.getByTestId('exercise-name')).toContainText('Jab');
@@ -52,13 +58,18 @@ test('entraînement : démarrage, pause qui arrête le chronomètre, reprise, st
 
 test('créateur : un enchaînement impossible est bloqué, un enchaînement valide se lance', async ({ page }) => {
   await onboard(page, 'homme');
-  await page.goto('/#/createur?d=mma');
+  // 0.38 (Créateur V2): the editor of a new sequence, moves added from the picker of pictograms
+  await page.goto('/#/createur/nouveau?d=mma');
+  await page.getByTestId('add-move').click();
   await page.getByTestId('add-jab').click();
   await page.getByTestId('add-releve-technique').click();
+  await page.getByTestId('picker-done').click();
   await expect(page.getByTestId('run-custom')).toBeDisabled();
   await page.getByRole('button', { name: /Retirer Relevé/ }).click();
+  await page.getByTestId('add-move').click();
   await page.getByTestId('add-descente-sol').click();
   await page.getByTestId('add-releve-technique').click();
+  await page.getByTestId('picker-done').click();
   await expect(page.getByTestId('run-custom')).toBeEnabled();
   await page.getByTestId('run-custom').click();
   await expect(page.getByTestId('exercise-name')).toBeVisible();
@@ -75,9 +86,13 @@ test('programme : les blocs s’enchaînent avec leurs rounds', async ({ page })
 
 test('réglages et confidentialité accessibles depuis l’accueil', async ({ page }) => {
   await onboard(page, 'homme');
-  await page.getByTestId('open-settings').click();
+  // 1.0.0 (refonte ergonomique): Profil › Réglages (formerly Menu › Paramètres)
+  await page.getByTestId('nav-profil').click();
+  await page.getByTestId('compte-reglages').click();
   await expect(page.getByRole('heading', { name: 'Réglages' })).toBeVisible();
-  await page.getByRole('link', { name: /Confidentialité/ }).click();
+  // 1.2.0: Réglages › Données et confidentialité
+  await page.getByTestId('set-donnees').click();
+  await page.getByRole('link', { name: /Politique de confidentialité/ }).click();
   await expect(page.getByText('Tout reste sur ton appareil.')).toBeVisible();
 });
 

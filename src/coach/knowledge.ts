@@ -12,6 +12,7 @@
 import { GUIDES } from '../domain/guide';
 import { CATEGORY_LABEL, TECHNIQUES, TECHNIQUE_BY_ID } from '../domain/techniques';
 import type { DisciplineId, LevelId, TechniqueCategory } from '../domain/types';
+import { MORE_FAQ } from './faqMore';
 
 export interface KnowledgeEntry {
   id: string;
@@ -57,6 +58,7 @@ export const CATEGORY_NUANCE: Record<TechniqueCategory, string> = {
   feinte: 'Une feinte ne marche que si elle ressemble à ton vrai coup : garde-la courte et enchaîne sans délai.',
   clinch: 'Le clinch se travaille réellement avec un partenaire ; en solo, concentre-toi sur la posture et le placement des hanches.',
   projection: 'En solo, seule l’entrée se travaille : déplacement, déséquilibre et placement. La projection elle-même ne se fait qu’au dojo, avec un partenaire et un professeur.',
+  chute: 'Chez toi, seulement les chutes basses (couché, assis, accroupi) sur un tapis épais : menton rentré, bras qui frappent à environ 45°. Les chutes depuis debout s’apprennent au dojo, avec un professeur.',
 };
 
 /** côté du membre d’après l’identifiant (« -avant » = membre avant, « -arriere » = membre arrière) */
@@ -90,7 +92,7 @@ function techniqueEntries(): KnowledgeEntry[] {
   });
 }
 
-type Faq = Omit<KnowledgeEntry, 'source' | 'disciplines' | 'levels'> & { disciplines?: DisciplineId[]; levels?: LevelId[] };
+export type Faq = Omit<KnowledgeEntry, 'source' | 'disciplines' | 'levels'> & { disciplines?: DisciplineId[]; levels?: LevelId[] };
 
 /** FAQ générale : principes standard, aucune technique en dehors de la bibliothèque */
 const FAQ: Faq[] = [
@@ -307,6 +309,8 @@ const FAQ: Faq[] = [
     tags: ['distance', 'portée', 'loin', 'près', 'allonge'],
     related: ['jab', 'crochet-avant', 'teep-avant'],
   },
+  // 0.27: mental, régularité, objectifs (faqMore.ts)
+  ...MORE_FAQ,
 ];
 
 let cache: KnowledgeEntry[] | null = null;

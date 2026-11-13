@@ -1,17 +1,10 @@
-import { useEffect, useMemo } from 'react';
-import { useLoader } from '@react-three/fiber';
-import { NoColorSpace, TextureLoader } from 'three';
-import { useFrame } from '@react-three/fiber';
-import { useGLTF } from '@react-three/drei';
 import type { GLTFLoader } from 'three-stdlib';
-import { Color, Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Object3D, SRGBColorSpace, Texture } from 'three';
-import { restoreReferencePose, setLegLength } from './pose';
-import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
-import { CoachRig } from '../engine/rig';
-import { FacialLife } from './facialLife';
-import { applyManga, outlineMaterial, toonMaterial } from './manga';
-import { CoachMeta, Customizer } from './customize';
-import { FighterLook, defaultLook } from '../editor/look';
+import { useGLTF } from '@react-three/drei';
+import { PhotoCoach } from './PhotoCoach';
+import { preloadOutfit, type OutfitId, type OutfitStatus } from './outfit';
+import type { HumanSignals } from './human/behavior';
+import type { CoachRig } from '../engine';
+import type { FighterLook } from '../editor/look';
 import type { CoachId } from '../domain/types';
 
 /**
@@ -21,12 +14,17 @@ import type { CoachId } from '../domain/types';
 const JSON_MODELS = import.meta.env.VITE_COACH_FORMAT === 'json';
 const EXT = JSON_MODELS ? 'json' : 'glb';
 
-export type CoachStyle = 'manga' | 'encre' | 'realiste';
-
-export function coachUrl(coach: CoachId, style: CoachStyle) {
-  const who = coach === 'homme' ? 'male' : 'female';
-  return `./models/coach_${who}${style !== 'realiste' ? '_manga' : ''}.${EXT}`;
+/**
+ * 1.37.9: keep Amara's original sports-underwear avatar for the "no outfit"
+ * selection and during basic preview; wear her true cleaned skin ONLY while a
+ * discipline outfit is selected. No other coach ever loads photo-clean.
+ * The cleaned mesh retains exact original POSITION for all seven hideBody masks.
+ */
+export function photoAssetPath(coachId: string, outfit: OutfitId | null, extension = 'glb'): string {
+  const variant = coachId === 'mma-amara' && outfit ? 'photo-clean' : 'photo';
+  return `./coaches/${coachId}/${variant}.${extension}`;
 }
+
 
 function base64ToBuffer(b64: string) {
   const bin = atob(b64);
@@ -50,130 +48,66 @@ function patchJsonModels(loader: GLTFLoader) {
 
 const DRACO = './draco/';
 
-export function preloadCoaches() {
-  for (const c of ['homme', 'femme'] as const) useGLTF.preload(coachUrl(c, 'manga'), DRACO, true, patchJsonModels);
+/**
+ * 1.25 chargement au démarrage: the coach's photo avatar is read once while the start screen shows (« Pesée
+ * officielle »), so the first 3D screen draws it at once. Same cache key as PhotoCoach (url, Draco, loader set-up).
+ */
+export function preloadPhotoCoach(coachId: string, outfit: OutfitId | null = null) {
+  useGLTF.preload(photoAssetPath(coachId, outfit, EXT), DRACO, true, patchJsonModels);
 }
 
-/** Upgrade the exported materials: physically based skin with a soft sheen, matte fabrics. */
-function upgradeMaterials(root: Object3D, quality: 'haute' | 'basse') {
-  root.traverse((o) => {
-    const mesh = o as Mesh;
-    if (!mesh.isMesh) return;
-    mesh.frustumCulled = false;
-    mesh.castShadow = false;
-    // self-shadowing from the shadow map draws hard crescents on the torso; the baked AO and the contact shadow look better
-    mesh.receiveShadow = false;
-    const old = mesh.material as MeshStandardMaterial;
-    const name = (old.name || '').toLowerCase();
-    if (name.startsWith('skin') || name.startsWith('hair')) {
-      const map = old.map as Texture | null;
-      if (map) map.colorSpace = SRGBColorSpace;
-      const isHair = name.startsWith('hair');
-      const mat =
-        quality === 'haute'
-          ? new MeshPhysicalMaterial({
-              name: old.name,
-              map,
-              roughness: isHair ? 0.68 : 0.5,
-              metalness: 0,
-              sheen: isHair ? 0.4 : 0.35,
-              sheenRoughness: 0.55,
-              sheenColor: new Color(isHair ? '#5a4535' : '#d08870'),
-              specularIntensity: isHair ? 0.35 : 0.45,
-              clearcoat: isHair ? 0 : 0.04,
-              clearcoatRoughness: 0.6,
-            })
-          : new MeshStandardMaterial({ name: old.name, map, roughness: 0.55, metalness: 0 });
-      mesh.material = mat;
-    } else if (old.isMeshStandardMaterial) {
-      old.metalness = 0;
-      if (name.startsWith('eyes')) old.roughness = 0.08;
-    }
-  });
+/**
+ * 1.34 (Youssef, 2026-11-11: « que ça ne mette pas de temps à s'afficher lorsqu'on change de coach »): a coach and the
+ * outfit of the discipline read ahead of time, while the coach screen shows another one; choosing it is then
+ * immediate (no reading or decoding left, only the first image).
+ */
+export function prewarmCoach(coachId: string, outfit: OutfitId | null) {
+  preloadPhotoCoach(coachId, outfit);
+  if (outfit) preloadOutfit(`./coaches/${coachId}/tenues/${outfit}.${EXT}`, patchJsonModels);
 }
-
-const metaCache = new Map<string, { promise: Promise<void>; value?: CoachMeta; error?: unknown }>();
-
-/** landmarks of the generated body (lips, eyes, pelvis...), loaded with suspense */
-function useMeta(url: string): CoachMeta {
-  let e = metaCache.get(url);
-  if (!e) {
-    const entry: { promise: Promise<void>; value?: CoachMeta; error?: unknown } = { promise: Promise.resolve() };
-    entry.promise = fetch(url)
-      .then((r) => r.json())
-      .then((v) => void (entry.value = v as CoachMeta))
-      .catch((err) => void (entry.error = err));
-    metaCache.set(url, entry);
-    e = entry;
-  }
-  if (e.error) throw e.error;
-  if (!e.value) throw e.promise;
-  return e.value;
-}
-
-const who = (c: CoachId) => (c === 'homme' ? 'male' : 'female');
 
 export interface CoachModelProps {
   coach: CoachId;
-  style: CoachStyle;
   quality: 'haute' | 'basse';
-  /** fighter creator look (manga style only) */
+  /** the coach's look for the discipline (the photo avatar reads its leg length) */
   look?: FighterLook | null;
-  /** gear drawn see-through ("Décomposer" mode) */
-  ghostGear?: boolean;
+  /** the champion coach's files, without extension (e.g. ./coaches/mma-kadir/model: photo.glb and tenues/ next to it) */
+  model: string;
   onRig: (rig: CoachRig) => void;
   /** called every frame before rendering; returns nothing, drives the rig */
   onFrame: (rig: CoachRig, dt: number) => void;
+  /** v0.31: discipline outfit of the Ultra-réaliste coaches (null: none) and its loading state */
+  outfit?: OutfitId | null;
+  onOutfit?: (s: OutfitStatus) => void;
+  /** 1.34 signals of the session for the coach's behaviour (src/three/human/behavior.ts) */
+  human?: HumanSignals;
 }
 
-export function CoachModel({ coach, style, quality, look, ghostGear = false, onRig, onFrame }: CoachModelProps) {
-  const gltf = useGLTF(coachUrl(coach, style), DRACO, true, patchJsonModels);
-  const custom = style !== 'realiste';
-  const meta = useMeta(`./models/coach_${who(coach)}_manga.meta.json`);
-  const masks = useLoader(TextureLoader, `./models/coach_${who(coach)}_manga_masks.png`);
-  const { scene, customizer } = useMemo(() => {
-    const s = cloneSkinned(gltf.scene);
-    upgradeMaterials(s, quality);
-    if (style !== 'realiste') applyManga(s, style);
-    let c: Customizer | null = null;
-    if (custom) {
-      masks.flipY = false;
-      masks.colorSpace = NoColorSpace;
-      try {
-        c = new Customizer(s, meta, masks, { toon: (n, col) => toonMaterial(n, null, col, style === 'encre' ? 'encre' : 'manga'), outline: (w) => (style === 'encre' ? outlineMaterial(w * 1.25, '#1b1d22') : outlineMaterial(w)) });
-        // development hook for the screenshot scripts
-        if (import.meta.env.DEV) ((window as unknown as { __cssCustomizers?: Customizer[] }).__cssCustomizers ??= []).push(c);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    restoreReferencePose(s); // records the reference pose before any animation
-    return { scene: s, customizer: c };
-  }, [gltf, quality, style, custom, meta, masks]);
-  const facialLife = useMemo(() => new FacialLife(scene, String(coach)), [scene, coach]);
-  useEffect(() => () => facialLife.dispose(), [facialLife]);
-  const legLength = look?.body.legLength ?? 1;
-  const rig = useMemo(() => {
-    restoreReferencePose(scene);
-    setLegLength(scene, legLength);
-    scene.updateMatrixWorld(true);
-    return new CoachRig(scene);
-  }, [scene, legLength]);
-
-  useEffect(() => {
-    customizer?.apply(look ?? defaultLook(coach));
-  }, [customizer, look, coach]);
-  useEffect(() => customizer?.setGhost(ghostGear), [customizer, ghostGear]);
-
-  useEffect(() => {
-    onRig(rig);
-  }, [rig, onRig]);
-
-  useFrame((_, dt) => {
-    const delta = Math.min(dt, 0.05);
-    onFrame(rig, delta);
-    facialLife.update(delta);
-  });
-
-  return <primitive object={scene} />;
+/**
+ * The 3D coach: the champion's photo-textured avatar (PhotoCoach), the Ultra-réaliste look. 1.37 (Youssef,
+ * 2026-11-12 « ne garder que les coachs ultra-réalistes »): the only render; the generated coach (creator, render
+ * « Précédente », VITE_PHOTO_COACH=0 builds) is removed and kept in « backup CS/ »
+ */
+export function CoachModel(props: CoachModelProps) {
+  const { model, quality } = props;
+  const coachId = model.match(/\/coaches\/([^/]+)\/model$/)?.[1] ?? '';
+  const photoUrl = coachId
+    ? photoAssetPath(coachId, props.outfit ?? null, EXT)
+    : `${model.replace(/model$/, 'photo')}.${EXT}`;
+  return (
+    <PhotoCoach
+      url={photoUrl}
+      outfitUrl={props.outfit ? `${model.replace(/model$/, `tenues/${props.outfit}`)}.${EXT}` : null}
+      outfit={props.outfit ?? null}
+      onOutfit={props.onOutfit}
+      quality={quality}
+      legLength={props.look?.body.legLength ?? 1}
+      shadows={quality === 'haute'}
+      onRig={props.onRig}
+      onFrame={props.onFrame}
+      human={props.human}
+      draco={DRACO}
+      extendLoader={patchJsonModels}
+    />
+  );
 }

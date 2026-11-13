@@ -1,0 +1,203 @@
+{
+ "id": "mma-kadir",
+ "sex": "male",
+ "seed": 101,
+ "note": "poids léger trapu de lutteur : cou épais, dos large, cuisses puissantes, ventre plat sans abdominaux saillants ; visage large, pommettes hautes, nez un peu épaté, sourcils bas ; v4 : yeux agrandis et traits marqués",
+ "macro": {
+  "gender": 1.0,
+  "age": 0.55,
+  "muscle": 0.92,
+  "weight": 0.6,
+  "height": 0.5,
+  "proportions": 0.6
+ },
+ "race": {
+  "african": 0.05,
+  "asian": 0.3,
+  "caucasian": 0.65
+ },
+ "single": [
+  [
+   "neck/measure-neck-circ-incr",
+   0.9
+  ],
+  [
+   "neck/measure-neck-height-decr",
+   0.7
+  ],
+  [
+   "neck/neck-scale-horiz-incr",
+   0.4
+  ],
+  [
+   "torso/torso-muscle-dorsi-incr",
+   0.6
+  ],
+  [
+   "torso/measure-shoulder-dist-incr",
+   0.3
+  ],
+  [
+   "torso/torso-scale-depth-incr",
+   0.45
+  ],
+  [
+   "torso/torso-scale-horiz-incr",
+   0.3
+  ],
+  [
+   "torso/torso-muscle-pectoral-incr",
+   0.25
+  ],
+  [
+   "torso/measure-waist-circ-incr",
+   0.3
+  ],
+  [
+   "torso/torso-vshape-decr",
+   0.2
+  ],
+  [
+   "stomach/stomach-tone-incr",
+   0.1
+  ],
+  [
+   "head/head-square",
+   0.5
+  ],
+  [
+   "head/head-scale-horiz-incr",
+   0.25
+  ],
+  [
+   "head/head-fat-incr",
+   0.2
+  ],
+  [
+   "chin/chin-width-incr",
+   0.6
+  ],
+  [
+   "chin/chin-height-decr",
+   0.2
+  ],
+  [
+   "nose/nose-width1-incr",
+   0.45
+  ],
+  [
+   "nose/nose-width2-incr",
+   0.3
+  ],
+  [
+   "nose/nose-flaring-incr",
+   0.45
+  ],
+  [
+   "nose/nose-scale-horiz-incr",
+   0.3
+  ],
+  [
+   "nose/nose-hump-incr",
+   0.35
+  ],
+  [
+   "nose/nose-point-down",
+   0.2
+  ],
+  [
+   "eyebrows/eyebrows-angle-down",
+   0.2
+  ],
+  [
+   "eyebrows/eyebrows-trans-forward",
+   0.3
+  ],
+  [
+   "forehead/forehead-trans-forward",
+   0.3
+  ],
+  [
+   "mouth/mouth-angles-down",
+   0.1
+  ],
+  [
+   "mouth/mouth-scale-horiz-incr",
+   0.2
+  ],
+  [
+   "forehead/forehead-nubian-incr",
+   0.3
+  ],
+  [
+   "chin/chin-prominent-incr",
+   0.3
+  ],
+  [
+   "eyebrows/eyebrows-trans-down",
+   0.2
+  ]
+ ],
+ "paired": [
+  [
+   "arms/X-upperarm-muscle-incr",
+   0.4
+  ],
+  [
+   "arms/X-upperarm-shoulder-muscle-incr",
+   0.3
+  ],
+  [
+   "arms/X-lowerarm-muscle-incr",
+   0.5
+  ],
+  [
+   "arms/X-upperarm-scale-horiz-incr",
+   0.2
+  ],
+  [
+   "legs/X-upperleg-muscle-incr",
+   0.7
+  ],
+  [
+   "legs/X-upperleg-scale-horiz-incr",
+   0.3
+  ],
+  [
+   "legs/X-lowerleg-muscle-incr",
+   0.4
+  ],
+  [
+   "cheek/X-cheek-bones-incr",
+   0.7
+  ],
+  [
+   "cheek/X-cheek-volume-decr",
+   0.1
+  ],
+  [
+   "ears/X-ear-flap-incr",
+   0.25
+  ],
+  [
+   "ears/X-ear-scale-depth-incr",
+   0.2
+  ],
+  [
+   "eyes/X-eye-corner2-up",
+   0.1
+  ],
+  [
+   "eyes/X-eye-scale-incr",
+   0.8
+  ],
+  [
+   "eyes/X-eye-height2-incr",
+   0.7
+  ],
+  [
+   "eyes/X-eye-height1-incr",
+   0.4
+  ]
+ ]
+}

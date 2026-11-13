@@ -1,0 +1,626 @@
+{
+ "mma-kadir": {
+  "garde": {
+   "aisselles, omoplates": {
+    "crease": 74.3675078636996,
+    "collapse": 0.10452031586977477,
+    "stretch": 2.586316185973666
+   },
+   "coudes": {
+    "crease": 85.21987429417672,
+    "collapse": 0.1730701881932241,
+    "stretch": 1.8521561112372633
+   },
+   "aine, bassin": {
+    "crease": 12.071308140926725,
+    "collapse": 0.3453624060871956,
+    "stretch": 3.6922404137604934
+   },
+   "genoux": {
+    "crease": 57.67238345871551,
+    "collapse": 0.3266604803528977,
+    "stretch": 2.306947718296505
+   }
+  },
+  "jab": {
+   "aisselles, omoplates": {
+    "crease": 71.03649645375775,
+    "collapse": 0.11590454217281569,
+    "stretch": 3.415508472416637
+   },
+   "coudes": {
+    "crease": 52.6910729769378,
+    "collapse": 0.19402457558187022,
+    "stretch": 1.797754159444919
+   },
+   "aine, bassin": {
+    "crease": 11.578414044782662,
+    "collapse": 0.3955629782184057,
+    "stretch": 4.036363653622213
+   },
+   "genoux": {
+    "crease": 57.43649962278716,
+    "collapse": 0.32850365291814143,
+    "stretch": 2.3047165534705183
+   }
+  },
+  "crochet": {
+   "aisselles, omoplates": {
+    "crease": 76.62417992500956,
+    "collapse": 0.08520851687268939,
+    "stretch": 3.623663178662379
+   },
+   "coudes": {
+    "crease": 59.1633966719723,
+    "collapse": 0.1461275985176346,
+    "stretch": 1.8464850209186459
+   },
+   "aine, bassin": {
+    "crease": 12.08435288021346,
+    "collapse": 0.25797898678849673,
+    "stretch": 3.4509599260545065
+   },
+   "genoux": {
+    "crease": 114.39837571701042,
+    "collapse": 0.0922464956574633,
+    "stretch": 2.528298421559505
+   }
+  },
+  "high kick": {
+   "aisselles, omoplates": {
+    "crease": 80.94152678241294,
+    "collapse": 0.10849585530834809,
+    "stretch": 2.7921502748316125
+   },
+   "coudes": {
+    "crease": 72.67864606210581,
+    "collapse": 0.16655715143188995,
+    "stretch": 1.7664710374306256
+   },
+   "aine, bassin": {
+    "crease": 102.37994310348768,
+    "collapse": 0.06829109722545748,
+    "stretch": 7.63526982276319
+   },
+   "genoux": {
+    "crease": 58.175585639608826,
+    "collapse": 0.26114826847832695,
+    "stretch": 2.3837854989298073
+   }
+  },
+  "squat (changement de niveau)": {
+   "aisselles, omoplates": {
+    "crease": 76.4100026199429,
+    "collapse": 0.07987469185120048,
+    "stretch": 2.11231589118676
+   },
+   "coudes": {
+    "crease": 69.0182389636978,
+    "collapse": 0.15700114192620626,
+    "stretch": 1.7452590398275345
+   },
+   "aine, bassin": {
+    "crease": 128.9821657756377,
+    "collapse": 0.0248096431969836,
+    "stretch": 4.993706280191488
+   },
+   "genoux": {
+    "crease": 131.44274341757017,
+    "collapse": 0.11146046707353863,
+    "stretch": 3.133272835404185
+   }
+  },
+  "bras levés (blocage haut)": {
+   "aisselles, omoplates": {
+    "crease": 123.8633115220175,
+    "collapse": 0.05745499031108032,
+    "stretch": 3.7175947429529463
+   },
+   "coudes": {
+    "crease": 83.96184543801161,
+    "collapse": 0.08336576985070374,
+    "stretch": 1.6645506685760219
+   },
+   "aine, bassin": {
+    "crease": 14.368598644995041,
+    "collapse": 0.2591392466140836,
+    "stretch": 3.803440332457794
+   },
+   "genoux": {
+    "crease": 87.82167821422094,
+    "collapse": 0.14986129769996556,
+    "stretch": 2.5062175569319782
+   }
+  },
+  "sol (rétention de garde)": {
+   "aisselles, omoplates": {
+    "crease": 71.69686289502718,
+    "collapse": 0.09109853123871356,
+    "stretch": 3.086623322915389
+   },
+   "coudes": {
+    "crease": 20.986197733401152,
+    "collapse": 0.28862786155892317,
+    "stretch": 1.4097263202083243
+   },
+   "aine, bassin": {
+    "crease": 38.174166164418814,
+    "collapse": 0.07338455473914791,
+    "stretch": 3.1500394906065967
+   },
+   "genoux": {
+    "crease": 132.22802738704266,
+    "collapse": 0.07147504334820026,
+    "stretch": 3.256095857315385
+   }
+  }
+ },
+ "mma-amara": {
+  "garde": {
+   "aisselles, omoplates": {
+    "crease": 34.178470382929135,
+    "collapse": 0.2059656349907536,
+    "stretch": 2.2533045170372503
+   },
+   "coudes": {
+    "crease": 72.4700108945365,
+    "collapse": 0.04828228935635742,
+    "stretch": 2.1037390231177118
+   },
+   "aine, bassin": {
+    "crease": 11.715926948417232,
+    "collapse": 0.666467622019419,
+    "stretch": 1.3046682384504344
+   },
+   "genoux": {
+    "crease": 49.187985012401136,
+    "collapse": 0.1928176845632913,
+    "stretch": 1.7228239314483034
+   }
+  },
+  "jab": {
+   "aisselles, omoplates": {
+    "crease": 38.80624372598034,
+    "collapse": 0.20412462087998362,
+    "stretch": 2.342088772289586
+   },
+   "coudes": {
+    "crease": 43.72093841406997,
+    "collapse": 0.055705663790078914,
+    "stretch": 1.6508082434472244
+   },
+   "aine, bassin": {
+    "crease": 11.307827826262765,
+    "collapse": 0.6515173888614285,
+    "stretch": 1.343255052502432
+   },
+   "genoux": {
+    "crease": 49.225044170565674,
+    "collapse": 0.1922186004914052,
+    "stretch": 1.723300182475907
+   }
+  },
+  "crochet": {
+   "aisselles, omoplates": {
+    "crease": 40.16227759447068,
+    "collapse": 0.15143400055611783,
+    "stretch": 2.3268212992051778
+   },
+   "coudes": {
+    "crease": 65.75869559897772,
+    "collapse": 0.11127403122062866,
+    "stretch": 1.5043264079107155
+   },
+   "aine, bassin": {
+    "crease": 20.153988677252507,
+    "collapse": 0.41838319211782116,
+    "stretch": 1.23775513880381
+   },
+   "genoux": {
+    "crease": 116.48151844607801,
+    "collapse": 0.06458114165782558,
+    "stretch": 1.899111495132524
+   }
+  },
+  "high kick": {
+   "aisselles, omoplates": {
+    "crease": 32.822158451971454,
+    "collapse": 0.1677549091480471,
+    "stretch": 2.3310495018135455
+   },
+   "coudes": {
+    "crease": 69.76344769917083,
+    "collapse": 0.03520480487267251,
+    "stretch": 1.8788187574606432
+   },
+   "aine, bassin": {
+    "crease": 71.99439431424102,
+    "collapse": 0.11122274317942897,
+    "stretch": 1.474873638274577
+   },
+   "genoux": {
+    "crease": 48.928564454608804,
+    "collapse": 0.19700532632833093,
+    "stretch": 1.7194613836231791
+   }
+  },
+  "squat (changement de niveau)": {
+   "aisselles, omoplates": {
+    "crease": 27.091127003682246,
+    "collapse": 0.24737584903450882,
+    "stretch": 1.725508272899593
+   },
+   "coudes": {
+    "crease": 59.64310908854861,
+    "collapse": 0.05398937351099132,
+    "stretch": 1.7604872301928938
+   },
+   "aine, bassin": {
+    "crease": 102.56681969728591,
+    "collapse": 0.06576369727012887,
+    "stretch": 1.6194068398695147
+   },
+   "genoux": {
+    "crease": 106.24107881863291,
+    "collapse": 0.05254341613964968,
+    "stretch": 2.2927965672362443
+   }
+  },
+  "bras levés (blocage haut)": {
+   "aisselles, omoplates": {
+    "crease": 51.462999463123545,
+    "collapse": 0.16655720464207976,
+    "stretch": 2.4648913820032985
+   },
+   "coudes": {
+    "crease": 83.14100224585928,
+    "collapse": 0.04504555798245002,
+    "stretch": 1.832495895278925
+   },
+   "aine, bassin": {
+    "crease": 14.62683733222031,
+    "collapse": 0.5880951890432093,
+    "stretch": 1.3284712076564271
+   },
+   "genoux": {
+    "crease": 80.72390426992544,
+    "collapse": 0.06877150449849201,
+    "stretch": 1.8734035044688
+   }
+  },
+  "sol (rétention de garde)": {
+   "aisselles, omoplates": {
+    "crease": 32.53690120619587,
+    "collapse": 0.2549267829709146,
+    "stretch": 2.6303030713042155
+   },
+   "coudes": {
+    "crease": 24.813576773919102,
+    "collapse": 0.20162075624354933,
+    "stretch": 1.2708370929198443
+   },
+   "aine, bassin": {
+    "crease": 58.88365779345357,
+    "collapse": 0.018539464723586453,
+    "stretch": 1.7287961546920911
+   },
+   "genoux": {
+    "crease": 131.17387043194358,
+    "collapse": 0.03456349931657364,
+    "stretch": 2.4145126067817073
+   }
+  }
+ },
+ "axel": {
+  "garde": {
+   "aisselles, omoplates": {
+    "crease": 66.05309553030835,
+    "collapse": 0.1233097988907008,
+    "stretch": 2.6649958186511715
+   },
+   "coudes": {
+    "crease": 106.49192428492239,
+    "collapse": 0.04184251918842317,
+    "stretch": 1.6356293286184833
+   },
+   "aine, bassin": {
+    "crease": 7.97616759678752,
+    "collapse": 0.7918503333407316,
+    "stretch": 1.459228168074271
+   },
+   "genoux": {
+    "crease": 16.339327512580333,
+    "collapse": 0.4954854104446874,
+    "stretch": 1.3605580498856324
+   }
+  },
+  "jab": {
+   "aisselles, omoplates": {
+    "crease": 52.77550761809369,
+    "collapse": 0.2237345600373561,
+    "stretch": 3.2819210674370787
+   },
+   "coudes": {
+    "crease": 71.14962799942873,
+    "collapse": 0.036739867705857625,
+    "stretch": 1.550392838106748
+   },
+   "aine, bassin": {
+    "crease": 9.30734410937537,
+    "collapse": 0.7544610104302819,
+    "stretch": 1.4433940290374072
+   },
+   "genoux": {
+    "crease": 17.062070534213152,
+    "collapse": 0.48249552054588773,
+    "stretch": 1.3688080246019037
+   }
+  },
+  "crochet": {
+   "aisselles, omoplates": {
+    "crease": 54.7304244359791,
+    "collapse": 0.19463661395755105,
+    "stretch": 3.0664509060552163
+   },
+   "coudes": {
+    "crease": 61.55138677329186,
+    "collapse": 0.023978610586200585,
+    "stretch": 1.3861079348013188
+   },
+   "aine, bassin": {
+    "crease": 7.876404353947371,
+    "collapse": 0.5383682911101542,
+    "stretch": 1.6964242021705662
+   },
+   "genoux": {
+    "crease": 34.33004858969916,
+    "collapse": 0.31047667087456793,
+    "stretch": 1.4643224989476777
+   }
+  },
+  "high kick": {
+   "aisselles, omoplates": {
+    "crease": 61.378367809782034,
+    "collapse": 0.12368677948604606,
+    "stretch": 3.1218640814744476
+   },
+   "coudes": {
+    "crease": 98.01592654606372,
+    "collapse": 0.04710304360674988,
+    "stretch": 1.6153917944349037
+   },
+   "aine, bassin": {
+    "crease": 37.79750645143447,
+    "collapse": 0.03818249983664348,
+    "stretch": 1.9940632702490018
+   },
+   "genoux": {
+    "crease": 15.454965451143748,
+    "collapse": 0.5122285613005888,
+    "stretch": 1.36358046698875
+   }
+  },
+  "squat (changement de niveau)": {
+   "aisselles, omoplates": {
+    "crease": 67.91202101451562,
+    "collapse": 0.11963710698296647,
+    "stretch": 1.9781561675843462
+   },
+   "coudes": {
+    "crease": 103.90798451568685,
+    "collapse": 0.03025753304425353,
+    "stretch": 1.498770584248456
+   },
+   "aine, bassin": {
+    "crease": 36.37550867470462,
+    "collapse": 0.11019383878303182,
+    "stretch": 2.356917537144462
+   },
+   "genoux": {
+    "crease": 121.21973607076038,
+    "collapse": 0.060314539016953626,
+    "stretch": 1.6916618643135526
+   }
+  },
+  "bras levés (blocage haut)": {
+   "aisselles, omoplates": {
+    "crease": 93.2069971878342,
+    "collapse": 0.12497487236664437,
+    "stretch": 4.868468579319498
+   },
+   "coudes": {
+    "crease": 118.62687562473991,
+    "collapse": 0.03727718456966551,
+    "stretch": 1.4845198543276135
+   },
+   "aine, bassin": {
+    "crease": 8.311100289748223,
+    "collapse": 0.6912374968029177,
+    "stretch": 1.5689538992334584
+   },
+   "genoux": {
+    "crease": 26.5135539287796,
+    "collapse": 0.36430807564312145,
+    "stretch": 1.446799268017594
+   }
+  },
+  "sol (rétention de garde)": {
+   "aisselles, omoplates": {
+    "crease": 55.766474894478755,
+    "collapse": 0.18316287856607644,
+    "stretch": 2.811792133579576
+   },
+   "coudes": {
+    "crease": 76.06512838235585,
+    "collapse": 0.05672907693122721,
+    "stretch": 1.5053996997883528
+   },
+   "aine, bassin": {
+    "crease": 55.065940894013224,
+    "collapse": 0.13346114259630792,
+    "stretch": 2.549653436294848
+   },
+   "genoux": {
+    "crease": 146.99957128746016,
+    "collapse": 0.027672109298133067,
+    "stretch": 1.8505009116792743
+   }
+  }
+ },
+ "kaila": {
+  "garde": {
+   "aisselles, omoplates": {
+    "crease": 52.829866300353096,
+    "collapse": 0.17020881601826926,
+    "stretch": 4.761759707808226
+   },
+   "coudes": {
+    "crease": 67.44406680296181,
+    "collapse": 0.09229303692669479,
+    "stretch": 1.747262552582132
+   },
+   "aine, bassin": {
+    "crease": 14.600090669298405,
+    "collapse": 0.5485074811875738,
+    "stretch": 1.7828720892471048
+   },
+   "genoux": {
+    "crease": 47.9481194369759,
+    "collapse": 0.05661543620051979,
+    "stretch": 1.6429735761750892
+   }
+  },
+  "jab": {
+   "aisselles, omoplates": {
+    "crease": 46.36565043695064,
+    "collapse": 0.1844648243288511,
+    "stretch": 4.962799398897374
+   },
+   "coudes": {
+    "crease": 29.81893261269967,
+    "collapse": 0.1934100809438032,
+    "stretch": 1.5404051025566952
+   },
+   "aine, bassin": {
+    "crease": 16.328816193493303,
+    "collapse": 0.5732177184593498,
+    "stretch": 1.7643463146134686
+   },
+   "genoux": {
+    "crease": 51.51323313636255,
+    "collapse": 0.04952404615071783,
+    "stretch": 1.6487391142189904
+   }
+  },
+  "crochet": {
+   "aisselles, omoplates": {
+    "crease": 50.059242395366056,
+    "collapse": 0.14596597091495056,
+    "stretch": 5.116682699231505
+   },
+   "coudes": {
+    "crease": 34.728518637370655,
+    "collapse": 0.23355372741256486,
+    "stretch": 1.5131857813031773
+   },
+   "aine, bassin": {
+    "crease": 38.74574790412552,
+    "collapse": 0.23685870993302804,
+    "stretch": 1.8030292620745787
+   },
+   "genoux": {
+    "crease": 87.89010143355114,
+    "collapse": 0.02192124114469546,
+    "stretch": 1.764274192886797
+   }
+  },
+  "high kick": {
+   "aisselles, omoplates": {
+    "crease": 49.79622966911183,
+    "collapse": 0.1645305296295779,
+    "stretch": 4.766589037493829
+   },
+   "coudes": {
+    "crease": 64.21085873351323,
+    "collapse": 0.14668278008783558,
+    "stretch": 1.7104013644995415
+   },
+   "aine, bassin": {
+    "crease": 131.79488423325859,
+    "collapse": 0.07913065477948454,
+    "stretch": 1.434750509262613
+   },
+   "genoux": {
+    "crease": 42.276822788248055,
+    "collapse": 0.06553509217933279,
+    "stretch": 1.636638622416736
+   }
+  },
+  "squat (changement de niveau)": {
+   "aisselles, omoplates": {
+    "crease": 52.86373752614191,
+    "collapse": 0.07336954578645898,
+    "stretch": 2.7457577655502705
+   },
+   "coudes": {
+    "crease": 73.16403047338815,
+    "collapse": 0.15041436368656705,
+    "stretch": 1.6082586467989892
+   },
+   "aine, bassin": {
+    "crease": 121.67029807677412,
+    "collapse": 0.06208916094631266,
+    "stretch": 2.652242116444627
+   },
+   "genoux": {
+    "crease": 115.33133835480756,
+    "collapse": 0.055003563168180475,
+    "stretch": 2.01363825265026
+   }
+  },
+  "bras levés (blocage haut)": {
+   "aisselles, omoplates": {
+    "crease": 73.0608090596441,
+    "collapse": 0.10876526139998896,
+    "stretch": 6.7186362656895975
+   },
+   "coudes": {
+    "crease": 90.90157366264901,
+    "collapse": 0.1323960461836399,
+    "stretch": 1.6206541591732875
+   },
+   "aine, bassin": {
+    "crease": 18.601163801108974,
+    "collapse": 0.47375895605798884,
+    "stretch": 1.8655400216284785
+   },
+   "genoux": {
+    "crease": 63.55820715802544,
+    "collapse": 0.07989171037820288,
+    "stretch": 1.736126717899699
+   }
+  },
+  "sol (rétention de garde)": {
+   "aisselles, omoplates": {
+    "crease": 54.91850759391094,
+    "collapse": 0.15521880623621898,
+    "stretch": 3.19085337565851
+   },
+   "coudes": {
+    "crease": 52.86622978118348,
+    "collapse": 0.16522989769645793,
+    "stretch": 1.5715633579244486
+   },
+   "aine, bassin": {
+    "crease": 135.3214568585097,
+    "collapse": 0.08013977656088238,
+    "stretch": 2.914025525491638
+   },
+   "genoux": {
+    "crease": 121.65237660006457,
+    "collapse": 0.0315647461899447,
+    "stretch": 2.1999294903952102
+   }
+  }
+ }
+}

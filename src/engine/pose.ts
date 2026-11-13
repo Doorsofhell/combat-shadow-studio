@@ -3,7 +3,7 @@
  *
  * Ground space: the coach stands on the plane y = 0 and faces +Z; +X is the coach's LEFT side.
  * Angles are radians. Yaw turns the body to the left when positive (seen from above, +Z toward +X),
- * pitch leans forward when positive, roll leans to the coach's right when positive.
+ * pitch leans forward when positive, roll leans to the coach's left (+X) when positive.
  *
  * Hands are positioned either in "chest" space (they follow the trunk: guards, returns) or in
  * "world" (ground) space (targets on an imaginary opponent, hands posted on the floor).
@@ -37,9 +37,33 @@ export interface HandPose {
   wrist?: number;
 }
 
+/**
+ * Ankle and toe angles relative to the shin (radians), the way a coach describes a kick: plantar
+ * flexion (+ toes down), inversion (+ sole toward the midline), rotation (+ toes out) and toe
+ * extension (+ toes pulled up, ball of the foot forward). Same values for both sides.
+ */
+export interface AnkleJoint {
+  plantar: number;
+  inversion: number;
+  rotation: number;
+  toes?: number;
+}
+
 export type FootPose =
   | { mode: 'ground'; ball: V3; yaw: number; heel: number; pole?: V3 }
-  | { mode: 'air'; ankle: V3; yaw: number; pitch: number; roll: number; pole: V3; point?: number };
+  /** joint: the foot is set relative to the shin (anatomical angles) instead of yaw/pitch/roll in ground space */
+  | {
+      mode: 'air';
+      ankle: V3;
+      yaw: number;
+      pitch: number;
+      roll: number;
+      pole: V3;
+      point?: number;
+      joint?: AnkleJoint;
+      /** v0.31: a foot just off the floor stays where it stood when the balance solver moves the hips */
+      pinned?: boolean;
+    };
 
 export interface Pose {
   hips: V3;
@@ -73,6 +97,20 @@ export interface ResolvedFoot {
   heel: number;
   pole: Vector3;
   point: number;
+  /** anatomical ankle angles and how much they decide the foot (0: yaw/pitch/roll in ground space, 1: the joint) */
+  joint: Required<AnkleJoint>;
+  jointW: number;
+}
+
+export const NEUTRAL_JOINT: Required<AnkleJoint> = { plantar: 0, inversion: 0, rotation: 0, toes: 0 };
+
+export function blendJoint(a: Required<AnkleJoint>, b: Required<AnkleJoint>, t: number): Required<AnkleJoint> {
+  return {
+    plantar: a.plantar + (b.plantar - a.plantar) * t,
+    inversion: a.inversion + (b.inversion - a.inversion) * t,
+    rotation: a.rotation + (b.rotation - a.rotation) * t,
+    toes: a.toes + (b.toes - a.toes) * t,
+  };
 }
 
 export interface ResolvedPose {
@@ -108,9 +146,7 @@ const mv = (p: V3): V3 => ({ x: -p.x, y: p.y, z: p.z });
 const mr = (r: Rot): Rot => ({ yaw: -r.yaw, pitch: r.pitch, roll: -r.roll });
 const mh = (h: HandPose): HandPose => ({ ...h, pos: mv(h.pos), pole: mv(h.pole) });
 const mf = (f: FootPose): FootPose =>
-  f.mode === 'ground'
-    ? { ...f, ball: mv(f.ball), yaw: -f.yaw, pole: f.pole ? mv(f.pole) : undefined }
-    : { ...f, ankle: mv(f.ankle), yaw: -f.yaw, roll: -f.roll, pole: mv(f.pole) };
+  f.mode === 'ground' ? { ...f, ball: mv(f.ball), yaw: -f.yaw, pole: f.pole ? mv(f.pole) : undefined } : { ...f, ankle: mv(f.ankle), yaw: -f.yaw, roll: -f.roll, pole: mv(f.pole) };
 
 /** Mirror a pose left/right: an orthodox technique becomes its southpaw version. */
 export function mirrorPose(p: Pose): Pose {
@@ -147,6 +183,8 @@ function blendFoot(a: ResolvedFoot, b: ResolvedFoot, t: number): ResolvedFoot {
     heel: a.heel + (b.heel - a.heel) * t,
     pole: a.pole.clone().lerp(b.pole, t).normalize(),
     point: a.point + (b.point - a.point) * t,
+    joint: blendJoint(a.joint, b.joint, t),
+    jointW: a.jointW + (b.jointW - a.jointW) * t,
   };
 }
 

@@ -14,6 +14,19 @@ export interface SessionRecord {
   mode: TrainingMode;
   activeSec: number;
   reps: number;
+  /**
+   * v0.47 (« Chronomètre intégré au coach 3D » §14): the summary of the whole session, written once on the record
+   * of the last exercise played (never summed with activeSec, so nothing is counted twice). Missing on older records.
+   */
+  status?: 'terminee' | 'interrompue';
+  workSec?: number;
+  restSec?: number;
+  totalSec?: number;
+  plannedRounds?: number | null;
+  doneRounds?: number;
+  intensity?: import('../ui/training/plan').CardioIntensity;
+  /** length of a timed period (round, effort), null when free */
+  work?: number | null;
 }
 
 interface StatsState {
@@ -22,6 +35,8 @@ interface StatsState {
   perExercise: Record<string, number>;
   /** add active time and reps to an open session, creating it on first call */
   record: (s: Omit<SessionRecord, 'activeSec' | 'reps'>, addSec: number, addReps: number) => void;
+  /** v0.47: adds the session summary to an existing record (time and reps untouched) */
+  annotate: (id: string, patch: Partial<Pick<SessionRecord, 'status' | 'workSec' | 'restSec' | 'totalSec' | 'plannedRounds' | 'doneRounds' | 'intensity' | 'work'>>) => void;
   importData: (data: unknown) => { ok: boolean; message: string };
   clear: () => void;
 }
@@ -42,6 +57,15 @@ export const useStats = create<StatsState>()(
           sessions: next,
           perExercise: { ...perExercise, [s.exerciseId]: (perExercise[s.exerciseId] ?? 0) + addSec },
         });
+      },
+      annotate: (id, patch) => {
+        const { sessions } = getState();
+        const i = sessions.findIndex((x) => x.id === id);
+        if (i < 0) return;
+        const clean = Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined));
+        const next = [...sessions];
+        next[i] = { ...next[i], ...clean };
+        setState({ sessions: next });
       },
       importData: (data) => {
         const d = data as { app?: string; sessions?: SessionRecord[]; perExercise?: Record<string, number> };

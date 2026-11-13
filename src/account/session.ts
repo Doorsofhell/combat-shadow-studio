@@ -179,6 +179,8 @@ export async function unlinkMethod(m: SignInMethod) {
   const u = await (await getProvider()).unlink(m);
   useAccount.setState({ user: u });
 }
+export const changeEmail = async (email: string) => (await getProvider()).changeEmail(email);
+export const changePassword = async (password: string) => (await getProvider()).changePassword(password);
 export const reauthenticate = async (m: SignInMethod, password?: string) => (await getProvider()).reauthenticate(m, password);
 
 /** sign out; the account's data stays on this device for the next sign-in unless `wipe` */

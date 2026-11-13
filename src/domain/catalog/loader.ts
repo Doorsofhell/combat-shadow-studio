@@ -1,8 +1,11 @@
-import type { Catalog, CatalogChampion, CatalogCombo, CatalogFile, CatalogStatus } from './types';
+import type { Catalog, CatalogChampion, CatalogCombo, CatalogFile, CatalogOrg, CatalogStatus } from './types';
+import { isValidated } from './types';
 import { sequenceKey } from './validate';
 
 /** URL relative : fonctionne en PWA (mise en cache hors ligne par le service worker) comme dans l’APK */
 export const CATALOG_URL = './catalog/catalog-v1.json';
+/** Catalogue validé (2026-11-06) : combinaisons des programmes officiels des fédérations (fichier séparé, jamais produit par le générateur des fiches inspirées) */
+export const PROGRAMS_URL = './catalog/programmes-v1.json';
 
 /** fiches et profils ajoutés par l’utilisateur (import JSON), conservés dans le store */
 export interface ImportedData {
@@ -20,11 +23,15 @@ let pending: Promise<CatalogFile> | null = null;
  */
 export function loadCatalogFile(fetcher: typeof fetch = fetch): Promise<CatalogFile> {
   if (!pending) {
-    pending = fetcher(CATALOG_URL)
-      .then((r) => {
+    const json = (url: string) =>
+      fetcher(url).then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json() as Promise<CatalogFile>;
-      })
+      });
+    // les fiches de programme sont un complément : si leur fichier manque, la bibliothèque s’ouvre quand même
+    const programs = json(PROGRAMS_URL).catch(() => undefined);
+    pending = Promise.all([json(CATALOG_URL), programs])
+      .then(([base, prog]) => mergeCatalogFiles(base, prog))
       .catch((e) => {
         pending = null;
         throw e;
@@ -33,7 +40,21 @@ export function loadCatalogFile(fetcher: typeof fetch = fetch): Promise<CatalogF
   return pending;
 }
 
-export const STATUS_RANK: Record<CatalogStatus, number> = { inspiree: 1, adaptee: 2, verifiee: 3 };
+/**
+ * Ajoute les fiches de programme fédéral au catalogue de base : leurs organismes viennent avec elles.
+ * Une fiche dont l’identifiant existe déjà dans la base est ignorée (la base ne change jamais).
+ */
+export function mergeCatalogFiles(base: CatalogFile, prog?: CatalogFile): CatalogFile {
+  if (!prog || !Array.isArray(prog.combos)) return base;
+  const ids = new Set(base.combos.map((c) => c.id));
+  return {
+    ...base,
+    orgs: [...(base.orgs ?? []), ...(prog.orgs ?? [])],
+    combos: [...base.combos, ...prog.combos.filter((c) => !ids.has(c.id))],
+  };
+}
+
+export const STATUS_RANK: Record<CatalogStatus, number> = { inspiree: 1, adaptee: 2, programme: 3, verifiee: 4 };
 
 /**
  * Catalogue final : base officielle + imports. Une fiche importée dont la séquence existe déjà
@@ -58,13 +79,17 @@ export function buildCatalog(base: CatalogFile, imported: ImportedData = EMPTY_I
     bySeq.set(k, c);
     extra.push(c);
   }
-  const combos = [...base.combos.filter((c) => !removed.has(c.id)), ...extra];
+  // Catalogue validé (Youssef, 2026-11-06 : « garder, validées en premier ») : les fiches appuyées sur une source
+  // vérifiable passent en tête de toutes les listes ; l’ordre relatif reste celui des fichiers
+  const all = [...base.combos.filter((c) => !removed.has(c.id)), ...extra];
+  const combos = [...all.filter((c) => isValidated(c.status)), ...all.filter((c) => !isValidated(c.status))];
   return {
     ...base,
     champions: [...championById.values()],
     combos,
     comboById: new Map(combos.map((c) => [c.id, c])),
     championById,
+    orgById: new Map<string, CatalogOrg>((base.orgs ?? []).map((o) => [o.id, o])),
     imported: new Set(extra.map((c) => c.id)),
   };
 }

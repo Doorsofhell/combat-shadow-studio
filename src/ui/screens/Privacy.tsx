@@ -1,5 +1,5 @@
 import { PageHead } from '../components';
-import { IconShield } from '../icons';
+import { AppIcon } from '../icons';
 
 /** Privacy policy, same content as docs/CONFIDENTIALITE.md. */
 export function Privacy() {
@@ -8,7 +8,7 @@ export function Privacy() {
       <PageHead title="Confidentialité" eyebrow="Tes données" fallback="/reglages" />
       <div className="card row nowrap" style={{ gap: 14, alignItems: 'flex-start' }}>
         <span className="icon-tile red" aria-hidden>
-          <IconShield />
+          <AppIcon id="privacy" />
         </span>
         <p>
           <b>Tout reste sur ton appareil.</b> Aucune mesure d’audience, aucune publicité. Rien n’est envoyé, sauf si tu actives toi-même la synchronisation d’un compte ou la saisie vocale en ligne.

@@ -40,6 +40,19 @@ export function onAppPause(fn: () => void) {
   return () => pauseListeners.delete(fn);
 }
 
+/**
+ * 0.27: screens can take the Android back button first (a total fullscreen closes before the page is left).
+ * The last registered handler is asked first; returning true consumes the press.
+ */
+const backHandlers: (() => boolean)[] = [];
+export function onBackButton(fn: () => boolean) {
+  backHandlers.push(fn);
+  return () => {
+    const i = backHandlers.lastIndexOf(fn);
+    if (i >= 0) backHandlers.splice(i, 1);
+  };
+}
+
 let installed = false;
 
 /** Android lifecycle and back button; safe to call several times */
@@ -48,6 +61,7 @@ export function installNativeHandlers() {
   installed = true;
   void App.addListener('pause', () => pauseListeners.forEach((f) => f()));
   void App.addListener('backButton', ({ canGoBack }) => {
+    for (let i = backHandlers.length - 1; i >= 0; i--) if (backHandlers[i]()) return;
     if (canGoBack && location.hash && location.hash !== '#/') history.back();
     else void App.minimizeApp();
   });

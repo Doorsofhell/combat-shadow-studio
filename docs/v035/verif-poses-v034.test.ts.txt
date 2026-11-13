@@ -1,0 +1,37 @@
+// One-off check run on 2026-10-22 for v0.35.0 (result: 1 test passed, exact equality).
+// Setup: git show 34669a1:src/engine/player.ts | sed "s#from './#from '../#g" > src/engine/__tests__/zz-base-player.ts
+// then this file as src/engine/__tests__/zz-base.test.ts ; npx vitest run src/engine/__tests__/zz-base.test.ts ; both files removed after.
+import { expect, test } from 'vitest';
+import { loadSkeleton } from '../../test/skeleton';
+import { CoachRig } from '../rig';
+import { getLibrary } from '../library';
+import { ComboPlayer } from '../player';
+import { ComboPlayer as BasePlayer } from './zz-base-player';
+import { STYLE_OF } from '../../three/CoachStage';
+import { EXERCISES } from '../../domain/exercises';
+import { playerSteps } from '../../ui/training/plan';
+
+test('poses identiques à la v0.34 (toutes disciplines, coach homme et femme, vitesses, pause)', () => {
+  for (const c of ['homme', 'femme'] as const) {
+    const rig = new CoachRig(loadSkeleton(c));
+    for (const d of ['boxe', 'kickboxing', 'mma', 'muaythai', 'bjj', 'judo'] as const) {
+      const lib = getLibrary(rig, STYLE_OF[d]);
+      for (const e of EXERCISES.filter((x) => x.discipline === d).slice(0, 12)) {
+        const a = new ComboPlayer(rig, lib, false, { onMove: () => {} });
+        const b = new BasePlayer(rig, lib, false, {});
+        for (const p of [a, b]) {
+          p.speed = e.speed;
+          p.setSequence(playerSteps(e.sequence), e.rest);
+          p.play();
+        }
+        for (let i = 0; i < 600; i++) {
+          if (i === 200) (a.pause(), b.pause());
+          if (i === 260) (a.play(), b.play());
+          const pa = a.update(1 / 60);
+          const pb = b.update(1 / 60);
+          expect(pa.hips.equals(pb.hips) && pa.chest.equals(pb.chest) && pa.pelvis.equals(pb.pelvis) && pa.handL.pos.equals(pb.handL.pos) && pa.handR.pos.equals(pb.handR.pos) && pa.footL.ankle.equals(pb.footL.ankle) && pa.footR.ankle.equals(pb.footR.ankle) && pa.head.yaw === pb.head.yaw, `${c} ${e.id} frame ${i}`).toBe(true);
+        }
+      }
+    }
+  }
+});

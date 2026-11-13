@@ -1,3 +1,5 @@
+import { ALL_COACHES } from '../../domain/coaches/catalog';
+import { pickChampion, useChosenCoach } from './CoachSelect';
 import '../training/training.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -8,22 +10,43 @@ import { useCustom } from '../../store/custom';
 import { formatDuration } from '../../store/stats';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
 import { PointPhase, instructionOf } from '../../domain/instructions';
-import { DISCIPLINES, LEVELS, TrainingMode } from '../../domain/types';
-import { MODE_LABEL, Plan, customPlan, exercisePlan, programPlan } from '../training/plan';
-import { useSession } from '../training/useSession';
+import { DISCIPLINES, DisciplineId, LEVELS, TrainingMode } from '../../domain/types';
+import { INTENSITY_LABEL, MODE_LABEL, Plan, customPlan, exercisePlan, programPlan, techniquePlan } from '../training/plan';
+import { cardioFromQuery } from '../training/TimerOptions';
+import { SessionPersist, useSession } from '../training/useSession';
 import { useCatalog } from '../../store/catalog';
 import { catalogPlan } from '../../domain/catalog/plan';
-import { CoachAskPanel } from '../coach-ai/CoachAskPanel';
+import { useCoachBubble } from '../coach-ai/coachHost';
+import { FsHint } from '../fullscreen/FullscreenStage';
+import { useStageFullscreen } from '../fullscreen/useStageFullscreen';
 import type { CoachAction } from '../../coach/engine';
-import { useCoachAi } from '../../store/coachAi';
 import { GuideCard } from '../GuideCard';
-import { chooseCoach } from '../components/fighter';
 import { CAMERA_MODES, CameraMode, manualView, stageAzimuth, stepViews, techniqueView, viewName } from '../../domain/camera';
 import type { StageView } from '../../three/StudioStage';
 import { StudyPanel, useStudy } from '../training/Study';
+import { MoveBand, MoveName } from '../training/MoveBand';
+import { ConsigneBand } from '../training/ConsigneBand';
+import { CoachScreen, useCoachUi } from '../coach-screen/CoachScreen';
+import { usePulseFlash } from '../training/pulse';
 import { ArBridge } from '../../ar/ArBridge';
 import { ArControls, ArIntroSheet, useArView } from '../training/ArMode';
-import { IconAr, IconBack, IconCamera, IconChat, IconClock, IconClose, IconExpand, IconInfo, IconLayers, IconMinus, IconNext, IconPlus, IconPause, IconPlay, IconPrev, IconRestart, IconRotateLeft, IconRotateRight, IconSliders, IconTarget } from '../icons';
+import { AppIcon } from '../icons';
+import { useNavActions } from '../nav/store';
+import { useSmartBack, vibrate } from '../nav/BottomBar';
+import { openLayers } from '../nav/layers';
+import { ConfirmDialog } from '../components/Sheet';
+import { onBackButton } from '../../platform/native';
+import { useResume } from '../../store/resume';
+import { ResumeSnapshot, matchesPlan, sessionQuery } from '../../domain/resume';
+import { useHydrated } from '../../store/useHydrated';
+
+/** 1.4.0: the angles at hand in the coach zone (every other one stays in the sheet « Caméra ») */
+const QUICK_ANGLES: { id: CameraMode; label: string }[] = [
+  { id: 'auto', label: 'Auto' },
+  { id: 'face', label: 'Face' },
+  { id: 'trois-quarts-droit', label: '3/4' },
+  { id: 'profil-droit', label: 'Profil' },
+];
 
 export function Training() {
   const [q] = useSearchParams();
@@ -39,22 +62,39 @@ export function Training() {
       roundSec: Number(q.get('round') ?? settings.defaultRoundSec),
       restSec: Number(q.get('rest') ?? settings.defaultRestSec),
       rounds: Number(q.get('rounds') ?? 3),
+      // v0.47: the Cardio intervals of the link (else the last ones chosen)
+      cardio: cardioFromQuery(q, settings.cardio),
     };
     if (catId) {
       const e = catalog?.comboById.get(catId);
       return e ? catalogPlan(e, mode, o) : null;
     }
-    if (q.get('prog')) return programPlan(q.get('prog')!);
+    if (q.get('prog')) return programPlan(q.get('prog')!, Math.max(0, Number(q.get('s') ?? 1) - 1) || 0);
     if (q.get('perso')) {
       const c = combos.find((x) => x.id === q.get('perso'));
       return c ? customPlan(c, profile.levels[c.discipline], mode, o) : null;
     }
     if (q.get('ex')) return exercisePlan(q.get('ex')!, mode, o);
+    if (q.get('tech')) {
+      const dq = (DISCIPLINES.some((x) => x.id === q.get('d')) ? q.get('d') : profile.mainDiscipline) as DisciplineId;
+      return techniquePlan(q.get('tech')!, dq, profile.levels[dq] ?? 'debutant', mode, o);
+    }
     return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, combos.length, catalog]);
 
-  if (catId && !catalog && !catalogError) return <div className="loading">Chargement…</div>;
+  // 0.33: « Reprendre » opens the session with reprise=1; the snapshot is read once the store is loaded, so a
+  // resume never silently starts the session from zero
+  const reprise = q.get('reprise') === '1';
+  const query = sessionQuery(q);
+  const resumeReady = useHydrated(useResume);
+  const snapshots = useResume((s) => s.snapshots);
+  const [fresh, setFresh] = useState(false);
+  const snapshot = useMemo<ResumeSnapshot | null>(() => (reprise && !fresh ? snapshots.find((x) => x.query === query) ?? null : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [reprise, fresh, query, resumeReady]);
+
+  if ((catId && !catalog && !catalogError) || (reprise && !resumeReady)) return <div className="loading">Chargement…</div>;
 
   if (!plan || !plan.items.length) {
     return (
@@ -66,7 +106,30 @@ export function Training() {
       </div>
     );
   }
-  return <TrainingView key={key} plan={plan} />;
+  const programId = q.get('prog') ?? undefined;
+  if (reprise && !fresh && (!snapshot || !matchesPlan(snapshot, plan))) {
+    // the save is gone or no longer matches the exercise (an exercise changed or a combination was edited):
+    // nothing is restored by guess, the user chooses to start again
+    return (
+      <div className="page">
+        <ConfirmDialog
+          title="Reprise impossible"
+          message={
+            snapshot
+              ? 'Cette séance a changé depuis ta pause : elle ne peut pas reprendre exactement où tu l’avais laissée. Ton temps déjà fait reste dans tes progrès.'
+              : 'Cette séance n’est plus enregistrée (elle est terminée ou a été remplacée). Ton temps déjà fait reste dans tes progrès.'
+          }
+          confirmLabel="Recommencer"
+          onConfirm={() => {
+            useResume.getState().drop(query);
+            setFresh(true);
+          }}
+          onCancel={() => history.back()}
+        />
+      </div>
+    );
+  }
+  return <TrainingView key={`${key}|${fresh}`} plan={plan} persist={{ query, programId, snapshot, coach: profile.coach === 'femme' ? 'femme' : 'homme' }} />;
 }
 
 
@@ -76,27 +139,47 @@ function clock(sec: number, up = true) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
-function TrainingView({ plan }: { plan: Plan }) {
+
+function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPersist, 'camera'> }) {
   const nav = useNavigate();
   const profile = useProfile((s) => s.profile);
   const updateProfile = useProfile((s) => s.update);
   const settings = useSettings((s) => s.settings);
   const setSettings = useSettings((s) => s.set);
-  const { view, item, events, onPlayer, player, start, pause, resume, restart, goto, setSpeed } = useSession(plan);
-  const [camMode, setCamMode] = useState<CameraMode>(settings.cameraMode ?? 'auto');
+  const savedCam = persist.snapshot?.camera;
+  const [camMode, setCamMode] = useState<CameraMode>(
+    savedCam && CAMERA_MODES.some((c) => c.id === savedCam) ? (savedCam as CameraMode) : (settings.cameraMode ?? 'auto'),
+  );
+  const camRef = useRef(camMode);
+  camRef.current = camMode;
+  const { view, item, events, onPlayer, player, move, start, pause, resume, restart, goto, setSpeed } = useSession(plan, { ...persist, camera: () => camRef.current });
   const [closeUp, setCloseUp] = useState(false);
   const [studyRot, setStudyRot] = useState(0);
   // « Caméra » zone: manual turn around the coach and zoom, on top of the chosen angle
   const [camOpen, setCamOpen] = useState(false);
   const [camRot, setCamRot] = useState(0);
   const [camZoom, setCamZoom] = useState(1);
-  const [immersive, setImmersive] = useState(false);
   const [sheet, setSheet] = useState(false);
   const [guideId, setGuideId] = useState<string | null>(null);
-  const [asking, setAsking] = useState(false);
-  const coachAiOn = useCoachAi((s) => s.enabled);
+  // 0.25 (Youssef, 2026-10-20 12:30): the coach is the app's one floating bubble; this screen is its
+  // host (see coachHost.ts), « asking » is the bubble's panel being open
+  const asking = useCoachBubble((s) => s.open);
+  const setAsking = useCoachBubble((s) => s.setOpen);
+  const [coachSlot, setCoachSlot] = useState<HTMLDivElement | null>(null);
   const pendingStudySpeed = useRef<number | null>(null);
   const root = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  // 0.27 (Youssef, 2026-10-20 22:09: « Un double clique sur la fenêtre du coach permet un plein écran total »): the
+  // immersive mode becomes the total fullscreen: a double tap on the stage or the button turns it on; only the coach
+  // is left, with the main control over it, and the controls fade after 2.5 s (a tap brings them back). The
+  // session keeps running.
+  // 1.4.0 (Youssef, 2026-10-28, option A: « un toucher montre les commandes sans pause, le toucher suivant les
+  // cache »): a single tap on the stage shows or hides the commands of the coach zone (it paused the session in
+  // 1.0.0); the pause is in the commands and in the bottom bar
+  const tapStage = useRef<() => void>(() => undefined);
+  const coachUi = useCoachUi();
+  const fs = useStageFullscreen(root, { tapRef: stageRef, onTap: () => tapStage.current() });
+  const immersive = fs.active;
   const arRoot = useRef<HTMLDivElement>(null);
   const ar = useMemo(() => new ArBridge(), []);
   const arView = useArView(ar);
@@ -114,15 +197,16 @@ function TrainingView({ plan }: { plan: Plan }) {
   }, [ar]);
   const southpaw = profile.guard === 'gaucher';
   const coach = profile.coach ?? 'homme';
+  const chosenCoach = useChosenCoach();
   const st = useStudy(southpaw);
+  // the study can show the other guard for comparison
+  const stageSouthpaw = st.tech ? st.southpaw : southpaw;
   const [q] = useSearchParams();
   const autoStudy = useRef(q.get('study') === '1');
 
   const seq = item.sequence;
   const curId = view.step >= 0 ? seq[view.step] : null;
   const cur = curId ? TECHNIQUE_BY_ID.get(curId) : null;
-  const nextId = view.step >= 0 ? seq[(view.step + 1) % seq.length] : seq[0];
-  const next = TECHNIQUE_BY_ID.get(nextId);
   const disc = DISCIPLINES.find((d) => d.id === item.discipline)!;
   const lvl = LEVELS.find((l) => l.id === item.level)!;
 
@@ -135,7 +219,7 @@ function TrainingView({ plan }: { plan: Plan }) {
   let stageView: StageView;
   if (manual) stageView = { ...manual, closeUp: false };
   else if (free && lastView.current) stageView = lastView.current;
-  else stageView = { az: stageAzimuth(teach, item.discipline, southpaw), el: teach.el, zoom: teach.zoom, focus: teach.focus, closeUp: false };
+  else stageView = { az: stageAzimuth(teach, item.discipline, stageSouthpaw), el: teach.el, zoom: teach.zoom, focus: teach.focus, closeUp: false };
   if (closeUp && teach.closeUp && !free) stageView = { ...stageView, zoom: teach.closeUp.zoom, focus: teach.closeUp.focus, closeUp: true };
   if (st.tech && studyRot && !free) stageView = { ...stageView, az: stageView.az + studyRot };
   // floor marks need to be seen from a little above
@@ -143,6 +227,19 @@ function TrainingView({ plan }: { plan: Plan }) {
   if (anyMark && !free && !st.tech && stageView.el < 16) stageView = { ...stageView, el: 16 };
   if (!free && (camRot || camZoom !== 1)) stageView = { ...stageView, az: stageView.az + camRot, zoom: stageView.zoom * camZoom };
   if (!free) lastView.current = stageView;
+  // 1.3.0: the instructions band covers the bottom of the stage: the coach is framed in the part above it, so the
+  // text never covers a foot (the user's own free camera is left as it is)
+  const [consH, setConsH] = useState(0);
+  const [stageH, setStageH] = useState(0);
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setStageH(el.clientHeight));
+    ro.observe(el);
+    setStageH(el.clientHeight);
+    return () => ro.disconnect();
+  }, []);
+  if (consH > 0 && stageH > 0 && !free && !stageView.closeUp) stageView = { ...stageView, inset: { top: 0, left: 0, right: 0, bottom: Math.min(0.4, consH / stageH) } };
   // a temporary close-up always returns to the whole body
   useEffect(() => {
     if (!closeUp) return;
@@ -163,10 +260,11 @@ function TrainingView({ plan }: { plan: Plan }) {
       st.bump();
     }
   });
-  const askCoach = () => {
-    pause();
-    setAsking(true);
-  };
+  // opening the coach pauses the session, as the former « Coach » button did
+  useEffect(() => {
+    if (asking) pause();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asking]);
   const onCoachAction = (a: CoachAction) => {
     if (a.type === 'demo' || a.type === 'repeat' || a.type === 'slow') {
       setAsking(false);
@@ -176,8 +274,35 @@ function TrainingView({ plan }: { plan: Plan }) {
       nav(`/entrainement?ex=${encodeURIComponent(a.exerciseId)}&mode=technique`);
     } else if (a.type === 'start-combo') {
       nav(`/entrainement?cat=${encodeURIComponent(a.comboId)}&mode=technique`);
+    } else if (a.type === 'navigate') {
+      // the coach does not offer it during a session; if it ever comes, the session is left on purpose
+      setAsking(false);
+      nav(a.to);
     }
   };
+  // the session is the bubble's host: its context (the move on screen) and its actions on the player
+  const coachTech = st.tech ?? curId ?? seq[0];
+  const usePseudo = profile.coachAi.usePseudo;
+  const coachContext = useMemo(
+    () => ({
+      pseudo: usePseudo ? profile.pseudo : undefined,
+      discipline: item.discipline,
+      level: item.level,
+      guard: profile.guard,
+      techniqueId: coachTech,
+      exerciseId: item.key,
+      screen: 'entrainement' as const,
+      goals: profile.goals,
+    }),
+    [usePseudo, profile.pseudo, item.discipline, item.level, profile.guard, coachTech, item.key, profile.goals],
+  );
+  const coachAction = useRef(onCoachAction);
+  coachAction.current = onCoachAction;
+  useEffect(() => {
+    if (coachSlot) useCoachBubble.getState().setHost({ slot: coachSlot, context: coachContext, onAction: (a) => coachAction.current(a) });
+  }, [coachSlot, coachContext]);
+  // leaving the session (or starting another one) closes the coach, as the former inline panel did
+  useEffect(() => () => useCoachBubble.setState({ host: null, open: false }), []);
   const ANGLES = CAMERA_MODES.filter((c) => c.id !== 'auto');
   // a chosen angle is exact: any earlier rotation is dropped
   const chooseAngle = (m: CameraMode) => {
@@ -206,16 +331,30 @@ function TrainingView({ plan }: { plan: Plan }) {
   const autoName = `Auto · ${viewName(teach)}`;
   const camLabel = camMode === 'auto' ? (isAuto ? autoName : 'Auto ajusté') : (CAMERA_MODES.find((c) => c.id === camMode)?.label ?? 'Auto');
 
-  const fullscreen = () => {
-    const el = root.current;
-    if (!el) return;
-    if (document.fullscreenElement) void document.exitFullscreen();
-    else void el.requestFullscreen?.().catch(() => undefined);
-  };
-
   const running = view.phase !== 'pret' && view.phase !== 'termine';
+  // v0.47 (« Chronomètre intégré au coach 3D » §4, §7, §8): the phase in words, with its colour (amber preparation,
+  // red work, teal rest, neutral pause); Cardio says Effort / Récupération and counts cycles, Rounds says Combat
+  const cardio = plan.mode === 'cardio';
   const phaseLabel =
-    view.phase === 'decompte' ? 'Prépare-toi' : view.phase === 'repos' ? 'Repos' : view.phase === 'travail' ? (item.work ? `Round ${view.round}/${item.rounds}` : MODE_LABEL[plan.mode]) : view.phase === 'termine' ? 'Terminé' : 'Prêt';
+    view.phase === 'decompte'
+      ? 'Prépare-toi'
+      : view.phase === 'repos'
+        ? cardio
+          ? 'Récupération'
+          : 'Repos'
+        : view.phase === 'travail'
+          ? item.work
+            ? cardio
+              ? `Effort · Cycle ${view.round}/${item.rounds}`
+              : plan.mode === 'rounds'
+                ? `Combat · Round ${view.round}/${item.rounds}`
+                : `Round ${view.round}/${item.rounds}`
+            : MODE_LABEL[plan.mode]
+          : view.phase === 'termine'
+            ? 'Terminé'
+            : 'Prêt';
+  // Libre and Technique have no end: the chronometer shows the time done
+  const hudTime = view.remaining !== null ? { sec: view.remaining, up: true, label: 'Temps restant' } : running ? { sec: view.sessionSec, up: false, label: 'Temps écoulé' } : null;
 
   // the technique taught right now: the one studied, the one played, else the first of the sequence
   // between two repetitions the last move stays on screen, so the panel does not jump
@@ -224,20 +363,19 @@ function TrainingView({ plan }: { plan: Plan }) {
   lastFocus.current = focusId;
   const focus = focusId ? TECHNIQUE_BY_ID.get(focusId) : undefined;
   const instr = focus ? instructionOf(focus) : null;
-  let moveName = cur?.name ?? (view.phase === 'travail' ? focus?.name ?? 'Garde' : phaseLabel);
   let cue = instr?.main ?? cur?.cues[0] ?? '';
   if (view.phase === 'pret') {
-    moveName = focus?.name ?? 'En garde';
     if (!instr) cue = 'Appuie sur Démarrer quand tu es prêt.';
   } else if (view.phase === 'repos') {
-    moveName = 'Repos';
-    cue = view.banner ?? 'Respire, relâche les épaules, reste en mouvement léger.';
+    cue = view.banner ?? (cardio ? 'Récupère : respire, relâche les épaules, garde les mains prêtes.' : 'Respire, relâche les épaules, reste en mouvement léger.');
   } else if (view.phase === 'termine') {
-    moveName = 'Séance terminée';
     cue = `${view.reps} répétitions, ${formatDuration(view.sessionSec)} de travail actif.`;
+
   } else if (view.phase === 'travail' && !cur && !instr) {
     cue = 'Retour en garde, respire.';
   }
+  // the empty band says nothing, except at the end of the session (never a move name)
+  const bandIdle = view.phase === 'termine' ? 'Séance terminée' : '';
 
   // key points of the taught technique (feet, pelvis, limbs, return to guard); the one matching the
   // phase being played is highlighted
@@ -264,11 +402,20 @@ function TrainingView({ plan }: { plan: Plan }) {
       ? livePhase.phase
       : null;
   const points = (view.phase === 'termine' ? [] : instr?.points ?? []).map((pt, i) => ({ id: `${focusId}#${i}`, ...pt, now: !!pt.phase && pt.phase === phaseNow }));
+  // 0.24 (Youssef: « que le coach soit bien visible »): while the session runs, only the point of the moment is
+  // shown, since 0.35 as the subtitle of the band under the coach; the full list is shown before starting, on
+  // pause, at rest and in "Comment faire ?"
+  const focusOnly = view.phase === 'travail' && !view.paused && !st.tech;
+  // 1.3.0: the instructions follow one another under the coach while the session works; on pause the full list is
+  // back under the stage (in fullscreen, where that list is hidden, the band stays, stopped)
+  const consignesOn = settings.consignes === 'enchainees' && view.phase === 'travail' && !st.tech && !arActive && (!view.paused || immersive);
   const SLOW = 0.25;
   const slow = view.speed <= SLOW + 1e-3 && item.speed > SLOW;
   // progression of the session: rounds of timed work, else exercises of the plan
   const itemFrac = item.work && view.remaining !== null && view.phase === 'travail' ? Math.min(1, ((view.round - 1) * item.work + (item.work - view.remaining)) / (item.rounds * item.work)) : view.phase === 'termine' ? 1 : 0;
-  const progress = plan.items.length > 1 || item.work ? Math.min(1, (view.itemIndex + itemFrac) / plan.items.length) : null;
+  // v0.47 §4: during a timed phase (preparation, round, effort, rest) the bar shows that phase; otherwise the session
+  const timedPhase = running && view.remaining !== null;
+  const progress = timedPhase ? view.phaseProgress : plan.items.length > 1 || item.work ? Math.min(1, (view.itemIndex + itemFrac) / plan.items.length) : null;
 
   // if the text is enlarged so much that everything cannot fit, switch to an explicit scrolling layout
   const [overflow, setOverflow] = useState(false);
@@ -285,82 +432,189 @@ function TrainingView({ plan }: { plan: Plan }) {
     return () => ro.disconnect();
   }, []);
 
-  return (
-    <div className={`training ${immersive ? 'immersive' : ''} ${overflow ? 'overflow' : ''} ${asking ? 'asking' : ''}`} ref={root} data-testid="training">
-      <header className="tr-top">
-        <button className="btn icon ghost" onClick={() => nav(-1)} aria-label="Quitter l’entraînement">
-          <IconBack />
-        </button>
-        <div className="tr-titles">
-          <div className="eyebrow">
-            {disc.name} · {lvl.name} · {MODE_LABEL[plan.mode]}
-          </div>
-          <div className="title" data-testid="exercise-name">
-            {item.label ? `${item.label} : ` : ''}
-            {item.name}
-          </div>
-        </div>
-        <button className={`ar-state ${arView.state !== 'off' ? 'on' : ''}`} onClick={() => setArIntro(true)} data-testid="ar-button" aria-label="Réalité augmentée">
-          <IconAr width={18} height={18} />
-          <span>{arView.state === 'off' ? 'AR désactivée' : arView.state === 'starting' ? 'AR…' : 'AR active'}</span>
-        </button>
-      </header>
+  // v0.32 navigation dynamique (sections 5.2 and 5.3): the bottom bar holds Retour, Démarrer / Pause / Reprendre (one
+  // place, driven by the session's own state), Décomposer and Caméra; the other commands of the former buttons
+  // (Recommencer, Précédent, Suivant, Comment faire ?, Ralenti, Options) are under « Sur cet écran » in Menu
+  const smartBack = useSmartBack();
+  const [leaving, setLeaving] = useState(false);
+  // a session started and not finished, running or paused: leaving it ends it
+  const live = running;
+  const askLeave = () => {
+    // a session in progress is never left by one tap: it pauses and asks (the time done is already saved)
+    if (live) {
+      if (!view.paused) pause();
+      setLeaving(true);
+    } else smartBack('entrainement');
+  };
+  const askLeaveRef = useRef(askLeave);
+  askLeaveRef.current = askLeave;
+  const liveRef = useRef(live);
+  liveRef.current = live;
+  // the Android back button follows the same rule (an open sheet closes first)
+  useEffect(
+    () =>
+      onBackButton(() => {
+        if (openLayers() > 0 || !liveRef.current) return false;
+        askLeaveRef.current();
+        return true;
+      }),
+    [],
+  );
+  const toggleState = !running ? 'start' : view.paused ? 'resume' : 'pause';
+  // hands-free (maquette v4): while the session runs, only Pause (and Retour) stay above the bottom; Décomposer,
+  // Caméra and « Plus » come back with the pause. A tap on the stage shows or hides the commands of the coach (1.4.0).
+  const handsFree = running && !view.paused && !st.tech && !camOpen && !asking && !sheet && !guideId;
+  tapStage.current = () => {
+    if (!arActive) coachUi.toggle();
+  };
+  useEffect(() => {
+    const html = document.documentElement;
+    if (handsFree) html.dataset.handsFree = '';
+    else delete html.dataset.handsFree;
+    return () => {
+      delete html.dataset.handsFree;
+    };
+  }, [handsFree]);
+  // 1.4.0: the screen flashes with the signals of the session (style and strength in Réglages)
+  usePulseFlash(root, running ? settings.pulse : 'off');
+  // vibrations at the moments that count, for a phone put down in front of the user (where the device can)
+  const prevBeat = useRef<{ running: boolean; paused: boolean; phase: string } | null>(null);
+  useEffect(() => {
+    const was = prevBeat.current;
+    prevBeat.current = { running, paused: view.paused, phase: view.phase };
+    if (!was) return;
+    let pattern: number[] | null = null;
+    if (!was.running && running) pattern = [60, 40, 90];
+    else if (running && !was.paused && view.paused) pattern = [30, 40, 30];
+    else if (running && was.paused && !view.paused) pattern = [20];
+    else if (running && !view.paused && was.phase !== view.phase && (view.phase === 'travail' || view.phase === 'repos' || view.phase === 'termine')) pattern = [80];
+    if (pattern) vibrate(pattern);
+  }, [running, view.paused, view.phase]);
+  useNavActions(
+    {
+      back: { run: askLeave, ariaLabel: 'Retour : quitter l’entraînement', testId: 'nav-back' },
+      toggle: {
+        run: () => (toggleState === 'start' ? start() : toggleState === 'resume' ? resume() : pause()),
+        icon: toggleState === 'pause' ? 'pause' : 'play',
+        label: toggleState === 'start' ? 'Démarrer' : toggleState === 'resume' ? 'Reprendre' : 'Pause',
+        pressed: toggleState === 'pause',
+        testId: toggleState,
+      },
+      decompose: { run: () => (st.tech ? st.close() : openStudy(curId ?? seq[0])), pressed: !!st.tech, ariaLabel: st.tech ? 'Décomposer : revenir à la séance' : 'Décomposer le mouvement', testId: 'decompose' },
+      camera: { run: () => setCamOpen(!camOpen), pressed: camOpen, ariaLabel: `Caméra : ${camLabel}. ${camOpen ? 'Fermer' : 'Ouvrir'} les réglages de caméra`, testId: 'cam-mode' },
+    },
+    [
+      { id: 'recommencer', label: 'Recommencer', icon: { glyph: 'replay' }, run: restart, testId: 'cmd-restart' },
+      { id: 'precedent', label: 'Exercice précédent', icon: { glyph: 'stepBack' }, run: () => goto(view.itemIndex - 1), disabled: view.itemIndex === 0, testId: 'cmd-prev' },
+      { id: 'suivant', label: 'Exercice suivant', icon: { glyph: 'stepForward' }, run: () => goto(view.itemIndex + 1), disabled: view.itemIndex >= plan.items.length - 1, testId: 'cmd-next' },
+      {
+        id: 'comment-faire',
+        label: 'Comment faire ?',
+        icon: { glyph: 'info' },
+        run: () => {
+          pause();
+          setGuideId(curId ?? seq[0]);
+        },
+        testId: 'how-to',
+      },
+      { id: 'ralenti', label: 'Ralenti', icon: 'speed', pressed: slow, run: () => setSpeed(slow ? item.speed : SLOW), testId: 'slow' },
+      { id: 'options', label: 'Options', icon: 'options', run: () => setSheet(true), testId: 'options' },
+    ],
+  );
 
-      <div className="tr-stage">
-        <CoachStage
-          coach={coach}
-          discipline={item.discipline}
-          southpaw={southpaw}
-          view={stageView}
-          free={free}
-          onUserOrbit={() => setCamMode('libre')}
-          frameIds={seq}
-          quality={settings.quality}
-          events={events}
-          onPlayer={onPlayer}
-          onRigReady={(rig, lib) => {
-            st.onRigReady(rig, lib);
-            if (autoStudy.current) {
-              autoStudy.current = false;
-              openStudy(seq[0]);
-            }
-          }}
-          study={st.study}
-          studyActive={!!st.tech}
-          ar={ar}
-          arActive={arActive}
-        />
-        <div className="stage-badge">
-          <span className={`phase ${view.phase}`} data-testid="phase">
+  return (
+    <div
+      className={`training ${immersive ? 'immersive' : ''} ${fs.idle ? 'fs-idle' : ''} ${overflow ? 'overflow' : ''} ${asking ? 'asking' : ''}`}
+      ref={root}
+      data-testid="training"
+      data-pulse={settings.pulse}
+      style={{ '--pulse-i': settings.pulseIntensity, '--pulse-c': view.phase === 'decompte' ? 'var(--phase-prep)' : view.phase === 'repos' ? 'var(--phase-rest-ink)' : 'var(--red)' } as React.CSSProperties}
+    >
+      {/* 1.4.0: the flash of the signals (gong, countdown, move called), never over a button (pointer-events: none) */}
+      <div className="tr-pulse" aria-hidden="true" />
+      {/* 0.35 HUD: discipline and level, the state of the session, the round and its time left, a thin progress bar.
+          The exercise (and so the full combination) is no longer shown here while it runs: see the band and tr-info */}
+      <header className={`tr-top tr-hud ${view.phase} ${view.paused ? 'paused' : ''}`} data-testid="hud">
+        <div className="hud-row">
+          <span className="hud-disc">
+            {disc.name} · {lvl.name}
+          </span>
+          <span className={`phase ${view.phase} ${view.paused ? 'paused' : ''}`} data-testid="phase">
             {view.paused ? 'Pause' : phaseLabel}
           </span>
-          {view.remaining !== null && <span className="phase light">{clock(view.remaining)}</span>}
-        </div>
-        {view.phase === 'decompte' && !view.paused && !st.tech && view.remaining !== null && view.remaining <= 3.05 && <div className="countdown">{Math.max(1, Math.ceil(view.remaining))}</div>}
-        <div className="stage-tools">
-          <button className={`btn cam-btn ${camOpen ? 'on' : ''}`} onClick={() => setCamOpen(!camOpen)} aria-label={`Caméra : ${camLabel}. Ouvrir les réglages de caméra`} aria-expanded={camOpen} data-testid="cam-mode">
-            <IconCamera />
-            <span>{isAuto ? 'Auto' : camLabel}</span>
-          </button>
-          {teach.closeUp && !free && (
-            <button className={`btn ${closeUp ? 'on' : ''}`} onClick={() => setCloseUp(!closeUp)} aria-label={teach.closeUp.label} aria-pressed={closeUp}>
-              Zoom
-            </button>
+          {hudTime && (
+            <span className={`hud-time ${hudTime.up ? '' : 'elapsed'}`} data-testid="phase-time" aria-label={`${hudTime.label} ${clock(hudTime.sec, hudTime.up)}`}>
+              {clock(hudTime.sec, hudTime.up).padStart(5, '0')}
+            </span>
           )}
-          <button
-            className={`btn ${immersive ? 'on' : ''}`}
-            onClick={() => {
-              if (!immersive) fullscreen();
-              else if (document.fullscreenElement) void document.exitFullscreen();
-              setImmersive(!immersive);
-            }}
-            aria-label="Plein écran : masquer les commandes secondaires"
-            aria-pressed={immersive}
-            data-testid="fullscreen"
-          >
-            <IconExpand />
+          <button className={`ar-state ${arView.state !== 'off' ? 'on' : ''}`} onClick={() => setArIntro(true)} data-testid="ar-button" aria-label="Réalité augmentée">
+            <AppIcon id="ar" size={18} />
+            {/* 0.24 (épuration) : « AR » seul quand elle est éteinte */}
+            <span>{arView.state === 'off' ? 'AR' : arView.state === 'starting' ? 'AR…' : 'AR active'}</span>
           </button>
         </div>
+        {progress !== null && (
+          <span className={`tr-progress hud-progress ${timedPhase ? `phase-bar ${view.paused ? 'paused' : view.phase}` : ''}`} role="progressbar" aria-label={timedPhase ? `Progression : ${phaseLabel}` : 'Progression de la séance'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} data-testid="progress">
+            <i style={{ width: `${Math.round(progress * 100)}%` }} />
+          </span>
+        )}
+      </header>
+
+      <CoachScreen
+        context="seance"
+        className="tr-stage"
+        screenRef={stageRef}
+        testId="training-stage"
+        place="entraînement"
+        stageClassName="tr-stage-3d"
+        style={consH ? ({ '--cons-h': `${consH}px` } as React.CSSProperties) : undefined}
+        fs={fs}
+        ui={coachUi}
+        hint={false}
+        fallback={null}
+        commands={{
+          // 1.1.0 (Youssef: « la vitesse d'exécution plus accessible directement depuis le démarrage »)
+          speed: arActive ? undefined : { value: view.speed, onChange: setSpeed },
+          // 1.3.0 (Youssef: « en dessous des deux options déjà présentes… à droite de l'écran »): the speaker
+          sound: !arActive,
+          pause: running ? { paused: view.paused, onToggle: view.paused ? resume : pause } : undefined,
+          angles: arActive || st.tech ? undefined : { value: isAuto ? 'auto' : camMode, options: QUICK_ANGLES, onChange: (id) => (id === 'auto' ? resetCam() : chooseAngle(id as CameraMode)) },
+          extra:
+            teach.closeUp && !free ? (
+              <button className={`btn ${closeUp ? 'on' : ''}`} onClick={() => setCloseUp(!closeUp)} aria-label={teach.closeUp.label} aria-pressed={closeUp}>
+                Zoom
+              </button>
+            ) : undefined,
+        }}
+        stage={
+          <CoachStage
+            backdrop="theme"
+            coach={coach}
+            discipline={item.discipline}
+            southpaw={stageSouthpaw}
+            view={stageView}
+            free={free}
+            onUserOrbit={() => setCamMode('libre')}
+            frameIds={seq}
+            quality={settings.quality}
+            events={events}
+            onPlayer={onPlayer}
+            onRigReady={(rig, lib) => {
+              st.onRigReady(rig, lib);
+              if (autoStudy.current) {
+                autoStudy.current = false;
+                openStudy(seq[0]);
+              }
+            }}
+            study={st.study}
+            studyActive={!!st.tech}
+            ar={ar}
+            arActive={arActive}
+          />
+        }
+      >
+        {/* 1.1.0 (Youssef, 2026-10-27: « la numérotation en rouge au milieu de l'écran ne sert plus à rien car on a le
+            chronomètre en haut à droite »): no big countdown over the coach; the time of the preparation is in the HUD */}
         {!st.tech && !arActive && (settings.groundMarks.avantArriere || settings.groundMarks.pivot || settings.groundMarks.trajectoire) && (
           <div className="mark-legend" aria-label="Légende des repères" data-testid="mark-legend">
             {settings.groundMarks.avantArriere && (
@@ -373,44 +627,77 @@ function TrainingView({ plan }: { plan: Plan }) {
             {settings.groundMarks.pivot && <span><i className="bar blue" /> Pivot</span>}
           </div>
         )}
-        {item.soloNote && !immersive && !asking && <div className="solo-note">{item.soloNote}</div>}
-        {asking && (
-          <div className="tr-ask" data-testid="coach-panel">
-            <CoachAskPanel
-              context={{
-                pseudo: profile.coachAi.usePseudo ? profile.pseudo : undefined,
-                discipline: item.discipline,
-                level: item.level,
-                guard: profile.guard,
-                techniqueId: st.tech ?? curId ?? seq[0],
-                exerciseId: item.key,
-                goals: profile.goals,
-              }}
-              onAction={onCoachAction}
-              onClose={() => setAsking(false)}
-            />
+        {consignesOn && <ConsigneBand techniqueId={focusId ?? null} running={!view.paused} sec={settings.consigneSec} onHeight={setConsH} />}
+        {item.soloNote && !immersive && !asking && !consignesOn && <div className="solo-note">{item.soloNote}</div>}
+        {!immersive && !asking && !arActive && !st.tech && !coachUi.shown && <FsHint />}
+        {/* the app's coach bubble and its panel are shown here (lower right corner of the stage) */}
+        <div className="tr-coach-slot" ref={setCoachSlot} />
+      </CoachScreen>
+
+      <MoveBand
+        store={move}
+        active={view.phase === 'travail'}
+        studied={st.tech}
+        phase={settings.consignes === 'point' ? livePhase : null}
+        total={seq.length}
+        idle={bandIdle}
+        onInfo={(id) => {
+          pause();
+          setGuideId(id);
+        }}
+      />
+
+      <section className={`tr-info ${focusOnly ? 'focus' : ''}`}>
+        {/* the exercise, its main instruction and every key point: before starting, on pause, at the end and in
+            Décomposer; while the coach works, the band under the stage carries the move and its point of the moment */}
+        {!focusOnly && !st.tech && (
+          <div className="tr-now">
+            <span className="name" data-testid="exercise-name">
+              {item.label ? `${item.label} : ` : ''}
+              {item.name}
+            </span>
+            <span className="next">{MODE_LABEL[plan.mode]}</span>
           </div>
         )}
-      </div>
-
-      <section className="tr-info" aria-live="polite">
-        <div className="tr-now">
-          <span className="name" data-testid="current-move">
-            {st.tech ? TECHNIQUE_BY_ID.get(st.tech)?.name : moveName}
-          </span>
-          {view.phase === 'travail' && view.step >= 0 && !st.tech && (
-            <span className="badge">
-              {view.step + 1}/{seq.length}
-            </span>
-          )}
-          {view.phase === 'travail' && next && !st.tech && <span className="next">Puis : {next.name}</span>}
-        </div>
-        {!st.tech && (
+        {!focusOnly && !st.tech && (
           <p className="tr-cue" data-testid="main-instruction">
             {cue}
           </p>
         )}
-        {points.length > 0 && (
+        {/* v0.47 §7, §8: the summary of a timed session (rounds or cycles, effort, rest, total, intensity) */}
+        {view.phase === 'termine' && !st.tech && view.plannedRounds !== null && (
+          <dl className="tr-summary" data-testid="session-summary">
+            <div>
+              <dt>{cardio ? 'Cycles' : 'Rounds'}</dt>
+              <dd>
+                {view.roundsDone}/{view.plannedRounds}
+              </dd>
+            </div>
+            <div>
+              <dt>{cardio ? 'Effort' : 'Travail'}</dt>
+              <dd>{formatDuration(view.sessionSec)}</dd>
+            </div>
+            <div>
+              <dt>{cardio ? 'Récupération' : 'Repos'}</dt>
+              <dd>{formatDuration(view.restSec)}</dd>
+            </div>
+            <div>
+              <dt>Durée totale</dt>
+              <dd>{formatDuration(view.totalSec)}</dd>
+            </div>
+            {cardio && plan.intensity && (
+              <div>
+                <dt>Intensité</dt>
+                <dd>{INTENSITY_LABEL[plan.intensity]}</dd>
+              </div>
+            )}
+            <div>
+              <dt>Discipline</dt>
+              <dd>{disc.name}</dd>
+            </div>
+          </dl>
+        )}
+        {!focusOnly && points.length > 0 && (
           <ul className={`tr-points ${points.length > 3 ? 'cols' : ''}`} aria-label="Points clés" data-testid="key-points">
             {points.map((pt) => (
               <li key={pt.id} className={pt.now ? 'now' : ''} data-zone={pt.zone} aria-current={pt.now ? 'step' : undefined}>
@@ -430,19 +717,9 @@ function TrainingView({ plan }: { plan: Plan }) {
             <span>
               <b data-testid="reps">{view.reps}</b> rép.
             </span>
-            {item.work ? (
-              <span>
-                Round <b>{view.round}</b>/{item.rounds}
-              </span>
-            ) : null}
             {plan.items.length > 1 && (
               <span>
                 Exercice <b>{view.itemIndex + 1}</b>/{plan.items.length}
-              </span>
-            )}
-            {progress !== null && (
-              <span className="tr-progress" role="progressbar" aria-label="Progression de la séance" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} data-testid="progress">
-                <i style={{ width: `${Math.round(progress * 100)}%` }} />
               </span>
             )}
           </div>
@@ -459,6 +736,8 @@ function TrainingView({ plan }: { plan: Plan }) {
             onClose={() => st.close()}
             rotate={studyRot}
             onRotate={setStudyRot}
+            southpaw={st.southpaw}
+            onToggleGuard={st.toggleGuard}
           />
         ) : (
           <>
@@ -470,95 +749,39 @@ function TrainingView({ plan }: { plan: Plan }) {
                   </button>
                   <div className="cam-angle">
                     <button className="btn icon sm" onClick={() => stepAngle(-1)} aria-label="Angle précédent">
-                      <IconPrev width={18} />
+                      <AppIcon id="back" size={18} />
                     </button>
                     <span aria-live="polite" data-testid="cam-angle">
                       {isAuto ? viewName(teach) : camLabel}
                     </span>
                     <button className="btn icon sm" onClick={() => stepAngle(1)} aria-label="Angle suivant" data-testid="cam-next">
-                      <IconNext width={18} />
+                      <AppIcon id="chevron" size={18} />
                     </button>
                   </div>
                 </div>
                 <div className="cam-row">
                   <button className="btn icon sm" onClick={() => turnCam(-30)} aria-label="Tourner la caméra vers la gauche" data-testid="cam-left">
-                    <IconRotateLeft width={20} />
+                    <AppIcon id="rotateLeft" size={20} />
                   </button>
                   <button className="btn icon sm" onClick={() => turnCam(30)} aria-label="Tourner la caméra vers la droite" data-testid="cam-right">
-                    <IconRotateRight width={20} />
+                    <AppIcon id="rotateRight" size={20} />
                   </button>
                   <button className="btn icon sm" onClick={() => zoomCam(1 / 1.15)} disabled={camZoom <= 0.7} aria-label="Dézoomer" data-testid="zoom-out">
-                    <IconMinus width={20} />
+                    <AppIcon id="zoomOut" size={20} />
                   </button>
                   <button className="btn icon sm" onClick={() => zoomCam(1.15)} disabled={camZoom >= 1.8} aria-label="Zoomer" data-testid="zoom-in">
-                    <IconPlus width={20} />
+                    <AppIcon id="zoomIn" size={20} />
                   </button>
                   <button className="btn sm" onClick={resetCam} aria-label="Recentrer la caméra" data-testid="cam-reset">
-                    <IconTarget width={18} />
+                    <AppIcon id="target" size={18} />
                     <span className="cam-reset-label">Recentrer</span>
                   </button>
                   <button className="btn icon sm" onClick={() => setCamOpen(false)} aria-label="Fermer les réglages de caméra" data-testid="cam-close">
-                    <IconClose width={20} />
+                    <AppIcon id="close" size={20} />
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="tr-secondary">
-                <button className="btn sm" data-testid="decompose" aria-label="Décomposer le mouvement" onClick={() => openStudy(curId ?? seq[0])}>
-                  <IconLayers width={18} />
-                  <span className="sec-label">Décomposer</span>
-                </button>
-                <button
-                  className="btn sm"
-                  data-testid="how-to"
-                  aria-label="Comment faire ?"
-                  onClick={() => {
-                    pause();
-                    setGuideId(curId ?? seq[0]);
-                  }}
-                >
-                  <IconInfo width={18} />
-                  <span className="sec-label">Comment faire ?</span>
-                </button>
-                <button className={`btn sm ${slow ? 'on' : ''}`} data-testid="slow" aria-label="Ralenti" aria-pressed={slow} onClick={() => setSpeed(slow ? item.speed : SLOW)}>
-                  <IconClock width={18} />
-                  <span className="sec-label">Ralenti</span>
-                </button>
-                <button className="btn sm icon-only" onClick={() => setSheet(true)} aria-label="Paramètres" data-testid="options">
-                  <IconSliders width={18} />
-                </button>
-              </div>
-            )}
-            <div className={`controls ${coachAiOn ? 'with-coach' : ''}`}>
-              <button className="btn icon ghost" onClick={restart} aria-label="Recommencer">
-                <IconRestart width={20} />
-              </button>
-              <button className="btn icon" onClick={() => goto(view.itemIndex - 1)} disabled={view.itemIndex === 0} aria-label="Exercice précédent">
-                <IconPrev />
-              </button>
-              {!running ? (
-                <button className="btn primary main" onClick={start} data-testid="start">
-                  <IconPlay /> {view.phase === 'termine' ? 'Recommencer' : 'Démarrer'}
-                </button>
-              ) : view.paused ? (
-                <button className="btn primary main" onClick={resume} data-testid="resume">
-                  <IconPlay /> Reprendre
-                </button>
-              ) : (
-                <button className="btn dark main" onClick={pause} data-testid="pause">
-                  <IconPause /> Pause
-                </button>
-              )}
-              <button className="btn icon" onClick={() => goto(view.itemIndex + 1)} disabled={view.itemIndex >= plan.items.length - 1} aria-label="Exercice suivant">
-                <IconNext />
-              </button>
-              {coachAiOn && (
-                <button className={`btn coach-btn ${asking ? 'on' : ''}`} data-testid="ask-coach" aria-label="Demander au coach" aria-pressed={asking} onClick={() => (asking ? setAsking(false) : askCoach())}>
-                  <IconChat width={20} />
-                  <span>Coach</span>
-                </button>
-              )}
-            </div>
+            ) : null}
           </>
         )}
       </footer>
@@ -575,8 +798,7 @@ function TrainingView({ plan }: { plan: Plan }) {
             </div>
             {!arCompact && (
               <div className="ar-move">
-                <b>{moveName}</b>
-                {view.phase === 'travail' && next && <span> · Suivant : {next.name}</span>}
+                <MoveName store={move} active={view.phase === 'travail'} fallback={view.phase === 'travail' ? '' : phaseLabel} />
               </div>
             )}
             <div className="ar-bottom">
@@ -591,25 +813,25 @@ function TrainingView({ plan }: { plan: Plan }) {
               <div className="row nowrap" style={{ gap: 6, justifyContent: 'center' }}>
                 {!arCompact && (
                   <button className="btn icon" onClick={() => goto(view.itemIndex - 1)} disabled={view.itemIndex === 0} aria-label="Exercice précédent">
-                    <IconPrev />
+                    <AppIcon id="stepBack" />
                   </button>
                 )}
                 {!running ? (
                   <button className="btn primary" onClick={start}>
-                    <IconPlay /> Démarrer
+                    <AppIcon id="play" /> Démarrer
                   </button>
                 ) : view.paused ? (
                   <button className="btn primary" onClick={resume}>
-                    <IconPlay /> Reprendre
+                    <AppIcon id="play" /> Reprendre
                   </button>
                 ) : (
                   <button className="btn dark" onClick={pause}>
-                    <IconPause /> Stop
+                    <AppIcon id="pause" /> Pause
                   </button>
                 )}
                 {!arCompact && (
                   <button className="btn icon" onClick={() => goto(view.itemIndex + 1)} disabled={view.itemIndex >= plan.items.length - 1} aria-label="Exercice suivant">
-                    <IconNext />
+                    <AppIcon id="stepForward" />
                   </button>
                 )}
               </div>
@@ -619,6 +841,19 @@ function TrainingView({ plan }: { plan: Plan }) {
       </div>
 
       {arIntro && <ArIntroSheet bridge={ar} overlayRoot={() => arRoot.current} onClose={() => setArIntro(false)} onBeforeStart={pause} />}
+
+      {leaving && (
+        <ConfirmDialog
+          title="Quitter la séance ?"
+          message="La séance est en pause. Le temps déjà fait est enregistré dans tes progrès, et tu pourras la reprendre depuis Entraîner."
+          confirmLabel="Quitter"
+          onConfirm={() => {
+            setLeaving(false);
+            smartBack('entrainement');
+          }}
+          onCancel={() => setLeaving(false)}
+        />
+      )}
 
       {guideId && (
         <div className="sheet-backdrop" onClick={() => setGuideId(null)}>
@@ -645,12 +880,11 @@ function TrainingView({ plan }: { plan: Plan }) {
             <div className="stack">
               <span className="label">Coach</span>
               <div className="row">
-                <button className={`chip ${coach === 'homme' ? 'on' : ''}`} onClick={() => chooseCoach('homme')}>
-                  Coach homme
-                </button>
-                <button className={`chip ${coach === 'femme' ? 'on' : ''}`} onClick={() => chooseCoach('femme')}>
-                  Coach femme
-                </button>
+                {ALL_COACHES.map((c) => (
+                  <button key={c.id} className={`chip ${chosenCoach === c.id ? 'on' : ''}`} onClick={() => pickChampion(c)}>
+                    {c.name}
+                  </button>
+                ))}
               </div>
             </div>
             <div className="stack">
@@ -727,3 +961,4 @@ function TrainingView({ plan }: { plan: Plan }) {
     </div>
   );
 }
+

@@ -3,26 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#101116" />
+    <meta name="theme-color" content="#0b0f14" />
     <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="./icons/icon-192.png" />
     <script>
       // theme before the first paint (no flash): saved choice, else the system's; see src/ui/theme/theme.ts
       (function () {
-        var p = 'auto';
-        try { p = localStorage.getItem('css-theme') || 'auto'; } catch (e) {}
+        var p = 'sombre';
+        try { p = localStorage.getItem('css-theme') || 'sombre'; } catch (e) {}
         var light = p === 'clair' || (p !== 'sombre' && window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches);
         var t = light ? 'light' : 'dark';
         document.documentElement.dataset.theme = t;
         document.documentElement.style.colorScheme = t;
         var m = document.querySelector('meta[name="theme-color"]');
-        if (m) m.content = location.hash.indexOf('#/entrainement') === 0 ? '#ffffff' : light ? '#f4f5f7' : '#101116';
+        if (m) m.content = location.hash.indexOf('#/entrainement') === 0 ? (light ? '#eef0f3' : '#0b0f14') : light ? '#f4f5f7' : '#0b0f14';
       })();
     </script>
     <title>Combat Shadow Studio v%VITE_APP_VERSION%</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- 0.25: start screen shown until React mounts (replaced by the app), same logo as the Android splash -->
+      <div class="boot" id="boot" role="status" aria-label="Chargement" style="position: fixed; inset: 0; display: grid; place-items: center; background: #0b0f14">
+        <img src="./icons/icon.svg" width="96" height="96" alt="" style="border-radius: 22px; opacity: 0.95" />
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

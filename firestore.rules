@@ -6,12 +6,20 @@ rules_version = '2';
 // Deploy: firebase deploy --only firestore:rules (see docs/COMPTES.md).
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{uid}/{document=**} {
+    // v0.37 : la future licence Premium (users/{uid}/entitlements/*) ne pourra être écrite que par un serveur
+    // de vérification des achats (Admin SDK, qui ignore ces règles) ; l'application peut seulement la lire.
+    match /users/{uid}/entitlements/{doc} {
+      allow read: if isOwner(uid);
+      allow write: if false;
+    }
+    match /users/{uid}/sync/{collection} {
       allow read, delete: if isOwner(uid);
-      // sync documents users/{uid}/sync/{collection} (Firestore caps a document at 1 MiB)
+      // one document per synchronised collection (Firestore caps a document at 1 MiB)
       allow create, update: if isOwner(uid)
+        && collection in ['profile', 'stats', 'custom', 'goals', 'fighters', 'catalog']
         && request.resource.data.keys().hasAll(['schema', 'collection', 'updatedAt', 'fields', 'items'])
-        && request.resource.data.schema == 1;
+        && request.resource.data.schema == 1
+        && request.resource.data.collection == collection;
     }
     match /{document=**} {
       allow read, write: if false;

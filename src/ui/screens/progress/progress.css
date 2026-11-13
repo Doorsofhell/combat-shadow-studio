@@ -1,0 +1,514 @@
+/* 0.34 — Progrès, Athletic Intelligence: an editorial dashboard in six zones on one screen.
+   Fine separators instead of boxes, tabular figures, the series pair deep red / slate (tokens --c-cur, --c-prev). */
+
+.page.dash.ai {
+  gap: 10px;
+}
+
+/* zone 1: title and the filters button, no banner */
+.dash.ai .page-head {
+  min-height: 44px;
+}
+.dash.ai .page-head h1 {
+  font-size: 1.65rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* zone 2: compact discipline selector and periods */
+.dash.ai > .tabs {
+  padding: 3px;
+  border-radius: 12px;
+}
+.dash.ai > .tabs .tab {
+  min-height: 38px;
+  padding: 0 10px;
+  font-size: 0.92rem;
+}
+.ai-filters .chip {
+  min-height: 36px;
+  padding: 0 12px;
+}
+
+/* zone 3: the course percentage, then four figures in one row with hairline separators */
+.ai-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.ai-course {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ai-course > svg {
+  color: var(--muted);
+}
+.ai-course:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+.ai-pct {
+  font-family: var(--font-display);
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.ai-pct small {
+  margin-left: 2px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.ai-course-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ai-summary .k,
+.ai-compare .k {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.ai-course-n {
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+.ai-course-n b {
+  font-weight: 700;
+}
+.ai-course-txt .trend {
+  font-size: 0.72rem;
+}
+.ai-track {
+  display: block;
+  height: 3px;
+  margin-top: 3px;
+  border-radius: 2px;
+  background: var(--track);
+  overflow: hidden;
+}
+.ai-track i {
+  display: block;
+  height: 100%;
+  background: var(--c-cur);
+}
+.ai-track i.full {
+  background: var(--gold);
+}
+.ai-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.ai-kpis .sum-row {
+  padding: 0 8px;
+  border-left: 1px solid var(--line);
+}
+.ai-kpis .sum-row:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.ai-kpis .sum-row .k {
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ai-kpis .sum-row .v {
+  font-size: 1.25rem;
+}
+.ai-kpis .sum-row .mv {
+  flex-direction: column;
+  align-items: flex-start;
+  row-gap: 0;
+}
+
+/* zone 4: the two periods (they are the legend of the chart), regularity on one line, the full comparison */
+.ai-compare {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 12px;
+}
+.ai-periods {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+.ai-per {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
+}
+.ai-per .sw {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.ai-per .k {
+  min-width: 70px;
+}
+.ai-per .tag {
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--red-soft);
+  color: var(--ink);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+.ai-regular {
+  grid-column: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 16px;
+}
+.ai-regular .mini {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 6px;
+}
+.ai-regular .mini .k {
+  font-size: 0.72rem;
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+.ai-regular .mini .v {
+  font-size: 0.98rem;
+}
+.ai-regular .mini .mv {
+  flex-wrap: nowrap;
+}
+.ai-cmp-btn {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 56px;
+  min-height: 48px;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: none;
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ai-cmp-btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* zones 5 and 6: the view and its tabs under it */
+.dash.ai .ai-panel {
+  padding: 8px 12px 0;
+}
+.dash.ai .ai-panel .dash-body {
+  padding-top: 0;
+}
+.dash.ai .ai-panel .utabs {
+  order: 2;
+  margin: 0 -12px;
+  padding: 0 4px;
+  border-bottom: 0;
+  border-top: 1px solid var(--line);
+}
+.dash.ai .ai-panel .utab {
+  min-height: 42px;
+  font-size: 0.9rem;
+}
+.dash.ai .ai-panel .utab[aria-selected='true']::after {
+  top: -1px;
+  bottom: auto;
+  border-radius: 0 0 3px 3px;
+}
+
+/* short screens (360 × 640 and similar): tighter type so the chart keeps a useful height */
+@media (max-height: 700px) {
+  .page.dash.ai {
+    gap: 8px;
+  }
+  .dash.ai .page-head {
+    min-height: 40px;
+  }
+  .dash.ai .page-head h1 {
+    font-size: 1.5rem;
+  }
+  .dash.ai > .tabs .tab,
+  .ai-filters .chip {
+    min-height: 34px;
+  }
+  .ai-pct {
+    font-size: 2.25rem;
+  }
+  .ai-summary {
+    gap: 6px;
+    padding-bottom: 8px;
+  }
+  .ai-kpis .sum-row .v {
+    font-size: 1.12rem;
+  }
+}
+
+/* in four columns the change wraps under the value (« Nouvelle activité » on two lines) instead of overflowing */
+.ai-kpis .sum-row {
+  min-width: 0;
+}
+.ai-kpis .sum-row .trend {
+  white-space: normal;
+}
+
+/* ---------------------------------------------------------------- v0.39 Progrès: overview and detail screens */
+/* (Youssef, 2026-10-22, « Refonte premium de l'espace Progrès », docs/design/progres/) */
+
+.p2 {
+  gap: 14px;
+}
+.p-ring {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+}
+.p-ring > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.p-ring-track {
+  fill: none;
+  stroke: var(--track);
+}
+.p-ring-arc {
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke-dasharray 900ms var(--ease, ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .p-ring-arc {
+    transition: none;
+  }
+}
+.p-ring-body {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  text-align: center;
+  line-height: 1.1;
+}
+.p2-hero {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 6px 0 2px;
+  color: inherit;
+  text-decoration: none;
+}
+.p2-big {
+  font-family: var(--font-display);
+  font-size: 2.6rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.p2-big small {
+  font-size: 0.55em;
+  color: var(--muted);
+}
+.p2-cap {
+  font-size: 0.85rem;
+  color: var(--muted);
+  max-width: 9em;
+}
+.p2-sub {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.p2-mini {
+  font-size: 0.8rem;
+}
+.p2-resume {
+  min-height: 52px;
+}
+.p2-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.p2-kpi {
+  display: grid;
+  gap: 2px;
+  padding: 12px 10px;
+  border-radius: var(--radius);
+  background: var(--tile, var(--surface-2));
+  border: 1px solid var(--tile-edge, var(--line));
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+.p2-kpi .k {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.p2-kpi b {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.p2-kpi .s {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.p2-rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+/* each detail is a compact tile: icon, title, and the one figure it opens on */
+.p2-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: 'i t c' 'i v c';
+  align-items: center;
+  column-gap: 8px;
+  min-height: 52px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--tile-edge, var(--line));
+  background: var(--tile, var(--surface-2));
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+.p2-row > svg:first-child {
+  grid-area: i;
+}
+.p2-row > svg:last-child {
+  grid-area: c;
+  color: var(--muted);
+}
+.p2-row .t {
+  grid-area: t;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.p2-row .v {
+  grid-area: v;
+  font-size: 0.74rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.p2-note,
+.p2-empty {
+  margin: 0;
+}
+.p2-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.p2-legend li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+.p2-legend .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.dot.gold {
+  background: var(--gold);
+}
+.dot.orange {
+  background: var(--c-orange, var(--gold));
+}
+.dot.muted {
+  background: var(--track);
+}
+.p2-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--tile, var(--surface-2));
+  border: 1px solid var(--tile-edge, var(--line));
+}
+.p2-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.p2-disc {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--tile, var(--surface-2));
+  border: 1px solid var(--tile-edge, var(--line));
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.p2-disc .grow {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.p2-facts {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 12px;
+  margin: 0;
+}
+.p2-facts dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.p2-top {
+  display: flex;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-s, 10px);
+  background: var(--tile, var(--surface-2));
+}

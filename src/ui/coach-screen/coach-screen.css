@@ -1,0 +1,183 @@
+/* 1.4.0: the coach screen, the same module on every screen (see CoachScreen.tsx). The stages of the home, the sheet
+   and the preview are dark in both themes; the session's stage follows the theme, so its glass does too. */
+.coach-screen {
+  --cs-glass: rgba(16, 21, 28, 0.78);
+  --cs-ink: #f4f4f5;
+  --cs-on-bg: #f4f4f5;
+  --cs-on-ink: #0b0f14;
+  --cs-off: #ff6b77;
+}
+.training .coach-screen {
+  --cs-glass: var(--tr-glass);
+  --cs-ink: var(--ink);
+  --cs-on-bg: var(--ink);
+  --cs-on-ink: var(--bg);
+  --cs-off: var(--red-ink);
+}
+
+/* the 3D layer fills the frame of the screen */
+.coach-screen .coach-3d,
+.coach-screen .tr-stage-3d {
+  position: absolute;
+  inset: 0;
+}
+
+/* the commands: a column on the right of the coach, at hand for the thumb */
+.coach-tools {
+  position: absolute;
+  right: calc(8px + env(safe-area-inset-right, 0px));
+  top: 8px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  animation: cs-in 0.16s ease-out;
+}
+.coach-tools .btn,
+.coach-angles .btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 8px;
+  border-radius: 12px;
+  border: 0;
+  background: var(--cs-glass);
+  color: var(--cs-ink);
+  font-size: 0.75em;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.coach-tools .btn.on,
+.coach-angles .btn.on {
+  background: var(--cs-on-bg);
+  color: var(--cs-on-ink);
+}
+
+/* the angles: one row at the top left of the coach, away from the instructions and from the middle of the screen
+   (where a double tap must still reach the coach) */
+.coach-angles {
+  position: absolute;
+  left: calc(8px + env(safe-area-inset-left, 0px));
+  top: 8px;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 16px;
+  background: var(--cs-glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  animation: cs-fade 0.16s ease-out;
+  max-width: calc(100% - 80px);
+}
+.coach-angles .btn {
+  min-height: 36px;
+  background: transparent;
+  white-space: nowrap;
+}
+
+@keyframes cs-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@keyframes cs-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .coach-tools,
+  .coach-angles {
+    animation: none;
+  }
+}
+
+/* the speed: its value, a touch opens the speeds under it along the right edge */
+.speed-tool {
+  position: relative;
+}
+.speed-tool > .btn {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 0.85em;
+}
+.speed-choices {
+  flex-direction: column;
+  width: max-content;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 6;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--cs-glass);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.speed-choices .btn {
+  min-width: 44px;
+  min-height: 40px;
+  padding: 0 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* the speaker (1.3.0): one tap per step, the waves show the step */
+.coach-tools .sound-btn {
+  flex-direction: column;
+  gap: 2px;
+  min-height: 52px;
+}
+.coach-tools .sound-btn.off {
+  color: var(--cs-off);
+}
+.sound-steps {
+  display: flex;
+  gap: 2px;
+}
+.sound-steps i {
+  width: 6px;
+  height: 3px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.3;
+}
+.sound-steps i.on {
+  opacity: 1;
+}
+
+/* the voice is off: a small crossed speaker stays in the corner while the commands are hidden */
+.coach-muted {
+  position: absolute;
+  right: calc(10px + env(safe-area-inset-right, 0px));
+  top: 10px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--cs-glass);
+  color: var(--cs-off);
+  pointer-events: none;
+}
+
+/* the home: the commands start under « Changer de coach » (top right of the hero) */
+.hero-stage .coach-tools,
+.hero-stage .coach-muted {
+  top: 54px;
+  right: var(--gutter, 16px);
+}
+.hero-stage.stage-fs .coach-tools,
+.hero-stage.stage-fs .coach-muted {
+  top: max(8px, env(safe-area-inset-top));
+}
+
+/* the session in fullscreen: clear of the status bar */
+.training.immersive .coach-angles {
+  top: max(8px, env(safe-area-inset-top));
+}

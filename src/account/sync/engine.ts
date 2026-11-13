@@ -170,9 +170,17 @@ export class SyncEngine {
       console.warn('[sync]', (e as { code?: string })?.code ?? e);
       await this.o.save(this.state);
       const offline = !this.online() || /unavailable|network|offline/i.test(String((e as { code?: string })?.code ?? e));
-      this.status(offline ? 'offline' : 'error', offline ? undefined : 'La synchronisation a échoué ; elle sera retentée.');
+      this.status(offline ? 'offline' : 'error', offline ? undefined : syncErrorMessage(e));
     }
   }
+}
+
+/** a clear sentence for the error state (v0.37): permissions and the free quota are named, nothing is lost */
+export function syncErrorMessage(e: unknown) {
+  const code = String((e as { code?: string })?.code ?? '');
+  if (/permission-denied|unauthenticated/.test(code)) return 'Le serveur a refusé l’accès : la sauvegarde en ligne n’est pas encore ouverte pour ce compte.';
+  if (/resource-exhausted/.test(code)) return 'Le quota gratuit du jour est atteint : la sauvegarde reprendra automatiquement plus tard.';
+  return 'La synchronisation a échoué ; elle sera retentée.';
 }
 
 /** in-memory adapter (tests, and a second "device" in simulations) */

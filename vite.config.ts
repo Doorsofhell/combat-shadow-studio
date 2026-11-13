@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import pkg from './package.json' with { type: 'json' };
+import { bootModels } from './tools/build/bootModels.ts';
 
 /** the version is shown in the page title of every build (%VITE_APP_VERSION% in index.html) */
 process.env.VITE_APP_VERSION = pkg.version;
@@ -13,6 +14,8 @@ export default defineConfig({
   base: './',
   plugins: [
     react(),
+    // 1.34: the coaches' models compressed in the build, and the fingerprint of each file of the start screen
+    bootModels(),
     VitePWA({
       disable: NATIVE,
       registerType: 'autoUpdate',
@@ -26,8 +29,8 @@ export default defineConfig({
         scope: './',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#101116',
-        theme_color: '#101116',
+        background_color: '#0b0f14',
+        theme_color: '#0b0f14',
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
@@ -37,6 +40,37 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,jpg,webp,svg,glb,wasm,json,woff,woff2}', 'draco/*'],
         maximumFileSizeToCacheInBytes: 12 * 1024 * 1024,
+        // 1.3.3 referee outfits: only for the encyclopedia illustrations (scripts/visuels), never loaded by the app.
+        // 1.10.1 (Youssef, 03/11 « je ne vois toujours pas la 1.10 ») : the coaches and their outfits (108 Mo) are no
+        // longer kept ahead. Every update had to download all changed models before the new version could start
+        // (71 Mo for 1.10); closed before the end, the phone stayed on the old one. They are kept on first use instead.
+        globIgnores: ['**/tenues/arbitre*', 'coaches/*/**', 'models/**', 'salles/**'],
+        runtimeCaching: [
+          {
+            // 1.25: the coaches and the rooms are downloaded by the start screen (src/boot), which also replaces
+            // a file changed by an update (its size differs); afterwards the kept copy answers at once, with no
+            // network round trip (Youssef 2026-11-06: « aucune latence lors du choix des coachs »)
+            urlPattern: ({ url }) => /\/(coaches|salles)\//.test(url.pathname) && !url.pathname.includes('/arbitre'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'css-modeles',
+              expiration: { maxEntries: 600, purgeOnQuotaError: true },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // network first (a model changed by an update is fetched again; unchanged ones answer 304), the kept
+            // copy after 4 s or offline
+            urlPattern: ({ url }) => /\/(coaches|models|salles)\//.test(url.pathname),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'css-modeles',
+              networkTimeoutSeconds: 4,
+              expiration: { maxEntries: 600, purgeOnQuotaError: true },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],

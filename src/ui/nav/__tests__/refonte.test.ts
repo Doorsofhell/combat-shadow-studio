@@ -1,0 +1,137 @@
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import { BAR_PLACES, barPlaceOf, isTrainHub, MENU_ENTRIES, NAV_CONFIG, PRIMARY, ROOT_SCREENS, SECTION, SECTION_TABS, TABS, backInRow, dockSlots, navScreen, sectionTabsFor, type NavScreen } from '../config';
+
+// 1.0.0 (refonte ergonomique, Youssef 2026-10-27): « Aucune perte de contenu. Réorganisation, logique et intelligente »
+const screens = Object.keys(NAV_CONFIG) as NavScreen[];
+const read = (f: string) => readFileSync(f, 'utf8');
+
+describe('refonte 1.0.0 : barre fixe et gros bouton', () => {
+  it('cinq places fixes : Accueil, Entraîner, Apprendre, Progrès, Profil', () => {
+    expect(TABS.map((t) => t.label)).toEqual(['Accueil', 'Entraîner', 'Apprendre', 'Progrès', 'Profil']);
+    for (const t of TABS) expect(navScreen(t.to), t.id).not.toBeNull();
+  });
+  it('chaque écran appartient à un espace, sauf une page inconnue', () => {
+    for (const s of screens) if (s !== 'autre') expect(SECTION[s], s).not.toBeNull();
+  });
+  it('le gros bouton de chaque écran est une action de cet écran', () => {
+    for (const [s, a] of Object.entries(PRIMARY)) expect(dockSlots(s as NavScreen).map((d) => d.slot.action), s).toContain(a);
+  });
+  it('un lien vers la page affichée n’est pas répété (Chrono sur le chrono), un lien vers une autre page du même écran reste', () => {
+    expect(dockSlots('chrono', '/chrono').map((d) => d.slot.action)).not.toContain('nav:/chrono');
+    // 1.1.0 (Youssef, 2026-10-27): « Caméra » left Réglages, it opened the same page as « Affichage »
+    expect(dockSlots('parametres', '/reglages').map((d) => d.slot.action)).toEqual(['nav:/reglages/affichage']);
+  });
+  it('aucune action d’écran ne disparaît : elle est au-dessus de la barre, ou c’est une des cinq places', () => {
+    const tabRoots = TABS.map((t) => t.to);
+    for (const s of screens) {
+      const shown = dockSlots(s).map((d) => d.slot.action);
+      for (const slot of NAV_CONFIG[s]) {
+        if (slot.action === 'back' || slot.action === 'menu' || shown.includes(slot.action)) continue;
+        const to = slot.action.slice(4);
+        expect(slot.action.startsWith('nav:') && tabRoots.includes(to), `${s} → ${slot.action}`).toBe(true);
+      }
+    }
+  });
+  it('Retour reste sur tous les écrans de détail', () => {
+    for (const s of screens) if (!ROOT_SCREENS.has(s)) expect(NAV_CONFIG[s].some((x) => x.action === 'back'), s).toBe(true);
+  });
+});
+
+describe('refonte 1.0.0 : le contenu de l’ancien Menu est redistribué, rien n’est perdu', () => {
+  const profile = read('src/ui/screens/account/Profile.tsx');
+  const settings = read('src/ui/screens/Settings.tsx');
+  const reach = (to: string): string | null => {
+    if (TABS.some((t) => t.to === to)) return 'barre';
+    for (const tabs of Object.values(SECTION_TABS)) if (tabs!.some((t) => t.to === to)) return 'onglets';
+    if (profile.includes(`to="${to}"`)) return 'Profil';
+    if (settings.includes(`to="${to}"`)) return 'Réglages';
+    return null;
+  };
+  it.each(MENU_ENTRIES.map((m) => [m.label, m] as const))('%s', (_label, m) => {
+    if (m.id === 'nouveautes') {
+      // 1.2.0: a row of the list (SetAction testId)
+      expect(settings).toContain('testId="reglages-nouveautes"');
+      expect(settings).toContain('onClick={openNews}');
+      return;
+    }
+    expect(reach(m.to), m.to).not.toBeNull();
+  });
+  // 1.2.0 (Youssef, 2026-10-28: « 2 onglets glissants : Mes infos & Reglages avec tous le reste dans reglages »):
+  // Mon coach and Coach IA became rows of Réglages
+  it('Profil : Mes infos et Réglages en onglets (lot 2, 1.2.0)', () => {
+    expect(sectionTabsFor('profil')?.map((t) => [t.label, t.to])).toEqual([
+      ['Mes infos', '/profil'],
+      ['Réglages', '/reglages'],
+    ]);
+    for (const t of sectionTabsFor('profil')!) expect(t.screens.map((x) => navScreen(t.to) === x)).toContain(true);
+  });
+  it('Entraîner : Séance, Programmes, Enchaînements, Favoris en onglets (lot 2) ; 1.1.0 : Chrono est le 3e choix de Séance', () => {
+    expect(sectionTabsFor('entrainer')?.map((t) => [t.label, t.to])).toEqual([
+      ['Séance', '/entrainer'],
+      ['Programmes', '/programmes'],
+      ['Enchaînements', '/createur'],
+      ['Favoris', '/favoris'],
+    ]);
+    // the chrono keeps the Séance tab lit and is reached from the segments Séances / Disciplines / Chrono
+    expect(sectionTabsFor('entrainer')![0].screens).toContain('chrono');
+    expect(readFileSync('src/ui/screens/Train.tsx', 'utf8')).toMatch(/data-testid=\{`space-\$\{/);
+    expect(readFileSync('src/ui/screens/Train.tsx', 'utf8')).toContain("'/chrono'");
+    for (const t of sectionTabsFor('entrainer')!) expect(t.screens.map((x) => navScreen(t.to) === x)).toContain(true);
+  });
+  it('sur le premier écran d’un onglet, un lien vers un autre onglet n’est pas répété au-dessus de la barre', () => {
+    expect(dockSlots('entrainer', '/entrainer').map((d) => d.slot.action)).toEqual(['start']);
+    // 1.2.0: Mon coach is no longer a tab but a row of Réglages, so « Coach » stays above the bar and opens it
+    expect(dockSlots('profil', '/profil').map((d) => d.slot.action)).toEqual(['nav:/reglages/coach']);
+    for (const s of screens)
+      for (const t of sectionTabsFor(s) ?? [])
+        if (t.screens.includes(s)) {
+          const hidden = NAV_CONFIG[s].filter((x) => x.action.startsWith('nav:') && !dockSlots(s, t.to).some((d) => d.slot === x));
+          const tabs = (sectionTabsFor(s) ?? []).map((x) => x.to);
+          for (const x of hidden) expect(TABS.some((b) => b.to === x.action.slice(4)) || tabs.includes(x.action.slice(4)) || x.action.slice(4) === t.to, `${s} → ${x.action}`).toBe(true);
+        }
+  });
+  it('les onglets ne s’affichent que sur les premiers écrans de l’espace', () => {
+    expect(sectionTabsFor('techniques')?.map((t) => t.label)).toEqual(['Techniques', 'Légendes', 'Encyclopédie']);
+    expect(sectionTabsFor('progres')?.map((t) => t.label)).toEqual(['Tableau', 'Historique', 'Objectifs']);
+    expect(sectionTabsFor('programme')).toBeNull();
+    expect(sectionTabsFor('createur-fiche')).toBeNull();
+    expect(sectionTabsFor('fiche')).toBeNull();
+    expect(sectionTabsFor('entrainement')).toBeNull();
+  });
+});
+
+// lot 3 (maquette v4): « Rechercher ou demander au coach » replaces the Coach IA bubble
+describe('1.0.0 lot 3 : accueil et recherche', () => {
+  it('Accueil : plus de Chrono au-dessus de la barre ; 1.30.0 : « Commencer » est dans la carte du coach, la barre ne garde que ses places', () => {
+    // 1.0.0: the big button « Reprendre » was above the bar; 1.30.0 (nouvelle ergonomie, lot 2, maquette validée le
+    // 2026-11-11): the page carries « Commencer » (coach card) and « Reprendre ta séance » (shortcut)
+    expect(PRIMARY.accueil).toBeUndefined();
+    const home = readFileSync('src/ui/screens/Home.tsx', 'utf8');
+    for (const id of ['home-cta', 'resume-last', 'tile-daily', 'tile-chrono', 'app-search', 'home-goal', 'home-prog', 'home-foryou']) expect(home, id).toContain(`data-testid="${id}"`);
+  });
+  it('1.29.0 (barre flottante) : quatre places, « Rechercher » en haut à droite de chaque écran à places, jamais en séance', () => {
+    // 1.1.0: the magnifier was a place of the bar and Profil the photo at the top right; 1.29.0 (Youssef, 2026-11-11,
+    // maquette validée): Compte (Profil) is back in the bar, the magnifier is at the top right, and Apprendre is
+    // reached from the tiles of Entraîner, whose place it lights
+    expect(BAR_PLACES.map((p) => p.label)).toEqual(['Accueil', 'Entraîner', 'Progrès', 'Compte']);
+    expect(BAR_PLACES.map((p) => p.to)).toEqual(['/', '/entrainer', '/stats', '/profil']);
+    for (const s of ['techniques', 'legendes', 'encyclopedie', 'fiche'] as NavScreen[]) expect(barPlaceOf(SECTION[s]), s).toBe('entrainer');
+    // the hub of Entraîner: no big button, no tabs; the former first page keeps them
+    expect(isTrainHub('entrainer', '')).toBe(true);
+    expect(isTrainHub('entrainer', '?espace=seances')).toBe(false);
+    expect(isTrainHub('programmes', '')).toBe(false);
+    // nothing lost: every tab of Entraîner and of Apprendre has its tile on the hub
+    const hub = readFileSync('src/ui/screens/Train.tsx', 'utf8');
+    for (const t of [...SECTION_TABS.entrainer!, ...SECTION_TABS.apprendre!]) expect(hub, t.to).toContain(t.to === '/entrainer' ? "to=\"/entrainer?espace=seances\"" : `to: '${t.to}'`);
+    expect(hub).toContain("to: '/chrono'");
+    const bar = readFileSync('src/ui/nav/BottomBar.tsx', 'utf8');
+    expect(bar).toContain('data-testid="app-search"');
+    // Compte is drawn from BAR_PLACES (data-testid nav-profil, from its path), with the photo or the initials
+    expect(bar).toContain('data-testid="nav-me"');
+    // no screen keeps its own search slot: the bar's search covers the screen first (useSearchScope)
+    for (const [s, slots] of Object.entries(NAV_CONFIG)) expect(slots.some((x) => x.action === 'search'), s).toBe(false);
+    // the session hides the bar (in-row screens)
+    expect(backInRow('entrainement')).toBe(true);
+  });
+});

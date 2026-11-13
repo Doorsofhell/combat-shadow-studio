@@ -1,0 +1,31 @@
+name: Diagnostic Amara MMA geometry 1.37.6
+on:
+  push:
+    branches:
+      - claude/project-thread-o7lrt8
+    paths:
+      - scripts/dev/inspect-amara-mma-geometry-v1376.py
+      - .github/workflows/audit-amara-mma-v1376.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender NumPy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender python3-numpy
+      - name: Inspect the published Amara MMA outfits (no changes)
+        run: |
+          mkdir -p logs
+          blender --background --python-exit-code 42 --python scripts/dev/inspect-amara-mma-geometry-v1376.py 2>&1 | tee logs/amara-mma-geometry-v1376.log
+      - name: Save geometry report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amara-mma-geometry-v1376
+          path: logs/amara-mma-geometry-v1376.log

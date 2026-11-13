@@ -1,0 +1,1731 @@
+{
+ "schema": 1,
+ "version": "1.0.0",
+ "updatedAt": "2026-11-06",
+ "champions": [],
+ "orgs": [
+  {
+   "id": "ffboxe",
+   "name": "FFBoxe",
+   "fullName": "Fédération française de boxe",
+   "url": "https://www.ffboxe.com/",
+   "disciplines": [
+    "boxe"
+   ]
+  },
+  {
+   "id": "ffkmda",
+   "name": "FFKMDA",
+   "fullName": "Fédération française de kickboxing, muaythai et disciplines associées",
+   "url": "https://www.ffkmda.com/",
+   "disciplines": [
+    "kickboxing",
+    "muaythai"
+   ]
+  }
+ ],
+ "combos": [
+  {
+   "id": "boxe-ffboxe-gb-01",
+   "name": "Deux directs : avant puis arrière",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant blanc), travaillé seul",
+    "reference": "FFBoxe, Livret explicatif du Gant blanc (dispositif des gants de couleur, 31/08/2023), p. 17, Appareil technique, APT 2",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2023/09/Livret-explicatif-du-Gant-Blanc-31.08.2023-ok-MT.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Livret explicatif du Gant blanc (dispositif des gants de couleur, 31/08/2023)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2023/09/Livret-explicatif-du-Gant-Blanc-31.08.2023-ok-MT.pdf",
+    "grade": "Gant blanc",
+    "page": 17,
+    "exercise": "Appareil technique, APT 2",
+    "quote": "Doublés de Directs ou enchaînement de 2 Directs Poings avant ou arrière à la face ou au buste",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Le document laisse le choix des poings et des cibles : ici poing avant puis poing arrière, à la face.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "longue",
+   "sequence": [
+    "jab",
+    "direct"
+   ],
+   "objective": "Enchaîner tes deux premiers coups droits sans perdre ta garde : la base de toute la boxe.",
+   "keyPoints": [
+    "Le poing avant part seul, le corps suit à peine",
+    "Le direct arrière part pendant que le jab revient",
+    "Les deux mains reviennent au visage"
+   ],
+   "errors": [
+    "Baisser la main qui ne frappe pas",
+    "Pencher la tête en avant au lieu de tourner les hanches"
+   ],
+   "estimatedSec": 1.5,
+   "variants": [
+    {
+     "label": "Les deux directs au buste",
+     "sequence": [
+      "jab-corps",
+      "direct-corps"
+     ]
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-gb-02",
+   "name": "Doublé de directs du poing avant",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant blanc), travaillé seul",
+    "reference": "FFBoxe, Livret explicatif du Gant blanc (dispositif des gants de couleur, 31/08/2023), p. 17, Appareil technique, APT 2",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2023/09/Livret-explicatif-du-Gant-Blanc-31.08.2023-ok-MT.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Livret explicatif du Gant blanc (dispositif des gants de couleur, 31/08/2023)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2023/09/Livret-explicatif-du-Gant-Blanc-31.08.2023-ok-MT.pdf",
+    "grade": "Gant blanc",
+    "page": 17,
+    "exercise": "Appareil technique, APT 2",
+    "quote": "Doublés de Directs ou enchaînement de 2 Directs Poings avant ou arrière à la face ou au buste",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Ici le « doublé » est fait avec le poing avant, à la face.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "longue",
+   "sequence": [
+    "jab",
+    "jab"
+   ],
+   "objective": "Doubler le jab pour garder l’adversaire à distance et préparer la suite.",
+   "keyPoints": [
+    "Le second jab part dès que le premier revient",
+    "Un petit pas en avant sur chaque jab",
+    "Le poing arrière reste collé au menton"
+   ],
+   "errors": [
+    "Ramener le poing trop bas entre les deux jabs",
+    "Faire deux grands pas qui te déséquilibrent"
+   ],
+   "estimatedSec": 1.2,
+   "variants": [
+    {
+     "label": "Le second jab au buste",
+     "sequence": [
+      "jab",
+      "jab-corps"
+     ]
+    }
+   ],
+   "goal": "deplacement",
+   "tags": [
+    "offensif",
+    "deplacement"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-gb-03",
+   "name": "Direct arrière puis jab",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant blanc), travaillé seul",
+    "reference": "FFBoxe, Livret explicatif du Gant blanc (dispositif des gants de couleur, 31/08/2023), p. 10, Échelle de rythme, exercice 2_GB_ECR.8",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2023/09/Livret-explicatif-du-Gant-Blanc-31.08.2023-ok-MT.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Livret explicatif du Gant blanc (dispositif des gants de couleur, 31/08/2023)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2023/09/Livret-explicatif-du-Gant-Blanc-31.08.2023-ok-MT.pdf",
+    "grade": "Gant blanc",
+    "page": 10,
+    "exercise": "Échelle de rythme, exercice 2_GB_ECR.8",
+    "quote": "Appui Avt / D.Pg Arr Face et Appui Arr / D.Pg Avt Face.",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Sans échelle au sol : garde le même rythme d’appuis, sur place ou en avançant.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "longue",
+   "sequence": [
+    "direct",
+    "jab"
+   ],
+   "objective": "Commencer par le bras arrière et revenir vite au jab, en suivant le rythme de tes appuis.",
+   "keyPoints": [
+    "Un coup par appui, comme dans l’échelle",
+    "Après le direct, les hanches reviennent pour lancer le jab",
+    "Regard fixe devant toi"
+   ],
+   "errors": [
+    "Rester bloqué sur la jambe avant après le direct",
+    "Frapper sans suivre le rythme des pieds"
+   ],
+   "estimatedSec": 1.5,
+   "variants": [
+    {
+     "label": "En reculant d’un pas après le jab"
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-gb-04",
+   "name": "Jab au visage, direct au buste",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant blanc), travaillé seul",
+    "reference": "FFBoxe, Livret explicatif du Gant blanc (dispositif des gants de couleur, 31/08/2023), p. 10, Échelle de rythme, exercice 2_GB_ECR.9",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2023/09/Livret-explicatif-du-Gant-Blanc-31.08.2023-ok-MT.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Livret explicatif du Gant blanc (dispositif des gants de couleur, 31/08/2023)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2023/09/Livret-explicatif-du-Gant-Blanc-31.08.2023-ok-MT.pdf",
+    "grade": "Gant blanc",
+    "page": 10,
+    "exercise": "Échelle de rythme, exercice 2_GB_ECR.9",
+    "quote": "Appui Avt / D.Pg Avt Face et Appui Arr / D.Pg Arr Buste.",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Sans échelle au sol : un coup par appui, sur place ou en avançant.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "moyenne",
+   "sequence": [
+    "jab",
+    "direct-corps"
+   ],
+   "objective": "Changer de hauteur : un jab en haut, puis le direct arrière au buste.",
+   "keyPoints": [
+    "Pour le buste, plie les genoux au lieu de baisser la tête",
+    "Le jab attire le regard en haut",
+    "Remonte en garde après le coup au buste"
+   ],
+   "errors": [
+    "Se pencher en avant pour toucher le buste",
+    "Baisser la main avant pendant le direct au corps"
+   ],
+   "estimatedSec": 1.6,
+   "variants": [
+    {
+     "label": "Les deux directs au visage",
+     "sequence": [
+      "jab",
+      "direct"
+     ]
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif",
+    "corps"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-gb-05",
+   "name": "Direct au buste, jab au visage",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant blanc), travaillé seul",
+    "reference": "FFBoxe, Livret explicatif du Gant blanc (dispositif des gants de couleur, 31/08/2023), p. 10, Échelle de rythme, exercice 2_GB_ECR10",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2023/09/Livret-explicatif-du-Gant-Blanc-31.08.2023-ok-MT.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Livret explicatif du Gant blanc (dispositif des gants de couleur, 31/08/2023)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2023/09/Livret-explicatif-du-Gant-Blanc-31.08.2023-ok-MT.pdf",
+    "grade": "Gant blanc",
+    "page": 10,
+    "exercise": "Échelle de rythme, exercice 2_GB_ECR10",
+    "quote": "Appui Avt / D.Pg Arr Buste et Appui Arr / D.Pg Avt Face.",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Sans échelle au sol : un coup par appui, sur place ou en reculant.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "moyenne",
+   "sequence": [
+    "direct-corps",
+    "jab"
+   ],
+   "objective": "Ouvrir au buste avec le bras arrière, puis remonter au visage avec le jab.",
+   "keyPoints": [
+    "Plie les genoux pour le coup au buste",
+    "Remonte sur les jambes en lançant le jab",
+    "Garde le menton rentré"
+   ],
+   "errors": [
+    "Rester bas après le coup au buste",
+    "Lancer le jab avant d’avoir repris ton équilibre"
+   ],
+   "estimatedSec": 1.6,
+   "variants": [
+    {
+     "label": "Le jab en reculant d’un pas"
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif",
+    "corps"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-gj-01",
+   "name": "Parade, direct, crochet, direct",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant jaune), travaillé seul",
+    "reference": "FFBoxe, Livret explicatif du Gant jaune (dispositif des gants de couleur, mis en ligne en janvier 2025), p. 16, Appareil technique, APT 1 (enchaînement imposé)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/01/Livret-explicatif-du-GANT-JAUNE.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Livret explicatif du Gant jaune (dispositif des gants de couleur, mis en ligne en janvier 2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/01/Livret-explicatif-du-GANT-JAUNE.pdf",
+    "grade": "Gant jaune",
+    "page": 16,
+    "exercise": "Appareil technique, APT 1 (enchaînement imposé)",
+    "quote": "Parade Avant-Bras + Direct Arr Face + Crochet Av Face + Direct Arr Face",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. La parade avec l’avant-bras est jouée ici par le blocage haut de l’app.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "moyenne",
+   "sequence": [
+    "blocage-haut",
+    "direct",
+    "crochet-avant",
+    "direct"
+   ],
+   "objective": "Bloquer d’abord, puis répondre tout de suite avec trois coups en alternant les bras.",
+   "keyPoints": [
+    "Le blocage est court : tu ripostes dès qu’il est fini",
+    "Le crochet avant part sur la rotation des hanches",
+    "Le dernier direct est aussi fort que le premier"
+   ],
+   "errors": [
+    "Garder les bras en blocage trop longtemps",
+    "Ouvrir le coude du crochet trop loin du corps"
+   ],
+   "estimatedSec": 2.4,
+   "variants": [
+    {
+     "label": "Le dernier direct au buste",
+     "sequence": [
+      "blocage-haut",
+      "direct",
+      "crochet-avant",
+      "direct-corps"
+     ]
+    }
+   ],
+   "goal": "defense",
+   "tags": [
+    "defense-contre"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-gj-02",
+   "name": "Jab, crochet avant, direct",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant jaune), travaillé seul",
+    "reference": "FFBoxe, Livret explicatif du Gant jaune (dispositif des gants de couleur, mis en ligne en janvier 2025), p. 16, Appareil technique, APT 1 (enchaînement imposé)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/01/Livret-explicatif-du-GANT-JAUNE.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Livret explicatif du Gant jaune (dispositif des gants de couleur, mis en ligne en janvier 2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/01/Livret-explicatif-du-GANT-JAUNE.pdf",
+    "grade": "Gant jaune",
+    "page": 16,
+    "exercise": "Appareil technique, APT 1 (enchaînement imposé)",
+    "quote": "Direct Av Face + Crochet Av Face + Direct Arr Face",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Le même enchaînement est aussi demandé au gant rouge (oppositions, LCO 2, page 14).",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "moyenne",
+   "sequence": [
+    "jab",
+    "crochet-avant",
+    "direct"
+   ],
+   "objective": "Doubler le bras avant (direct puis crochet) avant de finir avec le bras arrière.",
+   "keyPoints": [
+    "Le crochet suit le jab sans revenir en garde",
+    "Pivote le pied avant sur le crochet",
+    "Le direct finit l’enchaînement, poids sur la jambe avant"
+   ],
+   "errors": [
+    "Armer le crochet en reculant le bras",
+    "Oublier de pivoter le pied avant"
+   ],
+   "estimatedSec": 2,
+   "variants": [
+    {
+     "label": "Le crochet au buste",
+     "sequence": [
+      "jab",
+      "crochet-avant-corps",
+      "direct"
+     ]
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-gj-03",
+   "name": "Jab, crochet avant, puis blocage",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant jaune), travaillé seul",
+    "reference": "FFBoxe, Livret explicatif du Gant jaune (dispositif des gants de couleur, mis en ligne en janvier 2025), p. 18, Oppositions, LCO 1 (boxeur A)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/01/Livret-explicatif-du-GANT-JAUNE.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Livret explicatif du Gant jaune (dispositif des gants de couleur, mis en ligne en janvier 2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/01/Livret-explicatif-du-GANT-JAUNE.pdf",
+    "grade": "Gant jaune",
+    "page": 18,
+    "exercise": "Oppositions, LCO 1 (boxeur A)",
+    "quote": "A : Attaque en enchainement + Parade Bloquée (Direct Avant Face + Crochet Avant Face)",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. La parade bloquée est jouée ici par le blocage haut de l’app ; en club, le partenaire contre-attaque à ce moment.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "moyenne",
+   "sequence": [
+    "jab",
+    "crochet-avant",
+    "blocage-haut"
+   ],
+   "objective": "Attaquer à deux coups, puis te protéger tout de suite : on ne reste jamais découvert après une attaque.",
+   "keyPoints": [
+    "Les mains reviennent dès le crochet fini",
+    "Coudes serrés et menton rentré pour le blocage",
+    "Les yeux restent ouverts derrière les gants"
+   ],
+   "errors": [
+    "Admirer son crochet au lieu de remonter la garde",
+    "Fermer les yeux pendant le blocage"
+   ],
+   "estimatedSec": 1.8,
+   "variants": [
+    {
+     "label": "Avec un pas en arrière après le blocage"
+    }
+   ],
+   "goal": "defense",
+   "tags": [
+    "offensif",
+    "defense-contre"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-gj-04",
+   "name": "Crochet avant, direct, deux parades",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant jaune), travaillé seul",
+    "reference": "FFBoxe, Livret explicatif du Gant jaune (dispositif des gants de couleur, mis en ligne en janvier 2025), p. 11, Carré boxe 1, côté 1",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/01/Livret-explicatif-du-GANT-JAUNE.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Livret explicatif du Gant jaune (dispositif des gants de couleur, mis en ligne en janvier 2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/01/Livret-explicatif-du-GANT-JAUNE.pdf",
+    "grade": "Gant jaune",
+    "page": 11,
+    "exercise": "Carré boxe 1, côté 1",
+    "quote": "Crochet Avant Face / Appui Avant — Direct Arrière Face / Appui Arrière — 2 Parades sur place",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Le carré boxe se fait en se déplaçant sur les quatre côtés d’un carré ; seul, fais un côté, puis tourne d’un quart de tour.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "moyenne",
+   "sequence": [
+    "crochet-avant",
+    "direct",
+    "parade",
+    "parade"
+   ],
+   "objective": "Ouvrir avec le crochet avant, finir au direct, puis te protéger sur place.",
+   "keyPoints": [
+    "Le crochet part sur l’appui avant, le direct sur l’appui arrière",
+    "Les parades sont de petits gestes, sans ouvrir la garde",
+    "Reste sur place pendant les parades"
+   ],
+   "errors": [
+    "Faire des parades trop grandes qui ouvrent le visage",
+    "Frapper sans suivre l’appui indiqué"
+   ],
+   "estimatedSec": 2.4,
+   "variants": [
+    {
+     "label": "Le carré complet : enchaîne les quatre côtés"
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif",
+    "defense-contre"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-gj-05",
+   "name": "Deux crochets, deux parades",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant jaune), travaillé seul",
+    "reference": "FFBoxe, Livret explicatif du Gant jaune (dispositif des gants de couleur, mis en ligne en janvier 2025), p. 11, Carré boxe 1, côté 2",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/01/Livret-explicatif-du-GANT-JAUNE.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Livret explicatif du Gant jaune (dispositif des gants de couleur, mis en ligne en janvier 2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/01/Livret-explicatif-du-GANT-JAUNE.pdf",
+    "grade": "Gant jaune",
+    "page": 11,
+    "exercise": "Carré boxe 1, côté 2",
+    "quote": "Crochet Avant Face / Appui Arrière — Crochet Arrière Face / Appui Avant — 2 Parades sur place",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Seul, fais ce côté du carré en avançant, puis tourne d’un quart de tour.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "courte",
+   "sequence": [
+    "crochet-avant",
+    "crochet-arriere",
+    "parade",
+    "parade"
+   ],
+   "objective": "Enchaîner les deux crochets en tournant les hanches d’un côté puis de l’autre, puis parer.",
+   "keyPoints": [
+    "Les hanches tournent pour chaque crochet",
+    "Le bras reste plié, coude à hauteur du poing",
+    "Deux parades courtes pour finir"
+   ],
+   "errors": [
+    "Tendre le bras sur le crochet",
+    "Oublier de revenir en garde entre les deux crochets"
+   ],
+   "estimatedSec": 2.4,
+   "variants": [
+    {
+     "label": "Le second crochet au buste",
+     "sequence": [
+      "crochet-avant",
+      "crochet-arriere-corps",
+      "parade",
+      "parade"
+     ]
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif",
+    "defense-contre"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-gj-06",
+   "name": "Direct, crochet avant, deux parades",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant jaune), travaillé seul",
+    "reference": "FFBoxe, Livret explicatif du Gant jaune (dispositif des gants de couleur, mis en ligne en janvier 2025), p. 11, Carré boxe 1, côté 3",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/01/Livret-explicatif-du-GANT-JAUNE.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Livret explicatif du Gant jaune (dispositif des gants de couleur, mis en ligne en janvier 2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/01/Livret-explicatif-du-GANT-JAUNE.pdf",
+    "grade": "Gant jaune",
+    "page": 11,
+    "exercise": "Carré boxe 1, côté 3",
+    "quote": "Direct Arrière Face / Appui Arrière — Crochet Avant Face / Appui Avant — 2 Parades sur place",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Seul, fais ce côté du carré, puis tourne d’un quart de tour.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "moyenne",
+   "sequence": [
+    "direct",
+    "crochet-avant",
+    "parade",
+    "parade"
+   ],
+   "objective": "Le direct arrière charge la jambe avant : le crochet avant repart naturellement de là.",
+   "keyPoints": [
+    "Le direct fait tourner les hanches, le crochet les ramène",
+    "Le crochet reste court",
+    "Parades sur place, sans reculer"
+   ],
+   "errors": [
+    "Rester penché après le direct",
+    "Lancer le crochet de trop loin"
+   ],
+   "estimatedSec": 2.4,
+   "variants": [
+    {
+     "label": "Le carré complet : enchaîne les quatre côtés"
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif",
+    "defense-contre"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-gj-07",
+   "name": "Crochet arrière, crochet avant, deux parades",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant jaune), travaillé seul",
+    "reference": "FFBoxe, Livret explicatif du Gant jaune (dispositif des gants de couleur, mis en ligne en janvier 2025), p. 11, Carré boxe 1, côté 4",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/01/Livret-explicatif-du-GANT-JAUNE.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Livret explicatif du Gant jaune (dispositif des gants de couleur, mis en ligne en janvier 2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/01/Livret-explicatif-du-GANT-JAUNE.pdf",
+    "grade": "Gant jaune",
+    "page": 11,
+    "exercise": "Carré boxe 1, côté 4",
+    "quote": "Crochet Arrière Face / Appui Avant — Crochet Avant Face / Appui Arrière — 2 Parades sur place",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Seul, fais ce côté du carré, puis tourne d’un quart de tour.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "courte",
+   "sequence": [
+    "crochet-arriere",
+    "crochet-avant",
+    "parade",
+    "parade"
+   ],
+   "objective": "Commencer par le crochet du bras arrière et répondre aussitôt avec le bras avant.",
+   "keyPoints": [
+    "Le crochet arrière fait pivoter le pied arrière",
+    "Le crochet avant ramène les hanches",
+    "Menton rentré du début à la fin"
+   ],
+   "errors": [
+    "Faire un grand geste circulaire avec le bras arrière",
+    "Se pencher sur le côté au lieu de tourner"
+   ],
+   "estimatedSec": 2.4,
+   "variants": [
+    {
+     "label": "Le carré complet : enchaîne les quatre côtés"
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif",
+    "defense-contre"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-go-01",
+   "name": "Direct, crochet, uppercut",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant orange), travaillé seul",
+    "reference": "FFBoxe, Fiches ateliers du Gant orange (au 01/09/2025), p. 7, Carré boxe 1 (les quatre côtés)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-Ateliers-GANT-ORANGE-au-01_09_2025.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Fiches ateliers du Gant orange (au 01/09/2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-Ateliers-GANT-ORANGE-au-01_09_2025.pdf",
+    "grade": "Gant orange",
+    "page": 7,
+    "exercise": "Carré boxe 1 (les quatre côtés)",
+    "quote": "Enchainement successif et sans interruption (à la Face) : Direct – Crochet – Uppercut",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Le document ne précise pas les bras : ici bras arrière, bras avant, bras arrière, pour alterner. Le changement de garde demandé sur deux côtés du carré n’est pas joué par le coach.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "intermediaire",
+   "distance": "moyenne",
+   "sequence": [
+    "direct",
+    "crochet-avant",
+    "uppercut-arriere"
+   ],
+   "objective": "Les trois familles de coups (droit, circulaire, remontant) dans un seul enchaînement, sans pause.",
+   "keyPoints": [
+    "Chaque coup part de la rotation du précédent",
+    "L’uppercut monte par une petite flexion des jambes",
+    "Pas d’arrêt entre les coups"
+   ],
+   "errors": [
+    "Armer l’uppercut en baissant le bras",
+    "Faire une pause entre deux coups"
+   ],
+   "estimatedSec": 2,
+   "variants": [
+    {
+     "label": "En commençant par le jab",
+     "sequence": [
+      "jab",
+      "crochet-arriere",
+      "uppercut-avant"
+     ]
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif",
+    "uppercut"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-go-02",
+   "name": "Jab, uppercut arrière, crochet avant, blocage",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant orange), travaillé seul",
+    "reference": "FFBoxe, Fiches ateliers du Gant orange (au 01/09/2025), p. 8, Carré boxe 2, côté 1",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-Ateliers-GANT-ORANGE-au-01_09_2025.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Fiches ateliers du Gant orange (au 01/09/2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-Ateliers-GANT-ORANGE-au-01_09_2025.pdf",
+    "grade": "Gant orange",
+    "page": 8,
+    "exercise": "Carré boxe 2, côté 1",
+    "quote": "Direct Avant Face en contrôle / Uppercut Arrière Face en déplacement Oblique avant / Crochet Avant Face en retour d’appuis / Parade avant-bras en décalage sur les 2 appuis",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. La parade avec l’avant-bras est jouée par le blocage haut de l’app ; les déplacements obliques se font sur place ou sur un petit pas.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "intermediaire",
+   "distance": "courte",
+   "sequence": [
+    "jab",
+    "uppercut-arriere",
+    "crochet-avant",
+    "blocage-haut"
+   ],
+   "objective": "Contrôler avec le jab, entrer en oblique pour l’uppercut, finir au crochet et te protéger.",
+   "keyPoints": [
+    "Le jab sert à mesurer la distance",
+    "Petit pas en oblique avant sur l’uppercut",
+    "Garde fermée dès le crochet fini"
+   ],
+   "errors": [
+    "Entrer tout droit au lieu d’en oblique",
+    "Baisser la tête sur l’uppercut"
+   ],
+   "estimatedSec": 2.6,
+   "variants": [
+    {
+     "label": "Sans le blocage final",
+     "sequence": [
+      "jab",
+      "uppercut-arriere",
+      "crochet-avant"
+     ]
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif",
+    "uppercut",
+    "angle"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-go-03",
+   "name": "Deux uppercuts, crochet arrière, deux parades",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant orange), travaillé seul",
+    "reference": "FFBoxe, Fiches ateliers du Gant orange (au 01/09/2025), p. 8, Carré boxe 2, enchaînements",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-Ateliers-GANT-ORANGE-au-01_09_2025.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Fiches ateliers du Gant orange (au 01/09/2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-Ateliers-GANT-ORANGE-au-01_09_2025.pdf",
+    "grade": "Gant orange",
+    "page": 8,
+    "exercise": "Carré boxe 2, enchaînements",
+    "quote": "Uppercut Arr Face + Uppercut Av Face + Crochet Arr Face + 2 Parades (la 2e sur place)",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. La première parade se fait en bougeant, la seconde sur place.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "intermediaire",
+   "distance": "courte",
+   "sequence": [
+    "uppercut-arriere",
+    "uppercut-avant",
+    "crochet-arriere",
+    "parade",
+    "parade"
+   ],
+   "objective": "Travailler à courte distance : deux uppercuts, un crochet, puis deux parades.",
+   "keyPoints": [
+    "Les uppercuts restent près du corps",
+    "Les jambes donnent la force, pas les épaules",
+    "Deux parades courtes pour finir"
+   ],
+   "errors": [
+    "Faire de grands uppercuts qui partent du bas",
+    "Rester immobile pendant la première parade"
+   ],
+   "estimatedSec": 2.8,
+   "variants": [
+    {
+     "label": "Côté inverse",
+     "sequence": [
+      "uppercut-avant",
+      "uppercut-arriere",
+      "crochet-avant",
+      "parade",
+      "parade"
+     ]
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif",
+    "uppercut",
+    "defense-contre"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-go-04",
+   "name": "Deux uppercuts, crochet avant, deux parades",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant orange), travaillé seul",
+    "reference": "FFBoxe, Fiches ateliers du Gant orange (au 01/09/2025), p. 8, Carré boxe 2, enchaînements",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-Ateliers-GANT-ORANGE-au-01_09_2025.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Fiches ateliers du Gant orange (au 01/09/2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-Ateliers-GANT-ORANGE-au-01_09_2025.pdf",
+    "grade": "Gant orange",
+    "page": 8,
+    "exercise": "Carré boxe 2, enchaînements",
+    "quote": "Uppercut Av Face + Uppercut Arr Face + Crochet Av Face + 2 Parades (la 2e sur place)",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. La première parade se fait en bougeant, la seconde sur place.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "intermediaire",
+   "distance": "courte",
+   "sequence": [
+    "uppercut-avant",
+    "uppercut-arriere",
+    "crochet-avant",
+    "parade",
+    "parade"
+   ],
+   "objective": "La même série en commençant par le bras avant, pour boxer des deux côtés.",
+   "keyPoints": [
+    "L’uppercut avant part sur une petite flexion de la jambe avant",
+    "Le crochet avant ramène les hanches",
+    "Mains au visage pour les parades"
+   ],
+   "errors": [
+    "Se redresser entre les deux uppercuts",
+    "Laisser tomber la main arrière"
+   ],
+   "estimatedSec": 2.8,
+   "variants": [
+    {
+     "label": "Le crochet au buste",
+     "sequence": [
+      "uppercut-avant",
+      "uppercut-arriere",
+      "crochet-avant-corps",
+      "parade",
+      "parade"
+     ]
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif",
+    "uppercut",
+    "defense-contre"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-go-05",
+   "name": "Blocage, deux crochets au buste, crochet au visage",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant orange), travaillé seul",
+    "reference": "FFBoxe, Fiches ateliers du Gant orange (au 01/09/2025), p. 12, Appareil technique, APT 1, enchaînement imposé (contre-attaquant)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-Ateliers-GANT-ORANGE-au-01_09_2025.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Fiches ateliers du Gant orange (au 01/09/2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-Ateliers-GANT-ORANGE-au-01_09_2025.pdf",
+    "grade": "Gant orange",
+    "page": 12,
+    "exercise": "Appareil technique, APT 1, enchaînement imposé (contre-attaquant)",
+    "quote": "Parade avant-bras / Crochet Av Buste / Crochet Arr buste / Crochet Av Face",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. La parade avec l’avant-bras est jouée par le blocage haut de l’app.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "intermediaire",
+   "distance": "courte",
+   "sequence": [
+    "blocage-haut",
+    "crochet-avant-corps",
+    "crochet-arriere-corps",
+    "crochet-avant"
+   ],
+   "objective": "Contre-attaquer après un blocage : deux crochets au corps, puis remonter au visage.",
+   "keyPoints": [
+    "Plie les genoux pour les crochets au buste",
+    "Remonte sur les jambes pour le dernier crochet",
+    "Le blocage est court, la riposte immédiate"
+   ],
+   "errors": [
+    "Se pencher en avant pour toucher le corps",
+    "Rester bas pour le crochet au visage"
+   ],
+   "estimatedSec": 2.6,
+   "variants": [
+    {
+     "label": "Sans le blocage, en attaque",
+     "sequence": [
+      "crochet-avant-corps",
+      "crochet-arriere-corps",
+      "crochet-avant"
+     ]
+    }
+   ],
+   "goal": "defense",
+   "tags": [
+    "defense-contre",
+    "corps"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-go-06",
+   "name": "Jab, uppercut arrière, crochet avant",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant orange), travaillé seul",
+    "reference": "FFBoxe, Fiches ateliers du Gant orange (au 01/09/2025), p. 5, Échelle de rythme, exercice GO_ECR.3",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-Ateliers-GANT-ORANGE-au-01_09_2025.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Fiches ateliers du Gant orange (au 01/09/2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-Ateliers-GANT-ORANGE-au-01_09_2025.pdf",
+    "grade": "Gant orange",
+    "page": 5,
+    "exercise": "Échelle de rythme, exercice GO_ECR.3",
+    "quote": "- Direct en contrôle - Décalage Appui Arrière / Uppercut Arrière Face - Décalage Appui Avant / Crochet Avant Face",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Sans échelle : fais le décalage par un petit pas sur le côté. Le « direct en contrôle » est joué par le jab.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "intermediaire",
+   "distance": "courte",
+   "sequence": [
+    "jab",
+    "uppercut-arriere",
+    "crochet-avant"
+   ],
+   "objective": "Associer chaque coup à un décalage des appuis : on frappe en bougeant.",
+   "keyPoints": [
+    "Un décalage d’appui pour chaque coup",
+    "Le jab garde l’adversaire à distance",
+    "Le crochet part sur l’appui avant"
+   ],
+   "errors": [
+    "Frapper les pieds plantés au sol",
+    "Faire un trop grand pas qui te déséquilibre"
+   ],
+   "estimatedSec": 2,
+   "variants": [
+    {
+     "label": "En partant vers l’autre côté (exercice GO_ECR.4)"
+    }
+   ],
+   "goal": "deplacement",
+   "tags": [
+    "offensif",
+    "uppercut",
+    "deplacement"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-go-07",
+   "name": "Direct arrière, uppercut avant",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant orange), travaillé seul",
+    "reference": "FFBoxe, Fiches ateliers du Gant orange (au 01/09/2025), p. 5, Échelle de rythme, exercice GO_ECR.5",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-Ateliers-GANT-ORANGE-au-01_09_2025.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Fiches ateliers du Gant orange (au 01/09/2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-Ateliers-GANT-ORANGE-au-01_09_2025.pdf",
+    "grade": "Gant orange",
+    "page": 5,
+    "exercise": "Échelle de rythme, exercice GO_ECR.5",
+    "quote": "Appui Arrière (dans échelle) / Direct arrière Face — Appui Avant (dans échelle) / Uppercut avant Face",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Sans échelle au sol : un coup par appui, en avançant.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "intermediaire",
+   "distance": "moyenne",
+   "sequence": [
+    "direct",
+    "uppercut-avant"
+   ],
+   "objective": "Le direct arrière charge la jambe avant, l’uppercut avant en profite pour monter.",
+   "keyPoints": [
+    "Après le direct, le poids est sur la jambe avant : l’uppercut part de là",
+    "Le poing de l’uppercut monte paume vers toi",
+    "Retour en garde aussitôt"
+   ],
+   "errors": [
+    "Reculer le bras avant pour armer l’uppercut",
+    "Se redresser trop haut"
+   ],
+   "estimatedSec": 1.5,
+   "variants": [
+    {
+     "label": "Garde inversée (exercice GO_ECR.6)"
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif",
+    "uppercut"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-gr-01",
+   "name": "Crochet avant, uppercut arrière, jab en reculant",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant rouge), travaillé seul",
+    "reference": "FFBoxe, Fiches ateliers du Gant rouge (au 01/09/2025), p. 5, Échelle de rythme, exercice GR_ECR.3",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-ateliers-du-GANT-ROUGE-au-01_09_2025.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Fiches ateliers du Gant rouge (au 01/09/2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-ateliers-du-GANT-ROUGE-au-01_09_2025.pdf",
+    "grade": "Gant rouge",
+    "page": 5,
+    "exercise": "Échelle de rythme, exercice GR_ECR.3",
+    "quote": "- Crochet Avant Face + Uppercut Arrière Face REMOBILISATION = Retrait en Direct avant Face",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Le « retrait en direct avant » est joué par le jab : lance-le en reculant d’un pas.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "avance",
+   "distance": "courte",
+   "sequence": [
+    "crochet-avant",
+    "uppercut-arriere",
+    "jab"
+   ],
+   "objective": "Frapper à courte distance, puis ressortir en touchant avec le jab.",
+   "keyPoints": [
+    "Le crochet et l’uppercut partent près du corps",
+    "Le jab part pendant que tu recules",
+    "Tu ressors toujours en garde"
+   ],
+   "errors": [
+    "Reculer sans frapper",
+    "Reculer en ligne droite trop longtemps"
+   ],
+   "estimatedSec": 2,
+   "variants": [
+    {
+     "label": "Garde inversée (exercice GJ_ECR.4 de la même page)"
+    }
+   ],
+   "goal": "deplacement",
+   "tags": [
+    "offensif",
+    "uppercut",
+    "deplacement"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-gr-02",
+   "name": "Direct arrière, crochet arrière, uppercut avant",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant rouge), travaillé seul",
+    "reference": "FFBoxe, Fiches ateliers du Gant rouge (au 01/09/2025), p. 5, Échelle de rythme, exercice imprimé « GJ_ECR.5 »",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-ateliers-du-GANT-ROUGE-au-01_09_2025.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Fiches ateliers du Gant rouge (au 01/09/2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-ateliers-du-GANT-ROUGE-au-01_09_2025.pdf",
+    "grade": "Gant rouge",
+    "page": 5,
+    "exercise": "Échelle de rythme, exercice imprimé « GJ_ECR.5 »",
+    "quote": "- Appuis Avant / Direct arrière Face - Crochet Arrière Face + Uppercut Avant Face",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Sans échelle au sol : un coup par appui. Le code de l’exercice est imprimé « GJ » sur la fiche du gant rouge.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "avance",
+   "distance": "courte",
+   "sequence": [
+    "direct",
+    "crochet-arriere",
+    "uppercut-avant"
+   ],
+   "objective": "Doubler le bras arrière (droit puis circulaire) avant l’uppercut du bras avant.",
+   "keyPoints": [
+    "Le crochet arrière repart sans revenir complètement en garde",
+    "Les hanches font le travail",
+    "L’uppercut avant monte depuis les jambes"
+   ],
+   "errors": [
+    "Perdre l’équilibre vers l’avant après le direct",
+    "Ouvrir la garde avant pendant le crochet arrière"
+   ],
+   "estimatedSec": 2,
+   "variants": [
+    {
+     "label": "Garde inversée (exercice imprimé « GJ_ECR.6 »)"
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif",
+    "uppercut"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-gr-03",
+   "name": "Direct arrière, crochet avant",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant rouge), travaillé seul",
+    "reference": "FFBoxe, Fiches ateliers du Gant rouge (au 01/09/2025), p. 8, Carré boxe 2, enchaînements",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-ateliers-du-GANT-ROUGE-au-01_09_2025.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Fiches ateliers du Gant rouge (au 01/09/2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-ateliers-du-GANT-ROUGE-au-01_09_2025.pdf",
+    "grade": "Gant rouge",
+    "page": 8,
+    "exercise": "Carré boxe 2, enchaînements",
+    "quote": "Direct Arr Face + Crochet Av Face",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Au gant rouge, l’enchaînement se fait en déplacement circulaire autour du partenaire : seul, tourne autour d’un point fixe.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "avance",
+   "distance": "moyenne",
+   "sequence": [
+    "direct",
+    "crochet-avant"
+   ],
+   "objective": "Le duo classique, en tournant autour de l’adversaire pour changer d’angle.",
+   "keyPoints": [
+    "Le direct charge la jambe avant, le crochet la décharge",
+    "Un petit pas de côté après le crochet",
+    "Garde haute pendant le déplacement"
+   ],
+   "errors": [
+    "Croiser les pieds en tournant",
+    "Lancer le crochet de trop loin"
+   ],
+   "estimatedSec": 1.4,
+   "variants": [
+    {
+     "label": "Avec un pivot sur l’appui avant après le crochet"
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif",
+    "angle"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "boxe-ffboxe-gr-04",
+   "name": "Crochet avant, direct arrière",
+   "discipline": "boxe",
+   "champion": "ffboxe",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Gant rouge), travaillé seul",
+    "reference": "FFBoxe, Fiches ateliers du Gant rouge (au 01/09/2025), p. 8, Carré boxe 2, enchaînements",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-ateliers-du-GANT-ROUGE-au-01_09_2025.pdf"
+   },
+   "program": {
+    "org": "ffboxe",
+    "document": "Fiches ateliers du Gant rouge (au 01/09/2025)",
+    "url": "https://www.ffboxe.com/wp-content/uploads/2025/09/Fiches-ateliers-du-GANT-ROUGE-au-01_09_2025.pdf",
+    "grade": "Gant rouge",
+    "page": 8,
+    "exercise": "Carré boxe 2, enchaînements",
+    "quote": "Crochet Av Face + Direct Arr Face",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Seul, tourne autour d’un point fixe en gardant la distance.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "avance",
+   "distance": "moyenne",
+   "sequence": [
+    "crochet-avant",
+    "direct"
+   ],
+   "objective": "Le même duo à l’envers : le crochet ouvre, le direct passe au milieu.",
+   "keyPoints": [
+    "Le crochet tourne les hanches, le direct les ramène",
+    "Le direct part en ligne droite vers le centre",
+    "Retour en garde aussitôt"
+   ],
+   "errors": [
+    "Ouvrir le coude du crochet trop loin",
+    "Rester penché sur le côté après le crochet"
+   ],
+   "estimatedSec": 1.4,
+   "variants": [
+    {
+     "label": "Le direct au buste",
+     "sequence": [
+      "crochet-avant",
+      "direct-corps"
+     ]
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "muaythai-ffkmda-pj-01",
+   "name": "Parade et riposte du poing",
+   "discipline": "muaythai",
+   "champion": "ffkmda",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Prajeet jaune), travaillé seul",
+    "reference": "FFKMDA, Référentiel techniques et grades Muaythai (juillet 2026), assauts à thèmes, p. 15, Assaut à thèmes n° 1 (défense)",
+    "url": "https://www.ffkmda.com/wp-content/uploads/2026/07/2026-referentiel-techniques-et-grades-Muaythai-FFKMDA-officiel.pdf"
+   },
+   "program": {
+    "org": "ffkmda",
+    "document": "Référentiel techniques et grades Muaythai (juillet 2026), assauts à thèmes",
+    "url": "https://www.ffkmda.com/wp-content/uploads/2026/07/2026-referentiel-techniques-et-grades-Muaythai-FFKMDA-officiel.pdf",
+    "grade": "Prajeet jaune",
+    "page": 15,
+    "exercise": "Assaut à thèmes n° 1 (défense)",
+    "quote": "BANG MAT + MAT TRONG — Parade du bras et/avant ou arrière et riposte du bras avant et/ou arrière",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Le document laisse le choix des bras : ici parade, puis riposte du bras arrière. Bang Mat = parade avec la main ; Mat Trong = direct (lexique du référentiel, pages 4 et 10).",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "moyenne",
+   "sequence": [
+    "parade",
+    "direct"
+   ],
+   "objective": "Dévier le coup adverse et répondre aussitôt avec un direct.",
+   "keyPoints": [
+    "La parade est un petit geste de la main",
+    "Le direct part juste après, sans attendre",
+    "Garde haute sur la riposte"
+   ],
+   "errors": [
+    "Attraper au lieu de dévier",
+    "Riposter trop tard"
+   ],
+   "estimatedSec": 1.3,
+   "variants": [
+    {
+     "label": "Riposte du bras avant",
+     "sequence": [
+      "parade",
+      "jab"
+     ]
+    }
+   ],
+   "goal": "defense",
+   "tags": [
+    "defense-contre"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "muaythai-ffkmda-pj-02",
+   "name": "Parade de la jambe et riposte circulaire",
+   "discipline": "muaythai",
+   "champion": "ffkmda",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Prajeet jaune), travaillé seul",
+    "reference": "FFKMDA, Référentiel techniques et grades Muaythai (juillet 2026), assauts à thèmes, p. 15, Assaut à thèmes n° 2 (défense)",
+    "url": "https://www.ffkmda.com/wp-content/uploads/2026/07/2026-referentiel-techniques-et-grades-Muaythai-FFKMDA-officiel.pdf"
+   },
+   "program": {
+    "org": "ffkmda",
+    "document": "Référentiel techniques et grades Muaythai (juillet 2026), assauts à thèmes",
+    "url": "https://www.ffkmda.com/wp-content/uploads/2026/07/2026-referentiel-techniques-et-grades-Muaythai-FFKMDA-officiel.pdf",
+    "grade": "Prajeet jaune",
+    "page": 15,
+    "exercise": "Assaut à thèmes n° 2 (défense)",
+    "quote": "BANG TEI + TEI CHIANG — Parade jambe avant ou arrière et riposte jambe arrière",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Ici la parade se fait avec la jambe avant. Bang Tei = parade avec la jambe ; Tei Chiang = coup de pied circulaire niveau médian (lexique du référentiel, pages 5 et 10).",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "longue",
+   "sequence": [
+    "check-avant",
+    "middle-kick-arriere"
+   ],
+   "objective": "Bloquer le coup de pied avec le tibia, puis répondre avec ton circulaire au corps.",
+   "keyPoints": [
+    "Genou levé vers l’extérieur pour la parade",
+    "Repose le pied et frappe tout de suite",
+    "Le circulaire tourne sur le pied d’appui"
+   ],
+   "errors": [
+    "Reposer le pied trop loin, ce qui casse l’équilibre",
+    "Baisser les mains pendant la parade"
+   ],
+   "estimatedSec": 1.8,
+   "variants": [
+    {
+     "label": "Parade avec la jambe arrière",
+     "sequence": [
+      "check-arriere",
+      "middle-kick-arriere"
+     ]
+    }
+   ],
+   "goal": "defense",
+   "tags": [
+    "defense-contre",
+    "check",
+    "middle-kick"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "muaythai-ffkmda-pj-03",
+   "name": "Parade et riposte du genou",
+   "discipline": "muaythai",
+   "champion": "ffkmda",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Prajeet jaune), travaillé seul",
+    "reference": "FFKMDA, Référentiel techniques et grades Muaythai (juillet 2026), assauts à thèmes, p. 15, Assaut à thèmes n° 3 (défense)",
+    "url": "https://www.ffkmda.com/wp-content/uploads/2026/07/2026-referentiel-techniques-et-grades-Muaythai-FFKMDA-officiel.pdf"
+   },
+   "program": {
+    "org": "ffkmda",
+    "document": "Référentiel techniques et grades Muaythai (juillet 2026), assauts à thèmes",
+    "url": "https://www.ffkmda.com/wp-content/uploads/2026/07/2026-referentiel-techniques-et-grades-Muaythai-FFKMDA-officiel.pdf",
+    "grade": "Prajeet jaune",
+    "page": 15,
+    "exercise": "Assaut à thèmes n° 3 (défense)",
+    "quote": "BANG MAT + KHAO TRONG — Parade bras avant ou arrière et riposte jambe arrière",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Khao Trong = coup de genou direct (lexique du référentiel, page 7).",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "courte",
+   "sequence": [
+    "parade",
+    "genou-direct-arriere"
+   ],
+   "objective": "Dévier le poing adverse et entrer avec le genou arrière.",
+   "keyPoints": [
+    "La parade ouvre le chemin du genou",
+    "Les hanches poussent vers l’avant",
+    "Monte sur la pointe du pied d’appui"
+   ],
+   "errors": [
+    "Lever le genou sans pousser les hanches",
+    "Se pencher en arrière"
+   ],
+   "estimatedSec": 1.5,
+   "variants": [
+    {
+     "label": "Parade du bras avant, même riposte"
+    }
+   ],
+   "goal": "defense",
+   "tags": [
+    "defense-contre",
+    "genoux"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "muaythai-ffkmda-pj-04",
+   "name": "Parade et riposte au corps",
+   "discipline": "muaythai",
+   "champion": "ffkmda",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Prajeet jaune), travaillé seul",
+    "reference": "FFKMDA, Référentiel techniques et grades Muaythai (juillet 2026), assauts à thèmes, p. 15, Assaut à thèmes n° 4 (défense)",
+    "url": "https://www.ffkmda.com/wp-content/uploads/2026/07/2026-referentiel-techniques-et-grades-Muaythai-FFKMDA-officiel.pdf"
+   },
+   "program": {
+    "org": "ffkmda",
+    "document": "Référentiel techniques et grades Muaythai (juillet 2026), assauts à thèmes",
+    "url": "https://www.ffkmda.com/wp-content/uploads/2026/07/2026-referentiel-techniques-et-grades-Muaythai-FFKMDA-officiel.pdf",
+    "grade": "Prajeet jaune",
+    "page": 15,
+    "exercise": "Assaut à thèmes n° 4 (défense)",
+    "quote": "BANG MAT +TEI CHIANG — Bras avant ou arrière et riposte jambe arrière",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Dans l’assaut, cette défense répond à un coup de pied direct (Tei Trong) ; seul, tu joues seulement la défense et la riposte.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "debutant",
+   "distance": "longue",
+   "sequence": [
+    "parade",
+    "middle-kick-arriere"
+   ],
+   "objective": "Dévier avec la main, puis répondre avec le circulaire de la jambe arrière.",
+   "keyPoints": [
+    "Parade courte, sans tourner le buste",
+    "Le circulaire part dès la parade finie",
+    "Le bras du côté de la jambe descend pour l’équilibre"
+   ],
+   "errors": [
+    "Faire une grande parade qui t’ouvre",
+    "Frapper sans pivoter sur le pied d’appui"
+   ],
+   "estimatedSec": 1.7,
+   "variants": [
+    {
+     "label": "Parade du bras avant, même riposte"
+    }
+   ],
+   "goal": "defense",
+   "tags": [
+    "defense-contre",
+    "middle-kick"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "muaythai-ffkmda-po-01",
+   "name": "Esquive en reculant, circulaire haut",
+   "discipline": "muaythai",
+   "champion": "ffkmda",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Prajeet orange), travaillé seul",
+    "reference": "FFKMDA, Référentiel techniques et grades Muaythai (juillet 2026), assauts à thèmes, p. 18, Assaut à thèmes n° 1 (défense)",
+    "url": "https://www.ffkmda.com/wp-content/uploads/2026/07/2026-referentiel-techniques-et-grades-Muaythai-FFKMDA-officiel.pdf"
+   },
+   "program": {
+    "org": "ffkmda",
+    "document": "Référentiel techniques et grades Muaythai (juillet 2026), assauts à thèmes",
+    "url": "https://www.ffkmda.com/wp-content/uploads/2026/07/2026-referentiel-techniques-et-grades-Muaythai-FFKMDA-officiel.pdf",
+    "grade": "Prajeet orange",
+    "page": 18,
+    "exercise": "Assaut à thèmes n° 1 (défense)",
+    "quote": "LOM TCHAK + TEI KANN KRO — Esquives par pas de retrait et riposte jambe avant et/ou arrière",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Ici la riposte se fait avec la jambe arrière. Lom Tchak = esquive avec déplacement des appuis ; Tei Kan Kro = coup de pied circulaire niveau haut (lexique du référentiel, pages 5 et 10).",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "intermediaire",
+   "distance": "longue",
+   "sequence": [
+    "pas-arriere",
+    "high-kick-arriere"
+   ],
+   "objective": "Laisser passer le coup adverse en reculant d’un pas, puis répondre en haut.",
+   "keyPoints": [
+    "Le pied arrière recule en premier",
+    "Riposte dès que tu es stable",
+    "Hanche ouverte pour faire monter la jambe"
+   ],
+   "errors": [
+    "Reculer trop loin pour pouvoir toucher",
+    "Baisser les mains pendant le coup de pied"
+   ],
+   "estimatedSec": 1.8,
+   "variants": [
+    {
+     "label": "Riposte de la jambe avant",
+     "sequence": [
+      "pas-arriere",
+      "high-kick-avant"
+     ]
+    }
+   ],
+   "goal": "defense",
+   "tags": [
+    "defense-contre",
+    "high-kick",
+    "deplacement"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "muaythai-ffkmda-po-03",
+   "name": "Circulaire au corps puis coup de pied frontal",
+   "discipline": "muaythai",
+   "champion": "ffkmda",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Prajeet orange), travaillé seul",
+    "reference": "FFKMDA, Référentiel techniques et grades Muaythai (juillet 2026), assauts à thèmes, p. 18, Assaut à thèmes n° 3 (attaque)",
+    "url": "https://www.ffkmda.com/wp-content/uploads/2026/07/2026-referentiel-techniques-et-grades-Muaythai-FFKMDA-officiel.pdf"
+   },
+   "program": {
+    "org": "ffkmda",
+    "document": "Référentiel techniques et grades Muaythai (juillet 2026), assauts à thèmes",
+    "url": "https://www.ffkmda.com/wp-content/uploads/2026/07/2026-referentiel-techniques-et-grades-Muaythai-FFKMDA-officiel.pdf",
+    "grade": "Prajeet orange",
+    "page": 18,
+    "exercise": "Assaut à thèmes n° 3 (attaque)",
+    "quote": "TEI CHIANG + TIP TRONG — Jambe arrière et enchaînement jambe avant ou jambe arrière",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Ici le coup de pied frontal se fait avec la jambe avant. Tip Trong = coup de pied frontal (lexique du référentiel, page 5).",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "intermediaire",
+   "distance": "longue",
+   "sequence": [
+    "middle-kick-arriere",
+    "teep-avant"
+   ],
+   "objective": "Doubler les jambes à distance : circulaire au corps, puis repousser avec le pied avant.",
+   "keyPoints": [
+    "Repose le pied du circulaire en garde",
+    "Le teep pousse avec la plante du pied",
+    "Les mains restent hautes sur les deux coups"
+   ],
+   "errors": [
+    "Reposer le pied du circulaire trop en avant",
+    "Lever le teep sans pousser les hanches"
+   ],
+   "estimatedSec": 2,
+   "variants": [
+    {
+     "label": "Coup de pied frontal de la jambe arrière",
+     "sequence": [
+      "middle-kick-arriere",
+      "teep-arriere"
+     ]
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "middle-kick",
+    "teep",
+    "pieds"
+   ],
+   "addedAt": "2026-11-06"
+  },
+  {
+   "id": "muaythai-ffkmda-pv-01",
+   "name": "Deux directs puis coude descendant",
+   "discipline": "muaythai",
+   "champion": "ffkmda",
+   "status": "programme",
+   "source": {
+    "kind": "document",
+    "note": "Enchaînement écrit dans le programme officiel (Prajeet vert), travaillé seul",
+    "reference": "FFKMDA, Référentiel techniques et grades Muaythai (juillet 2026), assauts à thèmes, p. 21, Assaut à thèmes n° 1 (attaque)",
+    "url": "https://www.ffkmda.com/wp-content/uploads/2026/07/2026-referentiel-techniques-et-grades-Muaythai-FFKMDA-officiel.pdf"
+   },
+   "program": {
+    "org": "ffkmda",
+    "document": "Référentiel techniques et grades Muaythai (juillet 2026), assauts à thèmes",
+    "url": "https://www.ffkmda.com/wp-content/uploads/2026/07/2026-referentiel-techniques-et-grades-Muaythai-FFKMDA-officiel.pdf",
+    "grade": "Prajeet vert",
+    "page": 21,
+    "exercise": "Assaut à thèmes n° 1 (attaque)",
+    "quote": "MAT TRONG + SOK TAT — Bras avant et arrière suivi du coude avant ou arrière",
+    "solo": "Seul, sans partenaire ni cible : tu reproduis l’enchaînement dans le vide, en garde. Ici le coude est celui du bras avant. Sok Tat = coup de coude circulaire descendant ; le coude diagonal descendant de l’app est le geste le plus proche.",
+    "consulted": "2026-11-06"
+   },
+   "guard": "les-deux",
+   "level": "intermediaire",
+   "distance": "courte",
+   "sequence": [
+    "jab",
+    "direct",
+    "coude-diagonal-avant"
+   ],
+   "objective": "Entrer avec les poings pour arriver à la distance du coude.",
+   "keyPoints": [
+    "Les deux directs te font avancer",
+    "Le coude part haut et redescend",
+    "Les jambes fléchissent sur le coude"
+   ],
+   "errors": [
+    "Lancer le coude de trop loin",
+    "Ouvrir la garde avant le coude"
+   ],
+   "estimatedSec": 2,
+   "variants": [
+    {
+     "label": "Avec le coude arrière",
+     "sequence": [
+      "jab",
+      "direct",
+      "coude-diagonal-arriere"
+     ]
+    }
+   ],
+   "goal": "technique",
+   "tags": [
+    "offensif",
+    "coudes"
+   ],
+   "addedAt": "2026-11-06"
+  }
+ ]
+}

@@ -7,6 +7,7 @@ import { recommend } from '../recommend';
 import { DISCIPLINES, LEVELS } from '../types';
 import { EXERCISE_BY_ID } from '../exercises';
 import { DEFAULT_PROFILE } from '../../store/profile';
+import { SOURCE_BY_ID } from '../biomech/sources';
 
 const GRAPPLING = ['bjj', 'judo'];
 
@@ -102,5 +103,20 @@ describe('fiches pas à pas', () => {
       expect(g.errors.length, t.id).toBeGreaterThanOrEqual(2);
     }
     for (const id of Object.keys(GUIDES)) expect(TECHNIQUE_BY_ID.has(id), id).toBe(true);
+  });
+});
+
+describe('fiches partagées entre disciplines (0.28)', () => {
+  test('une note par discipline seulement pour les disciplines de la technique, sources connues', () => {
+    for (const t of TECHNIQUES) {
+      for (const d of Object.keys(t.notes ?? {})) expect(t.disciplines, `${t.id} : note ${d}`).toContain(d);
+      for (const id of t.sources ?? []) expect(SOURCE_BY_ID.has(id), `${t.id} : source ${id}`).toBe(true);
+    }
+  });
+  test('les chutes : version basse, avec un encadré de sécurité', () => {
+    for (const t of TECHNIQUES.filter((x) => x.category === 'chute')) {
+      expect(t.safety, t.id).toMatch(/debout/);
+      expect(t.soloNote, t.id).toMatch(/tapis épais/);
+    }
   });
 });

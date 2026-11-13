@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { Bone, BoxGeometry, Mesh, Object3D } from 'three';
 import type { CoachId } from '../domain/types';
@@ -17,8 +17,17 @@ interface GNode {
  * so the animation engine can be tested in Node without WebGL. A box stands in for the body mesh to
  * give the real height.
  */
-export function loadSkeleton(coach: CoachId): Object3D {
-  const file = resolve(__dirname, '../../public/models', coach === 'homme' ? 'coach_male.glb' : 'coach_female.glb');
+/** a model file of the tests: the app's public/ first, then the generated skeletons kept for the tests (1.37) */
+export function testModelPath(rel: string): string {
+  const pub = resolve(__dirname, '../../public', rel);
+  return existsSync(pub) ? pub : resolve(__dirname, '../../tests/fixtures/modeles-generes', rel);
+}
+
+export function loadSkeleton(coach: CoachId, model?: string): Object3D {
+  // model: a champion-inspired coach's own GLB, relative to public/ (e.g. coaches/mma-kadir/photo.glb). 1.37: the generated
+  // models are no longer in the app; the skeletons the engine tests measure are kept in tests/fixtures/modeles-generes/
+  // (models/coach_male.glb, coach_female.glb by default, coaches/mma-kadir/model.glb, coaches/mma-amara/model.glb)
+  const file = testModelPath(model ?? `models/${coach === 'homme' ? 'coach_male.glb' : 'coach_female.glb'}`);
   const buf = readFileSync(file);
   const len = buf.readUInt32LE(12);
   const json = JSON.parse(buf.subarray(20, 20 + len).toString('utf8'));
@@ -43,6 +52,8 @@ export function loadSkeleton(coach: CoachId): Object3D {
   const root = new Object3D();
   const scene = json.scenes[json.scene ?? 0];
   for (const i of scene.nodes) root.add(objs[i]);
+  // photo avatars (v0.29, Rocketbox) keep their mesh in centimetres under a scaled armature
+  if (top > 3) top /= 100;
   const body = new Mesh(new BoxGeometry(0.1, top, 0.1).translate(0, top / 2, 0));
   root.add(body);
   root.updateMatrixWorld(true);

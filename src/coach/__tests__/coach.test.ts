@@ -323,7 +323,10 @@ describe('voix', () => {
 });
 
 describe('store coachAi', () => {
-  test('valeurs par défaut, historique désactivé par défaut et plafonné', () => {
+  test('valeurs par défaut, historique désactivé par défaut et plafonné', async () => {
+    // since 0.25 a question asked before the saved settings are read back waits for them: read them first,
+    // as the app does at start, so the pushes below are recorded at once
+    await useCoachAi.persist.rehydrate();
     const s = useCoachAi.getState();
     expect(s.enabled).toBe(true);
     expect(s.voiceReplies).toBe(false);

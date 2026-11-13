@@ -1,39 +1,52 @@
-import { TechThumb, keyTechnique, programTechnique } from '../components/TechThumb';
-import { Suspense, lazy, useCallback, useMemo, useRef, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { CATEGORY_LABEL, TECHNIQUE_BY_ID, TECHNIQUES, techniquesFor } from '../../domain/techniques';
 import { EXERCISES, EXERCISE_BY_ID } from '../../domain/exercises';
+import { termForPartner, termForTechnique } from '../../domain/encyclopedia';
 import { PARTNER_BY_ID, PARTNER_CATEGORY_LABEL, partnerFor } from '../../domain/partner';
-import { PROGRAMS } from '../../domain/programs';
+import { SOURCE_BY_ID } from '../../domain/biomech/sources';
 import { DISCIPLINES, DisciplineId, LevelId, Technique } from '../../domain/types';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { useCustom } from '../../store/custom';
 import { useGoals } from '../../store/goals';
-import { useActiveFighter } from '../../store/fighters';
-import type { ComboPlayer, PlayerEvents } from '../../engine/player';
+import type { ComboPlayer, PlayerEvents } from '../../engine';
 import { playerSteps } from '../training/plan';
 import { say } from '../../audio/voice';
 import { GuideCard } from '../GuideCard';
-import { DisciplineArtwork, DisciplineLabel, ModeBadge, CameraControls, EmptyState, EntryCard, FilterChips, LevelSelector, PageHead, PlaybackControls, SectionHead, Tabs, TechniqueCard } from '../components';
+import { MasterySwitch } from '../components/Playback';
+import { AnimationBadge, DisciplineLabel, ModeBadge, EmptyState, EntryCard, FilterChips, KbOnlyBadge, KickboxingRulesCard, KickboxingStylePicker, LevelSelector, PageHead, PlaybackControls, SectionHead, Tabs, TechniqueCard, useKbStyle } from '../components';
+import { filterExercises, filterTechniques } from '../../domain/kickboxingStyles';
 import { ExerciseList, ExerciseSheet } from './Discipline';
-import { IconChevron, IconLayers, IconPlus, IconStar, IconStarFilled, IconTrend, IconTrophy } from '../icons';
-import { CHAMPIONS_AVAILABLE } from './features';
+import { AppIcon, DisciplineIcon } from '../icons';
+import { useNavActions } from '../nav/store';
+import { setSelection, useSelection } from '../nav/selection';
+import { LibraryPanels } from './LibraryNav';
+import { CoachScreen } from '../coach-screen/CoachScreen';
+import { CAMERA_PRESETS } from '../components/Playback';
+import { exerciseForTechnique } from '../../domain/quickPicks';
+import { TechniqueFilter, neighbours, parseTechniqueFilter, sheetQuery, techniqueCatalogue } from './techniqueOrder';
+import { PremiumMarker } from '../premium/PremiumMarker';
 
 const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
 
-type HubTab = 'techniques' | 'combinaisons' | 'legendes' | 'createur' | 'favoris' | 'programmes';
+// 0.36 (Youssef, 2026-10-22, « Entraîner = pratiquer et personnaliser, Techniques = apprendre et explorer »): the
+// library keeps Techniques, Combinaisons, Légendes and Favoris. The creator and the programmes live in Entraîner
+// (Séances, Programmes); their old links here are sent to /createur and /programmes. Légendes is back as a section
+// that leads into the legends library (0.27 had removed it while it was a tab of the bar; it is now in the Menu)
+// 1.0.0 (refonte, lot 2): Légendes is a tab of Apprendre at the top of the screen and Favoris a tab of Entraîner
+// (/favoris); their old links here lead there
+type HubTab = 'techniques' | 'combinaisons';
 
-const HUB_TABS: { id: HubTab; label: string }[] = [
-  { id: 'techniques', label: 'Techniques' },
-  { id: 'combinaisons', label: 'Combinaisons' },
-  { id: 'legendes', label: 'Légendes' },
-  { id: 'createur', label: 'Créateur' },
-  { id: 'favoris', label: 'Favoris' },
-  { id: 'programmes', label: 'Programmes' },
+const HUB_TABS: { id: HubTab; label: string; icon: ReactNode }[] = [
+  { id: 'techniques', label: 'Techniques', icon: <AppIcon id="techniques" size={18} /> },
+  { id: 'combinaisons', label: 'Combinaisons', icon: <AppIcon id="combos" size={18} /> },
 ];
 
-/** "Techniques" tab: individual techniques, combinations, legends, creator, favourites, programmes. */
+/** 1.4.0: the speeds of a technique sheet, in the coach zone (the former slider went from ×0.2 to ×1.2) */
+const SHEET_SPEEDS = [0.2, 0.4, 0.6, 0.8, 1, 1.2];
+
+/** "Techniques" tab of Apprendre: individual techniques and combinations. */
 export function Library() {
   const [q, setQ] = useSearchParams();
   const main = useProfile((s) => s.profile.mainDiscipline);
@@ -42,51 +55,99 @@ export function Library() {
   const set = (k: string, v: string) => {
     const n = new URLSearchParams(q);
     n.set(k, v);
+    // a new discipline starts on its whole list
+    if (k === 'd') n.delete('cat');
+    if (k === 'cat' && v === 'tout') n.delete('cat');
     setQ(n, { replace: true });
   };
+  // 0.25: the category filter is in the URL, so the technique sheets follow that list and Back finds it again
+  const cat = parseTechniqueFilter(q.get('cat'), Object.keys(CATEGORY_LABEL));
+  // 0.36: the creator and the programmes moved to Entraîner; old links keep working (the discipline goes along)
+  if (q.get('tab') === 'createur') return <Navigate to={`/createur${q.get('d') ? `?d=${q.get('d')}` : ''}`} replace />;
+  if (q.get('tab') === 'programmes') return <Navigate to="/programmes" replace />;
+  if (q.get('tab') === 'favoris') return <Navigate to="/favoris" replace />;
+  if (q.get('tab') === 'legendes') return <Navigate to="/champions" replace />;
   return (
     <div className="page">
       <PageHead title="Techniques" eyebrow="Bibliothèque" back={false} />
+      <LibraryPanels d={d} setD={(x) => set('d', x)} cat={cat} setCat={(c) => set('cat', c)} tab={tab} />
       <Tabs variant="underline" label="Sections" items={HUB_TABS} value={tab} onChange={(t) => set('tab', t)} />
       <div role="tabpanel" className="stack" style={{ gap: 16 }}>
-        {tab === 'techniques' && <TechniquesTab d={d} setD={(x) => set('d', x)} />}
+        {tab === 'techniques' && <TechniquesTab d={d} setD={(x) => set('d', x)} cat={cat} setCat={(c) => set('cat', c)} />}
         {tab === 'combinaisons' && <CombosTab d={d} setD={(x) => set('d', x)} />}
-        {tab === 'legendes' && <LegendsTab />}
-        {tab === 'createur' && <CreatorTab />}
-        {tab === 'favoris' && <FavoritesTab />}
-        {tab === 'programmes' && <ProgramsTab />}
       </div>
     </div>
   );
 }
 
 function DisciplineFilter({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) => void }) {
-  return <Tabs label="Discipline" items={DISCIPLINES.map((x) => ({ id: x.id, label: x.short, icon: <DisciplineArtwork id={x.id} format="avatar" size="xs" /> }))} value={d} onChange={setD} />;
+  return <Tabs label="Discipline" items={DISCIPLINES.map((x) => ({ id: x.id, label: x.short, icon: <DisciplineIcon id={x.id} size={24} /> }))} value={d} onChange={setD} />;
 }
 
-function TechniquesTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) => void }) {
-  const [cat, setCat] = useState<Technique['category'] | 'tout'>('tout');
+function TechniquesTab({ d, setD, cat, setCat }: { d: DisciplineId; setD: (d: DisciplineId) => void; cat: TechniqueFilter; setCat: (c: TechniqueFilter) => void }) {
   const fav = useGoals((s) => s.favTechniques);
-  const list = techniquesFor(d);
+  const mastery = useGoals((s) => s.mastery);
+  const [kbStyle] = useKbStyle();
+  const list = filterTechniques(techniquesFor(d), d, kbStyle);
   const cats = [...new Set(list.map((t) => t.category))];
-  const shown = cat === 'tout' ? list : list.filter((t) => t.category === cat);
+  const toReview = list.filter((t) => mastery[t.id] === 'a-revoir');
+  const shown = cat === 'tout' ? list : cat === 'a-revoir' ? toReview : list.filter((t) => t.category === cat);
   const partner = partnerFor(d);
+  const nav = useNavigate();
+  // 0.26 quick actions (a random technique of the list, the « À revoir » filter): v0.32 commands « Sur cet écran »
+  // of the Menu sheet; Rechercher, Filtres and Technique are in the bar (LibraryPanels)
+  const selected = useSelection('technique');
+  useNavActions({}, [
+    shown.length > 0 && {
+      id: 'au-hasard',
+      label: 'Au hasard',
+      icon: { glyph: 'random' },
+      run: () => {
+        const t = shown[Math.floor(Math.random() * shown.length) % shown.length];
+        nav(`/techniques/${t.id}${sheetQuery(d, cat)}`);
+      },
+    },
+    toReview.length > 0 && {
+      id: 'a-revoir',
+      label: `À revoir (${toReview.length})`,
+      icon: { glyph: 'struggling' },
+      pressed: cat === 'a-revoir',
+      run: () => setCat(cat === 'a-revoir' ? 'tout' : 'a-revoir'),
+    },
+  ]);
   return (
     <>
-      <DisciplineFilter d={d} setD={(x) => (setD(x), setCat('tout'))} />
+      <DisciplineFilter d={d} setD={setD} />
+      {d === 'kickboxing' && <KickboxingStylePicker />}
       <FilterChips
         scroll
         label="Catégorie"
         value={cat}
         onChange={setCat}
-        options={[{ id: 'tout' as const, label: `Tout (${list.length})` }, ...cats.map((c) => ({ id: c, label: CATEGORY_LABEL[c] }))]}
+        options={[
+          { id: 'tout' as const, label: `Tout (${list.length})` },
+          // 0.24: the techniques the user still finds hard, in one tap
+          ...(toReview.length > 0 ? [{ id: 'a-revoir' as const, label: `À revoir (${toReview.length})` }] : []),
+          ...cats.map((c) => ({ id: c, label: CATEGORY_LABEL[c] })),
+        ]}
       />
-      <div className="stack" style={{ gap: 8 }}>
+      <div className="tech-grid">
         {shown.map((t) => (
-          <TechniqueCard key={t.id} to={`/techniques/${t.id}?d=${d}`} title={t.name} description={t.description} thumb={t.id} favorite={fav.includes(t.id)} />
+          <TechniqueCard
+            tile
+            key={t.id}
+            to={`/techniques/${t.id}${sheetQuery(d, cat)}`}
+            title={t.name}
+            description={t.description}
+            thumb={t.id}
+            favorite={fav.includes(t.id)}
+            mastery={mastery[t.id]}
+            selected={selected === t.id}
+            meta={d === 'kickboxing' ? <KbOnlyBadge id={t.id} /> : undefined}
+          />
         ))}
       </div>
-      <p className="small muted">{TECHNIQUES.length} techniques au total, chacune animée sur ton combattant 3D.</p>
+      <p className="small muted">{TECHNIQUES.length} techniques au total, chacune animée sur ton coach 3D.</p>
       {partner.length > 0 && (
         <section className="section" data-testid="partner-section">
           <SectionHead title="Avec un partenaire réel" />
@@ -106,11 +167,13 @@ function CombosTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) => vo
   const levels = useProfile((s) => s.profile.levels);
   const [lvl, setLvl] = useState<LevelId>(levels[d]);
   const [open, setOpen] = useState<string | null>(null);
-  const list = EXERCISES.filter((e) => e.discipline === d && e.level === lvl && e.kind === 'combinaison');
+  const [kbStyle] = useKbStyle();
+  const list = filterExercises(EXERCISES.filter((e) => e.discipline === d && e.level === lvl && e.kind === 'combinaison'), kbStyle);
   const ex = open ? EXERCISE_BY_ID.get(open) : undefined;
   return (
     <>
       <DisciplineFilter d={d} setD={(x) => (setD(x), setLvl(levels[x]))} />
+      {d === 'kickboxing' && <KickboxingStylePicker />}
       <LevelSelector value={lvl} onChange={setLvl} />
       <ExerciseList list={list} onOpen={setOpen} />
       {ex && <ExerciseSheet ex={ex} onClose={() => setOpen(null)} />}
@@ -118,46 +181,8 @@ function CombosTab({ d, setD }: { d: DisciplineId; setD: (d: DisciplineId) => vo
   );
 }
 
-function LegendsTab() {
-  if (CHAMPIONS_AVAILABLE)
-    return (
-      <>
-        <p className="muted">Des enchaînements inspirés du style de grands champions, exécutés par ton combattant.</p>
-        <EntryCard to="/champions" icon={<IconTrophy />} tone="gold" title="Combinaisons des légendes" text="Parcourir les champions et leurs combinaisons" testId="open-champions" />
-      </>
-    );
-  return <EmptyState title="Combinaisons des légendes" text="Cette bibliothèque arrive bientôt : des enchaînements inspirés du style de grands champions." />;
-}
-
-function CreatorTab() {
-  const combos = useCustom((s) => s.combos);
-  return (
-    <>
-      <EntryCard to="/createur" icon={<IconPlus />} tone="red" title="Créer un enchaînement" text="Compose ta combinaison, l’application vérifie qu’elle est réalisable." />
-      <SectionHead title="Mes enchaînements" />
-      {combos.length === 0 ? (
-        <EmptyState title="Aucun enchaînement enregistré" text="Tes créations apparaîtront ici." />
-      ) : (
-        <div className="stack" style={{ gap: 8 }}>
-          {combos.map((c) => (
-            <Link key={c.id} to={`/entrainement?perso=${c.id}&mode=libre`} className="card link ex-card" aria-label={`Lancer ${c.name}`}>
-              <TechThumb id={keyTechnique(c.sequence)} />
-              <span className="body">
-                <span className="title">{c.name}</span>
-                <span className="small muted">
-                  <DisciplineLabel id={c.discipline} name={DISCIPLINES.find((x) => x.id === c.discipline)?.name ?? ''} /> · {c.sequence.length} mouvements
-                </span>
-              </span>
-              <IconChevron />
-            </Link>
-          ))}
-        </div>
-      )}
-    </>
-  );
-}
-
-function FavoritesTab() {
+/** the favourite exercises and techniques (1.0.0: shown in Entraîner › Favoris, screens/Favorites.tsx) */
+export function FavoritesList() {
   const favT = useGoals((s) => s.favTechniques);
   const favE = useGoals((s) => s.favExercises);
   const [open, setOpen] = useState<string | null>(null);
@@ -168,6 +193,9 @@ function FavoritesTab() {
     return <EmptyState title="Aucun favori pour l’instant" text="Touche l’étoile d’une technique ou d’un exercice pour le retrouver ici." />;
   return (
     <>
+      <p className="small muted premium-line">
+        Favoris illimités <PremiumMarker feature="unlimited_favorites" />
+      </p>
       {exs.length > 0 && (
         <section className="section">
           <SectionHead title="Exercices et combinaisons" />
@@ -189,34 +217,12 @@ function FavoritesTab() {
   );
 }
 
-function ProgramsTab() {
-  return (
-    <>
-      <EntryCard to="/programmes" icon={<IconTrend />} tone="red" title="Programmes guidés" text="Séances complètes, de l’échauffement au retour au calme." />
-      <EntryCard to="/createur" icon={<IconLayers />} title="Programme personnalisé" text="Crée ton enchaînement et lance-le en boucle ou en rounds." />
-      <div className="stack" style={{ gap: 8 }}>
-        {PROGRAMS.slice(0, 4).map((p) => (
-          <Link key={p.id} to={`/programmes/${p.id}`} className="card link ex-card">
-            <TechThumb id={programTechnique(p)} />
-            <span className="body">
-              <span className="eyebrow">{p.durationMin} min</span>
-              <span className="title">{p.name}</span>
-            </span>
-            <IconChevron />
-          </Link>
-        ))}
-      </div>
-    </>
-  );
-}
-
 export function TechniquePage() {
   const { id } = useParams();
   const [q] = useSearchParams();
   const t = id ? TECHNIQUE_BY_ID.get(id) : undefined;
   const profile = useProfile((s) => s.profile);
   const settings = useSettings((s) => s.settings);
-  const fighter = useActiveFighter();
   const fav = useGoals((s) => (t ? s.favTechniques.includes(t.id) : false));
   const toggleFav = useGoals((s) => s.toggleTechnique);
   const d = ((q.get('d') as DisciplineId) && t?.disciplines.includes(q.get('d') as DisciplineId) ? q.get('d') : t?.disciplines[0]) as DisciplineId;
@@ -226,16 +232,104 @@ export function TechniquePage() {
   const [cam, setCam] = useState(settings.cameraAngle);
   const speedRef = useRef(speed);
   speedRef.current = speed;
+  const nav = useNavigate();
+  const [kbStyle] = useKbStyle();
+  const mastery = useGoals((s) => s.mastery);
 
+  // the technique played by the coach; previous / next keep the same stage and change only the move
+  const tId = t?.id;
+  const shown = useRef<string | undefined>(undefined);
+  const play = useCallback((p: ComboPlayer, id: string) => {
+    shown.current = id;
+    p.speed = speedRef.current;
+    p.setSequence(playerSteps([id]), 1.2);
+    p.play();
+  }, []);
+  const tRef = useRef(tId);
+  tRef.current = tId;
   const onPlayer = useCallback(
     (p: ComboPlayer) => {
       player.current = p;
-      if (!t) return;
-      p.speed = speedRef.current;
-      p.setSequence(playerSteps([t.id]), 1.2);
-      p.play();
+      if (tRef.current) play(p, tRef.current);
     },
-    [t],
+    [play],
+  );
+  useEffect(() => {
+    const p = player.current;
+    if (!p || !tId || shown.current === tId) return;
+    play(p, tId);
+    setPlaying(true);
+  }, [tId, play]);
+
+  // 0.25 (Youssef, 2026-10-20 12:30): previous / next technique without leaving the sheet, in the order of
+  // the catalogue list the user came from (discipline, kick-boxing style, category or « À revoir »)
+  const cat = parseTechniqueFilter(q.get('cat'), Object.keys(CATEGORY_LABEL));
+  const list = useMemo(() => (d ? techniqueCatalogue(d, kbStyle, cat, mastery).map((x) => x.id) : []), [d, kbStyle, cat, mastery]);
+  // a technique marked « acquise » leaves the « À revoir » list: the sheet keeps the list it was opened in
+  const kept = useRef<string[]>([]);
+  if (tId && list.includes(tId)) kept.current = list;
+  const order = tId ? (list.includes(tId) ? list : kept.current.includes(tId) ? kept.current : null) : null;
+  const near = order && tId ? neighbours(order, tId) : null;
+  // replace: Back returns to the catalogue, not through every technique seen
+  const go = (to?: string) => to && nav(`/techniques/${to}${sheetQuery(d, cat)}`, { replace: true });
+  const swipe = useRef<{ x: number; y: number } | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    const el = e.target as HTMLElement;
+    // the 3D stage turns with the finger, sliders and scrolling rows keep their own gesture
+    if (e.touches.length !== 1 || el.closest('.preview-stage, input, textarea, select, [data-no-swipe]') || scrollsSideways(el)) {
+      swipe.current = null;
+      return;
+    }
+    swipe.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const s0 = swipe.current;
+    swipe.current = null;
+    if (!s0 || !near) return;
+    const dx = e.changedTouches[0].clientX - s0.x;
+    const dy = e.changedTouches[0].clientY - s0.y;
+    if (Math.abs(dx) < 70 || Math.abs(dy) > Math.abs(dx) * 0.6) return;
+    go(dx < 0 ? near.next : near.prev);
+  };
+  const nameOf = (id: string) => TECHNIQUE_BY_ID.get(id)?.name ?? id;
+
+  // 0.26 action pill: train this technique (the programme's exercise that works it the most directly),
+  // slow motion on the sheet, « Je la maîtrise » (the tick of the mastery switch)
+  const toggleMastery = useGoals((s) => s.toggleMastery);
+  const drill = useMemo(() => (t && d ? exerciseForTechnique(filterExercises(EXERCISES.filter((e) => e.discipline === d), kbStyle), t.id, profile.levels[d]) : undefined), [t, d, kbStyle, profile.levels]);
+  const SLOW = 0.25;
+  const slowOn = speed <= SLOW + 1e-3;
+  const setPlayerSpeed = (v: number) => {
+    setSpeed(v);
+    if (player.current) player.current.speed = v;
+  };
+  const normalSpeed = useRef(0.6);
+  // v0.32 bar of the sheet (section 5.5): S'entraîner, Ralenti, Maîtrise; the former floating pill is gone
+  useEffect(() => {
+    if (t) setSelection('technique', t.id);
+  }, [t]);
+  const toggleSlow = () => {
+    if (slowOn) setPlayerSpeed(normalSpeed.current > SLOW ? normalSpeed.current : 0.6);
+    else {
+      normalSpeed.current = speed;
+      setPlayerSpeed(SLOW);
+    }
+    if (!playing) {
+      player.current?.play();
+      setPlaying(true);
+    }
+  };
+  useNavActions(
+    t
+      ? {
+          // 1.3.0: never greyed out: without an exercise of the discipline that works it, the technique is trained alone
+          train: drill
+            ? { run: () => nav(`/entrainement?ex=${encodeURIComponent(drill.id)}&mode=technique`), ariaLabel: `S’entraîner : ${drill.name}` }
+            : { run: () => nav(`/entrainement?tech=${encodeURIComponent(t.id)}&d=${d}&mode=technique`), ariaLabel: `S’entraîner : ${t.name}` },
+          slow: { run: toggleSlow, pressed: slowOn, ariaLabel: slowOn ? 'Ralenti, activé' : 'Ralenti' },
+          mastery: { run: () => toggleMastery(t.id, 'acquise'), pressed: mastery[t.id] === 'acquise', ariaLabel: mastery[t.id] === 'acquise' ? 'Maîtrise : je la maîtrise' : 'Maîtrise : marquer comme maîtrisée' },
+        }
+      : {},
   );
   const events = useMemo<PlayerEvents>(
     () => ({
@@ -248,22 +342,33 @@ export function TechniquePage() {
 
   if (!t) return <EmptyState title="Technique introuvable" action={<Link to="/techniques" className="btn">Retour aux techniques</Link>} />;
   return (
-    <div className="page" style={{ gap: 16 }}>
+    <div className="page tech-page" style={{ gap: 16 }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} data-testid="technique-page">
       <PageHead
         title={t.name}
         eyebrow={CATEGORY_LABEL[t.category]}
         fallback="/techniques"
         right={
           <button type="button" className="btn icon ghost" aria-pressed={fav} aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'} onClick={() => toggleFav(t.id)} style={{ marginRight: -10 }}>
-            {fav ? <IconStarFilled style={{ color: 'var(--gold)' }} /> : <IconStar />}
+            {fav ? <AppIcon id="favorite" tone="accent" /> : <AppIcon id="favoriteOutline" />}
           </button>
         }
       />
-      <div className="preview-stage">
-        <Suspense fallback={<div className="hero-loading"><div className="stage-skeleton" /></div>}>
+      {/* 1.4.0: the coach screen of the app (the same module everywhere): a tap shows the sound, the speed, the
+          angles and the fullscreen in the zone of the coach; a double tap shows the coach on the whole screen */}
+      <CoachScreen
+        context="fiche"
+        className="preview-stage"
+        testId="technique-stage"
+        place="fiche technique"
+        commands={{
+          sound: true,
+          speed: { value: speed, onChange: setPlayerSpeed, speeds: SHEET_SPEEDS },
+          angles: { value: cam, options: CAMERA_PRESETS, onChange: (a) => setCam(a as number) },
+        }}
+        stage={
           <CoachStage
             backdrop="dark"
-            coach={fighter?.look.sex ?? profile.coach ?? 'homme'}
+            coach={profile.coach ?? 'homme'}
             discipline={d}
             southpaw={profile.guard === 'gaucher'}
             cameraAngle={cam}
@@ -271,8 +376,35 @@ export function TechniquePage() {
             events={events}
             onPlayer={onPlayer}
           />
-        </Suspense>
-      </div>
+        }
+      />
+      {near && near.total > 1 && (
+        <nav className="tech-step" aria-label="Techniques de la liste" data-testid="technique-step">
+          <button
+            type="button"
+            className="btn icon ghost"
+            disabled={!near.prev}
+            aria-label={near.prev ? `Technique précédente : ${nameOf(near.prev)}` : 'Technique précédente'}
+            onClick={() => go(near.prev)}
+            data-testid="technique-prev"
+          >
+            <AppIcon id="stepBack" size={20} />
+          </button>
+          <span className="tech-step-pos" aria-live="polite" data-testid="technique-position">
+            {near.index + 1} / {near.total}
+          </span>
+          <button
+            type="button"
+            className="btn icon ghost"
+            disabled={!near.next}
+            aria-label={near.next ? `Technique suivante : ${nameOf(near.next)}` : 'Technique suivante'}
+            onClick={() => go(near.next)}
+            data-testid="technique-next"
+          >
+            <AppIcon id="stepForward" size={20} />
+          </button>
+        </nav>
+      )}
       <PlaybackControls
         playing={playing}
         onToggle={() => {
@@ -280,19 +412,29 @@ export function TechniquePage() {
           else player.current?.play();
           setPlaying(!playing);
         }}
-        speed={speed}
-        onSpeed={(v) => {
-          setSpeed(v);
-          if (player.current) player.current.speed = v;
-        }}
+        extra={<MasterySwitch id={t.id} />}
       />
-      <CameraControls value={cam} onChange={setCam} />
       <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
         <ModeBadge mode={t.mode} />
+        <AnimationBadge id={t.id} />
       </div>
       <p>{t.description}</p>
+      <UnderstandLink term={termForTechnique(t.id)} />
       {t.soloNote && <div className="note">{t.soloNote}</div>}
+      {t.notes?.[d] && (
+        <div className="card stack" data-testid="technique-discipline-note">
+          <h3>{d === 'mma' ? 'En MMA' : `En ${DISCIPLINES.find((y) => y.id === d)!.name.toLowerCase()}`}</h3>
+          <p>{t.notes[d]}</p>
+        </div>
+      )}
+      {t.safety && (
+        <div className="card stack" style={{ borderLeft: '3px solid var(--red)' }} data-testid="technique-safety">
+          <h3>Sécurité</h3>
+          <p>{t.safety}</p>
+        </div>
+      )}
       <GuideCard id={t.id} southpaw={profile.guard === 'gaucher'} />
+      {d === 'kickboxing' && <KickboxingRulesCard id={t.id} />}
       <div className="card stack">
         <h3>Consignes du coach</h3>
         <ul className="plain-list">
@@ -302,14 +444,55 @@ export function TechniquePage() {
         </ul>
       </div>
       <p className="small muted">Disciplines : {t.disciplines.map((x) => DISCIPLINES.find((y) => y.id === x)!.name).join(', ')}</p>
+      {t.sources && t.sources.length > 0 && (
+        <p className="small muted" data-testid="technique-sources">
+          Sources :{' '}
+          {t.sources.map((id, i) => {
+            const src = SOURCE_BY_ID.get(id);
+            return (
+              <span key={id}>
+                {i > 0 && ' ; '}
+                {src ? (
+                  <a href={src.url} target="_blank" rel="noreferrer">
+                    {src.by}, « {src.title} »
+                  </a>
+                ) : (
+                  id
+                )}
+              </span>
+            );
+          })}
+        </p>
+      )}
     </div>
   );
+}
+
+/** 0.46 (« Encyclopédie du combat » §15): from a technique to the sheet that explains its name, when there is one */
+function UnderstandLink({ term }: { term?: { id: string; name: string } }) {
+  if (!term) return null;
+  return (
+    <Link to={`/encyclopedie/terme/${term.id}`} className="btn ghost small" style={{ alignSelf: 'flex-start' }} data-testid="understand-term">
+      Comprendre ce terme : {term.name}
+    </Link>
+  );
+}
+
+/** true when the touch starts in a row that scrolls sideways (chips, steps): its swipe is its own */
+function scrollsSideways(el: HTMLElement | null): boolean {
+  for (let e = el; e && !e.classList.contains('page'); e = e.parentElement) {
+    const ox = getComputedStyle(e).overflowX;
+    if ((ox === 'auto' || ox === 'scroll') && e.scrollWidth > e.clientWidth + 1) return true;
+  }
+  return false;
 }
 
 /** Fiche of a technique that needs a real partner: explanation and safety only, no animation, no solo drill. */
 export function PartnerPage() {
   const { id } = useParams();
   const p = id ? PARTNER_BY_ID.get(id) : undefined;
+  const navTo = useNavigate();
+  useNavActions({ techniques: p && { run: () => navTo(`/techniques?d=${p.discipline}`) } });
   if (!p) return <EmptyState title="Fiche introuvable" action={<Link to="/techniques" className="btn">Retour aux techniques</Link>} />;
   const disc = DISCIPLINES.find((x) => x.id === p.discipline)!;
   const prep = p.prep ? TECHNIQUE_BY_ID.get(p.prep) : undefined;
@@ -318,9 +501,11 @@ export function PartnerPage() {
       <PageHead title={p.name} eyebrow={PARTNER_CATEGORY_LABEL[p.category]} fallback={`/techniques?d=${p.discipline}`} />
       <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
         <ModeBadge mode={p.mode} />
+        <AnimationBadge id={p.id} />
         <DisciplineLabel id={p.discipline} name={disc.name} />
       </div>
       <p>{p.description}</p>
+      <UnderstandLink term={termForPartner(p.id)} />
       <div className="card stack" style={{ borderLeft: '3px solid var(--red)' }} data-testid="partner-safety">
         <h3>Sécurité</h3>
         <ul className="plain-list">
@@ -349,7 +534,7 @@ export function PartnerPage() {
       </div>
       <p className="small muted">Pas d’animation à deux pour cette technique pour l’instant : elle demande une démonstration avec un partenaire virtuel, en préparation.</p>
       {prep && (
-        <EntryCard to={`/techniques/${prep.id}?d=${p.discipline}`} icon={<IconLayers />} title={`Préparation en solo : ${prep.name}`} text="Le seul travail que tu peux faire seul, animé sur ton combattant." testId="partner-prep" />
+        <EntryCard to={`/techniques/${prep.id}?d=${p.discipline}`} icon={<AppIcon id="techniques" />} title={`Préparation en solo : ${prep.name}`} text="Le seul travail que tu peux faire seul, animé sur ton coach." testId="partner-prep" />
       )}
     </div>
   );

@@ -10,17 +10,31 @@ import { defaultLook } from '../../src/editor/look';
 const SCREENS = [
   ['accueil', '/#/'],
   ['entrainer', '/#/entrainer'],
+  // 0.33: the three spaces of Entraîner
+  ['entrainer-disciplines', '/#/entrainer?espace=disciplines'],
+  ['entrainer-programmes', '/#/programmes'],
   ['discipline', '/#/discipline/boxe'],
   ['techniques', '/#/techniques'],
   ['technique', '/#/techniques/jab'],
   ['champions', '/#/champions'],
+  // 0.28 (Youssef, 2026-10-20 21:52): the style flower, the legend cards and a judo / BJJ champion page
+  ['champions-liste', '/#/champions?vue=champions&d=bjj'],
+  ['champion-judo', '/#/champions/c/riner'],
   ['createur-enchainement', '/#/createur'],
+  // 0.38 Créateur V2: the editor of a new sequence
+  ['createur-editeur', '/#/createur/nouveau?d=boxe'],
   ['programmes', '/#/programmes'],
-  ['coach-editeur', '/#/combattant'],
+  // 1.13: the coach selection screen (bars, gold and red cells, « non mesuré »)
+  ['choix-coach', '/#/coach'],
   ['progres', '/#/stats'],
   ['historique', '/#/historique'],
   ['reglages', '/#/reglages'],
   ['profil', '/#/profil'],
+  // 1.2.0: the rows of the two lists, opened
+  ['reglages-voix', '/#/reglages/voix'],
+  ['reglages-donnees', '/#/reglages/donnees'],
+  ['profil-identite', '/#/profil?ouvert=identite'],
+  ['profil-disciplines', '/#/profil?ouvert=disciplines'],
   ['confidentialite', '/#/confidentialite'],
   ['coach-ia', '/#/coach-ia'],
   ['connexion', '/#/connexion'],
@@ -64,12 +78,18 @@ async function measureRendered(page: Page, selector: string) {
     const b = el.getBoundingClientRect();
     const px = parseFloat(cs.fontSize);
     const bold = parseInt(cs.fontWeight) >= 700;
+    // read now: cs is live, and the probe below turns the text transparent
+    const color = cs.color;
     const st = document.createElement('style');
     st.id = 'cr-probe';
     el.setAttribute('data-cr-probe', '');
-    st.textContent = '[data-cr-probe], [data-cr-probe] * { color: transparent !important; caret-color: transparent !important; }';
+    // a sibling icon drawn in the text colour (bar buttons) can overlap the label box: hide it too, it is not background
+    el.parentElement?.setAttribute('data-cr-probe-parent', '');
+    st.textContent =
+      '[data-cr-probe], [data-cr-probe] * { color: transparent !important; caret-color: transparent !important; }' +
+      ' [data-cr-probe-parent] > svg, [data-cr-probe-parent] > span > svg { visibility: hidden !important; }';
     document.head.append(st);
-    return { color: cs.color, large: px >= 24 || (bold && px >= 18.66), box: { x: b.x, y: b.y, width: b.width, height: b.height } };
+    return { color, large: px >= 24 || (bold && px >= 18.66), box: { x: b.x, y: b.y, width: b.width, height: b.height } };
   });
   if (info.box.width < 2 || info.box.height < 2) return null;
   await page.waitForTimeout(30);
@@ -77,6 +97,7 @@ async function measureRendered(page: Page, selector: string) {
   await page.evaluate(() => {
     document.getElementById('cr-probe')?.remove();
     document.querySelector('[data-cr-probe]')?.removeAttribute('data-cr-probe');
+    document.querySelector('[data-cr-probe-parent]')?.removeAttribute('data-cr-probe-parent');
   });
   const ratio = await page.evaluate(
     async ({ b64, color }) => {
@@ -91,7 +112,9 @@ async function measureRendered(page: Page, selector: string) {
       const d = g.getImageData(0, 0, c.width, c.height).data;
       const lin = (v: number) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
       const lum = (r: number, gg: number, b: number) => 0.2126 * lin(r) + 0.7152 * lin(gg) + 0.0722 * lin(b);
-      const m = color.match(/[\d.]+/g)!.map(Number);
+      // rgb(0-255) or, for color-mix() colours (v0.44 bar), color(srgb 0-1): read both as 0-255
+      const srgb = color.startsWith('color(srgb');
+      const m = color.match(/[\d.]+/g)!.map(Number).map((v) => (srgb ? v * 255 : v));
       const fg = lum(m[0], m[1], m[2]);
       const rs: number[] = [];
       for (let i = 0; i < d.length; i += 4) {
@@ -167,8 +190,11 @@ test('contraste des états : survol, appui, champ vide', async ({ page }) => {
   bad.push(...(await audit(page, 'appui')));
   await page.mouse.up();
   await page.goto('about:blank');
-  await page.goto('/#/profil');
+  // 1.2.0: the fields with a placeholder are in Mes infos › Âge, taille, poids
+  await page.goto('/#/profil?ouvert=corps');
   await page.waitForLoadState('networkidle');
+  // 1.25: the start screen (chrono du round) rings its bell before the page shows: wait for the fields themselves
+  await expect(page.locator('input[placeholder]').first()).toBeVisible();
   expect(await page.locator('input[placeholder]').count()).toBeGreaterThan(0);
   // placeholders: same AA rule as the text typed in the field
   const ph = await page.evaluate(() => {

@@ -1,0 +1,72 @@
+// 1.23 Salles immersives: the training screen of each discipline, with or without its room (before/after captures).
+// Usage: PORT=5173 OUT=dir node scripts/dev/shot-salles.mjs [boxe mma ...]   SALLE=0 for the plain background (before)
+import { chromium } from 'playwright';
+import { mkdirSync } from 'node:fs';
+
+const PORT = process.env.PORT ?? '5173';
+const OUT = process.env.OUT ?? 'docs/v1230/captures';
+const SALLE = process.env.SALLE !== '0';
+const W = Number(process.env.W ?? 393);
+const H = Number(process.env.H ?? 851);
+const list = process.argv.slice(2).length ? process.argv.slice(2) : ['boxe', 'kickboxing', 'mma', 'muaythai', 'judo', 'bjj'];
+mkdirSync(OUT, { recursive: true });
+const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH ?? '/opt/pw-browsers/chromium', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: Number(process.env.DPR ?? 1) });
+page.on('pageerror', (e) => console.log('pageerror', e.message));
+const base = `http://localhost:${PORT}/`;
+await page.goto(base);
+await page.waitForLoadState('networkidle');
+await page.evaluate(async (salle) => {
+  const put = (k, v) =>
+    new Promise((res, rej) => {
+      const r = indexedDB.open('keyval-store');
+      r.onupgradeneeded = () => r.result.createObjectStore('keyval');
+      r.onsuccess = () => {
+        const tx = r.result.transaction('keyval', 'readwrite');
+        tx.objectStore('keyval').put(v, k);
+        tx.oncomplete = () => res();
+        tx.onerror = () => rej(tx.error);
+      };
+    });
+  const { DEFAULT_PROFILE } = await import('/src/store/profile.ts');
+  const { DEFAULT_SETTINGS } = await import('/src/store/settings.ts');
+  await put('u:local:css-profile', JSON.stringify({ state: { profile: { ...DEFAULT_PROFILE, completed: true, coach: 'homme' } }, version: 0 }));
+  await put('u:local:css-settings', JSON.stringify({ state: { settings: { ...DEFAULT_SETTINGS, salleImmersive: salle } }, version: 3 }));
+}, SALLE).catch((e) => console.log('seed', e.message));
+// the setting through its switch (what a person does), so the saved settings stay in the store's own format
+await page.goto("about:blank");
+await page.goto(`${base}#/reglages/affichage`);
+const sw = page.getByRole('switch', { name: /Salle immersive/ });
+await sw.waitFor({ state: 'attached', timeout: 60_000 });
+if ((await sw.isChecked()) !== SALLE) await sw.click({ force: true });
+await page.waitForTimeout(800);
+for (const d of list) {
+  await page.goto('about:blank');
+  await page.goto(`${base}#/entrainement?ex=${d}-debutant-01&mode=technique`);
+  await page.getByTestId('start').waitFor({ timeout: 120_000 });
+  if (SALLE) await page.waitForFunction(() => window.__cssRoom, null, { timeout: 120_000 }).catch(() => console.log('pas de salle', d));
+  await page.waitForTimeout(Number(process.env.WAIT ?? 6000));
+  const room = await page.evaluate(() => document.querySelector('canvas')?.closest('[data-room]')?.getAttribute('data-room'));
+  console.log(d, 'salle', JSON.stringify(await page.evaluate(() => window.__cssRoom)), 'caméra', JSON.stringify(await page.evaluate(() => window.__cssCamera)));
+  await page.screenshot({ path: `${OUT}/${d}-${SALLE ? 'salle' : 'avant'}.png`, timeout: 180_000 });
+  console.log('ok', d, room);
+  // 1.26 FRAMES=3: more pictures of the same view, 1.5 s apart (what moves in the room)
+  for (let k = 1; k <= Number(process.env.FRAMES ?? 0); k++) {
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: `${OUT}/${d}-t${k}.png`, timeout: 180_000 });
+  }
+  // 1.26 DRAGS="150,-300": turn the camera by dragging over the stage (the room seen from other angles)
+  let nd = 0;
+  for (const dx of (process.env.DRAGS ?? '').split(',').filter(Boolean).map(Number)) {
+    const box = await page.locator('.tr-stage canvas').boundingBox();
+    const x = box.x + box.width / 2, y = box.y + box.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    for (let k = 1; k <= 10; k++) await page.mouse.move(x + (dx * k) / 10, y, { steps: 2 });
+    await page.mouse.up();
+    await page.waitForTimeout(2500);
+    console.log(d, 'drag', dx, JSON.stringify(await page.evaluate(() => window.__cssCamera)));
+    await page.screenshot({ path: `${OUT}/${d}-drag${++nd}.png`, timeout: 180_000 });
+  }
+}
+await browser.close();

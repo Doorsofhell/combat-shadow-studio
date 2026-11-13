@@ -30,7 +30,7 @@ export interface DisciplineArt {
   rev: number;
 }
 
-const OWN = { author: 'Combat Shadow Studio', licence: 'Création originale, propriété de l’éditeur', origin: 'Rendu des coachs 3D de l’application' };
+const OWN = { author: 'Combat Shadow Studio', licence: 'Création originale, propriété de l’éditeur', origin: 'Coachs 3D de l’application (Kadir, Amara) dans la salle d’ambiance de la discipline, scripts/visuels' };
 
 const art = (id: string, alt: string, focus: DisciplineArt['focus'], bust: DisciplineArt['bust']): DisciplineArt => ({
   sources: [240, 600].map((w) => ({ w, src: `./art/disciplines/${id}-${w}.webp` })),
@@ -40,17 +40,20 @@ const art = (id: string, alt: string, focus: DisciplineArt['focus'], bust: Disci
   bust,
   alt,
   credit: OWN,
-  rev: 1,
+  rev: 2,
 });
 
-/** disciplines whose official artwork is still to be produced: their name is shown alone, no stand-in */
-export const ART_PENDING: DisciplineId[] = ['bjj', 'judo'];
+/** disciplines whose official artwork is still to be produced: their name is shown alone, no stand-in (none since the studio visuals) */
+export const ART_PENDING: DisciplineId[] = [];
 
 export const DISCIPLINE_ART: Partial<Record<DisciplineId, DisciplineArt>> = {
-  boxe: art('boxe', 'Boxeur en garde', { x: 50, y: 20 }, { x: 52, y: 22, zoom: 2.2 }),
-  kickboxing: art('kickboxing', 'Combattante de kick-boxing en coup de pied', { x: 50, y: 22 }, { x: 46, y: 22, zoom: 2 }),
-  mma: art('mma', 'Combattant de MMA en entrée de lutte', { x: 50, y: 24 }, { x: 50, y: 24, zoom: 2 }),
-  muaythai: art('muaythai', 'Combattante de muay-thaï en coup de genou', { x: 50, y: 22 }, { x: 56, y: 20, zoom: 2.2 }),
+  // studio visuals (scripts/visuels/recipes.mjs): one coach, one telling move, the ambiance of the discipline
+  boxe: art('boxe', 'Boxeur qui porte un crochet dans une salle sombre', { x: 50, y: 30 }, { x: 52, y: 20, zoom: 2.2 }),
+  kickboxing: art('kickboxing', 'Combattante de kick-boxing en high kick', { x: 50, y: 30 }, { x: 50, y: 20, zoom: 2 }),
+  mma: art('mma', 'Combattant de MMA en entrée de lutte', { x: 50, y: 40 }, { x: 50, y: 34, zoom: 2 }),
+  muaythai: art('muaythai', 'Combattante de muay-thaï en coup de genou', { x: 50, y: 30 }, { x: 50, y: 18, zoom: 2.2 }),
+  judo: art('judo', 'Judoka en kimono qui prend sa garde de saisie (kumi-kata)', { x: 50, y: 30 }, { x: 50, y: 18, zoom: 2.2 }),
+  bjj: art('bjj', 'Combattante de jiu-jitsu brésilien en posture de grappling', { x: 50, y: 34 }, { x: 50, y: 24, zoom: 2.2 }),
 };
 
 /** the official artwork, or undefined for a discipline that has none yet (the UI then shows its name only) */

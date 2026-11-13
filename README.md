@@ -45,8 +45,9 @@ src/
   store/       Zustand persistant dans IndexedDB : profil, réglages, statistiques, enchaînements perso, chrono actif
   audio/       voix française (Web Speech API), cloche et bips synthétisés (Web Audio, aucun fichier)
   ui/          écrans React, moteur de séance (useSession)
-public/models/ coach_male.glb, coach_female.glb (glTF binaire, textures JPEG)
-generator/     (dans le dossier du projet) scripts Blender qui produisent les deux coachs
+public/coaches/ les quatre coachs ultra-réalistes Microsoft Rocketbox (Kadir, Amara, Naël, Inaya) : photo.glb + tenues/
+tools/generator/ scripts de fabrication des coachs Rocketbox et des emblèmes (voir son README)
+backup CS/   éléments retirés de l’application, gardés pour l’historique (non compilés, non publiés)
 ```
 
 ### Animation

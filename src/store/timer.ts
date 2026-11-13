@@ -21,6 +21,12 @@ export class ActiveTimer {
     this.running = false;
   }
 
+  /** 0.33: a resumed session starts from the time it had (stopped) */
+  seed(ms: number) {
+    this.running = false;
+    this.acc = Math.max(0, ms);
+  }
+
   reset() {
     this.running = false;
     this.acc = 0;

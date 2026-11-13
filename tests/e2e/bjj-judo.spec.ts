@@ -30,7 +30,7 @@ async function seed(page: Page) {
 
 test('Entraîner : 6 disciplines, dont BJJ et judo', async ({ page }) => {
   await seed(page);
-  await page.goto('/#/entrainer');
+  await page.goto('/#/entrainer?espace=disciplines');
   for (const n of ['Boxe anglaise', 'Kick-boxing', 'MMA', 'Muay-thaï', 'Jiu-jitsu brésilien', 'Judo']) await expect(page.locator('.disc-card .name', { hasText: n }).first()).toBeVisible();
 });
 
@@ -61,6 +61,8 @@ test('fiche partenaire : sécurité, étapes, aucun exercice ni animation', asyn
   await page.goto('/#/partenaire/o-soto-gari');
   await expect(page.getByTestId('partner-page')).toBeVisible();
   await expect(page.getByTestId('mode-badge')).toHaveAttribute('data-mode', 'partenaire');
+  // honest state of the two-person animation
+  await expect(page.getByTestId('animation-status')).toHaveAttribute('data-status', 'non-implementee');
   await expect(page.getByTestId('partner-safety')).toContainText('enseignant');
   await expect(page.getByTestId('partner-phases').locator('li')).toHaveCount(4);
   await expect(page.locator('canvas')).toHaveCount(0);
@@ -75,6 +77,7 @@ test('fiche partenaire : la préparation solo ouvre une vraie technique animée'
   await page.getByTestId('partner-prep').click();
   await expect(page).toHaveURL(/techniques\/uchikomi-seoi/);
   await expect(page.getByTestId('mode-badge')).toHaveAttribute('data-mode', 'solo');
+  await expect(page.getByTestId('animation-status')).toHaveText('Animation : contrôlée automatiquement');
   await expect(page.locator('canvas')).toHaveCount(1, { timeout: 20000 });
 });
 

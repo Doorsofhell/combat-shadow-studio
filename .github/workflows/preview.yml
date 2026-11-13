@@ -1,0 +1,77 @@
+
+name: Combat Shadow Studio - Preview
+
+on:
+  push:
+    branches:
+      - feature/coachs-champions
+      - feature/combat-shadow-v025
+      - feature/combat-shadow-v029
+      - feature/combat-shadow-v030
+      - claude/project-thread-o7lrt8
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  # The Blender workflow deploys the rebuilt GLBs after this quick preview;
+  # never cancel it with a race between competing pages deploys.
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # The dedicated rollback workflow restores binary GLBs before deploying 1.37.3.
+    # Do not race it with a stale source-only preview on this special release.
+    if: ${{ !contains(github.event.head_commit.message, '[asset-rollback-v1373]') }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify punch feel and chaining (v1.33.2)
+        run: npm run test -- src/engine/__tests__/punch-feel-v1332.test.ts src/engine/__tests__/torso-chain-v1331.test.ts src/engine/__tests__/hooks-chains.test.ts
+
+      - name: Verify outfits v1.37.2 — actual regenerated GLBs required
+        run: |
+          python3 -m py_compile tools/generator/rocketbox/outfits.py
+          npm run test -- src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit-rollback-v1373.test.ts src/three/__tests__/amara-skin-v1375.test.ts src/three/__tests__/outfit-amara-v1374.test.ts src/domain/release-version.test.ts
+
+      - name: Build application
+        run: npm run build
+        env:
+          # v0.37 comptes : configuration web publique du projet Firebase « Combat Shadow Studio » (forfait Spark).
+          # Ce sont des identifiants publics (présents dans toute application web Firebase), pas des secrets :
+          # l'accès est protégé par Firebase Authentication et les règles Firestore (firestore.rules).
+          VITE_FIREBASE_API_KEY: AIzaSyDBWzZTC4QHV445rRtbrJ-fLJLfUWCujV8
+          VITE_FIREBASE_AUTH_DOMAIN: combat-shadow-studio.firebaseapp.com
+          VITE_FIREBASE_PROJECT_ID: combat-shadow-studio
+          VITE_FIREBASE_APP_ID: 1:48532638871:web:2f135f723753e52b2cedd2
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload website
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
