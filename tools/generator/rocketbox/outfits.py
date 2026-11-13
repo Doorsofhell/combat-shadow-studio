@@ -3423,9 +3423,15 @@ def export(name, parts, hide):
         o.select_set(o in parts or o == arm)
     body.select_set(False)
     out = os.path.join(outdir, f'{name}.glb')
-    bpy.ops.export_scene.gltf(filepath=out, export_format='GLB', export_image_format='JPEG', export_jpeg_quality=85, export_animations=False,
-                              export_skins=True, export_yup=True, use_selection=True, export_extras=True, export_apply=False,
-                              export_vertex_color='ACTIVE' if AO else 'MATERIAL')
+    # Blender 4.0's glTF exporter does not accept export_vertex_color.
+    # Pass the legacy option only when it exists, without affecting other outfits.
+    gltf_options = dict(filepath=out, export_format='GLB', export_image_format='JPEG',
+                        export_jpeg_quality=85, export_animations=False, export_skins=True,
+                        export_yup=True, use_selection=True, export_extras=True, export_apply=False)
+    gltf_properties = bpy.ops.export_scene.gltf.get_rna_type().properties.keys()
+    if 'export_vertex_color' in gltf_properties:
+        gltf_options['export_vertex_color'] = 'ACTIVE' if AO else 'MATERIAL'
+    bpy.ops.export_scene.gltf(**gltf_options)
     print('wrote', out, os.path.getsize(out), 'parts', len(parts), 'hidden body vertices', len(hide))
     for o in parts:
         bpy.data.objects.remove(o)
