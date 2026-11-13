@@ -14,6 +14,18 @@ import type { CoachId } from '../domain/types';
 const JSON_MODELS = import.meta.env.VITE_COACH_FORMAT === 'json';
 const EXT = JSON_MODELS ? 'json' : 'glb';
 
+/**
+ * 1.37.9: keep Amara's original sports-underwear avatar for the "no outfit"
+ * selection and during basic preview; wear her true cleaned skin ONLY while a
+ * discipline outfit is selected. No other coach ever loads photo-clean.
+ * The cleaned mesh retains exact original POSITION for all seven hideBody masks.
+ */
+export function photoAssetPath(coachId: string, outfit: OutfitId | null, extension = 'glb'): string {
+  const variant = coachId === 'mma-amara' && outfit ? 'photo-clean' : 'photo';
+  return `./coaches/${coachId}/${variant}.${extension}`;
+}
+
+
 function base64ToBuffer(b64: string) {
   const bin = atob(b64);
   const out = new Uint8Array(bin.length);
@@ -40,8 +52,8 @@ const DRACO = './draco/';
  * 1.25 chargement au démarrage: the coach's photo avatar is read once while the start screen shows (« Pesée
  * officielle »), so the first 3D screen draws it at once. Same cache key as PhotoCoach (url, Draco, loader set-up).
  */
-export function preloadPhotoCoach(coachId: string) {
-  useGLTF.preload(`./coaches/${coachId}/photo.${EXT}`, DRACO, true, patchJsonModels);
+export function preloadPhotoCoach(coachId: string, outfit: OutfitId | null = null) {
+  useGLTF.preload(photoAssetPath(coachId, outfit, EXT), DRACO, true, patchJsonModels);
 }
 
 /**
@@ -50,7 +62,7 @@ export function preloadPhotoCoach(coachId: string) {
  * immediate (no reading or decoding left, only the first image).
  */
 export function prewarmCoach(coachId: string, outfit: OutfitId | null) {
-  preloadPhotoCoach(coachId);
+  preloadPhotoCoach(coachId, outfit);
   if (outfit) preloadOutfit(`./coaches/${coachId}/tenues/${outfit}.${EXT}`, patchJsonModels);
 }
 
@@ -78,9 +90,13 @@ export interface CoachModelProps {
  */
 export function CoachModel(props: CoachModelProps) {
   const { model, quality } = props;
+  const coachId = model.match(/\/coaches\/([^/]+)\/model$/)?.[1] ?? '';
+  const photoUrl = coachId
+    ? photoAssetPath(coachId, props.outfit ?? null, EXT)
+    : `${model.replace(/model$/, 'photo')}.${EXT}`;
   return (
     <PhotoCoach
-      url={`${model.replace(/model$/, 'photo')}.${EXT}`}
+      url={photoUrl}
       outfitUrl={props.outfit ? `${model.replace(/model$/, `tenues/${props.outfit}`)}.${EXT}` : null}
       outfit={props.outfit ?? null}
       onOutfit={props.onOutfit}

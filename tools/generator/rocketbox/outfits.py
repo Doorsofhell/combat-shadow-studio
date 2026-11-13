@@ -25,6 +25,8 @@ TEX = os.path.join(outdir, '_tex')
 os.makedirs(TEX, exist_ok=True)
 female = sex == 'femme'
 COACH_ID = os.path.basename(os.path.dirname(src))
+# Experimental Amara MMA only; disabled unless explicitly requested in Blender.
+AMARA_MMA_REF = COACH_ID == 'mma-amara' and os.environ.get('AMARA_MMA_REF', '0') == '1'
 # v1.37.4: Inaya's approved female clothing is the construction reference.
 # Every other female coach is rebuilt on HER OWN mesh and rig with the same patterns.
 # The 1.37.4 workflow rebuilds Amara only; Inaya, Naël and Kadir are never touched.
@@ -616,6 +618,11 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
         ignored = [e for e in fill_edges if crotch_seam_edge(e)]
         fill_edges = [e for e in fill_edges if not crotch_seam_edge(e)]
         print('Kadir MMA: crotch seam boundary edges kept open:', len(ignored))
+    if AMARA_MMA_REF and name == 'short-vale-tudo':
+        # Do not re-bridge the narrow inner-leg seam with holes_fill.
+        limit = hipZ - 0.08
+        fill_edges = [e for e in fill_edges if not all(abs((MW @ v.co).x) < 0.032 and
+                      (MW @ v.co).z < limit for v in e.verts)]
     if fill_edges:
         bmesh.ops.holes_fill(bm_, edges=fill_edges, sides=10)
     if BIKINI_MOVED:
@@ -1527,6 +1534,9 @@ def shorts(kind, color, band, n_leg=None, under=False):
                     'vale-tudo': blueprint['liner_waist'], 'surshort': blueprint.get('over_waist', 0.105)}[kind]
     # 1.10: the waistband covers the underwear painted on the skin (Kadir's showed as a brown band above his
     # vale-tudo short in 1.9), 8 mm over its top at most 6 cm higher than the cut asked
+    if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
+        hem = 0.53  # short fitted boxer, upper third of thigh
+        waist = hipZ + 0.105
     if 'top' not in _PAINT:
         tops = [r[1] for r in (painted_cloth_range(hipZ - 0.05, hipZ + 0.2, b) for b in (True, False)) if r]
         _PAINT['top'] = max(tops) if tops else None
@@ -1538,6 +1548,8 @@ def shorts(kind, color, band, n_leg=None, under=False):
         # through the top of the gathered band)
         waist += 0.008
     bandH = {'boxe': 0.07, 'kick': 0.04, 'thai': 0.08, 'mma': 0.04, 'compression': 0.025, 'vale-tudo': 0.035, 'surshort': 0.045}[kind]
+    if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
+        bandH = 0.045  # reference: soft, wide flexible waistband
 
     def hemz(i):
         s = leg_of(i)
@@ -1599,6 +1611,9 @@ def shorts(kind, color, band, n_leg=None, under=False):
     # polyester is matt; the satin relief is shallower (it drew wavy lines)
     sheenK = {'boxe': ('satin', 0.6, 0.35, 0.3), 'thai': ('satin', 0.58, 0.4, 0.3), 'kick': ('serge', 0.62, 0.2, 0.4), 'mma': ('flat', 0.68, 0.1, 1.0), 'compression': ('jersey', 0.78, 0.06, 0.34), 'vale-tudo': ('jersey', 0.8, 0.06, 0.4), 'surshort': ('serge', 0.64, 0.15, 0.35)}[kind]
     body_mat = grad_fabric(f'short-{kind}-degrade', sheenK[0], sheenK[1], sheenK[3], sheenK[2]) if isinstance(color, tuple) else fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3])
+    if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
+        # Original jersey and per-corner patterned colour panels: no external commercial asset.
+        body_mat = grad_fabric('short-vale-tudo-amara-ref-1379', 'jersey', 0.86, 0.38, 0.045)
     # 1.22 the gathered waist of the surshort: the elastic relief stronger (its ruffles), the colour a little darker in the hollows
     # Reduce deep corrugations: the contrasting waistband should read as
     # flexible elastic, not a row of detached stiff rectangles.
@@ -1611,7 +1626,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
     # The v1.26 procedural side slit on the female over-short creates a
     # pointed torn flap when its two moving layers cross. Keep a clean hem
     # here until a dedicated reinforced slit mesh is available.
-    if kind in ('vale-tudo', 'mma') and not under and SLIT_H > 0:
+    if kind in ('vale-tudo', 'mma') and not under and SLIT_H > 0 and not (AMARA_MMA_REF and kind == 'vale-tudo'):
         # 1.26 (Youssef, 2026-11-06, two photos of MMA shorts: « les shorts de MMA doivent avoir la petite fente »):
         # a short slit on the outer side of each leg, from the hem up, narrowing to a point. Cut by the field like
         # the hem (smooth edges; the v0.32 slit, cut along the skin's triangles, came out torn). What lies under it
@@ -1651,6 +1666,25 @@ def shorts(kind, color, band, n_leg=None, under=False):
             apex = min((q.z for q in P if abs(q.x) < 0.003 and _kz < q.z < H['Hips'].z), default=-1.0)
             gap_lo = apex - float(os.environ.get('LINER_GAP_DEPTH', '0.03'))
             F = lambda q: max(F1u(q), min(float(os.environ.get('LINER_GAP', '0.012')) - abs(q.x), q.z - gap_lo))
+    if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
+        # Close-fitting reference short: separate leg hem rings without a long dark bridging web.
+        # Narrow slit limited below the anatomical crotch: never open the pelvis / front panel.
+        kz = (H['LeftLeg'].z + H['LeftUpLeg'].z) * 0.5
+        apex = min((q.z for q in P if abs(q.x) < 0.003 and kz < q.z < H['Hips'].z),
+                   default=hipZ - 0.19)
+        cut_top = apex - 0.004
+        crotch_gap = 0.014
+        original_F = F
+        # Diagnostic candidate ONLY: compare a naturally connected fitted
+        # short with the older manual central slit; no other outfit is touched.
+        # A false slit can look like torn fabric when one thigh is raised.
+        if os.environ.get('AMARA_MMA_NATURAL_GROIN', '1') == '1':
+            print('Amara MMA DIAGNOSTIC: anatomical groin, no added artificial slit')
+            o_cut_mode = 'natural-no-artificial-slit'
+        else:
+            F = lambda q: max(original_F(q), min(crotch_gap - abs(q.x), cut_top - q.z))
+            o_cut_mode = 'manual-central-slit'
+        print('Amara MMA reference cut:', o_cut_mode, round(cut_top, 4), crotch_gap)
     # v1.37.6: A small web of very narrow polygons was measured at the
     # midline of Amara's MMA over-short near its inner hems (z ~= 0.81 m).
     # The model-derived shorts copied skin topology in that region. Excise
@@ -1759,6 +1793,12 @@ def shorts(kind, color, band, n_leg=None, under=False):
                                    and P[i].z > gap_lo - 0.004)}
     if isinstance(color, tuple):
         paint_grad(o, color, min(hz.values()), waist - bandH)
+    if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
+        paint_mma_compression(o, waist, min(hz.values()), bandH, top=False)
+        o['cssCompressionStyle'] = 'fitted-one-layer-reference-1379'
+        o['cssLegSeparationHalfWidth'] = crotch_gap
+        o['cssGroinMethod'] = o_cut_mode
+        o['cssNoOvershort'] = True
     return [o], cov
 
 
@@ -2037,6 +2077,8 @@ def bra_v2(color, accent=None, bandeau=False, band=0.02):
         return low - 0.02 < P[i].z < nk.z + 0.01 and w(i, 'Head') < 0.2 and w(i, *HANDS) < 0.3 and F(P[i]) < 0.03
     grad = isinstance(color, tuple)
     mats = [grad_fabric('haut-brassiere-degrade', 'jersey', 0.62, 0.45, 0.12) if grad else fabric(f'haut-brassiere-{color}', color, 'jersey', rough=0.62, strength=0.45, sheen=0.12)]
+    if AMARA_MMA_REF:
+        mats[0] = grad_fabric('haut-brassiere-amara-ref-1379', 'jersey', 0.85, 0.42, 0.045)
     cuts = []
     if accent:
         mats.append(fabric(f'liseré-{accent}', accent, 'elastique', rough=0.6, strength=0.8))
@@ -2046,6 +2088,9 @@ def bra_v2(color, accent=None, bandeau=False, band=0.02):
                    (lambda c, ids: 1 if c.z < low + band else 0) if accent else None, hem=0.008, cuts=cuts, iso=F)
     if grad:
         paint_grad(o, color, low + band, nk.z - 0.05)
+    if AMARA_MMA_REF:
+        paint_mma_compression(o, low + band, nk.z, band, top=True)
+        o['cssTopStyle'] = 'scoop-racerback-reference-1379'
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
     return [o], cov
@@ -2119,6 +2164,20 @@ def square_field(low, strap=(float(os.environ.get("SQ_IN", "0.112")), float(os.e
             st = max(strap[0] - ax, ax - strap[1], low - q.z,
                      arm_clear(q) - float(os.environ.get("SQ_ARM", "0.022")))
             return _smin(body_, st, 0.014)
+        if AMARA_MMA_REF:
+            # The provided MMA reference shows a low rounded U, wide side support
+            # and a broad athletic back (NOT the thin Y racerback of bra_field).
+            # Alter only this prototype: Inaya and the six other Amara outfits keep
+            # their accepted original pattern.
+            curve = 0.049 * _ss(0.018, 0.113, ax)
+            front_top = nk.z - 0.135 + curve
+            back_top = cz + 0.010
+            T = back_top + (front_top - back_top) * front
+            T -= 0.022 * _ss(0.153, 0.190, ax) * (1 - 0.6 * front)
+            body_ = max(q.z - T, low - q.z, arm_clear(q))
+            st = max(strap[0] - ax, ax - strap[1], low - q.z,
+                     arm_clear(q) - float(os.environ.get('SQ_ARM', '0.022')))
+            return _smin(body_, st, 0.012)
         # Unmodified reference cut: Inaya and all non-Amara characters.
         # 1.37.7: Amara keeps the higher front asked in 1.37.6 (« brassière trop décolletée »): the front of the
         # neckline 7.8 cm under the neck joint instead of 15 cm; the back, straps and armholes stay Inaya's
@@ -2172,6 +2231,50 @@ def relax_weights(o, repeat, k=0.5):
                 o.vertex_groups[g].add([i], Wm[i][g] / tot, 'REPLACE')
 
 
+def mma_reference_underband():
+    """Amara MMA only: smooth continuous 3D elastic ring, NOT a copy of the
+    Rocketbox bikini shell. The prior shell copied collapsed back folds and
+    produced the torn black ruffle even after the source skin was cleaned.
+
+    Interpolate the smoothed torso perimeter, with 3 cloth rows / 96 segments.
+    The band covers the scoop bra's hem by 12 mm, so the old lower edge cannot
+    protrude when her chest bends in guard or a high kick.
+    """
+    low = bra_low()
+    center_z = low + 0.010
+    # v1.37.9 final fit: the 14 mm prototype offset floated visibly off the back.
+    # The band now rests 7 mm from the cleaned torso, above the jersey surface.
+    cx, cy, rad = ring_profile(center_z, dz=0.016, pad=0.007)
+    # Use a periodic low-pass, not the 'max' jag of the source torso radius.
+    for _ in range(7):
+        rad = [(rad[(i - 1) % 36] + 2 * rad[i] + rad[(i + 1) % 36]) / 4
+               for i in range(36)]
+    seg = 96
+    path = []
+    for j in range(seg + 1):
+        ang = -math.pi + 2 * math.pi * j / seg
+        u = j / seg * 36
+        k = int(u) % 36
+        r = rad[k] * (1 - u % 1) + rad[(k + 1) % 36] * (u % 1)
+        path.append(Vector((cx + r * math.cos(ang), cy + r * math.sin(ang), center_z)))
+    mat = fabric('bande-brassiere-mma-amara-lisse-1379', '#111A21',
+                 'elastique', rough=0.87, strength=0.10, sheen=0.015)
+    # strip() creates a single seamless textile sheet with genuine thickness,
+    # NOT an isoline cut or duplicated under-skin fabric.
+    o = strip('bande-brassiere-mma', path, 0.044,
+              lambda q: Vector((q.x - cx, q.y - cy, 0)), 0.0014, mat, across=2)
+    weighted(o, lambda q: VW[KD.find(q)[1]])
+    relax_weights(o, 12)
+    o['cssBraBandCut'] = 'continuous-planar-elastic-1379'
+    o['cssBraBandConstruction'] = 'smooth-independent-torso-ring-1379'
+    o['cssBraBandHeight'] = 0.044
+    o['cssBraBandSegments'] = seg
+    o['cssBraBandOffset'] = 0.007
+    print('Amara MMA: independent bra underband', len(o.data.vertices),
+          'vertices', len(o.data.polygons), 'faces; centre', round(center_z, 4))
+    return [o], set()
+
+
 def top_square(color, accent=None, low=None, name='haut-carre'):
     """1.13 full top with a square neckline (square_field): a sports bra (low = bra_low()), a crop top or a tank top
     (lower), fine jersey 2.2 mm laid 5.5 mm off the skin like bra_v2, an accent band at the bottom when given"""
@@ -2181,6 +2284,8 @@ def top_square(color, accent=None, low=None, name='haut-carre'):
     def keep(i):
         return low - 0.02 < P[i].z < nk.z + 0.01 and w(i, 'Head') < 0.2 and w(i, *HANDS) < 0.3 and F(P[i]) < 0.03
     mats = [fabric(f'{name}-{color}', color, 'jersey', rough=0.62, strength=0.45, sheen=0.12)]
+    if AMARA_MMA_REF and name == 'haut-brassiere':
+        mats[0] = grad_fabric('haut-brassiere-amara-ref-1379', 'jersey', 0.86, 0.38, 0.045)
     cuts = []
     if accent:
         mats.append(fabric(f'liseré-{accent}', accent, 'elastique', rough=0.6, strength=0.8))
@@ -2199,6 +2304,9 @@ def top_square(color, accent=None, low=None, name='haut-carre'):
                    edge_skin=float(os.environ.get('SQ_EDGE', '0.002')))
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
+    if AMARA_MMA_REF and name == 'haut-brassiere':
+        paint_mma_compression(o, low, nk.z, 0.02, top=True)
+        o['cssTopStyle'] = 'scoop-racerback-reference-1379'
     # each point of the decimated top takes the weights of its closest skin point: along the strap's outer edge
     # those alternate between the arm and the shoulder blade, and the edge came out in teeth when the guard rises.
     # Relaxed over the garment (the skin under it is smoothed the same way by smooth_weights.py)
@@ -2960,6 +3068,60 @@ def paint_grad(o, cols, z0, z1):
             at.data[li].color = (*[b[j] + (a[j] - b[j]) * t for j in range(3)], 1)
 
 
+def paint_mma_compression(o, waist, hem_z, band_h, top=False):
+    """Reference-inspired MMA fabric, original artwork (not copied textures).
+    Uses only GLTF vertex colours on a fitted garment — no extra geometry or skin weights.
+    Sharp but anti-aliased diagonal panel, subdued polygonal technical-knit pattern.
+    """
+    def linear(hex_color):
+        raw = [int(hex_color[i:i + 2], 16) / 255.0 for i in (1, 3, 5)]
+        return np.array([x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in raw])
+    def blend(a, b, t):
+        return a * (1 - t) + b * t
+    carbon = linear('#132027')
+    petrol = linear('#174049')
+    slate = linear('#293139')
+    ivory = linear('#E5E7E3')
+    gold = linear('#CBA85C')
+    me_ = o.data
+    col = me_.color_attributes.get('Col') or me_.color_attributes.new('Col', 'FLOAT_COLOR', 'CORNER')
+    mw = o.matrix_world
+    painted = 0
+    for poly in me_.polygons:
+        mat = me_.materials[poly.material_index]
+        uses_vertex_colour = bool(mat and mat.get('css_grad'))
+        for li in poly.loop_indices:
+            if not uses_vertex_colour:
+                col.data[li].color = (1, 1, 1, 1)
+                continue
+            q = mw @ me_.vertices[me_.loops[li].vertex_index].co
+            # Slightly varied blocks: technical fabric, original deterministic pattern.
+            pattern = 0.5 + 0.25 * math.sin(41 * q.x + 29 * q.z) + 0.25 * math.sin(53 * q.y - 18 * q.z)
+            base = blend(carbon, petrol, max(0.0, min(0.44, pattern * 0.44)))
+            if top:
+                side = _ss(0.095, 0.135, abs(q.x))
+                base = blend(base, slate, 0.45 * side)
+                # Smooth fitted under-band, 24 mm high, using the existing colour layer.
+                # No extra material boundary or triangles that can open while kicking.
+                hem_band = 1.0 - _ss(hem_z + 0.013, hem_z + 0.035, q.z)
+                base = blend(base, linear('#111A21'), 0.95 * hem_band)
+            else:
+                # Angular warm-white panel across the front/outer right thigh.
+                # No triangle cutting at the border, so high kicks cannot tear the trim.
+                xline = 0.120 + 0.35 * (q.z - hem_z)
+                side = _ss(xline - 0.008, xline + 0.008, q.x)
+                front = _ss(0.10, -0.012, q.y)
+                below_belt = 1 - _ss(waist - 0.060, waist - 0.020, q.z)
+                patch = side * front * below_belt
+                base = blend(base, ivory, patch)
+                stripe = max(0.0, 1 - abs(q.x - xline) / 0.015) * front * below_belt
+                base = blend(base, gold, stripe * 0.55 * (1 - patch))
+            col.data[li].color = (*[float(c) for c in base], 1)
+            painted += 1
+    me_.color_attributes.active_color = col
+    print('Amara MMA custom fabric:', painted, 'coloured corners;', 'bra' if top else 'short')
+
+
 def outfit(name):
     parts, hide = [], set()
 
@@ -3000,9 +3162,19 @@ def outfit(name):
             # over-short) and a sports bra with a wide elastic under-band, colours per coach (MMAF_KITS)
             k = MMAF_KITS[MMAF]
             _ONCUT[0] = True
-            add(shorts('vale-tudo', k['liner'], k['linerband'], under=UNDER_OVERLAP >= 0))
-            add(shorts('surshort', k['over'], k['overband']))
-            add(female_top(k['top'], k['topband']) or bra_v2(k['top'], k['topband'], band=0.035))
+            if AMARA_MMA_REF:
+                # User reference: fitted MMA compression boxer, rounded scoop bra, no loose over-short.
+                # Brand colours adapted to Amara; no copied third-party logos or textures.
+                add(shorts('vale-tudo', '#132027', '#E2E3DF', under=False))
+                # No cut plane for a second under-band material: it fractured the border
+                # on the chest/back. Paint the dark elastic softly on the SAME shell.
+                add(top_square('#12282D', None, low=bra_low(), name='haut-brassiere'))
+                # The separate low-profile elastic ring replaces the jagged old hem.
+                add(mma_reference_underband())
+            else:
+                add(shorts('vale-tudo', k['liner'], k['linerband'], under=UNDER_OVERLAP >= 0))
+                add(shorts('surshort', k['over'], k['overband']))
+                add(female_top(k['top'], k['topband']) or bra_v2(k['top'], k['topband'], band=0.035))
             _ONCUT[0] = False
         else:
             add(shorts('vale-tudo', *C['mma']))
@@ -3068,7 +3240,8 @@ def brand_logos(parts):
     for g in parts:
         n = g.name
         if n.startswith('haut-') and female:
-            # 1.26 (Youssef, 2026-11-06: « retire aussi le logo sur les brassières des coachs femmes »): plain bras
+            # Previous sports bras remain logo-free. Reference Amara gets the studio's own mark,
+            # NOT commercial logos shown on user-provided reference pictures.
             continue
         if n.startswith('haut-') or n.startswith('rash-'):
             low = bra_low() - (0.04 if 'crop' in n else 0)
@@ -3360,7 +3533,7 @@ def export(name, parts, hide):
     parts[0]['outfit'] = name
     # Assets can now be verified as freshly regenerated: unchanged legacy GLBs must
     # never pass the v1.37.2 deployment gate with old cutouts.
-    parts[0]['generatorVersion'] = '1.37.7' if COACH_ID == 'mma-amara' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
+    parts[0]['generatorVersion'] = '1.37.9' if AMARA_MMA_REF and name == 'mma' else '1.37.7' if COACH_ID == 'mma-amara' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
     if COACH_ID == 'mma-amara':
         if AMARA_PATCHES:
             parts[0]['sportsTopCut'] = 'covered-square-1376'
@@ -3370,7 +3543,10 @@ def export(name, parts, hide):
             # 1.37.7: Inaya's crop with the higher front of 1.37.6; the MMA liner parted at the middle
             parts[0]['sportsTopCut'] = 'inaya-crop-high-front-1377'
             if name == 'mma':
-                parts[0]['shortCrotchGeometry'] = 'liner-split-1377'
+                parts[0]['shortCrotchGeometry'] = 'compression-open-hem-1379' if AMARA_MMA_REF else 'liner-split-1377'
+                if AMARA_MMA_REF:
+                    parts[0]['sportsTopCut'] = 'scoop-racerback-reference-1379'
+                    parts[0]['clothingStyle'] = 'female-compression-reference-1379'
     if CLEAN_BIKINI:
         parts[0]['oldBikiniFlattened'] = True
     if INAYA_FEMALE_PATTERN:

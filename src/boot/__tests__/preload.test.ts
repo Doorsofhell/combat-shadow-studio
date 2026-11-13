@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import SIZES from '../assetSizes.json';
 import { DISCIPLINES, bootMessage, bootPlan, runBoot, type BootProgress } from '../preload';
 import { ALL_COACHES } from '../../domain/coaches/catalog';
+import { bootFiles } from '../../../tools/build/bootModels';
 
 const sizes = SIZES as Record<string, number>;
 const IDS = ALL_COACHES.map((c) => c.id);
@@ -14,6 +15,12 @@ describe('chargement au démarrage (1.25) : ce qui est téléchargé', () => {
     for (const [rel, n] of Object.entries(sizes)) expect(statSync(join('public', rel)).size, rel).toBe(n);
     for (const r of readdirSync('public/salles')) for (const f of readdirSync(join('public/salles', r))) expect(sizes[`salles/${r}/${f}`], `salles/${r}/${f}`).toBeDefined();
     for (const c of ALL_COACHES) expect(sizes[`coaches/${c.id}/photo.glb`], c.id).toBeGreaterThan(0);
+    // Both original (no outfit) and prepared (seven dressed looks) are cached
+    // with stable fingerprints; otherwise the clean body would be downloaded
+    // again every time Amara switches from no outfit into MMA.
+    expect(sizes['coaches/mma-amara/photo-clean.glb']).toBeGreaterThan(0);
+    expect(bootFiles()).toContain('coaches/mma-amara/photo-clean.glb');
+    expect(bootFiles().filter((x) => x.endsWith('/photo-clean.glb'))).toEqual(['coaches/mma-amara/photo-clean.glb']);
   });
 
   it('le coach choisi d’abord, avec ses tenues et les 6 salles, puis tous les autres coachs et leurs tenues', () => {
@@ -45,7 +52,11 @@ describe('chargement au démarrage (1.25) : ce qui est téléchargé', () => {
     expect(none.length).toBeGreaterThan(0);
     expect(none.every((x) => x.step === 'salle')).toBe(true);
     // before the coach is chosen (first launch), every coach is downloaded so the choice is instant
-    expect(bootPlan({ ...base, coachId: null, coaches: IDS }).filter((x) => x.step === 'coach')).toHaveLength(IDS.length);
+    expect(bootPlan({ ...base, coachId: null, coaches: IDS }).filter((x) => x.step === 'coach')).toHaveLength(IDS.length + 1);
+    // Exactly one additional body file is preloaded: dressed Amara only.
+    expect(bootPlan({ ...base, coachId: 'mma-amara' }).some((x) => x.url === './coaches/mma-amara/photo-clean.glb')).toBe(true);
+    expect(bootPlan({ ...base, coachId: 'mma-amara', outfits: false }).some((x) => x.url.includes('photo-clean'))).toBe(false);
+    expect(bootPlan({ ...base, coachId: null, coaches: IDS, json: true }).some((x) => x.url === './coaches/mma-amara/photo-clean.json')).toBe(true);
   });
 
   it('les disciplines du profil d’abord ; modèles en JSON pour la page claude.ai', () => {

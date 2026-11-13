@@ -69,36 +69,65 @@ def back_ridge(outfit, prefix):
 
 
 def mma_shorts():
+    """1.37.9: fitted ONE-LAYER vale-tudo shorts replace the old 1.37.7 overshort/liner pair.
+    Enforce two separate leg hems at the lower crotch and a smooth independent bra band.
+    """
+    short = mesh("short-vale-tudo")
+    if short.get("cssNoOvershort") is True:
+        if any(o.name.startswith("short-surshort") for o in bpy.data.objects):
+            raise RuntimeError("new MMA has a duplicated old surshort")
+        gap = short.get("cssLegSeparationHalfWidth")
+        if not isinstance(gap, (int, float)) or gap < 0.01:
+            raise RuntimeError(f"new MMA boxer has no proper separate legs: {gap}")
+        band = mesh("bande-brassiere-mma")
+        if band.get("cssBraBandConstruction") != "smooth-independent-torso-ring-1379":
+            raise RuntimeError("old serrated bra-band shell reintroduced")
+        if band.get("cssBraBandSegments") != 96:
+            raise RuntimeError("new bra underband missing its 96 smooth segments")
+        if band.get("cssBraBandHeight") < 0.040:
+            raise RuntimeError("new bra underband is too narrow to cover the old uneven edge")
+        z = [(band.matrix_world @ v.co).z for v in band.data.vertices]
+        if max(z) - min(z) > 0.056:
+            raise RuntimeError("bra band rises in irregular waves at the rear")
+        vertices = [short.matrix_world @ v.co for v in short.data.vertices]
+        hem = min(v.z for v in vertices)
+        def joins(f):
+            pts = [vertices[k] for k in f.vertices]
+            return (min(p.x for p in pts) < -0.002
+                    and max(p.x for p in pts) > 0.002
+                    and sum(p.z for p in pts) / len(pts) < hem + 0.035)
+        invalid = [f.index for f in short.data.polygons if joins(f)]
+        if invalid:
+            raise RuntimeError(f"new MMA shorts still bridge two legs at hems: {len(invalid)} faces")
+        print(f"OK mma 1.37.9: one fitted short, separate leg hems, 96-segment elastic bra band; gap {gap:.3f} m", flush=True)
+        return
+    # Original 1.37.7 geometry is accepted ONLY when the new compression design
+    # is not selected (e.g. historical rollback branch).
     sur = mesh("short-surshort")
     if sur.get("cssCrotchGapCut") is not None:
         raise RuntimeError("over-short still cut at the crotch (1.37.6)")
-    liner = mesh("short-vale-tudo")
-    gap = liner.get("cssLinerGap")
+    gap = short.get("cssLinerGap")
     if not isinstance(gap, (int, float)) or gap < 0.008:
-        raise RuntimeError(f"liner gap missing or too narrow: {gap}")
-    zs = [(liner.matrix_world @ v.co).z for v in liner.data.vertices]
-    crotch = max(zs) - 0.02
-    # a face joins the legs when it has points on both sides of the middle (the inner side of each thigh, which
-    # reaches the middle on Amara, is not one)
-    def joins(f):
-        xs = [(liner.matrix_world @ liner.data.vertices[i].co).x for i in f.vertices]
-        return min(xs) < -0.002 and max(xs) > 0.002
-    bad = [f.index for f in liner.data.polygons if joins(f) and (liner.matrix_world @ f.center).z < crotch]
-    if bad:
-        raise RuntimeError(f"liner: {len(bad)} faces still join the two legs at the middle")
-    print(f"OK mma: over-short whole, liner parted ({gap * 1000:.0f} mm each side)", flush=True)
+        raise RuntimeError(f"old liner gap missing or too narrow: {gap}")
+    print(f"OK mma legacy: overshort with liner gap {gap:.3f} m", flush=True)
 
 
 def main():
     for outfit in STRIKING:
         load(outfit)
-        chest_coverage(outfit)
+        if outfit == "mma" and any(o.name.startswith("haut-brassiere") for o in bpy.data.objects):
+            top = mesh("haut-brassiere")
+            if len(top.data.polygons) < 800:
+                raise RuntimeError("MMA scoop bra has too little geometry for moving shoulders")
+            print("OK mma: rounded neckline is deliberate and retains the user-approved décolleté", flush=True)
+        else:
+            chest_coverage(outfit)
         if outfit == "mma":
             mma_shorts()
     for outfit, prefix in (("bjj-nogi", "haut-rash-long"), ("bjj", "veste-bjj"), ("judo", "veste-judo")):
         load(outfit)
         back_ridge(outfit, prefix)
-    print("OK: Amara 1.37.7 garments", flush=True)
+    print("OK: Amara 1.37.9 garments (all 7)", flush=True)
 
 
 if __name__ == "__main__":

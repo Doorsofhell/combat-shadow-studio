@@ -1,0 +1,175 @@
+{
+  "version": "1.37.9",
+  "source": "Lab React Three.js",
+  "imagesAreValidated": false,
+  "records": [
+    {
+      "outfit": "boxe",
+      "pose": "garde-face",
+      "outfitState": "portee",
+      "largeStretchTriangles": 1075
+    },
+    {
+      "outfit": "boxe",
+      "pose": "garde-dos",
+      "outfitState": "portee",
+      "largeStretchTriangles": 1075
+    },
+    {
+      "outfit": "boxe",
+      "pose": "low-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 1183
+    },
+    {
+      "outfit": "boxe",
+      "pose": "high-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 1188
+    },
+    {
+      "outfit": "kickboxing",
+      "pose": "garde-face",
+      "outfitState": "portee",
+      "largeStretchTriangles": 1125
+    },
+    {
+      "outfit": "kickboxing",
+      "pose": "garde-dos",
+      "outfitState": "portee",
+      "largeStretchTriangles": 1125
+    },
+    {
+      "outfit": "kickboxing",
+      "pose": "low-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 1257
+    },
+    {
+      "outfit": "kickboxing",
+      "pose": "high-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 1226
+    },
+    {
+      "outfit": "muaythai",
+      "pose": "garde-face",
+      "outfitState": "portee",
+      "largeStretchTriangles": 959
+    },
+    {
+      "outfit": "muaythai",
+      "pose": "garde-dos",
+      "outfitState": "portee",
+      "largeStretchTriangles": 959
+    },
+    {
+      "outfit": "muaythai",
+      "pose": "low-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 1063
+    },
+    {
+      "outfit": "muaythai",
+      "pose": "high-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 1067
+    },
+    {
+      "outfit": "bjj",
+      "pose": "garde-face",
+      "outfitState": "portee",
+      "largeStretchTriangles": 2290
+    },
+    {
+      "outfit": "bjj",
+      "pose": "garde-dos",
+      "outfitState": "portee",
+      "largeStretchTriangles": 2290
+    },
+    {
+      "outfit": "bjj",
+      "pose": "low-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 2525
+    },
+    {
+      "outfit": "bjj",
+      "pose": "high-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 2447
+    },
+    {
+      "outfit": "bjj-nogi",
+      "pose": "garde-face",
+      "outfitState": "portee",
+      "largeStretchTriangles": 1463
+    },
+    {
+      "outfit": "bjj-nogi",
+      "pose": "garde-dos",
+      "outfitState": "portee",
+      "largeStretchTriangles": 1463
+    },
+    {
+      "outfit": "bjj-nogi",
+      "pose": "low-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 1648
+    },
+    {
+      "outfit": "bjj-nogi",
+      "pose": "high-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 1644
+    },
+    {
+      "outfit": "judo",
+      "pose": "garde-face",
+      "outfitState": "portee",
+      "largeStretchTriangles": 2942
+    },
+    {
+      "outfit": "judo",
+      "pose": "garde-dos",
+      "outfitState": "portee",
+      "largeStretchTriangles": 2942
+    },
+    {
+      "outfit": "judo",
+      "pose": "low-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 3012
+    },
+    {
+      "outfit": "judo",
+      "pose": "high-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 2948
+    },
+    {
+      "outfit": "mma",
+      "pose": "garde-face",
+      "outfitState": "portee",
+      "largeStretchTriangles": 822
+    },
+    {
+      "outfit": "mma",
+      "pose": "garde-dos",
+      "outfitState": "portee",
+      "largeStretchTriangles": 822
+    },
+    {
+      "outfit": "mma",
+      "pose": "low-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 958
+    },
+    {
+      "outfit": "mma",
+      "pose": "high-kick",
+      "outfitState": "portee",
+      "largeStretchTriangles": 952
+    }
+  ]
+}

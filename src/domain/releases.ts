@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.37.9',
+      releaseDate: '2026-11-13',
+      title: 'Amara : nouvelle tenue MMA, peau nette sous les vêtements',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Nouvelle tenue MMA féminine pour Amara : brassière de compression au décolleté en U, bande élastique régulière et short vale-tudo ajusté, sans surshort ni filet entre les jambes.' },
+        { category: 'corrections', text: 'Ancien maillot Rocketbox retiré du corps d’Amara lorsqu’elle porte ses sept tenues : correction du relief et reconstruction localisée de la couleur de peau.' },
+        { category: 'ameliorations', text: 'Sans tenue, Amara conserve son modèle sportif d’origine. Visage, expressions, animations, six autres vêtements et les trois autres coachs préservés.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.37.8',
       releaseDate: '2026-11-12',
       title: 'Amara : relief musculaire affiné',

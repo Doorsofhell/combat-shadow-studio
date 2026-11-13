@@ -9,6 +9,7 @@ import { hairFadeAttribute, photoMaterial, photoPart, skinLookFor } from './phot
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { restoreReferencePose, setLegLength } from './pose';
 import { dropStillMorphs, FaceAnimator, type FaceOptions } from './face';
+import { bakeAmaraCleanSurface } from './amaraCleanSurface';
 import type { HumanSignals } from './human/behavior';
 import { humanProfileFor } from './human/profiles';
 import { CoachRig } from '../engine';
@@ -64,7 +65,10 @@ export function PhotoCoach({
       if (!m.isMesh) return;
       m.frustumCulled = false;
       // 1.16: the expressions stay only on the face (src/three/face.ts)
-      dropStillMorphs(m);
+      // Amara only: optional extra target on the body stores the old swimsuit surface
+      // flattened in the actual rendered model. Bake BEFORE removing static morphs.
+      // All seven existing hideBody masks still use the original unbaked vertex keys.
+      if (!bakeAmaraCleanSurface(m)) dropStillMorphs(m);
       // 1.10: each part classified (skin, eyes, hair, brows, lashes) and rebuilt from all its source properties
       // (src/three/photoMaterials.ts): before, « opacity » sent the eyes, brows and lashes to the hair branch
       const part = photoPart(m.material as Material);
