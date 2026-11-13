@@ -1509,7 +1509,7 @@ def collar(color, kind):
 BAND_RELIEF = float(os.environ.get('BAND_RELIEF', '0.15'))
 
 
-def shorts(kind, color, band, n_leg=None, under=False, hem_override=None):
+def shorts(kind, color, band, n_leg=None, under=False, hem_override=None, nogi=False):
     """kind: boxe (loose, to just above the knee, high waistband), kick (fitted, short), thai (short, very wide,
     high waistband), mma (board short, side slits, to the knee), compression"""
     # the photo body has its underwear painted down to mid-thigh: every short reaches below it
@@ -1605,7 +1605,7 @@ def shorts(kind, color, band, n_leg=None, under=False, hem_override=None):
     # Reduce deep corrugations: the contrasting waistband should read as
     # flexible elastic, not a row of detached stiff rectangles.
     band_rel = 0.35 if kind == 'surshort' else BAND_RELIEF
-    mats = [body_mat, fabric(f'ceinture-{kind}-{band}', band, 'elastique', rough=0.65, strength=band_rel, tone=0.1 if band_rel >= 0.5 else 0.03)]
+    mats = [body_mat, fabric(f'ceinture-{kind}-{band}', band, 'elastique', rough=0.65, strength=band_rel, tone=0 if nogi else (0.1 if band_rel >= 0.5 else 0.03))]
     # 1.10: waist and hems are the zero line of a field (exact, smooth edges whatever the body's triangles; the plane
     # cuts left a wavy waistband on the MakeHuman bodies); the band's lower line stays a straight plane cut
     hz = {s: H[f'{s}Leg'].z + hem * (H[f'{s}UpLeg'].z - H[f'{s}Leg'].z) for s in ('Left', 'Right')}
@@ -1767,6 +1767,10 @@ def shorts(kind, color, band, n_leg=None, under=False, hem_override=None):
 def top(kind, color, accent=None, geom=False, nogi=False):
     """kind: brassiere (sports bra), debardeur (tank top), rash-court, rash-long"""
     lowZ = {'brassiere': chestZ - 0.07 if female else chestZ - 0.05, 'debardeur': hipZ + 0.06, 'rash-court': hipZ + 0.04, 'rash-long': hipZ + 0.04}[kind]
+    if nogi:
+        # 5 mm hem overlap at the MMA waistband, rather than 30 mm of
+        # overlapping surfaces which produced a ragged dark seam.
+        lowZ = hipZ + 0.065
     sleeve = {'brassiere': 0, 'debardeur': 0, 'rash-court': 0.45, 'rash-long': 0.93}[kind]
 
     def keep(i):
@@ -3046,7 +3050,7 @@ def outfit(name):
         # The accent is applied to actual exported mesh materials (not to a
         # procedural Blender-only shader) so it survives glTF export.
         nogi_top = top('rash-court', top_color, accent=accent_color, nogi=True)
-        nogi_short = shorts('mma', short_color, accent_color, hem_override=0.46)
+        nogi_short = shorts('mma', short_color, accent_color, hem_override=0.46, nogi=True)
         add(nogi_top)
         add(nogi_short)
         for garment in (nogi_top, nogi_short):
