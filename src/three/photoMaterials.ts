@@ -133,7 +133,9 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
       // covers the iris in black; the wet look of the cornea is the clear coat of the eye itself
       const cut = old.transparent || old.alphaTest > 0 ? 0.5 : 0;
       const p: MeshStandardMaterialParameters = { ...base, metalness: 0, roughness: 0.18, transparent: false, alphaTest: cut, depthWrite: true };
-      return hi ? new MeshPhysicalMaterial({ ...p, clearcoat: 1, clearcoatRoughness: 0.04, specularIntensity: 0.8 }) : new MeshStandardMaterial({ ...p, roughness: 0.12 });
+      const m = hi ? new MeshPhysicalMaterial({ ...p, clearcoat: 1, clearcoatRoughness: 0.04, specularIntensity: 0.8 }) : new MeshStandardMaterial({ ...p, roughness: 0.12 });
+      eyeCatchlight(m);
+      return m;
     }
     case 'cheveux': {
       const m = new MeshStandardMaterial({ ...base, metalness: 0, roughness: Math.max(0.55, old.roughness), side: DoubleSide, transparent: false, alphaTest: 0.4, alphaToCoverage: true, depthWrite: true });
@@ -144,6 +146,32 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
     case 'cils':
       return new MeshStandardMaterial({ ...base, metalness: 0, side: DoubleSide, transparent: false, alphaTest: 0.3, alphaToCoverage: true, depthWrite: true });
   }
+}
+
+/**
+ * 1.39 (Youssef 13/11: « le visage reste trop figé… pas du tout naturel »): verified in the Lab, the eyes showed no
+ * highlight at all in close-up (the studio lights sit above and to the side, the eyes deep under the brows): matte,
+ * « dead » eyes. A real eye always carries the small reflection of the light in front of it (the catchlight). Each eye
+ * gets one: a sharp highlight of a soft light just above the viewer, computed in view space (it follows the camera, as
+ * the window reflected in a real eye does), a few instructions, both qualities.
+ */
+export const EYE_CATCHLIGHT = { dir: [-0.18, 0.05, 1] as [number, number, number], sharpness: 260, strength: 2.2 };
+
+export function eyeCatchlight(m: Material) {
+  const [x, y, z] = EYE_CATCHLIGHT.dir;
+  m.onBeforeCompile = (shader) => {
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <opaque_fragment>',
+      `{
+        vec3 cssV = normalize(vViewPosition);
+        vec3 cssH = normalize(normalize(vec3(${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)})) + cssV);
+        outgoingLight += vec3(${EYE_CATCHLIGHT.strength.toFixed(3)}) * pow(max(dot(normalize(normal), cssH), 0.0), ${EYE_CATCHLIGHT.sharpness.toFixed(1)});
+      }
+      #include <opaque_fragment>`,
+    );
+  };
+  m.customProgramCacheKey = () => 'css-eye-catchlight-v139';
+  m.userData.cssCatchlight = true;
 }
 
 /**

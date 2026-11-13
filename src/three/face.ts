@@ -2,6 +2,7 @@ import { Bone, Mesh, Object3D, Quaternion, Vector3 } from 'three';
 import { BehaviorEngine, HUMAN_STATES, NEUTRAL_MOOD, type HumanSignals, type HumanState, type Mood } from './human/behavior';
 import { faceCapabilities, type FaceCapabilities } from './human/capabilities';
 import { DEFAULT_PROFILE, type HumanProfile } from './human/profiles';
+import { MicroLife } from './human/micro';
 
 /**
  * 1.9 (Youssef, 2026-10-29: « l'expression des visages est trop statique, fait quelque chose »): a living face for
@@ -259,10 +260,17 @@ export class FaceAnimator {
   private shoulders: { bone: Bone; axis: Vector3; side: number; out: Quaternion; d: Quaternion }[] = [];
   /** the body's breath (Breath: -1 out .. 1 in), when the coach has one; the face's own cycle otherwise */
   private bodyBreath: number | null = null;
+  /** 1.39 the micro-life of the face (src/three/human/micro.ts), its own seeded generator (the blinks and glances
+   * of a coach stay the ones of 1.38) */
+  readonly micro: MicroLife;
+  /** 1.39 this blink: closing and opening times (s) and how far the lids go (a blink is not always complete) */
+  private blinkShape = { close: 0.07, open: 0.12, depth: 1 };
+  private lastU = Infinity;
 
   /** the model must be in its rest pose (restoreReferencePose) and its world matrices up to date */
   constructor(root: Object3D, seed = 1, profile: HumanProfile = DEFAULT_PROFILE) {
     this.rand = rng(seed);
+    this.micro = new MicroLife(rng(seed * 7919 + 13));
     this.root = root;
     this.profile = profile;
     this.behavior = new BehaviorEngine(profile.traits);
@@ -419,9 +427,20 @@ export class FaceAnimator {
     let blink = 0;
     if (this.blinkAt >= 0) {
       const u = this.t - this.blinkAt;
-      blink = u < 0.07 ? u / 0.07 : u < 0.19 ? 1 - (u - 0.07) / 0.12 : 0;
-      if (u >= 0.19) this.blinkAt = -1;
-    }
+      // 1.39 each blink its own shape (verified 1.38: all identical, 0.07 s + 0.12 s, always complete): closing 60 to
+      // 100 ms, opening 1.6 to 2.4 times slower, now and then a half blink (one in eight)
+      if (u === 0 || u < this.lastU) {
+        const r = this.micro.rand01();
+        this.blinkShape.close = 0.06 + 0.04 * r;
+        this.blinkShape.open = this.blinkShape.close * (1.6 + 0.8 * this.micro.rand01());
+        this.blinkShape.depth = this.micro.rand01() < 0.125 ? 0.6 + 0.2 * this.micro.rand01() : 1;
+      }
+      this.lastU = u;
+      const { close: c, open: o, depth } = this.blinkShape;
+      const ease = (x: number) => x * x * (3 - 2 * x);
+      blink = depth * (u < c ? ease(u / c) : u < c + o ? 1 - ease((u - c) / o) : 0);
+      if (u >= c + o) this.blinkAt = -1;
+    } else this.lastU = Infinity;
     if (still) blink = 0;
     if (opts.blink !== undefined) blink = opts.blink;
     // 1.20 the face at rest: a new mood every 2 to 5 s, reached over about a second; breathing 15 a minute,
@@ -430,10 +449,12 @@ export class FaceAnimator {
       const I = this.idleTo;
       if (this.t >= this.idleNext) {
         const r = this.rand();
-        I.focus = 0.35 + 0.65 * this.rand();
+        // 1.39 (Youssef 13/11: « pas de lèvres ni visage crispé »): the focus of 1.20 to 1.38 (0.35..1) held a frown
+        // for seconds; now 0.2..0.75 and the micro-life moves it. Lips pressed now and then and only lightly (they were
+        // pressed nearly half the time, up to full strength): mostly relaxed
+        I.focus = 0.2 + 0.55 * this.rand();
         I.brow = this.rand() < 0.3 ? 0.4 + 0.6 * this.rand() : 0;
-        // pressed lips most of the time, a faint smile now and then, otherwise relaxed
-        I.press = r < 0.45 ? 0.5 + 0.5 * this.rand() : 0;
+        I.press = r < 0.15 ? 0.2 + 0.3 * this.rand() : 0;
         I.smile = r > 0.8 ? 0.5 + 0.5 * this.rand() : 0;
         I.side = this.rand() * 2 - 1;
         this.idleNext = this.t + 2 + this.rand() * 3;
@@ -469,14 +490,20 @@ export class FaceAnimator {
     g.yaw += (g.toYaw - g.yaw) * s;
     g.pitch += (g.toPitch - g.pitch) * s;
 
+    // 1.39 the micro-life of the face: only live, given way to the strike, no micro-expression while preparing or
+    // striking (the states without glances)
+    const M = this.micro;
+    if (!still) M.update(dt, { rest, breath: this.idle.breath, calm: tempo.glance > 0 ? 1 : 0, strength: this.profile.traits.expressiveness });
+    const my = still ? 0 : M.eye.yaw;
+    const mp = still ? 0 : M.eye.pitch;
     // 1.34 the head first (its small life, a nod of encouragement), then the eyes, which aim from where it is
     this.moveHead(dt, still, rest, mood);
     this.aimEyes(dt);
     for (const e of this.eyes) {
       e.bone.quaternion
         .copy(e.q)
-        .multiply(tmpQ.setFromAxisAngle(e.yaw, g.yaw + this.aim.yaw))
-        .multiply(tmpQ.setFromAxisAngle(e.pitch, g.pitch + this.aim.pitch + 0.03 * close));
+        .multiply(tmpQ.setFromAxisAngle(e.yaw, g.yaw + this.aim.yaw + my))
+        .multiply(tmpQ.setFromAxisAngle(e.pitch, g.pitch + this.aim.pitch + mp + 0.03 * close));
     }
     // the lids; 1.34 the upper lid follows the eye as it turns up or down (a raised look opens the eye: without it the
     // iris went under the lid when the eyes looked up at the opponent), the lower one a little
@@ -522,11 +549,30 @@ export class FaceAnimator {
       const ex = still ? 0 : this.effort;
       this.exhale += (ex - this.exhale) * Math.min(1, dt / (ex > this.exhale ? 0.09 : 0.25));
       const w = opts.expr ?? expressionWeights(blink, this.effort, this.exhale, still ? undefined : this.idle, mood);
-      // 1.34 a raised look opens the eyes (the upper lid follows the eye: positive pitch is down)
+      if (!opts.expr && !still) {
+        // 1.39 the micro-life on top (it may also take a little off: a frown that lets go)
+        for (const [k, v] of Object.entries(M.w) as [FaceExpression, number][]) {
+          // never on the lids while they blink
+          if (blink > 0 && k.startsWith('EyeBlink')) continue;
+          w[k] = (w[k] ?? 0) + v;
+        }
+        // relaxed lips at rest (Youssef 13/11: « pas de lèvres crispées »): their press is held under 0.2 outside the
+        // strike
+        const cap = 0.2 + 0.8 * this.effort;
+        w.MouthPressLeft = Math.min(w.MouthPressLeft ?? 0, cap);
+        w.MouthPressRight = Math.min(w.MouthPressRight ?? 0, cap);
+      }
+      // 1.34 a raised look opens the eyes (the upper lid follows the eye: positive pitch is down). 1.39: the upper lid
+      // first gives back what the focus had lowered, the eye opens wide only beyond (in 1.38 both were applied at
+      // once: a lid lowered and widened together, the fixed stare seen in the Lab)
       if (!opts.expr && look < 0) {
         const up = Math.min(0.45, -1.4 * look) * (1 - blink);
-        w.EyeWideLeft = (w.EyeWideLeft ?? 0) + up;
-        w.EyeWideRight = (w.EyeWideRight ?? 0) + up;
+        for (const [lidK, wideK] of [['EyeBlinkLeft', 'EyeWideLeft'], ['EyeBlinkRight', 'EyeWideRight']] as const) {
+          const lid = w[lidK] ?? 0;
+          const give = blink > 0 ? 0 : Math.min(lid, up);
+          w[lidK] = lid - give;
+          w[wideK] = (w[wideK] ?? 0) + (up - give);
+        }
       }
       for (const { mesh, idx } of this.morphs) {
         const inf = mesh.morphTargetInfluences!;
