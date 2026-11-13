@@ -1771,6 +1771,41 @@ def shorts(kind, color, band, n_leg=None, under=False, hem_override=None, nogi=F
     return [o], cov
 
 
+def nogi_rashguard_texture(obj, base_hex, accent_hex, boundary_z):
+    """Paint a continuous colour boundary in world-height UV space.
+    No material splits or bmesh bisects at the shoulder/axilla."""
+    size = 1024
+    z0, z1 = hipZ - 0.05, H['Neck'].z + 0.04
+    def rgb(code):
+        return np.array([int(code[k:k + 2], 16) / 255.0 for k in (1, 3, 5)], dtype=np.float32)
+    base, accent = rgb(base_hex), rgb(accent_hex)
+    threshold = (boundary_z - z0) / max(0.001, z1 - z0)
+    v = (np.arange(size, dtype=np.float32) + 0.5) / size
+    # 2-pixel antialiasing, not a geometric step.
+    t = np.clip((v - threshold) * size / 2.0 + 0.5, 0, 1)
+    t = t * t * (3 - 2 * t)
+    row = base[None, :] * (1 - t[:, None]) + accent[None, :] * t[:, None]
+    pixels = np.broadcast_to(row[:, None, :], (size, size, 3)).copy()
+    img = save_png('nogi-rashguard-' + COACH_ID, pixels)
+    uv = obj.data.uv_layers.get('NoGiColour') or obj.data.uv_layers.new(name='NoGiColour')
+    for poly in obj.data.polygons:
+        for li in poly.loop_indices:
+            vertex = obj.data.vertices[obj.data.loops[li].vertex_index]
+            q = obj.matrix_world @ vertex.co
+            uv.data[li].uv = (0.5, max(0.001, min(0.999, (q.z - z0) / max(0.001, z1 - z0))))
+    mat = obj.data.materials[0]
+    nodes = mat.node_tree.nodes
+    bsdf = nodes.get('Principled BSDF')
+    tex = nodes.new('ShaderNodeTexImage')
+    tex.image = img
+    tex.interpolation = 'Linear'
+    tex.extension = 'EXTEND'
+    coord = nodes.new('ShaderNodeUVMap')
+    coord.uv_map = uv.name
+    mat.node_tree.links.new(coord.outputs['UV'], tex.inputs['Vector'])
+    mat.node_tree.links.new(tex.outputs['Color'], bsdf.inputs['Base Color'])
+
+
 def top(kind, color, accent=None, geom=False, nogi=False):
     """kind: brassiere (sports bra), debardeur (tank top), rash-court, rash-long"""
     lowZ = {'brassiere': chestZ - 0.07 if female else chestZ - 0.05, 'debardeur': hipZ + 0.06, 'rash-court': hipZ + 0.04, 'rash-long': hipZ + 0.04}[kind]
@@ -1860,17 +1895,7 @@ def top(kind, color, accent=None, geom=False, nogi=False):
         elif sleeve > 0.5:
             a, b = H[f'{s_}ForeArm'], H[f'{s_}Hand']
             cuts.append((a + (b - a) * (sleeve - 0.5) * 2, (b - a).normalized()))
-    if nogi and accent:
-        # Raglan-like side panels, not a copied manufacturer logo. The source
-        # colours remain coach-specific and export as standard glTF materials.
-        # Split source triangles on the No-Gi colour boundaries, rather than
-        # assigning whole irregular triangles to different materials.
-        # Do not slice the shoulder/arm junction at x=+/-0.105:
-        # those vertical planes intersect the sleeves and produce the
-        # apparent jagged underarm wedges visible in generation 12.
-        # A single horizontal shoulder-yoke boundary avoids crossing
-        # the axilla; the fitted sleeve remains one continuous material.
-        cuts.append((Vector((0, 0, chestZ + 0.10)), Vector((0, 0, 1))))
+    # No colour-boundary bisects: the No-Gi panel is painted onto continuous UVs.
     if kind == 'brassiere' and (GEOM_BRA or geom):
         nk = H['Neck']
         cuts += [(Vector((0, 0, z)), Vector((0, 0, 1))) for z in (nk.z - 0.13, chestZ + 0.02, nk.z - 0.02)]
@@ -1895,8 +1920,10 @@ def top(kind, color, accent=None, geom=False, nogi=False):
     # waist rather than a zigzag following the skin's last surviving triangles.
     hem_field = (lambda q: lowZ - q.z) if kind.startswith('rash-') else None
     o, cov = shell(f'haut-{kind}', keep, tpush, 0.003, mats,
-                   (lambda c, ids: 1 if (nogi and c.z > chestZ + 0.10) or (not nogi and w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ) else 0) if accent else None, cuts=cuts, iso=hem_field,
+                   (lambda c, ids: 1 if (False if nogi else False) or (not nogi and w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ) else 0) if accent else None, cuts=cuts, iso=hem_field,
                    detail_ratio=0.98 if nogi else None)
+    if nogi and accent:
+        nogi_rashguard_texture(o, color, accent, chestZ + 0.10)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
     return [o], cov
