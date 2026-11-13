@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.40.1',
+      releaseDate: '2026-11-13',
+      title: 'Visages : plus de traits sur le front et autour des yeux',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Les petits traits en pointillés qui apparaissaient sur le front et au coin des yeux des coachs sont supprimés : la peau du visage reste nette.' },
+        { category: 'ameliorations', text: 'Le reste des visages de la 1.40 est gardé : visage détendu, regard vers toi, sourires doux, tête qui suit le regard.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.40.0',
       releaseDate: '2026-11-13',
       title: 'Coachs : visages détendus, regard vers toi, sourires',

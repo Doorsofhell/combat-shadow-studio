@@ -22,6 +22,15 @@ export interface WrinkleUniforms {
   cssWrA: { value: Vector4 };
 }
 
+/**
+ * 1.40.1 (Youssef 13/11 22:36, captures téléphone : « des trucs qui apparaissent sur les visages », « humaniser ne veut
+ * pas dire rajouter des traits visibles »): on the phones the procedural lines read as dotted dark marks on the
+ * forehead and around the eyes. The coaches' skin no longer gets this shader; the expressions, the gaze and the
+ * micro-life of 1.39/1.40 stay. Kept here (off) so the work is not lost; turn back on only with close-up captures
+ * on a phone validated by Youssef.
+ */
+export const WRINKLES_ON_COACHES = false;
+
 /** depth of a full crease, in metres, and how much darker its bottom is */
 export const WRINKLE_LOOK = { depth: 0.0006, shade: 0.14 } as const;
 

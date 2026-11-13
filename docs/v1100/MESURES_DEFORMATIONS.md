@@ -19,7 +19,7 @@ Chaque case : **pli** (accentuation du pli par rapport au repos, 99e centile, de
 | crochet | genoux | 114° · 0.09 · 2.53 | 116° · 0.06 · 1.90 | 96° · 0.22 · 2.16 | 135° · 0.05 · 1.93 |
 | high kick | aisselles, omoplates | 70° · 0.08 · 2.62 | 33° · 0.17 · 2.33 | 66° · 0.03 · 2.32 | 20° · 0.19 · 1.91 |
 | high kick | coudes | 73° · 0.17 · 1.77 | 70° · 0.04 · 1.88 | 90° · 0.16 · 1.82 | 70° · 0.07 · 1.52 |
-| high kick | aine, bassin | 102° · 0.07 · 7.63 | 72° · 0.11 · 1.47 | 107° · 0.11 · 1.48 | 66° · 0.10 · 1.44 |
+| high kick | aine, bassin | 102° · 0.07 · 7.63 | 72° · 0.11 · 1.47 | 107° · 0.11 · 1.47 | 66° · 0.10 · 1.44 |
 | high kick | genoux | 58° · 0.26 · 2.38 | 49° · 0.20 · 1.72 | 52° · 0.40 · 2.00 | 50° · 0.11 · 1.75 |
 | squat (changement de niveau) | aisselles, omoplates | 60° · 0.07 · 1.83 | 27° · 0.25 · 1.73 | 58° · 0.07 · 1.78 | 13° · 0.36 · 1.55 |
 | squat (changement de niveau) | coudes | 69° · 0.16 · 1.75 | 60° · 0.05 · 1.76 | 86° · 0.14 · 1.73 | 54° · 0.08 · 1.43 |

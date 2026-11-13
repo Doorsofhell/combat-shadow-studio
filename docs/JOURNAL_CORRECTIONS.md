@@ -3834,3 +3834,22 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   complet conservé. La v1.41.0 est restée en ligne environ 5 minutes.
 - **Tests** : contenu comparé avec 5dd5007 : identique hors journal, TEST RÉUSSI. Titre en ligne vérifié après
   déploiement.
+
+## 2026-11-13 · v1.40.1 · Visages : plus de traits en pointillés
+
+- **Constat après vérification** : sur les captures du téléphone de Youssef (Kadir, Amara, Inaya), des traits sombres
+  en pointillés apparaissent sur le front et au coin des yeux. Cause : les « rides d'expression » ajoutées en 1.40
+  (`src/three/human/wrinkles.ts`) sont dessinées dans le shader de la peau par des lignes très fines ; sur le GPU
+  d'un téléphone, à la taille où le visage est affiché, elles se cassent en points et en tirets. Elles sont aussi
+  visibles au repos dès que les sourcils ou les joues bougent un peu. Humaniser ne doit pas ajouter de traits.
+- **Correction** : ces rides ne sont plus posées sur la peau des coachs (`WRINKLES_ON_COACHES = false`, appel unique
+  dans `src/three/PhotoCoach.tsx` gardé par ce réglage). Le code reste dans le dépôt, éteint. Le reste de la 1.40
+  est gardé : visage détendu, regard vers l'élève, sourires doux, tête qui suit le regard, cou en garde penchée.
+- **Fichiers** : `src/three/human/wrinkles.ts`, `src/three/PhotoCoach.tsx`, `src/domain/releases.ts`,
+  `package.json`, `package-lock.json`, test `src/three/human/__tests__/visage-net-v1401.test.ts`.
+- **Tests** : nouveau test « les rides procédurales ne sont plus posées sur la peau des coachs » : TEST RÉUSSI.
+  Vitest complet : 1448 réussis, 9 ÉCHOUÉ déjà connus avant ce lot (8 mesures du moteur de coups, poids de
+  photo.glb d'Amara), aucun nouveau. TypeScript : TEST RÉUSSI. Playwright : NON EXÉCUTÉ. Gros plans du visage dans
+  le navigateur de test (rendu logiciel) : NON CONCLUANT, ce rendu ne reproduit pas les pointillés du téléphone ;
+  vérification à faire par Youssef sur son téléphone.
+- **Restauration** : v1.40.0 = commit 63b3742.
