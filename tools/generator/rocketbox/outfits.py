@@ -1865,8 +1865,11 @@ def top(kind, color, accent=None, geom=False, nogi=False):
         # colours remain coach-specific and export as standard glTF materials.
         # Split source triangles on the No-Gi colour boundaries, rather than
         # assigning whole irregular triangles to different materials.
-        for xcut in (-0.105, 0.105):
-            cuts.append((Vector((xcut, 0, 0)), Vector((1, 0, 0))))
+        # Do not slice the shoulder/arm junction at x=+/-0.105:
+        # those vertical planes intersect the sleeves and produce the
+        # apparent jagged underarm wedges visible in generation 12.
+        # A single horizontal shoulder-yoke boundary avoids crossing
+        # the axilla; the fitted sleeve remains one continuous material.
         cuts.append((Vector((0, 0, chestZ + 0.10)), Vector((0, 0, 1))))
     if kind == 'brassiere' and (GEOM_BRA or geom):
         nk = H['Neck']
@@ -1892,7 +1895,7 @@ def top(kind, color, accent=None, geom=False, nogi=False):
     # waist rather than a zigzag following the skin's last surviving triangles.
     hem_field = (lambda q: lowZ - q.z) if kind.startswith('rash-') else None
     o, cov = shell(f'haut-{kind}', keep, tpush, 0.003, mats,
-                   (lambda c, ids: 1 if (nogi and abs(c.x) > 0.105 and c.z < chestZ + 0.10) or (not nogi and w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ) else 0) if accent else None, cuts=cuts, iso=hem_field,
+                   (lambda c, ids: 1 if (nogi and c.z > chestZ + 0.10) or (not nogi and w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ) else 0) if accent else None, cuts=cuts, iso=hem_field,
                    detail_ratio=0.98 if nogi else None)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
