@@ -1,0 +1,23 @@
+name: Inventory Amara source GLB (read-only)
+
+on:
+  push:
+    branches:
+      - prototype/amara-mma-compression-reference
+    paths:
+      - scripts/dev/probe-amara-photo-v1379.py
+      - .github/workflows/amara-photo-inventory.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python scripts/dev/probe-amara-photo-v1379.py
