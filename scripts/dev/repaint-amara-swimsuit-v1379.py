@@ -47,14 +47,15 @@ def load_embedded(name):
 color,img_node=load_embedded('f021_body_color')
 normal,norm_node=load_embedded('f021_body_normal')
 h,w=color.shape[:2]
-assert normal.shape[:2]==(h,w) and 512<=h<=4096 and 512<=w<=4096
-xy=np.empty((len(uv),2),np.float64)
-xy[:,0]=np.clip(uv[:,0],0,1)*(w-1)
-xy[:,1]=np.clip(uv[:,1],0,1)*(h-1)
-ix=np.clip(np.round(xy[:,0]).astype(int),0,w-1)
-iy=np.clip(np.round(xy[:,1]).astype(int),0,h-1)
-rgb=color[iy,ix].astype(np.float32)
-normal_rgb=normal[iy,ix].astype(np.float32)
+hn,wn=normal.shape[:2]
+assert 512<=h<=4096 and 512<=w<=4096 and 128<=hn<=4096 and 128<=wn<=4096
+def pixels_for_uv(image):
+    h_,w_=image.shape[:2]
+    xx=np.clip(np.round(uv[:,0]*(w_-1)).astype(int),0,w_-1)
+    yy=np.clip(np.round(uv[:,1]*(h_-1)).astype(int),0,h_-1)
+    return image[yy,xx].astype(np.float32)
+rgb=pixels_for_uv(color)
+normal_rgb=pixels_for_uv(normal)
 # Collect skin-only points from the torso and neck, excluding every vertex on a
 # swimsuit UV triangle (including possible border contamination). Back and front
 # are separated by physical 3D distance, not by 2D atlas location.
@@ -64,8 +65,7 @@ clean_ids=np.unique(indices[~key].reshape(-1))
 clean_ids=clean_ids[~bad_vertex[clean_ids]]
 cand=xyz[clean_ids]
 col=rgb[clean_ids]
-# The pale skin can be shadowed but is not black fabric. Filter with a generous
-# skin-chromaticity criterion; reject dark, green, red and black old clothes.
+# Shadowed natural skin is still warm, unlike almost black fabric.
 good=(cand[:,1]>1.11)&(cand[:,1]<1.72)&(np.abs(cand[:,0])<0.33)&(
     col[:,0]>65)&(col[:,0]>col[:,1]*1.05)&(col[:,1]>col[:,2]*0.88)&(col[:,1]>38)
 clean_ids=clean_ids[good]
@@ -73,68 +73,70 @@ assert len(clean_ids)>500, ('Too few reliable nearby skin pixels',len(clean_ids)
 tree=cKDTree(xyz[clean_ids])
 known_rgb=rgb[clean_ids]
 known_nrm=normal_rgb[clean_ids]
-out_color=color.copy()
-out_normal=normal.copy()
-mask=np.zeros((h,w),np.uint8)
-blended=np.zeros((h,w),np.uint8)
 def palette(world):
     dd, kk=tree.query(world,k=12)
     dd=np.maximum(dd,0.002)
-    weights=np.exp(-((dd/0.085)**2))*1/np.maximum(dd,0.008)
+    weights=np.exp(-((dd/0.085)**2))/np.maximum(dd,0.008)
     weights/=np.maximum(weights.sum(1,keepdims=True),1e-12)
     rgb_new=(known_rgb[kk]*weights[:,:,None]).sum(1)
     normal_new=(known_nrm[kk]*weights[:,:,None]).sum(1)
     return np.clip(rgb_new,0,255),np.clip(normal_new,0,255)
 
-# Rasterize the EXACT 4416 target faces using GLTF UV -> image pixels and
-# inverse barycentrics -> physically adjacent skin in 3D.
-for j in np.nonzero(key)[0]:
-    ids=indices[j]; tri=xy[ids]
-    lo=np.floor(tri.min(axis=0)).astype(int)-1
-    hi=np.ceil(tri.max(axis=0)).astype(int)+1
-    x0,y0=max(0,lo[0]),max(0,lo[1])
-    x1,y1=min(w-1,hi[0]),min(h-1,hi[1])
-    if x1<x0 or y1<y0:continue
-    ab=np.stack([tri[1]-tri[0],tri[2]-tri[0]],axis=1)
-    determinant=np.linalg.det(ab)
-    if abs(determinant)<1e-9:continue
-    ys,xs=np.mgrid[y0:y1+1,x0:x1+1]
-    pix=np.stack([xs.ravel()+0.5,ys.ravel()+0.5],axis=1)
-    lam=(pix-tri[0])@np.linalg.inv(ab).T
-    bary=np.column_stack([1-lam.sum(axis=1),lam])
-    inside=np.all(bary>=-0.005,axis=1)&np.all(bary<=1.005,axis=1)
-    if not inside.any():continue
-    q=bary[inside]@xyz[ids]
-    sampled,normal_sample=palette(q)
-    xx,yy=xs.ravel()[inside],ys.ravel()[inside]
-    out_color[yy,xx]=sampled.astype(np.uint8)
-    out_normal[yy,xx]=normal_sample.astype(np.uint8)
-    mask[yy,xx]=1
-# Preserve tiny untouched skin texture grain: reconstruct deterministic,
-# low-amplitude grain (sub-2 RGB levels) on the retouched area.
-y,x=np.nonzero(mask)
-if len(x):
-    small=np.sin(x*0.293+y*0.271)*np.sin(x*0.687-y*0.421)*1.6
-    out_color[y,x]=np.clip(out_color[y,x].astype(float)+small[:,None],0,255).astype(np.uint8)
-# Old black atlas padding is read through mipmaps and gave black triangles at UV seams.
-# Extend corrected skin only 3px into *dark off-island* texels, not valid other skin.
-border=distance_transform_edt(mask==0)
-_,nearest=distance_transform_edt(mask==0,return_indices=True)
-rim=(border<=3)&(mask==0)&(color.max(axis=2)<55)
-sy,sx=nearest
-out_color[rim]=out_color[sy[rim],sx[rim]]
-out_normal[rim]=out_normal[sy[rim],sx[rim]]
-blended[:]=mask+rim.astype(np.uint8)
+def repaint_map(source, which):
+    h_,w_=source.shape[:2]
+    xy=np.column_stack([np.clip(uv[:,0],0,1)*(w_-1),np.clip(uv[:,1],0,1)*(h_-1)])
+    output=source.copy()
+    mask=np.zeros((h_,w_),np.uint8)
+    # The normal map and body colour map need not have the same resolution.
+    for j in np.nonzero(key)[0]:
+        ids=indices[j];tri=xy[ids]
+        lo=np.floor(tri.min(axis=0)).astype(int)-1
+        hi=np.ceil(tri.max(axis=0)).astype(int)+1
+        x0,y0=max(0,lo[0]),max(0,lo[1])
+        x1,y1=min(w_-1,hi[0]),min(h_-1,hi[1])
+        if x1<x0 or y1<y0:continue
+        ab=np.stack([tri[1]-tri[0],tri[2]-tri[0]],axis=1)
+        if abs(np.linalg.det(ab))<1e-9:continue
+        ys,xs=np.mgrid[y0:y1+1,x0:x1+1]
+        pix=np.stack([xs.ravel()+0.5,ys.ravel()+0.5],axis=1)
+        lam=(pix-tri[0])@np.linalg.inv(ab).T
+        bary=np.column_stack([1-lam.sum(axis=1),lam])
+        inside=np.all(bary>=-0.005,axis=1)&np.all(bary<=1.005,axis=1)
+        if not inside.any():continue
+        q=bary[inside]@xyz[ids]
+        new_col,new_nrm=palette(q)
+        xx,yy=xs.ravel()[inside],ys.ravel()[inside]
+        output[yy,xx]=(new_col if which=='color' else new_nrm).astype(np.uint8)
+        mask[yy,xx]=1
+    y,x=np.nonzero(mask)
+    if which=='color' and len(x):
+        # Preserve a tiny natural grain, not a flat artificial painted patch.
+        small=np.sin(x*0.293+y*0.271)*np.sin(x*0.687-y*0.421)*1.6
+        output[y,x]=np.clip(output[y,x].astype(float)+small[:,None],0,255).astype(np.uint8)
+    # Pad only the black UNUSED atlas background: avoids UV edge bleeding at mip levels.
+    if np.any(mask):
+        border=distance_transform_edt(mask==0)
+        _,nearest=distance_transform_edt(mask==0,return_indices=True)
+        rim=(border<=3)&(mask==0)&(source.max(axis=2)<55)
+        sy,sx=nearest
+        output[rim]=output[sy[rim],sx[rim]]
+    else:
+        rim=np.zeros(mask.shape,bool)
+    altered=(mask>0)|rim
+    assert np.array_equal(output[~altered],source[~altered]),'Edited valid texture outside old bikini'
+    count=int(mask.sum())
+    print('REPAINT',which,'resolution',w_,h_,'UV pixels',count,'padding',int(rim.sum()),flush=True)
+    return output,mask
+out_color,mask=repaint_map(color,'color')
+out_normal,mask_nrm=repaint_map(normal,'normal')
 count=int(mask.sum())
-assert 5000<count<300000,('Bad UV coverage, source not expected',count)
-assert np.array_equal(out_color[blended==0],color[blended==0])
-assert np.array_equal(out_normal[blended==0],normal[blended==0])
-if count>0:
-    old_mean=np.mean(color[mask>0],axis=0)
-    new_mean=np.mean(out_color[mask>0],axis=0)
-    assert new_mean[0]>new_mean[1] and new_mean[1]>new_mean[2]*0.80
-    print('Old swimsuit painted RGB mean',old_mean.round(1),'new natural skin RGB mean',new_mean.round(1))
-print('REPAINT target pixels',count,'padding pixels',int(rim.sum()),'sources',len(clean_ids),flush=True)
+assert 5000<count<300000,('Bad colour UV coverage, source not expected',count)
+assert 1000<int(mask_nrm.sum())<300000
+old_mean=np.mean(color[mask>0],axis=0)
+new_mean=np.mean(out_color[mask>0],axis=0)
+assert new_mean[0]>new_mean[1] and new_mean[1]>new_mean[2]*0.80
+print('Old swimsuit RGB mean',old_mean.round(1),'new skin RGB mean',new_mean.round(1),
+      'reference skin samples',len(clean_ids),flush=True)
 
 def append_image(image, name, fmt, node, quality=None):
     f=io.BytesIO()
