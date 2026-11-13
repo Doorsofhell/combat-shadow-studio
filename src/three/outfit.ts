@@ -167,6 +167,7 @@ export function useOutfit(
               m.skeleton.boneInverses,
             );
             const mesh = new SkinnedMesh(m.geometry, dressOutfitMaterial(m.material as Material, quality, isAmaraOutfitUrl(url)));
+            if (isFittedBand(m)) overCloth(mesh.material as Material);
             mesh.name = `tenue:${m.name}`;
             mesh.position.copy(m.position);
             mesh.quaternion.copy(m.quaternion);
@@ -257,6 +258,23 @@ export function useOutfit(
 /** materials of the printed marks of the garments (tools/generator/rocketbox/outfits.py, logo_on) */
 export function isPrint(name: string) {
   return name.startsWith('logo-');
+}
+
+/**
+ * 1.40.2 (Youssef, 2026-11-13: la bande de la brassière d'Amara « change de couleur à chaque mouvement »): a fitted
+ * band (under-band of a top, waistband of a short; `cssFittedBand` written by the generator) lies less than a
+ * millimetre over the edge of the cloth it finishes. On a phone's depth buffer that is too little: the cloth showed
+ * through the band in patches that moved with the body. Like the printed mark (1.20), the band is drawn a little in
+ * front of what lies at its depth.
+ */
+export function isFittedBand(o: { userData?: Record<string, unknown> }): boolean {
+  return typeof o.userData?.cssFittedBand === 'string';
+}
+
+export function overCloth(m: Material): void {
+  m.polygonOffset = true;
+  m.polygonOffsetFactor = -1.5;
+  m.polygonOffsetUnits = -3;
 }
 
 /** True only for a genuine Amara garment URL; prevents an outfit shared through the loader cache leaking finishes to others. */

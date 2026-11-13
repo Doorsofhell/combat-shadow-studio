@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { MeshPhysicalMaterial, MeshStandardMaterial, Vector2 } from 'three';
-import { dressOutfitMaterial, isAmaraOutfitUrl } from '../outfit';
+import { dressOutfitMaterial, isAmaraOutfitUrl, isFittedBand, overCloth } from '../outfit';
+import { readFileSync } from 'node:fs';
 
 function mat(name: string, fabric: string, roughness: number, sheen: number) {
   const m = new MeshStandardMaterial({ roughness, metalness: 0.2, normalScale: new Vector2(1, -1) });
@@ -67,5 +68,35 @@ describe('v1.37.9 — finitions réservées aux vêtements Amara', () => {
       expect(a.normalScale.x).toBe(ref.normalScale.x);
       src.dispose(); a.dispose(); ref.dispose();
     }
+  });
+});
+
+// 1.40.2 (Youssef, 13/11 23:00: la bande de la brassière d'Amara, « une espèce de cercle un peu grosse et qui change de
+// couleur à chaque mouvement »)
+describe('v1.40.2 — bande de brassière d’Amara : bord du haut, pas une deuxième couche', () => {
+  const nodes = (outfit: string) => {
+    const b = readFileSync(`public/coaches/mma-amara/tenues/${outfit}.glb`);
+    return (JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString('utf8')) as { nodes: { name?: string; extras?: Record<string, unknown> }[] }).nodes;
+  };
+  test.each(['boxe', 'kickboxing', 'muaythai', 'mma'])('%s : bande au niveau du tissu, liée au tissu, tissu retiré dessous', (outfit) => {
+    const n = nodes(outfit);
+    const band = n.find((x) => x.name?.startsWith('bande-brassiere'))!;
+    const top = n.find((x) => x.extras?.cssHemUnderBand !== undefined)!;
+    expect(band.extras?.cssBandLevel).toBe('cloth');
+    expect(Number(band.extras?.cssBandHeight)).toBeLessThanOrEqual(0.025);
+    expect(Number(band.extras?.cssBandThickness)).toBeLessThanOrEqual(0.0008);
+    // it takes the weights of the top it finishes: both move as one piece
+    expect(String(band.extras?.cssBandFollows)).toBe(top.name);
+  });
+
+  test('une bande ajustée est dessinée un peu devant le tissu (tampon de profondeur des téléphones)', () => {
+    expect(isFittedBand({ userData: { cssFittedBand: '1.38.0' } })).toBe(true);
+    expect(isFittedBand({ userData: {} })).toBe(false);
+    const m = new MeshStandardMaterial();
+    overCloth(m);
+    expect(m.polygonOffset).toBe(true);
+    expect(m.polygonOffsetFactor).toBeLessThan(0);
+    expect(m.polygonOffsetUnits).toBeLessThan(0);
+    m.dispose();
   });
 });
