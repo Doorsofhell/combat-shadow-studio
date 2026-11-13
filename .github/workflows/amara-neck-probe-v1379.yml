@@ -1,0 +1,20 @@
+name: Diagnose remaining neckline strap material, read only
+on:
+  push:
+    branches:
+      - prototype/amara-mma-compression-reference
+    paths:
+      - scripts/dev/probe-amara-neck-v1379.py
+      - .github/workflows/amara-neck-probe-v1379.yml
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy pillow
+      - run: python scripts/dev/probe-amara-neck-v1379.py
