@@ -2223,30 +2223,44 @@ def relax_weights(o, repeat, k=0.5):
 
 
 def mma_reference_underband():
-    """Amara MMA only: a continuous anatomically skinned elastic under-band, with
-    two planar and smooth rings, conceals the old crop's uneven lower shell edge.
-    It is a separate cloth ring (not a cutter on the bust), so the low scoop and
-    breast shape do not change; no new topology in the inner thigh short.
+    """Amara MMA only: smooth continuous 3D elastic ring, NOT a copy of the
+    Rocketbox bikini shell. The prior shell copied collapsed back folds and
+    produced the torn black ruffle even after the source skin was cleaned.
+
+    Interpolate the smoothed torso perimeter, with 3 cloth rows / 96 segments.
+    The band covers the scoop bra's hem by 12 mm, so the old lower edge cannot
+    protrude when her chest bends in guard or a high kick.
     """
     low = bra_low()
-    bottom = low - 0.006
-    upper = low + 0.029
-    def keep(i):
-        q = P[i]
-        return bottom - 0.035 < q.z < upper + 0.035 and abs(q.x) < 0.31 and (
-            w(i, *ARMS) < 0.28 and w(i, *HANDS) < 0.15 and w(i, 'Head', 'Neck') < 0.25)
-    def ring(q):
-        return max(bottom - q.z, q.z - upper)
-    planes = [(Vector((0, 0, bottom)), Vector((0, 0, 1))),
-              (Vector((0, 0, upper)), Vector((0, 0, 1)))]
-    mat = fabric('bande-brassiere-mma-amara-1379', '#141D24',
-                 'elastique', rough=0.85, strength=0.20, sheen=0.025)
-    o, cov = shell('bande-brassiere-mma', keep, lambda i: 0.0095,
-                   0.0022, [mat], hem=0.0015, cuts=planes,
-                   iso=ring, edge_skin=0.0015)
+    center_z = low + 0.010
+    cx, cy, rad = ring_profile(center_z, dz=0.016, pad=0.014)
+    # Use a periodic low-pass, not the 'max' jag of the source torso radius.
+    for _ in range(7):
+        rad = [(rad[(i - 1) % 36] + 2 * rad[i] + rad[(i + 1) % 36]) / 4
+               for i in range(36)]
+    seg = 96
+    path = []
+    for j in range(seg + 1):
+        ang = -math.pi + 2 * math.pi * j / seg
+        u = j / seg * 36
+        k = int(u) % 36
+        r = rad[k] * (1 - u % 1) + rad[(k + 1) % 36] * (u % 1)
+        path.append(Vector((cx + r * math.cos(ang), cy + r * math.sin(ang), center_z)))
+    mat = fabric('bande-brassiere-mma-amara-lisse-1379', '#111A21',
+                 'elastique', rough=0.87, strength=0.10, sheen=0.015)
+    # strip() creates a single seamless textile sheet with genuine thickness,
+    # NOT an isoline cut or duplicated under-skin fabric.
+    o = strip('bande-brassiere-mma', path, 0.044,
+              lambda q: Vector((q.x - cx, q.y - cy, 0)), 0.0014, mat, across=2)
+    weighted(o, lambda q: VW[KD.find(q)[1]])
+    relax_weights(o, 12)
     o['cssBraBandCut'] = 'continuous-planar-elastic-1379'
-    o['cssBraBandHeight'] = round(upper - bottom, 4)
-    return [o], cov
+    o['cssBraBandConstruction'] = 'smooth-independent-torso-ring-1379'
+    o['cssBraBandHeight'] = 0.044
+    o['cssBraBandSegments'] = seg
+    print('Amara MMA: independent bra underband', len(o.data.vertices),
+          'vertices', len(o.data.polygons), 'faces; centre', round(center_z, 4))
+    return [o], set()
 
 
 def top_square(color, accent=None, low=None, name='haut-carre'):
