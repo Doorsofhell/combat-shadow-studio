@@ -1768,9 +1768,10 @@ def top(kind, color, accent=None, geom=False, nogi=False):
     """kind: brassiere (sports bra), debardeur (tank top), rash-court, rash-long"""
     lowZ = {'brassiere': chestZ - 0.07 if female else chestZ - 0.05, 'debardeur': hipZ + 0.06, 'rash-court': hipZ + 0.04, 'rash-long': hipZ + 0.04}[kind]
     if nogi:
-        # 5 mm hem overlap at the MMA waistband, rather than 30 mm of
-        # overlapping surfaces which produced a ragged dark seam.
-        lowZ = hipZ + 0.065
+        # Keep the hem slightly below the waistband top. Raising it to
+        # hipZ + 0.065 exposed a dark strip between the coloured elastic
+        # and the shorts in the fifth-generation rendered preview.
+        lowZ = hipZ + 0.040
     sleeve = {'brassiere': 0, 'debardeur': 0, 'rash-court': 0.45, 'rash-long': 0.93}[kind]
 
     def keep(i):
