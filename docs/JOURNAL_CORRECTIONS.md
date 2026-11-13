@@ -3794,3 +3794,12 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - **Tests existants** : aucun modifié ni affaibli. `src/ui/pictos/techniquePictos.json` régénéré
     (`PICTOS_WRITE=1`) : point de la tête déplacé de 0,1 unité au plus par la nouvelle tenue de tête.
 - **Restauration** : branche `restauration/avant-visages-v1400` (= contenu de la 1.39.0 publiée, `61b1306`).
+
+
+## 2026-11-13 · v1.41.0 · Visages : atténuation des artefacts noirs
+
+- **Constat** : marques sombres et pointillés sur les fronts et près des yeux après le rendu des rides v1.40.
+- **Correction** : rendu des rides procédurales suspendu dans `src/three/human/wrinkles.ts` ; expressions, clignements et regard conservés.
+- **Périmètre** : visages uniquement, aucun changement aux vêtements, morphologies ou animations de combat.
+- **Tests** : contrôles visuels GPU sur quatre coachs à confirmer après déploiement ; les résultats ne sont pas encore validés.
+- **Restauration** : `claude/project-thread-o7lrt8` avant fusion.
