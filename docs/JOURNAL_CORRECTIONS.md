@@ -3795,24 +3795,22 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     (`PICTOS_WRITE=1`) : point de la tête déplacé de 0,1 unité au plus par la nouvelle tenue de tête.
 - **Restauration** : branche `restauration/avant-visages-v1400` (= contenu de la 1.39.0 publiée, `61b1306`).
 
-## 2026-11-13 · Restauration de la v1.40.0 (dernière version construite avec Claude)
 
-- **Constat après vérification** :
-  - le site public était déployé depuis la branche `main` par un nouveau workflow `deploy-v142.yml` (commit
-    83900f3, ajouté hors Claude). Cette `main` part d'un état très ancien (v0.14.0 du 18 octobre, b3df4f9) auquel
-    on a ajouté un module `facialLife.ts` et un numéro « 1.42 » : l'application en ligne avait donc perdu tout le
-    travail de la v0.15 à la v1.40 ;
-  - la branche de publication `claude/project-thread-o7lrt8` portait en plus une « v1.41 » (6ffef89) ajoutée hors
-    Claude, qui coupait les rides d'expression de la v1.40.
-- **Correction** :
-  - sauvegarde sans rien supprimer : `sauvegarde/chatgpt-main-v142-2026-11-13` (aceabf0) et
-    `sauvegarde/publication-v141-avant-restauration-2026-11-13` (6ffef89) ;
-  - commit de retour sur `claude/project-thread-o7lrt8` (pas de réécriture d'historique) : le contenu redevient
-    exactement celui de la v1.40.0 (5dd5007), puis redéploiement du site par `preview.yml`.
-- **Fichiers** : `package.json`, `package-lock.json`, `src/domain/releases.ts`, `src/three/human/wrinkles.ts`,
-  ce journal.
-- **Tests** : contenu comparé fichier par fichier avec 5dd5007 : identique (hors cette entrée du journal), TEST
-  RÉUSSI. Suites Vitest et Playwright : NON EXÉCUTÉ (code identique à la v1.40.0 déjà testée).
-- **Restauration** : pour revenir à l'état d'avant cette restauration, branches `sauvegarde/…` ci-dessus.
-- **Attention** : la branche `main` et son workflow `deploy-v142.yml` sont restés tels quels ; un nouveau push sur
-  `main` redéploierait l'ancienne application par-dessus.
+## 2026-11-13 · v1.41.0 · Visages : atténuation des artefacts noirs
+
+- **Constat** : marques sombres et pointillés sur les fronts et près des yeux après le rendu des rides v1.40.
+- **Correction** : rendu des rides procédurales suspendu dans `src/three/human/wrinkles.ts` ; expressions, clignements et regard conservés.
+- **Périmètre** : visages uniquement, aucun changement aux vêtements, morphologies ou animations de combat.
+- **Tests** : contrôles visuels GPU sur quatre coachs à confirmer après déploiement ; les résultats ne sont pas encore validés.
+- **Restauration** : `claude/project-thread-o7lrt8` avant fusion.
+
+## 2026-11-13 · Retour à la v1.41.0 (demande de Youssef, 22:31)
+
+- **Constat** : la v1.40.0 a été restaurée à 22:19 (main + branche de publication, ancienne `main` sauvegardée dans
+  `sauvegarde/chatgpt-main-v142-2026-11-13`, workflow `deploy-v142.yml` retiré). Youssef demande ensuite la v1.41.
+- **Correction** : la branche de publication `claude/project-thread-o7lrt8` et `main` reprennent exactement le contenu
+  de la v1.41.0 (6ffef89 : rides procédurales du visage coupées), plus ce journal. Commit de retour, aucune réécriture
+  d'historique. `deploy-v142.yml` reste retiré : `main` ne publie plus le site.
+- **Tests** : contenu comparé avec 6ffef89 : identique hors journal, TEST RÉUSSI. Titre en ligne vérifié après
+  déploiement. Vitest/Playwright : NON EXÉCUTÉ (code identique à la v1.41.0 publiée).
+- **Restauration** : v1.40.0 = commit fa56a0a ou 5dd5007.
