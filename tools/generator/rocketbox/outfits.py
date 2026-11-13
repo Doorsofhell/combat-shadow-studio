@@ -3035,8 +3035,23 @@ def outfit(name):
         }
         top_color, short_color, accent_color = NOGI_PALETTES.get(
             COACH_ID, ('#152943', '#151A22', '#2F8CEB'))
-        add(top('rash-court', top_color))
-        add(shorts('mma', short_color, accent_color, hem_override=0.46))
+        # Premium combatwear styling: fitted rashguard, contrasted shoulder /
+        # side panels and technical elastic waistband, without third-party marks.
+        # The accent is applied to actual exported mesh materials (not to a
+        # procedural Blender-only shader) so it survives glTF export.
+        nogi_top = top('rash-court', top_color, accent=accent_color)
+        nogi_short = shorts('mma', short_color, accent_color, hem_override=0.46)
+        add(nogi_top)
+        add(nogi_short)
+        for garment in (nogi_top, nogi_short):
+            if garment is None:
+                continue
+            for mesh in garment[0]:
+                if mesh is None or not hasattr(mesh, 'data'):
+                    continue
+                mesh['cssNoGiPalette'] = COACH_ID
+                mesh['cssNoGiAccent'] = accent_color
+                mesh['cssNoGiCollection'] = 'Shadow Flow - original combatwear'
     elif name in ('bjj', 'judo'):
         col = C['gi'] if name == 'bjj' else C['judo']
         if female:
