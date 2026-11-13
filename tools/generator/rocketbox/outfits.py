@@ -1553,6 +1553,13 @@ def shorts(kind, color, band, n_leg=None, under=False, hem_override=None, nogi=F
         return True
 
     def push(i):
+        if nogi and P[i].z > hipZ + 0.02:
+            # Continuous clearance at the elastic boundary: the legacy
+            # abrupt +6 mm jump created isolated protruding triangles.
+            # This branch is No-Gi only; other MMA outfits are unchanged.
+            t = min(1.0, max(0.0, (P[i].z - (waist - bandH - 0.012)) / 0.024))
+            t = t * t * (3 - 2 * t)
+            return 0.004 + 0.006 * t
         # MH_BODY: the glutes of a MakeHuman body rise close to the waistband; the loose leg push there lifted the
         # cloth over the band (black teeth on the band)
         if kind == 'surshort':
