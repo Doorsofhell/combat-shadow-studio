@@ -64,7 +64,12 @@ export function bootPlan(p: BootPlanInput): BootItem[] {
   const json = !!p.json;
   const out: BootItem[] = [];
   const push = (x: BootItem | null) => x && out.push(x);
-  if (p.coachId) push(item(`coaches/${p.coachId}/photo.glb`, 'coach', json));
+  if (p.coachId) {
+    push(item(`coaches/${p.coachId}/photo.glb`, 'coach', json));
+    // Keep the original body when no outfit is worn; prefetch the clean 1.37.9
+    // Amara source only when a discipline outfit can actually use it.
+    if (p.outfits && p.coachId === 'mma-amara') push(item('coaches/mma-amara/photo-clean.glb', 'coach', json));
+  }
   const pref = (p.preferred ?? []).filter((d) => DISCIPLINES.includes(d));
   const order = [...pref, ...DISCIPLINES.filter((d) => !pref.includes(d))];
   for (const d of order) {
@@ -83,6 +88,7 @@ export function bootPlan(p: BootPlanInput): BootItem[] {
   for (const c of p.coaches) {
     if (c === p.coachId) continue;
     push(item(`coaches/${c}/photo.glb`, 'coach', json));
+    if (p.outfits && c === 'mma-amara') push(item('coaches/mma-amara/photo-clean.glb', 'coach', json));
     for (const d of order) for (const o of outfitsOf(d, p)) push(item(`coaches/${c}/tenues/${o}.glb`, 'tenue', json, d));
   }
   return out;
