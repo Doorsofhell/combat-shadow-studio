@@ -1678,7 +1678,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
         # Diagnostic candidate ONLY: compare a naturally connected fitted
         # short with the older manual central slit; no other outfit is touched.
         # A false slit can look like torn fabric when one thigh is raised.
-        if os.environ.get('AMARA_MMA_NATURAL_GROIN') == '1':
+        if os.environ.get('AMARA_MMA_NATURAL_GROIN', '1') == '1':
             print('Amara MMA DIAGNOSTIC: anatomical groin, no added artificial slit')
             o_cut_mode = 'natural-no-artificial-slit'
         else:
