@@ -1796,6 +1796,22 @@ def top(kind, color, accent=None, geom=False, nogi=False):
         if w(i, 'Neck') > (0.25 if kind != 'brassiere' else 0.15):
             return False
         armw = sum(w(i, f'{s}Arm', f'{s}ForeArm') for s in ('Left', 'Right'))
+        if nogi and kind == 'rash-court':
+            # Keep the shoulder/armpit transition intact: an abrupt 0.35
+            # skin-weight cutoff removed scattered torso triangles in the
+            # blended Rocketbox shoulder region. Only clip vertices which
+            # are actually beyond the short-sleeve end plane.
+            for side in ('Left', 'Right'):
+                a, b = H[f'{side}Arm'], H[f'{side}ForeArm']
+                axis = (b - a).normalized()
+                delta = P[i] - a
+                along = delta.dot(axis)
+                radial = (delta - axis * along).length
+                # The radius test keeps torso/underarm vertices out of the
+                # sleeve clipping logic; those belong to the body panel.
+                if radial < 0.16 and along > (b - a).length * sleeve * 2:
+                    return False
+            return True
         if armw > 0.35:
             if not sleeve:
                 return False
