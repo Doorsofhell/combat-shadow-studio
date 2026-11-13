@@ -3020,51 +3020,23 @@ def outfit(name):
             g = C['mmag'][:2] if 'mmag' in C else (('#16181D', '#E9E9E6') if not female else ('#16181D', '#2B2D33'))
             add(mma_shin_guards(*g))
     elif name == 'bjj-nogi':
-        # 1.38.0 Shadow Flow: a shared No-Gi cut for every body, generated on the
-        # coach's OWN vertices and skin weights (not a scaled generic avatar).
-        # Short sleeves + separate mid-thigh grappling legs for both sexes.
-        # The previous female leggings and male compression-under-boardshort
-        # are intentionally removed: a single short avoids double surfaces.
-        nogi_top = top('rash-court', '#152943')
-        nogi_short = shorts('mma', '#151A22', '#2F8CEB', hem_override=0.46)
-        add(nogi_top)
-        add(nogi_short)
-        # Original subtle technical graphic, applied only to these meshes.
-        # Do not mutate cached/global materials used by other disciplines.
-        for garment in (nogi_top, nogi_short):
-            if garment is None:
-                continue
-            for mesh in garment[0]:
-                if mesh is None or not hasattr(mesh, 'data'):
-                    continue
-                for idx, base in enumerate(list(mesh.data.materials)):
-                    if base is None or not base.use_nodes:
-                        continue
-                    mat = base.copy()
-                    mat.name = 'shadow-flow-' + base.name
-                    mesh.data.materials[idx] = mat
-                    nodes = mat.node_tree.nodes
-                    links = mat.node_tree.links
-                    bsdf = nodes.get('Principled BSDF')
-                    if not bsdf:
-                        continue
-                    # Procedural, scale-independent ink-like contours.
-                    # The color variation is deliberately low contrast.
-                    tex = nodes.new('ShaderNodeTexWave')
-                    tex.wave_type = 'BANDS'
-                    tex.bands_direction = 'DIAGONAL'
-                    tex.inputs['Scale'].default_value = 18.0
-                    tex.inputs['Distortion'].default_value = 3.0
-                    tex.inputs['Detail'].default_value = 2.0
-                    ramp = nodes.new('ShaderNodeValToRGB')
-                    ramp.color_ramp.elements[0].position = 0.43
-                    ramp.color_ramp.elements[0].color = (0.010, 0.020, 0.037, 1)
-                    ramp.color_ramp.elements[1].position = 0.56
-                    ramp.color_ramp.elements[1].color = (0.023, 0.070, 0.145, 1)
-                    links.new(tex.outputs['Color'], ramp.inputs['Fac'])
-                    links.new(ramp.outputs['Color'], bsdf.inputs['Base Color'])
-                    bsdf.inputs['Metallic'].default_value = 0.0
-                    bsdf.inputs['Roughness'].default_value = 0.85
+        # 1.38.0: same No-Gi pattern and skinning, distinct colours per coach.
+        # Keep the generator's exportable fabric materials: procedural Wave
+        # nodes are not reliably exported by Blender's glTF/GLB exporter.
+        NOGI_PALETTES = {
+            'mma-kadir': ('#17191D', '#292D34', '#D73B42'),
+            'kadir': ('#17191D', '#292D34', '#D73B42'),
+            'mma-nael': ('#152943', '#111821', '#2F8CEB'),
+            'nael': ('#152943', '#111821', '#2F8CEB'),
+            'inaya': ('#48203F', '#19151C', '#EA4E92'),
+            'mma-inaya': ('#48203F', '#19151C', '#EA4E92'),
+            'mma-amara': ('#151419', '#1D1B20', '#D4AF37'),
+            'amara': ('#151419', '#1D1B20', '#D4AF37'),
+        }
+        top_color, short_color, accent_color = NOGI_PALETTES.get(
+            COACH_ID, ('#152943', '#151A22', '#2F8CEB'))
+        add(top('rash-court', top_color))
+        add(shorts('mma', short_color, accent_color, hem_override=0.46))
     elif name in ('bjj', 'judo'):
         col = C['gi'] if name == 'bjj' else C['judo']
         if female:
