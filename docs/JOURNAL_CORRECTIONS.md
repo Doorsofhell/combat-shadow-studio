@@ -3895,3 +3895,39 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Restauration** : branche `restauration/avant-bande-amara-v1402` (= 1.40.1 publiée).
 - **Précision sur les captures « après »** : elles ont été faites sur la construction juste avant la finale, qui n'en
   diffère que par les poids de la ceinture du short (essai écarté ci-dessus) ; la bande de brassière y est identique.
+
+## 2026-11-13 · v1.40.3 · Amara et Inaya : maquillage léger sportif, reflet des yeux discret
+
+- **Demande** (Youssef, 13/11 23:06) : « Fais-moi des propositions de maquillage léger sportif pour les 2 femmes ».
+  Trois propositions par coach rendues avec le moteur (page https://claude.ai/artifact/7ndfV4xBGjD3UB8BUEw6AD :
+  A « Bonne mine », B « Frais d'entraînement », C « Glow athlète »). 23:24 : « Mets en place les options
+  conseillées » (B pour Amara, A pour Inaya) et « le point blanc dans les yeux fait trop, soit retire soit réduit
+  beaucoup ».
+- **Constat vérifié** :
+  - les visages sont la texture de tête `f021_head_color` des GLB Rocketbox ; Amara affiche `photo-clean.glb` dès
+    qu'elle porte une tenue (`CoachModel.tsx`) et `photo.glb` sinon : les deux fichiers doivent être maquillés ;
+  - le point blanc est le reflet ajouté en 1.39 (`EYE_CATCHLIGHT`, force 2,2, netteté 260) : en gros plan, un disque
+    blanc d'environ un tiers de l'iris.
+- **Correction** :
+  - `tools/generator/rocketbox/makeup.py` (nouveau) : zones douces (joues, paupières : gaussiennes larges ; lèvres :
+    leur propre forme trouvée par la rougeur, floutée de 4 px), la photo est multipliée par une teinte, donc grain,
+    pores et identité restent ; aucun trait fin (règle de la 1.40.1). Teintes par peau : Amara terracotta, bois de
+    rose, brun doux ; Inaya rose pêche, baume rosé. Le fichier maquillé porte `asset.extras.cssMakeup` et le script
+    refuse de maquiller deux fois. À relancer après toute reconstruction de ces GLB (après `morph_apply.py`) ;
+  - appliqué à `public/coaches/mma-amara/photo.glb` et `photo-clean.glb` (B) et `public/coaches/inaya/photo.glb`
+    (A) ; Kadir et Naël inchangés ; textures toujours 2048 px, même format (PNG / JPEG) ;
+  - `src/three/photoMaterials.ts` : `EYE_CATCHLIGHT` force 0,45 et netteté 700 : un léger éclat humide, plus de
+    point blanc ;
+  - `src/boot/assetSizes.json` régénéré (`node scripts/boot-sizes.mjs`), version 1.40.3, note dans `releases.ts`.
+- **Tests** : nouveau `src/three/human/__tests__/maquillage-v1403.test.ts` (maquillage présent sur les bons fichiers,
+  absent chez les hommes, format des textures, reflet ≤ 0,5 et netteté ≥ 600). Aucun test modifié ni affaibli.
+- **Résultats** :
+  - `npx vitest run` : 1458 réussis, 9 échoués, 1 ignoré. Les 9 échecs sont les échecs connus d'avant ce lot
+    (8 mesures du moteur de frappe et `expressions-v1160` « < 3,5 Mo » sur `photo.glb` d'Amara, qui passe de 4,94 à
+    4,86 Mo) : TEST RÉUSSI pour ce lot ;
+  - `npm run build` : TEST RÉUSSI ;
+  - captures du moteur en gros plan (avant / après, de face et de trois-quarts) : maquillage visible et fondu, reflet
+    des yeux discret ;
+  - `npx playwright test` : voir ci-dessous ;
+  - essai sur téléphone Android : NON EXÉCUTÉ ici, à confirmer par Youssef.
+- **Restauration** : branche `restauration/avant-maquillage-v1403` (= 1.40.2 publiée, b5bf609).

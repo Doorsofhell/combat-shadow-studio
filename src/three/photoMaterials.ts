@@ -155,7 +155,9 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
  * gets one: a sharp highlight of a soft light just above the viewer, computed in view space (it follows the camera, as
  * the window reflected in a real eye does), a few instructions, both qualities.
  */
-export const EYE_CATCHLIGHT = { dir: [-0.18, 0.05, 1] as [number, number, number], sharpness: 260, strength: 2.2 };
+// 1.40.3 (Youssef 13/11 23:24: « le point blanc dans les yeux fait trop, soit retire soit réduit beaucoup »): the dot
+// was a white disc about a third of the iris wide. Now about 5 times dimmer and smaller: a faint wet glint, no dot.
+export const EYE_CATCHLIGHT = { dir: [-0.18, 0.05, 1] as [number, number, number], sharpness: 700, strength: 0.45 };
 
 export function eyeCatchlight(m: Material) {
   const [x, y, z] = EYE_CATCHLIGHT.dir;
@@ -170,7 +172,7 @@ export function eyeCatchlight(m: Material) {
       #include <opaque_fragment>`,
     );
   };
-  m.customProgramCacheKey = () => 'css-eye-catchlight-v139';
+  m.customProgramCacheKey = () => 'css-eye-catchlight-v1403';
   m.userData.cssCatchlight = true;
 }
 

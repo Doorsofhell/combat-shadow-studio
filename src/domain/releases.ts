@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.40.3',
+      releaseDate: '2026-11-13',
+      title: 'Amara et Inaya : maquillage léger sportif',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Amara a un maquillage léger « frais d’entraînement » : joues rosées, lèvres un peu plus colorées, paupières légèrement ombrées.' },
+        { category: 'ameliorations', text: 'Inaya a une « bonne mine » : un peu de couleur aux joues et un baume teinté sur les lèvres.' },
+        { category: 'corrections', text: 'Le point blanc dans les yeux des coachs est beaucoup plus petit et plus discret.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.40.2',
       releaseDate: '2026-11-13',
       title: 'Amara : bande de brassière plate et moulante',
