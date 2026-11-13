@@ -1,0 +1,58 @@
+name: Experiment Amara natural MMA crotch (NOT PRODUCTION)
+on:
+  push:
+    branches: [prototype/amara-mma-natural-groin-v1379]
+    paths: [.github/workflows/amara-natural-groin-compare.yml]
+permissions:
+  contents: write
+jobs:
+  variant:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Install Blender and image tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y blender python3-numpy ffmpeg
+      - name: Build natural uncut one-layer MMA short, ONLY Amara
+        run: |
+          set -euo pipefail
+          mkdir -p logs
+          ONLY=mma AMARA_MMA_REF=1 AMARA_MMA_NATURAL_GROIN=1 blender --background --threads 2 --python-exit-code 42 --python tools/generator/rocketbox/outfits.py -- public/coaches/mma-amara/photo.glb public/coaches/mma-amara/tenues femme 2>&1 | tee logs/natural-mma-crotch.log
+          python3 scripts/dev/validate-amara-mma-reference-v1379.py || echo "DIAGNOSTIC ONLY: strict central seam not yet certified"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Build actual test WebGL model
+        run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: |
+          nohup npx vite preview --host 127.0.0.1 --port 4173 --strictPort > /tmp/preview.log 2>&1 &
+          for n in $(seq 1 40); do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 1; done
+          exit 1
+      - name: Capture 6 real motion views with NO artificial crotch cut
+        run: node scripts/dev/capture-amara-mma-reference-v1379.mjs
+      - name: Preserve side-by-side and closeup images as inspectable text
+        run: |
+          mkdir -p captures/amara-mma-natural-groin/_audit-viz
+          for n in 01-garde-face 02-garde-dos 03-low-kick 04-high-kick 05-high-kick-profil 06-brassiere-profil; do
+            cp "captures/amara-mma-prototype/$n.jpg" "captures/amara-mma-natural-groin/$n.jpg"
+            base64 -w0 "captures/amara-mma-prototype/$n.jpg" > "captures/amara-mma-natural-groin/_audit-viz/$n.b64"
+          done
+          cp captures/amara-mma-prototype/diagnostic.json captures/amara-mma-natural-groin/diagnostic.json
+      - name: Save only non-production geometry and evidence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/coaches/mma-amara/tenues/mma.glb captures/amara-mma-natural-groin/
+          git commit -m "experiment: natural one-piece MMA groin without slit, real 6 views [skip ci]"
+          git fetch origin prototype/amara-mma-natural-groin-v1379
+          git restore --worktree .
+          git rebase origin/prototype/amara-mma-natural-groin-v1379
+          git push origin HEAD:prototype/amara-mma-natural-groin-v1379
