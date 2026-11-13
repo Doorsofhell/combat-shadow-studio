@@ -3,6 +3,8 @@ import { BehaviorEngine, HUMAN_STATES, NEUTRAL_MOOD, type HumanSignals, type Hum
 import { faceCapabilities, type FaceCapabilities } from './human/capabilities';
 import { DEFAULT_PROFILE, type HumanProfile } from './human/profiles';
 import { MicroLife } from './human/micro';
+import { FaceWrinkles } from './human/wrinkles';
+import type { Camera } from 'three';
 
 /**
  * 1.9 (Youssef, 2026-10-29: « l'expression des visages est trop statique, fait quelque chose »): a living face for
@@ -249,10 +251,26 @@ export class FaceAnimator {
   private idleNext = 0;
   private breathPhase = -Math.PI / 2;
   private peak = 0;
-  private gaze = { yaw: 0, pitch: 0, toYaw: 0, toPitch: 0, next: 0.8 };
+  private gaze = { yaw: 0, pitch: 0, toYaw: 0, toPitch: 0, next: 0.8, away: false };
   /** 1.23 the head's own small life (axes in the bone's space); what was applied last frame, to take it off again
    * when the body pose of the frame did not rewrite the head (paused motion) */
-  private head: { bone: Bone; yaw: Vector3; pitch: Vector3; roll: Vector3; out: Quaternion; d: Quaternion; follow: number; followP: number } | null = null;
+  private head: {
+    bone: Bone;
+    yaw: Vector3;
+    pitch: Vector3;
+    roll: Vector3;
+    out: Quaternion;
+    d: Quaternion;
+    follow: number;
+    followP: number;
+    /** 1.40 first stage of the head's follow (the head starts after the eyes, then accelerates: an S-shaped turn) */
+    leadY: number;
+    leadP: number;
+    /** 1.40 small re-settling of the head (neck adjustments): current offset, target, next one (s) */
+    adj: Vector3;
+    adjTo: Vector3;
+    adjNext: number;
+  } | null = null;
   private headPhase = [0, 0, 0];
   /** grows from 0 over the first second: the head starts from the pose, never with a jump */
   private headAmp = 0;
@@ -266,6 +284,10 @@ export class FaceAnimator {
   /** 1.39 this blink: closing and opening times (s) and how far the lids go (a blink is not always complete) */
   private blinkShape = { close: 0.07, open: 0.12, depth: 1 };
   private lastU = Infinity;
+  /** 1.40 expression wrinkles (src/three/human/wrinkles.ts): null without a head and two eyes */
+  readonly wrinkles: FaceWrinkles | null = null;
+  /** 1.40 the expression weights applied this frame (the wrinkles follow them) */
+  private applied: Partial<Record<FaceExpression, number>> = {};
 
   /** the model must be in its rest pose (restoreReferencePose) and its world matrices up to date */
   constructor(root: Object3D, seed = 1, profile: HumanProfile = DEFAULT_PROFILE) {
@@ -331,7 +353,7 @@ export class FaceAnimator {
     const headBone = find(root, 'Head');
     if (headBone) {
       const fwd = new Vector3().crossVectors(lat, UP).normalize();
-      this.head = { bone: headBone, yaw: toBone(headBone, UP), pitch: toBone(headBone, lat), roll: toBone(headBone, fwd), out: new Quaternion(), d: new Quaternion(), follow: 0, followP: 0 };
+      this.head = { bone: headBone, yaw: toBone(headBone, UP), pitch: toBone(headBone, lat), roll: toBone(headBone, fwd), out: new Quaternion(), d: new Quaternion(), follow: 0, followP: 0, leadY: 0, leadP: 0, adj: new Vector3(), adjTo: new Vector3(), adjNext: 1.5 };
       this.headPhase = [this.rand() * 6.28, this.rand() * 6.28, this.rand() * 6.28];
       for (const [n, side] of [['LeftShoulder', 1], ['RightShoulder', -1]] as const) {
         const b = find(root, n);
@@ -339,6 +361,7 @@ export class FaceAnimator {
         if (b) this.shoulders.push({ bone: b, axis: toBone(b, fwd), side: sideOf, out: new Quaternion(), d: new Quaternion() });
       }
     }
+    if (headBone && le && re) this.wrinkles = new FaceWrinkles(headBone, le, re);
     const mid = find(root, 'Face_MMiddleEyebrow');
     if (mid) this.movers.push({ bone: mid, ...rest(mid), d: toParent(mid, UP.clone().multiplyScalar(-4 * MM)), kind: 'mid' });
     const jaw = find(root, 'Face_MJaw');
@@ -483,6 +506,7 @@ export class FaceAnimator {
       if (away) g.toPitch = Math.abs(g.toPitch) * 0.5;
       if (away && this.blinkAt < 0 && this.rand() < 0.35) this.blinkAt = this.t;
       g.next = this.t + (away ? 0.9 + this.rand() * 0.9 : 0.6 + this.rand() * 1.8);
+      g.away = away;
     }
     // a still image looks straight at the opponent at once (two captures of the same instant are the same)
     if (still) g.toYaw = g.toPitch = g.yaw = g.pitch = 0;
@@ -574,6 +598,7 @@ export class FaceAnimator {
           w[wideK] = (w[wideK] ?? 0) + (up - give);
         }
       }
+      this.applied = w;
       for (const { mesh, idx } of this.morphs) {
         const inf = mesh.morphTargetInfluences!;
         inf.fill(0);
@@ -647,16 +672,34 @@ export class FaceAnimator {
     const t = this.t;
     const [a, b, c] = this.headPhase;
     const deg = Math.PI / 180;
-    // the head turns after the eyes, slowly (a glance of 12° brings it round 3.6° in about a second)
-    h.follow += (this.gaze.yaw - h.follow) * Math.min(1, dt / 0.8);
-    h.followP += (this.gaze.pitch - h.followP) * Math.min(1, dt / 0.8);
+    // 1.40 (Youssef 13/11, « la tête et le regard ensemble », lot validé 17:13): the eyes move first, the head follows
+    // them about a tenth of a second later and takes a share of the look: about half of a real glance aside, a fifth
+    // of the small fixations around the opponent. Two smoothing stages make the turn start softly and end softly
+    // (1.23 to 1.39: 35 % of every glance, starting at once, one slow stage). The eyes keep their target as the head
+    // comes round (aimEyes measures the opponent from where the head is).
+    const g = this.gaze;
+    const share = g.away ? 0.55 : 0.2;
+    h.leadY += (g.yaw * share - h.leadY) * Math.min(1, dt / 0.14);
+    h.leadP += (g.pitch * share * 0.6 - h.leadP) * Math.min(1, dt / 0.14);
+    h.follow += (h.leadY - h.follow) * Math.min(1, dt / 0.24);
+    h.followP += (h.leadP - h.followP) * Math.min(1, dt / 0.24);
+    // 1.40 the neck re-settles now and then: a quick small adjustment of the head (under a degree), that then eases
+    // away over a few seconds; never during a strike (amp)
+    if (t >= h.adjNext) {
+      const R = () => this.micro.rand01() - 0.5;
+      h.adjTo.set(R() * 1.4 * deg, R() * 1.1 * deg, R() * 0.9 * deg);
+      h.adjNext = t + 2 + 3.5 * this.micro.rand01();
+    }
+    h.adjTo.multiplyScalar(1 - Math.min(1, dt / 2.5));
+    h.adj.lerp(h.adjTo, Math.min(1, dt / 0.11));
     this.headAmp += (1 - this.headAmp) * Math.min(1, dt / 1.2);
     const amp = rest * rest * this.headAmp * this.headAmp;
-    const yaw = amp * (deg * 2.2 * Math.sin(0.37 * t + a) + deg * 1.0 * Math.sin(0.91 * t + b) + 0.35 * h.follow);
+    const yaw = amp * (deg * 2.2 * Math.sin(0.37 * t + a) + deg * 1.0 * Math.sin(0.91 * t + b) + h.follow + h.adj.x);
     // 1.34 encouragement: a small nod (down and back, 2.5°, twice), gone with the state
     const nod = mood.nod * deg * 2.5 * Math.pow(Math.max(0, Math.sin(2 * Math.PI * 1.3 * this.behavior.age)), 2);
-    const pitch = amp * (deg * 1.4 * Math.sin(0.29 * t + b) + deg * 0.6 * Math.sin(0.77 * t + c) + 0.3 * h.followP) + nod;
-    const roll = amp * deg * (0.7 * Math.sin(0.23 * t + c) + 0.3 * Math.sin(0.61 * t + a));
+    const pitch = amp * (deg * 1.4 * Math.sin(0.29 * t + b) + deg * 0.6 * Math.sin(0.77 * t + c) + h.followP + h.adj.y) + nod;
+    // 1.40 a turning head tilts a little with the turn (a fifth of it), as a real neck does
+    const roll = amp * (deg * (0.7 * Math.sin(0.23 * t + c) + 0.3 * Math.sin(0.61 * t + a)) + 0.2 * h.follow + h.adj.z);
     h.d
       .setFromAxisAngle(h.yaw, yaw)
       .multiply(tmpQ.setFromAxisAngle(h.pitch, pitch))
@@ -675,6 +718,16 @@ export class FaceAnimator {
       sq.multiply(sh.d);
       sh.out.copy(sq);
     }
+  }
+
+  /** 1.40 after update(): the wrinkles follow this frame's expressions and the camera */
+  updateWrinkles(camera: Camera) {
+    this.wrinkles?.update(camera, this.morphs.length ? this.applied : {});
+  }
+
+  /** 1.40 for the tests and the Lab: the expression weights applied this frame */
+  get weights(): Readonly<Partial<Record<FaceExpression, number>>> {
+    return this.applied;
   }
 
   /** 1.23 the body's breath of this frame (Breath.amount.x: -1 breathed out .. 1 breathed in) */

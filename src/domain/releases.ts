@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.40.0',
+      releaseDate: '2026-11-13',
+      title: 'Coachs : la tête suit le regard, rides d’expression',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Quand le coach regarde ailleurs, ses yeux partent d’abord et sa tête suit un court instant après, comme une vraie personne ; de temps en temps, il réajuste légèrement sa tête.' },
+        { category: 'ameliorations', text: 'Rides d’expression sur les quatre coachs : le front se plisse quand les sourcils montent, deux petits plis apparaissent entre les sourcils quand ils se froncent, et les pattes d’oie quand les yeux se plissent. Elles disparaissent quand le visage se détend.' },
+        { category: 'ameliorations', text: 'Tenues, corps, coiffures, techniques et animations des coachs inchangés.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.39.0',
       releaseDate: '2026-11-13',
       title: 'Coachs : visages vivants et détendus',

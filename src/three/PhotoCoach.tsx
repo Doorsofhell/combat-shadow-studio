@@ -9,6 +9,7 @@ import { hairFadeAttribute, photoMaterial, photoPart, skinLookFor } from './phot
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { restoreReferencePose, setLegLength } from './pose';
 import { dropStillMorphs, FaceAnimator, type FaceOptions } from './face';
+import { applyWrinkles } from './human/wrinkles';
 import { bakeAmaraCleanSurface } from './amaraCleanSurface';
 import type { HumanSignals } from './human/behavior';
 import { humanProfileFor } from './human/profiles';
@@ -83,7 +84,15 @@ export function PhotoCoach({
   const face = useMemo(() => {
     restoreReferencePose(scene);
     // 1.34 every coach gets the common behaviour engine, with its own profile (src/three/human/profiles.ts)
-    return new FaceAnimator(scene, url.length, humanProfileFor(url));
+    const f = new FaceAnimator(scene, url.length, humanProfileFor(url));
+    // 1.40 expression wrinkles on the skin (src/three/human/wrinkles.ts), the same for every coach
+    if (f.wrinkles)
+      scene.traverse((o) => {
+        const m = o as Mesh;
+        const mat = m.isMesh ? (m.material as Material) : null;
+        if (mat?.userData.cssSkin && !mat.userData.cssWrinkles) applyWrinkles(mat, f.wrinkles!.uniforms);
+      });
+    return f;
   }, [scene, url]);
   const rig = useMemo(() => {
     restoreReferencePose(scene);
@@ -144,6 +153,7 @@ export function PhotoCoach({
     const fo = (globalThis as { __cssFace?: FaceOptions }).__cssFace;
     face.setBreath(fo?.still ? null : breath.amount.value.x);
     face.update(Math.min(dt, 0.05), fo, human);
+    face.updateWrinkles(camera);
     // still images (Lab, portraits): the chest at rest, so two captures of the same instant are the same
     breath.update(fo?.still ? 0 : dt, face.state.effort);
     if (fo?.still) breath.amount.value.set(0, 0, 0, 0);

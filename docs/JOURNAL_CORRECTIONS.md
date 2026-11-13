@@ -3704,3 +3704,46 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   micro-vie effacée ; clignements variés et parfois incomplets ; reflet présent dans les deux qualités.
 - **Tests existants** : aucun modifié ni affaibli.
 - **Restauration** : branche `restauration/avant-visages-v1390` (= 1.38.0 publiée, `f398408`).
+- **Résultats** :
+  - `npx vitest run` : 1 416 réussis, 9 échoués, 1 ignoré. Les 9 échecs sont ceux de la 1.38.0 (8 contrôles du moteur
+    de frappe et « modèle léger < 3,5 Mo » d'Amara) : aucun nouveau. `micro-life.test.ts` : TEST RÉUSSI (17) ;
+  - `npx playwright test` (suite complète, 293) : 287 réussis, 2 ignorés, 4 échoués. Relancés seuls :
+    `chrono-seul:96` et `coach-suggest:99` TEST RÉUSSI (instables sous charge, connus) ; `coach-suggest:207` et
+    `coaching-hud:60` ÉCHOUÉ, et ÉCHOUÉ aussi sur la 1.38.0 (machine trop lente, connus) : aucun lié au visage ;
+  - `npm run build` : TEST RÉUSSI ; captures avant/après au Lab : `captures/visages-v1390/` ;
+  - test sur téléphone Android : NON EXÉCUTÉ.
+- **Publication** : PR #104 fusionnée (`61b1306`) dans `claude/project-thread-o7lrt8`, GitHub Pages redéployé.
+
+## 2026-11-13 · v1.40.0 · La tête suit le regard, rides d'expression (les quatre coachs)
+
+- **Demande** : Youssef, 13/11 17:13, après la liste des pistes pour donner plus de vie au visage : « Ça me va. Je
+  veux que tu te lances après » (points retenus : la tête et le regard ensemble ; des rides qui apparaissent avec
+  l'expression).
+- **Constat vérifié** (code et Lab, base 1.39.0) :
+  - la tête prenait 35 % de chaque déplacement du regard, dès la première image, par un seul lissage lent (0,8 s) :
+    elle démarrait en même temps que les yeux, sans l'accélération d'un vrai mouvement de tête ; aucun réajustement
+    de la tête en dehors de la lente dérive ;
+  - la peau restait lisse quelle que soit l'expression (sourcils levés sur un front lisse, yeux plissés sans pattes
+    d'oie) : aucune ride n'existait dans les textures ni dans le shader de la peau.
+- **Correction** (moteur commun, aucune logique propre à un coach ; tenues, corps, coiffures, techniques inchangés) :
+  - tête (`src/three/face.ts`, `moveHead`) : les yeux partent d'abord, la tête suit environ un dixième de seconde
+    plus tard par deux lissages (départ et arrivée doux) ; elle prend 55 % d'un vrai regard de côté et 20 % des
+    petites fixations autour de l'adversaire ; elle s'incline un peu en tournant (un cinquième de la rotation) ;
+    toutes les 2 à 5,5 s, petit réajustement de la tête (moins d'un degré et demi) qui s'efface en quelques
+    secondes. Rien en image fixe ni pendant la frappe. Les yeux gardent leur cible pendant que la tête tourne ;
+  - rides (`src/three/human/wrinkles.ts`, nouveau) : dans le shader de la peau, un léger relief (0,6 mm au plus)
+    et un léger ombrage du pli, dans un repère lié au visage (origine entre les yeux, unité = écart des yeux) :
+    lignes du front avec le sourcil levé, deux plis verticaux entre les sourcils au froncement, pattes d'oie avec
+    les yeux plissés, les joues ou le sourire. Leur force vient des expressions appliquées à chaque image
+    (`FaceAnimator.updateWrinkles`) : visage neutre = peau lisse. Les lignes trop fines pour l'écran (coach vu de
+    loin) s'effacent au lieu de scintiller. Pas de texture ni de fichier ajouté.
+- **Fichiers** : `src/three/face.ts`, `src/three/human/wrinkles.ts` (nouveau), `src/three/PhotoCoach.tsx`,
+  `src/three/human/__tests__/head-wrinkles-v140.test.ts` (nouveau), `package.json`, `src/domain/releases.ts`,
+  `captures/visages-v1400/`.
+- **Tests ajoutés** (`head-wrinkles-v140.test.ts`, 19 contrôles, les quatre coachs) : les yeux partent d'abord, la
+  tête atteint la moitié de sa part au moins 0,1 s plus tard et prend 45 à 60 % d'un regard de côté ; réajustements
+  de tête présents et sous 1,5° ; en image fixe la tête ne bouge pas ; repère des rides centré entre les yeux et
+  tournant avec la tête ; visage neutre sans ride, chaque ride liée à son expression, bornée à 1 ; en séance, rides
+  présentes mais légères en moyenne ; shader de peau enchaîné (peau, puis rides) avec sa clé de programme.
+- **Tests existants** : aucun modifié ni affaibli.
+- **Restauration** : branche `restauration/avant-visages-v1400` (= contenu de la 1.39.0 publiée, `61b1306`).
