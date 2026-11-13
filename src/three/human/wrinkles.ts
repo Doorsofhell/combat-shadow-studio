@@ -94,7 +94,9 @@ export function applyWrinkles(m: Material, u: WrinkleUniforms) {
 export function wrinkleStrength(w: Partial<Record<string, number>>): [number, number, number, number] {
   const g = (k: string) => w[k] ?? 0;
   const clamp = (v: number) => Math.max(0, Math.min(1, v));
-  const brow = clamp(0.9 * g('BrowInnerUp'));
+  // 1.40 (Youssef 13/11 19:03, correction proposée sur la page de comparaison): the forehead lines only on a real
+  // raise of the brows (from 0.2); the small drifts of the brows at rest left the forehead lined nearly all the time
+  const brow = clamp(1.15 * (g('BrowInnerUp') - 0.2));
   const frown = clamp(0.5 * (g('BrowDownLeft') + g('BrowDownRight')) * 1.1 - 0.15);
   const crow = (s: 'Left' | 'Right') => clamp(0.7 * g(`EyeSquint${s}`) + 0.6 * g(`CheekSquint${s}`) + 0.5 * g(`MouthSmile${s}`) - 0.12);
   return [brow, frown, crow('Left'), crow('Right')];

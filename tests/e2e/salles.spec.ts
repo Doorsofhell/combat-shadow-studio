@@ -88,3 +88,36 @@ test('le coach apparaît avec sa salle, jamais avant elle (1.25.1)', async ({ pa
     expect(s.coachAt, ex).toBeGreaterThanOrEqual(s.roomAt);
   }
 });
+
+// 1.40 (Youssef 13/11 18:35: « interdire dans les salles de sport les rotations haut et bas, juste droite gauche comme
+// dans l'écran coach »): the room is a photograph around the coach; seen from above or below it stretches
+test('dans une salle, la caméra tourne à gauche et à droite, jamais en haut ni en bas', async ({ page }) => {
+  test.setTimeout(240_000);
+  await seed(page);
+  await training(page, 'mma-debutant-01');
+  await page.waitForFunction(() => (window as unknown as { __cssRoom?: { id: string } }).__cssRoom?.id === 'mma', null, { timeout: 90_000 });
+  const cam = () => page.evaluate(() => (window as unknown as { __cssCamera?: { az: number; el: number } }).__cssCamera ?? null);
+  await expect.poll(cam, { timeout: 90_000 }).not.toBeNull();
+  const box = (await page.locator('canvas').first().boundingBox())!;
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height * 0.45;
+  const drag = async (dx: number, dy: number) => {
+    await page.mouse.move(cx, cy);
+    await page.mouse.down();
+    await page.mouse.move(cx + dx, cy + dy, { steps: 8 });
+    await page.mouse.up();
+    await page.waitForTimeout(400);
+  };
+  const before = (await cam())!;
+  await drag(0, -140);
+  const afterUp = (await cam())!;
+  expect(Math.abs(afterUp.el - before.el), 'pas de bascule vers le haut').toBeLessThan(1);
+  await drag(0, 140);
+  await drag(0, 140);
+  const afterDown = (await cam())!;
+  expect(Math.abs(afterDown.el - before.el), 'pas de bascule vers le bas').toBeLessThan(1);
+  await drag(160, 0);
+  const afterH = (await cam())!;
+  expect(Math.abs(afterH.az - afterDown.az), 'rotation gauche-droite').toBeGreaterThan(10);
+  expect(Math.abs(afterH.el - before.el)).toBeLessThan(1);
+});

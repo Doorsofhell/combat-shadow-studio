@@ -20,6 +20,8 @@ export interface HumanProfile {
   traits: BehaviorTraits;
   /** factor on the blink rate (1 = every 3 to 6 s) */
   blinkRate: number;
+  /** 1.40 the face at rest (src/three/face.ts FACE_BASES); the default one when absent */
+  faceBase?: 'actuel' | 'calme' | 'doux' | 'vif';
 }
 
 /** older models allowed a degraded face (facial bones only, no expressions). Never add a new coach here. */

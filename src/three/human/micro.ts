@@ -78,13 +78,31 @@ const PAIRS: [MicroChannel, MicroChannel][] = [
   ['MouthSmileLeft', 'MouthSmileRight'],
 ];
 
-const mirror = (c: MicroChannel) => (c.endsWith('Left') ? (c.replace(/Left$/, 'Right') as MicroChannel) : c);
+const mirror = (c: MicroChannel) =>
+  (c.endsWith('Left') ? c.replace(/Left$/, 'Right') : c.endsWith('Right') ? c.replace(/Right$/, 'Left') : c) as MicroChannel;
 
 /** a slow, smooth wave in -1..1: three sines of unrelated periods (about 2 to 9 s), cheap and without jumps */
 interface Wave {
   f: [number, number, number];
   p: [number, number, number];
 }
+
+/**
+ * 1.40 (Youssef 13/11 19:04: « quelques petits sourires doux… humaniser sans que ça soit mécanique ou répétitif »):
+ * the soft smiles of the coach at rest, three kinds that never come twice in a row, each with its own strength,
+ * length and side, at irregular times (8 to 22 s apart for a coach of warmth 1, sooner for a warmer one):
+ * - bouche: the corners of the mouth only, a little uneven;
+ * - yeux: a real smile that reaches the eyes (the cheeks rise, the lower lids narrow);
+ * - demi: half a smile, one corner and its cheek.
+ * Never an open mouth, never pressed lips: only MouthSmile, CheekSquint and EyeSquint.
+ */
+export const SMILE_KINDS = ['bouche', 'yeux', 'demi'] as const;
+export type SmileKind = (typeof SMILE_KINDS)[number];
+const SMILE_SHAPE: Record<SmileKind, { w: Partial<Record<MicroChannel, number>>; side?: boolean }> = {
+  bouche: { w: { MouthSmileLeft: 0.3, MouthSmileRight: 0.24 } },
+  yeux: { w: { MouthSmileLeft: 0.34, MouthSmileRight: 0.3, CheekSquintLeft: 0.26, CheekSquintRight: 0.22, EyeSquintLeft: 0.12, EyeSquintRight: 0.1 } },
+  demi: { w: { MouthSmileLeft: 0.32, MouthSmileRight: 0.06, CheekSquintLeft: 0.14 }, side: true },
+};
 
 export interface MicroInput {
   /** 0 during a strike .. 1 at rest */
@@ -95,6 +113,8 @@ export interface MicroInput {
   calm: number;
   /** strength of the coach's expressions (profile traits.expressiveness) */
   strength: number;
+  /** 1.40 how readily the coach smiles (profile traits.warmth, 1 = standard); 0 = no smile */
+  warmth?: number;
 }
 
 export class MicroLife {
@@ -109,6 +129,10 @@ export class MicroLife {
   private waves = new Map<MicroChannel, Wave>();
   private shared = new Map<MicroChannel, Wave>();
   private tremor = { yaw: 0, pitch: 0, toYaw: 0, toPitch: 0, next: 0 };
+  /** 1.40 current soft smile: kind, side, strength, time in it, hold (s); the last kind; time of the next one */
+  smile: { kind: SmileKind; side: number; amp: number; t: number; hold: number } | null = null;
+  private lastSmile: SmileKind | null = null;
+  private nextSmile: number;
 
   constructor(private rand: () => number) {
     const wave = (): Wave => ({
@@ -118,6 +142,27 @@ export class MicroLife {
     for (const [c] of DRIFT) this.waves.set(c, wave());
     for (const [l] of PAIRS) this.shared.set(l, wave());
     this.nextEvent = 1.5 + 2 * rand();
+    this.nextSmile = 3 + 6 * rand();
+  }
+
+  /** 1.40 a soft smile now (the coach's encouragement after a repetition); a kind other than the last one */
+  startSmile(amp = 1) {
+    const kinds = SMILE_KINDS.filter((k) => k !== this.lastSmile);
+    const kind = kinds[Math.floor(this.rand() * kinds.length)];
+    this.lastSmile = kind;
+    this.smile = { kind, side: this.rand() < 0.5 ? 1 : -1, amp: amp * (0.65 + 0.5 * this.rand()), t: 0, hold: 0.8 + 1.6 * this.rand() };
+  }
+
+  /** envelope of a smile: it comes in 0.5 s and goes in 0.8 s, softly */
+  static smileEnvelope(t: number, hold: number) {
+    const up = 0.5;
+    const down = 0.8;
+    const s = (x: number) => x * x * (3 - 2 * x);
+    if (t < 0) return 0;
+    if (t < up) return s(t / up);
+    if (t < up + hold) return 1;
+    if (t < up + hold + down) return s(1 - (t - up - hold) / down);
+    return 0;
   }
 
   /** a draw of this layer's own generator (also used for the shape of each blink) */
@@ -188,6 +233,29 @@ export class MicroLife {
         w[c] = (w[c] ?? 0) + v * env * inp.strength;
       }
       if (e.t > e.hold + 0.7) this.event = null;
+    }
+
+    // 1.40 the soft smiles: only when calm, at irregular times (never two in a row of the same kind); a strike cuts
+    // the smile short as it does the micro-expressions
+    const warmth = inp.warmth ?? 1;
+    if (!this.smile && this.t >= this.nextSmile) {
+      if (inp.calm > 0.5 && warmth > 0) this.startSmile();
+      this.nextSmile = this.t + (8 + 14 * this.rand()) / Math.max(0.3, warmth);
+    }
+    if (this.smile) {
+      const sm = this.smile;
+      sm.t += dt;
+      const env = MicroLife.smileEnvelope(sm.t, sm.hold) * inp.rest * sm.amp * inp.strength;
+      const shape = SMILE_SHAPE[sm.kind];
+      for (const [c0, v] of Object.entries(shape.w) as [MicroChannel, number][]) {
+        const c = shape.side && sm.side < 0 ? mirror(c0) : c0;
+        w[c] = (w[c] ?? 0) + v * env;
+      }
+      if (sm.t > sm.hold + 1.3) {
+        this.smile = null;
+        // after a smile, the next one waits at least 6 s
+        this.nextSmile = Math.max(this.nextSmile, this.t + 6);
+      }
     }
 
     // the eyes are never perfectly still on the point they hold: micro-saccades of a few tenths of a degree every

@@ -51,11 +51,16 @@ export const RELEASES: readonly Release[] = (
     {
       version: '1.40.0',
       releaseDate: '2026-11-13',
-      title: 'Coachs : la tête suit le regard, rides d’expression',
+      title: 'Coachs : visages détendus, regard vers toi, sourires',
       isMajor: false,
       changes: [
+        { category: 'ameliorations', text: 'Visage détendu au repos sur les quatre coachs : plus de sourcils froncés ni de regard dur pendant l’attente.' },
+        { category: 'ameliorations', text: 'Le coach te regarde quand tu es en face de lui, avec de petites pauses comme une vraie personne ; vu de côté ou de dos, il garde les yeux sur son adversaire.' },
+        { category: 'ameliorations', text: 'De petits sourires doux de temps en temps, jamais deux fois le même à la suite. Naël sourit un peu plus, Kadir est plus sobre.' },
+        { category: 'corrections', text: 'Garde MMA penchée : le cou ne part plus en avant, la tête revient au-dessus des épaules et le regard est plus droit.' },
+        { category: 'corrections', text: 'Salles de sport : la caméra tourne seulement à gauche et à droite, comme sur l’écran coach.' },
         { category: 'ameliorations', text: 'Quand le coach regarde ailleurs, ses yeux partent d’abord et sa tête suit un court instant après, comme une vraie personne ; de temps en temps, il réajuste légèrement sa tête.' },
-        { category: 'ameliorations', text: 'Rides d’expression sur les quatre coachs : le front se plisse quand les sourcils montent, deux petits plis apparaissent entre les sourcils quand ils se froncent, et les pattes d’oie quand les yeux se plissent. Elles disparaissent quand le visage se détend.' },
+        { category: 'ameliorations', text: 'Rides d’expression sur les quatre coachs : le front se plisse quand les sourcils montent franchement, deux petits plis apparaissent entre les sourcils quand ils se froncent, et les pattes d’oie quand les yeux se plissent. Elles disparaissent quand le visage se détend.' },
         { category: 'ameliorations', text: 'Tenues, corps, coiffures, techniques et animations des coachs inchangés.' },
       ],
       links: [{ label: 'Voir les coachs', to: '/coach' }],
