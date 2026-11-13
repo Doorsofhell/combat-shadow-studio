@@ -1,52 +1,30 @@
-# Amara — plan de finitions des tenues (v1.37.9 et suites)
-Date : 12 novembre 2026.
+# Amara — finitions et correction du maillot d'origine (v1.37.9)
 
-## Objectif visuel
-Des vêtements sportifs féminins soignés et crédibles : décolleté esthétique et libre (pas de couverture imposée), bords réguliers, bretelles stables, shorts au tombé naturel, ceintures propres. Préserver intégralement la morphologie de l'athlète et les caractéristiques des six disciplines.
+Date de publication prévue : 13 novembre 2026. Référence avant travaux : v1.37.8.
+Version réservée à **Amara**. Le style du décolleté n'est pas contraint par une couverture imposée.
 
-## Lot A — matières et reflets (implémenté en 1.37.9)
-- Rendu exclusivement Amara (chemin `/mma-amara/tenues/`) : jersey du haut plus mat avec trame légèrement mieux lisible ; surshort moins brillant et moins strié ; ceinture moins dure visuellement.
-- Aucun changement de coupe, d'épaisseur réelle, de poids d'animation ou de maillage.
-- Pas de changement des textures partagées, ni du cache de GLB, ni des autres coachs.
+## Tenue MMA validée par l'utilisateur
+- **Brassière** : décolleté féminin en U arrondi, bretelles sport, dos athlétique, textile mat anthracite/pétrole.
+- **Bande inférieure** : vraie pièce élastique distincte, continue, environ 44 mm de hauteur, 96 segments, cousue visuellement sous le buste. Elle ne réutilise pas les plis sculptés de l'ancien maillot.
+- **Short** : coupe vale-tudo de compression, une seule couche, taille et jambes bien ajustées, ouvertures indépendantes, sans surshort flottant, pas de bande/filament reliant les cuisses.
+- **Décors originaux** : panneaux latéraux ivoire, détails dorés discrets et textile technique coloré sur le maillage existant. Aucun modèle, texture ni logo CGTrader importé.
+- **Squelette** : les vêtements sont générés sur la morphologie Rocketbox propre d'Amara avec ses poids d'animation.
 
-## Lot B — coupe du haut (NON IMPLÉMENTÉ, nécessite comparaison visuelle)
-- Conserver le patron validé Inaya (v1.37.7) comme référence, adapté au buste d'Amara ; ne pas recopier ses GLB.
-- Décolleté libre : ajuster sa courbe pour qu'elle soit harmonieuse, **sans ajouter une contrainte de couverture ni réduire automatiquement son ouverture**.
-- Protéger les bords du haut, les emmanchures et les bretelles des triangles effilochés pendant les gardes, directs, crochets et rotations d'épaules.
-- Ne pas réactiver `AMARA_PATCHES=1` (trous et bords déchirés observés en v1.37.6), ni modifier `photo.glb` ou `hideBody` sans comparaison de maillage.
-- Avant toute génération : vérifier le contour actuel, sa symétrie, les intersections avec la peau et la longueur des arêtes frontales en bind-pose **et** sur les poses dynamiques.
+## Ancien maillot et conservation du modèle d'origine
+Le fichier `photo.glb` d'origine est conservé **octet pour octet** : mode sans tenue identique à la v1.37.8. Un nouveau `photo-clean.glb` est utilisé uniquement lorsque l'une des **sept tenues** est sélectionnée. Le buste de cette version a une surface nettoyée (morph `CSS_CleanBikini`) et les zones colorées du bikini d'origine sont reconstruites en teintes de peau naturelle.
 
-## Lot C — shorts et ceintures (NON IMPLÉMENTÉ, maillage à vérifier)
-- Conserver le surshort MMA entier et la séparation du cuissard intérieur v1.37.7 ; **ne jamais reboucher l'entrejambe avec `holes_fill`** ni restaurer les découpes v1.37.6.
-- Ne pas modifier la géométrie de l'entrejambe sans détection des faces qui joignent les jambes et contrôle de l'étirement en high kick.
-- Nettoyer uniquement les ourlets irréguliers réellement constatés sur comparatifs ; conserver le repérage de la limite de couleur avant déformation (v1.37.7).
-- Éviter tout lissage global des poids, des os ou des vêtements.
+Le morph ne change pas les coordonnées source des sommets utilisées par `hideBody` : les sept masques de vêtements restent compatibles. Les 25 expressions du visage, la tête et ses textures sont préservées. Les six autres tenues d'Amara et les tenues d'Inaya, Kadir et Naël restent bit-à-bit identiques.
 
-## Nouvelle exigence absolue — aucune trace du maillot d'origine
-Le maillot de base Rocketbox (bonnets, cordon du cou, bande du dos, nœuds et parties imprimées sur la peau) **ne doit jamais être visible par-dessus ou à travers un vêtement neuf**, quels que soient la discipline, l'angle, la qualité graphique ou la posture. Cela n'impose pas de fermer le décolleté : la peau visible doit être naturelle, pas un ancien textile incrusté.
+Les contrôles qui comptent seulement les triangles d'origine encore dessinés sont désormais interprétés correctement : ces triangles sont recouverts de **peau reconstruite**, pas d'un matériau de maillot. Le contrôle strict vérifie aussi les deux textures modifiées et l'identité des images de tête.
 
-**Point technique découvert** : la v1.37.5 a retouché les couleurs, mais la v1.37.7 n'a aplani le volume de l'ancien bikini que sur le *maillage de travail servant à fabriquer les vêtements* ; le `photo.glb` effectivement porté conserve le relief de l'ancien bikini. Les tests historiques vérifient les habits, pas que tous les triangles du bikini original sont effectivement cachés par `hideBody`.
+## Contrôles de non-régression
+- Validation de la topologie du GLB et des accessoires MMA, présence du short mono-couche et de la bande élastique lisse.
+- Vérification Blender des sept tenues, des bords arrière et de l'absence de pont entre les jambes au niveau des ourlets.
+- Tests des matériaux et du rendu Amara, des masques, des 25 morphs du visage, de la sélection avec et sans tenue, du préchargement des fichiers et de la compilation.
+- Captures du vrai moteur Three.js : **sept tenues × garde face/dos + low kick + high kick** ; dossier de preuve `captures/revue-amara-v1379/`.
+- Contrôle de non-régression global : comparaison des échecs de la suite complète à ceux de la v1.37.8 (ne pas attribuer au correctif les tests moteur déjà défaillants en production).
 
-**Blocages à corriger avant validation définitive :**
-- vérifier les zones résiduelles de la texture d'origine dans le torse et la nuque, sans effacer la peau réelle ;
-- analyser les intersections géométriques avec le `photo.glb` livré, sans découpe aveugle pouvant créer des trous ;
-- mesurer dans les sept tenues les faces de bikini d'origine encore visibles après application de `hideBody` ; `scripts/dev/audit-amara-original-swimsuit.py` produit un rapport en lecture seule, avant durcissement du seuil ;
-- vérifier les bords et l'entrejambe sur des poses animées : aucun triangle étiré, aucune pièce sombre ;
-- figer un test automatique bloquant **après correction** de la source et des masques, plus une vérification visuelle.
+## Stratégie de publication
+Branche de livraison : `release/amara-mma-v1379` créée depuis la branche active `claude/project-thread-o7lrt8`. Sauvegarde de restauration exigée avant fusion. Ne publier qu'après passage des contrôles ci-dessus et validation des captures.
 
-## Validation bloquante
-1. Exactement la même caméra, lumière, pose et discipline avant/après : face, dos, profil, trois-quarts.
-2. Poses obligatoires : repos, garde, jab/direct, crochet, low kick, high kick, pivot ; qualité haute et basse.
-3. Aucun trou poitrine / aisselle / dos ; aucune peau qui traverse ; aucune ligne de couleur dentelée ; aucun filament dans l'entrejambe.
-4. Conserver les 7 modèles Inaya, 7 Naël, 7 Kadir, le corps et le squelette d'Amara bit-à-bit ; ne régénérer **que** les GLB effectivement corrigés, après sauvegarde.
-5. Exécuter les tests outfit et le gate Blender `check-amara-garments-v1377.py`, la compilation et le contrôle Android ; ne publier que des GLB validés visuellement.
-
-## Critère de livraison
-Le lot A est un correctif optique immédiat et réversible. Les lots B et C restent à implémenter après comparaison des captures, car une retouche aveugle de géométrie serait une régression potentielle.
-
-
-## Mesures d'audit sur la base v1.37.8 (12/11/2026)
-
-Le nouveau contrôle lit le fichier `photo.glb` d'Amara, retrouve les **4 416 triangles de l'îlot UV du bikini sculpté** et applique, comme `src/three/outfit.ts`, le masque `hideBody` de chaque tenue. Comptage des triangles de l'îlot bikini **encore dessinés** : boxe, kick-boxing, muay-thaï, MMA = **1 044** chacun (71 partiellement masqués, 973 non masqués) ; JJB no-gi = **581** ; JJB et judo = **449** chacun. Le contrôle mesure une source de fuite potentielle, pas une visibilité prouvée à l'écran pour chacun de ces triangles.
-
-**Décision bloquante** : le contrôle fonctionne désormais en mode strict dans le workflow `amara-garments-v1379.yml` : la CI doit échouer tant que les sept tenues ne masquent pas **l'ancien bikini sculpté** ou que la géométrie et la texture de ce bikini n'ont pas été remplacées par la vraie peau. Il ne faut **pas simplement ajouter les 1 044 triangles au masque** : cela pourrait effacer la peau que le décolleté doit montrer et créer des trous. La correction durable doit enlever l'ancien vêtement de la source visible tout en conservant la morphologie, le rig, les morph targets et les fichiers tenues approuvés. Une validation visuelle animée est obligatoire avant toute fusion ou déploiement.
+Dans un lancement sans tenue, l'avatar sportif d'origine reste visible. En cas d'échec de chargement des vêtements, l'application ne doit pas présenter le coach comme habillé tant que le modèle n'est pas prêt.
