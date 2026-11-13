@@ -1,0 +1,80 @@
+name: Amara v1.37.9 release gate - seven outfits true WebGL kicks
+
+on:
+  push:
+    branches:
+      - prototype/amara-mma-compression-reference
+    paths:
+      - .github/workflows/amara-7outfits-release-gate-v1379.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: amara-7outfits-release-1379
+  cancel-in-progress: false
+
+jobs:
+  review-seven:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Validate original undressed source, cleaned 7 dressed sources and independent MMA band
+        run: |
+          set -euo pipefail
+          test -s public/coaches/mma-amara/photo-clean.glb
+          test "$(git hash-object public/coaches/mma-amara/photo.glb)" = 805f138cd71a5091136a50f52e2a8ccb43f63f46
+          python3 scripts/dev/validate-amara-mma-reference-v1379.py
+          AMARA_AUDIT_STRICT=1 python3 scripts/dev/audit-amara-original-swimsuit.py
+      - name: Entire test suite, including 7 outfits, original no-outfit and 25 face expressions
+        run: npm run test
+      - name: Production build (not published)
+        run: |
+          npm run build
+          test -s dist/coaches/mma-amara/photo.glb
+          test -s dist/coaches/mma-amara/photo-clean.glb
+          test -s dist/coaches/mma-amara/tenues/mma.glb
+      - name: Install screenshot browser and composer
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+      - name: Start exact built candidate locally
+        run: |
+          nohup npx vite preview --host 127.0.0.1 --port 4173 --strictPort >/tmp/vite-release.log 2>&1 &
+          for n in $(seq 1 45); do
+            curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/vite-release.log
+          exit 1
+      - name: Capture all 7 real outfits x guard front/back + low/high kick
+        run: node scripts/dev/capture-amara-review-v1379.mjs
+      - name: Publish evidence only as non-release artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amara-1379-7outfits-dressed-source-28-real-poses
+          path: captures/revue-amara-v1379/
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Commit the 28 real prototype visuals, never the deployment branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add captures/revue-amara-v1379/*.jpg captures/revue-amara-v1379/diagnostic.json
+          if ! git diff --cached --quiet; then
+            git commit -m "review(v1.37.9): all 7 Amara outfits in guard/low/high kick with cleaned body [skip ci]"
+            git fetch origin prototype/amara-mma-compression-reference
+            git rebase origin/prototype/amara-mma-compression-reference
+            git push origin HEAD:prototype/amara-mma-compression-reference
+          fi
