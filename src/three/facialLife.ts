@@ -22,9 +22,13 @@ export class FacialLife {
   private nextBlink = 2.3;
   private blinkStart = -10;
   private seed: number;
+  private personality: number;
+  private blinkDuration = 0.19;
 
   constructor(root: Object3D, identity = 'coach') {
     this.seed = [...identity].reduce((n, c) => (n * 31 + c.charCodeAt(0)) >>> 0, 19);
+    this.personality = this.seed % 3;
+    this.nextBlink += this.random() * 2;
     root.traverse((object) => {
       const mesh = object as SkinnedMesh;
       if (!mesh.morphTargetDictionary || !mesh.morphTargetInfluences) return;
@@ -46,21 +50,22 @@ export class FacialLife {
     this.elapsed += Math.min(Math.max(dt, 0), 0.05);
     if (this.elapsed >= this.nextBlink) {
       this.blinkStart = this.elapsed;
-      this.nextBlink = this.elapsed + 2.4 + this.random() * 4.1;
+      this.blinkDuration = 0.14 + this.random() * 0.09;
+      this.nextBlink = this.elapsed + 2.2 + this.random() * 4.6;
     }
-    const blinkPhase = (this.elapsed - this.blinkStart) / 0.19;
+    const blinkPhase = (this.elapsed - this.blinkStart) / this.blinkDuration;
     const blink = blinkPhase >= 0 && blinkPhase <= 1 ? Math.sin(Math.PI * blinkPhase) ** 2 : 0;
     const breath = (Math.sin(this.elapsed * 1.7) + 1) / 2;
-    const concentration = 0.035 + 0.025 * Math.sin(this.elapsed * 0.47);
+    const concentration = (this.personality === 0 ? 0.045 : 0.025) + 0.012 * Math.sin(this.elapsed * 0.47);
     const effort = MathUtils.clamp(activity, 0, 1);
     for (const target of this.targets) {
       const values = target.mesh.morphTargetInfluences!;
       let amount = 0;
       switch (target.channel) {
         case 'blink': amount = blink * 0.85; break;
-        case 'focus': amount = concentration + effort * 0.11; break;
+        case 'focus': amount = concentration + effort * 0.08; break;
         case 'effort': amount = target.name.includes('jawopen') ? 0.012 + breath * 0.025 + effort * 0.08 : effort * 0.09; break;
-        case 'smile': amount = 0.012 + 0.008 * Math.sin(this.elapsed * 0.35); break;
+        case 'smile': amount = (this.personality === 1 ? 0.024 : 0.008) + 0.007 * Math.sin(this.elapsed * 0.35); break;
       }
       // Preserve the original facial expression and keep all contributions subtle.
       values[target.index] = MathUtils.clamp(target.base + amount * (1 - target.base), 0, 1);
