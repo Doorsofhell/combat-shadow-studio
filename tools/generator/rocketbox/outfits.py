@@ -1782,6 +1782,10 @@ def top(kind, color, accent=None, geom=False, nogi=False):
         # above it in depth and remains fully visible.
         lowZ = hipZ + 0.082
     sleeve = {'brassiere': 0, 'debardeur': 0, 'rash-court': 0.45, 'rash-long': 0.93}[kind]
+    # No-Gi product reference: compact short sleeves ending above the elbow,
+    # with a full shoulder panel and no floating fabric at the armpit.
+    if nogi and kind == 'rash-court':
+        sleeve = 0.36
 
     def keep(i):
         # The iso hem below trims the extra 3 cm exactly at lowZ. Without this
@@ -1833,6 +1837,8 @@ def top(kind, color, accent=None, geom=False, nogi=False):
             a, b = H[f'{s_}ForeArm'], H[f'{s_}Hand']
             cuts.append((a + (b - a) * (sleeve - 0.5) * 2, (b - a).normalized()))
     if nogi and accent:
+        # Raglan-like side panels, not a copied manufacturer logo. The source
+        # colours remain coach-specific and export as standard glTF materials.
         # Split source triangles on the No-Gi colour boundaries, rather than
         # assigning whole irregular triangles to different materials.
         for xcut in (-0.105, 0.105):
