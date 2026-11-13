@@ -27,6 +27,9 @@ export function bootFiles(pub = PUB): string[] {
     const dir = join(pub, 'coaches', c);
     if (!statSync(dir).isDirectory()) continue;
     if (readdirSync(dir).includes('photo.glb')) out.push(`coaches/${c}/photo.glb`);
+    // Amara's cleaned dressed-only source must also be fingerprinted and
+    // losslessly compressed, so her first outfit loads from the startup cache.
+    if (c === 'mma-amara' && readdirSync(dir).includes('photo-clean.glb')) out.push(`coaches/${c}/photo-clean.glb`);
     const t = join(dir, 'tenues');
     if (existsSync(t)) for (const f of readdirSync(t).sort()) if (f.endsWith('.glb') && !f.startsWith('arbitre')) out.push(`coaches/${c}/tenues/${f}`);
   }
