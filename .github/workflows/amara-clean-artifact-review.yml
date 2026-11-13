@@ -1,0 +1,61 @@
+name: Commit tested Amara clean torso into prototype for visual audit
+
+on:
+  push:
+    branches:
+      - prototype/amara-mma-compression-reference
+    paths:
+      - .github/workflows/amara-clean-artifact-review.yml
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  recover-clean-model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Verify the exact clean-source workflow has succeeded
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh run view 43340157322 --repo Doorsofhell/combat-shadow-studio --json conclusion --jq .conclusion)" = success
+      - name: Retrieve exact generated GLB and six real WebGL captures
+        uses: actions/download-artifact@v4
+        with:
+          name: amara-clean-torso-v1379-review-only
+          run-id: 43340157322
+          github-token: ${{ github.token }}
+          path: /tmp/amara-clean-artifact
+      - name: Verify morph, all head textures, source skeleton and only one changed GLB
+        run: |
+          set -euo pipefail
+          find /tmp/amara-clean-artifact -type f -printf '%p %s bytes\n'
+          orig=/tmp/am-original-photo-v1379.glb
+          cp public/coaches/mma-amara/photo.glb "$orig"
+          cleaned=$(find /tmp/amara-clean-artifact -type f -name photo.glb | head -1)
+          test -s "$cleaned"
+          cp "$cleaned" public/coaches/mma-amara/photo.glb
+          python scripts/dev/validate-amara-clean-morph-v1379.py "$orig" public/coaches/mma-amara/photo.glb
+          changed=$(git diff --name-only -- public/coaches)
+          test "$changed" = "public/coaches/mma-amara/photo.glb" || { echo "Other coaches or garments changed!"; exit 1; }
+          cp -a /tmp/amara-clean-artifact/captures/amara-clean-surface-v1379/. captures/amara-clean-surface-v1379/
+          test -s captures/amara-clean-surface-v1379/planche-4-poses.jpg
+          test -s captures/amara-clean-surface-v1379/06-brassiere-profil.jpg
+          mkdir -p captures/amara-clean-surface-v1379/_internal-review
+          base64 -w0 captures/amara-clean-surface-v1379/planche-4-poses.jpg > captures/amara-clean-surface-v1379/_internal-review/planche.b64
+          base64 -w0 captures/amara-clean-surface-v1379/06-brassiere-profil.jpg > captures/amara-clean-surface-v1379/_internal-review/brassiere.b64
+      - name: Keep the repaired body only in the prototype, never in production
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- public/coaches/mma-amara/photo.glb captures/amara-clean-surface-v1379/
+          git commit -m "prototype(v1.37.9): cleaned real Amara body + six WebGL validation captures [skip ci]"
+          git fetch origin prototype/amara-mma-compression-reference
+          git rebase origin/prototype/amara-mma-compression-reference
+          git push origin HEAD:prototype/amara-mma-compression-reference
