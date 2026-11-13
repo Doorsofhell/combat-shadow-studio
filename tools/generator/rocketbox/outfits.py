@@ -1818,6 +1818,12 @@ def top(kind, color, accent=None, geom=False, nogi=False):
         elif sleeve > 0.5:
             a, b = H[f'{s_}ForeArm'], H[f'{s_}Hand']
             cuts.append((a + (b - a) * (sleeve - 0.5) * 2, (b - a).normalized()))
+    if nogi and accent:
+        # Split source triangles on the No-Gi colour boundaries, rather than
+        # assigning whole irregular triangles to different materials.
+        for xcut in (-0.105, 0.105):
+            cuts.append((Vector((xcut, 0, 0)), Vector((1, 0, 0))))
+        cuts.append((Vector((0, 0, chestZ + 0.10)), Vector((0, 0, 1))))
     if kind == 'brassiere' and (GEOM_BRA or geom):
         nk = H['Neck']
         cuts += [(Vector((0, 0, z)), Vector((0, 0, 1))) for z in (nk.z - 0.13, chestZ + 0.02, nk.z - 0.02)]
