@@ -73,5 +73,7 @@ describe('v1.37.7 — Inaya référence immuable et Amara morphologie adaptée',
       n.extras?.cssTopStyle === 'scoop-racerback-reference-1379')).toBe(true);
     expect(gltf.nodes.some((n) => n.name?.includes('short-surshort'))).toBe(false);
     expect(gltf.nodes.some((n) => n.name?.includes('haut-crop'))).toBe(false);
+    expect(gltf.nodes.some((n) => n.name?.startsWith('bande-brassiere-mma') &&
+      n.extras?.cssBraBandCut === 'continuous-planar-elastic-1379')).toBe(true);
   });
 });
