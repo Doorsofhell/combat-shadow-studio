@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.41.0',
+      releaseDate: '2026-11-13',
+      title: 'Visages : suppression des artefacts noirs',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Désactivation temporaire du relief procédural des rides pouvant provoquer des marques sombres et des pointillés sur le front et autour des yeux.' },
+        { category: 'ameliorations', text: 'Clignements, regard, sourcils, bouche et expressions faciales conservés. Aucune modification des corps, vêtements ou animations de combat.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.40.0',
       releaseDate: '2026-11-13',
       title: 'Coachs : visages détendus, regard vers toi, sourires',

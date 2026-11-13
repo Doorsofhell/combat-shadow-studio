@@ -68,10 +68,11 @@ vec3 cssWrBump(vec3 pos, vec3 n, float h) {
 const BODY = /* glsl */ `
   {
     float cssWr = cssWrinkle((cssWrView * vec4(-vViewPosition, 1.0)).xyz);
-    if (cssWr > 0.0005) {
-      normal = cssWrBump(-vViewPosition, normal, -cssWr * ${WRINKLE_LOOK.depth.toFixed(5)});
-      diffuseColor.rgb *= 1.0 - ${WRINKLE_LOOK.shade.toFixed(3)} * min(cssWr, 1.0);
-    }
+    // v1.41: suspend the procedural wrinkle shading and normal perturbation.
+    // The v1.40 high-frequency lines create dark dotted artefacts on animated faces.
+    // Keep expression weights, facial morphs and the wrinkle uniforms intact;
+    // re-enable only after close-up GPU screenshot regression tests.
+    cssWr *= 0.0;
   }
 `;
 
