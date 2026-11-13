@@ -1,0 +1,84 @@
+name: Stage final natural-groin Amara MMA release and recapture four posed shots
+
+on:
+  push:
+    branches: [prototype/amara-mma-natural-groin-v1379]
+    paths:
+      - .github/workflows/amara-natural-final-stage.yml
+
+permissions:
+  contents: write
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/amara-mma-v1379
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Replace ONLY Amara's MMA short geometry and reproducible generator
+        run: |
+          set -euo pipefail
+          git fetch origin prototype/amara-mma-natural-groin-v1379
+          git restore --source=FETCH_HEAD -- \
+            public/coaches/mma-amara/tenues/mma.glb \
+            tools/generator/rocketbox/outfits.py \
+            scripts/dev/validate-amara-mma-reference-v1379.py
+          test "$(git hash-object public/coaches/mma-amara/photo.glb)" = 805f138cd71a5091136a50f52e2a8ccb43f63f46
+          python3 scripts/dev/validate-amara-mma-reference-v1379.py
+          AMARA_AUDIT_STRICT=1 python3 scripts/dev/audit-amara-original-swimsuit.py
+          node scripts/boot-sizes.mjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Seven outfits, startup, original unmodified coaches and clean skin
+        run: |
+          npm run test -- src/boot/__tests__/preload.test.ts src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-amara-finish-v1379.test.ts src/three/__tests__/amara-photo-source-v1379.test.ts src/three/__tests__/amara-clean-surface-v1379.test.ts src/three/__tests__/outfit-amara-v1374.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit-rollback-v1373.test.ts src/domain/release-version.test.ts
+          npm run build
+          test -s dist/coaches/mma-amara/photo-clean.glb
+      - name: Prepare WebGL screenshot dependencies
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+      - name: Start actual compressed production preview
+        run: |
+          nohup npx vite preview --host 127.0.0.1 --port 4173 --strictPort > /tmp/review.log 2>&1 &
+          for n in $(seq 1 45); do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/review.log
+          exit 1
+      - name: Render four final natural-groin MMA poses and preserve other 24
+        run: |
+          AMARA_CAPTURE_OUTFIT=mma node scripts/dev/capture-amara-review-v1379.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('captures/revue-amara-v1379')
+          d=json.loads((p/'diagnostic.json').read_text())
+          assert len(d['records'])==28, len(d['records'])
+          assert {x['outfit'] for x in d['records']}=={'boxe','kickboxing','muaythai','mma','bjj','bjj-nogi','judo'}
+          assert all(x['outfitState']=='portee' for x in d['records'])
+          print('PASS: 7 complete visual reviews, 4 revised MMA shots')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: amara-mma-natural-groin-release-1379
+          path: |
+            captures/revue-amara-v1379/amara-mma*.jpg
+            captures/revue-amara-v1379/diagnostic.json
+          retention-days: 30
+      - name: Commit only approved Amara assets and refreshed visual proofs to PR 102
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- public/coaches/mma-amara/tenues/mma.glb tools/generator/rocketbox/outfits.py scripts/dev/validate-amara-mma-reference-v1379.py src/boot/assetSizes.json captures/revue-amara-v1379/amara-mma*.jpg captures/revue-amara-v1379/diagnostic.json
+          git commit -m "release(v1.37.9): remove high-kick crotch notch; preserve natural fitted compression boxer"
+          git fetch origin release/amara-mma-v1379
+          git rebase origin/release/amara-mma-v1379
+          git push origin HEAD:release/amara-mma-v1379
