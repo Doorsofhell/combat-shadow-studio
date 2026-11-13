@@ -9,7 +9,7 @@ import { hairFadeAttribute, photoMaterial, photoPart, skinLookFor } from './phot
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { restoreReferencePose, setLegLength } from './pose';
 import { dropStillMorphs, FaceAnimator, type FaceOptions } from './face';
-import { applyWrinkles } from './human/wrinkles';
+import { applyWrinkles, WRINKLES_ON_COACHES } from './human/wrinkles';
 import { bakeAmaraCleanSurface } from './amaraCleanSurface';
 import type { HumanSignals } from './human/behavior';
 import { humanProfileFor } from './human/profiles';
@@ -85,8 +85,9 @@ export function PhotoCoach({
     restoreReferencePose(scene);
     // 1.34 every coach gets the common behaviour engine, with its own profile (src/three/human/profiles.ts)
     const f = new FaceAnimator(scene, url.length, humanProfileFor(url));
-    // 1.40 expression wrinkles on the skin (src/three/human/wrinkles.ts), the same for every coach
-    if (f.wrinkles)
+    // 1.40 expression wrinkles on the skin (src/three/human/wrinkles.ts), the same for every coach; off since 1.40.1
+    // (dotted marks on the faces on phones, WRINKLES_ON_COACHES)
+    if (f.wrinkles && WRINKLES_ON_COACHES)
       scene.traverse((o) => {
         const m = o as Mesh;
         const mat = m.isMesh ? (m.material as Material) : null;
