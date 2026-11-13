@@ -3650,3 +3650,18 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - pas de test sur téléphone Android réel. Poids des tenues : de +0,1 à +0,2 Mo pour les 4 tenues de frappe, de
     −0,2 à −0,3 Mo pour les 3 autres ; corps habillé −1,45 Mo.
 - **Restauration** : branche `restauration/avant-amara-v1380` (= 1.37.9 publiée, `461c12f`).
+- **Publication** : Youssef, 13/11 16:20 (« Lance la génération directement en 1.38 », la 1.38.0 JJB prévue ailleurs
+  n'étant pas prête) : ce lot est publié en 1.38.0.
+- **Résultats** :
+  - `npx vitest run` : 1 399 réussis, 9 échoués, 1 ignoré. TEST RÉUSSI pour tous les tests de tenues, du cou, des
+    bandes en mouvement, de version, de préchargement et du contrat humain. Les 9 échecs sont ceux de la 1.37.9
+    (8 contrôles du moteur de frappe : `audit`, `extension-v032`, `fluidity` ×3, `hooks-biomeca` ×2,
+    `torsion-range` ; et `expressions-v1160` « modèle léger < 3,5 Mo ») : aucun nouveau ;
+  - `amara-finish-v1380.test.ts` : TEST RÉUSSI (41 contrôles) ;
+  - `check-amara-garments-v1377.py` (Blender 5.3 local) : TEST RÉUSSI sur les 7 tenues ;
+  - `neck_seam.py` : TEST RÉUSSI (132 points partagés, écart de normale 0°, écart de poids 0) ;
+  - `npm run build` : TEST RÉUSSI ;
+  - captures du vrai moteur (Lab, Playwright) : 14 vues avant, 24 vues après, relues en gros plan,
+    `captures/amara-v1380/` ;
+  - `npx playwright test` (suite complète) : NON EXÉCUTÉ (environ 40 min en rendu logiciel ; aucun écran ni
+    parcours de l'appli n'est modifié) ; test sur téléphone Android : NON EXÉCUTÉ.
