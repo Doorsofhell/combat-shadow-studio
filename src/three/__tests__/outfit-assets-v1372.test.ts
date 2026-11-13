@@ -25,7 +25,8 @@ describe('1.37.2 — modèles vestimentaires reconstruits et validés', () => {
         // Its exact binary hashes are checked in outfit-rollback-v1373.test.ts.
         if (coach !== 'mma-kadir') {
           const carrier = glb.nodes.find(n => n.extras?.generatorVersion);
-          const expected = coach === 'mma-amara' ? (outfit === 'mma' ? '1.37.9' : '1.37.7') : '1.37.2';
+          // 1.38.0: Amara's seven outfits rebuilt on her body cleaned at its source (journal, v1.38.0)
+          const expected = coach === 'mma-amara' ? '1.38.0' : '1.37.2';
           expect(carrier?.extras?.generatorVersion, `${coach}/${outfit} doit être généré avec ${expected}`).toBe(expected);
         }
       });
@@ -42,8 +43,8 @@ describe('1.37.2 — modèles vestimentaires reconstruits et validés', () => {
         // the old double-layered MMA liner/overshort; Inaya remains untouched.
         expect(names.some(n => n.includes('short-surshort')), 'old Amara overshort returned').toBe(false);
         expect(meshes.some(n => n.name?.startsWith('short-vale-tudo') && n.extras?.cssNoOvershort === true)).toBe(true);
-        expect(meshes.some(n => n.name?.startsWith('bande-brassiere-mma') &&
-          n.extras?.cssBraBandConstruction === 'smooth-independent-torso-ring-1379')).toBe(true);
+        // 1.38.0: the under-band is a fitted ring (thin, on the body's outline), no longer the 4.4 cm ring of 1.37.9
+        expect(meshes.some(n => n.name?.startsWith('bande-brassiere-mma') && n.extras?.cssFittedBand === '1.38.0')).toBe(true);
       } else {
         expect(names.some(n => n.includes('short-surshort')), 'Inaya historical MMA outer-short missing').toBe(true);
       }

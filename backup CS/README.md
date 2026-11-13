@@ -33,3 +33,17 @@ Pour revenir entièrement à la 1.36.0 : branche `restauration/avant-ultra-reali
 | Retiré | Pourquoi |
 |---|---|
 | `.github/workflows/amara-v1376.yml` | À chaque push, il reconstruisait les tenues d'Amara avec la recette 1.37.6 et exigeait la découpe centrale du short MMA. Remplacé par `amara-v1377.yml` (choix de Youssef, 12/11 19:45) : au push, il contrôle les tenues 1.37.7 relues sur captures ; la reconstruction se fait à la demande. |
+| `.github/workflows/amara-garments-v1379.yml` (version 1.38.0, 13/11/2026) | Il exigeait la marque du morph « CSS_CleanBikini » de la 1.37.9 dans `photo-clean.glb` (`audit-amara-original-swimsuit.py`). Depuis la 1.38.0, `photo-clean.glb` est un vrai corps nettoyé, sans morph. Remplacé par `amara-finish-v1380.yml` (cou, bandes en mouvement, tenues, version, build). |
+
+## v1.37.9-morph (version 1.38.0, 13/11/2026)
+
+En 1.37.9, l'ancien maillot d'Amara était aplati par un morph ajouté à `photo-clean.glb` et appliqué au chargement.
+En 1.38.0, `photo-clean.glb` est le corps réellement nettoyé (`tools/generator/rocketbox/torso_from_clean.py` et
+`torso_textures.py`) : le cordon du maillot disparaît aussi de la nuque, que le morph ne touchait pas.
+
+| Retiré | Fichiers |
+|---|---|
+| Outils et contrôles propres au morph de la 1.37.9 (ils exigent ce morph, absent du nouveau fichier). | `scripts/dev/audit-amara-original-swimsuit.py`, `validate-amara-clean-morph-v1379.py`, `append-amara-clean-morph-v1379.py`, `calc-amara-surface-v1379.py`, `repaint-amara-swimsuit-v1379.py`, `validate-amara-mma-reference-v1379.py` |
+
+Reste en place, sans effet tant que le fichier n'a pas de morph : `src/three/amaraCleanSurface.ts` (il rend `false`
+et le modèle est affiché tel quel). Pour revenir à la 1.37.9 : branche `restauration/avant-amara-v1380`.

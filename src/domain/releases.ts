@@ -49,6 +49,19 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.38.0',
+      releaseDate: '2026-11-13',
+      title: 'Amara : brassière fine, short net, nuque sans ligne',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Brassière d’Amara (boxe, kick-boxing, muay-thaï, MMA) : la bande du bas est fine, plate et posée sur le corps, les bretelles sont plus étroites et les bords sont nets, de dos comme de face.' },
+        { category: 'corrections', text: 'Short : ceinture régulière et raccord propre entre le noir et le rouge en kick-boxing ; panneau clair du short MMA dessiné net.' },
+        { category: 'corrections', text: 'Nuque d’Amara : la ligne visible à la base du cou a disparu (reste de l’ancien maillot retiré et éclairage rendu continu entre la tête et le corps).' },
+        { category: 'ameliorations', text: 'Visage, morphologie, animations d’Amara et les trois autres coachs inchangés.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.37.9',
       releaseDate: '2026-11-13',
       title: 'Amara : nouvelle tenue MMA, peau nette sous les vêtements',

@@ -50,7 +50,9 @@ describe('tenues des coachs Ultra-réalistes', () => {
   });
 
   describe.each(COACHES)('%s', (coach) => {
-    const body = glb(`public/coaches/${coach}/photo.glb`);
+    // 1.38.0: Amara dressed is drawn on photo-clean.glb (CoachModel.photoAssetPath, 1.37.9), a real cleaned mesh since
+    // 1.38.0: her outfits name the skin points of THAT file
+    const body = glb(`public/coaches/${coach}/${coach === 'mma-amara' ? 'photo-clean' : 'photo'}.glb`);
     const bodyNode = body.json.nodes.find((n) => n.mesh !== undefined && n.skin !== undefined)!;
     // body and head: one primitive each
     const bodyPos = body.json.meshes[bodyNode.mesh!].primitives.flatMap((p) => [...body.floats(p.attributes.POSITION)]);

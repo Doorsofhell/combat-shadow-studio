@@ -3566,3 +3566,87 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests et compilation** : contrôle ciblé de la nouvelle géométrie, des habits historiques, des masques, du visage, du préchargement et du bundle — [GitHub Actions, succès](https://github.com/Doorsofhell/combat-shadow-studio/actions/runs/43371140056).
 - **Comparaison de toute la suite de tests** : 9 échecs historiques détectés dans la branche publiée en 1.37.8 (audit moteur, fluidité, crochets, torsion, limite ancienne de taille du modèle facial). La candidate 1.37.9 présente les **mêmes 9 échecs, aucun nouvel échec** — [GitHub Actions, parité réussie](https://github.com/Doorsofhell/combat-shadow-studio/actions/runs/43371375122). Les neuf tests historiques restent à traiter séparément et ne sont pas masqués.
 - **Restauration** : `restauration/avant-amara-mma-v1379` ; branche de livraison isolée `release/amara-mma-v1379`, PR #102. Aucun changement de code moteur d'animation.
+
+
+## 2026-11-13 · v1.38.0 — Amara : brassière fine et ajustée, ceinture et raccords nets, nuque sans ligne
+
+- **Signalement** (Youssef, 13/11 11:07, « CORRECTION AMARA V1.38.0 », départ strict de la 1.37.9 ; 11:18 « Repart des
+  derniers vêtements » avec la capture de la tenue MMA 1.37.9) : A. brassière trop épaisse dans le dos en MMA et en
+  kick-boxing (bande du bas en « bourrelet », bretelles larges, contours en dents) ; B. ligne artificielle à la base de
+  la nuque ; C. kick-boxing : bord bas de brassière irrégulier, raccord noir/rouge imparfait, ceinture du short en
+  dents. Sans toucher à la morphologie, au visage, aux animations ni aux autres coachs.
+- **Constat vérifié** (captures du moteur sur la 1.37.9, `captures/amara-v1380/avant/`, et mesures sur les fichiers) :
+  1. *Bande de brassière* : en MMA, un anneau de 44 mm de haut posé à 7 mm du torse (épaisseur de tissu comprise) ;
+     dans les trois autres tenues de frappe, la couleur de la bande était peinte sur les triangles du haut : son bord
+     suivait la grille des triangles (dents) et le raccord noir/rouge aussi.
+  2. *Tissu* : le haut était poussé à 5,5 mm de la peau avec 2,2 mm d'épaisseur, d'où l'aspect gonflé dans le dos.
+  3. *Ceinture du short* : même cause que la bande (couleur peinte sur les triangles, marche de 6 mm).
+  4. *Nuque* : deux causes. a) Le cordon de l'ancien maillot Rocketbox est sculpté et peint dans la **tête** (qui
+     descend jusqu'à la base du cou) : le morph de la 1.37.9 n'aplanissait que le corps. b) À la jonction tête/corps,
+     les 132 points partagés portaient deux normales différentes (jusqu'à 76° d'écart, 0° chez Inaya) : la lumière
+     changeait d'un côté à l'autre de la couture. Poids de peau déjà identiques des deux côtés (écart 0).
+  5. *Panneau clair du short MMA* : peint par couleurs de points, donc flou.
+- **Corrections** :
+  1. `photo-clean.glb` (le corps d'Amara habillée, choisi par `photoAssetPath` depuis la 1.37.9) devient un vrai corps
+     nettoyé, sans morph : zone de l'ancien maillot (buste, dos, cordon de nuque sur la tête) refaite sur la
+     topologie propre d'Inaya, à la morphologie d'Amara (`tools/generator/rocketbox/torso_from_clean.py`,
+     `torso_textures.py`). Visage, 25 expressions, squelette, membres : inchangés. 3,49 Mo (4,94 Mo avant).
+  2. Nouvel outil réutilisable `tools/generator/rocketbox/neck_seam.py` : une seule normale et un seul jeu de poids
+     par point partagé entre la tête et le corps. Appliqué à `photo-clean.glb` et à `photo.glb` (Amara sans tenue :
+     seules les normales de ces 132 points changent ; l'empreinte du fichier n'est donc plus celle notée en 1.37.9,
+     `805f138c…` → `305e552e…`). Ce n'est ni un changement de couleur ni un accessoire : la géométrie et l'éclairage
+     sont continus.
+  3. Nouvelle fonction réutilisable `fitted_band()` dans `tools/generator/rocketbox/outfits.py` : une bande est un
+     anneau à part, tracé sur le contour réel du tronc à chaque hauteur (lancer de rayons, lissage « élastique
+     tendu »), bords parfaitement horizontaux, une seule épaisseur de 1 mm, bords qui se referment sur la peau ou le
+     tissu. Bande de brassière : 30 mm (44 avant), à 2 à 11 mm de la peau. Ceinture du short : même méthode. Activée
+     pour Amara (`FITTED_BANDS`, disponible pour les autres coachs avec `FITTED_BANDS=1`, non appliquée ici).
+  4. Haut : tissu à 3,5 mm de la peau (5,5 avant) et 1,6 mm d'épaisseur (2,2 avant), bretelles plus étroites
+     (bords à 121 et 138 mm de l'axe), ourlet de 2 mm. Le vêtement n'est pas agrandi pour cacher les défauts : il est
+     plus près du corps.
+  5. Short : la zone sous la ceinture est d'un seul tissu, la ceinture est l'anneau ajusté ; le short s'arrête 6 mm
+     sous le bord haut de la ceinture (sinon son tissu sombre pointait au bord de la ceinture blanche du MMA, vu à
+     la relecture des captures). MMA : mêmes couleurs que la 1.37.9 (short pétrole foncé, ceinture blanche, panneau
+     ivoire et filet doré), panneau découpé par des plans, donc net.
+  6. Les sept tenues d'Amara sont reconstruites sur ce corps (`generatorVersion 1.38.0`, `bodyCleanAtSource`). Le MMA
+     est construit avec `AMARA_MMA_REF=1`, les six autres sans (ce réglage abaisse tous les décolletés) :
+     `scripts/dev/regenerate-amara-v1377.sh` fait les deux passes. Couleurs par discipline conservées.
+  7. Lab : `span`, `fy`, `el` acceptés avec `tech=` (gros plans en mouvement).
+- **Essais écartés, mesurés** : ceinture tenue par le bassin seul (elle ne s'étire plus, 1,07 contre 2,0, mais le
+  short passe au travers à la cuisse levée, jusqu'à 6,7 cm) ; poids du short lissés (trous dans le tissu au high
+  kick). Les deux réglages restent dans le générateur, éteints (`BAND_TRUNK`, `SHORT_SMOOTH`).
+- **Contrôles automatiques ajoutés** :
+  - `src/three/__tests__/amara-finish-v1380.test.ts` : jonction du cou (plus de 40 points partagés, normales à moins
+    de 3°, poids à moins de 0,02, même matière) ; bandes et ceintures du MMA et du kick-boxing posées comme dans
+    l'appli à 5 instants (25 à 125 % de l'instant clé) de 9 mouvements (garde, jab, direct, crochet, low kick arrière
+    et avant, middle, high kick, changement de niveau) : glissement sur la peau et étirement, écrits dans
+    `docs/v1380/MESURES_TENUES_AMARA.md`. Limites = mesures de la 1.38.0 avec marge (bande : 21 mm et 1,2 ; ceinture :
+    28 mm et 2,3) ;
+  - `scripts/dev/check-amara-garments-v1377.py` (Blender) : pour les 4 tenues de frappe, deux bandes ajustées, bords
+    horizontaux à 0,5 mm près, bande de brassière ≤ 32 mm, aucun point dans la peau, aucun à plus de 25 mm du corps ;
+  - `.github/workflows/amara-finish-v1380.yml` (à chaque PR vers la branche de publication) ; `amara-v1377.yml`
+    lance aussi le nouveau test avant de publier.
+- **Tests modifiés, avec la raison** (aucun n'est affaibli : ils suivent le nouveau contrat) :
+  - `outfit-amara-v1374.test.ts`, `outfit-assets-v1372.test.ts` : version attendue `1.38.0` pour les sept tenues
+    d'Amara, marque `bodyCleanAtSource` au lieu de `oldBikiniFlattened` (plus rien n'est aplani sous les tenues),
+    bande MMA = bande ajustée ≤ 32 mm au lieu de l'anneau de 44 mm ; nouveau contrôle des deux bandes par tenue ;
+  - `outfit.test.ts` : la peau masquée d'Amara est comparée à `photo-clean.glb`, le fichier que l'appli charge
+    quand elle est habillée ;
+  - `src/test/glbRead.ts` : lit aussi les normales.
+- **Rangé dans `backup CS/`** : les six scripts du morph de la 1.37.9 (`v1.37.9-morph/`) et le workflow
+  `amara-garments-v1379.yml`, qui exigeaient ce morph. `src/three/amaraCleanSurface.ts` reste en place, sans effet
+  (pas de morph dans le fichier).
+- **Fichiers** : `public/coaches/mma-amara/photo-clean.glb`, `photo.glb`, `tenues/*.glb` (7) ;
+  `tools/generator/rocketbox/outfits.py`, `neck_seam.py`, `torso_from_clean.py`, `torso_textures.py` ;
+  `scripts/dev/check-amara-garments-v1377.py`, `regenerate-amara-v1377.sh`, `validate-outfit-build-v1372.py` ;
+  `src/ui/Lab.tsx`, `src/test/glbRead.ts`, tests ci-dessus ; `src/boot/assetSizes.json` ; `package.json`,
+  `src/domain/releases.ts` ; workflows. Aucun fichier du moteur d'animation, du moteur humain, ni des trois autres
+  coachs.
+- **Limites connues** :
+  - au high kick, le tissu du short se froisse à l'entrejambe, comme en 1.37.9 (pas de trou, pas de surface entre
+    les jambes) ; la ceinture s'étire du côté de la jambe levée (elle suit la peau du pli de la hanche) ;
+  - petite irrégularité à la jonction bretelle / décolleté du haut MMA, de face ;
+  - « modèle léger < 3,5 Mo » échoue toujours pour `photo.glb` (4,94 Mo, Amara sans tenue, depuis la 1.37.5) ;
+  - pas de test sur téléphone Android réel. Poids des tenues : de +0,1 à +0,2 Mo pour les 4 tenues de frappe, de
+    −0,2 à −0,3 Mo pour les 3 autres ; corps habillé −1,45 Mo.
+- **Restauration** : branche `restauration/avant-amara-v1380` (= 1.37.9 publiée, `461c12f`).

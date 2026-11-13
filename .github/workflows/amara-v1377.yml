@@ -7,6 +7,7 @@ on:
     paths:
       - package.json
       - tools/generator/rocketbox/outfits.py
+      - public/coaches/mma-amara/photo-clean.glb
       - public/coaches/mma-amara/tenues/**
       - scripts/dev/regenerate-amara-v1377.sh
       - scripts/dev/check-amara-garments-v1377.py
@@ -16,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       rebuild:
-        description: "Reconstruire les sept tenues d'Amara avec la recette 1.37.7 avant le contrôle"
+        description: "Reconstruire les sept tenues d'Amara avec la recette 1.38.0 avant le contrôle"
         type: boolean
         default: false
 
@@ -85,7 +86,7 @@ jobs:
 
       - name: Test all garments, validated skin, reference coaches and versioning
         run: |
-          npm run test -- src/three/__tests__/amara-skin-v1375.test.ts src/three/__tests__/outfit-amara-v1374.test.ts src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit-rollback-v1373.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-materials-v1371.test.ts src/domain/release-version.test.ts src/boot/__tests__/preload.test.ts
+          npm run test -- src/three/__tests__/amara-finish-v1380.test.ts src/three/__tests__/amara-skin-v1375.test.ts src/three/__tests__/outfit-amara-v1374.test.ts src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit-rollback-v1373.test.ts src/three/__tests__/outfit.test.ts src/three/__tests__/outfit-v032.test.ts src/three/__tests__/outfit-materials-v1371.test.ts src/domain/release-version.test.ts src/boot/__tests__/preload.test.ts
 
       - name: Load existing public web configuration
         shell: bash
