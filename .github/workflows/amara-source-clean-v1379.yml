@@ -9,6 +9,7 @@ on:
       - scripts/dev/calc-amara-surface-v1379.py
       - scripts/dev/append-amara-clean-morph-v1379.py
       - scripts/dev/validate-amara-clean-morph-v1379.py
+      - scripts/dev/repaint-amara-swimsuit-v1379.py
       - scripts/dev/capture-amara-clean-surface-v1379.mjs
       - src/three/amaraCleanSurface.ts
       - src/three/PhotoCoach.tsx
@@ -38,7 +39,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: python -m pip install --disable-pip-version-check numpy scipy
+      - run: python -m pip install --disable-pip-version-check numpy scipy pillow
       - name: Compute original-to-clean world deltas from body only
         run: |
           blender --background --threads 2 --python-exit-code 42 --python scripts/dev/calc-amara-surface-v1379.py -- public/coaches/mma-amara/photo.glb /tmp/amara-clean-deltas.npz
@@ -46,6 +47,11 @@ jobs:
         run: |
           python scripts/dev/append-amara-clean-morph-v1379.py public/coaches/mma-amara/photo.glb /tmp/amara-clean-deltas.npz /tmp/amara-photo-clean-v1379.glb
           python scripts/dev/validate-amara-clean-morph-v1379.py public/coaches/mma-amara/photo.glb /tmp/amara-photo-clean-v1379.glb
+      - name: Repaint only the original bikini body-texture UV islands
+        run: |
+          python scripts/dev/repaint-amara-swimsuit-v1379.py /tmp/amara-photo-clean-v1379.glb /tmp/amara-photo-repaint-v1379.glb
+          python scripts/dev/validate-amara-clean-morph-v1379.py public/coaches/mma-amara/photo.glb /tmp/amara-photo-repaint-v1379.glb
+          mv /tmp/amara-photo-repaint-v1379.glb /tmp/amara-photo-clean-v1379.glb
       - name: Preserve source as comparison and install the experimental clean morph
         run: |
           cp public/coaches/mma-amara/photo.glb /tmp/original-amara-photo.glb
