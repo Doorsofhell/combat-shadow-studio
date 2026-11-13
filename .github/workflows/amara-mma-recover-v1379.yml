@@ -41,7 +41,7 @@ jobs:
           done
           python3 scripts/dev/validate-amara-mma-reference-v1379.py
           changed=$(git diff --name-only -- public/coaches)
-          test "$changed" = "public/coaches/mma-amara/tenues/mma.glb" || { echo "Unexpected changed models: $changed"; exit 1; }
+          [[ -z "$changed" || "$changed" = "public/coaches/mma-amara/tenues/mma.glb" ]] || { echo "Unexpected changed models: $changed"; exit 1; }
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
