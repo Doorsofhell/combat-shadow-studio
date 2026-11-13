@@ -3032,7 +3032,7 @@ def outfit(name):
         for garment in (nogi_top, nogi_short):
             if garment is None:
                 continue
-            for mesh in (garment if isinstance(garment, (tuple, list)) else [garment]):
+            for mesh in garment[0]:
                 if mesh is None or not hasattr(mesh, 'data'):
                     continue
                 for idx, base in enumerate(list(mesh.data.materials)):
