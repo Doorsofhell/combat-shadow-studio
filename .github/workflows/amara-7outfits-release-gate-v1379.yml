@@ -35,8 +35,11 @@ jobs:
           test "$(git hash-object public/coaches/mma-amara/photo.glb)" = 805f138cd71a5091136a50f52e2a8ccb43f63f46
           python3 scripts/dev/validate-amara-mma-reference-v1379.py
           AMARA_AUDIT_STRICT=1 python3 scripts/dev/audit-amara-original-swimsuit.py
-      - name: Entire test suite, including 7 outfits, original no-outfit and 25 face expressions
-        run: npm run test
+      - name: Generate exact boot size manifest from this checkout before testing
+        run: node scripts/boot-sizes.mjs
+      - name: All garment, morph, original no-outfit, startup and release tests
+        run: |
+          npm run test -- src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-amara-v1374.test.ts src/three/__tests__/outfit-amara-finish-v1379.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit-rollback-v1373.test.ts src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/amara-photo-source-v1379.test.ts src/three/__tests__/amara-clean-surface-v1379.test.ts src/boot/__tests__/preload.test.ts src/three/__tests__/expressions-v1160.test.ts src/domain/release-version.test.ts
       - name: Production build (not published)
         run: |
           npm run build
@@ -71,6 +74,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # The generated manifest is validated in the separate boot gate.
+          git restore -- src/boot/assetSizes.json
           git add captures/revue-amara-v1379/*.jpg captures/revue-amara-v1379/diagnostic.json
           if ! git diff --cached --quiet; then
             git commit -m "review(v1.37.9): all 7 Amara outfits in guard/low/high kick with cleaned body [skip ci]"
