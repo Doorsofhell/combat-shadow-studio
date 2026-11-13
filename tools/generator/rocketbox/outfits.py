@@ -1800,6 +1800,14 @@ def top(kind, color, accent=None, geom=False, nogi=False):
             if not sleeve:
                 return False
             s = 'Left' if P[i].x > 0 else 'Right'
+            if nogi and kind == 'rash-court':
+                # A consistent arm-axis cut avoids the abrupt 30% forearm
+                # skin-weight switch, which made triangular holes at the
+                # underarm on Rocketbox's blended shoulder weights.
+                # Keep the complete upper-arm surface until the sleeve plane;
+                # discard the forearm beyond it using position, not weights.
+                _, u = axis_point(i, f'{s}Arm', f'{s}ForeArm')
+                return u < sleeve * 2
             if w(i, f'{s}ForeArm') > 0.3:
                 _, u = axis_point(i, f'{s}ForeArm', f'{s}Hand')
                 return sleeve > 0.5 and u < (sleeve - 0.5) * 2
