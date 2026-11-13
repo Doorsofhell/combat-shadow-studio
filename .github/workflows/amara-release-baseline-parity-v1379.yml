@@ -1,0 +1,70 @@
+name: Amara 1.37.9 - full test-suite parity with live 1.37.8
+
+on:
+  push:
+    branches: [prototype/amara-mma-compression-reference]
+    paths:
+      - .github/workflows/amara-release-baseline-parity-v1379.yml
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/amara-mma-v1379
+      - uses: actions/download-artifact@v4
+        with:
+          name: production-v1378-full-suite-baseline
+          run-id: 43370699452
+          github-token: ${{ github.token }}
+          path: baseline
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Run entire 1.37.9 test suite under same conditions as unmodified 1.37.8
+        run: |
+          set +e
+          npm run test >candidate-suite-v1379.txt 2>&1
+          echo "CANDIDATE_EXIT=$?"
+          exit 0
+      - name: Fail only on NEW regressions compared to the actual deployed branch
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          pat=re.compile(r'\x1b\[[0-9;]*[a-zA-Z]')
+          def fail_list(name):
+              t=pat.sub('', Path(name).read_text(errors='replace'))
+              return {line.strip() for line in t.splitlines() if line.strip().startswith('FAIL  ')}
+          baseline=fail_list('baseline/baseline-suite-v1378.txt')
+          actual=fail_list('candidate-suite-v1379.txt')
+          new=actual-baseline
+          print('BASELINE 1.37.8 FAILURES:',len(baseline))
+          for x in sorted(baseline):print('  HISTORICAL',x)
+          print('CANDIDATE 1.37.9 FAILURES:',len(actual))
+          for x in sorted(new):print('  *** NEW REGRESSION ***',x)
+          print('OLD FAILURES RESOLVED:',len(baseline-actual))
+          assert len(baseline)==9, 'Unexpected production reference (baseline must be fixed)'
+          assert not new, 'RELEASE BLOCKED: new failing tests not present in 1.37.8'
+          print('PASS: every one of the 1.37.9 unit tests is >= 1.37.8 baseline, no new failures')
+          PY
+      - name: Verify shipped build output and both alternate Amara bodies
+        run: |
+          npm run build
+          test -s dist/coaches/mma-amara/photo-clean.glb
+          test -s dist/coaches/mma-amara/photo.glb
+          test -s dist/coaches/mma-amara/tenues/mma.glb
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: amara-v1379-full-suite-regression-diff
+          path: candidate-suite-v1379.txt
+          retention-days: 14

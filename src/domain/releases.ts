@@ -50,12 +50,13 @@ export const RELEASES: readonly Release[] = (
   [
     {
       version: '1.37.9',
-      releaseDate: '2026-11-12',
-      title: 'Amara : finitions textiles plus naturelles',
+      releaseDate: '2026-11-13',
+      title: 'Amara : nouvelle tenue MMA, peau nette sous les vêtements',
       isMajor: false,
       changes: [
-        { category: 'ameliorations', text: 'Amara : tissus des hauts de sport moins brillants, trame textile plus lisible et matières des shorts et ceintures adoucies.' },
-        { category: 'ameliorations', text: 'Réglage uniquement sur ses vêtements : décolleté, géométrie, rig, animations, tenues d’Inaya, Naël et Kadir inchangés.' },
+        { category: 'ameliorations', text: 'Nouvelle tenue MMA féminine pour Amara : brassière de compression au décolleté en U, bande élastique régulière et short vale-tudo ajusté, sans surshort ni filet entre les jambes.' },
+        { category: 'corrections', text: 'Ancien maillot Rocketbox retiré du corps d’Amara lorsqu’elle porte ses sept tenues : correction du relief et reconstruction localisée de la couleur de peau.' },
+        { category: 'ameliorations', text: 'Sans tenue, Amara conserve son modèle sportif d’origine. Visage, expressions, animations, six autres vêtements et les trois autres coachs préservés.' },
       ],
       links: [{ label: 'Voir les coachs', to: '/coach' }],
     },

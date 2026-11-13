@@ -1,0 +1,33 @@
+name: Amara 1.37.9 - combined MMA + clean skin regression gate
+
+on:
+  push:
+    branches:
+      - prototype/amara-mma-compression-reference
+    paths:
+      - .github/workflows/amara-v1379-integration-smoke.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Approved MMA references and isolated one-body morph
+        run: |
+          python3 scripts/dev/validate-amara-mma-reference-v1379.py
+          python3 scripts/dev/probe-amara-photo-v1379.py | grep -E 'MESH|PRIMITIVE|IMAGE'
+      - name: All legacy garments + clean skin + female face tests
+        run: |
+          npm run test -- src/three/__tests__/amara-clean-surface-v1379.test.ts src/three/__tests__/outfit-amara-v1374.test.ts src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/amara-skin-v1378.test.ts
+      - name: Build actual candidate with approved MMA and cleaned body
+        run: npm run build

@@ -1,0 +1,36 @@
+name: Final Amara MMA image review after tight-band revision
+on:
+  push:
+    branches: [prototype/amara-mma-compression-reference]
+    paths:
+      - .github/workflows/amara-final-release-photo-probe.yml
+permissions:
+  contents: write
+jobs:
+  photos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Render b64 audit of genuine FINAL release images, not prior prototype
+        run: |
+          set -euo pipefail
+          git fetch origin release/amara-mma-v1379
+          mkdir -p captures/amara-final-visual-v1379
+          for name in garde-face garde-dos low-kick high-kick; do
+            git show "FETCH_HEAD:captures/revue-amara-v1379/amara-mma-$name.jpg" | base64 -w0 > "captures/amara-final-visual-v1379/$name.b64"
+            test -s "captures/amara-final-visual-v1379/$name.b64"
+          done
+          for name in 06-brassiere-profil 05-high-kick-profil; do
+            base64 -w0 "captures/amara-mma-prototype/$name.jpg" > "captures/amara-final-visual-v1379/$name.b64"
+          done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add captures/amara-final-visual-v1379/
+          git commit -m "audit(1.37.9): final real 3D MMA visual proof only on nonproduction prototype [skip ci]"
+          git fetch origin prototype/amara-mma-compression-reference
+          git rebase origin/prototype/amara-mma-compression-reference
+          git push origin HEAD:prototype/amara-mma-compression-reference

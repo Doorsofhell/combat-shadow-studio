@@ -1,0 +1,34 @@
+name: Amara 1.37.9 close-up final bra and high-kick audit
+
+on:
+  push:
+    branches: [prototype/amara-mma-compression-reference]
+    paths:
+      - .github/workflows/amara-final-mma-closeup-review.yml
+
+permissions:
+  contents: write
+
+jobs:
+  closeup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Encode final actual GLB screenshots for eye-level inspection
+        run: |
+          set -euo pipefail
+          mkdir -p captures/amara-mma-prototype/_audit-viz
+          for n in 06-brassiere-profil 05-high-kick-profil 01-garde-face 02-garde-dos; do
+            test -s "captures/amara-mma-prototype/$n.jpg"
+            base64 -w0 "captures/amara-mma-prototype/$n.jpg" > "captures/amara-mma-prototype/_audit-viz/$n.b64"
+          done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add captures/amara-mma-prototype/_audit-viz/
+          git commit -m "review(v1.37.9): final uncompressed-look MMA closeups [skip ci]"
+          git fetch origin prototype/amara-mma-compression-reference
+          git rebase origin/prototype/amara-mma-compression-reference
+          git push origin HEAD:prototype/amara-mma-compression-reference

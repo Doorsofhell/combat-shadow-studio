@@ -1,0 +1,35 @@
+name: Amara 1.37.9 review final seven screenshot contact sheets
+
+on:
+  push:
+    branches: [prototype/amara-mma-compression-reference]
+    paths:
+      - .github/workflows/amara-final-images-review-v1379.yml
+
+permissions:
+  contents: write
+
+jobs:
+  make-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Prepare seven real contact sheets for before-publishing visual inspection
+        run: |
+          set -euo pipefail
+          mkdir -p captures/revue-amara-v1379/_audit-viz
+          for o in boxe kickboxing muaythai mma bjj bjj-nogi judo; do
+            test -s "captures/revue-amara-v1379/amara-$o.jpg"
+            base64 -w0 "captures/revue-amara-v1379/amara-$o.jpg" > "captures/revue-amara-v1379/_audit-viz/$o.b64"
+          done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add captures/revue-amara-v1379/_audit-viz/
+          git commit -m "review(v1.37.9): seven compressed side-by-side WebGL sheets [skip ci]"
+          git fetch origin prototype/amara-mma-compression-reference
+          git rebase origin/prototype/amara-mma-compression-reference
+          git push origin HEAD:prototype/amara-mma-compression-reference

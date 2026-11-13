@@ -1,0 +1,79 @@
+name: Prepare clean isolated Amara 1.37.9 release branch
+on:
+  push:
+    branches: [prototype/amara-mma-compression-reference]
+    paths:
+      - .github/workflows/amara-release-stage-v1379.yml
+
+permissions:
+  contents: write
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/amara-mma-v1379
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Copy only approved relevant files from prototype (no experimental workflows)
+        run: |
+          set -euo pipefail
+          git fetch origin prototype/amara-mma-compression-reference
+          git restore --source=FETCH_HEAD -- \
+            .github/workflows/amara-garments-v1379.yml \
+            tools/generator/rocketbox/outfits.py \
+            scripts/boot-sizes.mjs \
+            scripts/dev/audit-amara-original-swimsuit.py \
+            scripts/dev/check-amara-garments-v1377.py \
+            scripts/dev/validate-amara-mma-reference-v1379.py \
+            scripts/dev/calc-amara-surface-v1379.py \
+            scripts/dev/append-amara-clean-morph-v1379.py \
+            scripts/dev/repaint-amara-swimsuit-v1379.py \
+            scripts/dev/validate-amara-clean-morph-v1379.py \
+            scripts/dev/capture-amara-review-v1379.mjs \
+            public/coaches/mma-amara/photo-clean.glb \
+            public/coaches/mma-amara/tenues/mma.glb \
+            src/boot/assetSizes.json \
+            src/boot/preload.ts \
+            src/boot/__tests__/preload.test.ts \
+            src/three/CoachModel.tsx \
+            src/three/PhotoCoach.tsx \
+            src/three/amaraCleanSurface.ts \
+            src/three/outfit.ts \
+            src/three/__tests__/amara-clean-surface-v1379.test.ts \
+            src/three/__tests__/amara-photo-source-v1379.test.ts \
+            src/three/__tests__/outfit-amara-v1374.test.ts \
+            src/three/__tests__/outfit-assets-v1372.test.ts \
+            src/three/__tests__/outfit-amara-finish-v1379.test.ts \
+            src/domain/releases.ts \
+            package-lock.json \
+            package.json \
+            docs/JOURNAL_CORRECTIONS.md \
+            docs/AMARA_TENUES_V1379.md \
+            docs/AMARA_MMA_COMPRESSION_REFERENCE.md
+          node scripts/boot-sizes.mjs
+          test "$(git hash-object public/coaches/mma-amara/photo.glb)" = 805f138cd71a5091136a50f52e2a8ccb43f63f46
+          python3 scripts/dev/validate-amara-mma-reference-v1379.py
+          AMARA_AUDIT_STRICT=1 python3 scripts/dev/audit-amara-original-swimsuit.py
+          git status --short
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Release regression battery, 7 models, source masks and startup
+        run: |
+          npm run test -- src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-amara-v1374.test.ts src/three/__tests__/outfit-amara-finish-v1379.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit-rollback-v1373.test.ts src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/amara-photo-source-v1379.test.ts src/three/__tests__/amara-clean-surface-v1379.test.ts src/boot/__tests__/preload.test.ts src/domain/release-version.test.ts
+          npm run build
+          test -s dist/coaches/mma-amara/photo-clean.glb
+      - name: Commit signed-off source-only release staging, no deployment
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "release(v1.37.9): Amara approved MMA kit and dressed clean skin, isolated from 3 other coaches"
+            git push origin HEAD:release/amara-mma-v1379
+          fi

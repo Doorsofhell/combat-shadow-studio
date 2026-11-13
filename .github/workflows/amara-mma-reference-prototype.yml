@@ -1,0 +1,91 @@
+name: Amara MMA - reference compression kit (prototype only)
+
+on:
+  push:
+    branches:
+      - prototype/amara-mma-compression-reference
+    paths:
+      - tools/generator/rocketbox/outfits.py
+      - scripts/dev/regenerate-amara-mma-reference-v1379.sh
+      - scripts/dev/validate-amara-mma-reference-v1379.py
+      - scripts/dev/capture-amara-mma-reference-v1379.mjs
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: amara-mma-compression-prototype
+  cancel-in-progress: false
+
+jobs:
+  prototype:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Blender and image tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y blender python3-numpy ffmpeg
+          blender --background --python-exit-code 42 --python-expr "import numpy; print('Blender/numpy',numpy.__version__)"
+      - name: Regenerate only Amara's MMA outfit with exact morphology
+        env:
+          AMARA_MMA_REF: '1'
+        run: |
+          set -o pipefail
+          bash scripts/dev/regenerate-amara-mma-reference-v1379.sh
+      - name: Inspect source swimsuit masking (diagnostic, not a release approval)
+        run: python3 scripts/dev/audit-amara-original-swimsuit.py
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Guard tests, materials and app build
+        run: |
+          npm run test -- src/three/__tests__/outfit-materials-v1371.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/amara-skin-v1378.test.ts
+          npm run build
+      - name: Chromium for genuine 3D screenshots
+        run: npx playwright install --with-deps chromium
+      - name: Preview exact prototype GLB, no publishing
+        run: |
+          nohup npx vite preview --host 127.0.0.1 --port 4173 --strictPort >/tmp/vite-amara.log 2>&1 &
+          for n in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/vite-amara.log
+          exit 1
+      - name: Capture guard, kicks, profile and top details
+        run: node scripts/dev/capture-amara-mma-reference-v1379.mjs
+      - name: Store real model and review gallery
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amara-mma-reference-v1379-prototype
+          path: |
+            public/coaches/mma-amara/tenues/mma.glb
+            captures/amara-mma-prototype/
+            logs/amara-mma-reference.log
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Commit only the experimental MMA GLB and captures on the experimental branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- public/coaches/mma-amara/tenues/mma.glb captures/amara-mma-prototype/*.jpg captures/amara-mma-prototype/diagnostic.json
+          if ! git diff --cached --quiet; then
+            git commit -m "assets(prototype): Amara compression MMA kit and real motion review [skip ci]"
+            # The design-document branch can advance while Blender screenshots are rendering.
+            # Rebase only this isolated prototype commit; never force-push.
+            git fetch origin prototype/amara-mma-compression-reference
+            # Generator also writes auxiliary _tex files; none are part of the approved GLB commit.
+            git restore --worktree -- .
+            git rebase origin/prototype/amara-mma-compression-reference
+            git push origin HEAD:prototype/amara-mma-compression-reference
+          fi

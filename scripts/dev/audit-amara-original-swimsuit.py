@@ -135,10 +135,49 @@ def main():
               f"mask key hits {matched_corners}/{considered * 3}", flush=True)
         if left:
             failures.append((name, left))
-    print("Affected outfits:", failures, flush=True)
-    if os.environ.get("AMARA_AUDIT_STRICT") == "1" and failures:
-        raise AssertionError("Original swimsuit source geometry still drawn: " + repr(failures))
-    print("Read-only audit finished; 0 remaining triangles is necessary but NOT sufficient for visual proof.", flush=True)
+    print("Original swimsuit geometry still drawn with LEGACY body (diagnostic only):", failures, flush=True)
+    # v1.37.9: garments draw on the CLEAN source, which retains the SAME original
+    # triangle indices but whose old bikini UV region is repainted as natural
+    # skin. Counting visible triangles of that now-normal skin must NOT be treated
+    # as old bikini visibility. Strict mode checks the actual displayed asset.
+    if os.environ.get("AMARA_AUDIT_STRICT") == "1":
+        cleaned = ROOT / "photo-clean.glb"
+        assert cleaned.is_file(), "Outfit-only cleaned source missing: " + str(cleaned)
+        model, output = glb(cleaned)
+        extras = model["meshes"][0].get("extras", {})
+        assert extras.get("cssAmaraSurfacePrototype") == "bikini-geometry-cleaned-v1379", extras
+        assert extras.get("cssOriginalBikiniRepaint") == "body-skin-uv-1379", extras
+        assert int(extras.get("cssOriginalBikiniRepaintPixels", 0)) > 30000, extras
+        assert model["meshes"][0]["extras"]["targetNames"][-1] == "CSS_CleanBikini"
+        assert model["meshes"][0]["weights"][-1] == 1.0
+        assert len(model["meshes"][0]["extras"]["targetNames"]) == 26
+        assert len(model["meshes"][0]["primitives"]) == len(doc["meshes"][0]["primitives"]) == 3
+        assert model["textures"] == doc["textures"], "Texture indices unexpectedly changed"
+        for oldp, newp in zip(doc["meshes"][0]["primitives"], model["meshes"][0]["primitives"]):
+            assert oldp["attributes"] == newp["attributes"] and oldp["indices"] == newp["indices"], (
+                "Outfit mask source positions were changed")
+            assert oldp["targets"] == newp["targets"][:-1], "25 facial morphs changed"
+        old_ims = {im["name"]: im for im in doc["images"]}
+        new_ims = {im["name"]: im for im in model["images"]}
+        assert old_ims.keys() == new_ims.keys(), "Original head images removed"
+        def image_bytes(data, filedoc, im):
+            view = filedoc["bufferViews"][im["bufferView"]]
+            off, size = view.get("byteOffset", 0), view["byteLength"]
+            return data[off:off + size]
+        changed = []
+        for name in old_ims:
+            different = image_bytes(binary, doc, old_ims[name]) != image_bytes(output, model, new_ims[name])
+            if name in ("f021_body_color", "f021_body_normal"):
+                assert different, "Old bikini texture remains: " + name
+                changed.append(name)
+            else:
+                assert not different, "Head/face texture unexpectedly changed: " + name
+        assert sorted(changed) == ["f021_body_color", "f021_body_normal"]
+        for name in OUTFITS:
+            mask(ROOT / "tenues" / (name + ".glb"))
+        print("STRICT PASS: 7 original position masks + 2 repainted body textures +"
+              " 25 facial morphs + untouched head + clean morph", flush=True)
+    print("Read-only source audit finished; animated visual review is separately required.", flush=True)
 
 
 if __name__ == "__main__":

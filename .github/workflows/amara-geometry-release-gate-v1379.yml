@@ -1,0 +1,28 @@
+name: Amara v1.37.9 - independent Blender geometry release gate
+
+on:
+  push:
+    branches: [prototype/amara-mma-compression-reference]
+    paths:
+      - .github/workflows/amara-geometry-release-gate-v1379.yml
+      - scripts/dev/check-amara-garments-v1377.py
+
+permissions:
+  contents: read
+
+jobs:
+  geometry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - name: Blender and geometry masks
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y blender python3-numpy
+      - name: Reject MMA thigh bridges, invalid ribbed bra band, and other 6 garment back seams
+        run: blender --background --threads 2 --python-exit-code 42 --python scripts/dev/check-amara-garments-v1377.py
+      - name: Validate source skin/old swimsuit and seven masks
+        run: AMARA_AUDIT_STRICT=1 python3 scripts/dev/audit-amara-original-swimsuit.py
+      - name: Verify actual polished MMA asset and 96-segment band extras
+        run: python3 scripts/dev/validate-amara-mma-reference-v1379.py

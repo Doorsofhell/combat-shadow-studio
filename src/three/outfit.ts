@@ -195,8 +195,14 @@ export function useOutfit(
               // 1.26: the points read one by one (Axel's and Kaila's bodies store them interleaved with their
               // normals and texture coordinates: read as a plain array, only a third of their hidden points were found
               // and the skin came through their clothes, Youssef 2026-11-06 « les bottes avec des trous »)
-              const flat = new Float32Array(pos.count * 3);
-              for (let v = 0; v < pos.count; v++) flat.set([pos.getX(v), pos.getY(v), pos.getZ(v)], v * 3);
+              // Amara's cleaned torso is a morph baked AFTER glTF load. Use the
+              // unchanged source POSITION for all seven existing hideBody masks,
+              // or skin triangles will reappear where the original maillot was.
+              const orig = g.userData?.cssOriginalMaskPositions as Float32Array | undefined;
+              const flat = orig?.length === pos.count * 3 ? orig : new Float32Array(pos.count * 3);
+              if (flat !== orig) {
+                for (let v = 0; v < pos.count; v++) flat.set([pos.getX(v), pos.getY(v), pos.getZ(v)], v * 3);
+              }
               const r = maskedIndex(flat, idx, keys, h.scale);
               matched += r.matched;
               own.setIndex(new BufferAttribute(pos.count > 65535 ? new Uint32Array(r.index) : new Uint16Array(r.index), 1));

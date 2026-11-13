@@ -1,0 +1,93 @@
+name: Stage final adjusted MMA band and recheck 28-image release PR
+
+on:
+  push:
+    branches: [prototype/amara-mma-compression-reference]
+    paths:
+      - .github/workflows/amara-stage-final-band-v1379.yml
+
+permissions:
+  contents: write
+
+jobs:
+  stage-last-fitting:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/amara-mma-v1379
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Import ONLY final Amara MMA model, generator and revised isolated capture tool
+        run: |
+          set -euo pipefail
+          git fetch origin prototype/amara-mma-compression-reference
+          git restore --source=FETCH_HEAD -- \
+            tools/generator/rocketbox/outfits.py \
+            public/coaches/mma-amara/tenues/mma.glb \
+            scripts/dev/capture-amara-review-v1379.mjs
+          test "$(git hash-object public/coaches/mma-amara/photo.glb)" = "805f138cd71a5091136a50f52e2a8ccb43f63f46"
+          python3 -m py_compile tools/generator/rocketbox/outfits.py
+          python3 scripts/dev/validate-amara-mma-reference-v1379.py
+          AMARA_AUDIT_STRICT=1 python3 scripts/dev/audit-amara-original-swimsuit.py
+          git diff --name-only
+          node scripts/boot-sizes.mjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Check final fitting, boot preload and full build
+        run: |
+          npm run test -- src/boot/__tests__/preload.test.ts src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/outfit-amara-finish-v1379.test.ts src/three/__tests__/amara-photo-source-v1379.test.ts src/three/__tests__/amara-clean-surface-v1379.test.ts src/three/__tests__/outfit-amara-v1374.test.ts
+          npm run build
+          test -s dist/coaches/mma-amara/photo-clean.glb
+          test -s dist/coaches/mma-amara/photo.glb
+          test -s dist/coaches/mma-amara/tenues/mma.glb
+      - name: Install browser and ffmpeg for actual MMA motion check
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+      - name: Start production-build preview
+        run: |
+          nohup npx vite preview --host 127.0.0.1 --port 4173 --strictPort > /tmp/final-mma-preview.log 2>&1 &
+          for i in $(seq 1 40); do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/final-mma-preview.log
+          exit 1
+      - name: Recapture revised MMA four real poses only, retain other 24 proved frames
+        run: |
+          AMARA_CAPTURE_OUTFIT=mma node scripts/dev/capture-amara-review-v1379.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          root=Path('captures/revue-amara-v1379')
+          d=json.loads((root/'diagnostic.json').read_text())
+          assert len(d['records']) == 28, len(d['records'])
+          assert {x['outfit'] for x in d['records']} == {'boxe','kickboxing','muaythai','mma','bjj','bjj-nogi','judo'}
+          assert all(x['outfitState'] == 'portee' for x in d['records'])
+          for name in ('garde-face','garde-dos','low-kick','high-kick'):
+              assert (root/f'amara-mma-{name}.jpg').stat().st_size > 10000
+          print('PASS: 4 fresh MMA frames + 24 unmodified proof shots = 28')
+          PY
+      - name: Preserve final four image evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amara-1379-final-tight-band-four-mma-motions
+          path: |
+            captures/revue-amara-v1379/amara-mma*.jpg
+            captures/revue-amara-v1379/diagnostic.json
+          retention-days: 30
+      - name: Commit only selected release files, NO deployment yet
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- tools/generator/rocketbox/outfits.py public/coaches/mma-amara/tenues/mma.glb scripts/dev/capture-amara-review-v1379.mjs src/boot/assetSizes.json captures/revue-amara-v1379/amara-mma*.jpg captures/revue-amara-v1379/diagnostic.json
+          if ! git diff --cached --quiet; then
+            git commit -m "release(v1.37.9): tight fitted MMA bra ring, exact asset-cache and four real motion photos"
+            git fetch origin release/amara-mma-v1379
+            git rebase origin/release/amara-mma-v1379
+            git push origin HEAD:release/amara-mma-v1379
+          fi

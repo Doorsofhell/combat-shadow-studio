@@ -1,0 +1,53 @@
+name: Stage approved Amara seven-outfit WebGL proof on clean release branch
+
+on:
+  push:
+    branches: [prototype/amara-mma-compression-reference]
+    paths:
+      - .github/workflows/amara-stage-7outfit-images-v1379.yml
+
+permissions:
+  contents: write
+
+jobs:
+  stage-images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/amara-mma-v1379
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Copy the exactly validated 28 original WebGL screenshot JPEGs, not the temporary b64 review files
+        run: |
+          set -euo pipefail
+          git fetch origin prototype/amara-mma-compression-reference
+          for o in boxe kickboxing muaythai mma bjj bjj-nogi judo; do
+            for pose in garde-face garde-dos low-kick high-kick; do
+              f="captures/revue-amara-v1379/amara-$o-$pose.jpg"
+              git restore --source=FETCH_HEAD -- "$f"
+              test -s "$f"
+            done
+            git restore --source=FETCH_HEAD -- "captures/revue-amara-v1379/amara-$o.jpg"
+          done
+          git restore --source=FETCH_HEAD -- captures/revue-amara-v1379/diagnostic.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('captures/revue-amara-v1379')
+          d=json.loads((p/'diagnostic.json').read_text())
+          assert len(d['records'])==28
+          assert {x['outfit'] for x in d['records']}=={'boxe','kickboxing','muaythai','mma','bjj','bjj-nogi','judo'}
+          assert all(x['outfitState']=='portee' for x in d['records'])
+          assert all((p/f"amara-{o}.jpg").stat().st_size>10000 for o in ('boxe','kickboxing','muaythai','mma','bjj','bjj-nogi','judo'))
+          print('PASS: 28 real photographed moves wearing all 7 clean-body outfits')
+          PY
+          git status --short
+      - name: Commit only review evidence in the production-candidate PR
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add captures/revue-amara-v1379/*.jpg captures/revue-amara-v1379/diagnostic.json
+          git commit -m "review(v1.37.9): 28 real Amara WebGL frames across 7 fitted outfits [skip ci]"
+          git push origin HEAD:release/amara-mma-v1379

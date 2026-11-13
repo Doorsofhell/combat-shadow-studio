@@ -1,0 +1,42 @@
+name: Amara 1.37.9 - correct boot file manifest + targeted regressions
+
+on:
+  push:
+    branches: [prototype/amara-mma-compression-reference]
+    paths:
+      - .github/workflows/amara-boot-manifest-v1379.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix-boot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Recompute EXACT sizes, include both Amara bodies
+        run: node scripts/boot-sizes.mjs
+      - run: npm ci
+      - name: Verify preload, all outfits, independently cleaned body and source selection
+        run: |
+          npm run test -- src/boot/__tests__/preload.test.ts src/three/__tests__/outfit-assets-v1372.test.ts src/three/__tests__/amara-photo-source-v1379.test.ts src/three/__tests__/amara-clean-surface-v1379.test.ts src/three/__tests__/outfit-amara-v1374.test.ts src/domain/release-version.test.ts
+          npm run build
+      - name: Commit only the measured asset-sizes manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/boot/assetSizes.json
+          if ! git diff --cached --quiet; then
+            git commit -m "assets(v1.37.9): cache exact dressed Amara source and approved MMA model sizes [skip ci]"
+            git fetch origin prototype/amara-mma-compression-reference
+            git rebase origin/prototype/amara-mma-compression-reference
+            git push origin HEAD:prototype/amara-mma-compression-reference
+          fi
