@@ -1,7 +1,7 @@
 {
   "name": "combat-shadow-studio",
   "private": true,
-  "version": "1.37.9",
+  "version": "1.38.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

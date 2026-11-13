@@ -8,7 +8,8 @@ command -v python3 >/dev/null || { echo "::error::Python manquant"; exit 1; }
 
 SCRIPT=tools/generator/rocketbox/outfits.py
 VALIDATOR=scripts/dev/validate-outfit-build-v1372.py
-SRC=public/coaches/mma-amara/photo.glb
+# 1.38.0: the dressed body (photo-clean.glb, a real cleaned mesh): the outfits name ITS skin points
+SRC=public/coaches/mma-amara/photo-clean.glb
 DST=public/coaches/mma-amara/tenues
 OUTFITS=(boxe kickboxing muaythai mma bjj bjj-nogi judo)
 mkdir -p "$DST" logs
@@ -40,12 +41,19 @@ check_refs
 for outfit in "${OUTFITS[@]}"; do rm -f "$DST/$outfit.glb"; done
 
 echo "Référence : Inaya. Morphologie, palette et squelette : Amara."
-if ! ONLY=boxe,kickboxing,muaythai,mma,bjj,bjj-nogi,judo blender --background --threads 2 --python-exit-code 42 --python "$SCRIPT" -- "$SRC" "$DST" femme 2>&1 | tee logs/amara-v1377.log; then
-  echo "::error::Erreur Blender sur Amara v1.37.7"
-  tail -n 80 logs/amara-v1377.log
-  exit 42
-fi
+# 1.38.0: two runs. AMARA_MMA_REF=1 (the scoop top and one-layer short approved in 1.37.9) for MMA ONLY: the flag
+# lowers the neckline of every top, and the gate then refuses the six others ("upper chest not covered")
+run() {
+  if ! env "$@" blender --background --threads 2 --python-exit-code 42 --python "$SCRIPT" -- "$SRC" "$DST" femme 2>&1 | tee -a logs/amara-v1377.log; then
+    echo "::error::Erreur Blender sur Amara v1.38.0"
+    tail -n 80 logs/amara-v1377.log
+    exit 42
+  fi
+}
+: > logs/amara-v1377.log
+run ONLY=boxe,kickboxing,muaythai,bjj,bjj-nogi,judo
+run AMARA_MMA_REF=1 ONLY=mma
 
-python3 "$VALIDATOR" mma-amara "$DST" "boxe,kickboxing,muaythai,mma,bjj,bjj-nogi,judo" "1.37.7"
+python3 "$VALIDATOR" mma-amara "$DST" "boxe,kickboxing,muaythai,mma,bjj,bjj-nogi,judo" "1.38.0"
 check_refs
 echo "Amara : sept tenues reconstruites sur le patron Inaya ; trois autres coachs inchangés."

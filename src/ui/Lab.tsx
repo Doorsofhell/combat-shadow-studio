@@ -61,6 +61,10 @@ export function Lab() {
     const v = techniqueView(tech.id);
     // thumbnails (thumb=1): punches and elbows read better from the lead side than nearly face-on
     if (q.get('thumb') && ['poing', 'coude', 'feinte'].includes(tech.category)) return { az: 65, el: 8, zoom: 1, focus: v.focus };
+    // 1.38 span=&fy=&el= with tech=: a close-up of a body part during the technique (control of the outfits in motion)
+    if (q.get('az') && q.get('span')) {
+      return { az: Number(q.get('az')), el: Number(q.get('el') ?? '12'), zoom: 1, focus: q.get('fy') ? Number(q.get('fy')) / 1.85 : 0.5, closeUp: true, span: Number(q.get('span')) };
+    }
     return { az: q.get('az') ? Number(q.get('az')) : stageAzimuth(v, disc, false), el: v.el, zoom: Math.min(1, v.zoom), focus: v.focus };
   }, [tech, disc]);
   const cam = Number(q.get('cam') ?? '35');
