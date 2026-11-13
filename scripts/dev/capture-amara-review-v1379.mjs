@@ -1,5 +1,5 @@
 import { chromium } from '@playwright/test';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 
 const base = process.env.CAPTURE_BASE || 'http://127.0.0.1:4173';
@@ -24,12 +24,20 @@ const browser = await chromium.launch({
   args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-dev-shm-usage'],
 });
 await mkdir(output, { recursive: true });
-const diagnostics = [];
+// For a final isolated MMA hem adjustment, re-render ONLY that garment and
+// retain the verified 24 other frames. Without this flag still render all 28.
+const selected = process.env.AMARA_CAPTURE_OUTFIT || null;
+if (selected && !outfits.some(([o]) => o === selected)) throw new Error('Unknown outfit: ' + selected);
+const earlier = selected
+  ? JSON.parse(await readFile(`${output}/diagnostic.json`, 'utf8').catch(() => '{"records":[]}'))
+  : { records: [] };
+const diagnostics = (earlier.records || []).filter((x) => x.outfit !== selected);
+const chosenOutfits = selected ? outfits.filter(([o]) => o === selected) : outfits;
 
 try {
   const page = await browser.newPage({ viewport: { width: 360, height: 590 }, deviceScaleFactor: 1 });
   page.on('pageerror', e => console.error('JS PAGE ERROR', String(e).slice(0, 500)));
-  for (const [outfit, disc, label] of outfits) {
+  for (const [outfit, disc, label] of chosenOutfits) {
     const shots = [];
     for (const pose of poses) {
       const query = [
