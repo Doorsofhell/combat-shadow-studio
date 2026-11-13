@@ -4,6 +4,7 @@ on:
     branches: [feature/jjb-nogi-v1380]
     paths:
       - 'tools/generator/rocketbox/outfits.py'
+      - 'tools/generator/rocketbox/validate_nogi_glbs.py'
       - '.github/workflows/jjb-nogi-preview.yml'
   workflow_dispatch:
 jobs:
@@ -57,6 +58,8 @@ jobs:
             exit 1
           fi
           echo "Generated for $count coaches"
+      - name: Validate GLB meshes, coach palettes and skin metadata
+        run: python3 tools/generator/rocketbox/validate_nogi_glbs.py jjb-nogi-preview
       - name: Upload generated GLBs for visual review
         if: always()
         uses: actions/upload-artifact@v4
