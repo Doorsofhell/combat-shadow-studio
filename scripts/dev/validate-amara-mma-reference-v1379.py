@@ -27,6 +27,7 @@ assert any(e.get('generatorVersion') == '1.37.9' and e.get('clothingStyle') == '
 assert any(e.get('cssCompressionStyle') == 'fitted-one-layer-reference-1379'
            and e.get('cssNoOvershort') is True for e in metadata)
 assert any(e.get('cssTopStyle') == 'scoop-racerback-reference-1379' for e in metadata)
+assert any(e.get('cssGroinMethod') == 'natural-no-artificial-slit' for e in metadata), 'The manual crotch slit tears in high kicks'
 assert any(e.get('cssBraBandCut') == 'continuous-planar-elastic-1379' for e in metadata)
 assert any(e.get('cssBraBandConstruction') == 'smooth-independent-torso-ring-1379' and e.get('cssBraBandSegments') == 96 for e in metadata), 'old jagged bikini shell used instead of ring'
 hides = [e for e in metadata if e.get('hideBody')]
