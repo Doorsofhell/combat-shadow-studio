@@ -205,9 +205,9 @@ export function SettingsPage() {
         </div>
       </Panel>
 
-      <Panel title="À propos" id="p-about">
+      <Panel title="Nouveautés — version 1.42" id="p-whats-new">\n        <div className="panel-row col">\n          <strong>Visages des coachs : premières animations naturelles</strong>\n          <p className="small muted">Clignements à intervalles variables, micro-expressions discrètes des sourcils et de la bouche, et variations légères selon le coach.</p>\n          <p className="small muted">Ces animations fonctionnent uniquement sur les modèles 3D disposant de morph targets faciaux compatibles. Aucun changement de géométrie ou de tenue n’est introduit par cette évolution.</p>\n          <p className="small muted">À venir : vérification visuelle de chaque coach et expressions liées à l’effort.</p>\n        </div>\n      </Panel>\n\n      <Panel title="À propos" id="p-about">
         <p className="small muted" style={{ padding: '12px 0' }}>
-          Combat Shadow Studio, version {import.meta.env.VITE_APP_VERSION} (développement). Combattants 3D générés à partir de MakeHuman (licence CC0), animations produites par le moteur de l’application. Cette application ne
+          Combat Shadow Studio, version {import.meta.env.VITE_APP_VERSION}. Combattants 3D générés à partir de MakeHuman (licence CC0), animations produites par le moteur de l’application. Cette application ne
           remplace pas un entraîneur ni un avis médical.
         </p>
       </Panel>
