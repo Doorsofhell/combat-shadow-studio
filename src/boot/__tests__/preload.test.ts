@@ -45,7 +45,11 @@ describe('chargement au démarrage (1.25) : ce qui est téléchargé', () => {
     expect(none.length).toBeGreaterThan(0);
     expect(none.every((x) => x.step === 'salle')).toBe(true);
     // before the coach is chosen (first launch), every coach is downloaded so the choice is instant
-    expect(bootPlan({ ...base, coachId: null, coaches: IDS }).filter((x) => x.step === 'coach')).toHaveLength(IDS.length);
+    expect(bootPlan({ ...base, coachId: null, coaches: IDS }).filter((x) => x.step === 'coach')).toHaveLength(IDS.length + 1);
+    // Exactly one additional body file is preloaded: dressed Amara only.
+    expect(bootPlan({ ...base, coachId: 'mma-amara' }).some((x) => x.url === './coaches/mma-amara/photo-clean.glb')).toBe(true);
+    expect(bootPlan({ ...base, coachId: 'mma-amara', outfits: false }).some((x) => x.url.includes('photo-clean'))).toBe(false);
+    expect(bootPlan({ ...base, coachId: null, coaches: IDS, json: true }).some((x) => x.url === './coaches/mma-amara/photo-clean.json')).toBe(true);
   });
 
   it('les disciplines du profil d’abord ; modèles en JSON pour la page claude.ai', () => {
