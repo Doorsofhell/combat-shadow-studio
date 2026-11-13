@@ -2222,6 +2222,33 @@ def relax_weights(o, repeat, k=0.5):
                 o.vertex_groups[g].add([i], Wm[i][g] / tot, 'REPLACE')
 
 
+def mma_reference_underband():
+    """Amara MMA only: a continuous anatomically skinned elastic under-band, with
+    two planar and smooth rings, conceals the old crop's uneven lower shell edge.
+    It is a separate cloth ring (not a cutter on the bust), so the low scoop and
+    breast shape do not change; no new topology in the inner thigh short.
+    """
+    low = bra_low()
+    bottom = low - 0.006
+    upper = low + 0.029
+    def keep(i):
+        q = P[i]
+        return bottom - 0.035 < q.z < upper + 0.035 and abs(q.x) < 0.31 and (
+            w(i, *ARMS) < 0.28 and w(i, *HANDS) < 0.15 and w(i, 'Head', 'Neck') < 0.25)
+    def ring(q):
+        return max(bottom - q.z, q.z - upper)
+    planes = [(Vector((0, 0, bottom)), Vector((0, 0, 1))),
+              (Vector((0, 0, upper)), Vector((0, 0, 1)))]
+    mat = fabric('bande-brassiere-mma-amara-1379', '#141D24',
+                 'elastique', rough=0.85, strength=0.20, sheen=0.025)
+    o, cov = shell('bande-brassiere-mma', keep, lambda i: 0.0095,
+                   0.0022, [mat], hem=0.0015, cuts=planes,
+                   iso=ring, edge_skin=0.0015)
+    o['cssBraBandCut'] = 'continuous-planar-elastic-1379'
+    o['cssBraBandHeight'] = round(upper - bottom, 4)
+    return [o], cov
+
+
 def top_square(color, accent=None, low=None, name='haut-carre'):
     """1.13 full top with a square neckline (square_field): a sports bra (low = bra_low()), a crop top or a tank top
     (lower), fine jersey 2.2 mm laid 5.5 mm off the skin like bra_v2, an accent band at the bottom when given"""
@@ -3116,6 +3143,8 @@ def outfit(name):
                 # No cut plane for a second under-band material: it fractured the border
                 # on the chest/back. Paint the dark elastic softly on the SAME shell.
                 add(top_square('#12282D', None, low=bra_low(), name='haut-brassiere'))
+                # The separate low-profile elastic ring replaces the jagged old hem.
+                add(mma_reference_underband())
             else:
                 add(shorts('vale-tudo', k['liner'], k['linerband'], under=UNDER_OVERLAP >= 0))
                 add(shorts('surshort', k['over'], k['overband']))
