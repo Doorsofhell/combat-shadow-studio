@@ -1509,7 +1509,7 @@ def collar(color, kind):
 BAND_RELIEF = float(os.environ.get('BAND_RELIEF', '0.15'))
 
 
-def shorts(kind, color, band, n_leg=None, under=False):
+def shorts(kind, color, band, n_leg=None, under=False, hem_override=None):
     """kind: boxe (loose, to just above the knee, high waistband), kick (fitted, short), thai (short, very wide,
     high waistband), mma (board short, side slits, to the knee), compression"""
     # the photo body has its underwear painted down to mid-thigh: every short reaches below it
@@ -1523,6 +1523,8 @@ def shorts(kind, color, band, n_leg=None, under=False):
     blueprint = MMA_SHORT_CUTS[MMA_SHORT_REFERENCE]
     hem = {'boxe': 0.3, 'kick': 0.3, 'thai': 0.32, 'mma': 0.18, 'compression': 0.3,
            'vale-tudo': blueprint['liner_hem'], 'surshort': blueprint.get('over_hem', SUR_HEM)}[kind]
+    if hem_override is not None:
+        hem = max(0.0, min(0.75, float(hem_override)))
     waist = hipZ + {'boxe': 0.13, 'kick': 0.11, 'thai': 0.13, 'mma': 0.11, 'compression': 0.1,
                     'vale-tudo': blueprint['liner_waist'], 'surshort': blueprint.get('over_waist', 0.105)}[kind]
     # 1.10: the waistband covers the underwear painted on the skin (Kadir's showed as a brown band above his
@@ -3024,7 +3026,7 @@ def outfit(name):
         # The previous female leggings and male compression-under-boardshort
         # are intentionally removed: a single short avoids double surfaces.
         nogi_top = top('rash-court', '#152943')
-        nogi_short = shorts('mma', '#151A22', '#2F8CEB')
+        nogi_short = shorts('mma', '#151A22', '#2F8CEB', hem_override=0.46)
         add(nogi_top)
         add(nogi_short)
         # Original subtle technical graphic, applied only to these meshes.
