@@ -1675,8 +1675,16 @@ def shorts(kind, color, band, n_leg=None, under=False):
         cut_top = apex - 0.004
         crotch_gap = 0.014
         original_F = F
-        F = lambda q: max(original_F(q), min(crotch_gap - abs(q.x), cut_top - q.z))
-        print('Amara MMA reference cut: leg separation', round(cut_top, 4), crotch_gap)
+        # Diagnostic candidate ONLY: compare a naturally connected fitted
+        # short with the older manual central slit; no other outfit is touched.
+        # A false slit can look like torn fabric when one thigh is raised.
+        if os.environ.get('AMARA_MMA_NATURAL_GROIN', '1') == '1':
+            print('Amara MMA DIAGNOSTIC: anatomical groin, no added artificial slit')
+            o_cut_mode = 'natural-no-artificial-slit'
+        else:
+            F = lambda q: max(original_F(q), min(crotch_gap - abs(q.x), cut_top - q.z))
+            o_cut_mode = 'manual-central-slit'
+        print('Amara MMA reference cut:', o_cut_mode, round(cut_top, 4), crotch_gap)
     # v1.37.6: A small web of very narrow polygons was measured at the
     # midline of Amara's MMA over-short near its inner hems (z ~= 0.81 m).
     # The model-derived shorts copied skin topology in that region. Excise
@@ -1789,6 +1797,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
         paint_mma_compression(o, waist, min(hz.values()), bandH, top=False)
         o['cssCompressionStyle'] = 'fitted-one-layer-reference-1379'
         o['cssLegSeparationHalfWidth'] = crotch_gap
+        o['cssGroinMethod'] = o_cut_mode
         o['cssNoOvershort'] = True
     return [o], cov
 
