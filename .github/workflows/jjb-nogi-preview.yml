@@ -19,6 +19,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y blender
           blender --version
+          python3 --version
+          df -h .
           find public/coaches -name photo.glb -type f -print | sort
       - name: Generate JJB No-Gi for each available coach
         shell: bash
@@ -34,7 +36,17 @@ jobs:
             output="jjb-nogi-preview/$coach/tenues"
             mkdir -p "$output"
             echo "::group::Generate $coach ($sex)"
-            ONLY=bjj-nogi blender -b -t 2 --python tools/generator/rocketbox/outfits.py -- "$source" "$output" "$sex"
+            set +e
+            ONLY=bjj-nogi blender -b -t 2 --python tools/generator/rocketbox/outfits.py -- "$source" "$output" "$sex" 2>&1 | tee "$output/blender.log"
+            status=${PIPESTATUS[0]}
+            set -e
+            if [ "$status" -ne 0 ]; then
+              echo "::error::Blender failed for $coach (exit $status)"
+              echo "===== Blender traceback / final 100 lines ====="
+              tail -n 100 "$output/blender.log"
+              echo "::endgroup::"
+              exit "$status"
+            fi
             test -s "$output/bjj-nogi.glb"
             echo "::endgroup::"
             count=$((count+1))
@@ -50,5 +62,13 @@ jobs:
         with:
           name: shadow-flow-jjb-nogi-glbs
           path: jjb-nogi-preview/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Publish diagnostic logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shadow-flow-blender-diagnostics
+          path: jjb-nogi-preview/**/*.log
           if-no-files-found: warn
           retention-days: 7
