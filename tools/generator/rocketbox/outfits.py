@@ -518,7 +518,7 @@ def new_obj(name, bm_):
     return o
 
 
-def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=None, edge_skin=0.006):
+def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=None, edge_skin=0.006, detail_ratio=None):
     """body faces whose vertices all satisfy keep(i), pushed out by push(i) (metres along the normal, or a
     Vector: free displacement), given a thickness. mats: list of materials, mat_of(face centre, vertex ids) -> index.
     cuts: (point, normal) planes the body is sliced along first, so hems and colour bands are straight lines
@@ -545,7 +545,7 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
     # previously accidentally excluded: the coarse mesh tore its armholes.
     critical = name.startswith(('haut-crop', 'haut-carre', 'haut-brassiere', 'short-surshort', 'short-vale-tudo'))
     ratio = ('DECIMATE_MMA', '0.96') if critical else ('DECIMATE_DETAIL', '0.86') if detail else ('DECIMATE', '0.4')
-    dec.ratio = min(1.0, max(0.1, float(os.environ.get(*ratio))))
+    dec.ratio = min(1.0, max(0.1, float(os.environ.get(*ratio)) if detail_ratio is None else float(detail_ratio)))
     apply(o, dec)
     bm_ = bmesh.new()
     bm_.from_mesh(o.data)
@@ -1862,7 +1862,8 @@ def top(kind, color, accent=None, geom=False, nogi=False):
     # waist rather than a zigzag following the skin's last surviving triangles.
     hem_field = (lambda q: lowZ - q.z) if kind.startswith('rash-') else None
     o, cov = shell(f'haut-{kind}', keep, tpush, 0.003, mats,
-                   (lambda c, ids: 1 if (nogi and abs(c.x) > 0.105 and c.z < chestZ + 0.10) or (not nogi and w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ) else 0) if accent else None, cuts=cuts, iso=hem_field)
+                   (lambda c, ids: 1 if (nogi and abs(c.x) > 0.105 and c.z < chestZ + 0.10) or (not nogi and w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ) else 0) if accent else None, cuts=cuts, iso=hem_field,
+                   detail_ratio=0.98 if nogi else None)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
     return [o], cov
