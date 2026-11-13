@@ -11,6 +11,7 @@ for (const c of readdirSync(join(pub, 'coaches')).sort()) {
   const dir = join(pub, 'coaches', c);
   if (!statSync(dir).isDirectory()) continue;
   if (readdirSync(dir).includes('photo.glb')) add(`coaches/${c}/photo.glb`);
+  if (c === 'mma-amara' && readdirSync(dir).includes('photo-clean.glb')) add(`coaches/${c}/photo-clean.glb`);
   const t = join(dir, 'tenues');
   try {
     for (const f of readdirSync(t).sort()) if (f.endsWith('.glb') && !f.startsWith('arbitre')) add(`coaches/${c}/tenues/${f}`);
