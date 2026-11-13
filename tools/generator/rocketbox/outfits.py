@@ -1764,7 +1764,7 @@ def shorts(kind, color, band, n_leg=None, under=False, hem_override=None):
     return [o], cov
 
 
-def top(kind, color, accent=None, geom=False):
+def top(kind, color, accent=None, geom=False, nogi=False):
     """kind: brassiere (sports bra), debardeur (tank top), rash-court, rash-long"""
     lowZ = {'brassiere': chestZ - 0.07 if female else chestZ - 0.05, 'debardeur': hipZ + 0.06, 'rash-court': hipZ + 0.04, 'rash-long': hipZ + 0.04}[kind]
     sleeve = {'brassiere': 0, 'debardeur': 0, 'rash-court': 0.45, 'rash-long': 0.93}[kind]
@@ -1838,7 +1838,7 @@ def top(kind, color, accent=None, geom=False):
     # waist rather than a zigzag following the skin's last surviving triangles.
     hem_field = (lambda q: lowZ - q.z) if kind.startswith('rash-') else None
     o, cov = shell(f'haut-{kind}', keep, tpush, 0.003, mats,
-                   (lambda c, ids: 1 if w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ else 0) if accent else None, cuts=cuts, iso=hem_field)
+                   (lambda c, ids: 1 if (nogi and abs(c.x) > 0.105 and c.z < chestZ + 0.10) or (not nogi and w(ids[0], *ARMS) < 0.2 and abs(abs(c.x) - 0.16) < 0.02 and abs(c.y) < 0.03 and c.z < chestZ) else 0) if accent else None, cuts=cuts, iso=hem_field)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
     return [o], cov
@@ -3039,7 +3039,7 @@ def outfit(name):
         # side panels and technical elastic waistband, without third-party marks.
         # The accent is applied to actual exported mesh materials (not to a
         # procedural Blender-only shader) so it survives glTF export.
-        nogi_top = top('rash-court', top_color, accent=accent_color)
+        nogi_top = top('rash-court', top_color, accent=accent_color, nogi=True)
         nogi_short = shorts('mma', short_color, accent_color, hem_override=0.46)
         add(nogi_top)
         add(nogi_short)
