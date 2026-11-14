@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.45.2',
+      releaseDate: '2026-11-15',
+      title: 'Les plis aussi pour Kadir',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Shorts de Kadir (boxe, kick-boxing, muay-thaï, MMA) : les mêmes plis naturels que les autres coachs. Couleurs, logos, coupes et le reste de ses tenues inchangés.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.45.1',
       releaseDate: '2026-11-14',
       title: 'Des shorts plus vrais',

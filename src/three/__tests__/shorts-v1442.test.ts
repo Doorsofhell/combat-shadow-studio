@@ -129,10 +129,10 @@ for (const coach of COACHES) {
       const shorts = g.parts.filter((p) => isShort(p.name));
       expect(shorts.length, 'short').toBeGreaterThan(0);
       const carrier = (g.json as unknown as { nodes: { extras?: Record<string, unknown> }[] }).nodes.find((n) => n.extras?.hideBody);
-      // 2. the textile folds of 1.44.2 (tools/generator/rocketbox/short_folds.mjs) are on every short but Kadir's (his
-      // outfits change only with Youssef's agreement)
+      // 2. the textile folds of 1.44.2 (tools/generator/rocketbox/short_folds.mjs) are on every short; Kadir's since 1.45.2,
+      // with Youssef's agreement
       const folds = (g.json as unknown as { asset: { extras?: Record<string, unknown> } }).asset.extras?.cssShortFolds;
-      if (coach !== 'mma-kadir') expect(folds, 'plis textiles').toBe('1.44.2');
+      expect(folds, 'plis textiles').toBe('1.44.2');
       const keys = hiddenKeys(carrier!.extras!.hideBody as string);
       const scale = Number(carrier!.extras!.hideScale ?? 1000);
       // 3a. holes: edges used by a single triangle, over all the pieces of one short (one piece per material) with
@@ -283,8 +283,7 @@ for (const coach of COACHES) {
 }
 
 // limits: measured on 1.44.2 (docs/v1442/MESURES_SHORTS.md) with a margin
-// Kadir (2) and Naël (4): two tiny slits measured on their shorts before 1.44.2 (files unchanged in this version: Kadir is
-// only regenerated with Youssef’s agreement)
+// Kadir (2) and Naël (4): two tiny slits measured on their shorts before 1.44.2 (the folds keep the topology)
 const OPEN_LIMIT: Record<string, number> = { "mma-kadir": 2, nael: 4 };
 const LONGEST_LIMIT = 0.145;
 const STRETCH_LIMIT: Record<string, number> = { garde: 2.8, 'high kick': 6, genou: 3.8, 'changement de niveau': 3.8, 'low kick': 3.2 };
