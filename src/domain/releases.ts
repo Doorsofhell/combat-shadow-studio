@@ -59,6 +59,8 @@ export const RELEASES: readonly Release[] = (
         { category: 'ameliorations', text: 'Peau de Victor un peu plus claire et moins rouge.' },
       ],
       links: [{ label: 'Voir Victor', to: '/coach' }],
+    },
+    {
       version: '1.44.0',
       releaseDate: '2026-11-14',
       title: 'Coachs : un visage plus vivant, en douceur',
