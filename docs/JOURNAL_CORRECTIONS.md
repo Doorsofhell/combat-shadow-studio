@@ -4096,3 +4096,41 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     sur la 1.42.0 d'origine dans ce même environnement (vérifié sur `d1f3ccc`) : ÉCHOUÉ, sans lien avec ce lot, à
     examiner à part ;
   - essai sur téléphone Android : NON EXÉCUTÉ.
+
+## 2026-11-14 · v1.43.1 · Tenues de Victor d'après les planches, short MMA, peau plus claire
+
+- **Demandes** : Youssef, 2026-11-14 13:00 « revoir les vêtements et t'inspirer fortement des plaquettes fournies » ;
+  16:41 (capture) « une espèce de bout de tissu entre ces deux jambes » sur le short MMA ; 16:42 « un tout petit peu
+  moins brun ».
+- **Constat vérifié** :
+  - short MMA de Victor : 8 faces de la couture intérieure reliaient un point tenu par la cuisse gauche à un point tenu
+    par la droite (les deux jambes du short se chevauchent de quelques millimètres au milieu) ; en garde, elles
+    s'étirent en un long pan entre les cuisses. Reproduit dans le Lab (garde MMA, vue de face basse). Naël : aucune.
+    Le correctif de Kadir (poids mélangés vers le bassin) a été essayé : le pan restait et la peau perçait le tissu en
+    petits triangles bruns ; il n'est pas utilisé pour Victor ;
+  - tenues de la 1.43.0 génériques par rapport aux planches (short de boxe ample sans liseré, kick-boxing sans panneaux,
+    muay-thaï sans panneaux argent, kimono bleu vif et ample) ;
+  - peau de Victor plus foncée et plus rouge que voulu.
+- **Correction** :
+  - `outfits.py` : pour Victor, les faces du short MMA tenues par les deux cuisses sont retirées (couture entre les
+    cuisses, hors de vue) ;
+  - nouveaux shorts satinés à mi-cuisse (coupe thaï) avec panneau latéral et liserés coupés dans le tissu par des
+    plans (lignes nettes, comme le panneau d'Amara en 1.38) : kick-boxing bordeaux très sombre et rouge, liserés
+    gris ; muay-thaï noir, panneaux et liserés argent ; boxe noir, liserés gris (`SHORT_PANEL`) ;
+  - protection du coup de pied sous les protège-tibias (boxe, kick-boxing) ; prajiad clairs ; kimono bleu nuit
+    `#232A3A` plus ajusté (`GI_FIT` 0,45 pour Victor), ceinture noire ; judogi plus ajusté aussi ;
+  - peau éclaircie et un peu moins rouge sur les deux textures, cheveux et barbe gris inchangés
+    (`tools/generator/victor/eclaircir.py`, modèle reconstruit par `victor_build.mjs`) ; portrait refait.
+  - Kadir, Naël, Amara, Inaya : aucun fichier changé.
+- **Fichiers** : `tools/generator/rocketbox/outfits.py`, `tools/generator/victor/{eclaircir.py,README.md,donnees/}`,
+  `public/coaches/victor/` (photo.glb, portrait, 7 tenues), `src/boot/assetSizes.json`, `src/domain/releases.ts`,
+  `package.json`.
+- **Tests** :
+  - `npm run build` (titre v1.43.1) : TEST RÉUSSI ;
+  - `npx vitest run` : 1534 réussis, 5 échoués (les mêmes que 1.41/1.42/1.43.0), 1 ignoré : TEST RÉUSSI pour ce lot ;
+  - `npx playwright test` (299, 56 min) : 292 réussis, 5 échoués, 2 ignorés. `coaching-hud:60` connu ; `boot:98` et
+    `training-layout:117` échouent aussi sur la 1.42.0 d'origine (journal 1.43.0) ; `coach-suggest:99` et
+    `consignes-v130:27` (minutage sous charge, coach Amara) RÉUSSIS rejoués seuls ;
+  - contrôle visuel dans le Lab (garde MMA, kick-boxing, muay-thaï, boxe, JJB, judo, high kick, genou, sit-out) ;
+  - essai sur téléphone Android : NON EXÉCUTÉ.
+- **Restauration** : `restauration/avant-victor-v1431` (état 1.43.0, commit 8558e80).
