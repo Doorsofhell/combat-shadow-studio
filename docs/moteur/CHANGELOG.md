@@ -6,6 +6,13 @@ Le numéro du moteur (`ENGINE_VERSION`, `src/engine/index.ts`) est indépendant 
 - **mineure** (1.x.0) : un ajout (une technique, un outil, un réglage) qui ne casse rien ;
 - **majeure** (x.0.0) : un changement que l'application doit suivre.
 
+## 1.1.0 · 2026-11-14 (application v1.41.0)
+
+- Contrôles d'intégrité repris de CME-3D (`integrity.ts`) : erreurs d'écriture bloquantes (ordre des clés, valeurs non finies, poing entre 0 et 1, pied sous le tapis, impacts), utilisées par le registre et par `integrity.test.ts`.
+- `withOffsets` borne la fermeture du poing à 1 (la garde d'Amara, Naël et Inaya donnait 1,15 à 1,25).
+- Pieds traînés sur le tapis : `glideLift` (pied écrit au sol à deux endroits) et `lowLift` (décollage ou pose à ras du tapis) font passer le pied sur un petit arc (4,5 cm au plus) au-delà d'un pas glissé lent (0,35 à 0,75 m/s). Pieds immobiles, pivots lents et coups de pied qui montent franchement : inchangés.
+- Registre : contrôlé sur les quatre coachs de l'application et leur garde (`buildRegistry(coaches)`), contrôle « Animation bien écrite ».
+
 ## 1.0.2 · 2026-11-12 (application v1.33.2)
 
 - Anticipation procédurale des coups de poing uniquement (jabs, directs, crochets, uppercuts, overhand). Le bassin tourne jusqu’à 2,5° supplémentaires avec un pic 2,5 images à 60 FPS avant l’impact, puis revient exactement à la pose prévue au contact ; le buste conserve sa cible par contre-rotation.

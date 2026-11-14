@@ -2,7 +2,7 @@
  * Keyframed motions built on the pose model, and their sampling.
  */
 import { Quaternion, Vector3 } from 'three';
-import { Pose, ResolvedFoot, ResolvedHand, ResolvedPose, blendJoint, mirrorPose, quatFromRot, toVec } from './pose';
+import { Pose, type V3, ResolvedFoot, ResolvedHand, ResolvedPose, blendJoint, mirrorPose, quatFromRot, toVec } from './pose';
 import type { CoachRig } from './rig';
 
 export type Ease = 'linear' | 'inOut' | 'out' | 'in' | 'snap' | 'strike' | 'load';
@@ -416,10 +416,12 @@ export class MotionSampler {
         const pole = pr ? { x: pr.x, y: pr.y, z: pr.z } : undefined;
         const pv = off(side === 'footL' ? 'pivotL' : 'pivotR').clone();
         const bv = off(side === 'footL' ? 'ballL' : 'ballR');
+        // 1.41.0: past a slow glide, the foot travels on a low arc instead of being dragged along the mat
+        const lift = glideLift(pa.ball, pb.ball, h, u, this.rig.metrics.height);
         return this.rig.resolveFoot(
           {
             mode: 'ground',
-            ball: { x: lerp(pa.ball.x, pb.ball.x, u) + bv.x, y: lerp(pa.ball.y, pb.ball.y, u) + bv.y, z: lerp(pa.ball.z, pb.ball.z, u) + bv.z },
+            ball: { x: lerp(pa.ball.x, pb.ball.x, u) + bv.x, y: lerp(pa.ball.y, pb.ball.y, u) + bv.y + lift, z: lerp(pa.ball.z, pb.ball.z, u) + bv.z },
             yaw: lerp(pa.yaw, pb.yaw, u) + pv.x,
             heel: Math.max(0, lerp(pa.heel, pb.heel, u) + pv.y),
             pole,
@@ -430,7 +432,7 @@ export class MotionSampler {
       const fa = a[side];
       const fb = b[side];
       return {
-        ankle: fa.ankle.clone().lerp(fb.ankle, u).add(off(side)),
+        ankle: fa.ankle.clone().lerp(fb.ankle, u).add(off(side)).add(_up.set(0, this.lowLift(fa, fb, h, u), 0)),
         rot: fa.rot.clone().slerp(fb.rot, u),
         toeFlat: lerp(fa.toeFlat, fb.toeFlat, u),
         heel: lerp(fa.heel, fb.heel, u),
@@ -474,6 +476,23 @@ export class MotionSampler {
   }
 
   /**
+   * 1.41.0 (lot 2): a foot that leaves the floor or sets down on it while travelling low and far (a take-off or a
+   * landing almost flat along the mat, a leg swept along the floor) dragged its toes on the mat, up to 15 cm per
+   * image (sit-out, changement de base, relevé technique, sprawl, judo entries). The same low arc as a planted foot
+   * (glideLift) lifts it, faded out as soon as the written path rises steeply (kicks, knees, steps keep theirs).
+   */
+  private lowLift(fa: ResolvedFoot, fb: ResolvedFoot, h: number, u: number) {
+    const m = this.rig.metrics;
+    const low = (f: ResolvedFoot) => f.toeFlat > 0 || f.ankle.y < m.ballRestY + m.ankleFromBall.y + 0.03;
+    if (!low(fa) && !low(fb)) return 0;
+    const dh = Math.hypot(fb.ankle.x - fa.ankle.x, fb.ankle.z - fa.ankle.z);
+    if (dh < 1e-3) return 0;
+    const shallow = smooth(1 - Math.abs(fb.ankle.y - fa.ankle.y) / dh / 0.5);
+    if (shallow <= 0) return 0;
+    return shallow * glideLift(fa.ankle, fb.ankle, h, u, m.height);
+  }
+
+  /**
    * How much the hips must come down so that every planted foot stays reachable with a slightly bent
    * knee (a locked or over-stretched support leg would lift the foot off the floor).
    */
@@ -501,6 +520,26 @@ export class MotionSampler {
   }
 }
 
+/**
+ * 1.41.0 (lot 2, pieds qui glissent, Youssef 2026-11-14): a foot written on the floor at both ends of a segment but at
+ * two different places was dragged along the mat between them, up to 20 cm per image, 12 m/s (switch kick, sit-out,
+ * changement de base, relevé technique, judo and wrestling entries; docs/audit-biomecanique/MESURES_GLISSEMENT.md). A
+ * foot that carries weight cannot slide that fast: past a slow glide (pivots, suri-ashi, a shuffle) the foot now leaves
+ * the mat on a low arc and sets down at the written place. A foot that stays in place, or glides slowly, is unchanged.
+ */
+export const GLIDE_SPEED = { from: 0.35, full: 0.75 };
+/** highest lift of the arc (m, for a 1.8 m body), and its share of the distance travelled */
+export const GLIDE_LIFT = { max: 0.045, share: 0.15 };
+
+/** height added to a foot that travels on the floor from a to b in h seconds, at eased progress u (m) */
+export function glideLift(a: V3, b: V3, h: number, u: number, height: number): number {
+  if (u <= 0 || u >= 1 || h <= 0) return 0;
+  const d = Math.hypot(b.x - a.x, b.z - a.z);
+  const w = smooth((d / h - GLIDE_SPEED.from) / (GLIDE_SPEED.full - GLIDE_SPEED.from));
+  if (w <= 0) return 0;
+  return w * Math.min(GLIDE_LIFT.max * (height / 1.8), GLIDE_LIFT.share * d) * Math.sin(Math.PI * u);
+}
+
 /** seconds the legs and hips are ahead of the trunk and the arms, and the head behind */
 const CHAIN_LEGS = 0.05;
 const CHAIN_HEAD = 0.035;
@@ -508,6 +547,7 @@ const CHAIN_HEAD = 0.035;
 const CHAIN_MAX_TURN = (10 * Math.PI) / 180;
 /** seconds over which the shift grows at the start of a motion and fades at its end */
 const CHAIN_FADE = 0.15;
+const _up = new Vector3();
 const smooth = (x: number) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
 
 /** a planted foot, or one just off the floor (pinned above its place at a take-off or a landing) */

@@ -3935,3 +3935,64 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     visage ni le reflet des yeux. TEST RÉUSSI pour ce lot ;
   - essai sur téléphone Android : NON EXÉCUTÉ ici, à confirmer par Youssef.
 - **Restauration** : branche `restauration/avant-maquillage-v1403` (= 1.40.2 publiée, b5bf609).
+
+## 2026-11-14 · v1.41.0 · Contrôles du moteur biomécanique renforcés (4 lots)
+
+- **Demande** (Youssef, 14/11 00:13) : « On avait mis en place une IA pour contrôler corriger les mouvements. Est-ce
+  qu'elle est bien en place ? » Constat donné : pas d'IA, des règles biomécaniques appliquées à chaque image
+  (amplitudes, équilibre, tapis) et des mesures pendant les tests ; le Coach IA est une recherche locale, sans
+  modèle de langage. 00:19 : « renforce effectivement ces contrôles du moteur 3D biomécanique. Si les contrôles CME
+  sont valides intègre-les » ; 00:32, carte de décision : « Les 4 lots, dans l'ordre ».
+- **Base** : 1.40.3 publiée (4e0b38b). Restauration : branche `restauration/avant-controles-moteur`.
+- **Lot 1, contrôles CME** :
+  - constat : les contrôles d'intégrité de CME-3D (`feat/cme-integrite-moteur-20261027`, 27/10) n'avaient jamais
+    été intégrés. Rejoués sur 1.40.2 : 0 erreur avec la garde des disciplines, mais `FIST_RANGE` avec la garde
+    propre des coachs (poing à 1,15 pour Naël, 1,2 Amara, 1,25 Inaya : `withOffsets` ajoutait leur « poings plus
+    fermés » à un poing déjà fermé, les doigts se pliaient au-delà du poing fermé) ; `PLANTED_FOOT_MOVE` (10 144
+    signalements, presque tous des pas voulus) non retenu ; `HIP_ACCELERATION` : high kick avant, roundhouse
+    arrière et avant (46 à 62 m/s² contre 45), listés pour revue ;
+  - correction : `src/engine/integrity.ts` intégré ; `withOffsets` (`src/engine/author.ts`) borne le poing entre 0
+    et 1 ; registre : contrôle « Animation bien écrite ».
+- **Lot 2, pieds qui glissent** :
+  - constat (mesuré image par image sur le squelette posé des 4 coachs) : un pied écrit au sol à deux endroits était
+    traîné sur le tapis : switch kick 19,8 cm par image (12 m/s), sit-out et changement de base 15,1, relevé
+    technique 11,9, sprawl 10,5, entrées de judo et de lutte 7 à 8,6. Glissement cumulé de la bibliothèque : 336 m ;
+  - correction (`src/engine/motion.ts`) : `glideLift` et `lowLift`. Au-delà d'un pas glissé lent (0,35 à
+    0,75 m/s), le pied passe sur un petit arc (4,5 cm au plus, 15 % de la distance) et se pose à l'endroit écrit ;
+    pieds immobiles, pivots lents et coups de pied qui montent : inchangés ;
+  - résultat : 336 m → 81 m ; switch kick 1,4 cm par image, entrée en lutte 0,7, tai-sabaki 1,3, pont et rétention
+    de garde 0,9. Restent au-dessus de 1,5 cm par image des balayages (ko-uchi-gari, o-uchi-gari, sit-out,
+    changement de base, relevés, chutes, sprawl), bornés à leur valeur en attente de revue, mouvement par mouvement ;
+  - `src/test/ankles.ts` : un pied porté au-dessus du tapis par l'arc n'est plus compté comme pied à plat (il ne
+    porte pas le poids) ; sans cela, `descente-sol` lisait 19,9° de rotation « à plat » sur un pied en l'air.
+- **Lot 3, membres qui traversent le corps** :
+  - nouvelle mesure `src/test/collisions.ts` sur la peau des 4 coachs : un « cœur » par volume (tronc, tête, cuisses,
+    tibias), tranche par tranche et secteur par secteur (le torse est plus large que profond), à l'intérieur de la
+    chair ; profondeur d'une main, d'un avant-bras ou d'une jambe dedans ; jusqu'à 2 cm = contact ;
+  - constat : 33 techniques au-delà de 2 cm. Pire : o-soto-gari (Naël, main gauche 14,6 cm dans le ventre, vue sur
+    la capture de face), défense de lutte, genou circulaire avant, sprawl (coude dans le tronc, ~14 cm), uppercut
+    arrière (Inaya, 10,5) ; liste complète dans `docs/audit-biomecanique/MESURES_INTRUSIONS.md` ;
+  - non corrigé dans ce lot : la correction change le trajet d'un bras ou d'une jambe (technique montrée), donc
+    après accord de Youssef. Bornées par le test : elles ne peuvent pas empirer.
+- **Lot 4, couverture** :
+  - le registre des animations (statuts affichés dans l'appli) mesurait un squelette généré retiré de l'appli
+    (`coach_male.glb`) ; il mesure maintenant Kadir, Amara, Naël et Inaya, garde de la discipline et garde du
+    coach : 91 contrôlées, 0 à corriger ;
+  - `.github/workflows/preview.yml` : les contrôles du moteur (intégrité, glissement, traversées, tapis, chevilles,
+    torsions des coachs, registre) passent avant chaque mise en ligne GitHub Pages.
+- **Fichiers** : `src/engine/{integrity,author,motion,registry,index}.ts`, `src/test/{collisions,ankles}.ts`,
+  `src/engine/__tests__/{integrity,glide,intrusions,registry}.test.ts`, `docs/audit-biomecanique/MESURES_{INTEGRITE,
+  GLISSEMENT,INTRUSIONS}.md`, documents de mesures régénérés (MOTEUR, SOL, TORSIONS, FLUIDITE, CROCHETS,
+  ANIMATIONS, pictogrammes), `docs/moteur/CHANGELOG.md` (moteur 1.1.0), `releases.ts`, `package.json`.
+- **Tests** :
+  - `npx tsc -b` : TEST RÉUSSI ; `npm run build` (titre v1.41.0) : TEST RÉUSSI ;
+  - `npx vitest run` : 1471 réussis, 5 échoués, 1 ignoré. Les 5 échecs existent à l'identique sur 1.40.3 sans ce lot
+    (uppercut-arriere v0.32, fluidité « pas plus d'arrêts » et « coups pas ralentis », crochets « pas d'armé »,
+    taille du modèle d'Amara) : TEST RÉUSSI pour ce lot. Les 4 échecs « document à jour » de 1.40.3 sont résolus
+    (documents régénérés). Nouveaux : `integrity` (3), `glide` (3), `intrusions` (3) ;
+  - `npx playwright test` : 291 réussis, 1 échoué, 2 ignorés (Firebase). L'échec, `coaching-hud:60`, est l'échec
+    connu de la 1.40.2 et de la 1.40.3 : TEST RÉUSSI pour ce lot ;
+  - captures avant / après (switch kick, entrée en lutte, poing d'Inaya en garde) : geste identique à l'œil ;
+    captures des traversées (o-soto-gari de face : main dans le ventre visible) ;
+  - essai sur téléphone Android : NON EXÉCUTÉ.
+- **Restauration** : branche `restauration/avant-controles-moteur` (= 1.40.3 publiée, 4e0b38b).

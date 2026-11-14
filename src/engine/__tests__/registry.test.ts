@@ -3,9 +3,20 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { loadSkeleton } from '../../test/skeleton';
 import { CoachRig } from '../rig';
 import { buildRegistry, registryMarkdown } from '../registry';
+import { COACH_STANCES } from '../../domain/coaches/motion';
 import { TECHNIQUES } from '../../domain/techniques';
 
-const rows = buildRegistry(new CoachRig(loadSkeleton('homme')));
+// 1.41.0: the four coaches of the app, their own skeleton and guard (was: the generated skeleton coach_male.glb)
+const rows = buildRegistry(
+  (
+    [
+      ['mma-kadir', 'homme'],
+      ['mma-amara', 'femme'],
+      ['nael', 'homme'],
+      ['inaya', 'femme'],
+    ] as const
+  ).map(([id, sex]) => ({ id, rig: new CoachRig(loadSkeleton(sex, `coaches/${id}/photo.glb`)), offsets: COACH_STANCES[id] })),
+);
 const DOC = 'docs/ANIMATIONS.md';
 const JSON_FILE = 'src/domain/animationStatus.json';
 const json = JSON.stringify(Object.fromEntries(rows.map((r) => [r.id, { status: r.status, notes: r.notes }])), null, 1) + '\n';

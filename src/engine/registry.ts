@@ -11,7 +11,8 @@ import { CoachRig, ELBOW_MAX_FLEX, KNEE_MAX_FLEX } from './rig';
 import { getLibrary, getMotion } from './library';
 import { MotionSampler, duration } from './motion';
 import { techniquePhases } from './phases';
-import type { StanceStyle } from './author';
+import { checkMotion } from './integrity';
+import type { StanceOffsets, StanceStyle } from './author';
 import { TECHNIQUES } from '../domain/techniques';
 import { PARTNER_TECHNIQUES } from '../domain/partner';
 import type { DisciplineId, Technique } from '../domain/types';
@@ -25,6 +26,7 @@ export type CheckResult = 'reussi' | 'echoue' | 'non-applicable';
 
 export const CHECK_LABEL = {
   disponible: 'Présente dans chaque discipline, dans les deux gardes',
+  ecriture: 'Animation bien écrite (contrôles CME : ordre des clés, valeurs, poing, tapis, impacts)',
   amplitude: 'Coudes et genoux dans leur amplitude naturelle',
   appui: 'Pied d’appui fixe (pas de glissement)',
   continuite: 'Mouvement continu (pas de saut de pose)',
@@ -56,13 +58,24 @@ function styleOf(d: DisciplineId): StanceStyle {
   return d === 'boxe' ? 'boxing' : d === 'kickboxing' ? 'kickboxing' : d === 'muaythai' ? 'muaythai' : d === 'mma' ? 'mma' : d === 'bjj' ? 'bjj' : 'judo';
 }
 
-export function checkTechnique(rig: CoachRig, t: Technique): RegistryRow {
+/** a coach checked by the registry: its skeleton and (optionally) its own guard */
+export interface RegistryCoach {
+  id: string;
+  rig: CoachRig;
+  offsets?: StanceOffsets;
+}
+
+export function checkTechnique(rig: CoachRig, t: Technique, profile?: { id: string; offsets: StanceOffsets }): RegistryRow {
   const notes: string[] = [];
   const checks: RegistryRow['checks'] = {};
-  const motions = t.disciplines.flatMap((d) => [false, true].map((sp) => getMotion(getLibrary(rig, styleOf(d)), t.motion, sp)));
+  const motions = t.disciplines.flatMap((d) => [false, true].map((sp) => getMotion(getLibrary(rig, styleOf(d), profile), t.motion, sp)));
   const base = { id: t.id, name: t.name, disciplines: t.disciplines };
   if (motions.some((m) => !m)) return { ...base, status: 'manquante', checks: { disponible: 'echoue' }, notes: ['animation absente dans au moins une discipline ou une garde'] };
   checks.disponible = 'reussi';
+  // 1.41.0: the static checks ported from CME-3D, on every discipline and both guards
+  const written = motions.flatMap((mm) => checkMotion(mm!).filter((f) => f.level === 'error'));
+  checks.ecriture = written.length ? 'echoue' : 'reussi';
+  if (written.length) notes.push(...new Set(written.map((f) => `écriture : ${f.code} (${f.detail})`)));
   const m = motions[0]!;
   const s = new MotionSampler(rig, m);
   const dur = duration(m);
@@ -147,8 +160,29 @@ export function checkTechnique(rig: CoachRig, t: Technique): RegistryRow {
   return { ...base, status, checks, notes };
 }
 
-export function buildRegistry(rig: CoachRig): RegistryRow[] {
-  const rows = TECHNIQUES.filter((t) => t.mode !== 'partenaire').map((t) => checkTechnique(rig, t));
+const RANK: Record<CheckResult, number> = { 'non-applicable': 0, reussi: 1, echoue: 2 };
+
+/**
+ * 1.41.0 (lot 4): the registry checks every coach of the app (their own skeleton, with the discipline guard and
+ * with their own guard); a check passes only when it passes for all of them, and the notes say for which coach it
+ * failed. Before 1.41.0 it measured one generated skeleton that is no longer in the app (coach_male.glb).
+ */
+export function buildRegistry(coaches: RegistryCoach[] | CoachRig): RegistryRow[] {
+  const list: RegistryCoach[] = coaches instanceof CoachRig ? [{ id: '', rig: coaches }] : coaches;
+  const runs = list.flatMap((c) => [{ c, profile: undefined }, ...(c.offsets ? [{ c, profile: { id: c.id, offsets: c.offsets } }] : [])]);
+  const rows = TECHNIQUES.filter((t) => t.mode !== 'partenaire').map((t) => {
+    const each = runs.map((r) => ({ r, row: checkTechnique(r.c.rig, t, r.profile) }));
+    const checks: RegistryRow['checks'] = {};
+    const notes: string[] = [];
+    for (const { r, row } of each) {
+      for (const [k, v] of Object.entries(row.checks) as [CheckId, CheckResult][]) if (!checks[k] || RANK[v] > RANK[checks[k]!]) checks[k] = v;
+      const who = r.c.id ? `${r.c.id}${r.profile ? ' (garde du coach)' : ''} : ` : '';
+      for (const n of row.notes) notes.push(who + n);
+    }
+    const first = each[0].row;
+    const status: AnimationStatus = each.some((e) => e.row.status === 'manquante') ? 'manquante' : Object.values(checks).includes('echoue') ? 'a-corriger' : first.status;
+    return { ...first, status, checks, notes: [...new Set(notes)] };
+  });
   // partner techniques: a sheet exists, the two-person animation does not yet
   for (const p of PARTNER_TECHNIQUES) rows.push({ id: p.id, name: p.name, disciplines: [p.discipline], status: 'non-implementee', checks: {}, notes: ['fiche avec partenaire réel ; démonstration à deux personnages pas encore animée'] });
   return rows;
@@ -162,7 +196,9 @@ export function registryMarkdown(rows: RegistryRow[]): string {
   const lines = [
     '# Registre des animations',
     '',
-    'Généré par `UPDATE_REGISTRY=1 npx vitest run src/engine/__tests__/registry.test.ts` (contrôles sur le squelette réel du coach homme). Ne pas modifier à la main.',
+    'Généré par `UPDATE_REGISTRY=1 npx vitest run src/engine/__tests__/registry.test.ts`. Ne pas modifier à la main.',
+    '',
+    'Depuis la 1.41.0, contrôles sur le squelette réel des quatre coachs de l’application (Kadir, Amara, Naël, Inaya), avec la garde de la discipline et avec la garde propre au coach : un contrôle n’est réussi que s’il l’est pour tous.',
     '',
     '- **Validée par un expert** : revue par un entraîneur qualifié. Aucune pour l’instant.',
     '- **Contrôlée automatiquement** : tous les contrôles applicables sont réussis. Cela ne remplace pas une validation par un expert.',
@@ -172,6 +208,8 @@ export function registryMarkdown(rows: RegistryRow[]): string {
     `Bilan : ${count('validee')} validée(s), ${count('controlee')} contrôlée(s), ${count('a-corriger')} à corriger, ${count('manquante')} manquante(s), ${count('non-implementee')} non implémentée(s).`,
     '',
     'Contrôles : ' + ids.map((c, i) => `${i + 1}. ${CHECK_LABEL[c]}`).join(' ; ') + '.',
+    '',
+    'Mesurés à part sur toute la bibliothèque (1.41.0) : pieds qui glissent sur le tapis ([MESURES_GLISSEMENT.md](audit-biomecanique/MESURES_GLISSEMENT.md)) et membres qui traversent le corps ([MESURES_INTRUSIONS.md](audit-biomecanique/MESURES_INTRUSIONS.md), techniques en attente de correction listées là).',
     '',
     `| Technique | Disciplines | Statut | ${ids.map((_, i) => `C${i + 1}`).join(' | ')} | Notes |`,
     `|---|---|---|${ids.map(() => '---').join('|')}|---|`,

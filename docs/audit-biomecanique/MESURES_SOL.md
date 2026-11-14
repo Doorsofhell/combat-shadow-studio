@@ -12,13 +12,14 @@ Avant 1.8.0 : cuisses et tibias jusqu’à −20 cm (sprawl), doigts jusqu’à 
 | Mouvement | mma-kadir | mma-amara | nael | inaya |
 |---|---|---|---|---|
 | bjj changement-base | -0.8 (LeftHandMiddle3) | -1.1 (LeftToeBase) | -0.9 (LeftHandMiddle3) | -1.0 (LeftToeBase) |
+| bjj pont | -0.1 (RightShoulder) | -0.8 (Hips) | -0.2 (LeftShoulder) | -0.7 (Hips) |
 | bjj releve-genoux | -1.0 (LeftToeBase) | -1.2 (LeftToeBase) | -1.0 (LeftToeBase) | -1.1 (LeftToeBase) |
-| bjj retention-garde | -0.9 (RightShoulder) | -0.9 (LeftToeBase) | -0.9 (RightShoulder) | -0.9 (LeftToeBase) |
-| bjj sit-out | -1.4 (LeftHandMiddle3) | -1.1 (LeftToeBase) | -1.3 (LeftHandMiddle3) | -1.1 (RightFoot) |
+| bjj retention-garde | -0.9 (RightShoulder) | -0.6 (Hips) | -0.9 (RightShoulder) | -0.7 (Spine2) |
+| bjj sit-out | -1.4 (LeftHandMiddle3) | -1.1 (LeftToeBase) | -1.3 (LeftHandMiddle3) | -1.0 (LeftToeBase) |
 | judo uchikomi-o-uchi-gari | -1.2 (RightToeBase) | -0.7 (RightToeBase) | -1.2 (RightToeBase) | -0.7 (RightToeBase) |
 | judo ukemi-ushiro | -2.8 (LeftArm) | -1.2 (Spine2) | -2.4 (RightForeArm) | -1.3 (LeftArm) |
 | judo ukemi-yoko | -0.7 (RightArm) | -1.0 (RightToeBase) | -0.5 (RightToeBase) | -1.0 (RightToeBase) |
-| mma descente-sol | -1.1 (LeftHandMiddle3) | -1.3 (LeftHandMiddle3) | -0.4 (RightToeBase) | -1.4 (LeftHandMiddle3) |
+| mma descente-sol | -1.1 (LeftHandMiddle3) | -1.3 (LeftHandMiddle3) | -0.2 (RightToeBase) | -1.4 (LeftHandMiddle3) |
 | mma entree-lutte | -0.5 (RightToeBase) | -1.0 (RightToeBase) | -0.5 (RightToeBase) | -1.0 (RightToeBase) |
 | mma single-leg | -0.5 (RightToeBase) | -1.0 (RightToeBase) | -0.5 (RightToeBase) | -1.0 (RightToeBase) |
-| mma sprawl | -2.2 (LeftUpLeg) | -2.3 (LeftLeg) | -2.1 (LeftUpLeg) | -1.8 (RightUpLeg) |
+| mma sprawl | -2.2 (LeftUpLeg) | -2.2 (LeftLeg) | -2.4 (LeftUpLeg) | -1.8 (RightUpLeg) |
