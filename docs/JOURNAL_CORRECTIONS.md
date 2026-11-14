@@ -3984,4 +3984,15 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `src/engine/__tests__/{integrity,glide,intrusions,registry}.test.ts`, `docs/audit-biomecanique/MESURES_{INTEGRITE,
   GLISSEMENT,INTRUSIONS}.md`, documents de mesures régénérés (MOTEUR, SOL, TORSIONS, FLUIDITE, CROCHETS,
   ANIMATIONS, pictogrammes), `docs/moteur/CHANGELOG.md` (moteur 1.1.0), `releases.ts`, `package.json`.
-- **Tests** : voir le rapport de livraison ci-dessous.
+- **Tests** :
+  - `npx tsc -b` : TEST RÉUSSI ; `npm run build` (titre v1.41.0) : TEST RÉUSSI ;
+  - `npx vitest run` : 1471 réussis, 5 échoués, 1 ignoré. Les 5 échecs existent à l'identique sur 1.40.3 sans ce lot
+    (uppercut-arriere v0.32, fluidité « pas plus d'arrêts » et « coups pas ralentis », crochets « pas d'armé »,
+    taille du modèle d'Amara) : TEST RÉUSSI pour ce lot. Les 4 échecs « document à jour » de 1.40.3 sont résolus
+    (documents régénérés). Nouveaux : `integrity` (3), `glide` (3), `intrusions` (3) ;
+  - `npx playwright test` : 291 réussis, 1 échoué, 2 ignorés (Firebase). L'échec, `coaching-hud:60`, est l'échec
+    connu de la 1.40.2 et de la 1.40.3 : TEST RÉUSSI pour ce lot ;
+  - captures avant / après (switch kick, entrée en lutte, poing d'Inaya en garde) : geste identique à l'œil ;
+    captures des traversées (o-soto-gari de face : main dans le ventre visible) ;
+  - essai sur téléphone Android : NON EXÉCUTÉ.
+- **Restauration** : branche `restauration/avant-controles-moteur` (= 1.40.3 publiée, 4e0b38b).
