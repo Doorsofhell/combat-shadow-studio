@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.42.0',
+      releaseDate: '2026-11-14',
+      title: 'Retour, un pas à la fois',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Pendant une séance, le Retour du téléphone ne te fait plus sortir d’un coup : il met en pause et te demande avant de quitter.' },
+        { category: 'corrections', text: 'En plein écran, le Retour du téléphone sort d’abord du plein écran. La séance continue.' },
+        { category: 'ameliorations', text: 'En plein écran, une flèche Retour reste visible en haut à gauche. Dans « Quitter la séance ? », « Continuer » est le choix mis en avant.' },
+      ],
+      links: [{ label: 'Voir Entraîner', to: '/entrainer' }],
+    },
+    {
       version: '1.41.0',
       releaseDate: '2026-11-14',
       title: 'Mouvements des coachs mieux contrôlés',

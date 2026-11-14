@@ -1310,3 +1310,44 @@ body:has(.training .sheet-backdrop) .nav-bottom {
     transform: none;
   }
 }
+
+/* 1.42.0 (maquette validée le 2026-11-11): the Retour arrow of the fullscreen, always in sight. It dims with the
+   other commands (fs-idle) but never leaves, and stays touchable. */
+.tr-fs-back {
+  appearance: none;
+  position: absolute;
+  z-index: 6;
+  top: calc(env(safe-area-inset-top) + 12px);
+  left: calc(env(safe-area-inset-left) + 12px);
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--tr-glass);
+  color: var(--ink);
+  cursor: pointer;
+  transition: opacity 0.25s ease;
+}
+.tr-fs-back svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.training.immersive.fs-idle .tr-fs-back {
+  opacity: 0.55;
+}
+.tr-fs-back:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tr-fs-back {
+    transition: none;
+  }
+}

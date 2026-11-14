@@ -3996,3 +3996,45 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     captures des traversées (o-soto-gari de face : main dans le ventre visible) ;
   - essai sur téléphone Android : NON EXÉCUTÉ.
 - **Restauration** : branche `restauration/avant-controles-moteur` (= 1.40.3 publiée, 4e0b38b).
+
+## 2026-11-14 · v1.42.0 · Retour du téléphone : un pas à la fois (séance et plein écran)
+
+- **Demande** (Youssef, 2026-11-11) : « Revois aussi le retour arrière quand on est en plein écran ». Règle validée
+  le même jour : un Retour = un seul pas en arrière. Lot validé le 2026-11-11 (« Je valide », PR 72, alors 1.34.0)
+  mais non fusionné (coupure) ; le 2026-11-14 : « Replace le lot restant au prochain numéro libre » → replacé sur
+  la 1.41.0, numéro 1.42.0.
+- **Constat après vérification** (application web) : pendant une séance en cours, le Retour du téléphone ou du
+  navigateur quittait la séance d'un coup, sans la question « Quitter la séance ? » ; en plein écran, il sortait du
+  plein écran et de la séance en même temps. Cause : la règle n'existait que pour le bouton de l'application
+  Android (`onBackButton`) ; sur le web, seuls les panneaux étaient des étapes de l'historique.
+- **Méthode de correction** : la séance en cours pose une « garde » dans l'historique (`pushGuard`,
+  `src/ui/nav/layers.ts`) : chaque Retour appelle la séance et la page reste, jusqu'à « Quitter ». Le plein écran du
+  coach hors séance (accueil, fiches) devient une étape de l'historique comme les panneaux.
+- **Ce qui change** :
+  - Retour pendant la séance : pause et question ; un second Retour ferme la question (la séance reste en pause) ;
+    seul « Quitter » sort, vers l'écran d'où l'on venait ;
+  - Retour en plein écran : il sort du plein écran, la séance continue ; le Retour suivant pose la question ;
+  - en plein écran, une flèche Retour reste visible en haut à gauche (elle s'atténue avec les autres commandes mais
+    ne disparaît pas) ; elle fait le même pas en arrière ;
+  - « Quitter la séance ? » : « Continuer » (au lieu d'« Annuler ») est le bouton mis en avant, « Quitter » le
+    bouton discret ;
+  - séance non démarrée ou terminée : Retour quitte l'écran comme avant ;
+  - choix du coach : « Choisir » attend la fin de l'enregistrement avant de fermer l'écran (sous forte charge, un
+    rechargement immédiat pouvait perdre le choix : `coachs-v160` en échec intermittent).
+- **Fichiers** : `src/ui/nav/layers.ts`, `src/ui/fullscreen/useStageFullscreen.ts`, `src/ui/screens/Training.tsx`,
+  `src/ui/components/Sheet.tsx`, `src/ui/training/training.css`, `src/ui/screens/CoachSelect.tsx`,
+  `src/coach/appGuide.ts`, `src/domain/releases.ts`, `package.json`.
+- **Tests** (sur la 1.41.0 + ce lot) :
+  - `npx tsc -b` : TEST RÉUSSI ; `npm run build` (titre v1.42.0) : TEST RÉUSSI ;
+  - `npx vitest run` : 1471 réussis, 5 échoués, 1 ignoré ; les 5 échecs sont ceux déjà notés pour la 1.41.0
+    (uppercut-arriere v0.32, fluidité × 2, crochets « pas d'armé », taille du modèle d'Amara) : TEST RÉUSSI pour ce
+    lot ;
+  - `npx playwright test` (299 tests) : 294 réussis, 3 échoués, 2 ignorés (Firebase). `coaching-hud:60` est l'échec
+    connu de la 1.41.0 ; `coach-suggest:99` et `seance-mains-libres:117` (écrans non touchés) ont échoué sous la
+    charge de la suite et sont RÉUSSIS rejoués seuls (deux fois pour le second) ;
+  - nouveau `tests/e2e/retour-v1420.spec.ts` (5 tests) : TEST RÉUSSI ; `navigation` adapté (« Continuer » au lieu
+    d'« Annuler », même contrôle) ;
+  - essai sur téléphone Android : NON EXÉCUTÉ.
+- **Limite** : chemin de l'application Android (APK) non exécuté ici ; il passe par la même garde.
+- **Captures** : `docs/v1420/captures/` (prises sur la 1.34.0 d'origine, écran inchangé).
+- **Restauration** : état 1.41.0 (commit 8ef0b54 de `claude/project-thread-o7lrt8`).

@@ -59,18 +59,22 @@ export function Sheet({ title, eyebrow, onClose, children, footer, center = fals
 }
 
 /** Confirmation dialog (replaces window.confirm, which is unreliable inside the Android WebView). */
-export function ConfirmDialog({ title, message, confirmLabel, danger, onConfirm, onCancel }: { title: string; message: string; confirmLabel: string; danger?: boolean; onConfirm: () => void; onCancel: () => void }) {
+/** `keep` (1.42.0, « Quitter la séance ? »): staying is the highlighted choice, on the right under the thumb; leaving is the quiet one */
+export function ConfirmDialog({ title, message, confirmLabel, cancelLabel = 'Annuler', danger, keep, onConfirm, onCancel }: { title: string; message: string; confirmLabel: string; cancelLabel?: string; danger?: boolean; keep?: boolean; onConfirm: () => void; onCancel: () => void }) {
+  const cancel = (
+    <button key="cancel" type="button" className={`btn ${keep ? 'primary' : 'secondary'}`} style={{ flex: 1 }} onClick={onCancel} data-testid="confirm-cancel">
+      {cancelLabel}
+    </button>
+  );
+  const confirm = (
+    <button key="confirm" type="button" className={`btn ${keep ? 'secondary' : danger ? 'danger' : 'primary'}`} style={{ flex: 1 }} onClick={onConfirm} data-testid="confirm-ok">
+      {confirmLabel}
+    </button>
+  );
   return (
     <Sheet title={title} onClose={onCancel} center>
       <p className="muted">{message}</p>
-      <div className="row nowrap">
-        <button type="button" className="btn secondary" style={{ flex: 1 }} onClick={onCancel}>
-          Annuler
-        </button>
-        <button type="button" className={`btn ${danger ? 'danger' : 'primary'}`} style={{ flex: 1 }} onClick={onConfirm}>
-          {confirmLabel}
-        </button>
-      </div>
+      <div className="row nowrap">{keep ? [confirm, cancel] : [cancel, confirm]}</div>
     </Sheet>
   );
 }
