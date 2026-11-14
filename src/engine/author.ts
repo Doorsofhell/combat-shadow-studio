@@ -277,6 +277,9 @@ export function withOffsets(base: StanceDef, o?: StanceOffsets): StanceDef {
     const b = r[k];
     r[k] = Array.isArray(v) ? (b as number[]).map((x, i) => x + ((v as number[])[i] ?? 0)) : (b as number) + (v as number);
   }
+  // 1.41.0 (contrôles CME, FIST_RANGE): a coach's « fists more closed » on a discipline whose fists are already closed
+  // gave 1.15 to 1.25, fingers bent past a closed fist (Amara, Naël, Inaya); a fist closes from 0 (open) to 1 at most
+  r.fist = Math.min(1, Math.max(0, r.fist as number));
   return r as unknown as StanceDef;
 }
 

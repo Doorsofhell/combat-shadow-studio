@@ -11,6 +11,7 @@ import { CoachRig, ELBOW_MAX_FLEX, KNEE_MAX_FLEX } from './rig';
 import { getLibrary, getMotion } from './library';
 import { MotionSampler, duration } from './motion';
 import { techniquePhases } from './phases';
+import { checkMotion } from './integrity';
 import type { StanceStyle } from './author';
 import { TECHNIQUES } from '../domain/techniques';
 import { PARTNER_TECHNIQUES } from '../domain/partner';
@@ -25,6 +26,7 @@ export type CheckResult = 'reussi' | 'echoue' | 'non-applicable';
 
 export const CHECK_LABEL = {
   disponible: 'Présente dans chaque discipline, dans les deux gardes',
+  ecriture: 'Animation bien écrite (contrôles CME : ordre des clés, valeurs, poing, tapis, impacts)',
   amplitude: 'Coudes et genoux dans leur amplitude naturelle',
   appui: 'Pied d’appui fixe (pas de glissement)',
   continuite: 'Mouvement continu (pas de saut de pose)',
@@ -63,6 +65,10 @@ export function checkTechnique(rig: CoachRig, t: Technique): RegistryRow {
   const base = { id: t.id, name: t.name, disciplines: t.disciplines };
   if (motions.some((m) => !m)) return { ...base, status: 'manquante', checks: { disponible: 'echoue' }, notes: ['animation absente dans au moins une discipline ou une garde'] };
   checks.disponible = 'reussi';
+  // 1.41.0: the static checks ported from CME-3D, on every discipline and both guards
+  const written = motions.flatMap((mm) => checkMotion(mm!).filter((f) => f.level === 'error'));
+  checks.ecriture = written.length ? 'echoue' : 'reussi';
+  if (written.length) notes.push(...new Set(written.map((f) => `écriture : ${f.code} (${f.detail})`)));
   const m = motions[0]!;
   const s = new MotionSampler(rig, m);
   const dur = duration(m);
