@@ -1700,6 +1700,25 @@ BAND_RELIEF = float(os.environ.get('BAND_RELIEF', '0.15'))
 SHORT_PANEL = {}
 
 
+# 1.46 (Youssef 14/11 23:22, planche de shorts, choix « Coupes seulement, couleurs gardées »): the cut of each short
+# read on his sheet, (hem as a share of the thigh from the knee, waistband height in metres, flare at the hem in metres):
+# boxing loose to mid-thigh under a tall white-style band, Thai very short and very wide, kick-boxing a short trunk with
+# straight wide legs. Women's boxing is shorter (upper thigh). Colours and fabrics stay each coach's own. SHEET_CUTS=0 gives
+# the cuts of before. Victor keeps the cut of his own sheets (1.44.1)
+SHEET_CUTS = os.environ.get('SHEET_CUTS', '0') == '1'
+SHEET_CUT = {
+    'boxe': {'homme': (0.45, 0.09, 0.05), 'femme': (0.56, 0.085, 0.05)},
+    'thai': {'homme': (0.6, 0.09, 0.09), 'femme': (0.62, 0.085, 0.085)},
+    'kick': {'homme': (0.52, 0.08, 0.055), 'femme': (0.56, 0.075, 0.05)},
+}
+
+
+def sheet_cut(kind, under=False):
+    if not SHEET_CUTS or under or COACH_ID == 'victor' or SHORT_PANEL or AMARA_MMA_REF and kind == 'vale-tudo':
+        return None
+    return SHEET_CUT.get(kind, {}).get('femme' if female else 'homme')
+
+
 # 1.44.2: the textile folds of the shorts are added afterwards by tools/generator/rocketbox/short_folds.mjs (one tool for
 # every coach, run on the finished files: the other garments of an outfit stay byte for byte as they were)
 
@@ -1724,6 +1743,9 @@ def shorts(kind, color, band, n_leg=None, under=False):
     # vale-tudo short in 1.9), 8 mm over its top at most 6 cm higher than the cut asked
     if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
         hem = 0.53  # short fitted boxer, upper third of thigh
+    cut = sheet_cut(kind, under)
+    if cut:
+        hem = cut[0]
     if SHORT_PANEL.get('hem'):
         hem = SHORT_PANEL['hem']  # 1.43.1 Victor: Thai cut of his sheets, mid-thigh
         waist = hipZ + 0.105
@@ -1740,6 +1762,8 @@ def shorts(kind, color, band, n_leg=None, under=False):
     bandH = {'boxe': 0.07, 'kick': 0.04, 'thai': 0.08, 'mma': 0.04, 'compression': 0.025, 'vale-tudo': 0.035, 'surshort': 0.045}[kind]
     if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
         bandH = 0.045  # reference: soft, wide flexible waistband
+    if cut:
+        bandH = cut[1]
 
     ring_band = FITTED_BANDS and not under and kind != 'surshort'
 
@@ -1794,9 +1818,9 @@ def shorts(kind, color, band, n_leg=None, under=False):
                 return 0.004 + (0.0 if ring_band else 0.006) * t * t * (3 - 2 * t)
             return 0.004 + (0.006 if P[i].z > waist - bandH else 0)
         s = leg_of(i)
-        if kind in ('kick', 'compression', 'vale-tudo'):
+        if kind in ('kick', 'compression', 'vale-tudo') and not (cut and kind == 'kick'):
             return 0.003
-        flare = {'boxe': 0.03, 'thai': 0.075, 'mma': 0.022}[kind]
+        flare = cut[2] if cut else {'boxe': 0.03, 'thai': 0.075, 'mma': 0.022}[kind]
         crotch = max(0.0, 1 - abs(P[i].x) / 0.05)
         return loose(i, f'{s}UpLeg', f'{s}Leg', 0.005, lambda u: flare * u ** 1.5 * (1 - 0.7 * crotch) * (0.55 if abs(P[i].x) < abs(axis_point(i, f'{s}UpLeg', f'{s}Leg')[0].x) else 1))
 
