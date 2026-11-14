@@ -1,6 +1,8 @@
 # Registre des animations
 
-Généré par `UPDATE_REGISTRY=1 npx vitest run src/engine/__tests__/registry.test.ts` (contrôles sur le squelette réel du coach homme). Ne pas modifier à la main.
+Généré par `UPDATE_REGISTRY=1 npx vitest run src/engine/__tests__/registry.test.ts`. Ne pas modifier à la main.
+
+Depuis la 1.41.0, contrôles sur le squelette réel des quatre coachs de l’application (Kadir, Amara, Naël, Inaya), avec la garde de la discipline et avec la garde propre au coach : un contrôle n’est réussi que s’il l’est pour tous.
 
 - **Validée par un expert** : revue par un entraîneur qualifié. Aucune pour l’instant.
 - **Contrôlée automatiquement** : tous les contrôles applicables sont réussis. Cela ne remplace pas une validation par un expert.
@@ -10,6 +12,8 @@ Généré par `UPDATE_REGISTRY=1 npx vitest run src/engine/__tests__/registry.te
 Bilan : 0 validée(s), 91 contrôlée(s), 0 à corriger, 0 manquante(s), 10 non implémentée(s).
 
 Contrôles : 1. Présente dans chaque discipline, dans les deux gardes ; 2. Animation bien écrite (contrôles CME : ordre des clés, valeurs, poing, tapis, impacts) ; 3. Coudes et genoux dans leur amplitude naturelle ; 4. Pied d’appui fixe (pas de glissement) ; 5. Mouvement continu (pas de saut de pose) ; 6. Le membre arrive en fin de rotation des hanches ; 7. Le coup accélère et touche en vitesse (au moins 25 % de sa vitesse de pointe) ; 8. Vitesse de pointe plausible (poing ≤ 12 m/s, pied ≤ 26 m/s).
+
+Mesurés à part sur toute la bibliothèque (1.41.0) : pieds qui glissent sur le tapis ([MESURES_GLISSEMENT.md](audit-biomecanique/MESURES_GLISSEMENT.md)) et membres qui traversent le corps ([MESURES_INTRUSIONS.md](audit-biomecanique/MESURES_INTRUSIONS.md), techniques en attente de correction listées là).
 
 | Technique | Disciplines | Statut | C1 | C2 | C3 | C4 | C5 | C6 | C7 | C8 | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|

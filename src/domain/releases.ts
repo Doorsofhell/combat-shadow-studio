@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.41.0',
+      releaseDate: '2026-11-14',
+      title: 'Mouvements des coachs mieux contrôlés',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Les pieds ne glissent plus sur le tapis : au switch kick, dans les entrées de lutte et de judo, au pont ou à la sortie de hanche, le pied se lève un peu et se pose au bon endroit au lieu d’être traîné.' },
+        { category: 'corrections', text: 'Amara, Naël et Inaya ne serrent plus les poings au-delà d’un poing fermé (doigts trop pliés en garde).' },
+        { category: 'ameliorations', text: 'Nouveaux contrôles automatiques des animations, sur les quatre coachs : animation bien écrite, pieds qui glissent, bras ou jambe qui traverse le corps. Une version qui les casse n’est plus mise en ligne.' },
+      ],
+      links: [{ label: 'Voir les techniques', to: '/techniques' }],
+    },
+    {
       version: '1.40.3',
       releaseDate: '2026-11-13',
       title: 'Amara et Inaya : maquillage léger sportif',

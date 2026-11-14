@@ -48,6 +48,11 @@ jobs:
       - name: Verify punch feel and chaining (v1.33.2)
         run: npm run test -- src/engine/__tests__/punch-feel-v1332.test.ts src/engine/__tests__/torso-chain-v1331.test.ts src/engine/__tests__/hooks-chains.test.ts
 
+      - name: Verify motion engine controls (1.41.0)
+        # contrôles CME, pieds qui glissent, membres qui traversent le corps, contact avec le tapis, chevilles,
+        # torsions des coachs et registre des animations (4 coachs) : une version qui les casse n'est pas publiée
+        run: npm run test -- src/engine/__tests__/integrity.test.ts src/engine/__tests__/glide.test.ts src/engine/__tests__/intrusions.test.ts src/engine/__tests__/floor-contact.test.ts src/engine/__tests__/ankle-range.test.ts src/engine/__tests__/photo-coach.test.ts src/engine/__tests__/registry.test.ts
+
       - name: Verify outfits v1.37.2 — actual regenerated GLBs required
         run: |
           python3 -m py_compile tools/generator/rocketbox/outfits.py
