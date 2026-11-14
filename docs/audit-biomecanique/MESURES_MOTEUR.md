@@ -22,7 +22,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Pont (upa) (`pont`) | sol | 33,8 | 46 % | 0,00 | 3,0 (RightToeBase) | 11° | 0,57 |
 | Pas arrière (`pas-arriere`) | deplacement | 33,0 | 57 % | 0,23 | 3,0 (LeftToeBase) | 6° | 0,17 |
 | Pas latéral gauche (`pas-gauche`) | deplacement | 31,3 | 59 % | 0,24 | 3,0 (LeftToeBase) | 6° | 0,15 |
-| Uchikomi d’o-soto-gari (solo) (`uchikomi-o-soto-gari`) | projection | 30,6 | 33 % | 1,46 | 3,0 (LeftToeBase) | 2° | 0,37 |
+| Uchikomi d’o-soto-gari (solo) (`uchikomi-o-soto-gari`) | projection | 30,7 | 33 % | 1,46 | 3,0 (LeftToeBase) | 2° | 0,37 |
 | Pas latéral droit (`pas-droite`) | deplacement | 30,3 | 59 % | 0,24 | 3,0 (LeftToeBase) | 6° | 0,15 |
 | Relevé depuis les genoux (`releve-genoux`) | sol | 28,7 | 56 % | 1,01 | -0,1 (LeftToeBase) | 4° | 2,55 |
 | Check hook (crochet pivot) (`check-hook`) | poing | 23,7 | 66 % | 0,35 | 3,0 (LeftToeBase) | 20° | 0,40 |

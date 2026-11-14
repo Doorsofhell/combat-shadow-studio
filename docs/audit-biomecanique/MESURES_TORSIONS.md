@@ -62,7 +62,7 @@ au-delà de la référence (pour le genou, de la référence à sa flexion du mo
 | Rotation du tronc (bassin → haut du thorax) | 45° | 31° | non | 32° | non | mma-kadir crochet-avant (muaythai) t=0.29 s |
 | Rotation lombaire (os Spine seul) | 10° | 9° | non | 5° | non | mma-kadir sortie-hanche (mma, gaucher) t=0.33 s |
 | Rotation du cou (thorax → tête) | 80° | 67° | non | 73° | non | mma-amara sit-out (bjj) t=1.42 s |
-| Épaule : rotation interne | 70° | 179° | **+109°** | 98° | **+28°** | mma-kadir sprawl (mma, gaucher, garde du coach) t=0.23 s côté L |
+| Épaule : rotation interne | 70° | 179° | **+109°** | 70° | **+0°** | mma-kadir overhand (kickboxing, gaucher) t=0.47 s côté L |
 | Épaule : rotation externe | 90° | 180° | **+90°** | 90° | non | mma-kadir ukemi-yoko (judo) t=2.03 s côté R |
 | Avant-bras : pronation | 85° | 93° | **+8°** | 58° | non | mma-kadir defense-lutte (mma, gaucher) t=0.22 s côté L |
 | Avant-bras : supination | 85° | 117° | **+32°** | 81° | non | mma-amara uppercut-avant (mma) t=0.26 s côté L |
@@ -82,7 +82,7 @@ au-delà de la référence (pour le genou, de la référence à sa flexion du mo
 
 | Mesure | Avant | Après |
 |---|---|---|
-| Épaule : rotation interne | middle-kick-avant +109°, defense-lutte +105°, pont +97°, retention-garde +97°, changement-base +92°, genou-circulaire-avant +76°, sortie-hanche +73°, releve-technique +61°, … (35) | sprawl +28°, overhand +0°, pont +0°, defense-lutte +0°, descente-sol +0°, sortie-hanche +0°, ukemi-yoko +0°, releve-technique +0°, … (17) |
+| Épaule : rotation interne | middle-kick-avant +109°, defense-lutte +105°, pont +97°, retention-garde +97°, changement-base +92°, genou-circulaire-avant +76°, sortie-hanche +73°, releve-technique +61°, … (35) | overhand +0°, pont +0°, defense-lutte +0°, descente-sol +0°, sortie-hanche +0°, ukemi-yoko +0°, releve-technique +0°, retention-garde +0°, … (17) |
 | Épaule : rotation externe | middle-kick-avant +90°, changement-base +84°, overhand +33°, crochet-avant +23°, genou-circulaire-avant +19°, crochet-avant-corps +11° | ukemi-yoko +0°, overhand +0°, coude-diagonal-avant +0°, changement-base +0°, sit-out +0° |
 | Avant-bras : pronation | changement-base +8°, sprawl +4°, sortie-hanche +4°, retention-garde +4°, pont +4°, releve-technique +4°, descente-sol +4° | — |
 | Avant-bras : supination | uppercut-avant +32°, uppercut-arriere +32° | — |
