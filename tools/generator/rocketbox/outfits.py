@@ -1723,6 +1723,29 @@ def sheet_cut(kind, under=False):
 # every coach, run on the finished files: the other garments of an outfit stay byte for byte as they were)
 
 
+# Proposition « anti-carton » (aperçu, désactivée par défaut) : DRAPE=1 fait tomber le tissu des shorts amples en
+# ondulations verticales douces qui grandissent vers l'ourlet, toujours vers l'extérieur (jamais dans la peau)
+DRAPE = os.environ.get('DRAPE', '0') == '1'
+DRAPE_AMP = float(os.environ.get('DRAPE_AMP', '0.007'))
+DRAPE_LOBES = int(os.environ.get('DRAPE_LOBES', '7'))
+DRAPE_EXP = float(os.environ.get('DRAPE_EXP', '2.0'))
+
+
+def drape(i, s, crotch):
+    c, u = axis_point(i, f'{s}UpLeg', f'{s}Leg')
+    r = P[i] - c
+    r.z = 0
+    if r.length < 1e-6:
+        return Vector((0, 0, 0))
+    th = math.atan2(r.y, r.x) * (1 if s == 'Left' else -1)
+    ph = 0.7 if s == 'Left' else 2.1
+    wave = 0.5 + 0.5 * math.sin(DRAPE_LOBES * th + ph + 0.8 * math.sin(3 * th))
+    wave = wave ** 1.6  # creux larges, plis plus étroits, comme un tissu qui tombe
+    zf = max(0.0, min(1.0, (P[i].z - (hipZ - 0.04)) / -0.18))
+    zf = zf * zf * (3 - 2 * zf)
+    return r.normalized() * DRAPE_AMP * wave * zf * (1 - 0.8 * crotch)
+
+
 def shorts(kind, color, band, n_leg=None, under=False):
     """kind: boxe (loose, to just above the knee, high waistband), kick (fitted, short), thai (short, very wide,
     high waistband), mma (board short, side slits, to the knee), compression"""
@@ -1822,11 +1845,16 @@ def shorts(kind, color, band, n_leg=None, under=False):
             return 0.003
         flare = cut[2] if cut else {'boxe': 0.03, 'thai': 0.075, 'mma': 0.022}[kind]
         crotch = max(0.0, 1 - abs(P[i].x) / 0.05)
-        return loose(i, f'{s}UpLeg', f'{s}Leg', 0.005, lambda u: flare * u ** 1.5 * (1 - 0.7 * crotch) * (0.55 if abs(P[i].x) < abs(axis_point(i, f'{s}UpLeg', f'{s}Leg')[0].x) else 1))
+        base_push = loose(i, f'{s}UpLeg', f'{s}Leg', 0.005, lambda u: flare * u ** (DRAPE_EXP if DRAPE else 1.5) * (1 - 0.7 * crotch) * (0.55 if abs(P[i].x) < abs(axis_point(i, f'{s}UpLeg', f'{s}Leg')[0].x) else 1))
+        if DRAPE and not under and kind in ('boxe', 'thai', 'mma'):
+            base_push = base_push + drape(i, s, crotch)
+        return base_push
 
     # v0.32 (« matières trop brillantes ou plastifiées »): satin keeps a soft sheen but is no longer wet-looking,
     # polyester is matt; the satin relief is shallower (it drew wavy lines)
     sheenK = {'boxe': ('satin', 0.6, 0.35, 0.3), 'thai': ('satin', 0.58, 0.4, 0.3), 'kick': ('serge', 0.62, 0.2, 0.4), 'mma': ('flat', 0.68, 0.1, 1.0), 'compression': ('jersey', 0.78, 0.06, 0.34), 'vale-tudo': ('jersey', 0.8, 0.06, 0.4), 'surshort': ('serge', 0.64, 0.15, 0.35)}[kind]
+    if os.environ.get('SATIN_VIF') == '1' and kind in ('boxe', 'thai'):
+        sheenK = ('satin', 0.3, 0.9, 0.34)  # proposition : satin plus vivant (aperçu)
     body_mat = grad_fabric(f'short-{kind}-degrade', sheenK[0], sheenK[1], sheenK[3], sheenK[2]) if isinstance(color, tuple) else fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3])
     if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
         # Original jersey and per-corner patterned colour panels: no external commercial asset.
