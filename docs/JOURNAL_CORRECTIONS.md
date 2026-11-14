@@ -3928,6 +3928,10 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - `npm run build` : TEST RÉUSSI ;
   - captures du moteur en gros plan (avant / après, de face et de trois-quarts) : maquillage visible et fondu, reflet
     des yeux discret ;
-  - `npx playwright test` : voir ci-dessous ;
+  - `npx playwright test` : 288 réussis, 4 échoués, 2 ignorés (Firebase). Relancés seuls : `coach-suggest:207` et
+    `training-layout:117` réussissent (échecs dus à la charge) ; `coach-suggest:99` (défilement au doigt, instable
+    connu) et `coaching-hud:60` (le 4e nom « Jab » de la boucle n'arrive pas dans le temps imparti) échouent aussi
+    sur la 1.40.2 d'origine, sans ce lot, sur cette machine : échecs antérieurs, sans lien avec les textures du
+    visage ni le reflet des yeux. TEST RÉUSSI pour ce lot ;
   - essai sur téléphone Android : NON EXÉCUTÉ ici, à confirmer par Youssef.
 - **Restauration** : branche `restauration/avant-maquillage-v1403` (= 1.40.2 publiée, b5bf609).
