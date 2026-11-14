@@ -221,11 +221,29 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
       const kh = side === 'rear' ? 'handR' : 'handL';
       const gh = side === 'rear' ? 'handL' : 'handR';
       d[gh] = structuredClone(g[gh]);
-      d[kh] = a.hand('world', v3(-turn * 0.03 * s, y + 0.03 * s, z), v3(-turn * 0.6, -0.6, -0.3), 0.2, 1);
+      d[kh] = a.hand('world', v3(-turn * 0.07 * s, y + 0.03 * s, z), v3(-turn * 0.6, -0.6, -0.3), 0.2, 1);
       return;
     }
     d.handL = a.hand('world', v3(0.07 * s, y, z), v3(0.6, -0.6, -0.3), clinch ? -0.4 : 0.2, clinch ? 0.55 : 1, clinch ? deg(30) : 0);
     d.handR = a.hand('world', v3(-0.07 * s, y, z - 0.02 * s), v3(-0.6, -0.6, -0.3), clinch ? -0.4 : 0.2, clinch ? 0.55 : 1, clinch ? deg(30) : 0);
+    // 1.41.1 (traversées du corps): in the round knee the chest turns with the hips; the framing hands turn with it
+    // and stay in front of it (held straight ahead, the rear forearm crossed the chest, up to 14,6 cm)
+    if (!clinch && kind === 'round' && pull === 0) {
+      // while the hips load, the hands stay in the guard (they only go out to frame for the strike)
+      d.handL = structuredClone(g.handL);
+      d.handR = structuredClone(g.handR);
+      return;
+    }
+    if (!clinch && kind === 'round' && side === 'lead') {
+      const yaw = d.pelvis.yaw + d.chest.yaw - g.pelvis.yaw - g.chest.yaw;
+      const up = new Vector3(0, 1, 0);
+      for (const h of [d.handL, d.handR]) {
+        const v = new Vector3(h.pos.x - d.hips.x, 0, h.pos.z - d.hips.z).applyAxisAngle(up, yaw);
+        h.pos = v3(d.hips.x + v.x, h.pos.y, d.hips.z + v.z);
+        const pl = new Vector3(h.pole.x, h.pole.y, h.pole.z).applyAxisAngle(up, yaw);
+        h.pole = v3(pl.x, pl.y, pl.z);
+      }
+    }
   };
   const load = edit(g, (d) => {
     d.hips.z += 0.04 * s;
@@ -253,6 +271,7 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
   for (const p of [load, hit]) {
     for (const hs of ['L', 'R'] as const) {
       const h = hs === 'L' ? p.handL : p.handR;
+      if (h.space !== 'world') continue;
       const sh = a.shoulder(p, hs);
       const v = new Vector3(h.pos.x, h.pos.y, h.pos.z).sub(sh);
       const min = (a.m.upperArm + a.m.foreArm) * 0.5;

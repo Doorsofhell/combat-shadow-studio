@@ -4172,7 +4172,40 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - essai sur téléphone Android : NON EXÉCUTÉ.
 - **Restauration** : `restauration/avant-victor-v1431` (état 1.43.0, commit 8558e80).
 
-## 2026-11-14 · v1.44.2 · Shorts : entrejambe sans membrane et plis textiles
+
+## 2026-11-14 · v1.45.0 · Membres qui traversent le corps et épaules en pointe
+
+- **Constat vérifié** (mesure `intrusions.test.ts` sur la peau des coachs, base 1.41.0, et captures du Lab) : dans
+  33 techniques un membre entrait de plus de 2 cm dans le corps ; les pires : défense contre l'amené au sol 14,8 cm
+  (avant-bras dans la poitrine), sprawl 14,6, genou circulaire avant 14,6, o-soto-gari 14,8, uppercut arrière 10,7,
+  genou direct arrière 9,8. Après correction, Youssef a signalé sur ses captures que l'épaule formait une pointe quand
+  le buste se penche bras devant : la clavicule restait immobile.
+- **Correction** :
+  - `src/engine/rig.ts` : `handOutOfTrunk` (main cible ramenée à la surface du tronc, ellipses par os de la colonne
+    mesurées sur la peau, `trunkCore`) ; la clavicule suit le bras (0,3 rad au plus) seulement quand le bras monte et
+    que le buste se penche en avant. Première version retirée : une rotation automatique du coude donnait des poses
+    « impossibles, pas humaines » (retour de Youssef, 15:43) ; une clavicule à 0,5 rad sans condition déformait le
+    coup de pied haut.
+  - trajets corrigés geste par geste : `src/engine/library/mma.ts` (défense de lutte, sprawl),
+    `src/engine/library/legs.ts` (genou circulaire : garde pendant la charge, mains qui tournent avec le buste ; genou
+    direct), `src/engine/library/grappling.ts` (main au revers dans o-soto-gari).
+  - Moteur 1.2.0 (`src/engine/index.ts`, `docs/moteur/CHANGELOG.md`). Modèles, visages et tenues inchangés.
+- **Résultat** : défense de lutte 14,8 → 3,7 cm, sprawl et genou circulaire avant sous 2 cm (retirés de la liste
+  d'attente), o-soto 7,6, uppercut arrière 7,0, genou direct arrière 5,2. Avant/après validé par Youssef.
+- **Fichiers** : `src/engine/rig.ts`, `src/engine/library/{mma,legs,grappling}.ts`, `src/engine/index.ts`,
+  `src/engine/__tests__/intrusions.test.ts`, documents de mesures régénérés (`docs/audit-biomecanique/`,
+  `docs/v042-crochets/`, `docs/v1100/`), `src/ui/pictos/techniquePictos.json`, `package.json`,
+  `src/domain/releases.ts`.
+- **Tests** : bornes de `intrusions.test.ts` abaissées à min(nouvelle mesure + 0,2 cm, ancienne borne), jamais
+  relevées ; Victor (arrivé en 1.43.0) : bornes abaissées de même, uppercut arrière borné à 7,9 cm (8,2 en 1.43.0,
+  7,7 maintenant) car la borne commune tombe à 7,0. Vitest : 1544 réussis, 5 échecs déjà présents avant ce lot
+  (extension-v032 uppercut, fluidité ×2, crochets « pas d'armé », poids du modèle d'Amara) : TEST ÉCHOUÉ, non liés.
+  Playwright : 293 réussis, 2 ignorés (Firebase), 4 échecs ; relancés seuls, chrono-seul:96 et coach-suggest:99
+  passent ; coaching-hud:60 et training-layout:117 échouent aussi sur la base 1.44.0 (`f5941f1`) : TEST ÉCHOUÉ, non
+  liés à ce lot. Build : TEST RÉUSSI.
+- **Restauration** : branche `restauration/avant-traversees-v1450` (= 1.44.0, `f5941f1`).
+
+## 2026-11-14 · v1.45.1 (lot préparé en 1.44.2) · Shorts : entrejambe sans membrane et plis textiles
 
 - **Demande** : Youssef, 2026-11-14 22:28, « Correction des shorts 3D — Entrejambe et réalisme textile » (deux captures du
   short de kick-boxing de Victor en 1.44.1 : une bande de tissu claire relie les deux jambes au niveau des ourlets).
@@ -4213,7 +4246,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   à jour, raison : les plis demandés par Youssef pour tous les coachs changent les shorts de Naël et d'Inaya
   (`outfit-amara-v1374.test.ts` Inaya boxe/kick-boxing/muay-thaï/MMA, `outfit-references-v1372.test.ts` MMA de Naël et
   d'Inaya ; anciennes valeurs dans l'historique git) ; `src/boot/assetSizes.json` régénéré. `npm run build` TEST RÉUSSI
-  (titre v1.44.2). `npx playwright test` (en deux passes) : 299 réussis, 2 échecs connus qui échouent aussi sur 1.42.0
+  (titre v1.44.2, puis v1.45.1 après fusion de la 1.45.0). `npx playwright test` (en deux passes) : 299 réussis, 2 échecs connus qui échouent aussi sur 1.42.0
   et 1.44.0 (`coaching-hud:60`, `training-layout:117`). Android : NON EXÉCUTÉ. Captures avant/après (20 vues, 5 coachs,
   face, profil, high kick) : https://claude.ai/artifact/Hprx3xX5f6dMwJeSNWWFrz.
 - **Restauration** : branche `restauration/avant-shorts-v1442` (= 1.44.1).
