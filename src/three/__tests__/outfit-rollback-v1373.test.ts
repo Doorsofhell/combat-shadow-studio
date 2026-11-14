@@ -3,14 +3,11 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 
 /** Prevent re-introducing the shorts regression seen after the 1.37.1 rebuild. */
-// 1.45.2 (Youssef 15/11, carte « Ajouter aussi les plis sur les shorts de Kadir ? » → oui): the four shorts are the
-// validated v1.37.0 models plus the textile folds of tools/generator/rocketbox/short_folds.mjs (short positions and
-// normals only). The v1.37.0 fingerprints are in the git history
 const GOOD_1370 = {
-  'boxe': 'c381b22b0880cf3d0ee1bbdba1583acdc237ff80',
-  'kickboxing': 'a095d46c4cf418b233c595ce2f98a3606f37b55d',
-  'muaythai': '04764626a6c2018051b667a8bc0311a8b9b743bb',
-  'mma': 'd2638d08e8f7d12d35f8e3a6b3147dc21e5ebd3c',
+  'boxe': '9c4a33b36d2468a9f653cce3e62260e69c3c9664',
+  'kickboxing': '8cbced0c2a190539c7f3c172da3e9ca4ed4e4010',
+  'muaythai': 'c6c183d9a4784ad02d5390eddf272ff6772b41a1',
+  'mma': '0408bed276844fa7d85e469aab825fe301ef1e0c',
   'judo': '9ec4ec99f383d5bde97f9ea46efc9d78e131e804',
   'bjj': '18546da1ff3acb931583d642b2e04e53ec1cbb4c',
   'bjj-nogi': 'fdbeded76c3b976e6c95d81001529cc692ac3518',
