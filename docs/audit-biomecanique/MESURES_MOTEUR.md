@@ -15,14 +15,14 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 |---|---|---|---|---|---|---|---|
 | Sprawl (`sprawl`) | lutte | 70,3 | 41 % | 0,08 | -5,7 (LeftLeg) | 4° | 0,65 |
 | Entrée en double-leg (solo) (`entree-lutte`) | lutte | 43,6 | 46 % | 0,14 | 3,0 (LeftToeBase) | 9° | 0,54 |
-| Descente contrôlée au sol (`descente-sol`) | sol | 39,9 | 11 % | 0,03 | 3,0 (LeftToeBase) | 11° | 0,92 |
+| Descente contrôlée au sol (`descente-sol`) | sol | 39,8 | 11 % | 0,03 | 3,0 (LeftToeBase) | 11° | 0,92 |
 | Entrée en single-leg (solo) (`single-leg`) | lutte | 36,7 | 49 % | 0,19 | 3,0 (LeftToeBase) | 9° | 1,85 |
 | Pas avant (`pas-avant`) | deplacement | 34,5 | 57 % | 0,23 | 3,0 (LeftToeBase) | 6° | 0,17 |
 | Sortie d’angle (`sortie-angle`) | deplacement | 34,2 | 74 % | 0,26 | 3,0 (LeftToeBase) | 8° | 0,22 |
 | Pont (upa) (`pont`) | sol | 33,8 | 46 % | 0,00 | 3,0 (RightToeBase) | 11° | 0,57 |
 | Pas arrière (`pas-arriere`) | deplacement | 33,0 | 57 % | 0,23 | 3,0 (LeftToeBase) | 6° | 0,17 |
 | Pas latéral gauche (`pas-gauche`) | deplacement | 31,3 | 59 % | 0,24 | 3,0 (LeftToeBase) | 6° | 0,15 |
-| Uchikomi d’o-soto-gari (solo) (`uchikomi-o-soto-gari`) | projection | 30,7 | 33 % | 1,46 | 3,0 (LeftToeBase) | 2° | 0,37 |
+| Uchikomi d’o-soto-gari (solo) (`uchikomi-o-soto-gari`) | projection | 30,6 | 31 % | 1,46 | 3,0 (LeftToeBase) | 2° | 0,37 |
 | Pas latéral droit (`pas-droite`) | deplacement | 30,3 | 59 % | 0,24 | 3,0 (LeftToeBase) | 6° | 0,15 |
 | Relevé depuis les genoux (`releve-genoux`) | sol | 28,7 | 56 % | 1,01 | -0,1 (LeftToeBase) | 4° | 2,55 |
 | Check hook (crochet pivot) (`check-hook`) | poing | 23,7 | 66 % | 0,35 | 3,0 (LeftToeBase) | 20° | 0,40 |
@@ -60,8 +60,8 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Esquive extérieure (`esquive-droite`) | defense | 5,0 | 75 % | 0,00 | 3,0 (LeftToeBase) | 16° | 0,00 |
 | Low kick droit (`low-kick-arriere`) | pied | 4,8 | 2 % | 0,64 | 3,0 (LeftToeBase) | 22° | 0,21 |
 | Roundhouse kick (`roundhouse-arriere`) | pied | 4,4 | 2 % | 0,52 | 3,0 (LeftToeBase) | 23° | 0,03 |
-| Genou circulaire avant (`genou-circulaire-avant`) | genou | 4,2 | 16 % | 0,53 | 3,0 (LeftToeBase) | 21° | 0,02 |
 | Roll de l’autre côté (`roll-gauche`) | defense | 4,1 | 46 % | 0,00 | 3,0 (LeftToeBase) | 7° | 0,00 |
+| Genou circulaire avant (`genou-circulaire-avant`) | genou | 4,0 | 15 % | 0,53 | 3,0 (LeftToeBase) | 21° | 0,02 |
 | Genou direct avant (`genou-direct-avant`) | genou | 4,0 | 15 % | 0,53 | 3,0 (LeftToeBase) | 4° | 0,02 |
 | Rotation sous le crochet (roll) (`roll-droite`) | defense | 3,9 | 54 % | 0,00 | 3,0 (LeftToeBase) | 7° | 0,00 |
 | Jab au corps (`jab-corps`) | poing | 3,5 | 52 % | 0,00 | 3,0 (LeftToeBase) | 21° | 0,00 |
@@ -70,10 +70,10 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Rétention de garde (solo) (`retention-garde`) | sol | 2,7 | 15 % | 0,00 | 3,0 (RightToeBase) | 11° | 0,44 |
 | Posture debout de grappling (`garde-bjj`) | garde | 1,2 | 100 % | 0,00 | 3,0 (LeftToeBase) | 2° | 0,00 |
 | Genou circulaire dans le clinch (`genou-circulaire-clinch`) | clinch | 1,0 | 2 % | 0,50 | 3,0 (LeftToeBase) | 29° | 0,01 |
-| Genou circulaire (`genou-circulaire-arriere`) | genou | 1,0 | 2 % | 0,50 | 3,0 (LeftToeBase) | 29° | 0,01 |
 | Genou dans le clinch (`genou-clinch`) | clinch | 0,9 | 2 % | 0,50 | 3,0 (LeftToeBase) | 12° | 0,01 |
 | Overhand (`overhand`) | poing | 0,9 | 21 % | 0,00 | 3,0 (LeftToeBase) | 22° | 0,00 |
 | Genou direct (`genou-direct-arriere`) | genou | 0,7 | 2 % | 0,50 | 3,0 (LeftToeBase) | 12° | 0,01 |
+| Genou circulaire (`genou-circulaire-arriere`) | genou | 0,7 | 2 % | 0,50 | 3,0 (LeftToeBase) | 29° | 0,01 |
 | Jab (`jab`) | poing | 0,7 | 18 % | 0,00 | 3,0 (LeftToeBase) | 21° | 0,00 |
 | Blocage haut (`blocage-haut`) | defense | 0,6 | 61 % | 0,00 | 3,0 (LeftToeBase) | 6° | 0,00 |
 | Crochet gauche au corps (`crochet-avant-corps`) | poing | 0,6 | 11 % | 0,00 | 3,0 (LeftToeBase) | 26° | 0,00 |
@@ -169,6 +169,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `judo-avance-06` | uchikomi-ko-uchi-gari | 2,2 | 6,58 | 0,71 |
 | `muaythai-expert-04` | clinch-tirage → genou-clinch → genou-circulaire-clinch → genou-clinch → coude-diagonal-arriere → coude-montant-arriere | 19,9 | 0,36 | 0,35 |
 | `muaythai-expert-10` | coude-horizontal-avant → coude-horizontal-arriere → genou-direct-arriere → genou-circulaire-avant → coude-diagonal-arriere → coude-montant-arriere | 17,5 | 0,36 | 0,34 |
+| `muaythai-avance-09` | genou-circulaire-avant → coude-diagonal-arriere → crochet-avant | 15,8 | 0,36 | 0,34 |
 | `muaythai-debutant-11` | jab → direct → genou-direct-arriere | 17,5 | 0,27 | 0,25 |
 | `muaythai-avance-01` | jab → direct → crochet-avant → genou-direct-arriere | 17,5 | 0,27 | 0,25 |
 | `muaythai-intermediaire-04` | direct → genou-direct-arriere → coude-horizontal-avant | 17,5 | 0,27 | 0,25 |
@@ -200,8 +201,9 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `muaythai-expert-08` | teep-avant → jab → direct → low-kick-arriere → check-avant → middle-kick-arriere → genou-direct-arriere | 17,5 | 0,27 | 0,06 |
 | `kickboxing-debutant-12` | genou-direct-arriere | 15,8 | 0,04 | 0,03 |
 | `kickboxing-intermediaire-13` | jab → crochet-avant → genou-direct-arriere | 15,8 | 0,04 | 0,03 |
-| `muaythai-intermediaire-08` | genou-circulaire-arriere | 18,4 | 0,04 | 0,03 |
+| `kickboxing-intermediaire-12` | genou-circulaire-arriere | 15,2 | 0,04 | 0,03 |
 | `muaythai-debutant-07` | genou-direct-arriere | 17,5 | 0,04 | 0,03 |
+| `muaythai-intermediaire-08` | genou-circulaire-arriere | 18,4 | 0,04 | 0,03 |
 | `mma-intermediaire-07` | front-kick-avant → jab → changement-niveau | 16,7 | 0,05 | 0,02 |
 | `judo-avance-02` | tsugi-ashi-arriere → kuzushi → uchikomi-seoi | 20,3 | 2,05 | 0,00 |
 | `judo-expert-02` | tsugi-ashi-lateral → tai-sabaki → kuzushi → uchikomi-seoi → tsugi-ashi-arriere → uchikomi-seoi | 20,3 | 2,05 | 0,00 |
@@ -213,4 +215,4 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `kickboxing-avance-12` | jab → direct → middle-kick-arriere → genou-direct-arriere | 15,8 | 0,18 | 0,00 |
 | `kickboxing-expert-12` | jab → direct → genou-direct-arriere → crochet-avant → low-kick-arriere | 15,8 | 0,18 | 0,00 |
 
-Exercices sans glissement ajouté de plus de 0,5 cm par image ni saut de plus de 15 cm : 153 sur 254.
+Exercices sans glissement ajouté de plus de 0,5 cm par image ni saut de plus de 15 cm : 151 sur 254.

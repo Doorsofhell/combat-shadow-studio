@@ -10,16 +10,16 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 
 ## Total, 6 styles de garde
 
-528 animations, 2226 poses clés intérieures. Arrêts parasites : **2170 avant, 624 après**.
+528 animations, 2226 poses clés intérieures. Arrêts parasites : **2172 avant, 604 après**.
 
 | Style | Animations | Arrêts avant | Arrêts après |
 |---|---|---|---|
-| boxing | 88 | 356 | 101 |
-| kickboxing | 88 | 357 | 98 |
-| mma | 88 | 360 | 105 |
-| muaythai | 88 | 365 | 103 |
-| bjj | 88 | 363 | 107 |
-| judo | 88 | 369 | 110 |
+| boxing | 88 | 356 | 96 |
+| kickboxing | 88 | 358 | 99 |
+| mma | 88 | 359 | 100 |
+| muaythai | 88 | 365 | 99 |
+| bjj | 88 | 363 | 103 |
+| judo | 88 | 371 | 107 |
 
 ## Détail, garde de boxe
 
@@ -70,8 +70,8 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `front-kick-arriere` | 4 | 2 | 2 | 6,0 | 6,0 | 13,0 | 13,0 | 6,4 | 6,4 |
 | `genou-direct-arriere` | 8 | 12 | 4 | 7,4 | 7,4 | 14,8 | 14,8 | 8,0 | 8,0 |
 | `genou-direct-avant` | 8 | 12 | 4 | 5,3 | 5,3 | 20,1 | 20,1 | 5,7 | 5,7 |
-| `genou-circulaire-arriere` | 8 | 10 | 4 | 8,6 | 8,6 | 17,5 | 17,5 | 9,4 | 9,4 |
-| `genou-circulaire-avant` | 8 | 13 | 5 | 6,3 | 6,3 | 19,2 | 19,2 | 6,9 | 6,9 |
+| `genou-circulaire-arriere` | 8 | 10 | 2 | 8,6 | 8,6 | 17,5 | 17,5 | 9,4 | 9,4 |
+| `genou-circulaire-avant` | 8 | 13 | 2 | 6,3 | 6,3 | 19,2 | 19,2 | 6,8 | 6,8 |
 | `genou-direct-arriere-clinch` | 8 | 12 | 5 | 7,4 | 7,4 | 14,8 | 14,8 | 8,1 | 8,1 |
 | `genou-circulaire-arriere-clinch` | 8 | 10 | 4 | 8,6 | 8,6 | 17,5 | 17,5 | 9,4 | 9,4 |
 | `check-avant` | 2 | 0 | 0 | 0,0 | 0,0 | 9,1 | 9,1 | 0,0 | 0,0 |
@@ -106,7 +106,7 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `ayumi-ashi` | 3 | 0 | 0 | 0,5 | 0,5 | 5,5 | 5,5 | – | – |
 | `kumikata` | 4 | 0 | 0 | 2,2 | 2,2 | 2,5 | 2,5 | 0,0 | 0,0 |
 | `uchikomi-o-goshi` | 4 | 1 | 0 | 11,9 | 11,9 | 11,9 | 11,9 | 0,0 | 0,0 |
-| `uchikomi-o-soto-gari` | 6 | 3 | 1 | 10,8 | 10,8 | 10,4 | 10,4 | 0,0 | 0,0 |
+| `uchikomi-o-soto-gari` | 6 | 3 | 1 | 10,7 | 10,7 | 10,4 | 10,4 | 0,0 | 0,0 |
 | `uchikomi-o-uchi-gari` | 8 | 5 | 3 | 4,4 | 4,4 | 4,2 | 4,2 | 0,0 | 0,0 |
 | `uchikomi-ko-uchi-gari` | 6 | 2 | 1 | 3,7 | 3,7 | 5,4 | 5,4 | 0,0 | 0,0 |
 | `ukemi-ushiro` | 9 | 12 | 0 | 3,4 | 3,4 | 5,8 | 5,5 | 3,6 | 3,6 |
