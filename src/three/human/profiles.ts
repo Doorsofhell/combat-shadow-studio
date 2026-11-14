@@ -43,6 +43,8 @@ export const HUMAN_PROFILES: Record<string, HumanProfile> = {
   'mma-amara': p('mma-amara', { expressiveness: 1.1, warmth: 1, stamina: 1 }, 1),
   nael: p('nael', { expressiveness: 1, warmth: 1.1, stamina: 1 }, 1.05),
   inaya: p('inaya', { expressiveness: 1.05, warmth: 1, stamina: 1.1 }, 1),
+  // 1.43 Victor, vétéran posé : visage calme, sourire rare mais chaleureux, endurant
+  victor: p('victor', { expressiveness: 0.95, warmth: 0.95, stamina: 1.2 }, 0.9),
 };
 
 /** standard profile, given automatically to a model the registry does not know (its tests will still fail) */

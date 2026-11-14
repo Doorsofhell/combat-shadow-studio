@@ -6,16 +6,16 @@
 set -e
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 ONLY=${1:-boxe,kickboxing,muaythai,mma,bjj,bjj-nogi,judo}
-COACHES=${2:-mma-kadir,mma-amara,nael,inaya}
+COACHES=${2:-mma-kadir,mma-amara,nael,inaya,victor}
 WORK=${WORK:-${TMPDIR:-/tmp}/css-outfits}
 for c in $(echo "$COACHES" | tr ',' ' '); do
   case $c in
-    mma-kadir|nael) sex=homme ;;
+    mma-kadir|nael|victor) sex=homme ;;
     *) sex=femme ;;
   esac
   # 1.11: Naël and Inaya wear their own colours (outfits.py, palette by coach id)
   case $c in
-    nael|inaya) pal=$c ;;
+    nael|inaya|victor) pal=$c ;;
     *) pal= ;;
   esac
   # 1.37: Axel and Kaila (MakeHuman bodies, MH_BODY=1) are removed, see « backup CS/ »

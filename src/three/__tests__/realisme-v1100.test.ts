@@ -10,7 +10,7 @@ import { DEFAULT_SKIN, SKIN_SHADER_OK } from '../skinShader';
  * accessoires »), checked on the shipped files of the four coaches. Spatial checks: which bone moves which part
  * of a garment, measured where the part is (a list of bone names alone did not see the inverted glove weights).
  */
-const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya'];
+const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor'];
 const file = (c: string, o: string) => `public/coaches/${c}/tenues/${o}.glb`;
 
 describe('gants de boxe et de thaï : poids répartis selon la position', () => {

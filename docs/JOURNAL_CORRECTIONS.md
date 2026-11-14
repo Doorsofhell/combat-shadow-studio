@@ -4038,3 +4038,61 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Limite** : chemin de l'application Android (APK) non exécuté ici ; il passe par la même garde.
 - **Captures** : `docs/v1420/captures/` (prises sur la 1.34.0 d'origine, écran inchangé).
 - **Restauration** : état 1.41.0 (commit 8ef0b54 de `claude/project-thread-o7lrt8`).
+
+## 2026-11-14 · v1.43.0 · Nouveau coach : Victor « Le Loup gris »
+
+- **Demande** : Youssef, 2026-11-14 11:08 « Intégrer a l'application », après validation de l'essai (visage, bouche,
+  arrière de la tête, teint, cheveux poivre et sel, tenues) fait d'après ses planches de personnage (il a généré le
+  personnage lui-même et autorise son usage).
+- **Constat** : l'application comptait quatre coachs (Kadir, Naël, Amara, Inaya). Kadir ne doit pas changer sans
+  l'accord de Youssef.
+- **Correction** :
+  - modèle `public/coaches/victor/photo.glb` (3,1 Mo) fait à partir d'une **copie** de celui de Kadir
+    (`tools/generator/rocketbox/victor_build.mjs`) : mêmes os, mêmes poids, mêmes 25 expressions ARKit ; forme de la
+    tête, carrure, volume des cheveux et textures de Victor ; os `LeftEye`/`RightEye` déplacés avec les yeux.
+    Le fichier de Kadir est inchangé (même empreinte) ;
+  - chaîne de fabrication gardée dans `tools/generator/victor/` (scripts Blender et Python, données, README) ;
+  - sept tenues générées par `outfits.py` avec une palette `victor` (boxe noire avec protège-tibias, kick-boxing
+    noir et rouge, muay-thaï avec chevillères, MMA, JJB avec kimono bleu marine, JJB no-gi en legging et short,
+    judo blanc) ; portrait généré par `npm run visuels -- --only portraits --id victor` ;
+  - catalogue (cinq coachs, Victor 93 kg mesuré sur le modèle), apparence, profil humain `contract: 'complet'`
+    (expressivité 0,95, chaleur 0,95, endurance 1,2, clignements 0,9), peau, Coach IA (« cinq coachs ») ;
+  - garde propre : haute et compacte. Une première version (mains plus hautes, coude arrière serré) mettait
+    l'avant-bras arrière 4,9 cm dans le torse en garde de boxe : main arrière un peu plus basse et en avant
+    (`rearHand [0, -0.02, 0.03]`), plus aucune traversée en garde.
+- **Tests adaptés** (aucun contrôle affaibli pour les quatre autres coachs) :
+  - Victor ajouté à toutes les listes de coachs des tests (moteur humain, visage, regard, respiration, tenues,
+    squelette, sol, glissement, traversées, déformations, intégrité) ; « quatre coachs » devient « cinq » ;
+  - `expressions-v1160` : la lecture des cibles creuses suit maintenant la règle glTF (indices 16 ou 32 bits, décalage
+    propre à chaque partie, accesseur sans données = zéros). Les fichiers de glTF-Transform l'utilisent ; les
+    contrôles eux-mêmes sont les mêmes ;
+  - `outfit-assets-v1372` : les tenues de Victor portent la version de générateur 1.43.0 ;
+  - écarts propres à Victor, mesurés et bornés pour lui seul (ils ne peuvent pas empirer), dus à son corps plus
+    large que celui de Kadir pour les mêmes trajets : traversées de quelques millimètres de plus que les bornes de la
+    1.41.0 dans 12 techniques déjà en attente ou proches (`VICTOR_PENDING`, `intrusions.test.ts`, détail dans
+    `MESURES_INTRUSIONS.md`) ; avant-bras à 3,0 cm dans le tapis dans la chute arrière (`ukemi-ushiro`, borne
+    3,2 cm) ; glissement de `changement-base` à 13,20 cm par image (borne 13,3) ; genou en squat : plus petit
+    triangle à 0,091 du repos au lieu de 0,111 chez Kadir (`deformation-v1100`, Victor comparé à la peau de Kadir
+    d'aujourd'hui) ;
+  - documents de mesures régénérés (`MESURES_INTRUSIONS`, `MESURES_SOL`, `MESURES_GLISSEMENT`, `MESURES_INTEGRITE`,
+    `MESURES_DEFORMATIONS`, `ANIMATIONS.md`).
+- **Fichiers** : `public/coaches/victor/`, `tools/generator/victor/`, `tools/generator/rocketbox/{victor_build.mjs,
+  outfits.py,regen_outfits.sh}`, `src/domain/coaches/{catalog,looks,motion}.ts`, `src/three/human/profiles.ts`,
+  `src/three/photoMaterials.ts`, `src/coach/appGuide.ts`, `scripts/visuels/generate.mjs`, `src/boot/assetSizes.json`,
+  `src/domain/releases.ts`, `package.json`, tests listés ci-dessus.
+- **Limites connues** : léger raccord au milieu du front, quelques taches orangées sur le dessus du crâne ; tenues
+  encore génériques (bandes rouges du short de kick-boxing, inscriptions du short de muay-thaï, kimono plus fin) :
+  lot suivant, d'après les planches.
+- **Restauration** : `restauration/avant-victor-v1430` (état 1.42.0, commit d1f3ccc).
+- **Tests** (sur la 1.42.0 + ce lot) :
+  - `npm run build` (titre v1.43.0) : TEST RÉUSSI ;
+  - `npx vitest run` : 1534 réussis, 5 échoués, 1 ignoré ; les 5 échecs sont ceux déjà notés pour la 1.41.0 et la
+    1.42.0 (uppercut-arriere v0.32, fluidité × 2, crochets « pas d'armé », taille du modèle d'Amara) : TEST RÉUSSI
+    pour ce lot ;
+  - `npx playwright test` (299 tests, 57 min) : 287 réussis, 10 échoués, 2 ignorés (Firebase). Six échecs venaient
+    de l'écran de choix passé à cinq coachs (`coachs-v160`) : tests mis à jour (Victor dans les listes, cinq vignettes,
+    part de largeur pour cinq), rejoués : TEST RÉUSSI. `consignes-v130:27` : RÉUSSI rejoué seul. `coaching-hud:60` :
+    échec connu de la 1.41.0. `boot:98` et `training-layout:117` (ouvrir une séance par son adresse) échouent aussi
+    sur la 1.42.0 d'origine dans ce même environnement (vérifié sur `d1f3ccc`) : ÉCHOUÉ, sans lien avec ce lot, à
+    examiner à part ;
+  - essai sur téléphone Android : NON EXÉCUTÉ.

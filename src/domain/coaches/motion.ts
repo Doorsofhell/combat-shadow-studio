@@ -40,6 +40,16 @@ export const COACH_STANCES: Record<string, StanceOffsets> = {
     fist: 0.15,
     rearHeel: deg(5),
   },
+  // 1.43 Victor « Le Loup gris »: vétéran, garde haute et compacte, menton rentré, poings fermés près du visage
+  victor: {
+    knee: 0.02,
+    pelvisYaw: deg(-3),
+    chestPitch: deg(4),
+    leadHand: [0, 0.01, 0],
+    rearHand: [0, -0.02, 0.03],
+    fist: 0.2,
+    rearHeel: deg(4),
+  },
   // Inaya « La Panthère »: kicker, side-on, on the balls of the feet, hands high
   inaya: {
     knee: -0.01,

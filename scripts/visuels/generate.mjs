@@ -146,7 +146,7 @@ for (const a of ART) {
 }
 
 // portraits of the four coaches (1.37: Axel and Kaila, MakeHuman, removed)
-const PORTRAIT = { 'mma-kadir': ['1.04', '0.86'], 'mma-amara': ['1.04', '0.86'], nael: ['1.04', '0.86'], inaya: ['1.04', '0.86'] };
+const PORTRAIT = { 'mma-kadir': ['1.04', '0.86'], 'mma-amara': ['1.04', '0.86'], nael: ['1.04', '0.86'], inaya: ['1.04', '0.86'], victor: ['1.04', '0.86'] };
 for (const [c, [span, fy]] of Object.entries(PORTRAIT)) {
   if (!want('portraits', c) || !inD('mma')) continue;
   const png = `${CACHE}/portraits/${c}.png`;
