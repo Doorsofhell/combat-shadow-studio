@@ -177,7 +177,7 @@ function sprawl(a: Author): Motion {
     d.pelvis.pitch += deg(40);
     d.chest.pitch += deg(20);
     d.head.pitch += deg(-35);
-    press(d, 0.5 * s, 0.6 * s, 0.28, -0.6);
+    press(d, 0.5 * s, 0.6 * s, 0.34, -0.6);
   });
   const kick = edit(drop, (d) => {
     press(d, 0.06 * s, 0.4 * s);
@@ -259,8 +259,8 @@ function takedownDefence(a: Author): Motion {
     const y = a.target('body').y - 0.12 * s;
     // elbows back and close to the body, not flared to the side: the hands frame the opponent's
     // shoulders without the upper arm turning in on itself
-    d.handL = a.hand('world', v3(0.18 * s, y, 0.5 * s), v3(0.55, -0.45, -0.7), 1, 0.3, deg(-30));
-    d.handR = a.hand('world', v3(-0.24 * s, y, 0.56 * s), v3(-0.7, -0.45, -0.55), 1, 0.3, deg(-30));
+    d.handL = a.hand('world', v3(0.18 * s, y, 0.54 * s), v3(0.5, -0.75, -0.4), 1, 0.3, deg(-30));
+    d.handR = a.hand('world', v3(-0.24 * s, y, 0.6 * s), v3(-0.6, -0.75, -0.35), 1, 0.3, deg(-30));
   });
   return {
     id: 'defense-lutte',

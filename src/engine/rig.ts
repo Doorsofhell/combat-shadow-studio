@@ -73,6 +73,12 @@ const tmpV2 = new Vector3();
 const tmpQ = new Quaternion();
 const tmpQ2 = new Quaternion();
 
+/**
+ * 1.41.1 (« épaules en pic »): extra protraction of the clavicle (radians) behind an arm raised forward
+ * (elevation from..from+span) while the trunk is bent over (bentFrom..bentFrom+bentSpan); the guard (trunk ~24°) is
+ * not concerned
+ */
+const CLAVICLE_FOLLOW = { angle: 0.3, from: 70 * (Math.PI / 180), span: 30 * (Math.PI / 180), bentFrom: 30 * (Math.PI / 180), bentSpan: 20 * (Math.PI / 180) };
 /** 1.41.1: share of the skin's reach that the trunk's inner volume takes (inside the flesh) */
 const TRUNK_CORE = 0.85;
 /** 1.41.1: thickness of the hand around its bone (m, for a 1.80 m body) */
@@ -820,7 +826,15 @@ export class CoachRig {
       const fwd = clamp((local.z - 0.25) / 0.35, 0, 1);
       const up = clamp((local.y - 0.05) / 0.3, 0, 1);
       const sgn = s === 'L' ? 1 : -1;
-      const prot = new Quaternion().setFromAxisAngle(UP, -sgn * 0.16 * fwd);
+      // 1.41.1 (Youssef 2026-11-14, « épaules en pic »): the shoulder blade follows an arm reaching forward (scapulo-
+      // humeral rhythm). Without it, when the trunk bent over an arm held out in front (defence against a takedown,
+      // sprawl), the skin at the back of the shoulder folded into a point. Only with the trunk bent over: the guard
+      // keeps its shoulders.
+      const elev = Math.acos(clamp(-local.clone().normalize().y, -1, 1));
+      // bent forward only (the chest's front turned toward the floor), not leaning back as in a high kick
+      const bent = Math.asin(clamp(-new Vector3(0, 0, 1).applyQuaternion(trunk).y, -1, 1));
+      const flex = clamp((elev - CLAVICLE_FOLLOW.from) / CLAVICLE_FOLLOW.span, 0, 1) * clamp((bent - CLAVICLE_FOLLOW.bentFrom) / CLAVICLE_FOLLOW.bentSpan, 0, 1);
+      const prot = new Quaternion().setFromAxisAngle(UP, -sgn * Math.max(0.16 * fwd, CLAVICLE_FOLLOW.angle * flex));
       const shrug = new Quaternion().setFromAxisAngle(new Vector3(0, 0, 1), sgn * (0.06 * fwd + 0.08 * up));
       this.setWorldQ(sh, trunk.clone().multiply(prot).multiply(shrug).multiply(sh.worldQ));
     }

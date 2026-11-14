@@ -21,12 +21,12 @@ Chaque case : **pli** (accentuation du pli par rapport au repos, 99e centile, de
 | high kick | coudes | 73° · 0.17 · 1.77 | 70° · 0.04 · 1.88 | 90° · 0.16 · 1.82 | 70° · 0.07 · 1.52 |
 | high kick | aine, bassin | 102° · 0.07 · 7.63 | 72° · 0.11 · 1.47 | 107° · 0.11 · 1.47 | 66° · 0.10 · 1.44 |
 | high kick | genoux | 58° · 0.26 · 2.38 | 49° · 0.20 · 1.72 | 52° · 0.40 · 2.00 | 50° · 0.11 · 1.75 |
-| squat (changement de niveau) | aisselles, omoplates | 60° · 0.07 · 1.83 | 27° · 0.25 · 1.73 | 58° · 0.07 · 1.78 | 13° · 0.36 · 1.55 |
-| squat (changement de niveau) | coudes | 69° · 0.16 · 1.75 | 60° · 0.05 · 1.76 | 86° · 0.14 · 1.73 | 54° · 0.08 · 1.43 |
+| squat (changement de niveau) | aisselles, omoplates | 58° · 0.07 · 1.85 | 27° · 0.25 · 1.72 | 54° · 0.07 · 1.80 | 13° · 0.37 · 1.55 |
+| squat (changement de niveau) | coudes | 71° · 0.16 · 1.75 | 60° · 0.05 · 1.76 | 86° · 0.14 · 1.73 | 54° · 0.08 · 1.43 |
 | squat (changement de niveau) | aine, bassin | 129° · 0.02 · 4.99 | 103° · 0.07 · 1.62 | 119° · 0.02 · 1.41 | 116° · 0.02 · 1.61 |
 | squat (changement de niveau) | genoux | 131° · 0.11 · 3.13 | 106° · 0.05 · 2.29 | 141° · 0.14 · 2.64 | 118° · 0.03 · 2.29 |
-| bras levés (blocage haut) | aisselles, omoplates | 76° · 0.07 · 3.64 | 51° · 0.17 · 2.46 | 64° · 0.06 · 3.13 | 31° · 0.11 · 1.90 |
-| bras levés (blocage haut) | coudes | 84° · 0.08 · 1.66 | 83° · 0.05 · 1.83 | 110° · 0.09 · 1.67 | 86° · 0.05 · 1.52 |
+| bras levés (blocage haut) | aisselles, omoplates | 77° · 0.08 · 3.62 | 51° · 0.17 · 2.46 | 64° · 0.06 · 3.13 | 31° · 0.11 · 1.90 |
+| bras levés (blocage haut) | coudes | 85° · 0.08 · 1.67 | 83° · 0.05 · 1.83 | 110° · 0.09 · 1.67 | 86° · 0.05 · 1.52 |
 | bras levés (blocage haut) | aine, bassin | 14° · 0.26 · 3.80 | 15° · 0.59 · 1.33 | 15° · 0.32 · 1.22 | 15° · 0.56 · 1.36 |
 | bras levés (blocage haut) | genoux | 88° · 0.15 · 2.51 | 81° · 0.07 · 1.87 | 76° · 0.24 · 2.15 | 97° · 0.06 · 1.91 |
 | sol (rétention de garde) | aisselles, omoplates | 53° · 0.07 · 2.68 | 33° · 0.25 · 2.63 | 52° · 0.06 · 2.78 | 24° · 0.16 · 2.05 |

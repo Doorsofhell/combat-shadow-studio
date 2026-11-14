@@ -221,7 +221,7 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
       const kh = side === 'rear' ? 'handR' : 'handL';
       const gh = side === 'rear' ? 'handL' : 'handR';
       d[gh] = structuredClone(g[gh]);
-      d[kh] = a.hand('world', v3(-turn * 0.03 * s, y + 0.03 * s, z), v3(-turn * 0.6, -0.6, -0.3), 0.2, 1);
+      d[kh] = a.hand('world', v3(-turn * 0.07 * s, y + 0.03 * s, z), v3(-turn * 0.6, -0.6, -0.3), 0.2, 1);
       return;
     }
     d.handL = a.hand('world', v3(0.07 * s, y, z), v3(0.6, -0.6, -0.3), clinch ? -0.4 : 0.2, clinch ? 0.55 : 1, clinch ? deg(30) : 0);
