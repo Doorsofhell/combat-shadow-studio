@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.45.1',
+      releaseDate: '2026-11-14',
+      title: 'Des shorts plus vrais',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Shorts de Victor (boxe, kick-boxing, muay-thaï) : plus de bande de tissu entre les jambes. Les deux ourlets étaient cousus ensemble à l’intérieur des cuisses.' },
+        { category: 'ameliorations', text: 'Shorts de Victor, Naël, Inaya et Amara : plis naturels sous la ceinture, aux hanches, à l’entrejambe, sur les cuisses et le long des ourlets. Couleurs, logos et coupes inchangés.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.45.0',
       releaseDate: '2026-11-14',
       title: 'Coachs : des gestes qui ne traversent plus le corps',
