@@ -115,10 +115,27 @@ export const EXTRA_COACHES: ChampionCoach[] = [
     skills: sk(6, 9, 4, 4, 8, 7, 7),
     weightKg: 65,
   },
+  // 1.43 (Youssef 2026-11-14, « Intégrer à l'application »): Victor « Le Loup gris », dessiné par Youssef (planches
+  // Gemini) et construit sur une copie du corps de Kadir (Kadir ne change pas): tête remodelée, cheveux et barbe
+  // poivre et sel, carrure et teint de ses planches (tools/generator/victor/, tools/generator/rocketbox/victor_build.mjs)
+  {
+    id: 'victor',
+    coach: 'homme',
+    name: 'Victor',
+    nickname: 'Le Loup gris',
+    style: 'Vétéran calme, technique et lucide',
+    bio: 'Garde haute, regard qui lit tout : Victor ne gaspille rien, place chaque coup au bon moment et tient la distance.',
+    portrait: './coaches/victor/portrait.webp',
+    height: '1,81 m',
+    guard: 'Haute et compacte, menton rentré, coudes serrés',
+    strengths: ['Lecture du combat', 'Précision', 'Endurance'],
+    skills: sk(8, 7, 6, 6, 6, 8, 9),
+    weightKg: 93,
+  },
 ];
 
 /** every coach, in the order of the choice screen */
-export const ALL_COACHES: ChampionCoach[] = [CHAMPIONS.homme, EXTRA_COACHES[0], CHAMPIONS.femme, EXTRA_COACHES[1]];
+export const ALL_COACHES: ChampionCoach[] = [CHAMPIONS.homme, EXTRA_COACHES[0], EXTRA_COACHES[2], CHAMPIONS.femme, EXTRA_COACHES[1]];
 
 export const championById = (id: string | null | undefined) => ALL_COACHES.find((c) => c.id === id);
 

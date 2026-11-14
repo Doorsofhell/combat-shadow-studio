@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.43.0',
+      releaseDate: '2026-11-14',
+      title: 'Victor, le Loup gris',
+      isMajor: true,
+      changes: [
+        { category: 'coachs', text: 'Nouveau coach : Victor « Le Loup gris ». Vétéran calme et technique, cheveux et barbe poivre et sel, garde haute et compacte. Il a son visage vivant, ses expressions et ses tenues pour les six disciplines.' },
+        { category: 'coachs', text: 'L’écran de choix du coach présente maintenant cinq coachs : Kadir, Naël, Victor, Amara et Inaya.' },
+      ],
+      links: [{ label: 'Choisir Victor', to: '/coach' }],
+    },
+    {
       version: '1.42.0',
       releaseDate: '2026-11-14',
       title: 'Retour, un pas à la fois',

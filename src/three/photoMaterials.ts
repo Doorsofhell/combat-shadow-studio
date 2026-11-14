@@ -92,6 +92,8 @@ export const SKIN_LOOK: Record<string, SkinLook> = {
   nael: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, wrap: 0.45, shadowLift: 0.34, tint: [1, 0.55, 0.42] },
   // 1.20 (Youssef 05/11 14:09, Amara's muscles « bien dessinés »): Inaya's wrapped light was wider than Amara's
   // (0.55 for 0.45) and softened the shadows between the muscles; same as Amara now
+  // 1.43 Victor: the Kadir photo skin repainted (tan of Youssef's sheets): Kadir's light and relief
+  victor: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, wrap: 0.45, shadowLift: 0.36 },
   inaya: { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, wrap: 0.45, shadowLift: 0.32, tint: [1, 0.52, 0.38], sat: 1.12, gain: 0.8, warm: 0.12 },
 };
 

@@ -86,7 +86,7 @@ describe('tenues des coachs Ultra-réalistes', () => {
 // 1.11 (Naël, kick-boxing): one skin point of the thigh got another millimetre key than the one the app computes
 // (Blender's float32 cm -> m scale put it on the other side of a half) and stayed drawn: its triangles pierced the
 // short as a skin patch. For the coaches built since, every hidden key is a real point of the shipped body.
-describe.each(['nael', 'inaya'])('%s : peau masquée, chaque point retrouvé', (coach) => {
+describe.each(['nael', 'inaya', 'victor'])('%s : peau masquée, chaque point retrouvé', (coach) => {
   const body = glb(`public/coaches/${coach}/photo.glb`);
   const all = new Set<string>();
   for (const m of body.json.meshes)
