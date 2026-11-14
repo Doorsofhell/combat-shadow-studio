@@ -4,6 +4,7 @@ import { faceCapabilities, type FaceCapabilities } from './human/capabilities';
 import { DEFAULT_PROFILE, type HumanProfile } from './human/profiles';
 import { MicroLife } from './human/micro';
 import { FaceWrinkles } from './human/wrinkles';
+import { Exertion, updateFaceRender, type FaceRenderUniforms } from './human/faceRender';
 import type { Camera } from 'three';
 
 /**
@@ -318,6 +319,11 @@ export class FaceAnimator {
   private lastU = Infinity;
   /** 1.40 expression wrinkles (src/three/human/wrinkles.ts): null without a head and two eyes */
   readonly wrinkles: FaceWrinkles | null = null;
+  /** 1.44 how hard the session has been (flush, then sweat: src/three/human/faceRender.ts) */
+  readonly exertion = new Exertion();
+  /** 1.44 the world's up at rest, in the head bone's space (the eyes' lid shade) */
+  private upInHead = new Vector3(0, 1, 0);
+  private headBoneQ = new Quaternion();
   /** 1.40 the expression weights applied this frame (the wrinkles follow them) */
   private applied: Partial<Record<FaceExpression, number>> = {};
 
@@ -394,6 +400,7 @@ export class FaceAnimator {
       }
     }
     if (headBone && le && re) this.wrinkles = new FaceWrinkles(headBone, le, re);
+    if (headBone) this.upInHead.copy(UP).applyQuaternion(headBone.getWorldQuaternion(new Quaternion()).invert()).normalize();
     const mid = find(root, 'Face_MMiddleEyebrow');
     if (mid) this.movers.push({ bone: mid, ...rest(mid), d: toParent(mid, UP.clone().multiplyScalar(-4 * MM)), kind: 'mid' });
     const jaw = find(root, 'Face_MJaw');
@@ -461,6 +468,8 @@ export class FaceAnimator {
     // quick onset, slower release: the face sets as the strike leaves and relaxes after it
     this.effort += (target - this.effort) * Math.min(1, dt / (target > this.effort ? 0.05 : 0.35));
     if (opts.effort !== undefined) this.effort = opts.effort;
+    // 1.44 the session wears on the face (flush, then sweat), never on still images
+    if (!still) this.exertion.update(dt, this.effort);
     // 1.34 the behaviour state and its mood (an imposed state is shown at once, for the captures)
     const B = this.behavior;
     const forced = opts.state && (HUMAN_STATES as readonly string[]).includes(opts.state) ? opts.state : undefined;
@@ -806,6 +815,18 @@ export class FaceAnimator {
       sq.multiply(sh.d);
       sh.out.copy(sq);
     }
+  }
+
+  /**
+   * 1.44 after update(): the face's rendering (lid shade, flush and sweat of the session) into the uniforms shared by
+   * the head's skin and the eyes. Lab seance=0..1 imposes the session's level, rendu=avant turns it off
+   */
+  updateRender(u: FaceRenderUniforms, camera: Camera) {
+    const g = globalThis as { __cssSeance?: number; __cssRenduAvant?: boolean };
+    if (g.__cssSeance !== undefined) this.exertion.level = g.__cssSeance;
+    const head = this.head?.bone;
+    if (head) head.getWorldQuaternion(this.headBoneQ);
+    updateFaceRender(u, this.exertion, this.headBoneQ, this.upInHead, camera, !!g.__cssRenduAvant);
   }
 
   /** 1.40 after update(): the wrinkles follow this frame's expressions and the camera */

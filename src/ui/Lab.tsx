@@ -53,6 +53,9 @@ export function Lab() {
     // 1.40 epaules=<m>: rise of the shoulders in the leaning guards (src/engine/rig.ts SHRUG_LEAN)
     (globalThis as { __cssShrug?: number }).__cssShrug = q.get('epaules') !== null ? Number(q.get('epaules')) : undefined;
     // 1.40 nuque=<rad>: the neck leaning back in the leaning guards (src/engine/rig.ts NECK_BACK_LEAN)
+    // 1.44 seance=0..1: how hard the session has been (flush, sweat); rendu=avant: the face's rendering of 1.43
+    (globalThis as { __cssSeance?: number }).__cssSeance = q.get('seance') !== null ? Number(q.get('seance')) : undefined;
+    (globalThis as { __cssRenduAvant?: boolean }).__cssRenduAvant = q.get('rendu') === 'avant';
     (globalThis as { __cssNeckBack?: number }).__cssNeckBack = q.get('nuque') !== null ? Number(q.get('nuque')) : undefined;
     // 1.40 visage=actuel|calme|doux|vif: the face at rest (src/three/face.ts FACE_BASES), for the comparisons
     (globalThis as { __cssFaceBase?: string }).__cssFaceBase = q.get('visage') ?? undefined;

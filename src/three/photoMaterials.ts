@@ -1,3 +1,4 @@
+import { isHeadSkin, newFaceRenderUniforms, type FaceRenderUniforms } from './human/faceRender';
 import { applySkinShader, DEFAULT_SKIN, type SkinLook } from './skinShader';
 import { BufferAttribute, BufferGeometry, DoubleSide, FrontSide, Material, MeshPhysicalMaterial, MeshStandardMaterial, SRGBColorSpace, type MeshStandardMaterialParameters } from 'three';
 
@@ -126,7 +127,8 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
         ? new MeshPhysicalMaterial({ ...p, sheen: 0.3, sheenRoughness: 0.6, sheenColor: '#c98a72', specularIntensity: 0.4 })
         : new MeshStandardMaterial({ ...p, roughness: 0.6 });
       // scattering and lifted shadows in both qualities (a few instructions), pores in high quality only
-      applySkinShader(m, look, hi);
+      // 1.44 the head's skin also carries the face's soft zones (src/three/human/faceRender.ts)
+      applySkinShader(m, look, hi, isHeadSkin(old));
       return m;
     }
     case 'yeux': {
@@ -164,17 +166,23 @@ export const EYE_CATCHLIGHT = { dir: [-0.18, 0.05, 1] as [number, number, number
 export function eyeCatchlight(m: Material) {
   const [x, y, z] = EYE_CATCHLIGHT.dir;
   m.onBeforeCompile = (shader) => {
-    shader.fragmentShader = shader.fragmentShader.replace(
+    const fr: FaceRenderUniforms = m.userData.cssFaceRender ?? newFaceRenderUniforms();
+    shader.uniforms.cssEyeUp = fr.cssEyeUp;
+    shader.uniforms.cssLidShade = fr.cssLidShade;
+    shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 cssEyeUp;\nuniform float cssLidShade;').replace(
       '#include <opaque_fragment>',
       `{
         vec3 cssV = normalize(vViewPosition);
         vec3 cssH = normalize(normalize(vec3(${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)})) + cssV);
         outgoingLight += vec3(${EYE_CATCHLIGHT.strength.toFixed(3)}) * pow(max(dot(normalize(normal), cssH), 0.0), ${EYE_CATCHLIGHT.sharpness.toFixed(1)});
+        // 1.44 the upper lid shades the top of the eyeball (the head's up, not the eye's: the shade stays as the eye
+        // turns), softly
+        outgoingLight *= 1.0 - cssLidShade * smoothstep(0.15, 0.7, dot(normalize(normal), cssEyeUp));
       }
       #include <opaque_fragment>`,
     );
   };
-  m.customProgramCacheKey = () => 'css-eye-catchlight-v1403';
+  m.customProgramCacheKey = () => 'css-eye-catchlight-v1403-lid144';
   m.userData.cssCatchlight = true;
 }
 
