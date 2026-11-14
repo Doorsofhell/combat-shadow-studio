@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.45.0',
+      releaseDate: '2026-11-14',
+      title: 'Coachs : des gestes qui ne traversent plus le corps',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Défense contre l’amené au sol, sprawl, genou circulaire, o-soto-gari, uppercut arrière et genou direct : les mains et les avant-bras ne rentrent plus dans le corps du coach.' },
+        { category: 'corrections', text: 'Épaules plus naturelles : quand le buste se penche bras devant, l’omoplate accompagne le bras et l’épaule ne forme plus de pointe. En garde, rien ne change.' },
+        { category: 'ameliorations', text: 'Corrections faites geste par geste, sans toucher aux modèles des coachs ni à leurs visages.' },
+      ],
+      links: [{ label: 'Voir les techniques', to: '/techniques' }],
+    },
+    {
       version: '1.44.1',
       releaseDate: '2026-11-14',
       title: 'Les tenues de Victor',

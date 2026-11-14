@@ -21,10 +21,10 @@ Généré par `src/engine/__tests__/hooks-biomeca.test.ts` (`AUDIT_UPDATE=1` pou
 | Kadir (Ultra-réaliste) | kick-boxing | crochet-arriere | 84.2° | 8.2 | 26.4 | 7.3 | -7.3 | 23.3° | 2.17 | 0.208 / 0.230 | 9.5° | 11.5° |
 | Kadir (Ultra-réaliste) | kick-boxing | crochet-avant-corps | 77.5° | -9.1 | 26.1 | 7.2 | -7.2 | 35.2° | 1.24 | 0.185 / 0.200 | 4.1° | -16.3° |
 | Kadir (Ultra-réaliste) | kick-boxing | crochet-arriere-corps | 88.2° | -5.3 | 22.5 | 16.9 | -16.9 | 17.6° | 1.75 | 0.208 / 0.230 | 4.7° | 10.2° |
-| Kadir (Ultra-réaliste) | MMA | crochet-avant | 83.8° | 9.0 | 27.1 | 2.0 | -2.0 | 48.9° | 2.30 | 0.193 / 0.200 | 9.3° | -14.4° |
-| Kadir (Ultra-réaliste) | MMA | crochet-arriere | 85.5° | 7.8 | 27.0 | 5.3 | -5.3 | 41.1° | 2.82 | 0.217 / 0.230 | 9.8° | 13.4° |
-| Kadir (Ultra-réaliste) | MMA | crochet-avant-corps | 82.8° | -3.6 | 25.1 | 13.1 | -13.1 | 34.0° | 1.29 | 0.185 / 0.200 | 4.0° | -13.9° |
-| Kadir (Ultra-réaliste) | MMA | crochet-arriere-corps | 86.5° | -1.3 | 23.0 | 16.9 | -16.9 | 25.9° | 2.06 | 0.217 / 0.230 | 6.3° | 11.9° |
+| Kadir (Ultra-réaliste) | MMA | crochet-avant | 82.8° | 9.0 | 27.1 | 2.0 | -2.0 | 48.9° | 2.24 | 0.193 / 0.200 | 9.2° | -14.4° |
+| Kadir (Ultra-réaliste) | MMA | crochet-arriere | 85.5° | 7.8 | 27.0 | 5.3 | -5.3 | 41.1° | 2.74 | 0.217 / 0.230 | 9.8° | 13.4° |
+| Kadir (Ultra-réaliste) | MMA | crochet-avant-corps | 81.9° | -3.9 | 25.3 | 12.8 | -12.8 | 34.9° | 1.27 | 0.185 / 0.200 | 4.0° | -13.9° |
+| Kadir (Ultra-réaliste) | MMA | crochet-arriere-corps | 85.6° | -1.3 | 23.1 | 16.8 | -16.8 | 26.0° | 1.97 | 0.217 / 0.230 | 6.3° | 11.9° |
 | Kadir (Ultra-réaliste) | muay-thaï | crochet-avant | 90.2° | 7.5 | 27.2 | 4.8 | -4.8 | 16.8° | 1.59 | 0.193 / 0.200 | 7.6° | -23.7° |
 | Kadir (Ultra-réaliste) | muay-thaï | crochet-arriere | 92.1° | 7.2 | 26.6 | 7.6 | -7.6 | 9.9° | 2.59 | 0.217 / 0.230 | 8.7° | 17.7° |
 | Kadir (Ultra-réaliste) | muay-thaï | crochet-avant-corps | 85.3° | -9.7 | 24.4 | 11.3 | -11.3 | 17.5° | 1.12 | 0.185 / 0.200 | 2.8° | -22.8° |
@@ -53,10 +53,10 @@ Généré par `src/engine/__tests__/hooks-biomeca.test.ts` (`AUDIT_UPDATE=1` pou
 | Kadir (modèle généré) | kick-boxing | crochet-arriere | 83.0° | 7.4 | 24.4 | 6.3 | -6.3 | 24.3° | 2.15 | 0.208 / 0.230 | 9.2° | 11.5° |
 | Kadir (modèle généré) | kick-boxing | crochet-avant-corps | 76.0° | -8.6 | 24.1 | 6.1 | -6.0 | 36.9° | 1.23 | 0.185 / 0.200 | 4.1° | -16.2° |
 | Kadir (modèle généré) | kick-boxing | crochet-arriere-corps | 87.9° | -5.0 | 21.0 | 14.9 | -14.9 | 18.8° | 1.75 | 0.208 / 0.230 | 5.0° | 10.2° |
-| Kadir (modèle généré) | MMA | crochet-avant | 82.0° | 8.1 | 24.9 | 1.5 | -1.5 | 49.4° | 1.95 | 0.193 / 0.200 | 9.2° | -14.4° |
-| Kadir (modèle généré) | MMA | crochet-arriere | 85.0° | 7.3 | 24.7 | 4.9 | -4.9 | 40.5° | 2.65 | 0.217 / 0.230 | 9.9° | 13.4° |
-| Kadir (modèle généré) | MMA | crochet-avant-corps | 81.0° | -3.2 | 23.1 | 12.1 | -12.1 | 33.9° | 1.26 | 0.185 / 0.200 | 3.8° | -13.9° |
-| Kadir (modèle généré) | MMA | crochet-arriere-corps | 85.9° | -1.1 | 21.2 | 15.5 | -15.5 | 25.7° | 2.02 | 0.217 / 0.230 | 6.4° | 11.9° |
+| Kadir (modèle généré) | MMA | crochet-avant | 82.0° | 8.1 | 24.9 | 1.5 | -1.5 | 49.4° | 1.87 | 0.193 / 0.200 | 9.1° | -14.4° |
+| Kadir (modèle généré) | MMA | crochet-arriere | 85.0° | 7.3 | 24.7 | 4.9 | -4.9 | 40.5° | 2.57 | 0.217 / 0.230 | 10.0° | 13.4° |
+| Kadir (modèle généré) | MMA | crochet-avant-corps | 81.0° | -3.4 | 23.2 | 11.8 | -11.8 | 34.6° | 1.24 | 0.185 / 0.200 | 3.8° | -13.9° |
+| Kadir (modèle généré) | MMA | crochet-arriere-corps | 85.0° | -1.1 | 21.2 | 15.5 | -15.5 | 25.7° | 1.93 | 0.217 / 0.230 | 6.5° | 11.9° |
 | Kadir (modèle généré) | muay-thaï | crochet-avant | 88.0° | 6.7 | 25.2 | 3.1 | -3.1 | 20.4° | 1.50 | 0.193 / 0.200 | 7.5° | -23.6° |
 | Kadir (modèle généré) | muay-thaï | crochet-arriere | 91.0° | 6.5 | 24.8 | 5.7 | -5.7 | 13.6° | 2.42 | 0.217 / 0.230 | 8.9° | 17.7° |
 | Kadir (modèle généré) | muay-thaï | crochet-avant-corps | 84.0° | -9.1 | 22.8 | 9.4 | -9.4 | 19.5° | 1.13 | 0.185 / 0.200 | 2.7° | -22.8° |
@@ -87,7 +87,7 @@ Généré par `src/engine/__tests__/hooks-biomeca.test.ts` (`AUDIT_UPDATE=1` pou
 | Coach homme générique | kick-boxing | crochet-arriere-corps | 90.0° | -7.0 | 20.3 | 14.6 | -14.6 | 13.4° | 1.61 | 0.208 / 0.230 | 4.7° | 10.5° |
 | Coach homme générique | MMA | crochet-avant | 82.0° | 7.3 | 24.8 | 2.0 | -2.0 | 40.2° | 1.59 | 0.193 / 0.200 | 8.6° | -14.7° |
 | Coach homme générique | MMA | crochet-arriere | 87.0° | 6.4 | 24.3 | 6.4 | -6.4 | 28.8° | 2.29 | 0.217 / 0.230 | 9.7° | 13.5° |
-| Coach homme générique | MMA | crochet-avant-corps | 81.9° | -5.2 | 22.9 | 10.9 | -10.9 | 30.4° | 1.21 | 0.185 / 0.200 | 3.5° | -14.2° |
+| Coach homme générique | MMA | crochet-avant-corps | 82.0° | -5.2 | 22.9 | 10.9 | -10.9 | 30.3° | 1.21 | 0.185 / 0.200 | 3.5° | -14.2° |
 | Coach homme générique | MMA | crochet-arriere-corps | 87.9° | -3.1 | 20.6 | 15.4 | -15.4 | 20.0° | 1.84 | 0.217 / 0.230 | 6.4° | 12.2° |
 | Coach homme générique | muay-thaï | crochet-avant | 89.0° | 5.5 | 25.1 | 3.6 | -3.5 | 14.2° | 1.31 | 0.185 / 0.200 | 7.1° | -23.8° |
 | Coach homme générique | muay-thaï | crochet-arriere | 92.0° | 5.1 | 24.4 | 7.1 | -7.0 | 3.5° | 2.08 | 0.217 / 0.230 | 8.5° | 17.8° |
@@ -103,7 +103,7 @@ Généré par `src/engine/__tests__/hooks-biomeca.test.ts` (`AUDIT_UPDATE=1` pou
 | Coach femme générique | kick-boxing | crochet-arriere-corps | 89.0° | -7.3 | 21.3 | 14.8 | -14.8 | 13.9° | 1.52 | 0.208 / 0.230 | 4.3° | 10.3° |
 | Coach femme générique | MMA | crochet-avant | 83.0° | 7.7 | 25.6 | 2.5 | -2.5 | 39.0° | 1.54 | 0.193 / 0.200 | 8.6° | -14.5° |
 | Coach femme générique | MMA | crochet-arriere | 87.0° | 6.6 | 25.2 | 6.7 | -6.7 | 28.8° | 2.27 | 0.217 / 0.230 | 8.7° | 13.4° |
-| Coach femme générique | MMA | crochet-avant-corps | 82.0° | -5.2 | 23.7 | 11.6 | -11.6 | 30.7° | 1.16 | 0.185 / 0.200 | 4.1° | -14.0° |
+| Coach femme générique | MMA | crochet-avant-corps | 82.0° | -5.2 | 23.7 | 11.6 | -11.6 | 30.5° | 1.16 | 0.185 / 0.200 | 4.0° | -14.0° |
 | Coach femme générique | MMA | crochet-arriere-corps | 87.0° | -3.2 | 21.4 | 16.0 | -16.0 | 20.0° | 1.75 | 0.217 / 0.230 | 5.5° | 12.0° |
 | Coach femme générique | muay-thaï | crochet-avant | 89.0° | 5.7 | 25.9 | 4.6 | -4.6 | 12.6° | 1.29 | 0.193 / 0.200 | 7.4° | -23.6° |
 | Coach femme générique | muay-thaï | crochet-arriere | 92.0° | 5.3 | 25.2 | 7.8 | -7.8 | 2.0° | 2.05 | 0.217 / 0.230 | 7.2° | 17.7° |

@@ -21,20 +21,19 @@ import { styleOf } from '../audit';
  * path of a limb, so the technique shown.
  */
 const CONTACT = 2;
-/** worst depth of 1.41.0 (cm), technique by technique, before correction */
+/** worst depth (cm), technique by technique, before correction (1.41.0; lowered in 1.41.1 to what is left) */
 const PENDING: Record<string, number> = {
   'blocage-corps-avant': 2.9,
   'changement-base': 5.2,
   'check-hook': 2.7,
   'coude-montant-arriere': 5.1,
   'crochet-avant': 3.5,
-  'defense-lutte': 14.8,
+  'defense-lutte': 3.9,
   'entree-lutte': 8.1,
   'esquive-droite': 2.3,
   'genou-circulaire-arriere': 5.5,
-  'genou-circulaire-avant': 14.6,
   'genou-clinch': 2.3,
-  'genou-direct-arriere': 9.8,
+  'genou-direct-arriere': 5.4,
   'genou-direct-avant': 2.4,
   'middle-kick-arriere': 3.6,
   'pont': 5.4,
@@ -46,16 +45,15 @@ const PENDING: Record<string, number> = {
   'shoulder-roll': 4.4,
   'single-leg': 4.1,
   'sit-out': 5.1,
-  'sprawl': 14.6,
-  'switch-kick': 8.8,
+  'switch-kick': 3.7,
   'teep-avant': 5.0,
   'uchikomi-ko-uchi-gari': 3.9,
   'uchikomi-o-goshi': 7.4,
-  'uchikomi-o-soto-gari': 14.8,
+  'uchikomi-o-soto-gari': 7.8,
   'uchikomi-seoi': 7.3,
-  'ukemi-ushiro': 8.2,
-  'ukemi-yoko': 7.0,
-  'uppercut-arriere': 10.7,
+  'ukemi-ushiro': 5.9,
+  'ukemi-yoko': 6.8,
+  'uppercut-arriere': 7.2,
 };
 /**
  * 1.43.0 Victor: his body is the one of Kadir, made wider (torso, forearms, calves), with the same techniques. His
@@ -64,7 +62,7 @@ const PENDING: Record<string, number> = {
  * way (they may not get worse) and corrected with the others; the four other coaches keep the bounds above.
  */
 const VICTOR_PENDING: Record<string, number> = {
-  'defense-lutte': 15.5,
+  // 1.45.0 (traversées corrigées): bounds lowered to min(new + 0.2, 1.43.0); défense de lutte now under the common bound.
   'esquive-droite': 2.5,
   'genou-circulaire-clinch': 2.2,
   'high-kick-arriere': 2.5,
@@ -74,8 +72,10 @@ const VICTOR_PENDING: Record<string, number> = {
   'single-leg': 5.0,
   'sit-out': 5.9,
   'uchikomi-ko-uchi-gari': 4.1,
-  'ukemi-ushiro': 8.7,
+  'ukemi-ushiro': 6.8,
   'ukemi-yoko': 7.6,
+  // the common bound fell to 7.0; Victor's wider forearm stays a little deeper (8.2 cm in 1.43.0, 7.7 cm now)
+  'uppercut-arriere': 7.9,
 };
 const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor'] as const;
 const DOC = resolve(__dirname, '../../../docs/audit-biomecanique/MESURES_INTRUSIONS.md');
