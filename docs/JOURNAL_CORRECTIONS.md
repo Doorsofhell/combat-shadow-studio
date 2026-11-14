@@ -4096,3 +4096,41 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     sur la 1.42.0 d'origine dans ce même environnement (vérifié sur `d1f3ccc`) : ÉCHOUÉ, sans lien avec ce lot, à
     examiner à part ;
   - essai sur téléphone Android : NON EXÉCUTÉ.
+
+## 2026-11-14 · v1.44.0 · Visage plus vivant, en douceur (les cinq coachs)
+
+- **Demande** : Youssef, 13/11 21:07 « Quelles améliorations visuelles peux-tu me proposer pour humaniser les
+  expressions du visage de mes coachs ? » ; 13/11 22:36 (fil de restauration) « humaniser ne veut pas dire rajouter
+  des traits visibles » ; 14/11 15:01 « Je veux léger et naturel » (points 1, 2, 4, 5 de la proposition) ; 15:08
+  « Attend l'intégration de Victor pour ce patch » ; 16:49 « Go déploiement » après la page avant/après
+  https://claude.ai/artifact/EjtKXGYDhSjni9zuroYpp6.
+- **Constat vérifié** (Lab, base 1.43.0, gros plans des cinq coachs) : le blanc des yeux était éclairé
+  uniformément jusque sous la paupière (œil « posé » sur le visage) ; les oreilles, les narines et les lèvres avaient
+  la même diffusion de lumière que le reste de la peau (aucune transparence des parties fines) ; le visage restait
+  identique du début à la fin d'une séance.
+- **Correction** (moteur commun, aucun réglage propre à un coach ; rien de dessiné sur la peau) :
+  - `src/three/human/faceRender.ts` (nouveau) : réglages `FACE_RENDER` (transparence 1, bord humide 1, ombre de
+    paupière 0,28, rougeur 0,5, brillance 0,14), effort de séance `Exertion` (monte avec l'effort, environ 3 min de
+    round soutenu pour le maximum, redescend en environ 2 min de repos ; rougeur d'abord, brillance ensuite),
+    uniformes partagés par la peau de la tête et les yeux de chaque coach ;
+  - `src/three/skinShader.ts` : sur la seule peau de la tête (matériau `*_head`), zones gaussiennes larges placées sur
+    la texture des têtes Rocketbox (m021 et f021 ont la même disposition) : joues, oreilles, nez, narines, lèvres,
+    front, bord des paupières inférieures. Rougeur multipliée sur la teinte, lumière enveloppante plus large et
+    lumière arrière dans les parties fines, rugosité un peu plus basse (brillance, bord humide) ;
+  - `src/three/photoMaterials.ts` : ombre douce de la paupière supérieure sur l'œil, selon le haut de la tête vu de la
+    caméra (elle reste quand l'œil tourne) ;
+  - `src/three/face.ts`, `src/three/PhotoCoach.tsx` : effort de séance mis à jour à chaque image (jamais en image
+    fixe), uniformes envoyés après le visage ; Lab `seance=0..1` impose le niveau, `rendu=avant` montre le rendu de la
+    1.43.0.
+  - Premier réglage corrigé avant livraison : la brillance du front faisait une tache claire près de la racine des
+    cheveux d'Amara ; zone descendue et élargie, brillance 0,22 → 0,14.
+- **Fichiers** : `src/three/human/faceRender.ts` (nouveau), `src/three/skinShader.ts`, `src/three/photoMaterials.ts`,
+  `src/three/face.ts`, `src/three/PhotoCoach.tsx`, `src/ui/Lab.tsx`,
+  `src/three/human/__tests__/rendu-visage-v1440.test.ts` (nouveau), `package.json`, `package-lock.json`,
+  `src/domain/releases.ts`.
+- **Tests ajoutés** (`rendu-visage-v1440.test.ts`, 10 contrôles) : rougeur puis brillance avec l'effort, retour à
+  zéro au repos ; « rendu=avant » coupe tout ; réglages bornés (léger) ; pour les cinq coachs, une seule peau de tête
+  reconnue, zones du visage seulement sur elle, dans les deux qualités ; masques sans bord ni répétition (ni `step`,
+  `fract`, `sin`, `cos`) ; ombre de paupière dans le shader des yeux, deux qualités.
+- **Tests existants** : aucun modifié ni affaibli.
+- **Restauration** : branche `restauration/avant-rendu-visage` (= 1.43.0, `8558e80`).
