@@ -37,7 +37,8 @@ export function measureAnkles(rig: CoachRig, steps = 48, styles: readonly Stance
         for (const side of ['L', 'R'] as const) {
           const foot = side === 'L' ? pose.footL : pose.footR;
           const a = ankleAngles(rig, side)!;
-          const planted = foot.toeFlat >= 0.99;
+          // 1.41.0: a planted foot carried over the mat on its low arc (moteur, glideLift) bears no weight: neither planted nor in the air
+          const planted = foot.toeFlat >= 0.99 && rig.worldOf(`${side === 'L' ? 'Left' : 'Right'}ToeBase`)!.y <= rig.metrics.ballRestY + 0.01;
           const air = foot.toeFlat <= 0.01;
           if (!planted && !air) continue; // touching down or taking off: blended on purpose
           const t = planted ? w.planted : w.air;

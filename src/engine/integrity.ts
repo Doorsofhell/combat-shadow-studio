@@ -9,7 +9,7 @@
  * 1.41.0: the errors block the tests (src/engine/__tests__/integrity.test.ts) and the animation registry; the
  * warnings are listed in docs/audit-biomecanique/MESURES_INTEGRITE.md. PLANTED_FOOT_MOVE fires on every step or
  * glide written with the foot on the floor (1 268 warnings on 1.40.2, nearly all wanted steps): the sliding the
- * coach really shows is measured on the posed skeleton instead (src/engine/glide.ts, lot 2).
+ * coach really shows is measured on the posed skeleton instead (src/engine/__tests__/glide.test.ts, lot 2).
  */
 import type { Motion } from './motion';
 import type { Pose, V3 } from './pose';
