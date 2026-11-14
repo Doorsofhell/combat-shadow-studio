@@ -4024,7 +4024,17 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Fichiers** : `src/ui/nav/layers.ts`, `src/ui/fullscreen/useStageFullscreen.ts`, `src/ui/screens/Training.tsx`,
   `src/ui/components/Sheet.tsx`, `src/ui/training/training.css`, `src/ui/screens/CoachSelect.tsx`,
   `src/coach/appGuide.ts`, `src/domain/releases.ts`, `package.json`.
-- **Tests** : TESTS_A_COMPLETER
+- **Tests** (sur la 1.41.0 + ce lot) :
+  - `npx tsc -b` : TEST RÉUSSI ; `npm run build` (titre v1.42.0) : TEST RÉUSSI ;
+  - `npx vitest run` : 1471 réussis, 5 échoués, 1 ignoré ; les 5 échecs sont ceux déjà notés pour la 1.41.0
+    (uppercut-arriere v0.32, fluidité × 2, crochets « pas d'armé », taille du modèle d'Amara) : TEST RÉUSSI pour ce
+    lot ;
+  - `npx playwright test` (299 tests) : 294 réussis, 3 échoués, 2 ignorés (Firebase). `coaching-hud:60` est l'échec
+    connu de la 1.41.0 ; `coach-suggest:99` et `seance-mains-libres:117` (écrans non touchés) ont échoué sous la
+    charge de la suite et sont RÉUSSIS rejoués seuls (deux fois pour le second) ;
+  - nouveau `tests/e2e/retour-v1420.spec.ts` (5 tests) : TEST RÉUSSI ; `navigation` adapté (« Continuer » au lieu
+    d'« Annuler », même contrôle) ;
+  - essai sur téléphone Android : NON EXÉCUTÉ.
 - **Limite** : chemin de l'application Android (APK) non exécuté ici ; il passe par la même garde.
 - **Captures** : `docs/v1420/captures/` (prises sur la 1.34.0 d'origine, écran inchangé).
 - **Restauration** : état 1.41.0 (commit 8ef0b54 de `claude/project-thread-o7lrt8`).
