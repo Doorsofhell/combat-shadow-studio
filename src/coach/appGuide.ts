@@ -174,7 +174,7 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['entrainement'],
     answer:
       'Dans le studio, ton coach exécute les mouvements et tu les fais en même temps.\n' +
-      '• En bas : « Retour », « Démarrer » (qui devient « Pause » puis « Reprendre » au même endroit), « Décomposer », « Caméra » et « Plus ». Si tu touches Retour pendant la séance, elle se met en pause et l’application te demande avant de quitter.\n' +
+      '• En bas : « Retour », « Démarrer » (qui devient « Pause » puis « Reprendre » au même endroit), « Décomposer », « Caméra » et « Plus ». Si tu touches Retour pendant la séance, ou le retour de ton téléphone, elle se met en pause et l’application te demande avant de quitter : « Continuer » ou « Quitter ». En plein écran, le retour sort d’abord du plein écran et une flèche Retour reste visible en haut à gauche.\n' +
       '• Mains libres : pendant la séance, seuls Retour et Pause restent, pour un téléphone posé devant toi. Touche le coach une fois : ses commandes apparaissent sur lui (pause, vitesse, plein écran, son, angles), sans arrêter la séance ; touche-le encore une fois pour les cacher. À la pause, Décomposer, Caméra et Plus reviennent. Le téléphone vibre au départ, à la pause et à chaque round, s’il sait le faire.\n' +
       '• Sous le coach : le mouvement en cours, la consigne et le point clé du moment, puis le temps de séance, le cumul et les répétitions. Seul le temps de travail actif est compté.\n' +
       '• Dans « Plus » : « Recommencer », « Exercice précédent », « Exercice suivant », « Comment faire ? », « Ralenti » et « Options ».\n' +
@@ -261,11 +261,11 @@ export const APP_GUIDE: GuideEntry[] = [
   {
     id: 'choose-coach',
     title: 'Choisir son coach',
-    keywords: ['changer de coach', 'choisir mon coach', 'choisir un coach', 'choix du coach', 'autre coach', 'mon coach', 'kadir', 'amara', 'nael', 'inaya', 'coach homme', 'coach femme'],
+    keywords: ['changer de coach', 'choisir mon coach', 'choisir un coach', 'choix du coach', 'autre coach', 'mon coach', 'kadir', 'amara', 'nael', 'inaya', 'victor', 'coach homme', 'coach femme'],
     screens: ['coach-choix'],
     answer:
-      'Tu as quatre coachs : Kadir « L’Aigle », lutteur patient à la pression constante ; Naël « Le Faucon », contreur rapide ; Amara « La Lionne », frappeuse puissante à la garde haute ; Inaya « La Panthère », explosive, qui frappe des jambes à distance. Tous montrent les mêmes techniques.\n' +
-      'L’écran de choix montre le coach en grand et en 3D : fais-le tourner du doigt, passe au suivant avec les flèches, les quatre vignettes ou en balayant sa fiche, et touche l’icône ronde de lecture pour le voir bouger. Rien ne change tant que tu n’as pas touché « Choisir ».\n' +
+      'Tu as cinq coachs : Kadir « L’Aigle », lutteur patient à la pression constante ; Naël « Le Faucon », contreur rapide ; Victor « Le Loup gris », vétéran calme et technique ; Amara « La Lionne », frappeuse puissante à la garde haute ; Inaya « La Panthère », explosive, qui frappe des jambes à distance. Tous montrent les mêmes techniques.\n' +
+      'L’écran de choix montre le coach en grand et en 3D : fais-le tourner du doigt, passe au suivant avec les flèches, les cinq vignettes ou en balayant sa fiche, et touche l’icône ronde de lecture pour le voir bouger. Rien ne change tant que tu n’as pas touché « Choisir ».\n' +
       'Pour l’ouvrir : « Changer de coach » sur l’accueil, « Mon coach » dans Compte, Réglages puis « Mon coach », ou « Options » pendant une séance. Tes statistiques sont conservées.',
     action: { to: '/coach', label: 'Choisir mon coach' },
   },

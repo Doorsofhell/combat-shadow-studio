@@ -7,9 +7,9 @@ import { dropStillMorphs, expressionWeights, FACE_EXPRESSIONS } from '../face';
  * 1.16 (Youssef 04/11 14:16 « applique ta proposition »): the Rocketbox coaches carry 25 of the avatars' own facial
  * expressions (tools/generator/rocketbox/morph_{extract,apply}), on the face only, and the face animator drives them.
  */
-const ROCKETBOX = ['mma-kadir', 'mma-amara', 'nael', 'inaya'] as const;
+const ROCKETBOX = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor'] as const;
 
-interface Acc { count: number; type: string; bufferView?: number; sparse?: { count: number; indices: { bufferView: number; componentType: number }; values: { bufferView: number } } }
+interface Acc { count: number; type: string; bufferView?: number; sparse?: { count: number; indices: { bufferView: number; byteOffset?: number; componentType: number }; values: { bufferView: number; byteOffset?: number } } }
 interface Json {
   meshes: { extras?: { targetNames?: string[] }; weights?: number[]; primitives: { material: number; attributes: Record<string, number>; targets?: { POSITION: number }[] }[] }[];
   materials: { name: string }[];
@@ -30,11 +30,16 @@ function glb(id: string) {
   const sparse = (acc: number) => {
     const a = json.accessors[acc];
     expect(a.bufferView, 'cible creuse').toBeUndefined();
-    const s = a.sparse!;
-    const iv = view(s.indices.bufferView);
-    const vv = view(s.values.bufferView);
     const out = new Map<number, [number, number, number]>();
-    for (let k = 0; k < s.count; k++) out.set(iv.readUInt32LE(k * 4), [vv.readFloatLE(k * 12), vv.readFloatLE(k * 12 + 4), vv.readFloatLE(k * 12 + 8)]);
+    // 1.43.0: glTF rule, an accessor with neither bufferView nor sparse is all zeros (Victor's body targets, written by
+    // glTF-Transform); the indices are read with their own type (uint16 or uint32) and both parts at their own byteOffset, as
+    // three.js does
+    const s = a.sparse;
+    if (!s) return out;
+    const iv = view(s.indices.bufferView).subarray(s.indices.byteOffset ?? 0);
+    const vv = view(s.values.bufferView).subarray(s.values.byteOffset ?? 0);
+    const index = (k: number) => (s.indices.componentType === 5123 ? iv.readUInt16LE(k * 2) : s.indices.componentType === 5121 ? iv.readUInt8(k) : iv.readUInt32LE(k * 4));
+    for (let k = 0; k < s.count; k++) out.set(index(k), [vv.readFloatLE(k * 12), vv.readFloatLE(k * 12 + 4), vv.readFloatLE(k * 12 + 8)]);
     return out;
   };
   return { json, sparse };

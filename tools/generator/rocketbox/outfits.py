@@ -3035,6 +3035,86 @@ def mma_shin_guards(color, accent):
     return [o], cov
 
 
+def ankle_supports(color, accent):
+    """1.27 MMA shin-and-instep guards (Youssef, 2026-11-06, three photos of sock-style guards: « des protège-tibias
+    bien faits comme les autres, pas de bavures »): one stretch sleeve from under the knee down over the ankle and
+    the instep, the heel left bare in a rounded opening, the toes free; a padded plate in front of the shin, a thin
+    pad on the instep, an elastic band in the accent colour round the top. Every edge is cut by a field (iso), so
+    the outline is a smooth line whatever the size of the body's triangles: under the knee, round the heel, across
+    the foot before the toes, along the sides of the foot above the sole"""
+    # Victor (planche muay-thaï) : chevillères, manchon du bas du mollet au cou-de-pied, talon libre
+    top_z = ankleZ + 0.11
+    band_z = top_z - 0.02
+    frames = {}
+    for s in ('Left', 'Right'):
+        O = H[f'{s}Foot'].copy()
+        f = H[f'{s}ToeBase'] - H[f'{s}Foot']
+        f.z = 0
+        toe = f.length
+        f.normalize()
+        mine = [i for i in range(len(P)) if leg_of(i) == s and P[i].z < ankleZ + 0.05]
+        ground = min(P[i].z for i in mine)
+        heel = min((P[i] - O).dot(f) for i in mine)
+        frames[s] = (O, f, toe, ground, heel)
+
+    def field(q):
+        s = 'Left' if q.x > 0 else 'Right'
+        O, f, toe, ground, heel = frames[s]
+        u = (q - O).dot(f)
+        top = q.z - top_z
+        # across the foot, 2.5 cm before the toe joint (the toes stay free)
+        front = u - (toe - 0.025)
+        # along the sides of the foot, 1.4 cm above the floor (the sole stays bare)
+        sole = (ground + 0.014) - q.z
+        # the heel: a rounded opening behind the ankle
+        hu, hz = heel + 0.005, ground
+        e = ((u - hu) / 0.075) ** 2 + ((q.z - hz) / (ankleZ - ground + 0.005)) ** 2
+        hole = (1.0 - e) * 0.03
+        return max(top, front, sole, hole)
+
+    def keep(i):
+        s = leg_of(i)
+        return w(i, f'{s}Leg', f'{s}Foot', f'{s}ToeBase') > 0.5 and P[i].z < top_z + 0.03
+
+    def centre(i):
+        s = leg_of(i)
+        c, _ = axis_point(i, f'{s}Leg', f'{s}Foot')
+        return c
+
+    def push(i):
+        front = max(0.0, N[i].dot(FWD))
+        z = P[i].z
+        if z < ankleZ + 0.02:
+            # instep: a thin pad on the top of the foot, the sides snug
+            return 0.0035 + 0.003 * max(0.0, N[i].z)
+        return 0.0035
+
+    def mat_of(c, ids):
+        return 1 if c.z > band_z else 0
+
+    sleeve = fabric(f'chevillere-{color}', color, 'knit', rough=0.75, strength=0.9)
+    band = fabric(f'elastique-{accent}', accent, 'knit', rough=0.8, strength=1.3)
+    cuts = [(Vector((0, 0, band_z)), Vector((0, 0, 1)))]
+    _ONCUT[0] = True
+    # a longer relaxation of the free edges than the shorts': the top band crosses the fine skin of the MakeHuman
+    # bodies at the knee and kept small waves with the usual 14 steps (Kaila, 06/11)
+    keep_relax = os.environ.get('HEM_RELAX')
+    os.environ['HEM_RELAX'] = os.environ.get('SHIN_RELAX', '40')
+    try:
+        o, cov = shell('chevilleres', keep, push, 0.005, [sleeve, band], mat_of, cuts=cuts, iso=field)
+    finally:
+        _ONCUT[0] = False
+        if keep_relax is None:
+            os.environ.pop('HEM_RELAX', None)
+        else:
+            os.environ['HEM_RELAX'] = keep_relax
+    # the top band took some of the thigh's weight from the skin under it (MakeHuman bodies most): when the knee
+    # bent, its points followed the thigh one by one and the edge came out frilled. The sleeve follows the shin only
+    for s_ in ('Left', 'Right'):
+        fold_weights(o, [f'{s_}UpLeg'], f'{s_}Leg')
+    return [o], cov
+
+
 def mma_gloves(color, accent='#B3122A', palm=None):
     def keep(i):
         s = 'Left' if P[i].x > 0 else 'Right'
@@ -3269,6 +3349,8 @@ C = {
     'nael': dict(boxe=('#F4F4F5', '#1D4E89'), kick=('#1D4E89', '#F4F4F5'), thai=('#0F6B57', '#D4AF37'), mma=('#24344D', '#101521'), gi='#17181C', judo='#1B3F8B', belt='#121212', glove='#1D4E89', glove2='#F4F4F5', rash='#1D4E89', praj='#F4F4F5', mmag=('#1D4E89', '#F4F4F5', '#F4F4F5'), logo='#D4AF37'),
     # 1.19 (Youssef 05/11 « change la couleur »): carbon black and raspberry pink, the CS mark printed in white and pink
     'inaya': dict(boxe=('#D6336C', '#17171C'), kick=('#17171C', '#D6336C'), thai=('#F4F4F5', '#D6336C'), mma=('#17171C', '#D6336C'), gi='#1B3F8B', judo='#1B3F8B', belt='#121212', glove='#D6336C', glove2='#17171C', rash='#D6336C', praj='#D6336C', mmag=('#17171C', '#D6336C', '#D6336C'), logo='#D6336C'),
+    # Victor (essai, planches de Youssef 2026-11-14): noir partout, liseré blanc/argent, kick-boxing noir et rouge, kimono bleu marine
+    'victor': dict(boxe=('#141519', '#141519'), kick=('#141519', '#B3122A'), thai=('#141519', '#C9CCD1'), mma=('#1A1B1F', '#3A3D43'), gi='#1C2541', judo='#F7F6F2', belt='#121212', glove='#141519', glove2='#F4F4F5', rash='#141519', praj='#141519', mmag=('#141519', '#141519', '#3A3D43'), logo='#C9CCD1'),
 }[os.environ.get('PALETTE') or sex]
 # 1.12 (Youssef, 04/11, decision « Brassière sans bretelles au cou »): Inaya's boxing and kick-boxing tops are bandeaus;
 # her sports body's halter straps run round the neck and a strapped bra copied over them came out torn there
@@ -3380,15 +3462,18 @@ def outfit(name):
         for s in ('Left', 'Right'):
             parts.extend(boxing_glove_v2(s, C['glove'], '#F4F4F5'))
         hide |= hide_hands()
-        add(shoes_v2('#16181D' if not female else '#F4F4F5', '#F4F4F5' if not female else '#16181D'))
+        if COACH_ID == 'victor':
+            add(shin_guards('#16181D', '#2A2C31'))   # planche boxe de Youssef : protège-tibias noirs, pieds nus
+        else:
+            add(shoes_v2('#16181D' if not female else '#F4F4F5', '#F4F4F5' if not female else '#16181D'))
     elif name == 'kickboxing':
-        add(shorts('kick', *C['kick']))
+        add(shorts('boxe', '#141519', '#B3122A') if COACH_ID == 'victor' else shorts('kick', *C['kick']))
         if female:
             add(female_top(C['kick'][1], C['kick'][0]) or bra_v2(C['kick'][1], C['kick'][0], bandeau=BANDEAU))
         for s in ('Left', 'Right'):
-            parts.extend(boxing_glove_v2(s, C['glove2'], C['kick'][1]))
+            parts.extend(boxing_glove_v2(s, '#141519', '#F4F4F5') if COACH_ID == 'victor' else boxing_glove_v2(s, C['glove2'], C['kick'][1]))
         hide |= hide_hands()
-        add(shin_guards('#F4F4F5' if not female else '#16181D', C['kick'][1] if not female else C['kick'][0]))
+        add(shin_guards('#16181D', '#2A2C31') if COACH_ID == 'victor' else shin_guards('#F4F4F5' if not female else '#16181D', C['kick'][1] if not female else C['kick'][0]))
     elif name == 'muaythai':
         add(shorts('thai', *C['thai']))
         if female:
@@ -3397,6 +3482,8 @@ def outfit(name):
             parts.extend(boxing_glove_v2(s, C['glove'], C['thai'][1], thai=True))
             parts.extend(prajioud_v2(s, C.get('praj', '#B3122A' if female else '#D4AF37')))
         hide |= hide_hands()
+        if COACH_ID == 'victor':
+            add(ankle_supports('#16181D', '#16181D'))
     elif name == 'mma':
         # 1.9 (Youssef's references, 2026-10-29): vale-tudo short to mid-thigh (charcoal for him, black for her),
         # plain black racer-back bra, open gloves black with a white strap and palm (him) or all black (her)
@@ -3434,6 +3521,11 @@ def outfit(name):
         if os.environ.get('MMA_SHIN', '1') == '1':
             g = C['mmag'][:2] if 'mmag' in C else (('#16181D', '#E9E9E6') if not female else ('#16181D', '#2B2D33'))
             add(mma_shin_guards(*g))
+    elif name == 'bjj-nogi' and COACH_ID == 'victor':
+        # planche de Youssef : rashguard manches courtes noir, spats noirs, short noir par-dessus
+        add(top('rash-court', C['rash']))
+        add(pants('#16181D', 'nogi', legging=True))
+        add(shorts('mma', '#16181D', '#2A2C31'))
     elif name == 'bjj-nogi':
         add(top('rash-long', C['rash']))
         add(pants('#16181D', 'nogi', legging=True) if female else shorts('compression', '#16181D', '#B3122A'))
@@ -3778,7 +3870,7 @@ def export(name, parts, hide):
     parts[0]['outfit'] = name
     # Assets can now be verified as freshly regenerated: unchanged legacy GLBs must
     # never pass the v1.37.2 deployment gate with old cutouts.
-    parts[0]['generatorVersion'] = '1.38.0' if COACH_ID == 'mma-amara' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
+    parts[0]['generatorVersion'] = '1.38.0' if COACH_ID == 'mma-amara' else '1.43.0' if COACH_ID == 'victor' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
     if COACH_ID == 'mma-amara':
         if AMARA_PATCHES:
             parts[0]['sportsTopCut'] = 'covered-square-1376'

@@ -6,6 +6,12 @@ Le numéro du moteur (`ENGINE_VERSION`, `src/engine/index.ts`) est indépendant 
 - **mineure** (1.x.0) : un ajout (une technique, un outil, un réglage) qui ne casse rien ;
 - **majeure** (x.0.0) : un changement que l'application doit suivre.
 
+## 1.2.0 · 2026-11-14 (application v1.45.0)
+
+- Main dans le tronc : `handOutOfTrunk` (`rig.ts`) ramène une main cible qui tomberait dans le tronc à sa surface (ellipses du tronc mesurées sur la peau de chaque coach, `trunkCore`). Aucune rotation automatique du coude : essayée puis retirée, elle donnait des poses non humaines.
+- Épaules en pointe : la clavicule suit le bras (0,3 rad au plus) quand le bras monte au-delà de 70° et que le buste se penche en avant ; buste droit (garde) inchangé.
+- Trajets corrigés geste par geste : défense de lutte, sprawl, genou circulaire et genou direct (`mma.ts`, `legs.ts`), o-soto-gari (`grappling.ts`).
+
 ## 1.1.0 · 2026-11-14 (application v1.41.0)
 
 - Contrôles d'intégrité repris de CME-3D (`integrity.ts`) : erreurs d'écriture bloquantes (ordre des clés, valeurs non finies, poing entre 0 et 1, pied sous le tapis, impacts), utilisées par le registre et par `integrity.test.ts`.

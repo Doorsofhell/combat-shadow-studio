@@ -3996,3 +3996,170 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     captures des traversées (o-soto-gari de face : main dans le ventre visible) ;
   - essai sur téléphone Android : NON EXÉCUTÉ.
 - **Restauration** : branche `restauration/avant-controles-moteur` (= 1.40.3 publiée, 4e0b38b).
+
+## 2026-11-14 · v1.42.0 · Retour du téléphone : un pas à la fois (séance et plein écran)
+
+- **Demande** (Youssef, 2026-11-11) : « Revois aussi le retour arrière quand on est en plein écran ». Règle validée
+  le même jour : un Retour = un seul pas en arrière. Lot validé le 2026-11-11 (« Je valide », PR 72, alors 1.34.0)
+  mais non fusionné (coupure) ; le 2026-11-14 : « Replace le lot restant au prochain numéro libre » → replacé sur
+  la 1.41.0, numéro 1.42.0.
+- **Constat après vérification** (application web) : pendant une séance en cours, le Retour du téléphone ou du
+  navigateur quittait la séance d'un coup, sans la question « Quitter la séance ? » ; en plein écran, il sortait du
+  plein écran et de la séance en même temps. Cause : la règle n'existait que pour le bouton de l'application
+  Android (`onBackButton`) ; sur le web, seuls les panneaux étaient des étapes de l'historique.
+- **Méthode de correction** : la séance en cours pose une « garde » dans l'historique (`pushGuard`,
+  `src/ui/nav/layers.ts`) : chaque Retour appelle la séance et la page reste, jusqu'à « Quitter ». Le plein écran du
+  coach hors séance (accueil, fiches) devient une étape de l'historique comme les panneaux.
+- **Ce qui change** :
+  - Retour pendant la séance : pause et question ; un second Retour ferme la question (la séance reste en pause) ;
+    seul « Quitter » sort, vers l'écran d'où l'on venait ;
+  - Retour en plein écran : il sort du plein écran, la séance continue ; le Retour suivant pose la question ;
+  - en plein écran, une flèche Retour reste visible en haut à gauche (elle s'atténue avec les autres commandes mais
+    ne disparaît pas) ; elle fait le même pas en arrière ;
+  - « Quitter la séance ? » : « Continuer » (au lieu d'« Annuler ») est le bouton mis en avant, « Quitter » le
+    bouton discret ;
+  - séance non démarrée ou terminée : Retour quitte l'écran comme avant ;
+  - choix du coach : « Choisir » attend la fin de l'enregistrement avant de fermer l'écran (sous forte charge, un
+    rechargement immédiat pouvait perdre le choix : `coachs-v160` en échec intermittent).
+- **Fichiers** : `src/ui/nav/layers.ts`, `src/ui/fullscreen/useStageFullscreen.ts`, `src/ui/screens/Training.tsx`,
+  `src/ui/components/Sheet.tsx`, `src/ui/training/training.css`, `src/ui/screens/CoachSelect.tsx`,
+  `src/coach/appGuide.ts`, `src/domain/releases.ts`, `package.json`.
+- **Tests** (sur la 1.41.0 + ce lot) :
+  - `npx tsc -b` : TEST RÉUSSI ; `npm run build` (titre v1.42.0) : TEST RÉUSSI ;
+  - `npx vitest run` : 1471 réussis, 5 échoués, 1 ignoré ; les 5 échecs sont ceux déjà notés pour la 1.41.0
+    (uppercut-arriere v0.32, fluidité × 2, crochets « pas d'armé », taille du modèle d'Amara) : TEST RÉUSSI pour ce
+    lot ;
+  - `npx playwright test` (299 tests) : 294 réussis, 3 échoués, 2 ignorés (Firebase). `coaching-hud:60` est l'échec
+    connu de la 1.41.0 ; `coach-suggest:99` et `seance-mains-libres:117` (écrans non touchés) ont échoué sous la
+    charge de la suite et sont RÉUSSIS rejoués seuls (deux fois pour le second) ;
+  - nouveau `tests/e2e/retour-v1420.spec.ts` (5 tests) : TEST RÉUSSI ; `navigation` adapté (« Continuer » au lieu
+    d'« Annuler », même contrôle) ;
+  - essai sur téléphone Android : NON EXÉCUTÉ.
+- **Limite** : chemin de l'application Android (APK) non exécuté ici ; il passe par la même garde.
+- **Captures** : `docs/v1420/captures/` (prises sur la 1.34.0 d'origine, écran inchangé).
+- **Restauration** : état 1.41.0 (commit 8ef0b54 de `claude/project-thread-o7lrt8`).
+
+## 2026-11-14 · v1.43.0 · Nouveau coach : Victor « Le Loup gris »
+
+- **Demande** : Youssef, 2026-11-14 11:08 « Intégrer a l'application », après validation de l'essai (visage, bouche,
+  arrière de la tête, teint, cheveux poivre et sel, tenues) fait d'après ses planches de personnage (il a généré le
+  personnage lui-même et autorise son usage).
+- **Constat** : l'application comptait quatre coachs (Kadir, Naël, Amara, Inaya). Kadir ne doit pas changer sans
+  l'accord de Youssef.
+- **Correction** :
+  - modèle `public/coaches/victor/photo.glb` (3,1 Mo) fait à partir d'une **copie** de celui de Kadir
+    (`tools/generator/rocketbox/victor_build.mjs`) : mêmes os, mêmes poids, mêmes 25 expressions ARKit ; forme de la
+    tête, carrure, volume des cheveux et textures de Victor ; os `LeftEye`/`RightEye` déplacés avec les yeux.
+    Le fichier de Kadir est inchangé (même empreinte) ;
+  - chaîne de fabrication gardée dans `tools/generator/victor/` (scripts Blender et Python, données, README) ;
+  - sept tenues générées par `outfits.py` avec une palette `victor` (boxe noire avec protège-tibias, kick-boxing
+    noir et rouge, muay-thaï avec chevillères, MMA, JJB avec kimono bleu marine, JJB no-gi en legging et short,
+    judo blanc) ; portrait généré par `npm run visuels -- --only portraits --id victor` ;
+  - catalogue (cinq coachs, Victor 93 kg mesuré sur le modèle), apparence, profil humain `contract: 'complet'`
+    (expressivité 0,95, chaleur 0,95, endurance 1,2, clignements 0,9), peau, Coach IA (« cinq coachs ») ;
+  - garde propre : haute et compacte. Une première version (mains plus hautes, coude arrière serré) mettait
+    l'avant-bras arrière 4,9 cm dans le torse en garde de boxe : main arrière un peu plus basse et en avant
+    (`rearHand [0, -0.02, 0.03]`), plus aucune traversée en garde.
+- **Tests adaptés** (aucun contrôle affaibli pour les quatre autres coachs) :
+  - Victor ajouté à toutes les listes de coachs des tests (moteur humain, visage, regard, respiration, tenues,
+    squelette, sol, glissement, traversées, déformations, intégrité) ; « quatre coachs » devient « cinq » ;
+  - `expressions-v1160` : la lecture des cibles creuses suit maintenant la règle glTF (indices 16 ou 32 bits, décalage
+    propre à chaque partie, accesseur sans données = zéros). Les fichiers de glTF-Transform l'utilisent ; les
+    contrôles eux-mêmes sont les mêmes ;
+  - `outfit-assets-v1372` : les tenues de Victor portent la version de générateur 1.43.0 ;
+  - écarts propres à Victor, mesurés et bornés pour lui seul (ils ne peuvent pas empirer), dus à son corps plus
+    large que celui de Kadir pour les mêmes trajets : traversées de quelques millimètres de plus que les bornes de la
+    1.41.0 dans 12 techniques déjà en attente ou proches (`VICTOR_PENDING`, `intrusions.test.ts`, détail dans
+    `MESURES_INTRUSIONS.md`) ; avant-bras à 3,0 cm dans le tapis dans la chute arrière (`ukemi-ushiro`, borne
+    3,2 cm) ; glissement de `changement-base` à 13,20 cm par image (borne 13,3) ; genou en squat : plus petit
+    triangle à 0,091 du repos au lieu de 0,111 chez Kadir (`deformation-v1100`, Victor comparé à la peau de Kadir
+    d'aujourd'hui) ;
+  - documents de mesures régénérés (`MESURES_INTRUSIONS`, `MESURES_SOL`, `MESURES_GLISSEMENT`, `MESURES_INTEGRITE`,
+    `MESURES_DEFORMATIONS`, `ANIMATIONS.md`).
+- **Fichiers** : `public/coaches/victor/`, `tools/generator/victor/`, `tools/generator/rocketbox/{victor_build.mjs,
+  outfits.py,regen_outfits.sh}`, `src/domain/coaches/{catalog,looks,motion}.ts`, `src/three/human/profiles.ts`,
+  `src/three/photoMaterials.ts`, `src/coach/appGuide.ts`, `scripts/visuels/generate.mjs`, `src/boot/assetSizes.json`,
+  `src/domain/releases.ts`, `package.json`, tests listés ci-dessus.
+- **Limites connues** : léger raccord au milieu du front, quelques taches orangées sur le dessus du crâne ; tenues
+  encore génériques (bandes rouges du short de kick-boxing, inscriptions du short de muay-thaï, kimono plus fin) :
+  lot suivant, d'après les planches.
+- **Restauration** : `restauration/avant-victor-v1430` (état 1.42.0, commit d1f3ccc).
+- **Tests** (sur la 1.42.0 + ce lot) :
+  - `npm run build` (titre v1.43.0) : TEST RÉUSSI ;
+  - `npx vitest run` : 1534 réussis, 5 échoués, 1 ignoré ; les 5 échecs sont ceux déjà notés pour la 1.41.0 et la
+    1.42.0 (uppercut-arriere v0.32, fluidité × 2, crochets « pas d'armé », taille du modèle d'Amara) : TEST RÉUSSI
+    pour ce lot ;
+  - `npx playwright test` (299 tests, 57 min) : 287 réussis, 10 échoués, 2 ignorés (Firebase). Six échecs venaient
+    de l'écran de choix passé à cinq coachs (`coachs-v160`) : tests mis à jour (Victor dans les listes, cinq vignettes,
+    part de largeur pour cinq), rejoués : TEST RÉUSSI. `consignes-v130:27` : RÉUSSI rejoué seul. `coaching-hud:60` :
+    échec connu de la 1.41.0. `boot:98` et `training-layout:117` (ouvrir une séance par son adresse) échouent aussi
+    sur la 1.42.0 d'origine dans ce même environnement (vérifié sur `d1f3ccc`) : ÉCHOUÉ, sans lien avec ce lot, à
+    examiner à part ;
+  - essai sur téléphone Android : NON EXÉCUTÉ.
+
+## 2026-11-14 · v1.44.0 · Visage plus vivant, en douceur (les cinq coachs)
+
+- **Demande** : Youssef, 13/11 21:07 « Quelles améliorations visuelles peux-tu me proposer pour humaniser les
+  expressions du visage de mes coachs ? » ; 13/11 22:36 (fil de restauration) « humaniser ne veut pas dire rajouter
+  des traits visibles » ; 14/11 15:01 « Je veux léger et naturel » (points 1, 2, 4, 5 de la proposition) ; 15:08
+  « Attend l'intégration de Victor pour ce patch » ; 16:49 « Go déploiement » après la page avant/après
+  https://claude.ai/artifact/EjtKXGYDhSjni9zuroYpp6.
+- **Constat vérifié** (Lab, base 1.43.0, gros plans des cinq coachs) : le blanc des yeux était éclairé
+  uniformément jusque sous la paupière (œil « posé » sur le visage) ; les oreilles, les narines et les lèvres avaient
+  la même diffusion de lumière que le reste de la peau (aucune transparence des parties fines) ; le visage restait
+  identique du début à la fin d'une séance.
+- **Correction** (moteur commun, aucun réglage propre à un coach ; rien de dessiné sur la peau) :
+  - `src/three/human/faceRender.ts` (nouveau) : réglages `FACE_RENDER` (transparence 1, bord humide 1, ombre de
+    paupière 0,28, rougeur 0,5, brillance 0,14), effort de séance `Exertion` (monte avec l'effort, environ 3 min de
+    round soutenu pour le maximum, redescend en environ 2 min de repos ; rougeur d'abord, brillance ensuite),
+    uniformes partagés par la peau de la tête et les yeux de chaque coach ;
+  - `src/three/skinShader.ts` : sur la seule peau de la tête (matériau `*_head`), zones gaussiennes larges placées sur
+    la texture des têtes Rocketbox (m021 et f021 ont la même disposition) : joues, oreilles, nez, narines, lèvres,
+    front, bord des paupières inférieures. Rougeur multipliée sur la teinte, lumière enveloppante plus large et
+    lumière arrière dans les parties fines, rugosité un peu plus basse (brillance, bord humide) ;
+  - `src/three/photoMaterials.ts` : ombre douce de la paupière supérieure sur l'œil, selon le haut de la tête vu de la
+    caméra (elle reste quand l'œil tourne) ;
+  - `src/three/face.ts`, `src/three/PhotoCoach.tsx` : effort de séance mis à jour à chaque image (jamais en image
+    fixe), uniformes envoyés après le visage ; Lab `seance=0..1` impose le niveau, `rendu=avant` montre le rendu de la
+    1.43.0.
+  - Premier réglage corrigé avant livraison : la brillance du front faisait une tache claire près de la racine des
+    cheveux d'Amara ; zone descendue et élargie, brillance 0,22 → 0,14.
+- **Fichiers** : `src/three/human/faceRender.ts` (nouveau), `src/three/skinShader.ts`, `src/three/photoMaterials.ts`,
+  `src/three/face.ts`, `src/three/PhotoCoach.tsx`, `src/ui/Lab.tsx`,
+  `src/three/human/__tests__/rendu-visage-v1440.test.ts` (nouveau), `package.json`, `package-lock.json`,
+  `src/domain/releases.ts`.
+- **Tests ajoutés** (`rendu-visage-v1440.test.ts`, 10 contrôles) : rougeur puis brillance avec l'effort, retour à
+  zéro au repos ; « rendu=avant » coupe tout ; réglages bornés (léger) ; pour les cinq coachs, une seule peau de tête
+  reconnue, zones du visage seulement sur elle, dans les deux qualités ; masques sans bord ni répétition (ni `step`,
+  `fract`, `sin`, `cos`) ; ombre de paupière dans le shader des yeux, deux qualités.
+- **Tests existants** : aucun modifié ni affaibli.
+- **Restauration** : branche `restauration/avant-rendu-visage` (= 1.43.0, `8558e80`).
+
+## 2026-11-14 · v1.45.0 · Membres qui traversent le corps et épaules en pointe
+
+- **Constat vérifié** (mesure `intrusions.test.ts` sur la peau des coachs, base 1.41.0, et captures du Lab) : dans
+  33 techniques un membre entrait de plus de 2 cm dans le corps ; les pires : défense contre l'amené au sol 14,8 cm
+  (avant-bras dans la poitrine), sprawl 14,6, genou circulaire avant 14,6, o-soto-gari 14,8, uppercut arrière 10,7,
+  genou direct arrière 9,8. Après correction, Youssef a signalé sur ses captures que l'épaule formait une pointe quand
+  le buste se penche bras devant : la clavicule restait immobile.
+- **Correction** :
+  - `src/engine/rig.ts` : `handOutOfTrunk` (main cible ramenée à la surface du tronc, ellipses par os de la colonne
+    mesurées sur la peau, `trunkCore`) ; la clavicule suit le bras (0,3 rad au plus) seulement quand le bras monte et
+    que le buste se penche en avant. Première version retirée : une rotation automatique du coude donnait des poses
+    « impossibles, pas humaines » (retour de Youssef, 15:43) ; une clavicule à 0,5 rad sans condition déformait le
+    coup de pied haut.
+  - trajets corrigés geste par geste : `src/engine/library/mma.ts` (défense de lutte, sprawl),
+    `src/engine/library/legs.ts` (genou circulaire : garde pendant la charge, mains qui tournent avec le buste ; genou
+    direct), `src/engine/library/grappling.ts` (main au revers dans o-soto-gari).
+  - Moteur 1.2.0 (`src/engine/index.ts`, `docs/moteur/CHANGELOG.md`). Modèles, visages et tenues inchangés.
+- **Résultat** : défense de lutte 14,8 → 3,7 cm, sprawl et genou circulaire avant sous 2 cm (retirés de la liste
+  d'attente), o-soto 7,6, uppercut arrière 7,0, genou direct arrière 5,2. Avant/après validé par Youssef.
+- **Fichiers** : `src/engine/rig.ts`, `src/engine/library/{mma,legs,grappling}.ts`, `src/engine/index.ts`,
+  `src/engine/__tests__/intrusions.test.ts`, documents de mesures régénérés (`docs/audit-biomecanique/`,
+  `docs/v042-crochets/`, `docs/v1100/`), `src/ui/pictos/techniquePictos.json`, `package.json`,
+  `src/domain/releases.ts`.
+- **Tests** : bornes de `intrusions.test.ts` abaissées à min(nouvelle mesure + 0,2 cm, ancienne borne), jamais
+  relevées ; Victor (arrivé en 1.43.0) : bornes abaissées de même, uppercut arrière borné à 7,9 cm (8,2 en 1.43.0,
+  7,7 maintenant) car la borne commune tombe à 7,0. Vitest : 1544 réussis, 5 échecs déjà présents avant ce lot
+  (extension-v032 uppercut, fluidité ×2, crochets « pas d'armé », poids du modèle d'Amara) : TEST ÉCHOUÉ, non liés.
+- **Restauration** : branche `restauration/avant-traversees-v1450` (= 1.44.0, `f5941f1`).

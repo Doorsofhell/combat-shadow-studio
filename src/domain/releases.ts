@@ -49,6 +49,54 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.45.0',
+      releaseDate: '2026-11-14',
+      title: 'Coachs : des gestes qui ne traversent plus le corps',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Défense contre l’amené au sol, sprawl, genou circulaire, o-soto-gari, uppercut arrière et genou direct : les mains et les avant-bras ne rentrent plus dans le corps du coach.' },
+        { category: 'corrections', text: 'Épaules plus naturelles : quand le buste se penche bras devant, l’omoplate accompagne le bras et l’épaule ne forme plus de pointe. En garde, rien ne change.' },
+        { category: 'ameliorations', text: 'Corrections faites geste par geste, sans toucher aux modèles des coachs ni à leurs visages.' },
+      ],
+      links: [{ label: 'Voir les techniques', to: '/techniques' }],
+    },
+    {
+      version: '1.44.0',
+      releaseDate: '2026-11-14',
+      title: 'Coachs : un visage plus vivant, en douceur',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Yeux plus naturels : la paupière ombre légèrement le haut de l’œil, et le bord de la paupière inférieure brille à peine sous la lumière.' },
+        { category: 'ameliorations', text: 'Peau plus vivante : les oreilles, les narines et les lèvres prennent une teinte chaude au bord de l’ombre et à contre-jour.' },
+        { category: 'ameliorations', text: 'Le visage suit ta séance : les joues rougissent légèrement avec l’effort, puis le front et le nez brillent un peu. Tout revient au calme pendant la récupération.' },
+        { category: 'ameliorations', text: 'Rien n’est dessiné sur la peau. Tenues, corps, coiffures, maquillage et techniques des cinq coachs inchangés.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
+      version: '1.43.0',
+      releaseDate: '2026-11-14',
+      title: 'Victor, le Loup gris',
+      isMajor: true,
+      changes: [
+        { category: 'coachs', text: 'Nouveau coach : Victor « Le Loup gris ». Vétéran calme et technique, cheveux et barbe poivre et sel, garde haute et compacte. Il a son visage vivant, ses expressions et ses tenues pour les six disciplines.' },
+        { category: 'coachs', text: 'L’écran de choix du coach présente maintenant cinq coachs : Kadir, Naël, Victor, Amara et Inaya.' },
+      ],
+      links: [{ label: 'Choisir Victor', to: '/coach' }],
+    },
+    {
+      version: '1.42.0',
+      releaseDate: '2026-11-14',
+      title: 'Retour, un pas à la fois',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Pendant une séance, le Retour du téléphone ne te fait plus sortir d’un coup : il met en pause et te demande avant de quitter.' },
+        { category: 'corrections', text: 'En plein écran, le Retour du téléphone sort d’abord du plein écran. La séance continue.' },
+        { category: 'ameliorations', text: 'En plein écran, une flèche Retour reste visible en haut à gauche. Dans « Quitter la séance ? », « Continuer » est le choix mis en avant.' },
+      ],
+      links: [{ label: 'Voir Entraîner', to: '/entrainer' }],
+    },
+    {
       version: '1.41.0',
       releaseDate: '2026-11-14',
       title: 'Mouvements des coachs mieux contrôlés',

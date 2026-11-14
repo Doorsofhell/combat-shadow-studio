@@ -31,11 +31,11 @@ import { usePulseFlash } from '../training/pulse';
 import { ArBridge } from '../../ar/ArBridge';
 import { ArControls, ArIntroSheet, useArView } from '../training/ArMode';
 import { AppIcon } from '../icons';
+import { NavIcon } from '../nav/NavIcon';
 import { useNavActions } from '../nav/store';
 import { useSmartBack, vibrate } from '../nav/BottomBar';
-import { openLayers } from '../nav/layers';
+import { popLayer, pushGuard } from '../nav/layers';
 import { ConfirmDialog } from '../components/Sheet';
-import { onBackButton } from '../../platform/native';
 import { useResume } from '../../store/resume';
 import { ResumeSnapshot, matchesPlan, sessionQuery } from '../../domain/resume';
 import { useHydrated } from '../../store/useHydrated';
@@ -178,7 +178,7 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   // 1.0.0); the pause is in the commands and in the bottom bar
   const tapStage = useRef<() => void>(() => undefined);
   const coachUi = useCoachUi();
-  const fs = useStageFullscreen(root, { tapRef: stageRef, onTap: () => tapStage.current() });
+  const fs = useStageFullscreen(root, { tapRef: stageRef, onTap: () => tapStage.current(), history: false });
   const immersive = fs.active;
   const arRoot = useRef<HTMLDivElement>(null);
   const ar = useMemo(() => new ArBridge(), []);
@@ -444,22 +444,47 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
     if (live) {
       if (!view.paused) pause();
       setLeaving(true);
-    } else smartBack('entrainement');
+    } else leaveNow();
   };
   const askLeaveRef = useRef(askLeave);
   askLeaveRef.current = askLeave;
   const liveRef = useRef(live);
   liveRef.current = live;
-  // the Android back button follows the same rule (an open sheet closes first)
-  useEffect(
-    () =>
-      onBackButton(() => {
-        if (openLayers() > 0 || !liveRef.current) return false;
-        askLeaveRef.current();
-        return true;
-      }),
-    [],
-  );
+  // 1.42.0 (Youssef, 2026-11-11, rule « un Retour = un seul pas en arrière »): the Back of the phone (Android button,
+  // back gesture, browser, installed app) is held by a guard while the session is live or the coach is in fullscreen.
+  // One press = one step: it leaves the fullscreen (the session goes on); else it closes the question; else it
+  // pauses and asks. Only « Quitter » leaves. Before 1.42.0 this rule existed for the Android app alone: in the web
+  // app Back left a running session at once, fullscreen included.
+  const leavingRef = useRef(leaving);
+  leavingRef.current = leaving;
+  const fsRef = useRef(fs);
+  fsRef.current = fs;
+  /** one step back, the same for the Back of the phone and for the arrow of the fullscreen */
+  const backStep = () => {
+    if (fsRef.current.active) fsRef.current.exit();
+    else if (leavingRef.current) setLeaving(false);
+    else if (liveRef.current) askLeaveRef.current();
+  };
+  const backStepRef = useRef(backStep);
+  backStepRef.current = backStep;
+  const guard = useRef<number | null>(null);
+  const needGuard = live || immersive;
+  useEffect(() => {
+    if (needGuard && guard.current === null) {
+      guard.current = pushGuard(() => backStepRef.current());
+    } else if (!needGuard && guard.current !== null) {
+      const id = guard.current;
+      guard.current = null;
+      popLayer(id);
+    }
+  }, [needGuard]);
+  /** really leaves: the guard goes first, so the page left is the session and not the guard's own entry */
+  const leaveNow = () => {
+    const id = guard.current;
+    guard.current = null;
+    if (id !== null) popLayer(id, () => smartBack('entrainement'));
+    else smartBack('entrainement');
+  };
   const toggleState = !running ? 'start' : view.paused ? 'resume' : 'pause';
   // hands-free (maquette v4): while the session runs, only Pause (and Retour) stay above the bottom; Décomposer,
   // Caméra and « Plus » come back with the pause. A tap on the stage shows or hides the commands of the coach (1.4.0).
@@ -532,6 +557,13 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
     >
       {/* 1.4.0: the flash of the signals (gong, countdown, move called), never over a button (pointer-events: none) */}
       <div className="tr-pulse" aria-hidden="true" />
+      {/* 1.42.0 (maquette validée le 2026-11-11): in fullscreen a Retour arrow stays in sight (it only dims when the
+          other commands fade); one touch = one step back, here out of the fullscreen, the session goes on */}
+      {immersive && (
+        <button type="button" className="tr-fs-back" onClick={backStep} aria-label="Retour : quitter le plein écran" data-testid="fs-back">
+          <NavIcon id="back" />
+        </button>
+      )}
       {/* 0.35 HUD: discipline and level, the state of the session, the round and its time left, a thin progress bar.
           The exercise (and so the full combination) is no longer shown here while it runs: see the band and tr-info */}
       <header className={`tr-top tr-hud ${view.phase} ${view.paused ? 'paused' : ''}`} data-testid="hud">
@@ -847,9 +879,11 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
           title="Quitter la séance ?"
           message="La séance est en pause. Le temps déjà fait est enregistré dans tes progrès, et tu pourras la reprendre depuis Entraîner."
           confirmLabel="Quitter"
+          cancelLabel="Continuer"
+          keep
           onConfirm={() => {
             setLeaving(false);
-            smartBack('entrainement');
+            leaveNow();
           }}
           onCancel={() => setLeaving(false)}
         />

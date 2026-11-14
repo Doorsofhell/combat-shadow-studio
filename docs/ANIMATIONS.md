@@ -2,7 +2,7 @@
 
 Généré par `UPDATE_REGISTRY=1 npx vitest run src/engine/__tests__/registry.test.ts`. Ne pas modifier à la main.
 
-Depuis la 1.41.0, contrôles sur le squelette réel des quatre coachs de l’application (Kadir, Amara, Naël, Inaya), avec la garde de la discipline et avec la garde propre au coach : un contrôle n’est réussi que s’il l’est pour tous.
+Depuis la 1.41.0, contrôles sur le squelette réel des coachs de l’application (Kadir, Amara, Naël, Inaya et, depuis la 1.43.0, Victor), avec la garde de la discipline et avec la garde propre au coach : un contrôle n’est réussi que s’il l’est pour tous.
 
 - **Validée par un expert** : revue par un entraîneur qualifié. Aucune pour l’instant.
 - **Contrôlée automatiquement** : tous les contrôles applicables sont réussis. Cela ne remplace pas une validation par un expert.

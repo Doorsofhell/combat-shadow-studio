@@ -55,7 +55,29 @@ const PENDING: Record<string, number> = {
   'ukemi-yoko': 6.8,
   'uppercut-arriere': 7.2,
 };
-const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya'] as const;
+/**
+ * 1.43.0 Victor: his body is the one of Kadir, made wider (torso, forearms, calves), with the same techniques. His
+ * forearms reach a little deeper into his torso in some techniques already pending above (a few millimetres, as many as
+ * the extra width) and in three that the other coaches keep under 2 cm. Measured on his skin in 1.43.0, bounded the same
+ * way (they may not get worse) and corrected with the others; the four other coaches keep the bounds above.
+ */
+const VICTOR_PENDING: Record<string, number> = {
+  // 1.45.0 (traversées corrigées): bounds lowered to min(new + 0.2, 1.43.0); défense de lutte now under the common bound.
+  'esquive-droite': 2.5,
+  'genou-circulaire-clinch': 2.2,
+  'high-kick-arriere': 2.5,
+  'middle-kick-arriere': 4.1,
+  'rattrapage-middle': 7.6,
+  'retention-garde': 4.2,
+  'single-leg': 5.0,
+  'sit-out': 5.9,
+  'uchikomi-ko-uchi-gari': 4.1,
+  'ukemi-ushiro': 6.8,
+  'ukemi-yoko': 7.6,
+  // the common bound fell to 7.0; Victor's wider forearm stays a little deeper (8.2 cm in 1.43.0, 7.7 cm now)
+  'uppercut-arriere': 7.9,
+};
+const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor'] as const;
 const DOC = resolve(__dirname, '../../../docs/audit-biomecanique/MESURES_INTRUSIONS.md');
 
 interface Worst {
@@ -66,6 +88,7 @@ interface Worst {
   t: number;
 }
 const worst = new Map<string, Worst>();
+const worstVictor = new Map<string, Worst>();
 const garde: string[] = [];
 for (const id of COACHES) {
   const body = loadSkinnedBody(`coaches/${id}/photo.glb`, 3, (n) => !/eye|lash|brow|high-poly/i.test(n));
@@ -85,7 +108,8 @@ for (const id of COACHES) {
         rig.apply(s.sample(time));
         for (const x of intrusions(body, cores, 0.005)) {
           const d = x.depth * 100;
-          if ((worst.get(t.id)?.depth ?? 0) < d) worst.set(t.id, { depth: d, what: `${x.limb} dans ${x.core === 'tête' ? 'la tête' : x.core === 'tronc' ? 'le tronc' : `la ${x.core.replace('tibia', 'jambe (tibia)')}`}`, coach: id, style, t: time });
+          const into = id === 'victor' ? worstVictor : worst;
+          if ((into.get(t.id)?.depth ?? 0) < d) into.set(t.id, { depth: d, what: `${x.limb} dans ${x.core === 'tête' ? 'la tête' : x.core === 'tronc' ? 'le tronc' : `la ${x.core.replace('tibia', 'jambe (tibia)')}`}`, coach: id, style, t: time });
         }
       }
     }
@@ -93,15 +117,22 @@ for (const id of COACHES) {
 }
 const f = (x: number) => x.toFixed(1).replace('.', ',');
 const list = [...worst].sort((a, b) => b[1].depth - a[1].depth);
+const listVictor = [...worstVictor].sort((a, b) => b[1].depth - a[1].depth);
 
-describe('membres qui traversent le corps (peau des 4 coachs)', () => {
+describe('membres qui traversent le corps (peau des 5 coachs)', () => {
   test(`aucun membre à plus de ${CONTACT} cm dans le corps, hors techniques en attente de correction`, () => {
     const bad = list.filter(([id, w]) => w.depth > (PENDING[id] ?? CONTACT)).map(([id, w]) => `${id} : ${w.what} ${f(w.depth)} cm (${w.coach} ${w.style} t=${w.t.toFixed(2)} s)`);
     expect(bad).toEqual([]);
   });
 
+  test(`Victor : aucun membre plus profond qu’en 1.43.0`, () => {
+    if (process.env.AUDIT_UPDATE) console.log(listVictor.filter(([id, w]) => w.depth > (PENDING[id] ?? CONTACT)).map(([id, w]) => `  '${id}': ${(Math.ceil(w.depth * 10) / 10 + 0.2).toFixed(1)},`).join('\n'));
+    const bad = listVictor.filter(([id, w]) => w.depth > (VICTOR_PENDING[id] ?? PENDING[id] ?? CONTACT)).map(([id, w]) => `${id} : ${w.what} ${f(w.depth)} cm (${w.coach} ${w.style} t=${w.t.toFixed(2)} s)`);
+    expect(bad).toEqual([]);
+  });
+
   test('les techniques en attente existent toujours', () => {
-    for (const id of Object.keys(PENDING)) expect(TECHNIQUES.some((t) => t.id === id), id).toBe(true);
+    for (const id of [...Object.keys(PENDING), ...Object.keys(VICTOR_PENDING)]) expect(TECHNIQUES.some((t) => t.id === id), id).toBe(true);
   });
 
   test('le document de mesures est à jour', () => {
@@ -117,6 +148,14 @@ describe('membres qui traversent le corps (peau des 4 coachs)', () => {
       '| Technique | Pire profondeur (cm) | Quoi | Où | Instant |',
       '|---|---|---|---|---|',
       ...list.filter(([, w]) => w.depth > CONTACT).map(([id, w]) => `| \`${id}\` | ${f(w.depth)} | ${w.what} | ${w.coach} ${w.style} | ${w.t.toFixed(2).replace('.', ',')} s |`),
+      '',
+      '## Victor (1.43.0)',
+      '',
+      'Même mesure sur la peau de Victor (corps de Kadir élargi : torse, avant-bras, mollets). Bornes propres : une technique ne peut pas être plus profonde qu’ici.',
+      '',
+      '| Technique | Pire profondeur (cm) | Quoi | Où | Instant |',
+      '|---|---|---|---|---|',
+      ...listVictor.filter(([, w]) => w.depth > CONTACT).map(([id, w]) => `| \`${id}\` | ${f(w.depth)} | ${w.what} | ${w.coach} ${w.style} | ${w.t.toFixed(2).replace('.', ',')} s |`),
       '',
     ].join('\n');
     if (process.env.AUDIT_UPDATE) writeFileSync(DOC, md);

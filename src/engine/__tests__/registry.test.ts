@@ -13,6 +13,7 @@ const rows = buildRegistry(
       ['mma-kadir', 'homme'],
       ['mma-amara', 'femme'],
       ['nael', 'homme'],
+      ['victor', 'homme'],
       ['inaya', 'femme'],
     ] as const
   ).map(([id, sex]) => ({ id, rig: new CoachRig(loadSkeleton(sex, `coaches/${id}/photo.glb`)), offsets: COACH_STANCES[id] })),

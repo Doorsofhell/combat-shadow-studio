@@ -48,6 +48,16 @@ export const COACH_LOOKS: Record<string, FighterLook> = {
     l.outfit = { ...l.outfit, bottom: 'short-mma-court', bottomPaint: paint('#1d4e89', '#f4f4f5', 'bande'), top: 'aucun', shoes: 'pieds-nus' };
     l.gear = { ...l.gear, hands: 'gants-mma', handsPaint: paint('#16171a', '#1d4e89') };
   }),
+  // 1.43 Victor « Le Loup gris »: peau hâlée, yeux gris-bleu, cheveux courts et barbe poivre et sel; tenues noires
+  victor: look('homme', (l) => {
+    l.skin = '#b9805f';
+    l.eyes = '#6f8a96';
+    l.hair = { style: 'court', color: '#8d8a86', length: 0.12, meches: 0.9, flow: 0.25 };
+    l.beard = { style: 'pleine', color: '#9a9690' };
+    l.bodyHair = 0.3;
+    l.outfit = { ...l.outfit, bottom: 'short-mma-court', bottomPaint: paint('#1a1b1f', '#3a3d43', 'bande'), top: 'aucun', shoes: 'pieds-nus' };
+    l.gear = { ...l.gear, hands: 'gants-mma', handsPaint: paint('#16171a', '#3a3d43') };
+  }),
   // Inaya « La Panthère » (Rocketbox face Female_Adult_01): fair skin, blond ponytail; outfits in plum and orange
   inaya: look('femme', (l) => {
     l.skin = '#e8c6ad';
