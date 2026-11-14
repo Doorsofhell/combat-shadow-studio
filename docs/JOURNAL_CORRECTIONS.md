@@ -4162,4 +4162,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   relevées ; Victor (arrivé en 1.43.0) : bornes abaissées de même, uppercut arrière borné à 7,9 cm (8,2 en 1.43.0,
   7,7 maintenant) car la borne commune tombe à 7,0. Vitest : 1544 réussis, 5 échecs déjà présents avant ce lot
   (extension-v032 uppercut, fluidité ×2, crochets « pas d'armé », poids du modèle d'Amara) : TEST ÉCHOUÉ, non liés.
+  Playwright : 293 réussis, 2 ignorés (Firebase), 4 échecs ; relancés seuls, chrono-seul:96 et coach-suggest:99
+  passent ; coaching-hud:60 et training-layout:117 échouent aussi sur la base 1.44.0 (`f5941f1`) : TEST ÉCHOUÉ, non
+  liés à ce lot. Build : TEST RÉUSSI.
 - **Restauration** : branche `restauration/avant-traversees-v1450` (= 1.44.0, `f5941f1`).
