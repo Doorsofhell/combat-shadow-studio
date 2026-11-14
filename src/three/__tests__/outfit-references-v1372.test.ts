@@ -6,14 +6,16 @@ import { describe, expect, test } from 'vitest';
  * Reference meshes cannot be assigned to another coach's skeleton.
  * In v1.37.3 Kadir's own, previously approved GLBs are restored verbatim.
  */
+// 1.44.2: Naël's and Inaya's MMA shorts take the textile folds (short_folds.mjs, Youssef 14/11 « mutualiser… pour tous les
+// coachs »); only the short's positions and normals change. Fingerprints of 1.37.2 in the git history
 const references = [
   {
     coach: 'nael',
-    sha: 'e4d1e0e46de56ea8a702d776f055a0b4fe2d9478',
+    sha: '08481bf54bd7c191d870a4a1ff50b0ab3c4895d5',
   },
   {
     coach: 'inaya',
-    sha: '0237f76c9fc0db9e154efa5321cb0c17ace813b4',
+    sha: 'af445c42b327b865fa0538899c59a1f2374a5c2f',
   },
 ] as const;
 

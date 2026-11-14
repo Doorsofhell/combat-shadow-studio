@@ -603,7 +603,31 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
         bmesh.ops.delete(bm_, geom=[f for f in bm_.faces if not face_ok(f)], context='FACES')
     bmesh.ops.delete(bm_, geom=[v for v in bm_.verts if not v.link_faces], context='VERTS')
     # the body is split along its texture seams: weld them, or the garment shows a crack there
-    bmesh.ops.remove_doubles(bm_, verts=bm_.verts[:], dist=0.0005 / max(MW.to_scale()))
+    # 1.44.2 (Youssef 14/11, « membrane entre les jambes »): the two inner thighs of the bind pose touch from the
+    # crotch down to about mid-thigh (0.5 to 0.8 mm apart on Kadir's and Victor's bodies). A hem cut there had its
+    # left and right points welded together: the two leg openings were joined by a strip of cloth that stretched
+    # between the thighs as soon as the legs parted. Points held by opposite legs are never welded: the left side
+    # (with the pelvis), then the right side (with the pelvis)
+    # (the side is read on the point's own skin weights, copied from the body: the closest body point can belong to
+    # the other thigh where they touch)
+    dlay = bm_.verts.layers.deform.active
+    gname = {g_.index: g_.name for g_ in o.vertex_groups}
+
+    def leg_side(v):
+        if dlay is None:
+            return 'C'
+        l_ = r_ = 0.0
+        for gi, wt in v[dlay].items():
+            n_ = gname.get(gi, '')
+            if n_ in ('LeftUpLeg', 'LeftLeg'):
+                l_ += wt
+            elif n_ in ('RightUpLeg', 'RightLeg'):
+                r_ += wt
+        return 'L' if l_ >= 0.5 else 'R' if r_ >= 0.5 else 'C'
+    for s_ in ('L', 'R'):
+        bm_.verts.ensure_lookup_table()
+        group = [v for v in bm_.verts if leg_side(v) in (s_, 'C')]
+        bmesh.ops.remove_doubles(bm_, verts=group, dist=0.0005 / max(MW.to_scale()))
     # v0.32: small holes left by the body mesh (navel, a seam the weld missed) are closed; the real openings of a
     # garment (neck, sleeves, legs: dozens of edges) are kept
     # A few open body seam loops are genuine small holes; others are natural
@@ -1674,6 +1698,10 @@ BAND_RELIEF = float(os.environ.get('BAND_RELIEF', '0.15'))
 # sheets have a coloured panel on the outer side of each leg, edged by a thin piping, and the same piping along the
 # hem. Set by outfit() for the next shorts() call: dict(panel=hex, trim=hex)
 SHORT_PANEL = {}
+
+
+# 1.44.2: the textile folds of the shorts are added afterwards by tools/generator/rocketbox/short_folds.mjs (one tool for
+# every coach, run on the finished files: the other garments of an outfit stay byte for byte as they were)
 
 
 def shorts(kind, color, band, n_leg=None, under=False):

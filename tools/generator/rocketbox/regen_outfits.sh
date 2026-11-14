@@ -25,3 +25,11 @@ for c in $(echo "$COACHES" | tr ',' ' '); do
 done
 wait
 grep -h "^wrote" "$WORK"/*/outfits.log
+# 1.44.2: textile folds on the shorts (boxe, kickboxing, muaythai, mma), the same tool for every coach. Kadir only with
+# Youssef's agreement: set KADIR_FOLDS=1 once he has validated them
+for c in $(echo "$COACHES" | tr ',' ' '); do
+  [ "$c" = mma-kadir ] && [ "${KADIR_FOLDS:-0}" != 1 ] && continue
+  for o in boxe kickboxing muaythai mma; do
+    case ",$ONLY," in *",$o,"*) node "$ROOT/tools/generator/rocketbox/short_folds.mjs" "$ROOT/public/coaches/$c/tenues/$o.glb" ;; esac
+  done
+done
