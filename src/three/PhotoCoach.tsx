@@ -10,6 +10,7 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
 import { restoreReferencePose, setLegLength } from './pose';
 import { dropStillMorphs, FaceAnimator, type FaceOptions } from './face';
 import { applyWrinkles, WRINKLES_ON_COACHES } from './human/wrinkles';
+import { newFaceRenderUniforms, shareFaceRender } from './human/faceRender';
 import { bakeAmaraCleanSurface } from './amaraCleanSurface';
 import type { HumanSignals } from './human/behavior';
 import { humanProfileFor } from './human/profiles';
@@ -95,6 +96,12 @@ export function PhotoCoach({
       });
     return f;
   }, [scene, url]);
+  // 1.44 the face's rendering (src/three/human/faceRender.ts): one set of uniforms for the head's skin and the eyes
+  const faceRender = useMemo(() => {
+    const u = newFaceRenderUniforms();
+    shareFaceRender(scene, u);
+    return u;
+  }, [scene]);
   const rig = useMemo(() => {
     restoreReferencePose(scene);
     setLegLength(scene, legLength);
@@ -158,6 +165,7 @@ export function PhotoCoach({
     face.setViewer(camera.getWorldPosition(viewerPos));
     face.update(Math.min(dt, 0.05), fo, human);
     face.updateWrinkles(camera);
+    face.updateRender(faceRender, camera);
     // still images (Lab, portraits): the chest at rest, so two captures of the same instant are the same
     breath.update(fo?.still ? 0 : dt, face.state.effort);
     if (fo?.still) breath.amount.value.set(0, 0, 0, 0);

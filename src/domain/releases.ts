@@ -49,7 +49,7 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
-      version: '1.43.1',
+      version: '1.44.1',
       releaseDate: '2026-11-14',
       title: 'Les tenues de Victor',
       isMajor: false,
@@ -59,6 +59,17 @@ export const RELEASES: readonly Release[] = (
         { category: 'ameliorations', text: 'Peau de Victor un peu plus claire et moins rouge.' },
       ],
       links: [{ label: 'Voir Victor', to: '/coach' }],
+      version: '1.44.0',
+      releaseDate: '2026-11-14',
+      title: 'Coachs : un visage plus vivant, en douceur',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Yeux plus naturels : la paupière ombre légèrement le haut de l’œil, et le bord de la paupière inférieure brille à peine sous la lumière.' },
+        { category: 'ameliorations', text: 'Peau plus vivante : les oreilles, les narines et les lèvres prennent une teinte chaude au bord de l’ombre et à contre-jour.' },
+        { category: 'ameliorations', text: 'Le visage suit ta séance : les joues rougissent légèrement avec l’effort, puis le front et le nez brillent un peu. Tout revient au calme pendant la récupération.' },
+        { category: 'ameliorations', text: 'Rien n’est dessiné sur la peau. Tenues, corps, coiffures, maquillage et techniques des cinq coachs inchangés.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
     },
     {
       version: '1.43.0',
