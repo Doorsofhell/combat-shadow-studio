@@ -165,9 +165,11 @@ function sprawl(a: Author): Motion {
   const g = a.guard();
   const s = a.s;
   /** hands on the attacker's head and shoulders (imaginary), pressing down and away */
-  const press = (d: Pose, y: number, z: number) => {
-    d.handL = a.hand('world', v3(0.17 * s, y, z), v3(0.6, 0.1, -0.8), 1, 0, deg(-70));
-    d.handR = a.hand('world', v3(-0.17 * s, y, z), v3(-0.6, 0.1, -0.8), 1, 0, deg(-70));
+  // 1.41.1 (traversées du corps): on the way down the hands come wider, elbows out, so that the rear forearm does
+  // not cross the chest as it bends forward (up to 14 cm in the body before)
+  const press = (d: Pose, y: number, z: number, x = 0.17, py = 0.1) => {
+    d.handL = a.hand('world', v3(x * s, y, z), v3(0.6, py, -0.8), 1, 0, deg(-70));
+    d.handR = a.hand('world', v3(-x * s, y, z), v3(-0.6, py, -0.8), 1, 0, deg(-70));
   };
   const drop = edit(g, (d) => {
     d.hips.y -= 0.3 * s;
@@ -175,7 +177,7 @@ function sprawl(a: Author): Motion {
     d.pelvis.pitch += deg(40);
     d.chest.pitch += deg(20);
     d.head.pitch += deg(-35);
-    press(d, 0.5 * s, 0.42 * s);
+    press(d, 0.5 * s, 0.6 * s, 0.28, -0.6);
   });
   const kick = edit(drop, (d) => {
     press(d, 0.06 * s, 0.4 * s);
@@ -257,8 +259,8 @@ function takedownDefence(a: Author): Motion {
     const y = a.target('body').y - 0.12 * s;
     // elbows back and close to the body, not flared to the side: the hands frame the opponent's
     // shoulders without the upper arm turning in on itself
-    d.handL = a.hand('world', v3(0.16 * s, y, 0.42 * s), v3(0.4, -0.45, -0.8), 1, 0.3, deg(-30));
-    d.handR = a.hand('world', v3(-0.16 * s, y, 0.4 * s), v3(-0.4, -0.45, -0.8), 1, 0.3, deg(-30));
+    d.handL = a.hand('world', v3(0.18 * s, y, 0.5 * s), v3(0.55, -0.45, -0.7), 1, 0.3, deg(-30));
+    d.handR = a.hand('world', v3(-0.24 * s, y, 0.56 * s), v3(-0.7, -0.45, -0.55), 1, 0.3, deg(-30));
   });
   return {
     id: 'defense-lutte',

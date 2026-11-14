@@ -215,6 +215,14 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
   const hands = (d: Pose, pull: number) => {
     const y = head.y - 0.02 * s - pull * 0.12 * s;
     const z = head.z - pull * 0.08 * s;
+    // 1.41.1 (traversées du corps): in kick-boxing the round knee keeps the high guard, gloves at the face, turning
+    // with the chest; framing hands held straight ahead while the trunk turned put the rear forearm through the chest
+    // (up to 14,6 cm)
+    if (!clinch && kind === 'round' && a.style === 'kickboxing') {
+      d.handL = structuredClone(g.handL);
+      d.handR = structuredClone(g.handR);
+      return;
+    }
     if (!clinch && kind === 'straight') {
       // v0.29: the arm on the kicking side frames in a long guard, the other hand stays at the head [S35]
       // (both arms stretched in front read as a mannequin)
@@ -253,6 +261,7 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
   for (const p of [load, hit]) {
     for (const hs of ['L', 'R'] as const) {
       const h = hs === 'L' ? p.handL : p.handR;
+      if (h.space !== 'world') continue;
       const sh = a.shoulder(p, hs);
       const v = new Vector3(h.pos.x, h.pos.y, h.pos.z).sub(sh);
       const min = (a.m.upperArm + a.m.foreArm) * 0.5;

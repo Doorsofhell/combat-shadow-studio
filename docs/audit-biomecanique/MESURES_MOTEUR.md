@@ -15,7 +15,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 |---|---|---|---|---|---|---|---|
 | Sprawl (`sprawl`) | lutte | 70,3 | 41 % | 0,08 | -5,7 (LeftLeg) | 4° | 0,65 |
 | Entrée en double-leg (solo) (`entree-lutte`) | lutte | 43,6 | 46 % | 0,14 | 3,0 (LeftToeBase) | 9° | 0,54 |
-| Descente contrôlée au sol (`descente-sol`) | sol | 39,8 | 11 % | 0,03 | 3,0 (LeftToeBase) | 11° | 0,92 |
+| Descente contrôlée au sol (`descente-sol`) | sol | 39,9 | 11 % | 0,03 | 3,0 (LeftToeBase) | 11° | 0,92 |
 | Entrée en single-leg (solo) (`single-leg`) | lutte | 36,7 | 49 % | 0,19 | 3,0 (LeftToeBase) | 9° | 1,85 |
 | Pas avant (`pas-avant`) | deplacement | 34,5 | 57 % | 0,23 | 3,0 (LeftToeBase) | 6° | 0,17 |
 | Sortie d’angle (`sortie-angle`) | deplacement | 34,2 | 74 % | 0,26 | 3,0 (LeftToeBase) | 8° | 0,22 |
@@ -28,7 +28,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Check hook (crochet pivot) (`check-hook`) | poing | 23,7 | 66 % | 0,35 | 3,0 (LeftToeBase) | 20° | 0,40 |
 | Front kick avant (`front-kick-avant`) | pied | 22,8 | 26 % | 0,68 | 3,0 (LeftToeBase) | 6° | 0,03 |
 | Tsugi-ashi latéral (`tsugi-ashi-lateral`) | deplacement | 22,8 | 59 % | 0,24 | 3,0 (LeftToeBase) | 2° | 0,15 |
-| Défense d’entrée en lutte (`defense-lutte`) | lutte | 22,1 | 82 % | 0,03 | 3,0 (LeftToeBase) | 4° | 2,57 |
+| Défense d’entrée en lutte (`defense-lutte`) | lutte | 22,1 | 84 % | 0,03 | 3,0 (LeftToeBase) | 4° | 2,57 |
 | Check (blocage tibia) (`check-avant`) | defense | 22,1 | 26 % | 0,47 | 3,0 (LeftToeBase) | 6° | 0,09 |
 | Pivot (`pivot-droite`) | deplacement | 21,7 | 64 % | 0,23 | 3,0 (LeftToeBase) | 6° | 0,23 |
 | Tsugi-ashi avant (`tsugi-ashi-avant`) | deplacement | 20,5 | 57 % | 0,23 | 3,0 (LeftToeBase) | 2° | 0,17 |
@@ -133,16 +133,16 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `bjj-debutant-08` | releve-genoux | 6,1 | 4,25 | 1,71 |
 | `mma-avance-11` | jab → direct → sprawl → jab → direct → changement-niveau | 16,6 | 2,35 | 1,70 |
 | `mma-expert-08` | jab → direct → sprawl → jab → low-kick-arriere → crochet-avant → changement-niveau → direct | 16,6 | 2,35 | 1,70 |
-| `mma-debutant-09` | jab → direct → sprawl | 15,7 | 2,35 | 1,70 |
-| `mma-avance-05` | jab → sprawl → direct → sprawl → crochet-avant | 15,7 | 2,35 | 1,70 |
-| `mma-expert-09` | jab → direct → sprawl → jab → direct → sprawl → crochet-avant → direct | 15,7 | 2,35 | 1,70 |
-| `mma-avance-01` | jab → direct → crochet-avant → sprawl → jab → direct | 15,7 | 2,35 | 1,70 |
-| `mma-intermediaire-06` | sprawl → jab → direct | 15,7 | 2,35 | 1,70 |
-| `mma-debutant-06` | sprawl | 15,7 | 2,35 | 1,70 |
+| `mma-debutant-09` | jab → direct → sprawl | 16,3 | 2,35 | 1,70 |
+| `mma-avance-05` | jab → sprawl → direct → sprawl → crochet-avant | 16,3 | 2,35 | 1,70 |
+| `mma-expert-09` | jab → direct → sprawl → jab → direct → sprawl → crochet-avant → direct | 16,3 | 2,35 | 1,70 |
+| `mma-avance-01` | jab → direct → crochet-avant → sprawl → jab → direct | 16,3 | 2,35 | 1,70 |
+| `mma-intermediaire-06` | sprawl → jab → direct | 16,3 | 2,35 | 1,70 |
+| `mma-debutant-06` | sprawl | 16,2 | 2,35 | 1,70 |
 | `mma-expert-02` | jab → direct → low-kick-arriere → sprawl → jab → direct → crochet-avant → overhand | 13,1 | 2,35 | 1,70 |
 | `judo-avance-05` | uchikomi-o-uchi-gari | 5,4 | 7,20 | 1,59 |
-| `mma-expert-04` | defense-lutte → sprawl → direct → crochet-avant → uppercut-arriere → crochet-avant | 15,6 | 4,12 | 1,54 |
-| `mma-debutant-07` | defense-lutte | 10,8 | 4,12 | 1,54 |
+| `mma-expert-04` | defense-lutte → sprawl → direct → crochet-avant → uppercut-arriere → crochet-avant | 16,2 | 4,12 | 1,54 |
+| `mma-debutant-07` | defense-lutte | 11,7 | 4,12 | 1,54 |
 | `mma-avance-08` | defense-lutte → direct → high-kick-arriere | 16,1 | 4,12 | 1,54 |
 | `judo-expert-04` | kumikata → uchikomi-o-goshi → uchikomi-o-soto-gari → uchikomi-o-uchi-gari → uchikomi-ko-uchi-gari | 18,0 | 7,20 | 1,32 |
 | `judo-avance-07` | uchikomi-ko-uchi-gari → uchikomi-o-uchi-gari | 5,4 | 7,20 | 1,32 |
@@ -200,7 +200,6 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `muaythai-expert-08` | teep-avant → jab → direct → low-kick-arriere → check-avant → middle-kick-arriere → genou-direct-arriere | 17,5 | 0,27 | 0,06 |
 | `kickboxing-debutant-12` | genou-direct-arriere | 15,8 | 0,04 | 0,03 |
 | `kickboxing-intermediaire-13` | jab → crochet-avant → genou-direct-arriere | 15,8 | 0,04 | 0,03 |
-| `kickboxing-intermediaire-12` | genou-circulaire-arriere | 15,2 | 0,04 | 0,03 |
 | `muaythai-intermediaire-08` | genou-circulaire-arriere | 18,4 | 0,04 | 0,03 |
 | `muaythai-debutant-07` | genou-direct-arriere | 17,5 | 0,04 | 0,03 |
 | `mma-intermediaire-07` | front-kick-avant → jab → changement-niveau | 16,7 | 0,05 | 0,02 |
@@ -214,4 +213,4 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `kickboxing-avance-12` | jab → direct → middle-kick-arriere → genou-direct-arriere | 15,8 | 0,18 | 0,00 |
 | `kickboxing-expert-12` | jab → direct → genou-direct-arriere → crochet-avant → low-kick-arriere | 15,8 | 0,18 | 0,00 |
 
-Exercices sans glissement ajouté de plus de 0,5 cm par image ni saut de plus de 15 cm : 152 sur 254.
+Exercices sans glissement ajouté de plus de 0,5 cm par image ni saut de plus de 15 cm : 153 sur 254.

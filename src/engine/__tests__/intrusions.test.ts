@@ -21,41 +21,39 @@ import { styleOf } from '../audit';
  * path of a limb, so the technique shown.
  */
 const CONTACT = 2;
-/** worst depth of 1.41.0 (cm), technique by technique, before correction */
+/** worst depth (cm), technique by technique, before correction (1.41.0; lowered in 1.41.1 to what is left) */
 const PENDING: Record<string, number> = {
   'blocage-corps-avant': 2.9,
   'changement-base': 5.2,
   'check-hook': 2.7,
   'coude-montant-arriere': 5.1,
   'crochet-avant': 3.5,
-  'defense-lutte': 14.8,
+  'defense-lutte': 4.1,
   'entree-lutte': 8.1,
   'esquive-droite': 2.3,
   'genou-circulaire-arriere': 5.5,
-  'genou-circulaire-avant': 14.6,
   'genou-clinch': 2.3,
   'genou-direct-arriere': 9.8,
   'genou-direct-avant': 2.4,
-  'middle-kick-arriere': 3.6,
-  'pont': 5.4,
+  'middle-kick-arriere': 2.8,
+  'pont': 3.4,
   'rattrapage-middle': 6.9,
   'releve-genoux': 2.7,
   'releve-technique': 6.6,
   'retention-garde': 3.4,
   'retrait': 8.0,
   'shoulder-roll': 4.4,
-  'single-leg': 4.1,
   'sit-out': 5.1,
-  'sprawl': 14.6,
-  'switch-kick': 8.8,
+  'sprawl': 3.6,
+  'switch-kick': 3.4,
   'teep-avant': 5.0,
   'uchikomi-ko-uchi-gari': 3.9,
   'uchikomi-o-goshi': 7.4,
-  'uchikomi-o-soto-gari': 14.8,
+  'uchikomi-o-soto-gari': 7.8,
   'uchikomi-seoi': 7.3,
-  'ukemi-ushiro': 8.2,
-  'ukemi-yoko': 7.0,
-  'uppercut-arriere': 10.7,
+  'ukemi-ushiro': 5.9,
+  'ukemi-yoko': 6.8,
+  'uppercut-arriere': 7.2,
 };
 const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya'] as const;
 const DOC = resolve(__dirname, '../../../docs/audit-biomecanique/MESURES_INTRUSIONS.md');

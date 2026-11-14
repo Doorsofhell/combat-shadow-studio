@@ -73,6 +73,20 @@ const tmpV2 = new Vector3();
 const tmpQ = new Quaternion();
 const tmpQ2 = new Quaternion();
 
+/** 1.41.1: share of the skin's reach that the trunk's inner volume takes (inside the flesh) */
+const TRUNK_CORE = 0.85;
+/** 1.41.1: radius of the inside of the neck and of the head (m, for a 1.80 m body) */
+const HEAD_CORE = { neck: 0.045, head: 0.075 };
+/** 1.41.1: radius of the inside of a thigh at the hip and at the knee (m, for a 1.80 m body) */
+const THIGH_CORE = { hip: 0.075, knee: 0.05 };
+/** 1.41.1: the directions in which a hand inside the body is moved out (26, around a cube) */
+const PUSH_DIRS: Vector3[] = [];
+for (const x of [-1, 0, 1]) for (const y of [-1, 0, 1]) for (const z of [-1, 0, 1]) if (x || y || z) PUSH_DIRS.push(new Vector3(x, y, z).normalize());
+/** 1.41.1: thickness of the forearm and of the hand around their bones (m, for a 1.80 m body) */
+const ARM_PAD = { forearm: 0.05, hand: 0.045, elbow: 0.06 };
+/** 1.41.1: the most the elbow is turned about the shoulder → hand line to keep the arm out of the body */
+const ARM_TURN_MAX = Math.PI / 2;
+
 function worldQuat(o: Object3D, out: Quaternion) {
   o.matrixWorld.decompose(tmpV, out, tmpV2);
   return out;
@@ -174,6 +188,12 @@ export class CoachRig {
   private legSkin: Outline = [];
   private footOutline: Record<Side, Outline> = { L: [], R: [] };
   private handOutline: Record<Side, Outline> = { L: [], R: [] };
+  /**
+   * 1.41.1 (traversées du corps): the inner volume of the trunk, slice by slice along the spine, measured at rest
+   * (ground space): half width, depth to the front and to the back, a little inside the skin. An elbow, a forearm or
+   * a hand is kept out of it (keepArmOut).
+   */
+  private trunkCore: { bone: BoneRest; y0: number; y1: number; w: number; f: number; b: number }[] = [];
   /** rest axis of the spine (pelvis toward the neck): the trunk twists about it */
   private spineAxis = new Vector3(0, 1, 0);
 
@@ -313,6 +333,7 @@ export class CoachRig {
     const pick = (names: string[]) => outline.filter((o) => names.includes(o.name));
     this.trunkSkin = pick(['Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'LeftShoulder', 'RightShoulder']);
     this.legSkin = pick(['LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg']);
+    this.trunkCore = this.measureTrunkCore(outline);
     for (const sd of SIDES) {
       this.footOutline[sd] = pick([`${sideName(sd)}Foot`, `${sideName(sd)}ToeBase`]);
       this.handOutline[sd] = pick(['', ...FINGERS.flatMap((f) => [1, 2, 3].map((i) => `${f}${i}`))].map((x) => `${sideName(sd)}Hand${x}`));
@@ -367,6 +388,170 @@ export class CoachRig {
       out.push({ name, bone, pts: [...keep].map((p) => p.clone().applyMatrix4(restInv)) });
     }
     return out;
+  }
+
+  /**
+   * 1.41.1: the trunk's inner volume (see trunkCore), from the outline of the skin of each spine bone: its widest
+   * reach to the sides, the front and the back, times TRUNK_CORE (inside the flesh: ribs, belly, back muscles). A bare
+   * skeleton (some tests) gets an estimate from the hips and shoulders.
+   */
+  private measureTrunkCore(outline: Outline) {
+    const names = ['Hips', 'Spine', 'Spine1', 'Spine2'];
+    const bones = names.map((n) => this.bones.get(n)!);
+    const neck = this.bones.get('Neck')!;
+    const m = this.metrics;
+    const k = m.height / 1.8;
+    return bones.map((bone, i) => {
+      const at = bone.worldPos;
+      const y0 = i === 0 ? at.y - 0.06 * k : at.y;
+      const y1 = i < bones.length - 1 ? bones[i + 1].worldPos.y : neck.worldPos.y;
+      const pts = (outline.find((o) => o.bone === bone)?.pts ?? []).map((r) => r.clone().applyQuaternion(bone.worldQ).add(at));
+      if (pts.length < 8) {
+        const w = (i === 3 ? m.shoulderHalf * 0.7 : m.hipHalf * 1.0) * TRUNK_CORE;
+        return { bone, y0, y1, w, f: 0.1 * k * TRUNK_CORE, b: 0.09 * k * TRUNK_CORE };
+      }
+      let w = 0;
+      let f = 0;
+      let b = 0;
+      for (const p of pts) {
+        w = Math.max(w, Math.abs(p.x - at.x));
+        f = Math.max(f, p.z - at.z);
+        b = Math.max(b, at.z - p.z);
+      }
+      return { bone, y0, y1, w: w * TRUNK_CORE, f: f * TRUNK_CORE, b: b * TRUNK_CORE };
+    });
+  }
+
+  /**
+   * 1.41.1: how deep a point (ground space, posed) is inside the trunk's inner volume: < 1 inside (0 on the spine),
+   * Infinity when it is above or below the trunk. `slice` receives the slice and the point in its rest frame.
+   */
+  private trunkDepth(p: Vector3, out?: { slice: number; rest: Vector3; turn: Quaternion; at: Vector3 } | null, pad = 0) {
+    let best = Infinity;
+    const rootInv = worldQuat(this.root, new Quaternion()).invert();
+    for (let i = 0; i < this.trunkCore.length; i++) {
+      const c = this.trunkCore[i];
+      const at = this.bonePos(c.bone);
+      const turn = worldQuat(c.bone.bone, new Quaternion()).premultiply(rootInv).multiply(c.bone.worldQ.clone().invert());
+      const rest = p.clone().sub(at).applyQuaternion(turn.clone().invert()).add(c.bone.worldPos);
+      if (rest.y < c.y0 || rest.y > c.y1) continue;
+      const dz = rest.z - c.bone.worldPos.z;
+      const e = Math.hypot((rest.x - c.bone.worldPos.x) / (c.w + pad), dz / ((dz > 0 ? c.f : c.b) + pad));
+      if (e < best) {
+        best = e;
+        if (out) Object.assign(out, { slice: i, rest, turn, at });
+      }
+    }
+    return best;
+  }
+
+  /**
+   * 1.41.1: how deep a point is inside the trunk, the head and neck or a thigh (< 1 inside), each grown by `pad` (the thickness of the
+   * limb that comes near). A thigh is a cone from the hip to the knee (THIGH_CORE).
+   */
+  private bodyDepth(p: Vector3, pad: number) {
+    let d = this.trunkDepth(p, null, pad);
+    const k = this.metrics.height / 1.8;
+    // the head and the neck: a ball over the head bone and a short column down to the neck
+    const head = this.bones.get('Head');
+    const neck = this.bones.get('Neck');
+    if (head && neck) {
+      const h = this.bonePos(head);
+      const n = this.bonePos(neck);
+      const top = h.clone().sub(n).normalize().multiplyScalar(0.07 * k).add(h);
+      const nt = top.clone().sub(n);
+      const t = Math.min(1, Math.max(0, p.clone().sub(n).dot(nt) / nt.lengthSq()));
+      const r = (HEAD_CORE.neck + (HEAD_CORE.head - HEAD_CORE.neck) * Math.min(1, t * 1.6)) * k + pad;
+      d = Math.min(d, p.distanceTo(n.clone().addScaledVector(nt, t)) / r);
+    }
+    for (const s of SIDES) {
+      const a = this.bonePos(this.legs[s].upper);
+      const b = this.bonePos(this.legs[s].lower);
+      const ab = b.clone().sub(a);
+      const t = Math.min(1, Math.max(0, p.clone().sub(a).dot(ab) / ab.lengthSq()));
+      if (t <= 0 || t >= 1) continue;
+      const r = (THIGH_CORE.hip + (THIGH_CORE.knee - THIGH_CORE.hip) * t) * k + pad;
+      d = Math.min(d, p.distanceTo(a.clone().addScaledVector(ab, t)) / r);
+    }
+    return d;
+  }
+
+  /**
+   * 1.41.1 (Youssef 2026-11-14, « traversées du corps »): the elbow, the forearm and the hand never go into the
+   * trunk (up to 14 cm before: a hand in the belly in o-soto-gari, an elbow through the ribs in the uppercut's dip,
+   * the defence against a takedown, the sprawl). A hand written inside the trunk is set on its surface; an elbow or a
+   * forearm inside it turns about the shoulder → hand line (the hand stays on its target), by the smallest angle that
+   * clears it. Nothing changes for an arm already outside.
+   */
+  private handOutOfTrunk(s: Side, hand: Vector3): Vector3 {
+    if (!this.trunkCore.length) return hand;
+    const padHand = ARM_PAD.hand * (this.metrics.height / 1.8);
+    const info = { slice: 0, rest: new Vector3(), turn: new Quaternion(), at: new Vector3() };
+    if (this.trunkDepth(hand, info, padHand) < 1) {
+      // out of the trunk along the same direction from the spine (or to the side of its arm when it is on the spine)
+      const c = this.trunkCore[info.slice];
+      const o = c.bone.worldPos;
+      const dx = info.rest.x - o.x;
+      const dz = info.rest.z - o.z;
+      const e = Math.hypot(dx / (c.w + padHand), dz / ((dz > 0 ? c.f : c.b) + padHand));
+      const sx = e > 1e-3 ? dx : (s === 'L' ? 1 : -1) * (c.w + padHand);
+      const sz = e > 1e-3 ? dz : 0;
+      const e0 = e > 1e-3 ? e : 1;
+      const restOut = new Vector3(o.x + (sx / e0) * 1.02, info.rest.y, o.z + (sz / e0) * 1.02);
+      hand = restOut.sub(o).applyQuaternion(info.turn).add(info.at);
+    }
+    return hand;
+  }
+
+  /** 1.41.1: the elbow turned (within the shoulder's range) so that the forearm and the hand stay out of the body */
+  private keepArmOut(s: Side, hand: Vector3, pole: Vector3, trunk: Quaternion): Vector3 {
+    if (!this.trunkCore.length) return pole;
+    const limb = this.arms[s];
+    const k = this.metrics.height / 1.8;
+    const padHand = ARM_PAD.hand * k;
+    const padArm = ARM_PAD.forearm * k;
+    const padElbow = ARM_PAD.elbow * k;
+    const S = this.bonePos(limb.upper);
+    const axis = hand.clone().sub(S).normalize();
+    // how far the forearm and the hand are from going in (>= 1: clear), or -1 when the shoulder would turn past its
+    // range (the elbow may not be turned there)
+    const clear = (phi: number) => {
+      const pl = phi ? pole.clone().applyAxisAngle(axis, phi) : pole;
+      const { E, qUpper } = this.solveTwoBone(limb, hand, pl, ELBOW_MAX_FLEX);
+      if (phi) {
+        const r = this.shoulderRotation(s, qUpper, trunk);
+        if (r.elev < TWIST_UNDEFINED_ELEVATION && (r.rot < -SHOULDER_ROTATION.internal || r.rot > SHOULDER_ROTATION.external)) return -1;
+      }
+      const fist = hand.clone().sub(E).normalize().multiplyScalar(0.07 * k).add(hand);
+      // the elbow is the thickest part of the forearm, and its back comes up the upper arm
+      let d = Math.min(this.bodyDepth(fist, padHand), this.bodyDepth(E, padElbow), this.bodyDepth(E.clone().lerp(S, 0.12), padElbow));
+      for (const u of [0.25, 0.5, 0.75]) d = Math.min(d, this.bodyDepth(E.clone().lerp(hand, u), padArm));
+      return d;
+    };
+    const d0 = clear(0);
+    if (d0 >= 1) return pole;
+    // the smallest turn of the elbow, either way, that clears the arm, refined so that it follows the motion smoothly;
+    // when none does within the shoulder's range, the turn that brings it out the most
+    const STEP = 5 * DEG;
+    let best = { phi: 0, d: d0 };
+    for (const dir of [1, -1]) {
+      for (let i = 1; i * STEP <= ARM_TURN_MAX; i++) {
+        const phi = dir * i * STEP;
+        const d = clear(phi);
+        if (d < 0) break;
+        if (d >= 1) {
+          let [lo, hi] = [phi - dir * STEP, phi];
+          for (let j = 0; j < 6; j++) {
+            const mid = (lo + hi) / 2;
+            if (clear(mid) >= 1) hi = mid;
+            else lo = mid;
+          }
+          if (best.d < 1 || Math.abs(hi) < Math.abs(best.phi)) best = { phi: hi, d };
+          break;
+        }
+      }
+    }
+    return best.phi ? pole.clone().applyAxisAngle(axis, best.phi) : pole;
   }
 
   /** lowest point of the trunk and head skin (or of the given parts) as posed now (ground space), or Infinity when unknown */
@@ -608,8 +793,9 @@ export class CoachRig {
     }
     this.lastTrunkLift = Math.max(0, lift);
 
-    for (const s of SIDES) this.solveArm(s, hands[s], trunk);
+    // 1.41.1: the legs first, so that the arms see where the thighs are (keepArmOut)
     for (const s of SIDES) this.solveLeg(s, s === 'L' ? p.footL : p.footR, p.pelvis);
+    for (const s of SIDES) this.solveArm(s, hands[s], trunk);
 
     // 1.8.0: a foot on the floor that the leg cannot reach once the knee is fully bent (a squat too deep for the
     // body) went through the mat; the hips sit higher instead, by what the knee could not fold
@@ -631,8 +817,8 @@ export class CoachRig {
       hipsR.bone.position.copy(hipsNow.setY(hipsNow.y + short)).applyMatrix4(toParent);
       this.lastTrunkLift += short;
       const up = (h: ResolvedHand) => (h.pos.y < 0.15 ? h : { ...h, pos: h.pos.clone().setY(h.pos.y + raisedBy) });
-      for (const s of SIDES) this.solveArm(s, up(hands[s]), trunk);
       for (const s of SIDES) this.solveLeg(s, s === 'L' ? p.footL : p.footR, p.pelvis);
+      for (const s of SIDES) this.solveArm(s, up(hands[s]), trunk);
     }
   }
 
@@ -714,6 +900,9 @@ export class CoachRig {
     // 1.8.0: the wrist never goes lower than a hand lying flat on the mat (palm and wrist thickness)
     const wristFloor = 0.035 * (this.metrics.height / 1.8);
     if (h.pos.y < wristFloor) h = { ...h, pos: h.pos.clone().setY(wristFloor) };
+    // 1.41.1: a hand written inside the trunk is set on its surface
+    const outside = this.handOutOfTrunk(s, h.pos);
+    if (outside !== h.pos) h = { ...h, pos: outside };
     this.handAim[s] = h.pos.clone();
     this.handOnMat[s] = false;
     const limb = this.arms[s];
@@ -739,7 +928,9 @@ export class CoachRig {
       SHOULDER_ROTATION.external,
       1,
     );
-    const pole = armTurn ? h.pole.clone().applyAxisAngle(armAxis, armTurn) : h.pole;
+    let pole = armTurn ? h.pole.clone().applyAxisAngle(armAxis, armTurn) : h.pole;
+    // 1.41.1: the elbow and the forearm stay out of the trunk and the thighs
+    pole = this.keepArmOut(s, h.pos, pole, trunk);
     const { qUpper, qLower, p1Lower } = this.solveTwoBone(limb, h.pos, pole, ELBOW_MAX_FLEX);
     const sgn = s === 'L' ? 1 : -1;
     // pronation (+) / supination (−) from the thumb-up neutral, held within the forearm's range; it is
