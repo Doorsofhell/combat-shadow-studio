@@ -61,6 +61,18 @@ export const RELEASES: readonly Release[] = (
       links: [{ label: 'Voir les techniques', to: '/techniques' }],
     },
     {
+      version: '1.44.1',
+      releaseDate: '2026-11-14',
+      title: 'Les tenues de Victor',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Victor porte maintenant les tenues de ses planches : shorts satinés à mi-cuisse avec panneaux rouges en kick-boxing, argent en muay-thaï, liserés gris en boxe, protection du coup de pied, prajiad clairs, kimono bleu nuit plus ajusté.' },
+        { category: 'corrections', text: 'Short de MMA de Victor : plus de bout de tissu tendu entre les jambes en garde.' },
+        { category: 'ameliorations', text: 'Peau de Victor un peu plus claire et moins rouge.' },
+      ],
+      links: [{ label: 'Voir Victor', to: '/coach' }],
+    },
+    {
       version: '1.44.0',
       releaseDate: '2026-11-14',
       title: 'Coachs : un visage plus vivant, en douceur',

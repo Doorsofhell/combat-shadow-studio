@@ -1546,7 +1546,8 @@ def belt(color, z, extra=0.03):
 # 1.19 (Youssef, 05/11: « les kimonos, je les voudrais moins bouffis, plus cintrés mais pas collés »): share of the
 # gi's loose volume kept (sleeves, trousers, skirt, room round the trunk); 1 = the cut of the other coaches
 # 1.21 (Youssef 05/11 15:14: « applique toutes les améliorations effectuées sur Inaya sur les autres coachs »): all coaches
-GI_FIT = float(os.environ.get('GI_FIT', '0.6'))
+# 1.43.1 Victor (Youssef 14/11 « inspire-toi fortement des planches »: kimono ajusté, tombant, pas bouffant): 0.45
+GI_FIT = float(os.environ.get('GI_FIT', '0.45' if COACH_ID == 'victor' else '0.6'))
 
 
 def skirt(color, kind, top_z, length):
@@ -1669,6 +1670,12 @@ def collar(color, kind):
 BAND_RELIEF = float(os.environ.get('BAND_RELIEF', '0.15'))
 
 
+# 1.43.1 (Youssef 14/11 13:00 « inspire-toi fortement des planches »): Victor's kick-boxing and Muay-thaï shorts of his
+# sheets have a coloured panel on the outer side of each leg, edged by a thin piping, and the same piping along the
+# hem. Set by outfit() for the next shorts() call: dict(panel=hex, trim=hex)
+SHORT_PANEL = {}
+
+
 def shorts(kind, color, band, n_leg=None, under=False):
     """kind: boxe (loose, to just above the knee, high waistband), kick (fitted, short), thai (short, very wide,
     high waistband), mma (board short, side slits, to the knee), compression"""
@@ -1689,6 +1696,8 @@ def shorts(kind, color, band, n_leg=None, under=False):
     # vale-tudo short in 1.9), 8 mm over its top at most 6 cm higher than the cut asked
     if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
         hem = 0.53  # short fitted boxer, upper third of thigh
+    if SHORT_PANEL.get('hem'):
+        hem = SHORT_PANEL['hem']  # 1.43.1 Victor: Thai cut of his sheets, mid-thigh
         waist = hipZ + 0.105
     if 'top' not in _PAINT:
         tops = [r[1] for r in (painted_cloth_range(hipZ - 0.05, hipZ + 0.2, b) for b in (True, False)) if r]
@@ -1904,6 +1913,34 @@ def shorts(kind, color, band, n_leg=None, under=False):
                 if d > -gold_w:
                     return 3
             return 0
+    if SHORT_PANEL and not under:
+        # cut by planes (straight, sharp sewn lines, as the 1.38 panel of Amara): two planes front and back of each
+        # leg's outer side for the panel, two more for its piping, one over each hem for the hem piping
+        pan = dict(SHORT_PANEL)
+        yc = sum(H[f'{s_}UpLeg'].y + H[f'{s_}Leg'].y for s_ in ('Left', 'Right')) / 4
+        pw, tw, hw = 0.042, 0.008, 0.011
+        for d in (-pw - tw, -pw, pw, pw + tw):
+            cuts.append((Vector((0, yc + d, 0)), Vector((0, 1, 0))))
+        for s_ in ('Left', 'Right'):
+            cuts.append((Vector((0, 0, hz[s_] + hw)), Vector((0, 0, 1))))
+        mats += [fabric(f'panneau-short-{pan["panel"]}', pan['panel'], 'satin', rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3]),
+                 fabric(f'liseré-short-{pan["trim"]}', pan['trim'], 'satin', rough=0.5, sheen=0.4, strength=0.3)]
+        mat_band = mat_of
+
+        def mat_of(c, ids):
+            if mat_band(c, ids):
+                return 1
+            s_ = 'Left' if c.x > 0 else 'Right'
+            ax = (H[f'{s_}UpLeg'].x + H[f'{s_}Leg'].x) / 2
+            outer = (c.x - ax) * (1 if ax > 0 else -1) > 0
+            dy = abs(c.y - yc)
+            if c.z < hz[s_] + hw:
+                return 3
+            if outer and dy < pw:
+                return 2
+            if outer and dy < pw + tw:
+                return 3
+            return 0
     try:
         o, cov = shell(f'short-{kind}', keep_g, push, thick, mats, mat_of, cuts=cuts, iso=F,
                        hem=0.004 if thick < 0.003 else 0.006)
@@ -1948,6 +1985,36 @@ def shorts(kind, color, band, n_leg=None, under=False):
         print('Kadir MMA: crotch skin weights stabilised:', moved_vertices)
         if not moved_vertices:
             raise RuntimeError('Kadir MMA: zero crotch vertices stabilised; check source body')
+    if COACH_ID == 'victor' and kind == 'vale-tudo':
+        if True:
+            # 1.43.1 (Youssef 14/11 16:41, capture: « un bout de tissu entre les deux jambes »): on Victor the two leg
+            # tubes overlap by a few millimetres at the inner seam, and a few faces there join a point held by the
+            # left thigh to one held by the right: in guard they stretch into a long flap between the thighs. Those
+            # faces are removed (the seam they closed is between the thighs, under the crotch, out of sight). Kadir's
+            # weight blend toward the pelvis (above) is not used: the cloth then left the skin, which came through
+            # the shorts in small brown triangles
+            vg_names = {g_.index: g_.name for g_ in o.vertex_groups}
+            sides = []
+            for v in o.data.vertices:
+                best, side = 0.0, None
+                for g in v.groups:
+                    n_ = vg_names[g.group]
+                    if n_ in ('LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg') and g.weight > best:
+                        best, side = g.weight, n_.startswith('Left')
+                sides.append(side if best >= 0.5 else None)
+            bm_c = bmesh.new()
+            bm_c.from_mesh(o.data)
+            bad = []
+            for f in bm_c.faces:
+                fs = set()
+                for v in f.verts:
+                    fs.add(sides[v.index])
+                if True in fs and False in fs:
+                    bad.append(f)
+            bmesh.ops.delete(bm_c, geom=bad, context='FACES_ONLY')
+            bm_c.to_mesh(o.data)
+            bm_c.free()
+            print('1.43.1 Victor MMA : faces entre les deux cuisses retirées :', len(bad))
     if under and AMARA_CUT and os.environ.get('LINER_RIGID', '0') == '1':
         # 1.37.7 (Amara, thin dark strand between the thighs at a high kick, measured in the Lab with __labStretch: the
         # liner's faces 0.73 -> 0.78 m at the inner thigh stretched to 13 cm). Amara's crotch is lower than Inaya's,
@@ -3350,7 +3417,7 @@ C = {
     # 1.19 (Youssef 05/11 « change la couleur »): carbon black and raspberry pink, the CS mark printed in white and pink
     'inaya': dict(boxe=('#D6336C', '#17171C'), kick=('#17171C', '#D6336C'), thai=('#F4F4F5', '#D6336C'), mma=('#17171C', '#D6336C'), gi='#1B3F8B', judo='#1B3F8B', belt='#121212', glove='#D6336C', glove2='#17171C', rash='#D6336C', praj='#D6336C', mmag=('#17171C', '#D6336C', '#D6336C'), logo='#D6336C'),
     # Victor (essai, planches de Youssef 2026-11-14): noir partout, liseré blanc/argent, kick-boxing noir et rouge, kimono bleu marine
-    'victor': dict(boxe=('#141519', '#141519'), kick=('#141519', '#B3122A'), thai=('#141519', '#C9CCD1'), mma=('#1A1B1F', '#3A3D43'), gi='#1C2541', judo='#F7F6F2', belt='#121212', glove='#141519', glove2='#F4F4F5', rash='#141519', praj='#141519', mmag=('#141519', '#141519', '#3A3D43'), logo='#C9CCD1'),
+    'victor': dict(boxe=('#141519', '#141519'), kick=('#141519', '#B3122A'), thai=('#141519', '#C9CCD1'), mma=('#1A1B1F', '#3A3D43'), gi='#232A3A', judo='#F7F6F2', belt='#1D1F1A', glove='#141519', glove2='#F4F4F5', rash='#141519', praj='#E4E4E0', mmag=('#141519', '#141519', '#3A3D43'), logo='#C9CCD1'),
 }[os.environ.get('PALETTE') or sex]
 # 1.12 (Youssef, 04/11, decision « Brassière sans bretelles au cou »): Inaya's boxing and kick-boxing tops are bandeaus;
 # her sports body's halter straps run round the neck and a strapped bra copied over them came out torn there
@@ -3456,7 +3523,13 @@ def outfit(name):
         hide.update(cov)
 
     if name == 'boxe':
-        add(shorts('boxe', *C['boxe']))
+        if COACH_ID == 'victor':
+            # planche boxe de Youssef : même coupe satinée à mi-cuisse, noire, liserés gris sur les côtés et l'ourlet
+            SHORT_PANEL.update(panel='#141519', trim='#7E8187', hem=0.5)
+            add(shorts('thai', '#141519', '#141519'))
+            SHORT_PANEL.clear()
+        else:
+            add(shorts('boxe', *C['boxe']))
         if female:
             add(female_top(C['boxe'][0], C['boxe'][1]) or bra_v2(C['boxe'][0], C['boxe'][1], bandeau=BANDEAU))
         for s in ('Left', 'Right'):
@@ -3464,18 +3537,33 @@ def outfit(name):
         hide |= hide_hands()
         if COACH_ID == 'victor':
             add(shin_guards('#16181D', '#2A2C31'))   # planche boxe de Youssef : protège-tibias noirs, pieds nus
+            add(ankle_supports('#16181D', '#16181D'))   # 1.43.1 : la protection du coup de pied des planches
         else:
             add(shoes_v2('#16181D' if not female else '#F4F4F5', '#F4F4F5' if not female else '#16181D'))
     elif name == 'kickboxing':
-        add(shorts('boxe', '#141519', '#B3122A') if COACH_ID == 'victor' else shorts('kick', *C['kick']))
+        if COACH_ID == 'victor':
+            # planche kick-boxing de Youssef : short satiné bordeaux très sombre, panneaux latéraux rouges, liserés gris
+            SHORT_PANEL.update(panel='#B3122A', trim='#8E9196', hem=0.5)
+            add(shorts('thai', '#1A0B0D', '#141519'))
+            SHORT_PANEL.clear()
+        else:
+            add(shorts('kick', *C['kick']))
         if female:
             add(female_top(C['kick'][1], C['kick'][0]) or bra_v2(C['kick'][1], C['kick'][0], bandeau=BANDEAU))
         for s in ('Left', 'Right'):
             parts.extend(boxing_glove_v2(s, '#141519', '#F4F4F5') if COACH_ID == 'victor' else boxing_glove_v2(s, C['glove2'], C['kick'][1]))
         hide |= hide_hands()
+        if COACH_ID == 'victor':
+            add(ankle_supports('#16181D', '#16181D'))   # 1.43.1 : la protection du coup de pied des planches
         add(shin_guards('#16181D', '#2A2C31') if COACH_ID == 'victor' else shin_guards('#F4F4F5' if not female else '#16181D', C['kick'][1] if not female else C['kick'][0]))
     elif name == 'muaythai':
-        add(shorts('thai', *C['thai']))
+        if COACH_ID == 'victor':
+            # planche muay-thaï de Youssef : short satiné noir, panneaux latéraux argent, liserés argent
+            SHORT_PANEL.update(panel='#AEB2B8', trim='#D3D5D9', hem=0.5)
+            add(shorts('thai', '#141519', '#141519'))
+            SHORT_PANEL.clear()
+        else:
+            add(shorts('thai', *C['thai']))
         if female:
             add(female_top(C['thai'][0], C['thai'][1]) or bra_v2(C['thai'][0], C['thai'][1]))
         for s in ('Left', 'Right'):
