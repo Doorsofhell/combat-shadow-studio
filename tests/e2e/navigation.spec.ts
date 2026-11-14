@@ -271,7 +271,8 @@ test.describe('393×851', () => {
     const dlg = page.getByRole('dialog', { name: 'Quitter la séance ?' });
     await expect(dlg).toBeVisible();
     await expect(place2).toHaveAttribute('data-testid', 'resume');
-    await dlg.getByRole('button', { name: 'Annuler' }).click();
+    // 1.42.0: staying is the highlighted choice, « Continuer » (formerly « Annuler »)
+    await dlg.getByRole('button', { name: 'Continuer' }).click();
     await expect(dlg).toHaveCount(0);
     await expect(page).toHaveURL(/entrainement/);
     await bar(page).locator('[data-slot="1"]').click();

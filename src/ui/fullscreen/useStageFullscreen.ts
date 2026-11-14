@@ -1,6 +1,7 @@
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { onBackButton } from '../../platform/native';
 import { useSettings } from '../../store/settings';
+import { popLayer, pushLayer } from '../nav/layers';
 import { createDoubleTap, NO_DOUBLE_TAP } from './doubleTap';
 
 /** the longest gap between the two taps of a double tap (createDoubleTap's default) */
@@ -52,6 +53,11 @@ export function useStageFullscreen(
     tapRef?: RefObject<HTMLElement | null>;
     /** 1.0.0 (lot 4): a single tap on the view, once it is sure no second tap follows (the session's pause) */
     onTap?: () => void;
+    /**
+     * 1.42.0: the fullscreen is a history layer, so the Back of the phone or of the browser leaves the fullscreen and
+     * keeps the page. `false` for a screen that already holds its own Back (the session and its guard).
+     */
+    history?: boolean;
   } = {},
 ) {
   const tapRef = opts.tapRef ?? ref;
@@ -64,6 +70,10 @@ export function useStageFullscreen(
   const onTap = useRef(opts.onTap);
   onTap.current = opts.onTap;
   const tapTimer = useRef<number | undefined>(undefined);
+  const withHistory = opts.history !== false;
+  const layer = useRef<number | null>(null);
+  /** the way out taken by Back itself: the layer is already gone, only the view closes */
+  const byBack = useRef<() => void>(() => undefined);
 
   const wake = useCallback(() => {
     setIdle(false);
@@ -80,6 +90,11 @@ export function useStageFullscreen(
       document.documentElement.classList.toggle('stage-fs-open', on);
       if (on) {
         wake();
+        if (withHistory)
+          layer.current = pushLayer(() => {
+            layer.current = null;
+            byBack.current();
+          });
         const el = ref.current as FsElement | null;
         // a quick on / off: the request may end after the view was already turned off
         if (el && !fsElement()) void requestFs(el).then(() => !activeRef.current && exitFs());
@@ -88,10 +103,15 @@ export function useStageFullscreen(
         window.clearTimeout(timer.current);
         setIdle(false);
         exitFs();
+        // closed from the screen (button, double tap, Échap): its history entry goes with it
+        const id = layer.current;
+        layer.current = null;
+        if (id !== null) popLayer(id);
       }
     },
-    [ref, wake],
+    [ref, wake, withHistory],
   );
+  byBack.current = () => set(false);
   const enter = useCallback(() => set(true), [set]);
   const exit = useCallback(() => set(false), [set]);
   const toggle = useCallback(() => set(!activeRef.current), [set]);

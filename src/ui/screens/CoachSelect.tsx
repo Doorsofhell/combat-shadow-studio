@@ -1,7 +1,7 @@
 import { ALL_COACHES, CHAMPIONS, championFor, type ChampionCoach } from '../../domain/coaches/catalog';
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useProfile } from '../../store/profile';
+import { profileWrites, useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
 import { techniquesFor } from '../../domain/techniques';
 import type { ComboPlayer, PlayerEvents } from '../../engine';
@@ -192,8 +192,7 @@ export function CoachSelect() {
     if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
   };
   const mine = chosen === c.id;
-  const done = () => {
-    if (!mine) pickChampion(c);
+  const leave = () => {
     // back to the screen the user came from; opened directly (a link, a reload), there is none in the app: the home
     const inApp = ((window.history.state as { idx?: number } | null)?.idx ?? 0) > 0;
     if (first || !inApp) nav('/', { replace: true });
@@ -222,6 +221,13 @@ export function CoachSelect() {
     // only once per visit of the screen: the coaches looked at afterwards are already read
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
+  const done = () => {
+    if (mine) return leave();
+    pickChampion(c);
+    // 1.42.0: the screen closes once the choice is written on the phone (a few milliseconds), so closing or
+    // reloading the application right after « Choisir » never loses it
+    void profileWrites().then(leave, leave);
+  };
   return (
     <div className="page coach-select coach-star" data-testid="coach-star" data-coach={c.id}>
       <h1 className="sr-only">Choisis ton coach</h1>

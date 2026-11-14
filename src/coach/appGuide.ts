@@ -174,7 +174,7 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['entrainement'],
     answer:
       'Dans le studio, ton coach exécute les mouvements et tu les fais en même temps.\n' +
-      '• En bas : « Retour », « Démarrer » (qui devient « Pause » puis « Reprendre » au même endroit), « Décomposer », « Caméra » et « Plus ». Si tu touches Retour pendant la séance, elle se met en pause et l’application te demande avant de quitter.\n' +
+      '• En bas : « Retour », « Démarrer » (qui devient « Pause » puis « Reprendre » au même endroit), « Décomposer », « Caméra » et « Plus ». Si tu touches Retour pendant la séance, ou le retour de ton téléphone, elle se met en pause et l’application te demande avant de quitter : « Continuer » ou « Quitter ». En plein écran, le retour sort d’abord du plein écran et une flèche Retour reste visible en haut à gauche.\n' +
       '• Mains libres : pendant la séance, seuls Retour et Pause restent, pour un téléphone posé devant toi. Touche le coach une fois : ses commandes apparaissent sur lui (pause, vitesse, plein écran, son, angles), sans arrêter la séance ; touche-le encore une fois pour les cacher. À la pause, Décomposer, Caméra et Plus reviennent. Le téléphone vibre au départ, à la pause et à chaque round, s’il sait le faire.\n' +
       '• Sous le coach : le mouvement en cours, la consigne et le point clé du moment, puis le temps de séance, le cumul et les répétitions. Seul le temps de travail actif est compté.\n' +
       '• Dans « Plus » : « Recommencer », « Exercice précédent », « Exercice suivant », « Comment faire ? », « Ralenti » et « Options ».\n' +
