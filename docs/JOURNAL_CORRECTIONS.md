@@ -4304,4 +4304,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests** : bornes de `intrusions.test.ts` abaissées (entrée de lutte et retrait retirées, rattrapage 2,7, relevé
   5,6 ; Victor : rattrapage retiré), jamais relevées. Vitest : 1588 réussis, 5 échecs déjà présents (extension-v032
   uppercut Kadir, fluidité ×2, crochets « pas d'armé », poids du modèle d'Amara) : TEST ÉCHOUÉ, non liés.
+  Playwright : 293 réussis, 2 ignorés, 4 échecs ; relancés seuls, corrections-v110:53 et seance-mains-libres:117
+  passent ; coaching-hud:60 et training-layout:117 échouaient déjà sur la 1.44.0 : TEST ÉCHOUÉ, non liés. Build :
+  TEST RÉUSSI.
 - **Restauration** : branche `restauration/avant-traversees-lot2` (= 1.45.2, `b773812`).
