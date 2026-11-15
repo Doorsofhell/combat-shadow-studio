@@ -110,6 +110,9 @@ test('après le démarrage, choisir un autre coach ne télécharge rien et ne re
   await page.goto('/#/coach');
   await page.getByTestId('coach-nael').click();
   await page.getByTestId('coach-valider').click();
+  // 1.47.1: since 1.42.0 the screen closes once the choice is written on the phone (a few milliseconds later); going to
+  // the training before it has closed let that late « retour » bring the test back to the home page (no 3D scene)
+  await expect(page.getByTestId('coach-star')).toHaveCount(0);
   await expect(page.getByTestId('boot-screen')).toHaveCount(0);
   await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
   await expect(page.locator('.tr-stage canvas')).toBeVisible();
