@@ -66,25 +66,25 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 
 | coach | tenue | mouvement | étirement | arête la plus longue (mm) | dans la jambe |
 |---|---|---|---|---|---|
-| mma-kadir | boxe | garde | 2.03 | 63.9 | 0.4 % |
-| mma-kadir | boxe | high kick | 3.36 | 106.0 | 0.5 % |
-| mma-kadir | boxe | genou | 2.77 | 88.2 | 0.4 % |
+| mma-kadir | boxe | garde | 2.03 | 64.0 | 0.4 % |
+| mma-kadir | boxe | high kick | 3.35 | 106.0 | 0.5 % |
+| mma-kadir | boxe | genou | 2.76 | 88.1 | 0.4 % |
 | mma-kadir | boxe | changement de niveau | 2.47 | 87.5 | 0.3 % |
 | mma-kadir | boxe | low kick | 2.36 | 77.8 | 0.5 % |
-| mma-kadir | kickboxing | garde | 1.99 | 63.0 | 0.2 % |
+| mma-kadir | kickboxing | garde | 2.00 | 63.0 | 0.2 % |
 | mma-kadir | kickboxing | high kick | 3.39 | 104.8 | 0.2 % |
-| mma-kadir | kickboxing | genou | 2.71 | 90.2 | 0.3 % |
+| mma-kadir | kickboxing | genou | 2.71 | 90.1 | 0.3 % |
 | mma-kadir | kickboxing | changement de niveau | 2.45 | 86.3 | 0.1 % |
-| mma-kadir | kickboxing | low kick | 2.27 | 78.0 | 0.2 % |
-| mma-kadir | muaythai | garde | 1.86 | 64.4 | 0.6 % |
+| mma-kadir | kickboxing | low kick | 2.27 | 77.9 | 0.2 % |
+| mma-kadir | muaythai | garde | 1.86 | 64.3 | 0.6 % |
 | mma-kadir | muaythai | high kick | 3.59 | 105.8 | 1.3 % |
-| mma-kadir | muaythai | genou | 2.95 | 93.9 | 1.6 % |
+| mma-kadir | muaythai | genou | 2.94 | 93.8 | 1.6 % |
 | mma-kadir | muaythai | changement de niveau | 2.34 | 86.6 | 0.4 % |
-| mma-kadir | muaythai | low kick | 2.23 | 78.3 | 1.2 % |
-| mma-kadir | mma | garde | 2.16 | 70.3 | 0.9 % |
+| mma-kadir | muaythai | low kick | 2.23 | 78.2 | 1.2 % |
+| mma-kadir | mma | garde | 2.16 | 70.4 | 0.9 % |
 | mma-kadir | mma | high kick | 3.52 | 102.7 | 1.1 % |
-| mma-kadir | mma | genou | 2.58 | 87.4 | 1.0 % |
-| mma-kadir | mma | changement de niveau | 2.63 | 91.2 | 0.9 % |
+| mma-kadir | mma | genou | 2.58 | 87.3 | 1.0 % |
+| mma-kadir | mma | changement de niveau | 2.63 | 91.3 | 0.9 % |
 | mma-kadir | mma | low kick | 2.47 | 82.3 | 1.0 % |
 | mma-amara | boxe | garde | 1.91 | 65.3 | 0.3 % |
 | mma-amara | boxe | high kick | 4.97 | 128.3 | 0.6 % |
