@@ -543,6 +543,10 @@ function pullBack(a: Author): Motion {
     d.chest.yaw += deg(-6);
     if (d.footR.mode === 'ground') d.footR.heel = deg(5);
     if (d.footL.mode === 'ground') d.footL.heel = deg(10);
+    // 1.46.0: leaning back brings the belly forward under the chest; the guard moves a little forward with it
+    // (the rear forearm went into the trunk)
+    d.handR.pos = add(d.handR.pos, { z: 0.06 * s });
+    d.handL.pos = add(d.handL.pos, { z: 0.03 * s });
   });
   return {
     id: 'retrait',

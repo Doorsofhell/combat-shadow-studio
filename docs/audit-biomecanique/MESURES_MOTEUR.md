@@ -14,7 +14,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Technique | Catégorie | CdM hors appuis (cm) | Part du temps | Sur un pied (s) | Point le plus bas (cm) | Torsion | Glissement (cm / image) |
 |---|---|---|---|---|---|---|---|
 | Sprawl (`sprawl`) | lutte | 71,7 | 41 % | 0,08 | -5,7 (LeftLeg) | 4° | 0,65 |
-| Entrée en double-leg (solo) (`entree-lutte`) | lutte | 43,6 | 46 % | 0,14 | 3,0 (LeftToeBase) | 9° | 0,54 |
+| Entrée en double-leg (solo) (`entree-lutte`) | lutte | 44,1 | 46 % | 0,14 | 3,0 (LeftToeBase) | 9° | 0,54 |
 | Descente contrôlée au sol (`descente-sol`) | sol | 39,8 | 11 % | 0,03 | 3,0 (LeftToeBase) | 11° | 0,92 |
 | Entrée en single-leg (solo) (`single-leg`) | lutte | 36,7 | 49 % | 0,19 | 3,0 (LeftToeBase) | 9° | 1,85 |
 | Pas avant (`pas-avant`) | deplacement | 34,5 | 57 % | 0,23 | 3,0 (LeftToeBase) | 6° | 0,17 |
@@ -34,7 +34,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Tsugi-ashi avant (`tsugi-ashi-avant`) | deplacement | 20,5 | 57 % | 0,23 | 3,0 (LeftToeBase) | 2° | 0,17 |
 | Pivot extérieur (`pivot-gauche`) | deplacement | 19,9 | 62 % | 0,23 | 3,0 (LeftToeBase) | 17° | 0,33 |
 | Tsugi-ashi arrière (`tsugi-ashi-arriere`) | deplacement | 19,1 | 57 % | 0,23 | 3,0 (LeftToeBase) | 2° | 0,17 |
-| Rattrapage du middle kick (`rattrapage-middle`) | defense | 18,2 | 28 % | 0,37 | 3,0 (LeftToeBase) | 14° | 0,12 |
+| Rattrapage du middle kick (`rattrapage-middle`) | defense | 18,0 | 28 % | 0,37 | 3,0 (LeftToeBase) | 14° | 0,12 |
 | Switch kick (`switch-kick`) | pied | 16,8 | 15 % | 0,80 | 3,0 (RightToeBase) | 20° | 1,49 |
 | Front kick arrière (`front-kick-arriere`) | pied | 16,5 | 23 % | 0,68 | 3,0 (LeftToeBase) | 6° | 0,09 |
 | Teep (`teep-avant`) | pied | 16,5 | 23 % | 0,68 | 3,0 (LeftToeBase) | 4° | 0,03 |
@@ -48,12 +48,12 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Uchikomi de seoi-nage (solo) (`uchikomi-seoi`) | projection | 11,8 | 59 % | 0,35 | 3,0 (RightToeBase) | 15° | 1,74 |
 | Tai-sabaki (rotation du corps) (`tai-sabaki`) | deplacement | 11,4 | 28 % | 0,48 | 3,0 (LeftToeBase) | 14° | 1,04 |
 | Uchikomi d’o-goshi (solo) (`uchikomi-o-goshi`) | projection | 11,1 | 64 % | 0,43 | 3,0 (RightToeBase) | 16° | 1,90 |
+| Relevé technique (`releve-technique`) | sol | 9,1 | 11 % | 0,00 | 1,1 (LeftToeBase) | 23° | 4,12 |
 | Roundhouse jambe avant (`roundhouse-avant`) | pied | 7,6 | 21 % | 0,58 | 3,0 (LeftToeBase) | 11° | 0,05 |
 | High kick gauche (`high-kick-avant`) | pied | 7,5 | 21 % | 0,58 | 3,0 (LeftToeBase) | 11° | 0,05 |
 | Changement de niveau (`changement-niveau`) | lutte | 7,3 | 87 % | 0,00 | 3,0 (LeftToeBase) | 5° | 0,00 |
 | Low kick gauche (`low-kick-avant`) | pied | 6,8 | 18 % | 0,69 | 3,0 (LeftToeBase) | 10° | 0,00 |
 | Middle kick gauche (`middle-kick-avant`) | pied | 6,8 | 18 % | 0,69 | 3,0 (LeftToeBase) | 11° | 0,00 |
-| Relevé technique (`releve-technique`) | sol | 6,7 | 8 % | 0,00 | 1,1 (LeftToeBase) | 23° | 4,12 |
 | Feinte de lutte (`feinte-lutte`) | feinte | 6,3 | 82 % | 0,00 | 3,0 (LeftToeBase) | 4° | 0,00 |
 | High kick droit (`high-kick-arriere`) | pied | 5,1 | 3 % | 0,64 | 3,0 (LeftToeBase) | 23° | 0,20 |
 | Middle kick droit (`middle-kick-arriere`) | pied | 5,0 | 2 % | 0,64 | 3,0 (LeftToeBase) | 23° | 0,20 |

@@ -29,7 +29,6 @@ const PENDING: Record<string, number> = {
   'coude-montant-arriere': 5.1,
   'crochet-avant': 3.5,
   'defense-lutte': 3.9,
-  'entree-lutte': 8.1,
   'esquive-droite': 2.3,
   'genou-circulaire-arriere': 5.5,
   'genou-clinch': 2.3,
@@ -37,11 +36,10 @@ const PENDING: Record<string, number> = {
   'genou-direct-avant': 2.4,
   'middle-kick-arriere': 3.6,
   'pont': 5.4,
-  'rattrapage-middle': 6.9,
+  'rattrapage-middle': 2.7,
   'releve-genoux': 2.7,
-  'releve-technique': 6.6,
+  'releve-technique': 5.6,
   'retention-garde': 3.4,
-  'retrait': 8.0,
   'shoulder-roll': 4.4,
   'single-leg': 4.1,
   'sit-out': 5.1,
@@ -67,14 +65,13 @@ const VICTOR_PENDING: Record<string, number> = {
   'genou-circulaire-clinch': 2.2,
   'high-kick-arriere': 2.5,
   'middle-kick-arriere': 4.1,
-  'rattrapage-middle': 7.6,
   'retention-garde': 4.2,
   'single-leg': 5.0,
   'sit-out': 5.9,
   'uchikomi-ko-uchi-gari': 4.1,
   'ukemi-ushiro': 6.8,
   'ukemi-yoko': 7.6,
-  // the common bound fell to 7.0; Victor's wider forearm stays a little deeper (8.2 cm in 1.43.0, 7.7 cm now)
+  // Victor's wider forearm stays a little deeper than the common bound (8.2 cm in 1.43.0, 7.7 cm in 1.45.0)
   'uppercut-arriere': 7.9,
 };
 const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor'] as const;
