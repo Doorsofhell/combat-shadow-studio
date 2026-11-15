@@ -4331,6 +4331,9 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   uppercut, fluidity ×2, hooks-biomeca « pas d'armé », expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (connus, sans
   lien). Contrat humain, regard, comportement, visage (`src/three/human/__tests__/`) : TEST RÉUSSI. `npm run build` : TEST
   RÉUSSI (titre v1.46.0). Captures des kimonos et du rashguard sur le nouveau corps : aucun passage de peau ; le col du
-  rashguard no-gi garde son bord en dents de scie, déjà présent en 1.45.2. Android : NON EXÉCUTÉ. Vignettes des techniques
+  rashguard no-gi garde son bord en dents de scie, déjà présent en 1.45.2. `npx playwright test` (299 tests, 47 min) :
+  295 réussis, 2 ignorés (Firebase), 2 échecs connus qui échouent aussi sur les versions précédentes et seuls au calme
+  (`boot:98` : la scène 3D n'apparaît pas en 20 s ; `coaching-hud:60` : la 2e répétition ne commence pas dans les 30 s
+  observées) : TEST ÉCHOUÉ (connus, sans lien avec Kadir). Android : NON EXÉCUTÉ. Vignettes des techniques
   et illustrations rendues avec Kadir : NON REFAITES (rendu proche, à regénérer dans un lot dédié).
 - **Restauration** : branche `restauration/avant-kadir-realisme` (= 1.45.2, b773812).
