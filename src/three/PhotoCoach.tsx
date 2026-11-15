@@ -142,7 +142,7 @@ export function PhotoCoach({
   const decorate = useCallback(
     (g: SkinnedMesh) => {
       applyBreath(g.material as Material, breath.uniformsFor(g));
-      sway.add(g, outfit === 'judo');
+      if (!sway.add(g, outfit === 'judo')) sway.addShort(g);
     },
     [breath, sway, outfit],
   );

@@ -44,6 +44,10 @@ export function Lab() {
     // recuperation, encouragement), src/three/human/behavior.ts
     const state = q.get('etat') ?? undefined;
     (globalThis as { __cssFace?: object }).__cssFace = q.get('face') === 'live' ? { state } : { still: true, effort: num('effort'), blink: num('blink'), expr, state };
+    // proposition 1.46 sway=1 : les shorts amples suivent la cuisse avec retard (src/three/sway.ts) ; swaydt=<s> : pas
+    // de temps imposé au ressort (captures image par image)
+    (globalThis as { __cssShortSway?: boolean }).__cssShortSway = q.get('sway') === '1';
+    (globalThis as { __cssSwayDt?: number }).__cssSwayDt = num('swaydt');
   }, [q]);
   useMemo(() => {
     // 1.33 cou=ancien: the neck of 1.32 and before (src/engine/rig.ts), for before/after captures

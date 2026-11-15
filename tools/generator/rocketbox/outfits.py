@@ -16,7 +16,7 @@ Garments:
   belt with knot and tails, prajioud: shaped meshes weighted to their bones.
 Fabrics are generated textures (weave, satin, knit, leather), no logo, no brand.
 """
-import bpy, bmesh, sys, os, math, json, base64, struct
+import bpy, bmesh, sys, os, math, json, base64, struct, re
 from mathutils import Vector, Matrix
 
 src, outdir, sex = sys.argv[sys.argv.index('--') + 1:][:3] if '--' in sys.argv else sys.argv[1:4]
@@ -690,6 +690,15 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
         if small:
             bmesh.ops.holes_fill(bm_, edges=small, sides=0)
             print('1.37.7', name, 'trous bouchés sur l\'ancien bikini :', len(small), 'arêtes')
+    if SHORT_SUBDIV and re.match(r'short-(boxe|thai)$', name):
+        # proposition (aperçu) : un short ample plus fin (chaque arête coupée en deux, points lissés) pour que ses plis
+        # et son tombé se lisent sans facettes ; les poids des os sont interpolés par la subdivision
+        n0 = len(bm_.verts)
+        bmesh.ops.subdivide_edges(bm_, edges=bm_.edges[:], cuts=1, use_grid_fill=True, smooth=SHORT_SUBDIV_SMOOTH)
+        bmesh.ops.triangulate(bm_, faces=bm_.faces[:])
+        for v in bm_.verts:
+            v[lay] = KD.find(MW @ v.co)[1]
+        print('proposition', name, 'subdivisé', n0, '->', len(bm_.verts), 'points')
     bm_.normal_update()
     # body vertices under the garment: every body vertex of the region, but those near the garment's free edges
     # (the skin stays drawn where the cloth ends)
@@ -1698,6 +1707,9 @@ BAND_RELIEF = float(os.environ.get('BAND_RELIEF', '0.15'))
 # sheets have a coloured panel on the outer side of each leg, edged by a thin piping, and the same piping along the
 # hem. Set by outfit() for the next shorts() call: dict(panel=hex, trim=hex)
 SHORT_PANEL = {}
+SHORT_SUBDIV = os.environ.get('SHORT_SUBDIV', '0') == '1'
+SHORT_SUBDIV_SMOOTH = float(os.environ.get('SHORT_SUBDIV_SMOOTH', '1.0'))
+PROTO = os.environ.get('PROTO_STYLE', '')  # propositions de finition (aperçu) : '', 'fight' ou 'italien'
 
 
 # 1.46 (Youssef 14/11 23:22, planche de shorts, choix « Coupes seulement, couleurs gardées »): the cut of each short
@@ -1844,6 +1856,8 @@ def shorts(kind, color, band, n_leg=None, under=False):
         if kind in ('kick', 'compression', 'vale-tudo') and not (cut and kind == 'kick'):
             return 0.003
         flare = cut[2] if cut else {'boxe': 0.03, 'thai': 0.075, 'mma': 0.022}[kind]
+        if kind in ('boxe', 'thai'):
+            flare *= float(os.environ.get('FLARE_MUL', '1'))  # proposition (aperçu) : short plus ample
         crotch = max(0.0, 1 - abs(P[i].x) / 0.05)
         base_push = loose(i, f'{s}UpLeg', f'{s}Leg', 0.005, lambda u: flare * u ** (DRAPE_EXP if DRAPE else 1.5) * (1 - 0.7 * crotch) * (0.55 if abs(P[i].x) < abs(axis_point(i, f'{s}UpLeg', f'{s}Leg')[0].x) else 1))
         if DRAPE and not under and kind in ('boxe', 'thai', 'mma'):
@@ -1854,8 +1868,8 @@ def shorts(kind, color, band, n_leg=None, under=False):
     # polyester is matt; the satin relief is shallower (it drew wavy lines)
     sheenK = {'boxe': ('satin', 0.6, 0.35, 0.3), 'thai': ('satin', 0.58, 0.4, 0.3), 'kick': ('serge', 0.62, 0.2, 0.4), 'mma': ('flat', 0.68, 0.1, 1.0), 'compression': ('jersey', 0.78, 0.06, 0.34), 'vale-tudo': ('jersey', 0.8, 0.06, 0.4), 'surshort': ('serge', 0.64, 0.15, 0.35)}[kind]
     if os.environ.get('SATIN_VIF') == '1' and kind in ('boxe', 'thai'):
-        sheenK = ('satin', 0.3, 0.9, 0.34)  # proposition : satin plus vivant (aperçu)
-    body_mat = grad_fabric(f'short-{kind}-degrade', sheenK[0], sheenK[1], sheenK[3], sheenK[2]) if isinstance(color, tuple) else fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3])
+        sheenK = ('satin', float(os.environ.get('SATIN_ROUGH', '0.3')), float(os.environ.get('SATIN_SHEEN', '0.9')), float(os.environ.get('SATIN_STRENGTH', '0.34')))  # proposition : satin plus vivant (aperçu)
+    body_mat = grad_fabric(f'short-{kind}-degrade', sheenK[0], sheenK[1], sheenK[3], sheenK[2]) if isinstance(color, tuple) else fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3], coat=float(os.environ.get('SATIN_COAT', '0')) if os.environ.get('SATIN_VIF') == '1' and kind in ('boxe', 'thai') else 0.0)
     if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
         # Original jersey and per-corner patterned colour panels: no external commercial asset.
         # 1.38: a plain matt fabric (« noir pour le MMA »); the point colours of 1.37.9 gave a blurred ivory panel
@@ -1878,7 +1892,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
     # The v1.26 procedural side slit on the female over-short creates a
     # pointed torn flap when its two moving layers cross. Keep a clean hem
     # here until a dedicated reinforced slit mesh is available.
-    if kind in ('vale-tudo', 'mma') and not under and SLIT_H > 0 and not (AMARA_MMA_REF and kind == 'vale-tudo'):
+    if (kind in ('vale-tudo', 'mma') or SHORT_PANEL.get('slit')) and not under and SLIT_H > 0 and not (AMARA_MMA_REF and kind == 'vale-tudo'):
         # 1.26 (Youssef, 2026-11-06, two photos of MMA shorts: « les shorts de MMA doivent avoir la petite fente »):
         # a short slit on the outer side of each leg, from the hem up, narrowing to a point. Cut by the field like
         # the hem (smooth edges; the v0.32 slit, cut along the skin's triangles, came out torn). What lies under it
@@ -1998,7 +2012,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
         # leg's outer side for the panel, two more for its piping, one over each hem for the hem piping
         pan = dict(SHORT_PANEL)
         yc = sum(H[f'{s_}UpLeg'].y + H[f'{s_}Leg'].y for s_ in ('Left', 'Right')) / 4
-        pw, tw, hw = 0.042, 0.008, 0.011
+        pw, tw, hw = pan.get('pw', 0.042), pan.get('tw', 0.008), pan.get('hw', 0.011)
         for d in (-pw - tw, -pw, pw, pw + tw):
             cuts.append((Vector((0, yc + d, 0)), Vector((0, 1, 0))))
         for s_ in ('Left', 'Right'):
@@ -3602,7 +3616,26 @@ def outfit(name):
         parts.extend(ps)
         hide.update(cov)
 
-    if name == 'boxe':
+    if PROTO and name in ('boxe', 'muaythai') and COACH_ID != 'victor':
+        # Propositions (aperçu, PROTO_STYLE) : finition « combat moderne » ou « boxe italienne », couleurs du coach
+        kind_, (c0, c1) = ('boxe', C['boxe']) if name == 'boxe' else ('thai', C['thai'])
+        if PROTO == 'fight':
+            # satin noir, panneau latéral à la couleur du coach, liseré de son accent, fente en V sur le côté
+            SHORT_PANEL.update(panel=c0 if c0.upper() not in ('#F4F4F5', '#FFFFFF') else c1, trim=C.get('logo', c1), slit=name == 'muaythai')
+            add(shorts(kind_, '#121317', c1 if name == 'boxe' else '#121317'))
+        else:
+            # une seule couleur, ceinture contrastée, double liseré fin sur le côté et à l'ourlet
+            SHORT_PANEL.update(panel=c1, trim=c1, pw=0.006, tw=0.006, hw=0.008)
+            add(shorts(kind_, c0, c1))
+        SHORT_PANEL.clear()
+    if name == 'boxe' and PROTO and COACH_ID != 'victor':
+        if female:
+            add(female_top(C['boxe'][0], C['boxe'][1]) or bra_v2(C['boxe'][0], C['boxe'][1], bandeau=BANDEAU))
+        for s in ('Left', 'Right'):
+            parts.extend(boxing_glove_v2(s, C['glove'], '#F4F4F5'))
+        hide |= hide_hands()
+        add(shoes_v2('#16181D' if not female else '#F4F4F5', '#F4F4F5' if not female else '#16181D'))
+    elif name == 'boxe':
         if COACH_ID == 'victor':
             # planche boxe de Youssef : même coupe satinée à mi-cuisse, noire, liserés gris sur les côtés et l'ourlet
             SHORT_PANEL.update(panel='#141519', trim='#7E8187', hem=0.5)
@@ -3637,7 +3670,9 @@ def outfit(name):
             add(ankle_supports('#16181D', '#16181D'))   # 1.43.1 : la protection du coup de pied des planches
         add(shin_guards('#16181D', '#2A2C31') if COACH_ID == 'victor' else shin_guards('#F4F4F5' if not female else '#16181D', C['kick'][1] if not female else C['kick'][0]))
     elif name == 'muaythai':
-        if COACH_ID == 'victor':
+        if PROTO and COACH_ID != 'victor':
+            pass
+        elif COACH_ID == 'victor':
             # planche muay-thaï de Youssef : short satiné noir, panneaux latéraux argent, liserés argent
             SHORT_PANEL.update(panel='#AEB2B8', trim='#D3D5D9', hem=0.5)
             add(shorts('thai', '#141519', '#141519'))

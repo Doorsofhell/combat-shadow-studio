@@ -19,7 +19,8 @@
  * textures, les poids et la liste de peau masquée restent identiques, octet pour octet. Un fichier déjà traité est
  * reconnu (asset.extras.cssShortFolds) et laissé tel quel.
  *
- * Usage : node tools/generator/rocketbox/short_folds.mjs <tenue.glb>... [--out <dossier>] [--gain 1.4] [--force]
+ * Usage : node tools/generator/rocketbox/short_folds.mjs <tenue.glb>... [--out <dossier>] [--gain 1.4] [--force] [--drape]
+ * --drape (1.45.2) : shorts amples (boxe, thaï) en tombé souple au lieu des plis ; les autres shorts gardent leurs plis.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
@@ -33,6 +34,11 @@ const opt = (k, d) => {
 const outDir = opt('--out', null);
 const GAIN = Number(opt('--gain', '1.4'));
 const force = args.includes('--force') ? (args.splice(args.indexOf('--force'), 1), true) : false;
+// 1.45.2 (Youssef 15/11 : « Shorts : tombée souple ») : les shorts amples (boxe, thaï) reçoivent un tombé souple au lieu
+// des plis : de grandes ondulations verticales qui s'élargissent vers l'ourlet, comme un tissu qui tombe
+const drapeMode = args.includes('--drape') ? (args.splice(args.indexOf('--drape'), 1), true) : false;
+const DRAPE_KINDS = new Set(['boxe', 'thai']);
+const DRAPE = { amp: 0.016, lobes: 6 };
 
 // ------------------------------------------------------------------ smooth noise (deterministic, -1..1)
 const hash = (x, y, z) => {
@@ -122,6 +128,29 @@ const sm = (t) => {
 // a fold is a rounded crest between wider flat hollows (a plain sine read as corrugated sheet)
 const ridge = (a) => (0.5 + 0.5 * Math.sin(a)) ** 2;
 const LOOSE = { thai: 1.0, boxe: 0.9, mma: 0.8, surshort: 0.8, kick: 0.45, compression: 0.3, 'vale-tudo': 0.35 };
+
+/** même formule que drape() d'outfits.py (DRAPE=1) : vers l'extérieur de l'axe de la cuisse, jamais vers la peau */
+function draper({ hips, legs }) {
+  const hipZ = hips[2];
+  return (q) => {
+    const [x, y, z] = q;
+    const s = x > 0 ? 'Left' : 'Right';
+    const [a, b] = legs[s];
+    const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+    const u = Math.max(0, Math.min(1, ((x - a[0]) * d[0] + (y - a[1]) * d[1] + (z - a[2]) * d[2]) / (d[0] ** 2 + d[1] ** 2 + d[2] ** 2)));
+    const rx = x - (a[0] + d[0] * u), ry = y - (a[1] + d[1] * u);
+    const rl = Math.hypot(rx, ry);
+    if (rl < 1e-6) return null;
+    const th = Math.atan2(ry, rx) * (s === 'Left' ? 1 : -1);
+    const ph = s === 'Left' ? 0.7 : 2.1;
+    const wave = (0.5 + 0.5 * Math.sin(DRAPE.lobes * th + ph + 0.8 * Math.sin(3 * th))) ** 1.6;
+    let zf = Math.max(0, Math.min(1, (z - (hipZ - 0.04)) / -0.18));
+    zf = zf * zf * (3 - 2 * zf);
+    const crotch = Math.max(0, 1 - Math.abs(x) / 0.05);
+    const m = (DRAPE.amp * wave * zf * (1 - 0.8 * crotch)) / rl;
+    return m > 0 ? [rx * m, ry * m, 0] : null;
+  };
+}
 
 function folder({ kind, hips, legs, bandLow, hem }) {
   const k = (LOOSE[kind] ?? 0.5) * GAIN;
@@ -215,7 +244,9 @@ function processFile(path) {
     if (!Number.isFinite(bandLow)) bandLow = head.Hips[2] + 0.03;
     const hem = { Left: Infinity, Right: Infinity };
     for (const pts of world) for (const q of pts) if (q[2] < head.Hips[2] - 0.1) hem[q[0] > 0 ? 'Left' : 'Right'] = Math.min(hem[q[0] > 0 ? 'Left' : 'Right'], q[2]);
-    const fold = folder({ kind, hips: head.Hips, legs, bandLow, hem });
+    const drape = drapeMode && DRAPE_KINDS.has(kind);
+    const fold = drape ? draper({ hips: head.Hips, legs }) : folder({ kind, hips: head.Hips, legs, bandLow, hem });
+    if (drape) json.asset.extras.cssShortDrape = '1.45.2';
     // displaced positions (one function of the place: the points a colour line or a seam splits get the same move)
     const moved = world.map((pts) => pts.map((q) => {
       const d = fold(q);

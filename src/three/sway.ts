@@ -33,8 +33,61 @@ export function swingKind(name: string): 'jupe' | 'pan' | null {
   return null;
 }
 
+/**
+ * Proposition 1.46 (aperçu, Youssef 15/11 : « tissu qui bouge au mouvement ») : les shorts amples (boxe, thaï) suivent
+ * la cuisse avec un léger retard, chaque jambe du short son propre ressort, mené par la vitesse d'un point de son
+ * ourlet ; rien au-dessus de l'aine (la ceinture reste en place), tout à l'ourlet. Activé seulement par
+ * globalThis.__cssShortSway (Lab : ?sway=1) tant qu'il n'est pas validé.
+ */
+interface LegEntry {
+  mesh: SkinnedMesh;
+  legs: { bone: number; point: Vector3; prev: Vector3 | null; off: Vector3; vel: Vector3; u: { value: Vector4 } }[];
+}
+export const shortSwayOn = () => !!(globalThis as { __cssShortSway?: boolean }).__cssShortSway;
+const SHORT_RE = /^short-(?:boxe|thai)(?:\.\d+)?$/;
+
 export class Sway {
   private list: Entry[] = [];
+  private shorts: LegEntry[] = [];
+
+  /** a loose short: one spring per leg (proposition, see LegEntry) */
+  addShort(mesh: SkinnedMesh) {
+    const name = mesh.name.replace(/^tenue:/, '');
+    if (!SHORT_RE.test(name) || !shortSwayOn()) return false;
+    const bones = mesh.skeleton.bones.map((b) => b.name.replace(/^mixamorig:?/, ''));
+    const hips = bones.indexOf('Hips');
+    const legsIdx = [bones.indexOf('LeftUpLeg'), bones.indexOf('RightUpLeg')];
+    if (hips < 0 || legsIdx.some((i) => i < 0)) return false;
+    const g = mesh.geometry;
+    const pos = g.getAttribute('position');
+    let top = -Infinity, low = Infinity;
+    for (let i = 0; i < pos.count; i++) {
+      top = Math.max(top, pos.getY(i));
+      low = Math.min(low, pos.getY(i));
+    }
+    // the crotch line: 45 % of the way down from the waist; nothing moves above it
+    const crotch = top - (top - low) * 0.45;
+    const w = new Float32Array(pos.count);
+    const side = new Float32Array(pos.count);
+    const pts = [new Vector3(), new Vector3()];
+    const n = [0, 0];
+    for (let i = 0; i < pos.count; i++) {
+      const y = pos.getY(i);
+      const t = Math.min(1, Math.max(0, (crotch - y) / Math.max(1e-6, crotch - low)));
+      w[i] = t * t * (3 - 2 * t);
+      side[i] = pos.getX(i) > 0 ? 0 : 1;
+      if (y < low + (top - low) * 0.1) {
+        pts[side[i]].add(tmpV.fromBufferAttribute(pos, i));
+        n[side[i]]++;
+      }
+    }
+    g.setAttribute('cssSwayW', new BufferAttribute(w, 1));
+    g.setAttribute('cssSwaySide', new BufferAttribute(side, 1));
+    const legs = [0, 1].map((k) => ({ bone: legsIdx[k], point: pts[k].divideScalar(Math.max(1, n[k])), prev: null, off: new Vector3(), vel: new Vector3(), u: { value: new Vector4() } }));
+    applyShortSway(mesh.material as Material, { cssSwayL: legs[0].u, cssSwayR: legs[1].u });
+    this.shorts.push({ mesh, legs });
+    return true;
+  }
 
   /** prepares a garment if it swings; heavy = judo gi (thicker, heavier cotton) */
   add(mesh: SkinnedMesh, heavy: boolean) {
@@ -76,6 +129,7 @@ export class Sway {
 
   /** dt = 0 (still images): the cloth hangs at rest */
   update(dt: number) {
+    this.updateShorts(dt);
     // garments taken off (outfit or quality change) leave the list
     if (this.list.some((e) => !e.mesh.parent)) this.list = this.list.filter((e) => e.mesh.parent);
     for (const e of this.list) {
@@ -112,6 +166,61 @@ export class Sway {
       e.u.cssSway.value.set(o.x, o.y, o.z, 1);
     }
   }
+}
+
+const SHORT_GAIN = 0.03; // m: the hem trails the thigh by 3 cm at most
+const SHORT_STIFF = 140;
+Sway.prototype.updateShorts = function (this: Sway, dt: number) {
+  const self = this as unknown as { shorts: LegEntry[] };
+  if (self.shorts.some((e) => !e.mesh.parent)) self.shorts = self.shorts.filter((e) => e.mesh.parent);
+  const dd = (globalThis as { __cssSwayDt?: number }).__cssSwayDt;
+  for (const e of self.shorts)
+    for (const L of e.legs) {
+      if (dt <= 0) {
+        L.off.set(0, 0, 0);
+        L.vel.set(0, 0, 0);
+        L.prev = null;
+        L.u.value.set(0, 0, 0, 0);
+        continue;
+      }
+      if (dt > 0.2) L.prev = null;
+      const d = dd ?? Math.min(dt, 1 / 20);
+      const bone = e.mesh.skeleton.bones[L.bone];
+      tmpM.multiplyMatrices(bone.matrixWorld, e.mesh.skeleton.boneInverses[L.bone]).multiply(e.mesh.bindMatrix);
+      const p = L.point.clone().applyMatrix4(tmpM);
+      const v = L.prev ? p.clone().sub(L.prev).divideScalar(d) : new Vector3();
+      L.prev = p;
+      const target = v.multiplyScalar(-0.05).clampLength(0, SHORT_GAIN);
+      const c = 2 * Math.sqrt(SHORT_STIFF) * 0.5;
+      for (let k = 0; k < 2; k++) {
+        const h = d / 2;
+        const acc = target.clone().sub(L.off).multiplyScalar(SHORT_STIFF).addScaledVector(L.vel, -c);
+        L.vel.addScaledVector(acc, h);
+        L.off.addScaledVector(L.vel, h);
+      }
+      L.off.clampLength(0, SHORT_GAIN * 1.3);
+      tmpN.setFromMatrix4(tmpM).invert();
+      const o = L.off.clone().applyMatrix3(tmpN);
+      L.u.value.set(o.x, o.y, o.z, 1);
+    }
+};
+declare module './sway' {
+  interface Sway {
+    updateShorts(dt: number): void;
+  }
+}
+
+function applyShortSway(m: Material, u: { cssSwayL: { value: Vector4 }; cssSwayR: { value: Vector4 } }) {
+  const prev = m.onBeforeCompile;
+  const prevKey = m.customProgramCacheKey.bind(m);
+  m.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms, r) => {
+    prev.call(m, shader, r);
+    Object.assign(shader.uniforms, u);
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nuniform vec4 cssSwayL;\nuniform vec4 cssSwayR;\nattribute float cssSwayW;\nattribute float cssSwaySide;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\ntransformed += mix(cssSwayL.xyz, cssSwayR.xyz, cssSwaySide) * cssSwayW;');
+  };
+  m.customProgramCacheKey = () => `${prevKey()}|css-sway-short`;
 }
 
 function applySway(m: Material, u: { cssSway: { value: Vector4 } }) {
