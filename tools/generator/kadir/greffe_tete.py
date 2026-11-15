@@ -102,9 +102,42 @@ if os.environ.get('OREILLE_SRC'):
     eW = gaussian_filter(eW.astype(np.float32), 3)
     skK = VM & (z > 1.55) & (z < 1.60) & (y > -0.06) & (y < 0.0) & (hairy < 0.1)
     gk = np.median(O[skK], 0) / np.maximum(np.median(K[skK], 0), 1e-3)
-    Ke = np.clip(K * gk * np.array([0.95, 0.9, 0.92], np.float32), 0, 1)
+    Ke = np.clip(K * gk, 0, 1)
     O = O * (1 - eW[..., None]) + Ke * eW[..., None]
     print('oreilles : texels', int((eW > 0.5).sum()), 'gain', np.round(gk, 3))
+# version 2 (Youssef 15/11 « respecte les planches ») : barbe plus courte sous la mâchoire, brun foncé et moins
+# compacte comme sur les planches, sourcils un peu moins lourds
+if os.environ.get('V2', '0') == '1':
+    ax = np.abs(x)
+    L = O @ np.array([0.3, 0.59, 0.11], np.float32)
+    beardz = VM & (S < 0.5) & (z < 1.64) & (z > 1.50)
+    # cou sous la barbe rasé : la barbe s'arrête ~2 cm sous la ligne de la mâchoire
+    zn = np.interp(y, [-0.14, -0.10, -0.07, -0.04, 0.0], [1.570, 1.566, 1.572, 1.585, 1.60])
+    neck = sm((zn - z) / 0.006) * VM * (1 - S)
+    neck = gaussian_filter(neck, 2.5)
+    skin = VM & (z > 1.48) & (L > np.percentile(L[VM & (S < 0.1) & (z > 1.60) & (z < 1.70) & (y < -0.09)], 35))
+    wsk = gaussian_filter(skin.astype(np.float32), 22)
+    tone = gaussian_filter(O * skin[..., None], (22, 22, 0)) / np.maximum(wsk, 1e-4)[..., None]
+    O = O * (1 - neck[..., None]) + (tone * np.array([0.95, 0.94, 0.96], np.float32)) * neck[..., None]
+    # teinte de la barbe : brun foncé de la planche, contraste gardé (poils plus clairs sur la peau)
+    dark = beardz & (L < 0.25)
+    target = np.array([0.20, 0.14, 0.10], np.float32)
+    cur = np.median(O[dark], 0)
+    Lmed = float(np.median(L[dark]))
+    rec = target[None, None, :] * np.clip(L / max(Lmed, 1e-3), 0, 3)[..., None] ** 0.85
+    wb = gaussian_filter((beardz & (L < 0.35)).astype(np.float32), 1.0)[..., None] * 0.8
+    O = np.clip(O * (1 - wb) + rec * wb, 0, 1)
+    print('barbe : couleur', np.round(cur, 3), '->', target)
+    # sourcils : 25 % plus légers
+    brow = VM & (z > 1.69) & (z < 1.72) & (ax < 0.065) & (y < -0.08) & (L < 0.3)
+    wbr = gaussian_filter(brow.astype(np.float32), 1.5)[..., None] * 0.25
+    O = O * (1 - wbr) + tone * wbr
+# marge des îles (filtrage des textures) : chaque texel hors de la tête prend la couleur du texel de la tête le plus
+# proche (12 px), sinon les retouches de la tête laissent un liseré clair aux coutures
+from scipy.ndimage import distance_transform_edt
+dist, (ir, ic) = distance_transform_edt(~VM, return_indices=True)
+g_ = (~VM) & (dist <= 12)
+O[g_] = O[ir[g_], ic[g_]]
 H_ = O.shape[0]
 O[int(H_ * 0.73):, :int(H_ * 0.34)] = P[int(H_ * 0.73):, :int(H_ * 0.34)]
 Image.fromarray((O * 255 + 0.5).astype(np.uint8)).save(out_f, quality=86)

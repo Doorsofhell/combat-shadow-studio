@@ -1,6 +1,6 @@
 # Kadir 1.46 — visage greffé (proposition, non publiée)
 
-Visage de l'avatar Rocketbox **Male_Adult_19** (github.com/microsoft/Microsoft-Rocketbox, licence MIT) greffé sur le
+Version 2 (V2=1 OREILLES=0). Visage de l'avatar Rocketbox **Male_Adult_19** (github.com/microsoft/Microsoft-Rocketbox, licence MIT) greffé sur le
 corps de Kadir par `tools/generator/rocketbox/face_transfer.py`, puis :
 
 - `greffe_disp.py` : forme de la tête (+ oreilles de lutteur) → `disp.f32` ;

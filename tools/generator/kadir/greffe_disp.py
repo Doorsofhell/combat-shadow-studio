@@ -107,6 +107,19 @@ if os.environ.get('OREILLES', '1') == '1':
     Q = Q + Nq * (amp * wq)[:, None]
     D = D + (Q - Q0)[inv]
     print('oreilles : points', int(ear.sum()), 'déplacement max mm', round(float(np.linalg.norm((Q - Q0)[inv], axis=1).max() * 1000), 1))
+# version 2 : proportions du visage des planches, plus étroit aux joues et à la mâchoire, menton un peu plus long
+if os.environ.get('V2', '0') == '1':
+    P1 = R + D
+    sm_ = lambda t: np.clip(t, 0, 1) ** 2 * (3 - 2 * np.clip(t, 0, 1))
+    wf = sm_((-0.03 - R[:, 1]) / 0.03) * sm_((1.685 - R[:, 2]) / 0.02) * sm_((R[:, 2] - 1.53) / 0.03)
+    hm2 = np.zeros(len(R), bool); hm2[T[d['mat'] >= 1].ravel()] = True
+    em2 = np.zeros(len(R), bool); em2[T[d['mat'] == 2].ravel()] = True
+    wf *= hm2 & ~em2  # les globes oculaires restent rigides
+    D[:, 0] += -P1[:, 0] * 0.045 * wf
+    wc = sm_((0.03 - np.abs(R[:, 0])) / 0.02) * sm_((1.605 - R[:, 2]) / 0.015) * sm_((-0.07 - R[:, 1]) / 0.02) * hm2
+    D[:, 2] += -0.004 * wc
+    D[:, 1] += -0.0015 * wc
+    print('V2 : visage resserré, menton allongé')
 R2 = R + D
 N2 = vnorm(R2, T)
 np.savez(out, R2=R2, D=D, N2=N2)
