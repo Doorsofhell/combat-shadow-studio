@@ -143,15 +143,18 @@ if on('CHEVEUX'):
 # visage et cou plus épais (Youssef 15/11 10:36) : mêmes traits, joues et mâchoire un peu plus larges, cou plus épais.
 # Le déplacement ne dépend que de la position : les points dédoublés (coutures, raccord tête-corps) bougent ensemble.
 if os.environ.get('EPAIS', '0') == '1':
-    FX, FN = float(os.environ.get('EPAIS_VISAGE', '0.06')), float(os.environ.get('EPAIS_COU', '0.10'))
-    zz, rr = R[:, 2], np.hypot(R[:, 0], R[:, 1])
+    # dosage « humainement réaliste » (10:41) : tour de cou ~44 → ~46 cm (combattant), mâchoire ~10,7 → ~11,5 cm,
+    # joues un peu, pommettes presque pas ; la hauteur de tête (24 cm, 7,5 têtes pour 1,80 m) ne change pas
+    FX, FN = float(os.environ.get('EPAIS_VISAGE', '0.07')), float(os.environ.get('EPAIS_COU', '0.05'))
+    zz, yy, rr = R[:, 2], R[:, 1], np.hypot(R[:, 0], R[:, 1])
     em = np.zeros(len(R), bool); em[T[Mt == 2].ravel()] = True
-    # cou : agrandi autour de l'axe (x = 0, y = 0), entre le haut des trapèzes et la mâchoire ; ni épaules ni menton
-    wn = sm((zz - 1.47) / 0.05) * sm((1.62 - zz) / 0.03) * sm((0.11 - rr) / 0.03)
+    # cou : agrandi autour de l'axe (x = 0, y = 0) ; ni épaules, ni mâchoire, ni menton
+    machoire = sm((-0.03 - yy) / 0.02) * sm((zz - 1.55) / 0.02)
+    wn = sm((zz - 1.47) / 0.05) * sm((1.60 - zz) / 0.03) * sm((0.11 - rr) / 0.03) * (1 - machoire)
     Dd[:, 0] += R[:, 0] * FN * wn
     Dd[:, 1] += R[:, 1] * FN * wn
-    # visage : élargi en x des joues à la mâchoire, rien à hauteur des yeux (globes rigides)
-    wf = sm((zz - 1.55) / 0.03) * sm((1.665 - zz) / 0.03) * ~em
+    # visage : élargi en x, surtout à la mâchoire, de moins en moins vers les pommettes, rien aux yeux
+    wf = sm((zz - 1.55) / 0.025) * sm((1.67 - zz) / 0.04) * (1 - 0.6 * sm((zz - 1.585) / 0.07)) * ~em
     Dd[:, 0] += R[:, 0] * FX * wf
     print('épaisseur : visage', FX, 'cou', FN, 'max mm', round(float(np.linalg.norm(Dd, axis=1).max() * 1000), 1))
 R2 = R + Dd
