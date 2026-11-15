@@ -6,7 +6,7 @@ Mesure : à 60 images par seconde, sur le squelette posé de Kadir, Amara, Naël
 
 Correction 1.41.0 (moteur, `glideLift` et `lowLift` dans `src/engine/motion.ts`) : un pied écrit au sol à deux endroits différents, ou qui décolle et se pose en restant bas, était traîné sur le tapis. Au-delà d’un pas glissé lent, il quitte maintenant le tapis sur un petit arc (4,5 cm au plus) et se pose à l’endroit écrit. Les pieds immobiles, les pivots lents et les coups de pied qui montent franchement ne changent pas.
 
-Glissement cumulé de toute la bibliothèque (5 coachs, droitier et gaucher) : 100 m (1.40.3, même mesure : 336 m).
+Glissement cumulé de toute la bibliothèque (5 coachs, droitier et gaucher) : 97 m (1.40.3, même mesure : 336 m).
 
 | Technique | Pire glissement 1.40.3 (cm / image) | Pire glissement (cm / image) | Pire cas | Limite |
 |---|---|---|---|---|
@@ -20,10 +20,10 @@ Glissement cumulé de toute la bibliothèque (5 coachs, droitier et gaucher) : 1
 | `sprawl` | 10,5 | 2,81 | victor mma | 2,9 (balayage, en attente) |
 | `defense-lutte` | 5,8 | 2,57 | victor mma | 2,6 (balayage, en attente) |
 | `ukemi-ushiro` | 2,3 | 2,29 | mma-amara judo gaucher | 2,3 (balayage, en attente) |
-| `uchikomi-o-goshi` | 7,5 | 2,07 | victor judo | 2,1 (balayage, en attente) |
 | `kuzushi` | 3,5 | 1,99 | inaya judo gaucher | 2,0 (balayage, en attente) |
-| `uchikomi-seoi` | 8,3 | 1,84 | victor judo | 1,9 (balayage, en attente) |
+| `uchikomi-o-goshi` | 7,5 | 1,88 | mma-amara judo gaucher | 2,1 (balayage, en attente) |
 | `single-leg` | 7,0 | 1,84 | victor mma | 1,9 (balayage, en attente) |
+| `uchikomi-seoi` | 8,3 | 1,74 | mma-kadir judo | 1,9 (balayage, en attente) |
 | `switch-kick` | 19,8 | 1,37 | victor kickboxing gaucher | 1,5 |
 | `tai-sabaki` | 7,5 | 1,28 | mma-kadir judo | 1,5 |
 | `check-arriere` | 1,1 | 0,99 | mma-kadir mma | 1,5 |

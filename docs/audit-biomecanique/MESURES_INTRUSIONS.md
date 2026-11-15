@@ -8,9 +8,6 @@ Résultat : 29 techniques dépassent 2 cm. Elles sont bornées à leur valeur pa
 
 | Technique | Pire profondeur (cm) | Quoi | Où | Instant |
 |---|---|---|---|---|
-| `uchikomi-o-soto-gari` | 7,6 | main gauche dans le tronc | mma-amara judo | 1,18 s |
-| `uchikomi-o-goshi` | 7,2 | jambe droite dans la cuisse gauche | mma-kadir judo | 1,06 s |
-| `uchikomi-seoi` | 7,1 | jambe droite dans la cuisse gauche | mma-kadir judo | 1,04 s |
 | `uppercut-arriere` | 7,0 | avant-bras droit dans le tronc | nael boxing | 0,21 s |
 | `ukemi-yoko` | 6,6 | avant-bras gauche dans le tronc | mma-kadir judo | 2,05 s |
 | `ukemi-ushiro` | 5,7 | avant-bras gauche dans le tronc | mma-kadir judo | 2,84 s |
@@ -23,7 +20,10 @@ Résultat : 29 techniques dépassent 2 cm. Elles sont bornées à leur valeur pa
 | `coude-montant-arriere` | 4,9 | main droite dans la tête | mma-kadir muaythai | 0,39 s |
 | `teep-avant` | 4,8 | main gauche dans la cuisse gauche | mma-kadir mma | 0,27 s |
 | `defense-lutte` | 4,7 | avant-bras droit dans le tronc | mma-kadir mma | 0,27 s |
+| `uchikomi-o-goshi` | 4,6 | jambe droite dans la cuisse gauche | mma-kadir judo | 1,12 s |
+| `uchikomi-seoi` | 4,3 | jambe droite dans la cuisse gauche | mma-kadir judo | 1,11 s |
 | `shoulder-roll` | 4,2 | avant-bras droit dans le tronc | nael boxing | 0,20 s |
+| `uchikomi-o-soto-gari` | 4,0 | main gauche dans le tronc | mma-amara judo | 1,18 s |
 | `single-leg` | 3,9 | avant-bras gauche dans le tronc | mma-kadir bjj | 0,74 s |
 | `uchikomi-ko-uchi-gari` | 3,7 | jambe gauche dans la cuisse droite | inaya judo | 0,67 s |
 | `switch-kick` | 3,5 | main gauche dans le tronc | inaya kickboxing | 0,60 s |
@@ -46,10 +46,7 @@ Même mesure sur la peau de Victor (corps de Kadir élargi : torse, avant-bras, 
 |---|---|---|---|---|
 | `uppercut-arriere` | 7,7 | avant-bras droit dans le tronc | victor boxing | 0,14 s |
 | `ukemi-yoko` | 7,4 | avant-bras gauche dans le tronc | victor judo | 1,39 s |
-| `uchikomi-o-goshi` | 6,8 | jambe droite dans la cuisse gauche | victor judo | 1,06 s |
-| `uchikomi-seoi` | 6,7 | jambe droite dans la cuisse gauche | victor judo | 1,04 s |
 | `ukemi-ushiro` | 6,5 | avant-bras gauche dans le tronc | victor judo | 1,45 s |
-| `uchikomi-o-soto-gari` | 5,9 | main gauche dans le tronc | victor judo | 1,24 s |
 | `sit-out` | 5,7 | avant-bras gauche dans le tronc | victor bjj | 0,53 s |
 | `genou-circulaire-arriere` | 5,5 | jambe droite dans la cuisse gauche | victor kickboxing | 0,54 s |
 | `pont` | 5,3 | main droite dans le tronc | victor bjj | 0,93 s |
@@ -57,10 +54,13 @@ Même mesure sur la peau de Victor (corps de Kadir élargi : torse, avant-bras, 
 | `changement-base` | 5,0 | avant-bras gauche dans le tronc | victor bjj | 1,47 s |
 | `single-leg` | 4,8 | avant-bras gauche dans le tronc | victor bjj | 0,74 s |
 | `releve-technique` | 4,7 | jambe droite dans la cuisse gauche | victor bjj | 0,61 s |
+| `uchikomi-o-goshi` | 4,3 | jambe droite dans la cuisse gauche | victor judo | 1,12 s |
 | `shoulder-roll` | 4,0 | avant-bras droit dans le tronc | victor boxing | 0,20 s |
 | `retention-garde` | 4,0 | avant-bras droit dans le tronc | victor bjj | 1,26 s |
+| `uchikomi-seoi` | 4,0 | jambe droite dans la cuisse gauche | victor judo | 1,24 s |
 | `uchikomi-ko-uchi-gari` | 3,9 | jambe gauche dans la cuisse droite | victor judo | 0,80 s |
 | `middle-kick-arriere` | 3,9 | main droite dans le tronc | victor kickboxing | 0,40 s |
+| `uchikomi-o-soto-gari` | 3,8 | main gauche dans le tronc | victor judo | 1,24 s |
 | `coude-montant-arriere` | 3,5 | main droite dans la tête | victor muaythai | 0,39 s |
 | `crochet-avant` | 3,3 | avant-bras droit dans le tronc | victor boxing | 0,21 s |
 | `blocage-corps-avant` | 2,6 | avant-bras droit dans le tronc | victor boxing | 0,19 s |

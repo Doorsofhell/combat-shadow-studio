@@ -10,16 +10,16 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 
 ## Total, 6 styles de garde
 
-528 animations, 2226 poses clés intérieures. Arrêts parasites : **2178 avant, 612 après**.
+528 animations, 2238 poses clés intérieures. Arrêts parasites : **2193 avant, 606 après**.
 
 | Style | Animations | Arrêts avant | Arrêts après |
 |---|---|---|---|
-| boxing | 88 | 358 | 97 |
-| kickboxing | 88 | 358 | 100 |
-| mma | 88 | 361 | 102 |
-| muaythai | 88 | 366 | 100 |
-| bjj | 88 | 365 | 105 |
-| judo | 88 | 370 | 108 |
+| boxing | 88 | 361 | 96 |
+| kickboxing | 88 | 361 | 99 |
+| mma | 88 | 363 | 101 |
+| muaythai | 88 | 369 | 99 |
+| bjj | 88 | 367 | 104 |
+| judo | 88 | 372 | 107 |
 
 ## Détail, garde de boxe
 
@@ -102,11 +102,11 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `changement-base` | 4 | 2 | 0 | 0,0 | 0,0 | 9,3 | 9,3 | – | – |
 | `tai-sabaki` | 4 | 2 | 0 | 0,1 | 0,1 | 5,6 | 5,6 | 0,0 | 0,1 |
 | `kuzushi` | 2 | 0 | 0 | 0,0 | 0,0 | 7,2 | 7,2 | 0,0 | 0,0 |
-| `uchikomi-seoi` | 4 | 2 | 0 | 13,5 | 13,5 | 13,5 | 13,5 | 0,0 | 0,0 |
+| `uchikomi-seoi` | 5 | 4 | 0 | 13,5 | 13,5 | 13,5 | 13,5 | 0,0 | 0,0 |
 | `ayumi-ashi` | 3 | 0 | 0 | 0,5 | 0,5 | 5,5 | 5,5 | – | – |
 | `kumikata` | 4 | 0 | 0 | 2,2 | 2,2 | 2,5 | 2,5 | 0,0 | 0,0 |
-| `uchikomi-o-goshi` | 4 | 1 | 0 | 11,9 | 11,9 | 11,9 | 11,9 | 0,0 | 0,0 |
-| `uchikomi-o-soto-gari` | 6 | 3 | 1 | 10,8 | 10,8 | 10,4 | 10,4 | 0,0 | 0,0 |
+| `uchikomi-o-goshi` | 5 | 2 | 0 | 11,9 | 11,9 | 11,9 | 11,9 | 0,0 | 0,0 |
+| `uchikomi-o-soto-gari` | 6 | 3 | 0 | 10,7 | 10,7 | 10,3 | 10,3 | 0,0 | 0,0 |
 | `uchikomi-o-uchi-gari` | 8 | 5 | 3 | 4,4 | 4,4 | 4,2 | 4,2 | 0,0 | 0,0 |
 | `uchikomi-ko-uchi-gari` | 6 | 2 | 1 | 3,7 | 3,7 | 5,4 | 5,4 | 0,0 | 0,0 |
 | `ukemi-ushiro` | 9 | 12 | 0 | 3,4 | 3,4 | 5,8 | 5,5 | 3,6 | 3,6 |
