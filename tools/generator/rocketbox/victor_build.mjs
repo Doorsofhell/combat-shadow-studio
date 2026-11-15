@@ -148,6 +148,14 @@ if (process.env.ROUGH_BODY) {
   const bc = mat.getBaseColorTextureInfo();
   if (bc) mat.getMetallicRoughnessTextureInfo().setTexCoord(bc.getTexCoord());
 }
+if (process.env.ROUGH_HEAD) {
+  // 1.46 réalisme : rugosité de la tête (peau du visage moins lisse, front et nez un peu plus luisants, cheveux mats)
+  const mat = root.listMaterials().find((m) => m.getName() === 'm021_head');
+  const t = doc.createTexture('m021_head_rough').setImage(readFileSync(process.env.ROUGH_HEAD)).setMimeType('image/jpeg');
+  mat.setMetallicRoughnessTexture(t).setRoughnessFactor(1);
+  const bc = mat.getBaseColorTextureInfo();
+  if (bc) mat.getMetallicRoughnessTextureInfo().setTexCoord(bc.getTexCoord());
+}
 root.getAsset().extras = coach === 'victor'
   ? { ...(root.getAsset().extras ?? {}), cssCoach: 'victor', cssBase: 'mma-kadir', generatorVersion: '1.43.0' }
   : { ...(root.getAsset().extras ?? {}), cssCoach: coach, cssPlanches: process.env.GEN_VERSION ?? '1.46.0' };
