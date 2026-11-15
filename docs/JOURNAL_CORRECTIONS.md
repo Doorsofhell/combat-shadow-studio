@@ -4250,3 +4250,34 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   et 1.44.0 (`coaching-hud:60`, `training-layout:117`). Android : NON EXÉCUTÉ. Captures avant/après (20 vues, 5 coachs,
   face, profil, high kick) : https://claude.ai/artifact/Hprx3xX5f6dMwJeSNWWFrz.
 - **Restauration** : branche `restauration/avant-shorts-v1442` (= 1.44.1).
+
+## 2026-11-15 · v1.45.2 · Victor : peau sans taches sombres, teint de sa planche
+
+- **Demande** : Youssef, 2026-11-14 23:43 (capture de Victor en garde de boxe et sa planche source) : « corrige le corps de
+  Victor, il y a des taches sombres sur son corps, je veux aussi moins brun comme sur la palette source ». Aperçu
+  avant/après validé le 2026-11-15 00:45 (« Ok pour peau victor »).
+- **Constat vérifié** : la texture du corps de Victor (`m021_body_color`, 1024 px) vient de la projection de ses
+  planches ; elle a gardé de grandes plaques sombres et grises (fond gris et ombres de l'image projetée) : 8,1 % de la
+  peau avait un fond à moins de 75 % de la médiane. Teint médian de la peau 109, 75, 61 (sRGB), torse 125, 85, 66, contre
+  environ 168, 132, 114 sur la planche (pectoraux, abdominaux, dos) : plus sombre et plus roux.
+- **Correction** : `tools/generator/victor/peau_propre.py` (séparation de fréquences) : pores, poils, tatouages gardés
+  tels quels ; plaques moyennes resserrées (assombrissements surtout) ; fond et couleur ramenés vers le teint de la
+  planche (30 % des variations gardées). La tête reçoit le même gain de couleur moyen, pondéré par la saturation
+  (cheveux et barbe gris inchangés), pour garder le cou raccordé. Résultat : plaques 1,9 %, peau médiane 148, 113, 95.
+  Textures écrites dans `tools/generator/victor/donnees/`, modèle reconstruit par `victor_build.mjs` (forme, os, visage
+  et expressions inchangés ; reconstruction vérifiée identique octet pour octet avec les anciennes textures). Portrait de
+  Victor regénéré. Kadir non touché.
+- **Fichiers** : `tools/generator/victor/peau_propre.py` (nouveau), `tools/generator/victor/README.md`,
+  `tools/generator/victor/donnees/{body,head}_color.jpg`, `public/coaches/victor/photo.glb`,
+  `public/coaches/victor/portrait.webp`, `src/boot/assetSizes.json`, `src/domain/releases.ts`, `package.json`,
+  `src/three/__tests__/victor-peau-v1452.test.ts` (nouveau).
+- **Tests** : `npx vitest run` : 1588 réussis, 5 échecs qui échouent aussi sur la 1.45.1 en ligne (vérifié sur
+  d9ed4b1 : extension-v032 uppercut, fluidity ×2, hooks-biomeca, expressions-v1160 « < 3,5 Mo ») : TEST ÉCHOUÉ (connus,
+  sans lien). Nouveau test victor-peau-v1452 : TEST RÉUSSI. `npm run build` : TEST RÉUSSI. `npx playwright test` : 279
+  réussis à la première passe (18 tombés pendant que la machine faisait des captures en parallèle) ; repassés au calme :
+  15 réussis, 3 échecs connus qui échouent aussi sur les versions précédentes (`boot:98`, `coaching-hud:60`,
+  `training-layout:117`). Android : NON EXÉCUTÉ. Avant/après : https://claude.ai/artifact/1U3rVyDQjsWLGFpQCpoSsx.
+- **Hors lot** : les essais de shorts (tombé souple, satin lisse, tissu qui bouge) restent des propositions, rien n'est
+  appliqué (page https://claude.ai/artifact/Ci3RwadUxGVV2mEANYUiTU).
+- **Restauration** : branche `restauration/avant-tombe-v1452` (= 1.45.1).
+

@@ -12,7 +12,9 @@ tenues). Victor part d'une **copie** du modèle de Kadir : `public/coaches/mma-k
 2. **Textures** (Python, PIL/scipy) : projection des planches (`body_proj2.py`), bronzage (`tan.py`), raccord du
    short (`hem.py`), lèvre supérieure sans trait sombre (`lips.py`), arrière de la tête et nuque (`backhead.py`),
    teint (`teint.py`), cheveux poivre et sel (`finish_head.py`), puis (1.43.1, « un tout petit peu moins brun »)
-   peau éclaircie sur les deux textures (`eclaircir.py <entrée> <sortie> 2.2`). Résultats : `donnees/head_color.jpg`,
+   peau éclaircie sur les deux textures (`eclaircir.py <entrée> <sortie> 2.2`), puis (1.45.2, « taches sombres… moins
+   brun comme sur la palette source ») plaques sombres effacées et teint de la planche (`peau_propre.py corps_in corps_out
+   tete_in tete_out`, à ne passer qu'une fois). Résultats : `donnees/head_color.jpg`,
    `donnees/body_color.jpg` (déjà éclaircies).
 3. **Modèle de l'application** :
 
