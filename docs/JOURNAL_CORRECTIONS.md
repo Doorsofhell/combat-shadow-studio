@@ -4204,3 +4204,80 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   passent ; coaching-hud:60 et training-layout:117 échouent aussi sur la base 1.44.0 (`f5941f1`) : TEST ÉCHOUÉ, non
   liés à ce lot. Build : TEST RÉUSSI.
 - **Restauration** : branche `restauration/avant-traversees-v1450` (= 1.44.0, `f5941f1`).
+
+## 2026-11-14 · v1.45.1 (lot préparé en 1.44.2) · Shorts : entrejambe sans membrane et plis textiles
+
+- **Demande** : Youssef, 2026-11-14 22:28, « Correction des shorts 3D — Entrejambe et réalisme textile » (deux captures du
+  short de kick-boxing de Victor en 1.44.1 : une bande de tissu claire relie les deux jambes au niveau des ourlets).
+- **Constat vérifié** :
+  - origine : géométrie (soudure des points), pas les UV ni la texture. Sur les corps Rocketbox au repos, l'intérieur des
+    deux cuisses se touche de l'entrejambe jusqu'à mi-cuisse (0,5 à 0,8 mm d'écart, mesuré sur Kadir et Victor). Le
+    générateur (`outfits.py`, `shell`) soude les points à moins de 0,5 mm pour refermer les coutures de texture : sur un
+    ourlet coupé dans cette zone, il soudait le point gauche au point droit. Les shorts thaï de Victor de la 1.44.1
+    (ourlet à mi-cuisse) avaient ainsi 38 faces tenues à la fois par la jambe gauche et la droite (boxe, kick-boxing et
+    muay-thaï : 28 faces de liseré, 10 de tissu), qui s'étirent en bande dès que les jambes s'écartent. Les ourlets de
+    Kadir, Amara, Naël et Inaya sont plus bas (sous la zone de contact) : 0 face de ce type, vérifié sur leurs 4 shorts ;
+  - les shorts étaient des copies lisses de la peau : aucun pli.
+- **Correction** :
+  - `tools/generator/rocketbox/outfits.py` : la soudure ne réunit jamais deux points tenus par des jambes opposées (côté
+    lu sur les poids de peau du point lui-même : le point de corps le plus proche peut appartenir à l'autre cuisse) ;
+    commun à tous les vêtements de tous les coachs. Les 4 tenues à short de Victor sont régénérées (autres pièces
+    inchangées à moins de 1 mm) ; les autres coachs n'en avaient pas besoin ;
+  - `tools/generator/rocketbox/short_folds.mjs` (nouveau, commun) : plis procéduraux sur les shorts finis (compression
+    sous la ceinture, plis obliques de la hanche, éventail à l'entrejambe, tension sur le devant des cuisses, ondulation
+    des ourlets), amplitude selon la coupe (ample > ajusté), irréguliers (bruit lisse), toujours vers l'extérieur (jamais
+    dans la peau) ; seules positions et normales des maillages `short-*` changent, le reste du fichier est identique
+    octet pour octet ; même nombre de points (aucun coût sur téléphone). Les plis suivent le squelette par les poids
+    existants (pas de simulation). Posé sur Victor, Naël, Inaya et Amara ; **Kadir non modifié** (règle : rien sur Kadir
+    sans son accord) — aperçu préparé ; `regen_outfits.sh` l'applique après chaque génération (`KADIR_FOLDS=1` après accord) ;
+  - contrôles `src/three/__tests__/shorts-v1442.test.ts` (5 coachs × 4 tenues) : triangles tenus par les deux jambes (0),
+    trous (arêtes ouvertes), faces inversées, coordonnées de texture, peau dessinée sous le short (vêtement d'origine
+    peint), et en mouvement (garde, high kick, genou, changement de niveau, low kick à 50/100/125 %) : étirement, plus
+    longue arête de l'entrejambe, tissu passé dans la jambe ; mesures dans `docs/v1442/MESURES_SHORTS.md`.
+- **Limites connues** : au high kick, le devant du short se froisse fortement du côté de la jambe levée (étirement
+  ×3,4 à ×5,6 selon les coachs, déjà présent avant : limite du skinning, à traiter dans un lot dédié) ; Kadir et Naël ont
+  2 et 4 arêtes ouvertes (petites fentes, fichiers d'avant la 1.44.2, bornées dans le test).
+- **Fichiers** : `tools/generator/rocketbox/outfits.py`, `tools/generator/rocketbox/short_folds.mjs`,
+  `tools/generator/rocketbox/regen_outfits.sh`, `public/coaches/{victor,nael,inaya,mma-amara}/tenues/{boxe,kickboxing,muaythai,mma}.glb`,
+  `public/coaches/victor/tenues/_tex/`, `src/three/__tests__/shorts-v1442.test.ts`, `docs/v1442/`, `src/domain/releases.ts`,
+  `package.json`.
+- **Tests** : `npx vitest run` TEST RÉUSSI sauf les 5 échecs connus d'avant (uppercut extension-v032, fluidité ×2,
+  crochets « pas d'armé », taille du modèle d'Amara) ; `shorts-v1442.test.ts` 41/41 TEST RÉUSSI. Empreintes figées mises
+  à jour, raison : les plis demandés par Youssef pour tous les coachs changent les shorts de Naël et d'Inaya
+  (`outfit-amara-v1374.test.ts` Inaya boxe/kick-boxing/muay-thaï/MMA, `outfit-references-v1372.test.ts` MMA de Naël et
+  d'Inaya ; anciennes valeurs dans l'historique git) ; `src/boot/assetSizes.json` régénéré. `npm run build` TEST RÉUSSI
+  (titre v1.44.2, puis v1.45.1 après fusion de la 1.45.0). `npx playwright test` (en deux passes) : 299 réussis, 2 échecs connus qui échouent aussi sur 1.42.0
+  et 1.44.0 (`coaching-hud:60`, `training-layout:117`). Android : NON EXÉCUTÉ. Captures avant/après (20 vues, 5 coachs,
+  face, profil, high kick) : https://claude.ai/artifact/Hprx3xX5f6dMwJeSNWWFrz.
+- **Restauration** : branche `restauration/avant-shorts-v1442` (= 1.44.1).
+
+## 2026-11-15 · v1.45.2 · Victor : peau sans taches sombres, teint de sa planche
+
+- **Demande** : Youssef, 2026-11-14 23:43 (capture de Victor en garde de boxe et sa planche source) : « corrige le corps de
+  Victor, il y a des taches sombres sur son corps, je veux aussi moins brun comme sur la palette source ». Aperçu
+  avant/après validé le 2026-11-15 00:45 (« Ok pour peau victor »).
+- **Constat vérifié** : la texture du corps de Victor (`m021_body_color`, 1024 px) vient de la projection de ses
+  planches ; elle a gardé de grandes plaques sombres et grises (fond gris et ombres de l'image projetée) : 8,1 % de la
+  peau avait un fond à moins de 75 % de la médiane. Teint médian de la peau 109, 75, 61 (sRGB), torse 125, 85, 66, contre
+  environ 168, 132, 114 sur la planche (pectoraux, abdominaux, dos) : plus sombre et plus roux.
+- **Correction** : `tools/generator/victor/peau_propre.py` (séparation de fréquences) : pores, poils, tatouages gardés
+  tels quels ; plaques moyennes resserrées (assombrissements surtout) ; fond et couleur ramenés vers le teint de la
+  planche (30 % des variations gardées). La tête reçoit le même gain de couleur moyen, pondéré par la saturation
+  (cheveux et barbe gris inchangés), pour garder le cou raccordé. Résultat : plaques 1,9 %, peau médiane 148, 113, 95.
+  Textures écrites dans `tools/generator/victor/donnees/`, modèle reconstruit par `victor_build.mjs` (forme, os, visage
+  et expressions inchangés ; reconstruction vérifiée identique octet pour octet avec les anciennes textures). Portrait de
+  Victor regénéré. Kadir non touché.
+- **Fichiers** : `tools/generator/victor/peau_propre.py` (nouveau), `tools/generator/victor/README.md`,
+  `tools/generator/victor/donnees/{body,head}_color.jpg`, `public/coaches/victor/photo.glb`,
+  `public/coaches/victor/portrait.webp`, `src/boot/assetSizes.json`, `src/domain/releases.ts`, `package.json`,
+  `src/three/__tests__/victor-peau-v1452.test.ts` (nouveau).
+- **Tests** : `npx vitest run` : 1588 réussis, 5 échecs qui échouent aussi sur la 1.45.1 en ligne (vérifié sur
+  d9ed4b1 : extension-v032 uppercut, fluidity ×2, hooks-biomeca, expressions-v1160 « < 3,5 Mo ») : TEST ÉCHOUÉ (connus,
+  sans lien). Nouveau test victor-peau-v1452 : TEST RÉUSSI. `npm run build` : TEST RÉUSSI. `npx playwright test` : 279
+  réussis à la première passe (18 tombés pendant que la machine faisait des captures en parallèle) ; repassés au calme :
+  15 réussis, 3 échecs connus qui échouent aussi sur les versions précédentes (`boot:98`, `coaching-hud:60`,
+  `training-layout:117`). Android : NON EXÉCUTÉ. Avant/après : https://claude.ai/artifact/1U3rVyDQjsWLGFpQCpoSsx.
+- **Hors lot** : les essais de shorts (tombé souple, satin lisse, tissu qui bouge) restent des propositions, rien n'est
+  appliqué (page https://claude.ai/artifact/Ci3RwadUxGVV2mEANYUiTU).
+- **Restauration** : branche `restauration/avant-tombe-v1452` (= 1.45.1).
+

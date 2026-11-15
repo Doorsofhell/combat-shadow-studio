@@ -603,7 +603,31 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
         bmesh.ops.delete(bm_, geom=[f for f in bm_.faces if not face_ok(f)], context='FACES')
     bmesh.ops.delete(bm_, geom=[v for v in bm_.verts if not v.link_faces], context='VERTS')
     # the body is split along its texture seams: weld them, or the garment shows a crack there
-    bmesh.ops.remove_doubles(bm_, verts=bm_.verts[:], dist=0.0005 / max(MW.to_scale()))
+    # 1.44.2 (Youssef 14/11, « membrane entre les jambes »): the two inner thighs of the bind pose touch from the
+    # crotch down to about mid-thigh (0.5 to 0.8 mm apart on Kadir's and Victor's bodies). A hem cut there had its
+    # left and right points welded together: the two leg openings were joined by a strip of cloth that stretched
+    # between the thighs as soon as the legs parted. Points held by opposite legs are never welded: the left side
+    # (with the pelvis), then the right side (with the pelvis)
+    # (the side is read on the point's own skin weights, copied from the body: the closest body point can belong to
+    # the other thigh where they touch)
+    dlay = bm_.verts.layers.deform.active
+    gname = {g_.index: g_.name for g_ in o.vertex_groups}
+
+    def leg_side(v):
+        if dlay is None:
+            return 'C'
+        l_ = r_ = 0.0
+        for gi, wt in v[dlay].items():
+            n_ = gname.get(gi, '')
+            if n_ in ('LeftUpLeg', 'LeftLeg'):
+                l_ += wt
+            elif n_ in ('RightUpLeg', 'RightLeg'):
+                r_ += wt
+        return 'L' if l_ >= 0.5 else 'R' if r_ >= 0.5 else 'C'
+    for s_ in ('L', 'R'):
+        bm_.verts.ensure_lookup_table()
+        group = [v for v in bm_.verts if leg_side(v) in (s_, 'C')]
+        bmesh.ops.remove_doubles(bm_, verts=group, dist=0.0005 / max(MW.to_scale()))
     # v0.32: small holes left by the body mesh (navel, a seam the weld missed) are closed; the real openings of a
     # garment (neck, sleeves, legs: dozens of edges) are kept
     # A few open body seam loops are genuine small holes; others are natural
@@ -1676,6 +1700,52 @@ BAND_RELIEF = float(os.environ.get('BAND_RELIEF', '0.15'))
 SHORT_PANEL = {}
 
 
+# 1.46 (Youssef 14/11 23:22, planche de shorts, choix « Coupes seulement, couleurs gardées »): the cut of each short
+# read on his sheet, (hem as a share of the thigh from the knee, waistband height in metres, flare at the hem in metres):
+# boxing loose to mid-thigh under a tall white-style band, Thai very short and very wide, kick-boxing a short trunk with
+# straight wide legs. Women's boxing is shorter (upper thigh). Colours and fabrics stay each coach's own. SHEET_CUTS=0 gives
+# the cuts of before. Victor keeps the cut of his own sheets (1.44.1)
+SHEET_CUTS = os.environ.get('SHEET_CUTS', '0') == '1'
+SHEET_CUT = {
+    'boxe': {'homme': (0.45, 0.09, 0.05), 'femme': (0.56, 0.085, 0.05)},
+    'thai': {'homme': (0.6, 0.09, 0.09), 'femme': (0.62, 0.085, 0.085)},
+    'kick': {'homme': (0.52, 0.08, 0.055), 'femme': (0.56, 0.075, 0.05)},
+}
+
+
+def sheet_cut(kind, under=False):
+    if not SHEET_CUTS or under or COACH_ID == 'victor' or SHORT_PANEL or AMARA_MMA_REF and kind == 'vale-tudo':
+        return None
+    return SHEET_CUT.get(kind, {}).get('femme' if female else 'homme')
+
+
+# 1.44.2: the textile folds of the shorts are added afterwards by tools/generator/rocketbox/short_folds.mjs (one tool for
+# every coach, run on the finished files: the other garments of an outfit stay byte for byte as they were)
+
+
+# Proposition « anti-carton » (aperçu, désactivée par défaut) : DRAPE=1 fait tomber le tissu des shorts amples en
+# ondulations verticales douces qui grandissent vers l'ourlet, toujours vers l'extérieur (jamais dans la peau)
+DRAPE = os.environ.get('DRAPE', '0') == '1'
+DRAPE_AMP = float(os.environ.get('DRAPE_AMP', '0.007'))
+DRAPE_LOBES = int(os.environ.get('DRAPE_LOBES', '7'))
+DRAPE_EXP = float(os.environ.get('DRAPE_EXP', '2.0'))
+
+
+def drape(i, s, crotch):
+    c, u = axis_point(i, f'{s}UpLeg', f'{s}Leg')
+    r = P[i] - c
+    r.z = 0
+    if r.length < 1e-6:
+        return Vector((0, 0, 0))
+    th = math.atan2(r.y, r.x) * (1 if s == 'Left' else -1)
+    ph = 0.7 if s == 'Left' else 2.1
+    wave = 0.5 + 0.5 * math.sin(DRAPE_LOBES * th + ph + 0.8 * math.sin(3 * th))
+    wave = wave ** 1.6  # creux larges, plis plus étroits, comme un tissu qui tombe
+    zf = max(0.0, min(1.0, (P[i].z - (hipZ - 0.04)) / -0.18))
+    zf = zf * zf * (3 - 2 * zf)
+    return r.normalized() * DRAPE_AMP * wave * zf * (1 - 0.8 * crotch)
+
+
 def shorts(kind, color, band, n_leg=None, under=False):
     """kind: boxe (loose, to just above the knee, high waistband), kick (fitted, short), thai (short, very wide,
     high waistband), mma (board short, side slits, to the knee), compression"""
@@ -1696,6 +1766,9 @@ def shorts(kind, color, band, n_leg=None, under=False):
     # vale-tudo short in 1.9), 8 mm over its top at most 6 cm higher than the cut asked
     if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
         hem = 0.53  # short fitted boxer, upper third of thigh
+    cut = sheet_cut(kind, under)
+    if cut:
+        hem = cut[0]
     if SHORT_PANEL.get('hem'):
         hem = SHORT_PANEL['hem']  # 1.43.1 Victor: Thai cut of his sheets, mid-thigh
         waist = hipZ + 0.105
@@ -1712,6 +1785,8 @@ def shorts(kind, color, band, n_leg=None, under=False):
     bandH = {'boxe': 0.07, 'kick': 0.04, 'thai': 0.08, 'mma': 0.04, 'compression': 0.025, 'vale-tudo': 0.035, 'surshort': 0.045}[kind]
     if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
         bandH = 0.045  # reference: soft, wide flexible waistband
+    if cut:
+        bandH = cut[1]
 
     ring_band = FITTED_BANDS and not under and kind != 'surshort'
 
@@ -1766,15 +1841,20 @@ def shorts(kind, color, band, n_leg=None, under=False):
                 return 0.004 + (0.0 if ring_band else 0.006) * t * t * (3 - 2 * t)
             return 0.004 + (0.006 if P[i].z > waist - bandH else 0)
         s = leg_of(i)
-        if kind in ('kick', 'compression', 'vale-tudo'):
+        if kind in ('kick', 'compression', 'vale-tudo') and not (cut and kind == 'kick'):
             return 0.003
-        flare = {'boxe': 0.03, 'thai': 0.075, 'mma': 0.022}[kind]
+        flare = cut[2] if cut else {'boxe': 0.03, 'thai': 0.075, 'mma': 0.022}[kind]
         crotch = max(0.0, 1 - abs(P[i].x) / 0.05)
-        return loose(i, f'{s}UpLeg', f'{s}Leg', 0.005, lambda u: flare * u ** 1.5 * (1 - 0.7 * crotch) * (0.55 if abs(P[i].x) < abs(axis_point(i, f'{s}UpLeg', f'{s}Leg')[0].x) else 1))
+        base_push = loose(i, f'{s}UpLeg', f'{s}Leg', 0.005, lambda u: flare * u ** (DRAPE_EXP if DRAPE else 1.5) * (1 - 0.7 * crotch) * (0.55 if abs(P[i].x) < abs(axis_point(i, f'{s}UpLeg', f'{s}Leg')[0].x) else 1))
+        if DRAPE and not under and kind in ('boxe', 'thai', 'mma'):
+            base_push = base_push + drape(i, s, crotch)
+        return base_push
 
     # v0.32 (« matières trop brillantes ou plastifiées »): satin keeps a soft sheen but is no longer wet-looking,
     # polyester is matt; the satin relief is shallower (it drew wavy lines)
     sheenK = {'boxe': ('satin', 0.6, 0.35, 0.3), 'thai': ('satin', 0.58, 0.4, 0.3), 'kick': ('serge', 0.62, 0.2, 0.4), 'mma': ('flat', 0.68, 0.1, 1.0), 'compression': ('jersey', 0.78, 0.06, 0.34), 'vale-tudo': ('jersey', 0.8, 0.06, 0.4), 'surshort': ('serge', 0.64, 0.15, 0.35)}[kind]
+    if os.environ.get('SATIN_VIF') == '1' and kind in ('boxe', 'thai'):
+        sheenK = ('satin', 0.3, 0.9, 0.34)  # proposition : satin plus vivant (aperçu)
     body_mat = grad_fabric(f'short-{kind}-degrade', sheenK[0], sheenK[1], sheenK[3], sheenK[2]) if isinstance(color, tuple) else fabric(f'short-{kind}-{color}', color, sheenK[0], rough=sheenK[1], sheen=sheenK[2], strength=sheenK[3])
     if AMARA_MMA_REF and kind == 'vale-tudo' and not under:
         # Original jersey and per-corner patterned colour panels: no external commercial asset.
