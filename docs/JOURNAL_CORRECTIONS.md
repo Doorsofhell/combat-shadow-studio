@@ -4281,3 +4281,27 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   appliqué (page https://claude.ai/artifact/Ci3RwadUxGVV2mEANYUiTU).
 - **Restauration** : branche `restauration/avant-tombe-v1452` (= 1.45.1).
 
+
+## 2026-11-15 · v1.46.0 · Membres qui traversent le corps, lot 2
+
+- **Constat vérifié** (mesure `intrusions.test.ts` sur la peau des cinq coachs, base 1.45.2, image par image) :
+  entrée de lutte 7,9 cm (main gauche dans la cuisse avant, Inaya), retrait en boxe 7,8 cm (avant-bras arrière dans
+  le ventre quand le buste recule, Naël), rattrapage du middle 6,7 cm (main qui ramasse la jambe dans le ventre),
+  relevé technique 6,4 cm (main posée au sol sous la cuisse qui recule), uppercut arrière 7,0 cm.
+- **Correction** (trajets seulement, moteur 1.2.1) :
+  - `src/engine/library/mma.ts` : entrée de lutte, mains plus larges et plus devant, tirées moins en arrière ;
+    relevé technique, main posée qui glisse vers l'extérieur pendant que les hanches montent ;
+  - `src/engine/library/boxing.ts` : retrait, la garde avance de 3 à 6 cm avec le buste qui recule ;
+  - `src/engine/library/legs.ts` : rattrapage du middle, jambe tenue 8 cm plus devant, mains qui suivent la rotation
+    sans revenir dans le tronc.
+  - Uppercut arrière non modifié : abaisser le poing devant le corps ou ouvrir le coude faisait culminer l'épaule et
+    le poing à la même image (test `extension-v032` S3) ou aggravait la mesure.
+- **Résultat** (validé par Youssef sur la page avant/après) : entrée de lutte et retrait sous 2 cm (retirés de la liste
+  d'attente), rattrapage du middle 2,5 cm, relevé technique 5,4 cm (les jambes se frôlent encore).
+- **Fichiers** : `src/engine/library/{mma,boxing,legs}.ts`, `src/engine/index.ts`, `docs/moteur/CHANGELOG.md`,
+  `src/engine/__tests__/intrusions.test.ts`, documents de mesures régénérés, `src/ui/pictos/techniquePictos.json`,
+  `package.json`, `package-lock.json`, `src/domain/releases.ts`.
+- **Tests** : bornes de `intrusions.test.ts` abaissées (entrée de lutte et retrait retirées, rattrapage 2,7, relevé
+  5,6 ; Victor : rattrapage retiré), jamais relevées. Vitest : 1588 réussis, 5 échecs déjà présents (extension-v032
+  uppercut Kadir, fluidité ×2, crochets « pas d'armé », poids du modèle d'Amara) : TEST ÉCHOUÉ, non liés.
+- **Restauration** : branche `restauration/avant-traversees-lot2` (= 1.45.2, `b773812`).
