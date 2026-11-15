@@ -10,16 +10,16 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 
 ## Total, 6 styles de garde
 
-528 animations, 2226 poses clés intérieures. Arrêts parasites : **2172 avant, 603 après**.
+528 animations, 2226 poses clés intérieures. Arrêts parasites : **2178 avant, 612 après**.
 
 | Style | Animations | Arrêts avant | Arrêts après |
 |---|---|---|---|
-| boxing | 88 | 357 | 96 |
-| kickboxing | 88 | 358 | 99 |
-| mma | 88 | 359 | 100 |
-| muaythai | 88 | 365 | 99 |
-| bjj | 88 | 363 | 103 |
-| judo | 88 | 370 | 106 |
+| boxing | 88 | 358 | 97 |
+| kickboxing | 88 | 358 | 100 |
+| mma | 88 | 361 | 102 |
+| muaythai | 88 | 366 | 100 |
+| bjj | 88 | 365 | 105 |
+| judo | 88 | 370 | 108 |
 
 ## Détail, garde de boxe
 
@@ -46,7 +46,7 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `blocage-corps-avant` | 2 | 0 | 0 | 0,0 | 0,0 | 2,9 | 2,9 | 0,0 | 0,0 |
 | `blocage-corps-arriere` | 2 | 0 | 0 | 0,0 | 0,0 | 2,6 | 2,6 | 0,0 | 0,0 |
 | `parade` | 1 | 0 | 0 | 0,0 | 0,0 | 5,2 | 5,2 | 0,0 | 0,0 |
-| `retrait` | 2 | 0 | 0 | 0,0 | 0,0 | 4,1 | 4,1 | – | – |
+| `retrait` | 2 | 0 | 0 | 0,0 | 0,0 | 3,2 | 3,2 | – | – |
 | `pas-avant` | 2 | 6 | 0 | 0,5 | 0,6 | 4,6 | 4,3 | – | – |
 | `pas-arriere` | 2 | 6 | 0 | 0,6 | 0,6 | 4,0 | 3,8 | – | – |
 | `pas-gauche` | 2 | 6 | 0 | 0,5 | 0,5 | 4,0 | 3,8 | – | – |
@@ -90,12 +90,12 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `feinte-epaule` | 1 | 0 | 0 | 0,0 | 0,0 | 3,7 | 3,7 | – | – |
 | `feinte-lutte` | 1 | 0 | 0 | 0,0 | 0,0 | 11,0 | 11,0 | – | – |
 | `changement-niveau` | 2 | 0 | 0 | 0,0 | 0,0 | 11,5 | 11,5 | – | – |
-| `entree-lutte` | 4 | 1 | 1 | 13,9 | 13,9 | 13,7 | 13,7 | 0,0 | 0,0 |
+| `entree-lutte` | 4 | 2 | 2 | 14,4 | 14,4 | 14,1 | 14,1 | 0,0 | 0,0 |
 | `sprawl` | 6 | 6 | 3 | 8,7 | 8,7 | 9,7 | 9,3 | 0,0 | 0,0 |
 | `defense-lutte` | 2 | 0 | 0 | 0,0 | 0,0 | 17,5 | 17,5 | 0,0 | 0,0 |
 | `descente-sol` | 2 | 2 | 1 | 0,0 | 0,0 | 12,1 | 12,3 | – | – |
 | `sortie-hanche` | 3 | 1 | 1 | 4,2 | 4,2 | 4,2 | 4,2 | 0,0 | 0,1 |
-| `releve-technique` | 3 | 7 | 2 | 0,0 | 0,0 | 10,9 | 10,8 | – | – |
+| `releve-technique` | 3 | 7 | 2 | 0,0 | 0,0 | 11,2 | 11,2 | – | – |
 | `single-leg` | 4 | 3 | 2 | 13,0 | 13,0 | 12,7 | 12,7 | 0,0 | 0,0 |
 | `pont` | 6 | 4 | 4 | 4,5 | 4,5 | 4,5 | 4,5 | 0,0 | 0,0 |
 | `retention-garde` | 7 | 0 | 0 | 0,0 | 0,0 | 4,1 | 3,9 | – | – |

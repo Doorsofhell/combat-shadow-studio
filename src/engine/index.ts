@@ -10,7 +10,7 @@
  */
 
 /** version of the motion engine, independent of the app version (docs/moteur/CHANGELOG.md) */
-export const ENGINE_VERSION = '1.2.0';
+export const ENGINE_VERSION = '1.2.1';
 
 // the skeleton and its limits
 export { CoachRig, KNEE_MAX_FLEX, type Side } from './rig';

@@ -505,7 +505,8 @@ function catchKick(a: Author): Motion {
   const W = a.hipJoint(g, 'L');
   const scoop = edit(cover, (d) => {
     // rear hand under the leg at waist height, palm up; lead forearm over it
-    d.handR = a.hand('world', v3(W.x + 0.02 * s, W.y + 0.06 * s, W.z + 0.24 * s), v3(-0.4, -0.8, -0.3), -0.9, 0.5);
+    // 1.46.0: the scooping forearm holds the leg in front of the body, not inside it
+    d.handR = a.hand('world', v3(W.x + 0.02 * s, W.y + 0.06 * s, W.z + 0.38 * s), v3(-0.4, -0.8, -0.3), -0.9, 0.5);
     d.handL = a.hand('world', v3(W.x + 0.06 * s, W.y + 0.2 * s, W.z + 0.2 * s), v3(0.8, -0.3, -0.2), 0.3, 0.6);
   });
   const rear = g.footR.mode === 'ground' ? g.footR.ball : v3(0, 0, 0);
@@ -520,8 +521,9 @@ function catchKick(a: Author): Motion {
     d.pelvis.yaw += deg(-16);
     d.chest.yaw += deg(-10);
     d.chest.roll -= deg(6);
-    d.handR.pos = add(d.handR.pos, { x: -0.12 * s, z: -0.08 * s });
-    d.handL.pos = add(d.handL.pos, { x: -0.12 * s, z: -0.08 * s });
+    // the body turns right under the held leg: the hands follow it without coming back into the trunk
+    d.handR.pos = add(d.handR.pos, { x: -0.12 * s, z: 0.02 * s });
+    d.handL.pos = add(d.handL.pos, { x: -0.12 * s, z: 0.02 * s });
   });
   const stepBack = edit(g, (d) => {
     if (d.footR.mode === 'ground') d.footR.ball = add(rear, { z: -0.07 * s, y: 0.05 * s });

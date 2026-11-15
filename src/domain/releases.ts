@@ -49,7 +49,7 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
-      version: '1.46.0',
+      version: '1.47.0',
       releaseDate: '2026-11-15',
       title: 'Kadir plus réaliste',
       isMajor: false,
@@ -58,6 +58,19 @@ export const RELEASES: readonly Release[] = (
         { category: 'coachs', text: 'Kadir : visage et cou un peu plus épais, trapèzes de combattant. Ses kimonos et son rashguard suivent la nouvelle forme.' },
       ],
       links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
+      version: '1.46.0',
+      releaseDate: '2026-11-15',
+      title: 'Coachs : quatre gestes de plus qui ne traversent plus le corps',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Entrée de lutte : les mains partent plus larges et plus devant, elles ne rentrent plus dans la cuisse avant.' },
+        { category: 'corrections', text: 'Retrait en boxe : la garde avance un peu quand le buste recule, l’avant-bras ne rentre plus dans le ventre.' },
+        { category: 'corrections', text: 'Rattrapage du middle kick : la jambe est tenue contre le corps, devant lui, et non plus dedans.' },
+        { category: 'corrections', text: 'Relevé technique : la main posée au sol reste à l’extérieur et la jambe passe à l’intérieur.' },
+      ],
+      links: [{ label: 'Voir les techniques', to: '/techniques' }],
     },
     {
       version: '1.45.2',
