@@ -16,18 +16,18 @@ Résultat : 29 techniques dépassent 2 cm. Elles sont bornées à leur valeur pa
 | `ukemi-ushiro` | 5,7 | avant-bras gauche dans le tronc | mma-kadir judo | 2,84 s |
 | `releve-technique` | 5,4 | jambe droite dans la cuisse gauche | mma-amara bjj | 0,68 s |
 | `genou-circulaire-arriere` | 5,3 | jambe droite dans la cuisse gauche | mma-kadir kickboxing | 0,54 s |
-| `pont` | 5,2 | main droite dans le tronc | mma-kadir bjj | 1,07 s |
 | `genou-direct-arriere` | 5,2 | jambe droite dans la cuisse gauche | mma-kadir mma | 0,54 s |
+| `pont` | 5,2 | main droite dans le tronc | mma-kadir bjj | 0,93 s |
 | `changement-base` | 5,0 | avant-bras gauche dans le tronc | mma-amara bjj | 0,53 s |
 | `sit-out` | 4,9 | avant-bras gauche dans le tronc | mma-kadir bjj | 0,53 s |
 | `coude-montant-arriere` | 4,9 | main droite dans la tête | mma-kadir muaythai | 0,39 s |
 | `teep-avant` | 4,8 | main gauche dans la cuisse gauche | mma-kadir mma | 0,27 s |
+| `defense-lutte` | 4,7 | avant-bras droit dans le tronc | mma-kadir mma | 0,27 s |
 | `shoulder-roll` | 4,2 | avant-bras droit dans le tronc | nael boxing | 0,20 s |
 | `single-leg` | 3,9 | avant-bras gauche dans le tronc | mma-kadir bjj | 0,74 s |
 | `uchikomi-ko-uchi-gari` | 3,7 | jambe gauche dans la cuisse droite | inaya judo | 0,67 s |
-| `defense-lutte` | 3,7 | avant-bras droit dans la tête | mma-kadir mma | 0,20 s |
 | `switch-kick` | 3,5 | main gauche dans le tronc | inaya kickboxing | 0,60 s |
-| `middle-kick-arriere` | 3,4 | main droite dans le tronc | mma-kadir mma | 0,40 s |
+| `middle-kick-arriere` | 3,3 | main droite dans le tronc | mma-kadir mma | 0,40 s |
 | `crochet-avant` | 3,3 | avant-bras droit dans le tronc | nael boxing | 0,21 s |
 | `retention-garde` | 3,2 | avant-bras gauche dans le tronc | mma-kadir bjj | 1,99 s |
 | `blocage-corps-avant` | 2,7 | avant-bras droit dans le tronc | nael boxing | 0,25 s |

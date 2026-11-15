@@ -13,20 +13,20 @@ Généré par `src/engine/__tests__/hooks-biomeca.test.ts` (`AUDIT_UPDATE=1` pou
 
 | Corps | Discipline | Crochet | Flexion | Coude haut | Coude côté | Coude devant | Derrière max | Rot. ext. max | Chemin | Vitesse max / impact | Plan du coude | Tronc |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Kadir (Ultra-réaliste) | boxe | crochet-avant | 68.7° | 7.6 | 27.3 | -3.4 | 3.4 | 54.7° | 1.74 | 0.185 / 0.200 | 8.0° | -15.6° |
+| Kadir (Ultra-réaliste) | boxe | crochet-avant | 68.7° | 7.6 | 27.3 | -3.4 | 3.4 | 54.7° | 1.74 | 0.185 / 0.200 | 7.9° | -15.6° |
 | Kadir (Ultra-réaliste) | boxe | crochet-arriere | 83.3° | 9.9 | 24.9 | 10.0 | -10.0 | 18.5° | 2.19 | 0.208 / 0.230 | 9.0° | 11.5° |
 | Kadir (Ultra-réaliste) | boxe | crochet-avant-corps | 76.7° | -9.4 | 26.2 | 6.5 | -6.5 | 39.6° | 1.20 | 0.185 / 0.200 | 4.2° | -15.1° |
 | Kadir (Ultra-réaliste) | boxe | crochet-arriere-corps | 92.3° | -3.7 | 21.1 | 18.9 | -18.9 | 15.5° | 1.86 | 0.208 / 0.230 | 5.0° | 10.1° |
 | Kadir (Ultra-réaliste) | kick-boxing | crochet-avant | 74.4° | 6.6 | 27.7 | -2.4 | 2.4 | 47.9° | 1.78 | 0.185 / 0.200 | 8.0° | -17.2° |
-| Kadir (Ultra-réaliste) | kick-boxing | crochet-arriere | 84.2° | 8.2 | 26.4 | 7.3 | -7.3 | 23.3° | 2.17 | 0.208 / 0.230 | 9.5° | 11.5° |
+| Kadir (Ultra-réaliste) | kick-boxing | crochet-arriere | 84.2° | 8.2 | 26.4 | 7.3 | -7.3 | 23.3° | 2.17 | 0.208 / 0.230 | 9.4° | 11.5° |
 | Kadir (Ultra-réaliste) | kick-boxing | crochet-avant-corps | 77.5° | -9.1 | 26.1 | 7.2 | -7.2 | 35.2° | 1.24 | 0.185 / 0.200 | 4.1° | -16.3° |
-| Kadir (Ultra-réaliste) | kick-boxing | crochet-arriere-corps | 88.2° | -5.3 | 22.5 | 16.9 | -16.9 | 17.6° | 1.75 | 0.208 / 0.230 | 4.7° | 10.2° |
+| Kadir (Ultra-réaliste) | kick-boxing | crochet-arriere-corps | 88.3° | -5.3 | 22.5 | 16.8 | -16.8 | 17.6° | 1.75 | 0.208 / 0.230 | 4.8° | 10.2° |
 | Kadir (Ultra-réaliste) | MMA | crochet-avant | 82.8° | 9.0 | 27.1 | 2.0 | -2.0 | 48.9° | 2.24 | 0.193 / 0.200 | 9.2° | -14.4° |
-| Kadir (Ultra-réaliste) | MMA | crochet-arriere | 85.5° | 7.8 | 27.0 | 5.3 | -5.3 | 41.1° | 2.74 | 0.217 / 0.230 | 9.8° | 13.4° |
+| Kadir (Ultra-réaliste) | MMA | crochet-arriere | 85.5° | 7.8 | 27.0 | 5.3 | -5.3 | 41.1° | 2.75 | 0.217 / 0.230 | 9.8° | 13.4° |
 | Kadir (Ultra-réaliste) | MMA | crochet-avant-corps | 81.9° | -3.9 | 25.3 | 12.8 | -12.8 | 34.9° | 1.27 | 0.185 / 0.200 | 4.0° | -13.9° |
 | Kadir (Ultra-réaliste) | MMA | crochet-arriere-corps | 85.6° | -1.3 | 23.1 | 16.8 | -16.8 | 26.0° | 1.97 | 0.217 / 0.230 | 6.3° | 11.9° |
 | Kadir (Ultra-réaliste) | muay-thaï | crochet-avant | 90.2° | 7.5 | 27.2 | 4.8 | -4.8 | 16.8° | 1.59 | 0.193 / 0.200 | 7.6° | -23.7° |
-| Kadir (Ultra-réaliste) | muay-thaï | crochet-arriere | 92.1° | 7.2 | 26.6 | 7.6 | -7.6 | 9.9° | 2.59 | 0.217 / 0.230 | 8.7° | 17.7° |
+| Kadir (Ultra-réaliste) | muay-thaï | crochet-arriere | 92.1° | 7.2 | 26.6 | 7.6 | -7.6 | 9.9° | 2.60 | 0.217 / 0.230 | 8.7° | 17.7° |
 | Kadir (Ultra-réaliste) | muay-thaï | crochet-avant-corps | 85.3° | -9.7 | 24.4 | 11.3 | -11.3 | 17.5° | 1.12 | 0.185 / 0.200 | 2.8° | -22.8° |
 | Kadir (Ultra-réaliste) | muay-thaï | crochet-arriere-corps | 88.2° | -9.2 | 22.8 | 14.6 | -14.6 | 12.1° | 1.62 | 0.217 / 0.230 | 3.8° | 16.8° |
 | Amara (Ultra-réaliste) | boxe | crochet-avant | 69.0° | 6.1 | 24.3 | -2.8 | 2.9 | 50.3° | 1.16 | 0.185 / 0.200 | 6.9° | -14.5° |

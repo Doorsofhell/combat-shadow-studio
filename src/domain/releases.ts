@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.47.0',
+      releaseDate: '2026-11-15',
+      title: 'Kadir plus réaliste',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Kadir : peau plus mate et teint légèrement hâlé, muscles plus lisibles, cheveux plus fins avec un peu de volume, caleçon mat. Même visage.' },
+        { category: 'coachs', text: 'Kadir : visage et cou un peu plus épais, trapèzes de combattant. Ses kimonos et son rashguard suivent la nouvelle forme.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.46.0',
       releaseDate: '2026-11-15',
       title: 'Coachs : quatre gestes de plus qui ne traversent plus le corps',
