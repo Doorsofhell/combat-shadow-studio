@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.45.2',
+      releaseDate: '2026-11-15',
+      title: 'Victor : une peau plus nette',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Victor : plus de taches sombres sur le corps, et un teint moins brun, comme sur sa planche. Muscles, tatouages et visage gardés.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.45.1',
       releaseDate: '2026-11-14',
       title: 'Des shorts plus vrais',
