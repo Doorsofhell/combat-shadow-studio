@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.56.3',
+      releaseDate: '2026-11-18',
+      title: 'Plus de fausse alerte de stabilité 3D',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Quitter un écran avec le coach ne compte plus comme un incident graphique : la qualité 3D n’est plus allégée à tort, et le niveau allégé laissé par ces fausses alertes est remis à zéro.' },
+        { category: 'ameliorations', text: 'Réglages › Affichage 3D : le journal dit combien de ses lignes sont de vrais incidents (les autres sont du suivi : démarrage, mesure chaque minute).' },
+      ],
+      links: [{ label: 'Voir les réglages 3D', to: '/reglages/affichage' }],
+    },
+    {
       version: '1.56.2',
       releaseDate: '2026-11-17',
       title: 'Kanya : poitrine mise en valeur et teint unifié',

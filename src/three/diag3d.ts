@@ -59,6 +59,12 @@ export function clearDiag() {
   }
 }
 
+/** 1.56.3: the lines that are real incidents (the rest is routine: start, measures, background…) */
+export const INCIDENT_KINDS: readonly DiagKind[] = ['contexte-perdu', 'echec', 'animation', 'salle'];
+export function incidentCount(entries = readDiag()) {
+  return entries.filter((e) => INCIDENT_KINDS.includes(e.kind)).length;
+}
+
 /** the journal as plain text, to copy into a message */
 export function diagText(entries = readDiag()) {
   const nav = typeof navigator !== 'undefined' ? navigator : undefined;

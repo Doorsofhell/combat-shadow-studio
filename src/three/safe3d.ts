@@ -1,3 +1,5 @@
+import { log3d } from './diag3d';
+
 /**
  * v0.29 (Youssef, 2026-10-21: the coach vanished on his phone and never came back): graphics stability of the
  * device, kept apart from the 3D bundle so the screens can read it without loading three.js.
@@ -17,6 +19,13 @@ export type StabilityLevel = 0 | 1 | 2;
 const KEY = 'css-3d-level';
 /** the former flag (v0.29.0-proto2), read once and converted */
 const OLD_KEY = 'css-3d-safe';
+/**
+ * 1.56.3: up to 1.47.0 every screen left with a coach counted as a graphics incident (the context that three.js
+ * gives back on purpose was taken for a lost one, see CoachStage). A level saved by those versions was therefore
+ * almost always a false alarm: it is put back to 0 once, at the first launch of 1.56.3. Real incidents counted from
+ * then on are kept as before.
+ */
+const FIX_KEY = 'css-3d-fix-1563';
 /** rendering without incident for this long brings the quality one step back up */
 export const CALM_MS = 10 * 60_000;
 
@@ -31,7 +40,16 @@ function read(): Stored {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const v = JSON.parse(raw) as Stored;
-      if (v && (v.level === 0 || v.level === 1 || v.level === 2)) return v;
+      if (v && (v.level === 0 || v.level === 1 || v.level === 2)) {
+        if (v.level > 0 && localStorage.getItem(FIX_KEY) !== '1') {
+          localStorage.setItem(FIX_KEY, '1');
+          localStorage.setItem(KEY, JSON.stringify({ level: 0, at: 0 }));
+          log3d('qualite', `1.56.3 : niveau ${v.level} remis à 0 (il venait des changements d’écran, comptés à tort comme incidents)`);
+          return { level: 0, at: 0 };
+        }
+        localStorage.setItem(FIX_KEY, '1');
+        return v;
+      }
     }
     if (localStorage.getItem(OLD_KEY) === '1') {
       // proto2 kept the light quality for good: it becomes level 1, which goes back up after a calm period
@@ -40,6 +58,7 @@ function read(): Stored {
       localStorage.removeItem(OLD_KEY);
       return v;
     }
+    localStorage.setItem(FIX_KEY, '1');
   } catch {
     /* storage unavailable: normal quality */
   }
