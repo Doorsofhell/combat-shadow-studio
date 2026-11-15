@@ -5,6 +5,7 @@
 //   npm run visuels -- --only thumbs,art         families: thumbs, ency, art, portraits, scenes
 //   npm run visuels -- --id jab,tech-jab         some pictures only (technique id, encyclopedia id, discipline id…)
 //   npm run visuels -- --d judo,bjj --only thumbs,ency,art   the pictures of some disciplines only (an outfit changed)
+//   npm run visuels -- --coach homme --force     the pictures of one coach only (Kadir or Amara changed)
 //   npm run visuels -- --force                   render again even when the cached render exists (coach or motion changed)
 //   npm run visuels -- --recompose               no rendering: compose the cached renders again (ambiances.json changed)
 //
@@ -169,6 +170,19 @@ for (const s of SCENES) {
   // a whole room (the dojo) fills the picture; an object stands on the floor of the gym
   const room = ROOMS.has(s.scene) ? { mode: 'top', fill: 1, top: 0, full: true } : WIDE.has(s.scene) ? { mode: 'top', fill: 0.96, top: 0.03 } : BADGES[s.scene] ? { fill: 0.5, floor: 0.9, badges: BADGES[s.scene], badgeH: 0.24 } : { fill: 0.86, floor: 0.9 };
   jobs.push({ out: `public/encyclopedie/${s.id}`, w: 720, h: 400, mood: SCENE_MOOD[s.scene] ?? 'boxe', seed: s.id, layers: [png], centers: [0.5], ...room, mini: { size: 160 }, object: true });
+}
+
+// --coach homme|femme: only the pictures that show that coach (his or her model changed); a picture with both coaches
+// is made again whole
+const COACH = opt('coach')?.[0];
+if (COACH) {
+  const pngsOf = (r) => r.pngs ?? [r.png];
+  const mine = new Set(renders.filter((r) => r.q.get('champion') === CHAMPION[COACH]).flatMap(pngsOf));
+  const keep = jobs.filter((j) => j.layers.some((l) => mine.has(l)));
+  const needed = new Set(keep.flatMap((j) => j.layers));
+  jobs.splice(0, jobs.length, ...keep);
+  renders.splice(0, renders.length, ...renders.filter((r) => pngsOf(r).some((x) => needed.has(x))));
+  sceneJobs.length = 0;
 }
 
 // ---- renders
