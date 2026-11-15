@@ -157,8 +157,30 @@ if os.environ.get('EPAIS', '0') == '1':
     wf = sm((zz - 1.55) / 0.025) * sm((1.67 - zz) / 0.04) * (1 - 0.6 * sm((zz - 1.585) / 0.07)) * ~em
     Dd[:, 0] += R[:, 0] * FX * wf
     print('épaisseur : visage', FX, 'cou', FN, 'max mm', round(float(np.linalg.norm(Dd, axis=1).max() * 1000), 1))
+# trapèzes de combattant (Youssef 15/11 10:52) : le haut des trapèzes monte d'environ 1,5 cm sur les côtés du cou et
+# comble l'angle cou-épaule ; le squelette, le visage et l'avant du cou (clavicules) ne bougent pas.
+if os.environ.get('TRAPEZES', '0') == '1':
+    TH = float(os.environ.get('TRAPEZES_MM', '15')) / 1000
+    ax, yy, zz = np.abs(R[:, 0]), R[:, 1], R[:, 2]
+    key = np.round(R * 1e5).astype(np.int64); _, inv = np.unique(key, axis=0, return_inverse=True); inv = inv.ravel()
+    nf = np.cross(R[T[:, 1]] - R[T[:, 0]], R[T[:, 2]] - R[T[:, 0]])
+    nq = np.zeros((inv.max() + 1, 3))
+    for k in range(3): np.add.at(nq, inv[T[:, k]], nf)
+    nq /= np.linalg.norm(nq, axis=1, keepdims=True) + 1e-12
+    m = (sm((0.17 - ax) / 0.06) * sm((ax - 0.045) / 0.02) * sm((zz - 1.44) / 0.04) * sm((1.585 - zz) / 0.03)
+         * sm((yy + 0.045) / 0.035))
+    mq = np.zeros(len(nq)); np.maximum.at(mq, inv, m)
+    nb = [set() for _ in range(len(mq))]
+    for t in T:
+        a, b, c = inv[t]; nb[a] |= {b, c}; nb[b] |= {a, c}; nb[c] |= {a, b}
+    for it in range(8):
+        mq = np.array([0.5 * mq[i] + 0.5 * np.mean(mq[list(nb[i])]) if nb[i] else mq[i] for i in range(len(mq))])
+    up = nq.copy(); up[:, 2] = np.maximum(up[:, 2], 0)       # jamais vers le bas
+    up /= np.linalg.norm(up, axis=1, keepdims=True) + 1e-12
+    Dd += (up * (mq * TH)[:, None])[inv]
+    print('trapèzes : max mm', round(float(mq.max() * TH * 1000), 1))
 R2 = R + Dd
-n2 =np.zeros_like(R2); f = np.cross(R2[T[:, 1]] - R2[T[:, 0]], R2[T[:, 2]] - R2[T[:, 0]])
+n2 = np.zeros_like(R2); f = np.cross(R2[T[:, 1]] - R2[T[:, 0]], R2[T[:, 2]] - R2[T[:, 0]])
 for k in range(3): np.add.at(n2, T[:, k], f)
 key = np.round(R * 1e5).astype(np.int64); _, inv = np.unique(key, axis=0, return_inverse=True); inv = inv.ravel()
 acc = np.zeros((inv.max() + 1, 3)); np.add.at(acc, inv, n2); n2 = acc[inv]
