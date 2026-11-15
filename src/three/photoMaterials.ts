@@ -122,10 +122,12 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
       // 1.12: a model can ask for its body skin from both sides (`bothSides` in the glTF material's extras, set by
       // tools/generator/rocketbox/both_sides.py): Inaya's halter straps make a fold whose inner wall faces away
       const side = old.userData?.bothSides ? DoubleSide : FrontSide;
-      const p: MeshStandardMaterialParameters = { ...base, normalScale, side, metalness: 0, roughness: 0.58, transparent: false, alphaTest: 0 };
+      // 1.46 Kadir: a body roughness map (matte boxer, skin less smooth than the shared 0.58): the map gives the value
+      const rough = old.roughnessMap ? 1 : 0.58;
+      const p: MeshStandardMaterialParameters = { ...base, normalScale, side, metalness: 0, roughness: rough, transparent: false, alphaTest: 0 };
       const m = hi
         ? new MeshPhysicalMaterial({ ...p, sheen: 0.3, sheenRoughness: 0.6, sheenColor: '#c98a72', specularIntensity: 0.4 })
-        : new MeshStandardMaterial({ ...p, roughness: 0.6 });
+        : new MeshStandardMaterial({ ...p, roughness: old.roughnessMap ? 1 : 0.6 });
       // scattering and lifted shadows in both qualities (a few instructions), pores in high quality only
       // 1.44 the head's skin also carries the face's soft zones (src/three/human/faceRender.ts)
       applySkinShader(m, look, hi, isHeadSkin(old));

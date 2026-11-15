@@ -10,6 +10,9 @@
 // Les expressions sont des différences : le même déplacement ayant été appliqué à chaque expression dans Blender,
 // leurs différences ne changent pas et restent celles de Kadir.
 //   node tools/generator/rocketbox/victor_build.mjs kadir.glb disp.f32 head.jpg body.jpg out.glb
+// 1.46 (Kadir d'après ses planches) : le même script reconstruit Kadir lui-même à partir de la copie de 1.45 gardée
+// dans tools/generator/kadir/donnees/photo-1.45.glb (variable COACH=mma-kadir), avec en option une carte de rugosité
+// du corps (ROUGH_BODY=fichier.jpg : caleçon mat, peau un peu moins lisse).
 import { readFileSync } from 'node:fs';
 import { NodeIO, VertexLayout } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
@@ -132,6 +135,21 @@ for (const tex of root.listTextures()) {
   if (tex.getName() === 'm021_head_color' || /head_color/.test(tex.getURI() + tex.getName())) tex.setImage(readFileSync(headJpg)).setMimeType('image/jpeg');
   if (tex.getName() === 'm021_body_color' || /body_color/.test(tex.getURI() + tex.getName())) tex.setImage(readFileSync(bodyJpg)).setMimeType('image/jpeg');
 }
-root.getAsset().extras = { ...(root.getAsset().extras ?? {}), cssCoach: 'victor', cssBase: 'mma-kadir', generatorVersion: '1.43.0' };
+const coach = process.env.COACH ?? 'victor';
+if (process.env.HEAD_NORMAL) {
+  const t = root.listTextures().find((x) => x.getName() === 'm021_head_normal');
+  t.setImage(readFileSync(process.env.HEAD_NORMAL)).setMimeType('image/jpeg');
+}
+if (process.env.ROUGH_BODY) {
+  // carte de rugosité du corps (canal vert, glTF) : le facteur passe à 1, la carte donne la valeur
+  const mat = root.listMaterials().find((m) => m.getName() === 'm021_body');
+  const t = doc.createTexture('m021_body_rough').setImage(readFileSync(process.env.ROUGH_BODY)).setMimeType('image/jpeg');
+  mat.setMetallicRoughnessTexture(t).setRoughnessFactor(1);
+  const bc = mat.getBaseColorTextureInfo();
+  if (bc) mat.getMetallicRoughnessTextureInfo().setTexCoord(bc.getTexCoord());
+}
+root.getAsset().extras = coach === 'victor'
+  ? { ...(root.getAsset().extras ?? {}), cssCoach: 'victor', cssBase: 'mma-kadir', generatorVersion: '1.43.0' }
+  : { ...(root.getAsset().extras ?? {}), cssCoach: coach, cssPlanches: process.env.GEN_VERSION ?? '1.46.0' };
 await io.write(out, doc);
 console.log('points déplacés', moved, 'écart max de correspondance (mm)', (worst * 1000).toFixed(3), '→', out);
