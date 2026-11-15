@@ -5,7 +5,8 @@ import { describe, expect, test } from 'vitest';
 /** Prevent re-introducing the shorts regression seen after the 1.37.1 rebuild.
  * 1.46.0 (Youssef 15/11, Kadir plus réaliste : cou, mâchoire, trapèzes) : new body, and the three outfits that cover
  * the neck and the trapezius (judo, bjj, bjj-nogi) follow it by tools/generator/kadir/tenues_suivent.py (garment
- * points moved with the body, hidden skin keys renamed); the shorts and the other outfits keep their 1.37.0 bytes. */
+ * points moved with the body, hidden skin keys renamed); the shorts and the other outfits keep their 1.37.0 bytes.
+ * 1.47.1: body textures only (light line of the middle of the skull), same shape: new body print, outfits unchanged. */
 const GOOD_1370 = {
   'boxe': '9c4a33b36d2468a9f653cce3e62260e69c3c9664',
   'kickboxing': '8cbced0c2a190539c7f3c172da3e9ca4ed4e4010',
@@ -27,6 +28,6 @@ describe('v1.37.3 — rollback non régressif des shorts de Kadir', () => {
     });
   }
   test('modèle corporel Kadir intact', () => {
-    expect(gitSha('public/coaches/mma-kadir/photo.glb')).toBe('c31999b521a53267262e77679afbc53d594c4ae2');
+    expect(gitSha('public/coaches/mma-kadir/photo.glb')).toBe('ecc10496ce9b378eef7268bde16f4ea4140b48e9');
   });
 });

@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.47.1',
+      releaseDate: '2026-11-15',
+      title: 'Kadir : finitions',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Kadir : le fin trait clair au milieu du crâne et du front a disparu.' },
+        { category: 'ameliorations', text: 'Les vignettes des techniques, l’encyclopédie et les visuels de discipline montrent le nouveau Kadir.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.47.0',
       releaseDate: '2026-11-15',
       title: 'Kadir plus réaliste',
