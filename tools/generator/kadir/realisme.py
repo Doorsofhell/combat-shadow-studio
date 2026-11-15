@@ -167,8 +167,8 @@ if os.environ.get('TRAPEZES', '0') == '1':
     nq = np.zeros((inv.max() + 1, 3))
     for k in range(3): np.add.at(nq, inv[T[:, k]], nf)
     nq /= np.linalg.norm(nq, axis=1, keepdims=True) + 1e-12
-    m = (sm((0.17 - ax) / 0.06) * sm((ax - 0.045) / 0.02) * sm((zz - 1.44) / 0.04) * sm((1.585 - zz) / 0.03)
-         * sm((yy + 0.045) / 0.035))
+    m = (sm((0.17 - ax) / 0.06) * sm((ax - float(os.environ.get('TRAPEZES_X0', '0.045'))) / 0.02) * sm((zz - 1.44) / 0.04) * sm((1.585 - zz) / 0.03)
+         * sm((yy - float(os.environ.get('TRAPEZES_Y0', '-0.045'))) / 0.035))
     mq = np.zeros(len(nq)); np.maximum.at(mq, inv, m)
     nb = [set() for _ in range(len(mq))]
     for t in T:

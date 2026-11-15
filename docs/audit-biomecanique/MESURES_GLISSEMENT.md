@@ -26,8 +26,8 @@ Glissement cumulé de toute la bibliothèque (5 coachs, droitier et gaucher) : 1
 | `single-leg` | 7,0 | 1,84 | victor mma | 1,9 (balayage, en attente) |
 | `switch-kick` | 19,8 | 1,37 | victor kickboxing gaucher | 1,5 |
 | `tai-sabaki` | 7,5 | 1,28 | mma-kadir judo | 1,5 |
-| `check-arriere` | 1,1 | 0,98 | mma-kadir mma | 1,5 |
-| `descente-sol` | 6,7 | 0,89 | victor bjj gaucher | 1,5 |
+| `check-arriere` | 1,1 | 0,99 | mma-kadir mma | 1,5 |
+| `descente-sol` | 6,7 | 0,89 | mma-kadir bjj gaucher | 1,5 |
 | `pont` | 4,4 | 0,88 | inaya bjj gaucher | 1,5 |
 | `retention-garde` | 4,4 | 0,88 | inaya bjj gaucher | 1,5 |
 | `entree-lutte` | 7,6 | 0,74 | inaya bjj gaucher | 1,5 |

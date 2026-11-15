@@ -15,6 +15,7 @@ const sets = {
   garde: [20,200].map(az => ({ n:`garde-az${az}`, q:`d=mma&motion=garde&az=${az}&el=8&light=app` })),
   oreille: [80,270].map(az => ({ n:`oreille-az${az}`, q:`tenue=0&rest=1&az=${az}&el=4&span=0.09&fy=${process.env.FY||'1.66'}` })),
   expr: [['neutre',''],['clin','&blink=1'],['bouche','&expr=JawOpen:1'],['sourire','&expr=MouthSmileLeft:1,MouthSmileRight:1'],['effort','&effort=1']].map(([n,e]) => ({ n:`expr-${n}`, q:`tenue=0&rest=1&az=15&el=4&span=0.16&fy=${process.env.FY||'1.66'}${e}` })),
+  lutte: [0,45,90,135,315].map(az => ({ n:`lutte-az${az}`, q:`d=mma&tenue=0&motion=${process.env.MOTION||'defense-lutte'}&t=${process.env.T||'0.27'}&az=${az}&el=15&light=app` })),
   visage: (process.env.VAZ||"10,45,300").split(",").map(Number).map(az => ({ n:`visage-az${az}`, q:`d=mma&motion=garde&az=${az}&el=6&light=app&span=0.2&fy=1.50` })),
 };
 for (const v of V) for (const s of sets[v]) {

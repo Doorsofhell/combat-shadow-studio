@@ -4281,3 +4281,56 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   appliqué (page https://claude.ai/artifact/Ci3RwadUxGVV2mEANYUiTU).
 - **Restauration** : branche `restauration/avant-tombe-v1452` (= 1.45.1).
 
+
+## 2026-11-15 · v1.46.0 · Kadir plus réaliste (même visage), cou et trapèzes de combattant
+
+- **Demande** : Youssef, 2026-11-15. Après le refus de deux nouveaux visages (greffe Rocketbox, propositions non
+  publiées) : 10:21 « Propose moi juste des améliorations physiques pour plus de réalisme du Kadir existant » ;
+  10:36 « Peux tu épaissir son visage et cou ? » ; 10:41 « Epai mais humainement réaliste / La tête doit être ratio
+  avec le corps » ; 10:52 « Oui » aux trapèzes de combattant ; 10:56 « Toutes les améliorations / Go ». Avant/après :
+  https://claude.ai/artifact/FAFUPNJuxxhdAZY5ZsSm3f.
+- **Constat vérifié** (mesures sur le modèle 1.45, `tools/generator/kadir/mesure_proportions.py`) : peau uniformément
+  luisante, teint rosé, caleçon noir brillant ; liseré clair sur le côté du cou (marge des îles de texture) et fin trait
+  au milieu du crâne. Tête 24 cm du sommet au menton pour 1,80 m (7,5 têtes, proportion normale), cou 44 cm de tour,
+  mâchoire 10,7 cm ; menton → creux du cou 8,5 à 9 cm (référence ≈ 9,5 cm) : le cou n'est pas long, il le paraît parce que
+  les trapèzes descendent en pente douce.
+- **Correction** : `tools/generator/kadir/realisme.py` (textures et déplacement de points ; visage, traits, os et
+  expressions inchangés) :
+  - peau plus mate (carte de rugosité tête et corps, front et nez un peu plus luisants), teint légèrement hâlé avec un peu
+    de rougeur au nez, aux pommettes et aux oreilles ;
+  - muscles plus lisibles : ombre douce dans les creux, tirée de la carte de normales du corps (aucun trait dessiné) ;
+  - marges des îles remplies (liseré du cou presque effacé) ; trait du milieu du crâne seulement atténué (cause non
+    trouvée : ni la géométrie, ni la carte de normales, ni la couleur, ni le filtrage des textures) ;
+  - cheveux : grain plus fin et 6 mm de volume ; caleçon mat anthracite ;
+  - `EPAIS=1` : cou 44 → 46 cm, mâchoire 10,7 → 11,4 cm, joues 13,6 → 14,2 cm, pommettes et hauteur de tête inchangées ;
+  - `TRAPEZES=1` : haut des trapèzes +1,5 à 2 cm sur les côtés du cou.
+  Modèle reconstruit par `rocketbox/victor_build.mjs` (bloc `ROUGH_HEAD` ajouté) depuis
+  `tools/generator/kadir/donnees/photo-1.45.glb` ; chaîne `tools/generator/kadir/realisme-chaine.sh`, données dans
+  `tools/generator/kadir/donnees/realisme/`. `morph_apply.py` n'est volontairement pas relancé : `victor_build` garde les
+  25 expressions, `morph_apply` les retirerait des points déplacés de plus de 2 mm.
+  Tenues : `tools/generator/kadir/tenues_suivent.py` fait suivre le nouveau corps aux tenues qui couvrent le cou et les
+  trapèzes (judo, JJB, no-gi, arbitre de judo : points du vêtement déplacés comme le corps, clés de peau cachée
+  renommées), sans les reconstruire ; boxe, kick-boxing, muay-thaï et MMA restent identiques octet pour octet.
+  Portrait de Kadir refait (`npm run visuels -- --only portraits --id mma-kadir --force`). Les données de la greffe
+  refusée (`donnees/greffe-m19/`) sont retirées ; ses scripts restent dans `tools/generator/kadir/`.
+- **Fichiers** : `public/coaches/mma-kadir/photo.glb`, `portrait.webp`, `tenues/{judo,bjj,bjj-nogi,arbitre-judo}.glb`,
+  `tools/generator/kadir/{realisme.py,realisme-chaine.sh,tenues_suivent.py,mesure_proportions.py}`,
+  `tools/generator/kadir/donnees/realisme/`, `tools/generator/rocketbox/victor_build.mjs`, `src/three/photoMaterials.ts`
+  (rugosité de la peau à 1 quand le modèle porte sa carte), `src/boot/assetSizes.json`, `src/domain/releases.ts`,
+  `package.json`, mesures régénérées (`docs/audit-biomecanique/MESURES_{INTRUSIONS,SOL,GLISSEMENT}.md`,
+  `docs/v042-crochets/MESURES_CROCHETS.md`, `docs/v1442/MESURES_SHORTS.md`).
+- **Tests modifiés, avec raison** :
+  - `outfit-rollback-v1373.test.ts` : empreintes de `photo.glb` et des tenues judo, bjj, bjj-nogi mises à jour (corps
+    retouché à la demande de Youssef, tenues qui le suivent) ; boxe, kick-boxing, muay-thaï et MMA gardent leurs
+    empreintes de la 1.37.0 (la garde contre la régression des shorts reste entière) ;
+  - `intrusions.test.ts` : borne propre à Kadir pour `defense-lutte` (4,9 cm, avant-bras droit dans le tronc 4,7 cm).
+    L'avant-bras cadre devant le cou, contact déjà en attente (3,7 cm dans la tête en 1.45) ; la base du cou plus
+    épaisse le rend plus profond. Sans trapèzes le test passe ; trapèzes plus bas, plus étroits ou limités à l'arrière :
+    4,2 à 4,6 cm. Les autres coachs gardent leurs bornes ; à corriger avec la technique.
+- **Tests** : `npx vitest run` : 1588 réussis, 5 échecs identiques à la 1.45.2 (vérifié sur b773812 : extension-v032
+  uppercut, fluidity ×2, hooks-biomeca « pas d'armé », expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (connus, sans
+  lien). Contrat humain, regard, comportement, visage (`src/three/human/__tests__/`) : TEST RÉUSSI. `npm run build` : TEST
+  RÉUSSI (titre v1.46.0). Captures des kimonos et du rashguard sur le nouveau corps : aucun passage de peau ; le col du
+  rashguard no-gi garde son bord en dents de scie, déjà présent en 1.45.2. Android : NON EXÉCUTÉ. Vignettes des techniques
+  et illustrations rendues avec Kadir : NON REFAITES (rendu proche, à regénérer dans un lot dédié).
+- **Restauration** : branche `restauration/avant-kadir-realisme` (= 1.45.2, b773812).
