@@ -140,8 +140,22 @@ if on('CHEVEUX'):
     nq = np.zeros((len(q), 3)); np.add.at(nq, inv, n); nq /= np.linalg.norm(nq, axis=1, keepdims=True) + 1e-12
     Dd = (nq * (q * th)[:, None])[inv]
     print('cheveux : volume max mm', round(float(np.linalg.norm(Dd, axis=1).max() * 1000), 1))
+# visage et cou plus épais (Youssef 15/11 10:36) : mêmes traits, joues et mâchoire un peu plus larges, cou plus épais.
+# Le déplacement ne dépend que de la position : les points dédoublés (coutures, raccord tête-corps) bougent ensemble.
+if os.environ.get('EPAIS', '0') == '1':
+    FX, FN = float(os.environ.get('EPAIS_VISAGE', '0.06')), float(os.environ.get('EPAIS_COU', '0.10'))
+    zz, rr = R[:, 2], np.hypot(R[:, 0], R[:, 1])
+    em = np.zeros(len(R), bool); em[T[Mt == 2].ravel()] = True
+    # cou : agrandi autour de l'axe (x = 0, y = 0), entre le haut des trapèzes et la mâchoire ; ni épaules ni menton
+    wn = sm((zz - 1.47) / 0.05) * sm((1.62 - zz) / 0.03) * sm((0.11 - rr) / 0.03)
+    Dd[:, 0] += R[:, 0] * FN * wn
+    Dd[:, 1] += R[:, 1] * FN * wn
+    # visage : élargi en x des joues à la mâchoire, rien à hauteur des yeux (globes rigides)
+    wf = sm((zz - 1.55) / 0.03) * sm((1.665 - zz) / 0.03) * ~em
+    Dd[:, 0] += R[:, 0] * FX * wf
+    print('épaisseur : visage', FX, 'cou', FN, 'max mm', round(float(np.linalg.norm(Dd, axis=1).max() * 1000), 1))
 R2 = R + Dd
-n2 = np.zeros_like(R2); f = np.cross(R2[T[:, 1]] - R2[T[:, 0]], R2[T[:, 2]] - R2[T[:, 0]])
+n2 =np.zeros_like(R2); f = np.cross(R2[T[:, 1]] - R2[T[:, 0]], R2[T[:, 2]] - R2[T[:, 0]])
 for k in range(3): np.add.at(n2, T[:, k], f)
 key = np.round(R * 1e5).astype(np.int64); _, inv = np.unique(key, axis=0, return_inverse=True); inv = inv.ravel()
 acc = np.zeros((inv.max() + 1, 3)); np.add.at(acc, inv, n2); n2 = acc[inv]
