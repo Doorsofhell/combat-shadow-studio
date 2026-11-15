@@ -6,6 +6,10 @@ Le numéro du moteur (`ENGINE_VERSION`, `src/engine/index.ts`) est indépendant 
 - **mineure** (1.x.0) : un ajout (une technique, un outil, un réglage) qui ne casse rien ;
 - **majeure** (x.0.0) : un changement que l'application doit suivre.
 
+## 1.2.1 · 2026-11-15 (application v1.46.0)
+
+- Trajets corrigés geste par geste, sans changement du solveur : entrée de lutte et relevé technique (`mma.ts`), retrait (`boxing.ts`), rattrapage du middle (`legs.ts`).
+
 ## 1.2.0 · 2026-11-14 (application v1.45.0)
 
 - Main dans le tronc : `handOutOfTrunk` (`rig.ts`) ramène une main cible qui tomberait dans le tronc à sa surface (ellipses du tronc mesurées sur la peau de chaque coach, `trunkCore`). Aucune rotation automatique du coude : essayée puis retirée, elle donnait des poses non humaines.
