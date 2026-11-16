@@ -35,6 +35,23 @@ describe('Amara 1.47.1 — isolated semi-realistic material pilot', () => {
     expect(revised.normalScale.x).toBeCloseTo(1.21);
     revised.dispose(); src.dispose();
   });
+  test('face-only natural finish preserves body and other coaches', () => {
+    const head = new MeshStandardMaterial({ roughness: 0.58 });
+    head.name = 'f021_head';
+    const body = new MeshStandardMaterial({ roughness: 0.58 });
+    body.name = 'f021_body';
+    const face = photoMaterial(head, 'peau', 'haute', amara) as MeshPhysicalMaterial;
+    const torso = photoMaterial(body, 'peau', 'haute', amara) as MeshPhysicalMaterial;
+    const other = photoMaterial(head, 'peau', 'haute', skinLookFor('/coaches/inaya/photo.glb')) as MeshPhysicalMaterial;
+    expect(face.userData.cssAmaraFaceFinish).toBe(true);
+    expect(face.sheen).toBe(0.22);
+    expect(face.sheenRoughness).toBe(0.75);
+    expect(face.specularIntensity).toBe(0.34);
+    expect(torso.userData.cssAmaraFaceFinish).toBeUndefined();
+    expect(other.userData.cssAmaraFaceFinish).toBeUndefined();
+    expect(head.roughness).toBe(0.58);
+    face.dispose(); torso.dispose(); other.dispose(); head.dispose(); body.dispose();
+  });
   test('premium eyes only on Amara in high quality', () => {
     const src = new MeshStandardMaterial({ roughness: 0.7 });
     const a = photoMaterial(src, 'yeux', 'haute', amara) as MeshPhysicalMaterial;
