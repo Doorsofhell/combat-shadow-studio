@@ -12,6 +12,7 @@ import { dropStillMorphs, FaceAnimator, type FaceOptions } from './face';
 import { applyWrinkles, WRINKLES_ON_COACHES } from './human/wrinkles';
 import { newFaceRenderUniforms, shareFaceRender } from './human/faceRender';
 import { bakeAmaraCleanSurface } from './amaraCleanSurface';
+import { smoothPhotoNeckSeam } from './photoNeckSeam';
 import type { HumanSignals } from './human/behavior';
 import { humanProfileFor } from './human/profiles';
 import { CoachRig } from '../engine';
@@ -62,6 +63,9 @@ export function PhotoCoach({
     // 1.10: skin calibrated per coach (relief, scattering, pores: photoMaterials.ts SKIN_LOOK)
     const look = skinLookFor(url);
     const s = cloneSkinned(gltf.scene);
+    // 1.48.1: remove the neck normal discontinuity BEFORE material replacement
+    // (original Rocketbox material names identify the head/body primitives).
+    smoothPhotoNeckSeam(s);
     s.traverse((o) => {
       const m = o as Mesh;
       if (!m.isMesh) return;
