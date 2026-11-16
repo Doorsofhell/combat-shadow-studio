@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.50.0',
+      releaseDate: '2026-11-16',
+      title: 'Étude visuelle combat premium — Amara et Victor',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Étude en cours avant validation : réglages de lumière et de matières ciblés sur la peau, les yeux et les cheveux d’Amara et Victor, en qualité haute.' },
+        { category: 'corrections', text: 'Comparaisons WebGL disponibles ; aucune modification des modèles 3D, de la géométrie du cou, des shaders GLSL, des tenues ni des animations.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.49.0',
       releaseDate: '2026-11-16',
       title: 'Rendu premium des cinq coachs',
