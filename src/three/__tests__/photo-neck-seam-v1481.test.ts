@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { BufferAttribute, BufferGeometry, Group, Mesh, MeshStandardMaterial } from 'three';
+import { BufferAttribute, BufferGeometry, DataTexture, Group, Mesh, MeshStandardMaterial, MeshPhysicalMaterial } from 'three';
+import { photoMaterial, SKIN_LOOK } from '../photoMaterials';
 import { smoothPhotoNeckSeam } from '../photoNeckSeam';
 
 const piece = (name: string, normals: number[]) => {
@@ -36,6 +37,36 @@ describe('1.48.1 Rocketbox neck continuity', () => {
       // Positions remain bit-for-bit identical.
       expect(body.geometry.getAttribute('position').getX(i)).toBe(originalBody.getAttribute('position').getX(i));
     }
+  });
+
+  test('blends only the head neck-ring albedo to the actual body texture', () => {
+    const root = new Group();
+    const body = piece('m021_body', [0, 1, 0, 0, 1, 0, 0, 1, 0]);
+    const head = piece('m021_head', [0, 1, 0, 0, 1, 0, 0, 1, 0]);
+    const tex = new DataTexture(new Uint8Array([160, 115, 95, 255]), 1, 1);
+    tex.needsUpdate = true;
+    body.material.map = tex;
+    head.material.map = tex;
+    for (const m of [body, head]) {
+      m.geometry.setAttribute('uv', new BufferAttribute(new Float32Array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]), 2));
+    }
+    root.add(body, head);
+    const report = smoothPhotoNeckSeam(root);
+    expect(report.adjustedVertices).toBe(0);
+    expect(report.toneBlendVertices).toBe(3);
+    expect(head.geometry.getAttribute('cssNeckFade').getX(0)).toBeCloseTo(0.9);
+    expect(body.geometry.getAttribute('cssNeckFade')).toBeUndefined();
+    const skin = photoMaterial(head.material, 'peau', 'haute', SKIN_LOOK['mma-amara']) as MeshPhysicalMaterial;
+    expect(skin.userData.cssNeckToneApplied).toBe(true);
+    const shader = {
+      uniforms: {}, vertexShader: '#include <common>\\n#include <begin_vertex>',
+      fragmentShader: '#include <common>\\n#include <map_fragment>\\n#include <roughnessmap_fragment>',
+    };
+    skin.onBeforeCompile(shader as Parameters<typeof skin.onBeforeCompile>[0], {} as Parameters<typeof skin.onBeforeCompile>[1]);
+    expect(shader.vertexShader).toContain('attribute vec2 cssNeckBodyUv');
+    expect(shader.fragmentShader).toContain('cssNeckBodyAlbedo');
+    expect(skin.customProgramCacheKey()).toContain('neck-tone1481');
+    skin.dispose(); tex.dispose();
   });
 
   test('leaves absent head meshes unchanged', () => {
