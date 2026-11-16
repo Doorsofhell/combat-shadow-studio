@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.49.0',
+      releaseDate: '2026-11-16',
+      title: 'Prototype rendu premium — en validation',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Prototype non publié : netteté des textures en qualité haute, réglages de peau, yeux et cheveux individualisés pour les cinq coachs photo actifs.' },
+        { category: 'corrections', text: 'Aucune intervention sur la géométrie des cous, les shaders GLSL, les personnages, les animations ou les tenues.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.48.0',
       releaseDate: '2026-11-16',
       title: 'Finition peau premium par coach et nettoyage Victor',
