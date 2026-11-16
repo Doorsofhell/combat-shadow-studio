@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.48.0',
+      releaseDate: '2026-11-16',
+      title: 'Finition peau premium par coach et nettoyage Victor',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Rendu peau, yeux et cheveux calibré séparément pour Kadir, Naël, Inaya, Victor et Amara ; carnations, visages et morphologies préservés.' },
+        { category: 'corrections', text: 'Victor : atténuation ciblée des marques de couleur sur la peau du corps (shader réversible, sans modifier le visage ni le modèle source).' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.47.3',
       releaseDate: '2026-11-16',
       title: 'Amara : regard, peau et finitions textiles',
