@@ -26,8 +26,8 @@ describe('1.48.0 premium skin: isolated per-coach calibration', () => {
     expect(b.sheen).toBe(finish.bodySheen);
     expect(h.sheen).toBe(finish.faceSheen);
     expect(e.userData.cssPremiumEyes).toBe(true);
-    expect(e.roughness).toBe(finish.eyeRoughness);
-    expect(t.roughness).toBeCloseTo(Math.max(0.49, 0.8 * finish.hairScale));
+    expect(e.roughness).toBeCloseTo(Math.max(0.14, finish.eyeRoughness - 0.025));
+    expect(t.roughness).toBeCloseTo(Math.max(0.48, 0.8 * finish.hairScale * 0.94));
     expect(body.roughness).toBe(1);
     expect(hair.roughness).toBe(0.8);
     for (const m of [body, head, eye, hair, b, h, e, t]) m.dispose();
