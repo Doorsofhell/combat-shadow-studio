@@ -1,0 +1,62 @@
+name: v1.49.0 - Matched WebGL before and after screenshots
+
+on:
+  pull_request:
+    branches:
+      - claude/project-thread-o7lrt8
+    paths-ignore:
+      - 'captures/v1490/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  matched-webgl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - name: Checkout experimental 1.49.0 branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/premium-visual-v1490
+          persist-credentials: true
+      - name: Checkout exact stable 1.48.0 reference
+        uses: actions/checkout@v4
+        with:
+          ref: feab073675520997c3c736a910f87ea2268f32b3
+          path: reference-v1480
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install both versions without altering lockfiles
+        run: |
+          npm ci
+          npm ci --prefix reference-v1480
+      - name: Premium materials and non-regression tests
+        run: npm run test -- src/three/__tests__/premium-visual-v1490.test.ts src/three/__tests__/premium-skin-v1480.test.ts src/three/__tests__/amara-semi-realiste-v1471.test.ts
+      - name: Production-type build (not published)
+        run: npm run build
+      - name: Install headless Chromium with SwiftShader
+        run: npx playwright install --with-deps chromium
+      - name: Create paired actual WebGL renders
+        run: node scripts/visuels/v1490-before-after.mjs
+      - name: Upload before/after PNGs even on failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v1490-matched-webgl-before-after
+          path: captures/v1490/
+          if-no-files-found: warn
+      - name: Publish direct PNG links to experimental branch
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add captures/v1490/
+          if ! git diff --cached --quiet; then
+            git commit -m "test(v1.49): real matched coach screenshots [skip ci]"
+            git push origin HEAD:feature/premium-visual-v1490
+          fi

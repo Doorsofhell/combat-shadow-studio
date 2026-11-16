@@ -131,8 +131,13 @@ export function skinLookFor(url: string): SkinLook {
  */
 export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, quality: 'haute' | 'basse', look: PhotoLook): MeshStandardMaterial {
   if (old.map) old.map.colorSpace = SRGBColorSpace;
-  // v0.31: anisotropic filtering keeps the skin's detail at grazing angles (4 samples: cheap on phones)
-  for (const t of [old.map, old.normalMap, old.roughnessMap]) if (t) t.anisotropy = 4;
+  // 1.49.0 experimental premium filter: increase texture clarity at grazing
+  // viewing angles only in 'haute'. Does NOT change resolution, UVs or geometry.
+  // The source glTF texture objects are cached; never reduce a higher value.
+  const filtering = quality === 'haute' && premiumFinish(look) ? 8 : 4;
+  for (const t of [old.map, old.normalMap, old.roughnessMap]) {
+    if (t) t.anisotropy = Math.max(t.anisotropy, filtering);
+  }
   const base = standardParams(old);
   const hi = quality === 'haute';
   switch (part) {
@@ -154,6 +159,11 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
         m.sheen = head ? finish.faceSheen : finish.bodySheen;
         m.sheenRoughness = head ? 0.86 : 0.84;
         m.specularIntensity = head ? finish.faceSpecular : finish.bodySpecular;
+        // 1.49.0: restrained high-quality premium lighting response.
+        // Kept to material parameters — no GLSL rewriting after 1.48.1.
+        m.sheenRoughness = head ? 0.79 : 0.81;
+        m.specularIntensity = Math.min(0.38, m.specularIntensity + 0.04);
+        m.userData.cssPremium149 = true;
         m.userData.cssPremiumFinish = true;
         // Historic regression flags retained for the Amara-specific test.
         if (look === SKIN_LOOK['mma-amara']) m.userData[head ? 'cssAmaraFaceFinish' : 'cssAmaraBodyFinish'] = true;
@@ -176,6 +186,9 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
         m.roughness = eyeFinish.eyeRoughness;
         m.clearcoatRoughness = 0.045;
         m.specularIntensity = 0.78;
+        m.roughness = Math.max(0.14, eyeFinish.eyeRoughness - 0.025);
+        m.clearcoatRoughness = 0.038;
+        m.userData.cssPremium149 = true;
         m.userData.cssPremiumEyes = true;
       }
       eyeCatchlight(m);
@@ -185,7 +198,10 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
       const m = new MeshStandardMaterial({ ...base, metalness: 0, roughness: Math.max(0.55, old.roughness), side: DoubleSide, transparent: false, alphaTest: 0.4, alphaToCoverage: true, depthWrite: true });
       // Per-coach hair finish; never alter alpha edges, geometry or depth order.
       const hairFinish = premiumFinish(look);
-      if (hi && hairFinish) m.roughness = Math.max(0.49, old.roughness * hairFinish.hairScale);
+      if (hi && hairFinish) {
+        m.roughness = Math.max(0.48, old.roughness * hairFinish.hairScale * 0.94);
+        m.userData.cssPremium149 = true;
+      }
       fadeHairEnds(m);
       return m;
     }
