@@ -28,3 +28,15 @@ jobs:
           npm run test -- src/three/__tests__/amara-skin-v1378.test.ts src/three/__tests__/amara-skin-v1375.test.ts src/three/__tests__/outfit-amara-v1374.test.ts src/three/__tests__/outfit-references-v1372.test.ts src/three/__tests__/outfit-rollback-v1373.test.ts src/three/__tests__/outfit-materials-v1371.test.ts src/domain/release-version.test.ts
       - name: TypeScript and production bundle
         run: npm run build
+
+      - name: Install Chromium for real Amara WebGL captures
+        run: npx playwright install --with-deps chromium
+      - name: Capture actual Amara 1.47.1 Lab renders (no Pages deployment)
+        run: node scripts/visuels/amara-v1471-capture.mjs
+      - name: Upload Amara visual validation (even if a view fails)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amara-v1471-real-render
+          path: artifacts/amara-v1471/
+          if-no-files-found: warn

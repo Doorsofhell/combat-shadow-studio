@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.47.1',
+      releaseDate: '2026-11-16',
+      title: 'Amara : finition naturelle du visage, des yeux et des cheveux',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Amara : peau légèrement plus nuancée, reflets du visage adoucis, yeux et cheveux affinés en qualité haute.' },
+        { category: 'ameliorations', text: 'Identité, morphologie, animations et tenues conservées ; les autres coachs ne sont pas modifiés.' },
+      ],
+      links: [{ label: 'Voir Amara', to: '/coach' }],
+    },
+    {
       version: '1.47.0',
       releaseDate: '2026-11-15',
       title: 'Kadir plus réaliste',
