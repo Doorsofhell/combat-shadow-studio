@@ -29,7 +29,7 @@ try {
       await page.waitForTimeout(1000);
       const neck = await page.evaluate(() => window.__photoScene?.userData?.cssNeckSeamReport ?? null);
       console.log('NECK SEAM AUDIT', name, JSON.stringify(neck));
-      if (!neck || neck.skipped || neck.matchingVertices < 1) {
+      if (!neck || neck.skipped || neck.matchingVertices < 1 || neck.toneBlendVertices < 1) {
         throw new Error('No shared Rocketbox neck-ring vertices matched: ' + JSON.stringify(neck));
       }
       const data = await page.evaluate(() => document.querySelector('canvas').toDataURL('image/png'));
