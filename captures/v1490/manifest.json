@@ -1,0 +1,114 @@
+[
+  {
+    "name": "kadir-face",
+    "champion": "mma-kadir",
+    "az": 0,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 204542
+  },
+  {
+    "name": "kadir-face",
+    "champion": "mma-kadir",
+    "az": 0,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 204732
+  },
+  {
+    "name": "amara-face",
+    "champion": "mma-amara",
+    "az": 0,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 157981
+  },
+  {
+    "name": "amara-face",
+    "champion": "mma-amara",
+    "az": 0,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 158233
+  },
+  {
+    "name": "nael-face",
+    "champion": "nael",
+    "az": 0,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 204936
+  },
+  {
+    "name": "nael-face",
+    "champion": "nael",
+    "az": 0,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 205130
+  },
+  {
+    "name": "inaya-face",
+    "champion": "inaya",
+    "az": 0,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 180163
+  },
+  {
+    "name": "inaya-face",
+    "champion": "inaya",
+    "az": 0,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 180280
+  },
+  {
+    "name": "victor-face",
+    "champion": "victor",
+    "az": 0,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 205855
+  },
+  {
+    "name": "victor-face",
+    "champion": "victor",
+    "az": 0,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 205881
+  },
+  {
+    "name": "amara-three-quarter",
+    "champion": "mma-amara",
+    "az": 35,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 154682
+  },
+  {
+    "name": "amara-three-quarter",
+    "champion": "mma-amara",
+    "az": 35,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 155079
+  },
+  {
+    "name": "victor-three-quarter",
+    "champion": "victor",
+    "az": 35,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 198038
+  },
+  {
+    "name": "victor-three-quarter",
+    "champion": "victor",
+    "az": 35,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 198091
+  }
+]
