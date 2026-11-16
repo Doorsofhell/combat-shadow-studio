@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.47.2',
+      releaseDate: '2026-11-16',
+      title: 'Amara : peau et visage plus naturels',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Amara : reflets du visage, des épaules et des jambes adoucis pour limiter l’aspect plastique, sans modifier sa morphologie ni ses expressions.' },
+        { category: 'corrections', text: 'Correction de la configuration des matériaux du visage d’Amara ; les autres coachs et les tenues sont inchangés.' },
+      ],
+      links: [{ label: 'Voir Amara', to: '/coach' }],
+    },
+    {
       version: '1.47.1',
       releaseDate: '2026-11-16',
       title: 'Amara : finition naturelle du visage, des yeux et des cheveux',
