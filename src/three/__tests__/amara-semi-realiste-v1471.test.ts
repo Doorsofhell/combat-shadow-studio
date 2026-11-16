@@ -44,10 +44,12 @@ describe('Amara 1.47.1 — isolated semi-realistic material pilot', () => {
     const torso = photoMaterial(body, 'peau', 'haute', amara) as MeshPhysicalMaterial;
     const other = photoMaterial(head, 'peau', 'haute', skinLookFor('/coaches/inaya/photo.glb')) as MeshPhysicalMaterial;
     expect(face.userData.cssAmaraFaceFinish).toBe(true);
-    expect(face.sheen).toBe(0.22);
-    expect(face.sheenRoughness).toBe(0.75);
-    expect(face.specularIntensity).toBe(0.34);
+    expect(face.sheen).toBe(0.18);
+    expect(face.sheenRoughness).toBe(0.82);
+    expect(face.specularIntensity).toBe(0.28);
     expect(torso.userData.cssAmaraFaceFinish).toBeUndefined();
+    expect(torso.userData.cssAmaraBodyFinish).toBe(true);
+    expect(torso.specularIntensity).toBe(0.30);
     expect(other.userData.cssAmaraFaceFinish).toBeUndefined();
     expect(head.roughness).toBe(0.58);
     face.dispose(); torso.dispose(); other.dispose(); head.dispose(); body.dispose();
