@@ -134,14 +134,14 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
       // without changing mesh, normal maps, animation or other coaches.
       if (hi && look === SKIN_LOOK['mma-amara'] && m instanceof MeshPhysicalMaterial) {
         if (isHeadSkin(old)) {
-          m.sheen = 0.18;
-          m.sheenRoughness = 0.82;
-          m.specularIntensity = 0.28;
+          m.sheen = 0.14;
+          m.sheenRoughness = 0.86;
+          m.specularIntensity = 0.26;
           m.userData.cssAmaraFaceFinish = true;
         } else {
-          m.sheen = 0.20;
-          m.sheenRoughness = 0.76;
-          m.specularIntensity = 0.30;
+          m.sheen = 0.15;
+          m.sheenRoughness = 0.84;
+          m.specularIntensity = 0.27;
           m.userData.cssAmaraBodyFinish = true;
         }
       }
@@ -159,9 +159,9 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
       const m = hi ? new MeshPhysicalMaterial({ ...p, clearcoat: 1, clearcoatRoughness: 0.04, specularIntensity: 0.8 }) : new MeshStandardMaterial({ ...p, roughness: 0.12 });
       // 1.47.1: premium eye finish is scoped to Amara, with no iris/geometry changes.
       if (hi && look === SKIN_LOOK['mma-amara'] && m instanceof MeshPhysicalMaterial) {
-        m.roughness = 0.14;
-        m.clearcoatRoughness = 0.025;
-        m.specularIntensity = 0.72;
+        m.roughness = 0.19;
+        m.clearcoatRoughness = 0.045;
+        m.specularIntensity = 0.78;
       }
       eyeCatchlight(m);
       return m;

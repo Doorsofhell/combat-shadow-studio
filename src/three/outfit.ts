@@ -317,14 +317,14 @@ export function dressOutfitMaterial(src: Material, quality: 'haute' | 'basse', a
   const outerShort = amara && !isPrint(m.name) && /^short-(?:boxe|kick|thai|mma|surshort)/i.test(m.name);
   const waistband = amara && !isPrint(m.name) && /^ceinture-/i.test(m.name);
   if (fineTop && knit) {
-    m.roughness = Math.max(m.roughness, 0.86);
-    m.normalScale.multiplyScalar(1.12); // small weave detail; v1.37.1 matte treatment is preserved
+    m.roughness = Math.max(m.roughness, 0.89);
+    m.normalScale.multiplyScalar(0.92); // small weave detail; v1.37.1 matte treatment is preserved
   } else if (outerShort) {
-    m.roughness = Math.max(m.roughness, 0.76);
+    m.roughness = Math.max(m.roughness, 0.84);
     m.metalness = 0;
-    m.normalScale.multiplyScalar(0.84); // less harsh procedural ribs on curved leg panels
+    m.normalScale.multiplyScalar(0.72); // soften harsh ribs, preserve existing folds and geometry
   } else if (waistband) {
-    m.roughness = Math.max(m.roughness, 0.79);
+    m.roughness = Math.max(m.roughness, 0.86);
     m.metalness = 0;
     m.normalScale.multiplyScalar(0.80); // elastic no longer resembles separate hard rectangles
   }
@@ -333,7 +333,7 @@ export function dressOutfitMaterial(src: Material, quality: 'haute' | 'basse', a
   if (quality === 'basse' || (!sheen && !coat)) return m;
   const physical = physicalFrom(m, {
     metalness: 0,
-    sheen: knit ? Math.min(sheen, 0.06) : outerShort ? Math.min(sheen, 0.18) : sheen,
+    sheen: knit ? Math.min(sheen, amara ? 0.035 : 0.06) : outerShort ? Math.min(sheen, 0.10) : sheen,
     sheenRoughness: knit ? 0.85 : 0.45,
     sheenColor: m.color.clone().lerp(m.color.clone().set('#ffffff'), knit ? 0.15 : 0.4),
     clearcoat: knit ? 0 : coat,
