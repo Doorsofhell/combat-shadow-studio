@@ -48,6 +48,16 @@ describe('1.48.0 premium skin: isolated per-coach calibration', () => {
     expect(vb.customProgramCacheKey()).toContain('victor-clean148');
     expect(vh.customProgramCacheKey()).not.toContain('victor-clean148');
     expect(kb.customProgramCacheKey()).not.toContain('victor-clean148');
+    // The shader is emitted on Victor's body only; avoid any leakage into the
+    // face or the other coaches, regardless of shared shader caching.
+    const compile = (material: MeshStandardMaterial) => {
+      const shader = { uniforms: {}, fragmentShader: '#include <common>\n#include <map_fragment>\n#include <roughnessmap_fragment>\n#include <lights_physical_pars_fragment>\n#include <lights_fragment_begin>' };
+      material.onBeforeCompile(shader as Parameters<typeof material.onBeforeCompile>[0], {} as Parameters<typeof material.onBeforeCompile>[1]);
+      return shader.fragmentShader;
+    };
+    expect(compile(vb)).toContain('cssWideNeighbour');
+    expect(compile(vh)).not.toContain('cssWideNeighbour');
+    expect(compile(kb)).not.toContain('cssWideNeighbour');
     for (const m of [body, head, vb, vh, kb]) m.dispose();
   });
 
