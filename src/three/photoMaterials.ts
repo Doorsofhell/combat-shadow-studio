@@ -84,7 +84,9 @@ export type PhotoLook = SkinLook;
  */
 export const SKIN_LOOK: Record<string, SkinLook> = {
   'mma-kadir': { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, wrap: 0.45, shadowLift: 0.36 },
-  // 1.47.1 Amara-only semi-realistic skin study: retain original relief, wrap, colour and geometry;\n  // slightly enrich high-quality roughness and tint variation without touching other coaches.\n  // 1.37.8: only Amara, shader-only: clearer muscle highlights without any mesh, garment or rig change.
+  // 1.47.1 Amara-only semi-realistic skin study: retain original relief, wrap, colour and geometry;
+  // slightly enrich high-quality roughness and tint variation without touching other coaches.
+  // 1.37.8: only Amara, shader-only: clearer muscle highlights without any mesh, garment or rig change.
   // Keep colour, pores and skin texture identical; small gain to normal-map relief and local contrast.
   'mma-amara': { ...DEFAULT_SKIN, relief: 1.21, pores: 0.03, roughVar: 0.15, tintVar: 0.055, wrap: 0.43, shadowLift: 0.33 },
   // 1.11 Naël and Inaya: Rocketbox photo skins like Kadir and Amara (same relief maps); lighter skins, the
@@ -140,11 +142,19 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
       const cut = old.transparent || old.alphaTest > 0 ? 0.5 : 0;
       const p: MeshStandardMaterialParameters = { ...base, metalness: 0, roughness: 0.18, transparent: false, alphaTest: cut, depthWrite: true };
       const m = hi ? new MeshPhysicalMaterial({ ...p, clearcoat: 1, clearcoatRoughness: 0.04, specularIntensity: 0.8 }) : new MeshStandardMaterial({ ...p, roughness: 0.12 });
+      // 1.47.1: premium eye finish is scoped to Amara, with no iris/geometry changes.
+      if (hi && look === SKIN_LOOK['mma-amara'] && m instanceof MeshPhysicalMaterial) {
+        m.roughness = 0.14;
+        m.clearcoatRoughness = 0.025;
+        m.specularIntensity = 0.72;
+      }
       eyeCatchlight(m);
       return m;
     }
     case 'cheveux': {
       const m = new MeshStandardMaterial({ ...base, metalness: 0, roughness: Math.max(0.55, old.roughness), side: DoubleSide, transparent: false, alphaTest: 0.4, alphaToCoverage: true, depthWrite: true });
+      // Amara-only finer highlights; preserve alpha cut, original hair cards and depth ordering.
+      if (hi && look === SKIN_LOOK['mma-amara']) m.roughness = Math.max(0.49, old.roughness * 0.92);
       fadeHairEnds(m);
       return m;
     }
