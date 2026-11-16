@@ -130,7 +130,22 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
       const m = hi
         ? new MeshPhysicalMaterial({ ...p, sheen: 0.3, sheenRoughness: 0.6, sheenColor: '#c98a72', specularIntensity: 0.4 })
         : new MeshStandardMaterial({ ...p, roughness: old.roughnessMap ? 1 : 0.6 });
-      // Amara 1.47.1: subtle face-only finish. Keep original facial geometry, textures and expressions.\n      // The forehead/cheeks reflect soft light without a waxy all-over skin sheen.\n      if (hi && isHeadSkin(old) && look === SKIN_LOOK['mma-amara'] && m instanceof MeshPhysicalMaterial) {\n        m.sheen = 0.22;\n        m.sheenRoughness = 0.75;\n        m.specularIntensity = 0.34;\n        m.userData.cssAmaraFaceFinish = true;\n      }\n      // scattering and lifted shadows in both qualities (a few instructions), pores in high quality only
+      // Amara 1.47.2: soften the waxy highlight on the face and glossy body areas,
+      // without changing mesh, normal maps, animation or other coaches.
+      if (hi && look === SKIN_LOOK['mma-amara'] && m instanceof MeshPhysicalMaterial) {
+        if (isHeadSkin(old)) {
+          m.sheen = 0.18;
+          m.sheenRoughness = 0.82;
+          m.specularIntensity = 0.28;
+          m.userData.cssAmaraFaceFinish = true;
+        } else {
+          m.sheen = 0.20;
+          m.sheenRoughness = 0.76;
+          m.specularIntensity = 0.30;
+          m.userData.cssAmaraBodyFinish = true;
+        }
+      }
+      // scattering and lifted shadows in both qualities (a few instructions), pores in high quality only
       // 1.44 the head's skin also carries the face's soft zones (src/three/human/faceRender.ts)
       applySkinShader(m, look, hi, isHeadSkin(old));
       return m;
