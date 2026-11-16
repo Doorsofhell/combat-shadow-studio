@@ -124,7 +124,12 @@ export function PhotoCoach({
     () => () =>
       scene.traverse((o) => {
         const m = o as Mesh;
-        if (m.isMesh) (m.material as MeshStandardMaterial).dispose();
+        if (m.isMesh) {
+          (m.material as MeshStandardMaterial).dispose();
+          // Only dispose the geometry cloned by the 1.48.1 neck-seam pass;
+          // original cached useGLTF geometries belong to the shared loader.
+          if (m.geometry.userData.cssNeckSeamClone) m.geometry.dispose();
+        }
       }),
     [scene],
   );
