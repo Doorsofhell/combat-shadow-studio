@@ -44,12 +44,12 @@ describe('Amara 1.47.1 — isolated semi-realistic material pilot', () => {
     const torso = photoMaterial(body, 'peau', 'haute', amara) as MeshPhysicalMaterial;
     const other = photoMaterial(head, 'peau', 'haute', skinLookFor('/coaches/inaya/photo.glb')) as MeshPhysicalMaterial;
     expect(face.userData.cssAmaraFaceFinish).toBe(true);
-    expect(face.sheen).toBe(0.18);
-    expect(face.sheenRoughness).toBe(0.82);
-    expect(face.specularIntensity).toBe(0.28);
+    expect(face.sheen).toBe(0.14);
+    expect(face.sheenRoughness).toBe(0.86);
+    expect(face.specularIntensity).toBe(0.26);
     expect(torso.userData.cssAmaraFaceFinish).toBeUndefined();
     expect(torso.userData.cssAmaraBodyFinish).toBe(true);
-    expect(torso.specularIntensity).toBe(0.30);
+    expect(torso.specularIntensity).toBe(0.27);
     expect(other.userData.cssAmaraFaceFinish).toBeUndefined();
     expect(head.roughness).toBe(0.58);
     face.dispose(); torso.dispose(); other.dispose(); head.dispose(); body.dispose();
@@ -58,8 +58,8 @@ describe('Amara 1.47.1 — isolated semi-realistic material pilot', () => {
     const src = new MeshStandardMaterial({ roughness: 0.7 });
     const a = photoMaterial(src, 'yeux', 'haute', amara) as MeshPhysicalMaterial;
     const other = photoMaterial(src, 'yeux', 'haute', skinLookFor('/coaches/mma-kadir/photo.glb')) as MeshPhysicalMaterial;
-    expect(a.roughness).toBe(0.14);
-    expect(a.clearcoatRoughness).toBe(0.025);
+    expect(a.roughness).toBe(0.19);
+    expect(a.clearcoatRoughness).toBe(0.045);
     expect(other.roughness).toBe(0.18);
     expect(other.clearcoatRoughness).toBe(0.04);
     expect(src.roughness).toBe(0.7);
