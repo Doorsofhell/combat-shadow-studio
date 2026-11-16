@@ -175,5 +175,5 @@ ${look.cleanBody && !face ? `
     );
     shader.fragmentShader = f;
   };
-  m.customProgramCacheKey = () => `css-skin-${detail ? 1 : 0}${face ? '-face144' : ''}`;
+  m.customProgramCacheKey = () => `css-skin-${detail ? 1 : 0}${face ? '-face144' : ''}${look.cleanBody && !face ? '-victor-clean148' : ''}`;
 }
