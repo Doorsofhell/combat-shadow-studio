@@ -1,4 +1,4 @@
-import { Mesh, Object3D, SkinnedMesh, Vector3 } from 'three';
+import { BufferAttribute, Mesh, Object3D, SkinnedMesh, Vector3, type Material, type MeshStandardMaterial, type Texture, type WebGLProgramParametersWithUniforms } from 'three';
 import { isHeadSkin } from './human/faceRender';
 
 /**
@@ -18,6 +18,7 @@ export interface NeckSeamReport {
   adjustedVertices: number;
   worstNormalAngleDegrees: number;
   skipped: boolean;
+  toneBlendVertices: number;
 }
 
 function findSkinPair(root: Object3D): { body: Mesh; head: Mesh } | null {
@@ -35,7 +36,7 @@ function findSkinPair(root: Object3D): { body: Mesh; head: Mesh } | null {
 }
 
 export function smoothPhotoNeckSeam(root: Object3D): NeckSeamReport {
-  const empty = { matchingVertices: 0, adjustedVertices: 0, worstNormalAngleDegrees: 0, skipped: true };
+  const empty = { matchingVertices: 0, adjustedVertices: 0, worstNormalAngleDegrees: 0, skipped: true, toneBlendVertices: 0 };
   const pair = findSkinPair(root);
   if (!pair) return empty;
   const { body, head } = pair;
@@ -109,5 +110,69 @@ export function smoothPhotoNeckSeam(root: Object3D): NeckSeamReport {
   }
   bnorm.needsUpdate = true;
   hnorm.needsUpdate = true;
-  return { matchingVertices: groups.length, adjustedVertices: adjusted, worstNormalAngleDegrees: worst, skipped: false };
+
+  // Colour discontinuities are independent from normal continuity. Give the
+  // head's *last 3.5 cm* a smooth transition towards the body albedo sampled
+  // at the corresponding neck ring. No source PNG or cached GLB is repainted.
+  let toneBlendVertices = 0;
+  const bm = body.material as MeshStandardMaterial;
+  const hm = head.material as MeshStandardMaterial;
+  const buv = bg.getAttribute('uv');
+  if (bm.map && hm.map && buv && buv.count === bp.count) {
+    const fromBodyUv = new Float32Array(hp.count * 2);
+    const fade = new Float32Array(hp.count);
+    const radius = span > 10 ? 3.5 : 0.035;
+    const seamPoints = groups.map(g => {
+      const i = g.bodyIds[0], j = g.headIds[0];
+      return { x: hp.getX(j), y: hp.getY(j), z: hp.getZ(j),
+        u: buv.getX(i), v: buv.getY(i) };
+    });
+    for (let j = 0; j < hp.count; j++) {
+      const x = hp.getX(j), y = hp.getY(j), z = hp.getZ(j);
+      let nearest = seamPoints[0], best = Infinity;
+      for (const point of seamPoints) {
+        const ds = (x - point.x) ** 2 + (y - point.y) ** 2 + (z - point.z) ** 2;
+        if (ds < best) { nearest = point; best = ds; }
+      }
+      fromBodyUv[j * 2] = nearest.u;
+      fromBodyUv[j * 2 + 1] = nearest.v;
+      const t = Math.max(0, 1 - Math.sqrt(best) / radius);
+      fade[j] = 0.9 * t * t * (3 - 2 * t);
+      if (fade[j] > 0) toneBlendVertices++;
+    }
+    head.geometry.setAttribute('cssNeckBodyUv', new BufferAttribute(fromBodyUv, 2));
+    head.geometry.setAttribute('cssNeckFade', new BufferAttribute(fade, 1));
+    hm.userData.cssNeckToneBlend = { bodyMap: bm.map, bodyColor: bm.color.clone() };
+  }
+  return { matchingVertices: groups.length, adjustedVertices: adjusted, worstNormalAngleDegrees: worst, skipped: false, toneBlendVertices };
+}
+
+/** Layer a neck tone correction on top of the existing skin shader. */
+export function applyHeadNeckToneBlend(material: Material): void {
+  const blend = material.userData.cssNeckToneBlend as
+    | { bodyMap: Texture; bodyColor: { r: number; g: number; b: number } }
+    | undefined;
+  if (!blend) return;
+  const prior = material.onBeforeCompile;
+  material.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms, renderer) => {
+    prior.call(material, shader, renderer);
+    shader.uniforms.cssNeckBodyMap = { value: blend.bodyMap };
+    shader.uniforms.cssNeckBodyColor = {
+      value: new Vector3(blend.bodyColor.r, blend.bodyColor.g, blend.bodyColor.b),
+    };
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\\nattribute vec2 cssNeckBodyUv;\\nattribute float cssNeckFade;\\nvarying vec2 vCssNeckBodyUv;\\nvarying float vCssNeckFade;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\\nvCssNeckBodyUv = cssNeckBodyUv;\\nvCssNeckFade = cssNeckFade;');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\\nuniform sampler2D cssNeckBodyMap;\\nuniform vec3 cssNeckBodyColor;\\nvarying vec2 vCssNeckBodyUv;\\nvarying float vCssNeckFade;')
+      .replace('#include <map_fragment>', `#include <map_fragment>
+#ifdef USE_MAP
+  // The neck ring shares the body's colour. Blend out towards the jawline.
+  vec3 cssNeckBodyAlbedo = texture2D(cssNeckBodyMap, vCssNeckBodyUv).rgb * cssNeckBodyColor;
+  diffuseColor.rgb = mix(diffuseColor.rgb, cssNeckBodyAlbedo, clamp(vCssNeckFade, 0.0, 0.95));
+#endif`);
+  };
+  const oldKey = material.customProgramCacheKey.bind(material);
+  material.customProgramCacheKey = () => oldKey() + '-neck-tone1481';
+  material.userData.cssNeckToneApplied = true;
 }
