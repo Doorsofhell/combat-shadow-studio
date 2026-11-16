@@ -112,6 +112,34 @@ export const PREMIUM_FINISH: Partial<Record<keyof typeof SKIN_LOOK, {
   victor: { bodySheen: 0.12, faceSheen: 0.13, bodySpecular: 0.24, faceSpecular: 0.26, eyeRoughness: 0.20, hairScale: 0.98 },
 };
 
+/** 1.50.0 isolated optical pilot — NEVER changes vertices, neck or GLSL. */
+export const FIGHTER_PILOT_150: Partial<Record<keyof typeof SKIN_LOOK, {
+  faceSheen: number;
+  bodySheen: number;
+  faceSpecular: number;
+  bodySpecular: number;
+  sheenRoughnessFace: number;
+  sheenRoughnessBody: number;
+  eyeRoughness: number;
+  hairScale: number;
+}>> = {
+  'mma-amara': {
+    faceSheen: 0.17, bodySheen: 0.19, faceSpecular: 0.33, bodySpecular: 0.35,
+    sheenRoughnessFace: 0.76, sheenRoughnessBody: 0.78,
+    eyeRoughness: 0.16, hairScale: 0.89,
+  },
+  victor: {
+    faceSheen: 0.15, bodySheen: 0.16, faceSpecular: 0.31, bodySpecular: 0.32,
+    sheenRoughnessFace: 0.77, sheenRoughnessBody: 0.79,
+    eyeRoughness: 0.17, hairScale: 0.93,
+  },
+};
+
+function pilot150(look: SkinLook) {
+  const id = Object.keys(SKIN_LOOK).find((k) => SKIN_LOOK[k] === look);
+  return id ? FIGHTER_PILOT_150[id] : undefined;
+}
+
 function premiumFinish(look: SkinLook) {
   const id = Object.keys(SKIN_LOOK).find((k) => SKIN_LOOK[k] === look);
   return id ? PREMIUM_FINISH[id] : undefined;
@@ -163,6 +191,13 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
         // Kept to material parameters — no GLSL rewriting after 1.48.1.
         m.sheenRoughness = head ? 0.79 : 0.81;
         m.specularIntensity = Math.min(0.38, m.specularIntensity + 0.04);
+        const fighter = pilot150(look);
+        if (fighter) {
+          m.sheen = head ? fighter.faceSheen : fighter.bodySheen;
+          m.sheenRoughness = head ? fighter.sheenRoughnessFace : fighter.sheenRoughnessBody;
+          m.specularIntensity = head ? fighter.faceSpecular : fighter.bodySpecular;
+          m.userData.cssFighterPilot150 = true;
+        }
         m.userData.cssPremium149 = true;
         m.userData.cssPremiumFinish = true;
         // Historic regression flags retained for the Amara-specific test.
@@ -189,6 +224,11 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
         m.roughness = Math.max(0.14, eyeFinish.eyeRoughness - 0.025);
         m.clearcoatRoughness = 0.038;
         m.userData.cssPremium149 = true;
+        const fighter = pilot150(look);
+        if (fighter) {
+          m.roughness = fighter.eyeRoughness;
+          m.userData.cssFighterPilot150 = true;
+        }
         m.userData.cssPremiumEyes = true;
       }
       eyeCatchlight(m);
@@ -200,6 +240,11 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
       const hairFinish = premiumFinish(look);
       if (hi && hairFinish) {
         m.roughness = Math.max(0.48, old.roughness * hairFinish.hairScale * 0.94);
+        const fighter = pilot150(look);
+        if (fighter) {
+          m.roughness = Math.max(0.48, old.roughness * fighter.hairScale);
+          m.userData.cssFighterPilot150 = true;
+        }
         m.userData.cssPremium149 = true;
       }
       fadeHairEnds(m);
