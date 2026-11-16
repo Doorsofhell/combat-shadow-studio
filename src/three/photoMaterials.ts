@@ -1,6 +1,5 @@
 import { isHeadSkin, newFaceRenderUniforms, type FaceRenderUniforms } from './human/faceRender';
 import { applySkinShader, DEFAULT_SKIN, type SkinLook } from './skinShader';
-import { applyHeadNeckToneBlend } from './photoNeckSeam';
 import { BufferAttribute, BufferGeometry, DoubleSide, FrontSide, Material, MeshPhysicalMaterial, MeshStandardMaterial, SRGBColorSpace, type MeshStandardMaterialParameters } from 'three';
 
 /**
@@ -162,8 +161,6 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
       // scattering and lifted shadows in both qualities (a few instructions), pores in high quality only
       // 1.44 the head's skin also carries the face's soft zones (src/three/human/faceRender.ts)
       applySkinShader(m, look, hi, isHeadSkin(old));
-      // 1.48.1: fade the head's neck-ring colour into the matching body albedo.
-      if (isHeadSkin(old)) applyHeadNeckToneBlend(m);
       return m;
     }
     case 'yeux': {

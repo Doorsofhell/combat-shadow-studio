@@ -49,17 +49,6 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
-      version: '1.48.1',
-      releaseDate: '2026-11-16',
-      title: 'Continuité des cous des coachs',
-      isMajor: false,
-      changes: [
-        { category: 'corrections', text: 'Jonctions tête–cou–torse : harmonisation des normales sur les sommets communs de la tête et du corps pour réduire les lignes artificielles de lumière.' },
-        { category: 'ameliorations', text: 'Traitement limité aux géométries dupliquées des coachs : textures, poids d’animation, morphologies, tenues et expressions préservés.' },
-      ],
-      links: [{ label: 'Voir les coachs', to: '/coach' }],
-    },
-    {
       version: '1.48.0',
       releaseDate: '2026-11-16',
       title: 'Finition peau premium par coach et nettoyage Victor',
