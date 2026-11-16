@@ -1,4 +1,4 @@
-import { BufferAttribute, BufferGeometry, Mesh, Object3D, SkinnedMesh, Vector3 } from 'three';
+import { Mesh, Object3D, SkinnedMesh, Vector3 } from 'three';
 import { isHeadSkin } from './human/faceRender';
 
 /**
@@ -40,8 +40,8 @@ export function smoothPhotoNeckSeam(root: Object3D): NeckSeamReport {
   if (!pair) return empty;
   const { body, head } = pair;
   // Never smooth unrelated skin pieces or mismatched skeletal spaces.
-  if (body.isSkinnedMesh !== head.isSkinnedMesh) return empty;
-  if (body.isSkinnedMesh && head.isSkinnedMesh) {
+  if (!!(body as SkinnedMesh).isSkinnedMesh !== !!(head as SkinnedMesh).isSkinnedMesh) return empty;
+  if ((body as SkinnedMesh).isSkinnedMesh && (head as SkinnedMesh).isSkinnedMesh) {
     const b = body as SkinnedMesh, h = head as SkinnedMesh;
     if (b.skeleton.bones.length !== h.skeleton.bones.length ||
         b.skeleton.bones.some((bone, i) => bone.name !== h.skeleton.bones[i]?.name)) return empty;
