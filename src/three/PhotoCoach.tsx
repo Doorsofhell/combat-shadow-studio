@@ -65,7 +65,7 @@ export function PhotoCoach({
     const s = cloneSkinned(gltf.scene);
     // 1.48.1: remove the neck normal discontinuity BEFORE material replacement
     // (original Rocketbox material names identify the head/body primitives).
-    smoothPhotoNeckSeam(s);
+    s.userData.cssNeckSeamReport = smoothPhotoNeckSeam(s);
     s.traverse((o) => {
       const m = o as Mesh;
       if (!m.isMesh) return;
