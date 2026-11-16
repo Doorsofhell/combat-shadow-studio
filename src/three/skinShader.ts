@@ -37,6 +37,8 @@ export interface SkinLook {
   sat?: number;
   gain?: number;
   warm?: number;
+  /** Victor only: local albedo cleanup on body, never on face or outfit. */
+  cleanBody?: boolean;
 }
 
 export const DEFAULT_SKIN: SkinLook = { relief: 1.3, wrap: 0.5, shadowLift: 0.32, pores: 0.05, roughVar: 0.12, tintVar: 0.05, tint: [1, 0.5, 0.36] };
@@ -122,6 +124,7 @@ export function applySkinShader(m: Material, look: SkinLook, detail: boolean, fa
   };
   m.userData.cssSkin = uniforms;
   if (face) m.userData.cssFaceSkin = true;
+  if (look.cleanBody && !face) m.userData.cssVictorBodyClean = true;
   m.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
     Object.assign(shader.uniforms, uniforms);
     let f = shader.fragmentShader.replace('#include <common>', `#include <common>\n${HEADER}${face ? FACE_HEADER : ''}`);
@@ -133,6 +136,24 @@ export function applySkinShader(m: Material, look: SkinLook, detail: boolean, fa
     f = f.replace(
       '#include <map_fragment>',
       `#include <map_fragment>
+  // 1.48.0 Victor BODY only: attenuate small baked-in spots in the photographic albedo.
+  // Filter RGB locally, preserving coarse muscle illumination and leaving head/eyes untouched.
+  // The body texture is unchanged on disk; the shader is reversible.
+#ifdef USE_MAP
+${look.cleanBody && !face ? `
+  vec2 cssD = vec2(0.004, 0.006);
+  vec3 cssNeighbour = (
+    texture2D(map, vMapUv + vec2(cssD.x, 0.0)).rgb +
+    texture2D(map, vMapUv - vec2(cssD.x, 0.0)).rgb +
+    texture2D(map, vMapUv + vec2(0.0, cssD.y)).rgb +
+    texture2D(map, vMapUv - vec2(0.0, cssD.y)).rgb
+  ) * 0.25;
+  // A gentle neighbour mix only where albedo visibly differs locally;
+  // original shading/skin colour dominates in stable areas.
+  float cssSpot = smoothstep(0.035, 0.13, length(diffuseColor.rgb - cssNeighbour));
+  diffuseColor.rgb = mix(diffuseColor.rgb, cssNeighbour, 0.72 * cssSpot);
+` : ''}
+#endif
   diffuseColor.rgb = cssGradeRgb(diffuseColor.rgb);
 #ifdef USE_MAP
   // tint: slow variations (blotches a few centimetres wide), warmer or cooler
