@@ -44,12 +44,12 @@ describe('Amara 1.47.1 — isolated semi-realistic material pilot', () => {
     const torso = photoMaterial(body, 'peau', 'haute', amara) as MeshPhysicalMaterial;
     const other = photoMaterial(head, 'peau', 'haute', skinLookFor('/coaches/inaya/photo.glb')) as MeshPhysicalMaterial;
     expect(face.userData.cssAmaraFaceFinish).toBe(true);
-    expect(face.sheen).toBe(0.14);
-    expect(face.sheenRoughness).toBe(0.79);
-    expect(face.specularIntensity).toBeCloseTo(0.30);
+    expect(face.sheen).toBe(0.17);
+    expect(face.sheenRoughness).toBe(0.76);
+    expect(face.specularIntensity).toBeCloseTo(0.33);
     expect(torso.userData.cssAmaraFaceFinish).toBeUndefined();
     expect(torso.userData.cssAmaraBodyFinish).toBe(true);
-    expect(torso.specularIntensity).toBeCloseTo(0.31);
+    expect(torso.specularIntensity).toBeCloseTo(0.35);
     expect(other.userData.cssAmaraFaceFinish).toBeUndefined();
     expect(head.roughness).toBe(0.58);
     face.dispose(); torso.dispose(); other.dispose(); head.dispose(); body.dispose();
@@ -58,7 +58,7 @@ describe('Amara 1.47.1 — isolated semi-realistic material pilot', () => {
     const src = new MeshStandardMaterial({ roughness: 0.7 });
     const a = photoMaterial(src, 'yeux', 'haute', amara) as MeshPhysicalMaterial;
     const other = photoMaterial(src, 'yeux', 'haute', skinLookFor('/coaches/mma-kadir/photo.glb')) as MeshPhysicalMaterial;
-    expect(a.roughness).toBeCloseTo(0.165);
+    expect(a.roughness).toBeCloseTo(0.16);
     expect(a.clearcoatRoughness).toBe(0.038);
     expect(other.roughness).toBeCloseTo(0.175);
     expect(other.clearcoatRoughness).toBe(0.038);
@@ -69,7 +69,7 @@ describe('Amara 1.47.1 — isolated semi-realistic material pilot', () => {
     const src = new MeshStandardMaterial({ roughness: 0.65 });
     const a = photoMaterial(src, 'cheveux', 'haute', amara);
     const other = photoMaterial(src, 'cheveux', 'haute', skinLookFor('/coaches/inaya/photo.glb'));
-    expect(a.roughness).toBeCloseTo(0.65 * 0.92 * 0.94);
+    expect(a.roughness).toBeCloseTo(0.65 * 0.89);
     expect(other.roughness).toBeCloseTo(0.65 * 0.97 * 0.94);
     expect(a.alphaTest).toBe(0.4);
     expect(a.depthWrite).toBe(true);
