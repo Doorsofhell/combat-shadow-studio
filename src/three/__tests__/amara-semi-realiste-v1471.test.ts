@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { MeshStandardMaterial, Vector2 } from 'three';
+import { MeshPhysicalMaterial, MeshStandardMaterial, Vector2 } from 'three';
 import { DEFAULT_SKIN } from '../skinShader';
 import { photoMaterial, skinLookFor } from '../photoMaterials';
 import { dressOutfitMaterial } from '../outfit';
@@ -34,6 +34,28 @@ describe('Amara 1.47.1 — isolated semi-realistic material pilot', () => {
     expect(src.normalScale.x).toBe(1);
     expect(revised.normalScale.x).toBeCloseTo(1.21);
     revised.dispose(); src.dispose();
+  });
+  test('premium eyes only on Amara in high quality', () => {
+    const src = new MeshStandardMaterial({ roughness: 0.7 });
+    const a = photoMaterial(src, 'yeux', 'haute', amara) as MeshPhysicalMaterial;
+    const other = photoMaterial(src, 'yeux', 'haute', skinLookFor('/coaches/mma-kadir/photo.glb')) as MeshPhysicalMaterial;
+    expect(a.roughness).toBe(0.14);
+    expect(a.clearcoatRoughness).toBe(0.025);
+    expect(other.roughness).toBe(0.18);
+    expect(other.clearcoatRoughness).toBe(0.04);
+    expect(src.roughness).toBe(0.7);
+    a.dispose(); other.dispose(); src.dispose();
+  });
+  test('hair highlights only on Amara; alpha and source unchanged', () => {
+    const src = new MeshStandardMaterial({ roughness: 0.65 });
+    const a = photoMaterial(src, 'cheveux', 'haute', amara);
+    const other = photoMaterial(src, 'cheveux', 'haute', skinLookFor('/coaches/inaya/photo.glb'));
+    expect(a.roughness).toBeCloseTo(0.65 * 0.92);
+    expect(other.roughness).toBe(0.65);
+    expect(a.alphaTest).toBe(0.4);
+    expect(a.depthWrite).toBe(true);
+    expect(src.roughness).toBe(0.65);
+    a.dispose(); other.dispose(); src.dispose();
   });
   test('does not change cached source clothing materials', () => {
     const src = new MeshStandardMaterial({ roughness: 0.62 });
