@@ -51,10 +51,10 @@ export const RELEASES: readonly Release[] = (
     {
       version: '1.49.0',
       releaseDate: '2026-11-16',
-      title: 'Prototype rendu premium — en validation',
+      title: 'Rendu premium des cinq coachs',
       isMajor: false,
       changes: [
-        { category: 'ameliorations', text: 'Prototype non publié : netteté des textures en qualité haute, réglages de peau, yeux et cheveux individualisés pour les cinq coachs photo actifs.' },
+        { category: 'ameliorations', text: 'Version publiée : amélioration du filtrage des textures en qualité haute et réglages individualisés de peau, yeux et cheveux pour Kadir, Amara, Naël, Inaya et Victor.' },
         { category: 'corrections', text: 'Aucune intervention sur la géométrie des cous, les shaders GLSL, les personnages, les animations ou les tenues.' },
       ],
       links: [{ label: 'Voir les coachs', to: '/coach' }],
