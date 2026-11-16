@@ -27,9 +27,14 @@ try {
       const status = await page.evaluate(() => window.__labOutfit);
       if (status !== 'portee') throw new Error(`Outfit not loaded: ${status}`);
       await page.waitForTimeout(1000);
+      const neck = await page.evaluate(() => window.__photoScene?.userData?.cssNeckSeamReport ?? null);
+      console.log('NECK SEAM AUDIT', name, JSON.stringify(neck));
+      if (!neck || neck.skipped || neck.matchingVertices < 1 || neck.toneBlendVertices < 1) {
+        throw new Error('No shared Rocketbox neck-ring vertices matched: ' + JSON.stringify(neck));
+      }
       const data = await page.evaluate(() => document.querySelector('canvas').toDataURL('image/png'));
       writeFileSync(`${out}/${name}.png`, Buffer.from(data.split(',')[1], 'base64'));
-      manifest.push({ name, status: 'ok', url });
+      manifest.push({ name, status: 'ok', neck, url });
       console.log('REAL RENDER', name);
     } catch (e) {
       manifest.push({ name, status: 'failed', error: String(e) });

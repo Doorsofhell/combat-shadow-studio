@@ -21,7 +21,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: 1.48.0 isolated material tests
-        run: npm run test -- src/three/__tests__/premium-skin-v1480.test.ts src/three/__tests__/amara-semi-realiste-v1471.test.ts
+        run: npm run test -- src/three/__tests__/premium-skin-v1480.test.ts src/three/__tests__/amara-semi-realiste-v1471.test.ts src/three/__tests__/photo-neck-seam-v1481.test.ts
       - name: TypeScript and production bundle
         run: npm run build
       - name: Install Chromium
