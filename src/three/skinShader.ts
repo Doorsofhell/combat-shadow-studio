@@ -150,8 +150,11 @@ ${look.cleanBody && !face ? `
   ) * 0.25;
   // A gentle neighbour mix only where albedo visibly differs locally;
   // original shading/skin colour dominates in stable areas.
-  float cssSpot = smoothstep(0.035, 0.13, length(diffuseColor.rgb - cssNeighbour));
-  diffuseColor.rgb = mix(diffuseColor.rgb, cssNeighbour, 0.72 * cssSpot);
+  vec3 cssOriginalTexel = texture2D(map, vMapUv).rgb;
+  float cssSpot = smoothstep(0.035, 0.13, length(cssOriginalTexel - cssNeighbour));
+  // Preserve the glTF material's own base colour: modulate, never replace it with raw map RGB.
+  vec3 cssNeighbourRatio = clamp(cssNeighbour / max(cssOriginalTexel, vec3(0.04)), vec3(0.65), vec3(1.35));
+  diffuseColor.rgb *= mix(vec3(1.0), cssNeighbourRatio, 0.72 * cssSpot);
 ` : ''}
 #endif
   diffuseColor.rgb = cssGradeRgb(diffuseColor.rgb);
