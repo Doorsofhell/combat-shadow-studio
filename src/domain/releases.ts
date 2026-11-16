@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.47.3',
+      releaseDate: '2026-11-16',
+      title: 'Amara : regard, peau et finitions textiles',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Amara : reflets du visage et du corps plus diffus, yeux moins artificiellement brillants.' },
+        { category: 'ameliorations', text: 'Amara : finition textile plus mate sur la brassière, le short et la ceinture, sans modifier les maillages ni les animations.' },
+      ],
+      links: [{ label: 'Voir Amara', to: '/coach' }],
+    },
+    {
       version: '1.47.2',
       releaseDate: '2026-11-16',
       title: 'Amara : peau et visage plus naturels',
