@@ -87,6 +87,8 @@ export function smoothPhotoNeckSeam(root: Object3D): NeckSeamReport {
   // Do not edit the cached source GLB's shared BufferGeometry.
   body.geometry = bg.clone();
   head.geometry = hg.clone();
+  body.geometry.userData.cssNeckSeamClone = true;
+  head.geometry.userData.cssNeckSeamClone = true;
   const bnorm = body.geometry.getAttribute('normal');
   const hnorm = head.geometry.getAttribute('normal');
   let adjusted = 0, worst = 0;
