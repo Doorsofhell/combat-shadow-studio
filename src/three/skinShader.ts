@@ -150,11 +150,22 @@ ${look.cleanBody && !face ? `
   ) * 0.25;
   // A gentle neighbour mix only where albedo visibly differs locally;
   // original shading/skin colour dominates in stable areas.
+  // 1.48.0 waist seam cleanup: a second, wider footprint resolves a narrow
+  // horizontal colour band without painting over the original muscle normals.
+  // Work only on Victor's body and only on significant local chroma outliers.
+  vec2 cssWide = vec2(0.012, 0.018);
+  vec3 cssWideNeighbour = (
+    texture2D(map, vMapUv + vec2(cssWide.x, 0.0)).rgb +
+    texture2D(map, vMapUv - vec2(cssWide.x, 0.0)).rgb +
+    texture2D(map, vMapUv + vec2(0.0, cssWide.y)).rgb +
+    texture2D(map, vMapUv - vec2(0.0, cssWide.y)).rgb
+  ) * 0.25;
   vec3 cssOriginalTexel = texture2D(map, vMapUv).rgb;
-  float cssSpot = smoothstep(0.035, 0.13, length(cssOriginalTexel - cssNeighbour));
-  // Preserve the glTF material's own base colour: modulate, never replace it with raw map RGB.
-  vec3 cssNeighbourRatio = clamp(cssNeighbour / max(cssOriginalTexel, vec3(0.04)), vec3(0.65), vec3(1.35));
-  diffuseColor.rgb *= mix(vec3(1.0), cssNeighbourRatio, 0.72 * cssSpot);
+  vec3 cssLocalTarget = mix(cssNeighbour, cssWideNeighbour, 0.55);
+  float cssSpot = smoothstep(0.025, 0.105, length(cssOriginalTexel - cssLocalTarget));
+  // Preserve the glTF base colour, and bound any correction near UV island edges.
+  vec3 cssNeighbourRatio = clamp(cssLocalTarget / max(cssOriginalTexel, vec3(0.04)), vec3(0.78), vec3(1.22));
+  diffuseColor.rgb *= mix(vec3(1.0), cssNeighbourRatio, 0.88 * cssSpot);
 ` : ''}
 #endif
   diffuseColor.rgb = cssGradeRgb(diffuseColor.rgb);
@@ -178,5 +189,5 @@ ${look.cleanBody && !face ? `
     );
     shader.fragmentShader = f;
   };
-  m.customProgramCacheKey = () => `css-skin-${detail ? 1 : 0}${face ? '-face144' : ''}${look.cleanBody && !face ? '-victor-clean148' : ''}`;
+  m.customProgramCacheKey = () => `css-skin-${detail ? 1 : 0}${face ? '-face144' : ''}${look.cleanBody && !face ? '-victor-clean148-waist2' : ''}`;
 }
