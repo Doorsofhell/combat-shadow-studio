@@ -13,7 +13,6 @@ const cases = [
   ['mma-three-quarter', 'mma', 28, 'garde'],
   ['mma-profile', 'mma', 90, 'garde'],
   ['mma-back', 'mma', 180, 'garde'],
-  ['boxe', 'boxe', 28, 'garde'],
   ['kickboxing', 'kickboxing', 28, 'garde'],
   ['muaythai', 'muaythai', 28, 'garde'],
   ['bjj-gi', 'bjj', 28, 'garde'],
