@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.51.0',
+      releaseDate: '2026-11-17',
+      title: 'Étude visuelle premium — Kadir, Naël et Inaya',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Version expérimentale, non publiée : réglages individualisés de la réflexion de la peau, des yeux et des cheveux pour Kadir, Naël et Inaya en qualité haute.' },
+        { category: 'corrections', text: 'Conservation de la géométrie, des visages, des cous, des textures sources, des animations et des tenues ; contrôles comparatifs avant publication.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.50.0',
       releaseDate: '2026-11-16',
       title: 'Étude visuelle combat premium — Amara et Victor',
