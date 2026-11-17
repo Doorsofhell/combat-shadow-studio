@@ -5,7 +5,7 @@
     "az": 0,
     "label": "avant",
     "status": "ok",
-    "bytes": 204704
+    "bytes": 204716
   },
   {
     "name": "kadir-face",
@@ -13,7 +13,7 @@
     "az": 0,
     "label": "apres",
     "status": "ok",
-    "bytes": 204717
+    "bytes": 204742
   },
   {
     "name": "kadir-three-quarter",
@@ -21,7 +21,7 @@
     "az": 35,
     "label": "avant",
     "status": "ok",
-    "bytes": 195313
+    "bytes": 195314
   },
   {
     "name": "kadir-three-quarter",
@@ -29,7 +29,7 @@
     "az": 35,
     "label": "apres",
     "status": "ok",
-    "bytes": 195191
+    "bytes": 195229
   },
   {
     "name": "kadir-profile",
@@ -37,7 +37,7 @@
     "az": 90,
     "label": "avant",
     "status": "ok",
-    "bytes": 226365
+    "bytes": 226382
   },
   {
     "name": "kadir-profile",
@@ -45,7 +45,7 @@
     "az": 90,
     "label": "apres",
     "status": "ok",
-    "bytes": 226426
+    "bytes": 226413
   },
   {
     "name": "nael-face",
@@ -53,7 +53,7 @@
     "az": 0,
     "label": "avant",
     "status": "ok",
-    "bytes": 205095
+    "bytes": 205097
   },
   {
     "name": "nael-face",
@@ -61,7 +61,7 @@
     "az": 0,
     "label": "apres",
     "status": "ok",
-    "bytes": 205152
+    "bytes": 205155
   },
   {
     "name": "nael-three-quarter",
@@ -69,7 +69,7 @@
     "az": 35,
     "label": "avant",
     "status": "ok",
-    "bytes": 187689
+    "bytes": 187706
   },
   {
     "name": "nael-three-quarter",
@@ -77,7 +77,7 @@
     "az": 35,
     "label": "apres",
     "status": "ok",
-    "bytes": 187605
+    "bytes": 187604
   },
   {
     "name": "nael-profile",
@@ -93,7 +93,7 @@
     "az": 90,
     "label": "apres",
     "status": "ok",
-    "bytes": 223875
+    "bytes": 223829
   },
   {
     "name": "inaya-face",
@@ -101,7 +101,7 @@
     "az": 0,
     "label": "avant",
     "status": "ok",
-    "bytes": 180280
+    "bytes": 180294
   },
   {
     "name": "inaya-face",
@@ -117,7 +117,7 @@
     "az": 35,
     "label": "avant",
     "status": "ok",
-    "bytes": 169796
+    "bytes": 169799
   },
   {
     "name": "inaya-three-quarter",
@@ -125,7 +125,7 @@
     "az": 35,
     "label": "apres",
     "status": "ok",
-    "bytes": 169780
+    "bytes": 169755
   },
   {
     "name": "inaya-profile",
@@ -133,7 +133,7 @@
     "az": 90,
     "label": "avant",
     "status": "ok",
-    "bytes": 210296
+    "bytes": 210328
   },
   {
     "name": "inaya-profile",
@@ -141,6 +141,6 @@
     "az": 90,
     "label": "apres",
     "status": "ok",
-    "bytes": 210253
+    "bytes": 210279
   }
 ]
