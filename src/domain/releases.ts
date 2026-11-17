@@ -49,7 +49,7 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
-      version: '1.54.0',
+      version: '1.55.0',
       releaseDate: '2026-11-17',
       title: 'Kimonos plus fins et plus naturels',
       isMajor: false,
@@ -57,6 +57,17 @@ export const RELEASES: readonly Release[] = (
         { category: 'ameliorations', text: 'Kimonos de judo et de JJB refaits pour les cinq coachs : tissu à l’épaisseur d’un vrai kimono, col et ourlets plus fins, ceinture posée sur la veste.' },
         { category: 'ameliorations', text: 'Le tissu tombe au lieu de mouler les muscles : dos, manches et pantalon moins bouffants, bas de la veste qui tombe droit depuis les hanches.' },
         { category: 'corrections', text: 'Visages, corps, animations et autres tenues inchangés.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
+      version: '1.53.1',
+      releaseDate: '2026-11-17',
+      title: 'Victor : peau unie, cou raccordé',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Victor : les dernières taches sombres et grises du corps (flancs, dos, bras, jambes) sont effacées dans sa texture de peau. Muscles, poils et tatouages gardés.' },
+        { category: 'corrections', text: 'Victor : plus de zone claire entre la tête et le buste, le cou et le haut de la poitrine ont la couleur du corps. Visage, forme, tenues et autres coachs inchangés.' },
       ],
       links: [{ label: 'Voir les coachs', to: '/coach' }],
     },

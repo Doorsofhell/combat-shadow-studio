@@ -531,13 +531,13 @@ def new_obj(name, bm_):
 
 
 _BODY_BVH = []
-# 1.54: plain Laplacian (the cloth is pulled taut over the convex points, as by its weight) instead of Taubin
+# 1.55: plain Laplacian (the cloth is pulled taut over the convex points, as by its weight) instead of Taubin
 DRAPE_SHRINK = os.environ.get('DRAPE_SHRINK', '1') == '1'
 DRAPE_ARGS2 = True
 
 
 def drape_pass(o, clear, rounds=6, iters=12, keep_border=True):
-    """1.54 (Youssef 15/11 « les kimonos : trop gros, pas esthétique, pas réaliste, trop épais »): a shell copied
+    """1.55 (Youssef 15/11 « les kimonos : trop gros, pas esthétique, pas réaliste, trop épais »): a shell copied
     from the skin moulds every muscle (scapulae, glutes, biceps, the spine's groove) and reads as a padded suit.
     Real cloth rests on the convex points and spans the hollows. Taubin smoothing (removes the anatomy, keeps the
     overall size) alternated with a clamp that keeps the surface at least `clear` outside the skin. The free edges
@@ -590,7 +590,7 @@ def drape_pass(o, clear, rounds=6, iters=12, keep_border=True):
                 X[k] = tuple(q + nrm * (c - d))
     X0 = np.array([tuple(MW @ v.co) for v in o.data.vertices])
     dd = np.linalg.norm(X - X0, axis=1)
-    print('1.54 drape', o.name, 'points', n, 'déplacement médian mm', round(float(np.median(dd)) * 1000, 1), 'p90', round(float(np.percentile(dd, 90)) * 1000, 1))
+    print('1.55 drape', o.name, 'points', n, 'déplacement médian mm', round(float(np.median(dd)) * 1000, 1), 'p90', round(float(np.percentile(dd, 90)) * 1000, 1))
     for k, v in enumerate(o.data.vertices):
         v.co = MWI @ Vector(X[k])
 
@@ -1641,7 +1641,7 @@ def belt(color, z, extra=0.03):
 # 1.21 (Youssef 05/11 15:14: « applique toutes les améliorations effectuées sur Inaya sur les autres coachs »): all coaches
 # 1.43.1 Victor (Youssef 14/11 « inspire-toi fortement des planches »: kimono ajusté, tombant, pas bouffant): 0.45
 GI_FIT = float(os.environ.get('GI_FIT', '0.45' if COACH_ID == 'victor' else '0.6'))
-# 1.54 (Youssef 15/11 « trop gros, pas esthétique, pas réaliste, trop épais », option B chosen 17/11): '' = the gis of 1.53;
+# 1.55 (Youssef 15/11 « trop gros, pas esthétique, pas réaliste, trop épais », option B chosen 17/11): '' = the gis of 1.53;
 # 'fin' = real cloth thicknesses (jacket 2 mm, trousers and skirt 1.8 mm, collar 6 mm, belt 3 mm laid on the jacket,
 # thin hems); 'tombe' = 'fin' plus the drape pass (the cloth spans the hollows instead of moulding the muscles)
 GI_STYLE = os.environ.get('GI_STYLE', 'tombe')
@@ -1673,7 +1673,7 @@ def skirt(color, kind, top_z, length):
             # soft vertical folds of the hanging cloth, deeper towards the hem
             r += (0.006 if GI_STYLE == 'tombe' and kind != 'costume' else 0.004) * (k / n) * math.sin(ang * 9 + 0.7)
             if GI_STYLE == 'tombe' and kind != 'costume' and rows:
-                # 1.54: the cloth falls straight from the widest point of the hips and glutes, it never tucks back
+                # 1.55: the cloth falls straight from the widest point of the hips and glutes, it never tucks back
                 # in under them (the back of the skirt read as a stiff plate moulding the buttocks)
                 pr = MW @ rows[-1][j].co
                 # a little give (1.5 mm per row): the hem swings in softly instead of standing out as a box

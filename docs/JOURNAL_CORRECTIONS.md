@@ -4366,7 +4366,53 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Numéro** : préparée comme 1.46.0 ; renumérotée 1.47.0 après la fusion de la 1.46.0 (traversées, lot 2), publiée entre-temps.
 - **Restauration** : branche `restauration/avant-kadir-realisme` (= 1.45.2, b773812) ; la 1.46.0 = 066131d.
 
-## 2026-11-17 · v1.54.0 · Kimonos plus fins et plus naturels (option B « Tombé »)
+## 2026-11-17 · v1.53.1 · Victor : peau unie, cou raccordé
+
+- **Demande** (Youssef, 15/11 15:45, captures du genou direct en kick-boxing) : « Il y a encore des traces et des tâches
+  sur le corps de Victor… Il y aussi une jonction plus clair entre la tête et son buste. » Le 17/11 : repartir de la
+  dernière version en place et n'appliquer la correction que si elle est encore nécessaire.
+- **Préparée d'abord sur la 1.47.0 (15/11), non publiée** ; reprise sur la 1.53.0 (8e486ac + 920d6aa) le 17/11.
+- **Constat après vérification sur la 1.53.0** (captures WebGL du Lab, kick-boxing, garde, lumière vive) : le modèle de
+  Victor est identique octet pour octet à celui de la 1.47.0 ; les réglages de matière 1.48 à 1.53 (atténuation des
+  marques du corps en qualité haute, éclairage) ne suffisent pas :
+  - la texture du corps garde des plaques moyennes (10 à 45 px sur 1024) sombres ou grises, restes du fond gris et des
+    ombres des planches projetées (flanc et abdomen gauche, bras, cuisses). Mesure : rapport lumière locale / fond,
+    1er centile 0,70, 99e 1,25 ;
+  - le pectoral gauche porte une ombre grise et des points sombres à la place du mamelon (défaut de la planche) ;
+  - la texture de la tête porte aussi le cou et le haut de la poitrine ; ce morceau est plus clair et plus rose que la
+    poitrine du corps (médianes 199/141/116 contre 163/124/105) : c'est la « jonction plus claire », en forme de col.
+- **Correction** (périmètre : les deux textures de couleur de Victor, rien d'autre ; pas de reprise du chantier
+  cou/nuque 1.52 abandonné, qui portait sur Kadir) : `tools/generator/victor/peau_unie.py` (à ne passer qu'une fois)
+  sépare la lumière en bandes (détail fin < 3 px gardé, relief musculaire 3-6 px gardé à 90 %, traits clairs resserrés,
+  plaques 6-45 px resserrées, fond ramené au teint) et la couleur (taches ramenées au teint, détail gardé : tatouages,
+  poils), avec des flous normalisés par un masque de peau ; pectoral et oblique gauches repris en miroir du côté droit
+  (axe du sternum mesuré, x = 514/1024) ; sur la tête, cou + poitrine ramenés à la lumière et à la couleur du corps avec
+  un fondu vers la mâchoire. Après : 1er centile 0,88, 99e 1,10 ; poitrine de la tête 160/120/100 contre 153/115/97 au
+  corps ; visage et cheveux inchangés (écart moyen 0,6 et 1,2 sur 255, recompression JPEG).
+  `tools/generator/victor/swap_textures.mjs` pose les textures dans le modèle existant (attributs séparés), sans
+  reconstruire Victor depuis Kadir. Forme, os, UV, 25 expressions, tenues, matériaux 1.48-1.53 : inchangés.
+- **Limites** : un léger contour de l'île de texture de la tête reste visible de très près sur le haut de la poitrine ;
+  le trait du milieu du crâne (déjà présent) n'est pas traité.
+- **Fichiers** : `public/coaches/victor/photo.glb`, `tools/generator/victor/{peau_unie.py,swap_textures.mjs,README.md}`,
+  `tools/generator/victor/donnees/{body_color,head_color}.jpg`, `src/boot/assetSizes.json`, `src/domain/releases.ts`,
+  `package.json`, nouveau test `src/three/__tests__/victor-peau-v1531.test.ts` (plaques et raccord du cou mesurés).
+- **Tests** : `npx vitest run` : 1621 réussis, 5 échecs déjà présents en 1.47.0 (extension-v032 uppercut, fluidity ×2,
+  hooks-biomeca « pas d'armé », expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (connus, sans lien). `victor-peau-v1452`,
+  `outfit.test` (peau masquée de Victor), `premium-skin-v1480`, `premium-visual-v1490`, contrat humain : TEST RÉUSSI.
+  `npm run build` : TEST RÉUSSI (titre v1.53.1). `npx playwright test` (299 tests, 54 min) : 292 réussis, 2 ignorés
+  (Firebase), 5 échecs : TEST ÉCHOUÉ. Quatre échouent aussi seuls sur la 1.53.0 non modifiée (`coaching-hud:60`,
+  `consignes-v130:27`, `corrections-v110:53`, `training-layout:117`). Le cinquième, `encyclopedie:54` (filtres de la
+  liste), a échoué dans la suite complète et une fois seul sur la 1.53.1, puis a réussi 3 fois sur 3 seul
+  (`--repeat-each 3`) : le compte des résultats est lu avant la fin de l'affichage de la liste, sans lien avec les
+  textures de Victor. Contrôle `matched-webgl` de GitHub : ÉCHOUÉ, mais il teste la branche figée
+  `feature/premium-visual-v1490` et pas cette PR (expiration des captures « après » pour les cinq coachs). Android :
+  NON EXÉCUTÉ.
+- **Captures** : WebGL réelles, même personnage, tenue, pose, caméra, résolution ; seule la texture change. Page
+  avant/après : https://claude.ai/artifact/MV8CneamJgBhY3Fco2696R
+- **Validation** : Youssef, 17/11 13:15 (« Je valide »), sur la page avant/après. PR #133.
+- **Restauration** : branche `restauration/avant-victor-peau-v1531` (= 1.53.0, 920d6aa).
+
+## 2026-11-17 · v1.55.0 · Kimonos plus fins et plus naturels (option B « Tombé »)
 
 - **Demande** : Youssef, 15/11 15:47 : « les kimonos … trop gros. Pas esthétique. Pas réaliste. Trop épais ». Deux
   options montrées en images (A « Affiné », B « Tombé ») ; B choisie le 17/11 à 08:02. Le 17/11 à 08:24 : repartir de
@@ -4389,16 +4435,17 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     1.37.0 (déplacés par `tenues_suivent.py`) ; ils sont maintenant bâtis sur son corps actuel (1,06 Mo → 1,5 Mo
     chacun, comme ceux de Naël et Victor). Autres tenues, corps, visages et animations : inchangés.
 - **Fichiers** : `tools/generator/rocketbox/outfits.py`, `public/coaches/{mma-kadir,mma-amara,nael,inaya,victor}/tenues/{judo,bjj}.glb`,
-  `src/boot/assetSizes.json`, `src/domain/releases.ts`, `package.json`, `docs/v1540-kimonos/` (manifeste, 80 captures),
-  `scripts/dev/shot-kimonos-v1540.mjs`.
+  `src/boot/assetSizes.json`, `src/domain/releases.ts`, `package.json`, `docs/v1550-kimonos/` (manifeste, 80 captures),
+  `scripts/dev/shot-kimonos-v1550.mjs`.
 - **Tests modifiés, avec raison** : `outfit-rollback-v1373.test.ts` (Kadir) et `outfit-amara-v1374.test.ts` (Inaya) :
   nouvelles empreintes pour judo et bjj seulement, kimonos refaits à la demande de Youssef ; les shorts et le no-gi
   gardent les leurs.
 - **Tests** : `npx vitest run` : 1619 réussis, 5 échecs identiques aux versions précédentes (extension-v032 uppercut,
   fluidity ×2, hooks-biomeca « pas d'armé », expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (connus, sans lien).
-  Tests des tenues et du moteur humain : TEST RÉUSSI. `npm run build` : TEST RÉUSSI (titre v1.54.0).
+  Tests des tenues et du moteur humain : TEST RÉUSSI. `npm run build` : TEST RÉUSSI (titre v1.55.0).
   `npx playwright test` (299 tests, 55 min) : 294 réussis, 2 ignorés (Firebase), 3 échecs : `boot:98` et
   `coaching-hud:60` (connus), `training-layout:117` (délai dépassé ; échoue aussi seul sur la 1.53.0, vérifié) :
   TEST ÉCHOUÉ (sans lien avec les kimonos). Captures WebGL avant/après des 5 coachs, 8 vues : RÉALISÉES
-  (`docs/v1540-kimonos/MANIFEST.md`). Android : NON EXÉCUTÉ. Vignettes et illustrations judo/JJB : NON REFAITES.
+  (`docs/v1550-kimonos/MANIFEST.md`). Android : NON EXÉCUTÉ. Vignettes et illustrations judo/JJB : NON REFAITES.
+- **Numéro** : préparée comme 1.54.0 ; renumérotée 1.55.0 (la 1.54.0 est prise par Kanya, PR #134) après fusion de la 1.53.1 (Victor : peau seule, géométrie de son corps identique, vérifié : ses kimonos restent valables).
 - **Restauration** : branche `restauration/avant-kimonos-v1540` (= 1.53.0, 920d6aa).
