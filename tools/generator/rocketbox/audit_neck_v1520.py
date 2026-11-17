@@ -7,6 +7,8 @@ Usage: python tools/generator/rocketbox/audit_neck_v1520.py GLB [GLB ...]
 import json
 import struct
 import sys
+from io import BytesIO
+from PIL import Image
 from pathlib import Path
 import numpy as np
 from scipy.spatial import cKDTree
@@ -102,6 +104,43 @@ def inspect(path):
         im = document.get('images', [])[image_id] if image_id is not None else {}
         return {'textureIndex': tid, 'texCoord': tx.get('texCoord', 0),
                 'imageMime': im.get('mimeType'), 'imageName': im.get('name')}
+    def image_for_material(mat):
+        tx = mat.get('pbrMetallicRoughness', {}).get('baseColorTexture', {})
+        t = tx.get('index')
+        if t is None: return None
+        imgid = document['textures'][t].get('source')
+        if imgid is None: return None
+        desc = document['images'][imgid]
+        if 'bufferView' not in desc: return None
+        bv = document['bufferViews'][desc['bufferView']]
+        pos = bv.get('byteOffset', 0)
+        return np.asarray(Image.open(BytesIO(bytes(binary[pos:pos+bv['byteLength']]))).convert('RGB'))
+    def colour_at(image, uv):
+        # glTF texcoords use lower-left origin; image arrays use upper-left.
+        # Nearest sampling is sufficient for a colour-seam diagnostic, not repainting.
+        x = np.clip((uv[:, 0] % 1 * (image.shape[1] - 1)).astype(int), 0, image.shape[1] - 1)
+        y = np.clip(((1 - uv[:, 1] % 1) * (image.shape[0] - 1)).astype(int), 0, image.shape[0] - 1)
+        return image[y, x].astype(np.float64)
+    color_gap = None
+    if np.any(close_neck) and 'TEXCOORD_0' in head['attributes'] and 'TEXCOORD_0' in body['attributes']:
+        head_image = image_for_material(hm)
+        body_image = image_for_material(bm)
+        if head_image is not None and body_image is not None:
+            head_uv = read(head['attributes']['TEXCOORD_0'])[close_neck]
+            body_uv = read(body['attributes']['TEXCOORD_0'])[idx[close_neck]]
+            h_rgb = colour_at(head_image, head_uv)
+            b_rgb = colour_at(body_image, body_uv)
+            delta = np.linalg.norm(h_rgb - b_rgb, axis=1)
+            color_gap = {
+                'samples': len(delta),
+                'headTextureSize': list(head_image.shape[:2][::-1]),
+                'bodyTextureSize': list(body_image.shape[:2][::-1]),
+                'medianRgbDistance': round(float(np.median(delta)), 2),
+                'p90RgbDistance': round(float(np.quantile(delta, .9)), 2),
+                'maxRgbDistance': round(float(delta.max()), 2),
+                'headMedianRgb': np.median(h_rgb, axis=0).round().astype(int).tolist(),
+                'bodyMedianRgb': np.median(b_rgb, axis=0).round().astype(int).tolist(),
+            }
     report = {
         'file': str(path), 'headMaterial': headname, 'bodyMaterial': bodyname,
         'headVertices': len(h), 'bodyVertices': len(b),
@@ -119,6 +158,7 @@ def inspect(path):
         'headUVPresent': 'TEXCOORD_0' in head['attributes'],
         'bodyUVPresent': 'TEXCOORD_0' in body['attributes'],
         'headTexture': texture_info(hm), 'bodyTexture': texture_info(bm),
+        'colourDiscontinuityAtCoincidentNeckVertices': color_gap,
         'headHasWeights': 'WEIGHTS_0' in head['attributes'],
         'bodyHasWeights': 'WEIGHTS_0' in body['attributes'],
     }
@@ -132,7 +172,7 @@ def main():
         print(json.dumps(item, indent=2))
     output = Path('captures/v1520/neck-glb-audit.json')
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(result, indent=2) + '\\n', encoding='utf-8')
+    output.write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
     print('WROTE', output)
 if __name__ == '__main__':
     main()
