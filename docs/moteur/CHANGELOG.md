@@ -6,6 +6,10 @@ Le numéro du moteur (`ENGINE_VERSION`, `src/engine/index.ts`) est indépendant 
 - **mineure** (1.x.0) : un ajout (une technique, un outil, un réglage) qui ne casse rien ;
 - **majeure** (x.0.0) : un changement que l'application doit suivre.
 
+## 1.2.2 · 2026-11-17 (application v1.51.0)
+
+- Entrées de judo corrigées (`grappling.ts`) : pas d'entrée de seoi-nage et d'o-goshi moins croisé, retour par un pas en arrière du pied gauche (`stepBack`), bras d'o-goshi par l'extérieur, main de manche d'o-soto-gari tenue dans le repère du buste.
+
 ## 1.2.1 · 2026-11-15 (application v1.46.0)
 
 - Trajets corrigés geste par geste, sans changement du solveur : entrée de lutte et relevé technique (`mma.ts`), retrait (`boxing.ts`), rattrapage du middle (`legs.ts`).

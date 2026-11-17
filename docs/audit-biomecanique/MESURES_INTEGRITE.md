@@ -31,4 +31,4 @@ Lus sur les images clés seulement (pas sur le mouvement joué) : hanches à plu
 
 ## Contrôle non retenu
 
-`PLANTED_FOOT_MOVE` (pied d’appui qui change de place entre deux clés) : 12680 signalements, presque tous des pas et des pivots voulus. Le glissement que le coach montre vraiment est mesuré sur le squelette posé, image par image (MESURES_GLISSEMENT.md).
+`PLANTED_FOOT_MOVE` (pied d’appui qui change de place entre deux clés) : 12920 signalements, presque tous des pas et des pivots voulus. Le glissement que le coach montre vraiment est mesuré sur le squelette posé, image par image (MESURES_GLISSEMENT.md).

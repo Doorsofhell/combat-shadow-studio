@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.51.0',
+      releaseDate: '2026-11-17',
+      title: 'Judo : des entrées qui ne traversent plus le corps',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Seoi-nage et o-goshi : au retour, le pied gauche recule d’abord, les jambes ne se croisent plus à travers l’autre cuisse.' },
+        { category: 'corrections', text: 'O-goshi : le bras droit fait le tour de la taille du partenaire par l’extérieur, sans passer dans le ventre du coach.' },
+        { category: 'corrections', text: 'O-soto-gari : la main qui tire la manche reste sur le côté des côtes et suit le buste.' },
+      ],
+      links: [{ label: 'Voir les techniques', to: '/techniques' }],
+    },
+    {
       version: '1.50.0',
       releaseDate: '2026-11-16',
       title: 'Étude visuelle combat premium — Amara et Victor',

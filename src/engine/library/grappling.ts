@@ -171,6 +171,21 @@ function baseSwitch(a: Author): Motion {
 
 // ------------------------------------------------------------------ judo (standing, solo)
 
+/**
+ * 1.47.1: on the way back from a turning entry (seoi-nage, o-goshi) the left foot first steps back, away from the
+ * right foot, before going round to its place in the stance. Going straight across, its thigh passed through the
+ * right leg (up to 7 cm).
+ */
+function stepBack(a: Author, fit: Pose, step: Pose): Pose {
+  const s = a.s;
+  return edit(step, (d) => {
+    d.hips = v3((fit.hips.x + step.hips.x) / 2, (fit.hips.y + step.hips.y) / 2, (fit.hips.z + step.hips.z) / 2);
+    d.pelvis = { ...d.pelvis, yaw: (fit.pelvis.yaw + step.pelvis.yaw) / 2 };
+    const yaw = step.footL.mode === 'ground' && fit.footL.mode === 'ground' ? (fit.footL.yaw + step.footL.yaw) / 2 : 0;
+    d.footL = a.ground(v3(-0.1 * s, 0, 0.04 * s), yaw, deg(20));
+  });
+}
+
 /** tai-sabaki: the body turns about the lead foot, the rear foot sweeps a half-circle, then back */
 function taiSabaki(a: Author): Motion {
   const g = a.guard();
@@ -247,7 +262,7 @@ function uchikomiSeoi(a: Author): Motion {
     d.hips = v3(-0.02 * s, d.hips.y - 0.05 * s, 0.12 * s);
     // right seoi-nage: the right hip leads the turn (turning the other way would cross the legs)
     d.pelvis.yaw += deg(80);
-    d.footR = a.ground(v3(0.02 * s, 0, 0.3 * s), deg(105), 0);
+    d.footR = a.ground(v3(-0.05 * s, 0, 0.3 * s), deg(105), 0);
     // the left foot pivots on its ball with the hips (a planted foot would twist the left hip inward
     // far past its range)
     if (d.footL.mode === 'ground') d.footL = a.ground(d.footL.ball, d.footL.yaw + deg(45), deg(20));
@@ -274,6 +289,7 @@ function uchikomiSeoi(a: Author): Motion {
       { t: 0.3, pose: step, ease: 'inOut' },
       { t: 0.6, pose: fit, ease: 'snap' },
       { t: 0.85, pose: fit, ease: 'linear' },
+      { t: 1.0, pose: stepBack(a, fit, step), ease: 'inOut' },
       { t: 1.15, pose: step, ease: 'inOut' },
       { t: 1.5, pose: g, ease: 'inOut' },
     ],
@@ -411,8 +427,11 @@ function uchikomiOgoshi(author: Author): Motion {
   const step = edit(g, (d) => {
     d.hips = v3(-0.02 * s, d.hips.y - 0.05 * s, 0.12 * s);
     d.pelvis.yaw += deg(80);
-    d.footR = a.ground(v3(0.02 * s, 0, 0.3 * s), deg(105), 0);
+    d.footR = a.ground(v3(-0.05 * s, 0, 0.3 * s), deg(105), 0);
     if (d.footL.mode === 'ground') d.footL = a.ground(d.footL.ball, d.footL.yaw + deg(45), deg(20));
+    // 1.47.1: the right arm opens wide on the way round the partner's waist (going straight, the hand passed
+    // through the coach's own trunk)
+    d.handR = a.hand('world', v3(0.3 * s, a.m.hipsRest.y + 0.1 * s, 0.5 * s), v3(1, -0.4, -0.2), -0.2, 0.7);
   });
   const fit = edit(g, (d) => {
     // the hips go a little further across than for seoi-nage: the right hip passes the partner's centre
@@ -435,6 +454,7 @@ function uchikomiOgoshi(author: Author): Motion {
       { t: 0.3, pose: step, ease: 'inOut' },
       { t: 0.62, pose: fit, ease: 'snap' },
       { t: 0.88, pose: fit, ease: 'linear' },
+      { t: 1.03, pose: stepBack(a, fit, step), ease: 'inOut' },
       { t: 1.18, pose: step, ease: 'inOut' },
       { t: 1.52, pose: g, ease: 'inOut' },
     ],
@@ -460,7 +480,9 @@ function uchikomiOsoto(author: Author): Motion {
   const pullHands = (d: Pose, k: number) => {
     // 1.41.1 (traversées du corps): the lapel hand pushes a little further in front, so that the right forearm stays
     // out of the chest as it leans in (up to 14,8 cm before)
-    d.handL = a.hand('world', v3(0.22 * s, a.m.hipsRest.y + 0.08 * s, d.hips.z + 0.05 * s), v3(0.8, -1, -0.3), 0.3, 0.9);
+    // 1.47.1: the sleeve hand is held in the chest frame, so it follows the trunk as it leans in and comes back up
+    // (in ground space the trunk moved onto it: up to 11 cm as the chest came up)
+    d.handL = a.hand('chest', a.toChest(d, v3(0.3 * s, a.m.hipsRest.y + 0.2 * s, d.hips.z + 0.16 * s)), v3(0.8, -1, -0.3), 0.3, 0.9);
     d.handR = a.hand('world', v3(-0.04 * s, shY - 0.1 * s - k * 0.04 * s, d.hips.z + 0.5 * s), v3(-0.7, -1, -0.1), 0.5, 0.9);
   };
   const stepIn = edit(g, (d) => {
