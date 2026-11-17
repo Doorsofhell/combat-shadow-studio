@@ -1,0 +1,92 @@
+name: v1.52.0 - Real WebGL neck comparison (no deployment)
+
+on:
+  push:
+    branches:
+      - feature/neck-nape-v1520
+    paths-ignore:
+      - 'captures/v1520/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: neck-v1520
+  cancel-in-progress: false
+
+jobs:
+  render-compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout v1.52 candidate
+        uses: actions/checkout@v4
+        with:
+          ref: feature/neck-nape-v1520
+          persist-credentials: true
+      - name: Checkout exact published 1.51 baseline
+        uses: actions/checkout@v4
+        with:
+          ref: d7169f22799dd09d12ca35a298caf09df7ba9d0e
+          path: reference-v1510
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install both source trees
+        run: |
+          npm ci
+          npm ci --prefix reference-v1510
+          npx playwright install --with-deps chromium
+      - name: Neck regression tests
+        run: npm run test -- src/three/__tests__/photo-neck-continuity-v1520.test.ts src/three/__tests__/premium-skin-v1480.test.ts
+      - name: Verify production bundle
+        run: npm run build
+      - name: Render matched real WebGL canvases
+        run: node scripts/visuels/v1520-neck-before-after.mjs
+      - name: Compose side-by-side comparison PNGs
+        run: |
+          python3 -m pip install --user pillow
+          python3 - <<'PY'
+          from PIL import Image, ImageDraw
+          from pathlib import Path
+          import json
+          root=Path('captures/v1520')
+          manifest=json.loads((root/'manifest.json').read_text())
+          assert len(manifest)==30 and all(x['status']=='ok' for x in manifest), 'Incomplete WebGL capture'
+          out=root/'comparatifs'
+          out.mkdir(exist_ok=True)
+          for coach in ['kadir','amara','nael','inaya','victor']:
+            for angle in ['three-quarter','profile','back']:
+              stem=f'{coach}-{angle}.png'
+              a=Image.open(root/'avant'/stem).convert('RGB')
+              b=Image.open(root/'apres'/stem).convert('RGB')
+              assert a.size==b.size
+              w,h=a.size
+              canvas=Image.new('RGB',(w*2,h+42),'#14161d')
+              canvas.paste(a,(0,42)); canvas.paste(b,(w,42))
+              draw=ImageDraw.Draw(canvas)
+              draw.text((20,14),'AVANT — 1.51.0',fill='white')
+              draw.text((w+20,14),'APRES — 1.52.0 (essai)',fill='white')
+              canvas.save(out/stem,optimize=True)
+          print('15 true paired comparisons generated')
+          PY
+      - name: Commit comparison images on candidate branch
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add captures/v1520/
+          if ! git diff --cached --quiet; then
+            git commit -m "test(1.52): real matched WebGL before-after neck captures [skip ci]"
+            git push origin HEAD:feature/neck-nape-v1520
+          fi
+      - name: Upload visual comparisons for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neck-v1520-real-webgl-comparisons
+          path: captures/v1520/
+          if-no-files-found: warn
