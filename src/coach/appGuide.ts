@@ -261,11 +261,11 @@ export const APP_GUIDE: GuideEntry[] = [
   {
     id: 'choose-coach',
     title: 'Choisir son coach',
-    keywords: ['changer de coach', 'choisir mon coach', 'choisir un coach', 'choix du coach', 'autre coach', 'mon coach', 'kadir', 'amara', 'nael', 'inaya', 'victor', 'coach homme', 'coach femme'],
+    keywords: ['changer de coach', 'choisir mon coach', 'choisir un coach', 'choix du coach', 'autre coach', 'mon coach', 'kadir', 'amara', 'nael', 'inaya', 'victor', 'kanya', 'coach homme', 'coach femme'],
     screens: ['coach-choix'],
     answer:
-      'Tu as cinq coachs : Kadir « L’Aigle », lutteur patient à la pression constante ; Naël « Le Faucon », contreur rapide ; Victor « Le Loup gris », vétéran calme et technique ; Amara « La Lionne », frappeuse puissante à la garde haute ; Inaya « La Panthère », explosive, qui frappe des jambes à distance. Tous montrent les mêmes techniques.\n' +
-      'L’écran de choix montre le coach en grand et en 3D : fais-le tourner du doigt, passe au suivant avec les flèches, les cinq vignettes ou en balayant sa fiche, et touche l’icône ronde de lecture pour le voir bouger. Rien ne change tant que tu n’as pas touché « Choisir ».\n' +
+      'Tu as six coachs : Kadir « L’Aigle », lutteur patient à la pression constante ; Naël « Le Faucon », contreur rapide ; Victor « Le Loup gris », vétéran calme et technique ; Amara « La Lionne », frappeuse puissante à la garde haute ; Inaya « La Panthère », explosive, qui frappe des jambes à distance ; Kanya « La Tigresse », Kru de muay-thaï, reine du clinch, des coudes et des genoux. Tous montrent les mêmes techniques.\n' +
+      'L’écran de choix montre le coach en grand et en 3D : fais-le tourner du doigt, passe au suivant avec les flèches, les six vignettes ou en balayant sa fiche, et touche l’icône ronde de lecture pour le voir bouger. Rien ne change tant que tu n’as pas touché « Choisir ».\n' +
       'Pour l’ouvrir : « Changer de coach » sur l’accueil, « Mon coach » dans Compte, Réglages puis « Mon coach », ou « Options » pendant une séance. Tes statistiques sont conservées.',
     action: { to: '/coach', label: 'Choisir mon coach' },
   },

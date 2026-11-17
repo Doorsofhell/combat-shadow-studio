@@ -4412,6 +4412,69 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Validation** : Youssef, 17/11 13:15 (« Je valide »), sur la page avant/après. PR #133.
 - **Restauration** : branche `restauration/avant-victor-peau-v1531` (= 1.53.0, 920d6aa).
 
+## 2026-11-17 · v1.54.0 · Nouvelle coach : Kanya « La Tigresse », Kru de muay-thaï
+
+- **Demande** : Youssef, 2026-11-15 16:02 (modifiée à 16:08), « PROFIL 3D : KANYA — COACH MUAY THAÏ (KRU) —
+  COMPATIBLE ROCKETBOX » : 42 ans, ancienne championne devenue Kru, clinch, coudes et genoux ; 2 planches à 7 vues
+  (corps, tête) et 4 visuels de détail (dos et tatouages Sak Yant, bras, short et chevillères, paos), visuels synthétiques
+  générés par Gemini, libres d'utilisation. Règles 3D strictes : pas de pont à l'entrejambe, maillage étanche, pas de peau
+  qui traverse le tissu, vraie épaisseur aux ourlets. Copies des planches : `tools/generator/kanya/planches/`.
+- **Constat vérifié** : aucun corps Rocketbox féminin libre n'est plus proche des planches que celui d'Inaya (même
+  morphologie tonique, squelette compatible). Méthode Victor : copie du coach, nouveau visage et nouvelles textures,
+  Inaya inchangée. Les deux défauts connus de Victor (plaques sombres venues des ombres de ses planches, raccord tête/cou
+  plus clair) sont évités par un « délumage » des vues et une égalisation basse fréquence de la peau mesurée sur la peau
+  seule, avec le même gain de teint sur la tête et le corps.
+- **Correction** (nouveaux outils dans `tools/generator/kanya/`, README) :
+  - tête : chignon bas d'Inaya effacé (552 points ramenés sur le crâne, rosace de sa texture et de sa carte de relief
+    repeinte), pommettes et mâchoire retouchées (≤ 1,4 mm), visage projeté depuis les vues de face, de profil et de dos
+    de la planche 2 (plaque mince sur des repères relevés à la main), cheveux noirs tirés, iris brun foncé ;
+  - chignon haut : maillage à part sur l'os `Head` (2 145 points, sillons en spirale, matière `Hair_chignon`, classée
+    « cheveux » par `photoPart`) ;
+  - tatouages Sak Yant tirés de la planche 3 : nuque (géométrique), omoplate gauche (écritures), omoplate droite (double
+    tigre), épaules ;
+  - modèle `public/coaches/kanya/photo.glb` (3,40 Mo) par `tools/generator/rocketbox/kanya_build.mjs` : 25 expressions,
+    os des yeux, cou et tête d'Inaya conservés (`morph_apply.py` non relancé, comme pour Victor) ;
+  - tenues (`outfits.py`, palette `kanya`, `generatorVersion` 1.51.0) : en muay-thaï brassière dos nageur noire à liseré
+    doré avec « COACH » doré et « MUAY THAI » rouge, short satiné noir à larges panneaux et ourlet dorés avec « มวยไทย »
+    (police Kanit Bold, SIL OFL 1.1 comme Inter, `tools/generator/kanya/polices/`), bandages noirs et rouges doigts libres (`hand_wraps`), Pra Jiad
+    tressés rouge et blanc à 4 franges (`prajioud_v2` bicolore), chevillères à liseré rouge ; pas de gants. Les six autres
+    tenues reprennent les coupes communes à ses couleurs (noir, or, rouge) ;
+  - short muay-thaï : la couture de l'entrejambe sortait froissée (1,7 % de faces retournées, limite 1 % ; étirement 6,5
+    en high kick, limite 6) : lissage local de la couture (`crotch_relax`, Kanya seule) → 0,7 % et dans la limite ;
+  - application : catalogue (`EXTRA_COACHES`, sixième vignette), apparence, garde propre (`COACH_STANCES.kanya` : garde
+    haute, coudes serrés), profil du moteur humain (`contract: 'complet'`), réglages de peau, guide du coach IA (« six
+    coachs »), portrait.
+- **Écarts au cahier des charges, à valider par Youssef** :
+  - taille : le modèle garde la taille d'Inaya (1,73 m, 65 kg mesurés sur le modèle) au lieu de 1,68 m / 61 kg. À 1,68 m
+    (`KANYA_SCALE=0.9687`), les gestes du moteur, écrits en mètres pour des corps de 1,73 à 1,81 m, plient l'aine de 77° en
+    high kick (Inaya 66°, limite 70°) et font glisser le pied du kuzushi à 3,3 cm par image : rendre le moteur
+    proportionnel à la taille du coach est un lot à part ;
+  - le devant de la brassière garde la forme en bonnets du patron commun (la planche montre un devant plein), la ceinture
+    du short n'a pas les rayures dorées, paos et ceinture abdominale (optionnels) non faits.
+- **Tests adaptés, avec raison** : listes de coachs complétées par Kanya (contrat humain, regard, visage, comportement,
+  tenues, déformations, glissement, intégrité, sol, shorts…) ; nombre de coachs 5 → 6 ; e2e choix du coach (6 vignettes,
+  Kanya après Inaya) ; `realisme-v1100` : en muay-thaï Kanya porte des bandages, le contrôle des gants y est remplacé
+  par un contrôle des bandages (pas de gants, doigts libres, jointures et poignet couverts, la main ne suit pas
+  l'avant-bras) ; base des déformations de Kanya = celles d'Inaya aujourd'hui ; glissement : deux balayages en attente
+  bornés pour Kanya à leur valeur 1.51.0 (`releve-technique` 10,6 au lieu de 10,5, `kuzushi` 2,05 au lieu de 2,0 cm par
+  image, même corps qu'Inaya, sa garde propre) ; préchargement au premier lancement (tous les coachs et toutes leurs
+  tenues) : 122 Mo mesurés, limite relevée de 110 à 125 Mo (110 Mo valait pour les six coachs de la 1.25, plus légers).
+- **Tests** : `npx vitest run` : 1 689 réussis, 5 ÉCHOUÉS déjà sur la 1.50.0 sans Kanya (vérifié sur 7068f78 :
+  `expressions-v1160` taille d'Amara 4,86 Mo, `extension-v032` uppercut-arrière, `hooks-biomeca` crochet-avant, deux de
+  `fluidity`) ; `npm run build` réussi ; `npx playwright test` sur la 1.54.0 : 293 RÉUSSIS, 2 ignorés, 4 ÉCHOUÉS
+  hors Kanya : `coaching-hud:60`, `training-layout:117` (déjà connus), `consignes-v130:27` (échoue aussi sur la 1.53.0
+  sans Kanya, vérifié sur 920d6aa), `corrections-v110:53` (RÉUSSI relancé seul).
+- **Mise à jour sur la 1.53.0** (Youssef, 17/11 09:24 et 10:06 : « repartir de l'existant… n'appliquer que si encore
+  nécessaire » ; « Kanya doit bénéficier de toutes les améliorations apportées aux autres coachs ») : le lot, préparé sur
+  la 1.50.0, est fusionné avec la version publiée 1.53.0 (`claude/project-thread-o7lrt8`, 920d6aa) et prend le numéro
+  1.54.0 (1.51.0 à 1.53.1 sont pris ; la 1.53.1, peau de Victor, est aussi fusionnée : rien à reprendre pour Kanya). Kanya reçoit : le profil optique premium 1.51.0 (`FIGHTER_PILOT_150.kanya`, celui
+  d'Inaya dont elle partage le corps et la peau photo, test `fighter-visual-v1510` étendu) ; l'éclairage cinématographique
+  1.53.0 s'applique à tous les coachs sans réglage par coach. Les réglages 1.48 à 1.50 (finition premium, filtrage des
+  textures) étaient déjà repris. Le numéro `generatorVersion` des tenues reste « 1.51.0 » (version du générateur qui les a
+  construites).
+- **Restauration** : branches `restauration/avant-kanya-v151` (1.50.0, 7068f78) et `restauration/avant-kanya-v154`
+  (1.53.0, 920d6aa).
+
 ## 2026-11-17 · v1.55.0 · Kimonos plus fins et plus naturels (option B « Tombé »)
 
 - **Demande** : Youssef, 15/11 15:47 : « les kimonos … trop gros. Pas esthétique. Pas réaliste. Trop épais ». Deux

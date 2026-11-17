@@ -3,7 +3,7 @@ import { MeshPhysicalMaterial, MeshStandardMaterial } from 'three';
 import { photoMaterial, PREMIUM_FINISH, FIGHTER_PILOT_150, SKIN_LOOK, skinLookFor } from '../photoMaterials';
 
 describe('1.48.0 premium skin: isolated per-coach calibration', () => {
-  const ids = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor'] as const;
+  const ids = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor', 'kanya'] as const;
   test.each(ids)('%s uses a dedicated high quality skin, eye and hair finish', id => {
     const look = skinLookFor('/coaches/' + id + '/photo.glb');
     const finish = PREMIUM_FINISH[id]!;

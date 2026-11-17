@@ -1355,10 +1355,12 @@ def prajioud(s, color):
     return [t]
 
 
-def prajioud_v2(s, color):
+def prajioud_v2(s, color, color2=None, tails=2, tail_len=0.045):
     """v0.43 prajioud (Youssef, 2026-10-23: « équipements simplifiés »). Before: a smooth ring 12 mm away from the arm
     all round, floating. Now a braided cord laid on the arm: its path follows the measured outline of the upper arm
-    (one radius per direction), two twisted strands, a knot on the outside of the arm with two short tails"""
+    (one radius per direction), two twisted strands, a knot on the outside of the arm with two short tails.
+    1.51 Kanya (planche 4) : color2 = second brin (tresse rouge et blanche), `tails` franges libres plus longues et plus
+    fines, un petit nœud au bout de chacune ; sans color2 rien ne change pour les autres coachs"""
     a, b = H[f'{s}Arm'], H[f'{s}ForeArm']
     ax = (b - a).normalized()
     c = a + (b - a) * 0.42
@@ -1407,28 +1409,42 @@ def prajioud_v2(s, color):
         rows.append(row)
     for j in range(SEG):
         for k_ in range(AROUND):
-            bm_.faces.new([rows[j][k_], rows[(j + 1) % SEG][k_], rows[(j + 1) % SEG][(k_ + 1) % AROUND], rows[j][(k_ + 1) % AROUND]])
+            f_ = bm_.faces.new([rows[j][k_], rows[(j + 1) % SEG][k_], rows[(j + 1) % SEG][(k_ + 1) % AROUND], rows[j][(k_ + 1) % AROUND]])
+            if color2:
+                # the two strands: one each side of the turning pinch, the white one a little narrower
+                ph_ = 2 * math.pi * (k_ + 0.5) / AROUND
+                t2 = 2 * math.pi * (j + 0.5) / SEG
+                f_.material_index = 1 if math.cos(ph_ - 7 * t2) > 0.25 else 0
     # knot on the outside of the arm and two tails hanging toward the elbow
     kc = ring_pt(0.0) + e1 * 0.004
     bmesh.ops.create_uvsphere(bm_, u_segments=12, v_segments=8, radius=1.0,
                               matrix=Matrix.Translation(MWI @ kc) @ (MWI.to_3x3() @ Matrix.Diagonal((0.011, 0.012, 0.011))).to_4x4())
-    for sgn in (-1, 1):
+    nknot = len(bm_.faces)
+    for ti in range(tails):
+        sgn = -1 + 2 * ti / (tails - 1) if tails > 1 else 0
         start = kc + e2 * (0.006 * sgn)
-        end = start + ax * 0.045 + e1 * 0.006 + e2 * (0.008 * sgn)
+        end = start + ax * tail_len * (1 - 0.12 * (ti % 2)) + e1 * 0.006 + e2 * (0.008 * sgn)
         prev = None
+        thin = 0.55 if color2 else 1.0
         for j in range(7):
             u_ = j / 6
             q_ = start.lerp(end, u_)
             d_ = (end - start).normalized()
             n1 = d_.cross(e2).normalized()
             n2 = d_.cross(n1).normalized()
-            rr = cr * (0.85 - 0.25 * u_)
+            rr = cr * (0.85 - 0.25 * u_) * thin
+            if color2 and j == 6:
+                rr *= 1.6  # the little knot at the end of each fringe
             row = [bm_.verts.new(MWI @ (q_ + (n1 * math.cos(2 * math.pi * k_ / 8) + n2 * math.sin(2 * math.pi * k_ / 8)) * rr)) for k_ in range(8)]
             if prev:
                 for k_ in range(8):
-                    bm_.faces.new([prev[k_], row[k_], row[(k_ + 1) % 8], prev[(k_ + 1) % 8]])
+                    f_ = bm_.faces.new([prev[k_], row[k_], row[(k_ + 1) % 8], prev[(k_ + 1) % 8]])
+                    if color2:
+                        f_.material_index = ti % 2
             prev = row
-        bm_.faces.new(prev[::-1])
+        f_ = bm_.faces.new(prev[::-1])
+        if color2:
+            f_.material_index = ti % 2
     bmesh.ops.recalc_face_normals(bm_, faces=bm_.faces[:])
     o = new_obj(f'prajioud-{s}', bm_)
     bm_.free()
@@ -1436,6 +1452,8 @@ def prajioud_v2(s, color):
     for p_ in o.data.polygons:
         p_.use_smooth = True
     o.data.materials.append(fabric(f'cordon-{color}', color, 'knit', rough=0.8, strength=2))
+    if color2:
+        o.data.materials.append(fabric(f'cordon-{color2}', color2, 'knit', rough=0.8, strength=2))
     weighted(o, {f'{s}Arm': 1.0})
     print('prajioud', s, len(o.data.polygons), 'faces, arm radius', round(sum(rad) / NA, 3))
     return [o]
@@ -1871,6 +1889,43 @@ def drape(i, s, crotch):
     return r.normalized() * DRAPE_AMP * wave * zf * (1 - 0.8 * crotch)
 
 
+def crotch_relax(o, iters=6, k=0.5):
+    """1.51 Kanya : son short thaï, plus court et à larges panneaux, laissait à l'entrejambe une couture froissée
+    (1,7 % de faces retournées, au-dessus de la limite de 1 % du contrôle 1.44.2). Lissage de Laplace local, seulement
+    sur la couture (|x| < 5 cm, du bas du bassin à 4 cm au-dessus de l'entrejambe), qui s'efface en douceur vers
+    l'extérieur ; les points d'un bord (ourlet, coupe) ne bougent pas. Les autres coachs ne passent pas ici."""
+    me_ = o.data
+    MW_ = o.matrix_world
+    MWi = MW_.inverted()
+    bm_ = bmesh.new()
+    bm_.from_mesh(me_)
+    bm_.verts.ensure_lookup_table()
+    z0, z1 = hipZ - 0.2, hipZ - 0.04
+
+    def fade(q):
+        x = max(0.0, min(1.0, (0.05 - abs(q.x)) / 0.03))
+        zl = max(0.0, min(1.0, (q.z - z0) / 0.03))
+        zh = max(0.0, min(1.0, (z1 - q.z) / 0.03))
+        return x * zl * zh
+    W_ = {v.index: fade(MW_ @ v.co) for v in bm_.verts}
+    moving = [v for v in bm_.verts if W_[v.index] > 0.001 and not v.is_boundary]
+    for _ in range(iters):
+        new = {}
+        for v in moving:
+            nb_ = [e.other_vert(v).co for e in v.link_edges]
+            if not nb_:
+                continue
+            avg = sum(nb_, Vector((0, 0, 0))) / len(nb_)
+            new[v.index] = v.co + (avg - v.co) * k * W_[v.index]
+        for i, c in new.items():
+            bm_.verts[i].co = c
+    bm_.normal_update()
+    bm_.to_mesh(me_)
+    bm_.free()
+    me_.update()
+    print('kanya : couture de l\'entrejambe lissée,', len(moving), 'points')
+
+
 def shorts(kind, color, band, n_leg=None, under=False):
     """kind: boxe (loose, to just above the knee, high waistband), kick (fitted, short), thai (short, very wide,
     high waistband), mma (board short, side slits, to the knee), compression"""
@@ -2123,7 +2178,7 @@ def shorts(kind, color, band, n_leg=None, under=False):
         # leg's outer side for the panel, two more for its piping, one over each hem for the hem piping
         pan = dict(SHORT_PANEL)
         yc = sum(H[f'{s_}UpLeg'].y + H[f'{s_}Leg'].y for s_ in ('Left', 'Right')) / 4
-        pw, tw, hw = 0.042, 0.008, 0.011
+        pw, tw, hw = pan.get('pw', 0.042), pan.get('tw', 0.008), pan.get('hw', 0.011)
         for d in (-pw - tw, -pw, pw, pw + tw):
             cuts.append((Vector((0, yc + d, 0)), Vector((0, 1, 0))))
         for s_ in ('Left', 'Right'):
@@ -2152,6 +2207,8 @@ def shorts(kind, color, band, n_leg=None, under=False):
     finally:
         _ONCUT[0] = old_oncut
     smooth(o, 1)
+    if COACH_ID == 'kanya' and kind == 'thai' and not under:
+        crotch_relax(o)
     if AMARA_PATCHES and kind in ('surshort', 'vale-tudo'):
         # Exported into glTF extras and inspected independently by Blender CI.
         o['cssCrotchGapCut'] = round(cut_top, 5)
@@ -3490,6 +3547,109 @@ def mma_gloves(color, accent='#B3122A', palm=None):
     return [o], set()
 
 
+def hand_wraps(color, accent):
+    """1.51 Kanya (planche 4) : bandages de coton noirs et rouges, doigts libres. Une bande serrée (2,5 mm de la peau,
+    2,5 mm d'épaisseur) du poignet (7 cm sur l'avant-bras) jusqu'aux jointures et à la base du pouce ; rouge : le
+    revers du poignet, une bande en travers du dos de la main, la bande des jointures ; coupes droites (plans)"""
+    def keep(i):
+        s = 'Left' if P[i].x > 0 else 'Right'
+        fingers = [f'{s}Hand{f}1' for f in ('Index', 'Middle', 'Ring', 'Pinky')]
+        if w(i, *fingers) > 0.5:
+            f = max(fingers, key=lambda n: w(i, n))
+            _, u = axis_point(i, f, f.replace('1', '2'))
+            return u < 0.3
+        if w(i, f'{s}HandThumb2', f'{s}HandThumb3') > 0.4:
+            return False
+        if w(i, f'{s}Hand', f'{s}HandThumb1') > 0.4:
+            return True
+        if w(i, f'{s}ForeArm') > 0.3:
+            d_ = (H[f'{s}Hand'] - H[f'{s}ForeArm']).normalized()
+            return (P[i] - H[f'{s}Hand']).dot(d_) > -0.075
+        return False
+
+    def push(i):
+        s = 'Left' if P[i].x > 0 else 'Right'
+        wr, a, lat, up = hand_frame(s)
+        q = P[i] - wr
+        knuckles = max(0.0, 1 - abs(q.dot(a) - (H[f'{s}HandMiddle1'] - wr).length) / 0.02)
+        return 0.0025 + 0.002 * knuckles
+
+    cuts, frame = [], {}
+    for s in ('Left', 'Right'):
+        d_ = (H[f'{s}Hand'] - H[f'{s}ForeArm']).normalized()
+        frame[s] = d_
+        cuts.append((H[f'{s}Hand'] - d_ * 0.068, d_))
+        cuts.append((H[f'{s}Hand'] - d_ * 0.048, d_))
+        for f in (f'{s}Hand{n}1' for n in ('Index', 'Middle', 'Ring', 'Pinky')):
+            ax_ = H[f.replace('1', '2')] - H[f]
+            cuts.append((H[f] + ax_ * 0.3, ax_.normalized()))
+
+    def mat_of(c, ids):
+        s = 'Left' if c.x > 0 else 'Right'
+        wr, a, lat, up = hand_frame(s)
+        q = c - wr
+        u = q.dot(frame[s])
+        if -0.068 < u < -0.048:
+            return 1  # revers rouge du poignet
+        if w(ids[0], *[f'{s}Hand{n}1' for n in ('Index', 'Middle', 'Ring', 'Pinky')]) > 0.4:
+            return 1  # bande des jointures
+        if N[ids[0]].dot(up) > 0.2 and abs(q.dot(a) - 0.6 * q.dot(lat) - 0.035) < 0.009:
+            return 1  # bande en travers du dos de la main
+        return 0
+
+    mats = [fabric(f'bandage-{color}', color, 'weave', rough=0.85, strength=1.4),
+            fabric(f'bandage-{accent}', accent, 'weave', rough=0.85, strength=1.4)]
+    o, cov = shell('bandages', keep, push, 0.0025, mats, mat_of, cuts=cuts, hem=0.004)
+    return [o], set()
+
+
+TEXT_FONT_LATIN = os.environ.get('TEXT_FONT_LATIN', '/usr/share/fonts/opentype/inter/Inter-Black.otf')
+# 1.51 « มวยไทย » du short de Kanya : Kanit Bold (Cadson Demak, SIL OFL 1.1, comme Inter), sous-ensemble thaï tiré de
+# @fontsource/kanit 5.3.0, gardé dans le dépôt avec sa licence (tools/generator/kanya/polices/)
+TEXT_FONT_THAI = os.environ.get('TEXT_FONT_THAI', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'kanya', 'polices', 'Kanit-Bold-thai.ttf'))
+
+
+def text_mesh(text, font_path, width, color):
+    """1.51 Kanya : un texte (police libre) en maillage plat, `width` mètres de large, centré, cousu d'une grille de 8 mm
+    pour suivre le tissu ; deux matières de même couleur (format attendu par merge_prints)"""
+    font = bpy.data.fonts.load(font_path, check_existing=True)
+    cu = bpy.data.curves.new('txt', 'FONT')
+    cu.body = text
+    cu.font = font
+    cu.align_x, cu.align_y = 'CENTER', 'CENTER'
+    cu.resolution_u = 4  # contours des lettres : 4 segments par courbe suffisent à cette taille (fichier plus léger)
+    t = bpy.data.objects.new('txt', cu)
+    bpy.context.collection.objects.link(t)
+    dg = bpy.context.evaluated_depsgraph_get()
+    tm = bpy.data.meshes.new_from_object(t.evaluated_get(dg))
+    bpy.data.objects.remove(t)
+    bm_ = bmesh.new()
+    bm_.from_mesh(tm)
+    xs = [v.co.x for v in bm_.verts]
+    ys = [v.co.y for v in bm_.verts]
+    w0 = max(xs) - min(xs)
+    cx, cy = (max(xs) + min(xs)) / 2, (max(ys) + min(ys)) / 2
+    for v in bm_.verts:
+        v.co = Vector(((v.co.x - cx) / w0, (v.co.y - cy) / w0, 0))
+    bmesh.ops.triangulate(bm_, faces=bm_.faces[:])
+    step = 0.008 / width
+    for k in range(-int(0.6 / step), int(0.6 / step) + 1):
+        bmesh.ops.bisect_plane(bm_, geom=bm_.verts[:] + bm_.edges[:] + bm_.faces[:], plane_co=(k * step, 0, 0), plane_no=(1, 0, 0))
+        bmesh.ops.bisect_plane(bm_, geom=bm_.verts[:] + bm_.edges[:] + bm_.faces[:], plane_co=(0, k * step, 0), plane_no=(0, 1, 0))
+    bmesh.ops.triangulate(bm_, faces=bm_.faces[:])
+    for f in bm_.faces:
+        f.material_index = 0
+    for v in bm_.verts:
+        v.co *= width
+    me_ = bpy.data.meshes.new('texte')
+    bm_.to_mesh(me_)
+    bm_.free()
+    bpy.data.meshes.remove(tm)
+    me_.materials.append(_flat_mat(f'texte-{color}', color, 0.45))
+    me_.materials.append(_flat_mat(f'texte2-{color}', color, 0.45))
+    return me_
+
+
 def hide_hands():
     return {i for i in range(len(P)) if w(i, *HANDS) > 0.5}
 
@@ -3573,7 +3733,7 @@ def logo_mesh(width, letters='#FFFFFF', slash='#C8102E'):
     return me_
 
 
-def logo_on(garment, name, centre, view, width, up=Vector((0, 0, 1)), letters='#FFFFFF', slash='#C8102E', lift=0.0015):
+def logo_on(garment, name, centre, view, width, up=Vector((0, 0, 1)), letters='#FFFFFF', slash='#C8102E', lift=0.0015, mesh=None):
     """prints the mark on `garment` (an object of this file, skinned by vertex groups), centred where the ray from
     `centre` + view * 0.25 towards -view meets it; view: the direction the print faces (world)"""
     from mathutils.bvhtree import BVHTree
@@ -3591,7 +3751,7 @@ def logo_on(garment, name, centre, view, width, up=Vector((0, 0, 1)), letters='#
     view = view.normalized()
     xr = up.cross(view).normalized()  # print's right, seen from outside
     yu = view.cross(xr).normalized()
-    me_ = logo_mesh(width, letters, slash)
+    me_ = mesh if mesh is not None else logo_mesh(width, letters, slash)
     o = bpy.data.objects.new(name, me_)
     bpy.context.collection.objects.link(o)
     from mathutils.interpolate import poly_3d_calc
@@ -3668,6 +3828,8 @@ C = {
     # 1.19 (Youssef 05/11 « change la couleur »): carbon black and raspberry pink, the CS mark printed in white and pink
     'inaya': dict(boxe=('#D6336C', '#17171C'), kick=('#17171C', '#D6336C'), thai=('#F4F4F5', '#D6336C'), mma=('#17171C', '#D6336C'), gi='#1B3F8B', judo='#1B3F8B', belt='#121212', glove='#D6336C', glove2='#17171C', rash='#D6336C', praj='#D6336C', mmag=('#17171C', '#D6336C', '#D6336C'), logo='#D6336C'),
     # Victor (essai, planches de Youssef 2026-11-14): noir partout, liseré blanc/argent, kick-boxing noir et rouge, kimono bleu marine
+    # 1.51 Kanya (planches de Youssef 2026-11-15) : noir et or, rouge des bandages et des Pra Jiad ; kimono de JJB noir
+    'kanya': dict(boxe=('#141519', '#C9A23A'), kick=('#141519', '#B3122A'), thai=('#141519', '#C9A23A'), mma=('#141519', '#C9A23A'), gi='#141519', judo='#F7F6F2', belt='#121212', glove='#141519', glove2='#B3122A', rash='#141519', praj='#B3122A', mmag=('#141519', '#141519', '#C9A23A'), logo='#C9A23A'),
     'victor': dict(boxe=('#141519', '#141519'), kick=('#141519', '#B3122A'), thai=('#141519', '#C9CCD1'), mma=('#1A1B1F', '#3A3D43'), gi='#232A3A', judo='#F7F6F2', belt='#1D1F1A', glove='#141519', glove2='#F4F4F5', rash='#141519', praj='#E4E4E0', mmag=('#141519', '#141519', '#3A3D43'), logo='#C9CCD1'),
 }[os.environ.get('PALETTE') or sex]
 # 1.12 (Youssef, 04/11, decision « Brassière sans bretelles au cou »): Inaya's boxing and kick-boxing tops are bandeaus;
@@ -3807,6 +3969,31 @@ def outfit(name):
         if COACH_ID == 'victor':
             add(ankle_supports('#16181D', '#16181D'))   # 1.43.1 : la protection du coup de pied des planches
         add(shin_guards('#16181D', '#2A2C31') if COACH_ID == 'victor' else shin_guards('#F4F4F5' if not female else '#16181D', C['kick'][1] if not female else C['kick'][0]))
+    elif name == 'muaythai' and COACH_ID == 'kanya':
+        # 1.51 planches de Youssef : short satiné noir, larges panneaux latéraux et bande d'ourlet dorés, « มวยไทย » en
+        # lettres dorées devant ; brassière noire à dos nageur, liseré doré, « COACH » doré et « MUAY THAI » rouge ;
+        # bandages noirs et rouges (doigts libres), Pra Jiad tressés rouge et blanc à franges, chevillères noires à
+        # liseré rouge, pieds nus ; pas de gants
+        SHORT_PANEL.update(panel='#B08A2E', trim='#B08A2E', hem=0.5, pw=0.05, tw=0.007, hw=0.022)
+        rs = shorts('thai', '#121316', '#121316')
+        SHORT_PANEL.clear()
+        add(rs)
+        rt = (None if os.environ.get('KANYA_TOP', 'brassiere') == 'brassiere' else female_top('#121316', '#B08A2E')) or bra_v2('#121316', '#B08A2E', band=0.012)
+        add(rt)
+        add(hand_wraps('#17181B', '#A3121F'))
+        for s in ('Left', 'Right'):
+            parts.extend(prajioud_v2(s, '#B3122A', color2='#EFECE4', tails=4, tail_len=0.085))
+        add(ankle_supports('#16181D', '#B3122A'))
+        bra, sh = rt[0][0], rs[0][0]
+        low = bra_low()
+        prints = [
+            logo_on(bra, 'texte-coach', Vector((0, 0, low + 0.068)), Vector((0, -1, 0)), 0.13, mesh=text_mesh('COACH', TEXT_FONT_LATIN, 0.13, '#C9A23A')),
+            logo_on(bra, 'texte-muaythai', Vector((0, 0, low + 0.037)), Vector((0, -1, 0)), 0.085, mesh=text_mesh('MUAY THAI', TEXT_FONT_LATIN, 0.085, '#C8102E')),
+            logo_on(sh, 'texte-thai', Vector((0, 0, hipZ - 0.05)), Vector((0, -1, 0)), 0.17, lift=0.007,  # au-dessus des plis (short_folds)
+                    mesh=text_mesh('มวยไทย', TEXT_FONT_THAI, 0.17, '#C9A23A')),
+        ]
+        parts.extend(merge_prints([o for o in prints if o is not None]))
+        return parts, hide
     elif name == 'muaythai':
         if COACH_ID == 'victor':
             # planche muay-thaï de Youssef : short satiné noir, panneaux latéraux argent, liserés argent
@@ -4209,7 +4396,7 @@ def export(name, parts, hide):
     parts[0]['outfit'] = name
     # Assets can now be verified as freshly regenerated: unchanged legacy GLBs must
     # never pass the v1.37.2 deployment gate with old cutouts.
-    parts[0]['generatorVersion'] = '1.38.0' if COACH_ID == 'mma-amara' else '1.43.0' if COACH_ID == 'victor' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
+    parts[0]['generatorVersion'] = '1.38.0' if COACH_ID == 'mma-amara' else '1.43.0' if COACH_ID == 'victor' else '1.51.0' if COACH_ID == 'kanya' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
     if COACH_ID == 'mma-amara':
         if AMARA_PATCHES:
             parts[0]['sportsTopCut'] = 'covered-square-1376'

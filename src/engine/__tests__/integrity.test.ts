@@ -20,6 +20,7 @@ const COACHES = [
   ['mma-amara', 'femme'],
   ['nael', 'homme'],
   ['victor', 'homme'],
+  ['kanya', 'femme'],
   ['inaya', 'femme'],
 ] as const;
 const DOC = resolve(__dirname, '../../../docs/audit-biomecanique/MESURES_INTEGRITE.md');
@@ -50,9 +51,9 @@ for (const [id, sex] of COACHES) {
 const label = (r: Run) => `${r.coach} ${r.style} garde ${r.guard === 'coach' ? 'du coach' : 'de discipline'}${r.southpaw ? ' gaucher' : ''}`;
 
 describe('intégrité des animations (contrôles repris de CME-3D)', () => {
-  test('aucune erreur d’écriture : 5 coachs, 6 styles, 2 gardes, droitier et gaucher', () => {
+  test('aucune erreur d’écriture : 6 coachs, 6 styles, 2 gardes, droitier et gaucher', () => {
     const errors = runs.flatMap((r) => r.findings.filter((f) => f.level === 'error').map((f) => `${label(r)} : ${f.motionId}#${f.keyIndex} ${f.code} ${f.detail}`));
-    expect(runs.length).toBe(5 * 6 * 2 * 2);
+    expect(runs.length).toBe(6 * 6 * 2 * 2); // 1.51.0: six coachs (Kanya)
     expect(runs.every((r) => r.motions > 80)).toBe(true);
     expect(errors).toEqual([]);
   });
@@ -101,7 +102,7 @@ describe('intégrité des animations (contrôles repris de CME-3D)', () => {
       '',
       'Généré par `UPDATE_INTEGRITY=1 npx vitest run src/engine/__tests__/integrity.test.ts`. Ne pas modifier à la main.',
       '',
-      `Contrôlé : 5 coachs (Kadir, Amara, Naël, Inaya, Victor), 6 styles, garde de la discipline et garde du coach, droitier et gaucher, soit ${runs.length} bibliothèques et ${runs.reduce((n, r) => n + r.motions, 0)} animations.`,
+      `Contrôlé : 6 coachs (Kadir, Amara, Naël, Inaya, Victor, Kanya), 6 styles, garde de la discipline et garde du coach, droitier et gaucher, soit ${runs.length} bibliothèques et ${runs.reduce((n, r) => n + r.motions, 0)} animations.`,
       '',
       '## Erreurs (bloquantes)',
       '',

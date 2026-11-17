@@ -3,12 +3,12 @@ import { expect, test } from '@playwright/test';
 /**
  * 1.6.0 (Youssef 2026-10-28): Axel and Kaila joined Kadir and Amara; « Quand je clique sur changer de coach, je ne veux
  * voir que la liste des coachs, rien d'autre. » 1.37 (Youssef, 2026-11-12): Axel and Kaila (MakeHuman) are removed,
- * the four Microsoft Rocketbox coaches remain (Kadir, Naël, Amara, Inaya). 1.43.0: Victor joins them (five coaches).
+ * the four Microsoft Rocketbox coaches remain (Kadir, Naël, Amara, Inaya). 1.43.0: Victor joins them (five coaches). 1.51.0: Kanya (six coaches).
  */
-test('cinq coachs : Amara choisie au premier lancement, Naël depuis « Changer de coach » (liste seule)', async ({ page }) => {
+test('six coachs : Amara choisie au premier lancement, Naël depuis « Changer de coach » (liste seule)', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('next').click();
-  for (const id of ['coach-homme', 'coach-nael', 'coach-victor', 'coach-femme', 'coach-inaya']) await expect(page.getByTestId(id), id).toBeVisible();
+  for (const id of ['coach-homme', 'coach-nael', 'coach-victor', 'coach-femme', 'coach-inaya', 'coach-kanya']) await expect(page.getByTestId(id), id).toBeVisible();
   await expect(page.getByTestId('coach-axel')).toHaveCount(0);
   await expect(page.getByTestId('coach-kaila')).toHaveCount(0);
   await page.getByTestId('coach-femme').click();
@@ -22,8 +22,8 @@ test('cinq coachs : Amara choisie au premier lancement, Naël depuis « Changer 
 
   await page.getByRole('link', { name: /Changer de coach/ }).click();
   await expect(page).toHaveURL(/#\/coach$/);
-  // only the coaches and the button to confirm; 1.32.0 (« La vedette »): the coach looked at in 3D, the strip of five (1.43.0)
-  await expect(page.locator('.star-thumb')).toHaveCount(5);
+  // only the coaches and the button to confirm; 1.32.0 (« La vedette »): the coach looked at in 3D, the strip of six (1.51.0)
+  await expect(page.locator('.star-thumb')).toHaveCount(6);
   await expect(page.getByTestId('settings-coach-look')).toHaveCount(0);
   await expect(page.locator('.page p, .page select, .page input')).toHaveCount(0);
   await expect(page.getByTestId('coach-femme')).toHaveAttribute('aria-checked', 'true');
@@ -57,7 +57,7 @@ test('1.37 : un profil qui avait choisi Axel ou Kaila retrouve Kadir ou Amara', 
     await page.reload();
     await expect(page.getByTestId('fighter-name')).toHaveText(name);
     await page.goto('/#/coach');
-    await expect(page.locator('.star-thumb')).toHaveCount(5);
+    await expect(page.locator('.star-thumb')).toHaveCount(6);
     await expect(page.getByTestId(`coach-${sex}`)).toHaveAttribute('aria-checked', 'true');
   }
 });
@@ -71,7 +71,7 @@ for (const [w, h] of [
   [400, 820],
   [360, 640],
 ])
-  test(`écran de choix ${w}x${h} : les cinq, la fiche et « Valider » tiennent sur un écran, un appui montre la fiche`, async ({ page }) => {
+  test(`écran de choix ${w}x${h} : les six, la fiche et « Valider » tiennent sur un écran, un appui montre la fiche`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await page.goto('/');
     await page.getByTestId('next').click();
@@ -80,12 +80,12 @@ for (const [w, h] of [
     for (let i = 0; i < 4; i++) await page.getByTestId('next').click();
     await page.getByTestId('finish').click();
     await page.goto('/#/coach');
-    await expect(page.locator('.star-thumb')).toHaveCount(5);
+    await expect(page.locator('.star-thumb')).toHaveCount(6);
     await expect(page.getByTestId('star-mine')).toHaveText('Ton coach');
     // no page scroll: every coach, the sheet and the button inside the screen, above the bottom bar
     expect(await page.evaluate(() => document.scrollingElement!.scrollHeight)).toBeLessThanOrEqual(h);
     const bar = await page.getByTestId('bottom-bar').boundingBox();
-    for (const id of ['coach-homme', 'coach-nael', 'coach-victor', 'coach-femme', 'coach-inaya', 'coach-details-nael', 'coach-valider']) {
+    for (const id of ['coach-homme', 'coach-nael', 'coach-victor', 'coach-femme', 'coach-inaya', 'coach-kanya', 'coach-details-nael', 'coach-valider']) {
       const b = (await page.getByTestId(id).boundingBox())!;
       expect(b.y + b.height, id).toBeLessThanOrEqual(bar ? bar.y + 1 : h);
     }
@@ -104,9 +104,12 @@ for (const [w, h] of [
     await expect(page.locator('.coach-star .cells, .coach-star .skill')).toHaveCount(0);
     await expect(page.getByTestId('star-mine')).toHaveCount(0);
     await expect(page.getByTestId('coach-valider')).toHaveText(/Choisir Inaya/i);
-    // the arrows go round the five coaches (Inaya is the last one: « suivant » comes back to Kadir)
+    // the arrows go round the six coaches (1.51.0: Kanya after Inaya, then « suivant » comes back to Kadir)
+    await page.getByTestId('star-next').click();
+    await expect(page.getByTestId('coach-kanya')).toHaveAttribute('aria-checked', 'true');
     await page.getByTestId('star-next').click();
     await expect(page.getByTestId('coach-homme')).toHaveAttribute('aria-checked', 'true');
+    await page.getByTestId('star-prev').click();
     await page.getByTestId('star-prev').click();
     await expect(page.getByTestId('coach-inaya')).toHaveAttribute('aria-checked', 'true');
     // « Le voir bouger » is an icon (no text), pressed while the coach shows the move
@@ -170,7 +173,7 @@ for (const [w, h] of [
     );
     await page.goto('/#/coach');
     const thumbs = page.locator('.star-thumb');
-    await expect(thumbs).toHaveCount(5);
+    await expect(thumbs).toHaveCount(6);
     const boxes = await thumbs.evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON() as DOMRect));
     const strip = (await page.locator('.star-strip').boundingBox())!;
     // one row, equal widths, inside the screen
@@ -180,10 +183,11 @@ for (const [w, h] of [
       expect(b.x).toBeGreaterThanOrEqual(0);
       expect(b.x + b.width).toBeLessThanOrEqual(w);
     }
-    // the share of the width: five portraits (1.43.0) fill the strip (at most 120 px each), far wider than the 48 px of six
-    const share = Math.min(120, (strip.width - 16 - 4 * 6) / 5);
+    // the share of the width: the portraits fill the strip (at most 120 px each); 1.51.0 six portraits (Kanya), five gaps
+    // of 6 px; still wider than the 48 px fixed thumbs of 1.36 (60 px was the floor with five)
+    const share = Math.min(120, (strip.width - 16 - 5 * 6) / 6);
     expect(boxes[0].width).toBeGreaterThan(share - 2);
-    expect(boxes[0].width).toBeGreaterThan(60);
+    expect(boxes[0].width).toBeGreaterThan(50);
     // the height of 1.32: the big stage keeps its room
     expect(boxes[0].height).toBe(h <= 700 ? 50 : 56);
 
