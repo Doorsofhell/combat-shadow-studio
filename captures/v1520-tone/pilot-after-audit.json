@@ -1,0 +1,92 @@
+[
+  {
+    "file": "public/coaches/mma-kadir/photo.glb",
+    "headMaterial": "m021_head",
+    "bodyMaterial": "m021_body",
+    "headVertices": 9947,
+    "bodyVertices": 13220,
+    "headBBox": [
+      [
+        -0.09975159168243408,
+        1.3592743873596191,
+        -0.0861910730600357
+      ],
+      [
+        0.09973929077386856,
+        1.807956576347351,
+        0.152937650680542
+      ]
+    ],
+    "bodyBBox": [
+      [
+        -0.673298180103302,
+        0.00020164951274637133,
+        -0.12874174118041992
+      ],
+      [
+        0.6732980012893677,
+        1.5413269996643066,
+        0.1928848922252655
+      ]
+    ],
+    "headBottom20RangeY": [
+      1.4751088571548463,
+      1.6082186698913574
+    ],
+    "unitFactor": 1,
+    "distanceTolerance": 0.0002,
+    "headVerticesInNeckRegion": 1792,
+    "nearCoincidentNeckVertices": 33,
+    "closeVertexCountAllHead": 57,
+    "neckMinNearestDistance": 0.0,
+    "neckMedianNearestDistance": 0.08791564,
+    "neckP90NearestDistance": 0.15165872,
+    "neckMaxNearestDistance": 0.16688104,
+    "normalAngleAtNeckShared": {
+      "max": 0.0,
+      "median": 0.0,
+      "over_1deg": 0,
+      "over_5deg": 0
+    },
+    "headUVPresent": true,
+    "bodyUVPresent": true,
+    "headTexture": {
+      "textureIndex": 3,
+      "texCoord": 0,
+      "imageMime": "image/png",
+      "imageName": "m021_head_color"
+    },
+    "bodyTexture": {
+      "textureIndex": 0,
+      "texCoord": 0,
+      "imageMime": "image/jpeg",
+      "imageName": "m021_body_color"
+    },
+    "colourDiscontinuityAtCoincidentNeckVertices": {
+      "samples": 33,
+      "headTextureSize": [
+        2048,
+        2048
+      ],
+      "bodyTextureSize": [
+        1024,
+        1024
+      ],
+      "medianRgbDistance": 2.24,
+      "p90RgbDistance": 9.78,
+      "maxRgbDistance": 13.86,
+      "headMedianRgb": [
+        208,
+        140,
+        99
+      ],
+      "bodyMedianRgb": [
+        208,
+        139,
+        98
+      ]
+    },
+    "headHasWeights": true,
+    "bodyHasWeights": true
+  }
+]

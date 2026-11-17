@@ -1,0 +1,392 @@
+[
+  {
+    "coach": "kadir",
+    "champion": "mma-kadir",
+    "angle": "three-quarter",
+    "az": 35,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 195231,
+    "neck": null
+  },
+  {
+    "coach": "kadir",
+    "champion": "mma-kadir",
+    "angle": "three-quarter",
+    "az": 35,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 195390,
+    "neck": {
+      "skipped": true,
+      "reason": "no safely adjustable neck vertices",
+      "matched": 0,
+      "adjusted": 0,
+      "maximumAngleDegrees": 0
+    }
+  },
+  {
+    "coach": "kadir",
+    "champion": "mma-kadir",
+    "angle": "profile",
+    "az": 90,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 226418,
+    "neck": null
+  },
+  {
+    "coach": "kadir",
+    "champion": "mma-kadir",
+    "angle": "profile",
+    "az": 90,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 226782,
+    "neck": {
+      "skipped": true,
+      "reason": "no safely adjustable neck vertices",
+      "matched": 0,
+      "adjusted": 0,
+      "maximumAngleDegrees": 0
+    }
+  },
+  {
+    "coach": "kadir",
+    "champion": "mma-kadir",
+    "angle": "back",
+    "az": 180,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 189438,
+    "neck": null
+  },
+  {
+    "coach": "kadir",
+    "champion": "mma-kadir",
+    "angle": "back",
+    "az": 180,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 189775,
+    "neck": {
+      "skipped": true,
+      "reason": "no safely adjustable neck vertices",
+      "matched": 0,
+      "adjusted": 0,
+      "maximumAngleDegrees": 0
+    }
+  },
+  {
+    "coach": "amara",
+    "champion": "mma-amara",
+    "angle": "three-quarter",
+    "az": 35,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 155382,
+    "neck": null
+  },
+  {
+    "coach": "amara",
+    "champion": "mma-amara",
+    "angle": "three-quarter",
+    "az": 35,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 155354,
+    "neck": {
+      "skipped": true,
+      "reason": "no safely adjustable neck vertices",
+      "matched": 0,
+      "adjusted": 0,
+      "maximumAngleDegrees": 0
+    }
+  },
+  {
+    "coach": "amara",
+    "champion": "mma-amara",
+    "angle": "profile",
+    "az": 90,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 189263,
+    "neck": null
+  },
+  {
+    "coach": "amara",
+    "champion": "mma-amara",
+    "angle": "profile",
+    "az": 90,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 189311,
+    "neck": {
+      "skipped": true,
+      "reason": "no safely adjustable neck vertices",
+      "matched": 0,
+      "adjusted": 0,
+      "maximumAngleDegrees": 0
+    }
+  },
+  {
+    "coach": "amara",
+    "champion": "mma-amara",
+    "angle": "back",
+    "az": 180,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 159085,
+    "neck": null
+  },
+  {
+    "coach": "amara",
+    "champion": "mma-amara",
+    "angle": "back",
+    "az": 180,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 159085,
+    "neck": {
+      "skipped": true,
+      "reason": "no safely adjustable neck vertices",
+      "matched": 0,
+      "adjusted": 0,
+      "maximumAngleDegrees": 0
+    }
+  },
+  {
+    "coach": "nael",
+    "champion": "nael",
+    "angle": "three-quarter",
+    "az": 35,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 187593,
+    "neck": null
+  },
+  {
+    "coach": "nael",
+    "champion": "nael",
+    "angle": "three-quarter",
+    "az": 35,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 187594,
+    "neck": {
+      "skipped": true,
+      "reason": "no safely adjustable neck vertices",
+      "matched": 0,
+      "adjusted": 0,
+      "maximumAngleDegrees": 0
+    }
+  },
+  {
+    "coach": "nael",
+    "champion": "nael",
+    "angle": "profile",
+    "az": 90,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 223822,
+    "neck": null
+  },
+  {
+    "coach": "nael",
+    "champion": "nael",
+    "angle": "profile",
+    "az": 90,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 223827,
+    "neck": {
+      "skipped": true,
+      "reason": "no safely adjustable neck vertices",
+      "matched": 0,
+      "adjusted": 0,
+      "maximumAngleDegrees": 0
+    }
+  },
+  {
+    "coach": "nael",
+    "champion": "nael",
+    "angle": "back",
+    "az": 180,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 187929,
+    "neck": null
+  },
+  {
+    "coach": "nael",
+    "champion": "nael",
+    "angle": "back",
+    "az": 180,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 187929,
+    "neck": {
+      "skipped": true,
+      "reason": "no safely adjustable neck vertices",
+      "matched": 0,
+      "adjusted": 0,
+      "maximumAngleDegrees": 0
+    }
+  },
+  {
+    "coach": "inaya",
+    "champion": "inaya",
+    "angle": "three-quarter",
+    "az": 35,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 169780,
+    "neck": null
+  },
+  {
+    "coach": "inaya",
+    "champion": "inaya",
+    "angle": "three-quarter",
+    "az": 35,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 169782,
+    "neck": {
+      "skipped": true,
+      "reason": "no safely adjustable neck vertices",
+      "matched": 0,
+      "adjusted": 0,
+      "maximumAngleDegrees": 0
+    }
+  },
+  {
+    "coach": "inaya",
+    "champion": "inaya",
+    "angle": "profile",
+    "az": 90,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 210250,
+    "neck": null
+  },
+  {
+    "coach": "inaya",
+    "champion": "inaya",
+    "angle": "profile",
+    "az": 90,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 210244,
+    "neck": {
+      "skipped": true,
+      "reason": "no safely adjustable neck vertices",
+      "matched": 0,
+      "adjusted": 0,
+      "maximumAngleDegrees": 0
+    }
+  },
+  {
+    "coach": "inaya",
+    "champion": "inaya",
+    "angle": "back",
+    "az": 180,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 182274,
+    "neck": null
+  },
+  {
+    "coach": "inaya",
+    "champion": "inaya",
+    "angle": "back",
+    "az": 180,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 182274,
+    "neck": {
+      "skipped": true,
+      "reason": "no safely adjustable neck vertices",
+      "matched": 0,
+      "adjusted": 0,
+      "maximumAngleDegrees": 0
+    }
+  },
+  {
+    "coach": "victor",
+    "champion": "victor",
+    "angle": "three-quarter",
+    "az": 35,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 197960,
+    "neck": null
+  },
+  {
+    "coach": "victor",
+    "champion": "victor",
+    "angle": "three-quarter",
+    "az": 35,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 197981,
+    "neck": {
+      "skipped": true,
+      "reason": "no safely adjustable neck vertices",
+      "matched": 0,
+      "adjusted": 0,
+      "maximumAngleDegrees": 0
+    }
+  },
+  {
+    "coach": "victor",
+    "champion": "victor",
+    "angle": "profile",
+    "az": 90,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 239466,
+    "neck": null
+  },
+  {
+    "coach": "victor",
+    "champion": "victor",
+    "angle": "profile",
+    "az": 90,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 239468,
+    "neck": {
+      "skipped": true,
+      "reason": "no safely adjustable neck vertices",
+      "matched": 0,
+      "adjusted": 0,
+      "maximumAngleDegrees": 0
+    }
+  },
+  {
+    "coach": "victor",
+    "champion": "victor",
+    "angle": "back",
+    "az": 180,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 199739,
+    "neck": null
+  },
+  {
+    "coach": "victor",
+    "champion": "victor",
+    "angle": "back",
+    "az": 180,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 199739,
+    "neck": {
+      "skipped": true,
+      "reason": "no safely adjustable neck vertices",
+      "matched": 0,
+      "adjusted": 0,
+      "maximumAngleDegrees": 0
+    }
+  }
+]

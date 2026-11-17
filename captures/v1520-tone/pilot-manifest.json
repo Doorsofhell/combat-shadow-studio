@@ -1,0 +1,11 @@
+{
+  "file": "public/coaches/mma-kadir/photo.glb",
+  "sharedRingPoints": 33,
+  "brushRadiusPixels": 52,
+  "medianBeforeRgbDistance": 145.84,
+  "modifiedPixels": 160402,
+  "totalPixels": 4194304,
+  "modifiedFraction": 0.03824,
+  "bodyGeometryBytesUnchanged": true,
+  "outputGlbBytes": 5923920
+}
