@@ -228,7 +228,7 @@ function LabProbe({ rig }: { rig: MutableRefObject<CoachRig | null> }) {
           return [n, [((p.x + 1) / 2) * size.width, ((1 - p.y) / 2) * size.height]];
         }),
       );
-    // 1.47.1 window.__labScene: the scene itself, to try a material or a setting on a defect seen on a capture
+    // 1.50.1 window.__labScene: the scene itself, to try a material or a setting on a defect seen on a capture
     (window as unknown as { __labScene?: unknown }).__labScene = scene;
     // 1.14 window.__labPick(x, y): what is drawn at a canvas point (mesh, material, texture coordinates, height), to
     // find which part of a model a defect seen on a capture belongs to

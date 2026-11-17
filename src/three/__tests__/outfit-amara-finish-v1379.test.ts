@@ -10,7 +10,7 @@ function mat(name: string, fabric: string, roughness: number, sheen: number) {
   return m;
 }
 
-describe('v1.37.9 — finitions réservées aux vêtements Amara', () => {
+describe('v1.37.9 / v1.47.3 — finitions réservées aux vêtements Amara', () => {
   test('la sélection est liée au fichier de tenue et non à un modèle photo', () => {
     expect(isAmaraOutfitUrl('./coaches/mma-amara/tenues/mma.glb')).toBe(true);
     expect(isAmaraOutfitUrl('/coaches/mma-amara/tenues/boxe.glb?v=1379')).toBe(true);
@@ -25,10 +25,10 @@ describe('v1.37.9 — finitions réservées aux vêtements Amara', () => {
     const old = dressOutfitMaterial(src, quality) as MeshStandardMaterial;
     const revised = dressOutfitMaterial(src, quality, true) as MeshStandardMaterial;
     expect(old.roughness).toBeCloseTo(0.8);
-    expect(revised.roughness).toBeCloseTo(0.86);
+    expect(revised.roughness).toBeCloseTo(0.89);
     expect(old.normalScale.x).toBeCloseTo(0.65);
-    expect(revised.normalScale.x).toBeCloseTo(0.65 * 1.12);
-    expect(revised.normalScale.y).toBeCloseTo(-0.65 * 1.12);
+    expect(revised.normalScale.x).toBeCloseTo(0.65 * 0.92);
+    expect(revised.normalScale.y).toBeCloseTo(-0.65 * 0.92);
     expect(src.roughness).toBe(0.62);
     expect(src.normalScale.x).toBe(1);
     old.dispose(); revised.dispose(); src.dispose();
@@ -39,9 +39,9 @@ describe('v1.37.9 — finitions réservées aux vêtements Amara', () => {
     const reference = dressOutfitMaterial(src, 'haute') as MeshPhysicalMaterial;
     const amara = dressOutfitMaterial(src, 'haute', true) as MeshPhysicalMaterial;
     expect(reference.sheen).toBeCloseTo(0.35);
-    expect(amara.sheen).toBeCloseTo(0.18);
-    expect(amara.roughness).toBeGreaterThanOrEqual(0.76);
-    expect(amara.normalScale.x).toBeCloseTo(0.84);
+    expect(amara.sheen).toBeCloseTo(0.10);
+    expect(amara.roughness).toBeGreaterThanOrEqual(0.84);
+    expect(amara.normalScale.x).toBeCloseTo(0.72);
     expect(src.roughness).toBe(0.64);
     expect(src.normalScale.x).toBe(1);
     reference.dispose(); amara.dispose(); src.dispose();
@@ -51,11 +51,31 @@ describe('v1.37.9 — finitions réservées aux vêtements Amara', () => {
     const src = mat('ceinture-mma-#D4AF37', 'elastique', 0.65, 0);
     const a = dressOutfitMaterial(src, 'basse', true) as MeshStandardMaterial;
     const ref = dressOutfitMaterial(src, 'basse') as MeshStandardMaterial;
-    expect(a.roughness).toBeCloseTo(0.79);
+    expect(a.roughness).toBeCloseTo(0.86);
     expect(a.normalScale.x).toBeCloseTo(0.80);
     expect(ref.roughness).toBe(0.65);
     expect(ref.normalScale.x).toBe(1);
     src.dispose(); a.dispose(); ref.dispose();
+  });
+
+  test('brassière et short : paramètres 1.47.3 limités à Amara, aucune mutation des sources', () => {
+    const top = mat('haut-brassiere-#141519', 'jersey', 0.62, 0.12);
+    const shorts = mat('short-mma-#141519', 'serge', 0.64, 0.35);
+    const aTop = dressOutfitMaterial(top, 'haute', true) as MeshPhysicalMaterial;
+    const aShort = dressOutfitMaterial(shorts, 'haute', true) as MeshPhysicalMaterial;
+    const refTop = dressOutfitMaterial(top, 'haute', false) as MeshPhysicalMaterial;
+    const refShort = dressOutfitMaterial(shorts, 'haute', false) as MeshPhysicalMaterial;
+    expect(aTop.roughness).toBe(0.89);
+    expect(aTop.sheen).toBeCloseTo(0.035);
+    expect(aShort.roughness).toBe(0.84);
+    expect(aShort.sheen).toBeCloseTo(0.10);
+    expect(refTop.roughness).toBe(0.8);
+    expect(refTop.sheen).toBeCloseTo(0.06);
+    expect(refShort.roughness).toBe(0.64);
+    expect(refShort.sheen).toBeCloseTo(0.35);
+    expect(top.roughness).toBe(0.62);
+    expect(shorts.roughness).toBe(0.64);
+    for (const m of [top, shorts, aTop, aShort, refTop, refShort]) m.dispose();
   });
 
   test('logo et gi restent strictement identiques même pour Amara', () => {

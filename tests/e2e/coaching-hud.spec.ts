@@ -74,7 +74,7 @@ test('Jab → Direct arrière → Low kick droit : chaque nom pendant son coup, 
   await expect(page.getByTestId('move-band')).toHaveAttribute('data-move', '');
   await expect(page.getByTestId('phase')).not.toHaveText('Prépare-toi', { timeout: 10_000 });
   // (the browser of the tests draws few frames per second: the motions take longer in real time, never shorter)
-  // 1.47.1: the watch ends at the first move of the second repetition, 100 s at most. It was a fixed 30 s: measured on
+  // 1.50.1: the watch ends at the first move of the second repetition, 100 s at most. It was a fixed 30 s: measured on
   // the test machine (3.7 images per second, the engine never skips time), one repetition and its guard take about 35 s
   const r = await watchBand(page, 100_000, 4);
   const names = r.seq.filter(Boolean);

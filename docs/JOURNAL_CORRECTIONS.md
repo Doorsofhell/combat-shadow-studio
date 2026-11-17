@@ -4366,7 +4366,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Numéro** : préparée comme 1.46.0 ; renumérotée 1.47.0 après la fusion de la 1.46.0 (traversées, lot 2), publiée entre-temps.
 - **Restauration** : branche `restauration/avant-kadir-realisme` (= 1.45.2, b773812) ; la 1.46.0 = 066131d.
 
-## 2026-11-15 · v1.47.1 · Suites de Kadir : deux tests de bout en bout, images de l'appli, trait du crâne
+## 2026-11-17 · v1.50.1 · Suites de Kadir : deux tests de bout en bout, images de l'appli, trait du crâne
 
 - **Demande** : Youssef, 2026-11-15 16:44, « Lance » pour les trois points laissés ouverts par la 1.47.0.
 - **Constat vérifié** :
@@ -4404,3 +4404,9 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests modifiés, avec raison** : les deux tests ci-dessus (course et durée propres à la machine de test, contrôles
   gardés) ; `outfit-rollback-v1373.test.ts` : empreinte de `photo.glb` (textures seules).
 - **Restauration** : branche `restauration/avant-suites-v147` (= 1.47.0, f94f767).
+- **Numéro** : préparée le 2026-11-15 comme 1.47.1 ; renumérotée 1.50.1 le 2026-11-17 après la fusion de la base, passée
+  entre-temps à la 1.50.0 (versions 1.47.1 à 1.50.0 d'un autre lot : rendu de la peau, des yeux et des cheveux). Les
+  mentions « 1.47.1 » de cette entrée désignent ce lot-ci.
+- **Playwright complet avant la fusion de la base** (2026-11-15) : TEST RÉUSSI, 297 réussis, 2 ignorés, 0 échec (48,1 min).
+- **Limite connue** : les 137 images de l'appli ont été rendues avant le réglage du trait du crâne et avant les réglages
+  de rendu des versions 1.48.0 à 1.50.0 ; l'écart est faible, elles ne sont pas refaites dans ce lot.

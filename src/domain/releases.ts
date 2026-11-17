@@ -49,8 +49,8 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
-      version: '1.47.1',
-      releaseDate: '2026-11-15',
+      version: '1.50.1',
+      releaseDate: '2026-11-17',
       title: 'Kadir : finitions',
       isMajor: false,
       changes: [
@@ -58,6 +58,72 @@ export const RELEASES: readonly Release[] = (
         { category: 'ameliorations', text: 'Les vignettes des techniques, l’encyclopédie et les visuels de discipline montrent le nouveau Kadir.' },
       ],
       links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
+      version: '1.50.0',
+      releaseDate: '2026-11-16',
+      title: 'Étude visuelle combat premium — Amara et Victor',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Étude en cours avant validation : réglages de lumière et de matières ciblés sur la peau, les yeux et les cheveux d’Amara et Victor, en qualité haute.' },
+        { category: 'corrections', text: 'Comparaisons WebGL disponibles ; aucune modification des modèles 3D, de la géométrie du cou, des shaders GLSL, des tenues ni des animations.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
+      version: '1.49.0',
+      releaseDate: '2026-11-16',
+      title: 'Rendu premium des cinq coachs',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Version publiée : amélioration du filtrage des textures en qualité haute et réglages individualisés de peau, yeux et cheveux pour Kadir, Amara, Naël, Inaya et Victor.' },
+        { category: 'corrections', text: 'Aucune intervention sur la géométrie des cous, les shaders GLSL, les personnages, les animations ou les tenues.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
+      version: '1.48.0',
+      releaseDate: '2026-11-16',
+      title: 'Finition peau premium par coach et nettoyage Victor',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Rendu peau, yeux et cheveux calibré séparément pour Kadir, Naël, Inaya, Victor et Amara ; carnations, visages et morphologies préservés.' },
+        { category: 'corrections', text: 'Victor : atténuation ciblée des marques de couleur sur la peau du corps (shader réversible, sans modifier le visage ni le modèle source).' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
+      version: '1.47.3',
+      releaseDate: '2026-11-16',
+      title: 'Amara : regard, peau et finitions textiles',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Amara : reflets du visage et du corps plus diffus, yeux moins artificiellement brillants.' },
+        { category: 'ameliorations', text: 'Amara : finition textile plus mate sur la brassière, le short et la ceinture, sans modifier les maillages ni les animations.' },
+      ],
+      links: [{ label: 'Voir Amara', to: '/coach' }],
+    },
+    {
+      version: '1.47.2',
+      releaseDate: '2026-11-16',
+      title: 'Amara : peau et visage plus naturels',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Amara : reflets du visage, des épaules et des jambes adoucis pour limiter l’aspect plastique, sans modifier sa morphologie ni ses expressions.' },
+        { category: 'corrections', text: 'Correction de la configuration des matériaux du visage d’Amara ; les autres coachs et les tenues sont inchangés.' },
+      ],
+      links: [{ label: 'Voir Amara', to: '/coach' }],
+    },
+    {
+      version: '1.47.1',
+      releaseDate: '2026-11-16',
+      title: 'Amara : finition naturelle du visage, des yeux et des cheveux',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Amara : peau légèrement plus nuancée, reflets du visage adoucis, yeux et cheveux affinés en qualité haute.' },
+        { category: 'ameliorations', text: 'Identité, morphologie, animations et tenues conservées ; les autres coachs ne sont pas modifiés.' },
+      ],
+      links: [{ label: 'Voir Amara', to: '/coach' }],
     },
     {
       version: '1.47.0',

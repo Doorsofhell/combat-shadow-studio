@@ -6,7 +6,7 @@ import { describe, expect, test } from 'vitest';
  * 1.46.0 (Youssef 15/11, Kadir plus réaliste : cou, mâchoire, trapèzes) : new body, and the three outfits that cover
  * the neck and the trapezius (judo, bjj, bjj-nogi) follow it by tools/generator/kadir/tenues_suivent.py (garment
  * points moved with the body, hidden skin keys renamed); the shorts and the other outfits keep their 1.37.0 bytes.
- * 1.47.1: body textures only (light line of the middle of the skull), same shape: new body print, outfits unchanged. */
+ * 1.50.1: body textures only (light line of the middle of the skull), same shape: new body print, outfits unchanged. */
 const GOOD_1370 = {
   'boxe': '9c4a33b36d2468a9f653cce3e62260e69c3c9664',
   'kickboxing': '8cbced0c2a190539c7f3c172da3e9ca4ed4e4010',

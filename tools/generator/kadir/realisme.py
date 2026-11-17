@@ -70,7 +70,7 @@ if on('CALECON'):
 # 4. raccords : marges des îles remplies (liseré clair sur le côté du cou), couture du milieu du crâne et du front
 #    adoucie dans la carte de normales (les deux moitiés en miroir n'ont pas le même relief au bord)
 if on('RACCORDS'):
-    # 1.47.1 trait clair au milieu du crâne : la texture d'origine est entourée de bandes étirées plus claires, et la
+    # 1.50.1 trait clair au milieu du crâne : la texture d'origine est entourée de bandes étirées plus claires, et la
     # compression JPEG les fait baver sur les 2 derniers texels de l'île. Sur le crâne et le front (îles coupées au
     # milieu), ces texels du bord sont refaits depuis l'intérieur de l'île, avant de remplir la marge
     from scipy.ndimage import binary_erosion
@@ -81,7 +81,7 @@ if on('RACCORDS'):
     B = gutter(B, BVM, 12)
     mid = VM & (np.abs(x) < 0.006) & (z > 1.69)
     wm = gaussian_filter(np.where(VM, (1 - np.abs(x) / 0.006) * mid, 0), 1.5)[..., None]
-    # 1.47.1 : la normale n'est plus aplatie au milieu (MILIEU=1 pour l'ancien réglage) : la bande lisse accrochait la
+    # 1.50.1 : la normale n'est plus aplatie au milieu (MILIEU=1 pour l'ancien réglage) : la bande lisse accrochait la
     # lumière comme un trait ; le bord de l'île est refait comme pour la couleur
     if os.environ.get('MILIEU', '0') == '1':
         HN = HN * (1 - wm) + np.array([0.5, 0.5, 1.0], np.float32) * wm
@@ -92,7 +92,7 @@ if on('CHEVEUX'):
     wh = gaussian_filter(hair.astype(np.float32), 2)[..., None]
     hp = H - gaussian_filter(H, (1.2, 1.2, 0))
     H = np.clip(H + 0.8 * hp * wh, 0, 1)
-# couture du milieu du crâne et du front dans la couleur (1.47.1) : les deux moitiés n'ont pas tout à fait le même ton.
+# couture du milieu du crâne et du front dans la couleur (1.50.1) : les deux moitiés n'ont pas tout à fait le même ton.
 # Près de x = 0, chaque texel prend le ton moyen (basses fréquences) de lui-même et de son symétrique ; le grain des
 # cheveux et de la peau n'est pas touché (l'ancienne moyenne simple, MILIEU=1, laissait une bande lisse)
 if on('RACCORDS'):
