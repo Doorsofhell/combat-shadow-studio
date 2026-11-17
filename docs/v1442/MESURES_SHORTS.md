@@ -57,10 +57,10 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 | victor | muaythai | short-thai.002 | 2244 | 0 | 0 | 2 | 0 | 0.0 % |
 | victor | mma | short-vale-tudo | 5624 | 0 | 0 | 22 | 0 | 0.0 % |
 | victor | mma | short-vale-tudo | 2780 | 0 | 0 | 0 | 0 | 92.5 % |
-| kanya | boxe | short-thai | 3752 | 0 | 0 | 30 | 0 | 0.0 % |
-| kanya | boxe | short-thai | 3464 | 0 | 0 | 0 | 0 | 0.0 % |
-| kanya | boxe | short-thai | 648 | 0 | 0 | 0 | 0 | 0.0 % |
-| kanya | boxe | short-thai | 2216 | 0 | 0 | 2 | 0 | 0.0 % |
+| kanya | boxe | short-thai | 3662 | 0 | 0 | 24 | 0 | 0.0 % |
+| kanya | boxe | short-thai | 3508 | 0 | 0 | 0 | 0 | 0.0 % |
+| kanya | boxe | short-thai | 688 | 0 | 0 | 0 | 0 | 0.0 % |
+| kanya | boxe | short-thai | 2290 | 0 | 0 | 3 | 0 | 0.0 % |
 | kanya | kickboxing | short-thai.001 | 3682 | 0 | 0 | 18 | 0 | 0.0 % |
 | kanya | kickboxing | short-thai.001 | 3490 | 0 | 0 | 2 | 0 | 0.0 % |
 | kanya | kickboxing | short-thai.001 | 692 | 0 | 0 | 0 | 0 | 0.0 % |
@@ -182,8 +182,11 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 | victor | mma | genou | 2.97 | 86.9 | 1.4 % |
 | victor | mma | changement de niveau | 3.03 | 89.8 | 1.2 % |
 | victor | mma | low kick | 2.67 | 80.1 | 1.3 % |
-| kanya | boxe | garde | 2.43 | 56.0 | 1.2 % |
-| kanya | boxe | high kick | 6.20 | 114.2 | 2.0 % |
+| kanya | boxe | garde | 2.37 | 52.6 | 1.1 % |
+| kanya | boxe | high kick | 5.33 | 101.6 | 1.6 % |
+| kanya | boxe | genou | 2.95 | 74.9 | 2.0 % |
+| kanya | boxe | changement de niveau | 3.39 | 66.2 | 1.4 % |
+| kanya | boxe | low kick | 2.85 | 63.4 | 1.5 % |
 | kanya | kickboxing | garde | 2.20 | 52.2 | 1.1 % |
 | kanya | kickboxing | high kick | 5.35 | 105.2 | 1.6 % |
 | kanya | kickboxing | genou | 2.93 | 75.3 | 1.8 % |

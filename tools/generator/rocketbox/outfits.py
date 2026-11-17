@@ -3924,7 +3924,7 @@ def kanya_kit(name):
         rs = shorts('thai', BLACK_K, BLACK_K)
         SHORT_PANEL.clear()
     elif name == 'boxe':
-        SHORT_PANEL.update(panel=GOLD_K, trim=GOLD_K, hem=0.48, pw=0.045, tw=0.007, hw=0.02)
+        SHORT_PANEL.update(panel=GOLD_K, trim=GOLD_K, hem=0.5, pw=0.05, tw=0.007, hw=0.022)   # 0.48 : étirement 6,2 en high kick (limite 6)
         rs = shorts('thai', BLACK_K, GOLD_K)
         SHORT_PANEL.clear()
     else:
