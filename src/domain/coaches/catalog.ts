@@ -135,7 +135,9 @@ export const EXTRA_COACHES: ChampionCoach[] = [
   // 1.51 (Youssef 2026-11-15, « PROFIL 3D : KANYA — COACH MUAY THAÏ (KRU) »): Kanya « La Tigresse », dessinée par Youssef
   // (planches Gemini) et construite sur une copie du corps d'Inaya (Inaya ne change pas): visage, teint, chignon haut,
   // tatouages Sak Yant de ses planches (tools/generator/kanya/, tools/generator/rocketbox/kanya_build.mjs). Taille et poids :
-  // ceux du modèle 3D, le corps d'Inaya (1,73 m, 65 kg) ; à 1,68 m les gestes du moteur plient trop l'aine (journal 1.51.0)
+  // ceux du modèle 3D, le corps d'Inaya (1,73 m, 65 kg) ; à 1,68 m les gestes du moteur plient trop l'aine (journal 1.51.0).
+  // 1.55 (Youssef 2026-11-17, « n'oublie sa taille ») : moteur proportionnel à la taille, Kanya à sa taille de planche,
+  // 1,68 m, et son poids de profil, 61 kg (le corps d'Inaya réduit de 3 %)
   {
     id: 'kanya',
     coach: 'femme',
@@ -144,11 +146,11 @@ export const EXTRA_COACHES: ChampionCoach[] = [
     style: 'Kru de muay-thaï, maîtresse du clinch',
     bio: 'Ancienne championne devenue entraîneuse : Kanya saisit au clinch, frappe court des coudes et des genoux et bloque sec, avec une précision chirurgicale.',
     portrait: './coaches/kanya/portrait.webp',
-    height: '1,73 m',
+    height: '1,68 m',
     guard: 'Haute et de face, coudes serrés, prête au clinch',
     strengths: ['Clinch', 'Coudes et genoux', 'Blocages secs'],
     skills: sk(7, 8, 6, 3, 7, 9, 8),
-    weightKg: 65,
+    weightKg: 61,
   },
 ];
 

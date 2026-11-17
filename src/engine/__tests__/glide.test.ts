@@ -39,10 +39,10 @@ const SWEEP_PENDING: Record<string, number> = {
 /** 1.43.0 Victor: his own guard brings the floor sweep of changement-base to 13.20 cm per image (left-handed), at the
  * 1.41.0 bound; bounded for him only, a hair above (journal 1.43.0), the other coaches keep the bound above */
 const VICTOR_SWEEP: Record<string, number> = { "changement-base": 13.3 };
-// 1.51.0 Kanya: Inaya's body (same skeleton) with her own guard; two pending sweeps measure a hair over the bound
-// written for the other coaches (10,57 and 2,01 cm per image against 10,5 and 2,0), bounded here at their 1.51.0
-// value, logged in docs/JOURNAL_CORRECTIONS.md; every other technique keeps the common limits
-const KANYA_SWEEP: Record<string, number> = { "releve-technique": 10.6, kuzushi: 2.05 };
+// 1.51.0 Kanya: two pending sweeps bounded at their 1.51.0 value (10.6 and 2.05 cm per image). 1.55: with the step
+// speeds compared per body length (motion.ts, glideSpeedOf) she measures 10.24 and 1.95 at 1.68 m, under the common
+// bounds: her own bounds are removed, she keeps the limits of every coach
+const KANYA_SWEEP: Record<string, number> = {};
 const COACHES = [
   ["mma-kadir", "homme"],
   ["mma-amara", "femme"],

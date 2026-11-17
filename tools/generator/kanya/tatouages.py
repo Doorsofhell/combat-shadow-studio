@@ -5,7 +5,8 @@ place mesurée sur la planche (échelle : largeur des épaules de la planche = c
   - nuque : motif géométrique (yantra à flèches) ;
   - omoplate gauche : cinq colonnes d'écritures sacrées (Ha Taew) ;
   - omoplate droite : double tigre (Suea Koo) ;
-  - épaules (deltoïdes, arrière) : deux colonnes d'écritures, comme sur les planches 1 et 4.
+  - épaules (deltoïdes, arrière) : deux colonnes d'écritures, comme sur les planches 1 et 4 ;
+  - 1.55 ventre (VENTRE=planches/planche7-tenue-mma-ventre.png) : yant central et deux tigres.
   python3 tools/generator/kanya/tatouages.py pose.npz forme.npz planche3.jpg corps.png tete.png [taille=2048]"""
 import sys, os, numpy as np
 from PIL import Image
@@ -58,6 +59,27 @@ def back_y(x, z):
     s = (np.abs(P[:, 0] - x) < 0.01) & (np.abs(P[:, 2] - z) < 0.01) & (P[:, 1] > 0)
     return P[s, 1].max()
 
+def front_y(x, z):
+    s = (np.abs(P[:, 0] - x) < 0.01) & (np.abs(P[:, 2] - z) < 0.01) & (P[:, 1] < 0)
+    return P[s, 1].min()
+
+VENTRE = os.environ.get('VENTRE')   # planche du ventre (planches/planche7-tenue-mma-ventre.png)
+VENTRE_Z = float(os.environ.get('VENTRE_Z', '1.122'))
+VENTRE_H = float(os.environ.get('VENTRE_H', '0.14'))
+if VENTRE:
+    # cadre du motif dans le gros plan (pixels de la planche 1024 px), agrandi 4 fois avant l'extraction de l'encre
+    x0, y0, x1, y1 = 862, 347, 1010, 428
+    v = Image.open(VENTRE).convert('RGB').crop((x0 - 12, y0 - 12, x1 + 12, y1 + 12))
+    v = np.asarray(v.resize((v.size[0] * 4, v.size[1] * 4), Image.LANCZOS)).astype(np.float32) / 255
+    Lv = v @ np.array([0.2126, 0.7152, 0.0722], np.float32)
+    iv = np.clip((gf(Lv, 24) - Lv) / np.maximum(gf(Lv, 24), 1e-3) / 0.25, 0, 1)
+    iv = gf(iv, 1.0); iv = np.clip((iv - 0.2) / 0.35, 0, 1); iv = iv * iv * (3 - 2 * iv)   # traits plus nets
+    iv = iv[48:-48, 48:-48]
+    h_, w_ = iv.shape
+    fx = np.minimum(np.arange(w_), w_ - 1 - np.arange(w_)) / 20; fy = np.minimum(np.arange(h_), h_ - 1 - np.arange(h_)) / 20
+    VENTRE_IMG = iv * np.clip(fx, 0, 1)[None] * np.clip(fy, 0, 1)[:, None]
+    Image.fromarray((255 - VENTRE_IMG * 255).astype(np.uint8)).save('ventre-encre.png')
+
 layers = {}
 for mat, outf in ((0, out_body), (1, out_head)):
     PM, NM, VM = uv_raster(P, Nv, T, UV, M, mat, size)
@@ -83,6 +105,13 @@ for mat, outf in ((0, out_body), (1, out_head)):
         pt = P[cand][np.argmax(P[cand] @ out_dir)]
         vv = -axd; uu = np.cross(vv, out_dir); uu /= np.linalg.norm(uu); nn_ = np.cross(uu, vv)
         acc = np.maximum(acc, decal(PM, NM, VM, cols, pt - vv * 0.01, uu, vv, nn_, 60 * MPX * 0.9, 325 * MPX * 0.9, depth=0.03))
+    # 1.55 (Youssef 2026-11-17, « rajoute lui des tatouages sur le ventre ») : yant central à trois flèches entouré
+    # d'écritures et deux tigres dressés sur les flancs, d'après le gros plan du ventre de la planche MMA (planche7) ;
+    # posé de face entre le bas de la brassière et la ceinture du short (14 cm de haut, de la brassière à la ceinture comme sur la planche)
+    if VENTRE:
+        acc = np.maximum(acc, decal(PM, NM, VM, VENTRE_IMG, np.array([0.0, front_y(0.0, VENTRE_Z), VENTRE_Z]),
+                                    np.array([1.0, 0, 0]), np.array([0, 0, 1.0]), np.array([0, -1.0, 0]),
+                                    VENTRE_H * VENTRE_IMG.shape[1] / VENTRE_IMG.shape[0], VENTRE_H, depth=0.12))
     layers[mat] = acc
     im = np.zeros(VM.shape + (2,), np.uint8); im[..., 1] = (np.clip(acc, 0, 1) * 255).astype(np.uint8)
     Image.fromarray(im, 'LA').save(outf)
