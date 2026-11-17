@@ -4365,3 +4365,25 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   et illustrations rendues avec Kadir : NON REFAITES (rendu proche, à regénérer dans un lot dédié).
 - **Numéro** : préparée comme 1.46.0 ; renumérotée 1.47.0 après la fusion de la 1.46.0 (traversées, lot 2), publiée entre-temps.
 - **Restauration** : branche `restauration/avant-kadir-realisme` (= 1.45.2, b773812) ; la 1.46.0 = 066131d.
+
+## 2026-11-17 · v1.51.0 · Membres qui traversent le corps, lot 3 (entrées de judo)
+
+- **Constat vérifié** (mesure `intrusions.test.ts` sur la peau des cinq coachs, base 1.47.0, image par image) :
+  seoi-nage 7,1 cm et o-goshi 7,2 cm (jambe droite dans la cuisse gauche, au pas d'entrée et surtout au retour, quand
+  le pied gauche passait tout droit devant le pied droit), o-goshi aussi 6,1 cm (main droite à travers le ventre en
+  allant vers le dos du partenaire), o-soto-gari 7,6 cm (main gauche de manche dans le tronc quand le buste se
+  redresse).
+- **Correction** (`src/engine/library/grappling.ts`, moteur 1.2.2) :
+  - pas d'entrée de seoi-nage et d'o-goshi un peu moins croisé (pied droit 7 cm plus à droite) ;
+  - nouvelle clé de retour `stepBack` : le pied gauche recule d'abord, loin du pied droit, puis revient à sa place ;
+  - o-goshi : le bras droit s'ouvre par l'extérieur avant de faire le tour de la taille ;
+  - o-soto-gari : la main de manche est tenue dans le repère du buste, sur le côté des côtes, et le suit.
+- **Résultat** (validé par Youssef sur la page avant/après) : seoi-nage 4,3 cm, o-goshi 4,6 cm, o-soto-gari 4,0 cm.
+  Les jambes se frôlent encore au retour du pas tournant.
+- **Fichiers** : `src/engine/library/grappling.ts`, `src/engine/index.ts`, `docs/moteur/CHANGELOG.md`,
+  `src/engine/__tests__/intrusions.test.ts`, documents de mesures régénérés, `src/ui/pictos/techniquePictos.json`,
+  `package.json`, `package-lock.json`, `src/domain/releases.ts`.
+- **Tests** : bornes de `intrusions.test.ts` abaissées (seoi 4,5, o-goshi 4,8, o-soto 4,2), jamais relevées. Vitest
+  (après fusion de la 1.50.0) : 1615 réussis, 5 échecs déjà présents (extension-v032 uppercut Kadir, fluidité ×2,
+  crochets « pas d'armé », poids du modèle d'Amara) : TEST ÉCHOUÉ, non liés.
+- **Restauration** : branche `restauration/avant-v1510` (= 1.50.0, `7068f78`) ; le lot seul part de `restauration/avant-traversees-lot3` (= 1.47.0).
