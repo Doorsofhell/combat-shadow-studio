@@ -4475,7 +4475,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Restauration** : branches `restauration/avant-kanya-v151` (1.50.0, 7068f78) et `restauration/avant-kanya-v154`
   (1.53.0, 920d6aa).
 
-## 2026-11-17 · v1.55.0 · Kimonos plus fins et plus naturels (option B « Tombé »)
+## 2026-11-17 · v1.56.0 · Kimonos plus fins et plus naturels (option B « Tombé »)
 
 - **Demande** : Youssef, 15/11 15:47 : « les kimonos … trop gros. Pas esthétique. Pas réaliste. Trop épais ». Deux
   options montrées en images (A « Affiné », B « Tombé ») ; B choisie le 17/11 à 08:02. Le 17/11 à 08:24 : repartir de
@@ -4505,14 +4505,14 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     1.37.0 (déplacés par `tenues_suivent.py`) ; ils sont maintenant bâtis sur son corps actuel (1,06 Mo → 1,5 Mo
     chacun, comme ceux de Naël et Victor). Autres tenues, corps, visages et animations : inchangés.
 - **Fichiers** : `tools/generator/rocketbox/outfits.py`, `public/coaches/{mma-kadir,mma-amara,nael,inaya,victor,kanya}/tenues/{judo,bjj}.glb`,
-  `src/boot/assetSizes.json`, `src/domain/releases.ts`, `package.json`, `docs/v1550-kimonos/` (manifeste, 96 captures),
-  `scripts/dev/shot-kimonos-v1550.mjs`.
+  `src/boot/assetSizes.json`, `src/domain/releases.ts`, `package.json`, `docs/v1560-kimonos/` (manifeste, 96 captures),
+  `scripts/dev/shot-kimonos-v1560.mjs`.
 - **Tests modifiés, avec raison** : `outfit-rollback-v1373.test.ts` (Kadir) et `outfit-amara-v1374.test.ts` (Inaya) :
   nouvelles empreintes pour judo et bjj seulement, kimonos refaits à la demande de Youssef ; les shorts et le no-gi
   gardent les leurs.
 - **Tests** : `npx vitest run` : 1619 réussis, 5 échecs identiques aux versions précédentes (extension-v032 uppercut,
   fluidity ×2, hooks-biomeca « pas d'armé », expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (connus, sans lien).
-  Tests des tenues et du moteur humain : TEST RÉUSSI. `npm run build` : TEST RÉUSSI (titre v1.55.0).
+  Tests des tenues et du moteur humain : TEST RÉUSSI. `npm run build` : TEST RÉUSSI (titre v1.56.0).
   `npx playwright test` (299 tests, 55 min) : 294 réussis, 2 ignorés (Firebase), 3 échecs : `boot:98` et
   `coaching-hud:60` (connus), `training-layout:117` (délai dépassé ; échoue aussi seul sur la 1.53.0, vérifié) :
   TEST ÉCHOUÉ (sans lien avec les kimonos). Après la coupe des planches : `npx vitest run` 1621 réussis, mêmes 5 échecs
@@ -4520,6 +4520,6 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   complète : NON RELANCÉE (seuls les GLB des kimonos ont changé depuis la passe complète). Après l'ajout de Kanya :
   `npx vitest run` 1695 réussis, mêmes 5 échecs connus. Amara : deux petites marques
   sombres de dos à la jonction manche et dos, réduites, pas effacées. Captures WebGL avant/après des 6 coachs, 8 vues : RÉALISÉES
-  (`docs/v1550-kimonos/MANIFEST.md`). Android : NON EXÉCUTÉ. Vignettes et illustrations judo/JJB : NON REFAITES.
-- **Numéro** : préparée comme 1.54.0 ; renumérotée 1.55.0 (la 1.54.0 est prise par Kanya, PR #134) après fusion de la 1.53.1 (Victor : peau seule, géométrie de son corps identique, vérifié : ses kimonos restent valables), puis de la 1.54.0 (Kanya).
+  (`docs/v1560-kimonos/MANIFEST.md`). Android : NON EXÉCUTÉ. Vignettes et illustrations judo/JJB : NON REFAITES.
+- **Numéro** : préparée comme 1.54.0 ; renumérotée 1.55.0 (la 1.54.0 est prise par Kanya, PR #134) après fusion de la 1.53.1 (Victor : peau seule, géométrie de son corps identique, vérifié : ses kimonos restent valables), puis de la 1.54.0 (Kanya) ; renumérotée 1.56.0 le 17/11 (la 1.55.0 est prise par le lot Kanya validé à 17:36). Validée par Youssef le 17/11 à 19:04 (« Je valide la 1.56.0 »).
 - **Restauration** : branche `restauration/avant-kimonos-v1540` (= 1.53.0, 920d6aa).

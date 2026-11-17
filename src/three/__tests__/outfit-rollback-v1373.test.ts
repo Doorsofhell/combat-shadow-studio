@@ -6,7 +6,7 @@ import { describe, expect, test } from 'vitest';
  * 1.46.0 (Youssef 15/11, Kadir plus réaliste : cou, mâchoire, trapèzes) : new body, and the three outfits that cover
  * the neck and the trapezius (judo, bjj, bjj-nogi) follow it by tools/generator/kadir/tenues_suivent.py (garment
  * points moved with the body, hidden skin keys renamed); the shorts and the other outfits keep their 1.37.0 bytes.
- * 1.55.0 (Youssef 15/11 « kimonos trop gros, trop épais », option B « Tombé » choisie le 17/11) : judo and bjj rebuilt
+ * 1.56.0 (Youssef 15/11 « kimonos trop gros, trop épais », option B « Tombé » choisie le 17/11) : judo and bjj rebuilt
  * on the current body by outfits.py (GI_STYLE tombe: real cloth thicknesses, the cloth spans the hollows; then the cut of Youssef's reference sheets: straight wide trouser legs and sleeves). New approved
  * fingerprints for these two only; the 1.46 ones are in the git history. The shorts guard is untouched. */
 const GOOD_1370 = {

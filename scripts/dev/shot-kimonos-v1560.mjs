@@ -1,5 +1,5 @@
-// 1.55.0 kimonos: Lab captures, same coach/outfit/pose/camera/resolution for before and after.
-// node scripts/dev/shot-kimonos-v1550.mjs OUT_DIR '[["name","champion=…&d=judo&tenue=judo&motion=garde&az=45&el=5"],…]'   (vite dev on :5173)
+// 1.56.0 kimonos: Lab captures, same coach/outfit/pose/camera/resolution for before and after.
+// node scripts/dev/shot-kimonos-v1560.mjs OUT_DIR '[["name","champion=…&d=judo&tenue=judo&motion=garde&az=45&el=5"],…]'   (vite dev on :5173)
 import { chromium } from '@playwright/test';
 const OUT = process.argv[2]; const list = JSON.parse(process.argv[3]);
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });

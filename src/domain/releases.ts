@@ -49,7 +49,7 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
-      version: '1.55.0',
+      version: '1.56.0',
       releaseDate: '2026-11-17',
       title: 'Kimonos plus fins et plus naturels',
       isMajor: false,
