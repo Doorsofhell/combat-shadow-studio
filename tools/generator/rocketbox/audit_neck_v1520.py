@@ -27,7 +27,7 @@ def inspect(path):
         chunk = memoryview(data)[offset+8:offset+8+size]
         if kind == b'JSON':
             document = json.loads(bytes(chunk))
-        elif kind == b'BIN\\x00':
+        elif kind == b'BIN\x00':
             binary = chunk
         offset += 8 + size
     if document is None or binary is None:
