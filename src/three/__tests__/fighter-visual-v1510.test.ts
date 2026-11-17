@@ -3,7 +3,8 @@ import { MeshPhysicalMaterial, MeshStandardMaterial } from 'three';
 import { FIGHTER_PILOT_150, photoMaterial, skinLookFor } from '../photoMaterials';
 
 describe('1.51.0 pilot for Kadir Naël and Inaya', () => {
-  for (const id of ['mma-kadir', 'nael', 'inaya'] as const) {
+  // 1.54.0: Kanya (Inaya's body and skin) takes the same pilot
+  for (const id of ['mma-kadir', 'nael', 'inaya', 'kanya'] as const) {
     test(id + ' high quality gains controlled optical finish', () => {
       const look=skinLookFor('/coaches/'+id+'/photo.glb');
       const pilot=FIGHTER_PILOT_150[id]!;

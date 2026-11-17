@@ -11,7 +11,7 @@ import { Exertion, FACE_RENDER, isHeadSkin, newFaceRenderUniforms, updateFaceRen
  * rajouter des traits visibles »): the rendering of a living face on the five coaches. Lid shade on the eyes, light
  * through the thin parts, flush then sweat with the session. Soft zones only, never a line.
  */
-const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor'];
+const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor', 'kanya'];
 
 function materialNames(id: string) {
   const b = readFileSync(resolve(__dirname, `../../../../public/coaches/${id}/photo.glb`));

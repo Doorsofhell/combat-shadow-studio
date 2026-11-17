@@ -58,6 +58,22 @@ export const COACH_LOOKS: Record<string, FighterLook> = {
     l.outfit = { ...l.outfit, bottom: 'short-mma-court', bottomPaint: paint('#1a1b1f', '#3a3d43', 'bande'), top: 'aucun', shoes: 'pieds-nus' };
     l.gear = { ...l.gear, hands: 'gants-mma', handsPaint: paint('#16171a', '#3a3d43') };
   }),
+  // 1.51 Kanya « La Tigresse » : peau dorée, yeux bruns foncés, cheveux noirs en chignon haut ; tenues noir et or
+  kanya: look('femme', (l) => {
+    l.skin = '#a8775d';
+    l.eyes = '#2a1a10';
+    l.hair = { style: 'degrade', color: '#0f0d0c', length: 0.45, meches: 0.6, flow: 0.2 };
+    l.beard = { style: 'aucune', color: '#0f0d0c' };
+    l.outfit = {
+      ...l.outfit,
+      bottom: 'short-mma-court',
+      bottomPaint: paint('#141519', '#d4af37', 'bande'),
+      top: 'brassiere',
+      topPaint: paint('#141519'),
+      shoes: 'pieds-nus',
+    };
+    l.gear = { ...l.gear, hands: 'gants-mma', handsPaint: paint('#16171a', '#b3122a') };
+  }),
   // Inaya « La Panthère » (Rocketbox face Female_Adult_01): fair skin, blond ponytail; outfits in plum and orange
   inaya: look('femme', (l) => {
     l.skin = '#e8c6ad';

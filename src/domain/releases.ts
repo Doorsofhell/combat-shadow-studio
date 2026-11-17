@@ -49,6 +49,19 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.54.0',
+      releaseDate: '2026-11-17',
+      title: 'Nouvelle coach : Kanya « La Tigresse », Kru de muay-thaï',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Kanya « La Tigresse » rejoint les coachs : ancienne championne devenue Kru de muay-thaï, spécialiste du clinch, des coudes et des genoux. Visage, chignon haut et tatouages Sak Yant d’après ses planches.' },
+        { category: 'coachs', text: 'Sa tenue de muay-thaï : brassière noire « COACH MUAY THAI », short satiné noir et or « มวยไทย », bandages noirs et rouges à doigts libres, Pra Jiad rouge et blanc, chevillères à liseré rouge. Ses six autres tenues sont à ses couleurs.' },
+        { category: 'ameliorations', text: 'Elle profite des mêmes réglages que les autres coachs : rendu premium de la peau, des yeux et des cheveux en qualité haute, éclairage cinématographique.' },
+        { category: 'corrections', text: 'Aucun autre coach n’est modifié.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.53.1',
       releaseDate: '2026-11-17',
       title: 'Victor : peau unie, cou raccordé',

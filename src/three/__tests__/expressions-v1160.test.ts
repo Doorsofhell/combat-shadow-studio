@@ -7,7 +7,7 @@ import { dropStillMorphs, expressionWeights, FACE_EXPRESSIONS } from '../face';
  * 1.16 (Youssef 04/11 14:16 « applique ta proposition »): the Rocketbox coaches carry 25 of the avatars' own facial
  * expressions (tools/generator/rocketbox/morph_{extract,apply}), on the face only, and the face animator drives them.
  */
-const ROCKETBOX = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor'] as const;
+const ROCKETBOX = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor', 'kanya'] as const;
 
 interface Acc { count: number; type: string; bufferView?: number; sparse?: { count: number; indices: { bufferView: number; byteOffset?: number; componentType: number }; values: { bufferView: number; byteOffset?: number } } }
 interface Json {

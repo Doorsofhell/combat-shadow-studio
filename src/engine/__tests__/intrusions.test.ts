@@ -83,7 +83,7 @@ const VICTOR_PENDING: Record<string, number> = {
 const KADIR_PENDING: Record<string, number> = {
   'defense-lutte': 4.9,
 };
-const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor'] as const;
+const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor', 'kanya'] as const;
 const DOC = resolve(__dirname, '../../../docs/audit-biomecanique/MESURES_INTRUSIONS.md');
 
 interface Worst {

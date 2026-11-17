@@ -40,7 +40,9 @@ describe('chargement au démarrage (1.25) : ce qui est téléchargé', () => {
       for (const o of [...DISCIPLINES, 'bjj-nogi']) expect(all.some((x) => x.url === `./coaches/${c}/tenues/${o}.glb`), `${c} ${o}`).toBe(true);
     }
     expect(new Set(all.map((x) => x.url)).size).toBe(all.length);
-    expect(all.reduce((a, x) => a + x.bytes, 0) / 1e6).toBeLessThan(110);
+    // 1.25.0: 110 Mo for six coaches; 1.51.0: six coaches again (Kanya), each with heavier photo bodies and outfits
+    // (122 Mo measured): bound raised to 125 Mo, reason logged in docs/JOURNAL_CORRECTIONS.md (1.51.0)
+    expect(all.reduce((a, x) => a + x.bytes, 0) / 1e6).toBeLessThan(125);
   });
 
   it('suit les réglages : sans kimono, qualité Haute, salles ou tenues coupées, pas encore de coach', () => {

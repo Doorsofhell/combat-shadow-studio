@@ -99,6 +99,9 @@ export const SKIN_LOOK: Record<string, SkinLook> = {
   // 1.43 Victor: the Kadir photo skin repainted (tan of Youssef's sheets): Kadir's light and relief
   victor: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.022, roughVar: 0.11, tintVar: 0.018, wrap: 0.45, shadowLift: 0.36, cleanBody: true },
   inaya: { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, roughVar: 0.12, tintVar: 0.045, wrap: 0.45, shadowLift: 0.32, tint: [1, 0.52, 0.38], sat: 1.12, gain: 0.8, warm: 0.12 },
+  // 1.51 Kanya: Inaya's photo skin repainted to the tone of Youssef's sheets (the texture already carries the tone: no
+  // gain, the light and relief of Inaya's body)
+  kanya: { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, roughVar: 0.12, tintVar: 0.04, wrap: 0.45, shadowLift: 0.32, tint: [1, 0.52, 0.38] },
 };
 
 /** 1.48 premium material finish: calibrated individually, never changes body proportions or facial expressions. */
@@ -110,6 +113,7 @@ export const PREMIUM_FINISH: Partial<Record<keyof typeof SKIN_LOOK, {
   nael: { bodySheen: 0.14, faceSheen: 0.13, bodySpecular: 0.27, faceSpecular: 0.26, eyeRoughness: 0.19, hairScale: 0.96 },
   inaya: { bodySheen: 0.13, faceSheen: 0.12, bodySpecular: 0.25, faceSpecular: 0.24, eyeRoughness: 0.20, hairScale: 0.97 },
   victor: { bodySheen: 0.12, faceSheen: 0.13, bodySpecular: 0.24, faceSpecular: 0.26, eyeRoughness: 0.20, hairScale: 0.98 },
+  kanya: { bodySheen: 0.13, faceSheen: 0.12, bodySpecular: 0.25, faceSpecular: 0.24, eyeRoughness: 0.20, hairScale: 0.97 },
 };
 
 /** 1.50.0 isolated optical pilot — NEVER changes vertices, neck or GLSL. */
@@ -145,6 +149,12 @@ export const FIGHTER_PILOT_150: Partial<Record<keyof typeof SKIN_LOOK, {
     eyeRoughness: 0.16, hairScale: 0.93,
   },
   inaya: {
+    faceSheen: 0.15, bodySheen: 0.16, faceSpecular: 0.30, bodySpecular: 0.31,
+    sheenRoughnessFace: 0.78, sheenRoughnessBody: 0.80,
+    eyeRoughness: 0.175, hairScale: 0.94,
+  },
+  // 1.54.0 Kanya: built on Inaya's body and photo skin, she takes Inaya's validated profile
+  kanya: {
     faceSheen: 0.15, bodySheen: 0.16, faceSpecular: 0.30, bodySpecular: 0.31,
     sheenRoughnessFace: 0.78, sheenRoughnessBody: 0.80,
     eyeRoughness: 0.175, hairScale: 0.94,

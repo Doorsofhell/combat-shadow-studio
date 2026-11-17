@@ -16,6 +16,7 @@ const photos = [
   // 1.11: same Rocketbox bodies with a grafted face (face bones moved to the donor's face), their own guards
   { id: 'nael', rig: new CoachRig(loadSkeleton('homme', 'coaches/nael/photo.glb')), offsets: COACH_STANCES.nael },
   { id: 'victor', rig: new CoachRig(loadSkeleton('homme', 'coaches/victor/photo.glb')), offsets: COACH_STANCES.victor },
+  { id: 'kanya', rig: new CoachRig(loadSkeleton('femme', 'coaches/kanya/photo.glb')), offsets: COACH_STANCES.kanya },
   { id: 'inaya', rig: new CoachRig(loadSkeleton('femme', 'coaches/inaya/photo.glb')), offsets: COACH_STANCES.inaya },
 ];
 

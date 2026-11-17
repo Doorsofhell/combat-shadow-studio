@@ -6,7 +6,7 @@
 
 - Viser un rendu de jeu de combat premium, comparable par le soin des volumes, de l'éclairage, des expressions et des animations à **Street Fighter 6**, sans copier ses personnages, assets ou autres éléments protégés.
 - Favoriser une anatomie athlétique crédible, des volumes musculaires lisibles, une peau naturelle, des tenues propres et des animations biomécaniquement cohérentes.
-- Préserver l'identité des cinq coachs **Kadir, Amara, Naël, Inaya et Victor** et les six disciplines **boxe anglaise, kick-boxing, MMA, muay-thaï, judo et JJB**.
+- Préserver l'identité des coachs **Kadir, Amara, Naël, Inaya, Victor et Kanya** (Kanya depuis la 1.54.0) et les six disciplines **boxe anglaise, kick-boxing, MMA, muay-thaï, judo et JJB**.
 - Être **force de proposition** : diagnostiquer les limites, proposer des améliorations visuelles utiles, prioriser selon l'impact, le risque, la performance et la faisabilité. Éviter les modifications cosmétiques sans gain démontré.
 
 ## Règle absolue : ne pas régresser

@@ -132,10 +132,28 @@ export const EXTRA_COACHES: ChampionCoach[] = [
     skills: sk(8, 7, 6, 6, 6, 8, 9),
     weightKg: 93,
   },
+  // 1.51 (Youssef 2026-11-15, « PROFIL 3D : KANYA — COACH MUAY THAÏ (KRU) »): Kanya « La Tigresse », dessinée par Youssef
+  // (planches Gemini) et construite sur une copie du corps d'Inaya (Inaya ne change pas): visage, teint, chignon haut,
+  // tatouages Sak Yant de ses planches (tools/generator/kanya/, tools/generator/rocketbox/kanya_build.mjs). Taille et poids :
+  // ceux du modèle 3D, le corps d'Inaya (1,73 m, 65 kg) ; à 1,68 m les gestes du moteur plient trop l'aine (journal 1.51.0)
+  {
+    id: 'kanya',
+    coach: 'femme',
+    name: 'Kanya',
+    nickname: 'La Tigresse',
+    style: 'Kru de muay-thaï, maîtresse du clinch',
+    bio: 'Ancienne championne devenue entraîneuse : Kanya saisit au clinch, frappe court des coudes et des genoux et bloque sec, avec une précision chirurgicale.',
+    portrait: './coaches/kanya/portrait.webp',
+    height: '1,73 m',
+    guard: 'Haute et de face, coudes serrés, prête au clinch',
+    strengths: ['Clinch', 'Coudes et genoux', 'Blocages secs'],
+    skills: sk(7, 8, 6, 3, 7, 9, 8),
+    weightKg: 65,
+  },
 ];
 
 /** every coach, in the order of the choice screen */
-export const ALL_COACHES: ChampionCoach[] = [CHAMPIONS.homme, EXTRA_COACHES[0], EXTRA_COACHES[2], CHAMPIONS.femme, EXTRA_COACHES[1]];
+export const ALL_COACHES: ChampionCoach[] = [CHAMPIONS.homme, EXTRA_COACHES[0], EXTRA_COACHES[2], CHAMPIONS.femme, EXTRA_COACHES[1], EXTRA_COACHES[3]];
 
 export const championById = (id: string | null | undefined) => ALL_COACHES.find((c) => c.id === id);
 
