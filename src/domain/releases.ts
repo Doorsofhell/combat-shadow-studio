@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.54.0',
+      releaseDate: '2026-11-17',
+      title: 'Kimonos plus fins et plus naturels',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Kimonos de judo et de JJB refaits pour les cinq coachs : tissu à l’épaisseur d’un vrai kimono, col et ourlets plus fins, ceinture posée sur la veste.' },
+        { category: 'ameliorations', text: 'Le tissu tombe au lieu de mouler les muscles : dos, manches et pantalon moins bouffants, bas de la veste qui tombe droit depuis les hanches.' },
+        { category: 'corrections', text: 'Visages, corps, animations et autres tenues inchangés.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.53.0',
       releaseDate: '2026-11-17',
       title: 'Éclairage cinématographique premium',
