@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.53.0',
+      releaseDate: '2026-11-17',
+      title: 'Éclairage cinématographique premium',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Nouvel éclairage cinématographique en qualité haute dans les scènes des coachs : lumière principale chaude, remplissage doux et contre-jours pour mieux distinguer les volumes et les silhouettes.' },
+        { category: 'ameliorations', text: 'Rendu plus équilibré sur les visages et les épaules ; tests WebGL comparatifs réalisés sur Kadir et Amara en face, trois quarts et profil.' },
+        { category: 'corrections', text: 'Aucun changement de modèles 3D, visages, cou, animations, textures ou tenues. Les salles avec éclairage spécifique, la réalité augmentée et le mode lumière vive conservent leur éclairage.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.51.0',
       releaseDate: '2026-11-17',
       title: 'Rendu premium — Kadir, Naël et Inaya',
