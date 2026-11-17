@@ -57,6 +57,8 @@ export interface StudioStageProps {
   shadows?: boolean;
   /** studio visuals (scripts/visuels): dark photo-studio lights, no floor shadow (the picture is laid on its own room) */
   mood?: boolean;
+  /** v1.53 experimental three-point cinematic light, opt-in only; no model changes. */
+  cinematic?: boolean;
   /** 1.23 the discipline's room: its own key and rim lights on the coach (rooms.ts) */
   room?: RoomSpec | null;
 }
@@ -103,6 +105,32 @@ export function StageLights({ dark = false, shadows = false, vive = false }: { d
  * the right, two cool rim lights from behind, almost no ambient light, so the coach stands out of a dark room in light
  * and shade like a gym photo. No shadow map: on the photo-textured skin it drew stripes.
  */
+/**
+ * v1.53 isolated cinematic lighting study. Opt-in via Lab ?cinema=1.
+ * Physically distinct key/fill/rim, no geometry, texture, shader or
+ * colour grading changes; the v1.51 lighting remains the default.
+ */
+export const CINEMATIC_LIGHTING_153 = {
+  key: { position: [3.4, 4.7, 2.0] as [number, number, number], intensity: 3.45, color: '#ffe8d5' },
+  fill: { position: [-3.5, 2.35, 1.25] as [number, number, number], intensity: 0.72, color: '#c3d8ff' },
+  rim: { position: [-2.0, 3.5, -3.25] as [number, number, number], intensity: 2.1, color: '#dbe9ff' },
+  warmRim: { position: [2.8, 1.9, -2.75] as [number, number, number], intensity: 0.85, color: '#ffdfc2' },
+  ambient: 0.10,
+} as const;
+
+export function CinematicLights() {
+  const l = CINEMATIC_LIGHTING_153;
+  return (
+    <>
+      <hemisphereLight args={['#dce8f8', '#30303a', l.ambient]} />
+      <directionalLight position={l.key.position} intensity={l.key.intensity} color={l.key.color} />
+      <directionalLight position={l.fill.position} intensity={l.fill.intensity} color={l.fill.color} />
+      <directionalLight position={l.rim.position} intensity={l.rim.intensity} color={l.rim.color} />
+      <directionalLight position={l.warmRim.position} intensity={l.warmRim.intensity} color={l.warmRim.color} />
+    </>
+  );
+}
+
 function MoodLights() {
   return (
     <>
@@ -157,7 +185,7 @@ const corner = new Vector3();
  * (computed from the real animation), from the requested angle, and glides to a new angle
  * instead of cutting. In free mode the user turns around the coach with a finger.
  */
-export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 1, focusY, follow, envelope, origin, orbit = false, free = false, turnOnly = false, onUserOrbit, dark = false, shadows = false, vive = false, mood = false, room = null }: StudioStageProps) {
+export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 1, focusY, follow, envelope, origin, orbit = false, free = false, turnOnly = false, onUserOrbit, dark = false, shadows = false, vive = false, mood = false, cinematic = false, room = null }: StudioStageProps) {
   const { camera, size } = useThree();
   const controls = useRef<OrbitControlsImpl>(null);
   const cur = useRef<{ az: number; el: number; dist: number; target: Vector3 } | null>(null);
@@ -266,7 +294,7 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
   const hi = quality === 'haute';
   return (
     <>
-      {mood ? <MoodLights /> : room ? <RoomLights spec={room} shadows={shadows} /> : <StageLights dark={dark} shadows={shadows} vive={vive} />}
+      {cinematic ? <CinematicLights /> : mood ? <MoodLights /> : room ? <RoomLights spec={room} shadows={shadows} /> : <StageLights dark={dark} shadows={shadows} vive={vive} />}
       {children}
       {!mood && <ContactShadows position={[0, 0.001, 0]} opacity={room ? 0.92 : dark ? 0.75 : 0.42} scale={6} blur={2.4} far={1.6} resolution={hi ? 512 : 256} color={dark ? '#000000' : '#3a3530'} />}
       {orbit && (

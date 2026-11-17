@@ -394,6 +394,7 @@ export function CoachStage(props: CoachStageProps) {
             dark={stageDark}
             shadows={realShadows}
             vive={vive}
+            cinematic={q === 'haute' && !room && !arActive && !vive}
             room={room}
           />
         )}

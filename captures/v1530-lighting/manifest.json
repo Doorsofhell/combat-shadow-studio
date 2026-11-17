@@ -1,0 +1,122 @@
+[
+  {
+    "coach": "kadir",
+    "champion": "mma-kadir",
+    "angle": "front",
+    "az": 0,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 204749,
+    "lighting": "1.51.0 mood lighting"
+  },
+  {
+    "coach": "kadir",
+    "champion": "mma-kadir",
+    "angle": "front",
+    "az": 0,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 206097,
+    "lighting": "1.53.0 cinematic opt-in"
+  },
+  {
+    "coach": "kadir",
+    "champion": "mma-kadir",
+    "angle": "three-quarter",
+    "az": 35,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 195188,
+    "lighting": "1.51.0 mood lighting"
+  },
+  {
+    "coach": "kadir",
+    "champion": "mma-kadir",
+    "angle": "three-quarter",
+    "az": 35,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 193928,
+    "lighting": "1.53.0 cinematic opt-in"
+  },
+  {
+    "coach": "kadir",
+    "champion": "mma-kadir",
+    "angle": "profile",
+    "az": 90,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 226370,
+    "lighting": "1.51.0 mood lighting"
+  },
+  {
+    "coach": "kadir",
+    "champion": "mma-kadir",
+    "angle": "profile",
+    "az": 90,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 222830,
+    "lighting": "1.53.0 cinematic opt-in"
+  },
+  {
+    "coach": "amara",
+    "champion": "mma-amara",
+    "angle": "front",
+    "az": 0,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 158547,
+    "lighting": "1.51.0 mood lighting"
+  },
+  {
+    "coach": "amara",
+    "champion": "mma-amara",
+    "angle": "front",
+    "az": 0,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 160878,
+    "lighting": "1.53.0 cinematic opt-in"
+  },
+  {
+    "coach": "amara",
+    "champion": "mma-amara",
+    "angle": "three-quarter",
+    "az": 35,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 155353,
+    "lighting": "1.51.0 mood lighting"
+  },
+  {
+    "coach": "amara",
+    "champion": "mma-amara",
+    "angle": "three-quarter",
+    "az": 35,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 154415,
+    "lighting": "1.53.0 cinematic opt-in"
+  },
+  {
+    "coach": "amara",
+    "champion": "mma-amara",
+    "angle": "profile",
+    "az": 90,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 189263,
+    "lighting": "1.51.0 mood lighting"
+  },
+  {
+    "coach": "amara",
+    "champion": "mma-amara",
+    "angle": "profile",
+    "az": 90,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 186493,
+    "lighting": "1.53.0 cinematic opt-in"
+  }
+]
