@@ -528,6 +528,15 @@ export class MotionSampler {
  * the mat on a low arc and sets down at the written place. A foot that stays in place, or glides slowly, is unchanged.
  */
 export const GLIDE_SPEED = { from: 0.35, full: 0.75 };
+/**
+ * 1.55 (Youssef 2026-11-17, « n'oublie sa taille » : gestes proportionnels à la taille du coach). The speeds above are
+ * for a 1.8 m body: every step of the library is written in body lengths (Author.s = height / 1.8) over the same time,
+ * so a smaller coach walks the same step more slowly in metres per second. Compared in metres per second, Kanya at
+ * 1.68 m lifted her stepping foot less than at 1.73 m (kuzushi: 3.8 mm instead of 4.7 mm at the first image, the foot
+ * then read as dragged along the mat). The speed is now compared per body length: the same step gets the same arc,
+ * scaled to the body, whatever the coach's height.
+ */
+export const glideSpeedOf = (d: number, h: number, height: number) => d / h / (height / 1.8);
 /** highest lift of the arc (m, for a 1.8 m body), and its share of the distance travelled */
 export const GLIDE_LIFT = { max: 0.045, share: 0.15 };
 
@@ -535,7 +544,7 @@ export const GLIDE_LIFT = { max: 0.045, share: 0.15 };
 export function glideLift(a: V3, b: V3, h: number, u: number, height: number): number {
   if (u <= 0 || u >= 1 || h <= 0) return 0;
   const d = Math.hypot(b.x - a.x, b.z - a.z);
-  const w = smooth((d / h - GLIDE_SPEED.from) / (GLIDE_SPEED.full - GLIDE_SPEED.from));
+  const w = smooth((glideSpeedOf(d, h, height) - GLIDE_SPEED.from) / (GLIDE_SPEED.full - GLIDE_SPEED.from));
   if (w <= 0) return 0;
   return w * Math.min(GLIDE_LIFT.max * (height / 1.8), GLIDE_LIFT.share * d) * Math.sin(Math.PI * u);
 }

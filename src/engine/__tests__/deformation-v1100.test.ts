@@ -90,6 +90,23 @@ function measure(b: SkinnedBody, rest: Float32Array, posed: Float32Array, inRegi
   };
 }
 
+/**
+ * 1.55 Kanya at 1.68 m (Youssef 2026-11-17, « n'oublie sa taille »): her body is Inaya's scaled down as a whole (3 %).
+ * Her poses are the same angle for angle (the engine writes them in body lengths), but a zone of fixed radius in metres
+ * takes in more of a smaller body: round her groin it reached triangles of the belly and buttocks that Inaya's did not,
+ * and the fold measured there rose from 66° to 77° with an identical high kick. The zones of a scaled body are scaled
+ * with it (ratio of the heights of the head joint), so the same skin is measured on both
+ */
+const SCALED_FROM: Partial<Record<(typeof COACHES)[number], (typeof COACHES)[number]>> = { kanya: 'inaya' };
+const headYCache = new Map<string, number>();
+function headY(id: string) {
+  if (!headYCache.has(id)) {
+    const b = loadSkinnedBody(`coaches/${id}/photo.glb`, 1, () => false);
+    headYCache.set(id, b.bones.find((x) => x.name === 'Head')!.getWorldPosition(new Vector3()).y);
+  }
+  return headYCache.get(id)!;
+}
+
 const rows: string[] = [];
 const all: Record<string, Record<string, Record<string, Metric>>> = {};
 for (const id of COACHES) {
@@ -103,7 +120,7 @@ for (const id of COACHES) {
       const js = bones.map(joint);
       const m = new Uint8Array(body.count);
       // radius in the body's own units (the Rocketbox bodies are in centimetres under a 0.01 scale: read the height)
-      const unit = joint('Head').y > 10 ? 100 : 1;
+      const unit = (joint('Head').y > 10 ? 100 : 1) * (SCALED_FROM[id] ? headY(id) / headY(SCALED_FROM[id]) : 1);
       for (let v = 0; v < body.count; v++) {
         const q = new Vector3().fromArray(rest, v * 3);
         if (js.some((j) => j.distanceTo(q) < radius * unit)) m[v] = 1;
@@ -148,8 +165,8 @@ Object.assign(base, JSON.parse(readFileSync(BASE_1110, 'utf8')));
 // thigh, has its smallest triangle at 0.091 of rest instead of 0.111 (limit 0.02 under Kadir: 0.0002 short)
 base.victor = structuredClone(all['mma-kadir']);
 base.victor['squat (changement de niveau)'].genoux.collapse = 0.1;
-// 1.51.0 Kanya: Inaya's body and skin weights at 1.68 m (uniform scale: the angles and ratios measured here do not
-// change with size), only the head reshaped; her joints may not deform more than Inaya's today
+// 1.51.0 Kanya: Inaya's body and skin weights (1.55: at 1.68 m, a uniform scale, her zones scaled with her, see
+// SCALED_FROM), only the head reshaped; her joints may not deform more than Inaya's today
 base.kanya = structuredClone(all.inaya);
 
 describe('déformations aux articulations (peau des six coachs)', () => {

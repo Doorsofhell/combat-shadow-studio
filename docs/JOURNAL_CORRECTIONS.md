@@ -4366,7 +4366,6 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Numéro** : préparée comme 1.46.0 ; renumérotée 1.47.0 après la fusion de la 1.46.0 (traversées, lot 2), publiée entre-temps.
 - **Restauration** : branche `restauration/avant-kadir-realisme` (= 1.45.2, b773812) ; la 1.46.0 = 066131d.
 
-<<<<<<< HEAD
 ## 2026-11-17 · v1.53.1 · Victor : peau unie, cou raccordé
 
 - **Demande** (Youssef, 15/11 15:45, captures du genou direct en kick-boxing) : « Il y a encore des traces et des tâches
@@ -4412,7 +4411,6 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   avant/après : https://claude.ai/artifact/MV8CneamJgBhY3Fco2696R
 - **Validation** : Youssef, 17/11 13:15 (« Je valide »), sur la page avant/après. PR #133.
 - **Restauration** : branche `restauration/avant-victor-peau-v1531` (= 1.53.0, 920d6aa).
->>>>>>> origin/claude/project-thread-o7lrt8
 
 ## 2026-11-17 · v1.54.0 · Nouvelle coach : Kanya « La Tigresse », Kru de muay-thaï
 
@@ -4476,4 +4474,53 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   construites).
 - **Restauration** : branches `restauration/avant-kanya-v151` (1.50.0, 7068f78) et `restauration/avant-kanya-v154`
   (1.53.0, 920d6aa).
-=======
+
+## 2026-11-17 · v1.55.0 · Kanya : brassière, tatouage du ventre, nouvelles tenues, 1,68 m
+
+- **Demande** (Youssef, 17/11 15:48 et 15:49) : « le coach sur sa brassière disparaît puis réapparaît à chaque
+  mouvement » ; « rajoute lui des tatouages sur le ventre » ; « je te donne ses nouvelles tenues & accessoires » (7
+  planches, `/mnt/project-files/combat-shadow-studio/maquettes/kanya-v155/`) ; « n'oublie sa taille » (lot convenu en
+  1.54.0 : moteur proportionnel à la taille, puis Kanya à 1,68 m).
+- **Constat vérifié (brassière)** : captures WebGL du crochet avant, vue de face, 6 images : le mot « COACH » est coupé
+  sur 3 images. La brassière, copiée de la peau, descend de 24,7 mm dans le creux entre les seins ; les lettres posées
+  dessus y descendent aussi et, quand le buste tourne, le bonnet le plus proche de la caméra passe devant elles. Mesuré
+  aussi : les lettres suivent bien le tissu (mêmes poids de peau, écart 1,3 à 2,1 mm au repos, normales à 2,7° en
+  médiane) ; ce n'était ni la respiration ni la profondeur.
+- **Correction** : `bridge_cleavage()` (`tools/generator/rocketbox/outfits.py`, Kanya seule) ramène le devant de la
+  brassière sur son enveloppe convexe tranche par tranche (tissu tendu d'un bonnet à l'autre, comme une brassière de
+  sport), les deux faces du tissu ensemble. Après : « COACH » entier sur les 6 images. Sonde de laboratoire ajoutée :
+  `window.__labPrintCover()` (`src/ui/Lab.tsx`).
+- **Tatouage du ventre** : yant à trois flèches, prières en cercle et deux tigres, extraits du gros plan de la planche MMA
+  (`tools/generator/kanya/planches/planche7-tenue-mma-ventre.png`, option `VENTRE` de `tatouages.py`), 14 cm de haut
+  entre la brassière et la ceinture. La planche fait 1 024 px : traits un peu doux de près.
+- **Tenues** (`kanya_kit()`, palette or `#B08A2E`, `generatorVersion` 1.55.0 ; BJJ, no-gi et judo inchangés de forme) :
+  muay-thaï = short de compression noir à pans dorés en biais coupés dans le tissu (`DIAG_PANEL`), bandages, Pra Jiad,
+  chevillères ; MMA = short ample à pans et ourlet dorés, gants MMA à sangle blanche, genouillères (`knee_pads`, neuves),
+  protège-tibias et pieds noirs à bande dorée ; boxe = short satiné noir à ceinture et pans dorés, gants à paume dorée
+  (`boxing_glove_v2(palm=)`) et sangle blanche, bottines à col doré et semelle sombre (`shoes_v2(sole=)`) ; kick-boxing =
+  short noir à pans rouges, liserés dorés, ceinture rouge, « KICKBOXING » doré, gants à paume rouge, protège-tibias bordés
+  de rouge. Brassière commune : « COACH » doré et la discipline dessous (« MUAY THAI » en rouge aussi en MMA, comme sur la
+  planche). Écarts : texte « KICKBOXING » du short plus petit que sur la planche, bottines sans bandes dorées (essai de
+  bande en biais : taches sur les grands triangles de la tige), ceinture de boxe sans rayures, petits écussons de la
+  brassière non faits.
+- **Taille** : `src/engine/motion.ts` `glideSpeedOf` : la vitesse d'un pas, qui décide s'il quitte le tapis, est
+  comparée par longueur de corps (les pas sont écrits en longueurs de corps sur le même temps : un coach plus petit va
+  moins vite en m/s et levait moins le pied ; kuzushi à 1,68 m : pied à 3,8 mm du tapis au lieu de 4,7, lu comme
+  traîné). Vérifié : à 1,73 et 1,68 m, le high kick donne les mêmes angles au dixième de degré ; le pli de l'aine mesuré à
+  77° venait de la zone de mesure de rayon fixe en mètres, qui prenait plus de peau sur un corps plus petit : le test des
+  déformations met à l'échelle les zones d'un corps réduit (`SCALED_FROM`, Kanya ← Inaya). Kanya est construite à 1,68 m
+  (`KANYA_SCALE` 0,9687 par défaut dans `kanya_build.mjs`), poids de profil 61 kg, ses 7 tenues refaites sur ce corps.
+- **Tests adaptés, avec raison** : `glide` : les bornes propres à Kanya (10,6 et 2,05) sont retirées, elle mesure 10,24 et
+  1,95 sous les bornes communes ; `deformation-v1100` : zones mises à l'échelle pour un corps réduit (ci-dessus) ;
+  `skills-v1130` : poids de Kanya 61 ; `outfit-assets-v1372` : tenues de Kanya en 1.55.0 ; documents de mesures régénérés
+  (`AUDIT_UPDATE=1 UPDATE_INTEGRITY=1`). Le short de boxe à mi-cuisse plus court (0,48) étirait la peau à 6,2 en high kick
+  (limite 6) : coupe 0,5 gardée, test réussi.
+- **Tests** : `npx vitest run` : 1 694 réussis, 6 échoués → après la correction du short de boxe, les 5 ÉCHECS connus
+  seulement (`expressions-v1160` Amara, `extension-v032`, `hooks-biomeca`, `fluidity` ×2, les mêmes qu'en 1.54.0).
+  `npm run build` : RÉUSSI. `npx playwright test` : 294 RÉUSSIS, 2 ignorés (Firebase), 3 ÉCHOUÉS hors Kanya :
+  `coaching-hud:60` et `training-layout:117` (déjà en échec en 1.54.0), `chrono-seul:96` (RÉUSSI relancé seul, minuterie
+  sous la charge de la suite).
+- **Validation** : Youssef, 17/11 18:36 (« Je valide »), sur les captures planches/application et brassière avant/après
+  (`/mnt/project-files/combat-shadow-studio/kanya-v155/`).
+- **Correction annexe** : marqueurs de fusion restés dans ce journal à la 1.54.0 (autour de la 1.53.1) retirés.
+- **Restauration** : branche `restauration/avant-kanya-v155` (= 1.54.0, 538409a).
