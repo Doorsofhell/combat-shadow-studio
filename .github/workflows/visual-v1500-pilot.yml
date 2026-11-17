@@ -39,24 +39,17 @@ jobs:
         run: npm run test -- src/three/__tests__/premium-visual-v1490.test.ts src/three/__tests__/premium-skin-v1480.test.ts src/three/__tests__/amara-semi-realiste-v1471.test.ts
       - name: Build experimental application (no deployment)
         run: npm run build
-      - name: Prepare browser with SwiftShader
-        run: npx playwright install --with-deps chromium
-      - name: Capture Amara/Victor in real WebGL
-        run: node scripts/visuels/v1500-before-after.mjs
-      - name: Upload real PNG captures
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: v1500-real-pilot-before-after
-          path: captures/v1500/
-          if-no-files-found: warn
-      - name: Commit direct preview images to prototype branch
-        if: success()
+      - name: Verify previously generated paired real WebGL captures
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add captures/v1500/
-          if ! git diff --cached --quiet; then
-            git commit -m "test(v1.50): real Amara/Victor before-after images [skip ci]"
-            git push origin HEAD:feature/streetfighter-visual-v1500
-          fi
+          node --input-type=module <<'NODE'
+          import { readFileSync, statSync } from 'node:fs';
+          const dir='captures/v1500';
+          const manifest=JSON.parse(readFileSync(dir+'/manifest.json','utf8'));
+          if (manifest.length !== 12 || manifest.some(x => x.status !== 'ok')) throw Error('Expected 12 successful real WebGL captures');
+          for (const x of manifest) {
+            const file=dir+'/'+x.label+'/'+x.name+'.png';
+            const bytes=statSync(file).size;
+            if (bytes < 15000) throw Error('Missing/empty capture '+file);
+            console.log(file, bytes);
+          }
+          NODE
