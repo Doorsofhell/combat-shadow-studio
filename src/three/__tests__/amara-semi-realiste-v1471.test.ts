@@ -70,7 +70,7 @@ describe('Amara 1.47.1 — isolated semi-realistic material pilot', () => {
     const a = photoMaterial(src, 'cheveux', 'haute', amara);
     const other = photoMaterial(src, 'cheveux', 'haute', skinLookFor('/coaches/inaya/photo.glb'));
     expect(a.roughness).toBeCloseTo(0.65 * 0.89);
-    expect(other.roughness).toBeCloseTo(0.65 * 0.97 * 0.94);
+    expect(other.roughness).toBeCloseTo(0.65 * 0.94);
     expect(a.alphaTest).toBe(0.4);
     expect(a.depthWrite).toBe(true);
     expect(src.roughness).toBe(0.65);
