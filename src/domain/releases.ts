@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.56.1',
+      releaseDate: '2026-11-17',
+      title: 'Kanya : tenue JJB no-gi et mot COACH stable',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Tenue JJB no-gi de Kanya refaite selon sa planche : brassière noire « COACH », short de compression noir à panneaux dorés, pieds nus.' },
+        { category: 'corrections', text: 'Le mot « COACH » sur la brassière de Kanya ne disparaît plus pendant les mouvements : il est placé un peu plus bas, sous le bord des bonnets, et le tissu reste tendu entre les deux bonnets.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.56.0',
       releaseDate: '2026-11-17',
       title: 'Kimonos plus fins et plus naturels',

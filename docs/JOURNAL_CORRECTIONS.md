@@ -4578,3 +4578,31 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   d'abord échoué (lien de la note 1.56.0 perdu à la fusion), corrigé : TEST RÉUSSI. `npm run build` (titre v1.56.0) et
   Playwright `bjj-judo`, `outfit-loading`, `boot` (12/12) : TEST RÉUSSI. Suite Playwright complète : NON RELANCÉE.
 - **Restauration** : branche `restauration/avant-kimonos-v1540` (= 1.53.0, 920d6aa).
+
+## 2026-11-17 · v1.56.1 · Kanya : tenue JJB no-gi et mot « COACH » stable
+
+- **Constat vérifié** (messages de Youssef du 17/11, 19:50 et 19:51) :
+  - la tenue JJB no-gi de Kanya restait l'ancienne : `kanya_kit()` n'avait pas d'entrée `bjj-nogi`, le kit de base
+    (planche 1) n'était donc pas appliqué ;
+  - le mot « COACH » apparaissait et disparaissait encore pendant les mouvements, malgré la 1.55.0. Mesuré sur le
+    GLB : le haut du texte était à 1,267 m, au-dessus du fond du décolleté en V (1,253 m au centre). Le bord des
+    bonnets passait donc devant le « A » dès que le buste tournait. Il restait aussi un creux de quelques
+    millimètres au milieu du pont entre les bonnets (le flou seul abaissait le pont), visible en crochet.
+- **Correction** (`tools/generator/rocketbox/outfits.py`) :
+  - `kanya_kit('bjj-nogi')` : brassière noire à bande dorée « COACH », short vale-tudo noir à panneaux dorés en
+    diagonale (`DIAG_PANEL`), pieds nus, sans accessoire ni sous-titre ;
+  - texte placé plus bas et un peu plus petit : « COACH » à 54 mm au-dessus du bas de la brassière (48 mm sans
+    sous-titre), largeur 115 mm (125 mm sans sous-titre) ; haut du texte à 1,244 m, sous le fond du V ;
+  - `bridge_cleavage()` : le creux est d'abord élargi (filtre maximum 7×5) puis adouci, le tissu reste tendu
+    d'un bonnet à l'autre (creux comblé jusqu'à 28,9 mm).
+  - Tenues avec brassière de Kanya régénérées : muay-thaï, MMA, boxe, kick-boxing, no-gi. Textures identiques pixel
+    pour pixel (non modifiées). Kimonos, corps, visage, tatouages, taille et animations : inchangés.
+- **Fichiers** : `tools/generator/rocketbox/outfits.py`,
+  `public/coaches/kanya/tenues/{muaythai,mma,boxe,kickboxing,bjj-nogi}.glb`, `src/boot/assetSizes.json`,
+  `src/domain/releases.ts`, `package.json`.
+- **Tests** : `npx vitest run` : 1695 réussis, 5 échecs identiques aux versions précédentes (extension-v032
+  uppercut, fluidity ×2, hooks-biomeca « pas d'armé », expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (connus, sans
+  lien). Tests des tenues et du moteur humain : TEST RÉUSSI. `npm run build` (titre v1.56.1) : TEST RÉUSSI.
+  Captures WebGL : crochet et coude muay-thaï (6 images chacun, « COACH » lisible sur toutes) et 4 tenues de face,
+  de trois quarts et de dos : RÉALISÉES. Android : NON EXÉCUTÉ.
+- **Restauration** : branche `restauration/avant-kanya-nogi-v1561` (= 1.56.0, dd63329).

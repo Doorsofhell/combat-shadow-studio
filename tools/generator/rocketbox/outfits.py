@@ -2703,8 +2703,10 @@ def bridge_cleavage(o, low, top):
             hull.append((x_, y_))
         hx = np.array([h[0] for h in hull]); hy = np.array([h[1] for h in hull])
         D[a, ok] = np.maximum(0.0, Y - np.interp(X, hx, hy))
-    from scipy.ndimage import gaussian_filter as _gf
-    D = _gf(D, (2.0, 1.5))
+    from scipy.ndimage import gaussian_filter as _gf, maximum_filter as _mf
+    # 1.56.1 : le flou seul abaissait le pont au milieu (creux de quelques millimètres restant, le bonnet proche
+    # repassait devant le « A » en crochet) : le creux est d'abord élargi (maximum), puis adouci
+    D = _gf(_mf(D, size=(7, 5)), (1.5, 1.2))
     moved = 0
     for v, q in zip(me_.vertices, pts):
         if q.y >= 0.02 or not (zs[0] <= q.z <= zs[-1]) or abs(q.x) > 0.13:
@@ -4084,9 +4086,11 @@ def kanya_kit(name):
         parts.extend(ps)
         hide.update(cov)
     sub = {'muaythai': ('MUAY THAI', '#C8102E'), 'mma': ('MUAY THAI', '#C8102E'),
-           'boxe': ('BOXING', GOLD_TXT), 'kickboxing': ('KICKBOXING', GOLD_TXT)}[name]
+           'boxe': ('BOXING', GOLD_TXT), 'kickboxing': ('KICKBOXING', GOLD_TXT), 'bjj-nogi': None}[name]
     short_text = None
-    if name == 'muaythai':
+    if name in ('muaythai', 'bjj-nogi'):
+        # 1.56.1 (Youssef 17/11 19:50, planche 1 : « Tu n'as pas changé la tenue JJB no-gi de Kanya ») : no-gi = la tenue
+        # de base de la planche 1, brassière « COACH » seul et short de compression à pans dorés, pieds nus
         DIAG_PANEL.update(panel=GOLD_K)
         rs = shorts('vale-tudo', BLACK_K, BLACK_K)
         DIAG_PANEL.clear()
@@ -4121,7 +4125,7 @@ def kanya_kit(name):
         hide |= hide_hands()
         # bande en biais essayée (deco) : taches sur les grands triangles de la tige ; col doré et semelle sombre
         add(shoes_v2('#141519', GOLD_K, sole='#1C1D21'))
-    else:
+    elif name == 'kickboxing':
         for s in ('Left', 'Right'):
             parts.extend(boxing_glove_v2(s, '#141519', '#F4F4F5', palm=RED_K))
         hide |= hide_hands()
@@ -4129,11 +4133,15 @@ def kanya_kit(name):
     bra, sh = rt[0][0], rs[0][0]
     low = bra_low()
     prints = [
-        logo_on(bra, 'texte-coach', Vector((0, 0, low + 0.074)), Vector((0, -1, 0)), 0.135, lift=0.002,
-                mesh=text_mesh('COACH', TEXT_FONT_LATIN, 0.135, GOLD_TXT)),
-        logo_on(bra, 'texte-discipline', Vector((0, 0, low + 0.04)), Vector((0, -1, 0)), 0.095, lift=0.002,
-                mesh=text_mesh(sub[0], TEXT_FONT_LATIN, 0.095, sub[1])),
+        # 1.56.1 (Youssef 17/11 19:51, « le mot COACH continue de disparaître/réapparaître ») : mesuré à 1,68 m, le haut des
+        # lettres (1,267 m au milieu) dépassait le fond du décolleté en V (1,253 m) : le bord du bonnet passait devant
+        # le « A » à chaque rotation du buste. Les deux lignes tiennent maintenant sous le V, au-dessus du liseré
+        logo_on(bra, 'texte-coach', Vector((0, 0, low + (0.054 if sub else 0.048))), Vector((0, -1, 0)), 0.115 if sub else 0.125, lift=0.002,
+                mesh=text_mesh('COACH', TEXT_FONT_LATIN, 0.115 if sub else 0.125, GOLD_TXT)),
     ]
+    if sub:
+        prints.append(logo_on(bra, 'texte-discipline', Vector((0, 0, low + 0.031)), Vector((0, -1, 0)), 0.082, lift=0.002,
+                              mesh=text_mesh(sub[0], TEXT_FONT_LATIN, 0.082, sub[1])))
     if short_text:
         prints.append(logo_on(sh, 'texte-short', Vector((0, 0, hipZ - 0.05)), Vector((0, -1, 0)), short_text[1], lift=0.007,
                               mesh=text_mesh(short_text[0], TEXT_FONT_LATIN, short_text[1], GOLD_TXT)))
@@ -4142,7 +4150,7 @@ def kanya_kit(name):
 
 
 def outfit(name):
-    if COACH_ID == 'kanya' and name in ('muaythai', 'mma', 'boxe', 'kickboxing') and os.environ.get('KANYA_KIT', '1155') == '1155':
+    if COACH_ID == 'kanya' and name in ('muaythai', 'mma', 'boxe', 'kickboxing', 'bjj-nogi') and os.environ.get('KANYA_KIT', '1155') == '1155':
         return kanya_kit(name)
     parts, hide = [], set()
 
