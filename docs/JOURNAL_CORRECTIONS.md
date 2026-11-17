@@ -4366,7 +4366,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Numéro** : préparée comme 1.46.0 ; renumérotée 1.47.0 après la fusion de la 1.46.0 (traversées, lot 2), publiée entre-temps.
 - **Restauration** : branche `restauration/avant-kadir-realisme` (= 1.45.2, b773812) ; la 1.46.0 = 066131d.
 
-## 2026-11-17 · v1.51.0 · Nouvelle coach : Kanya « La Tigresse », Kru de muay-thaï
+## 2026-11-17 · v1.54.0 · Nouvelle coach : Kanya « La Tigresse », Kru de muay-thaï
 
 - **Demande** : Youssef, 2026-11-15 16:02 (modifiée à 16:08), « PROFIL 3D : KANYA — COACH MUAY THAÏ (KRU) —
   COMPATIBLE ROCKETBOX » : 42 ans, ancienne championne devenue Kru, clinch, coudes et genoux ; 2 planches à 7 vues
@@ -4416,4 +4416,13 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests** : `npx vitest run` : 1 689 réussis, 5 ÉCHOUÉS déjà sur la 1.50.0 sans Kanya (vérifié sur 7068f78 :
   `expressions-v1160` taille d'Amara 4,86 Mo, `extension-v032` uppercut-arrière, `hooks-biomeca` crochet-avant, deux de
   `fluidity`) ; Playwright et build : voir la fin de ce lot.
-- **Restauration** : branche `restauration/avant-kanya-v151` (1.50.0, 7068f78).
+- **Mise à jour sur la 1.53.0** (Youssef, 17/11 09:24 et 10:06 : « repartir de l'existant… n'appliquer que si encore
+  nécessaire » ; « Kanya doit bénéficier de toutes les améliorations apportées aux autres coachs ») : le lot, préparé sur
+  la 1.50.0, est fusionné avec la version publiée 1.53.0 (`claude/project-thread-o7lrt8`, 920d6aa) et prend le numéro
+  1.54.0 (1.51.0 à 1.53.0 sont pris). Kanya reçoit : le profil optique premium 1.51.0 (`FIGHTER_PILOT_150.kanya`, celui
+  d'Inaya dont elle partage le corps et la peau photo, test `fighter-visual-v1510` étendu) ; l'éclairage cinématographique
+  1.53.0 s'applique à tous les coachs sans réglage par coach. Les réglages 1.48 à 1.50 (finition premium, filtrage des
+  textures) étaient déjà repris. Le numéro `generatorVersion` des tenues reste « 1.51.0 » (version du générateur qui les a
+  construites).
+- **Restauration** : branches `restauration/avant-kanya-v151` (1.50.0, 7068f78) et `restauration/avant-kanya-v154`
+  (1.53.0, 920d6aa).

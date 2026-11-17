@@ -1,0 +1,146 @@
+[
+  {
+    "name": "kadir-face",
+    "champion": "mma-kadir",
+    "az": 0,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 204716
+  },
+  {
+    "name": "kadir-face",
+    "champion": "mma-kadir",
+    "az": 0,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 204742
+  },
+  {
+    "name": "kadir-three-quarter",
+    "champion": "mma-kadir",
+    "az": 35,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 195314
+  },
+  {
+    "name": "kadir-three-quarter",
+    "champion": "mma-kadir",
+    "az": 35,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 195229
+  },
+  {
+    "name": "kadir-profile",
+    "champion": "mma-kadir",
+    "az": 90,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 226382
+  },
+  {
+    "name": "kadir-profile",
+    "champion": "mma-kadir",
+    "az": 90,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 226413
+  },
+  {
+    "name": "nael-face",
+    "champion": "nael",
+    "az": 0,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 205097
+  },
+  {
+    "name": "nael-face",
+    "champion": "nael",
+    "az": 0,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 205155
+  },
+  {
+    "name": "nael-three-quarter",
+    "champion": "nael",
+    "az": 35,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 187706
+  },
+  {
+    "name": "nael-three-quarter",
+    "champion": "nael",
+    "az": 35,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 187604
+  },
+  {
+    "name": "nael-profile",
+    "champion": "nael",
+    "az": 90,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 223459
+  },
+  {
+    "name": "nael-profile",
+    "champion": "nael",
+    "az": 90,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 223829
+  },
+  {
+    "name": "inaya-face",
+    "champion": "inaya",
+    "az": 0,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 180294
+  },
+  {
+    "name": "inaya-face",
+    "champion": "inaya",
+    "az": 0,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 180300
+  },
+  {
+    "name": "inaya-three-quarter",
+    "champion": "inaya",
+    "az": 35,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 169799
+  },
+  {
+    "name": "inaya-three-quarter",
+    "champion": "inaya",
+    "az": 35,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 169755
+  },
+  {
+    "name": "inaya-profile",
+    "champion": "inaya",
+    "az": 90,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 210328
+  },
+  {
+    "name": "inaya-profile",
+    "champion": "inaya",
+    "az": 90,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 210279
+  }
+]

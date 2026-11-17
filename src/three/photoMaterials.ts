@@ -137,6 +137,28 @@ export const FIGHTER_PILOT_150: Partial<Record<keyof typeof SKIN_LOOK, {
     sheenRoughnessFace: 0.77, sheenRoughnessBody: 0.79,
     eyeRoughness: 0.17, hairScale: 0.93,
   },
+  // 1.51.0: individual non-GLSL optical profiles, preserving each coach's identity.
+  'mma-kadir': {
+    faceSheen: 0.16, bodySheen: 0.17, faceSpecular: 0.31, bodySpecular: 0.33,
+    sheenRoughnessFace: 0.77, sheenRoughnessBody: 0.79,
+    eyeRoughness: 0.175, hairScale: 0.96,
+  },
+  nael: {
+    faceSheen: 0.16, bodySheen: 0.17, faceSpecular: 0.32, bodySpecular: 0.33,
+    sheenRoughnessFace: 0.77, sheenRoughnessBody: 0.79,
+    eyeRoughness: 0.16, hairScale: 0.93,
+  },
+  inaya: {
+    faceSheen: 0.15, bodySheen: 0.16, faceSpecular: 0.30, bodySpecular: 0.31,
+    sheenRoughnessFace: 0.78, sheenRoughnessBody: 0.80,
+    eyeRoughness: 0.175, hairScale: 0.94,
+  },
+  // 1.54.0 Kanya: built on Inaya's body and photo skin, she takes Inaya's validated profile
+  kanya: {
+    faceSheen: 0.15, bodySheen: 0.16, faceSpecular: 0.30, bodySpecular: 0.31,
+    sheenRoughnessFace: 0.78, sheenRoughnessBody: 0.80,
+    eyeRoughness: 0.175, hairScale: 0.94,
+  },
 };
 
 function pilot150(look: SkinLook) {

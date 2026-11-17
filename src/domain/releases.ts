@@ -49,14 +49,38 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
-      version: '1.51.0',
+      version: '1.54.0',
       releaseDate: '2026-11-17',
       title: 'Nouvelle coach : Kanya « La Tigresse », Kru de muay-thaï',
       isMajor: false,
       changes: [
         { category: 'coachs', text: 'Kanya « La Tigresse » rejoint les coachs : ancienne championne devenue Kru de muay-thaï, spécialiste du clinch, des coudes et des genoux. Visage, chignon haut et tatouages Sak Yant d’après ses planches.' },
         { category: 'coachs', text: 'Sa tenue de muay-thaï : brassière noire « COACH MUAY THAI », short satiné noir et or « มวยไทย », bandages noirs et rouges à doigts libres, Pra Jiad rouge et blanc, chevillères à liseré rouge. Ses six autres tenues sont à ses couleurs.' },
+        { category: 'ameliorations', text: 'Elle profite des mêmes réglages que les autres coachs : rendu premium de la peau, des yeux et des cheveux en qualité haute, éclairage cinématographique.' },
         { category: 'corrections', text: 'Aucun autre coach n’est modifié.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
+      version: '1.53.0',
+      releaseDate: '2026-11-17',
+      title: 'Éclairage cinématographique premium',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Nouvel éclairage cinématographique en qualité haute dans les scènes des coachs : lumière principale chaude, remplissage doux et contre-jours pour mieux distinguer les volumes et les silhouettes.' },
+        { category: 'ameliorations', text: 'Rendu plus équilibré sur les visages et les épaules ; tests WebGL comparatifs réalisés sur Kadir et Amara en face, trois quarts et profil.' },
+        { category: 'corrections', text: 'Aucun changement de modèles 3D, visages, cou, animations, textures ou tenues. Les salles avec éclairage spécifique, la réalité augmentée et le mode lumière vive conservent leur éclairage.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
+      version: '1.51.0',
+      releaseDate: '2026-11-17',
+      title: 'Rendu premium — Kadir, Naël et Inaya',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Version publiée : réglages individualisés de la réflexion de la peau, des yeux et des cheveux pour Kadir, Naël et Inaya en qualité haute.' },
+        { category: 'corrections', text: 'Géométrie, visages, cous, textures sources, animations et tenues conservés ; comparaisons visuelles réalisées avant publication.' },
       ],
       links: [{ label: 'Voir les coachs', to: '/coach' }],
     },
