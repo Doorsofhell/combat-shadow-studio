@@ -4499,11 +4499,13 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     cheville ; femmes × 0,93, JJB × 0,92), sans fronces au-dessus de la cheville ; manches en tube (rayon minimal
     7,8 cm au bras, 7,2 à 6 cm à l'avant-bras ; femmes × 0,92, JJB × 0,9), ourlets ouverts au même rayon ; pans de
     ceinture plus courts et écartés ; aisselles et dos de l'épaule à 22 mm de la peau chez les femmes (rashguard).
-  - Les 10 kimonos (judo et JJB des 5 coachs) reconstruits. Kadir : ses kimonos n'étaient plus reconstruits depuis la
+  - Les 12 kimonos (judo et JJB des 6 coachs) reconstruits ; Kanya (arrivée en 1.54.0) reçoit la même coupe, avec
+    le même générateur (sa version de base est reproduite à 0,02 % près en taille, vérifié avant le changement).
+    Kimonos des 5 premiers coachs reconstruits une seconde fois : fichiers identiques octet pour octet (reproductible). Kadir : ses kimonos n'étaient plus reconstruits depuis la
     1.37.0 (déplacés par `tenues_suivent.py`) ; ils sont maintenant bâtis sur son corps actuel (1,06 Mo → 1,5 Mo
     chacun, comme ceux de Naël et Victor). Autres tenues, corps, visages et animations : inchangés.
-- **Fichiers** : `tools/generator/rocketbox/outfits.py`, `public/coaches/{mma-kadir,mma-amara,nael,inaya,victor}/tenues/{judo,bjj}.glb`,
-  `src/boot/assetSizes.json`, `src/domain/releases.ts`, `package.json`, `docs/v1550-kimonos/` (manifeste, 80 captures),
+- **Fichiers** : `tools/generator/rocketbox/outfits.py`, `public/coaches/{mma-kadir,mma-amara,nael,inaya,victor,kanya}/tenues/{judo,bjj}.glb`,
+  `src/boot/assetSizes.json`, `src/domain/releases.ts`, `package.json`, `docs/v1550-kimonos/` (manifeste, 96 captures),
   `scripts/dev/shot-kimonos-v1550.mjs`.
 - **Tests modifiés, avec raison** : `outfit-rollback-v1373.test.ts` (Kadir) et `outfit-amara-v1374.test.ts` (Inaya) :
   nouvelles empreintes pour judo et bjj seulement, kimonos refaits à la demande de Youssef ; les shorts et le no-gi
@@ -4515,8 +4517,9 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `coaching-hud:60` (connus), `training-layout:117` (délai dépassé ; échoue aussi seul sur la 1.53.0, vérifié) :
   TEST ÉCHOUÉ (sans lien avec les kimonos). Après la coupe des planches : `npx vitest run` 1621 réussis, mêmes 5 échecs
   connus ; `npm run build` et Playwright `bjj-judo`, `outfit-loading`, `boot` : 12/12 TEST RÉUSSI ; suite Playwright
-  complète : NON RELANCÉE (seuls les GLB des kimonos ont changé depuis la passe complète). Amara : deux petites marques
-  sombres de dos à la jonction manche et dos, réduites, pas effacées. Captures WebGL avant/après des 5 coachs, 8 vues : RÉALISÉES
+  complète : NON RELANCÉE (seuls les GLB des kimonos ont changé depuis la passe complète). Après l'ajout de Kanya :
+  `npx vitest run` 1695 réussis, mêmes 5 échecs connus. Amara : deux petites marques
+  sombres de dos à la jonction manche et dos, réduites, pas effacées. Captures WebGL avant/après des 6 coachs, 8 vues : RÉALISÉES
   (`docs/v1550-kimonos/MANIFEST.md`). Android : NON EXÉCUTÉ. Vignettes et illustrations judo/JJB : NON REFAITES.
-- **Numéro** : préparée comme 1.54.0 ; renumérotée 1.55.0 (la 1.54.0 est prise par Kanya, PR #134) après fusion de la 1.53.1 (Victor : peau seule, géométrie de son corps identique, vérifié : ses kimonos restent valables).
+- **Numéro** : préparée comme 1.54.0 ; renumérotée 1.55.0 (la 1.54.0 est prise par Kanya, PR #134) après fusion de la 1.53.1 (Victor : peau seule, géométrie de son corps identique, vérifié : ses kimonos restent valables), puis de la 1.54.0 (Kanya).
 - **Restauration** : branche `restauration/avant-kimonos-v1540` (= 1.53.0, 920d6aa).
