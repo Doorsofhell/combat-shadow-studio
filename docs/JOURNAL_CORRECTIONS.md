@@ -4572,4 +4572,8 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   sombres de dos à la jonction manche et dos, réduites, pas effacées. Captures WebGL avant/après des 6 coachs, 8 vues : RÉALISÉES
   (`docs/v1560-kimonos/MANIFEST.md`). Android : NON EXÉCUTÉ. Vignettes et illustrations judo/JJB : NON REFAITES.
 - **Numéro** : préparée comme 1.54.0 ; renumérotée 1.55.0 (la 1.54.0 est prise par Kanya, PR #134) après fusion de la 1.53.1 (Victor : peau seule, géométrie de son corps identique, vérifié : ses kimonos restent valables), puis de la 1.54.0 (Kanya) ; renumérotée 1.56.0 le 17/11 (la 1.55.0 est prise par le lot Kanya validé à 17:36). Validée par Youssef le 17/11 à 19:04 (« Je valide la 1.56.0 »).
+- **Mise à jour sur la 1.55.0** (Kanya passe à 1,68 m) : ses kimonos sont reconstruits sur son nouveau corps (sa version
+  1.55.0 est reproduite à 0,01 % près en taille avec l'ancien réglage, vérifié) ; captures avant (1.55.0) et après
+  refaites. `npx vitest run` : 1694 réussis, 5 échecs connus (TEST ÉCHOUÉ, sans lien) ; le test des Nouveautés a
+  d'abord échoué (lien de la note 1.56.0 perdu à la fusion), corrigé : TEST RÉUSSI.
 - **Restauration** : branche `restauration/avant-kimonos-v1540` (= 1.53.0, 920d6aa).

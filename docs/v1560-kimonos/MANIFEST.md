@@ -1,11 +1,11 @@
 # 1.56.0 — kimonos plus fins : manifeste des captures
 
-- **Référence** : 1.53.0 (Kanya : 1.54.0, commit `538409a`, son arrivée), commit `920d6aa` (branche publiée `claude/project-thread-o7lrt8`), restauration `restauration/avant-kimonos-v1540`.
+- **Référence** : 1.53.0 (Kanya : 1.55.0, commit `8957866`, son corps à 1,68 m), commit `920d6aa` (branche publiée `claude/project-thread-o7lrt8`), restauration `restauration/avant-kimonos-v1540`.
 - **Candidate** : 1.56.0, branche `claude/project-thread-98s98b`.
 - **Variable évaluée** : uniquement `public/coaches/<coach>/tenues/{judo,bjj}.glb` (6 coachs : Kadir, Amara, Naël, Inaya, Victor, Kanya). Corps, visages, textures de peau, animations, éclairage et autres tenues identiques.
 - **Captures** : rendu réel Three.js/WebGL du Lab (`#/lab?look=realiste&frame=1&champion=…&d=…&tenue=…`), Chromium SwiftShader, 420 × 620 px, facteur 1, même scène pour avant et après. Script : `scripts/dev/shot-kimonos-v1560.mjs`. Chaque capture attend `__labReady` et `__labOutfit = portee` (tenue chargée) : les 96 captures l'ont atteint, aucune erreur WebGL.
 - **Vues** (par coach), debout (`motion=neutre`) comme sur les planches de référence de Youssef : judo face (az 0), trois quarts (40), profil (90), dos (180) ; JJB face et dos ; puis judo en garde (az 45) et JJB sprawl (`tech=sprawl&at=1`).
-- **Fichiers** : `captures/avant-1.53.0/<coach>-<vue>.png` (Kanya : sa version 1.54.0) et `captures/apres-1.56.0/<coach>-<vue>.png` (même nom des deux côtés).
+- **Fichiers** : `captures/avant-1.53.0/<coach>-<vue>.png` (Kanya : sa version 1.55.0) et `captures/apres-1.56.0/<coach>-<vue>.png` (même nom des deux côtés).
 
 ## Mesures (distance médiane de la surface à la peau, Kadir, judo)
 

@@ -58,6 +58,7 @@ export const RELEASES: readonly Release[] = (
         { category: 'ameliorations', text: 'Le tissu tombe au lieu de mouler les muscles : dos, manches et pantalon moins bouffants, bas de la veste qui tombe droit depuis les hanches.' },
         { category: 'corrections', text: 'Visages, corps, animations et autres tenues inchangés.' },
       ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
     },
     {
       version: '1.55.0',
