@@ -193,6 +193,7 @@ export function Lab() {
             zoom={Number(q.get('zoom') ?? '1')}
             focusY={q.get('fy') ? Number(q.get('fy')) : undefined}
             mood={!!q.get('mood')}
+            cinematic={q.get('cinema') === '1'}
             vive={light === 'vive'}
             dark={light === 'sombre' || light === 'vive'}
             shadows={!!light}
