@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { MeshPhysicalMaterial, MeshStandardMaterial } from 'three';
-import { photoMaterial, PREMIUM_FINISH, SKIN_LOOK, skinLookFor } from '../photoMaterials';
+import { photoMaterial, PREMIUM_FINISH, FIGHTER_PILOT_150, SKIN_LOOK, skinLookFor } from '../photoMaterials';
 
 describe('1.48.0 premium skin: isolated per-coach calibration', () => {
   const ids = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor'] as const;
@@ -23,11 +23,12 @@ describe('1.48.0 premium skin: isolated per-coach calibration', () => {
     const t = photoMaterial(hair, 'cheveux', 'haute', look);
     expect(b.userData.cssPremiumFinish).toBe(true);
     expect(h.userData.cssPremiumFinish).toBe(true);
-    expect(b.sheen).toBe(finish.bodySheen);
-    expect(h.sheen).toBe(finish.faceSheen);
+    const pilot = FIGHTER_PILOT_150[id];
+    expect(b.sheen).toBe(pilot?.bodySheen ?? finish.bodySheen);
+    expect(h.sheen).toBe(pilot?.faceSheen ?? finish.faceSheen);
     expect(e.userData.cssPremiumEyes).toBe(true);
-    expect(e.roughness).toBeCloseTo(Math.max(0.14, finish.eyeRoughness - 0.025));
-    expect(t.roughness).toBeCloseTo(Math.max(0.48, 0.8 * finish.hairScale * 0.94));
+    expect(e.roughness).toBeCloseTo(pilot?.eyeRoughness ?? Math.max(0.14, finish.eyeRoughness - 0.025));
+    expect(t.roughness).toBeCloseTo(pilot ? Math.max(0.48, 0.8 * pilot.hairScale) : Math.max(0.48, 0.8 * finish.hairScale * 0.94));
     expect(body.roughness).toBe(1);
     expect(hair.roughness).toBe(0.8);
     for (const m of [body, head, eye, hair, b, h, e, t]) m.dispose();
