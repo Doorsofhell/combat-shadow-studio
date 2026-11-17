@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.56.2',
+      releaseDate: '2026-11-17',
+      title: 'Kanya : poitrine mise en valeur et teint unifié',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Brassières de Kanya redessinées : chaque bonnet suit sa poitrine, bretelles plus larges qui rejoignent les bonnets en arrondi.' },
+        { category: 'ameliorations', text: '« COACH » est maintenant sur la bande sous la poitrine, toujours visible ; le nom de la discipline est dans le liseré doré.' },
+        { category: 'corrections', text: 'Le teint des jambes et des pieds de Kanya est le même que celui du buste (ils étaient plus roses).' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.56.1',
       releaseDate: '2026-11-17',
       title: 'Kanya : tenue JJB no-gi et mot COACH stable',

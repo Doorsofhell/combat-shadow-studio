@@ -22,6 +22,8 @@ Venv Python avec bpy 5.3, numpy, scipy, Pillow (`export PATH=/home/user/venv/bin
    sur la peau seule (pas de plaques sombres), cheveux noirs, iris brun, carte de relief sans l'ancien chignon.
 6. `corps.py tex/f021_body_color.jpg masques.json corps.jpg 2048 tat-corps.png` : même gain de teint sur le corps (pas de
    raccord tête/cou), tatouages.
+6 bis. 1.56.2 : `teint_uni.py inaya.npz corps.jpg corps-uni.jpg` ramène la teinte des jambes et des pieds sur celle du
+   buste (teinte à 100 %, clarté à 50 %, en basse fréquence) ; c'est `corps-uni.jpg` qui est donné à `kanya_build.mjs`.
 7. `chignon.py f1.npz chignon.npz chignon.jpg` : chignon haut (maillage à part, lié à l'os `Head`).
 8. `node tools/generator/rocketbox/kanya_build.mjs public/coaches/inaya/photo.glb W/f1.f32 W/tete.jpg W/corps.jpg
    W/chignon.npz W/chignon.jpg public/coaches/kanya/photo.glb` (`HEAD_NORMAL=W/tete-normale.jpg`). `morph_apply.py`

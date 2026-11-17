@@ -4606,3 +4606,36 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   Captures WebGL : crochet et coude muay-thaï (6 images chacun, « COACH » lisible sur toutes) et 4 tenues de face,
   de trois quarts et de dos : RÉALISÉES. Android : NON EXÉCUTÉ.
 - **Restauration** : branche `restauration/avant-kanya-nogi-v1561` (= 1.56.0, dd63329).
+
+## 2026-11-17 · v1.56.2 · Kanya : poitrine mise en valeur, brassière finie, teint unifié
+
+- **Constat vérifié** (messages de Youssef du 17/11, 22:50 et 22:51, captures de son téléphone) :
+  - teint : sur la texture du corps (héritée d'Inaya), les cuisses sont plus roses que le buste (bleu/vert 0,92
+    contre 0,81 à la poitrine), le bas des jambes plus rouge (rouge/vert 1,48 contre 1,38), les pieds plus clairs ;
+  - poitrine : la 1.56.1 tendait le tissu d'un bonnet à l'autre jusqu'en haut (creux comblé jusqu'à 29 mm) : un
+    bandeau plat, sans forme de poitrine ;
+  - brassière : bretelles fines (2,2 cm) tombant en T sur un bord de bonnet droit, raccord à 8 mm.
+- **Correction** :
+  - `tools/generator/kanya/teint_uni.py` (nouveau) : la teinte de basse fréquence de toute la peau du corps est
+    ramenée sur celle du buste (teinte 100 %, clarté 50 %), sans le noir du bas peint ni l'encre ; grain, ombres fines
+    et tatouages gardés. Mesuré après : rouge/vert 1,40 / 1,43 / 1,40 (bas des jambes, cuisses, ventre), bleu/vert
+    0,81 partout. `photo.glb` reconstruit par `kanya_build.mjs` (chaîne vérifiée d'abord : la reconstruction avec
+    l'ancienne texture redonne la 1.56.1 octet pour octet) ; seule la texture du corps change ;
+  - `bridge_cleavage()` : pont entier seulement sous la poitrine, au-dessus le creux n'est adouci que de 6 mm au
+    plus : chaque bonnet suit son sein ;
+  - « COACH » sur la bande sous la poitrine (9,2 cm de large), le nom de la discipline dans le liseré doré (1,4 cm),
+    en rouge ou en noir : rien ne passe devant quand le buste tourne ;
+  - bretelles de Kanya 3 cm (`STRAP_HW` 15 mm) et raccord arrondi de 3 cm avec le bonnet (`STRAP_JOIN`) ; les autres
+    coachs gardent leurs valeurs.
+  - Tenues avec brassière régénérées : muay-thaï, MMA, boxe, kick-boxing, no-gi. Kimonos, visage, forme du corps,
+    taille et animations : inchangés.
+- **Fichiers** : `tools/generator/kanya/teint_uni.py`, `tools/generator/kanya/README.md`,
+  `tools/generator/rocketbox/outfits.py`, `public/coaches/kanya/photo.glb`,
+  `public/coaches/kanya/tenues/{muaythai,mma,boxe,kickboxing,bjj-nogi}.glb`, `src/boot/assetSizes.json`,
+  `src/domain/releases.ts`, `package.json`.
+- **Tests** : `npx vitest run` : 1695 réussis, 5 échecs connus (extension-v032 uppercut, fluidity ×2, hooks-biomeca,
+  expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (sans lien). `npm run build` (titre v1.56.2) : TEST RÉUSSI.
+  Playwright `outfit-loading` et `boot` : 4/5 ; `boot:98` (changement de coach vers Naël) échoue aussi sur la 1.56.1
+  sans ces changements (vérifié) : TEST ÉCHOUÉ (sans lien). Captures WebGL : avant/après du teint, crochet et coude
+  (6 instants, « COACH » lisible sauf sous le gant), 5 tenues de face, 3/4 et dos : RÉALISÉES. Android : NON EXÉCUTÉ.
+- **Restauration** : branche `restauration/avant-kanya-poitrine-v1562` (= 1.56.1, 45e9aa2).
