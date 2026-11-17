@@ -4431,6 +4431,11 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     taille du pantalon laissée sous la veste ;
   - bas de veste : il tombe droit depuis le point le plus large des hanches (1,5 mm de jeu par rang), plis verticaux
     un peu plus marqués.
+  - coupe d'après les planches de Youssef (17/11 15:54, Kadir et Kanya en judogi, 15:56 Kanya en JJB) : pantalon en
+    tube droit autour de l'axe de la jambe (rayon minimal 10,4 cm du genou à la cuisse, 10,2 à 9,8 cm vers la
+    cheville ; femmes × 0,93, JJB × 0,92), sans fronces au-dessus de la cheville ; manches en tube (rayon minimal
+    7,8 cm au bras, 7,2 à 6 cm à l'avant-bras ; femmes × 0,92, JJB × 0,9), ourlets ouverts au même rayon ; pans de
+    ceinture plus courts et écartés ; aisselles et dos de l'épaule à 22 mm de la peau chez les femmes (rashguard).
   - Les 10 kimonos (judo et JJB des 5 coachs) reconstruits. Kadir : ses kimonos n'étaient plus reconstruits depuis la
     1.37.0 (déplacés par `tenues_suivent.py`) ; ils sont maintenant bâtis sur son corps actuel (1,06 Mo → 1,5 Mo
     chacun, comme ceux de Naël et Victor). Autres tenues, corps, visages et animations : inchangés.
@@ -4445,7 +4450,10 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   Tests des tenues et du moteur humain : TEST RÉUSSI. `npm run build` : TEST RÉUSSI (titre v1.55.0).
   `npx playwright test` (299 tests, 55 min) : 294 réussis, 2 ignorés (Firebase), 3 échecs : `boot:98` et
   `coaching-hud:60` (connus), `training-layout:117` (délai dépassé ; échoue aussi seul sur la 1.53.0, vérifié) :
-  TEST ÉCHOUÉ (sans lien avec les kimonos). Captures WebGL avant/après des 5 coachs, 8 vues : RÉALISÉES
+  TEST ÉCHOUÉ (sans lien avec les kimonos). Après la coupe des planches : `npx vitest run` 1621 réussis, mêmes 5 échecs
+  connus ; `npm run build` et Playwright `bjj-judo`, `outfit-loading`, `boot` : 12/12 TEST RÉUSSI ; suite Playwright
+  complète : NON RELANCÉE (seuls les GLB des kimonos ont changé depuis la passe complète). Amara : deux petites marques
+  sombres de dos à la jonction manche et dos, réduites, pas effacées. Captures WebGL avant/après des 5 coachs, 8 vues : RÉALISÉES
   (`docs/v1550-kimonos/MANIFEST.md`). Android : NON EXÉCUTÉ. Vignettes et illustrations judo/JJB : NON REFAITES.
 - **Numéro** : préparée comme 1.54.0 ; renumérotée 1.55.0 (la 1.54.0 est prise par Kanya, PR #134) après fusion de la 1.53.1 (Victor : peau seule, géométrie de son corps identique, vérifié : ses kimonos restent valables).
 - **Restauration** : branche `restauration/avant-kimonos-v1540` (= 1.53.0, 920d6aa).
