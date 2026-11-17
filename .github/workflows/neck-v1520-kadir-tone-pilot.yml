@@ -1,0 +1,97 @@
+name: v1.52 - Kadir GLB neck tone texture pilot (real WebGL, no deploy)
+
+on:
+  push:
+    branches:
+      - experiment/neck-tone-kadir-v1520
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: neck-tone-kadir-v1520
+  cancel-in-progress: false
+
+jobs:
+  tone-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout experimental candidate
+        uses: actions/checkout@v4
+        with:
+          ref: experiment/neck-tone-kadir-v1520
+          persist-credentials: true
+      - name: Checkout exact 1.51.0 stable reference
+        uses: actions/checkout@v4
+        with:
+          ref: d7169f22799dd09d12ca35a298caf09df7ba9d0e
+          path: reference-v1510
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm ci --prefix reference-v1510
+          npm exec -- playwright install --with-deps chromium
+          python -m pip install numpy pillow scipy
+      - name: Apply reversible Kadir neck-tone experiment on candidate GLB only
+        run: |
+          python tools/generator/rocketbox/neck_tone_pilot_v1520.py public/coaches/mma-kadir/photo.glb
+          python tools/generator/rocketbox/audit_neck_v1520.py public/coaches/mma-kadir/photo.glb
+          cp captures/v1520/neck-glb-audit.json captures/v1520-tone/pilot-after-audit.json
+      - name: Verify build and neck regression tests
+        run: |
+          npm run test -- src/three/__tests__/photo-neck-continuity-v1520.test.ts
+          npm run build
+      - name: Compare published WebGL with candidate GLB
+        run: node scripts/visuels/v1520-neck-tone-before-after.mjs
+      - name: Compose side-by-side PNG images
+        run: |
+          python3 - <<'PY'
+          from PIL import Image,ImageDraw
+          from pathlib import Path
+          import json
+          root=Path('captures/v1520-tone')
+          rows=json.loads((root/'manifest.json').read_text())
+          assert len(rows)==30 and all(x['status']=='ok' for x in rows), '30 captures required'
+          out=root/'comparatifs'
+          out.mkdir(exist_ok=True)
+          for coach in ['kadir','amara','nael','inaya','victor']:
+            for angle in ['three-quarter','profile','back']:
+              name=f'{coach}-{angle}.png'
+              a=Image.open(root/'avant'/name).convert('RGB')
+              b=Image.open(root/'apres'/name).convert('RGB')
+              assert a.size==b.size
+              w,h=a.size
+              canvas=Image.new('RGB',(2*w,h+42),'#14161d')
+              canvas.paste(a,(0,42));canvas.paste(b,(w,42))
+              d=ImageDraw.Draw(canvas)
+              d.text((20,14),'AVANT 1.51.0',fill='white')
+              d.text((w+20,14),'APRES ESSAI 1.52.0 (Kadir)',fill='white')
+              canvas.save(out/name,optimize=True)
+          PY
+      - name: Commit real GLB pilot and screenshots
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/coaches/mma-kadir/photo.glb captures/v1520-tone/
+          if ! git diff --cached --quiet; then
+            git commit -m "experiment(1.52): Kadir skin junction texture and real WebGL A/B [skip ci]"
+            git push origin HEAD:experiment/neck-tone-kadir-v1520
+          fi
+      - name: Upload A/B artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kadir-neck-tone-v1520-webgl
+          path: captures/v1520-tone/
+          if-no-files-found: warn
