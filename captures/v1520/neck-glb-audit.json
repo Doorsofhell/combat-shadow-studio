@@ -62,6 +62,30 @@
       "imageMime": "image/jpeg",
       "imageName": "m021_body_color"
     },
+    "colourDiscontinuityAtCoincidentNeckVertices": {
+      "samples": 33,
+      "headTextureSize": [
+        2048,
+        2048
+      ],
+      "bodyTextureSize": [
+        1024,
+        1024
+      ],
+      "medianRgbDistance": 145.84,
+      "p90RgbDistance": 210.12,
+      "maxRgbDistance": 231.46,
+      "headMedianRgb": [
+        95,
+        63,
+        37
+      ],
+      "bodyMedianRgb": [
+        208,
+        139,
+        98
+      ]
+    },
     "headHasWeights": true,
     "bodyHasWeights": true
   },
@@ -127,6 +151,30 @@
       "texCoord": 0,
       "imageMime": "image/png",
       "imageName": "f021_body_color"
+    },
+    "colourDiscontinuityAtCoincidentNeckVertices": {
+      "samples": 104,
+      "headTextureSize": [
+        2048,
+        2048
+      ],
+      "bodyTextureSize": [
+        1024,
+        1024
+      ],
+      "medianRgbDistance": 39.5,
+      "p90RgbDistance": 94.69,
+      "maxRgbDistance": 114.35,
+      "headMedianRgb": [
+        88,
+        54,
+        32
+      ],
+      "bodyMedianRgb": [
+        116,
+        73,
+        46
+      ]
     },
     "headHasWeights": true,
     "bodyHasWeights": true
@@ -194,6 +242,30 @@
       "imageMime": "image/jpeg",
       "imageName": "m021_body_color"
     },
+    "colourDiscontinuityAtCoincidentNeckVertices": {
+      "samples": 33,
+      "headTextureSize": [
+        2048,
+        2048
+      ],
+      "bodyTextureSize": [
+        1024,
+        1024
+      ],
+      "medianRgbDistance": 120.6,
+      "p90RgbDistance": 153.38,
+      "maxRgbDistance": 176.74,
+      "headMedianRgb": [
+        120,
+        76,
+        53
+      ],
+      "bodyMedianRgb": [
+        206,
+        144,
+        108
+      ]
+    },
     "headHasWeights": true,
     "bodyHasWeights": true
   },
@@ -259,6 +331,30 @@
       "texCoord": 0,
       "imageMime": "image/jpeg",
       "imageName": "f021_body_color"
+    },
+    "colourDiscontinuityAtCoincidentNeckVertices": {
+      "samples": 104,
+      "headTextureSize": [
+        2048,
+        2048
+      ],
+      "bodyTextureSize": [
+        1024,
+        1024
+      ],
+      "medianRgbDistance": 25.22,
+      "p90RgbDistance": 70.2,
+      "maxRgbDistance": 116.08,
+      "headMedianRgb": [
+        189,
+        140,
+        108
+      ],
+      "bodyMedianRgb": [
+        196,
+        142,
+        111
+      ]
     },
     "headHasWeights": true,
     "bodyHasWeights": true
@@ -326,7 +422,31 @@
       "imageMime": "image/jpeg",
       "imageName": "m021_body_color"
     },
+    "colourDiscontinuityAtCoincidentNeckVertices": {
+      "samples": 33,
+      "headTextureSize": [
+        2048,
+        2048
+      ],
+      "bodyTextureSize": [
+        1024,
+        1024
+      ],
+      "medianRgbDistance": 45.97,
+      "p90RgbDistance": 159.99,
+      "maxRgbDistance": 191.25,
+      "headMedianRgb": [
+        123,
+        90,
+        73
+      ],
+      "bodyMedianRgb": [
+        158,
+        118,
+        99
+      ]
+    },
     "headHasWeights": true,
     "bodyHasWeights": true
   }
-]\n
+]
