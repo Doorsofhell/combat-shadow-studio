@@ -1,0 +1,332 @@
+[
+  {
+    "file": "public/coaches/mma-kadir/photo.glb",
+    "headMaterial": "m021_head",
+    "bodyMaterial": "m021_body",
+    "headVertices": 9947,
+    "bodyVertices": 13220,
+    "headBBox": [
+      [
+        -0.09975159168243408,
+        1.3592743873596191,
+        -0.0861910730600357
+      ],
+      [
+        0.09973929077386856,
+        1.807956576347351,
+        0.152937650680542
+      ]
+    ],
+    "bodyBBox": [
+      [
+        -0.673298180103302,
+        0.00020164951274637133,
+        -0.12874174118041992
+      ],
+      [
+        0.6732980012893677,
+        1.5413269996643066,
+        0.1928848922252655
+      ]
+    ],
+    "headBottom20RangeY": [
+      1.4751088571548463,
+      1.6082186698913574
+    ],
+    "unitFactor": 1,
+    "distanceTolerance": 0.0002,
+    "headVerticesInNeckRegion": 1792,
+    "nearCoincidentNeckVertices": 33,
+    "closeVertexCountAllHead": 57,
+    "neckMinNearestDistance": 0.0,
+    "neckMedianNearestDistance": 0.08791564,
+    "neckP90NearestDistance": 0.15165872,
+    "neckMaxNearestDistance": 0.16688104,
+    "normalAngleAtNeckShared": {
+      "max": 0.0,
+      "median": 0.0,
+      "over_1deg": 0,
+      "over_5deg": 0
+    },
+    "headUVPresent": true,
+    "bodyUVPresent": true,
+    "headTexture": {
+      "textureIndex": 3,
+      "texCoord": 0,
+      "imageMime": "image/jpeg",
+      "imageName": "m021_head_color"
+    },
+    "bodyTexture": {
+      "textureIndex": 0,
+      "texCoord": 0,
+      "imageMime": "image/jpeg",
+      "imageName": "m021_body_color"
+    },
+    "headHasWeights": true,
+    "bodyHasWeights": true
+  },
+  {
+    "file": "public/coaches/mma-amara/photo.glb",
+    "headMaterial": "f021_head",
+    "bodyMaterial": "f021_body",
+    "headVertices": 10495,
+    "bodyVertices": 16558,
+    "headBBox": [
+      [
+        -0.1211148202419281,
+        1.3704328536987305,
+        -0.19533252716064453
+      ],
+      [
+        0.12094911187887192,
+        1.7300962209701538,
+        0.07421976327896118
+      ]
+    ],
+    "bodyBBox": [
+      [
+        -0.607940673828125,
+        -0.0016108957352116704,
+        -0.15199105441570282
+      ],
+      [
+        0.6079409122467041,
+        1.4926557540893555,
+        0.12787571549415588
+      ]
+    ],
+    "headBottom20RangeY": [
+      1.4371182823181152,
+      1.5421264886856079
+    ],
+    "unitFactor": 1,
+    "distanceTolerance": 0.0002,
+    "headVerticesInNeckRegion": 1889,
+    "nearCoincidentNeckVertices": 104,
+    "closeVertexCountAllHead": 135,
+    "neckMinNearestDistance": 0.0,
+    "neckMedianNearestDistance": 0.07873391,
+    "neckP90NearestDistance": 0.1286302,
+    "neckMaxNearestDistance": 0.14342017,
+    "normalAngleAtNeckShared": {
+      "max": 0.0,
+      "median": 0.0,
+      "over_1deg": 0,
+      "over_5deg": 0
+    },
+    "headUVPresent": true,
+    "bodyUVPresent": true,
+    "headTexture": {
+      "textureIndex": 2,
+      "texCoord": 0,
+      "imageMime": "image/png",
+      "imageName": "f021_head_color"
+    },
+    "bodyTexture": {
+      "textureIndex": 0,
+      "texCoord": 0,
+      "imageMime": "image/png",
+      "imageName": "f021_body_color"
+    },
+    "headHasWeights": true,
+    "bodyHasWeights": true
+  },
+  {
+    "file": "public/coaches/nael/photo.glb",
+    "headMaterial": "m021_head",
+    "bodyMaterial": "m021_body",
+    "headVertices": 9947,
+    "bodyVertices": 13220,
+    "headBBox": [
+      [
+        -0.09671830385923386,
+        1.3604300022125244,
+        -0.08235272020101547
+      ],
+      [
+        0.0965915322303772,
+        1.8047254085540771,
+        0.1493828296661377
+      ]
+    ],
+    "bodyBBox": [
+      [
+        -0.673297643661499,
+        0.00020164827583357692,
+        -0.12597158551216125
+      ],
+      [
+        0.6732974648475647,
+        1.5349242687225342,
+        0.19288499653339386
+      ]
+    ],
+    "headBottom20RangeY": [
+      1.4741300964355468,
+      1.6083693981170655
+    ],
+    "unitFactor": 1,
+    "distanceTolerance": 0.0002,
+    "headVerticesInNeckRegion": 1791,
+    "nearCoincidentNeckVertices": 33,
+    "closeVertexCountAllHead": 57,
+    "neckMinNearestDistance": 0.0,
+    "neckMedianNearestDistance": 0.09382347,
+    "neckP90NearestDistance": 0.15570028,
+    "neckMaxNearestDistance": 0.16925175,
+    "normalAngleAtNeckShared": {
+      "max": 0.0,
+      "median": 0.0,
+      "over_1deg": 0,
+      "over_5deg": 0
+    },
+    "headUVPresent": true,
+    "bodyUVPresent": true,
+    "headTexture": {
+      "textureIndex": 0,
+      "texCoord": 0,
+      "imageMime": "image/jpeg",
+      "imageName": "m021_head_color"
+    },
+    "bodyTexture": {
+      "textureIndex": 2,
+      "texCoord": 0,
+      "imageMime": "image/jpeg",
+      "imageName": "m021_body_color"
+    },
+    "headHasWeights": true,
+    "bodyHasWeights": true
+  },
+  {
+    "file": "public/coaches/inaya/photo.glb",
+    "headMaterial": "f021_head",
+    "bodyMaterial": "f021_body",
+    "headVertices": 10495,
+    "bodyVertices": 15702,
+    "headBBox": [
+      [
+        -0.1194116547703743,
+        1.3725287914276123,
+        -0.1944715678691864
+      ],
+      [
+        0.1194615513086319,
+        1.7343209981918335,
+        0.07416760176420212
+      ]
+    ],
+    "bodyBBox": [
+      [
+        -0.607940673828125,
+        -0.001610895385965705,
+        -0.15393251180648804
+      ],
+      [
+        0.6079407334327698,
+        1.4974068403244019,
+        0.12787578999996185
+      ]
+    ],
+    "headBottom20RangeY": [
+      1.4386371278762817,
+      1.5424943208694457
+    ],
+    "unitFactor": 1,
+    "distanceTolerance": 0.0002,
+    "headVerticesInNeckRegion": 1889,
+    "nearCoincidentNeckVertices": 104,
+    "closeVertexCountAllHead": 135,
+    "neckMinNearestDistance": 0.0,
+    "neckMedianNearestDistance": 0.07607348,
+    "neckP90NearestDistance": 0.12727965,
+    "neckMaxNearestDistance": 0.14166736,
+    "normalAngleAtNeckShared": {
+      "max": 0.0,
+      "median": 0.0,
+      "over_1deg": 0,
+      "over_5deg": 0
+    },
+    "headUVPresent": true,
+    "bodyUVPresent": true,
+    "headTexture": {
+      "textureIndex": 2,
+      "texCoord": 0,
+      "imageMime": "image/jpeg",
+      "imageName": "f021_head_color"
+    },
+    "bodyTexture": {
+      "textureIndex": 0,
+      "texCoord": 0,
+      "imageMime": "image/jpeg",
+      "imageName": "f021_body_color"
+    },
+    "headHasWeights": true,
+    "bodyHasWeights": true
+  },
+  {
+    "file": "public/coaches/victor/photo.glb",
+    "headMaterial": "m021_head",
+    "bodyMaterial": "m021_body",
+    "headVertices": 9947,
+    "bodyVertices": 13220,
+    "headBBox": [
+      [
+        -0.09724373370409012,
+        1.3592743873596191,
+        -0.0823407769203186
+      ],
+      [
+        0.09689828008413315,
+        1.8087949752807617,
+        0.1463005691766739
+      ]
+    ],
+    "bodyBBox": [
+      [
+        -0.673298180103302,
+        0.00020164951274637133,
+        -0.12852320075035095
+      ],
+      [
+        0.6732980012893677,
+        1.5408283472061157,
+        0.1928848922252655
+      ]
+    ],
+    "headBottom20RangeY": [
+      1.4751083087921142,
+      1.6074377298355103
+    ],
+    "unitFactor": 1,
+    "distanceTolerance": 0.0002,
+    "headVerticesInNeckRegion": 1792,
+    "nearCoincidentNeckVertices": 33,
+    "closeVertexCountAllHead": 57,
+    "neckMinNearestDistance": 0.0,
+    "neckMedianNearestDistance": 0.08527792,
+    "neckP90NearestDistance": 0.15087069,
+    "neckMaxNearestDistance": 0.16732651,
+    "normalAngleAtNeckShared": {
+      "max": 0.0,
+      "median": 0.0,
+      "over_1deg": 0,
+      "over_5deg": 0
+    },
+    "headUVPresent": true,
+    "bodyUVPresent": true,
+    "headTexture": {
+      "textureIndex": 2,
+      "texCoord": 0,
+      "imageMime": "image/jpeg",
+      "imageName": "m021_head_color"
+    },
+    "bodyTexture": {
+      "textureIndex": 0,
+      "texCoord": 0,
+      "imageMime": "image/jpeg",
+      "imageName": "m021_body_color"
+    },
+    "headHasWeights": true,
+    "bodyHasWeights": true
+  }
+]\n
