@@ -12,6 +12,7 @@ import { dropStillMorphs, FaceAnimator, type FaceOptions } from './face';
 import { applyWrinkles, WRINKLES_ON_COACHES } from './human/wrinkles';
 import { newFaceRenderUniforms, shareFaceRender } from './human/faceRender';
 import { bakeAmaraCleanSurface } from './amaraCleanSurface';
+import { harmonizePhotoNeckNormals } from './photoNeckContinuity';
 import type { HumanSignals } from './human/behavior';
 import { humanProfileFor } from './human/profiles';
 import { CoachRig } from '../engine';
@@ -62,6 +63,8 @@ export function PhotoCoach({
     // 1.10: skin calibrated per coach (relief, scattering, pores: photoMaterials.ts SKIN_LOOK)
     const look = skinLookFor(url);
     const s = cloneSkinned(gltf.scene);
+    // v1.52 isolated pilot: geometric neck continuity without new shader or texture edits.
+    s.userData.cssNeck152Report = harmonizePhotoNeckNormals(s);
     s.traverse((o) => {
       const m = o as Mesh;
       if (!m.isMesh) return;
@@ -120,7 +123,10 @@ export function PhotoCoach({
     () => () =>
       scene.traverse((o) => {
         const m = o as Mesh;
-        if (m.isMesh) (m.material as MeshStandardMaterial).dispose();
+        if (m.isMesh) {
+          (m.material as MeshStandardMaterial).dispose();
+          if (m.geometry.userData.cssNeck152Clone) m.geometry.dispose();
+        }
       }),
     [scene],
   );
