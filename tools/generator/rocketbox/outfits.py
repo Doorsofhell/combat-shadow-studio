@@ -2514,6 +2514,12 @@ def painted_cloth_range(zlo, zhi, back=True):
     return dark[max(0, int(len(dark) * 0.03))], dark[min(len(dark) - 1, int(len(dark) * 0.97))]
 
 
+# 1.56.2 (Kanya, « sa brassière n'est pas correctement finie ») : bretelles plus larges (planche 1 : bretelles de
+# brassière de sport) et raccord arrondi avec le bonnet (à 8 mm, la bretelle tombait en T sur un bord droit)
+STRAP_HW = 0.011
+STRAP_JOIN = 0.008
+
+
 def bra_field(straps=True):
     """1.10 (Youssef 2026-11-03, « brassière de la coach blonde » first): the racer-back sports bra as a field on the
     body, < 0 inside, measured on the coach's own landmarks. Before, its edges were the body's triangles (Rocketbox)
@@ -2580,7 +2586,7 @@ def bra_field(straps=True):
                 r = q - (a + ab * t)
                 n_ = nn[k]
                 dn = r.dot(n_)
-                d = (r - n_ * dn).length + 0.3 * abs(dn) - (0.011 + 0.005 * _ss(0.7, 1.0, u[k] + (u[k + 1] - u[k]) * t))
+                d = (r - n_ * dn).length + 0.3 * abs(dn) - (STRAP_HW + 0.005 * _ss(0.7, 1.0, u[k] + (u[k + 1] - u[k]) * t))
                 best = min(best, d)
         return best
     # upper arm and forearm: in the rest pose of the Rocketbox bodies the forearms hang at chest height, and with the
@@ -2617,7 +2623,7 @@ def bra_field(straps=True):
             # no racer panel, so nothing runs over the sports body's halter straps at the neck
             return band
         # the straps never cross the under-arm side seam
-        f = _smin(f, max(strap(q), arm_clear(q)), 0.008)
+        f = _smin(f, max(strap(q), arm_clear(q)), STRAP_JOIN)
         return f
     print('brassiere: centre y', round(yc, 3), 'demi-largeur', round(xside, 3), 'croisement dos z', round(D.z, 3))
     return field
@@ -2663,7 +2669,7 @@ def bra_v2(color, accent=None, bandeau=False, band=0.02):
     if AMARA_MMA_REF:
         paint_mma_compression(o, low + band, nk.z, band, top=True)
         o['cssTopStyle'] = 'scoop-racerback-reference-1379'
-    if COACH_ID == 'kanya':
+    if COACH_ID == 'kanya' and os.environ.get('KANYA_BRIDGE', '1') != '0':
         bridge_cleavage(o, low, chestZ + 0.12)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
@@ -2707,6 +2713,13 @@ def bridge_cleavage(o, low, top):
     # 1.56.1 : le flou seul abaissait le pont au milieu (creux de quelques millimètres restant, le bonnet proche
     # repassait devant le « A » en crochet) : le creux est d'abord élargi (maximum), puis adouci
     D = _gf(_mf(D, size=(7, 5)), (1.5, 1.2))
+    # 1.56.2 (Youssef 17/11 22:50, « sa poitrine n'est pas bien du tout », 22:51 « ses hauts doivent mettre en valeur sa
+    # poitrine ») : tendu jusqu'en haut, le tissu comblait 29 mm entre les seins, un bandeau plat sans forme. Le pont
+    # n'est plus entier que sous la poitrine (bande où sont posées les lettres) ; au-dessus, le creux n'est adouci que
+    # de 6 mm au plus : chaque bonnet suit son sein
+    t_ = np.clip((zs - low - 0.045) / 0.03, 0, 1)
+    capz = 0.006 + 1.0 * (1 - t_ * t_ * (3 - 2 * t_))
+    D = np.minimum(D, capz[:, None])
     moved = 0
     for v, q in zip(me_.vertices, pts):
         if q.y >= 0.02 or not (zs[0] <= q.z <= zs[-1]) or abs(q.x) > 0.13:
@@ -4108,7 +4121,10 @@ def kanya_kit(name):
         SHORT_PANEL.clear()
         short_text = ('KICKBOXING', 0.15)
     add(rs)
-    rt = bra_v2(BLACK_K, GOLD_K, band=0.012)
+    global STRAP_HW, STRAP_JOIN
+    STRAP_HW, STRAP_JOIN = 0.015, 0.03
+    rt = bra_v2(BLACK_K, GOLD_K, band=0.014)
+    STRAP_HW, STRAP_JOIN = 0.011, 0.008
     add(rt)
     if name == 'muaythai':
         add(hand_wraps('#17181B', '#A3121F'))
@@ -4132,16 +4148,17 @@ def kanya_kit(name):
         add(mma_shin_guards('#141519', RED_K))
     bra, sh = rt[0][0], rs[0][0]
     low = bra_low()
+    # 1.56.2 : les lettres quittent les bonnets (qui suivent maintenant la poitrine) pour la bande sous la poitrine,
+    # tendue et plate : « COACH » au-dessus du liseré, le nom de la discipline dans le liseré doré. Rien ne peut passer
+    # devant elles quand le buste tourne (la poitrine est au-dessus, pas devant)
     prints = [
-        # 1.56.1 (Youssef 17/11 19:51, « le mot COACH continue de disparaître/réapparaître ») : mesuré à 1,68 m, le haut des
-        # lettres (1,267 m au milieu) dépassait le fond du décolleté en V (1,253 m) : le bord du bonnet passait devant
-        # le « A » à chaque rotation du buste. Les deux lignes tiennent maintenant sous le V, au-dessus du liseré
-        logo_on(bra, 'texte-coach', Vector((0, 0, low + (0.054 if sub else 0.048))), Vector((0, -1, 0)), 0.115 if sub else 0.125, lift=0.002,
-                mesh=text_mesh('COACH', TEXT_FONT_LATIN, 0.115 if sub else 0.125, GOLD_TXT)),
+        logo_on(bra, 'texte-coach', Vector((0, 0, low + 0.0285)), Vector((0, -1, 0)), 0.092, lift=0.002,
+                mesh=text_mesh('COACH', TEXT_FONT_LATIN, 0.092, GOLD_TXT)),
     ]
     if sub:
-        prints.append(logo_on(bra, 'texte-discipline', Vector((0, 0, low + 0.031)), Vector((0, -1, 0)), 0.082, lift=0.002,
-                              mesh=text_mesh(sub[0], TEXT_FONT_LATIN, 0.082, sub[1])))
+        sub_col = sub[1] if sub[1] != GOLD_TXT else '#141519'
+        prints.append(logo_on(bra, 'texte-discipline', Vector((0, 0, low + 0.0072)), Vector((0, -1, 0)), 0.006 * len(sub[0]) + 0.012,
+                              lift=0.0025, mesh=text_mesh(sub[0], TEXT_FONT_LATIN, 0.006 * len(sub[0]) + 0.012, sub_col)))
     if short_text:
         prints.append(logo_on(sh, 'texte-short', Vector((0, 0, hipZ - 0.05)), Vector((0, -1, 0)), short_text[1], lift=0.007,
                               mesh=text_mesh(short_text[0], TEXT_FONT_LATIN, short_text[1], GOLD_TXT)))
