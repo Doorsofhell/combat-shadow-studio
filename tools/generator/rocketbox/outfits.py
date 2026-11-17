@@ -330,6 +330,20 @@ def axis_point(i, top, bottom):
     return a + d * u, u
 
 
+def seg_point(q, top, bottom):
+    """closest point of the bone segment top->bottom to the point q, and the parameter along it"""
+    a, b = H[top], H[bottom]
+    d = b - a
+    u = max(0.0, min(1.0, (q - a).dot(d) / d.length_squared))
+    return a + d * u, u
+
+
+# 1.55 (Youssef 17/11, reference sheets of Kadir and Kanya in judogi): radii of the cloth tubes, metres from the bone
+# axis. Trousers: straight wide legs (about 22 cm across at the knee, 19 cm at the hem); sleeves: wide, straight
+# (about 15 cm across at the cuff). Women's a little narrower
+GI_TUBE = float(os.environ.get('GI_TUBE', '1.0'))
+
+
 def leg_of(i):
     return 'Left' if P[i].x > 0 else 'Right'
 
@@ -530,7 +544,97 @@ def new_obj(name, bm_):
     return o
 
 
-def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=None, edge_skin=0.006):
+_BODY_BVH = []
+# 1.55: plain Laplacian (the cloth is pulled taut over the convex points, as by its weight) instead of Taubin
+DRAPE_SHRINK = os.environ.get('DRAPE_SHRINK', '1') == '1'
+DRAPE_ARGS2 = True
+
+
+def drape_pass(o, clear, rounds=6, iters=12, radial=None, keep_border=True):
+    """1.55 (Youssef 15/11 « les kimonos : trop gros, pas esthétique, pas réaliste, trop épais »): a shell copied
+    from the skin moulds every muscle (scapulae, glutes, biceps, the spine's groove) and reads as a padded suit.
+    Real cloth rests on the convex points and spans the hollows. Taubin smoothing (removes the anatomy, keeps the
+    overall size) alternated with a clamp that keeps the surface at least `clear` outside the skin. The free edges
+    (hems on their cut planes) do not move"""
+    from mathutils.bvhtree import BVHTree
+    import numpy as np
+    if not _BODY_BVH:
+        _BODY_BVH.append(BVHTree.FromPolygons([Vector(q) for q in P], [tuple(p_.vertices) for p_ in me.polygons]))
+    bvh = _BODY_BVH[0]
+    import bmesh as _bm
+    b_ = _bm.new()
+    b_.from_mesh(o.data)
+    b_.verts.ensure_lookup_table()
+    n = len(b_.verts)
+    fixed = np.array([v.is_boundary for v in b_.verts]) if keep_border else np.zeros(n, bool)
+    nb = [[e.other_vert(v).index for e in v.link_edges] for v in b_.verts]
+    b_.free()
+    X = np.array([tuple(MW @ v.co) for v in o.data.vertices])
+    deg = np.array([max(1, len(a)) for a in nb], float)
+    ii = np.concatenate([[k] * len(a) for k, a in enumerate(nb)]).astype(int)
+    jj = np.concatenate([a for a in nb]).astype(int)
+    def lap(Y):
+        acc = np.zeros_like(Y)
+        np.add.at(acc, ii, Y[jj])
+        return acc / deg[:, None] - Y
+    clear_of = clear if callable(clear) else (lambda q, j=None: clear)
+    # a point whose clearance is None stays where the shell put it (the trousers' waist under the jacket)
+    for k in range(n):
+        q = Vector(X[k])
+        if clear_of(q, KD.find(q)[1]) is None:
+            fixed[k] = True
+    for r in range(rounds):
+        for it in range(iters):
+            L = lap(X)
+            L[fixed] = 0
+            X = X + (0.5 if (it % 2 == 0 or DRAPE_SHRINK) else -0.53) * L
+        for k in range(n):
+            q = Vector(X[k])
+            if fixed[k]:
+                # a free edge (a cuff, a trouser hem) keeps its line but opens to the tube's radius
+                if radial is not None and keep_border:
+                    j = KD.find(q)[1]
+                    if clear_of(q, j) is not None:
+                        rr = radial(q, j)
+                        if rr is not None:
+                            cen, rmin, flat = rr
+                            v = q - cen
+                            if flat:
+                                v.z = 0.0
+                            if 1e-6 < v.length < rmin:
+                                X[k] = tuple(q + v.normalized() * (rmin - v.length))
+                continue
+            loc, nrm, _, _ = bvh.find_nearest(q, 0.2)
+            if loc is None:
+                continue
+            j = KD.find(loc)[1]
+            if nrm.dot(N[j]) < 0:
+                nrm = -nrm
+            c = clear_of(q, j) if DRAPE_ARGS2 else clear_of(q)
+            d = (q - loc).dot(nrm)
+            if c is not None and d < c:
+                q = q + nrm * (c - d)
+                X[k] = tuple(q)
+            if radial is not None and c is not None:
+                # 1.55 (Youssef 17/11, his reference sheets): sleeves and trouser legs are straight tubes of cloth
+                # around the bone, at least `rmin` from its axis, whatever the muscle under them
+                rr = radial(q, j)
+                if rr is not None:
+                    cen, rmin, flat = rr
+                    v = q - cen
+                    if flat:
+                        v.z = 0.0
+                    if 1e-6 < v.length < rmin:
+                        q = q + v.normalized() * (rmin - v.length)
+                        X[k] = tuple(q)
+    X0 = np.array([tuple(MW @ v.co) for v in o.data.vertices])
+    dd = np.linalg.norm(X - X0, axis=1)
+    print('1.55 drape', o.name, 'points', n, 'déplacement médian mm', round(float(np.median(dd)) * 1000, 1), 'p90', round(float(np.percentile(dd, 90)) * 1000, 1))
+    for k, v in enumerate(o.data.vertices):
+        v.co = MWI @ Vector(X[k])
+
+
+def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=None, edge_skin=0.006, drape=None):
     """body faces whose vertices all satisfy keep(i), pushed out by push(i) (metres along the normal, or a
     Vector: free displacement), given a thickness. mats: list of materials, mat_of(face centre, vertex ids) -> index.
     cuts: (point, normal) planes the body is sliced along first, so hems and colour bands are straight lines
@@ -863,6 +967,8 @@ def shell(name, keep, push, thick, mats, mat_of=None, hem=0.006, cuts=(), iso=No
                     v.co = MWI @ (q + nrm * (clear - d))
                     moved += 1
             print('1.37.7', name, 'tissu écarté de la peau livrée encore dessinée :', moved)
+    if drape is not None:
+        drape_pass(o, *drape) if isinstance(drape, tuple) else drape_pass(o, drape)
     if thick:
         sol = o.modifiers.new('Solidify', 'SOLIDIFY')
         sol.thickness = thick / max(MW.to_scale())
@@ -1576,18 +1682,23 @@ def belt(color, z, extra=0.03):
         f = j / seg * 36
         r = rad[int(f) % 36] * (1 - f % 1) + rad[(int(f) + 1) % 36] * (f % 1)
         ring.append(Vector((cx + r * math.cos(ang), cy + r * math.sin(ang), z)))
-    o = strip('ceinture', ring, 0.04, lambda c: Vector((c.x - cx, c.y - cy, 0)), 0.005, m)
+    bt = 0.003 if GI_STYLE else 0.005
+    o = strip('ceinture', ring, 0.04, lambda c: Vector((c.x - cx, c.y - cy, 0)), bt, m)
     parts = [o]
     front = Vector((cx, cy - rad[9], z))
     out = Vector((0, -1, 0))
     # knot: a wrap across the belt, the crossing end over it, then the two ends
-    wrap = strip('noeud', curve(front + Vector((-0.034, -0.008, 0)), front + Vector((0.034, -0.008, 0)), Vector((0, -0.006, 0)), 6), 0.046, out, 0.006, m)
-    cross = strip('noeud-croise', curve(front + Vector((-0.022, -0.016, 0.022)), front + Vector((0.02, -0.016, -0.024)), Vector((0, -0.006, 0)), 6), 0.036, out, 0.006, m)
+    kt = 0.004 if GI_STYLE else 0.006
+    wrap = strip('noeud', curve(front + Vector((-0.034, -0.008, 0)), front + Vector((0.034, -0.008, 0)), Vector((0, -0.006, 0)), 6), 0.046, out, kt, m)
+    cross = strip('noeud-croise', curve(front + Vector((-0.022, -0.016, 0.022)), front + Vector((0.02, -0.016, -0.024)), Vector((0, -0.006, 0)), 6), 0.036, out, kt, m)
     parts += [wrap, cross]
     for sgn, ln in ((1, 0.24), (-1, 0.22)):
         a = front + Vector((0.012 * sgn, -0.02, -0.018))
         b = a + Vector((0.055 * sgn, -0.035, -ln))
-        parts.append(strip(f'pan-{sgn}', curve(a, b, Vector((0.012 * sgn, -0.01, 0.0)), 12), 0.04, out, 0.005, m))
+        if GI_STYLE == 'tombe':
+            # 1.55 (reference sheets): the two ends of the knot are shorter and spread apart, as a tied belt hangs
+            b = a + Vector((0.075 * sgn, -0.03, -(ln - 0.06)))
+        parts.append(strip(f'pan-{sgn}', curve(a, b, Vector((0.012 * sgn, -0.01, 0.0)), 12), 0.04, out, bt, m))
     for p_ in parts:
         weighted(p_, {'Hips': 0.8, 'Spine': 0.2})
     return parts
@@ -1598,6 +1709,10 @@ def belt(color, z, extra=0.03):
 # 1.21 (Youssef 05/11 15:14: « applique toutes les améliorations effectuées sur Inaya sur les autres coachs »): all coaches
 # 1.43.1 Victor (Youssef 14/11 « inspire-toi fortement des planches »: kimono ajusté, tombant, pas bouffant): 0.45
 GI_FIT = float(os.environ.get('GI_FIT', '0.45' if COACH_ID == 'victor' else '0.6'))
+# 1.55 (Youssef 15/11 « trop gros, pas esthétique, pas réaliste, trop épais », option B chosen 17/11): '' = the gis of 1.53;
+# 'fin' = real cloth thicknesses (jacket 2 mm, trousers and skirt 1.8 mm, collar 6 mm, belt 3 mm laid on the jacket,
+# thin hems); 'tombe' = 'fin' plus the drape pass (the cloth spans the hollows instead of moulding the muscles)
+GI_STYLE = os.environ.get('GI_STYLE', 'tombe')
 
 
 def skirt(color, kind, top_z, length):
@@ -1610,6 +1725,8 @@ def skirt(color, kind, top_z, length):
     n = 10
     # v0.32: closer to the body (the old 2.5 to 4.5 cm made a padded, inflated skirt)
     pad0, pad1 = (0.014, 0.016) if kind == 'judo' else (0.011, 0.012)
+    if GI_STYLE and kind != 'costume':
+        pad0 = (0.012 if female else 0.009) if kind == 'judo' else (0.011 if female else 0.008)
     if kind != 'costume':
         # only the flare towards the hem: at the top the skirt covers the trousers' waist (9 mm off the skin)
         pad1 = pad1 * GI_FIT
@@ -1622,7 +1739,13 @@ def skirt(color, kind, top_z, length):
             f = j / seg * 36
             r = rad[int(f) % 36] * (1 - f % 1) + rad[(int(f) + 1) % 36] * (f % 1)
             # soft vertical folds of the hanging cloth, deeper towards the hem
-            r += 0.004 * (k / n) * math.sin(ang * 9 + 0.7)
+            r += (0.006 if GI_STYLE == 'tombe' and kind != 'costume' else 0.004) * (k / n) * math.sin(ang * 9 + 0.7)
+            if GI_STYLE == 'tombe' and kind != 'costume' and rows:
+                # 1.55: the cloth falls straight from the widest point of the hips and glutes, it never tucks back
+                # in under them (the back of the skirt read as a stiff plate moulding the buttocks)
+                pr = MW @ rows[-1][j].co
+                # a little give (1.5 mm per row): the hem swings in softly instead of standing out as a box
+                r = max(r, math.hypot(pr.x - cx, pr.y - cy) - float(os.environ.get('SKIRT_GIVE', '0.0015')))
             row.append(bm_.verts.new(MWI @ Vector((cx + r * math.cos(ang), cy + r * math.sin(ang), z))))
         rows.append(row)
     for k in range(n):
@@ -1635,7 +1758,7 @@ def skirt(color, kind, top_z, length):
     o = new_obj('jupe-veste', bm_)
     bm_.free()
     o.matrix_world = MW
-    solid(o, 0.004 if kind == 'judo' else 0.003)
+    solid(o, (0.002 if kind == 'judo' else 0.0018) if GI_STYLE and kind != 'costume' else 0.004 if kind == 'judo' else 0.003)
     o.data.materials.append(gi_fabric(color, kind))
 
     def ww(p):
@@ -1686,6 +1809,8 @@ def collar(color, kind):
             j = min(range(len(P)), key=lambda i: (P[i] - p).length_squared if w(i, *ARMS) < 0.3 else 9)
             # above the skirt below the belt (the skirt stands up to 3 cm off the thigh)
             off = 0.02 if s == 'Left' else 0.013
+            if GI_STYLE:
+                off = (0.016 if s == 'Left' else 0.011) + (0.003 if female else 0.0)
             if p.z < hipZ:
                 off += 0.02 + (hipZ - p.z) * 0.08
             fixed.append(P[j] + N[j] * off)
@@ -1697,7 +1822,7 @@ def collar(color, kind):
             u = t - i0
             path.append(fixed[i0] * (1 - u) + fixed[i0 + 1] * u)
         nrm = lambda c: N[min(range(len(P)), key=lambda i: (P[i] - c).length_squared)]
-        o = strip(f'revers-{s}', path, wd, nrm, 0.012 if kind == 'judo' else 0.010, m, across=3)
+        o = strip(f'revers-{s}', path, wd, nrm, (0.006 if kind == 'judo' else 0.005) if GI_STYLE else 0.012 if kind == 'judo' else 0.010, m, across=3)
         smooth(o, 1)
         def lw(p):
             if p.z > chestZ:
@@ -2924,6 +3049,9 @@ def pants(color, kind, legging=False):
             v = loose(i, f'{s}UpLeg', f'{s}Leg', 0.006, lambda u: g * ((0.016 + 0.006 * u) if judo else (0.012 + 0.004 * u)))
         else:
             v = loose(i, f'{s}Leg', f'{s}Foot', 0.006, lambda u: g * ((0.022 + 0.01 * u) if judo else (0.016 + 0.008 * u)))
+        if GI_STYLE == 'tombe' and kind in ('judo', 'bjj'):
+            # 1.55 (reference sheets): the trouser leg falls straight to the ankle, no gathered rings above the hem
+            return v + N[i] * folds(i, 0.003)
         return v + N[i] * (folds(i, 0.004 * (0.5 + 0.5 * g)) + bunch(P[i].z, ankleZ + 0.06, 0.14, 0.006 * g))
 
     if legging:
@@ -2932,7 +3060,20 @@ def pants(color, kind, legging=False):
         # gi trousers: a plainer, twilled cotton than the jacket, matt
         mats = [fabric(f'pantalon-{color}-{kind}', color, 'serge', rough=0.9, strength=0.25, tone=0.03)]
     cuts = [(Vector((0, 0, ankleZ + (0.06 if not legging else 0.05))), Vector((0, 0, 1))), (Vector((0, 0, hipZ + (0.06 if legging else 0.09))), Vector((0, 0, 1)))]
-    o, cov = shell(f'pantalon-{kind}', keep, push, 0.003, mats, cuts=cuts)
+    gi_k = GI_STYLE and kind in ('judo', 'bjj') and not legging
+
+    def pant_tube(q, j):
+        s = leg_of(j)
+        k = (0.93 if female else 1.0) * (1.0 if judo else 0.92) * GI_TUBE
+        if q.z > H[f'{s}Leg'].z:
+            c, u = seg_point(q, f'{s}UpLeg', f'{s}Leg')
+            if u < 0.55:
+                return None
+            return c, k * 0.104, True
+        c, u = seg_point(q, f'{s}Leg', f'{s}Foot')
+        return c, k * (0.102 - 0.004 * u), True
+    o, cov = shell(f'pantalon-{kind}', keep, push, 0.0018 if gi_k else 0.003, mats, cuts=cuts, hem=0.004 if gi_k else 0.006,
+                   drape=(lambda q, j=None: float(os.environ.get('LEG_CLEAR', '0.008')) if P[j].z < hipZ - 0.08 else None, int(os.environ.get('DRAPE_ROUNDS', '10')), int(os.environ.get('DRAPE_ITERS', '10')), pant_tube) if gi_k and GI_STYLE == 'tombe' else None)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [f'{s_}Foot', f'{s_}ToeBase'], f'{s_}Leg')
     smooth(o, 2 if not legging else 1)
@@ -2986,7 +3127,37 @@ def jacket(color, kind):
     for s_ in ('Left', 'Right'):
         a, b = H[f'{s_}ForeArm'], H[f'{s_}Hand']
         cuts.append((a + (b - a) * 0.82, (b - a).normalized()))
-    o, cov = shell(f'veste-{kind}', keep, push, 0.004 if judo else 0.003, mats, hem=0.01, cuts=cuts)
+    gi_k = GI_STYLE and kind in ('judo', 'bjj')
+    def jclear(q, j=None):
+        # the rash guard under a woman's gi stands up to 7 mm off the skin; the belt cinches the jacket at the waist
+        base = 0.0105 if female else 0.005
+        if female and j is not None and 0.03 < w(j, 'LeftArm', 'RightArm', 'LeftShoulder', 'RightShoulder') and w(j, 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm') <= 0.5:
+            # the armpit and the back of the shoulder: the rash guard's short sleeve starts there (it came through
+            # the jacket as two dark marks on the shoulder blades)
+            return float(os.environ.get("AXIL_CLEAR", "0.022"))
+        if j is not None and w(j, 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm') > 0.5:
+            # a sleeve is a tube of cloth: it rests on the biceps and the forearm, never moulds them. A woman's sleeve
+            # covers the short rash guard's sleeve (up to 7 mm off the skin): 4 mm more room
+            return float(os.environ.get('SLEEVE_CLEAR', '0.012' if judo else '0.009')) * (0.6 + 0.4 * GI_FIT / 0.6) + (0.004 if female else 0.0)
+        if q.z < hipZ + 0.1:
+            # the trousers' waist (6 mm off the skin) and the rash guard stay under the jacket
+            return base + 0.0045
+        return base
+    def sleeve_tube(q, j):
+        if w(j, 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm') < 0.5:
+            return None
+        s = 'Left' if P[j].x > 0 else 'Right'
+        k = (0.92 if female else 1.0) * (1.0 if judo else 0.9) * GI_TUBE
+        if w(j, f'{s}ForeArm') > 0.5:
+            c, u = seg_point(q, f'{s}ForeArm', f'{s}Hand')
+            return c, k * (0.072 - 0.012 * u), False
+        c, u = seg_point(q, f'{s}Arm', f'{s}ForeArm')
+        if u < 0.2:
+            return None
+        return c, k * 0.078, False
+
+    o, cov = shell(f'veste-{kind}', keep, push, (0.002 if judo else 0.0016) if gi_k else 0.004 if judo else 0.003, mats,
+                   hem=0.004 if gi_k else 0.01, cuts=cuts, drape=(jclear, int(os.environ.get('DRAPE_ROUNDS', '10')), int(os.environ.get('DRAPE_ITERS', '10')), sleeve_tube) if gi_k and GI_STYLE == 'tombe' else None)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
     smooth(o, 2)
@@ -4110,7 +4281,7 @@ def outfit(name):
         add(pants(col, name))
         parts.extend(skirt(col, name, hipZ + 0.03, 0.2 if name == 'bjj' else 0.25))
         parts.extend(collar(col, name))
-        parts.extend(belt(C['belt'], hipZ + 0.035, extra=0.02))
+        parts.extend(belt(C['belt'], hipZ + 0.035, extra=(0.014 if female else 0.011) if GI_STYLE else 0.02))
     elif name == 'arbitre':
         # 1.4.1 boxing referee (illustrations of the encyclopedia only): white shirt, black trousers, bow tie, shoes
         add(top('rash-long', '#EEEEEA'))

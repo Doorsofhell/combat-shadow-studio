@@ -1,0 +1,29 @@
+# 1.56.0 — kimonos plus fins : manifeste des captures
+
+- **Référence** : 1.53.0 (Kanya : 1.55.0, commit `8957866`, son corps à 1,68 m), commit `920d6aa` (branche publiée `claude/project-thread-o7lrt8`), restauration `restauration/avant-kimonos-v1540`.
+- **Candidate** : 1.56.0, branche `claude/project-thread-98s98b`.
+- **Variable évaluée** : uniquement `public/coaches/<coach>/tenues/{judo,bjj}.glb` (6 coachs : Kadir, Amara, Naël, Inaya, Victor, Kanya). Corps, visages, textures de peau, animations, éclairage et autres tenues identiques.
+- **Captures** : rendu réel Three.js/WebGL du Lab (`#/lab?look=realiste&frame=1&champion=…&d=…&tenue=…`), Chromium SwiftShader, 420 × 620 px, facteur 1, même scène pour avant et après. Script : `scripts/dev/shot-kimonos-v1560.mjs`. Chaque capture attend `__labReady` et `__labOutfit = portee` (tenue chargée) : les 96 captures l'ont atteint, aucune erreur WebGL.
+- **Vues** (par coach), debout (`motion=neutre`) comme sur les planches de référence de Youssef : judo face (az 0), trois quarts (40), profil (90), dos (180) ; JJB face et dos ; puis judo en garde (az 45) et JJB sprawl (`tech=sprawl&at=1`).
+- **Fichiers** : `captures/avant-1.53.0/<coach>-<vue>.png` (Kanya : sa version 1.55.0) et `captures/apres-1.56.0/<coach>-<vue>.png` (même nom des deux côtés).
+
+## Mesures (distance médiane de la surface à la peau, Kadir, judo)
+
+| pièce | 1.53.0 | 1.56.0 |
+|---|---|---|
+| épaisseur du tissu de la veste | 4 mm | 2 mm (JJB 1,6 mm) |
+| épaisseur du pantalon et du bas de veste | 3 à 4 mm | 1,8 à 2 mm |
+| col et revers | 12 mm (JJB 10) | 6 mm (JJB 5) |
+| ourlets de la veste | 10 mm | 4 mm |
+| ceinture | 5 mm, posée à 2 cm de la veste | 3 mm, posée à 1,1 cm de la peau |
+
+## Planches de référence (Youssef, 17/11 15:54 et 15:56)
+
+Kadir et Kanya en judogi blanc, Kanya en kimono de JJB bleu nuit : veste ample et droite, manches larges jusqu'au poignet, pantalon droit et large jusqu'à la cheville, col large et plat, ceinture nouée dont les deux pans s'écartent. La 1.56.0 suit cette coupe (écussons, inscriptions et barrette rouge de la ceinture de JJB : non faits, à décider).
+
+## Constat visuel
+
+- Dos, manches et pantalon ne moulent plus les muscles ; le bas de la veste tombe droit depuis les hanches au lieu d'épouser les fesses.
+- Pantalon en tube droit (environ 20 cm de large de la cuisse à la cheville), sans fronces au bas ; manches en tube large (environ 15 cm au poignet) ; pans de ceinture plus courts et écartés.
+- Amara : quelques points sombres traversaient déjà les manches en 1.53.0 (toujours là). Deux petites marques sombres apparaissent de dos, à la jonction manche et dos, en position debout ; la marge de l'aisselle est augmentée (22 mm), elles sont plus courtes mais restent visibles de près. Inaya, même réglage : aucune marque.
+- Limite : le bas de la veste reste un peu rigide en mouvement (pas de simulation de tissu).

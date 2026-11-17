@@ -4524,3 +4524,57 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   (`/mnt/project-files/combat-shadow-studio/kanya-v155/`).
 - **Correction annexe** : marqueurs de fusion restés dans ce journal à la 1.54.0 (autour de la 1.53.1) retirés.
 - **Restauration** : branche `restauration/avant-kanya-v155` (= 1.54.0, 538409a).
+
+## 2026-11-17 · v1.56.0 · Kimonos plus fins et plus naturels (option B « Tombé »)
+
+- **Demande** : Youssef, 15/11 15:47 : « les kimonos … trop gros. Pas esthétique. Pas réaliste. Trop épais ». Deux
+  options montrées en images (A « Affiné », B « Tombé ») ; B choisie le 17/11 à 08:02. Le 17/11 à 08:24 : repartir de
+  la version en ligne. Vérifié : la géométrie des kimonos n'a pas changé entre la 1.47.0 et la 1.53.0, la correction
+  reste nécessaire.
+- **Constat vérifié** (mesures sur les GLB, distance à la peau) : la veste est une copie de la peau poussée de 8 à
+  10 mm, elle moule omoplates, fessiers et biceps (effet combinaison rembourrée) ; tissu de 3 à 4 mm, col de 10 à
+  12 mm, ourlets de 10 mm ; ceinture à 2,7 cm de la peau, 5 mm d'épaisseur ; au dos, le bas de la veste suit les
+  fesses puis rentre dessous (effet plaque).
+- **Correction** (`tools/generator/rocketbox/outfits.py`, réglage `GI_STYLE`, `tombe` par défaut, `''` redonne les
+  kimonos de la 1.53.0) :
+  - épaisseurs réelles : veste 2 mm (JJB 1,6), pantalon et bas de veste 1,8 à 2 mm, col 6 mm (JJB 5), ourlets 4 mm,
+    ceinture 3 mm et nœud 4 mm, posée sur la veste ;
+  - `drape_pass()` : lissage du tissu alterné avec une distance minimale à la peau, le tissu repose sur les points hauts
+    et passe par-dessus les creux ; manches gardées en tube (plus 4 mm chez les femmes, pour couvrir le rashguard),
+    taille du pantalon laissée sous la veste ;
+  - bas de veste : il tombe droit depuis le point le plus large des hanches (1,5 mm de jeu par rang), plis verticaux
+    un peu plus marqués.
+  - coupe d'après les planches de Youssef (17/11 15:54, Kadir et Kanya en judogi, 15:56 Kanya en JJB) : pantalon en
+    tube droit autour de l'axe de la jambe (rayon minimal 10,4 cm du genou à la cuisse, 10,2 à 9,8 cm vers la
+    cheville ; femmes × 0,93, JJB × 0,92), sans fronces au-dessus de la cheville ; manches en tube (rayon minimal
+    7,8 cm au bras, 7,2 à 6 cm à l'avant-bras ; femmes × 0,92, JJB × 0,9), ourlets ouverts au même rayon ; pans de
+    ceinture plus courts et écartés ; aisselles et dos de l'épaule à 22 mm de la peau chez les femmes (rashguard).
+  - Les 12 kimonos (judo et JJB des 6 coachs) reconstruits ; Kanya (arrivée en 1.54.0) reçoit la même coupe, avec
+    le même générateur (sa version de base est reproduite à 0,02 % près en taille, vérifié avant le changement).
+    Kimonos des 5 premiers coachs reconstruits une seconde fois : fichiers identiques octet pour octet (reproductible). Kadir : ses kimonos n'étaient plus reconstruits depuis la
+    1.37.0 (déplacés par `tenues_suivent.py`) ; ils sont maintenant bâtis sur son corps actuel (1,06 Mo → 1,5 Mo
+    chacun, comme ceux de Naël et Victor). Autres tenues, corps, visages et animations : inchangés.
+- **Fichiers** : `tools/generator/rocketbox/outfits.py`, `public/coaches/{mma-kadir,mma-amara,nael,inaya,victor,kanya}/tenues/{judo,bjj}.glb`,
+  `src/boot/assetSizes.json`, `src/domain/releases.ts`, `package.json`, `docs/v1560-kimonos/` (manifeste, 96 captures),
+  `scripts/dev/shot-kimonos-v1560.mjs`.
+- **Tests modifiés, avec raison** : `outfit-rollback-v1373.test.ts` (Kadir) et `outfit-amara-v1374.test.ts` (Inaya) :
+  nouvelles empreintes pour judo et bjj seulement, kimonos refaits à la demande de Youssef ; les shorts et le no-gi
+  gardent les leurs.
+- **Tests** : `npx vitest run` : 1619 réussis, 5 échecs identiques aux versions précédentes (extension-v032 uppercut,
+  fluidity ×2, hooks-biomeca « pas d'armé », expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (connus, sans lien).
+  Tests des tenues et du moteur humain : TEST RÉUSSI. `npm run build` : TEST RÉUSSI (titre v1.56.0).
+  `npx playwright test` (299 tests, 55 min) : 294 réussis, 2 ignorés (Firebase), 3 échecs : `boot:98` et
+  `coaching-hud:60` (connus), `training-layout:117` (délai dépassé ; échoue aussi seul sur la 1.53.0, vérifié) :
+  TEST ÉCHOUÉ (sans lien avec les kimonos). Après la coupe des planches : `npx vitest run` 1621 réussis, mêmes 5 échecs
+  connus ; `npm run build` et Playwright `bjj-judo`, `outfit-loading`, `boot` : 12/12 TEST RÉUSSI ; suite Playwright
+  complète : NON RELANCÉE (seuls les GLB des kimonos ont changé depuis la passe complète). Après l'ajout de Kanya :
+  `npx vitest run` 1695 réussis, mêmes 5 échecs connus. Amara : deux petites marques
+  sombres de dos à la jonction manche et dos, réduites, pas effacées. Captures WebGL avant/après des 6 coachs, 8 vues : RÉALISÉES
+  (`docs/v1560-kimonos/MANIFEST.md`). Android : NON EXÉCUTÉ. Vignettes et illustrations judo/JJB : NON REFAITES.
+- **Numéro** : préparée comme 1.54.0 ; renumérotée 1.55.0 (la 1.54.0 est prise par Kanya, PR #134) après fusion de la 1.53.1 (Victor : peau seule, géométrie de son corps identique, vérifié : ses kimonos restent valables), puis de la 1.54.0 (Kanya) ; renumérotée 1.56.0 le 17/11 (la 1.55.0 est prise par le lot Kanya validé à 17:36). Validée par Youssef le 17/11 à 19:04 (« Je valide la 1.56.0 »).
+- **Mise à jour sur la 1.55.0** (Kanya passe à 1,68 m) : ses kimonos sont reconstruits sur son nouveau corps (sa version
+  1.55.0 est reproduite à 0,01 % près en taille avec l'ancien réglage, vérifié) ; captures avant (1.55.0) et après
+  refaites. `npx vitest run` : 1694 réussis, 5 échecs connus (TEST ÉCHOUÉ, sans lien) ; le test des Nouveautés a
+  d'abord échoué (lien de la note 1.56.0 perdu à la fusion), corrigé : TEST RÉUSSI. `npm run build` (titre v1.56.0) et
+  Playwright `bjj-judo`, `outfit-loading`, `boot` (12/12) : TEST RÉUSSI. Suite Playwright complète : NON RELANCÉE.
+- **Restauration** : branche `restauration/avant-kimonos-v1540` (= 1.53.0, 920d6aa).
