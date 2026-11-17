@@ -4366,7 +4366,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Numéro** : préparée comme 1.46.0 ; renumérotée 1.47.0 après la fusion de la 1.46.0 (traversées, lot 2), publiée entre-temps.
 - **Restauration** : branche `restauration/avant-kadir-realisme` (= 1.45.2, b773812) ; la 1.46.0 = 066131d.
 
-## 2026-11-17 · v1.53.1 (candidate, non publiée) · Victor : peau unie, cou raccordé
+## 2026-11-17 · v1.53.1 · Victor : peau unie, cou raccordé
 
 - **Demande** (Youssef, 15/11 15:45, captures du genou direct en kick-boxing) : « Il y a encore des traces et des tâches
   sur le corps de Victor… Il y aussi une jonction plus clair entre la tête et son buste. » Le 17/11 : repartir de la
@@ -4399,7 +4399,15 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests** : `npx vitest run` : 1621 réussis, 5 échecs déjà présents en 1.47.0 (extension-v032 uppercut, fluidity ×2,
   hooks-biomeca « pas d'armé », expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (connus, sans lien). `victor-peau-v1452`,
   `outfit.test` (peau masquée de Victor), `premium-skin-v1480`, `premium-visual-v1490`, contrat humain : TEST RÉUSSI.
-  `npm run build` : TEST RÉUSSI (titre v1.53.1). `npx playwright test` : voir la mise à jour ci-dessous. Android : NON EXÉCUTÉ.
+  `npm run build` : TEST RÉUSSI (titre v1.53.1). `npx playwright test` (299 tests, 54 min) : 292 réussis, 2 ignorés
+  (Firebase), 5 échecs : TEST ÉCHOUÉ. Quatre échouent aussi seuls sur la 1.53.0 non modifiée (`coaching-hud:60`,
+  `consignes-v130:27`, `corrections-v110:53`, `training-layout:117`). Le cinquième, `encyclopedie:54` (filtres de la
+  liste), a échoué dans la suite complète et une fois seul sur la 1.53.1, puis a réussi 3 fois sur 3 seul
+  (`--repeat-each 3`) : le compte des résultats est lu avant la fin de l'affichage de la liste, sans lien avec les
+  textures de Victor. Contrôle `matched-webgl` de GitHub : ÉCHOUÉ, mais il teste la branche figée
+  `feature/premium-visual-v1490` et pas cette PR (expiration des captures « après » pour les cinq coachs). Android :
+  NON EXÉCUTÉ.
 - **Captures** : WebGL réelles, même personnage, tenue, pose, caméra, résolution ; seule la texture change. Page
   avant/après : https://claude.ai/artifact/MV8CneamJgBhY3Fco2696R
+- **Validation** : Youssef, 17/11 13:15 (« Je valide »), sur la page avant/après. PR #133.
 - **Restauration** : branche `restauration/avant-victor-peau-v1531` (= 1.53.0, 920d6aa).
