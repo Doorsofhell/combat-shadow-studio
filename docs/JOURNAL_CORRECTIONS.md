@@ -4575,5 +4575,6 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Mise à jour sur la 1.55.0** (Kanya passe à 1,68 m) : ses kimonos sont reconstruits sur son nouveau corps (sa version
   1.55.0 est reproduite à 0,01 % près en taille avec l'ancien réglage, vérifié) ; captures avant (1.55.0) et après
   refaites. `npx vitest run` : 1694 réussis, 5 échecs connus (TEST ÉCHOUÉ, sans lien) ; le test des Nouveautés a
-  d'abord échoué (lien de la note 1.56.0 perdu à la fusion), corrigé : TEST RÉUSSI.
+  d'abord échoué (lien de la note 1.56.0 perdu à la fusion), corrigé : TEST RÉUSSI. `npm run build` (titre v1.56.0) et
+  Playwright `bjj-judo`, `outfit-loading`, `boot` (12/12) : TEST RÉUSSI. Suite Playwright complète : NON RELANCÉE.
 - **Restauration** : branche `restauration/avant-kimonos-v1540` (= 1.53.0, 920d6aa).
