@@ -4517,6 +4517,10 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   (limite 6) : coupe 0,5 gardée, test réussi.
 - **Tests** : `npx vitest run` : 1 694 réussis, 6 échoués → après la correction du short de boxe, les 5 ÉCHECS connus
   seulement (`expressions-v1160` Amara, `extension-v032`, `hooks-biomeca`, `fluidity` ×2, les mêmes qu'en 1.54.0).
-  Playwright et build : voir ci-dessous.
+  `npm run build` : RÉUSSI. `npx playwright test` : 294 RÉUSSIS, 2 ignorés (Firebase), 3 ÉCHOUÉS hors Kanya :
+  `coaching-hud:60` et `training-layout:117` (déjà en échec en 1.54.0), `chrono-seul:96` (RÉUSSI relancé seul, minuterie
+  sous la charge de la suite).
+- **Validation** : Youssef, 17/11 18:36 (« Je valide »), sur les captures planches/application et brassière avant/après
+  (`/mnt/project-files/combat-shadow-studio/kanya-v155/`).
 - **Correction annexe** : marqueurs de fusion restés dans ce journal à la 1.54.0 (autour de la 1.53.1) retirés.
 - **Restauration** : branche `restauration/avant-kanya-v155` (= 1.54.0, 538409a).
