@@ -17,7 +17,7 @@ describe('barres de l’écran de choix', () => {
   });
   test('poids mesurés : Kadir 91, Naël 87, Victor 93, Amara 61, Inaya 65', () => {
     const w = Object.fromEntries(ALL_COACHES.map((c) => [c.id, c.weightKg]));
-    expect(w).toEqual({ 'mma-kadir': 91, nael: 87, victor: 93, 'mma-amara': 61, inaya: 65, kanya: 65 });
+    expect(w).toEqual({ 'mma-kadir': 91, nael: 87, victor: 93, 'mma-amara': 61, inaya: 65, kanya: 61 });
   });
   test('deux coachs ne se ressemblent pas : profils tous différents', () => {
     const keys = ALL_COACHES.map((c) => SKILLS.map((k) => c.skills[k.id]).join(','));

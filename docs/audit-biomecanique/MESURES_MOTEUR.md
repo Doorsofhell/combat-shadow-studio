@@ -42,8 +42,8 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Uchikomi de ko-uchi-gari (solo) (`uchikomi-ko-uchi-gari`) | projection | 15,7 | 25 % | 0,43 | 2,3 (RightToeBase) | 2° | 5,88 |
 | Yoko-ukemi (chute latérale, version basse) (`ukemi-yoko`) | chute | 15,4 | 59 % | 0,00 | 2,3 (RightToeBase) | 4° | 1,96 |
 | Uchikomi d’o-uchi-gari (solo) (`uchikomi-o-uchi-gari`) | projection | 15,0 | 36 % | 0,78 | -0,1 (RightToeBase) | 2° | 5,61 |
-| Ushiro-ukemi (chute arrière, version basse) (`ukemi-ushiro`) | chute | 14,9 | 39 % | 0,00 | 0,3 (Spine2) | 4° | 2,22 |
-| Ayumi-ashi (pas marchés) (`ayumi-ashi`) | deplacement | 13,8 | 64 % | 0,56 | 3,0 (LeftToeBase) | 4° | 0,60 |
+| Ushiro-ukemi (chute arrière, version basse) (`ukemi-ushiro`) | chute | 14,9 | 39 % | 0,00 | 0,3 (Spine2) | 4° | 2,24 |
+| Ayumi-ashi (pas marchés) (`ayumi-ashi`) | deplacement | 13,8 | 66 % | 0,57 | 3,0 (LeftToeBase) | 4° | 0,60 |
 | Teep arrière (`teep-arriere`) | pied | 12,1 | 21 % | 0,68 | 3,0 (LeftToeBase) | 4° | 0,09 |
 | Uchikomi de seoi-nage (solo) (`uchikomi-seoi`) | projection | 11,8 | 59 % | 0,35 | 3,0 (RightToeBase) | 15° | 1,74 |
 | Tai-sabaki (rotation du corps) (`tai-sabaki`) | deplacement | 11,4 | 28 % | 0,48 | 3,0 (LeftToeBase) | 14° | 1,04 |
@@ -102,7 +102,7 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Feinte de jab (`feinte-jab`) | feinte | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 14° | 0,00 |
 | Feinte d’épaule (`feinte-epaule`) | feinte | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 6° | 0,00 |
 | Shizen-tai (posture naturelle) (`shizen-tai`) | garde | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 2° | 0,00 |
-| Kuzushi (déséquilibre, solo) (`kuzushi`) | projection | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 7° | 2,05 |
+| Kuzushi (déséquilibre, solo) (`kuzushi`) | projection | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 7° | 1,71 |
 | Kumi-kata (prise de garde, solo) (`kumikata`) | garde | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 8° | 0,00 |
 
 ## Transitions dans les exercices
@@ -123,10 +123,10 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `kickboxing-expert-10` | jab → sortie-angle → direct → low-kick-arriere → pivot-droite → crochet-avant → middle-kick-arriere | 13,7 | 4,06 | 3,84 |
 | `boxe-avance-03` | jab → direct → sortie-angle → crochet-avant → direct | 13,1 | 3,98 | 3,76 |
 | `kickboxing-avance-07` | jab → direct → sortie-angle → crochet-avant → low-kick-arriere | 12,6 | 3,92 | 3,70 |
-| `judo-expert-05` | ukemi-ushiro → ukemi-yoko → ukemi-ushiro | 17,5 | 4,16 | 1,93 |
-| `bjj-debutant-07` | ukemi-ushiro | 9,0 | 4,16 | 1,93 |
-| `judo-debutant-07` | ukemi-ushiro | 9,0 | 4,16 | 1,93 |
-| `judo-intermediaire-07` | ukemi-yoko | 17,5 | 3,86 | 1,90 |
+| `judo-expert-05` | ukemi-ushiro → ukemi-yoko → ukemi-ushiro | 17,5 | 4,19 | 1,96 |
+| `bjj-debutant-07` | ukemi-ushiro | 9,0 | 4,19 | 1,96 |
+| `judo-debutant-07` | ukemi-ushiro | 9,0 | 4,19 | 1,96 |
+| `judo-intermediaire-07` | ukemi-yoko | 17,5 | 3,88 | 1,92 |
 | `muaythai-avance-10` | pas-avant → teep-avant → pas-avant → jab → direct → low-kick-arriere | 14,8 | 1,92 | 1,71 |
 | `kickboxing-expert-08` | jab → direct → low-kick-arriere → check-avant → direct → crochet-avant → middle-kick-arriere → pas-arriere | 13,7 | 1,92 | 1,71 |
 | `kickboxing-expert-06` | pas-avant → jab → direct → pas-avant → crochet-avant → direct → low-kick-arriere | 12,6 | 1,92 | 1,71 |
@@ -183,14 +183,18 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `boxe-intermediaire-11` | jab-corps → jab → direct | 15,9 | 0,16 | 0,16 |
 | `boxe-expert-07` | jab-corps → direct → crochet-avant-corps → crochet-avant → direct-corps → uppercut-arriere → crochet-avant | 16,0 | 0,16 | 0,16 |
 | `boxe-avance-04` | jab-corps → direct-corps → crochet-avant → uppercut-arriere | 16,0 | 0,16 | 0,16 |
-| `mma-expert-06` | pas-avant → jab → direct → pas-avant → crochet-avant → changement-niveau → entree-lutte | 16,6 | 0,66 | 0,12 |
 | `mma-expert-01` | jab → direct → crochet-avant → changement-niveau → entree-lutte → direct | 16,6 | 0,66 | 0,12 |
 | `mma-avance-03` | jab → overhand → changement-niveau → entree-lutte | 16,6 | 0,66 | 0,12 |
+| `mma-expert-06` | pas-avant → jab → direct → pas-avant → crochet-avant → changement-niveau → entree-lutte | 16,6 | 0,66 | 0,12 |
 | `muaythai-expert-07` | pas-avant → jab → direct → pas-avant → genou-direct-arriere → coude-horizontal-avant → pas-arriere → teep-avant | 17,9 | 0,27 | 0,10 |
 | `muaythai-avance-04` | clinch-tirage → genou-clinch → genou-circulaire-clinch → genou-clinch | 19,9 | 0,11 | 0,09 |
 | `muaythai-intermediaire-09` | clinch-tirage → genou-clinch → genou-clinch | 19,9 | 0,11 | 0,09 |
+| `judo-expert-02` | tsugi-ashi-lateral → tai-sabaki → kuzushi → uchikomi-seoi → tsugi-ashi-arriere → uchikomi-seoi | 20,3 | 1,81 | 0,08 |
 | `judo-avance-04` | tai-sabaki → tsugi-ashi-avant → uchikomi-seoi | 20,3 | 1,81 | 0,08 |
+| `judo-expert-01` | tsugi-ashi-avant → kuzushi → uchikomi-seoi → tsugi-ashi-arriere → kuzushi → uchikomi-seoi | 20,3 | 1,81 | 0,08 |
+| `judo-avance-02` | tsugi-ashi-arriere → kuzushi → uchikomi-seoi | 20,3 | 1,81 | 0,08 |
 | `judo-intermediaire-02` | uchikomi-seoi | 20,3 | 1,81 | 0,08 |
+| `judo-avance-01` | kuzushi → uchikomi-seoi | 20,3 | 1,81 | 0,08 |
 | `judo-avance-03` | uchikomi-seoi → uchikomi-seoi → uchikomi-seoi | 20,3 | 1,81 | 0,08 |
 | `judo-expert-03` | uchikomi-seoi → uchikomi-seoi → uchikomi-seoi → uchikomi-seoi → uchikomi-seoi | 20,3 | 1,81 | 0,08 |
 | `muaythai-expert-11` | jab → direct → crochet-avant → uppercut-arriere → coude-horizontal-avant → genou-direct-arriere → high-kick-arriere | 17,9 | 0,27 | 0,06 |
@@ -205,10 +209,6 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `muaythai-debutant-07` | genou-direct-arriere | 17,9 | 0,04 | 0,03 |
 | `muaythai-intermediaire-08` | genou-circulaire-arriere | 18,4 | 0,04 | 0,03 |
 | `mma-intermediaire-07` | front-kick-avant → jab → changement-niveau | 16,7 | 0,05 | 0,02 |
-| `judo-avance-02` | tsugi-ashi-arriere → kuzushi → uchikomi-seoi | 20,3 | 2,05 | 0,00 |
-| `judo-expert-02` | tsugi-ashi-lateral → tai-sabaki → kuzushi → uchikomi-seoi → tsugi-ashi-arriere → uchikomi-seoi | 20,3 | 2,05 | 0,00 |
-| `judo-avance-01` | kuzushi → uchikomi-seoi | 20,3 | 2,05 | 0,00 |
-| `judo-expert-01` | tsugi-ashi-avant → kuzushi → uchikomi-seoi → tsugi-ashi-arriere → kuzushi → uchikomi-seoi | 20,3 | 2,05 | 0,00 |
 | `mma-debutant-05` | changement-niveau | 16,7 | 0,00 | 0,00 |
 | `mma-expert-11` | overhand → crochet-avant → uppercut-arriere → crochet-avant → direct → high-kick-arriere | 16,1 | 0,20 | 0,00 |
 | `kickboxing-avance-09` | jab-corps → direct → crochet-avant-corps → middle-kick-arriere | 16,0 | 0,18 | 0,00 |

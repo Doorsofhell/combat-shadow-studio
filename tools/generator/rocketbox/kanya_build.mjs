@@ -192,7 +192,9 @@ root.listScenes()[0].addChild(bunNode);
 // taille : 1,68 m au sommet de la tête (cheveux tirés), chignon au-dessus
 // 1.51.0 : taille d'Inaya gardée (1,73 m). À 1,68 m (KANYA_SCALE=0.9687) les gestes du moteur, écrits en mètres pour
 // des corps de 1,73 à 1,81 m, plient l'aine plus fort en high kick et font glisser le pied en judo (tests deformation et glide)
-const K = Number(process.env.KANYA_SCALE ?? 1);
+// 1.55 (Youssef 2026-11-17, « n'oublie sa taille ») : le moteur compare désormais la vitesse des pas par longueur de
+// corps (src/engine/motion.ts, glideSpeedOf) ; Kanya passe à sa taille de planche, 1,68 m (KANYA_SCALE=1 : celle d'Inaya)
+const K = Number(process.env.KANYA_SCALE ?? 0.9687);
 if (K !== 1) {
   const seenAcc = new Set();
   const scaleAcc = (a) => { if (!a || seenAcc.has(a)) return; seenAcc.add(a); a.setArray(a.getArray().map((x) => x * K)); };

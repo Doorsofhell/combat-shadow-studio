@@ -57,17 +57,22 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 | victor | muaythai | short-thai.002 | 2244 | 0 | 0 | 2 | 0 | 0.0 % |
 | victor | mma | short-vale-tudo | 5624 | 0 | 0 | 22 | 0 | 0.0 % |
 | victor | mma | short-vale-tudo | 2780 | 0 | 0 | 0 | 0 | 92.5 % |
-| kanya | boxe | short-boxe | 5276 | 0 | 0 | 23 | 0 | 0.0 % |
-| kanya | boxe | short-boxe | 2856 | 0 | 0 | 0 | 0 | 0.0 % |
-| kanya | kickboxing | short-kick | 5366 | 0 | 0 | 4 | 0 | 0.0 % |
-| kanya | kickboxing | short-kick | 2370 | 0 | 0 | 2 | 0 | 0.0 % |
-| kanya | muaythai | short-thai | 3698 | 0 | 0 | 24 | 0 | 0.0 % |
-| kanya | muaythai | short-thai | 3536 | 0 | 0 | 1 | 0 | 0.0 % |
-| kanya | muaythai | short-thai | 642 | 0 | 0 | 0 | 0 | 0.0 % |
-| kanya | muaythai | short-thai | 2304 | 0 | 0 | 4 | 0 | 0.0 % |
-| kanya | mma | short-surshort | 5060 | 0 | 0 | 31 | 0 | 0.0 % |
-| kanya | mma | short-surshort | 2564 | 0 | 0 | 0 | 0 | 0.0 % |
-| kanya | mma | short-vale-tudo | 3372 | 0 | 0 | 3 | 0 | 0.0 % |
+| kanya | boxe | short-thai | 3662 | 0 | 0 | 24 | 0 | 0.0 % |
+| kanya | boxe | short-thai | 3508 | 0 | 0 | 0 | 0 | 0.0 % |
+| kanya | boxe | short-thai | 688 | 0 | 0 | 0 | 0 | 0.0 % |
+| kanya | boxe | short-thai | 2290 | 0 | 0 | 3 | 0 | 0.0 % |
+| kanya | kickboxing | short-thai.001 | 3682 | 0 | 0 | 18 | 0 | 0.0 % |
+| kanya | kickboxing | short-thai.001 | 3490 | 0 | 0 | 2 | 0 | 0.0 % |
+| kanya | kickboxing | short-thai.001 | 692 | 0 | 0 | 0 | 0 | 0.0 % |
+| kanya | kickboxing | short-thai.001 | 2304 | 0 | 0 | 2 | 0 | 0.0 % |
+| kanya | muaythai | short-vale-tudo | 6962 | 0 | 0 | 21 | 0 | 0.0 % |
+| kanya | muaythai | short-vale-tudo | 2948 | 0 | 0 | 0 | 0 | 89.2 % |
+| kanya | muaythai | short-vale-tudo | 1158 | 0 | 0 | 0 | 0 | 0.0 % |
+| kanya | muaythai | short-vale-tudo | 308 | 0 | 0 | 0 | 0 | 0.0 % |
+| kanya | mma | short-thai.002 | 3662 | 0 | 0 | 24 | 0 | 0.0 % |
+| kanya | mma | short-thai.002 | 3508 | 0 | 0 | 0 | 0 | 0.0 % |
+| kanya | mma | short-thai.002 | 688 | 0 | 0 | 0 | 0 | 0.0 % |
+| kanya | mma | short-thai.002 | 2290 | 0 | 0 | 3 | 0 | 0.0 % |
 
 ## En mouvement (50, 100 et 125 % de l'instant clé)
 
@@ -177,23 +182,23 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 | victor | mma | genou | 2.97 | 86.9 | 1.4 % |
 | victor | mma | changement de niveau | 3.03 | 89.8 | 1.2 % |
 | victor | mma | low kick | 2.67 | 80.1 | 1.3 % |
-| kanya | boxe | garde | 1.85 | 66.0 | 0.3 % |
-| kanya | boxe | high kick | 4.51 | 130.6 | 0.5 % |
-| kanya | boxe | genou | 2.35 | 96.7 | 0.4 % |
-| kanya | boxe | changement de niveau | 2.61 | 78.6 | 0.5 % |
-| kanya | boxe | low kick | 2.41 | 81.8 | 0.6 % |
-| kanya | kickboxing | garde | 1.88 | 65.8 | 0.1 % |
-| kanya | kickboxing | high kick | 4.66 | 129.2 | 0.1 % |
-| kanya | kickboxing | genou | 2.49 | 93.4 | 0.1 % |
-| kanya | kickboxing | changement de niveau | 2.51 | 77.4 | 0.1 % |
-| kanya | kickboxing | low kick | 2.33 | 79.0 | 0.1 % |
-| kanya | muaythai | garde | 1.98 | 57.5 | 0.9 % |
-| kanya | muaythai | high kick | 5.29 | 103.2 | 1.5 % |
-| kanya | muaythai | genou | 3.22 | 80.8 | 2.1 % |
-| kanya | muaythai | changement de niveau | 3.02 | 68.5 | 1.4 % |
-| kanya | muaythai | low kick | 2.59 | 73.8 | 1.5 % |
-| kanya | mma | garde | 2.03 | 62.9 | 0.6 % |
-| kanya | mma | high kick | 4.00 | 125.0 | 0.9 % |
-| kanya | mma | genou | 2.66 | 97.1 | 1.5 % |
-| kanya | mma | changement de niveau | 2.61 | 80.9 | 0.6 % |
-| kanya | mma | low kick | 2.51 | 85.9 | 1.1 % |
+| kanya | boxe | garde | 2.37 | 52.6 | 1.1 % |
+| kanya | boxe | high kick | 5.33 | 101.6 | 1.6 % |
+| kanya | boxe | genou | 2.95 | 74.9 | 2.0 % |
+| kanya | boxe | changement de niveau | 3.39 | 66.2 | 1.4 % |
+| kanya | boxe | low kick | 2.85 | 63.4 | 1.5 % |
+| kanya | kickboxing | garde | 2.20 | 52.2 | 1.1 % |
+| kanya | kickboxing | high kick | 5.35 | 105.2 | 1.6 % |
+| kanya | kickboxing | genou | 2.93 | 75.3 | 1.8 % |
+| kanya | kickboxing | changement de niveau | 3.19 | 65.3 | 1.5 % |
+| kanya | kickboxing | low kick | 2.70 | 64.7 | 1.4 % |
+| kanya | muaythai | garde | 1.81 | 61.5 | 0.2 % |
+| kanya | muaythai | high kick | 4.81 | 117.1 | 0.5 % |
+| kanya | muaythai | genou | 2.87 | 83.2 | 0.6 % |
+| kanya | muaythai | changement de niveau | 2.66 | 70.9 | 0.3 % |
+| kanya | muaythai | low kick | 2.45 | 74.4 | 0.5 % |
+| kanya | mma | garde | 2.69 | 55.0 | 1.2 % |
+| kanya | mma | high kick | 5.24 | 103.9 | 1.6 % |
+| kanya | mma | genou | 2.99 | 79.1 | 1.8 % |
+| kanya | mma | changement de niveau | 3.65 | 69.1 | 1.6 % |
+| kanya | mma | low kick | 3.04 | 71.5 | 1.5 % |

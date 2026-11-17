@@ -58,6 +58,18 @@ export const RELEASES: readonly Release[] = (
         { category: 'ameliorations', text: 'Le tissu tombe au lieu de mouler les muscles : dos, manches et pantalon moins bouffants, bas de la veste qui tombe droit depuis les hanches.' },
         { category: 'corrections', text: 'Visages, corps, animations et autres tenues inchangés.' },
       ],
+    },
+    {
+      version: '1.55.0',
+      releaseDate: '2026-11-17',
+      title: 'Kanya : nouvelles tenues, tatouage du ventre et sa vraie taille',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Kanya mesure maintenant 1,68 m, sa taille de profil. Ses gestes gardent les mêmes angles que ceux des autres coachs : le moteur règle désormais ses pas sur la taille de chaque coach.' },
+        { category: 'coachs', text: 'Nouvelles tenues de Kanya d’après ses planches : muay-thaï (short de compression noir à pans dorés), MMA (short à pans dorés, gants MMA, genouillères, protège-tibias), boxe (short satiné noir et or, gants à paume dorée, bottines) et kick-boxing (short noir et rouge « KICKBOXING », gants à paume rouge, protège-tibias). Sa brassière porte « COACH » et sa discipline.' },
+        { category: 'coachs', text: 'Kanya porte un tatouage Sak Yant sur le ventre : un yant à trois flèches entouré de prières et deux tigres.' },
+        { category: 'corrections', text: 'Le mot « COACH » sur la brassière de Kanya ne disparaît plus pendant les mouvements : le tissu est tendu d’un bonnet à l’autre au lieu de suivre le creux de la poitrine.' },
+      ],
       links: [{ label: 'Voir les coachs', to: '/coach' }],
     },
     {

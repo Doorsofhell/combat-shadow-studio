@@ -1244,8 +1244,13 @@ def lin(hexc):
     return [x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
 
 
-def boxing_glove_v2(s, color, accent, thai=False):
-    """v0.43 sculpted glove (tools/generator/rocketbox/glove.py): one mesh per hand, vertex-coloured regions"""
+PALM_Z = float(os.environ.get('PALM_Z', '-0.006'))
+
+
+def boxing_glove_v2(s, color, accent, thai=False, palm=None):
+    """v0.43 sculpted glove (tools/generator/rocketbox/glove.py): one mesh per hand, vertex-coloured regions.
+    1.55 Kanya (planches gants) : palm = couleur du côté de la paume et du pouce (cuir doré ou rouge), le dos de la main
+    et la frappe restent de la couleur du gant ; sans palm rien ne change pour les autres coachs"""
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import glove as GL
     # 1.10: the Thai cut is its own shape (glove.py, thai=True); before, `thai` only renamed the material
@@ -1304,7 +1309,8 @@ def boxing_glove_v2(s, color, accent, thai=False):
             x_ = inv_b @ d_
         return tuple(x_ / k)
 
-    vreg, pip = GL.regions(np.array([local(MW @ vv.co) for vv in me_.vertices]), thai)
+    vloc = np.array([local(MW @ vv.co) for vv in me_.vertices])
+    vreg, pip = GL.regions(vloc, thai)
     freg, _ = GL.regions(np.array([local(MW @ f_.center) for f_ in me_.polygons]), thai)
     leather = lin(color)
     strap = lin(accent)
@@ -1316,6 +1322,8 @@ def boxing_glove_v2(s, color, accent, thai=False):
         for li in f_.loop_indices:
             vi = me_.loops[li].vertex_index
             c = strap if r == 1 else lining if r == 2 else pipe if pip[vi] and vreg[vi] == 0 else leather
+            if palm and r == 0 and c is leather and vloc[vi][2] < PALM_Z and vloc[vi][0] > -0.02:
+                c = lin(palm)
             col.data[li].color = (*c, 1)
     me_.color_attributes.active_color = col
     m = fabric(f'cuir-gant-{"thai" if thai else "boxe"}', '#FFFFFF', 'cuir', rough=0.42, strength=0.6, coat=0.25)
@@ -1841,6 +1849,9 @@ BAND_RELIEF = float(os.environ.get('BAND_RELIEF', '0.15'))
 # sheets have a coloured panel on the outer side of each leg, edged by a thin piping, and the same piping along the
 # hem. Set by outfit() for the next shorts() call: dict(panel=hex, trim=hex)
 SHORT_PANEL = {}
+# 1.55 Kanya (planches de Youssef 2026-11-17) : short de compression noir, un pan doré en biais sur l'extérieur de chaque
+# cuisse et un filet doré le long du pan, coupés dans le tissu par des plans (lignes nettes, comme le pan d'Amara 1.38)
+DIAG_PANEL = {}
 
 
 # 1.46 (Youssef 14/11 23:22, planche de shorts, choix « Coupes seulement, couleurs gardées »): the cut of each short
@@ -2172,6 +2183,36 @@ def shorts(kind, color, band, n_leg=None, under=False):
                     return 2
                 if d > -gold_w:
                     return 3
+            return 0
+    if DIAG_PANEL and not under:
+        hem_z = min(hz.values())
+        x0, slope, gap, fil = DIAG_PANEL.get('x0', 0.088), DIAG_PANEL.get('slope', 0.2), DIAG_PANEL.get('gap', 0.006), DIAG_PANEL.get('fil', 0.006)
+        top_z_ = waist - bandH - 0.004
+        planes = {}
+        for sg in (1, -1):
+            pn = Vector((sg, 0, -slope)).normalized()
+            p0 = Vector((sg * x0, 0, hem_z))
+            planes[sg] = (pn, p0)
+            for d in (0.0, -gap, -gap - fil):
+                cuts.append((p0 + pn * d, pn))
+        cuts.append((Vector((0, 0, top_z_)), Vector((0, 0, 1))))
+        cuts.append((Vector((0, 0.03, 0)), Vector((0, 1, 0))))
+        mats += [fabric(f'panneau-compression-{DIAG_PANEL["panel"]}', DIAG_PANEL['panel'], 'jersey', rough=0.8, sheen=0.08, strength=0.35),
+                 fabric(f'filet-compression-{DIAG_PANEL["panel"]}', DIAG_PANEL['panel'], 'jersey', rough=0.75, sheen=0.1, strength=0.3)]
+        mat_band_d = mat_of
+
+        def mat_of(c, ids):
+            if mat_band_d(c, ids):
+                return 1
+            # le pan est devant et sur le côté (le dos du short reste noir, comme sur la planche)
+            if c.z > top_z_ or c.y > 0.03:
+                return 0
+            pn, p0 = planes[1 if c.x > 0 else -1]
+            d = (c - p0).dot(pn)
+            if d > 0:
+                return 2
+            if -gap - fil < d < -gap:
+                return 3
             return 0
     if SHORT_PANEL and not under:
         # cut by planes (straight, sharp sewn lines, as the 1.38 panel of Amara): two planes front and back of each
@@ -2622,9 +2663,61 @@ def bra_v2(color, accent=None, bandeau=False, band=0.02):
     if AMARA_MMA_REF:
         paint_mma_compression(o, low + band, nk.z, band, top=True)
         o['cssTopStyle'] = 'scoop-racerback-reference-1379'
+    if COACH_ID == 'kanya':
+        bridge_cleavage(o, low, chestZ + 0.12)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
     return [o], cov
+
+
+def bridge_cleavage(o, low, top):
+    """1.55 (Youssef 2026-11-17, Kanya : « le COACH sur sa brassière disparaît puis réapparaît à chaque mouvement »).
+    Vérifié : la brassière, copiée de la peau, descend dans le creux entre les seins ; « COACH » posé dessus s'y
+    enfonce et, dès que le buste tourne, le bonnet le plus proche de la caméra passe devant les lettres. Une brassière
+    de sport en jersey se tend d'un bonnet à l'autre : par tranche horizontale (5 mm), le devant est ramené sur son
+    enveloppe convexe vue de face (la corde entre les deux bonnets), écart lissé en hauteur et en largeur, appliqué aux
+    deux faces du tissu (épaisseur gardée). Les poids de peau ne changent pas"""
+    me_ = o.data
+    mw = o.matrix_world
+    inv = mw.inverted()
+    pts = [mw @ v.co for v in me_.vertices]
+    zs = np.arange(low, top + 1e-6, 0.005)
+    xs = np.arange(-0.13, 0.1301, 0.005)
+    D = np.zeros((len(zs), len(xs)))
+    for a, z in enumerate(zs):
+        prof = np.full(len(xs), np.nan)
+        for q in pts:
+            if abs(q.z - z) < 0.004 and abs(q.x) < 0.135 and q.y < 0:
+                b = int(round((q.x + 0.13) / 0.005))
+                if 0 <= b < len(xs) and not (prof[b] <= q.y):
+                    prof[b] = q.y
+        ok = ~np.isnan(prof)
+        if ok.sum() < 6:
+            continue
+        X = xs[ok]; Y = prof[ok]
+        # enveloppe convexe du côté de l'avant (y le plus petit) : chaîne inférieure de la méthode du monotone
+        hull = []
+        for x_, y_ in zip(X, Y):
+            while len(hull) >= 2 and (hull[-1][0] - hull[-2][0]) * (y_ - hull[-2][1]) - (hull[-1][1] - hull[-2][1]) * (x_ - hull[-2][0]) <= 0:
+                hull.pop()
+            hull.append((x_, y_))
+        hx = np.array([h[0] for h in hull]); hy = np.array([h[1] for h in hull])
+        D[a, ok] = np.maximum(0.0, Y - np.interp(X, hx, hy))
+    from scipy.ndimage import gaussian_filter as _gf
+    D = _gf(D, (2.0, 1.5))
+    moved = 0
+    for v, q in zip(me_.vertices, pts):
+        if q.y >= 0.02 or not (zs[0] <= q.z <= zs[-1]) or abs(q.x) > 0.13:
+            continue
+        a = (q.z - zs[0]) / 0.005; b = (q.x + 0.13) / 0.005
+        a0, b0 = int(a), int(b); a1, b1 = min(a0 + 1, len(zs) - 1), min(b0 + 1, len(xs) - 1)
+        fa, fb = a - a0, b - b0
+        d = (D[a0, b0] * (1 - fa) * (1 - fb) + D[a1, b0] * fa * (1 - fb) + D[a0, b1] * (1 - fa) * fb + D[a1, b1] * fa * fb)
+        if d > 1e-4:
+            v.co = inv @ (q - Vector((0, d, 0)))
+            moved += 1
+    me_.update()
+    print('brassière tendue entre les bonnets :', moved, 'points, creux max', round(float(D.max()) * 1000, 1), 'mm')
 
 
 # 1.19: with the bikini gone from Inaya's body (clean_torso.py), the crop's straps sit on the trapezius (7.5 to 11.2 cm
@@ -3113,7 +3206,7 @@ def shoes(color, accent):
 SHOE_TRIS = int(os.environ.get('SHOE_TRIS', '2400'))
 
 
-def shoes_v2(color, accent):
+def shoes_v2(color, accent, sole=None, deco=None):
     """v0.43 boxing shoes (Youssef, 2026-10-23, capture: black shoes « avec un motif blanc »). Before: the skin of
     the foot pushed out (shell): the shoe showed every toe and its white side stripe was cut along the skin's
     triangles. Now each shoe is a closed shape measured on the coach's own foot and shin (cross-sections every
@@ -3126,6 +3219,11 @@ def shoes_v2(color, accent):
     parts, cov = [], set()
     up_c, sole_c, collar_c = lin(color), lin(accent), lin(accent)
     lining_c = lin('#1A1A1C')
+    # 1.55 Kanya (planche chaussures) : semelle sombre, contrefort du talon et bande en biais sur la tige dans la couleur
+    # `deco` (or) ; sans ces options rien ne change pour les autres coachs
+    if sole:
+        sole_c = lin(sole)
+    deco_c = lin(deco) if deco else None
     m = fabric(f'chaussure-v2-{color}', '#FFFFFF', 'grain', rough=0.55, strength=0.7, coat=0.15)
     if not m.get('css_vcol'):
         nt = m.node_tree
@@ -3254,6 +3352,11 @@ def shoes_v2(color, accent):
             r_ = min(np.interp(zi, zs, rx), np.interp(zi, zs, ry))
             inside = c.z > top_z - 0.04 and math.hypot(c.x - np.interp(zi, zs, cx), c.y - np.interp(zi, zs, cy)) < r_ - 0.0035
             k_ = lining_c if inside else sole_c if c.z < ground + 0.016 else collar_c if c.z > collar_z else up_c
+            if deco_c is not None and k_ is up_c:
+                t_ = ((c.x - O.x) * f.x + (c.y - O.y) * f.y - u0) / max(1e-6, u1 - u0)
+                h_ = c.z - ground
+                if (t_ < 0.17 and h_ < 0.075) or (0.08 < t_ < 0.82 and abs(h_ - (0.115 - 0.085 * t_)) < 0.013):
+                    k_ = deco_c
             for li in p_.loop_indices:
                 col.data[li].color = (*k_, 1)
         me_.color_attributes.active_color = col
@@ -3927,7 +4030,120 @@ def paint_mma_compression(o, waist, hem_z, band_h, top=False):
     print('Amara MMA custom fabric:', painted, 'coloured corners;', 'bra' if top else 'short')
 
 
+def knee_pads(color, accent=None):
+    """1.55 Kanya (planche MMA) : genouillères en néoprène noir, un manchon de 12,5 cm autour du genou (6,5 cm au-dessus de
+    l'articulation, 6 cm en dessous), rembourré devant (7,5 mm) et fin derrière (3 mm), bords droits coupés par des plans ;
+    il suit la peau du genou (mêmes poids), donc il se plie avec la jambe"""
+    top_z, bot_z = kneeZ + 0.065, kneeZ - 0.06
+
+    def keep(i):
+        s = 'Left' if P[i].x > 0 else 'Right'
+        return w(i, f'{s}UpLeg', f'{s}Leg') > 0.6 and top_z > P[i].z > bot_z
+
+    def push(i):
+        front = max(0.0, N[i].dot(FWD))
+        # le coussin devant la rotule, arrondi en hauteur
+        zc = 1 - min(1.0, abs(P[i].z - kneeZ) / 0.065) ** 2
+        return 0.003 + 0.0045 * front ** 0.8 * (0.5 + 0.5 * zc)
+    pad = fabric(f'genouillere-{color}', color, 'knit', rough=0.82, strength=0.9)
+    mats = [pad]
+    cuts = [(Vector((0, 0, z)), Vector((0, 0, 1))) for z in (top_z, bot_z)]
+    mat_of = None
+    if accent:
+        mats.append(fabric(f'genouillere-bord-{accent}', accent, 'elastique', rough=0.7, strength=0.8))
+        cuts += [(Vector((0, 0, z)), Vector((0, 0, 1))) for z in (top_z - 0.012, bot_z + 0.012)]
+        mat_of = lambda c, ids: 1 if c.z > top_z - 0.012 or c.z < bot_z + 0.012 else 0
+    o, cov = shell('genouilleres', keep, push, 0.004, mats, mat_of, cuts=cuts)
+    smooth(o, 2, cuts)
+    return [o], cov
+
+
+GOLD_K = '#B08A2E'      # or des planches de Kanya (tissu)
+GOLD_TXT = '#C9A23A'    # or des lettres
+RED_K = '#B3122A'
+BLACK_K = '#121316'
+
+
+def kanya_kit(name):
+    """1.55 (Youssef 2026-11-17, « je te donne ses nouvelles tenues & accessoires », planches 1 à 7 rangées dans
+    maquettes/kanya-v155) : une même brassière noire à dos nageur, liseré doré, « COACH » doré et le nom de la
+    discipline dessous ; puis, par discipline :
+      - muay-thaï (planche 2) : short de compression noir à pans dorés en biais, bandages noirs et rouges, Pra Jiad
+        rouges et blancs, chevillères noires à liseré rouge (planche 7), pieds nus ;
+      - MMA (planche 3) : short ample noir à pans et ourlet dorés, gants MMA noirs à sangle blanche, genouillères
+        noires, protège-tibias et pieds noirs à bande dorée ;
+      - boxe (planche 4) : short satiné noir, ceinture et pans dorés, gants noirs à paume dorée et sangle blanche,
+        bottines noires à bandes dorées ;
+      - kick-boxing (planche 5) : short noir à pans rouges et liserés dorés, ceinture rouge, « KICKBOXING » doré
+        devant, gants noirs à paume rouge et sangle blanche, protège-tibias et pieds noirs bordés de rouge.
+    Sur la planche MMA, la brassière porte « MUAY THAI » (Kanya est Kru de muay-thaï) : gardé tel quel"""
+    parts, hide = [], set()
+
+    def add(r):
+        ps, cov = r
+        parts.extend(ps)
+        hide.update(cov)
+    sub = {'muaythai': ('MUAY THAI', '#C8102E'), 'mma': ('MUAY THAI', '#C8102E'),
+           'boxe': ('BOXING', GOLD_TXT), 'kickboxing': ('KICKBOXING', GOLD_TXT)}[name]
+    short_text = None
+    if name == 'muaythai':
+        DIAG_PANEL.update(panel=GOLD_K)
+        rs = shorts('vale-tudo', BLACK_K, BLACK_K)
+        DIAG_PANEL.clear()
+    elif name == 'mma':
+        SHORT_PANEL.update(panel=GOLD_K, trim=GOLD_K, hem=0.5, pw=0.05, tw=0.007, hw=0.022)
+        rs = shorts('thai', BLACK_K, BLACK_K)
+        SHORT_PANEL.clear()
+    elif name == 'boxe':
+        SHORT_PANEL.update(panel=GOLD_K, trim=GOLD_K, hem=0.5, pw=0.05, tw=0.007, hw=0.022)   # 0.48 : étirement 6,2 en high kick (limite 6)
+        rs = shorts('thai', BLACK_K, GOLD_K)
+        SHORT_PANEL.clear()
+    else:
+        SHORT_PANEL.update(panel=RED_K, trim=GOLD_K, hem=0.5, pw=0.05, tw=0.008, hw=0.02)
+        rs = shorts('thai', BLACK_K, RED_K)
+        SHORT_PANEL.clear()
+        short_text = ('KICKBOXING', 0.15)
+    add(rs)
+    rt = bra_v2(BLACK_K, GOLD_K, band=0.012)
+    add(rt)
+    if name == 'muaythai':
+        add(hand_wraps('#17181B', '#A3121F'))
+        for s in ('Left', 'Right'):
+            parts.extend(prajioud_v2(s, RED_K, color2='#EFECE4', tails=4, tail_len=0.085))
+        add(ankle_supports('#16181D', RED_K))
+    elif name == 'mma':
+        add(mma_gloves('#141519', '#F4F4F5'))
+        add(knee_pads('#141519'))
+        add(mma_shin_guards('#141519', GOLD_K))
+    elif name == 'boxe':
+        for s in ('Left', 'Right'):
+            parts.extend(boxing_glove_v2(s, '#141519', '#F4F4F5', palm=GOLD_K))
+        hide |= hide_hands()
+        # bande en biais essayée (deco) : taches sur les grands triangles de la tige ; col doré et semelle sombre
+        add(shoes_v2('#141519', GOLD_K, sole='#1C1D21'))
+    else:
+        for s in ('Left', 'Right'):
+            parts.extend(boxing_glove_v2(s, '#141519', '#F4F4F5', palm=RED_K))
+        hide |= hide_hands()
+        add(mma_shin_guards('#141519', RED_K))
+    bra, sh = rt[0][0], rs[0][0]
+    low = bra_low()
+    prints = [
+        logo_on(bra, 'texte-coach', Vector((0, 0, low + 0.074)), Vector((0, -1, 0)), 0.135, lift=0.002,
+                mesh=text_mesh('COACH', TEXT_FONT_LATIN, 0.135, GOLD_TXT)),
+        logo_on(bra, 'texte-discipline', Vector((0, 0, low + 0.04)), Vector((0, -1, 0)), 0.095, lift=0.002,
+                mesh=text_mesh(sub[0], TEXT_FONT_LATIN, 0.095, sub[1])),
+    ]
+    if short_text:
+        prints.append(logo_on(sh, 'texte-short', Vector((0, 0, hipZ - 0.05)), Vector((0, -1, 0)), short_text[1], lift=0.007,
+                              mesh=text_mesh(short_text[0], TEXT_FONT_LATIN, short_text[1], GOLD_TXT)))
+    parts.extend(merge_prints([o for o in prints if o is not None]))
+    return parts, hide
+
+
 def outfit(name):
+    if COACH_ID == 'kanya' and name in ('muaythai', 'mma', 'boxe', 'kickboxing') and os.environ.get('KANYA_KIT', '1155') == '1155':
+        return kanya_kit(name)
     parts, hide = [], set()
 
     def add(r):
@@ -4396,7 +4612,7 @@ def export(name, parts, hide):
     parts[0]['outfit'] = name
     # Assets can now be verified as freshly regenerated: unchanged legacy GLBs must
     # never pass the v1.37.2 deployment gate with old cutouts.
-    parts[0]['generatorVersion'] = '1.38.0' if COACH_ID == 'mma-amara' else '1.43.0' if COACH_ID == 'victor' else '1.51.0' if COACH_ID == 'kanya' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
+    parts[0]['generatorVersion'] = '1.38.0' if COACH_ID == 'mma-amara' else '1.43.0' if COACH_ID == 'victor' else '1.55.0' if COACH_ID == 'kanya' else '1.37.4' if INAYA_FEMALE_PATTERN else '1.37.2'
     if COACH_ID == 'mma-amara':
         if AMARA_PATCHES:
             parts[0]['sportsTopCut'] = 'covered-square-1376'
