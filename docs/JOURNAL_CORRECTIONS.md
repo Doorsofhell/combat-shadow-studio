@@ -4365,3 +4365,48 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   et illustrations rendues avec Kadir : NON REFAITES (rendu proche, à regénérer dans un lot dédié).
 - **Numéro** : préparée comme 1.46.0 ; renumérotée 1.47.0 après la fusion de la 1.46.0 (traversées, lot 2), publiée entre-temps.
 - **Restauration** : branche `restauration/avant-kadir-realisme` (= 1.45.2, b773812) ; la 1.46.0 = 066131d.
+
+## 2026-11-17 · v1.50.1 · Suites de Kadir : deux tests de bout en bout, images de l'appli, trait du crâne
+
+- **Demande** : Youssef, 2026-11-15 16:44, « Lance » pour les trois points laissés ouverts par la 1.47.0.
+- **Constat vérifié** :
+  - `boot.spec.ts:98` (connu en échec depuis plusieurs versions) : depuis la 1.42.0, l'écran du choix du coach se ferme
+    quelques millisecondes après « Valider », une fois le choix écrit sur le téléphone. Le test partait vers
+    l'entraînement avant cette fermeture, et le retour tardif le ramenait à l'accueil : pas de scène 3D. L'application n'a
+    pas de défaut (personne ne change d'adresse en quelques millisecondes).
+  - `coaching-hud.spec.ts:60` : sur la machine de test, la page dessine 3,7 images par seconde (259 images en 70 s) et le
+    moteur ne saute jamais de temps : une répétition du Jab → Direct arrière → Low kick et sa garde durent environ 35 s,
+    alors que le test n'observait que 30 s. Sur 70 s, l'ordre est le bon et le bandeau est vide entre deux répétitions.
+    L'application n'a pas de défaut.
+  - Trait clair au milieu du crâne : il disparaît quand on retire la texture de couleur (essais dans le Lab : ombres,
+    normales, rugosité, double face sans effet). Le crâne est coupé au milieu en deux îles de texture ; la texture
+    d'origine est entourée de bandes étirées plus claires qui bavent sur les derniers texels de l'île (compression
+    JPEG). La 1.47.0 l'avait remplacé par une bande lisse (moyenne simple des deux côtés, normale aplatie au milieu).
+  - Les 137 images de l'appli rendues avec Kadir montraient encore l'ancien modèle.
+- **Correction** :
+  - `boot.spec.ts` : le test attend la fermeture de l'écran du coach (`coach-star` absent) avant d'aller à
+    l'entraînement ; contrôles inchangés.
+  - `coaching-hud.spec.ts` : `watchBand` s'arrête au premier coup de la 2e répétition (100 s au plus, au lieu de 30 s
+    fixes) ; les contrôles sont les mêmes (ordre, bandeau vide après le low kick, jamais deux noms).
+  - `tools/generator/kadir/realisme.py` : sur le crâne et le front, les 3 texels du bord des îles sont refaits depuis
+    l'intérieur avant le remplissage de la marge (32 px, couleur et normales) ; la normale n'est plus aplatie au
+    milieu ; le ton (basses fréquences) est égalisé entre chaque texel et son symétrique près du milieu, sans toucher au
+    grain. Résultat sur capture rapprochée : plus de trait clair ; il reste une légère différence d'éclairage entre les
+    deux moitiés et un très fin trait sombre en bas des cheveux. Forme, os, expressions et tenues inchangés.
+  - Images : `npm run visuels -- --coach homme --force` (nouvelle option `--coach`) : 91 vignettes, encyclopédie,
+    visuels de discipline et portrait, 137 images. Elles ont été rendues juste avant la retouche du trait (invisible à
+    leur taille) : non refaites après.
+  - `src/ui/Lab.tsx` : `window.__labScene` pour essayer un matériau sur un défaut vu en capture.
+- **Fichiers** : `tests/e2e/boot.spec.ts`, `tests/e2e/coaching-hud.spec.ts`, `tools/generator/kadir/realisme.py`,
+  `tools/generator/kadir/donnees/realisme/{tete,normale}.jpg`, `tools/generator/kadir/tenues_suivent.py` (mise en garde),
+  `public/coaches/mma-kadir/photo.glb`, `public/thumbs/homme/`, `public/encyclopedie/`, `public/art/disciplines/`,
+  `scripts/visuels/generate.mjs`, `src/ui/Lab.tsx`, `src/boot/assetSizes.json`, `src/domain/releases.ts`, `package.json`.
+- **Tests modifiés, avec raison** : les deux tests ci-dessus (course et durée propres à la machine de test, contrôles
+  gardés) ; `outfit-rollback-v1373.test.ts` : empreinte de `photo.glb` (textures seules).
+- **Restauration** : branche `restauration/avant-suites-v147` (= 1.47.0, f94f767).
+- **Numéro** : préparée le 2026-11-15 comme 1.47.1 ; renumérotée 1.50.1 le 2026-11-17 après la fusion de la base, passée
+  entre-temps à la 1.50.0 (versions 1.47.1 à 1.50.0 d'un autre lot : rendu de la peau, des yeux et des cheveux). Les
+  mentions « 1.47.1 » de cette entrée désignent ce lot-ci.
+- **Playwright complet avant la fusion de la base** (2026-11-15) : TEST RÉUSSI, 297 réussis, 2 ignorés, 0 échec (48,1 min).
+- **Limite connue** : les 137 images de l'appli ont été rendues avant le réglage du trait du crâne et avant les réglages
+  de rendu des versions 1.48.0 à 1.50.0 ; l'écart est faible, elles ne sont pas refaites dans ce lot.

@@ -6,7 +6,9 @@ Pour chaque tenue :
   du nouveau corps, sinon la peau retouchée réapparaîtrait sous le vêtement ;
 - chaque point du vêtement reçoit le déplacement du point du corps le plus proche (plein jusqu'à 1,5 cm, nul à
   4 cm) : le col et les épaules du kimono ou du rashguard suivent les trapèzes, rien ne traverse.
-Un fichier dont rien ne bouge n'est pas réécrit (même octets, même empreinte)."""
+Un fichier dont rien ne bouge n'est pas réécrit (même octets, même empreinte).
+ATTENTION : une seule passe par tenue. Les tenues judo, bjj, bjj-nogi et arbitre-judo de Kadir l'ont déjà reçue
+(1.47.0) : les relancer déplacerait le vêtement une seconde fois."""
 import sys, json, struct, base64
 import numpy as np
 from scipy.spatial import cKDTree

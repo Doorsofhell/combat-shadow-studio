@@ -70,32 +70,44 @@ if on('CALECON'):
 # 4. raccords : marges des îles remplies (liseré clair sur le côté du cou), couture du milieu du crâne et du front
 #    adoucie dans la carte de normales (les deux moitiés en miroir n'ont pas le même relief au bord)
 if on('RACCORDS'):
-    H = gutter(H, VM, 16)
+    # 1.50.1 trait clair au milieu du crâne : la texture d'origine est entourée de bandes étirées plus claires, et la
+    # compression JPEG les fait baver sur les 2 derniers texels de l'île. Sur le crâne et le front (îles coupées au
+    # milieu), ces texels du bord sont refaits depuis l'intérieur de l'île, avant de remplir la marge
+    from scipy.ndimage import binary_erosion
+    crane = (z > 1.66) & (y > -0.11)
+    VMc = VM & (binary_erosion(VM, iterations=int(os.environ.get('BORD_PX', '3'))) | ~crane)
+    H = gutter(H, VMc, 4)
+    H = gutter(H, VM, 32)
     B = gutter(B, BVM, 12)
     mid = VM & (np.abs(x) < 0.006) & (z > 1.69)
     wm = gaussian_filter(np.where(VM, (1 - np.abs(x) / 0.006) * mid, 0), 1.5)[..., None]
-    HN = HN * (1 - wm) + np.array([0.5, 0.5, 1.0], np.float32) * wm
-    HN = gutter(HN, VM, 16)
+    # 1.50.1 : la normale n'est plus aplatie au milieu (MILIEU=1 pour l'ancien réglage) : la bande lisse accrochait la
+    # lumière comme un trait ; le bord de l'île est refait comme pour la couleur
+    if os.environ.get('MILIEU', '0') == '1':
+        HN = HN * (1 - wm) + np.array([0.5, 0.5, 1.0], np.float32) * wm
+    HN = gutter(HN, VMc, 4)
+    HN = gutter(HN, VM, 32)
 # 5. cheveux : grain plus fin (détail fin renforcé dans les cheveux peints), volume dans disp.f32
 if on('CHEVEUX'):
     wh = gaussian_filter(hair.astype(np.float32), 2)[..., None]
     hp = H - gaussian_filter(H, (1.2, 1.2, 0))
     H = np.clip(H + 0.8 * hp * wh, 0, 1)
-# couture du milieu du crâne et du front dans la couleur : près de x = 0, moyenne des deux côtés pris à 10 mm
+# couture du milieu du crâne et du front dans la couleur (1.50.1) : les deux moitiés n'ont pas tout à fait le même ton.
+# Près de x = 0, chaque texel prend le ton moyen (basses fréquences) de lui-même et de son symétrique ; le grain des
+# cheveux et de la peau n'est pas touché (l'ancienne moyenne simple, MILIEU=1, laissait une bande lisse)
 if on('RACCORDS'):
     from scipy.spatial import cKDTree
     hz = VM & (z > 1.69)
     idx = np.argwhere(hz); tree = cKDTree(PM[hz])
-    near = hz & (np.abs(x) < 0.010)
-    Hb = gaussian_filter(H, (2, 2, 0))
-    cols = []
-    for sx in (0.010, -0.010):
-        qq = PM[near].copy(); qq[:, 0] = sx
-        _, j = tree.query(qq); rr, cc = idx[j].T
-        cols.append(Hb[rr, cc])
-    w = (1 - np.abs(x[near]) / 0.010)[:, None]
-    H[near] = H[near] * (1 - w) + 0.5 * (cols[0] + cols[1]) * w
-    H = gutter(H, VM, 16)
+    LARG = 0.015
+    near = hz & (np.abs(x) < LARG)
+    Hb = gaussian_filter(H, (6, 6, 0))
+    qq = PM[near].copy(); qq[:, 0] *= -1
+    _, j = tree.query(qq); rr, cc = idx[j].T
+    w = sm(1 - np.abs(x[near]) / LARG)[:, None]
+    H[near] = np.clip(H[near] + w * (0.5 * (Hb[near] + Hb[rr, cc]) - Hb[near]), 0, 1)
+    H = gutter(H, VMc, 4)
+    H = gutter(H, VM, 32)
 # 1 bis. peau mate de la tête : rugosité 0.62 (front et nez 0.52, un peu luisants), cheveux 0.8
 if on('PEAU_MATE'):
     ax = np.abs(x)
