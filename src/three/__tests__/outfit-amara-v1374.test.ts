@@ -15,9 +15,9 @@ const INAYA_GIT_SHA: Record<(typeof OUTFITS)[number], string> = {
   kickboxing: '5f7c4c668075aab7cacaf82eff0bb40d0657412e',
   muaythai: '494810268d8faefa74813250af7a0e863eba8b71',
   mma: 'af445c42b327b865fa0538899c59a1f2374a5c2f',
-  bjj: '61aa1635bf07ff669394d352c1ba611da1487c41',
+  bjj: 'c1a66341247c5eb7bfaa6f50d3e65429d3134ab4',
   'bjj-nogi': 'f874d571568e3d5c3abb7023954410fd3d2e594c',
-  judo: 'baf242917608546224b7ad02d4f2f6f1e1498465',
+  judo: 'fc2ed9316ddc3c009a0dd5aef509595a18636659',
 };
 
 function binary(path: string) {

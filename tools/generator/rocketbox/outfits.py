@@ -330,6 +330,20 @@ def axis_point(i, top, bottom):
     return a + d * u, u
 
 
+def seg_point(q, top, bottom):
+    """closest point of the bone segment top->bottom to the point q, and the parameter along it"""
+    a, b = H[top], H[bottom]
+    d = b - a
+    u = max(0.0, min(1.0, (q - a).dot(d) / d.length_squared))
+    return a + d * u, u
+
+
+# 1.55 (Youssef 17/11, reference sheets of Kadir and Kanya in judogi): radii of the cloth tubes, metres from the bone
+# axis. Trousers: straight wide legs (about 22 cm across at the knee, 19 cm at the hem); sleeves: wide, straight
+# (about 15 cm across at the cuff). Women's a little narrower
+GI_TUBE = float(os.environ.get('GI_TUBE', '1.0'))
+
+
 def leg_of(i):
     return 'Left' if P[i].x > 0 else 'Right'
 
@@ -536,7 +550,7 @@ DRAPE_SHRINK = os.environ.get('DRAPE_SHRINK', '1') == '1'
 DRAPE_ARGS2 = True
 
 
-def drape_pass(o, clear, rounds=6, iters=12, keep_border=True):
+def drape_pass(o, clear, rounds=6, iters=12, radial=None, keep_border=True):
     """1.55 (Youssef 15/11 « les kimonos : trop gros, pas esthétique, pas réaliste, trop épais »): a shell copied
     from the skin moulds every muscle (scapulae, glutes, biceps, the spine's groove) and reads as a padded suit.
     Real cloth rests on the convex points and spans the hollows. Taubin smoothing (removes the anatomy, keeps the
@@ -575,9 +589,21 @@ def drape_pass(o, clear, rounds=6, iters=12, keep_border=True):
             L[fixed] = 0
             X = X + (0.5 if (it % 2 == 0 or DRAPE_SHRINK) else -0.53) * L
         for k in range(n):
-            if fixed[k]:
-                continue
             q = Vector(X[k])
+            if fixed[k]:
+                # a free edge (a cuff, a trouser hem) keeps its line but opens to the tube's radius
+                if radial is not None and keep_border:
+                    j = KD.find(q)[1]
+                    if clear_of(q, j) is not None:
+                        rr = radial(q, j)
+                        if rr is not None:
+                            cen, rmin, flat = rr
+                            v = q - cen
+                            if flat:
+                                v.z = 0.0
+                            if 1e-6 < v.length < rmin:
+                                X[k] = tuple(q + v.normalized() * (rmin - v.length))
+                continue
             loc, nrm, _, _ = bvh.find_nearest(q, 0.2)
             if loc is None:
                 continue
@@ -587,7 +613,20 @@ def drape_pass(o, clear, rounds=6, iters=12, keep_border=True):
             c = clear_of(q, j) if DRAPE_ARGS2 else clear_of(q)
             d = (q - loc).dot(nrm)
             if c is not None and d < c:
-                X[k] = tuple(q + nrm * (c - d))
+                q = q + nrm * (c - d)
+                X[k] = tuple(q)
+            if radial is not None and c is not None:
+                # 1.55 (Youssef 17/11, his reference sheets): sleeves and trouser legs are straight tubes of cloth
+                # around the bone, at least `rmin` from its axis, whatever the muscle under them
+                rr = radial(q, j)
+                if rr is not None:
+                    cen, rmin, flat = rr
+                    v = q - cen
+                    if flat:
+                        v.z = 0.0
+                    if 1e-6 < v.length < rmin:
+                        q = q + v.normalized() * (rmin - v.length)
+                        X[k] = tuple(q)
     X0 = np.array([tuple(MW @ v.co) for v in o.data.vertices])
     dd = np.linalg.norm(X - X0, axis=1)
     print('1.55 drape', o.name, 'points', n, 'déplacement médian mm', round(float(np.median(dd)) * 1000, 1), 'p90', round(float(np.percentile(dd, 90)) * 1000, 1))
@@ -1630,6 +1669,9 @@ def belt(color, z, extra=0.03):
     for sgn, ln in ((1, 0.24), (-1, 0.22)):
         a = front + Vector((0.012 * sgn, -0.02, -0.018))
         b = a + Vector((0.055 * sgn, -0.035, -ln))
+        if GI_STYLE == 'tombe':
+            # 1.55 (reference sheets): the two ends of the knot are shorter and spread apart, as a tied belt hangs
+            b = a + Vector((0.075 * sgn, -0.03, -(ln - 0.06)))
         parts.append(strip(f'pan-{sgn}', curve(a, b, Vector((0.012 * sgn, -0.01, 0.0)), 12), 0.04, out, bt, m))
     for p_ in parts:
         weighted(p_, {'Hips': 0.8, 'Spine': 0.2})
@@ -2857,6 +2899,9 @@ def pants(color, kind, legging=False):
             v = loose(i, f'{s}UpLeg', f'{s}Leg', 0.006, lambda u: g * ((0.016 + 0.006 * u) if judo else (0.012 + 0.004 * u)))
         else:
             v = loose(i, f'{s}Leg', f'{s}Foot', 0.006, lambda u: g * ((0.022 + 0.01 * u) if judo else (0.016 + 0.008 * u)))
+        if GI_STYLE == 'tombe' and kind in ('judo', 'bjj'):
+            # 1.55 (reference sheets): the trouser leg falls straight to the ankle, no gathered rings above the hem
+            return v + N[i] * folds(i, 0.003)
         return v + N[i] * (folds(i, 0.004 * (0.5 + 0.5 * g)) + bunch(P[i].z, ankleZ + 0.06, 0.14, 0.006 * g))
 
     if legging:
@@ -2866,8 +2911,19 @@ def pants(color, kind, legging=False):
         mats = [fabric(f'pantalon-{color}-{kind}', color, 'serge', rough=0.9, strength=0.25, tone=0.03)]
     cuts = [(Vector((0, 0, ankleZ + (0.06 if not legging else 0.05))), Vector((0, 0, 1))), (Vector((0, 0, hipZ + (0.06 if legging else 0.09))), Vector((0, 0, 1)))]
     gi_k = GI_STYLE and kind in ('judo', 'bjj') and not legging
+
+    def pant_tube(q, j):
+        s = leg_of(j)
+        k = (0.93 if female else 1.0) * (1.0 if judo else 0.92) * GI_TUBE
+        if q.z > H[f'{s}Leg'].z:
+            c, u = seg_point(q, f'{s}UpLeg', f'{s}Leg')
+            if u < 0.55:
+                return None
+            return c, k * 0.104, True
+        c, u = seg_point(q, f'{s}Leg', f'{s}Foot')
+        return c, k * (0.102 - 0.004 * u), True
     o, cov = shell(f'pantalon-{kind}', keep, push, 0.0018 if gi_k else 0.003, mats, cuts=cuts, hem=0.004 if gi_k else 0.006,
-                   drape=(lambda q, j=None: float(os.environ.get('LEG_CLEAR', '0.008')) if P[j].z < hipZ - 0.08 else None, int(os.environ.get('DRAPE_ROUNDS', '10')), int(os.environ.get('DRAPE_ITERS', '10'))) if gi_k and GI_STYLE == 'tombe' else None)
+                   drape=(lambda q, j=None: float(os.environ.get('LEG_CLEAR', '0.008')) if P[j].z < hipZ - 0.08 else None, int(os.environ.get('DRAPE_ROUNDS', '10')), int(os.environ.get('DRAPE_ITERS', '10')), pant_tube) if gi_k and GI_STYLE == 'tombe' else None)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [f'{s_}Foot', f'{s_}ToeBase'], f'{s_}Leg')
     smooth(o, 2 if not legging else 1)
@@ -2925,6 +2981,10 @@ def jacket(color, kind):
     def jclear(q, j=None):
         # the rash guard under a woman's gi stands up to 7 mm off the skin; the belt cinches the jacket at the waist
         base = 0.0105 if female else 0.005
+        if female and j is not None and 0.03 < w(j, 'LeftArm', 'RightArm', 'LeftShoulder', 'RightShoulder') and w(j, 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm') <= 0.5:
+            # the armpit and the back of the shoulder: the rash guard's short sleeve starts there (it came through
+            # the jacket as two dark marks on the shoulder blades)
+            return float(os.environ.get("AXIL_CLEAR", "0.022"))
         if j is not None and w(j, 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm') > 0.5:
             # a sleeve is a tube of cloth: it rests on the biceps and the forearm, never moulds them. A woman's sleeve
             # covers the short rash guard's sleeve (up to 7 mm off the skin): 4 mm more room
@@ -2933,8 +2993,21 @@ def jacket(color, kind):
             # the trousers' waist (6 mm off the skin) and the rash guard stay under the jacket
             return base + 0.0045
         return base
+    def sleeve_tube(q, j):
+        if w(j, 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm') < 0.5:
+            return None
+        s = 'Left' if P[j].x > 0 else 'Right'
+        k = (0.92 if female else 1.0) * (1.0 if judo else 0.9) * GI_TUBE
+        if w(j, f'{s}ForeArm') > 0.5:
+            c, u = seg_point(q, f'{s}ForeArm', f'{s}Hand')
+            return c, k * (0.072 - 0.012 * u), False
+        c, u = seg_point(q, f'{s}Arm', f'{s}ForeArm')
+        if u < 0.2:
+            return None
+        return c, k * 0.078, False
+
     o, cov = shell(f'veste-{kind}', keep, push, (0.002 if judo else 0.0016) if gi_k else 0.004 if judo else 0.003, mats,
-                   hem=0.004 if gi_k else 0.01, cuts=cuts, drape=(jclear, int(os.environ.get('DRAPE_ROUNDS', '10')), int(os.environ.get('DRAPE_ITERS', '10'))) if gi_k and GI_STYLE == 'tombe' else None)
+                   hem=0.004 if gi_k else 0.01, cuts=cuts, drape=(jclear, int(os.environ.get('DRAPE_ROUNDS', '10')), int(os.environ.get('DRAPE_ITERS', '10')), sleeve_tube) if gi_k and GI_STYLE == 'tombe' else None)
     for s_ in ('Left', 'Right'):
         fold_weights(o, [n for n in G if n.startswith(s_) and 'Hand' in n], f'{s_}ForeArm')
     smooth(o, 2)
