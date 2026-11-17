@@ -4365,3 +4365,49 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   et illustrations rendues avec Kadir : NON REFAITES (rendu proche, à regénérer dans un lot dédié).
 - **Numéro** : préparée comme 1.46.0 ; renumérotée 1.47.0 après la fusion de la 1.46.0 (traversées, lot 2), publiée entre-temps.
 - **Restauration** : branche `restauration/avant-kadir-realisme` (= 1.45.2, b773812) ; la 1.46.0 = 066131d.
+
+## 2026-11-17 · v1.53.1 · Victor : peau unie, cou raccordé
+
+- **Demande** (Youssef, 15/11 15:45, captures du genou direct en kick-boxing) : « Il y a encore des traces et des tâches
+  sur le corps de Victor… Il y aussi une jonction plus clair entre la tête et son buste. » Le 17/11 : repartir de la
+  dernière version en place et n'appliquer la correction que si elle est encore nécessaire.
+- **Préparée d'abord sur la 1.47.0 (15/11), non publiée** ; reprise sur la 1.53.0 (8e486ac + 920d6aa) le 17/11.
+- **Constat après vérification sur la 1.53.0** (captures WebGL du Lab, kick-boxing, garde, lumière vive) : le modèle de
+  Victor est identique octet pour octet à celui de la 1.47.0 ; les réglages de matière 1.48 à 1.53 (atténuation des
+  marques du corps en qualité haute, éclairage) ne suffisent pas :
+  - la texture du corps garde des plaques moyennes (10 à 45 px sur 1024) sombres ou grises, restes du fond gris et des
+    ombres des planches projetées (flanc et abdomen gauche, bras, cuisses). Mesure : rapport lumière locale / fond,
+    1er centile 0,70, 99e 1,25 ;
+  - le pectoral gauche porte une ombre grise et des points sombres à la place du mamelon (défaut de la planche) ;
+  - la texture de la tête porte aussi le cou et le haut de la poitrine ; ce morceau est plus clair et plus rose que la
+    poitrine du corps (médianes 199/141/116 contre 163/124/105) : c'est la « jonction plus claire », en forme de col.
+- **Correction** (périmètre : les deux textures de couleur de Victor, rien d'autre ; pas de reprise du chantier
+  cou/nuque 1.52 abandonné, qui portait sur Kadir) : `tools/generator/victor/peau_unie.py` (à ne passer qu'une fois)
+  sépare la lumière en bandes (détail fin < 3 px gardé, relief musculaire 3-6 px gardé à 90 %, traits clairs resserrés,
+  plaques 6-45 px resserrées, fond ramené au teint) et la couleur (taches ramenées au teint, détail gardé : tatouages,
+  poils), avec des flous normalisés par un masque de peau ; pectoral et oblique gauches repris en miroir du côté droit
+  (axe du sternum mesuré, x = 514/1024) ; sur la tête, cou + poitrine ramenés à la lumière et à la couleur du corps avec
+  un fondu vers la mâchoire. Après : 1er centile 0,88, 99e 1,10 ; poitrine de la tête 160/120/100 contre 153/115/97 au
+  corps ; visage et cheveux inchangés (écart moyen 0,6 et 1,2 sur 255, recompression JPEG).
+  `tools/generator/victor/swap_textures.mjs` pose les textures dans le modèle existant (attributs séparés), sans
+  reconstruire Victor depuis Kadir. Forme, os, UV, 25 expressions, tenues, matériaux 1.48-1.53 : inchangés.
+- **Limites** : un léger contour de l'île de texture de la tête reste visible de très près sur le haut de la poitrine ;
+  le trait du milieu du crâne (déjà présent) n'est pas traité.
+- **Fichiers** : `public/coaches/victor/photo.glb`, `tools/generator/victor/{peau_unie.py,swap_textures.mjs,README.md}`,
+  `tools/generator/victor/donnees/{body_color,head_color}.jpg`, `src/boot/assetSizes.json`, `src/domain/releases.ts`,
+  `package.json`, nouveau test `src/three/__tests__/victor-peau-v1531.test.ts` (plaques et raccord du cou mesurés).
+- **Tests** : `npx vitest run` : 1621 réussis, 5 échecs déjà présents en 1.47.0 (extension-v032 uppercut, fluidity ×2,
+  hooks-biomeca « pas d'armé », expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (connus, sans lien). `victor-peau-v1452`,
+  `outfit.test` (peau masquée de Victor), `premium-skin-v1480`, `premium-visual-v1490`, contrat humain : TEST RÉUSSI.
+  `npm run build` : TEST RÉUSSI (titre v1.53.1). `npx playwright test` (299 tests, 54 min) : 292 réussis, 2 ignorés
+  (Firebase), 5 échecs : TEST ÉCHOUÉ. Quatre échouent aussi seuls sur la 1.53.0 non modifiée (`coaching-hud:60`,
+  `consignes-v130:27`, `corrections-v110:53`, `training-layout:117`). Le cinquième, `encyclopedie:54` (filtres de la
+  liste), a échoué dans la suite complète et une fois seul sur la 1.53.1, puis a réussi 3 fois sur 3 seul
+  (`--repeat-each 3`) : le compte des résultats est lu avant la fin de l'affichage de la liste, sans lien avec les
+  textures de Victor. Contrôle `matched-webgl` de GitHub : ÉCHOUÉ, mais il teste la branche figée
+  `feature/premium-visual-v1490` et pas cette PR (expiration des captures « après » pour les cinq coachs). Android :
+  NON EXÉCUTÉ.
+- **Captures** : WebGL réelles, même personnage, tenue, pose, caméra, résolution ; seule la texture change. Page
+  avant/après : https://claude.ai/artifact/MV8CneamJgBhY3Fco2696R
+- **Validation** : Youssef, 17/11 13:15 (« Je valide »), sur la page avant/après. PR #133.
+- **Restauration** : branche `restauration/avant-victor-peau-v1531` (= 1.53.0, 920d6aa).

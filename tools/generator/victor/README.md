@@ -14,7 +14,11 @@ tenues). Victor part d'une **copie** du modèle de Kadir : `public/coaches/mma-k
    teint (`teint.py`), cheveux poivre et sel (`finish_head.py`), puis (1.43.1, « un tout petit peu moins brun »)
    peau éclaircie sur les deux textures (`eclaircir.py <entrée> <sortie> 2.2`), puis (1.45.2, « taches sombres… moins
    brun comme sur la palette source ») plaques sombres effacées et teint de la planche (`peau_propre.py corps_in corps_out
-   tete_in tete_out`, à ne passer qu'une fois). Résultats : `donnees/head_color.jpg`,
+   tete_in tete_out`, à ne passer qu'une fois). Puis (1.53.1, « encore des traces et des tâches… jonction plus claire entre la tête et son
+   buste ») : `peau_unie.py corps_in corps_out tete_in tete_out` (plaques moyennes effacées, pectoral et oblique gauches
+   repris en miroir du côté droit, cou et poitrine de la tête au teint du corps ; à ne passer qu'une fois), puis
+   `swap_textures.mjs public/coaches/victor/photo.glb tete.jpg corps.jpg sortie.glb` qui remplace seulement les deux
+   textures dans le modèle déjà construit (Kadir a changé de forme en 1.47.0 : ne pas reconstruire Victor depuis lui). Résultats : `donnees/head_color.jpg`,
    `donnees/body_color.jpg` (déjà éclaircies).
 3. **Modèle de l'application** :
 

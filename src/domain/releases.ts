@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.53.1',
+      releaseDate: '2026-11-17',
+      title: 'Victor : peau unie, cou raccordé',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Victor : les dernières taches sombres et grises du corps (flancs, dos, bras, jambes) sont effacées dans sa texture de peau. Muscles, poils et tatouages gardés.' },
+        { category: 'corrections', text: 'Victor : plus de zone claire entre la tête et le buste, le cou et le haut de la poitrine ont la couleur du corps. Visage, forme, tenues et autres coachs inchangés.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '1.53.0',
       releaseDate: '2026-11-17',
       title: 'Éclairage cinématographique premium',
