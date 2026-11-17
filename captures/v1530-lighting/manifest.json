@@ -6,7 +6,7 @@
     "az": 0,
     "label": "avant",
     "status": "ok",
-    "bytes": 204749,
+    "bytes": 204754,
     "lighting": "1.51.0 mood lighting"
   },
   {
@@ -16,7 +16,7 @@
     "az": 0,
     "label": "apres",
     "status": "ok",
-    "bytes": 206097,
+    "bytes": 206153,
     "lighting": "1.53.0 cinematic opt-in"
   },
   {
@@ -26,7 +26,7 @@
     "az": 35,
     "label": "avant",
     "status": "ok",
-    "bytes": 195188,
+    "bytes": 195225,
     "lighting": "1.51.0 mood lighting"
   },
   {
@@ -36,7 +36,7 @@
     "az": 35,
     "label": "apres",
     "status": "ok",
-    "bytes": 193928,
+    "bytes": 193987,
     "lighting": "1.53.0 cinematic opt-in"
   },
   {
@@ -46,7 +46,7 @@
     "az": 90,
     "label": "avant",
     "status": "ok",
-    "bytes": 226370,
+    "bytes": 226388,
     "lighting": "1.51.0 mood lighting"
   },
   {
@@ -56,7 +56,7 @@
     "az": 90,
     "label": "apres",
     "status": "ok",
-    "bytes": 222830,
+    "bytes": 222750,
     "lighting": "1.53.0 cinematic opt-in"
   },
   {
@@ -66,7 +66,7 @@
     "az": 0,
     "label": "avant",
     "status": "ok",
-    "bytes": 158547,
+    "bytes": 158601,
     "lighting": "1.51.0 mood lighting"
   },
   {
@@ -86,7 +86,7 @@
     "az": 35,
     "label": "avant",
     "status": "ok",
-    "bytes": 155353,
+    "bytes": 155365,
     "lighting": "1.51.0 mood lighting"
   },
   {
@@ -96,7 +96,7 @@
     "az": 35,
     "label": "apres",
     "status": "ok",
-    "bytes": 154415,
+    "bytes": 154379,
     "lighting": "1.53.0 cinematic opt-in"
   },
   {
@@ -106,7 +106,7 @@
     "az": 90,
     "label": "avant",
     "status": "ok",
-    "bytes": 189263,
+    "bytes": 189295,
     "lighting": "1.51.0 mood lighting"
   },
   {
@@ -116,7 +116,7 @@
     "az": 90,
     "label": "apres",
     "status": "ok",
-    "bytes": 186493,
+    "bytes": 186500,
     "lighting": "1.53.0 cinematic opt-in"
   }
 ]
