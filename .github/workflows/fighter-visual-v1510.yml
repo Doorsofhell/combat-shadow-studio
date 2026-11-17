@@ -39,24 +39,19 @@ jobs:
         run: npm run test -- src/three/__tests__/fighter-visual-v1510.test.ts src/three/__tests__/premium-skin-v1480.test.ts src/domain/release-version.test.ts
       - name: Build without publishing
         run: npm run build
-      - name: Setup headless WebGL
-        run: npx playwright install --with-deps chromium
-      - name: Generate 18 real before-and-after coach images
-        run: node scripts/visuels/v1510-before-after.mjs
-      - name: Upload comparison images
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: v1510-real-coach-before-after
-          path: captures/v1510/
-          if-no-files-found: warn
-      - name: Commit direct PNG image links to prototype branch
-        if: success()
+      - name: Verify 18 already generated real WebGL images
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add captures/v1510/
-          if ! git diff --cached --quiet; then
-            git commit -m "test(1.51): matched real coach PNG comparisons [skip ci]"
-            git push origin HEAD:feature/fighter-visual-v1510
-          fi
+          node --input-type=module <<'NODE'
+          import { readFileSync, statSync } from 'node:fs';
+          const root = 'captures/v1510';
+          const rows = JSON.parse(readFileSync(root+'/manifest.json','utf8'));
+          if(rows.length!==18 || rows.some(x=>x.status!=='ok')) throw Error('Not all 18 captures succeeded');
+          const expected=new Set(['mma-kadir','nael','inaya']);
+          for(const x of rows){
+            if(!expected.has(x.champion))throw Error('Unexpected coach');
+            const f=root+'/'+x.label+'/'+x.name+'.png';
+            const size=statSync(f).size;
+            if(size<15000)throw Error('Invalid PNG '+f);
+            console.log(f,size);
+          }
+          NODE
