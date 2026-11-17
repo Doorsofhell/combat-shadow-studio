@@ -13,7 +13,7 @@ function parse(path: string): Asset {
   return json;
 }
 
-const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor'];
+const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor', 'kanya'];
 const OUTFITS = ['boxe', 'kickboxing', 'muaythai', 'mma', 'bjj', 'bjj-nogi', 'judo'];
 
 describe('1.37.2 — modèles vestimentaires reconstruits et validés', () => {
@@ -26,8 +26,8 @@ describe('1.37.2 — modèles vestimentaires reconstruits et validés', () => {
         if (coach !== 'mma-kadir') {
           const carrier = glb.nodes.find(n => n.extras?.generatorVersion);
           // 1.38.0: Amara's seven outfits rebuilt on her body cleaned at its source (journal, v1.38.0)
-          // 1.43.0: Victor's seven outfits made with the 1.43.0 generator (palette victor)
-          const expected = coach === 'mma-amara' ? '1.38.0' : coach === 'victor' ? '1.43.0' : '1.37.2';
+          // 1.43.0: Victor's seven outfits made with the 1.43.0 generator (palette victor); 1.51.0: Kanya's (palette kanya)
+          const expected = coach === 'mma-amara' ? '1.38.0' : coach === 'victor' ? '1.43.0' : coach === 'kanya' ? '1.51.0' : '1.37.2';
           expect(carrier?.extras?.generatorVersion, `${coach}/${outfit} doit être généré avec ${expected}`).toBe(expected);
         }
       });

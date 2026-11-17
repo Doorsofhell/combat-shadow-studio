@@ -30,7 +30,7 @@ import { hiddenKeys } from '../outfit';
  * 1. no stretched triangle at the crotch, 2. the cloth stays outside the legs, 4. no excessive stretch at a kick.
  * Results written to docs/v1442/MESURES_SHORTS.md.
  */
-const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor'];
+const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor', 'kanya'];
 const OUTFITS: [outfit: string, discipline: DisciplineId][] = [
   ['boxe', 'boxe'],
   ['kickboxing', 'kickboxing'],

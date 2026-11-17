@@ -19,6 +19,7 @@ const COACHES = [
   ['mma-amara', 'femme'],
   ['nael', 'homme'],
   ['victor', 'homme'],
+  ['kanya', 'femme'],
   ['inaya', 'femme'],
 ] as const;
 

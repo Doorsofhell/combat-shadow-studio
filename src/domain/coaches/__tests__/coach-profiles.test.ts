@@ -20,7 +20,7 @@ import { COACH_LOOKS } from '../looks';
  * and the guard keeps the centre of mass between the feet.
  */
 const D = 180 / Math.PI;
-const STYLE: Record<string, 'mma'> = { 'mma-kadir': 'mma', 'mma-amara': 'mma', nael: 'mma', inaya: 'mma', victor: 'mma' };
+const STYLE: Record<string, 'mma'> = { 'mma-kadir': 'mma', 'mma-amara': 'mma', nael: 'mma', inaya: 'mma', victor: 'mma', kanya: 'mma' };
 // 1.11: Naël and Inaya have no generated model, their own skeleton is the one of their photo avatar (1.37: the generated
 // skeletons of Kadir and Amara are kept for the tests in tests/fixtures/modeles-generes/)
 const skeletonFile = (id: string) => (existsSync(testModelPath(`coaches/${id}/model.glb`)) ? `coaches/${id}/model.glb` : `coaches/${id}/photo.glb`);

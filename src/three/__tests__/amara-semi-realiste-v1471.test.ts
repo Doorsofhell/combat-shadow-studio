@@ -21,7 +21,7 @@ describe('Amara 1.47.1 — isolated semi-realistic material pilot', () => {
     expect(amara.tintVar).toBe(0.055);
     expect(amara.roughVar).toBeGreaterThan(DEFAULT_SKIN.roughVar);
   });
-  test.each(['mma-kadir', 'nael', 'inaya', 'victor'])('%s retains independent skin values', (id) => {
+  test.each(['mma-kadir', 'nael', 'inaya', 'victor', 'kanya'])('%s retains independent skin values', (id) => {
     const profile = skinLookFor(`/coaches/${id}/photo.glb`);
     expect(profile).not.toBe(amara);
     expect(profile.roughVar).toBeGreaterThan(0);

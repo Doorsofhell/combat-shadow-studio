@@ -23,7 +23,7 @@ import { analyseMotion } from '../study';
  * Results written to docs/v1100/MESURES_DEFORMATIONS.md. Limits: a few known extremes of the old skin weights are
  * allowed, every coach must stay under them, and the 1.10 corrections must not raise any.
  */
-const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor'] as const;
+const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor', 'kanya'] as const;
 const POSES: [string, string, number][] = [
   ['garde', 'garde', 0],
   ['jab', 'jab', 1],
@@ -129,7 +129,7 @@ for (const [label] of POSES)
     rows.push(`| ${label} | ${r} | ${COACHES.map((c) => { const x = all[c][label][r]; return `${x.crease.toFixed(0)}° · ${x.collapse.toFixed(2)} · ${x.stretch.toFixed(2)}`; }).join(' | ')} |`);
 writeFileSync(
   resolve(__dirname, '../../../docs/v1100/MESURES_DEFORMATIONS.md'),
-  `# Déformations de la peau aux articulations (1.10)\n\nGénéré par \`src/engine/__tests__/deformation-v1100.test.ts\` (peau des cinq coachs posée sur le processeur comme dans l'appli, à l'instant clé de chaque pose).\nChaque case : **pli** (accentuation du pli par rapport au repos, 99e centile, degrés) · **écrasement** (plus petit rapport d'aire d'un triangle, 0,2e centile) · **étirement** (rapport de longueur d'une arête, 99,8e centile).\n\n| pose | zone | ${COACHES.join(' | ')} |\n|---|---|${COACHES.map(() => '---').join('|')}|\n${rows.join('\n')}\n`,
+  `# Déformations de la peau aux articulations (1.10)\n\nGénéré par \`src/engine/__tests__/deformation-v1100.test.ts\` (peau des six coachs posée sur le processeur comme dans l'appli, à l'instant clé de chaque pose).\nChaque case : **pli** (accentuation du pli par rapport au repos, 99e centile, degrés) · **écrasement** (plus petit rapport d'aire d'un triangle, 0,2e centile) · **étirement** (rapport de longueur d'une arête, 99,8e centile).\n\n| pose | zone | ${COACHES.join(' | ')} |\n|---|---|${COACHES.map(() => '---').join('|')}|\n${rows.join('\n')}\n`,
 );
 
 // the measures of 1.9.0 (before the corrections), written once with DEFORM_BASE=1 on the 1.9.0 files
@@ -148,8 +148,11 @@ Object.assign(base, JSON.parse(readFileSync(BASE_1110, 'utf8')));
 // thigh, has its smallest triangle at 0.091 of rest instead of 0.111 (limit 0.02 under Kadir: 0.0002 short)
 base.victor = structuredClone(all['mma-kadir']);
 base.victor['squat (changement de niveau)'].genoux.collapse = 0.1;
+// 1.51.0 Kanya: Inaya's body and skin weights at 1.68 m (uniform scale: the angles and ratios measured here do not
+// change with size), only the head reshaped; her joints may not deform more than Inaya's today
+base.kanya = structuredClone(all.inaya);
 
-describe('déformations aux articulations (peau des cinq coachs)', () => {
+describe('déformations aux articulations (peau des six coachs)', () => {
   // no joint of any coach in any pose folds, collapses or stretches more than in 1.9.0 (small tolerance: the
   // weights smoothed round a joint move its neighbours a little)
   for (const id of COACHES)

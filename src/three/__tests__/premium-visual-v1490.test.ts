@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { MeshPhysicalMaterial, MeshStandardMaterial, Texture } from 'three';
 import { photoMaterial, skinLookFor } from '../photoMaterials';
 
-const coaches = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor'];
+const coaches = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor', 'kanya'];
 describe('1.49.0 premium optical pilot, no geometry or shader changes', () => {
   test.each(coaches)('%s: high quality skin/eyes/hair are individually enhanced', id => {
     const look = skinLookFor('/coaches/' + id + '/photo.glb');

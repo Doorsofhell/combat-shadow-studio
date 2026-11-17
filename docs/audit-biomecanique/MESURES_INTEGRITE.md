@@ -2,7 +2,7 @@
 
 Généré par `UPDATE_INTEGRITY=1 npx vitest run src/engine/__tests__/integrity.test.ts`. Ne pas modifier à la main.
 
-Contrôlé : 5 coachs (Kadir, Amara, Naël, Inaya, Victor), 6 styles, garde de la discipline et garde du coach, droitier et gaucher, soit 120 bibliothèques et 10560 animations.
+Contrôlé : 6 coachs (Kadir, Amara, Naël, Inaya, Victor, Kanya), 6 styles, garde de la discipline et garde du coach, droitier et gaucher, soit 144 bibliothèques et 12672 animations.
 
 ## Erreurs (bloquantes)
 
@@ -18,11 +18,13 @@ Lus sur les images clés seulement (pas sur le mouvement joué) : hanches à plu
 |---|---|---|---|---|
 | `high-kick-arriere` | mma-kadir | HIP_ACCELERATION | abrupt change of hip speed (47 m/s²) | bjj |
 | `high-kick-avant` | inaya | HIP_ACCELERATION | abrupt change of hip speed (52 m/s²) | mma, bjj |
+| `high-kick-avant` | kanya | HIP_ACCELERATION | abrupt change of hip speed (52 m/s²) | mma, bjj |
 | `high-kick-avant` | mma-amara | HIP_ACCELERATION | abrupt change of hip speed (52 m/s²) | mma, bjj |
 | `high-kick-avant` | mma-kadir | HIP_ACCELERATION | abrupt change of hip speed (62 m/s²) | boxing, kickboxing, mma, muaythai, bjj, judo |
 | `high-kick-avant` | nael | HIP_ACCELERATION | abrupt change of hip speed (58 m/s²) | mma, bjj |
 | `high-kick-avant` | victor | HIP_ACCELERATION | abrupt change of hip speed (58 m/s²) | mma, bjj, judo |
 | `roundhouse-arriere` | inaya | HIP_ACCELERATION | abrupt change of hip speed (46 m/s²) | bjj |
+| `roundhouse-arriere` | kanya | HIP_ACCELERATION | abrupt change of hip speed (46 m/s²) | bjj |
 | `roundhouse-arriere` | mma-amara | HIP_ACCELERATION | abrupt change of hip speed (46 m/s²) | bjj |
 | `roundhouse-arriere` | mma-kadir | HIP_ACCELERATION | abrupt change of hip speed (61 m/s²) | boxing, mma, bjj |
 | `roundhouse-arriere` | nael | HIP_ACCELERATION | abrupt change of hip speed (56 m/s²) | mma, bjj |
@@ -31,4 +33,4 @@ Lus sur les images clés seulement (pas sur le mouvement joué) : hanches à plu
 
 ## Contrôle non retenu
 
-`PLANTED_FOOT_MOVE` (pied d’appui qui change de place entre deux clés) : 12680 signalements, presque tous des pas et des pivots voulus. Le glissement que le coach montre vraiment est mesuré sur le squelette posé, image par image (MESURES_GLISSEMENT.md).
+`PLANTED_FOOT_MOVE` (pied d’appui qui change de place entre deux clés) : 15216 signalements, presque tous des pas et des pivots voulus. Le glissement que le coach montre vraiment est mesuré sur le squelette posé, image par image (MESURES_GLISSEMENT.md).

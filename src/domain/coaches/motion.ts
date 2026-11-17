@@ -50,6 +50,17 @@ export const COACH_STANCES: Record<string, StanceOffsets> = {
     fist: 0.2,
     rearHeel: deg(4),
   },
+  // 1.51 Kanya « La Tigresse » : Kru de muay-thaï, garde haute de face, coudes serrés, prête au clinch ; même bassin
+  // qu'Inaya et Amara (même corps sportif)
+  kanya: {
+    knee: -0.01,
+    pelvisYaw: deg(-6),
+    pelvisPitch: deg(-4),
+    leadHand: [0, 0.03, -0.02],
+    rearHand: [0, 0.04, 0],
+    fist: 0.2,
+    rearHeel: deg(6),
+  },
   // Inaya « La Panthère »: kicker, side-on, on the balls of the feet, hands high
   inaya: {
     knee: -0.01,

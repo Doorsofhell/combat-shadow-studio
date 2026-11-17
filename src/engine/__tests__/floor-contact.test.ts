@@ -23,7 +23,7 @@ const PRESS = 0.03;
 /** 1.43.0 Victor: his fuller forearm presses 3.0 cm into the mat in the back breakfall (Kadir 2.8 cm with his upper arm);
  * bounded for him only, logged in the journal (1.43.0) */
 const PRESS_VICTOR: Record<string, number> = { 'victor judo ukemi-ushiro': 0.032 };
-const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor'] as const;
+const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor', 'kanya'] as const;
 
 interface Worst {
   part: string;
