@@ -83,20 +83,67 @@ export type PhotoLook = SkinLook;
  * had 1.5 and 1.35.)
  */
 export const SKIN_LOOK: Record<string, SkinLook> = {
-  'mma-kadir': { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, wrap: 0.45, shadowLift: 0.36 },
+  // 1.48.0: individual, mobile-friendly calibration; colours and anatomical relief unchanged.
+  'mma-kadir': { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, roughVar: 0.14, tintVar: 0.05, wrap: 0.45, shadowLift: 0.36 },
+  // 1.47.1 Amara-only semi-realistic skin study: retain original relief, wrap, colour and geometry;
+  // slightly enrich high-quality roughness and tint variation without touching other coaches.
   // 1.37.8: only Amara, shader-only: clearer muscle highlights without any mesh, garment or rig change.
   // Keep colour, pores and skin texture identical; small gain to normal-map relief and local contrast.
-  'mma-amara': { ...DEFAULT_SKIN, relief: 1.21, pores: 0.03, wrap: 0.43, shadowLift: 0.33 },
+  'mma-amara': { ...DEFAULT_SKIN, relief: 1.21, pores: 0.03, roughVar: 0.15, tintVar: 0.055, wrap: 0.43, shadowLift: 0.33 },
   // 1.11 Naël and Inaya: Rocketbox photo skins like Kadir and Amara (same relief maps); lighter skins, the
   // scattering a little warmer
   // 1.21 same light as Kadir (Inaya got Amara's in 1.20): the wider wrap softened the shadows between the muscles
-  nael: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, wrap: 0.45, shadowLift: 0.34, tint: [1, 0.55, 0.42] },
+  nael: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, roughVar: 0.13, tintVar: 0.045, wrap: 0.45, shadowLift: 0.34, tint: [1, 0.55, 0.42] },
   // 1.20 (Youssef 05/11 14:09, Amara's muscles « bien dessinés »): Inaya's wrapped light was wider than Amara's
   // (0.55 for 0.45) and softened the shadows between the muscles; same as Amara now
   // 1.43 Victor: the Kadir photo skin repainted (tan of Youssef's sheets): Kadir's light and relief
-  victor: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, wrap: 0.45, shadowLift: 0.36 },
-  inaya: { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, wrap: 0.45, shadowLift: 0.32, tint: [1, 0.52, 0.38], sat: 1.12, gain: 0.8, warm: 0.12 },
+  victor: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.022, roughVar: 0.11, tintVar: 0.018, wrap: 0.45, shadowLift: 0.36, cleanBody: true },
+  inaya: { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, roughVar: 0.12, tintVar: 0.045, wrap: 0.45, shadowLift: 0.32, tint: [1, 0.52, 0.38], sat: 1.12, gain: 0.8, warm: 0.12 },
 };
+
+/** 1.48 premium material finish: calibrated individually, never changes body proportions or facial expressions. */
+export const PREMIUM_FINISH: Partial<Record<keyof typeof SKIN_LOOK, {
+  bodySheen: number; faceSheen: number; bodySpecular: number; faceSpecular: number; eyeRoughness: number; hairScale: number;
+}>> = {
+  'mma-kadir': { bodySheen: 0.12, faceSheen: 0.13, bodySpecular: 0.24, faceSpecular: 0.25, eyeRoughness: 0.20, hairScale: 1 },
+  'mma-amara': { bodySheen: 0.15, faceSheen: 0.14, bodySpecular: 0.27, faceSpecular: 0.26, eyeRoughness: 0.19, hairScale: 0.92 },
+  nael: { bodySheen: 0.14, faceSheen: 0.13, bodySpecular: 0.27, faceSpecular: 0.26, eyeRoughness: 0.19, hairScale: 0.96 },
+  inaya: { bodySheen: 0.13, faceSheen: 0.12, bodySpecular: 0.25, faceSpecular: 0.24, eyeRoughness: 0.20, hairScale: 0.97 },
+  victor: { bodySheen: 0.12, faceSheen: 0.13, bodySpecular: 0.24, faceSpecular: 0.26, eyeRoughness: 0.20, hairScale: 0.98 },
+};
+
+/** 1.50.0 isolated optical pilot — NEVER changes vertices, neck or GLSL. */
+export const FIGHTER_PILOT_150: Partial<Record<keyof typeof SKIN_LOOK, {
+  faceSheen: number;
+  bodySheen: number;
+  faceSpecular: number;
+  bodySpecular: number;
+  sheenRoughnessFace: number;
+  sheenRoughnessBody: number;
+  eyeRoughness: number;
+  hairScale: number;
+}>> = {
+  'mma-amara': {
+    faceSheen: 0.17, bodySheen: 0.19, faceSpecular: 0.33, bodySpecular: 0.35,
+    sheenRoughnessFace: 0.76, sheenRoughnessBody: 0.78,
+    eyeRoughness: 0.16, hairScale: 0.89,
+  },
+  victor: {
+    faceSheen: 0.15, bodySheen: 0.16, faceSpecular: 0.31, bodySpecular: 0.32,
+    sheenRoughnessFace: 0.77, sheenRoughnessBody: 0.79,
+    eyeRoughness: 0.17, hairScale: 0.93,
+  },
+};
+
+function pilot150(look: SkinLook) {
+  const id = Object.keys(SKIN_LOOK).find((k) => SKIN_LOOK[k] === look);
+  return id ? FIGHTER_PILOT_150[id] : undefined;
+}
+
+function premiumFinish(look: SkinLook) {
+  const id = Object.keys(SKIN_LOOK).find((k) => SKIN_LOOK[k] === look);
+  return id ? PREMIUM_FINISH[id] : undefined;
+}
 
 export function skinLookFor(url: string): SkinLook {
   const id = Object.keys(SKIN_LOOK).find((k) => url.includes(`/${k}/`));
@@ -112,8 +159,13 @@ export function skinLookFor(url: string): SkinLook {
  */
 export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, quality: 'haute' | 'basse', look: PhotoLook): MeshStandardMaterial {
   if (old.map) old.map.colorSpace = SRGBColorSpace;
-  // v0.31: anisotropic filtering keeps the skin's detail at grazing angles (4 samples: cheap on phones)
-  for (const t of [old.map, old.normalMap, old.roughnessMap]) if (t) t.anisotropy = 4;
+  // 1.49.0 experimental premium filter: increase texture clarity at grazing
+  // viewing angles only in 'haute'. Does NOT change resolution, UVs or geometry.
+  // The source glTF texture objects are cached; never reduce a higher value.
+  const filtering = quality === 'haute' && premiumFinish(look) ? 8 : 4;
+  for (const t of [old.map, old.normalMap, old.roughnessMap]) {
+    if (t) t.anisotropy = Math.max(t.anisotropy, filtering);
+  }
   const base = standardParams(old);
   const hi = quality === 'haute';
   switch (part) {
@@ -128,6 +180,29 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
       const m = hi
         ? new MeshPhysicalMaterial({ ...p, sheen: 0.3, sheenRoughness: 0.6, sheenColor: '#c98a72', specularIntensity: 0.4 })
         : new MeshStandardMaterial({ ...p, roughness: old.roughnessMap ? 1 : 0.6 });
+      // 1.48.0: calibrated material finish on each photo coach (not a copy of Amara's face).
+      const finish = premiumFinish(look);
+      if (hi && finish && m instanceof MeshPhysicalMaterial) {
+        const head = isHeadSkin(old);
+        m.sheen = head ? finish.faceSheen : finish.bodySheen;
+        m.sheenRoughness = head ? 0.86 : 0.84;
+        m.specularIntensity = head ? finish.faceSpecular : finish.bodySpecular;
+        // 1.49.0: restrained high-quality premium lighting response.
+        // Kept to material parameters — no GLSL rewriting after 1.48.1.
+        m.sheenRoughness = head ? 0.79 : 0.81;
+        m.specularIntensity = Math.min(0.38, m.specularIntensity + 0.04);
+        const fighter = pilot150(look);
+        if (fighter) {
+          m.sheen = head ? fighter.faceSheen : fighter.bodySheen;
+          m.sheenRoughness = head ? fighter.sheenRoughnessFace : fighter.sheenRoughnessBody;
+          m.specularIntensity = head ? fighter.faceSpecular : fighter.bodySpecular;
+          m.userData.cssFighterPilot150 = true;
+        }
+        m.userData.cssPremium149 = true;
+        m.userData.cssPremiumFinish = true;
+        // Historic regression flags retained for the Amara-specific test.
+        if (look === SKIN_LOOK['mma-amara']) m.userData[head ? 'cssAmaraFaceFinish' : 'cssAmaraBodyFinish'] = true;
+      }
       // scattering and lifted shadows in both qualities (a few instructions), pores in high quality only
       // 1.44 the head's skin also carries the face's soft zones (src/three/human/faceRender.ts)
       applySkinShader(m, look, hi, isHeadSkin(old));
@@ -140,11 +215,38 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
       const cut = old.transparent || old.alphaTest > 0 ? 0.5 : 0;
       const p: MeshStandardMaterialParameters = { ...base, metalness: 0, roughness: 0.18, transparent: false, alphaTest: cut, depthWrite: true };
       const m = hi ? new MeshPhysicalMaterial({ ...p, clearcoat: 1, clearcoatRoughness: 0.04, specularIntensity: 0.8 }) : new MeshStandardMaterial({ ...p, roughness: 0.12 });
+      // 1.48.0: subtle corneal highlights, with individual roughness.
+      const eyeFinish = premiumFinish(look);
+      if (hi && eyeFinish && m instanceof MeshPhysicalMaterial) {
+        m.roughness = eyeFinish.eyeRoughness;
+        m.clearcoatRoughness = 0.045;
+        m.specularIntensity = 0.78;
+        m.roughness = Math.max(0.14, eyeFinish.eyeRoughness - 0.025);
+        m.clearcoatRoughness = 0.038;
+        m.userData.cssPremium149 = true;
+        const fighter = pilot150(look);
+        if (fighter) {
+          m.roughness = fighter.eyeRoughness;
+          m.userData.cssFighterPilot150 = true;
+        }
+        m.userData.cssPremiumEyes = true;
+      }
       eyeCatchlight(m);
       return m;
     }
     case 'cheveux': {
       const m = new MeshStandardMaterial({ ...base, metalness: 0, roughness: Math.max(0.55, old.roughness), side: DoubleSide, transparent: false, alphaTest: 0.4, alphaToCoverage: true, depthWrite: true });
+      // Per-coach hair finish; never alter alpha edges, geometry or depth order.
+      const hairFinish = premiumFinish(look);
+      if (hi && hairFinish) {
+        m.roughness = Math.max(0.48, old.roughness * hairFinish.hairScale * 0.94);
+        const fighter = pilot150(look);
+        if (fighter) {
+          m.roughness = Math.max(0.48, old.roughness * fighter.hairScale);
+          m.userData.cssFighterPilot150 = true;
+        }
+        m.userData.cssPremium149 = true;
+      }
       fadeHairEnds(m);
       return m;
     }

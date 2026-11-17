@@ -1,0 +1,37 @@
+name: v1.48.0 - Real WebGL premium skin comparison
+
+on:
+  pull_request:
+    branches:
+      - claude/project-thread-o7lrt8
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  premium-skin-webgl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: 1.48.0 isolated material tests
+        run: npm run test -- src/three/__tests__/premium-skin-v1480.test.ts src/three/__tests__/amara-semi-realiste-v1471.test.ts
+      - name: TypeScript and production bundle
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Capture actual WebGL coach renders
+        run: node scripts/visuels/premium-skin-v1480-capture.mjs
+      - name: Upload real-render comparisons
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: premium-skin-v1480-real-renders
+          path: artifacts/premium-skin-v1480/
+          if-no-files-found: warn
