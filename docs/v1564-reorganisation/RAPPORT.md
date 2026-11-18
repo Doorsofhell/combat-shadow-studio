@@ -110,7 +110,8 @@ l'APK : le fonctionnement hors ligne est celui de la 1.56.3.
 | Ressources de démarrage présentes dans l'APK (hors ligne) | 95/95 : TEST RÉUSSI |
 | Captures WebGL avant/après (même coach, tenue, pose de garde, angle, cadrage, 600×800) | 18/18 rendues sans erreur WebGL ; écart de 0 à 14 pixels sur 480 000 (0,003 %) : TEST RÉUSSI |
 | Contrôle du bruit : 1.56.3 contre elle-même (4 cas) | 0 à 11 pixels différents, écart max 37 : même ordre que avant/après, dû au visage vivant (clignements, regard) |
-<!-- PLAYWRIGHT -->
+| `npx playwright test` complet sur 1.56.4 (301 tests, 1,2 h) | 290 réussis, 2 ignorés (Firebase), 9 échecs : TEST ÉCHOUÉ (sans lien, voir ci-dessous) |
+| Les 9 échecs relancés seuls, sur 1.56.4 puis sur 1.56.3 | `coach-suggest:147`, `coach-suggest:207`, `coaching-hud:60`, `coaching-hud:89`, `training-layout:117` échouent aussi sur 1.56.3 ; `chrono:93` et `mastery:26` réussissent seuls sur les deux ; `boot:98` (1 échec sur 3 sur 1.56.3 comme sur 1.56.4) et `encyclopedie:54` (1 échec sur 8 sur 1.56.3, 1 sur 3 sur 1.56.4, même valeur reçue 44) sont intermittents sur les deux versions. Aucun échec propre à la 1.56.4 |
 
 Captures : 6 coachs, chacun dans deux disciplines (les six disciplines couvertes deux fois) en trois-quarts, plus
 Kadir (MMA) et Inaya (JJB no-gi) de face, de profil et de dos. Images et mesures :

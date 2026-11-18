@@ -4727,7 +4727,10 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - `npm run build` et `npm run build:android` : TEST RÉUSSI ;
   - captures WebGL avant/après (18 cas, 6 coachs, 6 disciplines, face/profil/dos) : 0 à 14 pixels sur 480 000,
     comme le contrôle 1.56.3 contre elle-même (0 à 11) : TEST RÉUSSI ;
-  - PLAYWRIGHT_RESULTAT
+  - `npx playwright test` (301 tests, 1,2 h) : 290 réussis, 2 ignorés (Firebase), 9 échecs, tous retrouvés sur
+    1.56.3 relancée seule le même jour (`coach-suggest:147` et `:207`, `coaching-hud:60` et `:89`,
+    `training-layout:117` échouent sur les deux ; `boot:98` et `encyclopedie:54` sont intermittents sur les deux ;
+    `chrono:93` et `mastery:26` réussissent relancés seuls) : TEST ÉCHOUÉ (sans lien avec ce lot) ;
   - APK Gradle : NON EXÉCUTÉ (SDK Android inaccessible ici ; workflow `android-apk.yml` = pré-version GitHub, à
     lancer avec l'accord de Youssef).
 - **Restauration** : branche `restauration/avant-reorganisation-v1563` (= 1.56.3, `8311586`) ; un fichier seul :
