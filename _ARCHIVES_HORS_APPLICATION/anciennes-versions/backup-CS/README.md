@@ -1,5 +1,19 @@
 # backup CS
 
+> **1.56.4 (18/11/2026, réorganisation du dépôt)** : l'ancien dossier `backup CS/` à la racine est rangé ici, dans
+> `_ARCHIVES_HORS_APPLICATION/anciennes-versions/backup-CS/`, et réparti par catégorie sans rien supprimer :
+>
+> | Partie | Nouvel emplacement |
+> |---|---|
+> | `v1.37-ultra-realiste/public/` (Axel, Kaila, modèles manga, masques, cheveux, peau) | `_ARCHIVES_HORS_APPLICATION/anciens-modeles-3d/v1.37-ultra-realiste/public/` |
+> | `v1.37-ultra-realiste/tools/` (générateur MakeHuman) | `_ARCHIVES_HORS_APPLICATION/anciens-scripts/v1.37-ultra-realiste/tools/` |
+> | `v1.37.9-morph/scripts/` | `_ARCHIVES_HORS_APPLICATION/anciens-scripts/v1.37.9-morph/scripts/` |
+> | `workflows/` | `_ARCHIVES_HORS_APPLICATION/anciens-scripts/workflows-retires/` |
+> | le reste (`src/`, `tests/`, `docs/`, `originaux-1.36.0/`) | ici, inchangé |
+>
+> Les chemins indiqués ci-dessous sont ceux d'avant ce rangement. L'inventaire complet est dans
+> `_ARCHIVES_HORS_APPLICATION/inventaire-archives.md`.
+
 Ce dossier range ce qui a été **retiré de l'application** et qu'on garde sur GitHub pour l'historique (demande de
 Youssef, 12/11/2026 : « Tout ce que tu supprimes, tu le classes dans un dossier backup […] non inclus dans
 l'application mais tu le gardes sur GitHub »).

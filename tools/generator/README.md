@@ -12,7 +12,7 @@ les quatre coachs photo **Microsoft Rocketbox** (licence MIT) : Kadir, Amara, Na
 
 Après toute reconstruction d'un `photo.glb` Rocketbox : relancer `rocketbox/morph_apply.py`.
 
-## Retiré en 1.37.0 (rangé dans `backup CS/v1.37-ultra-realiste/tools/generator/`)
+## Retiré en 1.37.0 (rangé dans `_ARCHIVES_HORS_APPLICATION/anciens-scripts/v1.37-ultra-realiste/tools/generator/`)
 
 - `build.py`, `install.py`, `anatomy.py`, `coaches/` (sauf `design.py`) : générateur Blender + MPFB2 des anciens coachs générés
   (`public/models/coach_*`, `coaches/*/model.glb`), du créateur de combattant et des anciens rendus dessinés.

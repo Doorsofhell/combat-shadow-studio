@@ -18,7 +18,7 @@ for c in $(echo "$COACHES" | tr ',' ' '); do
     nael|inaya|victor|kanya) pal=$c ;;
     *) pal= ;;
   esac
-  # 1.37: Axel and Kaila (MakeHuman bodies, MH_BODY=1) are removed, see « backup CS/ »
+  # 1.37: Axel and Kaila (MakeHuman bodies, MH_BODY=1) are removed, see « _ARCHIVES_HORS_APPLICATION/anciennes-versions/backup-CS/ »
   env=""
   mkdir -p "$WORK/$c"
   (cd "$WORK/$c" && env $env PALETTE=$pal ONLY=$ONLY python3 "$ROOT/tools/generator/rocketbox/outfits.py" -- "$ROOT/public/coaches/$c/photo.glb" "$ROOT/public/coaches/$c/tenues" $sex > "$WORK/$c/outfits.log" 2>&1) &

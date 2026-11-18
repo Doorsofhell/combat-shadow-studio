@@ -79,7 +79,7 @@ export const CHAMPIONS: Record<CoachId, ChampionCoach> = {
 
 /**
  * Coaches added to Kadir and Amara. 1.5 added Axel and Kaila (MakeHuman); 1.37 (Youssef, 2026-11-12: « supprime les
- * deux coachs qui ne sont pas faits en Microsoft ») removes them, their files are kept in « backup CS/ ». A profile
+ * deux coachs qui ne sont pas faits en Microsoft ») removes them, their files are kept in « _ARCHIVES_HORS_APPLICATION/anciennes-versions/backup-CS/ ». A profile
  * that chose one of them gets Kadir or Amara (championFor), see RETIRED_COACHES in src/store/profile.ts.
  */
 export const EXTRA_COACHES: ChampionCoach[] = [

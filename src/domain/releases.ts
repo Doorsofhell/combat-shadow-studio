@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '1.56.4',
+      releaseDate: '2026-11-18',
+      title: 'Application plus légère',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'L’application Android embarque 29,5 Mo de fichiers en moins (26,7 Mo pour la version web) : copies de travail des textures de tenues (déjà intégrées aux modèles), anciennes photos de coach et tenues d’arbitre qui ne servent qu’aux illustrations. Coachs, tenues, salles et animations sont inchangés.' },
+        { category: 'ameliorations', text: 'Dépôt réorganisé : ce qui ne sert plus est rangé, sans rien supprimer, dans un dossier d’archives tenu hors de l’application, avec son inventaire.' },
+      ],
+      links: [],
+    },
+    {
       version: '1.56.3',
       releaseDate: '2026-11-18',
       title: 'Plus de fausse alerte de stabilité 3D',

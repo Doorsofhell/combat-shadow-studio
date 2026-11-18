@@ -195,5 +195,5 @@ describe('déformations aux articulations (peau des six coachs)', () => {
       expect(x, label).toBeLessThan(b * 0.85);
     }
   });
-  // 1.37: the test « aisselles de Kaila » is removed with Kaila (kept in « backup CS/ »)
+  // 1.37: the test « aisselles de Kaila » is removed with Kaila (kept in « _ARCHIVES_HORS_APPLICATION/anciennes-versions/backup-CS/ »)
 });

@@ -21,7 +21,11 @@ from mathutils import Vector, Matrix
 
 src, outdir, sex = sys.argv[sys.argv.index('--') + 1:][:3] if '--' in sys.argv else sys.argv[1:4]
 ONLY = os.environ.get('ONLY', '').split(',') if os.environ.get('ONLY') else None
-TEX = os.path.join(outdir, '_tex')
+# 1.56.4: the generated fabric pictures are only a working copy (the GLB embeds them). They were written next to the
+# outfits, in public/, and so shipped in the app and the APK (26 Mo). They now go to a working folder outside public/
+# (CSS_TEX_DIR to choose it); the old copies are kept in _ARCHIVES_HORS_APPLICATION/anciennes-textures/.
+import tempfile
+TEX = os.environ.get('CSS_TEX_DIR') or os.path.join(tempfile.gettempdir(), 'css-tenues-tex', os.path.basename(os.path.dirname(os.path.abspath(outdir))))
 os.makedirs(TEX, exist_ok=True)
 female = sex == 'femme'
 COACH_ID = os.path.basename(os.path.dirname(src))
