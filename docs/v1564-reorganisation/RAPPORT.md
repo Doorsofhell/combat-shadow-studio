@@ -1,4 +1,4 @@
-# Rapport 1.56.4 — réorganisation et allègement du dépôt
+# Rapport 2.0.0 (préparée comme 1.56.4) — réorganisation et allègement du dépôt
 
 Demande de Youssef (18/11/2026) : audit complet du dépôt, archivage de ce qui est inutilisé dans
 `_ARCHIVES_HORS_APPLICATION/`, restructuration adaptée au projet, optimisation de l'APK, sans perte de données ni

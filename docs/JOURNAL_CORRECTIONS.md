@@ -4687,7 +4687,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   renumérotée 1.56.3.
 - **Restauration** : branche `restauration/avant-stabilite-3d` (= 1.56.2, cab6545).
 
-## 2026-11-18 · v1.56.4 · Réorganisation du dépôt et APK allégé
+## 2026-11-18 · v2.0.0 (préparée comme 1.56.4) · Réorganisation du dépôt et APK allégé
 
 - **Demande** (Youssef, 18/11) : audit complet du dépôt, archivage de tout ce qui est démontré inutile dans
   `_ARCHIVES_HORS_APPLICATION/` (par catégorie, avec inventaire, rien supprimé), structure adaptée au projet, APK
@@ -4735,3 +4735,5 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     lancer avec l'accord de Youssef).
 - **Restauration** : branche `restauration/avant-reorganisation-v1563` (= 1.56.3, `8311586`) ; un fichier seul :
   `git mv` depuis son chemin d'archive (voir l'inventaire).
+- **Publication** : Youssef, 18/11 21:37 : « Fusionne et passe en V2 » → numéro 2.0.0 (même contenu que la 1.56.4
+  testée), PR #139 fusionnée dans `claude/project-thread-o7lrt8`.
