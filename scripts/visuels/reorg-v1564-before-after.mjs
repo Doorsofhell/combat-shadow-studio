@@ -10,6 +10,7 @@ const [avantDir, apresDir, outRoot = 'captures/v1564-reorganisation'] = process.
 if (!avantDir || !apresDir) throw new Error('usage: <dist-avant> <dist-apres> [sortie]');
 
 const COACHS = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor', 'kanya'];
+const STYLE = { boxe: 'boxing', kickboxing: 'kickboxing', mma: 'mma', muaythai: 'muaythai', judo: 'judo', bjj: 'bjj' };
 const D = ['boxe', 'kickboxing', 'mma', 'muaythai', 'judo', 'bjj'];
 /** each coach in two disciplines (all six disciplines covered twice), three-quarter view; plus face/profile/back */
 const cases = [];
@@ -19,6 +20,8 @@ COACHS.forEach((c, i) => {
 for (const [c, d, t] of [['mma-kadir', 'mma', 'mma'], ['inaya', 'bjj', 'bjj-nogi']])
   for (const [v, az] of [['face', 0], ['profil', 90], ['dos', 180]]) cases.push({ name: `${c}-${t}-${v}`, champion: c, d, tenue: t, az });
 
+// CASES=a,b: only these cases (e.g. a control run avant vs avant to measure the noise of the live face)
+if (process.env.CASES) { const keep = new Set(process.env.CASES.split(',')); cases.splice(0, cases.length, ...cases.filter((c) => keep.has(c.name))); }
 const executablePath = process.env.CHROMIUM_PATH || undefined;
 const browser = await chromium.launch({ headless: true, executablePath,
   args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
@@ -37,8 +40,8 @@ try {
       const errors = [];
       page.on('pageerror', (e) => errors.push(String(e)));
       page.on('console', (m) => { if (m.type() === 'error' && /shader|webgl|compile|GLSL|glb|gltf/i.test(m.text())) errors.push(m.text()); });
-      const q = new URLSearchParams({ champion: k.champion, look: 'realiste', d: k.d, tenue: k.tenue, motion: 'garde', style: k.d,
-        az: String(k.az), el: '6', span: '1.04', fy: '0.86', mood: '1', alpha: '1', frame: '1' });
+      const q = new URLSearchParams({ champion: k.champion, look: 'realiste', d: k.d, tenue: k.tenue, motion: 'garde', style: STYLE[k.d],
+        az: String(k.az), el: '6', span: '1.04', fy: '0.86', mood: '1', alpha: '1' });
       try {
         await page.goto(`http://localhost:${port}/#/lab?${q}`, { waitUntil: 'domcontentloaded' });
         await page.waitForFunction(() => window.__labReady === true, null, { timeout: 180000 });

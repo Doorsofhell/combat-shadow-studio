@@ -1,0 +1,206 @@
+{
+ "date": "2026-11-18T18:27:03.490Z",
+ "avant": "/tmp/claude-0/dist-web-avant",
+ "apres": "/tmp/claude-0/dist-web-apres",
+ "viewport": "600x800 dpr1",
+ "cases": [
+  {
+   "name": "mma-kadir-boxe-34",
+   "champion": "mma-kadir",
+   "d": "boxe",
+   "tenue": "boxe",
+   "az": 35,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 8,
+   "ecartMax": 36
+  },
+  {
+   "name": "mma-kadir-muaythai-34",
+   "champion": "mma-kadir",
+   "d": "muaythai",
+   "tenue": "muaythai",
+   "az": 35,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 0,
+   "ecartMax": 2
+  },
+  {
+   "name": "mma-amara-kickboxing-34",
+   "champion": "mma-amara",
+   "d": "kickboxing",
+   "tenue": "kickboxing",
+   "az": 35,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 0,
+   "ecartMax": 1
+  },
+  {
+   "name": "mma-amara-judo-34",
+   "champion": "mma-amara",
+   "d": "judo",
+   "tenue": "judo",
+   "az": 35,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 1,
+   "ecartMax": 3
+  },
+  {
+   "name": "nael-mma-34",
+   "champion": "nael",
+   "d": "mma",
+   "tenue": "mma",
+   "az": 35,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 14,
+   "ecartMax": 37
+  },
+  {
+   "name": "nael-bjj-34",
+   "champion": "nael",
+   "d": "bjj",
+   "tenue": "bjj",
+   "az": 35,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 7,
+   "ecartMax": 30
+  },
+  {
+   "name": "inaya-muaythai-34",
+   "champion": "inaya",
+   "d": "muaythai",
+   "tenue": "muaythai",
+   "az": 35,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 3,
+   "ecartMax": 19
+  },
+  {
+   "name": "inaya-boxe-34",
+   "champion": "inaya",
+   "d": "boxe",
+   "tenue": "boxe",
+   "az": 35,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 1,
+   "ecartMax": 6
+  },
+  {
+   "name": "victor-judo-34",
+   "champion": "victor",
+   "d": "judo",
+   "tenue": "judo",
+   "az": 35,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 8,
+   "ecartMax": 31
+  },
+  {
+   "name": "victor-kickboxing-34",
+   "champion": "victor",
+   "d": "kickboxing",
+   "tenue": "kickboxing",
+   "az": 35,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 0,
+   "ecartMax": 2
+  },
+  {
+   "name": "kanya-bjj-34",
+   "champion": "kanya",
+   "d": "bjj",
+   "tenue": "bjj",
+   "az": 35,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 12,
+   "ecartMax": 37
+  },
+  {
+   "name": "kanya-mma-34",
+   "champion": "kanya",
+   "d": "mma",
+   "tenue": "mma",
+   "az": 35,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 10,
+   "ecartMax": 30
+  },
+  {
+   "name": "mma-kadir-mma-face",
+   "champion": "mma-kadir",
+   "d": "mma",
+   "tenue": "mma",
+   "az": 0,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 9,
+   "ecartMax": 34
+  },
+  {
+   "name": "mma-kadir-mma-profil",
+   "champion": "mma-kadir",
+   "d": "mma",
+   "tenue": "mma",
+   "az": 90,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 1,
+   "ecartMax": 37
+  },
+  {
+   "name": "mma-kadir-mma-dos",
+   "champion": "mma-kadir",
+   "d": "mma",
+   "tenue": "mma",
+   "az": 180,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 0,
+   "ecartMax": 0
+  },
+  {
+   "name": "inaya-bjj-nogi-face",
+   "champion": "inaya",
+   "d": "bjj",
+   "tenue": "bjj-nogi",
+   "az": 0,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 3,
+   "ecartMax": 43
+  },
+  {
+   "name": "inaya-bjj-nogi-profil",
+   "champion": "inaya",
+   "d": "bjj",
+   "tenue": "bjj-nogi",
+   "az": 90,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 0,
+   "ecartMax": 1
+  },
+  {
+   "name": "inaya-bjj-nogi-dos",
+   "champion": "inaya",
+   "d": "bjj",
+   "tenue": "bjj-nogi",
+   "az": 180,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 0,
+   "ecartMax": 0
+  }
+ ]
+}
