@@ -6,7 +6,7 @@ import { menuCommand } from './nav-helpers';
  * Coach render: one look only, Ultra-réaliste (the drawn looks are gone since 1.9). 1.37 (Youssef, 2026-11-12: « ne
  * garder que les coachs ultra-réalistes »): no render version either (« Précédente (secours) » removed), no fighter
  * creator (/combattant), and the older saved settings open without these fields. The 1.36 version of this file, with
- * the studio framing test of the creator, is kept in « backup CS/v1.37-ultra-realiste/tests/e2e/ ».
+ * the studio framing test of the creator, is kept in « _ARCHIVES_HORS_APPLICATION/anciennes-versions/backup-CS/v1.37-ultra-realiste/tests/e2e/ ».
  */
 async function seed(page: Page, settings?: Record<string, unknown>) {
   await page.goto('/icons/icon.svg');

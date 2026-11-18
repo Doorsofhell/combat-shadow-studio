@@ -4686,3 +4686,54 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Numéro** : préparée comme 1.47.1, puis 1.50.1 (PR #130) ; mise en pause le 17/11, reprise le 18/11 sur 1.56.2 et
   renumérotée 1.56.3.
 - **Restauration** : branche `restauration/avant-stabilite-3d` (= 1.56.2, cab6545).
+
+## 2026-11-18 · v2.0.0 (préparée comme 1.56.4) · Réorganisation du dépôt et APK allégé
+
+- **Demande** (Youssef, 18/11) : audit complet du dépôt, archivage de tout ce qui est démontré inutile dans
+  `_ARCHIVES_HORS_APPLICATION/` (par catégorie, avec inventaire, rien supprimé), structure adaptée au projet, APK
+  allégé, sans régression ; ni fusion ni publication sans son accord.
+- **Constat vérifié** (sur 1.56.3, `8311586`) :
+  - `public/coaches/*/tenues/_tex/` (362 PNG, 26,7 Mo) : copies de travail écrites par `outfits.py`, lues par aucun
+    fichier ; les 51 GLB embarquent leurs images (aucune référence externe). Elles partaient dans `dist/` et l'APK ;
+  - `public/coaches/homme.jpg`, `femme.jpg` : référencées nulle part (seul le précache PWA les prenait) ;
+  - tenues d'arbitre : servent seulement aux illustrations de l'encyclopédie, jamais chargées par l'application ;
+  - `lab/groom.*` ne compile plus (modules supprimés en 1.37.0) ; 6 scripts remplacés ou visant des écrans supprimés ;
+    3 scripts jetables `_*.mjs` ; 8 caches Python committés ;
+  - vignettes (182), images d'encyclopédie (224), salles, emblèmes, catalogue, dépendances npm, workflows et
+    générateur Blender : tous utilisés, rien déplacé.
+- **Correction** :
+  - 598 fichiers déplacés par `git mv` dans `_ARCHIVES_HORS_APPLICATION/` (anciens-modeles-3d, anciennes-textures,
+    anciens-scripts, anciens-prototypes, anciennes-versions, fichiers-temporaires ; animations et tenues : vides,
+    rien d'inutile), dont tout l'ancien `backup CS/` ; inventaire `inventaire-archives.md` (chemin d'origine, motif,
+    taille) régénérable par `scripts/archives-inventaire.py` ;
+  - `outfits.py` écrit ses textures de travail hors de `public/` (`CSS_TEX_DIR` ou dossier temporaire) ;
+  - `tools/build/nativeOnly.ts` : le build Android laisse les tenues d'arbitre hors de l'APK ;
+  - `vite.config.ts` : `coaches/*.jpg` retiré du précache ; `.gitignore` : `__pycache__/`, `*.pyc` ;
+  - carte des dossiers `docs/ARCHITECTURE.md` ; références mises à jour (`CLAUDE.md`, `README.md`,
+    `NON_REGRESSION.md`, `tools/generator/README.md`, `regen_outfits.sh`, commentaires de 6 fichiers) ;
+  - le code de `src/` n'est pas déplacé (déjà rangé par rôle ; aucun gain pour l'APK, conflits avec les PR ouvertes).
+- **Résultat** : build Android 115,2 → 85,7 Mo (−29,5 Mo), build web 115,2 → 88,5 Mo (−26,7 Mo) ; les 548
+  ressources gardées sont identiques octet par octet. Rapport complet : `docs/v1564-reorganisation/RAPPORT.md`.
+- **Fichiers** : `_ARCHIVES_HORS_APPLICATION/`, `tools/build/nativeOnly.ts`, `vite.config.ts`,
+  `tools/generator/rocketbox/outfits.py`, `docs/ARCHITECTURE.md`, `docs/v1564-reorganisation/`,
+  `scripts/archives-inventaire.py`, `scripts/visuels/reorg-v1564-before-after.mjs`, `src/domain/releases.ts`,
+  `package.json`.
+- **Tests ajoutés** : `src/boot/__tests__/archives-hors-build.test.ts` (4 : archives hors de `src/` et `public/`,
+  pas de `_tex`/cache/photo orpheline dans `public/`, chaque coach garde modèle, portrait et 7 tenues, l'exclusion
+  Android ne touche aucun fichier de démarrage).
+- **Tests** :
+  - `npx vitest run` : 1702 réussis, 1 ignoré, les 5 échecs déjà présents en 1.56.3 (mesurés sur 1.56.3 le même
+    jour : 1698 réussis, mêmes 5) : TEST ÉCHOUÉ (connus, sans lien) ; `archives-hors-build` : TEST RÉUSSI ;
+  - `npm run build` et `npm run build:android` : TEST RÉUSSI ;
+  - captures WebGL avant/après (18 cas, 6 coachs, 6 disciplines, face/profil/dos) : 0 à 14 pixels sur 480 000,
+    comme le contrôle 1.56.3 contre elle-même (0 à 11) : TEST RÉUSSI ;
+  - `npx playwright test` (301 tests, 1,2 h) : 290 réussis, 2 ignorés (Firebase), 9 échecs, tous retrouvés sur
+    1.56.3 relancée seule le même jour (`coach-suggest:147` et `:207`, `coaching-hud:60` et `:89`,
+    `training-layout:117` échouent sur les deux ; `boot:98` et `encyclopedie:54` sont intermittents sur les deux ;
+    `chrono:93` et `mastery:26` réussissent relancés seuls) : TEST ÉCHOUÉ (sans lien avec ce lot) ;
+  - APK Gradle : NON EXÉCUTÉ (SDK Android inaccessible ici ; workflow `android-apk.yml` = pré-version GitHub, à
+    lancer avec l'accord de Youssef).
+- **Restauration** : branche `restauration/avant-reorganisation-v1563` (= 1.56.3, `8311586`) ; un fichier seul :
+  `git mv` depuis son chemin d'archive (voir l'inventaire).
+- **Publication** : Youssef, 18/11 21:37 : « Fusionne et passe en V2 » → numéro 2.0.0 (même contenu que la 1.56.4
+  testée), PR #139 fusionnée dans `claude/project-thread-o7lrt8`.

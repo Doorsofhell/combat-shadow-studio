@@ -45,7 +45,9 @@ comportement. En résumé :
 - Coachs : `src/domain/coaches/catalog.ts` ; modèles `public/coaches/<id>/photo.glb` (Rocketbox MIT : Kadir,
   Amara, Naël, Inaya ; Victor sur Kadir et Kanya sur Inaya, chaînes dans `tools/generator/{victor,kanya}/`). Un seul rendu, Ultra-réaliste (1.37.0) : pas de style dessiné, pas de coach généré, pas de
   créateur de combattant. Axel et Kaila (MakeHuman) sont retirés.
-- Tout ce qui est retiré de l'application est rangé dans `backup CS/` (hors build, gardé sur GitHub). Les squelettes
+- Tout ce qui est retiré de l'application est rangé dans `_ARCHIVES_HORS_APPLICATION/<catégorie>/<chemin d'origine>`
+  (hors build, gardé sur GitHub, motif dans `inventaire-archives.md` ; l'ancien `backup CS/` y est depuis la 1.56.4).
+  Carte des dossiers : `docs/ARCHITECTURE.md`. Les squelettes
   générés que mesurent les tests du moteur sont dans `tests/fixtures/modeles-generes/`.
 - Moteur d'animation : `src/engine/` (`rig.ts`, `player.ts`, `motion.ts`) ; scène : `src/three/CoachStage.tsx`,
   `src/three/PhotoCoach.tsx`.

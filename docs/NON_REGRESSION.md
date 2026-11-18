@@ -41,7 +41,7 @@ Captures de référence : `/mnt/project-files/combat-shadow-studio/reference/<da
 
 Retirés à la demande de Youssef (« ne garder que les coachs ultra-réalistes ») : rendus dessinés (code mort depuis
 1.9), réglage « Version du rendu 3D », coach généré et créateur de combattant (« Mon combattant », /combattant),
-coachs Axel et Kaila. Tout est rangé dans `backup CS/v1.37-ultra-realiste/`. Les lignes ci-dessous qui en parlent
+coachs Axel et Kaila. Tout est rangé dans `backup CS/v1.37-ultra-realiste/` (depuis la 1.56.4 : `_ARCHIVES_HORS_APPLICATION/`, voir son inventaire). Les lignes ci-dessous qui en parlent
 décrivent l'état de référence d'origine (historique).
 
 ## État de référence (17 octobre 2026, V2)

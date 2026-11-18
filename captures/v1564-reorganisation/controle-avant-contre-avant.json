@@ -1,0 +1,52 @@
+{
+ "date": "2026-11-18T18:57:14.808Z",
+ "avant": "/tmp/claude-0/dist-web-avant",
+ "apres": "/tmp/claude-0/dist-web-avant",
+ "viewport": "600x800 dpr1",
+ "cases": [
+  {
+   "name": "mma-kadir-boxe-34",
+   "champion": "mma-kadir",
+   "d": "boxe",
+   "tenue": "boxe",
+   "az": 35,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 1,
+   "ecartMax": 36
+  },
+  {
+   "name": "nael-mma-34",
+   "champion": "nael",
+   "d": "mma",
+   "tenue": "mma",
+   "az": 35,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 1,
+   "ecartMax": 3
+  },
+  {
+   "name": "kanya-bjj-34",
+   "champion": "kanya",
+   "d": "bjj",
+   "tenue": "bjj",
+   "az": 35,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 11,
+   "ecartMax": 37
+  },
+  {
+   "name": "mma-kadir-mma-face",
+   "champion": "mma-kadir",
+   "d": "mma",
+   "tenue": "mma",
+   "az": 0,
+   "status": "ok",
+   "pixels": 480000,
+   "pixelsDifferents": 0,
+   "ecartMax": 0
+  }
+ ]
+}

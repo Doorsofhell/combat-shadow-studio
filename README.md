@@ -45,9 +45,10 @@ src/
   store/       Zustand persistant dans IndexedDB : profil, réglages, statistiques, enchaînements perso, chrono actif
   audio/       voix française (Web Speech API), cloche et bips synthétisés (Web Audio, aucun fichier)
   ui/          écrans React, moteur de séance (useSession)
-public/coaches/ les quatre coachs ultra-réalistes Microsoft Rocketbox (Kadir, Amara, Naël, Inaya) : photo.glb + tenues/
+public/coaches/ les six coachs ultra-réalistes (Kadir, Amara, Naël, Inaya, Victor, Kanya) : photo.glb + tenues/
 tools/generator/ scripts de fabrication des coachs Rocketbox et des emblèmes (voir son README)
-backup CS/   éléments retirés de l’application, gardés pour l’historique (non compilés, non publiés)
+_ARCHIVES_HORS_APPLICATION/ éléments retirés de l’application, gardés pour l’historique (non compilés, non publiés,
+             inventaire-archives.md) ; carte complète des dossiers : docs/ARCHITECTURE.md
 ```
 
 ### Animation

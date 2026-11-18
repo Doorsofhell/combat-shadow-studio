@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import pkg from './package.json' with { type: 'json' };
 import { bootModels } from './tools/build/bootModels.ts';
+import { nativeOnly } from './tools/build/nativeOnly.ts';
 
 /** the version is shown in the page title of every build (%VITE_APP_VERSION% in index.html) */
 process.env.VITE_APP_VERSION = pkg.version;
@@ -16,10 +17,12 @@ export default defineConfig({
     react(),
     // 1.34: the coaches' models compressed in the build, and the fingerprint of each file of the start screen
     bootModels(),
+    // 1.56.4: the APK leaves out the files only the illustration tools use (referee outfits)
+    nativeOnly(NATIVE),
     VitePWA({
       disable: NATIVE,
       registerType: 'autoUpdate',
-      includeAssets: ['icons/*.png', 'icons/*.svg', 'coaches/*.jpg', 'draco/*'],
+      includeAssets: ['icons/*.png', 'icons/*.svg', 'draco/*'],
       manifest: {
         name: 'Combat Shadow Studio',
         short_name: 'Shadow Studio',
