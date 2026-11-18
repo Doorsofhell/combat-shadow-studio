@@ -20,7 +20,7 @@ import { CoachAiSettings } from './CoachHistory';
 import { AccountDataBody } from './account/Profile';
 import { useCoachAi } from '../../store/coachAi';
 import { AppIcon } from '../icons';
-import { clearDiag, diagText, readDiag } from '../../three/diag3d';
+import { clearDiag, diagText, incidentCount, readDiag } from '../../three/diag3d';
 import { resetStability, stabilityLevel } from '../../three/safe3d';
 import { PremiumMarker } from '../premium/PremiumMarker';
 
@@ -64,7 +64,7 @@ function Diag3dRows() {
           </button>
         )}
       </PanelRow>
-      <PanelRow label="Journal 3D" hint={`${entries.length} évènement(s) enregistré(s) sur cet appareil, rien n’est envoyé.`} column>
+      <PanelRow label="Journal 3D" hint={journalHint(entries.length, incidentCount(entries))} column>
         <details data-testid="diag3d">
           <summary>Voir le journal</summary>
           <pre className="diag3d-log">{diagText(entries)}</pre>
@@ -87,6 +87,17 @@ function Diag3dRows() {
       </PanelRow>
     </>
   );
+}
+
+/**
+ * 1.56.3 (Youssef, 2026-11-15): « 80 évènement(s) » read as 80 anomalies. The journal keeps the last 80 lines, most
+ * of them routine (start of a stage, measure every minute, app in the background): the incidents are counted apart.
+ */
+function journalHint(lines: number, incidents: number) {
+  const inc = incidents === 0 ? 'aucun incident' : incidents === 1 ? '1 incident' : `${incidents} incidents`;
+  return lines === 0
+    ? 'Journal vide, rien n’est envoyé.'
+    : `${lines} ligne(s) de suivi (les 80 dernières au plus), dont ${inc}. Tout reste sur cet appareil, rien n’est envoyé.`;
 }
 
 const pct = (v: number) => `${Math.round(v * 100)} %`;

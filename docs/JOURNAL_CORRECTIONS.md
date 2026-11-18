@@ -4639,3 +4639,50 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   sans ces changements (vérifié) : TEST ÉCHOUÉ (sans lien). Captures WebGL : avant/après du teint, crochet et coude
   (6 instants, « COACH » lisible sauf sous le gant), 5 tenues de face, 3/4 et dos : RÉALISÉES. Android : NON EXÉCUTÉ.
 - **Restauration** : branche `restauration/avant-kanya-poitrine-v1562` (= 1.56.1, 45e9aa2).
+
+## 2026-11-18 · v1.56.3 · Stabilité 3D : fausses alertes à chaque changement d'écran
+
+- **Signalement** (Youssef, téléphone Android, 15/11 16:51) : Réglages › Affichage 3D affiche souvent « Qualité
+  allégée (niveau 2) après un incident graphique » avec « Rétablir la qualité choisie », et « Journal 3D : 80
+  évènement(s) ».
+- **Constat après vérification** : reproduit en test réel (Chromium, `tests/e2e/stabilite-3d-v1563.spec.ts`, rouge sur
+  la 1.47.0, même code sur la 1.50.0) en allant simplement Accueil → Progrès → fiche technique → Progrès : deux lignes `contexte-perdu` et
+  niveau 2, sans aucun incident. Cause : quand on quitte un écran avec coach, React Three Fiber rend volontairement le
+  contexte graphique (`forceContextLoss`, `node_modules/@react-three/fiber`, fonction `releaseRenderer`) ; le navigateur
+  annonce alors « contexte perdu » sur le canvas qui vient de disparaître, et `CoachStage` le comptait comme un
+  incident (`stepDown`). Deux changements d'écran suffisaient pour le niveau 2. Le minuteur « pas de retour après
+  8 s » restait aussi armé après la sortie. Les « 80 évènements » ne sont pas 80 incidents : le journal garde les 80
+  dernières lignes, surtout du suivi (démarrage, mesure chaque minute, arrière-plan). Le poids des modèles, tenues et
+  salles n'est pas en cause dans ce constat.
+- **Correction** :
+  - `CoachStage` ignore la perte de contexte d'un canvas qui quitte l'écran (drapeau posé au démontage, avant la
+    libération par R3F, et `canvas.isConnected`) et coupe le minuteur de 8 s ; une vraie perte sur un coach affiché
+    est toujours comptée et récupérée comme avant ;
+  - `safe3d` : un niveau allégé enregistré avant la 1.56.3 (presque toujours une fausse alerte) est remis à 0 une seule
+    fois, avec une ligne au journal ; les incidents comptés ensuite sont gardés ;
+  - Réglages › Journal 3D : « N ligne(s) de suivi (les 80 dernières au plus), dont M incident(s) » (`incidentCount`,
+    incidents = contexte perdu, échec, animation arrêtée, salle non chargée).
+- **Fichiers** : `src/three/CoachStage.tsx`, `src/three/safe3d.ts`, `src/three/diag3d.ts`,
+  `src/ui/screens/Settings.tsx`, `src/domain/releases.ts`, `package.json`.
+- **Tests ajoutés** : `tests/e2e/stabilite-3d-v1563.spec.ts` (2 : changements d'écran sans incident ni niveau
+  allégé ; remise à 0 du niveau laissé par une version précédente), `stability.test.ts` (+3 : remise à 0 unique,
+  appareil sans niveau non touché, comptage des incidents).
+- **Test modifié, avec raison** : `coach-3d-recovery.spec.ts` › « Réglages › Affichage 3D » pose aussi
+  `css-3d-fix-1563` : sans lui, la remise à 0 unique effacerait le niveau 2 que le test installe pour vérifier
+  l'affichage et le bouton. Ce que le test vérifie est inchangé.
+- **Revérifié sur 1.56.2** (2026-11-18, version en ligne, consigne « repartir de la dernière version ») : le code en
+  cause n'a pas changé ; `stabilite-3d-v1563` échoue sur 1.56.2 avec les mêmes deux lignes `contexte-perdu`.
+- **Tests** (sur 1.56.2 + correction) :
+  - `npx vitest run` : 1698 réussis, 1 ignoré, 5 échecs connus de la version en ligne (extension-v032 uppercut,
+    fluidity ×2, hooks-biomeca « pas d'armé », expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (connus, sans lien) ;
+    `stability.test.ts` (9) : TEST RÉUSSI ;
+  - `npm run build` (titre v1.56.3) : TEST RÉUSSI ;
+  - `npx playwright test` (301 tests, 48 min) : 295 réussis, 2 ignorés (Firebase), 4 échecs sans lien :
+    `coaching-hud:60` (connu) et `coach-suggest:207` (échoue aussi sur 1.56.2 sans la correction, vérifié) ;
+    `chrono-seul:96` et `seance-mains-libres:117` réussissent relancés seuls (lenteur sous charge) : TEST ÉCHOUÉ (sans
+    lien) ; `coach-3d-recovery` (6) et `stabilite-3d-v1563` (2) : TEST RÉUSSI ;
+  - captures WebGL avant/après : NON APPLICABLE (aucun changement de rendu : seul le comptage des incidents change) ;
+  - Android : NON EXÉCUTÉ (à vérifier sur le téléphone de Youssef).
+- **Numéro** : préparée comme 1.47.1, puis 1.50.1 (PR #130) ; mise en pause le 17/11, reprise le 18/11 sur 1.56.2 et
+  renumérotée 1.56.3.
+- **Restauration** : branche `restauration/avant-stabilite-3d` (= 1.56.2, cab6545).
