@@ -4737,3 +4737,31 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `git mv` depuis son chemin d'archive (voir l'inventaire).
 - **Publication** : Youssef, 18/11 21:37 : « Fusionne et passe en V2 » → numéro 2.0.0 (même contenu que la 1.56.4
   testée), PR #139 fusionnée dans `claude/project-thread-o7lrt8`.
+
+## 2026-11-18 · v2.1.0 (expérimentale, non publiée) · Écran « Ton coach » V4 : un univers par coach
+
+- **Demande** : Youssef, 18/11 21:05 (maquette V4, refonte premium de la sélection des coachs avec ambiances
+  automatiques), précisée à 21:09 : « Pas forcément des salles en ambiance, mais quelque chose tiré des traits du coach ».
+- **Constat vérifié (2.0.0)** : l'écran montre les six coachs sur le même fond (halo rouge et or), le nom en filigrane
+  devant la scène ; le coach occupe environ 39 % de la hauteur ; les données du dépôt n'ont pas de champ discipline
+  (seul le style de Kanya la nomme, Kadir et Amara ont l'identifiant `mma-…`).
+- **Correction** : module `CoachAtmosphereResolver` (`src/domain/coaches/atmosphere.ts`) qui calcule pour chaque coach,
+  à partir de son surnom, sa description, son style, ses points forts et sa discipline quand elle figure dans les
+  données, une ambiance unique et déterministe (emblème de l'animal, palette, lumières, fumée, sol) ; scène WebGL
+  propre à cet écran (`src/three/atmosphere/`) ; nouvelle disposition (fiche sur la scène, portraits au contour doré,
+  bouton doré) ; cadrage sur la garde réelle du coach (+19 % mesuré sur Kanya) ; fondus entre coachs. Rapport complet :
+  `docs/v210/SELECTION_COACH_V4.md`.
+- **Corrigé en cours de lot** : un emblème pouvait rester en mémoire graphique après des appuis très rapides (trouvé par
+  le nouveau test des 18 changements) ; badge « Ton coach » remis sur fond uni (contraste mesuré 1,57:1 sur dégradé).
+- **Constat hors périmètre** (non corrigé) : sur cet écran, le total des textures grandit d'environ 13 par changement
+  de coach, autant en 2.0.0 qu'en 2.1.0 (chargement des coachs).
+- **Fichiers** : `src/domain/coaches/atmosphere.ts`, `src/three/atmosphere/emblem.ts`,
+  `src/three/atmosphere/AtmosphereScene.tsx`, `src/three/CoachStage.tsx` (prop facultative), `src/three/StudioStage.tsx`
+  (props facultatives), `src/ui/screens/CoachSelect.tsx`, `src/ui/styles.css`, `src/domain/releases.ts`, `package.json`,
+  `scripts/dev/shot-selection-v4.mjs`, `scripts/dev/shot-transition-v4.mjs`, `docs/v210/`.
+- **Tests ajoutés** : `src/domain/coaches/__tests__/atmosphere.test.ts` (10), `tests/e2e/selection-coach-v4.spec.ts` (4).
+- **Tests** : `atmosphere.test.ts` TEST RÉUSSI ; `npx vitest run` 1712 réussis, 5 échecs déjà présents sur la 2.0.0
+  (mêmes 5 relancés sur `e176ff9`) TEST ÉCHOUÉ (sans lien) ; Playwright `selection-coach-v4`, `coachs-v160`, `contrast`,
+  `navigation`, `boot` TEST RÉUSSI ; `npm run build` TEST RÉUSSI ; suite Playwright complète et téléphone réel NON EXÉCUTÉ.
+- **Restauration** : branche `restauration/avant-selection-coach-v4` (= 2.0.0, `e176ff9`).
+- **Publication** : aucune ; en attente de la validation de Youssef.

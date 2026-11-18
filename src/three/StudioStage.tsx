@@ -61,6 +61,13 @@ export interface StudioStageProps {
   cinematic?: boolean;
   /** 1.23 the discipline's room: its own key and rim lights on the coach (rooms.ts) */
   room?: RoomSpec | null;
+  /** V4 « Ton coach » (2.1): the lights come from the coach's atmosphere (AtmosphereScene), none of the studio's */
+  customLights?: boolean;
+  /**
+   * V4 « Ton coach » (2.1): in free mode, the finger owns the angle only; the distance keeps fitting the whole coach (and the
+   * free part of the canvas, `view.inset`), so every morphology is framed head to feet. No pinch zoom then.
+   */
+  autoFit?: boolean;
 }
 
 /**
@@ -185,7 +192,7 @@ const corner = new Vector3();
  * (computed from the real animation), from the requested angle, and glides to a new angle
  * instead of cutting. In free mode the user turns around the coach with a finger.
  */
-export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 1, focusY, follow, envelope, origin, orbit = false, free = false, turnOnly = false, onUserOrbit, dark = false, shadows = false, vive = false, mood = false, cinematic = false, room = null }: StudioStageProps) {
+export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 1, focusY, follow, envelope, origin, orbit = false, free = false, turnOnly = false, onUserOrbit, dark = false, shadows = false, vive = false, mood = false, cinematic = false, room = null, customLights = false, autoFit = false }: StudioStageProps) {
   const { camera, size } = useThree();
   const controls = useRef<OrbitControlsImpl>(null);
   const cur = useRef<{ az: number; el: number; dist: number; target: Vector3 } | null>(null);
@@ -268,6 +275,13 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
       cam.position.add(delta);
       controls.current.target.copy(s.target);
       const off = cam.position.clone().sub(s.target);
+      if (autoFit) {
+        // the distance glides to the fitted one along the direction the user chose
+        const d = off.length() || 1;
+        const next = d + (dist - d) * (dist > d ? Math.min(1, k * 3) : k);
+        off.multiplyScalar(next / d);
+        cam.position.copy(s.target).add(off);
+      }
       s.dist = off.length();
       s.az = Math.atan2(off.x, off.z);
       s.el = Math.asin(Math.max(-1, Math.min(1, off.y / Math.max(1e-6, s.dist))));
@@ -294,13 +308,14 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
   const hi = quality === 'haute';
   return (
     <>
-      {cinematic ? <CinematicLights /> : mood ? <MoodLights /> : room ? <RoomLights spec={room} shadows={shadows} /> : <StageLights dark={dark} shadows={shadows} vive={vive} />}
+      {customLights ? null : cinematic ? <CinematicLights /> : mood ? <MoodLights /> : room ? <RoomLights spec={room} shadows={shadows} /> : <StageLights dark={dark} shadows={shadows} vive={vive} />}
       {children}
       {!mood && <ContactShadows position={[0, 0.001, 0]} opacity={room ? 0.92 : dark ? 0.75 : 0.42} scale={6} blur={2.4} far={1.6} resolution={hi ? 512 : 256} color={dark ? '#000000' : '#3a3530'} />}
       {orbit && (
         <OrbitControls
           ref={controls}
           enablePan={false}
+          enableZoom={!autoFit}
           enableDamping={false}
           minDistance={1.2}
           maxDistance={12}
