@@ -1,0 +1,302 @@
+{
+ "inaya": {
+  "f021_body_color": {
+   "size": [
+    1024,
+    1024
+   ],
+   "skin_fraction": 0.975,
+   "gutter_black": 0.0002,
+   "ao_depth": 0.0736,
+   "dark_blotch": 0.0085,
+   "purple": 0.0008,
+   "edge_lines": 0.0072,
+   "mean_rgb": [
+    0.763,
+    0.561,
+    0.461
+   ],
+   "saturation": 0.399,
+   "luminance": 0.596
+  },
+  "f021_body_normal": {
+   "mean_tilt_deg": 4.27,
+   "p95_tilt_deg": 14.72,
+   "steep_fraction": 0.0009
+  },
+  "f021_head_color": {
+   "size": [
+    2048,
+    2048
+   ],
+   "skin_fraction": 0.999,
+   "gutter_black": 0.0004,
+   "ao_depth": 0.3033,
+   "dark_blotch": 0.0536,
+   "purple": 0.0,
+   "edge_lines": 0.0086,
+   "mean_rgb": [
+    0.627,
+    0.474,
+    0.352
+   ],
+   "saturation": 0.468,
+   "luminance": 0.493
+  },
+  "f021_head_normal": {
+   "mean_tilt_deg": 4.21,
+   "p95_tilt_deg": 14.28,
+   "steep_fraction": 0.0042
+  }
+ },
+ "kanya": {
+  "f021_body_color": {
+   "size": [
+    2048,
+    2048
+   ],
+   "skin_fraction": 0.975,
+   "gutter_black": 0.0005,
+   "ao_depth": 0.0497,
+   "dark_blotch": 0.0128,
+   "purple": 0.001,
+   "edge_lines": 0.0097,
+   "mean_rgb": [
+    0.605,
+    0.444,
+    0.367
+   ],
+   "saturation": 0.422,
+   "luminance": 0.475
+  },
+  "f021_body_normal": {
+   "mean_tilt_deg": 4.27,
+   "p95_tilt_deg": 14.72,
+   "steep_fraction": 0.0009
+  },
+  "f021_head_color": {
+   "size": [
+    2048,
+    2048
+   ],
+   "skin_fraction": 0.964,
+   "gutter_black": 0.0105,
+   "ao_depth": 0.6208,
+   "dark_blotch": 0.2101,
+   "purple": 0.0023,
+   "edge_lines": 0.0322,
+   "mean_rgb": [
+    0.385,
+    0.282,
+    0.218
+   ],
+   "saturation": 0.416,
+   "luminance": 0.299
+  },
+  "f021_head_normal": {
+   "mean_tilt_deg": 3.53,
+   "p95_tilt_deg": 12.41,
+   "steep_fraction": 0.004
+  }
+ },
+ "mma-amara": {
+  "f021_body_color": {
+   "size": [
+    1024,
+    1024
+   ],
+   "skin_fraction": 0.765,
+   "gutter_black": 0.0241,
+   "ao_depth": 0.0746,
+   "dark_blotch": 0.0244,
+   "purple": 0.0017,
+   "edge_lines": 0.0202,
+   "mean_rgb": [
+    0.447,
+    0.282,
+    0.193
+   ],
+   "saturation": 0.569,
+   "luminance": 0.31
+  },
+  "f021_body_normal": {
+   "mean_tilt_deg": 7.12,
+   "p95_tilt_deg": 21.49,
+   "steep_fraction": 0.0053
+  },
+  "f021_head_color": {
+   "size": [
+    2048,
+    2048
+   ],
+   "skin_fraction": 0.882,
+   "gutter_black": 0.0091,
+   "ao_depth": 0.5769,
+   "dark_blotch": 0.1017,
+   "purple": 0.0,
+   "edge_lines": 0.0154,
+   "mean_rgb": [
+    0.279,
+    0.178,
+    0.115
+   ],
+   "saturation": 0.576,
+   "luminance": 0.193
+  },
+  "f021_head_normal": {
+   "mean_tilt_deg": 6.49,
+   "p95_tilt_deg": 19.17,
+   "steep_fraction": 0.0102
+  }
+ },
+ "mma-kadir": {
+  "m021_body_color": {
+   "size": [
+    1024,
+    1024
+   ],
+   "skin_fraction": 0.766,
+   "gutter_black": 0.0209,
+   "ao_depth": 0.1053,
+   "dark_blotch": 0.0201,
+   "purple": 0.0005,
+   "edge_lines": 0.0132,
+   "mean_rgb": [
+    0.702,
+    0.453,
+    0.318
+   ],
+   "saturation": 0.55,
+   "luminance": 0.496
+  },
+  "m021_body_normal": {
+   "mean_tilt_deg": 7.67,
+   "p95_tilt_deg": 19.74,
+   "steep_fraction": 0.0021
+  },
+  "m021_head_color": {
+   "size": [
+    2048,
+    2048
+   ],
+   "skin_fraction": 0.828,
+   "gutter_black": 0.0062,
+   "ao_depth": 0.6664,
+   "dark_blotch": 0.159,
+   "purple": 0.0001,
+   "edge_lines": 0.0495,
+   "mean_rgb": [
+    0.452,
+    0.299,
+    0.208
+   ],
+   "saturation": 0.542,
+   "luminance": 0.325
+  },
+  "m021_head_normal": {
+   "mean_tilt_deg": 6.69,
+   "p95_tilt_deg": 19.52,
+   "steep_fraction": 0.0029
+  }
+ },
+ "nael": {
+  "m021_body_color": {
+   "size": [
+    1024,
+    1024
+   ],
+   "skin_fraction": 0.921,
+   "gutter_black": 0.003,
+   "ao_depth": 0.1108,
+   "dark_blotch": 0.0141,
+   "purple": 0.0003,
+   "edge_lines": 0.0052,
+   "mean_rgb": [
+    0.705,
+    0.47,
+    0.357
+   ],
+   "saturation": 0.496,
+   "luminance": 0.512
+  },
+  "m021_body_normal": {
+   "mean_tilt_deg": 7.67,
+   "p95_tilt_deg": 19.74,
+   "steep_fraction": 0.0021
+  },
+  "m021_head_color": {
+   "size": [
+    2048,
+    2048
+   ],
+   "skin_fraction": 0.907,
+   "gutter_black": 0.0137,
+   "ao_depth": 0.5425,
+   "dark_blotch": 0.1398,
+   "purple": 0.0,
+   "edge_lines": 0.0715,
+   "mean_rgb": [
+    0.516,
+    0.351,
+    0.261
+   ],
+   "saturation": 0.537,
+   "luminance": 0.381
+  },
+  "m021_head_normal": {
+   "mean_tilt_deg": 7.03,
+   "p95_tilt_deg": 20.46,
+   "steep_fraction": 0.0027
+  }
+ },
+ "victor": {
+  "m021_body_color": {
+   "size": [
+    1024,
+    1024
+   ],
+   "skin_fraction": 0.959,
+   "gutter_black": 0.0001,
+   "ao_depth": 0.0215,
+   "dark_blotch": 0.0225,
+   "purple": 0.0005,
+   "edge_lines": 0.0172,
+   "mean_rgb": [
+    0.575,
+    0.432,
+    0.362
+   ],
+   "saturation": 0.373,
+   "luminance": 0.458
+  },
+  "m021_body_normal": {
+   "mean_tilt_deg": 7.67,
+   "p95_tilt_deg": 19.74,
+   "steep_fraction": 0.0021
+  },
+  "m021_head_color": {
+   "size": [
+    2048,
+    2048
+   ],
+   "skin_fraction": 0.829,
+   "gutter_black": 0.0042,
+   "ao_depth": 0.4477,
+   "dark_blotch": 0.1119,
+   "purple": 0.0004,
+   "edge_lines": 0.0637,
+   "mean_rgb": [
+    0.415,
+    0.305,
+    0.251
+   ],
+   "saturation": 0.35,
+   "luminance": 0.324
+  },
+  "m021_head_normal": {
+   "mean_tilt_deg": 7.03,
+   "p95_tilt_deg": 20.46,
+   "steep_fraction": 0.0027
+  }
+ }
+}

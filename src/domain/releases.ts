@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.2.0',
+      releaseDate: '2026-11-19',
+      title: 'Coachs 3D : silhouettes et peau plus naturelles',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Amara, Inaya et Kanya : la taille, trop fine pour des combattantes, est un peu plus pleine (3 à 4 cm de tour) ; hanches, poitrine, visage et tenues approuvées gardent leur forme, les tenues suivent le corps.' },
+        { category: 'ameliorations', text: 'Ombres portées plus douces sur les coachs, et sans teinte orange : l’ombre d’un gant sur le torse ne fait plus une tache.' },
+        { category: 'corrections', text: 'Victor : plus de plaque claire en haut de la poitrine ni de liseré sombre autour des muscles, peau moins grise. Naël : raccord de teinte du cou au torse affiné.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '2.1.0',
       releaseDate: '2026-11-18',
       title: 'Choix du coach : un univers pour chacun',

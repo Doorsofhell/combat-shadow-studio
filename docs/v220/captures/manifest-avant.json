@@ -1,0 +1,815 @@
+{
+ "base": "http://localhost:4180",
+ "shots": {
+  "mma-kadir__01-face": {
+   "query": "champion=mma-kadir&look=realiste&d=mma&rest=1&az=0&el=6&span=1.08&fy=0.920&light=app",
+   "ok": true,
+   "ms": 8841,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-kadir__02-profil-gauche": {
+   "query": "champion=mma-kadir&look=realiste&d=mma&rest=1&az=90&el=6&span=1.08&fy=0.920&light=app",
+   "ok": true,
+   "ms": 8347,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-kadir__03-profil-droit": {
+   "query": "champion=mma-kadir&look=realiste&d=mma&rest=1&az=-90&el=6&span=1.08&fy=0.920&light=app",
+   "ok": true,
+   "ms": 8258,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-kadir__04-dos": {
+   "query": "champion=mma-kadir&look=realiste&d=mma&rest=1&az=180&el=6&span=1.08&fy=0.920&light=app",
+   "ok": true,
+   "ms": 8094,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-kadir__05-visage": {
+   "query": "champion=mma-kadir&look=realiste&d=mma&rest=1&az=18&el=4&span=0.15&fy=1.630&light=app",
+   "ok": true,
+   "ms": 7811,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-kadir__06-torse-epaules-cou": {
+   "query": "champion=mma-kadir&look=realiste&d=mma&rest=1&az=20&el=6&span=0.36&fy=1.300&light=app",
+   "ok": true,
+   "ms": 7992,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-kadir__07-abdomen-bassin-hanches": {
+   "query": "champion=mma-kadir&look=realiste&d=mma&rest=1&az=25&el=4&span=0.34&fy=1.050&light=app",
+   "ok": true,
+   "ms": 8503,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-kadir__08-jambes": {
+   "query": "champion=mma-kadir&look=realiste&d=mma&rest=1&az=30&el=4&span=0.6&fy=0.500&light=app",
+   "ok": true,
+   "ms": 7976,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-kadir__09-garde": {
+   "query": "champion=mma-kadir&look=realiste&d=mma&frame=1&motion=garde&az=35&el=8&light=app",
+   "ok": true,
+   "ms": 9359,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-kadir__10-direct": {
+   "query": "champion=mma-kadir&look=realiste&tech=direct&d=boxe&at=1&az=60&el=8&light=app",
+   "ok": true,
+   "ms": 9400,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-kadir__11-crochet": {
+   "query": "champion=mma-kadir&look=realiste&tech=crochet-avant&d=boxe&at=1&az=20&el=8&light=app",
+   "ok": true,
+   "ms": 8263,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-kadir__12-uppercut": {
+   "query": "champion=mma-kadir&look=realiste&tech=uppercut-arriere&d=boxe&at=1&az=30&el=8&light=app",
+   "ok": true,
+   "ms": 7976,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-kadir__13-coup-de-pied": {
+   "query": "champion=mma-kadir&look=realiste&tech=middle-kick-arriere&d=muaythai&at=1&az=40&el=8&light=app",
+   "ok": true,
+   "ms": 7997,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-kadir__14-tenue-judo-mouvement": {
+   "query": "champion=mma-kadir&look=realiste&d=judo&frame=1&motion=garde&az=30&el=8&light=app",
+   "ok": true,
+   "ms": 8450,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-kadir__15-dos-garde": {
+   "query": "champion=mma-kadir&look=realiste&d=mma&frame=1&motion=garde&az=200&el=10&light=app",
+   "ok": true,
+   "ms": 7949,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-amara__01-face": {
+   "query": "champion=mma-amara&look=realiste&d=mma&rest=1&az=0&el=6&span=1.08&fy=0.881&light=app",
+   "ok": true,
+   "ms": 8600,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-amara__02-profil-gauche": {
+   "query": "champion=mma-amara&look=realiste&d=mma&rest=1&az=90&el=6&span=1.08&fy=0.881&light=app",
+   "ok": true,
+   "ms": 8693,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-amara__03-profil-droit": {
+   "query": "champion=mma-amara&look=realiste&d=mma&rest=1&az=-90&el=6&span=1.08&fy=0.881&light=app",
+   "ok": true,
+   "ms": 8715,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-amara__04-dos": {
+   "query": "champion=mma-amara&look=realiste&d=mma&rest=1&az=180&el=6&span=1.08&fy=0.881&light=app",
+   "ok": true,
+   "ms": 8749,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-amara__05-visage": {
+   "query": "champion=mma-amara&look=realiste&d=mma&rest=1&az=18&el=4&span=0.15&fy=1.562&light=app",
+   "ok": true,
+   "ms": 8581,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-amara__06-torse-epaules-cou": {
+   "query": "champion=mma-amara&look=realiste&d=mma&rest=1&az=20&el=6&span=0.36&fy=1.245&light=app",
+   "ok": true,
+   "ms": 9187,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-amara__07-abdomen-bassin-hanches": {
+   "query": "champion=mma-amara&look=realiste&d=mma&rest=1&az=25&el=4&span=0.34&fy=1.006&light=app",
+   "ok": true,
+   "ms": 9778,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-amara__08-jambes": {
+   "query": "champion=mma-amara&look=realiste&d=mma&rest=1&az=30&el=4&span=0.6&fy=0.479&light=app",
+   "ok": true,
+   "ms": 8452,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-amara__09-garde": {
+   "query": "champion=mma-amara&look=realiste&d=mma&frame=1&motion=garde&az=35&el=8&light=app",
+   "ok": true,
+   "ms": 8847,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-amara__10-direct": {
+   "query": "champion=mma-amara&look=realiste&tech=direct&d=boxe&at=1&az=60&el=8&light=app",
+   "ok": true,
+   "ms": 8794,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-amara__11-crochet": {
+   "query": "champion=mma-amara&look=realiste&tech=crochet-avant&d=boxe&at=1&az=20&el=8&light=app",
+   "ok": true,
+   "ms": 8667,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-amara__12-uppercut": {
+   "query": "champion=mma-amara&look=realiste&tech=uppercut-arriere&d=boxe&at=1&az=30&el=8&light=app",
+   "ok": true,
+   "ms": 8724,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-amara__13-coup-de-pied": {
+   "query": "champion=mma-amara&look=realiste&tech=middle-kick-arriere&d=muaythai&at=1&az=40&el=8&light=app",
+   "ok": true,
+   "ms": 10024,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-amara__14-tenue-judo-mouvement": {
+   "query": "champion=mma-amara&look=realiste&d=judo&frame=1&motion=garde&az=30&el=8&light=app",
+   "ok": true,
+   "ms": 10960,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "mma-amara__15-dos-garde": {
+   "query": "champion=mma-amara&look=realiste&d=mma&frame=1&motion=garde&az=200&el=10&light=app",
+   "ok": true,
+   "ms": 9305,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "nael__01-face": {
+   "query": "champion=nael&look=realiste&d=mma&rest=1&az=0&el=6&span=1.08&fy=0.918&light=app",
+   "ok": true,
+   "ms": 8543,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "nael__02-profil-gauche": {
+   "query": "champion=nael&look=realiste&d=mma&rest=1&az=90&el=6&span=1.08&fy=0.918&light=app",
+   "ok": true,
+   "ms": 7954,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "nael__03-profil-droit": {
+   "query": "champion=nael&look=realiste&d=mma&rest=1&az=-90&el=6&span=1.08&fy=0.918&light=app",
+   "ok": true,
+   "ms": 8334,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "nael__04-dos": {
+   "query": "champion=nael&look=realiste&d=mma&rest=1&az=180&el=6&span=1.08&fy=0.918&light=app",
+   "ok": true,
+   "ms": 7900,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "nael__05-visage": {
+   "query": "champion=nael&look=realiste&d=mma&rest=1&az=18&el=4&span=0.15&fy=1.627&light=app",
+   "ok": true,
+   "ms": 7626,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "nael__06-torse-epaules-cou": {
+   "query": "champion=nael&look=realiste&d=mma&rest=1&az=20&el=6&span=0.36&fy=1.297&light=app",
+   "ok": true,
+   "ms": 8169,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "nael__07-abdomen-bassin-hanches": {
+   "query": "champion=nael&look=realiste&d=mma&rest=1&az=25&el=4&span=0.34&fy=1.048&light=app",
+   "ok": true,
+   "ms": 9933,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "nael__08-jambes": {
+   "query": "champion=nael&look=realiste&d=mma&rest=1&az=30&el=4&span=0.6&fy=0.499&light=app",
+   "ok": true,
+   "ms": 9583,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "nael__09-garde": {
+   "query": "champion=nael&look=realiste&d=mma&frame=1&motion=garde&az=35&el=8&light=app",
+   "ok": true,
+   "ms": 9646,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "nael__10-direct": {
+   "query": "champion=nael&look=realiste&tech=direct&d=boxe&at=1&az=60&el=8&light=app",
+   "ok": true,
+   "ms": 9441,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "nael__11-crochet": {
+   "query": "champion=nael&look=realiste&tech=crochet-avant&d=boxe&at=1&az=20&el=8&light=app",
+   "ok": true,
+   "ms": 9433,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "nael__12-uppercut": {
+   "query": "champion=nael&look=realiste&tech=uppercut-arriere&d=boxe&at=1&az=30&el=8&light=app",
+   "ok": true,
+   "ms": 8406,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "nael__13-coup-de-pied": {
+   "query": "champion=nael&look=realiste&tech=middle-kick-arriere&d=muaythai&at=1&az=40&el=8&light=app",
+   "ok": true,
+   "ms": 8743,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "nael__14-tenue-judo-mouvement": {
+   "query": "champion=nael&look=realiste&d=judo&frame=1&motion=garde&az=30&el=8&light=app",
+   "ok": true,
+   "ms": 22095,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "nael__15-dos-garde": {
+   "query": "champion=nael&look=realiste&d=mma&frame=1&motion=garde&az=200&el=10&light=app",
+   "ok": true,
+   "ms": 8981,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "inaya__01-face": {
+   "query": "champion=inaya&look=realiste&d=mma&rest=1&az=0&el=6&span=1.08&fy=0.883&light=app",
+   "ok": true,
+   "ms": 10375,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "inaya__02-profil-gauche": {
+   "query": "champion=inaya&look=realiste&d=mma&rest=1&az=90&el=6&span=1.08&fy=0.883&light=app",
+   "ok": true,
+   "ms": 12923,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "inaya__03-profil-droit": {
+   "query": "champion=inaya&look=realiste&d=mma&rest=1&az=-90&el=6&span=1.08&fy=0.883&light=app",
+   "ok": true,
+   "ms": 10768,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "inaya__04-dos": {
+   "query": "champion=inaya&look=realiste&d=mma&rest=1&az=180&el=6&span=1.08&fy=0.883&light=app",
+   "ok": true,
+   "ms": 12619,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "inaya__05-visage": {
+   "query": "champion=inaya&look=realiste&d=mma&rest=1&az=18&el=4&span=0.15&fy=1.565&light=app",
+   "ok": true,
+   "ms": 13595,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "inaya__06-torse-epaules-cou": {
+   "query": "champion=inaya&look=realiste&d=mma&rest=1&az=20&el=6&span=0.36&fy=1.248&light=app",
+   "ok": true,
+   "ms": 14708,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "inaya__07-abdomen-bassin-hanches": {
+   "query": "champion=inaya&look=realiste&d=mma&rest=1&az=25&el=4&span=0.34&fy=1.008&light=app",
+   "ok": true,
+   "ms": 14145,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "inaya__08-jambes": {
+   "query": "champion=inaya&look=realiste&d=mma&rest=1&az=30&el=4&span=0.6&fy=0.480&light=app",
+   "ok": true,
+   "ms": 9857,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "inaya__09-garde": {
+   "query": "champion=inaya&look=realiste&d=mma&frame=1&motion=garde&az=35&el=8&light=app",
+   "ok": true,
+   "ms": 18888,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "inaya__10-direct": {
+   "query": "champion=inaya&look=realiste&tech=direct&d=boxe&at=1&az=60&el=8&light=app",
+   "ok": true,
+   "ms": 18247,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "inaya__11-crochet": {
+   "query": "champion=inaya&look=realiste&tech=crochet-avant&d=boxe&at=1&az=20&el=8&light=app",
+   "ok": true,
+   "ms": 20258,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "inaya__12-uppercut": {
+   "query": "champion=inaya&look=realiste&tech=uppercut-arriere&d=boxe&at=1&az=30&el=8&light=app",
+   "ok": true,
+   "ms": 16478,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "inaya__13-coup-de-pied": {
+   "query": "champion=inaya&look=realiste&tech=middle-kick-arriere&d=muaythai&at=1&az=40&el=8&light=app",
+   "ok": true,
+   "ms": 9379,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "inaya__14-tenue-judo-mouvement": {
+   "query": "champion=inaya&look=realiste&d=judo&frame=1&motion=garde&az=30&el=8&light=app",
+   "ok": true,
+   "ms": 20706,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "inaya__15-dos-garde": {
+   "query": "champion=inaya&look=realiste&d=mma&frame=1&motion=garde&az=200&el=10&light=app",
+   "ok": true,
+   "ms": 8611,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "victor__01-face": {
+   "query": "champion=victor&look=realiste&d=mma&rest=1&az=0&el=6&span=1.08&fy=0.920&light=app",
+   "ok": true,
+   "ms": 10880,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "victor__02-profil-gauche": {
+   "query": "champion=victor&look=realiste&d=mma&rest=1&az=90&el=6&span=1.08&fy=0.920&light=app",
+   "ok": true,
+   "ms": 20610,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "victor__03-profil-droit": {
+   "query": "champion=victor&look=realiste&d=mma&rest=1&az=-90&el=6&span=1.08&fy=0.920&light=app",
+   "ok": true,
+   "ms": 19370,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "victor__04-dos": {
+   "query": "champion=victor&look=realiste&d=mma&rest=1&az=180&el=6&span=1.08&fy=0.920&light=app",
+   "ok": true,
+   "ms": 13976,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "victor__05-visage": {
+   "query": "champion=victor&look=realiste&d=mma&rest=1&az=18&el=4&span=0.15&fy=1.630&light=app",
+   "ok": true,
+   "ms": 14749,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "victor__06-torse-epaules-cou": {
+   "query": "champion=victor&look=realiste&d=mma&rest=1&az=20&el=6&span=0.36&fy=1.300&light=app",
+   "ok": true,
+   "ms": 13611,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "victor__07-abdomen-bassin-hanches": {
+   "query": "champion=victor&look=realiste&d=mma&rest=1&az=25&el=4&span=0.34&fy=1.050&light=app",
+   "ok": true,
+   "ms": 10088,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "victor__08-jambes": {
+   "query": "champion=victor&look=realiste&d=mma&rest=1&az=30&el=4&span=0.6&fy=0.500&light=app",
+   "ok": true,
+   "ms": 8883,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "victor__09-garde": {
+   "query": "champion=victor&look=realiste&d=mma&frame=1&motion=garde&az=35&el=8&light=app",
+   "ok": true,
+   "ms": 9570,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "victor__10-direct": {
+   "query": "champion=victor&look=realiste&tech=direct&d=boxe&at=1&az=60&el=8&light=app",
+   "ok": true,
+   "ms": 10655,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "victor__11-crochet": {
+   "query": "champion=victor&look=realiste&tech=crochet-avant&d=boxe&at=1&az=20&el=8&light=app",
+   "ok": true,
+   "ms": 10574,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "victor__12-uppercut": {
+   "query": "champion=victor&look=realiste&tech=uppercut-arriere&d=boxe&at=1&az=30&el=8&light=app",
+   "ok": true,
+   "ms": 10264,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "victor__13-coup-de-pied": {
+   "query": "champion=victor&look=realiste&tech=middle-kick-arriere&d=muaythai&at=1&az=40&el=8&light=app",
+   "ok": true,
+   "ms": 10385,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "victor__14-tenue-judo-mouvement": {
+   "query": "champion=victor&look=realiste&d=judo&frame=1&motion=garde&az=30&el=8&light=app",
+   "ok": true,
+   "ms": 9229,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "victor__15-dos-garde": {
+   "query": "champion=victor&look=realiste&d=mma&frame=1&motion=garde&az=200&el=10&light=app",
+   "ok": true,
+   "ms": 9972,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "kanya__01-face": {
+   "query": "champion=kanya&look=realiste&d=mma&rest=1&az=0&el=6&span=1.08&fy=0.863&light=app",
+   "ok": true,
+   "ms": 10279,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "kanya__02-profil-gauche": {
+   "query": "champion=kanya&look=realiste&d=mma&rest=1&az=90&el=6&span=1.08&fy=0.863&light=app",
+   "ok": true,
+   "ms": 10148,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "kanya__03-profil-droit": {
+   "query": "champion=kanya&look=realiste&d=mma&rest=1&az=-90&el=6&span=1.08&fy=0.863&light=app",
+   "ok": true,
+   "ms": 9960,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "kanya__04-dos": {
+   "query": "champion=kanya&look=realiste&d=mma&rest=1&az=180&el=6&span=1.08&fy=0.863&light=app",
+   "ok": true,
+   "ms": 9912,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "kanya__05-visage": {
+   "query": "champion=kanya&look=realiste&d=mma&rest=1&az=18&el=4&span=0.15&fy=1.528&light=app",
+   "ok": true,
+   "ms": 8811,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "kanya__06-torse-epaules-cou": {
+   "query": "champion=kanya&look=realiste&d=mma&rest=1&az=20&el=6&span=0.36&fy=1.219&light=app",
+   "ok": true,
+   "ms": 9539,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "kanya__07-abdomen-bassin-hanches": {
+   "query": "champion=kanya&look=realiste&d=mma&rest=1&az=25&el=4&span=0.34&fy=0.984&light=app",
+   "ok": true,
+   "ms": 13166,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "kanya__08-jambes": {
+   "query": "champion=kanya&look=realiste&d=mma&rest=1&az=30&el=4&span=0.6&fy=0.469&light=app",
+   "ok": true,
+   "ms": 18481,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "kanya__09-garde": {
+   "query": "champion=kanya&look=realiste&d=mma&frame=1&motion=garde&az=35&el=8&light=app",
+   "ok": true,
+   "ms": 21937,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "kanya__10-direct": {
+   "query": "champion=kanya&look=realiste&tech=direct&d=boxe&at=1&az=60&el=8&light=app",
+   "ok": true,
+   "ms": 17190,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "kanya__11-crochet": {
+   "query": "champion=kanya&look=realiste&tech=crochet-avant&d=boxe&at=1&az=20&el=8&light=app",
+   "ok": true,
+   "ms": 10331,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "kanya__12-uppercut": {
+   "query": "champion=kanya&look=realiste&tech=uppercut-arriere&d=boxe&at=1&az=30&el=8&light=app",
+   "ok": true,
+   "ms": 18572,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "kanya__13-coup-de-pied": {
+   "query": "champion=kanya&look=realiste&tech=middle-kick-arriere&d=muaythai&at=1&az=40&el=8&light=app",
+   "ok": true,
+   "ms": 19084,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "kanya__14-tenue-judo-mouvement": {
+   "query": "champion=kanya&look=realiste&d=judo&frame=1&motion=garde&az=30&el=8&light=app",
+   "ok": true,
+   "ms": 22807,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  },
+  "kanya__15-dos-garde": {
+   "query": "champion=kanya&look=realiste&d=mma&frame=1&motion=garde&az=200&el=10&light=app",
+   "ok": true,
+   "ms": 18926,
+   "errors": [
+    "console THREE.WebGLShadowMap: PCFSoftShadowMap has been removed. Using PCFShadowMap instead.",
+    "console THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported."
+   ]
+  }
+ }
+}

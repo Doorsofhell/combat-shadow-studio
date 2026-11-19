@@ -16,6 +16,7 @@ import type { HumanSignals } from './human/behavior';
 import { humanProfileFor } from './human/profiles';
 import { CoachRig } from '../engine';
 import { useOutfit, type OutfitId, type OutfitStatus } from './outfit';
+import { applyMorphology, morphologyFor } from './morphology';
 
 /**
  * v0.29 Ultra-réaliste coach built on a photo-textured avatar of the Microsoft Rocketbox library (MIT,
@@ -61,6 +62,7 @@ export function PhotoCoach({
   const scene = useMemo(() => {
     // 1.10: skin calibrated per coach (relief, scattering, pores: photoMaterials.ts SKIN_LOOK)
     const look = skinLookFor(url);
+    const morpho = morphologyFor(url);
     const s = cloneSkinned(gltf.scene);
     // 2.1.0: what this copy owns in graphics memory, given back when it leaves (see the cleanup below)
     const owned: BufferGeometry[] = [];
@@ -74,6 +76,11 @@ export function PhotoCoach({
       // All seven existing hideBody masks still use the original unbaked vertex keys.
       const loaded = m.geometry;
       if (!bakeAmaraCleanSurface(m)) dropStillMorphs(m);
+      // 2.2.0: the coach's own morphology (src/three/morphology.ts), on the body only, the garments get the same field
+      if (morpho && /body/i.test((m.material as Material).name) && (m as SkinnedMesh).isSkinnedMesh) {
+        if (m.geometry === loaded) m.geometry = loaded.clone();
+        applyMorphology(m.geometry, morpho, (m as SkinnedMesh).skeleton);
+      }
       if (m.geometry !== loaded) owned.push(m.geometry);
       // 1.10: each part classified (skin, eyes, hair, brows, lashes) and rebuilt from all its source properties
       // (src/three/photoMaterials.ts): before, « opacity » sent the eyes, brows and lashes to the hair branch

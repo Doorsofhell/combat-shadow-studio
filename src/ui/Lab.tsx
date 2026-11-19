@@ -59,6 +59,11 @@ export function Lab() {
     (globalThis as { __cssNeckBack?: number }).__cssNeckBack = q.get('nuque') !== null ? Number(q.get('nuque')) : undefined;
     // 1.40 visage=actuel|calme|doux|vif: the face at rest (src/three/face.ts FACE_BASES), for the comparisons
     (globalThis as { __cssFaceBase?: string }).__cssFaceBase = q.get('visage') ?? undefined;
+    // 2.2.0 v220=0: the coach as in 2.1.0 (no morphology, no skin finish of 2.2.0), for the side-by-side comparisons
+    (globalThis as { __cssMorpho?: boolean }).__cssMorpho = q.get('v220') === '0' ? false : undefined;
+    (globalThis as { __cssSkin220?: boolean }).__cssSkin220 = q.get('v220') === '0' ? false : undefined;
+    // 2.2.0 fx=pores,teinte,rugosite,diffusion,ombres,relief,etalonnage,brillance,nettoyage: skin effects switched off
+    (globalThis as { __cssSkinFx?: string }).__cssSkinFx = q.get('fx') ?? undefined;
   }, [q]);
   const envelope = useRef<Envelope | null>(null);
   const origin = useRef({ x: 0, z: 0, yaw: 0 });
