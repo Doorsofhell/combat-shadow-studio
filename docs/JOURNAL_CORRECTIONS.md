@@ -4765,3 +4765,30 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `navigation`, `boot` TEST RÉUSSI ; `npm run build` TEST RÉUSSI ; suite Playwright complète et téléphone réel NON EXÉCUTÉ.
 - **Restauration** : branche `restauration/avant-selection-coach-v4` (= 2.0.0, `e176ff9`).
 - **Publication** : aucune ; en attente de la validation de Youssef.
+
+## 2026-11-19 · v2.1.0 (expérimentale, non publiée) · Mémoire graphique à chaque changement de coach
+
+- **Demande** : Youssef, 19/11 06:52 : « Il faut corriger la mise en mémoire à chaque changement de coach avant la
+  publication ». La 2.1.0 n'étant pas publiée, la correction y est ajoutée sans changer de numéro.
+- **Constat vérifié** : textures vivantes de la carte graphique comptées (appels WebGL) après chaque tour des six coachs
+  sur l'écran « Ton coach » : 163 → 242 → 321 (+79 par tour, ≈ 13 par changement). Ce qui grandit : les textures
+  20×20 en flottants (matrices des os des squelettes) 73 → 219, et l'emblème de l'univers 5 → 17.
+- **Causes** : (1) chaque coach affiché est une copie du modèle avec ses propres squelettes (corps, tête, yeux, cheveux,
+  pièces de tenue), dont three.js garde les os dans une texture ; ces squelettes, et les géométries propres à la copie,
+  n'étaient jamais rendus au départ du coach (déjà en 2.0.0) ; (2) l'emblème qui s'efface était rendu à la carte
+  graphique alors qu'il restait dessiné une image de plus, et three.js le renvoyait aussitôt (propre à la 2.1.0).
+- **Correction** : `PhotoCoach.tsx` rend squelettes et géométries propres avec les matériaux au départ du coach ;
+  `outfit.ts` rend le squelette de chaque pièce de tenue ; `AtmosphereScene.tsx` cache l'emblème avant de le rendre.
+  Modèles chargés, visages, tenues, textures, animations : non touchés. Après : 94 → 94 → 94.
+- **Fichiers** : `src/three/PhotoCoach.tsx`, `src/three/outfit.ts`, `src/three/atmosphere/AtmosphereScene.tsx`,
+  `tests/e2e/selection-coach-v4.spec.ts`, `src/domain/releases.ts`, `docs/v210/SELECTION_COACH_V4.md` (§ 11),
+  `docs/v210/captures/memoire-avant-apres.jpg`.
+- **Test renforcé** : `selection-coach-v4.spec.ts` (18 changements) vérifie maintenant que le total des textures en
+  mémoire graphique ne grandit pas d'un tour à l'autre (marge 2 ; avant : +78 par tour).
+- **Tests** : Playwright `selection-coach-v4`, `coachs-v160`, `outfit-loading`, `coach-render`, `coach-3d-recovery`,
+  `stabilite-3d-v1563`, `ecran-coach-v140`, `navigation` : 58/58 TEST RÉUSSI ; `npx vitest run src/three src/domain/coaches`
+  727 réussis, 1 échec déjà présent sur la 2.0.0 (`expressions-v1160`, taille du modèle d'Amara) TEST ÉCHOUÉ (sans lien) ;
+  `npm run build` TEST RÉUSSI ; captures Kadir, Amara, Kanya avant/après la correction : rendu identique
+  (`memoire-avant-apres.jpg`) ; suite Playwright complète et téléphone réel NON EXÉCUTÉ.
+- **Restauration** : branche `restauration/avant-memoire-coach-v4` (= `2edb83c`).
+- **Publication** : aucune ; en attente de la validation de Youssef.

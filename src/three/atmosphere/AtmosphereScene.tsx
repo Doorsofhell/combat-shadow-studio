@@ -290,8 +290,15 @@ export function AtmosphereScene({ atmosphere: a, name, quality, shadows }: Atmos
     if (changed) {
       const gone = ls.filter((l) => l.out && l.k === 0);
       for (const l of gone) {
+        // hidden first: the mesh stays in the scene until React removes it, and a drawn material would send its
+        // freed texture back to the graphics memory, for good (2.1.0, measured: one emblem kept per coach change)
+        const mat = emblemMats.current.get(l.key);
+        if (mat) {
+          mat.visible = false;
+          mat.map = null;
+        }
         l.tex.dispose();
-        emblemMats.current.get(l.key)?.dispose();
+        mat?.dispose();
         emblemMats.current.delete(l.key);
       }
       layersRef.current = ls.filter((l) => !(l.out && l.k === 0));

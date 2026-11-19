@@ -239,6 +239,8 @@ export function useOutfit(
         o.removeFromParent();
         const m = o as Mesh;
         (m.material as Material).dispose();
+        // 2.1.0: each garment's own skeleton keeps its bone matrices in a texture, given back with it
+        (o as SkinnedMesh).skeleton?.dispose();
       }
       restore.forEach((f) => f());
     };

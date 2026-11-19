@@ -105,10 +105,9 @@ Barre du bas : aucun fichier modifié, tests de navigation réussis.
 - Dessin d'un emblème : 4 à 10 ms (une fois par changement de coach).
 - Appels de dessin : 11 → 17 à 20 par image ; shaders +6 ; géométries +4 ; textures de l'ambiance : 2 au plus
   (emblème 768×1080, 384×540 en légère ; fumée 256×256), vérifié après 18 changements.
-- **Constat hors périmètre** : sur la 2.0.0 comme sur la V4, le total des textures en mémoire graphique grandit
-  d'environ 13 à chaque changement de coach sur cet écran (463 → 672 en 200 s sur la 2.0.0, 474 → 682 sur la V4 :
-  même pente). Les géométries, elles, se stabilisent. Cela vient du chargement des coachs (non modifié ici) ; à
-  corriger dans un lot dédié si tu le souhaites.
+- **Mémoire à chaque changement de coach : corrigé** (demande de Youssef du 19/11 06:52, voir § 11). Avant : le total
+  des textures en mémoire graphique grandissait d'environ 13 à chaque changement (463 → 672 en 200 s sur la 2.0.0,
+  474 → 682 sur la V4). Après : stable d'un tour de coachs à l'autre.
 - Qualité légère (passage automatique quand l'appareil rame) : pas de fumée, emblème en demi-résolution, lumière
   d'ambiance relevée ; la peau y est plus saturée, comme sur la 2.0.0 dans le même mode
   (`captures/qualite-legere-2.0.0-puis-v4.jpg` : 2.0.0 à gauche, V4 avant puis après relevé de lumière).
@@ -126,3 +125,43 @@ Barre du bas : aucun fichier modifié, tests de navigation réussis.
 `captures/avant-apres-<coach>.jpg` (même profil, même discipline boxe, même taille 393×851 ×2, même attente,
 2.0.0 à gauche, V4 à droite), `apercu-6-avant.jpg`, `apercu-6-univers.jpg`, `transition-kanya-kadir.jpg`,
 `mesures-avant.json`, `mesures-apres.json`.
+
+## 11. Correction de la mémoire à chaque changement de coach (19/11/2026)
+
+Demande de Youssef (19/11 06:52) : « Il faut corriger la mise en mémoire à chaque changement de coach avant la
+publication ». Restauration : `restauration/avant-memoire-coach-v4` (= `2edb83c`).
+
+**Constat vérifié.** Les textures vivantes de la carte graphique ont été comptées une à une (appels WebGL
+`createTexture` / `deleteTexture`, groupées par taille et format) après chaque tour complet des six coachs, sur la
+version construite (`.tmp-measure/texleak.mjs`, hors dépôt) :
+
+| | tour 1 | tour 2 | tour 3 | ce qui grandit |
+|---|---|---|---|---|
+| avant | 163 | 242 | 321 | 20×20 en flottants (matrices des os) : 73 → 219 ; emblème 384×540 : 5 → 17 |
+| après | 94 | 94 | 94 | rien |
+
+Deux causes :
+
+1. **Squelettes jamais rendus (≈ 12 par changement, déjà là en 2.0.0).** Chaque coach affiché est une copie du modèle
+   chargé ; chaque partie animée de la copie (corps, tête, yeux, cheveux…) et chaque pièce de tenue a son propre
+   squelette, et three.js garde les positions de ses os dans une petite texture. Les matériaux étaient rendus quand le
+   coach partait, pas les squelettes. Les géométries propres à la copie (visage sans expressions immobiles, surface
+   nettoyée d'Amara) ne l'étaient pas non plus.
+2. **Emblème de l'univers renvoyé en mémoire (≈ 1 par changement, propre à la 2.1.0).** L'emblème qui s'efface était
+   rendu pendant que son dessin restait une image de plus dans la scène : three.js le renvoyait aussitôt à la carte
+   graphique, pour de bon. Le compteur de l'ambiance (objets) ne le voyait pas ; le compteur de la carte graphique, oui.
+
+**Correction (rien ne change à l'écran).**
+
+- `src/three/PhotoCoach.tsx` : au départ du coach (ou au changement de qualité), ses squelettes et ses géométries
+  propres sont rendus avec ses matériaux. Le modèle chargé (partagé, en cache) n'est pas touché.
+- `src/three/outfit.ts` : le squelette de chaque pièce de tenue est rendu avec elle.
+- `src/three/atmosphere/AtmosphereScene.tsx` : l'emblème qui s'efface est d'abord caché, puis rendu.
+
+**Test renforcé.** `tests/e2e/selection-coach-v4.spec.ts` (18 changements) : le total des textures en mémoire
+graphique après un tour de plus ne dépasse pas celui d'avant ce tour (marge 2). Il aurait échoué avant la correction
+(+78 par tour).
+**Résultats.** Playwright (choix du coach V4, coachs, chargement des tenues, rendu, reprise 3D, stabilité 3D, écran
+coach, barre du bas) : 58/58 TEST RÉUSSI. Vitest `src/three` + `src/domain/coaches` : 727 réussis, 1 échec déjà présent
+en 2.0.0 (taille du modèle d'Amara). Build : TEST RÉUSSI. Captures avant/après la correction (Kadir, Amara, Kanya) :
+`captures/memoire-avant-apres.jpg`, rendu identique.

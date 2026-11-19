@@ -53,7 +53,7 @@ test('V4 : chaque coach a son propre univers, tiré de son surnom, et sa fiche r
   expect(errors).toEqual([]);
 });
 
-test('V4 : dix-huit changements de coach de suite, ni erreur ni accumulation en mémoire graphique', async ({ page }) => {
+test('V4 : dix-huit changements de coach de suite, ni erreur ni accumulation en mémoire graphique (textures comprises)', async ({ page }) => {
   test.setTimeout(240_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
@@ -84,8 +84,10 @@ test('V4 : dix-huit changements de coach de suite, ni erreur ni accumulation en 
   // même coach à l'écran qu'après 12 (un tour de plus) : pas une géométrie de plus
   expect(after18.coach).toBe(after6.coach);
   expect(after18.geometries!, 'géométries').toBeLessThanOrEqual(after6.geometries! + 2);
-  // NB : le total des textures de la scène grandit d'environ 13 par changement de coach, autant sur la 2.0.0 que sur la V4
-  // (mesuré, docs/v210/SELECTION_COACH_V4.md) : c'est le chargement des coachs, hors du périmètre de cet écran
+  // 2.1.0 (Youssef, 2026-11-19 « corriger la mise en mémoire à chaque changement de coach ») : le total des textures en
+  // mémoire graphique ne grandit plus d'un tour de coachs à l'autre (avant : environ 13 de plus par changement, squelettes
+  // des coachs et des tenues jamais rendus ; marge de 2 pour une ombre ou un emblème qui change de qualité)
+  expect(after18.textures!, 'textures en mémoire graphique, un tour de plus').toBeLessThanOrEqual(after6.textures! + 2);
   expect(errors).toEqual([]);
 });
 
