@@ -4930,5 +4930,11 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     SDK cible 36, non débogable, permissions, alignement 16 Ko, manifeste de l’AAB : TEST RÉUSSI ; signature :
     NON EXÉCUTÉ (secrets absents) ;
   - Vitest complet sur la 2.3.0 avant changement : 1781 réussis, 4 TEST ÉCHOUÉ déjà connus (voir 2.3.0) ;
+  - Vitest complet sur la 2.3.1 : 1788 réussis, les mêmes 4 TEST ÉCHOUÉ connus, aucun nouveau ;
+  - `npm run build` : TEST RÉUSSI ;
+  - Playwright complet sur la 2.3.1 (305 tests, 1 h 06) : 297 réussis, 2 ignorés, 6 TEST ÉCHOUÉ ; relancés seuls :
+    3 réussissent (`chrono-seul:96`, `coachs-v160:74`, `seance-mains-libres:117`, instables sous charge) ; les
+    3 autres (`coach-suggest:147`, `coaching-hud:60`, `training-layout:336`) échouent à l’identique sur la 2.3.0
+    (`restauration/avant-play-store-v231`) : antérieurs, sans lien avec cette version, aucune régression ;
   - installation sur un vrai téléphone : NON EXÉCUTÉ.
 - **Restauration** : branche `restauration/avant-play-store-v231` (= 2.3.0, `6e139eb`).
