@@ -95,6 +95,7 @@ décrivent l'état de référence d'origine (historique).
 | Génération aléatoire | Personnages anatomiquement cohérents | `editor.test` (100 graines par sexe, archétypes, curseurs aux limites), `pose.test` (posture de référence, jambes aux limites dans toutes les animations) | planche de rendus aléatoires |
 | Sauvegarde | Personnages conservés après redémarrage | `coach-studio.spec`, `migration*.test` | – |
 | Animations | Aucun mouvement détérioré, aucune articulation au-delà de son amplitude | `engine.test` (dont biomécanique : coudes ≤ 150°, genoux ≤ 155°), `camera.test` (toutes techniques, deux coachs, deux gardes) | rendus Lab |
+| Animations de combat (2.3.0) | Chaîne bassin → épaules → poing sur les coups, pas d’arrêt figé à l’impact, jambe qui tourne autour de la hanche aux coups de pied hauts, garde vivante non répétitive, chaque correction réversible seule (`?v230=-nom`) | `anim-audit-v230.test` (1 272 mesures, 6 coachs), `stabilite-v230.test` (3 min par coach), `torso-chain-v1331.test` (avec et sans snap), `chain.test` (garde vivante 2.3.0), `intrusions`, `torsion-range`, `hooks-biomeca`, `fluidity` | `docs/v230/captures/` (avant/après, 7 phases) |
 | Consignes | Une consigne et 3 à 5 points clés (appuis, bassin, membres, garde) par technique, valables dans les deux gardes | `instructions.test` (64 techniques, Jab mot pour mot, phases), `engine.test` (phase jouée) | captures entraînement |
 | Commandes et zone Caméra | Lecture, précédent, suivant, coach ; Décomposer, Comment faire, Ralenti ; zone Caméra sans masquer le coach | `training-layout.spec` (zone Caméra sur 5 tailles, consigne, ralenti, ligne de temps) | captures entraînement |
 | Caméra Auto et manuelle | Angle par technique, pas de vue de haut sur les coups, suivi du coach après pivot, retour Auto complet, angle manuel exact | `camera.test` (stepViews, viewName), `training-layout.spec` (caméra ×2, zone Caméra) | mesure de la caméra pendant « Pivots et angles » |
@@ -118,4 +119,5 @@ décrivent l'état de référence d'origine (historique).
 | Réalité augmentée | Démarrage, refus, arrêt caméra | `ar.test` | non applicable sans appareil |
 
 Commandes : `npx tsc -b`, `npx vitest run`, `npx vite build` puis
-`CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome npx playwright test`.
+`CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome npx playwright test`
+(depuis la 2.3.0, le navigateur installé est `/opt/pw-browsers/chromium`).

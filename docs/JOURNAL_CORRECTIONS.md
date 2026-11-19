@@ -4827,3 +4827,59 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `npm run build` TEST RÉUSSI ; téléphone Android NON EXÉCUTÉ ; mesures de performance : triangles et appels de dessin
   identiques (`docs/v220/RAPPORT_V220.md` § 6).
 - **Restauration** : branche `restauration/avant-refonte-3d-v220` (= 2.1.0, `2bc24cd`). Non fusionné, non publié.
+
+## 2026-11-19 · v2.3.0 (expérimentale, non publiée) · Biomécanique et animations de combat (lot 2)
+
+- **Demande** : Youssef, 19/11 11:27, « LOT 2, BIOMÉCANIQUE ET ANIMATIONS DE COMBAT AAA » (tous les coachs, chaîne
+  cinétique, coups de pied et équilibre, morphologies, timing, transitions, captures WebGL réelles avant/après,
+  aucune fusion ni publication sans son accord).
+- **Sources** : 2.2.0 (`claude/project-thread-o7lrt8`, `72d9bd5`, Lot 1 vérifié intégré).
+- **Constat vérifié** (outil `src/test/animAudit.ts`, 1 272 mesures sur les six coachs, `docs/v230/audit/avant.json`) :
+  hanches et épaules culminent ensemble sur 250 coups (pas de chaîne cinétique sur les directs) ; poing ou coude
+  figé à l’impact (jab 67 ms, direct 92 ms, coudes 94 ms ; 358 coups ≥ 50 ms) ; high kicks : retour du pied en
+  ligne droite qui replie la jambe, genou qui tourne de 53 à 58° en 1/60 s, saut de vitesse 11 à 12 ; uppercut
+  arrière : poing qui culmine avant les épaules ; overhand : coude qui bascule de 158° en une image (Kadir) ; garde
+  au repos identique toutes les 0,9 s (corrélation 1,000), dérive en centimètres fixes quelle que soit la taille.
+- **Corrections** (chacune derrière un interrupteur de `src/engine/v230.ts`, annulable seule : `?v230=-nom` dans le
+  Lab, `V230=-nom` pour les tests, `?v230=0` = moteur 2.2.0) :
+  - `chainLead` : sur les coups de poing, le bassin prend son avance dès le début (`motion.ts`) ;
+  - `snap` : la pose d’impact n’est plus tenue sur les poings, coudes et front kicks (`library/index.ts`) ; pas sur
+    les genoux (tibia dans l’autre jambe), le teep, les défenses, ni les coups au corps (le coude s’ouvrait à 95,3°
+    pour 95° max sur le crochet arrière au corps, `hooks-biomeca.test`) ;
+  - `armLag` : uppercuts, le bras monte en dernier (`author.ts` `lagHand`, `boxing.ts`) ;
+  - `legArc` : un pied en l’air tourne autour de la hanche si la jambe est tendue à une extrémité (`motion.ts`) ;
+  - `twistCap` : le solveur ne fait plus tourner un coude ou un genou d’un demi-tour pour 1 à 2° de rotation
+    d’épaule ou de hanche (`rig.ts`) ;
+  - `overhandPath` : overhand sans armé à côté de l’oreille (`boxing.ts`) ;
+  - `idleLife` : garde au repos non répétitive, dérive proportionnelle à la taille (`player.ts`).
+  - Essai écarté : `poleSlerp` (interrupteur coupé) : avant-bras dans le tronc 5,8 cm (changement de base), main
+    dans le tronc 3,7 cm (middle kick). Retirés aussi : `armLag` sur directs, crochets et coudes (poing plus lent),
+    tenue d’impact de 12 ms (poses clés < 25 ms, `integrity.test`), recalage d’épaule à ± 150° (chute arrière
+    retournée).
+- **Résultat mesuré** (`docs/v230/AUDIT_MESURES.md`, `docs/v230/RAPPORT_V230.md`) : coups où hanches et épaules
+  culminent ensemble 250 → 157 ; arrêt du poing jab 67 → 33 ms, direct 92 → 50 ms ; high kick avant : vitesse du
+  pied 10,4-10,9 → 15,3-15,8 m/s, rotation du genou 53-58° → 38-39° ; sauts de vitesse > 10 : 67 → 38 ; rotations
+  parasites > 45° : 66 → 34 ; garde : corrélation 1,000 → 0,85 ; techniques avec un membre dans le corps > 2 cm :
+  29 → 28. Limite : overhand 10 à 13 % plus lent à l’impact (trajectoire plus courte), à valider.
+- **Tests adaptés, avec raison** :
+  - `chain.test.ts` « garde vivante » : l’ancien test (pieds fixes, rebond strictement périodique) tourne avec
+    `idleLife` coupé, inchangé ; un test 2.3.0 ajouté vérifie pieds fixes (< 0,1 mm) et rebond non identique ;
+  - `torso-chain-v1331.test.ts` : la structure des poses clés est vérifiée avec et sans `snap` (sans : la tenue
+    d’impact doit être là, comme avant ; avec : elle est retirée, le reste identique) ; 48 → 96 tests ;
+  - documents de mesures régénérés par leurs tests : `MESURES_FLUIDITE`, `MESURES_INTRUSIONS`, `MESURES_MOTEUR`,
+    `MESURES_TORSIONS`, `MESURES_CROCHETS`, `MESURES_TENUES_AMARA`, `techniquePictos.json` (pictogramme de
+    l’overhand, données dérivées des animations ; aucun écran modifié).
+- **Tests ajoutés** : `anim-audit-v230.test.ts` (mesure complète), `stabilite-v230.test.ts` (3 minutes par coach,
+  pas de valeur invalide ni de dérive).
+- **Fichiers** : `src/engine/{v230,motion,player,rig,author,index}.ts`, `src/engine/library/{index,boxing}.ts`,
+  `src/ui/Lab.tsx` (`?v230=`), `src/test/animAudit.ts`, `scripts/v230/` (captures, vidéos, synthèse), `docs/v230/`,
+  `src/domain/releases.ts`, `package.json` (2.3.0), `docs/NON_REGRESSION.md`.
+- **Tests** : Vitest complet : 4 TEST ÉCHOUÉ, tous déjà en échec en 2.2.0 (expressions-v1160 taille du modèle
+  d’Amara, fluidity ×2, hooks-biomeca « pas d’armé ») ; l’échec 2.2.0 d’`extension-v032` (uppercut arrière) est
+  corrigé ; tous les autres TEST RÉUSSI ; `npm run build` TEST RÉUSSI ; captures WebGL avant/après : voir le rapport ;
+  Playwright ciblé (8 fichiers) : 44 réussis, 3 TEST ÉCHOUÉ non encore analysés (`coaching-hud.spec:60` nom du
+  coup pendant Jab → Direct → Low kick, `training-layout.spec:117` sans défilement, `training-layout.spec:336`
+  caméra Auto ; les deux derniers sont connus instables sous charge, à vérifier contre la 2.2.0) ; Playwright
+  complet NON EXÉCUTÉ ; téléphone Android NON EXÉCUTÉ.
+- **Restauration** : branche `restauration/avant-animations-v230` (= 2.2.0, `72d9bd5`), ou une correction seule par
+  son interrupteur. Non fusionné, non publié.

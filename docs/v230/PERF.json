@@ -1,0 +1,50 @@
+{
+ "mma-kadir": {
+  "msParImage_avant": 0.1254,
+  "msParImage_apres": 0.1239,
+  "rapport": 0.988,
+  "derive_m": 0.373,
+  "repetitions_3min": 34,
+  "msParImage_3min": 0.1526
+ },
+ "mma-amara": {
+  "msParImage_avant": 0.1401,
+  "msParImage_apres": 0.1598,
+  "rapport": 1.141,
+  "derive_m": 0.32,
+  "repetitions_3min": 34,
+  "msParImage_3min": 0.1342
+ },
+ "nael": {
+  "msParImage_avant": 0.1298,
+  "msParImage_apres": 0.1246,
+  "rapport": 0.96,
+  "derive_m": 0.352,
+  "repetitions_3min": 34,
+  "msParImage_3min": 0.1459
+ },
+ "victor": {
+  "msParImage_avant": 0.1234,
+  "msParImage_apres": 0.1201,
+  "rapport": 0.973,
+  "derive_m": 0.357,
+  "repetitions_3min": 34,
+  "msParImage_3min": 0.1283
+ },
+ "inaya": {
+  "msParImage_avant": 0.1684,
+  "msParImage_apres": 0.1239,
+  "rapport": 0.736,
+  "derive_m": 0.322,
+  "repetitions_3min": 34,
+  "msParImage_3min": 0.1276
+ },
+ "kanya": {
+  "msParImage_avant": 0.1424,
+  "msParImage_apres": 0.1464,
+  "rapport": 1.028,
+  "derive_m": 0.312,
+  "repetitions_3min": 34,
+  "msParImage_3min": 0.1527
+ }
+}

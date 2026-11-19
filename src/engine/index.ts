@@ -34,3 +34,5 @@ export { sequenceEnvelope, type Envelope } from './envelope';
 
 // v0.49, taken from the CME-3D lab (PR #25): velocity-aware smoothing of a stream of positions
 export { MotionSmoother } from './smoothing';
+
+export { V230, setV230FromQuery, type V230Flags } from './v230';

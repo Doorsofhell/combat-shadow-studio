@@ -1,0 +1,66 @@
+[
+ {
+  "coach": "mma-kadir",
+  "tech": "high-kick-avant",
+  "ver": "avant",
+  "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=kickboxing&tech=high-kick-avant&az=45&el=8&v230=0",
+  "duration": 0.91,
+  "images": 42
+ },
+ {
+  "coach": "mma-kadir",
+  "tech": "high-kick-avant",
+  "ver": "apres",
+  "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=kickboxing&tech=high-kick-avant&az=45&el=8",
+  "duration": 0.91,
+  "images": 42
+ },
+ {
+  "coach": "mma-kadir",
+  "tech": "uppercut-arriere",
+  "ver": "avant",
+  "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=boxe&tech=uppercut-arriere&az=60&el=8&v230=0",
+  "duration": 0.48,
+  "images": 42
+ },
+ {
+  "coach": "mma-kadir",
+  "tech": "uppercut-arriere",
+  "ver": "apres",
+  "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=boxe&tech=uppercut-arriere&az=60&el=8",
+  "duration": 0.44999999999999996,
+  "images": 42
+ },
+ {
+  "coach": "mma-amara",
+  "tech": "high-kick-avant",
+  "ver": "avant",
+  "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=kickboxing&tech=high-kick-avant&az=45&el=8&v230=0",
+  "duration": 0.91,
+  "images": 42
+ },
+ {
+  "coach": "mma-amara",
+  "tech": "high-kick-avant",
+  "ver": "apres",
+  "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=kickboxing&tech=high-kick-avant&az=45&el=8",
+  "duration": 0.91,
+  "images": 42
+ },
+ {
+  "coach": "mma-amara",
+  "tech": "uppercut-arriere",
+  "ver": "avant",
+  "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=boxe&tech=uppercut-arriere&az=60&el=8&v230=0",
+  "duration": 0.48,
+  "images": 42
+ },
+ {
+  "coach": "mma-amara",
+  "tech": "uppercut-arriere",
+  "ver": "apres",
+  "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=boxe&tech=uppercut-arriere&az=60&el=8",
+  "duration": 0.44999999999999996,
+  "images": 42
+ }
+]

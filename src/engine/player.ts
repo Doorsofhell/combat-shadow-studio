@@ -8,6 +8,7 @@ import { Quaternion, Vector3 } from 'three';
 import { ResolvedPose, blendResolved, transformResolved } from './pose';
 import type { CoachRig } from './rig';
 import { MotionLibrary, getMotion } from './library';
+import { V230 } from './v230';
 
 export interface PlayerStep {
   techniqueId: string;
@@ -203,8 +204,8 @@ export class ComboPlayer {
     }
     const d = dt * this.speed;
     this.clock += d;
-    this.cur.t += d;
-    if (this.next) this.next.t += d;
+    this.cur.t += d * this.idleRate(this.cur);
+    if (this.next) this.next.t += d * this.idleRate(this.next);
     if (this.restLeft > 0) this.restLeft -= dt;
 
     // start the next motion when the current reaches its chain point
@@ -230,9 +231,35 @@ export class ComboPlayer {
     return pose;
   }
 
+  /**
+   * 2.3.0 (idleLife): the guard's bounce is a loop of 0.9 s; played at the same pace it repeated identically (0.999
+   * correlation from one bounce to the next, measured on the six coaches): a metronome. Its pace now wanders slowly
+   * between about 0.85 and 1.15 times, never the same twice; the techniques keep their own timing.
+   */
+  private restY = new WeakMap<MotionSampler, number>();
+
+  /** height of the hips at the top of the guard's bounce (its first key) */
+  private idleRest(s: MotionSampler) {
+    let y = this.restY.get(s);
+    if (y === undefined) this.restY.set(s, (y = s.sample(0).hips.y));
+    return y;
+  }
+
+  private idleRate(a: Active) {
+    if (!V230.idleLife || !a.auto || a.sampler.motion.id !== this.idle) return 1;
+    return 1 + 0.2 * wander(this.clock, 0.8, 1.7, 2.9);
+  }
+
   private sample(a: Active) {
     const p = a.sampler.sample(Math.min(a.t, a.sampler.duration));
-    if (a.sampler.motion.id === this.idle) alive(p, this.clock);
+    if (a.sampler.motion.id === this.idle) {
+      if (V230.idleLife) {
+        // and its depth varies too, from about a half to the full written bounce
+        const rest = this.idleRest(a.sampler);
+        p.hips.y = rest + (p.hips.y - rest) * (0.75 + 0.25 * wander(this.clock * 0.9, 1.1, 2.3, 3.7));
+      }
+      alive(p, this.clock, V230.idleLife ? this.rig.metrics.height / 1.8 : 1);
+    }
     return transformResolved(p, a.origin);
   }
 
@@ -336,20 +363,20 @@ const wander = (t: number, a: number, b: number, c: number) => (Math.sin(t * a) 
  * loop, the weight drifts slowly from one foot to the other, the trunk and the head turn a little and the
  * gloves move a few millimetres, never the same way twice. The feet stay planted (the legs follow by IK).
  */
-function alive(p: ResolvedPose, t: number) {
+function alive(p: ResolvedPose, t: number, k = 1) {
   const shift = wander(t, 2.1, 3.7, 5.3);
   const sway = wander(t, 1.6, 2.9, 4.4);
-  p.hips.x += 0.012 * shift;
-  p.hips.z += 0.008 * sway;
+  p.hips.x += 0.012 * k * shift;
+  p.hips.z += 0.008 * k * sway;
   p.chest.premultiply(_yaw.setFromAxisAngle(UP, 0.035 * wander(t, 1.3, 2.3, 3.1)));
   p.head.yaw += 0.03 * wander(t, 0.9, 1.9, 3.3);
   p.head.pitch += 0.02 * wander(t, 1.1, 2.6, 4.1);
-  for (const [h, k] of [
+  for (const [h, o] of [
     [p.handL, 0.7],
     [p.handR, 1.9],
   ] as const) {
-    h.pos.x += 0.006 * wander(t + k, 2.2, 3.4, 5.1) + 0.012 * shift;
-    h.pos.y += 0.006 * wander(t + k, 1.7, 2.8, 4.6);
-    h.pos.z += 0.008 * sway;
+    h.pos.x += (0.006 * wander(t + o, 2.2, 3.4, 5.1) + 0.012 * shift) * k;
+    h.pos.y += 0.006 * k * wander(t + o, 1.7, 2.8, 4.6);
+    h.pos.z += 0.008 * k * sway;
   }
 }
