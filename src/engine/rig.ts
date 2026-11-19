@@ -5,6 +5,7 @@
  */
 import { Bone, Matrix4, Object3D, Quaternion, SkinnedMesh, Vector3 } from 'three';
 import { FootPose, HandPose, Pose, ResolvedFoot, NEUTRAL_JOINT, ResolvedHand, ResolvedPose, quatFromRot, toVec } from './pose';
+import { V230 } from './v230';
 import { PLANTED_LIMIT, TOE_LIMIT, ankleAngles as ankleAnglesOf, ankleQuat, limitAnkle, softLimit } from './limits';
 
 export type Side = 'L' | 'R';
@@ -124,6 +125,8 @@ export const FOREARM_ROTATION = { pronation: 80 * DEG, supination: 80 * DEG };
 export const WRIST_RANGE = { flexion: 80 * DEG, extension: 70 * DEG, loaded: 90 * DEG };
 /** past this elevation from hanging (arm) or standing (thigh) the axial rotation is not defined */
 const TWIST_UNDEFINED_ELEVATION = 150 * DEG;
+/** 2.3.0: largest turn of a limb about its own line to settle an excess of rotation f0: k·f0 + base (see settleTwist) */
+const TWIST_CAP = { k: 3, base: 20 * DEG, small: 2.5 * DEG };
 const wrapAngle = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
 /** 1.33 the neck in an upright guard: share of the way from the trunk to the vertical, and extra chin tuck (rad) */
@@ -1017,6 +1020,13 @@ export class CoachRig {
       }
     }
     if (Number.isFinite(found)) best = found;
+    // 2.3.0 (twistCap): a small excess past the range never turns the limb a long way round. Measured before: with the
+    // arm raised (overhand, sprawl, ukemi) or the leg folded (o-soto-gari), an excess of 1 to 5° was settled by turning
+    // the elbow or the knee 50 to 150° about the limb, then back on the next image (the root found jumps from one side
+    // to the other): the elbow or knee whipped across in 1/60 s. For an excess of a few degrees only (TWIST_CAP.small),
+    // the joint stays that little past its soft stop instead, within the torsion tests' tolerance; a larger excess is
+    // settled as before.
+    if (V230.twistCap && Math.abs(f0) < TWIST_CAP.small && Math.abs(best) > TWIST_CAP.k * Math.abs(f0) + TWIST_CAP.base) return 0;
     return best * w;
   }
 

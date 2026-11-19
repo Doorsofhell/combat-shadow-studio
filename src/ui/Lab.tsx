@@ -8,7 +8,7 @@ import { StudioStage } from '../three/StudioStage';
 import { StudioEnvironment } from '../three/StudioEnvironment';
 import type { CoachRig } from '../engine';
 import { getDuo, getIllustration, getLibrary, getMotion, type Place } from '../engine';
-import { MotionSampler, duration } from '../engine';
+import { MotionSampler, duration, setV230FromQuery } from '../engine';
 import type { StanceStyle } from '../engine';
 import type { CoachId, DisciplineId } from '../domain/types';
 import { TECHNIQUE_BY_ID } from '../domain/techniques';
@@ -62,6 +62,9 @@ export function Lab() {
     // 2.2.0 v220=0: the coach as in 2.1.0 (no morphology, no skin finish of 2.2.0), for the side-by-side comparisons
     (globalThis as { __cssMorpho?: boolean }).__cssMorpho = q.get('v220') === '0' ? false : undefined;
     (globalThis as { __cssSkin220?: boolean }).__cssSkin220 = q.get('v220') === '0' ? false : undefined;
+    // 2.3.0 v230=0: the animation engine as in 2.2.0 (every change of the lot switched off), v230=-snap,-legArc: some
+    // off (src/engine/v230.ts), for the side-by-side comparisons
+    setV230FromQuery(q.get('v230'));
     // 2.2.0 fx=pores,teinte,rugosite,diffusion,ombres,relief,etalonnage,brillance,nettoyage: skin effects switched off
     (globalThis as { __cssSkinFx?: string }).__cssSkinFx = q.get('fx') ?? undefined;
   }, [q]);

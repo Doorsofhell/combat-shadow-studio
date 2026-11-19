@@ -49,6 +49,19 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.3.0',
+      releaseDate: '2026-11-19',
+      title: 'Coups plus vifs, coups de pied plus naturels',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Coups de poing : le bassin part avant les épaules, puis le poing, comme chez un vrai boxeur ; le poing ne reste plus figé au bout du coup (arrêt deux fois plus court sur le jab et le direct), il repart aussitôt en garde.' },
+        { category: 'ameliorations', text: 'Coups de pied hauts : la jambe tourne autour de la hanche au lieu de se replier d’un coup au retour ; le genou ne fouette plus de côté et le pied arrive plus vite.' },
+        { category: 'ameliorations', text: 'Uppercuts : les jambes et les hanches lancent le coup, le bras monte en dernier. Overhand : le poing ne s’arme plus à côté de l’oreille et le coude ne bascule plus.' },
+        { category: 'ameliorations', text: 'Garde au repos plus vivante : le rebond ne se répète plus à l’identique, et ses mouvements suivent la taille de chaque coach. Les six coachs profitent des mêmes réglages.' },
+      ],
+      links: [{ label: 'S’entraîner', to: '/entrainer' }],
+    },
+    {
       version: '2.2.0',
       releaseDate: '2026-11-19',
       title: 'Coachs 3D : silhouettes et peau plus naturelles',

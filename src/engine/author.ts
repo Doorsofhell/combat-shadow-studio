@@ -243,6 +243,27 @@ export function driveToward(from: Pose, to: Pose, k = { pelvis: 0.6, chest: 0.45
   });
 }
 
+/**
+ * 2.3.0 (armLag): the striking hand of a « drive » key (the body has started the blow, the arm has not) is left
+ * partly behind in space instead of being carried whole by the turning trunk: by the time the hips and shoulders
+ * have turned, the fist has only gone `k` of the way the trunk would have carried it. The arm then catches up in the
+ * strike segment and reaches its top speed near the impact (measured before on the rear hook, the uppercuts and the
+ * elbows: the fist or the elbow was fastest 70 to 110 ms before the impact, carried by the trunk, and reached the
+ * target at a fifth of that speed). `a` gives the chest frames, `from` is the key before the drive.
+ */
+export function lagHand(a: Author, from: Pose, drive: Pose, side: 'L' | 'R', k: number) {
+  const hk = side === 'L' ? 'handL' : 'handR';
+  const hf = from[hk];
+  const hd = drive[hk];
+  const startW = hf.space === 'world' ? new Vector3(hf.pos.x, hf.pos.y, hf.pos.z) : vec(a.toWorld(from, hf.pos));
+  const carried = hd.space === 'world' ? new Vector3(hd.pos.x, hd.pos.y, hd.pos.z) : vec(a.toWorld(drive, hd.pos));
+  const w = startW.lerp(carried, k);
+  const at = v3(w.x, w.y, w.z);
+  drive[hk] = { ...hd, pos: hd.space === 'world' ? at : a.toChest(drive, at) };
+}
+
+const vec = (p: V3) => new Vector3(p.x, p.y, p.z);
+
 export const add = (a: V3, b: Partial<V3>): V3 => ({ x: a.x + (b.x ?? 0), y: a.y + (b.y ?? 0), z: a.z + (b.z ?? 0) });
 
 export interface StanceDef {
