@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.3.1',
+      releaseDate: '2026-11-19',
+      title: 'Préparation de la version Google Play',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'L’application Android est prête pour le Play Store : version de publication signée, contrôles automatiques (Android 16, permissions, sécurité) et politique de confidentialité consultable en ligne.' },
+      ],
+      links: [{ label: 'Confidentialité', to: '/confidentialite' }],
+    },
+    {
       version: '2.3.0',
       releaseDate: '2026-11-19',
       title: 'Coups plus vifs, coups de pied plus naturels',
