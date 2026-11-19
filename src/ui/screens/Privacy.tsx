@@ -63,7 +63,7 @@ export function Privacy() {
 
         <h2>Application Android</h2>
         <ul>
-          <li>Seule la permission INTERNET est demandée aujourd’hui (permission normale, sans fenêtre d’autorisation), utilisée pour afficher l’application.</li>
+          <li>Deux permissions normales sont déclarées, sans fenêtre d’autorisation : INTERNET, pour afficher l’application, et VIBRATE, pour les vibrations qui marquent le début, la pause et les rounds d’une séance.</li>
           <li>La sauvegarde dans le cloud et le transfert vers un nouvel appareil sont désactivés : tes données ne quittent pas le téléphone. Pour les déplacer, utilise l’export JSON.</li>
         </ul>
 

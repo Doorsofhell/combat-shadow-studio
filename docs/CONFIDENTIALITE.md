@@ -69,7 +69,7 @@ Détails techniques : `docs/COMPTES.md`.
 
 ## Application Android
 
-- Permission demandée aujourd’hui : `INTERNET` uniquement (permission normale, accordée à l’installation sans fenêtre).
+- Permissions déclarées : `INTERNET` et `VIBRATE` (depuis la 2.3.1, vibrations de la séance), permissions normales accordées à l’installation sans fenêtre.
 - Sauvegarde cloud et transfert d’appareil désactivés : `android:allowBackup="false"`, `android:fullBackupContent="false"` et `data_extraction_rules.xml` qui exclut tous les domaines. Les données se déplacent avec l’export JSON.
 
 ## Caméra et réalité augmentée

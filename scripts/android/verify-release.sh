@@ -41,9 +41,9 @@ echo "$B" | grep -q "targetSdkVersion:'$TARGET'" && ok "SDK cible $TARGET (exige
 echo "$B" | grep -q "minSdkVersion:'$MIN'" && ok "SDK minimal $MIN (Android 7.0)" || ko "SDK minimal différent de $MIN"
 if echo "$B" | grep -q "application-debuggable"; then ko "application débogable"; else ok "application non débogable"; fi
 
-# Permissions : INTERNET, plus la permission interne (signature) qu'AndroidX ajoute à toutes les applications
+# Permissions : INTERNET et VIBRATE (permissions normales), plus la permission interne (signature) qu'AndroidX ajoute à toutes les applications
 PERMS=$(echo "$B" | sed -n "s/^uses-permission: name='\([^']*\)'.*/\1/p" | sort -u)
-BAD=$(echo "$PERMS" | grep -v -x -e 'android.permission.INTERNET' -e "$PKG.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" || true)
+BAD=$(echo "$PERMS" | grep -v -x -e 'android.permission.INTERNET' -e 'android.permission.VIBRATE' -e "$PKG.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" || true)
 if [ -z "$BAD" ]; then ok "permissions : $(echo $PERMS | tr ' ' ',')"; else ko "permissions inattendues : $(echo $BAD | tr ' ' ',')"; fi
 
 # Pages mémoire de 16 Ko (obligatoire pour les mises à jour depuis novembre 2025)
@@ -77,8 +77,9 @@ fi
 # Tests unitaires lancés avant la compilation
 if [ -f vitest.log ]; then
   echo >> "$R"; echo "Tests unitaires (Vitest) :" >> "$R"; echo '```' >> "$R"
-  grep -E '^\s+(Test Files|Tests)\s' vitest.log | sed 's/\x1b\[[0-9;]*m//g' >> "$R" || true
-  grep -E '^ FAIL ' vitest.log | sed 's/\x1b\[[0-9;]*m//g' | sort -u >> "$R" || true
+  CLEAN=$(sed 's/\x1b\[[0-9;]*m//g' vitest.log)
+  echo "$CLEAN" | grep -E '^[[:space:]]*(Test Files|Tests)[[:space:]]' >> "$R" || true
+  echo "$CLEAN" | grep -E '^[[:space:]]*FAIL[[:space:]]' | sort -u >> "$R" || true
   echo '```' >> "$R"
 fi
 

@@ -1,7 +1,8 @@
 # Application Android (Capacitor)
 
-L’APK et l’AAB définitifs ne seront produits qu’après validation explicite de la Web App. Ce document décrit une
-compilation reproductible ; rien n’a encore été compilé pour publication.
+Depuis la 2.3.1, la version de publication (AAB signé pour le Play Store + APK signé) est construite par
+`.github/workflows/android-release.yml` et contrôlée par `scripts/android/verify-release.sh` : voir
+**`docs/PLAY_STORE.md`** (signature, contrôles, fiche, formulaires de la Play Console).
 
 ## Choix technique
 
@@ -65,7 +66,7 @@ Google Play (Play App Signing) et garder cette clé comme clé d’importation, 
 
 - `allowBackup=false` et `data_extraction_rules.xml` : aucune donnée copiée dans la sauvegarde cloud ni lors d’un
   transfert d’appareil.
-- Seule permission : `INTERNET` (accordée à l’installation, sans demande). Aucun accès caméra, micro, localisation.
+- Permissions : `INTERNET` et `VIBRATE` (2.3.1, vibrations de la séance), accordées à l’installation, sans demande. Aucun accès caméra, micro, localisation.
 - Quand la réalité augmentée native (ARCore) ou la reconnaissance vocale hors ligne seront ajoutées, les permissions
   `CAMERA` et `RECORD_AUDIO` seront demandées au moment de l’usage seulement (voir `AR.md` et `COACH_IA.md`).
 

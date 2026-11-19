@@ -4883,3 +4883,52 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   complet NON EXÉCUTÉ ; téléphone Android NON EXÉCUTÉ.
 - **Restauration** : branche `restauration/avant-animations-v230` (= 2.2.0, `72d9bd5`), ou une correction seule par
   son interrupteur. Non fusionné, non publié.
+
+## 2026-11-19 · v2.3.1 · Version Google Play : AAB signé, contrôles de conformité, fiche et confidentialité
+
+- **Demande** (Youssef) : générer l’APK final, « dans les règles », conforme à tous les critères de publication du
+  Play Store.
+- **Constat vérifié sur la 2.3.0** (`6e139eb`) :
+  - conforme : SDK cible et de compilation 36 (Android 16), SDK minimal 24, `versionCode` croissant tiré de
+    `package.json`, sauvegarde cloud désactivée, débogage WebView coupé, aucune bibliothèque native, application
+    hors ligne (84 Mo de contenu web), aucune donnée collectée ;
+  - manquant : aucun build de publication (seul un APK de test signé en debug, dernier construit en 0.24.0), pas de
+    format AAB, pas de signature de publication, adresse de contact « [à compléter avant publication] » dans l’écran
+    Confidentialité, politique de confidentialité non publiée à une adresse publique, pas de visuels ni de textes
+    de fiche ;
+  - anomalie : les vibrations de la séance (début, pause, rounds, 1.0.0) ne peuvent pas fonctionner dans
+    l’application Android, la permission `VIBRATE` n’étant pas déclarée (la WebView ignore alors
+    `navigator.vibrate`) ;
+  - point de vigilance non modifié : l’écran Premium présente une offre pas encore en vente (risque d’être jugé
+    trompeur à l’examen ; toute vente devra passer par Google Play Billing).
+- **Correction** :
+  - nouveau workflow `.github/workflows/android-release.yml` : tests unitaires (joints au rapport), build web,
+    `bundleRelease` + `assembleRelease`, signature par les secrets GitHub `ANDROID_KEYSTORE_BASE64`,
+    `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` (clé écrite dans le dossier temporaire
+    du runner puis effacée ; sans secrets, fichiers marqués `NON-SIGNE`) ;
+  - `scripts/android/verify-release.sh` : contrôles bloquants sur le fichier compilé (identifiant, versionCode,
+    versionName, SDK cible 36, SDK minimal 24, non débogable, permissions autorisées, alignement 16 Ko, signatures
+    apksigner et jarsigner, manifeste de l’AAB par bundletool), rapport `RAPPORT.md` et `SHA256SUMS.txt` ;
+  - permission `VIBRATE` (normale, sans fenêtre) ajoutée au manifeste ; textes de confidentialité mis à jour
+    (écran, `docs/CONFIDENTIALITE.md`, `docs/ANDROID.md`) ;
+  - `public/confidentialite.html` : politique publique sans script, adresse prévue
+    `https://doorsofhell.github.io/combat-shadow-studio/confidentialite.html` ;
+  - `docs/PLAY_STORE.md` : signature, contrôles, fiche (nom, descriptions), réponses aux formulaires (sécurité des
+    données, classification, public cible 13 ans et plus, santé), ordre des étapes (dont le test fermé de 12 testeurs
+    pendant 14 jours imposé aux comptes personnels récents) ;
+  - `docs/play-store/visuels/` : icône 512×512 RGBA, bannière 1024×500 (rendus réels de Naël, Amara, Kadir),
+    6 captures 1080×1920 de l’application compilée pour Android ;
+  - clé d’importation RSA 4096 préparée hors dépôt (fichiers privés du projet), en attente du choix de Youssef.
+- **Fichiers** : `.github/workflows/android-release.yml`, `scripts/android/verify-release.sh`,
+  `android/app/src/main/AndroidManifest.xml`, `public/confidentialite.html`, `src/ui/screens/Privacy.tsx`,
+  `docs/{PLAY_STORE,ANDROID,CONFIDENTIALITE,NON_REGRESSION}.md`, `docs/play-store/visuels/`,
+  `src/domain/play-store-v231.test.ts`, `src/domain/releases.ts`, `package.json` (2.3.1).
+- **Tests** :
+  - ajouté : `play-store-v231.test.ts` (7 tests : SDK, permissions, sauvegarde, signature hors dépôt, versionCode,
+    politique publique, workflow) : TEST RÉUSSI ;
+  - build Android sur GitHub Actions (run 44597153826, sans signature) : AAB et APK 65 Mo, versionCode 20301,
+    SDK cible 36, non débogable, permissions, alignement 16 Ko, manifeste de l’AAB : TEST RÉUSSI ; signature :
+    NON EXÉCUTÉ (secrets absents) ;
+  - Vitest complet sur la 2.3.0 avant changement : 1781 réussis, 4 TEST ÉCHOUÉ déjà connus (voir 2.3.0) ;
+  - installation sur un vrai téléphone : NON EXÉCUTÉ.
+- **Restauration** : branche `restauration/avant-play-store-v231` (= 2.3.0, `6e139eb`).
