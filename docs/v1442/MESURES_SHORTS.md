@@ -57,22 +57,22 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 | victor | muaythai | short-thai.002 | 2244 | 0 | 0 | 2 | 0 | 0.0 % |
 | victor | mma | short-vale-tudo | 5624 | 0 | 0 | 22 | 0 | 0.0 % |
 | victor | mma | short-vale-tudo | 2780 | 0 | 0 | 0 | 0 | 92.5 % |
-| kanya | boxe | short-thai.001 | 3662 | 0 | 0 | 24 | 0 | 0.0 % |
-| kanya | boxe | short-thai.001 | 3508 | 0 | 0 | 0 | 0 | 0.0 % |
-| kanya | boxe | short-thai.001 | 688 | 0 | 0 | 0 | 0 | 0.0 % |
-| kanya | boxe | short-thai.001 | 2290 | 0 | 0 | 3 | 0 | 0.0 % |
-| kanya | kickboxing | short-thai.002 | 3682 | 0 | 0 | 18 | 0 | 0.0 % |
-| kanya | kickboxing | short-thai.002 | 3490 | 0 | 0 | 2 | 0 | 0.0 % |
-| kanya | kickboxing | short-thai.002 | 692 | 0 | 0 | 0 | 0 | 0.0 % |
-| kanya | kickboxing | short-thai.002 | 2304 | 0 | 0 | 2 | 0 | 0.0 % |
+| kanya | boxe | short-thai | 3662 | 0 | 0 | 24 | 0 | 0.0 % |
+| kanya | boxe | short-thai | 3508 | 0 | 0 | 0 | 0 | 0.0 % |
+| kanya | boxe | short-thai | 688 | 0 | 0 | 0 | 0 | 0.0 % |
+| kanya | boxe | short-thai | 2290 | 0 | 0 | 3 | 0 | 0.0 % |
+| kanya | kickboxing | short-thai.001 | 3682 | 0 | 0 | 18 | 0 | 0.0 % |
+| kanya | kickboxing | short-thai.001 | 3490 | 0 | 0 | 2 | 0 | 0.0 % |
+| kanya | kickboxing | short-thai.001 | 692 | 0 | 0 | 0 | 0 | 0.0 % |
+| kanya | kickboxing | short-thai.001 | 2304 | 0 | 0 | 2 | 0 | 0.0 % |
 | kanya | muaythai | short-vale-tudo | 6962 | 0 | 0 | 21 | 0 | 0.0 % |
 | kanya | muaythai | short-vale-tudo | 2948 | 0 | 0 | 0 | 0 | 89.2 % |
 | kanya | muaythai | short-vale-tudo | 1158 | 0 | 0 | 0 | 0 | 0.0 % |
 | kanya | muaythai | short-vale-tudo | 308 | 0 | 0 | 0 | 0 | 0.0 % |
-| kanya | mma | short-thai | 3662 | 0 | 0 | 24 | 0 | 0.0 % |
-| kanya | mma | short-thai | 3508 | 0 | 0 | 0 | 0 | 0.0 % |
-| kanya | mma | short-thai | 688 | 0 | 0 | 0 | 0 | 0.0 % |
-| kanya | mma | short-thai | 2290 | 0 | 0 | 3 | 0 | 0.0 % |
+| kanya | mma | short-thai.002 | 3662 | 0 | 0 | 24 | 0 | 0.0 % |
+| kanya | mma | short-thai.002 | 3508 | 0 | 0 | 0 | 0 | 0.0 % |
+| kanya | mma | short-thai.002 | 688 | 0 | 0 | 0 | 0 | 0.0 % |
+| kanya | mma | short-thai.002 | 2290 | 0 | 0 | 3 | 0 | 0.0 % |
 
 ## En mouvement (50, 100 et 125 % de l'instant clé)
 
