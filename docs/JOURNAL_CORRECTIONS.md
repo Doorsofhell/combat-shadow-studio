@@ -4792,3 +4792,38 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   (`memoire-avant-apres.jpg`) ; suite Playwright complète et téléphone réel NON EXÉCUTÉ.
 - **Restauration** : branche `restauration/avant-memoire-coach-v4` (= `2edb83c`).
 - **Publication** : aucune ; en attente de la validation de Youssef.
+
+## 2026-11-19 · v2.2.0 (expérimentale, non publiée) · Refonte qualitative 3D des coachs (lot 1)
+
+- **Demande** : Youssef, 19/11 09:04, « REFONTE QUALITATIVE 3D AAA » (tous les coachs, priorité aux morphologies
+  féminines, comparatifs WebGL réels, aucune fusion ni publication sans accord).
+- **Sources** : 2.1.0 publiée (`claude/project-thread-o7lrt8`, `2bc24cd`), pas `main` (1.40.1).
+- **Audit vérifié** (scripts `scripts/v220/`, données `docs/v220/audit/`) : 6 coachs (Kadir, Naël, Victor, Amara,
+  Inaya, Kanya), poids de peau sains sur les six ; deux corps de base seulement (épaules identiques au millimètre) ;
+  tailles féminines étroites (taille/hanches Inaya 0,63, Kanya 0,64, Amara 0,67 ; 59 à 63 cm de tour) ; Victor :
+  plaque claire en haut de la poitrine (raccord tête/corps, écart 9,1/255), liseré et traits sombres, peau grise
+  (saturation 0,37) ; ombres portées à bord net (PCFSoftShadowMap retiré de three r186) et orangées sur toute leur
+  surface (tache sous les gants).
+- **Corrections** :
+  - `src/three/morphology.ts` (nouveau) : taille élargie de 3 à 4 cm pour Amara, Inaya, Kanya (rapport 0,67→0,69,
+    0,63→0,67, 0,63→0,67), hanches et poitrine inchangées, même champ appliqué aux tenues
+    (`src/three/PhotoCoach.tsx`, `src/three/outfit.ts`) ; GLB et masques de peau inchangés ;
+  - Victor : textures corps et tête corrigées (`scripts/v220/peau.py`, `scripts/v220/raccord.py --hauteur`),
+    données sources mises à jour dans `tools/generator/victor/donnees/` (le test octet pour octet reste valable) ;
+  - Naël : raccord de teinte cou/poitrine de la texture de la tête (écart 5,6→4,5) ; le même raccord sur Kadir
+    (3,6→2,4) a été annulé : il cassait l'empreinte protégée de `outfit-rollback-v1373` (« modèle corporel Kadir
+    intact ») pour un gain léger ; le test est gardé tel quel ;
+  - ombres : rayon 4 → 8 de la lumière principale du studio, teinte chaude limitée à la pénombre
+    (`src/three/StudioStage.tsx`, `src/three/skinShader.ts`) ;
+  - Lab : `?fx=` (isolation des effets de peau) et `?v220=0` (rendu 2.1.0) pour les comparatifs (`src/ui/Lab.tsx`,
+    `src/three/photoMaterials.ts`).
+- **Essais annulés faute de gain** : marges des îlots UV (déjà présentes dans les textures d'origine), microrelief
+  procédural (invisible à la taille réelle).
+- **Fichiers** : ci-dessus, plus `src/domain/releases.ts`, `package.json` (2.2.0), `src/boot/assetSizes.json`,
+  `docs/v220/` (rapport `RAPPORT_V220.md`, captures, audit), `src/three/__tests__/morphology-v220.test.ts`.
+- **Tests ajoutés** : `morphology-v220.test.ts` (12) : TEST RÉUSSI.
+- **Tests** : Vitest 1 723 réussis, 5 TEST ÉCHOUÉ déjà en échec en 2.1.0 (expressions-v1160, extension-v032,
+  hooks-biomeca, fluidity ×2), aucun nouveau ; Playwright ciblé 74/74 TEST RÉUSSI ; Playwright complet NON EXÉCUTÉ ;
+  `npm run build` TEST RÉUSSI ; téléphone Android NON EXÉCUTÉ ; mesures de performance : triangles et appels de dessin
+  identiques (`docs/v220/RAPPORT_V220.md` § 6).
+- **Restauration** : branche `restauration/avant-refonte-3d-v220` (= 2.1.0, `2bc24cd`). Non fusionné, non publié.

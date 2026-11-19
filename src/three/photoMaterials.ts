@@ -162,19 +162,45 @@ export const FIGHTER_PILOT_150: Partial<Record<keyof typeof SKIN_LOOK, {
 };
 
 function pilot150(look: SkinLook) {
+  look = source(look);
   const id = Object.keys(SKIN_LOOK).find((k) => SKIN_LOOK[k] === look);
   return id ? FIGHTER_PILOT_150[id] : undefined;
 }
 
 function premiumFinish(look: SkinLook) {
+  look = source(look);
   const id = Object.keys(SKIN_LOOK).find((k) => SKIN_LOOK[k] === look);
   return id ? PREMIUM_FINISH[id] : undefined;
 }
 
 export function skinLookFor(url: string): SkinLook {
   const id = Object.keys(SKIN_LOOK).find((k) => url.includes(`/${k}/`));
-  return id ? SKIN_LOOK[id] : DEFAULT_SKIN;
+  const look = id ? SKIN_LOOK[id] : DEFAULT_SKIN;
+  const fx = skinIsolation();
+  if (!fx) return look;
+  // 2.2.0 Lab only (?fx=pores,teinte,...): the same look with the named effects switched off, to find which effect
+  // makes a defect (Youssef 19/11 § 5 « isoler chaque effet »). Never set by the app itself.
+  const x: SkinLook = { ...look };
+  if (fx.has('relief')) x.relief = 0;
+  if (fx.has('diffusion')) { x.wrap = 0; }
+  if (fx.has('ombres')) x.shadowLift = 0;
+  if (fx.has('pores')) x.pores = 0;
+  if (fx.has('rugosite')) x.roughVar = 0;
+  if (fx.has('teinte')) x.tintVar = 0;
+  if (fx.has('etalonnage')) { x.sat = 1; x.gain = 1; x.warm = 0; }
+  if (fx.has('nettoyage')) x.cleanBody = false;
+  isolated.set(x, look);
+  return x;
 }
+
+/** 2.2.0 effets coupés pour l'étude d'isolation du Lab (?fx=), null dans l'application */
+export function skinIsolation(): Set<string> | null {
+  const f = (globalThis as { __cssSkinFx?: string }).__cssSkinFx;
+  return f ? new Set(f.split(',')) : null;
+}
+/** the look a Lab isolation copy was made from (the per-coach finish tables are keyed by the original) */
+const isolated = new WeakMap<SkinLook, SkinLook>();
+const source = (look: SkinLook) => isolated.get(look) ?? look;
 
 /**
  * The material drawn for one part of a photo coach. Skin: closed surface, front faces only (as in 1.9: the back
@@ -224,10 +250,11 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
           m.specularIntensity = head ? fighter.faceSpecular : fighter.bodySpecular;
           m.userData.cssFighterPilot150 = true;
         }
+        if (skinIsolation()?.has('brillance')) { m.sheen = 0; m.specularIntensity = 0.2; }
         m.userData.cssPremium149 = true;
         m.userData.cssPremiumFinish = true;
         // Historic regression flags retained for the Amara-specific test.
-        if (look === SKIN_LOOK['mma-amara']) m.userData[head ? 'cssAmaraFaceFinish' : 'cssAmaraBodyFinish'] = true;
+        if (source(look) === SKIN_LOOK['mma-amara']) m.userData[head ? 'cssAmaraFaceFinish' : 'cssAmaraBodyFinish'] = true;
       }
       // scattering and lifted shadows in both qualities (a few instructions), pores in high quality only
       // 1.44 the head's skin also carries the face's soft zones (src/three/human/faceRender.ts)

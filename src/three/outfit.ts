@@ -4,6 +4,7 @@ import { GLTFLoader, MeshoptDecoder, type GLTF } from 'three-stdlib';
 import type { DisciplineId } from '../domain/types';
 import { log3d } from './diag3d';
 import { physicalFrom } from './photoMaterials';
+import { applyMorphology, morphologyFor } from './morphology';
 
 /**
  * v0.31 discipline outfits of the Ultra-réaliste coaches (Youssef, 2026-10-22: « TENUES ET ACCESSOIRES 3D PREMIUM
@@ -166,7 +167,14 @@ export function useOutfit(
               m.skeleton.bones.map((b) => bones.get(b.name) ?? b),
               m.skeleton.boneInverses,
             );
-            const mesh = new SkinnedMesh(m.geometry, dressOutfitMaterial(m.material as Material, quality, isAmaraOutfitUrl(url)));
+            // 2.2.0: the garment follows the coach's own morphology (same field as the body, src/three/morphology.ts)
+            const morpho = morphologyFor(url);
+            const geometry = morpho ? m.geometry.clone() : m.geometry;
+            if (morpho) {
+              applyMorphology(geometry, morpho, m.skeleton);
+              restore.push(() => geometry.dispose());
+            }
+            const mesh = new SkinnedMesh(geometry, dressOutfitMaterial(m.material as Material, quality, isAmaraOutfitUrl(url)));
             if (isFittedBand(m)) overCloth(mesh.material as Material);
             mesh.name = `tenue:${m.name}`;
             mesh.position.copy(m.position);

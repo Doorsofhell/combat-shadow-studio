@@ -1,3 +1,4 @@
+import { skin220 } from './skinShader';
 import { ReactNode, useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { ContactShadows, OrbitControls } from '@react-three/drei';
@@ -88,7 +89,9 @@ export function StageLights({ dark = false, shadows = false, vive = false }: { d
         shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0004}
         shadow-normalBias={0.025}
-        shadow-radius={4}
+        // 2.2.0: a softer edge to the cast shadows (about 1.3 cm instead of 6 mm): three r186 dropped PCFSoftShadowMap,
+        // the shadows of the gloves and arms on the body had a cut-out edge
+        shadow-radius={skin220() ? 8 : 4}
         shadow-camera-left={-1.6}
         shadow-camera-right={1.6}
         shadow-camera-top={2}

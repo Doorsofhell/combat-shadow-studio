@@ -41,6 +41,9 @@ export interface SkinLook {
   cleanBody?: boolean;
 }
 
+/** 2.2.0 finish of the skin (penumbra lift, see cssShadowLift); off only in the Lab comparisons (?v220=0) */
+export const skin220 = () => (globalThis as { __cssSkin220?: boolean }).__cssSkin220 !== false;
+
 export const DEFAULT_SKIN: SkinLook = { relief: 1.3, wrap: 0.5, shadowLift: 0.32, pores: 0.05, roughVar: 0.12, tintVar: 0.05, tint: [1, 0.5, 0.36] };
 
 const HEADER = /* glsl */ `
@@ -63,7 +66,14 @@ float cssNoise(vec2 p) {
 }
 // 1.44 light through the thin parts of the face (ears, nostrils, lips): set by the head's skin, 0 elsewhere
 float cssThinK = 0.0;
-vec3 cssShadowLift(float s) { return vec3(s) + (1.0 - s) * cssShadowLiftK * cssTint; }
+uniform float cssPenumbra;
+// 2.2.0: the warm light kept in shadows only along their edge (the penumbra, where light really scatters under the
+// skin); deep in a cast shadow the same amount of light, neutral (same luminance). In 2.1.0 the whole shadow took the
+// orange tint: a glove's shadow on the chest read as a dark orange stain (captures 12-uppercut, Naël, Victor)
+vec3 cssShadowLift(float s) {
+  vec3 t = mix(vec3(dot(cssTint, vec3(0.2126, 0.7152, 0.0722))), cssTint, mix(1.0, clamp(4.0 * s * (1.0 - s) * 1.6, 0.0, 1.0), cssPenumbra));
+  return vec3(s) + (1.0 - s) * cssShadowLiftK * t;
+}
 vec3 cssWrapIrr(vec3 n, vec3 l, vec3 c) {
   float ndl = dot(n, l);
   vec3 w = (cssWrap + 0.6 * cssThinK) * cssTint;
@@ -121,6 +131,7 @@ export function applySkinShader(m: Material, look: SkinLook, detail: boolean, fa
     cssRoughVar: { value: look.roughVar },
     cssTintVar: { value: look.tintVar },
     cssGrade: { value: new Vector3(look.sat ?? 1, look.gain ?? 1, look.warm ?? 0) },
+    cssPenumbra: { value: skin220() ? 1 : 0 },
   };
   m.userData.cssSkin = uniforms;
   if (face) m.userData.cssFaceSkin = true;
@@ -189,5 +200,5 @@ ${look.cleanBody && !face ? `
     );
     shader.fragmentShader = f;
   };
-  m.customProgramCacheKey = () => `css-skin-${detail ? 1 : 0}${face ? '-face144' : ''}${look.cleanBody && !face ? '-victor-clean148-waist2' : ''}`;
+  m.customProgramCacheKey = () => `css-skin-${detail ? 1 : 0}${skin220() ? '-v220' : ''}${face ? '-face144' : ''}${look.cleanBody && !face ? '-victor-clean148-waist2' : ''}`;
 }
