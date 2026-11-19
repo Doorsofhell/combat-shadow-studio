@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import type { GLTFLoader } from 'three-stdlib';
-import { Material, Mesh, MeshStandardMaterial, Object3D, Vector3, type SkinnedMesh } from 'three';
+import { BufferGeometry, Material, Mesh, MeshStandardMaterial, Object3D, Vector3, type Skeleton, type SkinnedMesh } from 'three';
 import { applyBreath, Breath } from './breath';
 import { Sway } from './sway';
 import { hairFadeAttribute, photoMaterial, photoPart, skinLookFor } from './photoMaterials';
@@ -62,6 +62,8 @@ export function PhotoCoach({
     // 1.10: skin calibrated per coach (relief, scattering, pores: photoMaterials.ts SKIN_LOOK)
     const look = skinLookFor(url);
     const s = cloneSkinned(gltf.scene);
+    // 2.1.0: what this copy owns in graphics memory, given back when it leaves (see the cleanup below)
+    const owned: BufferGeometry[] = [];
     s.traverse((o) => {
       const m = o as Mesh;
       if (!m.isMesh) return;
@@ -70,7 +72,9 @@ export function PhotoCoach({
       // Amara only: optional extra target on the body stores the old swimsuit surface
       // flattened in the actual rendered model. Bake BEFORE removing static morphs.
       // All seven existing hideBody masks still use the original unbaked vertex keys.
+      const loaded = m.geometry;
       if (!bakeAmaraCleanSurface(m)) dropStillMorphs(m);
+      if (m.geometry !== loaded) owned.push(m.geometry);
       // 1.10: each part classified (skin, eyes, hair, brows, lashes) and rebuilt from all its source properties
       // (src/three/photoMaterials.ts): before, « opacity » sent the eyes, brows and lashes to the hair branch
       const part = photoPart(m.material as Material);
@@ -79,6 +83,7 @@ export function PhotoCoach({
       if (part === 'peau' && (m as SkinnedMesh).isSkinnedMesh) applyBreath(m.material as Material, breath.uniformsFor(m as SkinnedMesh));
     });
     restoreReferencePose(s);
+    s.userData.cssOwnedGeometries = owned;
     return s;
   }, [gltf, quality, url, breath]);
   // 1.9: blinks, gaze and the effort of the strikes on the facial bones (src/three/face.ts); after the rig's pose
@@ -116,12 +121,21 @@ export function PhotoCoach({
   }, [scene, shadows]);
   // v0.29: the materials made for this quality are freed when the quality changes or the coach leaves
   // (they used to stay in graphics memory; the textures belong to the loaded model and stay shared)
+  // 2.1.0 (Youssef, 2026-11-19 « corriger la mise en mémoire à chaque changement de coach »): the copy's own
+  // skeletons (each one keeps its bone matrices in a texture) and its own geometries are given back too: about
+  // thirteen textures used to stay in graphics memory at every coach change
   useEffect(
-    () => () =>
+    () => () => {
+      const skeletons = new Set<Skeleton>();
       scene.traverse((o) => {
         const m = o as Mesh;
-        if (m.isMesh) (m.material as MeshStandardMaterial).dispose();
-      }),
+        if (!m.isMesh) return;
+        (m.material as MeshStandardMaterial).dispose();
+        if ((m as SkinnedMesh).isSkinnedMesh && !o.name.startsWith('tenue:')) skeletons.add((m as SkinnedMesh).skeleton);
+      });
+      for (const k of skeletons) k.dispose();
+      for (const g of (scene.userData.cssOwnedGeometries as BufferGeometry[] | undefined) ?? []) g.dispose();
+    },
     [scene],
   );
   useEffect(() => onRig(rig), [rig, onRig]);

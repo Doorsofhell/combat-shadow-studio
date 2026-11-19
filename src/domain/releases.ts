@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.1.0',
+      releaseDate: '2026-11-18',
+      title: 'Choix du coach : un univers pour chacun',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Écran « Ton coach » : chaque coach apparaît dans son propre univers, tiré de ses traits (son surnom, son style, ses points forts) : ailes de l’aigle pour Kadir, piqué du faucon pour Naël, lune du loup pour Victor, crinière de la lionne pour Amara, griffes de la panthère pour Inaya, rayures de la tigresse pour Kanya.' },
+        { category: 'ameliorations', text: 'Le coach est plus grand à l’écran et toujours en entier ; sa fiche (surnom, taille, poids, spécialités avec icônes) est posée sous lui ; bouton doré « Garder » ou « Choisir ».' },
+        { category: 'corrections', text: 'Changer de coach ne remplit plus la mémoire du téléphone : chaque coach quitté rend tout ce qu’il occupait dans la carte graphique (avant, une dizaine d’images restaient à chaque changement).' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '2.0.0',
       releaseDate: '2026-11-18',
       title: 'Version 2 : application plus légère',

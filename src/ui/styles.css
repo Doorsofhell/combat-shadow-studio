@@ -4817,3 +4817,232 @@ html[data-back-chip] .page.coach-star.coach-select:not(:has(> .page-head:first-c
     transition: none;
   }
 }
+
+/* ==========================================================================
+   V4 « Ton coach » (Youssef, 2026-11-18, maquette V4 + « quelque chose tiré des traits du coach »): the coach stands in
+   his own universe (src/three/atmosphere, colours from CoachAtmosphereResolver in --atmo-*). The sheet lies over the
+   bottom of the stage (the camera frames the coach above it), the strip of portraits with a gold outline on the coach
+   looked at, a gold button. The stage is always dark, whatever the theme; what lies under it follows the theme.
+   ========================================================================== */
+.coach-v4 {
+  --atmo-primary: #d4af37;
+  --atmo-accent: #f4e2a6;
+  --atmo-deep: #060606;
+  --v4-gold: #f2c230;
+  --v4-gold-2: #d99a0b;
+}
+.page.coach-v4 {
+  /* the whole screen is the coach's night: the strip and the button sit on the same dark as the stage */
+  background: var(--atmo-deep);
+  transition: background-color 0.6s ease;
+}
+.coach-v4 .star-stage {
+  background: var(--atmo-deep);
+  transition: background-color 0.6s ease;
+  isolation: isolate;
+}
+.coach-v4 .star-ghost {
+  transition: opacity 0.4s ease;
+  color: color-mix(in srgb, var(--atmo-accent) 12%, transparent);
+}
+/* the name is drawn in the 3D universe once it is there */
+.coach-v4 .star-stage[data-ready='true'] .star-ghost {
+  opacity: 0;
+}
+.coach-v4 .star-mine {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+.coach-v4 .star-arrow {
+  top: 40%;
+  width: 46px;
+  height: 46px;
+  border: 2px solid color-mix(in srgb, var(--v4-gold) 85%, transparent);
+  background: rgba(8, 8, 10, 0.55);
+  color: #fff;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--v4-gold) 35%, transparent);
+  transition: transform 0.12s ease, background-color 0.2s ease;
+}
+.coach-v4 .star-arrow:active {
+  transform: scale(0.92);
+}
+.coach-v4 .star-see {
+  position: absolute;
+  z-index: 3;
+  right: 10px;
+  top: calc(env(safe-area-inset-top) + 68px);
+  border: 2px solid var(--v4-gold);
+  background: rgba(8, 8, 10, 0.5);
+  color: #fff;
+}
+.coach-v4 .star-see[aria-pressed='true'] {
+  color: var(--v4-gold);
+}
+.coach-v4 .star-info {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 36px var(--gutter) 10px;
+  gap: 8px;
+  color: #fff;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--atmo-deep) 82%, transparent) 34%, color-mix(in srgb, var(--atmo-deep) 96%, transparent));
+}
+.coach-v4 .star-row {
+  align-items: flex-end;
+}
+.coach-v4 .star-who {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.coach-v4 .star-nick {
+  color: var(--v4-gold);
+  font-style: italic;
+  font-size: 1.05rem;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+.coach-v4 .star-name {
+  color: #fff;
+  font-style: italic;
+  font-size: clamp(2.6rem, 13vw, 3.6rem);
+  letter-spacing: 0.01em;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
+}
+.coach-v4 .star-style {
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.875rem;
+}
+.coach-v4 .star-facts {
+  flex: none;
+  margin: 0 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 12px;
+  border-left: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  font-size: 1rem;
+}
+.coach-v4 .star-fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+.coach-v4 .star-sep {
+  display: none;
+}
+.coach-v4 .star-glyph {
+  width: 17px;
+  height: 17px;
+  fill: rgba(255, 255, 255, 0.82);
+}
+.coach-v4 .star-chips {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.coach-v4 .star-chips i {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 7px 8px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--atmo-accent) 30%, rgba(255, 255, 255, 0.12));
+  background: rgba(10, 10, 12, 0.62);
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1.15;
+}
+.coach-v4 .star-chips i svg {
+  flex: none;
+  color: var(--v4-gold);
+}
+.coach-v4 .star-thumb {
+  height: 56px;
+  border-radius: 12px;
+  opacity: 0.82;
+  background: radial-gradient(circle at 50% 30%, #2a2e36, #0b0d10);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+/* the face fills the portrait, lit up a little */
+.coach-v4 .star-thumb img {
+  object-position: 46% 4%;
+  transform: skewX(6deg) scale(2.4);
+  transform-origin: 46% 8%;
+  filter: brightness(1.45) contrast(1.08) saturate(1.05);
+}
+.coach-v4 .star-thumb.on {
+  opacity: 1;
+  border-color: var(--v4-gold);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 0 16px color-mix(in srgb, var(--v4-gold) 60%, transparent);
+}
+.coach-v4 .star-thumb .tick {
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--v4-gold);
+  color: #111;
+}
+.coach-v4 .star-thumb.mine::after {
+  left: 4px;
+  right: auto;
+}
+.coach-v4 .star-cta-gold {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 54px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffd34d, var(--v4-gold) 45%, var(--v4-gold-2));
+  color: #141414;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  box-shadow: 0 6px 18px rgba(217, 154, 11, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: transform 0.1s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+.coach-v4 .star-cta-gold:active {
+  transform: scale(0.97);
+  filter: brightness(0.95);
+  box-shadow: 0 2px 8px rgba(217, 154, 11, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.coach-v4 .star-cta-gold:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+@media (max-height: 700px) {
+  .coach-v4 .star-name {
+    font-size: 2.3rem;
+  }
+  .coach-v4 .star-info {
+    padding-top: 24px;
+    gap: 6px;
+  }
+  .coach-v4 .star-chips i {
+    padding: 5px 7px;
+  }
+  .coach-v4 .star-thumb {
+    height: 50px;
+  }
+  .coach-v4 .star-cta-gold {
+    min-height: 48px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .coach-v4 .star-stage,
+  .coach-v4 .star-ghost,
+  .coach-v4 .star-cta-gold,
+  .coach-v4 .star-arrow {
+    transition: none;
+  }
+}
