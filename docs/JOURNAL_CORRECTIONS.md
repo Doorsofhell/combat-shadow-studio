@@ -4936,5 +4936,11 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     3 réussissent (`chrono-seul:96`, `coachs-v160:74`, `seance-mains-libres:117`, instables sous charge) ; les
     3 autres (`coach-suggest:147`, `coaching-hud:60`, `training-layout:336`) échouent à l’identique sur la 2.3.0
     (`restauration/avant-play-store-v231`) : antérieurs, sans lien avec cette version, aucune régression ;
+  - 20/11 : adresse de contact publique (provisoire, Youssef) dans `src/domain/contact.ts` et
+    `public/confidentialite.html`, test de cohérence ajouté (8 tests) : TEST RÉUSSI ;
+  - 20/11 : build signé (run 44704915977, commit `377a43c`) : signature APK (apksigner) et AAB (jarsigner) TEST
+    RÉUSSI, empreinte de la clé d’importation `B4:7F:38:3A:…:A7:11`, tous les autres contrôles TEST RÉUSSI ;
+    artefact `play-store-signe` (AAB `e9209e3a…`, APK `3e93ce41…`, 30 jours) ; Vitest du runner : les 4 échecs
+    connus + `morphology-v220` « ordre des surfaces » (réussit 2 fois sur 2 en local, sans lien avec cette version) ;
   - installation sur un vrai téléphone : NON EXÉCUTÉ.
 - **Restauration** : branche `restauration/avant-play-store-v231` (= 2.3.0, `6e139eb`).
