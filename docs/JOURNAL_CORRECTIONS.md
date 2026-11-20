@@ -5071,5 +5071,14 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     marque) n'est plus servie, le nouveau portrait arrive : TEST RÉUSSI ;
   - Vitest complet : 1804 réussis, 1 ignoré, 4 TEST ÉCHOUÉ déjà connus et sans lien (`fluidity` ×2,
     `hooks-biomeca`, `expressions-v1160`, les mêmes que sur la 2.3.2) ;
-  - `npm run build` : TEST RÉUSSI.
+  - `npm run build` : TEST RÉUSSI (2.3.4, `version.json` 2.3.4 / 20304, empreintes présentes dans `sw.js`) ;
+  - Playwright complet (306 tests, 1 h 12) : 301 réussis, 2 ignorés (Firebase), 3 TEST ÉCHOUÉ :
+    `coach-suggest:147` et `coaching-hud:60` échouent aussi relancés seuls, comme sur la 2.3.0 à 2.3.2 (sans lien) ;
+    `training-layout:117` réussit relancé seul (instable sous charge) ;
+  - relance ciblée sur la 2.3.4 fusionnée avec la 2.3.3 : `maj-modeles-v234`, `boot.spec` (1 à 3), `training-layout:117`
+    : TEST RÉUSSI ; `boot.spec:98` (changer de coach après le démarrage) est intermittent : 1 échec sur 3 sur la
+    2.3.4 et **3 échecs sur 5 sur la 2.3.3 sans cette correction** : antérieur, sans lien avec le cache (l'écran
+    d'entraînement n'est pas encore ouvert au moment du contrôle) ;
+  - preuve avant/après (script ad hoc, même navigateur) : sur la 2.3.2 une copie périmée du modèle et du portrait est
+    servie ; sur la 2.3.4 les vrais fichiers.
 - **Restauration** : branche `restauration/avant-cache-3d-v232` (= 2.3.2, `d5b3b9b`).
