@@ -49,6 +49,27 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.3.5',
+      releaseDate: '2026-11-20',
+      title: 'Retour protégé dans le créateur',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Créateur d’enchaînements : le bouton Retour du téléphone (ou du navigateur) ne fait plus perdre tes modifications. Il ferme d’abord le panneau ouvert, puis demande « Abandonner les modifications ? ». Un deuxième Retour ferme la question et garde ton brouillon.' },
+      ],
+      links: [{ label: 'Créateur', to: '/createur' }],
+    },
+    {
+      version: '2.3.3',
+      releaseDate: '2026-11-20',
+      title: 'Numéro de version et documentation à jour',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Le numéro de version vient maintenant d’une seule source : le titre, l’écran À propos, l’application Android et Nouveautés affichent toujours le même.' },
+        { category: 'corrections', text: 'La présentation de l’application et l’état du projet sont générés depuis le contenu réel : six disciplines, et le nombre exact de techniques, d’exercices, de combinaisons et de coachs.' },
+      ],
+      links: [{ label: 'À propos', to: '/reglages/a-propos' }],
+    },
+    {
       version: '2.3.2',
       releaseDate: '2026-11-20',
       title: 'Nouveau prix de Premium à vie',

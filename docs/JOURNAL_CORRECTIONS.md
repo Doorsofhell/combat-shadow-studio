@@ -4977,3 +4977,89 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     intermittent : 1 échec sur 4 sur la 2.3.2 et 2 échecs sur 4 sur la 2.3.1 (`restauration/avant-prix-premium-v232`),
     donc antérieur et sans lien avec le prix. Aucune régression ;
   - capture du panneau Offre en 412 × 915 : `monetisation/offre-premium-v2.3.2.png` (fichiers du projet).
+
+## 2026-11-20 · v2.3.3 · Source unique de version et documentation générée (P0)
+
+- **Signalement (Youssef, P0)** : `package.json` en 1.40.1 alors que les travaux portent sur la 2.x, README à
+  « quatre disciplines » et « 64 techniques », `docs/ETAT.md` daté du 17 octobre.
+- **Constat vérifié** :
+  - la 1.40.1 est celle de la branche `main`, restée en retard ; la branche déployée sur GitHub Pages
+    (`claude/project-thread-o7lrt8`) est en **2.3.2** dans `package.json`, le titre et Nouveautés ;
+  - sur cette branche, `package-lock.json` était resté en **2.3.1** (non mis à jour par la 2.3.2) ;
+  - le titre, À propos et l'écran de démarrage lisaient déjà `package.json` ; Android aussi, mais seulement au
+    moment de `build:android` ; rien n'écrivait les informations de publication dans le build ;
+  - le README décrivait 4 disciplines et 64 techniques, `docs/ETAT.md` datait du 17 octobre (137 tests,
+    1 100 combinaisons, 4 coachs), le manifeste de la web app, le premier écran et le coach IA citaient 4 disciplines.
+    Le modèle réel : 6 disciplines, 91 techniques, 254 exercices, 49 programmes, 6 coachs, 1 496 combinaisons.
+- **Correction** :
+  - `package.json` reste la seule source ; `package-lock.json` réaligné (`npm version 2.3.3`) ;
+  - `scripts/android-version.mjs` exporte `androidVersion()` (même formule x × 10000 + y × 100 + z) réutilisée par
+    le build et la documentation ;
+  - nouveau `tools/build/releaseInfo.ts` : chaque build écrit `version.json` (version, versionName, versionCode,
+    date et titre de Nouveautés, commit, heure du build) ; le build s'arrête si Nouveautés n'annonce pas la version
+    de `package.json`. Fichier exclu du cache hors ligne pour toujours refléter la version déployée ;
+  - `src/domain/projectFacts.ts` compte les disciplines, techniques, exercices, programmes, coachs et combinaisons
+    depuis les catalogues réels ; `npm run docs:sync` réécrit les blocs générés du README et de `docs/ETAT.md` ;
+  - `docs/ETAT.md` réécrit (partie générée + état de publication tenu à la main) ; README sans chiffre figé ;
+  - manifeste, premier écran et consigne du coach IA citent les six disciplines.
+- **Test de désynchronisation** : `src/domain/version-sync.test.ts` (9 tests) échoue si `package-lock.json`, le
+  titre, Android, Nouveautés, `version.json`, le README ou `docs/ETAT.md` ne suivent plus `package.json` et les
+  catalogues. Il a trouvé un écart d'historique : la 1.33.2 (lot fait hors suivi, consigné le 2026-11-12) est datée
+  après la 1.34.0 ; l'historique est gardé tel quel, le test exige seulement qu'aucune version ne soit datée après
+  la dernière. Aucun test existant modifié.
+- **Fichiers** : `package.json`, `package-lock.json`, `scripts/android-version.mjs` (+ `.d.mts`),
+  `scripts/docs-sync.mjs`, `tools/build/releaseInfo.ts`, `vite.config.ts`, `src/domain/projectFacts.ts`,
+  `src/domain/version-sync.test.ts`, `src/domain/releases.ts`, `src/ui/screens/Onboarding.tsx`, `src/coach/llm.ts`,
+  `README.md`, `docs/ETAT.md`, `docs/NON_REGRESSION.md`.
+- **Restauration** : branche `restauration/avant-version-unique-v233` (= 2.3.2, `d5b3b9b`).
+- **Résultats (2.3.3)** :
+  - `src/domain/version-sync.test.ts` (9 tests) : TEST RÉUSSI ;
+  - Vitest complet : 1 798 réussis, 1 ignoré, 4 TEST ÉCHOUÉ déjà connus et sans lien (`fluidity` ×2,
+    `hooks-biomeca`, `expressions-v1160` taille d'Amara), les mêmes que sur la 2.3.2 avant changement ;
+  - `npm run build` : TEST RÉUSSI ; `dist/version.json` en 2.3.3 (versionCode 20303), titre « Combat Shadow Studio
+    v2.3.3 », `version.json` absent du cache hors ligne ;
+  - Playwright ciblé (`app`, `navigation` dont Nouveautés, `profil-v120`, `aucune-perte-v100`, `account`,
+    49 tests) : 47 réussis, 2 ignorés (Firebase) : TEST RÉUSSI ;
+  - Playwright complet (1 h) : NON EXÉCUTÉ (aucun changement de 3D, d'animation ni de mise en page) ;
+  - build Android signé : NON EXÉCUTÉ (la formule du versionCode est inchangée et testée).
+
+## 2026-11-20 · v2.3.5 · Bouton Retour : plus de perte de modifications dans le créateur (P1)
+
+- **Signalement** : Youssef, 2026-11-20 (P1 « Risque lié au bouton Retour Android ») : le fichier d'état indiquait
+  que le retour système peut quitter le créateur sans confirmer les modifications non enregistrées.
+- **Constat vérifié sur la v2.3.2** (`d5b3b9b`, build de production, Playwright) : dans l'éditeur d'un enchaînement,
+  après avoir retiré un mouvement, le Retour du navigateur quitte l'éditeur tout de suite, sans question, et la
+  modification est perdue ; même chose avec le panneau « Ajouter un mouvement » ouvert. Le nouveau
+  `retour-createur.spec` échoue 2 fois sur 5 sur la v2.3.2. Sur Android, le bouton Retour (Capacitor,
+  `src/platform/native.ts`) appelle `history.back()` quand aucun écran ne le prend : même effet.
+- **Cause** : la protection du créateur (`useLeaveGuard`) ne surveillait que les liens, la barre, le Menu et le
+  rechargement de la page. Le Retour du système passe par l'historique, qu'elle ne regardait pas.
+- **Correction** (réutilise le système de navigation existant, sans nouveau mécanisme) :
+  - la protection passe dans la navigation (`src/ui/nav/useLeaveGuard.ts`) pour servir à tout écran avec un
+    brouillon ; elle pose une « garde » des couches d'historique (`pushGuard`, 1.42.0), la même que la séance ;
+  - règle « un Retour = un seul pas » : Retour ferme d'abord un panneau ouvert, puis demande « Abandonner les
+    modifications ? » ; un deuxième Retour ferme la question et garde le brouillon ; seul « Abandonner » sort, vers
+    la page d'avant ; sans modification, Retour sort tout de suite ;
+  - Enregistrer, Annuler, la barre et les liens retirent la garde avant de changer de page : Retour depuis la page
+    suivante ne retombe jamais sur une copie de l'éditeur ;
+  - inventaire : le créateur d'enchaînements est le seul écran de l'application avec un brouillon non enregistré
+    (les autres réglages s'enregistrent tout de suite ; les fenêtres de mot de passe, d'e-mail et de photo sont des
+    panneaux que Retour ferme, comme avant).
+- **Fichiers** : `src/ui/nav/useLeaveGuard.ts` (déplacé depuis `src/ui/screens/creator/`),
+  `src/ui/screens/creator/CreatorEditor.tsx`, `tests/e2e/retour-createur.spec.ts` (nouveau, 5 tests),
+  `src/ui/nav/__tests__/leave-guard-android.test.tsx` (nouveau, 3 tests : le bouton Android simulé comme Capacitor),
+  `docs/NON_REGRESSION.md`, `src/domain/releases.ts`, `package.json` et `package-lock.json` (2.3.5), `README.md` et
+  `docs/ETAT.md` régénérés par `npm run docs:sync` (la limite « Retour système » n'y figure plus).
+- **Restauration** : branche `restauration/avant-retour-createur-v232` (= 2.3.2, `d5b3b9b`).
+- **Résultats (2.3.5)** :
+  - avant correction, sur la v2.3.2 : `retour-createur.spec` 2 TEST ÉCHOUÉ sur 5 (le constat) ;
+  - après correction : `retour-createur.spec` (5) et `createur-v2.spec` (5) : TEST RÉUSSI ;
+  - `leave-guard-android.test` (3, bouton Android simulé comme Capacitor) : TEST RÉUSSI ;
+  - Vitest complet : 1792 réussis, 1 ignoré, 4 TEST ÉCHOUÉ déjà connus et sans lien (`fluidity` ×2,
+    `hooks-biomeca`, `expressions-v1160`) ; `morphology-v220` « ordre des surfaces » a échoué 1 fois sur 2
+    (intermittent connu, voir 2.3.1) ; après fusion de la 2.3.3 : `src/ui/nav` + `src/domain` (332) TEST RÉUSSI ;
+  - `npm run build` et `tsc` : TEST RÉUSSI ;
+  - Playwright complet : NON EXÉCUTÉ en entier. Arrêté à 72/310 à la demande de Youssef (2026-11-20 14 h 20,
+    « Passe la suite Playwright ») après sa validation de la PR #146. Sur ces 72 tests, 3 échecs sur des écrans que
+    cette correction ne touche pas : `coach-suggest:147` (déjà en échec sur la 2.3.0 à 2.3.2), `boot:98` et
+    `chrono:124` (non comparés à la 2.3.2 faute de suite complète ; à revérifier au prochain passage complet).

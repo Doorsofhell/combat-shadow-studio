@@ -31,6 +31,7 @@ chaque lot, point de restauration, rapport (TEST RÉUSSI / ÉCHOUÉ / NON EXÉCU
 | `restauration/lot-4c` | v0.9.0 | Commandes hiérarchisées, zone Caméra regroupée (angle, rotation, zoom, recentrer), progression |
 | `restauration/lot-4b` | v0.8.0 | Consigne principale et 3 à 5 points clés par technique, point de la phase en cours mis en évidence |
 | `restauration/avant-play-store-v231` | `6e139eb` (2.3.0) | Avant la version Google Play 2.3.1 (build AAB signé, contrôles Play Store, permission VIBRATE, politique publique) |
+| `restauration/avant-version-unique-v233` | `d5b3b9b` (2.3.2) | Avant la source unique de version et la documentation générée (2.3.3) |
 
 Les étiquettes Git (tags) ne passent pas par le proxy de l’environnement : chaque point de restauration est donc une
 branche `restauration/...` sur GitHub. Retour arrière : `git checkout restauration/<nom>`.
@@ -84,7 +85,7 @@ décrivent l'état de référence d'origine (historique).
   (le short) au premier affichage de l’éditeur. Non reproduit depuis ; à surveiller.
 - Signalé par Youssef : certains textes sont peu lisibles ou masqués par les couleurs.
 - Cartes des disciplines : grand titre en filigrane coupé et superposé à l’image.
-- Le geste retour du système ne déclenche pas la confirmation de l’éditeur.
+- ~~Le geste retour du système ne déclenche pas la confirmation de l’éditeur.~~ Corrigé en 2.3.5 (`retour-createur.spec`).
 - Gants de boxe et garde : le visage est caché dans la vue de face de l’éditeur.
 
 ## Matrice de non-régression
@@ -117,6 +118,7 @@ décrivent l'état de référence d'origine (historique).
 | Performances | Pas de dégradation non justifiée | taille des fichiers du build | – |
 | Coach IA | Réponses hors ligne, pause, ralenti | `coach.test`, `training-layout.spec` | – |
 | Coachs 3D | (1.37.0) Un seul rendu Ultra-réaliste, quatre coachs Rocketbox ; anciens réglages (style, « Précédente ») et anciens choix Axel / Kaila convertis sans perte ; chevilles dans les amplitudes ; vignettes du choix de coach sur une ligne, rotation gauche-droite seulement | `ankle-range.test`, `settings-style.test`, `contract.test`, `coach-render.spec`, `coachs-v160.spec`, `moteur-lumiere.spec` | captures de la PR 1.37.0 |
+| Retour avec modifications non enregistrées (2.3.5) | Créateur d’enchaînements : Retour du téléphone, geste retour et Retour du navigateur ferment d’abord un panneau, puis demandent ; un deuxième Retour garde le brouillon ; seul « Abandonner » sort ; sans modification, sortie directe ; après Enregistrer, pas de retour dans l’éditeur | `retour-createur.spec` (5), `leave-guard-android.test` (3), `createur-v2.spec` | – |
 | Réalité augmentée | Démarrage, refus, arrêt caméra | `ar.test` | non applicable sans appareil |
 
 Commandes : `npx tsc -b`, `npx vitest run`, `npx vite build` puis
