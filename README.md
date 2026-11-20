@@ -1,8 +1,25 @@
 # Combat Shadow Studio
 
-Application web progressive (PWA) d’entraînement solo en shadow boxing, guidée par un coach 3D, pour quatre disciplines :
-boxe anglaise, kick-boxing, MMA et muay-thaï, du niveau débutant à expert. Interface entièrement en français, données
-stockées uniquement sur l’appareil.
+<!-- GÉNÉRÉ:presentation — ne pas modifier à la main, lancer « npm run docs:sync » -->
+Version **2.3.3** (20 novembre 2026) : Numéro de version et documentation à jour. Version testable en ligne : https://doorsofhell.github.io/combat-shadow-studio/
+
+Application d’entraînement solo en shadow boxing, guidée par un coach 3D, pour six disciplines :
+boxe anglaise, kick-boxing, MMA, muay-thaï, jiu-jitsu brésilien et judo, sur quatre niveaux (débutant, intermédiaire, avancé, expert).
+Interface entièrement en français, données stockées uniquement sur l’appareil. Web app (PWA) et application Android.
+
+| Discipline | Techniques | Exercices | Combinaisons des légendes |
+| --- | ---: | ---: | ---: |
+| Boxe anglaise | 30 | 49 | 348 |
+| Kick-boxing | 46 | 56 | 286 |
+| MMA | 54 | 48 | 348 |
+| Muay-thaï | 54 | 48 | 310 |
+| Jiu-jitsu brésilien | 13 | 25 | 96 |
+| Judo | 15 | 28 | 108 |
+| **Total** | **91** | **254** | **1 496** |
+
+Une technique commune à plusieurs disciplines (le direct, par exemple) est une seule définition comptée une fois dans le total.
+Programmes : 49. Coachs 3D : 6 (Kadir, Naël, Victor, Amara, Inaya, Kanya). Légendes : 107 champions.
+<!-- FIN GÉNÉRÉ:presentation -->
 
 ## Démarrer
 
@@ -13,6 +30,7 @@ npm run build        # production dans dist/ (avec service worker, fonctionne ho
 npm run preview      # sert dist/ sur http://localhost:4173
 npm test             # tests unitaires (Vitest)
 npm run test:e2e     # parcours complets dans Chromium (Playwright, build + preview automatiques)
+npm run docs:sync    # régénère les chiffres de ce README et de docs/ETAT.md depuis les catalogues réels
 ```
 
 Node 20 ou plus. Pour Playwright avec un Chromium déjà installé : `CHROMIUM_PATH=/chemin/vers/chrome npm run test:e2e`.
@@ -23,11 +41,11 @@ Node 20 ou plus. Pour Playwright avec un Chromium déjà installé : `CHROMIUM_P
 | --- | --- |
 | Bienvenue (questionnaire) | âge, taille, poids, expérience, niveau par discipline, objectifs, disponibilité, durée, garde, limitations, discipline principale, **choix obligatoire du coach**, recommandations |
 | Coach | changement de coach à tout moment, statistiques conservées |
-| Accueil | 4 disciplines, recommandations, temps de la semaine, reprise |
-| Discipline | 4 niveaux, 11 à 12 exercices par niveau, choix du mode |
+| Accueil | toutes les disciplines, recommandations, temps de la semaine, reprise |
+| Discipline | niveaux et exercices de la discipline (nombres exacts dans le tableau ci-dessus), choix du mode |
 | Entraînement 3D | coach animé, enchaînement en cours, mouvement actuel et suivant, consigne, chrono de séance (temps actif), cumul de l’exercice, démarrer, pause, reprise, recommencer, vitesse, exercice précédent et suivant, plein écran, caméra, garde |
-| Bibliothèque | 64 techniques, chacune jouée en 3D avec description, consignes et points clés |
-| Programmes | 8 séances structurées (échauffement, technique, combinaisons, cardio, retour au calme) |
+| Bibliothèque | toutes les techniques (nombre exact dans le tableau ci-dessus), chacune jouée en 3D avec description, consignes et points clés |
+| Programmes | programmes structurés (échauffement, technique, combinaisons, cardio, retour au calme) |
 | Créateur | enchaînements personnalisés avec validation des transitions |
 | Statistiques, Historique | temps actif par discipline, niveau, exercice, semaine, mois ; répétitions ; séances |
 | Réglages | voix, volumes séparés, qualité 3D, caméra, rounds par défaut, export et import JSON, effacement |

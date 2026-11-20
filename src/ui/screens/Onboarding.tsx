@@ -85,7 +85,7 @@ export function Onboarding() {
               <br />
               <em>guidé par un coach 3D</em>
             </h1>
-            <p className="muted">Boxe anglaise, kick-boxing, MMA et muay-thaï, du niveau débutant à expert. Ton coach montre chaque mouvement, tu le suis comme dans un miroir de salle.</p>
+            <p className="muted">Boxe anglaise, kick-boxing, MMA, muay-thaï, judo et jiu-jitsu brésilien, du niveau débutant à expert. Ton coach montre chaque mouvement, tu le suis comme dans un miroir de salle.</p>
             <ul className="feature-list">
               <li>
                 <span className="icon-tile red" aria-hidden>
