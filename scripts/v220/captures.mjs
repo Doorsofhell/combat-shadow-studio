@@ -13,6 +13,7 @@ export const VIEWS = {
   '02-profil-gauche': `d=mma&rest=1&az=90&el=6&span=1.08&fy=0.92&${L}`,
   '03-profil-droit': `d=mma&rest=1&az=-90&el=6&span=1.08&fy=0.92&${L}`,
   '04-dos': `d=mma&rest=1&az=180&el=6&span=1.08&fy=0.92&${L}`,
+  '05b-visage-face': `d=mma&rest=1&az=0&el=2&span=0.13&fy=1.66&${L}`,
   '05-visage': `d=mma&rest=1&az=18&el=4&span=0.15&fy=1.63&${L}`,
   '06-torse-epaules-cou': `d=mma&rest=1&az=20&el=6&span=0.36&fy=1.30&${L}`,
   '07-abdomen-bassin-hanches': `d=mma&rest=1&az=25&el=4&span=0.34&fy=1.05&${L}`,

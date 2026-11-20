@@ -1,0 +1,257 @@
+"""2.4.0 « coachs fidèles aux images de référence » : rapproche la tête d'un coach Rocketbox d'une image de visage.
+1. repères MediaPipe sur un rendu de face du modèle et sur l'image (reperes.py) ;
+2. caméra affine ajustée sur les 478 paires ;
+3. FORME : écart des repères (nez, bouche, sourcils, ovale, menton) converti en mètres et appliqué aux points de la
+   tête par un champ lisse (plaque mince) : fonction de la position seule, donc les points dupliqués des coutures uv
+   bougent ensemble ; yeux fixes (os des yeux inchangés), nuque, crâne et cou à zéro ; expressions gardées (deltas) ;
+4. TEXTURE : l'image est projetée sur la texture de la tête (texels de face, dans l'ovale du visage) en basses
+   fréquences, le grain de peau du modèle gardé en hautes fréquences ; le teint de la tête et du corps est ramené à
+   celui de l'image par le même gain (pas de raccord au cou).
+  python3 visage.py config.json   (voir fideles/<coach>.json)"""
+import sys, os, json, io
+import numpy as np
+from PIL import Image
+from scipy import ndimage as nd
+from scipy.interpolate import RBFInterpolator
+from matplotlib.path import Path as MPath
+H = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, H)
+from glb import Glb, save, prim_refs
+from raster import front_view, uv_raster
+from reperes import detect
+
+OVAL = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149,
+        150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109]
+EYES = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 263, 249, 390, 373, 374, 380,
+        381, 382, 362, 398, 384, 385, 386, 387, 388, 466] + list(range(468, 478))
+SHAPE = [1, 4, 5, 6, 197, 195, 2, 98, 327, 129, 358, 48, 278, 61, 291, 0, 17, 13, 14, 37, 267, 84, 314, 152, 148, 377,
+         176, 400, 172, 397, 136, 365, 58, 288, 132, 361, 93, 323, 234, 454, 70, 63, 105, 66, 107, 336, 296, 334, 293,
+         300, 151, 9, 8, 168, 50, 280, 205, 425, 187, 411, 207, 427, 116, 345, 123, 352]
+EYE_ANCHOR = [33, 133, 159, 145, 263, 362, 386, 374]
+
+
+def smooth(e0, e1, x):
+    t = np.clip((x - e0) / (e1 - e0), 0, 1)
+    return t * t * (3 - 2 * t)
+
+
+def fit_affine(X, u):
+    A = np.hstack([X, np.ones((len(X), 1))])
+    M, *_ = np.linalg.lstsq(A, u, rcond=None)
+    return M.T  # 2x4
+
+
+def proj(M, X):
+    return X @ M[:, :3].T + M[:, 3]
+
+
+def vertex_normals(P, T):
+    # normales lissées en soudant les points de même position (coutures uv)
+    key = np.round(P / 1e-5).astype(np.int64)
+    _, inv = np.unique(key, axis=0, return_inverse=True)
+    inv = inv.ravel()
+    fn = np.cross(P[T[:, 1]] - P[T[:, 0]], P[T[:, 2]] - P[T[:, 0]])
+    acc = np.zeros((inv.max() + 1, 3))
+    for k in range(3):
+        np.add.at(acc, inv[T[:, k]], fn)
+    n = acc[inv]
+    return n / np.maximum(np.linalg.norm(n, axis=1, keepdims=True), 1e-12)
+
+
+def main(cfg):
+    C = json.load(open(cfg))
+    task = C['task']
+    g = Glb(C['src'])
+    refs = prim_refs(g)
+    head = [r for r in refs if r[0].endswith('_head')][0]
+    Pacc, Nacc, Iacc = head[1], head[2], head[3]
+    P0 = g.acc(Pacc).astype(np.float64); N0 = g.acc(Nacc).astype(np.float64)
+    T = g.acc(Iacc).reshape(-1, 3).astype(np.int64)
+    UV = [p['UV'] for p in g.prims() if p['mat'].endswith('_head')][0].astype(np.float64)
+    eye_prim = [r for r in refs if r[0].startswith('Eyes')]
+    TE = g.acc(eye_prim[0][3]).reshape(-1, 3).astype(np.int64) if eye_prim else np.zeros((0, 3), np.int64)
+    J = g.joints_world(); ey = J['LeftEye'][1]; ez = J['LeftEye'][2]
+    tex = np.asarray(g.image('head_color')).astype(np.float32) / 255
+    px = 0.0004
+    img, XYZ, Z = front_view(P0, T, UV, tex, (-0.11, 0.11, ey - 0.14, ey + 0.11), px)
+    Image.fromarray((img * 255).astype(np.uint8)).save(C['work'] + '-face-avant.png')
+    Lm = detect(Image.open(C['work'] + '-face-avant.png'), task)
+    ref = Image.open(C['ref']).convert('RGB')
+    x0, y0, x1, y1 = C['ref_box']
+    Lr = detect(ref.crop((x0, y0, x1, y1)), task)
+    if Lm is None or Lr is None:
+        raise SystemExit('visage non détecté')
+    Lr[:, 0] += x0; Lr[:, 1] += y0
+    ix = np.clip(Lm[:, 0].astype(int), 0, XYZ.shape[1] - 1); iy = np.clip(Lm[:, 1].astype(int), 0, XYZ.shape[0] - 1)
+    X3 = XYZ[iy, ix]; ok = np.isfinite(Z[iy, ix])
+    # caméra : ajustée sur les points de l'ovale, du nez et des yeux (structure), pas sur la bouche/expression
+    base_idx = np.array([i for i in OVAL + EYES[:32] + [1, 4, 6, 168, 197, 195, 5, 98, 327] if ok[i]])
+    M = fit_affine(X3[base_idx], Lr[base_idx, :2])
+    res0 = np.linalg.norm(proj(M, X3[base_idx]) - Lr[base_idx, :2], axis=1).mean()
+    print('écart moyen avant forme (px image)', round(float(res0), 2))
+    # ----- forme
+    alpha = C.get('shape', 0.8)
+    A2 = M[:, :2]; A2i = np.linalg.pinv(A2)
+    sh = np.array([i for i in SHAPE if ok[i]])
+    r = Lr[sh, :2] - proj(M, X3[sh])
+    dxy = (A2i @ r.T).T * alpha
+    lim = C.get('shape_max', 0.006)
+    nrm = np.linalg.norm(dxy, axis=1, keepdims=True); dxy = dxy * np.minimum(1, lim / np.maximum(nrm, 1e-9))
+    anc = np.array([i for i in EYE_ANCHOR if ok[i]])
+    src = np.vstack([X3[sh, :2], X3[anc, :2]])
+    dst = np.vstack([dxy, np.zeros((len(anc), 2))])
+    # anneau de points fixes autour du visage (crâne, oreilles, cou)
+    cx = 0.0; cy = ey - 0.035
+    ring = np.array([[cx + 0.11 * np.cos(t), cy + 0.14 * np.sin(t)] for t in np.linspace(0, 2 * np.pi, 24, endpoint=False)])
+    src = np.vstack([src, ring]); dst = np.vstack([dst, np.zeros((len(ring), 2))])
+    tps = RBFInterpolator(src, dst, kernel='thin_plate_spline', smoothing=C.get('shape_smooth', 2e-5))
+    chin_y = X3[152, 1]
+    def field(P, N):
+        wv = smooth(-0.1, 0.45, N[:, 2]) * smooth(chin_y - 0.025, chin_y - 0.002, P[:, 1]) * smooth(ez - 0.06, ez - 0.02, P[:, 2])
+        D = np.zeros_like(P); D[:, :2] = tps(P[:, :2]) * wv[:, None]
+        # garde-fou : les globes et le pourtour immédiat des yeux ne bougent pas (os LeftEye/RightEye inchangés)
+        for e in ('LeftEye', 'RightEye'):
+            D *= smooth(0.016, 0.026, np.linalg.norm(P - J[e], axis=1))[:, None]
+        P1 = P + D
+        gn0 = vertex_normals(P, T); gn1 = vertex_normals(P1, T)
+        N1 = N + (gn1 - gn0); N1 /= np.maximum(np.linalg.norm(N1, axis=1, keepdims=True), 1e-12)
+        moved = np.linalg.norm(D, axis=1) > 1e-7
+        N1[~moved] = N[~moved]
+        return P1, N1, D
+    P1, N1, D = field(P0, N0)
+    print('déplacement max (mm)', round(float(np.abs(D).max() * 1000), 2), 'points bougés', int((np.linalg.norm(D, axis=1) > 1e-5).sum()))
+    # repères déplacés par le même champ, caméra réajustée
+    X3b = X3.copy(); X3b[:, :2] += tps(X3[:, :2]) * smooth(chin_y - 0.025, chin_y - 0.002, X3[:, 1])[:, None]
+    M = fit_affine(X3b[base_idx], Lr[base_idx, :2])
+    sh_res = np.linalg.norm(proj(M, X3b[sh]) - Lr[sh, :2], axis=1).mean()
+    print('écart des repères de forme après (px)', round(float(sh_res), 2), 'avant', round(float(np.linalg.norm(r, axis=1).mean()), 2))
+    # ----- texture
+    S = tex.shape[0]
+    PM, NM, VM = uv_raster(P1, N1, T, UV, S)
+    _, _, VE = uv_raster(P1, N1, TE, UV, S) if len(TE) else (None, None, np.zeros((S, S), bool))
+    cam = np.cross(M[0, :3], M[1, :3]); cam /= np.linalg.norm(cam)
+    if cam[2] < 0: cam = -cam
+    facing = (NM @ cam)
+    uvp = proj(M, PM.reshape(-1, 3)).reshape(S, S, 2)
+    R = np.asarray(ref).astype(np.float32) / 255
+    # masque de l'ovale dans l'image, rentré pour ne pas prendre de cheveux ni de fond
+    poly = MPath(Lr[OVAL, :2])
+    hh, ww = R.shape[:2]
+    yy, xx = np.mgrid[y0:y1, x0:x1]
+    inside = np.zeros((hh, ww), np.float32)
+    inside[y0:y1, x0:x1] = poly.contains_points(np.stack([xx.ravel() + .5, yy.ravel() + .5], 1)).reshape(yy.shape)
+    ero = C.get('mask_erode', 6)
+    inside = nd.gaussian_filter(nd.binary_erosion(inside > 0.5, iterations=ero).astype(np.float32), ero * 0.6)
+    # délumage partiel de l'image (grandes ombres) : luminance basse fréquence dans l'ovale
+    lum = R @ np.array([0.3, 0.59, 0.11], np.float32)
+    w8 = nd.gaussian_filter(inside, 18) + 1e-4
+    low = nd.gaussian_filter(lum * inside, 18) / w8
+    mean_l = float((lum * inside).sum() / inside.sum())
+    dl = C.get('delight', 0.5)
+    Rd = R * (np.clip(mean_l / np.maximum(low, 0.05), 0.6, 1.7) ** dl)[..., None]
+    Rd = np.clip(Rd, 0, 1)
+    u = uvp[..., 0]; v = uvp[..., 1]
+    from scipy.ndimage import map_coordinates
+    samp = np.stack([map_coordinates(Rd[..., c], [v.ravel(), u.ravel()], order=1, mode='nearest').reshape(S, S) for c in range(3)], -1)
+    win = map_coordinates(inside, [v.ravel(), u.ravel()], order=1, mode='constant').reshape(S, S)
+    W = win * smooth(*C.get('facing', (0.25, 0.6)), facing) * VM * (~VE)
+    W = np.clip(W * C.get('strength', 1.0), 0, 1)
+    # teint : gain par canal qui amène la peau du modèle (même zone) sur celle de l'image
+    sel = W > 0.6
+    base_mean = tex[sel].mean(0); ref_mean = samp[sel].mean(0)
+    gain = np.clip(ref_mean / base_mean, 0.5, 2.0) if C.get('tone', True) else np.ones(3)
+    gain = 1 + (gain - 1) * C.get('tone_amount', 1.0)
+    print('gain de teint', gain.round(3))
+    t2 = np.clip(tex * gain, 0, 1)
+    sig = C.get('detail_sigma', 5)
+    hi = t2 - nd.gaussian_filter(t2, (sig, sig, 0))
+    # teint du visage projeté ramené exactement sur celui de la tête et du corps (même moyenne) : pas de raccord
+    samp = samp * (t2[sel].mean(0) / np.maximum(samp[sel].mean(0), 1e-4))
+    lo = nd.gaussian_filter(samp, (sig * 0.5, sig * 0.5, 0))
+    # le shader de peau de l'application ajoute déjà contraste, saturation et chaleur : l'image est adoucie d'autant
+    m0 = t2[sel].mean(0)
+    lo = m0 + (lo - m0) * C.get('contraste', 0.8)
+    g0 = lo @ np.array([0.3, 0.59, 0.11]); lo = g0[..., None] + (lo - g0[..., None]) * C.get('saturation', 0.85)
+    face = np.clip(lo + hi * C.get('detail', 1.0), 0, 1)
+    outt = t2 * (1 - W[..., None]) + face * W[..., None]
+    if C.get('poivre_sel'):
+        # cheveux et barbe poivre et sel (planche de Victor) : texels sombres hors du visage projeté, plus clairs sur
+        # les tempes et la barbe que sur le dessus du crâne
+        ps = C['poivre_sel']
+        l = outt @ np.array([0.3, 0.59, 0.11])
+        dark = smooth(0.30, 0.16, l) * VM * (~VE)
+        y = PM[..., 1]; x = np.abs(PM[..., 0]); zf = PM[..., 2]
+        top = smooth(ey + 0.07, ey + 0.11, y)
+        side = smooth(0.035, 0.07, x) * smooth(ey - 0.06, ey - 0.02, y)
+        beard = smooth(ey - 0.04, ey - 0.07, y)
+        amt = dark * np.clip(ps.get('tempes', 0.75) * side + ps.get('dessus', 0.35) * top + ps.get('barbe', 0.6) * beard * (1 - W), 0, 1)
+        rng = np.random.default_rng(7)
+        nz = nd.gaussian_filter(rng.random((S, S)), 0.8); nz = (nz - nz.min()) / (nz.max() - nz.min())
+        amt = amt * (0.55 + 0.9 * nz)
+        grey = np.clip(l * 1.6 + 0.30, 0, 0.85)[..., None] * np.array([1.0, 0.99, 0.97])
+        outt = outt * (1 - amt[..., None]) + grey * amt[..., None]
+    if C.get('barbe_courte'):
+        # barbe courte poivre et sel sur la mâchoire et les joues basses (planche de Victor), lèvres épargnées
+        bc = C['barbe_courte']
+        y = PM[..., 1]; x = PM[..., 0]; zf = PM[..., 2]
+        mouth = X3b[13]; nose = X3b[2]
+        top = nose[1] - 0.007 - 0.006 * smooth(0.015, 0.03, np.abs(x)) + 0.008 * smooth(0.035, 0.06, np.abs(x))
+        zone = smooth(top + 0.006, top - 0.006, y) * smooth(chin_y - 0.016, chin_y - 0.006, y) * smooth(ez - 0.075, ez - 0.05, zf)
+        lips = np.hypot((x - mouth[0]) / 0.026, (y - mouth[1]) / 0.011)
+        zone = nd.gaussian_filter(zone * smooth(0.9, 1.3, lips) * VM * (~VE), 6)
+        rng = np.random.default_rng(11)
+        nz = rng.random((S, S)); nz = nd.gaussian_filter(nz, 1.1); nz = (nz - nz.min()) / (nz.max() - nz.min())
+        hair = smooth(0.45, 0.65, nz)
+        poivre = np.where(nd.gaussian_filter(rng.random((S, S)), 0.6) > 0.55, 0.50, 0.20)[..., None] * np.array([1, 0.96, 0.92])
+        a = (zone * (bc.get('ombre', 0.35) + bc.get('poils', 0.55) * hair))[..., None]
+        outt = outt * (1 - a) + poivre * a
+    if C.get('iris'):
+        # couleur de l'iris (planche) : texels des globes dont la teinte est marquée, luminance gardée
+        h = C['iris']; tgt = np.array([int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)])
+        # iris bleu-vert des modèles Rocketbox : bleu au-dessus du rouge (le pourtour rougeâtre du globe n'est pas touché)
+        chroma = (np.maximum(outt[..., 1], outt[..., 2]) - outt[..., 0]) * VE
+        a = smooth(0.01, 0.05, chroma)[..., None]
+        l = (outt @ np.array([0.3, 0.59, 0.11]))[..., None]
+        col = np.clip(l / (tgt @ np.array([0.3, 0.59, 0.11])) * tgt, 0, 1)
+        outt = outt * (1 - a) + col * a
+    np.save(C['work'] + '-poids.npy', W.astype(np.float16))
+    Image.fromarray((outt * 255).astype(np.uint8)).save(C['work'] + '-tete.png')
+    # corps : même gain (raccord du cou)
+    new_img = {}
+    for i, im in enumerate(g.j['images']):
+        nm = im.get('name', '')
+        if 'head_color' in nm:
+            b = io.BytesIO(); Image.fromarray((outt * 255).astype(np.uint8)).save(b, 'JPEG', quality=92); new_img[i] = b.getvalue()
+        if 'body_color' in nm and C.get('tone', True):
+            body = np.asarray(g.image('body_color')).astype(np.float32) / 255
+            b = io.BytesIO(); Image.fromarray((np.clip(body * gain, 0, 1) * 255).astype(np.uint8)).save(b, 'JPEG', quality=92); new_img[i] = b.getvalue()
+    for out in C['out']:
+        gg = Glb(out['from']) if 'from' in out else g
+        imgs = {}
+        for i, im in enumerate(gg.j['images']):
+            nm = im.get('name', '')
+            if 'head_color' in nm:
+                # même format que l'image d'origine (test maquillage-v1403)
+                b = io.BytesIO(); hi8 = Image.fromarray((outt * 255).astype(np.uint8))
+                hi8.save(b, 'PNG', optimize=True) if im.get('mimeType') == 'image/png' else hi8.save(b, 'JPEG', quality=92)
+                imgs[i] = b.getvalue()
+            if 'body_color' in nm and C.get('tone', True):
+                body = np.asarray(gg.image('body_color')).astype(np.float32) / 255
+                b = io.BytesIO(); Image.fromarray((np.clip(body * gain, 0, 1) * 255).astype(np.uint8)).save(b, 'JPEG', quality=92); imgs[i] = b.getvalue()
+        hr = [r for r in prim_refs(gg) if r[0].endswith('_head')][0]
+        Pv, Nv, _ = field(gg.acc(hr[1]).astype(np.float64), gg.acc(hr[2]).astype(np.float64))
+        if out.get('textures'):
+            os.makedirs(out['textures'], exist_ok=True)
+            for i, im in enumerate(gg.j['images']):
+                for k in ('head_color', 'body_color'):
+                    if k in im.get('name', '') and i in imgs:
+                        open(os.path.join(out['textures'], k + ('.png' if imgs[i][:4] == b'\x89PNG' else '.jpg')), 'wb').write(imgs[i])
+        save(gg, out['path'], {hr[1]: Pv.astype(np.float32), hr[2]: Nv.astype(np.float32)}, imgs)
+        print('écrit', out['path'])
+    # contrôle : rendu de face après
+    img2, _, _ = front_view(P1, T, UV, outt, (-0.11, 0.11, ey - 0.14, ey + 0.11), px)
+    Image.fromarray((img2 * 255).astype(np.uint8)).save(C['work'] + '-face-apres.png')
+    Image.fromarray((img * 255).astype(np.uint8)).save(C['work'] + '-face-avant.png')
+
+
+if __name__ == '__main__':
+    main(sys.argv[1])

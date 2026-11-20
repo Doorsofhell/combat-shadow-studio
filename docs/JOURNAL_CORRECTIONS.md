@@ -5063,3 +5063,33 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     « Passe la suite Playwright ») après sa validation de la PR #146. Sur ces 72 tests, 3 échecs sur des écrans que
     cette correction ne touche pas : `coach-suggest:147` (déjà en échec sur la 2.3.0 à 2.3.2), `boot:98` et
     `chrono:124` (non comparés à la 2.3.2 faute de suite complète ; à revérifier au prochain passage complet).
+
+## 2026-11-20 · prototype 2.4.0 (non publié) · Coachs fidèles aux planches : Amara et Victor
+
+- **Demande** (Youssef, 20/11 14 h 38, « Reproduction 3D fidèle des six coachs de référence ») : reproduire dans le
+  vrai moteur les planches de personnage des 6 coachs ; phases audit, prototypes Amara et Victor, comparaison,
+  validation avant de généraliser. Précisions : chaque coach garde son modèle (planches Amara brune, Inaya blonde,
+  Victor cheveux gris) ; « améliorer l'existant plutôt que reconstruire » ; « on se focalise sur le modèle 3D, pas
+  encore sur les tenues » ; ordre validé : visage, puis corps et taille, puis tenues en un seul passage (sans les
+  tenues libres ni de repos).
+- **Constat** : captures réelles de la 2.3.5 (`scripts/v220/captures.mjs`) : visages génériques par rapport aux
+  planches ; Victor aux yeux bleu-vert, sans barbe ni tempes grises ; Amara plus foncée et plus terne que sa planche.
+- **Correction (prototype)** : `tools/generator/fideles/` (nouveau) : `visage.py` pose 478 repères MediaPipe (outil de
+  fabrication, non livré) sur un rendu de face du modèle et sur le gros plan de la planche, ajuste une caméra affine,
+  rapproche la forme du visage (champ lisse fonction de la position seule : coutures uv intactes, yeux et os des yeux
+  fixes, crâne et cou à zéro, expressions gardées ; Amara 3 mm, Victor 3,3 mm au plus) et reprend la texture du
+  visage en basses fréquences (grain de peau du modèle gardé, teint ramené sur celui de la tête et du corps, contraste et
+  saturation adoucis pour le shader de peau). Victor : tempes poivre et sel, barbe courte peinte, iris bruns. Réglages
+  dans `tools/generator/fideles/configs/`, planches dans `tools/generator/fideles/references/`. Squelette, poids,
+  25 expressions, tenues et code : inchangés.
+- **Fichiers** : `public/coaches/mma-amara/photo.glb`, `photo-clean.glb`, `public/coaches/victor/photo.glb` ; modèles
+  d'origine dans `_ARCHIVES_HORS_APPLICATION/anciens-modeles-3d/avant-coachs-fideles-v240/` ; `src/boot/sizes`
+  (`node scripts/boot-sizes.mjs`) ; vue `05b-visage-face` ajoutée à `scripts/v220/captures.mjs`.
+- **Test modifié (raison écrite)** : `victor-peau-v1452.test.ts` compare désormais les textures de Victor à
+  `tools/generator/fideles/victor/` (visage repris de la planche et teint du corps ajusté du même gain).
+- **Tests** : `tsc` TEST RÉUSSI ; `vite build` TEST RÉUSSI ; vitest `src/three` + `src/boot` : 731/732, seul échec
+  `expressions-v1160` taille d'Amara > 3,5 Mo, déjà en échec avant (4,86 Mo en 2.3.5) ; vitest complet : en plus
+  `fluidity` ×2 et `hooks-biomeca`, déjà en échec avant ; captures réelles avant/après (7 vues par coach,
+  page https://claude.ai/artifact/3PN2BSBi4H5Pyy8Mm1CGky) ; Playwright : NON EXÉCUTÉ (prototype, avant validation).
+- **Version** : pas de changement de version ni de note de Nouveautés tant que Youssef n'a pas validé (rien publié).
+- **Restauration** : `restauration/avant-coachs-fideles-v240` (= 2.3.5, a0c40f3).

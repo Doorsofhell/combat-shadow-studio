@@ -22,12 +22,14 @@ function image(path: string, name: string) {
   return Buffer.from(bin.subarray(bv.byteOffset ?? 0, (bv.byteOffset ?? 0) + bv.byteLength));
 }
 
-describe('1.45.2 : peau de Victor', () => {
+describe('1.45.2 puis 2.4.0 : peau de Victor', () => {
   test.each([
     ['m021_body_color', 'body_color.jpg'],
     ['m021_head_color', 'head_color.jpg'],
   ])('%s = texture nettoyée %s', (name, file) => {
-    const src = readFileSync(resolve(ROOT, 'tools/generator/victor/donnees', file));
+    // 2.4.0 (prototype « coachs fidèles aux planches ») : visage rapproché de la planche de Victor et teint du corps
+    // ajusté du même gain ; les textures livrées sont celles de tools/generator/fideles/victor (journal 2.4.0)
+    const src = readFileSync(resolve(ROOT, 'tools/generator/fideles/victor', file));
     expect(Buffer.compare(image('public/coaches/victor/photo.glb', name), src)).toBe(0);
   });
 
