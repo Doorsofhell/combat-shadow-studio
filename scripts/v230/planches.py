@@ -39,11 +39,7 @@ for coach, tech in sorted({(s['coach'], s['tech']) for s in shots}):
     left, top = 92, 54
     sheet = Image.new('RGB', (left + 7 * cw, top + 2 * (ch + 22)), 'white')
     d = ImageDraw.Draw(sheet)
-<<<<<<< HEAD
     d.text((8, 8), f'{NAME.get(coach, coach)} · {tech} · haut : {os.environ.get('AVANT_LABEL', 'avant (2.2.0)')} · bas : {os.environ.get('APRES_LABEL', 'après (2.3.0)')} · rendus WebGL réels', fill='black', font=fb)
-=======
-    d.text((8, 8), f'{NAME.get(coach, coach)} · {tech} · haut : avant (2.2.0) · bas : après (2.3.0) · rendus WebGL réels', fill='black', font=fb)
->>>>>>> 099abd4c561a15c37da41fa4c0eb7b4fd55ca6aa
     for i, lab in enumerate(LABEL):
         d.text((left + i * cw + 6, 32), lab, fill='black', font=f)
     for r, (ver, row) in enumerate(zip(['avant', 'après'], rows)):

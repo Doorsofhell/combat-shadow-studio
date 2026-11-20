@@ -62,11 +62,7 @@ au-delà de la référence (pour le genou, de la référence à sa flexion du mo
 | Rotation du tronc (bassin → haut du thorax) | 45° | 31° | non | 31° | non | mma-kadir crochet-avant-corps (muaythai) t=0.29 s |
 | Rotation lombaire (os Spine seul) | 10° | 9° | non | 5° | non | mma-kadir sortie-hanche (mma, gaucher) t=0.33 s |
 | Rotation du cou (thorax → tête) | 80° | 67° | non | 73° | non | mma-amara sit-out (bjj) t=1.42 s |
-<<<<<<< HEAD
 | Épaule : rotation interne | 70° | 179° | **+109°** | 70° | **+0°** | mma-kadir pont (bjj, gaucher) t=1.98 s côté R |
-=======
-| Épaule : rotation interne | 70° | 179° | **+109°** | 71° | **+1°** | mma-kadir sprawl (mma, gaucher, garde du coach) t=0.23 s côté L |
->>>>>>> 099abd4c561a15c37da41fa4c0eb7b4fd55ca6aa
 | Épaule : rotation externe | 90° | 180° | **+90°** | 91° | **+1°** | mma-kadir genou-direct-avant (kickboxing, garde du coach) t=0.13 s côté L |
 | Avant-bras : pronation | 85° | 93° | **+8°** | 58° | non | mma-kadir defense-lutte (mma, gaucher) t=0.45 s côté L |
 | Avant-bras : supination | 85° | 117° | **+32°** | 81° | non | mma-amara uppercut-avant (mma) t=0.27 s côté L |
@@ -78,11 +74,7 @@ au-delà de la référence (pour le genou, de la référence à sa flexion du mo
 | Genou : hyperextension (pli à l’envers) | 5° | -2° | non | -5° | non | mma-kadir teep-avant (mma, gaucher, garde du coach) t=0.34 s côté R |
 | Hanche : rotation interne | 45° | 180° | **+135°** | 48° | **+3°** | mma-amara sit-out (bjj, gaucher) t=1.18 s côté L |
 | Hanche : rotation externe | 45° | 180° | **+135°** | 45° | **+0°** | mma-amara middle-kick-arriere (mma, gaucher) t=0.31 s côté L |
-<<<<<<< HEAD
 | Genou : rotation axiale | — | 6° | non | 6° | non | mma-amara genou-circulaire-avant (muaythai, garde du coach) t=0.42 s côté L |
-=======
-| Genou : rotation axiale | — | 6° | non | 6° | non | mma-amara genou-circulaire-avant (muaythai, garde du coach) t=0.50 s côté L |
->>>>>>> 099abd4c561a15c37da41fa4c0eb7b4fd55ca6aa
 | Torsion portée par l’os de la main seul (peau du poignet) | — | 54° | non | 37° | non | mma-kadir uppercut-arriere (muaythai, gaucher) t=0.27 s côté L |
 | Hanche : élévation de la cuisse (flexion / abduction) | — | 169° | non | 158° | non | mma-kadir changement-base (bjj, gaucher) t=0.57 s côté L |
 
@@ -90,23 +82,14 @@ au-delà de la référence (pour le genou, de la référence à sa flexion du mo
 
 | Mesure | Avant | Après |
 |---|---|---|
-<<<<<<< HEAD
 | Épaule : rotation interne | middle-kick-avant +109°, defense-lutte +105°, pont +97°, retention-garde +97°, changement-base +92°, genou-circulaire-avant +76°, sortie-hanche +73°, releve-technique +61°, … (35) | pont +0°, descente-sol +0°, sortie-hanche +0°, ukemi-yoko +0°, releve-technique +0°, uchikomi-o-goshi +0°, retention-garde +0°, defense-lutte +0°, … (15) |
-=======
-| Épaule : rotation interne | middle-kick-avant +109°, defense-lutte +105°, pont +97°, retention-garde +97°, changement-base +92°, genou-circulaire-avant +76°, sortie-hanche +73°, releve-technique +61°, … (35) | sprawl +1°, pont +0°, descente-sol +0°, sortie-hanche +0°, ukemi-yoko +0°, releve-technique +0°, uchikomi-o-goshi +0°, retention-garde +0°, … (15) |
->>>>>>> 099abd4c561a15c37da41fa4c0eb7b4fd55ca6aa
 | Épaule : rotation externe | middle-kick-avant +90°, changement-base +84°, overhand +33°, crochet-avant +23°, genou-circulaire-avant +19°, crochet-avant-corps +11° | genou-direct-avant +1°, ukemi-yoko +0°, coude-diagonal-avant +0°, check-hook +0°, changement-base +0°, sit-out +0° |
 | Avant-bras : pronation | changement-base +8°, sprawl +4°, sortie-hanche +4°, retention-garde +4°, pont +4°, releve-technique +4°, descente-sol +4° | — |
 | Avant-bras : supination | uppercut-avant +32°, uppercut-arriere +32° | — |
 | Poignet : inclinaison radiale | clinch-tirage +11°, genou-circulaire-clinch +7°, genou-clinch +7° | — |
 | Poignet : inclinaison cubitale | changement-base +43°, sprawl +38°, sortie-hanche +38°, retention-garde +38°, pont +38°, releve-technique +38°, descente-sol +38° | — |
-<<<<<<< HEAD
 | Hanche : rotation interne | high-kick-arriere +135°, high-kick-avant +94°, middle-kick-arriere +54°, roundhouse-arriere +53°, uchikomi-seoi +32°, middle-kick-avant +17°, changement-base +10°, low-kick-arriere +0° | sit-out +3° |
 | Hanche : rotation externe | high-kick-arriere +135°, changement-base +95°, high-kick-avant +84°, middle-kick-avant +83°, descente-sol +75°, releve-technique +73°, sortie-hanche +73°, roundhouse-avant +68°, … (21) | middle-kick-arriere +0°, high-kick-arriere +0°, roundhouse-arriere +0°, high-kick-avant +0°, switch-kick +0°, check-avant +0°, low-kick-avant +0°, releve-technique +0°, … (13) |
-=======
-| Hanche : rotation interne | high-kick-arriere +135°, high-kick-avant +94°, middle-kick-arriere +54°, roundhouse-arriere +53°, uchikomi-seoi +32°, middle-kick-avant +17°, changement-base +10°, low-kick-arriere +0° | sit-out +3°, uchikomi-o-soto-gari +0° |
-| Hanche : rotation externe | high-kick-arriere +135°, changement-base +95°, high-kick-avant +84°, middle-kick-avant +83°, descente-sol +75°, releve-technique +73°, sortie-hanche +73°, roundhouse-avant +68°, … (21) | middle-kick-arriere +0°, high-kick-arriere +0°, roundhouse-arriere +0°, high-kick-avant +0°, switch-kick +0°, check-avant +0°, low-kick-avant +0°, releve-technique +0°, … (14) |
->>>>>>> 099abd4c561a15c37da41fa4c0eb7b4fd55ca6aa
 
 ## Torsion os par os (après)
 
@@ -126,17 +109,10 @@ pronation) : ce tableau sert à repérer une torsion concentrée sur un seul os.
 | LeftForeArm | 66° | 45° | 111° | mma-kadir uppercut-avant (boxing, garde du coach) t=0.27 s |
 | LeftHand | 54° | 37° | 86° | mma-kadir uppercut-arriere (muaythai, gaucher) t=0.27 s |
 | LeftUpLeg | 180° | 131° | 158° | mma-kadir sit-out (bjj) t=2.52 s |
-<<<<<<< HEAD
 | LeftLeg | 6° | 6° | 149° | mma-amara genou-circulaire-avant (muaythai, garde du coach) t=0.42 s |
 | LeftFoot | 30° | 30° | 58° | mma-kadir sit-out (bjj, gaucher) t=1.93 s |
 | RightShoulder | 4° | 8° | 16° | mma-amara sprawl (mma, gaucher, garde du coach) t=1.34 s |
 | RightArm | 179° | 173° | 156° | mma-kadir genou-direct-avant (kickboxing, gaucher, garde du coach) t=0.15 s |
-=======
-| LeftLeg | 6° | 6° | 149° | mma-amara genou-circulaire-avant (muaythai, garde du coach) t=0.50 s |
-| LeftFoot | 30° | 32° | 58° | mma-amara uchikomi-o-soto-gari (judo, gaucher) t=1.20 s |
-| RightShoulder | 4° | 8° | 17° | mma-amara sprawl (mma, gaucher, garde du coach) t=1.34 s |
-| RightArm | 179° | 173° | 164° | mma-kadir genou-direct-avant (kickboxing, gaucher, garde du coach) t=0.15 s |
->>>>>>> 099abd4c561a15c37da41fa4c0eb7b4fd55ca6aa
 | RightForeArm | 66° | 45° | 111° | mma-kadir uppercut-avant (mma, gaucher) t=0.27 s |
 | RightHand | 54° | 37° | 86° | mma-kadir uppercut-avant (muaythai, gaucher) t=0.27 s |
 | RightUpLeg | 180° | 130° | 158° | mma-kadir changement-base (bjj, gaucher) t=0.58 s |

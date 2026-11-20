@@ -9,13 +9,8 @@ const [OUT = 'docs/v230/captures/raw', coachArg = 'mma-kadir,mma-amara,nael,vict
 const PORT = process.env.PORT ?? 4180;
 // technique, discipline, camera azimuth (degrees), elevation
 const TECHS = (techArg ?? 'jab,direct,crochet-arriere,uppercut-arriere,overhand,high-kick-avant,middle-kick-arriere,low-kick-arriere,teep-avant,genou-direct-arriere').split(',');
-<<<<<<< HEAD
 const DISC = { overhand: 'mma', sprawl: 'mma', 'uchikomi-o-soto-gari': 'judo', 'teep-avant': 'muaythai', 'genou-direct-arriere': 'muaythai', 'middle-kick-arriere': 'muaythai', 'low-kick-arriere': 'kickboxing', 'high-kick-avant': 'kickboxing' };
 const AZ = { sprawl: 90, 'uchikomi-o-soto-gari': 60, jab: 60, direct: 60, 'crochet-arriere': 35, 'uppercut-arriere': 60, overhand: 60, 'teep-avant': 90 };
-=======
-const DISC = { overhand: 'mma', 'teep-avant': 'muaythai', 'genou-direct-arriere': 'muaythai', 'middle-kick-arriere': 'muaythai', 'low-kick-arriere': 'kickboxing', 'high-kick-avant': 'kickboxing' };
-const AZ = { jab: 60, direct: 60, 'crochet-arriere': 35, 'uppercut-arriere': 60, overhand: 60, 'teep-avant': 90 };
->>>>>>> 099abd4c561a15c37da41fa4c0eb7b4fd55ca6aa
 const PHASES = [
   ['1-garde', () => 0],
   ['2-anticipation', (pk) => pk * 0.35],
@@ -40,11 +35,7 @@ const save = () => writeFileSync(mf, JSON.stringify({ errors, shots: manifest },
 for (const coach of coachArg.split(',')) {
   for (const tech of TECHS) {
     for (const ver of ['avant', 'apres']) {
-<<<<<<< HEAD
       const url = `http://localhost:${PORT}/#/lab?champion=${coach}&look=realiste&d=${DISC[tech] ?? 'boxe'}&tech=${tech}&az=${AZ[tech] ?? 45}&el=8${ver === 'avant' ? `&v230=${process.env.AVANT ?? '0'}` : ''}`;
-=======
-      const url = `http://localhost:${PORT}/#/lab?champion=${coach}&look=realiste&d=${DISC[tech] ?? 'boxe'}&tech=${tech}&az=${AZ[tech] ?? 45}&el=8${ver === 'avant' ? '&v230=0' : ''}`;
->>>>>>> 099abd4c561a15c37da41fa4c0eb7b4fd55ca6aa
       await p.goto('about:blank');
       await p.goto(url);
       try {

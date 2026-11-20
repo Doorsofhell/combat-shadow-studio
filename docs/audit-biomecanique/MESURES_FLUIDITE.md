@@ -10,7 +10,6 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 
 ## Total, 6 styles de garde
 
-<<<<<<< HEAD
 528 animations, 2136 poses clés intérieures. Arrêts parasites : **2193 avant, 605 après**.
 
 | Style | Animations | Arrêts avant | Arrêts après |
@@ -21,18 +20,6 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | muaythai | 88 | 369 | 99 |
 | bjj | 88 | 367 | 103 |
 | judo | 88 | 374 | 108 |
-=======
-528 animations, 2136 poses clés intérieures. Arrêts parasites : **2171 avant, 607 après**.
-
-| Style | Animations | Arrêts avant | Arrêts après |
-|---|---|---|---|
-| boxing | 88 | 356 | 96 |
-| kickboxing | 88 | 356 | 99 |
-| mma | 88 | 360 | 101 |
-| muaythai | 88 | 365 | 99 |
-| bjj | 88 | 364 | 104 |
-| judo | 88 | 370 | 108 |
->>>>>>> 099abd4c561a15c37da41fa4c0eb7b4fd55ca6aa
 
 ## Détail, garde de boxe
 
@@ -81,17 +68,10 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/fluidity.test.
 | `teep-arriere` | 4 | 2 | 2 | 8,7 | 8,7 | 19,5 | 19,5 | 9,1 | 9,1 |
 | `front-kick-avant` | 3 | 4 | 0 | 8,5 | 8,5 | 14,5 | 14,5 | 8,9 | 8,9 |
 | `front-kick-arriere` | 3 | 2 | 2 | 8,5 | 8,5 | 14,5 | 14,5 | 8,9 | 8,9 |
-<<<<<<< HEAD
 | `genou-direct-arriere` | 8 | 13 | 4 | 7,4 | 7,4 | 12,6 | 12,6 | 8,0 | 8,0 |
 | `genou-direct-avant` | 8 | 14 | 4 | 5,3 | 5,3 | 20,1 | 20,1 | 5,8 | 5,8 |
 | `genou-circulaire-arriere` | 8 | 11 | 2 | 8,6 | 8,6 | 12,6 | 12,6 | 9,4 | 9,4 |
 | `genou-circulaire-avant` | 8 | 14 | 2 | 6,3 | 6,3 | 19,2 | 19,2 | 6,8 | 6,8 |
-=======
-| `genou-direct-arriere` | 8 | 12 | 4 | 7,4 | 7,4 | 14,8 | 14,8 | 8,0 | 8,0 |
-| `genou-direct-avant` | 8 | 13 | 4 | 5,3 | 5,3 | 20,1 | 20,1 | 5,8 | 5,8 |
-| `genou-circulaire-arriere` | 8 | 10 | 2 | 8,6 | 8,6 | 17,5 | 17,5 | 9,4 | 9,4 |
-| `genou-circulaire-avant` | 8 | 13 | 2 | 6,3 | 6,3 | 19,2 | 19,2 | 6,8 | 6,8 |
->>>>>>> 099abd4c561a15c37da41fa4c0eb7b4fd55ca6aa
 | `genou-direct-arriere-clinch` | 8 | 12 | 5 | 7,4 | 7,4 | 14,8 | 14,8 | 8,1 | 8,1 |
 | `genou-circulaire-arriere-clinch` | 8 | 10 | 4 | 8,6 | 8,6 | 17,5 | 17,5 | 9,4 | 9,4 |
 | `check-avant` | 2 | 0 | 0 | 0,0 | 0,0 | 9,1 | 9,1 | 0,0 | 0,0 |
