@@ -31,6 +31,7 @@ chaque lot, point de restauration, rapport (TEST RÉUSSI / ÉCHOUÉ / NON EXÉCU
 | `restauration/lot-4c` | v0.9.0 | Commandes hiérarchisées, zone Caméra regroupée (angle, rotation, zoom, recentrer), progression |
 | `restauration/lot-4b` | v0.8.0 | Consigne principale et 3 à 5 points clés par technique, point de la phase en cours mis en évidence |
 | `restauration/avant-play-store-v231` | `6e139eb` (2.3.0) | Avant la version Google Play 2.3.1 (build AAB signé, contrôles Play Store, permission VIBRATE, politique publique) |
+| `restauration/avant-version-unique-v233` | `d5b3b9b` (2.3.2) | Avant la source unique de version et la documentation générée (2.3.3) |
 
 Les étiquettes Git (tags) ne passent pas par le proxy de l’environnement : chaque point de restauration est donc une
 branche `restauration/...` sur GitHub. Retour arrière : `git checkout restauration/<nom>`.

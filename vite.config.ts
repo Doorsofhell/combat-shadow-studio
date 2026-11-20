@@ -4,8 +4,13 @@ import { VitePWA } from 'vite-plugin-pwa';
 import pkg from './package.json' with { type: 'json' };
 import { bootModels } from './tools/build/bootModels.ts';
 import { nativeOnly } from './tools/build/nativeOnly.ts';
+import { releaseInfoPlugin } from './tools/build/releaseInfo.ts';
 
-/** the version is shown in the page title of every build (%VITE_APP_VERSION% in index.html) */
+/**
+ * the version is shown in the page title of every build (%VITE_APP_VERSION% in index.html). 2.3.3: package.json is
+ * the only source of the version (title, À propos, Android versionName/versionCode, version.json, docs/ETAT.md);
+ * src/domain/version-sync.test.ts fails when something drifts.
+ */
 process.env.VITE_APP_VERSION = pkg.version;
 
 /** CAP_BUILD=1: build for the Android app (Capacitor); files are packaged in the APK, no service worker */
@@ -19,6 +24,8 @@ export default defineConfig({
     bootModels(),
     // 1.56.4: the APK leaves out the files only the illustration tools use (referee outfits)
     nativeOnly(NATIVE),
+    // 2.3.3: version.json (publication information generated from package.json)
+    releaseInfoPlugin(pkg.version),
     VitePWA({
       disable: NATIVE,
       registerType: 'autoUpdate',
@@ -26,7 +33,7 @@ export default defineConfig({
       manifest: {
         name: 'Combat Shadow Studio',
         short_name: 'Shadow Studio',
-        description: "Entraînement solo en boxe anglaise, kick-boxing, MMA et muay-thaï avec un coach 3D.",
+        description: "Entraînement solo en boxe anglaise, kick-boxing, MMA, muay-thaï, judo et jiu-jitsu brésilien avec un coach 3D.",
         lang: 'fr',
         start_url: './',
         scope: './',
@@ -47,7 +54,8 @@ export default defineConfig({
         // 1.10.1 (Youssef, 03/11 « je ne vois toujours pas la 1.10 ») : the coaches and their outfits (108 Mo) are no
         // longer kept ahead. Every update had to download all changed models before the new version could start
         // (71 Mo for 1.10); closed before the end, the phone stayed on the old one. They are kept on first use instead.
-        globIgnores: ['**/tenues/arbitre*', 'coaches/*/**', 'models/**', 'salles/**'],
+        // 2.3.3 version.json: always read from the server (it tells which version is deployed)
+        globIgnores: ['version.json', '**/tenues/arbitre*', 'coaches/*/**', 'models/**', 'salles/**'],
         runtimeCaching: [
           {
             // 1.25: the coaches and the rooms are downloaded by the start screen (src/boot), which also replaces
