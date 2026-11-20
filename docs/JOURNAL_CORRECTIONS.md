@@ -5051,3 +5051,15 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `docs/NON_REGRESSION.md`, `src/domain/releases.ts`, `package.json` et `package-lock.json` (2.3.5), `README.md` et
   `docs/ETAT.md` régénérés par `npm run docs:sync` (la limite « Retour système » n'y figure plus).
 - **Restauration** : branche `restauration/avant-retour-createur-v232` (= 2.3.2, `d5b3b9b`).
+- **Résultats (2.3.5)** :
+  - avant correction, sur la v2.3.2 : `retour-createur.spec` 2 TEST ÉCHOUÉ sur 5 (le constat) ;
+  - après correction : `retour-createur.spec` (5) et `createur-v2.spec` (5) : TEST RÉUSSI ;
+  - `leave-guard-android.test` (3, bouton Android simulé comme Capacitor) : TEST RÉUSSI ;
+  - Vitest complet : 1792 réussis, 1 ignoré, 4 TEST ÉCHOUÉ déjà connus et sans lien (`fluidity` ×2,
+    `hooks-biomeca`, `expressions-v1160`) ; `morphology-v220` « ordre des surfaces » a échoué 1 fois sur 2
+    (intermittent connu, voir 2.3.1) ; après fusion de la 2.3.3 : `src/ui/nav` + `src/domain` (332) TEST RÉUSSI ;
+  - `npm run build` et `tsc` : TEST RÉUSSI ;
+  - Playwright complet : NON EXÉCUTÉ en entier. Arrêté à 72/310 à la demande de Youssef (2026-11-20 14 h 20,
+    « Passe la suite Playwright ») après sa validation de la PR #146. Sur ces 72 tests, 3 échecs sur des écrans que
+    cette correction ne touche pas : `coach-suggest:147` (déjà en échec sur la 2.3.0 à 2.3.2), `boot:98` et
+    `chrono:124` (non comparés à la 2.3.2 faute de suite complète ; à revérifier au prochain passage complet).
