@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # v2.3.1 : prépare la signature de publication à partir des secrets GitHub, sans jamais afficher une valeur.
 # Noms attendus : ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD.
-# Si ces noms sont absents, les 4 secrets créés le 20/11/2026 sous d'autres noms (CANDIDATE_1..4, voir le workflow)
-# sont reconnus par leur contenu : le keystore est le seul long texte base64 qui se décode en fichier PKCS12, les
+# Si ces noms sont absents, des secrets passés en CANDIDATE_1..4 (aucun aujourd'hui dans le workflow) sont reconnus par leur contenu : le keystore est le seul long texte base64 qui se décode en fichier PKCS12, les
 # mots de passe sont ceux qui l'ouvrent (keytool), l'alias est celui qui existe dans le keystore.
 # Écrit android/keystore.properties et "signed=1|0" dans $GITHUB_OUTPUT.
 set -uo pipefail

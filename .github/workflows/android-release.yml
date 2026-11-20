@@ -57,11 +57,6 @@ jobs:
           KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          # secrets créés par Youssef le 20/11/2026 sous d'autres noms : reconnus par leur contenu
-          CANDIDATE_1: ${{ secrets.PERE_MERE }}
-          CANDIDATE_2: ${{ secrets.TOWN }}
-          CANDIDATE_3: ${{ secrets.POKEMON }}
-          CANDIDATE_4: ${{ secrets.SAHABA }}
         run: bash scripts/android/setup-signing.sh
 
       - name: Build web + AAB + APK de publication
