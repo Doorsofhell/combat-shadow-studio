@@ -5064,7 +5064,71 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     cette correction ne touche pas : `coach-suggest:147` (déjà en échec sur la 2.3.0 à 2.3.2), `boot:98` et
     `chrono:124` (non comparés à la 2.3.2 faute de suite complète ; à revérifier au prochain passage complet).
 
-## 2026-11-20 · v2.4.0 (expérimentale, non publiée) · Animations de combat, lot 3
+## 2026-11-20 · v2.3.6 · Cache des modèles 3D : une seule règle par fichier, version vérifiée
+
+- **Signalement (Youssef, P0)** : dans `vite.config.ts`, les fichiers de `coaches/` et `salles/` correspondent à deux
+  règles de cache successives (CacheFirst puis NetworkFirst) ; la première peut empêcher la seconde.
+- **Constat vérifié (v2.3.2)** :
+  - Workbox répond avec la **première** route qui correspond (`workbox-routing/Router.js`, boucle `for (const route
+    of routes)` qui s'arrête au premier résultat). Le `sw.js` construit enregistre bien CacheFirst avant NetworkFirst :
+    la règle NetworkFirst ne s'appliquait **jamais** aux coachs ni aux salles, seulement aux tenues d'arbitre (et à
+    `models/`, dossier qui n'existe plus). Son commentaire (« un modèle changé est retéléchargé ») était faux ;
+  - le renouvellement d'un GLB reposait donc uniquement sur l'écran de démarrage (empreinte, 1.34). Une copie qu'il
+    n'a pas vérifiée (« Entrer sans attendre », démarrage interrompu) et les **portraits des coachs** (absents de
+    l'écran de démarrage) restaient l'ancienne version pour toujours ;
+  - preuve sur la v2.3.2 construite : une copie périmée posée dans `css-modeles` est servie telle quelle pour le
+    modèle de la coach (4 octets au lieu de 3,8 Mo) et pour son portrait (3 octets au lieu de 23 Ko). Même essai sur
+    la 2.3.6 : les vrais fichiers sont servis ;
+  - le test de mise à jour a aussi montré que GitHub Pages envoie `max-age=600` : sans précaution, la règle « réseau
+    d'abord » recevait jusqu'à 10 min la copie du navigateur au lieu du serveur.
+- **Correction (responsabilités clarifiées, `tools/build/swModeles.ts`)** :
+  - **précache** Workbox : seulement l'application (code, pages, petites images), jamais la 3D (inchangé, gain de
+    la 1.10.1 conservé) ;
+  - **cache PWA `css-modeles`**, deux règles qui ne se chevauchent plus (l'ordre n'a plus d'effet) :
+    A. fichiers de l'écran de démarrage (modèles, tenues, salles) : CacheFirst, réponse immédiate depuis le téléphone
+    (gain de la 1.25/1.34 conservé) **seulement si la copie gardée a l'empreinte de cette version** ; sinon le
+    serveur est interrogé, et hors ligne l'ancienne copie répond plutôt que pas de coach ;
+    B. autres fichiers de ces dossiers (portraits, tenues d'arbitre) : NetworkFirst, copie gardée après 4 s ou hors
+    ligne ;
+  - les deux règles interrogent le serveur lui-même (`no-cache` : une courte réponse « non modifié » si rien n'a
+    changé), jamais la copie de 10 min du navigateur ;
+  - **versionnement** : l'empreinte de chaque fichier (SHA-1 des octets servis, déjà calculée pour l'écran de
+    démarrage) est écrite dans `sw.js` au build ; le service worker marque chaque copie gardée de son empreinte
+    (en-tête `x-css-empreinte`), et l'écran de démarrage lit cette marque avant sa note locale. Une copie gardée
+    avant la 2.3.6 (sans marque) est vérifiée une fois par ses octets puis marquée : rien n'est retéléchargé pour
+    rien ;
+  - rien n'a changé dans les adresses des modèles, le chargement 3D ni la reprise WebGL.
+- **Fichiers** : `tools/build/swModeles.ts` (nouveau), `tools/build/bootModels.ts` (empreintes partagées, dossier
+  public en paramètre), `vite.config.ts`, `package.json` (2.3.6), `src/domain/releases.ts`, `src/boot/preload.ts`, `src/boot/__tests__/cache-modeles-v236.test.ts`,
+  `src/boot/__tests__/cache-modeles-page-v236.test.ts`, `tests/e2e/maj-modeles-v236.spec.ts`.
+- **Tests** :
+  - nouveaux Vitest (15) : chaque fichier de l'écran de démarrage ne prend que la règle versionnée, les portraits et
+    tenues d'arbitre que la règle réseau, aucun fichier ne correspond aux deux ; le plugin **tel qu'écrit dans
+    sw.js** (texte relu) sert une copie de cette version, refuse une autre version, vérifie une copie sans marque,
+    interroge le serveur sans cache HTTP, répond hors ligne ; l'écran de démarrage lit la marque : TEST RÉUSSI ;
+  - nouveau Playwright `maj-modeles-v236.spec` : une vraie version 2 de l'application est construite avec le modèle
+    de la coach et son portrait modifiés, puis servie comme GitHub Pages (max-age, ETag) au même navigateur, sans
+    jamais vider le cache : le coach gardé devient la version 2, une ancienne copie remise en place (avec ou sans
+    marque) n'est plus servie, le nouveau portrait arrive : TEST RÉUSSI ;
+  - Vitest complet : 1804 réussis, 1 ignoré, 4 TEST ÉCHOUÉ déjà connus et sans lien (`fluidity` ×2,
+    `hooks-biomeca`, `expressions-v1160`, les mêmes que sur la 2.3.2) ;
+  - `npm run build` : TEST RÉUSSI (2.3.6, `version.json` 2.3.6 / 20306, empreintes présentes dans `sw.js`) ;
+  - Playwright complet (306 tests, 1 h 12) : 301 réussis, 2 ignorés (Firebase), 3 TEST ÉCHOUÉ :
+    `coach-suggest:147` et `coaching-hud:60` échouent aussi relancés seuls, comme sur la 2.3.0 à 2.3.2 (sans lien) ;
+    `training-layout:117` réussit relancé seul (instable sous charge) ;
+  - relance ciblée sur cette branche fusionnée avec la 2.3.3 : `maj-modeles-v236`, `boot.spec` (1 à 3), `training-layout:117`
+    : TEST RÉUSSI ; `boot.spec:98` (changer de coach après le démarrage) est intermittent : 1 échec sur 3 avec
+    cette correction et **3 échecs sur 5 sur la 2.3.3 sans cette correction** : antérieur, sans lien avec le cache (l'écran
+    d'entraînement n'est pas encore ouvert au moment du contrôle) ;
+  - preuve avant/après (script ad hoc, même navigateur) : sur la 2.3.2 une copie périmée du modèle et du portrait est
+    servie ; sur la 2.3.6 les vrais fichiers.
+- **Restauration** : branche `restauration/avant-cache-3d-v232` (= 2.3.2, `d5b3b9b`).
+- **Numéro** : prévue en 2.3.4, renommée 2.3.6 car la 2.3.5 (bouton Retour, #146) a été publiée avant ; branche
+  fusionnée avec la 2.3.5 (aucun fichier commun hors version et documentation générée). Après la fusion :
+  Vitest `src/domain`, `src/boot`, `src/ui/nav` (366 tests, dont version-sync), `npm run build` (`version.json`
+  2.3.6 / 20306), Playwright `maj-modeles-v236`, `boot`, `retour-createur`, `app` (16 tests) : TEST RÉUSSI.
+
+## 2026-11-20 · v2.4.0 · Animations de combat, lot 3
 
 - **Demande** : Youssef, 20/11 13:33, « On revient à l’amélioration des animations de combat des coachs. Il reste aussi
   des choses à faire. » Base : dernière version en ligne (2.3.2, puis fusion de la 2.3.5).
@@ -5095,4 +5159,4 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `:117` TEST RÉUSSI, `coaching-hud:60` TEST ÉCHOUÉ (antérieur) ; `npm run build` TEST RÉUSSI ; captures WebGL
   avant/après `docs/v240/captures/`, vidéos `docs/v240/videos/` ; téléphone Android NON EXÉCUTÉ.
 - **Restauration** : `restauration/avant-animations-lot3` (= 2.3.2, `d5b3b9b`), ou une correction seule par son
-  interrupteur. Non fusionné, non publié.
+  interrupteur. Validée par Youssef le 20/11 à 15 h 50 (« je valide ») ; PR #147 fusionnée après intégration de la 2.3.6.

@@ -61,6 +61,17 @@ export const RELEASES: readonly Release[] = (
       links: [{ label: 'S’entraîner', to: '/entrainer' }],
     },
     {
+      version: '2.3.6',
+      releaseDate: '2026-11-20',
+      title: 'Coachs et salles toujours à jour',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Après une mise à jour, un coach, une tenue ou une salle modifiés sont toujours téléchargés à nouveau : le téléphone ne garde plus une ancienne version, sans avoir à vider le cache.' },
+        { category: 'corrections', text: 'Les portraits des coachs suivent aussi les mises à jour. Hors ligne, la copie gardée sur le téléphone reste utilisée.' },
+      ],
+      links: [],
+    },
+    {
       version: '2.3.5',
       releaseDate: '2026-11-20',
       title: 'Retour protégé dans le créateur',
