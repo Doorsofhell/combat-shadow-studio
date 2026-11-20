@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { FINGERPRINT_HEADER, isKept, noteKept, type BootItem } from '../preload';
 
 /**
- * 2.3.4 cache des modèles 3D: the start screen reads the fingerprint the service worker writes on each model it keeps
+ * 2.3.6 cache des modèles 3D: the start screen reads the fingerprint the service worker writes on each model it keeps
  * (tools/build/swModeles.ts), before its own note (localStorage, 1.34) and the announced size (before 1.34).
  */
 function fakeCaches() {
@@ -14,7 +14,7 @@ function fakeCaches() {
 const item = (url: string, bytes: number, v?: string): BootItem => ({ url, bytes, v, step: 'coach' });
 const abs = (u: string) => new URL(u, location.href).href;
 
-describe('2.3.4 : l’écran de démarrage lit l’empreinte écrite par le service worker', () => {
+describe('2.3.6 : l’écran de démarrage lit l’empreinte écrite par le service worker', () => {
   let c: ReturnType<typeof fakeCaches>;
   beforeEach(() => {
     c = fakeCaches();
@@ -40,7 +40,7 @@ describe('2.3.4 : l’écran de démarrage lit l’empreinte écrite par le serv
     expect(c.m.has(abs(x.url))).toBe(false);
   });
 
-  it('sans empreinte (gardé avant 2.3.4) : la note puis la taille décident, comme avant', async () => {
+  it('sans empreinte (gardé avant 2.3.6) : la note puis la taille décident, comme avant', async () => {
     const x = item('./salles/boxe/salle.json', 10, 'v1');
     await (await c.open()).put(abs(x.url), new Response(new Uint8Array(10), { headers: { 'content-length': '10' } }));
     expect(await isKept(x)).toBe(true);

@@ -18,13 +18,13 @@ process.env.VITE_APP_VERSION = pkg.version;
 const NATIVE = process.env.CAP_BUILD === '1';
 
 /**
- * 2.3.4: the public folder. Another one only for the GLB update test (tests/e2e/maj-modeles-v234.spec.ts builds a
+ * 2.3.6: the public folder. Another one only for the GLB update test (tests/e2e/maj-modeles-v236.spec.ts builds a
  * second version of the app with one model changed, without touching public/).
  */
 const PUBLIC = process.env.CSS_PUBLIC_DIR || 'public';
 
 export default defineConfig(async ({ command }) => {
-  // 2.3.4: the fingerprint of each 3D file this build serves, written into the service worker (tools/build/swModeles.ts)
+  // 2.3.6: the fingerprint of each 3D file this build serves, written into the service worker (tools/build/swModeles.ts)
   const fingerprints: Record<string, string> = {};
   if (command === 'build' && !NATIVE) for (const [rel, [, v]] of Object.entries(await bootAssets(PUBLIC, compressedBuild(command)))) fingerprints[rel] = v;
   return {
@@ -68,7 +68,7 @@ export default defineConfig(async ({ command }) => {
           // (71 Mo for 1.10); closed before the end, the phone stayed on the old one. They are kept on first use instead.
           // 2.3.3 version.json: always read from the server (it tells which version is deployed)
           globIgnores: ['version.json', '**/tenues/arbitre*', 'coaches/*/**', 'models/**', 'salles/**'],
-          // 2.3.4 (Youssef, 2026-11-20, P0): before, two rules matched coaches/ and salles/ and Workbox only ever
+          // 2.3.6 (Youssef, 2026-11-20, P0): before, two rules matched coaches/ and salles/ and Workbox only ever
           // applies the first one (CacheFirst): the NetworkFirst written after it never ran for them. Now two rules
           // that never match the same file: the versioned 3D (CacheFirst checked by fingerprint) and the rest
           // (NetworkFirst). Who does what: tools/build/swModeles.ts.

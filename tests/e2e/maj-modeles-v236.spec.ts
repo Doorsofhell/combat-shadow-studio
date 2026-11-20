@@ -9,13 +9,13 @@ import { championFor } from '../../src/domain/coaches/catalog';
 import { seedProfile } from './nav-helpers';
 
 /**
- * 2.3.4 cache des modèles 3D (Youssef, 2026-11-20, P0 « tester une mise à jour de GLB sans effacer manuellement le
+ * 2.3.6 cache des modèles 3D (Youssef, 2026-11-20, P0 « tester une mise à jour de GLB sans effacer manuellement le
  * cache »). Two real builds of the app: the one under test (dist/, version 1) and a second one built here from a copy
  * of public/ where the coach's model and portrait changed (version 2). A server like GitHub Pages (max-age=600, ETag)
  * serves version 1, then version 2, to the same browser: the cache of the phone is never emptied by hand.
  *
  * Expected: after the update the coach kept on the phone is the new one, and the service worker never answers with
- * the old copy, even one the start screen did not check (« Entrer sans attendre », a boot cut short). Before 2.3.4 the
+ * the old copy, even one the start screen did not check (« Entrer sans attendre », a boot cut short). Before 2.3.6 the
  * CacheFirst rule answered with whatever copy it had (the NetworkFirst rule written after it never applied).
  */
 
@@ -30,7 +30,7 @@ const sha12 = (b: Uint8Array) => createHash('sha1').update(b).digest('hex').slic
 function changedGlb(src: Buffer): Buffer {
   const jsonLen = src.readUInt32LE(12);
   const json = JSON.parse(src.subarray(20, 20 + jsonLen).toString('utf8'));
-  json.scenes[0].extras = { ...(json.scenes[0].extras ?? {}), miseAJourTest: '2.3.4' };
+  json.scenes[0].extras = { ...(json.scenes[0].extras ?? {}), miseAJourTest: '2.3.6' };
   let text = Buffer.from(JSON.stringify(json), 'utf8');
   const pad = (4 - (text.length % 4)) % 4;
   text = Buffer.concat([text, Buffer.alloc(pad, 0x20)]);
@@ -107,7 +107,7 @@ const putBack = (page: Page, rel: string, stamped: boolean) =>
     { rel, stamped },
   );
 
-test.describe('2.3.4 : mise à jour d’un GLB sans vider le cache', () => {
+test.describe('2.3.6 : mise à jour d’un GLB sans vider le cache', () => {
   test.use({ baseURL: BASE });
   test.setTimeout(420_000);
 
@@ -191,7 +191,7 @@ test.describe('2.3.4 : mise à jour d’un GLB sans vider le cache', () => {
     expect((await served(page, MODEL)).v).toBe(h2);
     expect(await kept(page, MODEL)).toEqual({ v: h2, stamp: h2 });
 
-    // 3. the same, kept by a version before 2.3.4 (no fingerprint on it): its bytes decide
+    // 3. the same, kept by a version before 2.3.6 (no fingerprint on it): its bytes decide
     await putBack(page, MODEL, false);
     expect((await kept(page, MODEL))?.stamp).toBeNull();
     expect((await served(page, MODEL)).v).toBe(h2);

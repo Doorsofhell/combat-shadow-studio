@@ -7,10 +7,10 @@ import { FINGERPRINT_HEADER, MODEL_CACHE, OTHER_MODEL_FILES, SW_GLOBAL, VERSIONE
 import { FINGERPRINT_HEADER as PAGE_HEADER, MODEL_CACHE as PAGE_CACHE } from '../preload';
 
 /**
- * 2.3.4 cache des modèles 3D (Youssef, 2026-11-20, P0): two rules matched coaches/ and salles/ and Workbox applies
+ * 2.3.6 cache des modèles 3D (Youssef, 2026-11-20, P0): two rules matched coaches/ and salles/ and Workbox applies
  * only the first one (CacheFirst), so the NetworkFirst rule never ran for them and a copy the start screen did not
  * check stayed the old version. The rules no longer overlap, and the CacheFirst one checks the fingerprint.
- * The whole update, in a real browser with a second build: tests/e2e/maj-modeles-v234.spec.ts.
+ * The whole update, in a real browser with a second build: tests/e2e/maj-modeles-v236.spec.ts.
  */
 
 const APP = 'https://doorsofhell.github.io/combat-shadow-studio/';
@@ -41,7 +41,7 @@ function fakeCaches() {
   return { open, match, stores };
 }
 
-describe('2.3.4 : une seule règle de cache par fichier 3D', () => {
+describe('2.3.6 : une seule règle de cache par fichier 3D', () => {
   const versioned = bootFiles();
   const others = ['coaches/nael/portrait.webp', 'coaches/inaya/tenues/arbitre.glb', 'coaches/mma-kadir/tenues/arbitre-boxe.glb', 'models/coach_male.glb', 'coaches/nael/photo.json', 'coaches/LICENSE-ROCKETBOX.txt'];
 
@@ -92,7 +92,7 @@ describe('2.3.4 : une seule règle de cache par fichier 3D', () => {
   });
 });
 
-describe('2.3.4 : le service worker ne sert une copie gardée que si c’est celle de cette version', () => {
+describe('2.3.6 : le service worker ne sert une copie gardée que si c’est celle de cette version', () => {
   const v1 = new Uint8Array([1, 2, 3, 4, 5]);
   const v2 = new Uint8Array([9, 8, 7, 6, 5, 4]);
   const rel = 'coaches/nael/photo.glb';
@@ -136,7 +136,7 @@ describe('2.3.4 : le service worker ne sert une copie gardée que si c’est cel
     expect(await use(new Response(v1, { headers: { [FINGERPRINT_HEADER]: sha12(v1) } }))).toBeNull();
   });
 
-  it('copie gardée avant 2.3.4 (sans empreinte) : ses octets décident, une seule fois', async () => {
+  it('copie gardée avant 2.3.6 (sans empreinte) : ses octets décident, une seule fois', async () => {
     expect(await use(new Response(v1))).toBeNull();
     const ok = await use(new Response(v2));
     expect(ok?.headers.get(FINGERPRINT_HEADER)).toBe(sha12(v2));

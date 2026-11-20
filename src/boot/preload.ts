@@ -104,7 +104,7 @@ function outfitsOf(d: DisciplineId, p: BootPlanInput): OutfitId[] {
 
 /** the app's cache of models and pictures (vite.config.ts, runtimeCaching css-modeles) */
 export const MODEL_CACHE = 'css-modeles';
-/** 2.3.4: the header with which the service worker marks the fingerprint of a model it keeps (tools/build/swModeles.ts) */
+/** 2.3.6: the header with which the service worker marks the fingerprint of a model it keeps (tools/build/swModeles.ts) */
 export const FINGERPRINT_HEADER = 'x-css-empreinte';
 
 /**
@@ -157,7 +157,7 @@ export async function isKept(x: BootItem, json = false) {
   const r = await c.match(url);
   if (!r) return false;
   if (json && x.url.endsWith('.json')) return true;
-  // 2.3.4: the service worker writes the fingerprint of the bytes it keeps (tools/build/swModeles.ts): it decides first
+  // 2.3.6: the service worker writes the fingerprint of the bytes it keeps (tools/build/swModeles.ts): it decides first
   const stamped = x.v ? r.headers.get(FINGERPRINT_HEADER) : null;
   if (stamped === x.v) {
     noteKept(x);

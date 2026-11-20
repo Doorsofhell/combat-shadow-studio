@@ -49,7 +49,7 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
-      version: '2.3.4',
+      version: '2.3.6',
       releaseDate: '2026-11-20',
       title: 'Coachs et salles toujours à jour',
       isMajor: false,
@@ -58,6 +58,16 @@ export const RELEASES: readonly Release[] = (
         { category: 'corrections', text: 'Les portraits des coachs suivent aussi les mises à jour. Hors ligne, la copie gardée sur le téléphone reste utilisée.' },
       ],
       links: [],
+    },
+    {
+      version: '2.3.5',
+      releaseDate: '2026-11-20',
+      title: 'Retour protégé dans le créateur',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Créateur d’enchaînements : le bouton Retour du téléphone (ou du navigateur) ne fait plus perdre tes modifications. Il ferme d’abord le panneau ouvert, puis demande « Abandonner les modifications ? ». Un deuxième Retour ferme la question et garde ton brouillon.' },
+      ],
+      links: [{ label: 'Créateur', to: '/createur' }],
     },
     {
       version: '2.3.3',

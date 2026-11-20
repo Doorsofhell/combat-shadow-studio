@@ -5023,7 +5023,48 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - Playwright complet (1 h) : NON EXÉCUTÉ (aucun changement de 3D, d'animation ni de mise en page) ;
   - build Android signé : NON EXÉCUTÉ (la formule du versionCode est inchangée et testée).
 
-## 2026-11-20 · v2.3.4 · Cache des modèles 3D : une seule règle par fichier, version vérifiée
+## 2026-11-20 · v2.3.5 · Bouton Retour : plus de perte de modifications dans le créateur (P1)
+
+- **Signalement** : Youssef, 2026-11-20 (P1 « Risque lié au bouton Retour Android ») : le fichier d'état indiquait
+  que le retour système peut quitter le créateur sans confirmer les modifications non enregistrées.
+- **Constat vérifié sur la v2.3.2** (`d5b3b9b`, build de production, Playwright) : dans l'éditeur d'un enchaînement,
+  après avoir retiré un mouvement, le Retour du navigateur quitte l'éditeur tout de suite, sans question, et la
+  modification est perdue ; même chose avec le panneau « Ajouter un mouvement » ouvert. Le nouveau
+  `retour-createur.spec` échoue 2 fois sur 5 sur la v2.3.2. Sur Android, le bouton Retour (Capacitor,
+  `src/platform/native.ts`) appelle `history.back()` quand aucun écran ne le prend : même effet.
+- **Cause** : la protection du créateur (`useLeaveGuard`) ne surveillait que les liens, la barre, le Menu et le
+  rechargement de la page. Le Retour du système passe par l'historique, qu'elle ne regardait pas.
+- **Correction** (réutilise le système de navigation existant, sans nouveau mécanisme) :
+  - la protection passe dans la navigation (`src/ui/nav/useLeaveGuard.ts`) pour servir à tout écran avec un
+    brouillon ; elle pose une « garde » des couches d'historique (`pushGuard`, 1.42.0), la même que la séance ;
+  - règle « un Retour = un seul pas » : Retour ferme d'abord un panneau ouvert, puis demande « Abandonner les
+    modifications ? » ; un deuxième Retour ferme la question et garde le brouillon ; seul « Abandonner » sort, vers
+    la page d'avant ; sans modification, Retour sort tout de suite ;
+  - Enregistrer, Annuler, la barre et les liens retirent la garde avant de changer de page : Retour depuis la page
+    suivante ne retombe jamais sur une copie de l'éditeur ;
+  - inventaire : le créateur d'enchaînements est le seul écran de l'application avec un brouillon non enregistré
+    (les autres réglages s'enregistrent tout de suite ; les fenêtres de mot de passe, d'e-mail et de photo sont des
+    panneaux que Retour ferme, comme avant).
+- **Fichiers** : `src/ui/nav/useLeaveGuard.ts` (déplacé depuis `src/ui/screens/creator/`),
+  `src/ui/screens/creator/CreatorEditor.tsx`, `tests/e2e/retour-createur.spec.ts` (nouveau, 5 tests),
+  `src/ui/nav/__tests__/leave-guard-android.test.tsx` (nouveau, 3 tests : le bouton Android simulé comme Capacitor),
+  `docs/NON_REGRESSION.md`, `src/domain/releases.ts`, `package.json` et `package-lock.json` (2.3.5), `README.md` et
+  `docs/ETAT.md` régénérés par `npm run docs:sync` (la limite « Retour système » n'y figure plus).
+- **Restauration** : branche `restauration/avant-retour-createur-v232` (= 2.3.2, `d5b3b9b`).
+- **Résultats (2.3.5)** :
+  - avant correction, sur la v2.3.2 : `retour-createur.spec` 2 TEST ÉCHOUÉ sur 5 (le constat) ;
+  - après correction : `retour-createur.spec` (5) et `createur-v2.spec` (5) : TEST RÉUSSI ;
+  - `leave-guard-android.test` (3, bouton Android simulé comme Capacitor) : TEST RÉUSSI ;
+  - Vitest complet : 1792 réussis, 1 ignoré, 4 TEST ÉCHOUÉ déjà connus et sans lien (`fluidity` ×2,
+    `hooks-biomeca`, `expressions-v1160`) ; `morphology-v220` « ordre des surfaces » a échoué 1 fois sur 2
+    (intermittent connu, voir 2.3.1) ; après fusion de la 2.3.3 : `src/ui/nav` + `src/domain` (332) TEST RÉUSSI ;
+  - `npm run build` et `tsc` : TEST RÉUSSI ;
+  - Playwright complet : NON EXÉCUTÉ en entier. Arrêté à 72/310 à la demande de Youssef (2026-11-20 14 h 20,
+    « Passe la suite Playwright ») après sa validation de la PR #146. Sur ces 72 tests, 3 échecs sur des écrans que
+    cette correction ne touche pas : `coach-suggest:147` (déjà en échec sur la 2.3.0 à 2.3.2), `boot:98` et
+    `chrono:124` (non comparés à la 2.3.2 faute de suite complète ; à revérifier au prochain passage complet).
+
+## 2026-11-20 · v2.3.6 · Cache des modèles 3D : une seule règle par fichier, version vérifiée
 
 - **Signalement (Youssef, P0)** : dans `vite.config.ts`, les fichiers de `coaches/` et `salles/` correspondent à deux
   règles de cache successives (CacheFirst puis NetworkFirst) ; la première peut empêcher la seconde.
@@ -5037,7 +5078,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     l'écran de démarrage) restaient l'ancienne version pour toujours ;
   - preuve sur la v2.3.2 construite : une copie périmée posée dans `css-modeles` est servie telle quelle pour le
     modèle de la coach (4 octets au lieu de 3,8 Mo) et pour son portrait (3 octets au lieu de 23 Ko). Même essai sur
-    la 2.3.4 : les vrais fichiers sont servis ;
+    la 2.3.6 : les vrais fichiers sont servis ;
   - le test de mise à jour a aussi montré que GitHub Pages envoie `max-age=600` : sans précaution, la règle « réseau
     d'abord » recevait jusqu'à 10 min la copie du navigateur au lieu du serveur.
 - **Correction (responsabilités clarifiées, `tools/build/swModeles.ts`)** :
@@ -5054,31 +5095,35 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - **versionnement** : l'empreinte de chaque fichier (SHA-1 des octets servis, déjà calculée pour l'écran de
     démarrage) est écrite dans `sw.js` au build ; le service worker marque chaque copie gardée de son empreinte
     (en-tête `x-css-empreinte`), et l'écran de démarrage lit cette marque avant sa note locale. Une copie gardée
-    avant la 2.3.4 (sans marque) est vérifiée une fois par ses octets puis marquée : rien n'est retéléchargé pour
+    avant la 2.3.6 (sans marque) est vérifiée une fois par ses octets puis marquée : rien n'est retéléchargé pour
     rien ;
   - rien n'a changé dans les adresses des modèles, le chargement 3D ni la reprise WebGL.
 - **Fichiers** : `tools/build/swModeles.ts` (nouveau), `tools/build/bootModels.ts` (empreintes partagées, dossier
-  public en paramètre), `vite.config.ts`, `package.json` (2.3.4), `src/domain/releases.ts`, `src/boot/preload.ts`, `src/boot/__tests__/cache-modeles-v234.test.ts`,
-  `src/boot/__tests__/cache-modeles-page-v234.test.ts`, `tests/e2e/maj-modeles-v234.spec.ts`.
+  public en paramètre), `vite.config.ts`, `package.json` (2.3.6), `src/domain/releases.ts`, `src/boot/preload.ts`, `src/boot/__tests__/cache-modeles-v236.test.ts`,
+  `src/boot/__tests__/cache-modeles-page-v236.test.ts`, `tests/e2e/maj-modeles-v236.spec.ts`.
 - **Tests** :
   - nouveaux Vitest (15) : chaque fichier de l'écran de démarrage ne prend que la règle versionnée, les portraits et
     tenues d'arbitre que la règle réseau, aucun fichier ne correspond aux deux ; le plugin **tel qu'écrit dans
     sw.js** (texte relu) sert une copie de cette version, refuse une autre version, vérifie une copie sans marque,
     interroge le serveur sans cache HTTP, répond hors ligne ; l'écran de démarrage lit la marque : TEST RÉUSSI ;
-  - nouveau Playwright `maj-modeles-v234.spec` : une vraie version 2 de l'application est construite avec le modèle
+  - nouveau Playwright `maj-modeles-v236.spec` : une vraie version 2 de l'application est construite avec le modèle
     de la coach et son portrait modifiés, puis servie comme GitHub Pages (max-age, ETag) au même navigateur, sans
     jamais vider le cache : le coach gardé devient la version 2, une ancienne copie remise en place (avec ou sans
     marque) n'est plus servie, le nouveau portrait arrive : TEST RÉUSSI ;
   - Vitest complet : 1804 réussis, 1 ignoré, 4 TEST ÉCHOUÉ déjà connus et sans lien (`fluidity` ×2,
     `hooks-biomeca`, `expressions-v1160`, les mêmes que sur la 2.3.2) ;
-  - `npm run build` : TEST RÉUSSI (2.3.4, `version.json` 2.3.4 / 20304, empreintes présentes dans `sw.js`) ;
+  - `npm run build` : TEST RÉUSSI (2.3.6, `version.json` 2.3.6 / 20306, empreintes présentes dans `sw.js`) ;
   - Playwright complet (306 tests, 1 h 12) : 301 réussis, 2 ignorés (Firebase), 3 TEST ÉCHOUÉ :
     `coach-suggest:147` et `coaching-hud:60` échouent aussi relancés seuls, comme sur la 2.3.0 à 2.3.2 (sans lien) ;
     `training-layout:117` réussit relancé seul (instable sous charge) ;
-  - relance ciblée sur la 2.3.4 fusionnée avec la 2.3.3 : `maj-modeles-v234`, `boot.spec` (1 à 3), `training-layout:117`
-    : TEST RÉUSSI ; `boot.spec:98` (changer de coach après le démarrage) est intermittent : 1 échec sur 3 sur la
-    2.3.4 et **3 échecs sur 5 sur la 2.3.3 sans cette correction** : antérieur, sans lien avec le cache (l'écran
+  - relance ciblée sur cette branche fusionnée avec la 2.3.3 : `maj-modeles-v236`, `boot.spec` (1 à 3), `training-layout:117`
+    : TEST RÉUSSI ; `boot.spec:98` (changer de coach après le démarrage) est intermittent : 1 échec sur 3 avec
+    cette correction et **3 échecs sur 5 sur la 2.3.3 sans cette correction** : antérieur, sans lien avec le cache (l'écran
     d'entraînement n'est pas encore ouvert au moment du contrôle) ;
   - preuve avant/après (script ad hoc, même navigateur) : sur la 2.3.2 une copie périmée du modèle et du portrait est
-    servie ; sur la 2.3.4 les vrais fichiers.
+    servie ; sur la 2.3.6 les vrais fichiers.
 - **Restauration** : branche `restauration/avant-cache-3d-v232` (= 2.3.2, `d5b3b9b`).
+- **Numéro** : prévue en 2.3.4, renommée 2.3.6 car la 2.3.5 (bouton Retour, #146) a été publiée avant ; branche
+  fusionnée avec la 2.3.5 (aucun fichier commun hors version et documentation générée). Après la fusion :
+  Vitest `src/domain`, `src/boot`, `src/ui/nav` (366 tests, dont version-sync), `npm run build` (`version.json`
+  2.3.6 / 20306), Playwright `maj-modeles-v236`, `boot`, `retour-createur`, `app` (16 tests) : TEST RÉUSSI.

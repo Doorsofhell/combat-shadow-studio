@@ -1,7 +1,7 @@
 import type { RuntimeCaching } from 'workbox-build';
 
 /**
- * 2.3.4 cache des modèles 3D (Youssef, 2026-11-20, P0 « Stratégies de cache 3D potentiellement contradictoires »).
+ * 2.3.6 cache des modèles 3D (Youssef, 2026-11-20, P0 « Stratégies de cache 3D potentiellement contradictoires »).
  *
  * Constat (v2.3.2): vite.config.ts declared two rules for the same files. Workbox answers a request with the FIRST
  * route that matches, so every file of coaches/ and salles/ took the CacheFirst rule and the NetworkFirst rule written
@@ -94,7 +94,7 @@ const callbacks = {
     if (!want) return null;
     const have = cachedResponse.headers.get(this.header);
     if (have) return have === want ? cachedResponse : null;
-    // a copy kept before 2.3.4 (or by the start screen on the very first launch): its bytes decide, once
+    // a copy kept before 2.3.6 (or by the start screen on the very first launch): its bytes decide, once
     const buf = await cachedResponse.clone().arrayBuffer();
     const v = await this.hash(buf);
     if (v !== want) return null;

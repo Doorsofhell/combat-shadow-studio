@@ -68,7 +68,7 @@ export async function compressModel(src: Uint8Array): Promise<Uint8Array> {
 export type BootAssets = Record<string, [bytes: number, version: string]>;
 
 /**
- * 2.3.4 (cache des modèles 3D): what the server sends for each file of the start screen (the compressed model in a
+ * 2.3.6 (cache des modèles 3D): what the server sends for each file of the start screen (the compressed model in a
  * build, the file itself otherwise), read once per public folder and mode. Shared by the start screen
  * (virtual:boot-assets) and the service worker (tools/build/swModeles.ts), so both expect the same fingerprints.
  */
@@ -103,7 +103,7 @@ export async function bootAssets(pub = PUB, compress = false): Promise<BootAsset
 /** whether a vite command builds the compressed models (CSS_RAW_MODELS=1 keeps them as they are) */
 export const compressedBuild = (command: string) => command === 'build' && process.env.CSS_RAW_MODELS !== '1';
 
-/** pub: the public folder (2.3.4: another one only for the GLB update test, tests/e2e/maj-modeles-v234.spec.ts) */
+/** pub: the public folder (2.3.6: another one only for the GLB update test, tests/e2e/maj-modeles-v236.spec.ts) */
 export function bootModels(pub = PUB): Plugin {
   let build = false;
   let outDir = 'dist';

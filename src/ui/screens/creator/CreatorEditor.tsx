@@ -14,8 +14,9 @@ import { AppIcon, DisciplineIcon } from '../../icons';
 import { NavPanel, usePanel } from '../../nav/NavSheets';
 import { fold } from '../../nav/selection';
 import { useNavActions } from '../../nav/store';
+import { useSmartBack } from '../../nav/BottomBar';
+import { useLeaveGuard } from '../../nav/useLeaveGuard';
 import { TechniquePicto } from '../../pictos/TechniquePicto';
-import { useLeaveGuard } from './useLeaveGuard';
 import { saveCombo } from './actions';
 import { ScoreRing, masteryKey } from './shared';
 import './creator.css';
@@ -53,7 +54,6 @@ function EditorBody() {
   const [name, setName] = useState(initial.name);
   const [d, setD] = useState<DisciplineId>(initial.discipline);
   const [seq, setSeq] = useState<string[]>(initial.sequence);
-  const [ask, setAsk] = useState<null | { go: () => void }>(null);
   const picker = usePanel();
   const issues = validateSequence(seq, d);
   const playable = seq.length > 0 && isPlayable(issues);
@@ -62,19 +62,20 @@ function EditorBody() {
   const dirty = name !== initial.name || d !== initial.discipline || seq.join(',') !== initial.sequence.join(',');
   // the analysis is local and instant: shown while editing, stored on save
   const preview = useMemo(() => (seq.length ? analyseCombo(d, seq) : null), [d, seq]);
-  useLeaveGuard(dirty, (go) => setAsk({ go }));
+  // 2.3.5: every way out asks while the draft has changes, the Back of the phone and of the browser included
+  const smartBack = useSmartBack();
+  const guard = useLeaveGuard(dirty, () => smartBack('createur-editeur'));
 
   const save = (then?: (id: string) => void) => {
     if (!playable) return;
     const c = saveCombo({ id: existing?.id, name: finalName, discipline: d, sequence: seq });
     toast(existing ? (dirty ? 'Modifications enregistrées' : 'Aucune modification') : 'Enchaînement enregistré');
-    if (then) then(c.id);
-    else nav(`/createur/${c.id}`, { replace: true });
+    // the guard's history entry goes first: Back from the next page never comes back to this editor's copy
+    guard.release(() => (then ? then(c.id) : nav(`/createur/${c.id}`, { replace: true })));
   };
   const cancel = () => {
     const go = () => (existing ? nav(`/createur/${existing.id}`, { replace: true }) : nav('/createur', { replace: true }));
-    if (dirty) setAsk({ go });
-    else go();
+    guard.attempt(go);
   };
   const move = (i: number, by: number) => {
     const j = i + by;
@@ -190,21 +191,19 @@ function EditorBody() {
       </div>
 
       {picker.open && <MovePicker d={d} onAdd={(tid) => setSeq((s) => [...s, tid])} onClose={() => picker.hide()} count={seq.length} />}
-      {ask && (
+      {guard.asking && (
         <ConfirmDialog
           title="Modifications non enregistrées"
           message="Abandonner les modifications ? Ce que tu as changé depuis l’ouverture sera perdu."
           confirmLabel="Abandonner"
           danger
-          onCancel={() => setAsk(null)}
+          onCancel={guard.dismiss}
           onConfirm={() => {
-            const go = ask.go;
-            setAsk(null);
             setName(initial.name);
             setD(initial.discipline);
             setSeq(initial.sequence);
-            // after the reset the guard sees a clean editor
-            setTimeout(go, 0);
+            // the guard and its history entry go first, then the way out that was asked
+            guard.confirm();
           }}
         />
       )}
