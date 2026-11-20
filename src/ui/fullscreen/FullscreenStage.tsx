@@ -17,7 +17,7 @@ export function FsHint() {
   if (seen) return null;
   return (
     <div className="fs-hint" role="note" data-testid="fs-hint" data-no-double-tap>
-      <span>Astuce : touche deux fois le coach pour le plein écran</span>
+      <span>Astuce : touche le coach pour ses options, deux fois pour le plein écran</span>
       <button type="button" className="fs-hint-close" onClick={() => set({ stageFsHintSeen: true })} aria-label="Fermer l’astuce">
         <AppIcon id="close" size={16} />
       </button>

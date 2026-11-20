@@ -14,7 +14,6 @@ import type { ComboPlayer, PlayerEvents } from '../../engine';
 import { playerSteps } from '../training/plan';
 import { say } from '../../audio/voice';
 import { GuideCard } from '../GuideCard';
-import { MasterySwitch } from '../components/Playback';
 import { AnimationBadge, DisciplineLabel, ModeBadge, EmptyState, EntryCard, FilterChips, KbOnlyBadge, KickboxingRulesCard, KickboxingStylePicker, LevelSelector, PageHead, PlaybackControls, SectionHead, Tabs, TechniqueCard, useKbStyle } from '../components';
 import { filterExercises, filterTechniques } from '../../domain/kickboxingStyles';
 import { ExerciseList, ExerciseSheet } from './Discipline';
@@ -24,6 +23,7 @@ import { setSelection, useSelection } from '../nav/selection';
 import { LibraryPanels } from './LibraryNav';
 import { CoachScreen } from '../coach-screen/CoachScreen';
 import { CAMERA_PRESETS } from '../components/Playback';
+import { stageAzimuth, techniqueView } from '../../domain/camera';
 import { exerciseForTechnique } from '../../domain/quickPicks';
 import { TechniqueFilter, neighbours, parseTechniqueFilter, sheetQuery, techniqueCatalogue } from './techniqueOrder';
 import { PremiumMarker } from '../premium/PremiumMarker';
@@ -45,6 +45,11 @@ const HUB_TABS: { id: HubTab; label: string; icon: ReactNode }[] = [
 
 /** 1.4.0: the speeds of a technique sheet, in the coach zone (the former slider went from ×0.2 to ×1.2) */
 const SHEET_SPEEDS = [0.2, 0.4, 0.6, 0.8, 1, 1.2];
+/** 2.4: the angles of the sheet in the coach's panel: Auto (new), then the four of 1.4.0 */
+const SHEET_ANGLES: { id: number | 'auto'; label: string }[] = [
+  { id: 'auto', label: 'Auto' },
+  ...['Face', '3/4', 'Profil', '3/4 opposé'].map((l) => CAMERA_PRESETS.find((p) => p.label === l)!),
+];
 
 /** "Techniques" tab of Apprendre: individual techniques and combinations. */
 export function Library() {
@@ -229,7 +234,9 @@ export function TechniquePage() {
   const player = useRef<ComboPlayer | null>(null);
   const [playing, setPlaying] = useState(true);
   const [speed, setSpeed] = useState(0.6);
-  const [cam, setCam] = useState(settings.cameraAngle);
+  // 2.4: 'auto' is the teaching angle of the session for this technique (new on the sheet); it starts on the angle of
+  // Réglages, as before
+  const [cam, setCam] = useState<number | 'auto'>(settings.cameraAngle);
   const speedRef = useRef(speed);
   speedRef.current = speed;
   const nav = useNavigate();
@@ -340,6 +347,12 @@ export function TechniquePage() {
     [t, settings.voice, settings.announceMoves],
   );
 
+  const autoView = useMemo(() => {
+    if (cam !== 'auto' || !t) return undefined;
+    const v = techniqueView(t.id);
+    return { az: stageAzimuth(v, d, profile.guard === 'gaucher'), el: v.el, zoom: v.zoom, focus: v.focus, closeUp: false };
+  }, [cam, t, d, profile.guard]);
+
   if (!t) return <EmptyState title="Technique introuvable" action={<Link to="/techniques" className="btn">Retour aux techniques</Link>} />;
   return (
     <div className="page tech-page" style={{ gap: 16 }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} data-testid="technique-page">
@@ -360,10 +373,12 @@ export function TechniquePage() {
         className="preview-stage"
         testId="technique-stage"
         place="fiche technique"
-        commands={{
-          sound: true,
-          speed: { value: speed, onChange: setPlayerSpeed, speeds: SHEET_SPEEDS },
-          angles: { value: cam, options: CAMERA_PRESETS, onChange: (a) => setCam(a as number) },
+        panel={{
+          learning: { items: [{ id: t.id, name: t.name }] },
+          camera: { value: cam, options: SHEET_ANGLES, onChange: (a) => setCam(a as number | 'auto') },
+          speed: { value: speed, onChange: setPlayerSpeed, steps: SHEET_SPEEDS },
+          reset: () => setCam(settings.cameraAngle),
+          advanced: { coach: true, guard: true, announce: true },
         }}
         stage={
           <CoachStage
@@ -371,7 +386,8 @@ export function TechniquePage() {
             coach={profile.coach ?? 'homme'}
             discipline={d}
             southpaw={profile.guard === 'gaucher'}
-            cameraAngle={cam}
+            cameraAngle={cam === 'auto' ? undefined : cam}
+            view={autoView}
             quality={settings.quality}
             events={events}
             onPlayer={onPlayer}
@@ -412,7 +428,6 @@ export function TechniquePage() {
           else player.current?.play();
           setPlaying(!playing);
         }}
-        extra={<MasterySwitch id={t.id} />}
       />
       <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
         <ModeBadge mode={t.mode} />

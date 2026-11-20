@@ -192,7 +192,7 @@ test('astuce unique : affichée une fois, fermée pour de bon', async ({ page })
   await seed(page);
   await page.goto('/#/');
   const hint = page.getByTestId('fs-hint');
-  await expect(hint).toHaveText('Astuce : touche deux fois le coach pour le plein écran');
+  await expect(hint).toHaveText('Astuce : touche le coach pour ses options, deux fois pour le plein écran');
   await hint.getByRole('button', { name: 'Fermer l’astuce' }).click();
   await expect(hint).toHaveCount(0);
   // the settings are written to the device asynchronously

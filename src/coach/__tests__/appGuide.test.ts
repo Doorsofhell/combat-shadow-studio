@@ -133,8 +133,9 @@ describe('guide de l’application : contenu', () => {
     // the coach does not see the user, it runs on the device
     expect(by('coach-ia')).toMatch(/ne te vois pas/);
     expect(by('coach-ia')).toMatch(/sans internet/);
-    // the mastery switch: two icons next to the playback bar, coloured edge, "À revoir", Progrès > Maîtrise
-    for (const w of ['Assimilée', 'Encore du mal', 'barre de lecture', 'liseré', 'À revoir', 'Maîtrise']) expect(by('mastery')).toContain(w);
+    // 2.4: the mastery is « Mon apprentissage » in the coach's panel (the two icons next to the playback bar are gone):
+    // its three states, the coloured edge, "À revoir", Progrès > Maîtrise
+    for (const w of ['Mon apprentissage', 'Acquis', 'Encore du mal', 'En apprentissage', 'liseré', 'À revoir', 'Maîtrise']) expect(by('mastery')).toContain(w);
     // the two coaches really offered, and the render answer up to date
     expect(by('choose-coach')).toMatch(/Kadir/);
     expect(by('choose-coach')).toMatch(/Amara/);
@@ -163,7 +164,8 @@ describe('guide de l’application : contenu', () => {
       expect(barLabels, w).toContain(w);
       expect(by('barre-actions'), w).toContain(`« ${w} »`);
     }
-    for (const w of ['Au hasard', 'À revoir', 'Exercice suivant', 'Comment faire ?', 'Options']) {
+    // 2.4: « Options » became « Options du coach » (it opens the coach's panel) and « Enchaînement » has its own entry
+    for (const w of ['Au hasard', 'À revoir', 'Exercice suivant', 'Comment faire ?', 'Options du coach', 'Enchaînement']) {
       expect(commandLabels, w).toContain(w);
       expect(by('barre-actions'), w).toContain(`« ${w} »`);
     }

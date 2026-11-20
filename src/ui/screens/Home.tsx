@@ -190,7 +190,7 @@ export function Home() {
             stageClassName="hero-stage-3d"
             stageHidden
             fallback={<StageFallback />}
-            commands={{ sound: true }}
+            panel={{ advanced: { coach: true, guard: true } }}
             stage={
               <CoachStage
                 backdrop="dark"
@@ -204,9 +204,7 @@ export function Home() {
               />
             }
           />
-          <Link to="/coach" className="chip home-coach-chg" aria-label={`Changer de coach (${name})`}>
-            Changer de coach
-          </Link>
+          {/* 2.4: « Changer de coach » is in the coach's panel (Options avancées), no longer on the coach */}
           <button type="button" className="home-go" onClick={start} data-testid="home-cta" data-action="start" aria-label={recEx ? `Commencer : ${recEx.name}` : 'Commencer l’entraînement'}>
             <NavIcon id="play" />
             Commencer

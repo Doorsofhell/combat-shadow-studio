@@ -234,46 +234,55 @@ test('demander au coach : pause, réponse hors ligne, ralenti, sans défilement 
   }
 });
 
-test('zone Caméra : angle, rotation, zoom, recentrer, sans masquer le coach ni déborder', async ({ page }) => {
+// 2.4 (panneau « Options du coach »): « Caméra » opens the coach's panel on « Angle de vue » (the camera panel of the
+// bottom of 0.x is gone). The same commands (Auto, the angles, rotation, zoom, back to the advised angle) are checked:
+// reachable at every size, big enough for a finger, none cut; the panel is over the coach on purpose (glass).
+test('Caméra : le panneau du coach s’ouvre sur l’angle de vue, tout à portée sans déborder', async ({ page }) => {
   await seed(page);
   for (const s of SIZES) {
     await page.setViewportSize({ width: s.width, height: s.height });
     await open(page, `/#/entrainement?ex=boxe-debutant-02&mode=technique`);
     await page.getByTestId('cam-mode').click();
-    await expect(page.getByTestId('camera-panel')).toBeVisible();
-    const r = await page.evaluate(() => {
-      const vw = innerWidth;
-      const vh = innerHeight;
-      // v0.32 (navigation, 2026-10-22): Démarrer and Menu (where the Coach IA is) are places of the bottom bar
-      const ids = ['cam-auto', 'cam-next', 'cam-left', 'cam-right', 'zoom-in', 'zoom-out', 'cam-reset', 'cam-close', 'start', 'nav-menu'];
-      const hidden = ids.filter((id) => {
-        const b = document.querySelector(`[data-testid=${id}]`)?.getBoundingClientRect();
-        return !b || b.width < 40 || b.height < 40 || b.left < -1 || b.right > vw + 1 || b.top < -1 || b.bottom > vh + 1;
+    await expect(page.getByTestId('coach-panel')).toBeVisible();
+    await expect(page.getByTestId('cp-camera')).toBeVisible();
+    // v0.32 (navigation, 2026-10-22): Démarrer and Menu stay behind the panel, untouched
+    const ids = ['cp-cam-auto', 'cp-cam-face', 'cp-cam-left', 'cp-cam-right', 'cp-zoom-in', 'cp-zoom-out', 'cp-reset', 'coach-panel-close'];
+    const hidden: string[] = [];
+    for (const id of ids) {
+      const el = page.getByTestId(id);
+      await el.scrollIntoViewIfNeeded();
+      const ok = await el.evaluate((e) => {
+        const b = e.getBoundingClientRect();
+        return b.width >= 40 && b.height >= 40 && b.left >= -1 && b.right <= innerWidth + 1 && b.top >= -1 && b.bottom <= innerHeight + 1;
       });
-      const panel = document.querySelector('[data-testid=camera-panel]')!.getBoundingClientRect();
+      if (!ok) hidden.push(id);
+    }
+    const r = await page.evaluate(() => {
+      const vh = innerHeight;
+      const panel = document.querySelector('[data-testid=coach-panel]')!.getBoundingClientRect();
       const stage = document.querySelector('.tr-stage')!.getBoundingClientRect();
-      const clipped = [...document.querySelectorAll('.tr-bottom *')]
-        // visually hidden labels (1 px, read by screen readers) are not visible text, as in checkFits
+      const clipped = [...document.querySelectorAll('.cpn-body *')]
         .filter((e) => [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim()) && e.getBoundingClientRect().width > 1 && (e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 2))
         .map((e) => e.textContent);
-      return { hidden, overStage: panel.top < stage.bottom - 1, stageH: stage.height, scroll: document.scrollingElement!.scrollHeight - vh, clipped };
+      return { inside: panel.top >= 0 && panel.bottom <= vh + 1 && panel.left >= 0 && panel.right <= innerWidth + 1, stageH: stage.height, scroll: document.scrollingElement!.scrollHeight - vh, clipped };
     });
-    expect(r.hidden, `${s.name} boutons hors écran ou trop petits`).toEqual([]);
-    expect(r.overStage, `${s.name} la zone Caméra masque le coach`).toBe(false);
+    expect(hidden, `${s.name} boutons hors écran ou trop petits`).toEqual([]);
+    expect(r.inside, `${s.name} le panneau dépasse de l’écran`).toBe(true);
     expect(r.stageH, `${s.name} hauteur du coach`).toBeGreaterThan(150);
     expect(r.scroll, s.name).toBeLessThanOrEqual(0);
     expect(r.clipped, `${s.name} textes coupés`).toEqual([]);
   }
   // the controls act: angle chosen, then everything back to the advised angle
-  await page.getByTestId('cam-next').click();
-  await expect(page.getByTestId('cam-angle')).toHaveText('Face');
+  await page.getByTestId('cp-cam-face').click();
+  await expect(page.getByTestId('cp-cam-face')).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByTestId('cam-mode')).toHaveAttribute('aria-label', /^Caméra : Face/);
-  await page.getByTestId('zoom-in').click();
-  await page.getByTestId('cam-left').click();
-  await page.getByTestId('cam-reset').click();
+  await page.getByTestId('cp-zoom-in').click();
+  await page.getByTestId('cp-cam-left').click();
+  await page.getByTestId('cp-reset').click();
   await expect(page.getByTestId('cam-mode')).toHaveAttribute('aria-label', /^Caméra : Auto/);
-  await expect(page.getByTestId('cam-auto')).toHaveAttribute('aria-pressed', 'true');
-  await page.getByTestId('cam-close').click();
+  await expect(page.getByTestId('cp-cam-auto')).toHaveAttribute('aria-checked', 'true');
+  await page.getByTestId('coach-panel-close').click();
+  await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
   await expect(page.getByTestId('decompose')).toBeVisible();
 });
 
@@ -301,34 +310,34 @@ test('caméra : « Auto » annule rotation et zoom, un angle manuel est exact', 
   await page.setViewportSize({ width: 393, height: 851 });
   await open(page, `/#/entrainement?ex=boxe-debutant-02&mode=technique`);
   const auto = await steady(page);
+  // 2.4: the same commands, in the coach's panel (« Caméra » opens it on « Angle de vue »)
   await page.getByTestId('cam-mode').click();
-  await expect(page.getByTestId('cam-angle')).toHaveText('3/4 avant');
-  await page.getByTestId('cam-right').click();
-  await page.getByTestId('zoom-in').click();
-  await expect(page.getByTestId('cam-auto')).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByTestId('cp-cam-detail')).toContainText('3/4 avant');
+  await page.getByTestId('cp-cam-right').click();
+  await page.getByTestId('cp-zoom-in').click();
+  await expect(page.getByTestId('cp-cam-auto')).toHaveAttribute('aria-checked', 'false');
   await expect(page.getByTestId('cam-mode')).toHaveAttribute('aria-label', /^Caméra : Auto ajusté/);
   await settle(page);
   expect(Math.abs((await camera(page)).az - auto.az - 30)).toBeLessThan(3);
   // back to Auto: the advised angle and distance, nothing left from the adjustment
-  await page.getByTestId('cam-auto').click();
-  await expect(page.getByTestId('cam-auto')).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('cp-cam-auto').click();
+  await expect(page.getByTestId('cp-cam-auto')).toHaveAttribute('aria-checked', 'true');
   // the camera glides back (it moves away slowly on purpose, so the view never pumps)
   await expect.poll(async () => Math.abs((await camera(page)).az - auto.az), { timeout: 15_000 }).toBeLessThan(2);
   await expect.poll(async () => Math.abs((await camera(page)).dist - auto.dist), { timeout: 15_000 }).toBeLessThan(0.1);
   // a manual angle after a rotation is the angle itself
-  await page.getByTestId('cam-left').click();
-  await page.getByTestId('cam-next').click();
-  await expect(page.getByTestId('cam-angle')).toHaveText('Face');
+  await page.getByTestId('cp-cam-left').click();
+  await page.getByTestId('cp-cam-face').click();
+  await expect(page.getByTestId('cp-cam-face')).toHaveAttribute('aria-checked', 'true');
   await settle(page);
   expect(Math.abs((await camera(page)).az)).toBeLessThan(2);
-  // the same choices from the Options sheet
-  await page.getByTestId('cam-close').click();
-  await menuCommand(page, 'options');
-  await page.getByTestId('cam-chip-profil-gauche').click();
+  // the other angles of the former Options sheet, behind « Autres angles »
+  await page.getByTestId('cp-cam-more').click();
+  await page.getByTestId('cp-cam-profil-gauche').click();
   await settle(page);
   expect(Math.abs((await camera(page)).az - 90)).toBeLessThan(2);
-  await page.getByTestId('cam-chip-auto').click();
-  await expect(page.getByTestId('cam-why')).toBeVisible();
+  await page.getByTestId('cp-cam-auto').click();
+  await expect(page.getByTestId('cp-cam-detail')).toBeVisible();
   await settle(page);
   expect(Math.abs((await camera(page)).az - auto.az)).toBeLessThan(2);
 });
@@ -379,8 +388,9 @@ test('consigne principale, points clés, ralenti et ligne de temps', async ({ pa
   await openMenu(page);
   await expect(page.getByTestId('slow')).toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.press('Escape');
+  // 2.4: « Options du coach » opens the coach's panel, its speed shows the slow motion
   await menuCommand(page, 'options');
-  await expect(page.getByTestId('speed')).toHaveText('×0.25');
+  await expect(page.getByTestId('cp-speed-value')).toHaveText('×0,25');
 });
 
 test('repères au sol : chacun s’active seul, légende sans débordement, choix mémorisé', async ({ page }) => {
@@ -390,14 +400,17 @@ test('repères au sol : chacun s’active seul, légende sans débordement, choi
   await page.setViewportSize({ width: 360, height: 640 });
   await open(page, `/#/entrainement?ex=muaythai-intermediaire-11&mode=technique`);
   await expect(page.getByTestId('mark-legend')).toHaveCount(0);
+  // 2.4: the floor marks are in the coach's panel, « Options avancées »
   await menuCommand(page, 'options');
+  await page.getByTestId('cp-advanced').click();
   const ids = ['pieds', 'orientation', 'avantArriere', 'pivot', 'trajectoire'];
-  for (const id of ids) await expect(page.getByTestId(`mark-${id}`)).toHaveAttribute('aria-pressed', 'false');
-  await page.getByTestId('mark-pivot').click();
-  await expect(page.getByTestId('mark-pivot')).toHaveAttribute('aria-pressed', 'true');
-  for (const id of ids.filter((i) => i !== 'pivot')) await expect(page.getByTestId(`mark-${id}`)).toHaveAttribute('aria-pressed', 'false');
-  await page.getByTestId('mark-avantArriere').click();
-  await page.getByRole('button', { name: 'Fermer' }).last().click();
+  for (const id of ids) await expect(page.getByTestId(`cp-mark-${id}`)).toHaveAttribute('aria-pressed', 'false');
+  await page.getByTestId('cp-mark-pivot').click();
+  await expect(page.getByTestId('cp-mark-pivot')).toHaveAttribute('aria-pressed', 'true');
+  for (const id of ids.filter((i) => i !== 'pivot')) await expect(page.getByTestId(`cp-mark-${id}`)).toHaveAttribute('aria-pressed', 'false');
+  await page.getByTestId('cp-mark-avantArriere').click();
+  await page.getByTestId('coach-panel-close').click();
+  await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
   await expect(page.getByTestId('mark-legend')).toContainText('Pied avant');
   await expect(page.getByTestId('mark-legend')).toContainText('Pivot');
   await expect(page.getByTestId('mark-legend')).not.toContainText('Trajectoire');
@@ -427,10 +440,12 @@ test('changer de coach pendant l’entraînement : la coach femme s’affiche', 
   await page.setViewportSize({ width: 393, height: 851 });
   await open(page, `/#/entrainement?ex=boxe-debutant-02&mode=technique`);
   await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'homme');
+  // 2.4: the coach is chosen in the coach's panel, « Options avancées »
   await menuCommand(page, 'options');
+  await page.getByTestId('cp-advanced').click();
   // 0.24: the two coaches are named Kadir and Amara
-  await page.getByRole('button', { name: 'Amara' }).click();
+  await page.getByRole('radio', { name: 'Amara' }).click();
   await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'femme');
-  await page.getByRole('button', { name: 'Kadir' }).click();
+  await page.getByRole('radio', { name: 'Kadir' }).click();
   await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'homme');
 });

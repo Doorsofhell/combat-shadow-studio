@@ -1,11 +1,9 @@
-import { ALL_COACHES } from '../../domain/coaches/catalog';
-import { pickChampion, useChosenCoach } from './CoachSelect';
 import '../training/training.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { CoachStage } from '../../three/CoachStage';
 import { useProfile } from '../../store/profile';
-import { GROUND_MARK_LABEL, GroundMarkId, useSettings } from '../../store/settings';
+import { useSettings } from '../../store/settings';
 import { useCustom } from '../../store/custom';
 import { formatDuration } from '../../store/stats';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
@@ -27,6 +25,7 @@ import { StudyPanel, useStudy } from '../training/Study';
 import { MoveBand, MoveName } from '../training/MoveBand';
 import { ConsigneBand } from '../training/ConsigneBand';
 import { CoachScreen, useCoachUi } from '../coach-screen/CoachScreen';
+import type { CoachPanelConfig } from '../coach-panel/CoachPanel';
 import { usePulseFlash } from '../training/pulse';
 import { ArBridge } from '../../ar/ArBridge';
 import { ArControls, ArIntroSheet, useArView } from '../training/ArMode';
@@ -40,13 +39,15 @@ import { useResume } from '../../store/resume';
 import { ResumeSnapshot, matchesPlan, sessionQuery } from '../../domain/resume';
 import { useHydrated } from '../../store/useHydrated';
 
-/** 1.4.0: the angles at hand in the coach zone (every other one stays in the sheet « Caméra ») */
+/** 1.4.0: the angles at hand (2.4: the first row of « Angle de vue » in the coach's panel) */
 const QUICK_ANGLES: { id: CameraMode; label: string }[] = [
   { id: 'auto', label: 'Auto' },
   { id: 'face', label: 'Face' },
   { id: 'trois-quarts-droit', label: '3/4' },
   { id: 'profil-droit', label: 'Profil' },
 ];
+/** 2.4: every other angle of the session (the former sheet « Caméra »), behind « Autres angles » in the panel */
+const MORE_ANGLES = CAMERA_MODES.filter((c) => !QUICK_ANGLES.some((q) => q.id === c.id));
 
 export function Training() {
   const [q] = useSearchParams();
@@ -143,9 +144,7 @@ function clock(sec: number, up = true) {
 function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPersist, 'camera'> }) {
   const nav = useNavigate();
   const profile = useProfile((s) => s.profile);
-  const updateProfile = useProfile((s) => s.update);
   const settings = useSettings((s) => s.settings);
-  const setSettings = useSettings((s) => s.set);
   const savedCam = persist.snapshot?.camera;
   const [camMode, setCamMode] = useState<CameraMode>(
     savedCam && CAMERA_MODES.some((c) => c.id === savedCam) ? (savedCam as CameraMode) : (settings.cameraMode ?? 'auto'),
@@ -155,8 +154,7 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   const { view, item, events, onPlayer, player, move, start, pause, resume, restart, goto, setSpeed } = useSession(plan, { ...persist, camera: () => camRef.current });
   const [closeUp, setCloseUp] = useState(false);
   const [studyRot, setStudyRot] = useState(0);
-  // « Caméra » zone: manual turn around the coach and zoom, on top of the chosen angle
-  const [camOpen, setCamOpen] = useState(false);
+  // manual turn around the coach and zoom, on top of the chosen angle (2.4: in the coach's panel, « Angle de vue »)
   const [camRot, setCamRot] = useState(0);
   const [camZoom, setCamZoom] = useState(1);
   const [sheet, setSheet] = useState(false);
@@ -197,7 +195,6 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   }, [ar]);
   const southpaw = profile.guard === 'gaucher';
   const coach = profile.coach ?? 'homme';
-  const chosenCoach = useChosenCoach();
   const st = useStudy(southpaw);
   // the study can show the other guard for comparison
   const stageSouthpaw = st.tech ? st.southpaw : southpaw;
@@ -303,17 +300,10 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   }, [coachSlot, coachContext]);
   // leaving the session (or starting another one) closes the coach, as the former inline panel did
   useEffect(() => () => useCoachBubble.setState({ host: null, open: false }), []);
-  const ANGLES = CAMERA_MODES.filter((c) => c.id !== 'auto');
   // a chosen angle is exact: any earlier rotation is dropped
   const chooseAngle = (m: CameraMode) => {
     setCamMode(m);
     setCamRot(0);
-  };
-  const stepAngle = (d: 1 | -1) => {
-    // from « Auto », the arrows start at the first or the last angle
-    const i = ANGLES.findIndex((c) => c.id === camMode);
-    const j = i < 0 ? (d > 0 ? 0 : ANGLES.length - 1) : (i + d + ANGLES.length) % ANGLES.length;
-    chooseAngle(ANGLES[j].id);
   };
   const turnCam = (deg: number) => {
     if (free) setCamMode('auto');
@@ -488,7 +478,7 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   const toggleState = !running ? 'start' : view.paused ? 'resume' : 'pause';
   // hands-free (maquette v4): while the session runs, only Pause (and Retour) stay above the bottom; Décomposer,
   // Caméra and « Plus » come back with the pause. A tap on the stage shows or hides the commands of the coach (1.4.0).
-  const handsFree = running && !view.paused && !st.tech && !camOpen && !asking && !sheet && !guideId;
+  const handsFree = running && !view.paused && !st.tech && !asking && !sheet && !guideId;
   tapStage.current = () => {
     if (!arActive) coachUi.toggle();
   };
@@ -515,6 +505,32 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
     else if (running && !view.paused && was.phase !== view.phase && (view.phase === 'travail' || view.phase === 'repos' || view.phase === 'termine')) pattern = [80];
     if (pattern) vibrate(pattern);
   }, [running, view.paused, view.phase]);
+  // 2.4: the coach's panel of the session (CoachPanel): the techniques of the exercise to rate, the angle (quick ones,
+  // the others, rotation, zoom, close-up), the speed, then the coach, the guard, the floor marks and the sounds. It
+  // never pauses the session: it only calls the functions above. In Décomposer the study keeps its own angle and
+  // speeds; during AR the panel does not open (a tap on the stage does nothing there, as before).
+  const learnItems = useMemo(
+    () => [...new Set(st.tech ? [st.tech] : seq)].filter((id) => TECHNIQUE_BY_ID.has(id)).map((id) => ({ id, name: TECHNIQUE_BY_ID.get(id)!.name })),
+    [st.tech, seq],
+  );
+  const coachPanel: CoachPanelConfig = {
+    learning: { items: learnItems, current: st.tech ?? curId },
+    camera: st.tech
+      ? undefined
+      : {
+          value: isAuto ? 'auto' : camMode,
+          options: QUICK_ANGLES,
+          more: MORE_ANGLES,
+          onChange: (id) => (id === 'auto' ? resetCam() : chooseAngle(id as CameraMode)),
+          detail: isAuto ? `${autoName}. ${teach.why}` : camMode === 'auto' ? 'Auto ajusté : Réinitialiser la vue revient à l’angle automatique.' : free ? 'Glisse le doigt sur le coach pour tourner autour de lui.' : undefined,
+          rotate: turnCam,
+          zoom: { canIn: camZoom < 1.8, canOut: camZoom > 0.7, onIn: () => zoomCam(1.15), onOut: () => zoomCam(1 / 1.15) },
+          closeUp: teach.closeUp && !free ? { on: closeUp, label: teach.closeUp.label, onToggle: () => setCloseUp(!closeUp) } : undefined,
+        },
+    speed: st.tech ? undefined : { value: view.speed, onChange: setSpeed, min: 0.25, max: 1.5, step: 0.05 },
+    reset: st.tech ? undefined : resetCam,
+    advanced: { coach: true, guard: true, groundMarks: true, announce: true, impacts: true },
+  };
   useNavActions(
     {
       back: { run: askLeave, ariaLabel: 'Retour : quitter l’entraînement', testId: 'nav-back' },
@@ -526,7 +542,8 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
         testId: toggleState,
       },
       decompose: { run: () => (st.tech ? st.close() : openStudy(curId ?? seq[0])), pressed: !!st.tech, ariaLabel: st.tech ? 'Décomposer : revenir à la séance' : 'Décomposer le mouvement', testId: 'decompose' },
-      camera: { run: () => setCamOpen(!camOpen), pressed: camOpen, ariaLabel: `Caméra : ${camLabel}. ${camOpen ? 'Fermer' : 'Ouvrir'} les réglages de caméra`, testId: 'cam-mode' },
+      // 2.4: « Caméra » opens the coach's panel on its « Angle de vue » section (the panel of the bottom is gone)
+      camera: { run: () => coachUi.open('camera'), pressed: coachUi.shown && coachUi.section === 'camera', ariaLabel: `Caméra : ${camLabel}. Ouvrir l’angle de vue dans les options du coach`, testId: 'cam-mode' },
     },
     [
       { id: 'recommencer', label: 'Recommencer', icon: { glyph: 'replay' }, run: restart, testId: 'cmd-restart' },
@@ -543,7 +560,9 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
         testId: 'how-to',
       },
       { id: 'ralenti', label: 'Ralenti', icon: 'speed', pressed: slow, run: () => setSpeed(slow ? item.speed : SLOW), testId: 'slow' },
-      { id: 'options', label: 'Options', icon: 'options', run: () => setSheet(true), testId: 'options' },
+      // 2.4: the options of the coach are its panel; the list of the session keeps its own sheet
+      { id: 'options', label: 'Options du coach', icon: 'options', run: () => coachUi.open(), testId: 'options' },
+      { id: 'enchainement', label: 'Enchaînement', icon: { glyph: 'list' }, run: () => setSheet(true), testId: 'cmd-sequence' },
     ],
   );
 
@@ -604,20 +623,8 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
         ui={coachUi}
         hint={false}
         fallback={null}
-        commands={{
-          // 1.1.0 (Youssef: « la vitesse d'exécution plus accessible directement depuis le démarrage »)
-          speed: arActive ? undefined : { value: view.speed, onChange: setSpeed },
-          // 1.3.0 (Youssef: « en dessous des deux options déjà présentes… à droite de l'écran »): the speaker
-          sound: !arActive,
-          pause: running ? { paused: view.paused, onToggle: view.paused ? resume : pause } : undefined,
-          angles: arActive || st.tech ? undefined : { value: isAuto ? 'auto' : camMode, options: QUICK_ANGLES, onChange: (id) => (id === 'auto' ? resetCam() : chooseAngle(id as CameraMode)) },
-          extra:
-            teach.closeUp && !free ? (
-              <button className={`btn ${closeUp ? 'on' : ''}`} onClick={() => setCloseUp(!closeUp)} aria-label={teach.closeUp.label} aria-pressed={closeUp}>
-                Zoom
-              </button>
-            ) : undefined,
-        }}
+        sound={!arActive}
+        panel={coachPanel}
         stage={
           <CoachStage
             backdrop="theme"
@@ -771,51 +778,7 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
             southpaw={st.southpaw}
             onToggleGuard={st.toggleGuard}
           />
-        ) : (
-          <>
-            {camOpen ? (
-              <div className="tr-camera" role="group" aria-label="Caméra" data-testid="camera-panel">
-                <div className="cam-row">
-                  <button className={`btn sm ${isAuto ? 'on' : ''}`} aria-pressed={isAuto} onClick={resetCam} data-testid="cam-auto">
-                    Auto
-                  </button>
-                  <div className="cam-angle">
-                    <button className="btn icon sm" onClick={() => stepAngle(-1)} aria-label="Angle précédent">
-                      <AppIcon id="back" size={18} />
-                    </button>
-                    <span aria-live="polite" data-testid="cam-angle">
-                      {isAuto ? viewName(teach) : camLabel}
-                    </span>
-                    <button className="btn icon sm" onClick={() => stepAngle(1)} aria-label="Angle suivant" data-testid="cam-next">
-                      <AppIcon id="chevron" size={18} />
-                    </button>
-                  </div>
-                </div>
-                <div className="cam-row">
-                  <button className="btn icon sm" onClick={() => turnCam(-30)} aria-label="Tourner la caméra vers la gauche" data-testid="cam-left">
-                    <AppIcon id="rotateLeft" size={20} />
-                  </button>
-                  <button className="btn icon sm" onClick={() => turnCam(30)} aria-label="Tourner la caméra vers la droite" data-testid="cam-right">
-                    <AppIcon id="rotateRight" size={20} />
-                  </button>
-                  <button className="btn icon sm" onClick={() => zoomCam(1 / 1.15)} disabled={camZoom <= 0.7} aria-label="Dézoomer" data-testid="zoom-out">
-                    <AppIcon id="zoomOut" size={20} />
-                  </button>
-                  <button className="btn icon sm" onClick={() => zoomCam(1.15)} disabled={camZoom >= 1.8} aria-label="Zoomer" data-testid="zoom-in">
-                    <AppIcon id="zoomIn" size={20} />
-                  </button>
-                  <button className="btn sm" onClick={resetCam} aria-label="Recentrer la caméra" data-testid="cam-reset">
-                    <AppIcon id="target" size={18} />
-                    <span className="cam-reset-label">Recentrer</span>
-                  </button>
-                  <button className="btn icon sm" onClick={() => setCamOpen(false)} aria-label="Fermer les réglages de caméra" data-testid="cam-close">
-                    <AppIcon id="close" size={20} />
-                  </button>
-                </div>
-              </div>
-            ) : null}
-          </>
-        )}
+        ) : null}
       </footer>
 
       {/* shown by the browser on top of the camera image during an AR session (WebXR DOM overlay) */}
@@ -909,72 +872,10 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
 
       {sheet && (
         <div className="sheet-backdrop" onClick={() => setSheet(false)}>
-          <div className="sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Options d’entraînement">
-            <h2>Options</h2>
-            <div className="stack">
-              <span className="label">Coach</span>
-              <div className="row">
-                {ALL_COACHES.map((c) => (
-                  <button key={c.id} className={`chip ${chosenCoach === c.id ? 'on' : ''}`} onClick={() => pickChampion(c)}>
-                    {c.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="stack">
-              <span className="label">Garde</span>
-              <div className="row">
-                <button className={`chip ${!southpaw ? 'on' : ''}`} onClick={() => updateProfile({ guard: 'orthodoxe' })}>
-                  Orthodoxe (gauche devant)
-                </button>
-                <button className={`chip ${southpaw ? 'on' : ''}`} onClick={() => updateProfile({ guard: 'gaucher' })}>
-                  Gaucher (droite devant)
-                </button>
-              </div>
-            </div>
-            <div className="stack">
-              <span className="label">Caméra</span>
-              <div className="row">
-                {CAMERA_MODES.map((c) => (
-                  <button key={c.id} className={`chip ${(c.id === 'auto' ? isAuto : camMode === c.id) ? 'on' : ''}`} aria-pressed={c.id === 'auto' ? isAuto : camMode === c.id} onClick={() => (c.id === 'auto' ? resetCam() : chooseAngle(c.id))} data-testid={`cam-chip-${c.id}`}>
-                    {c.label}
-                  </button>
-                ))}
-              </div>
-              {isAuto && <p className="cam-why" data-testid="cam-why">{teach.why}</p>}
-              <p className="small muted">Glisse le doigt sur le coach pour passer en caméra libre à 360°.</p>
-            </div>
-            <div className="stack">
-              <span className="label">Repères au sol</span>
-              <div className="row" data-testid="ground-marks">
-                {(Object.keys(GROUND_MARK_LABEL) as GroundMarkId[]).map((k) => (
-                  <button key={k} className={`chip ${settings.groundMarks[k] ? 'on' : ''}`} aria-pressed={settings.groundMarks[k]} onClick={() => setSettings({ groundMarks: { ...settings.groundMarks, [k]: !settings.groundMarks[k] } })} data-testid={`mark-${k}`}>
-                    {GROUND_MARK_LABEL[k]}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="stack">
-              <span className="label">Vitesse d’exécution</span>
-              <div className="speed">
-                <input type="range" min={0.25} max={1.5} step={0.05} value={view.speed} onChange={(e) => setSpeed(Number(e.target.value))} aria-label="Vitesse d’exécution" data-testid="speed-range" />
-                <b data-testid="speed">×{view.speed.toFixed(2)}</b>
-              </div>
-            </div>
-            <div className="stack">
-              <span className="label">Voix et sons</span>
-              <div className="row">
-                <button className={`chip ${settings.voice ? 'on' : ''}`} onClick={() => setSettings({ voice: !settings.voice })}>
-                  Voix {settings.voice ? 'activée' : 'coupée'}
-                </button>
-                <button className={`chip ${settings.announceMoves ? 'on' : ''}`} onClick={() => setSettings({ announceMoves: !settings.announceMoves })}>
-                  Annonce des coups
-                </button>
-                <button className={`chip ${settings.impactSounds ? 'on' : ''}`} onClick={() => setSettings({ impactSounds: !settings.impactSounds })}>
-                  Sons d’impact
-                </button>
-              </div>
-            </div>
+          <div className="sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Enchaînement" data-testid="sequence-sheet">
+            {/* 2.4: the coach, the guard, the camera, the floor marks, the speed and the sounds of this former « Options »
+                sheet are in the coach's panel; the list of the session stays here */}
+            <h2>Enchaînement</h2>
             <div className="stack">
               <span className="label">Enchaînement</span>
               <ol className="small" style={{ margin: 0, paddingLeft: 20 }}>
