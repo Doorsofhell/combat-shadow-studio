@@ -14,7 +14,8 @@
     "build:android": "tsc -b && CAP_BUILD=1 vite build && node scripts/android-version.mjs && cap sync android",
     "android:open": "cap open android",
     "android:apk-test": "npm run build:android && cd android && ./gradlew assembleDebug",
-    "android:aab": "npm run build:android && cd android && ./gradlew bundleRelease"
+    "android:aab": "npm run build:android && cd android && ./gradlew bundleRelease",
+    "docs:sync": "node scripts/docs-sync.mjs"
   },
   "dependencies": {
     "@capacitor-community/keep-awake": "^8.0.1",

@@ -4978,6 +4978,51 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     donc antérieur et sans lien avec le prix. Aucune régression ;
   - capture du panneau Offre en 412 × 915 : `monetisation/offre-premium-v2.3.2.png` (fichiers du projet).
 
+## 2026-11-20 · v2.3.3 · Source unique de version et documentation générée (P0)
+
+- **Signalement (Youssef, P0)** : `package.json` en 1.40.1 alors que les travaux portent sur la 2.x, README à
+  « quatre disciplines » et « 64 techniques », `docs/ETAT.md` daté du 17 octobre.
+- **Constat vérifié** :
+  - la 1.40.1 est celle de la branche `main`, restée en retard ; la branche déployée sur GitHub Pages
+    (`claude/project-thread-o7lrt8`) est en **2.3.2** dans `package.json`, le titre et Nouveautés ;
+  - sur cette branche, `package-lock.json` était resté en **2.3.1** (non mis à jour par la 2.3.2) ;
+  - le titre, À propos et l'écran de démarrage lisaient déjà `package.json` ; Android aussi, mais seulement au
+    moment de `build:android` ; rien n'écrivait les informations de publication dans le build ;
+  - le README décrivait 4 disciplines et 64 techniques, `docs/ETAT.md` datait du 17 octobre (137 tests,
+    1 100 combinaisons, 4 coachs), le manifeste de la web app, le premier écran et le coach IA citaient 4 disciplines.
+    Le modèle réel : 6 disciplines, 91 techniques, 254 exercices, 49 programmes, 6 coachs, 1 496 combinaisons.
+- **Correction** :
+  - `package.json` reste la seule source ; `package-lock.json` réaligné (`npm version 2.3.3`) ;
+  - `scripts/android-version.mjs` exporte `androidVersion()` (même formule x × 10000 + y × 100 + z) réutilisée par
+    le build et la documentation ;
+  - nouveau `tools/build/releaseInfo.ts` : chaque build écrit `version.json` (version, versionName, versionCode,
+    date et titre de Nouveautés, commit, heure du build) ; le build s'arrête si Nouveautés n'annonce pas la version
+    de `package.json`. Fichier exclu du cache hors ligne pour toujours refléter la version déployée ;
+  - `src/domain/projectFacts.ts` compte les disciplines, techniques, exercices, programmes, coachs et combinaisons
+    depuis les catalogues réels ; `npm run docs:sync` réécrit les blocs générés du README et de `docs/ETAT.md` ;
+  - `docs/ETAT.md` réécrit (partie générée + état de publication tenu à la main) ; README sans chiffre figé ;
+  - manifeste, premier écran et consigne du coach IA citent les six disciplines.
+- **Test de désynchronisation** : `src/domain/version-sync.test.ts` (9 tests) échoue si `package-lock.json`, le
+  titre, Android, Nouveautés, `version.json`, le README ou `docs/ETAT.md` ne suivent plus `package.json` et les
+  catalogues. Il a trouvé un écart d'historique : la 1.33.2 (lot fait hors suivi, consigné le 2026-11-12) est datée
+  après la 1.34.0 ; l'historique est gardé tel quel, le test exige seulement qu'aucune version ne soit datée après
+  la dernière. Aucun test existant modifié.
+- **Fichiers** : `package.json`, `package-lock.json`, `scripts/android-version.mjs` (+ `.d.mts`),
+  `scripts/docs-sync.mjs`, `tools/build/releaseInfo.ts`, `vite.config.ts`, `src/domain/projectFacts.ts`,
+  `src/domain/version-sync.test.ts`, `src/domain/releases.ts`, `src/ui/screens/Onboarding.tsx`, `src/coach/llm.ts`,
+  `README.md`, `docs/ETAT.md`, `docs/NON_REGRESSION.md`.
+- **Restauration** : branche `restauration/avant-version-unique-v233` (= 2.3.2, `d5b3b9b`).
+- **Résultats (2.3.3)** :
+  - `src/domain/version-sync.test.ts` (9 tests) : TEST RÉUSSI ;
+  - Vitest complet : 1 798 réussis, 1 ignoré, 4 TEST ÉCHOUÉ déjà connus et sans lien (`fluidity` ×2,
+    `hooks-biomeca`, `expressions-v1160` taille d'Amara), les mêmes que sur la 2.3.2 avant changement ;
+  - `npm run build` : TEST RÉUSSI ; `dist/version.json` en 2.3.3 (versionCode 20303), titre « Combat Shadow Studio
+    v2.3.3 », `version.json` absent du cache hors ligne ;
+  - Playwright ciblé (`app`, `navigation` dont Nouveautés, `profil-v120`, `aucune-perte-v100`, `account`,
+    49 tests) : 47 réussis, 2 ignorés (Firebase) : TEST RÉUSSI ;
+  - Playwright complet (1 h) : NON EXÉCUTÉ (aucun changement de 3D, d'animation ni de mise en page) ;
+  - build Android signé : NON EXÉCUTÉ (la formule du versionCode est inchangée et testée).
+
 ## 2026-11-20 · v2.3.5 · Bouton Retour : plus de perte de modifications dans le créateur (P1)
 
 - **Signalement** : Youssef, 2026-11-20 (P1 « Risque lié au bouton Retour Android ») : le fichier d'état indiquait
@@ -5003,5 +5048,6 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Fichiers** : `src/ui/nav/useLeaveGuard.ts` (déplacé depuis `src/ui/screens/creator/`),
   `src/ui/screens/creator/CreatorEditor.tsx`, `tests/e2e/retour-createur.spec.ts` (nouveau, 5 tests),
   `src/ui/nav/__tests__/leave-guard-android.test.tsx` (nouveau, 3 tests : le bouton Android simulé comme Capacitor),
-  `docs/NON_REGRESSION.md`, `src/domain/releases.ts`, `package.json` (2.3.5).
+  `docs/NON_REGRESSION.md`, `src/domain/releases.ts`, `package.json` et `package-lock.json` (2.3.5), `README.md` et
+  `docs/ETAT.md` régénérés par `npm run docs:sync` (la limite « Retour système » n'y figure plus).
 - **Restauration** : branche `restauration/avant-retour-createur-v232` (= 2.3.2, `d5b3b9b`).
