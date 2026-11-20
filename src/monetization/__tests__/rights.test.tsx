@@ -57,7 +57,8 @@ describe('catalogue des droits', () => {
     expect(PREMIUM_BENEFITS.filter((b) => !benefitAvailable(b)).map((b) => b.label)).toEqual(['Tous les combattants', 'Réglages avancés d’entraînement']);
   });
   it('prix centralisé, indicatif', () => {
-    expect(formatPrice()).toBe('39,99 € TTC');
+    expect(formatPrice()).toBe('29,99 € TTC');
+    expect(formatPrice(PREMIUM_OFFER.launch.priceCents)).toBe('19,99 € TTC');
     expect(PREMIUM_OFFER.indicative).toBe(true);
   });
 });
@@ -110,7 +111,8 @@ describe('statut Free (préparation)', () => {
     const el = mount(<PremiumPage />);
     act(() => (el.querySelector('[data-testid="premium-discover"]') as HTMLButtonElement).click());
     const panel = document.querySelector('[data-testid="premium-panel-offer"]')!;
-    expect(panel.querySelector('[data-testid="premium-price"]')!.textContent).toBe('39,99 € TTC');
+    expect(panel.querySelector('[data-testid="premium-price"]')!.textContent).toBe('29,99 € TTC');
+    expect(panel.querySelector('[data-testid="premium-launch-price"]')!.textContent).toBe('19,99 € TTC');
     expect(panel.textContent).toContain('Prix de lancement indicatif');
     act(() => (panel.querySelector('[data-testid="premium-pay"]') as HTMLButtonElement).click());
     expect(panel.querySelector('[data-testid="offer-result"]')!.textContent).toContain('Aucune option d’achat n’est disponible pour le moment');

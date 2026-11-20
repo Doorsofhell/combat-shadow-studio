@@ -55,7 +55,8 @@ test('Réglages › Premium : la page v0.45, l’offre et aucun paiement possibl
   await page.getByTestId('premium-discover').click();
   const offer = page.getByTestId('premium-panel-offer');
   await expect(offer).toBeVisible();
-  await expect(offer.getByTestId('premium-price')).toHaveText('39,99 € TTC');
+  await expect(offer.getByTestId('premium-price')).toHaveText('29,99 € TTC');
+  await expect(offer.getByTestId('premium-launch-price')).toHaveText('19,99 € TTC');
   await expect(offer).toContainText('Prix de lancement indicatif');
   await offer.getByTestId('premium-pay').click();
   await expect(offer.getByTestId('offer-result')).toContainText('Aucune option d’achat n’est disponible pour le moment');

@@ -241,7 +241,8 @@ function OfferPanel({ onClose }: { onClose: () => void }) {
           {PREMIUM_OFFER.indicative && (
             <>
               {' '}
-              Prix de lancement indicatif : <b data-testid="premium-price">{formatPrice()}</b>.
+              Prix indicatif : <b data-testid="premium-price">{formatPrice()}</b>. Prix de lancement indicatif :{' '}
+              <b data-testid="premium-launch-price">{formatPrice(PREMIUM_OFFER.launch.priceCents)}</b> {PREMIUM_OFFER.launch.durationLabel}.
             </>
           )}
         </span>
