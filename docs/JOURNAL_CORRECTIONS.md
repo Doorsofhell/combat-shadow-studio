@@ -4883,6 +4883,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   complet NON EXÉCUTÉ ; téléphone Android NON EXÉCUTÉ.
 - **Restauration** : branche `restauration/avant-animations-v230` (= 2.2.0, `72d9bd5`), ou une correction seule par
   son interrupteur. Non fusionné, non publié.
+<<<<<<< HEAD
 
 ## 2026-11-19 · v2.3.1 · Version Google Play : AAB signé, contrôles de conformité, fiche et confidentialité
 
@@ -5096,3 +5097,5 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   avant/après `docs/v240/captures/`, vidéos `docs/v240/videos/` ; téléphone Android NON EXÉCUTÉ.
 - **Restauration** : `restauration/avant-animations-lot3` (= 2.3.2, `d5b3b9b`), ou une correction seule par son
   interrupteur. Non fusionné, non publié.
+=======
+>>>>>>> 099abd4c561a15c37da41fa4c0eb7b4fd55ca6aa

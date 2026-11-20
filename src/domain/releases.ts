@@ -49,6 +49,7 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+<<<<<<< HEAD
       version: '2.4.0',
       releaseDate: '2026-11-20',
       title: 'Sprawl, o-soto-gari et genoux plus naturels',
@@ -102,6 +103,8 @@ export const RELEASES: readonly Release[] = (
       links: [{ label: 'Confidentialité', to: '/confidentialite' }],
     },
     {
+=======
+>>>>>>> 099abd4c561a15c37da41fa4c0eb7b4fd55ca6aa
       version: '2.3.0',
       releaseDate: '2026-11-19',
       title: 'Coups plus vifs, coups de pied plus naturels',

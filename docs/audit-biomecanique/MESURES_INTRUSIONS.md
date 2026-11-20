@@ -4,7 +4,11 @@ Généré par `AUDIT_UPDATE=1 npx vitest run src/engine/__tests__/intrusions.tes
 
 Mesure (1.41.0) : sur la peau de Kadir, Amara, Naël et Inaya (garde du coach, droitier), toutes les techniques dans chaque style de leurs disciplines, 15 images par seconde. Chaque volume du corps (tronc, tête, cuisses, tibias) a un « cœur » le long de ses os, tranche par tranche et secteur par secteur (un torse est plus large que profond) : 20 % de sa propre peau au repos est plus près des os, et le cœur est encore 1 cm plus profond. Une main, un avant-bras ou une jambe qui entre dans un cœur est dans le corps ; on donne la profondeur. Jusqu’à 2 cm, c’est un contact (chair qui s’écrase, gant contre les côtes).
 
+<<<<<<< HEAD
 Résultat : 27 techniques dépassent 2 cm. Elles sont bornées à leur valeur par le test (elles ne peuvent pas empirer) et seront corrigées une par une, avec l’accord de Youssef, car la correction change le trajet d’un membre.
+=======
+Résultat : 28 techniques dépassent 2 cm. Elles sont bornées à leur valeur par le test (elles ne peuvent pas empirer) et seront corrigées une par une, avec l’accord de Youssef, car la correction change le trajet d’un membre.
+>>>>>>> 099abd4c561a15c37da41fa4c0eb7b4fd55ca6aa
 
 | Technique | Pire profondeur (cm) | Quoi | Où | Instant |
 |---|---|---|---|---|
@@ -18,7 +22,10 @@ Résultat : 27 techniques dépassent 2 cm. Elles sont bornées à leur valeur pa
 | `pont` | 5,2 | main droite dans le tronc | mma-kadir bjj | 0,93 s |
 | `changement-base` | 5,0 | avant-bras gauche dans le tronc | mma-amara bjj | 0,53 s |
 | `sit-out` | 4,9 | avant-bras gauche dans le tronc | mma-kadir bjj | 0,53 s |
+<<<<<<< HEAD
 | `genou-direct-arriere` | 4,9 | jambe droite dans la cuisse gauche | mma-kadir mma | 0,54 s |
+=======
+>>>>>>> 099abd4c561a15c37da41fa4c0eb7b4fd55ca6aa
 | `defense-lutte` | 4,7 | avant-bras droit dans le tronc | mma-kadir mma | 0,27 s |
 | `genou-circulaire-arriere` | 4,5 | jambe droite dans la cuisse gauche | mma-kadir kickboxing | 0,54 s |
 | `shoulder-roll` | 4,2 | avant-bras droit dans le tronc | nael boxing | 0,20 s |
