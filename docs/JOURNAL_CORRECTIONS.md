@@ -4977,3 +4977,31 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     intermittent : 1 échec sur 4 sur la 2.3.2 et 2 échecs sur 4 sur la 2.3.1 (`restauration/avant-prix-premium-v232`),
     donc antérieur et sans lien avec le prix. Aucune régression ;
   - capture du panneau Offre en 412 × 915 : `monetisation/offre-premium-v2.3.2.png` (fichiers du projet).
+
+## 2026-11-20 · v2.3.5 · Bouton Retour : plus de perte de modifications dans le créateur (P1)
+
+- **Signalement** : Youssef, 2026-11-20 (P1 « Risque lié au bouton Retour Android ») : le fichier d'état indiquait
+  que le retour système peut quitter le créateur sans confirmer les modifications non enregistrées.
+- **Constat vérifié sur la v2.3.2** (`d5b3b9b`, build de production, Playwright) : dans l'éditeur d'un enchaînement,
+  après avoir retiré un mouvement, le Retour du navigateur quitte l'éditeur tout de suite, sans question, et la
+  modification est perdue ; même chose avec le panneau « Ajouter un mouvement » ouvert. Le nouveau
+  `retour-createur.spec` échoue 2 fois sur 5 sur la v2.3.2. Sur Android, le bouton Retour (Capacitor,
+  `src/platform/native.ts`) appelle `history.back()` quand aucun écran ne le prend : même effet.
+- **Cause** : la protection du créateur (`useLeaveGuard`) ne surveillait que les liens, la barre, le Menu et le
+  rechargement de la page. Le Retour du système passe par l'historique, qu'elle ne regardait pas.
+- **Correction** (réutilise le système de navigation existant, sans nouveau mécanisme) :
+  - la protection passe dans la navigation (`src/ui/nav/useLeaveGuard.ts`) pour servir à tout écran avec un
+    brouillon ; elle pose une « garde » des couches d'historique (`pushGuard`, 1.42.0), la même que la séance ;
+  - règle « un Retour = un seul pas » : Retour ferme d'abord un panneau ouvert, puis demande « Abandonner les
+    modifications ? » ; un deuxième Retour ferme la question et garde le brouillon ; seul « Abandonner » sort, vers
+    la page d'avant ; sans modification, Retour sort tout de suite ;
+  - Enregistrer, Annuler, la barre et les liens retirent la garde avant de changer de page : Retour depuis la page
+    suivante ne retombe jamais sur une copie de l'éditeur ;
+  - inventaire : le créateur d'enchaînements est le seul écran de l'application avec un brouillon non enregistré
+    (les autres réglages s'enregistrent tout de suite ; les fenêtres de mot de passe, d'e-mail et de photo sont des
+    panneaux que Retour ferme, comme avant).
+- **Fichiers** : `src/ui/nav/useLeaveGuard.ts` (déplacé depuis `src/ui/screens/creator/`),
+  `src/ui/screens/creator/CreatorEditor.tsx`, `tests/e2e/retour-createur.spec.ts` (nouveau, 5 tests),
+  `src/ui/nav/__tests__/leave-guard-android.test.tsx` (nouveau, 3 tests : le bouton Android simulé comme Capacitor),
+  `docs/NON_REGRESSION.md`, `src/domain/releases.ts`, `package.json` (2.3.5).
+- **Restauration** : branche `restauration/avant-retour-createur-v232` (= 2.3.2, `d5b3b9b`).
