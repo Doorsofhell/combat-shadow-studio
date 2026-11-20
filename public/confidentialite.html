@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Politique de confidentialité · Combat Shadow Studio</title>
+<meta name="description" content="Politique de confidentialité de l’application Combat Shadow Studio (Android et web)." />
+<!-- v2.3.1 : page publique, sans script ni ressource externe, adresse à donner dans la Play Console
+     (https://doorsofhell.github.io/combat-shadow-studio/confidentialite.html). Même contenu que l’écran
+     Confidentialité de l’application (src/ui/screens/Privacy.tsx) et que docs/CONFIDENTIALITE.md. -->
+<style>
+  :root { --bg: #fff; --fg: #17181c; --muted: #5b5f6a; --accent: #b3122a; --line: #e3e4e8; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #111216; --fg: #eceef2; --muted: #a3a7b2; --accent: #ff5a6e; --line: #2a2c33; } }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 1.7rem; line-height: 1.25; margin: 0 0 4px; }
+  h2 { font-size: 1.15rem; margin: 32px 0 8px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .muted { color: var(--muted); }
+  .lead { font-size: 1.08rem; border-left: 4px solid var(--accent); padding: 4px 0 4px 14px; }
+  li { margin: 4px 0; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Politique de confidentialité</h1>
+  <p class="muted">Combat Shadow Studio (application Android <code>fr.combatshadowstudio.app</code> et version web) · dernière mise à jour : 19 novembre 2026</p>
+
+  <p class="lead"><b>Tout reste sur ton appareil.</b> Aucune mesure d’audience, aucune publicité, aucun traceur. Rien n’est envoyé, sauf si tu actives toi-même la saisie vocale en ligne.</p>
+
+  <h2>Données conservées sur l’appareil</h2>
+  <p>L’application enregistre uniquement sur ton appareil (stockage local de l’application, IndexedDB) :</p>
+  <ul>
+    <li>ton profil : pseudo et, si tu les indiques, nom, prénom, date de naissance ou âge, taille, poids ; préférences d’affichage ;</li>
+    <li>ton profil sportif : disciplines, niveaux, années de pratique, garde, fréquence, durée des séances, objectifs, difficulté ;</li>
+    <li>tes limitations physiques si tu en indiques : chiffrées sur l’appareil (AES-GCM 256), jamais envoyées ;</li>
+    <li>tes réglages, statistiques d’entraînement (temps actif, séances, répétitions), enchaînements, favoris, collections et objectifs.</li>
+  </ul>
+  <p>Aucune de ces données n’est envoyée sur internet, ni à l’éditeur ni à un tiers. Ta taille, ton poids et ton âge ne servent qu’à ton suivi : l’application n’en tire aucune conclusion médicale.</p>
+
+  <h2>Comptes</h2>
+  <p>Aucun compte n’est nécessaire : toute l’application fonctionne hors ligne en mode invité. Les comptes en ligne ne sont pas activés dans cette version. S’ils le sont un jour, cette politique et la déclaration « Sécurité des données » de Google Play seront mises à jour avant.</p>
+
+  <h2>Coach IA et voix</h2>
+  <ul>
+    <li>Les questions posées au coach sont traitées sur l’appareil ; elles ne sont jamais envoyées. L’historique est facultatif, désactivé par défaut, et reste sur l’appareil.</li>
+    <li>Les réponses lues à voix haute utilisent uniquement les voix installées sur l’appareil.</li>
+    <li>La saisie vocale est désactivée par défaut. Si tu l’actives et que ton appareil la propose, elle utilise la reconnaissance vocale du système ou du navigateur, qui peut fonctionner en ligne : l’audio est alors traité par ce service (par exemple Google) pour être transcrit. L’application ne le conserve pas.</li>
+  </ul>
+
+  <h2>Caméra</h2>
+  <p>L’application Android ne demande pas l’accès à la caméra. Dans la version web, la réalité augmentée est désactivée par défaut, ne s’ouvre qu’après ton accord, traite les images uniquement sur l’appareil et n’enregistre ni photo ni vidéo.</p>
+
+  <h2>Permissions Android</h2>
+  <p>Deux permissions normales sont déclarées, sans fenêtre d’autorisation : <code>INTERNET</code>, pour l’affichage interne de l’application et l’ouverture des liens vers les sources citées, et <code>VIBRATE</code>, pour les vibrations qui marquent le début, la pause et les rounds d’une séance. La sauvegarde cloud et le transfert d’appareil sont désactivés : tes données ne quittent pas le téléphone.</p>
+
+  <h2>Tes droits : export et effacement</h2>
+  <ul>
+    <li>« Exporter mes données » (profil) crée un fichier JSON complet, rangé où tu le choisis.</li>
+    <li>« Supprimer mes données » (profil) et « Tout effacer » (réglages) suppriment tes données de l’appareil, avec la clé de chiffrement. Désinstaller l’application supprime tout.</li>
+    <li>L’éditeur ne détient aucune donnée te concernant : il n’y a rien à lui demander de supprimer.</li>
+  </ul>
+
+  <h2>Enfants</h2>
+  <p>L’application ne collecte aucune donnée, y compris pour les mineurs. Elle s’adresse aux personnes de 13 ans et plus ; un mineur doit pratiquer les sports de combat sous la surveillance d’un adulte.</p>
+
+  <h2>Contact</h2>
+  <p>Éditeur : Combat Shadow Studio. Adresse e-mail : <a data-contact href="mailto:y.benjelloun@gmail.com">y.benjelloun@gmail.com</a>.</p>
+</main>
+</body>
+</html>
