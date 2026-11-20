@@ -5127,3 +5127,36 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   fusionnée avec la 2.3.5 (aucun fichier commun hors version et documentation générée). Après la fusion :
   Vitest `src/domain`, `src/boot`, `src/ui/nav` (366 tests, dont version-sync), `npm run build` (`version.json`
   2.3.6 / 20306), Playwright `maj-modeles-v236`, `boot`, `retour-createur`, `app` (16 tests) : TEST RÉUSSI.
+
+## 2026-11-20 · v2.4.0 · Animations de combat, lot 3
+
+- **Demande** : Youssef, 20/11 13:33, « On revient à l’amélioration des animations de combat des coachs. Il reste aussi
+  des choses à faire. » Base : dernière version en ligne (2.3.2, puis fusion de la 2.3.5).
+- **Constat vérifié** (rapport `docs/v240/RAPPORT_LOT3.md`, mesures `docs/v230/audit/lot3-avant.json` / `lot3-apres.json`) :
+  sprawl, le coude droit tournait d’un coup autour du bras en descendant les mains (Kadir 163°, Victor 113°, Naël 82°
+  en 1/60 s : épaule en butée de rotation, bras levé à plus de 110° du buste) ; o-soto-gari, le genou basculait de
+  83 à 90° entre l’élan (genou vers l’avant) et le fauchage (genou écrit vers l’arrière) ; coups de genou, arrêt de
+  150 ms à l’impact pendant le retour des mains.
+- **Corrections** (interrupteurs dans `src/engine/v230.ts`) : `sprawlPath` (mains plus basses et moins loin,
+  `library/mma.ts`), `sotoPole` (genou vers le tapis au fauchage, `library/grappling.ts`), `kneeRelease` (le genou
+  redescend pendant le retour des mains, tenue 30 ms, hors clinch, `library/legs.ts`).
+- **Résultat mesuré** : sprawl 163/113/82° → 33/33/29° ; o-soto-gari 83-90° → 13-16°, saut de vitesse 25 → 4-6 ;
+  genoux 150 → 58 ms d’arrêt ; seules 66 mesures sur 1 272 changent.
+- **Essais annulés** : solveur qui renonce aux grandes rotations du coude (épaule hors amplitude jusqu’à 81°/90°,
+  `torsion-range`, `photo-coach`) ; même chose en repartant de l’image précédente (pas de gain) ; yoko-ukemi coude
+  vers le tapis (bascule 169° → 12° mais bras 4 à 13 cm dans le tapis, `floor-contact`) ; relâchement des genoux en
+  clinch (tibia 2,5 cm dans l’autre jambe, `intrusions`).
+- **Vérifié sans défaut** : low kick et middle kick, les hanches mènent les épaules pendant le coup (l’écart mesuré venait
+  du pas de préparation).
+- **Test adapté, avec raison** : `training-layout.spec:336` (caméra Auto) lisait la caméra 3,5 s fixes après
+  l’apparition du direct ; le direct plus court de la 2.3.0 ne dure plus que 3 s, le test lisait le pivot suivant
+  (vue plus haute voulue). Il attend maintenant que la caméra soit immobile et vérifie que le direct est encore joué
+  au moment de la lecture ; seuils inchangés.
+- **Autres tests d’écran de la 2.3.0** : `training-layout:117` réussi seul (charge machine) ; `coaching-hud:60` échoue
+  aussi en 2.2.0 (build `72d9bd5` refait), défaut antérieur.
+- **Tests** : Vitest complet, documents de mesures régénérés : 4 TEST ÉCHOUÉ déjà présents (expressions-v1160,
+  fluidity ×2, hooks-biomeca « pas d’armé »), tous les autres TEST RÉUSSI ; Playwright `training-layout:336` 3/3 et
+  `:117` TEST RÉUSSI, `coaching-hud:60` TEST ÉCHOUÉ (antérieur) ; `npm run build` TEST RÉUSSI ; captures WebGL
+  avant/après `docs/v240/captures/`, vidéos `docs/v240/videos/` ; téléphone Android NON EXÉCUTÉ.
+- **Restauration** : `restauration/avant-animations-lot3` (= 2.3.2, `d5b3b9b`), ou une correction seule par son
+  interrupteur. Validée par Youssef le 20/11 à 15 h 50 (« je valide ») ; PR #147 fusionnée après intégration de la 2.3.6.

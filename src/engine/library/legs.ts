@@ -5,6 +5,7 @@
  * toward the target for circular kicks), hips rotate, kicking knee chambers, the leg extends or
  * swings through, retracts, and the foot lands back in stance.
  */
+import { V230 } from '../v230';
 import { Vector3 } from 'three';
 import { Author, add, edit } from '../author';
 import type { Motion } from '../motion';
@@ -310,6 +311,8 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
     d.handL = structuredClone(g.handL);
     d.handR = structuredClone(g.handR);
   });
+  const KNEE_RELEASE = 0.35;
+  const KNEE_HOLD = 0.03;
   // v0.29: the knee comes back down the way it went up, foot under the knee, before the foot goes back to its
   // place: going straight from the knee up to the stance swung the foot behind the support leg (legs crossed)
   const retract = edit(g, (d) => {
@@ -320,6 +323,18 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
   {
     const hipR = a.hipJoint(retract, side === 'lead' ? 'L' : 'R');
     retract[k.kick] = joint(a.air(v3(hipR.x * 0.8, hipR.y - (a.m.thigh + a.m.shin) * 0.66, hipR.z - 0.08 * s), kind === 'round' ? turn * deg(30) : 0, deg(30), 0, v3(0, 0.3, 1), deg(10)), 30, -5);
+  }
+  // 2.4.0 (kneeRelease): the knee no longer waits at the impact while the hands go back to guard (it stood still 150 ms,
+  // the longest stop of every strike): it starts down already, KNEE_RELEASE of the way to its retracted place, and the
+  // hold of the impact pose is shortened (KNEE_HOLD, 30 ms). Removing the hold altogether brought the shin into the other leg,
+  // and in the clinch (knees close together) even this release did (2,5 cm): the clinch knees keep their timing.
+  if (V230.kneeRelease && !clinch) {
+    const f = guardHands[k.kick];
+    const r = retract[k.kick];
+    if (f.mode === 'air' && r.mode === 'air') {
+      const u = KNEE_RELEASE;
+      f.ankle = v3(f.ankle.x + (r.ankle.x - f.ankle.x) * u, f.ankle.y + (r.ankle.y - f.ankle.y) * u, f.ankle.z + (r.ankle.z - f.ankle.z) * u);
+    }
   }
   // v0.32: measured on both coaches, the toes skimmed the floor for 20 to 29 cm and slid 4 to 6 cm on it when the
   // knee left and came back. As for the round kicks (v0.31), the foot now leaves the floor upward and comes down
@@ -337,7 +352,7 @@ function knee(a: Author, side: LegSide, kind: 'straight' | 'round', clinch: bool
       { t: 0.16, pose: load, ease: 'load' },
       { t: 0.23, pose: lift(load, 0.08, 15), ease: 'inOut' },
       { t: 0.34, pose: hit, ease: 'strike' },
-      { t: 0.4, pose: hit, ease: 'linear' },
+      { t: V230.kneeRelease && !clinch ? 0.34 + KNEE_HOLD : 0.4, pose: hit, ease: 'linear' },
       // hands back in guard first, while the knee is still up: the return never squeezes an elbow
       { t: 0.48, pose: guardHands, ease: 'inOut' },
       { t: 0.58, pose: retract, ease: 'inOut' },
