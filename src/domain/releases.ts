@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.4.0',
+      releaseDate: '2026-11-20',
+      title: 'Sprawl, o-soto-gari et genoux plus naturels',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Sprawl : les mains descendent plus bas et moins loin ; le coude ne tourne plus d’un coup autour du bras pendant la descente.' },
+        { category: 'ameliorations', text: 'O-soto-gari (judo) : le genou de la jambe qui fauche passe par le bas au lieu de basculer d’un côté à l’autre.' },
+        { category: 'ameliorations', text: 'Coups de genou : le genou ne reste plus figé au bout du coup, il commence à redescendre pendant que les mains reviennent en garde (arrêt de 150 à environ 60 ms). Les genoux en clinch gardent leur rythme.' },
+      ],
+      links: [{ label: 'S’entraîner', to: '/entrainer' }],
+    },
+    {
       version: '2.3.5',
       releaseDate: '2026-11-20',
       title: 'Retour protégé dans le créateur',
