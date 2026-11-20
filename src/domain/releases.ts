@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.5.0',
+      releaseDate: '2026-11-20',
+      title: 'Épaules, coudes, hanches et genoux qui gardent leur volume',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Les six coachs ont des os de torsion au bras, à l’avant-bras et à la cuisse : quand le bras ou le poignet tourne, la peau tourne progressivement sur toute la longueur au lieu de se pincer au coude ou au poignet.' },
+        { category: 'ameliorations', text: 'L’épaule, le coude, la hanche et le genou gardent leur volume quand ils se plient (crochet, coup de pied haut, sprawl) : ils ne s’écrasent plus vers l’articulation. Les mouvements eux-mêmes ne changent pas.' },
+      ],
+      links: [{ label: 'S’entraîner', to: '/entrainer' }],
+    },
+    {
       version: '2.4.0',
       releaseDate: '2026-11-20',
       title: 'Sprawl, o-soto-gari et genoux plus naturels',

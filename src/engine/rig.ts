@@ -3,7 +3,7 @@
  * to ground space and drives the bones with analytic two-bone IK (arms and legs), spine
  * distribution, head look-at, clavicle protraction and finger curl.
  */
-import { Bone, Matrix4, Object3D, Quaternion, SkinnedMesh, Vector3 } from 'three';
+import { Bone, Matrix4, Object3D, Quaternion, SkinnedMesh, Vector3, type BufferAttribute, type InterleavedBufferAttribute } from 'three';
 import { FootPose, HandPose, Pose, ResolvedFoot, NEUTRAL_JOINT, ResolvedHand, ResolvedPose, quatFromRot, toVec } from './pose';
 import { V230 } from './v230';
 import { PLANTED_LIMIT, TOE_LIMIT, ankleAngles as ankleAnglesOf, ankleQuat, limitAnkle, softLimit } from './limits';
@@ -117,6 +117,12 @@ const DOWN = new Vector3(0, -1, 0);
  */
 export const SHOULDER_ROTATION = { internal: 70 * DEG, external: 90 * DEG };
 export const HIP_ROTATION = { internal: 45 * DEG, external: 45 * DEG };
+/**
+ * 2.5.0: the skin weights of a mesh as loaded, kept when the twist bones redistribute them (src/three/twist.ts), so
+ * that the outline of the body (readOutline) is measured on the main bones exactly as before.
+ */
+export const REST_SKIN = new WeakMap<object, { index: BufferAttribute | InterleavedBufferAttribute; weight: BufferAttribute | InterleavedBufferAttribute }>();
+
 export const FOREARM_ROTATION = { pronation: 80 * DEG, supination: 80 * DEG };
 /**
  * extension: active range (AAOS); loaded: a hand posted flat on the floor carries the body on the wrist bent back,
@@ -352,8 +358,11 @@ export class CoachRig {
       const m = o as SkinnedMesh;
       if (!m.isSkinnedMesh || !m.skeleton) return;
       const pos = m.geometry.getAttribute('position');
-      const si = m.geometry.getAttribute('skinIndex');
-      const sw = m.geometry.getAttribute('skinWeight');
+      // 2.5.0: the weights as loaded, before the twist bones took their share (src/three/twist.ts): the measures
+      // keep reading the main bone that carries each point
+      const rest = REST_SKIN.get(m.geometry);
+      const si = rest?.index ?? m.geometry.getAttribute('skinIndex');
+      const sw = rest?.weight ?? m.geometry.getAttribute('skinWeight');
       if (!pos || !si || !sw) return;
       m.updateWorldMatrix(true, false);
       m.skeleton.update();
