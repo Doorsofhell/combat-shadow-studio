@@ -50,10 +50,15 @@ export async function compressModel(src: Uint8Array): Promise<Uint8Array> {
   ]);
   await MeshoptEncoder.ready;
   await MeshoptDecoder.ready;
-  const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.encoder': MeshoptEncoder, 'meshopt.decoder': MeshoptDecoder });
+  const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({
+    'meshopt.encoder': MeshoptEncoder,
+    'meshopt.decoder': MeshoptDecoder,
+  });
   const doc = await io.readBinary(src);
   // QUANTIZE method without the quantize() step: the buffers are only encoded, their values are not changed
-  doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.QUANTIZE });
+  doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({
+    method: EXTMeshoptCompression.EncoderMethod.QUANTIZE,
+  });
   const out = await io.writeBinary(doc);
   mkdirSync(CACHE, { recursive: true });
   writeFileSync(file, out);
@@ -62,24 +67,51 @@ export async function compressModel(src: Uint8Array): Promise<Uint8Array> {
 
 export type BootAssets = Record<string, [bytes: number, version: string]>;
 
-export function bootModels(): Plugin {
-  let build = false;
-  let outDir = 'dist';
-  let served: Promise<Map<string, Uint8Array>> | null = null;
-  /** what the server will send for each file: the compressed model in a build, the file itself otherwise */
-  const files = () =>
-    (served ??= (async () => {
+/**
+ * 2.3.4 (cache des modèles 3D): what the server sends for each file of the start screen (the compressed model in a
+ * build, the file itself otherwise), read once per public folder and mode. Shared by the start screen
+ * (virtual:boot-assets) and the service worker (tools/build/swModeles.ts), so both expect the same fingerprints.
+ */
+const servedCache = new Map<string, Promise<Map<string, Uint8Array>>>();
+export function servedFiles(pub = PUB, compress = false): Promise<Map<string, Uint8Array>> {
+  const key = `${pub}|${compress}`;
+  let p = servedCache.get(key);
+  if (!p) {
+    p = (async () => {
       const m = new Map<string, Uint8Array>();
-      for (const rel of bootFiles()) {
-        const src = readFileSync(join(PUB, rel));
-        m.set(rel, build && rel.endsWith('.glb') ? await compressModel(src) : src);
+      for (const rel of bootFiles(pub)) {
+        const src = readFileSync(join(pub, rel));
+        m.set(rel, compress && rel.endsWith('.glb') ? await compressModel(src) : src);
       }
       return m;
-    })());
+    })();
+    servedCache.set(key, p);
+  }
+  return p;
+}
+
+/** the fingerprint of the bytes served (12 hex of SHA-1), the same one the service worker computes */
+export const fingerprint = (b: Uint8Array) => sha(b).slice(0, 12);
+
+/** bytes served and fingerprint of each file of the start screen */
+export async function bootAssets(pub = PUB, compress = false): Promise<BootAssets> {
+  const out: BootAssets = {};
+  for (const [rel, b] of await servedFiles(pub, compress)) out[rel] = [b.byteLength, fingerprint(b)];
+  return out;
+}
+
+/** whether a vite command builds the compressed models (CSS_RAW_MODELS=1 keeps them as they are) */
+export const compressedBuild = (command: string) => command === 'build' && process.env.CSS_RAW_MODELS !== '1';
+
+/** pub: the public folder (2.3.4: another one only for the GLB update test, tests/e2e/maj-modeles-v234.spec.ts) */
+export function bootModels(pub = PUB): Plugin {
+  let build = false;
+  let outDir = 'dist';
+  const files = () => servedFiles(pub, build);
   return {
     name: 'css-boot-models',
     configResolved(c) {
-      build = c.command === 'build' && process.env.CSS_RAW_MODELS !== '1';
+      build = compressedBuild(c.command);
       outDir = c.build.outDir;
     },
     resolveId(id) {
@@ -87,9 +119,7 @@ export function bootModels(): Plugin {
     },
     async load(id) {
       if (id !== `\0${VIRTUAL}`) return null;
-      const out: BootAssets = {};
-      for (const [rel, b] of await files()) out[rel] = [b.byteLength, sha(b).slice(0, 12)];
-      return `export default ${JSON.stringify(out)};`;
+      return `export default ${JSON.stringify(await bootAssets(pub, build))};`;
     },
     closeBundle: {
       sequential: true,
