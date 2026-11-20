@@ -79,7 +79,7 @@ export const CHAMPIONS: Record<CoachId, ChampionCoach> = {
 
 /**
  * Coaches added to Kadir and Amara. 1.5 added Axel and Kaila (MakeHuman); 1.37 (Youssef, 2026-11-12: « supprime les
- * deux coachs qui ne sont pas faits en Microsoft ») removes them, their files are kept in « backup CS/ ». A profile
+ * deux coachs qui ne sont pas faits en Microsoft ») removes them, their files are kept in « _ARCHIVES_HORS_APPLICATION/anciennes-versions/backup-CS/ ». A profile
  * that chose one of them gets Kadir or Amara (championFor), see RETIRED_COACHES in src/store/profile.ts.
  */
 export const EXTRA_COACHES: ChampionCoach[] = [
@@ -115,10 +115,47 @@ export const EXTRA_COACHES: ChampionCoach[] = [
     skills: sk(6, 9, 4, 4, 8, 7, 7),
     weightKg: 65,
   },
+  // 1.43 (Youssef 2026-11-14, « Intégrer à l'application »): Victor « Le Loup gris », dessiné par Youssef (planches
+  // Gemini) et construit sur une copie du corps de Kadir (Kadir ne change pas): tête remodelée, cheveux et barbe
+  // poivre et sel, carrure et teint de ses planches (tools/generator/victor/, tools/generator/rocketbox/victor_build.mjs)
+  {
+    id: 'victor',
+    coach: 'homme',
+    name: 'Victor',
+    nickname: 'Le Loup gris',
+    style: 'Vétéran calme, technique et lucide',
+    bio: 'Garde haute, regard qui lit tout : Victor ne gaspille rien, place chaque coup au bon moment et tient la distance.',
+    portrait: './coaches/victor/portrait.webp',
+    height: '1,81 m',
+    guard: 'Haute et compacte, menton rentré, coudes serrés',
+    strengths: ['Lecture du combat', 'Précision', 'Endurance'],
+    skills: sk(8, 7, 6, 6, 6, 8, 9),
+    weightKg: 93,
+  },
+  // 1.51 (Youssef 2026-11-15, « PROFIL 3D : KANYA — COACH MUAY THAÏ (KRU) »): Kanya « La Tigresse », dessinée par Youssef
+  // (planches Gemini) et construite sur une copie du corps d'Inaya (Inaya ne change pas): visage, teint, chignon haut,
+  // tatouages Sak Yant de ses planches (tools/generator/kanya/, tools/generator/rocketbox/kanya_build.mjs). Taille et poids :
+  // ceux du modèle 3D, le corps d'Inaya (1,73 m, 65 kg) ; à 1,68 m les gestes du moteur plient trop l'aine (journal 1.51.0).
+  // 1.55 (Youssef 2026-11-17, « n'oublie sa taille ») : moteur proportionnel à la taille, Kanya à sa taille de planche,
+  // 1,68 m, et son poids de profil, 61 kg (le corps d'Inaya réduit de 3 %)
+  {
+    id: 'kanya',
+    coach: 'femme',
+    name: 'Kanya',
+    nickname: 'La Tigresse',
+    style: 'Kru de muay-thaï, maîtresse du clinch',
+    bio: 'Ancienne championne devenue entraîneuse : Kanya saisit au clinch, frappe court des coudes et des genoux et bloque sec, avec une précision chirurgicale.',
+    portrait: './coaches/kanya/portrait.webp',
+    height: '1,68 m',
+    guard: 'Haute et de face, coudes serrés, prête au clinch',
+    strengths: ['Clinch', 'Coudes et genoux', 'Blocages secs'],
+    skills: sk(7, 8, 6, 3, 7, 9, 8),
+    weightKg: 61,
+  },
 ];
 
 /** every coach, in the order of the choice screen */
-export const ALL_COACHES: ChampionCoach[] = [CHAMPIONS.homme, EXTRA_COACHES[0], CHAMPIONS.femme, EXTRA_COACHES[1]];
+export const ALL_COACHES: ChampionCoach[] = [CHAMPIONS.homme, EXTRA_COACHES[0], EXTRA_COACHES[2], CHAMPIONS.femme, EXTRA_COACHES[1], EXTRA_COACHES[3]];
 
 export const championById = (id: string | null | undefined) => ALL_COACHES.find((c) => c.id === id);
 

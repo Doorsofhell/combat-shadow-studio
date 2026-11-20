@@ -4,7 +4,7 @@ import { BODY_RANGES, FACE_RANGES, MAX_TATTOOS, normalizeLook } from '../normali
 
 /**
  * 1.37: the fighter creator is removed; the tests of the random look, of the 100 random fighters and of the body
- * sliders on the generated model are kept in « backup CS/v1.37-ultra-realiste/src/editor/__tests__/ ». The saved
+ * sliders on the generated model are kept in « _ARCHIVES_HORS_APPLICATION/anciennes-versions/backup-CS/v1.37-ultra-realiste/src/editor/__tests__/ ». The saved
  * fighters stay readable (normalizeLook, used by src/store/fighters.ts).
  */
 describe('normalizeLook', () => {

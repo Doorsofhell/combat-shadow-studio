@@ -1,0 +1,1982 @@
+{
+ "inaya": {
+  "height_m": 1.736,
+  "landmarks": {
+   "Hips": 0.533,
+   "Spine1": 0.674,
+   "Spine2": 0.743,
+   "Neck": 0.838,
+   "Head": 0.878,
+   "LeftArm": 0.796,
+   "LeftLeg": 0.288,
+   "LeftFoot": 0.058
+  },
+  "shoulder_joint_width": 0.344,
+  "shoulder_to_height": 0.198,
+  "hip_joint_width": 0.177,
+  "leg_to_height": 0.476,
+  "arm_to_height": 0.284,
+  "chest": {
+   "z": 0.76,
+   "width": 0.282,
+   "depth": 0.245,
+   "perimeter": 0.923
+  },
+  "waist": {
+   "z": 0.683,
+   "width": 0.202,
+   "depth": 0.179,
+   "perimeter": 0.611
+  },
+  "hips": {
+   "z": 0.467,
+   "width": 0.363,
+   "depth": 0.189,
+   "perimeter": 0.964
+  },
+  "waist_to_hip": 0.634,
+  "chest_to_waist": 1.511,
+  "shoulder_width_to_hip_width": 0.879,
+  "thigh_girth": 0.588,
+  "calf_girth": 0.364,
+  "upper_arm_girth": null,
+  "profile": [
+   {
+    "z": 0.441,
+    "width": 0.358,
+    "depth": 0.203,
+    "perimeter": 0.954
+   },
+   {
+    "z": 0.449,
+    "width": 0.354,
+    "depth": 0.198,
+    "perimeter": 0.962
+   },
+   {
+    "z": 0.458,
+    "width": 0.353,
+    "depth": 0.192,
+    "perimeter": 0.877
+   },
+   {
+    "z": 0.467,
+    "width": 0.363,
+    "depth": 0.189,
+    "perimeter": 0.964
+   },
+   {
+    "z": 0.475,
+    "width": 0.363,
+    "depth": 0.197,
+    "perimeter": 0.958
+   },
+   {
+    "z": 0.484,
+    "width": 0.359,
+    "depth": 0.204,
+    "perimeter": 0.96
+   },
+   {
+    "z": 0.492,
+    "width": 0.36,
+    "depth": 0.213,
+    "perimeter": 0.961
+   },
+   {
+    "z": 0.501,
+    "width": 0.354,
+    "depth": 0.215,
+    "perimeter": 0.96
+   },
+   {
+    "z": 0.51,
+    "width": 0.354,
+    "depth": 0.221,
+    "perimeter": 0.959
+   },
+   {
+    "z": 0.518,
+    "width": 0.35,
+    "depth": 0.228,
+    "perimeter": 0.954
+   },
+   {
+    "z": 0.527,
+    "width": 0.345,
+    "depth": 0.23,
+    "perimeter": 0.944
+   },
+   {
+    "z": 0.536,
+    "width": 0.341,
+    "depth": 0.231,
+    "perimeter": 0.936
+   },
+   {
+    "z": 0.544,
+    "width": 0.332,
+    "depth": 0.232,
+    "perimeter": 0.918
+   },
+   {
+    "z": 0.553,
+    "width": 0.326,
+    "depth": 0.232,
+    "perimeter": 0.899
+   },
+   {
+    "z": 0.562,
+    "width": 0.314,
+    "depth": 0.228,
+    "perimeter": 0.88
+   },
+   {
+    "z": 0.57,
+    "width": 0.305,
+    "depth": 0.225,
+    "perimeter": 0.851
+   },
+   {
+    "z": 0.579,
+    "width": 0.301,
+    "depth": 0.212,
+    "perimeter": 0.825
+   },
+   {
+    "z": 0.588,
+    "width": 0.288,
+    "depth": 0.204,
+    "perimeter": 0.792
+   },
+   {
+    "z": 0.596,
+    "width": 0.28,
+    "depth": 0.192,
+    "perimeter": 0.755
+   },
+   {
+    "z": 0.605,
+    "width": 0.261,
+    "depth": 0.184,
+    "perimeter": 0.723
+   },
+   {
+    "z": 0.613,
+    "width": 0.251,
+    "depth": 0.178,
+    "perimeter": 0.7
+   },
+   {
+    "z": 0.622,
+    "width": 0.251,
+    "depth": 0.169,
+    "perimeter": 0.679
+   },
+   {
+    "z": 0.631,
+    "width": 0.243,
+    "depth": 0.169,
+    "perimeter": 0.666
+   },
+   {
+    "z": 0.639,
+    "width": 0.235,
+    "depth": 0.167,
+    "perimeter": 0.651
+   },
+   {
+    "z": 0.648,
+    "width": 0.229,
+    "depth": 0.169,
+    "perimeter": 0.64
+   },
+   {
+    "z": 0.657,
+    "width": 0.225,
+    "depth": 0.172,
+    "perimeter": 0.633
+   },
+   {
+    "z": 0.665,
+    "width": 0.218,
+    "depth": 0.177,
+    "perimeter": 0.625
+   },
+   {
+    "z": 0.674,
+    "width": 0.212,
+    "depth": 0.18,
+    "perimeter": 0.617
+   },
+   {
+    "z": 0.683,
+    "width": 0.202,
+    "depth": 0.179,
+    "perimeter": 0.611
+   },
+   {
+    "z": 0.691,
+    "width": 0.211,
+    "depth": 0.181,
+    "perimeter": 0.621
+   },
+   {
+    "z": 0.7,
+    "width": 0.229,
+    "depth": 0.183,
+    "perimeter": 0.655
+   },
+   {
+    "z": 0.708,
+    "width": 0.251,
+    "depth": 0.185,
+    "perimeter": 0.712
+   },
+   {
+    "z": 0.717,
+    "width": 0.271,
+    "depth": 0.206,
+    "perimeter": 0.779
+   },
+   {
+    "z": 0.726,
+    "width": 0.28,
+    "depth": 0.221,
+    "perimeter": 0.817
+   },
+   {
+    "z": 0.734,
+    "width": 0.283,
+    "depth": 0.231,
+    "perimeter": 0.845
+   },
+   {
+    "z": 0.743,
+    "width": 0.284,
+    "depth": 0.233,
+    "perimeter": 0.863
+   },
+   {
+    "z": 0.752,
+    "width": 0.282,
+    "depth": 0.241,
+    "perimeter": 0.885
+   },
+   {
+    "z": 0.76,
+    "width": 0.282,
+    "depth": 0.245,
+    "perimeter": 0.923
+   },
+   {
+    "z": 0.769,
+    "width": 0.285,
+    "depth": 0.238,
+    "perimeter": 0.923
+   },
+   {
+    "z": 0.778,
+    "width": 0.287,
+    "depth": 0.227,
+    "perimeter": 0.914
+   },
+   {
+    "z": 0.786,
+    "width": 0.291,
+    "depth": 0.212,
+    "perimeter": 0.908
+   },
+   {
+    "z": 0.795,
+    "width": 0.296,
+    "depth": 0.201,
+    "perimeter": 0.895
+   },
+   {
+    "z": 0.804,
+    "width": 0.291,
+    "depth": 0.192,
+    "perimeter": 0.871
+   },
+   {
+    "z": 0.812,
+    "width": 0.302,
+    "depth": 0.179,
+    "perimeter": 0.855
+   },
+   {
+    "z": 0.821,
+    "width": 0.319,
+    "depth": 0.167,
+    "perimeter": 0.831
+   }
+  ]
+ },
+ "kanya": {
+  "height_m": 1.695,
+  "landmarks": {
+   "Hips": 0.529,
+   "Spine1": 0.668,
+   "Spine2": 0.737,
+   "Neck": 0.832,
+   "Head": 0.871,
+   "LeftArm": 0.79,
+   "LeftLeg": 0.286,
+   "LeftFoot": 0.058
+  },
+  "shoulder_joint_width": 0.333,
+  "shoulder_to_height": 0.197,
+  "hip_joint_width": 0.171,
+  "leg_to_height": 0.472,
+  "arm_to_height": 0.282,
+  "chest": {
+   "z": 0.762,
+   "width": 0.276,
+   "depth": 0.231,
+   "perimeter": 0.898
+  },
+  "waist": {
+   "z": 0.682,
+   "width": 0.198,
+   "depth": 0.177,
+   "perimeter": 0.594
+  },
+  "hips": {
+   "z": 0.47,
+   "width": 0.352,
+   "depth": 0.193,
+   "perimeter": 0.935
+  },
+  "waist_to_hip": 0.635,
+  "chest_to_waist": 1.512,
+  "shoulder_width_to_hip_width": 0.832,
+  "thigh_girth": 0.57,
+  "calf_girth": 0.353,
+  "upper_arm_girth": null,
+  "profile": [
+   {
+    "z": 0.434,
+    "width": 0.347,
+    "depth": 0.196,
+    "perimeter": 0.926
+   },
+   {
+    "z": 0.443,
+    "width": 0.342,
+    "depth": 0.195,
+    "perimeter": 0.934
+   },
+   {
+    "z": 0.452,
+    "width": 0.342,
+    "depth": 0.188,
+    "perimeter": 0.932
+   },
+   {
+    "z": 0.461,
+    "width": 0.352,
+    "depth": 0.183,
+    "perimeter": 0.927
+   },
+   {
+    "z": 0.47,
+    "width": 0.352,
+    "depth": 0.193,
+    "perimeter": 0.935
+   },
+   {
+    "z": 0.478,
+    "width": 0.348,
+    "depth": 0.197,
+    "perimeter": 0.928
+   },
+   {
+    "z": 0.487,
+    "width": 0.349,
+    "depth": 0.204,
+    "perimeter": 0.935
+   },
+   {
+    "z": 0.496,
+    "width": 0.343,
+    "depth": 0.21,
+    "perimeter": 0.932
+   },
+   {
+    "z": 0.505,
+    "width": 0.343,
+    "depth": 0.214,
+    "perimeter": 0.929
+   },
+   {
+    "z": 0.514,
+    "width": 0.339,
+    "depth": 0.221,
+    "perimeter": 0.924
+   },
+   {
+    "z": 0.523,
+    "width": 0.336,
+    "depth": 0.223,
+    "perimeter": 0.916
+   },
+   {
+    "z": 0.532,
+    "width": 0.33,
+    "depth": 0.224,
+    "perimeter": 0.907
+   },
+   {
+    "z": 0.54,
+    "width": 0.318,
+    "depth": 0.225,
+    "perimeter": 0.889
+   },
+   {
+    "z": 0.549,
+    "width": 0.316,
+    "depth": 0.225,
+    "perimeter": 0.868
+   },
+   {
+    "z": 0.558,
+    "width": 0.304,
+    "depth": 0.221,
+    "perimeter": 0.848
+   },
+   {
+    "z": 0.567,
+    "width": 0.295,
+    "depth": 0.213,
+    "perimeter": 0.82
+   },
+   {
+    "z": 0.576,
+    "width": 0.288,
+    "depth": 0.205,
+    "perimeter": 0.786
+   },
+   {
+    "z": 0.585,
+    "width": 0.279,
+    "depth": 0.197,
+    "perimeter": 0.764
+   },
+   {
+    "z": 0.593,
+    "width": 0.271,
+    "depth": 0.183,
+    "perimeter": 0.727
+   },
+   {
+    "z": 0.602,
+    "width": 0.253,
+    "depth": 0.178,
+    "perimeter": 0.7
+   },
+   {
+    "z": 0.611,
+    "width": 0.243,
+    "depth": 0.169,
+    "perimeter": 0.67
+   },
+   {
+    "z": 0.62,
+    "width": 0.237,
+    "depth": 0.166,
+    "perimeter": 0.652
+   },
+   {
+    "z": 0.629,
+    "width": 0.233,
+    "depth": 0.164,
+    "perimeter": 0.64
+   },
+   {
+    "z": 0.638,
+    "width": 0.224,
+    "depth": 0.164,
+    "perimeter": 0.627
+   },
+   {
+    "z": 0.647,
+    "width": 0.218,
+    "depth": 0.166,
+    "perimeter": 0.617
+   },
+   {
+    "z": 0.655,
+    "width": 0.216,
+    "depth": 0.169,
+    "perimeter": 0.61
+   },
+   {
+    "z": 0.664,
+    "width": 0.211,
+    "depth": 0.172,
+    "perimeter": 0.601
+   },
+   {
+    "z": 0.673,
+    "width": 0.204,
+    "depth": 0.175,
+    "perimeter": 0.596
+   },
+   {
+    "z": 0.682,
+    "width": 0.198,
+    "depth": 0.177,
+    "perimeter": 0.594
+   },
+   {
+    "z": 0.691,
+    "width": 0.214,
+    "depth": 0.179,
+    "perimeter": 0.62
+   },
+   {
+    "z": 0.7,
+    "width": 0.235,
+    "depth": 0.179,
+    "perimeter": 0.664
+   },
+   {
+    "z": 0.708,
+    "width": 0.257,
+    "depth": 0.195,
+    "perimeter": 0.738
+   },
+   {
+    "z": 0.717,
+    "width": 0.269,
+    "depth": 0.21,
+    "perimeter": 0.782
+   },
+   {
+    "z": 0.726,
+    "width": 0.274,
+    "depth": 0.219,
+    "perimeter": 0.812
+   },
+   {
+    "z": 0.735,
+    "width": 0.275,
+    "depth": 0.226,
+    "perimeter": 0.829
+   },
+   {
+    "z": 0.744,
+    "width": 0.274,
+    "depth": 0.231,
+    "perimeter": 0.856
+   },
+   {
+    "z": 0.753,
+    "width": 0.274,
+    "depth": 0.234,
+    "perimeter": 0.896
+   },
+   {
+    "z": 0.762,
+    "width": 0.276,
+    "depth": 0.231,
+    "perimeter": 0.898
+   },
+   {
+    "z": 0.77,
+    "width": 0.278,
+    "depth": 0.222,
+    "perimeter": 0.889
+   },
+   {
+    "z": 0.779,
+    "width": 0.282,
+    "depth": 0.207,
+    "perimeter": 0.881
+   },
+   {
+    "z": 0.788,
+    "width": 0.287,
+    "depth": 0.195,
+    "perimeter": 0.868
+   },
+   {
+    "z": 0.797,
+    "width": 0.282,
+    "depth": 0.186,
+    "perimeter": 0.844
+   },
+   {
+    "z": 0.806,
+    "width": 0.293,
+    "depth": 0.173,
+    "perimeter": 0.829
+   }
+  ]
+ },
+ "mma-amara": {
+  "height_m": 1.732,
+  "landmarks": {
+   "Hips": 0.534,
+   "Spine1": 0.675,
+   "Spine2": 0.745,
+   "Neck": 0.84,
+   "Head": 0.88,
+   "LeftArm": 0.798,
+   "LeftLeg": 0.289,
+   "LeftFoot": 0.059
+  },
+  "shoulder_joint_width": 0.344,
+  "shoulder_to_height": 0.199,
+  "hip_joint_width": 0.177,
+  "leg_to_height": 0.477,
+  "arm_to_height": 0.285,
+  "chest": {
+   "z": 0.771,
+   "width": 0.29,
+   "depth": 0.239,
+   "perimeter": 0.931
+  },
+  "waist": {
+   "z": 0.658,
+   "width": 0.223,
+   "depth": 0.17,
+   "perimeter": 0.633
+  },
+  "hips": {
+   "z": 0.502,
+   "width": 0.349,
+   "depth": 0.209,
+   "perimeter": 0.943
+  },
+  "waist_to_hip": 0.671,
+  "chest_to_waist": 1.471,
+  "shoulder_width_to_hip_width": 0.968,
+  "thigh_girth": 0.565,
+  "calf_girth": 0.351,
+  "upper_arm_girth": null,
+  "profile": [
+   {
+    "z": 0.442,
+    "width": 0.35,
+    "depth": 0.192,
+    "perimeter": 0.923
+   },
+   {
+    "z": 0.45,
+    "width": 0.345,
+    "depth": 0.188,
+    "perimeter": 0.933
+   },
+   {
+    "z": 0.459,
+    "width": 0.345,
+    "depth": 0.183,
+    "perimeter": 0.853
+   },
+   {
+    "z": 0.468,
+    "width": 0.356,
+    "depth": 0.18,
+    "perimeter": 0.938
+   },
+   {
+    "z": 0.476,
+    "width": 0.356,
+    "depth": 0.19,
+    "perimeter": 0.934
+   },
+   {
+    "z": 0.485,
+    "width": 0.353,
+    "depth": 0.198,
+    "perimeter": 0.939
+   },
+   {
+    "z": 0.494,
+    "width": 0.355,
+    "depth": 0.207,
+    "perimeter": 0.942
+   },
+   {
+    "z": 0.502,
+    "width": 0.349,
+    "depth": 0.209,
+    "perimeter": 0.943
+   },
+   {
+    "z": 0.511,
+    "width": 0.35,
+    "depth": 0.217,
+    "perimeter": 0.943
+   },
+   {
+    "z": 0.52,
+    "width": 0.346,
+    "depth": 0.224,
+    "perimeter": 0.94
+   },
+   {
+    "z": 0.528,
+    "width": 0.341,
+    "depth": 0.226,
+    "perimeter": 0.931
+   },
+   {
+    "z": 0.537,
+    "width": 0.337,
+    "depth": 0.227,
+    "perimeter": 0.925
+   },
+   {
+    "z": 0.546,
+    "width": 0.326,
+    "depth": 0.228,
+    "perimeter": 0.908
+   },
+   {
+    "z": 0.554,
+    "width": 0.324,
+    "depth": 0.229,
+    "perimeter": 0.888
+   },
+   {
+    "z": 0.563,
+    "width": 0.313,
+    "depth": 0.225,
+    "perimeter": 0.871
+   },
+   {
+    "z": 0.572,
+    "width": 0.303,
+    "depth": 0.217,
+    "perimeter": 0.845
+   },
+   {
+    "z": 0.58,
+    "width": 0.3,
+    "depth": 0.21,
+    "perimeter": 0.821
+   },
+   {
+    "z": 0.589,
+    "width": 0.288,
+    "depth": 0.203,
+    "perimeter": 0.789
+   },
+   {
+    "z": 0.598,
+    "width": 0.279,
+    "depth": 0.191,
+    "perimeter": 0.753
+   },
+   {
+    "z": 0.606,
+    "width": 0.26,
+    "depth": 0.183,
+    "perimeter": 0.721
+   },
+   {
+    "z": 0.615,
+    "width": 0.249,
+    "depth": 0.178,
+    "perimeter": 0.698
+   },
+   {
+    "z": 0.624,
+    "width": 0.246,
+    "depth": 0.168,
+    "perimeter": 0.675
+   },
+   {
+    "z": 0.632,
+    "width": 0.24,
+    "depth": 0.169,
+    "perimeter": 0.661
+   },
+   {
+    "z": 0.641,
+    "width": 0.232,
+    "depth": 0.167,
+    "perimeter": 0.644
+   },
+   {
+    "z": 0.65,
+    "width": 0.226,
+    "depth": 0.169,
+    "perimeter": 0.634
+   },
+   {
+    "z": 0.658,
+    "width": 0.223,
+    "depth": 0.17,
+    "perimeter": 0.633
+   },
+   {
+    "z": 0.667,
+    "width": 0.221,
+    "depth": 0.174,
+    "perimeter": 0.634
+   },
+   {
+    "z": 0.676,
+    "width": 0.226,
+    "depth": 0.178,
+    "perimeter": 0.646
+   },
+   {
+    "z": 0.684,
+    "width": 0.228,
+    "depth": 0.184,
+    "perimeter": 0.662
+   },
+   {
+    "z": 0.693,
+    "width": 0.237,
+    "depth": 0.188,
+    "perimeter": 0.682
+   },
+   {
+    "z": 0.702,
+    "width": 0.245,
+    "depth": 0.197,
+    "perimeter": 0.716
+   },
+   {
+    "z": 0.71,
+    "width": 0.262,
+    "depth": 0.198,
+    "perimeter": 0.762
+   },
+   {
+    "z": 0.719,
+    "width": 0.271,
+    "depth": 0.215,
+    "perimeter": 0.813
+   },
+   {
+    "z": 0.728,
+    "width": 0.278,
+    "depth": 0.228,
+    "perimeter": 0.855
+   },
+   {
+    "z": 0.736,
+    "width": 0.28,
+    "depth": 0.238,
+    "perimeter": 0.884
+   },
+   {
+    "z": 0.745,
+    "width": 0.281,
+    "depth": 0.241,
+    "perimeter": 0.896
+   },
+   {
+    "z": 0.754,
+    "width": 0.282,
+    "depth": 0.248,
+    "perimeter": 0.917
+   },
+   {
+    "z": 0.762,
+    "width": 0.286,
+    "depth": 0.246,
+    "perimeter": 0.927
+   },
+   {
+    "z": 0.771,
+    "width": 0.29,
+    "depth": 0.239,
+    "perimeter": 0.931
+   },
+   {
+    "z": 0.78,
+    "width": 0.293,
+    "depth": 0.224,
+    "perimeter": 0.922
+   },
+   {
+    "z": 0.788,
+    "width": 0.3,
+    "depth": 0.208,
+    "perimeter": 0.906
+   },
+   {
+    "z": 0.797,
+    "width": 0.302,
+    "depth": 0.194,
+    "perimeter": 0.888
+   },
+   {
+    "z": 0.806,
+    "width": 0.302,
+    "depth": 0.184,
+    "perimeter": 0.866
+   },
+   {
+    "z": 0.814,
+    "width": 0.314,
+    "depth": 0.169,
+    "perimeter": 0.854
+   },
+   {
+    "z": 0.823,
+    "width": 0.338,
+    "depth": 0.158,
+    "perimeter": 0.833
+   }
+  ]
+ },
+ "mma-kadir": {
+  "height_m": 1.808,
+  "landmarks": {
+   "Hips": 0.495,
+   "Spine1": 0.646,
+   "Spine2": 0.731,
+   "Neck": 0.841,
+   "Head": 0.878,
+   "LeftArm": 0.79,
+   "LeftLeg": 0.275,
+   "LeftFoot": 0.056
+  },
+  "shoulder_joint_width": 0.421,
+  "shoulder_to_height": 0.233,
+  "hip_joint_width": 0.177,
+  "leg_to_height": 0.44,
+  "arm_to_height": 0.308,
+  "chest": {
+   "z": 0.755,
+   "width": 0.41,
+   "depth": 0.274,
+   "perimeter": 1.211
+  },
+  "waist": {
+   "z": 0.581,
+   "width": 0.307,
+   "depth": 0.229,
+   "perimeter": 0.849
+  },
+  "hips": {
+   "z": 0.415,
+   "width": 0.385,
+   "depth": 0.212,
+   "perimeter": 1.014
+  },
+  "waist_to_hip": 0.837,
+  "chest_to_waist": 1.426,
+  "shoulder_width_to_hip_width": 1.151,
+  "thigh_girth": 0.615,
+  "calf_girth": 0.408,
+  "upper_arm_girth": null,
+  "profile": [
+   {
+    "z": 0.407,
+    "width": 0.375,
+    "depth": 0.206,
+    "perimeter": 1.005
+   },
+   {
+    "z": 0.415,
+    "width": 0.385,
+    "depth": 0.212,
+    "perimeter": 1.014
+   },
+   {
+    "z": 0.423,
+    "width": 0.384,
+    "depth": 0.207,
+    "perimeter": 0.996
+   },
+   {
+    "z": 0.431,
+    "width": 0.378,
+    "depth": 0.208,
+    "perimeter": 0.995
+   },
+   {
+    "z": 0.44,
+    "width": 0.378,
+    "depth": 0.204,
+    "perimeter": 0.965
+   },
+   {
+    "z": 0.448,
+    "width": 0.365,
+    "depth": 0.202,
+    "perimeter": 0.986
+   },
+   {
+    "z": 0.456,
+    "width": 0.373,
+    "depth": 0.216,
+    "perimeter": 0.988
+   },
+   {
+    "z": 0.465,
+    "width": 0.37,
+    "depth": 0.228,
+    "perimeter": 0.987
+   },
+   {
+    "z": 0.473,
+    "width": 0.364,
+    "depth": 0.241,
+    "perimeter": 0.998
+   },
+   {
+    "z": 0.481,
+    "width": 0.357,
+    "depth": 0.249,
+    "perimeter": 0.986
+   },
+   {
+    "z": 0.49,
+    "width": 0.358,
+    "depth": 0.25,
+    "perimeter": 0.988
+   },
+   {
+    "z": 0.498,
+    "width": 0.351,
+    "depth": 0.253,
+    "perimeter": 0.964
+   },
+   {
+    "z": 0.506,
+    "width": 0.339,
+    "depth": 0.253,
+    "perimeter": 0.961
+   },
+   {
+    "z": 0.514,
+    "width": 0.343,
+    "depth": 0.249,
+    "perimeter": 0.946
+   },
+   {
+    "z": 0.523,
+    "width": 0.326,
+    "depth": 0.252,
+    "perimeter": 0.934
+   },
+   {
+    "z": 0.531,
+    "width": 0.333,
+    "depth": 0.247,
+    "perimeter": 0.917
+   },
+   {
+    "z": 0.539,
+    "width": 0.324,
+    "depth": 0.247,
+    "perimeter": 0.908
+   },
+   {
+    "z": 0.548,
+    "width": 0.323,
+    "depth": 0.247,
+    "perimeter": 0.895
+   },
+   {
+    "z": 0.556,
+    "width": 0.318,
+    "depth": 0.244,
+    "perimeter": 0.883
+   },
+   {
+    "z": 0.564,
+    "width": 0.312,
+    "depth": 0.241,
+    "perimeter": 0.865
+   },
+   {
+    "z": 0.573,
+    "width": 0.309,
+    "depth": 0.235,
+    "perimeter": 0.852
+   },
+   {
+    "z": 0.581,
+    "width": 0.307,
+    "depth": 0.229,
+    "perimeter": 0.849
+   },
+   {
+    "z": 0.589,
+    "width": 0.308,
+    "depth": 0.228,
+    "perimeter": 0.852
+   },
+   {
+    "z": 0.597,
+    "width": 0.311,
+    "depth": 0.227,
+    "perimeter": 0.859
+   },
+   {
+    "z": 0.606,
+    "width": 0.311,
+    "depth": 0.229,
+    "perimeter": 0.863
+   },
+   {
+    "z": 0.614,
+    "width": 0.31,
+    "depth": 0.229,
+    "perimeter": 0.867
+   },
+   {
+    "z": 0.622,
+    "width": 0.306,
+    "depth": 0.231,
+    "perimeter": 0.865
+   },
+   {
+    "z": 0.631,
+    "width": 0.298,
+    "depth": 0.233,
+    "perimeter": 0.86
+   },
+   {
+    "z": 0.639,
+    "width": 0.295,
+    "depth": 0.233,
+    "perimeter": 0.854
+   },
+   {
+    "z": 0.647,
+    "width": 0.291,
+    "depth": 0.234,
+    "perimeter": 0.857
+   },
+   {
+    "z": 0.656,
+    "width": 0.296,
+    "depth": 0.238,
+    "perimeter": 0.872
+   },
+   {
+    "z": 0.664,
+    "width": 0.299,
+    "depth": 0.24,
+    "perimeter": 0.884
+   },
+   {
+    "z": 0.672,
+    "width": 0.302,
+    "depth": 0.244,
+    "perimeter": 0.904
+   },
+   {
+    "z": 0.68,
+    "width": 0.314,
+    "depth": 0.248,
+    "perimeter": 0.925
+   },
+   {
+    "z": 0.689,
+    "width": 0.323,
+    "depth": 0.251,
+    "perimeter": 0.948
+   },
+   {
+    "z": 0.697,
+    "width": 0.323,
+    "depth": 0.255,
+    "perimeter": 0.973
+   },
+   {
+    "z": 0.705,
+    "width": 0.333,
+    "depth": 0.256,
+    "perimeter": 0.986
+   },
+   {
+    "z": 0.714,
+    "width": 0.338,
+    "depth": 0.259,
+    "perimeter": 1.016
+   },
+   {
+    "z": 0.722,
+    "width": 0.373,
+    "depth": 0.263,
+    "perimeter": 1.07
+   },
+   {
+    "z": 0.73,
+    "width": 0.392,
+    "depth": 0.27,
+    "perimeter": 1.135
+   },
+   {
+    "z": 0.738,
+    "width": 0.405,
+    "depth": 0.273,
+    "perimeter": 1.163
+   },
+   {
+    "z": 0.747,
+    "width": 0.413,
+    "depth": 0.274,
+    "perimeter": 1.198
+   },
+   {
+    "z": 0.755,
+    "width": 0.41,
+    "depth": 0.274,
+    "perimeter": 1.211
+   },
+   {
+    "z": 0.763,
+    "width": 0.404,
+    "depth": 0.272,
+    "perimeter": 1.209
+   },
+   {
+    "z": 0.772,
+    "width": 0.405,
+    "depth": 0.265,
+    "perimeter": 1.206
+   },
+   {
+    "z": 0.78,
+    "width": 0.413,
+    "depth": 0.259,
+    "perimeter": 1.196
+   },
+   {
+    "z": 0.788,
+    "width": 0.421,
+    "depth": 0.253,
+    "perimeter": 1.171
+   },
+   {
+    "z": 0.797,
+    "width": 0.385,
+    "depth": 0.238,
+    "perimeter": 1.116
+   },
+   {
+    "z": 0.805,
+    "width": 0.435,
+    "depth": 0.23,
+    "perimeter": 1.124
+   },
+   {
+    "z": 0.813,
+    "width": 0.443,
+    "depth": 0.212,
+    "perimeter": 1.08
+   },
+   {
+    "z": 0.821,
+    "width": 0.405,
+    "depth": 0.198,
+    "perimeter": 0.981
+   }
+  ]
+ },
+ "nael": {
+  "height_m": 1.805,
+  "landmarks": {
+   "Hips": 0.496,
+   "Spine1": 0.647,
+   "Spine2": 0.732,
+   "Neck": 0.843,
+   "Head": 0.879,
+   "LeftArm": 0.791,
+   "LeftLeg": 0.275,
+   "LeftFoot": 0.056
+  },
+  "shoulder_joint_width": 0.421,
+  "shoulder_to_height": 0.233,
+  "hip_joint_width": 0.177,
+  "leg_to_height": 0.441,
+  "arm_to_height": 0.309,
+  "chest": {
+   "z": 0.756,
+   "width": 0.399,
+   "depth": 0.268,
+   "perimeter": 1.185
+  },
+  "waist": {
+   "z": 0.582,
+   "width": 0.306,
+   "depth": 0.229,
+   "perimeter": 0.846
+  },
+  "hips": {
+   "z": 0.474,
+   "width": 0.358,
+   "depth": 0.237,
+   "perimeter": 0.981
+  },
+  "waist_to_hip": 0.862,
+  "chest_to_waist": 1.401,
+  "shoulder_width_to_hip_width": 1.229,
+  "thigh_girth": 0.592,
+  "calf_girth": 0.395,
+  "upper_arm_girth": null,
+  "profile": [
+   {
+    "z": 0.407,
+    "width": 0.365,
+    "depth": 0.194,
+    "perimeter": 0.97
+   },
+   {
+    "z": 0.416,
+    "width": 0.375,
+    "depth": 0.2,
+    "perimeter": 0.98
+   },
+   {
+    "z": 0.424,
+    "width": 0.374,
+    "depth": 0.196,
+    "perimeter": 0.964
+   },
+   {
+    "z": 0.432,
+    "width": 0.37,
+    "depth": 0.199,
+    "perimeter": 0.967
+   },
+   {
+    "z": 0.441,
+    "width": 0.37,
+    "depth": 0.196,
+    "perimeter": 0.944
+   },
+   {
+    "z": 0.449,
+    "width": 0.357,
+    "depth": 0.196,
+    "perimeter": 0.961
+   },
+   {
+    "z": 0.457,
+    "width": 0.366,
+    "depth": 0.203,
+    "perimeter": 0.964
+   },
+   {
+    "z": 0.465,
+    "width": 0.364,
+    "depth": 0.222,
+    "perimeter": 0.968
+   },
+   {
+    "z": 0.474,
+    "width": 0.358,
+    "depth": 0.237,
+    "perimeter": 0.981
+   },
+   {
+    "z": 0.482,
+    "width": 0.352,
+    "depth": 0.24,
+    "perimeter": 0.97
+   },
+   {
+    "z": 0.49,
+    "width": 0.354,
+    "depth": 0.246,
+    "perimeter": 0.974
+   },
+   {
+    "z": 0.499,
+    "width": 0.347,
+    "depth": 0.25,
+    "perimeter": 0.951
+   },
+   {
+    "z": 0.507,
+    "width": 0.335,
+    "depth": 0.25,
+    "perimeter": 0.95
+   },
+   {
+    "z": 0.515,
+    "width": 0.34,
+    "depth": 0.246,
+    "perimeter": 0.937
+   },
+   {
+    "z": 0.524,
+    "width": 0.324,
+    "depth": 0.25,
+    "perimeter": 0.925
+   },
+   {
+    "z": 0.532,
+    "width": 0.331,
+    "depth": 0.245,
+    "perimeter": 0.911
+   },
+   {
+    "z": 0.54,
+    "width": 0.322,
+    "depth": 0.246,
+    "perimeter": 0.901
+   },
+   {
+    "z": 0.549,
+    "width": 0.322,
+    "depth": 0.246,
+    "perimeter": 0.891
+   },
+   {
+    "z": 0.557,
+    "width": 0.318,
+    "depth": 0.243,
+    "perimeter": 0.881
+   },
+   {
+    "z": 0.565,
+    "width": 0.311,
+    "depth": 0.241,
+    "perimeter": 0.863
+   },
+   {
+    "z": 0.574,
+    "width": 0.308,
+    "depth": 0.235,
+    "perimeter": 0.85
+   },
+   {
+    "z": 0.582,
+    "width": 0.306,
+    "depth": 0.229,
+    "perimeter": 0.846
+   },
+   {
+    "z": 0.59,
+    "width": 0.306,
+    "depth": 0.228,
+    "perimeter": 0.847
+   },
+   {
+    "z": 0.598,
+    "width": 0.308,
+    "depth": 0.227,
+    "perimeter": 0.853
+   },
+   {
+    "z": 0.607,
+    "width": 0.307,
+    "depth": 0.228,
+    "perimeter": 0.857
+   },
+   {
+    "z": 0.615,
+    "width": 0.306,
+    "depth": 0.229,
+    "perimeter": 0.86
+   },
+   {
+    "z": 0.623,
+    "width": 0.303,
+    "depth": 0.231,
+    "perimeter": 0.858
+   },
+   {
+    "z": 0.632,
+    "width": 0.295,
+    "depth": 0.232,
+    "perimeter": 0.854
+   },
+   {
+    "z": 0.64,
+    "width": 0.292,
+    "depth": 0.232,
+    "perimeter": 0.848
+   },
+   {
+    "z": 0.648,
+    "width": 0.288,
+    "depth": 0.233,
+    "perimeter": 0.85
+   },
+   {
+    "z": 0.657,
+    "width": 0.293,
+    "depth": 0.237,
+    "perimeter": 0.865
+   },
+   {
+    "z": 0.665,
+    "width": 0.296,
+    "depth": 0.239,
+    "perimeter": 0.878
+   },
+   {
+    "z": 0.673,
+    "width": 0.299,
+    "depth": 0.243,
+    "perimeter": 0.897
+   },
+   {
+    "z": 0.682,
+    "width": 0.31,
+    "depth": 0.246,
+    "perimeter": 0.918
+   },
+   {
+    "z": 0.69,
+    "width": 0.318,
+    "depth": 0.249,
+    "perimeter": 0.937
+   },
+   {
+    "z": 0.698,
+    "width": 0.318,
+    "depth": 0.254,
+    "perimeter": 0.961
+   },
+   {
+    "z": 0.707,
+    "width": 0.328,
+    "depth": 0.254,
+    "perimeter": 0.975
+   },
+   {
+    "z": 0.715,
+    "width": 0.332,
+    "depth": 0.257,
+    "perimeter": 1.003
+   },
+   {
+    "z": 0.723,
+    "width": 0.354,
+    "depth": 0.26,
+    "perimeter": 1.043
+   },
+   {
+    "z": 0.731,
+    "width": 0.386,
+    "depth": 0.266,
+    "perimeter": 1.108
+   },
+   {
+    "z": 0.74,
+    "width": 0.391,
+    "depth": 0.269,
+    "perimeter": 1.136
+   },
+   {
+    "z": 0.748,
+    "width": 0.402,
+    "depth": 0.27,
+    "perimeter": 1.17
+   },
+   {
+    "z": 0.756,
+    "width": 0.399,
+    "depth": 0.268,
+    "perimeter": 1.185
+   },
+   {
+    "z": 0.765,
+    "width": 0.397,
+    "depth": 0.266,
+    "perimeter": 1.183
+   },
+   {
+    "z": 0.773,
+    "width": 0.398,
+    "depth": 0.258,
+    "perimeter": 1.177
+   },
+   {
+    "z": 0.781,
+    "width": 0.407,
+    "depth": 0.252,
+    "perimeter": 1.173
+   },
+   {
+    "z": 0.79,
+    "width": 0.416,
+    "depth": 0.239,
+    "perimeter": 1.145
+   },
+   {
+    "z": 0.798,
+    "width": 0.43,
+    "depth": 0.229,
+    "perimeter": 1.123
+   },
+   {
+    "z": 0.806,
+    "width": 0.44,
+    "depth": 0.218,
+    "perimeter": 1.103
+   },
+   {
+    "z": 0.815,
+    "width": 0.44,
+    "depth": 0.2,
+    "perimeter": 1.047
+   },
+   {
+    "z": 0.823,
+    "width": 0.391,
+    "depth": 0.186,
+    "perimeter": 0.922
+   }
+  ]
+ },
+ "victor": {
+  "height_m": 1.809,
+  "landmarks": {
+   "Hips": 0.495,
+   "Spine1": 0.646,
+   "Spine2": 0.73,
+   "Neck": 0.841,
+   "Head": 0.877,
+   "LeftArm": 0.79,
+   "LeftLeg": 0.275,
+   "LeftFoot": 0.056
+  },
+  "shoulder_joint_width": 0.421,
+  "shoulder_to_height": 0.233,
+  "hip_joint_width": 0.177,
+  "leg_to_height": 0.44,
+  "arm_to_height": 0.308,
+  "chest": {
+   "z": 0.771,
+   "width": 0.406,
+   "depth": 0.264,
+   "perimeter": 1.213
+  },
+  "waist": {
+   "z": 0.639,
+   "width": 0.304,
+   "depth": 0.233,
+   "perimeter": 0.87
+  },
+  "hips": {
+   "z": 0.415,
+   "width": 0.387,
+   "depth": 0.212,
+   "perimeter": 1.018
+  },
+  "waist_to_hip": 0.855,
+  "chest_to_waist": 1.394,
+  "shoulder_width_to_hip_width": 1.145,
+  "thigh_girth": 0.617,
+  "calf_girth": 0.435,
+  "upper_arm_girth": null,
+  "profile": [
+   {
+    "z": 0.406,
+    "width": 0.377,
+    "depth": 0.206,
+    "perimeter": 1.008
+   },
+   {
+    "z": 0.415,
+    "width": 0.387,
+    "depth": 0.212,
+    "perimeter": 1.018
+   },
+   {
+    "z": 0.423,
+    "width": 0.386,
+    "depth": 0.207,
+    "perimeter": 1.0
+   },
+   {
+    "z": 0.431,
+    "width": 0.381,
+    "depth": 0.208,
+    "perimeter": 1.0
+   },
+   {
+    "z": 0.44,
+    "width": 0.381,
+    "depth": 0.204,
+    "perimeter": 0.971
+   },
+   {
+    "z": 0.448,
+    "width": 0.367,
+    "depth": 0.202,
+    "perimeter": 0.993
+   },
+   {
+    "z": 0.456,
+    "width": 0.376,
+    "depth": 0.216,
+    "perimeter": 0.996
+   },
+   {
+    "z": 0.464,
+    "width": 0.373,
+    "depth": 0.228,
+    "perimeter": 0.996
+   },
+   {
+    "z": 0.473,
+    "width": 0.368,
+    "depth": 0.241,
+    "perimeter": 1.008
+   },
+   {
+    "z": 0.481,
+    "width": 0.364,
+    "depth": 0.249,
+    "perimeter": 0.999
+   },
+   {
+    "z": 0.489,
+    "width": 0.367,
+    "depth": 0.25,
+    "perimeter": 1.003
+   },
+   {
+    "z": 0.498,
+    "width": 0.36,
+    "depth": 0.253,
+    "perimeter": 0.981
+   },
+   {
+    "z": 0.506,
+    "width": 0.35,
+    "depth": 0.253,
+    "perimeter": 0.981
+   },
+   {
+    "z": 0.514,
+    "width": 0.356,
+    "depth": 0.249,
+    "perimeter": 0.968
+   },
+   {
+    "z": 0.522,
+    "width": 0.339,
+    "depth": 0.252,
+    "perimeter": 0.955
+   },
+   {
+    "z": 0.531,
+    "width": 0.346,
+    "depth": 0.247,
+    "perimeter": 0.939
+   },
+   {
+    "z": 0.539,
+    "width": 0.337,
+    "depth": 0.247,
+    "perimeter": 0.931
+   },
+   {
+    "z": 0.547,
+    "width": 0.337,
+    "depth": 0.247,
+    "perimeter": 0.918
+   },
+   {
+    "z": 0.556,
+    "width": 0.333,
+    "depth": 0.244,
+    "perimeter": 0.908
+   },
+   {
+    "z": 0.564,
+    "width": 0.327,
+    "depth": 0.241,
+    "perimeter": 0.89
+   },
+   {
+    "z": 0.572,
+    "width": 0.324,
+    "depth": 0.235,
+    "perimeter": 0.877
+   },
+   {
+    "z": 0.581,
+    "width": 0.322,
+    "depth": 0.229,
+    "perimeter": 0.873
+   },
+   {
+    "z": 0.589,
+    "width": 0.322,
+    "depth": 0.228,
+    "perimeter": 0.875
+   },
+   {
+    "z": 0.597,
+    "width": 0.325,
+    "depth": 0.227,
+    "perimeter": 0.882
+   },
+   {
+    "z": 0.605,
+    "width": 0.324,
+    "depth": 0.229,
+    "perimeter": 0.885
+   },
+   {
+    "z": 0.614,
+    "width": 0.322,
+    "depth": 0.229,
+    "perimeter": 0.887
+   },
+   {
+    "z": 0.622,
+    "width": 0.316,
+    "depth": 0.231,
+    "perimeter": 0.883
+   },
+   {
+    "z": 0.63,
+    "width": 0.307,
+    "depth": 0.233,
+    "perimeter": 0.876
+   },
+   {
+    "z": 0.639,
+    "width": 0.304,
+    "depth": 0.233,
+    "perimeter": 0.87
+   },
+   {
+    "z": 0.647,
+    "width": 0.3,
+    "depth": 0.234,
+    "perimeter": 0.871
+   },
+   {
+    "z": 0.655,
+    "width": 0.303,
+    "depth": 0.238,
+    "perimeter": 0.884
+   },
+   {
+    "z": 0.663,
+    "width": 0.305,
+    "depth": 0.24,
+    "perimeter": 0.895
+   },
+   {
+    "z": 0.672,
+    "width": 0.307,
+    "depth": 0.244,
+    "perimeter": 0.913
+   },
+   {
+    "z": 0.68,
+    "width": 0.319,
+    "depth": 0.248,
+    "perimeter": 0.933
+   },
+   {
+    "z": 0.688,
+    "width": 0.327,
+    "depth": 0.251,
+    "perimeter": 0.954
+   },
+   {
+    "z": 0.697,
+    "width": 0.327,
+    "depth": 0.255,
+    "perimeter": 0.978
+   },
+   {
+    "z": 0.705,
+    "width": 0.335,
+    "depth": 0.256,
+    "perimeter": 0.99
+   },
+   {
+    "z": 0.713,
+    "width": 0.339,
+    "depth": 0.259,
+    "perimeter": 1.018
+   },
+   {
+    "z": 0.722,
+    "width": 0.374,
+    "depth": 0.263,
+    "perimeter": 1.071
+   },
+   {
+    "z": 0.73,
+    "width": 0.392,
+    "depth": 0.27,
+    "perimeter": 1.129
+   },
+   {
+    "z": 0.738,
+    "width": 0.4,
+    "depth": 0.273,
+    "perimeter": 1.158
+   },
+   {
+    "z": 0.746,
+    "width": 0.413,
+    "depth": 0.274,
+    "perimeter": 1.197
+   },
+   {
+    "z": 0.755,
+    "width": 0.41,
+    "depth": 0.274,
+    "perimeter": 1.21
+   },
+   {
+    "z": 0.763,
+    "width": 0.404,
+    "depth": 0.272,
+    "perimeter": 1.208
+   },
+   {
+    "z": 0.771,
+    "width": 0.406,
+    "depth": 0.264,
+    "perimeter": 1.213
+   },
+   {
+    "z": 0.78,
+    "width": 0.414,
+    "depth": 0.257,
+    "perimeter": 1.195
+   },
+   {
+    "z": 0.788,
+    "width": 0.422,
+    "depth": 0.251,
+    "perimeter": 1.169
+   },
+   {
+    "z": 0.796,
+    "width": 0.385,
+    "depth": 0.235,
+    "perimeter": 1.114
+   },
+   {
+    "z": 0.804,
+    "width": 0.435,
+    "depth": 0.227,
+    "perimeter": 1.119
+   },
+   {
+    "z": 0.813,
+    "width": 0.443,
+    "depth": 0.207,
+    "perimeter": 1.074
+   },
+   {
+    "z": 0.821,
+    "width": 0.405,
+    "depth": 0.196,
+    "perimeter": 0.969
+   }
+  ]
+ }
+}

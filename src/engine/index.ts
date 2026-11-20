@@ -10,7 +10,7 @@
  */
 
 /** version of the motion engine, independent of the app version (docs/moteur/CHANGELOG.md) */
-export const ENGINE_VERSION = '1.0.2';
+export const ENGINE_VERSION = '1.2.1';
 
 // the skeleton and its limits
 export { CoachRig, KNEE_MAX_FLEX, type Side } from './rig';
@@ -34,3 +34,5 @@ export { sequenceEnvelope, type Envelope } from './envelope';
 
 // v0.49, taken from the CME-3D lab (PR #25): velocity-aware smoothing of a stream of positions
 export { MotionSmoother } from './smoothing';
+
+export { V230, setV230FromQuery, type V230Flags } from './v230';

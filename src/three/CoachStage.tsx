@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useContext, useEffect, useInsertionEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { PerformanceMonitor } from '@react-three/drei';
 import { StageResolution, budgetFor, stageDpr } from './resolution';
@@ -31,6 +31,8 @@ import type { FighterLook } from '../editor/look';
 import { RoomBoundary, RoomScene } from './rooms/RoomScene';
 import { roomFor } from './rooms/rooms';
 import { newSignals } from './human/behavior';
+import type { CoachAtmosphere } from '../domain/coaches/atmosphere';
+import { AtmosphereScene } from './atmosphere/AtmosphereScene';
 
 export const STYLE_OF: Record<DisciplineId, StanceStyle> = {
   boxe: 'boxing',
@@ -106,6 +108,12 @@ export interface CoachStageProps {
   turnOnly?: boolean;
   /** 1.32.0 (choix du coach « La vedette »): shows this coach of the catalogue instead of the one the user chose */
   champion?: string;
+  /**
+   * V4 « Ton coach » (2.1): the coach's own universe around him (CoachAtmosphereResolver → AtmosphereScene): its lights replace
+   * the studio's, the camera keeps fitting the whole coach while the finger turns it. Only the coach choice passes it; without
+   * it the stage is exactly the one of 2.0.
+   */
+  atmosphere?: { value: CoachAtmosphere; name: string };
 }
 
 /**
@@ -140,6 +148,17 @@ export function CoachStage(props: CoachStageProps) {
   const [slow, setSlow] = useState(false);
   const [hidden, setHidden] = useState(() => typeof document !== 'undefined' && document.visibilityState === 'hidden');
   const animAt = useRef(0);
+  // 1.56.3: the stage is leaving the screen (before React Three Fiber releases the context): what follows is not
+  // an incident, and a pending « no context after 8 s » must not create a new stage on the next screen
+  const released = useRef(false);
+  const lostTimer = useRef<(() => void) | null>(null);
+  useInsertionEffect(() => {
+    released.current = false;
+    return () => {
+      released.current = true;
+      lostTimer.current?.();
+    };
+  }, []);
   const onCreated = useCallback(
     ({ gl }: { gl: { domElement: HTMLCanvasElement; getContext: () => WebGLRenderingContext | WebGL2RenderingContext } }) => {
       const canvas = gl.domElement;
@@ -149,6 +168,12 @@ export function CoachStage(props: CoachStageProps) {
       log3d('gpu', `${gpu} · ${typeof WebGL2RenderingContext !== 'undefined' && ctx instanceof WebGL2RenderingContext ? 'WebGL 2' : 'WebGL 1'} · textures max ${ctx.getParameter(ctx.MAX_TEXTURE_SIZE)} · ${canvas.width}×${canvas.height} px`);
       let timer: ReturnType<typeof setTimeout> | undefined;
       canvas.addEventListener('webglcontextlost', (e) => {
+        // 1.56.3 (Youssef, 2026-11-15 : « J'ai souvent ce message par rapport à la stabilité 3D »). When a screen
+        // with a coach is left, three.js gives its graphics context back on purpose (React Three Fiber calls
+        // forceContextLoss on unmount) and the browser then announces « context lost » on the canvas that just
+        // left the page. That is not an incident: it used to lower the quality one step each time (level 2 after
+        // two screen changes) and fill the journal. Only a canvas still on screen can have a real incident.
+        if (released.current || !canvas.isConnected) return;
         e.preventDefault(); // lets the browser give the context back
         const l = stepDown();
         log3d('contexte-perdu', `qualité abaissée au niveau ${l}`);
@@ -161,6 +186,10 @@ export function CoachStage(props: CoachStageProps) {
         timer = undefined;
         log3d('contexte-restaure', 'même écran, le coach repart');
       });
+      lostTimer.current = () => {
+        if (timer) clearTimeout(timer);
+        timer = undefined;
+      };
     },
     [guard],
   );
@@ -215,7 +244,7 @@ export function CoachStage(props: CoachStageProps) {
     stageProbe().roomAt = performance.now();
   }, []);
   const coachShown = !roomId || roomUp === roomId || roomLate === roomId;
-  const stageDark = !!room || viveBg || (backdrop !== 'studio' && menuTheme === 'dark');
+  const stageDark = !!room || viveBg || !!props.atmosphere || (backdrop !== 'studio' && menuTheme === 'dark');
   // v0.31: discipline outfit of the Ultra-réaliste coaches; a failure is said, never silently replaced
   const outfitOn = useSettings((s) => s.settings.coachOutfit);
   const bjjOutfit = useSettings((s) => s.settings.bjjOutfit);
@@ -362,7 +391,7 @@ export function CoachStage(props: CoachStageProps) {
       // absence gave the staircase edges of the light quality)
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       camera={{ position: [0, 1.1, 5], fov: 30 }}
-      style={{ background: arActive ? 'transparent' : room ? room.background : viveBg ? VIVID_BG : backdrop === 'theme' ? 'transparent' : backdrop === 'dark' ? 'var(--scene)' : '#fff', touchAction: 'none' }}
+      style={{ background: arActive ? 'transparent' : props.atmosphere ? props.atmosphere.value.palette.sky[1] : room ? room.background : viveBg ? VIVID_BG : backdrop === 'theme' ? 'transparent' : backdrop === 'dark' ? 'var(--scene)' : '#fff', touchAction: 'none' }}
     >
       {quality === 'auto' && (
         <PerformanceMonitor
@@ -394,7 +423,10 @@ export function CoachStage(props: CoachStageProps) {
             dark={stageDark}
             shadows={realShadows}
             vive={vive}
+            cinematic={q === 'haute' && !room && !arActive && !vive && !props.atmosphere}
             room={room}
+            customLights={!!props.atmosphere}
+            autoFit={!!props.atmosphere}
           />
         )}
         {room && (
@@ -412,6 +444,7 @@ export function CoachStage(props: CoachStageProps) {
           </RoomBoundary>
         )}
         {!room && q === 'haute' && <StudioEnvironment intensity={vive ? 0.7 : 0.12} />}
+        {props.atmosphere && !arActive && <AtmosphereScene atmosphere={props.atmosphere.value} name={props.atmosphere.name} quality={q} shadows={realShadows} />}
         {ar && <ArScene bridge={ar} active={arActive} coachGroup={coachGroup} follow={follow} />}
         {/* the coach stays mounted when switching to AR: same model, same player, same animation */}
         <group ref={coachGroup} visible={coachShown}>

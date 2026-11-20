@@ -10,12 +10,15 @@ import { DEFAULT_SKIN, SKIN_SHADER_OK } from '../skinShader';
  * accessoires »), checked on the shipped files of the four coaches. Spatial checks: which bone moves which part
  * of a garment, measured where the part is (a list of bone names alone did not see the inverted glove weights).
  */
-const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya'];
+const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor', 'kanya'];
 const file = (c: string, o: string) => `public/coaches/${c}/tenues/${o}.glb`;
+// 1.51.0 Kanya (cahier des charges de Youssef, 15/11, planche 4): in muay-thaï she wears black and red wraps with the
+// fingers free, no gloves. Her boxing and kick-boxing gloves keep every check; her wraps get their own checks below.
+const BARE_WRAPS = new Set(['kanya muaythai']);
 
 describe('gants de boxe et de thaï : poids répartis selon la position', () => {
   for (const c of COACHES)
-    for (const o of ['boxe', 'kickboxing', 'muaythai'])
+    for (const o of ['boxe', 'kickboxing', 'muaythai'].filter((o) => !BARE_WRAPS.has(`${c} ${o}`)))
       test(`${c} ${o}`, () => {
         expect(existsSync(file(c, o))).toBe(true);
         const { parts, bind } = readGlb(file(c, o));
@@ -59,8 +62,37 @@ describe('gants de boxe et de thaï : poids répartis selon la position', () => 
       });
 });
 
+describe('bandages de Kanya en muay-thaï : mains bandées, doigts libres (1.51.0)', () => {
+  test('kanya muaythai', () => {
+    const { parts, bind } = readGlb(file('kanya', 'muaythai'));
+    expect(parts.some((p) => p.name.startsWith('gant-')), 'pas de gants').toBe(false);
+    const wraps = parts.find((p) => p.name === 'bandages');
+    expect(wraps, 'bandages').toBeTruthy();
+    for (const s of ['Left', 'Right']) {
+      const wr = bind.get(`${s}Hand`)!;
+      const ax = wr.clone().sub(bind.get(`${s}ForeArm`)!).normalize();
+      // the wrap of this hand: the points nearest to its wrist
+      const mine = wraps!.positions.filter((p) => p.distanceTo(wr) < 0.16);
+      expect(mine.length, `${s} bandage`).toBeGreaterThan(500);
+      const d = mine.map((p) => p.clone().sub(wr).dot(ax));
+      // the fingers stay free: nothing past the knuckles (the hand bone to the knuckles is about 9 cm)
+      expect(Math.max(...d), `${s} doigts libres`).toBeLessThan(0.11);
+      // the wrist and the start of the forearm are wrapped
+      expect(Math.min(...d), `${s} poignet bandé`).toBeLessThan(-0.03);
+      // the knuckles are covered (the hand is wrapped, not only the wrist)
+      expect(Math.max(...d), `${s} jointures`).toBeGreaterThan(0.06);
+      // in front of the wrist each point follows the hand (or the base of the thumb, as the skin under it), never the
+      // forearm: the wrap does not slide off the hand when the wrist bends
+      mine.forEach((p, k) => {
+        const i = wraps!.positions.indexOf(p);
+        if (d[k] > 0.045) expect(wraps!.weightOf(i, `${s}ForeArm`), `${s} main ${i}`).toBeLessThan(0.1);
+      });
+    }
+  });
+});
+
 describe('gants de thaï : coupe différente des gants de boxe', () => {
-  for (const c of COACHES)
+  for (const c of COACHES.filter((c) => !BARE_WRAPS.has(`${c} muaythai`)))
     test(c, () => {
       const cut = (o: string) => {
         const { parts, bind } = readGlb(file(c, o));
@@ -81,6 +113,8 @@ describe('matériaux des coachs photo : parties séparées, propriétés conserv
   const expected: Record<string, PhotoPart> = {
     m021_body: 'peau', m021_head: 'peau', f021_body: 'peau', f021_head: 'peau', Skin: 'peau',
     Eyes_opacity: 'yeux', Eyebrows_opacity: 'sourcils', Eyelashes_opacity: 'cils', Hair_opacity: 'cheveux',
+    // 1.51.0 Kanya's high bun, a mesh of its own on the Head bone
+    Hair_chignon: 'cheveux',
   };
   for (const c of COACHES)
     test(`${c} : chaque matériau livré a sa partie`, () => {

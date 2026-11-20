@@ -6,6 +6,23 @@ Le numéro du moteur (`ENGINE_VERSION`, `src/engine/index.ts`) est indépendant 
 - **mineure** (1.x.0) : un ajout (une technique, un outil, un réglage) qui ne casse rien ;
 - **majeure** (x.0.0) : un changement que l'application doit suivre.
 
+## 1.2.1 · 2026-11-15 (application v1.46.0)
+
+- Trajets corrigés geste par geste, sans changement du solveur : entrée de lutte et relevé technique (`mma.ts`), retrait (`boxing.ts`), rattrapage du middle (`legs.ts`).
+
+## 1.2.0 · 2026-11-14 (application v1.45.0)
+
+- Main dans le tronc : `handOutOfTrunk` (`rig.ts`) ramène une main cible qui tomberait dans le tronc à sa surface (ellipses du tronc mesurées sur la peau de chaque coach, `trunkCore`). Aucune rotation automatique du coude : essayée puis retirée, elle donnait des poses non humaines.
+- Épaules en pointe : la clavicule suit le bras (0,3 rad au plus) quand le bras monte au-delà de 70° et que le buste se penche en avant ; buste droit (garde) inchangé.
+- Trajets corrigés geste par geste : défense de lutte, sprawl, genou circulaire et genou direct (`mma.ts`, `legs.ts`), o-soto-gari (`grappling.ts`).
+
+## 1.1.0 · 2026-11-14 (application v1.41.0)
+
+- Contrôles d'intégrité repris de CME-3D (`integrity.ts`) : erreurs d'écriture bloquantes (ordre des clés, valeurs non finies, poing entre 0 et 1, pied sous le tapis, impacts), utilisées par le registre et par `integrity.test.ts`.
+- `withOffsets` borne la fermeture du poing à 1 (la garde d'Amara, Naël et Inaya donnait 1,15 à 1,25).
+- Pieds traînés sur le tapis : `glideLift` (pied écrit au sol à deux endroits) et `lowLift` (décollage ou pose à ras du tapis) font passer le pied sur un petit arc (4,5 cm au plus) au-delà d'un pas glissé lent (0,35 à 0,75 m/s). Pieds immobiles, pivots lents et coups de pied qui montent franchement : inchangés.
+- Registre : contrôlé sur les quatre coachs de l'application et leur garde (`buildRegistry(coaches)`), contrôle « Animation bien écrite ».
+
 ## 1.0.2 · 2026-11-12 (application v1.33.2)
 
 - Anticipation procédurale des coups de poing uniquement (jabs, directs, crochets, uppercuts, overhand). Le bassin tourne jusqu’à 2,5° supplémentaires avec un pic 2,5 images à 60 FPS avant l’impact, puis revient exactement à la pose prévue au contact ; le buste conserve sa cible par contre-rotation.

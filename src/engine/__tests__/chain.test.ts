@@ -1,10 +1,11 @@
-import { describe, expect, test } from 'vitest';
-import { Quaternion } from 'three';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { Quaternion, Vector3 } from 'three';
 import { loadSkeleton } from '../../test/skeleton';
 import { CoachRig } from '../rig';
 import { getLibrary, getMotion } from '../library';
 import { MotionSampler } from '../motion';
 import { ComboPlayer } from '../player';
+import { V230, setV230FromQuery } from '../v230';
 
 /**
  * v0.29 (Youssef, 2026-10-21: « il y a rien de naturel »): the body moves as a chain, the hips before the
@@ -50,6 +51,15 @@ describe('mouvement en chaîne', () => {
 });
 
 describe('garde vivante', () => {
+  // 2.3.0: this check is kept as it was, on the guard of 2.2.0 (idleLife off): the same instant of the breathing loop
+  // every 0.9 s. With idleLife the loop's pace and depth vary (it no longer comes back to the same instant every 0.9 s,
+  // which is the point): see the test below for the feet.
+  beforeAll(() => {
+    V230.idleLife = false;
+  });
+  afterAll(() => {
+    setV230FromQuery(null);
+  });
   test('le poids, le buste et les gants bougent sans se répéter, les pieds restent posés', () => {
     const p = new ComboPlayer(rig, lib, false);
     p.play();
@@ -68,5 +78,28 @@ describe('garde vivante', () => {
       expect(q.footL.ankle.distanceTo(poses[0].footL.ankle)).toBeLessThan(1e-6);
       expect(q.footR.ankle.distanceTo(poses[0].footR.ankle)).toBeLessThan(1e-6);
     }
+  });
+});
+
+describe('garde vivante 2.3.0 (rythme et profondeur variables)', () => {
+  test('le rebond ne se répète plus à l’identique, les appuis restent posés (plante du pied fixe)', () => {
+    const p = new ComboPlayer(rig, lib, false);
+    p.play();
+    const ys: number[] = [];
+    const balls: Vector3[][] = [];
+    for (let i = 0; i < 60 * 8; i++) {
+      const q = p.update(1 / 60);
+      ys.push(q.hips.y);
+      if (i % 15 === 0) {
+        rig.apply(q);
+        balls.push(['LeftToeBase', 'RightToeBase'].map((b) => rig.worldOf(b)!.clone()));
+      }
+    }
+    // the ball of each foot stays where it is (the heel may rise with the bounce)
+    for (const b of balls) for (const k of [0, 1]) expect(b[k].distanceTo(balls[0][k])).toBeLessThan(1e-4);
+    // two bounces 0.9 s apart differ now: the largest gap of the hips' height between t and t + 0.9 s
+    let gap = 0;
+    for (let i = 0; i + 54 < ys.length; i++) gap = Math.max(gap, Math.abs(ys[i + 54] - ys[i]));
+    expect(gap).toBeGreaterThan(0.003);
   });
 });

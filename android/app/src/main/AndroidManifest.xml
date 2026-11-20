@@ -38,8 +38,11 @@
         </provider>
     </application>
 
-    <!-- Permissions: INTERNET only (normal permission, granted at install, no prompt).
-         The app works fully offline; the WebView needs it to serve the packaged files.
+    <!-- Permissions: INTERNET and VIBRATE only (normal permissions, granted at install, no prompt).
+         The app works fully offline; the WebView needs INTERNET to serve the packaged files.
+         VIBRATE (v2.3.1): the WebView ignores navigator.vibrate without it; the session marks its start, pause and
+         rounds with a vibration (src/ui/nav/BottomBar.tsx vibrate()).
          No location, camera, microphone, contacts or storage permission is requested. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>

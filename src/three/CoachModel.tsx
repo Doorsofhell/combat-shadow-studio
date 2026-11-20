@@ -86,7 +86,7 @@ export interface CoachModelProps {
 /**
  * The 3D coach: the champion's photo-textured avatar (PhotoCoach), the Ultra-réaliste look. 1.37 (Youssef,
  * 2026-11-12 « ne garder que les coachs ultra-réalistes »): the only render; the generated coach (creator, render
- * « Précédente », VITE_PHOTO_COACH=0 builds) is removed and kept in « backup CS/ »
+ * « Précédente », VITE_PHOTO_COACH=0 builds) is removed and kept in « _ARCHIVES_HORS_APPLICATION/anciennes-versions/backup-CS/ »
  */
 export function CoachModel(props: CoachModelProps) {
   const { model, quality } = props;

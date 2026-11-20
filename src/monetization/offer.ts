@@ -6,8 +6,10 @@
 export const PREMIUM_OFFER = {
   name: 'Combat Shadow Studio Premium',
   tagline: 'Tous tes entraînements. Sans limites.',
-  /** in cents, tax included */
-  priceCents: 3999,
+  /** in cents, tax included. 2.3.2 (Youssef, 2026-11-20, plan de monétisation): 29,99 € instead of 39,99 € */
+  priceCents: 2999,
+  /** 2.3.2: launch promotion decided by Youssef (19,99 € during the first month on sale), indicative like the price */
+  launch: { priceCents: 1999, durationLabel: 'pendant le premier mois' },
   currency: 'EUR',
   /** true while no store catalogue is active: the page says « prix indicatif » */
   indicative: true,
@@ -15,7 +17,7 @@ export const PREMIUM_OFFER = {
   productId: 'premium_lifetime',
 } as const;
 
-/** « 39,99 € TTC » */
+/** « 29,99 € TTC » */
 export function formatPrice(cents: number = PREMIUM_OFFER.priceCents): string {
   return `${new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(cents / 100)} € TTC`;
 }

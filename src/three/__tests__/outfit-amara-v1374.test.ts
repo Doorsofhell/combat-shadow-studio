@@ -5,14 +5,19 @@ import { describe, expect, test } from 'vitest';
 const OUTFITS = ['boxe', 'kickboxing', 'muaythai', 'mma', 'bjj', 'bjj-nogi', 'judo'] as const;
 
 /** Approved Inaya models are a locked pattern reference, not a replacement rig. */
+// 1.44.2 (Youssef 14/11, « Mutualiser les corrections pour tous les coachs… utilisant des shorts »): the four outfits with a
+// short take the textile folds of tools/generator/rocketbox/short_folds.mjs (positions and normals of the short only;
+// every other byte unchanged). New approved fingerprints; the 1.38.0 ones are in the git history
+// 1.56.0 (Youssef 15/11 « kimonos trop gros, trop épais », option B « Tombé » choisie le 17/11): judo and bjj rebuilt with
+// GI_STYLE tombe (outfits.py). New approved fingerprints for these two; the shorts and no-gi keep theirs
 const INAYA_GIT_SHA: Record<(typeof OUTFITS)[number], string> = {
-  boxe: '6ae0e87eab10edc1586ec00e48635557cb7a38b9',
-  kickboxing: '00f89d185790d9515edb08f7f5864d4d611418f2',
-  muaythai: 'd292d31dc7d04d641d197cc74fd6394f32ec6db2',
-  mma: '0237f76c9fc0db9e154efa5321cb0c17ace813b4',
-  bjj: 'd867e25d3dd16fe4e227ee4b34ad6b15fab15ba1',
+  boxe: '8338964c3f0a4d61920fe3bef5c069fe309838a8',
+  kickboxing: '5f7c4c668075aab7cacaf82eff0bb40d0657412e',
+  muaythai: '494810268d8faefa74813250af7a0e863eba8b71',
+  mma: 'af445c42b327b865fa0538899c59a1f2374a5c2f',
+  bjj: 'c1a66341247c5eb7bfaa6f50d3e65429d3134ab4',
   'bjj-nogi': 'f874d571568e3d5c3abb7023954410fd3d2e594c',
-  judo: '0f79f8a23c0b65b92224f88f8387acc4cb74c5f5',
+  judo: 'fc2ed9316ddc3c009a0dd5aef509595a18636659',
 };
 
 function binary(path: string) {

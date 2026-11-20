@@ -142,7 +142,7 @@ describe('guide de l’application : contenu', () => {
     expect(by('render')).toMatch(/seul rendu/);
     expect(by('render')).toMatch(/styles dessinés ont été retirés/);
     // 1.37: only the four Microsoft Rocketbox coaches
-    expect(by('choose-coach')).toMatch(/quatre coachs/);
+    expect(by('choose-coach')).toMatch(/six coachs/);
     expect(by('choose-coach')).not.toMatch(/Axel|Kaila/);
     expect(by('render')).toMatch(/Ultra-réaliste/);
     // the five tabs of the bottom bar, as App.tsx names them

@@ -1,0 +1,57 @@
+name: v1.51.0 - Kadir Nael Inaya WebGL before-after
+
+on:
+  pull_request:
+    branches:
+      - claude/project-thread-o7lrt8
+    paths-ignore:
+      - 'captures/v1510/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  webgl-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout isolated v1.51.0 pilot
+        uses: actions/checkout@v4
+        with:
+          ref: feature/fighter-visual-v1510
+          persist-credentials: true
+      - name: Checkout exact v1.50.0 stable version
+        uses: actions/checkout@v4
+        with:
+          ref: 7068f78803630bfa7967083fcf3bf63e3a72e5b6
+          path: reference-v1500
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm ci --prefix reference-v1500
+      - name: Unit regression tests
+        run: npm run test -- src/three/__tests__/fighter-visual-v1510.test.ts src/three/__tests__/premium-skin-v1480.test.ts src/domain/release-version.test.ts
+      - name: Build without publishing
+        run: npm run build
+      - name: Verify 18 already generated real WebGL images
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, statSync } from 'node:fs';
+          const root = 'captures/v1510';
+          const rows = JSON.parse(readFileSync(root+'/manifest.json','utf8'));
+          if(rows.length!==18 || rows.some(x=>x.status!=='ok')) throw Error('Not all 18 captures succeeded');
+          const expected=new Set(['mma-kadir','nael','inaya']);
+          for(const x of rows){
+            if(!expected.has(x.champion))throw Error('Unexpected coach');
+            const f=root+'/'+x.label+'/'+x.name+'.png';
+            const size=statSync(f).size;
+            if(size<15000)throw Error('Invalid PNG '+f);
+            console.log(f,size);
+          }
+          NODE

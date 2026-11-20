@@ -5,6 +5,7 @@
  */
 import { Bone, Matrix4, Object3D, Quaternion, SkinnedMesh, Vector3 } from 'three';
 import { FootPose, HandPose, Pose, ResolvedFoot, NEUTRAL_JOINT, ResolvedHand, ResolvedPose, quatFromRot, toVec } from './pose';
+import { V230 } from './v230';
 import { PLANTED_LIMIT, TOE_LIMIT, ankleAngles as ankleAnglesOf, ankleQuat, limitAnkle, softLimit } from './limits';
 
 export type Side = 'L' | 'R';
@@ -73,6 +74,17 @@ const tmpV2 = new Vector3();
 const tmpQ = new Quaternion();
 const tmpQ2 = new Quaternion();
 
+/**
+ * 1.41.1 (« épaules en pic »): extra protraction of the clavicle (radians) behind an arm raised forward
+ * (elevation from..from+span) while the trunk is bent over (bentFrom..bentFrom+bentSpan); the guard (trunk ~24°) is
+ * not concerned
+ */
+const CLAVICLE_FOLLOW = { angle: 0.3, from: 70 * (Math.PI / 180), span: 30 * (Math.PI / 180), bentFrom: 30 * (Math.PI / 180), bentSpan: 20 * (Math.PI / 180) };
+/** 1.41.1: share of the skin's reach that the trunk's inner volume takes (inside the flesh) */
+const TRUNK_CORE = 0.85;
+/** 1.41.1: thickness of the hand around its bone (m, for a 1.80 m body) */
+const ARM_PAD = { hand: 0.045 };
+
 function worldQuat(o: Object3D, out: Quaternion) {
   o.matrixWorld.decompose(tmpV, out, tmpV2);
   return out;
@@ -113,6 +125,8 @@ export const FOREARM_ROTATION = { pronation: 80 * DEG, supination: 80 * DEG };
 export const WRIST_RANGE = { flexion: 80 * DEG, extension: 70 * DEG, loaded: 90 * DEG };
 /** past this elevation from hanging (arm) or standing (thigh) the axial rotation is not defined */
 const TWIST_UNDEFINED_ELEVATION = 150 * DEG;
+/** 2.3.0: largest turn of a limb about its own line to settle an excess of rotation f0: k·f0 + base (see settleTwist) */
+const TWIST_CAP = { k: 3, base: 20 * DEG, small: 2.5 * DEG };
 const wrapAngle = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
 /** 1.33 the neck in an upright guard: share of the way from the trunk to the vertical, and extra chin tuck (rad) */
@@ -174,6 +188,12 @@ export class CoachRig {
   private legSkin: Outline = [];
   private footOutline: Record<Side, Outline> = { L: [], R: [] };
   private handOutline: Record<Side, Outline> = { L: [], R: [] };
+  /**
+   * 1.41.1 (traversées du corps): the inner volume of the trunk, slice by slice along the spine, measured at rest
+   * (ground space): half width, depth to the front and to the back, a little inside the skin. A hand is kept out of
+   * it (handOutOfTrunk).
+   */
+  private trunkCore: { bone: BoneRest; y0: number; y1: number; w: number; f: number; b: number }[] = [];
   /** rest axis of the spine (pelvis toward the neck): the trunk twists about it */
   private spineAxis = new Vector3(0, 1, 0);
 
@@ -313,6 +333,7 @@ export class CoachRig {
     const pick = (names: string[]) => outline.filter((o) => names.includes(o.name));
     this.trunkSkin = pick(['Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'LeftShoulder', 'RightShoulder']);
     this.legSkin = pick(['LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg']);
+    this.trunkCore = this.measureTrunkCore(outline);
     for (const sd of SIDES) {
       this.footOutline[sd] = pick([`${sideName(sd)}Foot`, `${sideName(sd)}ToeBase`]);
       this.handOutline[sd] = pick(['', ...FINGERS.flatMap((f) => [1, 2, 3].map((i) => `${f}${i}`))].map((x) => `${sideName(sd)}Hand${x}`));
@@ -367,6 +388,87 @@ export class CoachRig {
       out.push({ name, bone, pts: [...keep].map((p) => p.clone().applyMatrix4(restInv)) });
     }
     return out;
+  }
+
+  /**
+   * 1.41.1: the trunk's inner volume (see trunkCore), from the outline of the skin of each spine bone: its widest
+   * reach to the sides, the front and the back, times TRUNK_CORE (inside the flesh: ribs, belly, back muscles). A bare
+   * skeleton (some tests) gets an estimate from the hips and shoulders.
+   */
+  private measureTrunkCore(outline: Outline) {
+    const names = ['Hips', 'Spine', 'Spine1', 'Spine2'];
+    const bones = names.map((n) => this.bones.get(n)!);
+    const neck = this.bones.get('Neck')!;
+    const m = this.metrics;
+    const k = m.height / 1.8;
+    return bones.map((bone, i) => {
+      const at = bone.worldPos;
+      const y0 = i === 0 ? at.y - 0.06 * k : at.y;
+      const y1 = i < bones.length - 1 ? bones[i + 1].worldPos.y : neck.worldPos.y;
+      const pts = (outline.find((o) => o.bone === bone)?.pts ?? []).map((r) => r.clone().applyQuaternion(bone.worldQ).add(at));
+      if (pts.length < 8) {
+        const w = (i === 3 ? m.shoulderHalf * 0.7 : m.hipHalf * 1.0) * TRUNK_CORE;
+        return { bone, y0, y1, w, f: 0.1 * k * TRUNK_CORE, b: 0.09 * k * TRUNK_CORE };
+      }
+      let w = 0;
+      let f = 0;
+      let b = 0;
+      for (const p of pts) {
+        w = Math.max(w, Math.abs(p.x - at.x));
+        f = Math.max(f, p.z - at.z);
+        b = Math.max(b, at.z - p.z);
+      }
+      return { bone, y0, y1, w: w * TRUNK_CORE, f: f * TRUNK_CORE, b: b * TRUNK_CORE };
+    });
+  }
+
+  /**
+   * 1.41.1: how deep a point (ground space, posed) is inside the trunk's inner volume: < 1 inside (0 on the spine),
+   * Infinity when it is above or below the trunk. `slice` receives the slice and the point in its rest frame.
+   */
+  private trunkDepth(p: Vector3, out?: { slice: number; rest: Vector3; turn: Quaternion; at: Vector3 } | null, pad = 0) {
+    let best = Infinity;
+    const rootInv = worldQuat(this.root, new Quaternion()).invert();
+    for (let i = 0; i < this.trunkCore.length; i++) {
+      const c = this.trunkCore[i];
+      const at = this.bonePos(c.bone);
+      const turn = worldQuat(c.bone.bone, new Quaternion()).premultiply(rootInv).multiply(c.bone.worldQ.clone().invert());
+      const rest = p.clone().sub(at).applyQuaternion(turn.clone().invert()).add(c.bone.worldPos);
+      if (rest.y < c.y0 || rest.y > c.y1) continue;
+      const dz = rest.z - c.bone.worldPos.z;
+      const e = Math.hypot((rest.x - c.bone.worldPos.x) / (c.w + pad), dz / ((dz > 0 ? c.f : c.b) + pad));
+      if (e < best) {
+        best = e;
+        if (out) Object.assign(out, { slice: i, rest, turn, at });
+      }
+    }
+    return best;
+  }
+
+  /**
+   * 1.41.1 (Youssef 2026-11-14, « traversées du corps »): a hand written inside the trunk is set on its surface.
+   * The elbow is not turned away from the body by the engine: a first try did it within the shoulder's range and
+   * Youssef found the result not human (elbow raised by the face, 2026-11-14 15:43). The arm paths are corrected
+   * technique by technique instead.
+   */
+  private handOutOfTrunk(s: Side, hand: Vector3): Vector3 {
+    if (!this.trunkCore.length) return hand;
+    const padHand = ARM_PAD.hand * (this.metrics.height / 1.8);
+    const info = { slice: 0, rest: new Vector3(), turn: new Quaternion(), at: new Vector3() };
+    if (this.trunkDepth(hand, info, padHand) < 1) {
+      // out of the trunk along the same direction from the spine (or to the side of its arm when it is on the spine)
+      const c = this.trunkCore[info.slice];
+      const o = c.bone.worldPos;
+      const dx = info.rest.x - o.x;
+      const dz = info.rest.z - o.z;
+      const e = Math.hypot(dx / (c.w + padHand), dz / ((dz > 0 ? c.f : c.b) + padHand));
+      const sx = e > 1e-3 ? dx : (s === 'L' ? 1 : -1) * (c.w + padHand);
+      const sz = e > 1e-3 ? dz : 0;
+      const e0 = e > 1e-3 ? e : 1;
+      const restOut = new Vector3(o.x + (sx / e0) * 1.02, info.rest.y, o.z + (sz / e0) * 1.02);
+      hand = restOut.sub(o).applyQuaternion(info.turn).add(info.at);
+    }
+    return hand;
   }
 
   /** lowest point of the trunk and head skin (or of the given parts) as posed now (ground space), or Infinity when unknown */
@@ -714,6 +816,9 @@ export class CoachRig {
     // 1.8.0: the wrist never goes lower than a hand lying flat on the mat (palm and wrist thickness)
     const wristFloor = 0.035 * (this.metrics.height / 1.8);
     if (h.pos.y < wristFloor) h = { ...h, pos: h.pos.clone().setY(wristFloor) };
+    // 1.41.1: a hand written inside the trunk is set on its surface
+    const outside = this.handOutOfTrunk(s, h.pos);
+    if (outside !== h.pos) h = { ...h, pos: outside };
     this.handAim[s] = h.pos.clone();
     this.handOnMat[s] = false;
     const limb = this.arms[s];
@@ -724,7 +829,15 @@ export class CoachRig {
       const fwd = clamp((local.z - 0.25) / 0.35, 0, 1);
       const up = clamp((local.y - 0.05) / 0.3, 0, 1);
       const sgn = s === 'L' ? 1 : -1;
-      const prot = new Quaternion().setFromAxisAngle(UP, -sgn * 0.16 * fwd);
+      // 1.41.1 (Youssef 2026-11-14, « épaules en pic »): the shoulder blade follows an arm reaching forward (scapulo-
+      // humeral rhythm). Without it, when the trunk bent over an arm held out in front (defence against a takedown,
+      // sprawl), the skin at the back of the shoulder folded into a point. Only with the trunk bent over: the guard
+      // keeps its shoulders.
+      const elev = Math.acos(clamp(-local.clone().normalize().y, -1, 1));
+      // bent forward only (the chest's front turned toward the floor), not leaning back as in a high kick
+      const bent = Math.asin(clamp(-new Vector3(0, 0, 1).applyQuaternion(trunk).y, -1, 1));
+      const flex = clamp((elev - CLAVICLE_FOLLOW.from) / CLAVICLE_FOLLOW.span, 0, 1) * clamp((bent - CLAVICLE_FOLLOW.bentFrom) / CLAVICLE_FOLLOW.bentSpan, 0, 1);
+      const prot = new Quaternion().setFromAxisAngle(UP, -sgn * Math.max(0.16 * fwd, CLAVICLE_FOLLOW.angle * flex));
       const shrug = new Quaternion().setFromAxisAngle(new Vector3(0, 0, 1), sgn * (0.06 * fwd + 0.08 * up));
       this.setWorldQ(sh, trunk.clone().multiply(prot).multiply(shrug).multiply(sh.worldQ));
     }
@@ -907,6 +1020,13 @@ export class CoachRig {
       }
     }
     if (Number.isFinite(found)) best = found;
+    // 2.3.0 (twistCap): a small excess past the range never turns the limb a long way round. Measured before: with the
+    // arm raised (overhand, sprawl, ukemi) or the leg folded (o-soto-gari), an excess of 1 to 5° was settled by turning
+    // the elbow or the knee 50 to 150° about the limb, then back on the next image (the root found jumps from one side
+    // to the other): the elbow or knee whipped across in 1/60 s. For an excess of a few degrees only (TWIST_CAP.small),
+    // the joint stays that little past its soft stop instead, within the torsion tests' tolerance; a larger excess is
+    // settled as before.
+    if (V230.twistCap && Math.abs(f0) < TWIST_CAP.small && Math.abs(best) > TWIST_CAP.k * Math.abs(f0) + TWIST_CAP.base) return 0;
     return best * w;
   }
 

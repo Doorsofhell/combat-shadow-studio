@@ -1,3 +1,4 @@
+import { skin220 } from './skinShader';
 import { ReactNode, useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { ContactShadows, OrbitControls } from '@react-three/drei';
@@ -57,8 +58,17 @@ export interface StudioStageProps {
   shadows?: boolean;
   /** studio visuals (scripts/visuels): dark photo-studio lights, no floor shadow (the picture is laid on its own room) */
   mood?: boolean;
+  /** v1.53 experimental three-point cinematic light, opt-in only; no model changes. */
+  cinematic?: boolean;
   /** 1.23 the discipline's room: its own key and rim lights on the coach (rooms.ts) */
   room?: RoomSpec | null;
+  /** V4 « Ton coach » (2.1): the lights come from the coach's atmosphere (AtmosphereScene), none of the studio's */
+  customLights?: boolean;
+  /**
+   * V4 « Ton coach » (2.1): in free mode, the finger owns the angle only; the distance keeps fitting the whole coach (and the
+   * free part of the canvas, `view.inset`), so every morphology is framed head to feet. No pinch zoom then.
+   */
+  autoFit?: boolean;
 }
 
 /**
@@ -79,7 +89,9 @@ export function StageLights({ dark = false, shadows = false, vive = false }: { d
         shadow-mapSize={[2048, 2048]}
         shadow-bias={-0.0004}
         shadow-normalBias={0.025}
-        shadow-radius={4}
+        // 2.2.0: a softer edge to the cast shadows (about 1.3 cm instead of 6 mm): three r186 dropped PCFSoftShadowMap,
+        // the shadows of the gloves and arms on the body had a cut-out edge
+        shadow-radius={skin220() ? 8 : 4}
         shadow-camera-left={-1.6}
         shadow-camera-right={1.6}
         shadow-camera-top={2}
@@ -103,6 +115,32 @@ export function StageLights({ dark = false, shadows = false, vive = false }: { d
  * the right, two cool rim lights from behind, almost no ambient light, so the coach stands out of a dark room in light
  * and shade like a gym photo. No shadow map: on the photo-textured skin it drew stripes.
  */
+/**
+ * v1.53 isolated cinematic lighting study. Opt-in via Lab ?cinema=1.
+ * Physically distinct key/fill/rim, no geometry, texture, shader or
+ * colour grading changes; the v1.51 lighting remains the default.
+ */
+export const CINEMATIC_LIGHTING_153 = {
+  key: { position: [3.4, 4.7, 2.0] as [number, number, number], intensity: 3.45, color: '#ffe8d5' },
+  fill: { position: [-3.5, 2.35, 1.25] as [number, number, number], intensity: 0.72, color: '#c3d8ff' },
+  rim: { position: [-2.0, 3.5, -3.25] as [number, number, number], intensity: 2.1, color: '#dbe9ff' },
+  warmRim: { position: [2.8, 1.9, -2.75] as [number, number, number], intensity: 0.85, color: '#ffdfc2' },
+  ambient: 0.10,
+} as const;
+
+export function CinematicLights() {
+  const l = CINEMATIC_LIGHTING_153;
+  return (
+    <>
+      <hemisphereLight args={['#dce8f8', '#30303a', l.ambient]} />
+      <directionalLight position={l.key.position} intensity={l.key.intensity} color={l.key.color} />
+      <directionalLight position={l.fill.position} intensity={l.fill.intensity} color={l.fill.color} />
+      <directionalLight position={l.rim.position} intensity={l.rim.intensity} color={l.rim.color} />
+      <directionalLight position={l.warmRim.position} intensity={l.warmRim.intensity} color={l.warmRim.color} />
+    </>
+  );
+}
+
 function MoodLights() {
   return (
     <>
@@ -157,7 +195,7 @@ const corner = new Vector3();
  * (computed from the real animation), from the requested angle, and glides to a new angle
  * instead of cutting. In free mode the user turns around the coach with a finger.
  */
-export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 1, focusY, follow, envelope, origin, orbit = false, free = false, turnOnly = false, onUserOrbit, dark = false, shadows = false, vive = false, mood = false, room = null }: StudioStageProps) {
+export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 1, focusY, follow, envelope, origin, orbit = false, free = false, turnOnly = false, onUserOrbit, dark = false, shadows = false, vive = false, mood = false, cinematic = false, room = null, customLights = false, autoFit = false }: StudioStageProps) {
   const { camera, size } = useThree();
   const controls = useRef<OrbitControlsImpl>(null);
   const cur = useRef<{ az: number; el: number; dist: number; target: Vector3 } | null>(null);
@@ -240,6 +278,13 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
       cam.position.add(delta);
       controls.current.target.copy(s.target);
       const off = cam.position.clone().sub(s.target);
+      if (autoFit) {
+        // the distance glides to the fitted one along the direction the user chose
+        const d = off.length() || 1;
+        const next = d + (dist - d) * (dist > d ? Math.min(1, k * 3) : k);
+        off.multiplyScalar(next / d);
+        cam.position.copy(s.target).add(off);
+      }
       s.dist = off.length();
       s.az = Math.atan2(off.x, off.z);
       s.el = Math.asin(Math.max(-1, Math.min(1, off.y / Math.max(1e-6, s.dist))));
@@ -266,13 +311,14 @@ export function StudioStage({ children, cameraAngle = 35, view, quality, zoom = 
   const hi = quality === 'haute';
   return (
     <>
-      {mood ? <MoodLights /> : room ? <RoomLights spec={room} shadows={shadows} /> : <StageLights dark={dark} shadows={shadows} vive={vive} />}
+      {customLights ? null : cinematic ? <CinematicLights /> : mood ? <MoodLights /> : room ? <RoomLights spec={room} shadows={shadows} /> : <StageLights dark={dark} shadows={shadows} vive={vive} />}
       {children}
       {!mood && <ContactShadows position={[0, 0.001, 0]} opacity={room ? 0.92 : dark ? 0.75 : 0.42} scale={6} blur={2.4} far={1.6} resolution={hi ? 512 : 256} color={dark ? '#000000' : '#3a3530'} />}
       {orbit && (
         <OrbitControls
           ref={controls}
           enablePan={false}
+          enableZoom={!autoFit}
           enableDamping={false}
           minDistance={1.2}
           maxDistance={12}

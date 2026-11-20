@@ -4,6 +4,7 @@ import { GLTFLoader, MeshoptDecoder, type GLTF } from 'three-stdlib';
 import type { DisciplineId } from '../domain/types';
 import { log3d } from './diag3d';
 import { physicalFrom } from './photoMaterials';
+import { applyMorphology, morphologyFor } from './morphology';
 
 /**
  * v0.31 discipline outfits of the Ultra-réaliste coaches (Youssef, 2026-10-22: « TENUES ET ACCESSOIRES 3D PREMIUM
@@ -166,7 +167,15 @@ export function useOutfit(
               m.skeleton.bones.map((b) => bones.get(b.name) ?? b),
               m.skeleton.boneInverses,
             );
-            const mesh = new SkinnedMesh(m.geometry, dressOutfitMaterial(m.material as Material, quality, isAmaraOutfitUrl(url)));
+            // 2.2.0: the garment follows the coach's own morphology (same field as the body, src/three/morphology.ts)
+            const morpho = morphologyFor(url);
+            const geometry = morpho ? m.geometry.clone() : m.geometry;
+            if (morpho) {
+              applyMorphology(geometry, morpho, m.skeleton);
+              restore.push(() => geometry.dispose());
+            }
+            const mesh = new SkinnedMesh(geometry, dressOutfitMaterial(m.material as Material, quality, isAmaraOutfitUrl(url)));
+            if (isFittedBand(m)) overCloth(mesh.material as Material);
             mesh.name = `tenue:${m.name}`;
             mesh.position.copy(m.position);
             mesh.quaternion.copy(m.quaternion);
@@ -238,6 +247,8 @@ export function useOutfit(
         o.removeFromParent();
         const m = o as Mesh;
         (m.material as Material).dispose();
+        // 2.1.0: each garment's own skeleton keeps its bone matrices in a texture, given back with it
+        (o as SkinnedMesh).skeleton?.dispose();
       }
       restore.forEach((f) => f());
     };
@@ -257,6 +268,23 @@ export function useOutfit(
 /** materials of the printed marks of the garments (tools/generator/rocketbox/outfits.py, logo_on) */
 export function isPrint(name: string) {
   return name.startsWith('logo-');
+}
+
+/**
+ * 1.40.2 (Youssef, 2026-11-13: la bande de la brassière d'Amara « change de couleur à chaque mouvement »): a fitted
+ * band (under-band of a top, waistband of a short; `cssFittedBand` written by the generator) lies less than a
+ * millimetre over the edge of the cloth it finishes. On a phone's depth buffer that is too little: the cloth showed
+ * through the band in patches that moved with the body. Like the printed mark (1.20), the band is drawn a little in
+ * front of what lies at its depth.
+ */
+export function isFittedBand(o: { userData?: Record<string, unknown> }): boolean {
+  return typeof o.userData?.cssFittedBand === 'string';
+}
+
+export function overCloth(m: Material): void {
+  m.polygonOffset = true;
+  m.polygonOffsetFactor = -1.5;
+  m.polygonOffsetUnits = -3;
 }
 
 /** True only for a genuine Amara garment URL; prevents an outfit shared through the loader cache leaking finishes to others. */
@@ -299,14 +327,14 @@ export function dressOutfitMaterial(src: Material, quality: 'haute' | 'basse', a
   const outerShort = amara && !isPrint(m.name) && /^short-(?:boxe|kick|thai|mma|surshort)/i.test(m.name);
   const waistband = amara && !isPrint(m.name) && /^ceinture-/i.test(m.name);
   if (fineTop && knit) {
-    m.roughness = Math.max(m.roughness, 0.86);
-    m.normalScale.multiplyScalar(1.12); // small weave detail; v1.37.1 matte treatment is preserved
+    m.roughness = Math.max(m.roughness, 0.89);
+    m.normalScale.multiplyScalar(0.92); // small weave detail; v1.37.1 matte treatment is preserved
   } else if (outerShort) {
-    m.roughness = Math.max(m.roughness, 0.76);
+    m.roughness = Math.max(m.roughness, 0.84);
     m.metalness = 0;
-    m.normalScale.multiplyScalar(0.84); // less harsh procedural ribs on curved leg panels
+    m.normalScale.multiplyScalar(0.72); // soften harsh ribs, preserve existing folds and geometry
   } else if (waistband) {
-    m.roughness = Math.max(m.roughness, 0.79);
+    m.roughness = Math.max(m.roughness, 0.86);
     m.metalness = 0;
     m.normalScale.multiplyScalar(0.80); // elastic no longer resembles separate hard rectangles
   }
@@ -315,7 +343,7 @@ export function dressOutfitMaterial(src: Material, quality: 'haute' | 'basse', a
   if (quality === 'basse' || (!sheen && !coat)) return m;
   const physical = physicalFrom(m, {
     metalness: 0,
-    sheen: knit ? Math.min(sheen, 0.06) : outerShort ? Math.min(sheen, 0.18) : sheen,
+    sheen: knit ? Math.min(sheen, amara ? 0.035 : 0.06) : outerShort ? Math.min(sheen, 0.10) : sheen,
     sheenRoughness: knit ? 0.85 : 0.45,
     sheenColor: m.color.clone().lerp(m.color.clone().set('#ffffff'), knit ? 0.15 : 0.4),
     clearcoat: knit ? 0 : coat,

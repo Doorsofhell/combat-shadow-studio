@@ -1,14 +1,14 @@
 import { championById, championFor, championLook, championStance } from '../domain/coaches/catalog';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { Raycaster, Vector2, Vector3, type Material, type Mesh, type SkinnedMesh } from 'three';
+import { BufferAttribute, BufferGeometry, DoubleSide, Mesh as ThreeMesh, MeshBasicMaterial, Raycaster, Vector2, Vector3, type Material, type Mesh, type Object3D, type SkinnedMesh } from 'three';
 import { CoachModel } from '../three/CoachModel';
 import { outfitFor, type OutfitId, type OutfitStatus } from '../three/outfit';
 import { StudioStage } from '../three/StudioStage';
 import { StudioEnvironment } from '../three/StudioEnvironment';
 import type { CoachRig } from '../engine';
 import { getDuo, getIllustration, getLibrary, getMotion, type Place } from '../engine';
-import { MotionSampler, duration } from '../engine';
+import { MotionSampler, duration, setV230FromQuery } from '../engine';
 import type { StanceStyle } from '../engine';
 import type { CoachId, DisciplineId } from '../domain/types';
 import { TECHNIQUE_BY_ID } from '../domain/techniques';
@@ -53,9 +53,20 @@ export function Lab() {
     // 1.40 epaules=<m>: rise of the shoulders in the leaning guards (src/engine/rig.ts SHRUG_LEAN)
     (globalThis as { __cssShrug?: number }).__cssShrug = q.get('epaules') !== null ? Number(q.get('epaules')) : undefined;
     // 1.40 nuque=<rad>: the neck leaning back in the leaning guards (src/engine/rig.ts NECK_BACK_LEAN)
+    // 1.44 seance=0..1: how hard the session has been (flush, sweat); rendu=avant: the face's rendering of 1.43
+    (globalThis as { __cssSeance?: number }).__cssSeance = q.get('seance') !== null ? Number(q.get('seance')) : undefined;
+    (globalThis as { __cssRenduAvant?: boolean }).__cssRenduAvant = q.get('rendu') === 'avant';
     (globalThis as { __cssNeckBack?: number }).__cssNeckBack = q.get('nuque') !== null ? Number(q.get('nuque')) : undefined;
     // 1.40 visage=actuel|calme|doux|vif: the face at rest (src/three/face.ts FACE_BASES), for the comparisons
     (globalThis as { __cssFaceBase?: string }).__cssFaceBase = q.get('visage') ?? undefined;
+    // 2.2.0 v220=0: the coach as in 2.1.0 (no morphology, no skin finish of 2.2.0), for the side-by-side comparisons
+    (globalThis as { __cssMorpho?: boolean }).__cssMorpho = q.get('v220') === '0' ? false : undefined;
+    (globalThis as { __cssSkin220?: boolean }).__cssSkin220 = q.get('v220') === '0' ? false : undefined;
+    // 2.3.0 v230=0: the animation engine as in 2.2.0 (every change of the lot switched off), v230=-snap,-legArc: some
+    // off (src/engine/v230.ts), for the side-by-side comparisons
+    setV230FromQuery(q.get('v230'));
+    // 2.2.0 fx=pores,teinte,rugosite,diffusion,ombres,relief,etalonnage,brillance,nettoyage: skin effects switched off
+    (globalThis as { __cssSkinFx?: string }).__cssSkinFx = q.get('fx') ?? undefined;
   }, [q]);
   const envelope = useRef<Envelope | null>(null);
   const origin = useRef({ x: 0, z: 0, yaw: 0 });
@@ -190,6 +201,7 @@ export function Lab() {
             zoom={Number(q.get('zoom') ?? '1')}
             focusY={q.get('fy') ? Number(q.get('fy')) : undefined}
             mood={!!q.get('mood')}
+            cinematic={q.get('cinema') === '1'}
             vive={light === 'vive'}
             dark={light === 'sombre' || light === 'vive'}
             shadows={!!light}
@@ -266,6 +278,54 @@ function LabProbe({ rig }: { rig: MutableRefObject<CoachRig | null> }) {
           if (lp > min && lp > ratio * lr) out.push({ mesh: o.name, face: f / 3, posed: +lp.toFixed(3), rest: +lr.toFixed(4), points: ids.map((i) => rest[i].toArray().map((v) => +v.toFixed(4))) });
         }
       });
+      return out;
+    };
+    // 1.55 window.__labPrintCover(): for each printed mark of the outfit (logo, text), how many of its points the
+    // cloth under it covers when seen from the camera (cloth hit in front of the point by more than 0.2 mm), and the
+    // deepest one in millimetres, to measure a mark that sinks into its garment during a motion
+    (window as unknown as { __labPrintCover?: unknown }).__labPrintCover = () => {
+      scene.updateMatrixWorld(true);
+      const prints: SkinnedMesh[] = [];
+      const cloth: Object3D[] = [];
+      scene.traverse((o) => {
+        if (!o.name.startsWith('tenue:') || !(o as SkinnedMesh).isSkinnedMesh) return;
+        const sm = o as SkinnedMesh;
+        if (((sm.material as Material).name ?? '').startsWith('logo-')) return void prints.push(sm);
+        // the cloth in its current pose, as a plain mesh: a ray against a skinned mesh poses every point again
+        const pos = sm.geometry.getAttribute('position');
+        const posed = new Float32Array(pos.count * 3);
+        const v = new Vector3();
+        for (let i = 0; i < pos.count; i++) sm.getVertexPosition(i, v).applyMatrix4(sm.matrixWorld).toArray(posed, i * 3);
+        const g = new BufferGeometry();
+        g.setAttribute('position', new BufferAttribute(posed, 3));
+        if (sm.geometry.index) g.setIndex(sm.geometry.index);
+        cloth.push(new ThreeMesh(g, new MeshBasicMaterial({ side: DoubleSide })));
+      });
+      const r = new Raycaster();
+      const out: object[] = [];
+      for (const pm of prints) {
+        const pos = pm.geometry.getAttribute('position');
+        let covered = 0;
+        let seen = 0;
+        let deepest = 0;
+        const low: number[] = [];
+        for (let i = 0; i < pos.count; i += 2) {
+          const p = pm.getVertexPosition(i, new Vector3()).applyMatrix4(pm.matrixWorld);
+          const dir = p.clone().sub(camera.position);
+          const d = dir.length();
+          r.set(camera.position, dir.normalize());
+          r.far = d + 0.01;
+          const hit = r.intersectObjects(cloth, false)[0];
+          if (!hit || hit.distance < d - 0.03) continue; // hidden by something else (an arm) or the cloth's back
+          seen++;
+          if (hit.distance < d - 0.0002) {
+            covered++;
+            if (low.length < 400) low.push(+pos.getY(i).toFixed(2));
+            deepest = Math.max(deepest, d - hit.distance);
+          }
+        }
+        out.push({ mesh: pm.name, points: pos.count, seen, covered, deepestMm: +(deepest * 1000).toFixed(2), restHeights: [...new Set(low)].sort() });
+      }
       return out;
     };
     // 1.26 window.__labMats(): the garments' materials (point colours used, colour), to check the baked shadows

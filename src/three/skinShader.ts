@@ -1,4 +1,5 @@
 import { ShaderChunk, Vector3, type Material, type WebGLProgramParametersWithUniforms } from 'three';
+import { newFaceRenderUniforms, type FaceRenderUniforms } from './human/faceRender';
 
 /**
  * 1.10 skin of the photo coaches (Youssef 2026-11-03, « peau assez uniforme », « diffusion approchée de la lumière si
@@ -36,7 +37,12 @@ export interface SkinLook {
   sat?: number;
   gain?: number;
   warm?: number;
+  /** Victor only: local albedo cleanup on body, never on face or outfit. */
+  cleanBody?: boolean;
 }
+
+/** 2.2.0 finish of the skin (penumbra lift, see cssShadowLift); off only in the Lab comparisons (?v220=0) */
+export const skin220 = () => (globalThis as { __cssSkin220?: boolean }).__cssSkin220 !== false;
 
 export const DEFAULT_SKIN: SkinLook = { relief: 1.3, wrap: 0.5, shadowLift: 0.32, pores: 0.05, roughVar: 0.12, tintVar: 0.05, tint: [1, 0.5, 0.36] };
 
@@ -58,11 +64,22 @@ float cssNoise(vec2 p) {
   vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
   return mix(mix(cssHash(i), cssHash(i + vec2(1.0, 0.0)), u.x), mix(cssHash(i + vec2(0.0, 1.0)), cssHash(i + vec2(1.0, 1.0)), u.x), u.y);
 }
-vec3 cssShadowLift(float s) { return vec3(s) + (1.0 - s) * cssShadowLiftK * cssTint; }
+// 1.44 light through the thin parts of the face (ears, nostrils, lips): set by the head's skin, 0 elsewhere
+float cssThinK = 0.0;
+uniform float cssPenumbra;
+// 2.2.0: the warm light kept in shadows only along their edge (the penumbra, where light really scatters under the
+// skin); deep in a cast shadow the same amount of light, neutral (same luminance). In 2.1.0 the whole shadow took the
+// orange tint: a glove's shadow on the chest read as a dark orange stain (captures 12-uppercut, Naël, Victor)
+vec3 cssShadowLift(float s) {
+  vec3 t = mix(vec3(dot(cssTint, vec3(0.2126, 0.7152, 0.0722))), cssTint, mix(1.0, clamp(4.0 * s * (1.0 - s) * 1.6, 0.0, 1.0), cssPenumbra));
+  return vec3(s) + (1.0 - s) * cssShadowLiftK * t;
+}
 vec3 cssWrapIrr(vec3 n, vec3 l, vec3 c) {
   float ndl = dot(n, l);
-  vec3 w = cssWrap * cssTint;
-  return clamp((vec3(ndl) + w) / (1.0 + w), 0.0, 1.0) * c;
+  vec3 w = (cssWrap + 0.6 * cssThinK) * cssTint;
+  // 1.44 a light behind a thin part shows through it, warm (a fraction of it, only where the face is thin)
+  vec3 cssBack = 0.3 * cssThinK * max(0.0, -ndl) * cssTint;
+  return (clamp((vec3(ndl) + w) / (1.0 + w), 0.0, 1.0) + cssBack) * c;
 }
 `;
 
@@ -76,7 +93,35 @@ const LIGHTS_BEGIN = ShaderChunk.lights_fragment_begin.replace(SHADOW_RE, 'direc
 /** true when the chunks of this three.js version still hold the lines the skin replaces (checked by the tests) */
 export const SKIN_SHADER_OK = LIGHTS_PARS !== ShaderChunk.lights_physical_pars_fragment && LIGHTS_BEGIN !== ShaderChunk.lights_fragment_begin;
 
-export function applySkinShader(m: Material, look: SkinLook, detail: boolean) {
+/**
+ * 1.44 the face's soft zones on the head's skin (src/three/human/faceRender.ts): wide gaussian masks placed on the
+ * Rocketbox head texture (u from the coach's right, v down), mirrored left and right. No line, no edge.
+ */
+const FACE_HEADER = /* glsl */ `
+uniform vec4 cssFace;
+float cssBlob(vec2 uv, vec2 c, vec2 r) { vec2 d = (uv - c) / r; return exp(-dot(d, d)); }
+float cssPair(vec2 uv, vec2 c, vec2 r) { return max(cssBlob(uv, c, r), cssBlob(uv, vec2(1.0 - c.x, c.y), r)); }
+`;
+const FACE_BODY = /* glsl */ `
+#ifdef USE_MAP
+  float cssCheek = cssPair(vMapUv, vec2(0.405, 0.36), vec2(0.045, 0.035));
+  float cssEar = cssPair(vMapUv, vec2(0.245, 0.36), vec2(0.03, 0.05));
+  float cssNose = cssBlob(vMapUv, vec2(0.5, 0.335), vec2(0.028, 0.03));
+  float cssNostril = cssPair(vMapUv, vec2(0.478, 0.355), vec2(0.014, 0.009));
+  float cssLip = cssBlob(vMapUv, vec2(0.5, 0.407), vec2(0.045, 0.016));
+  float cssBrow = cssBlob(vMapUv, vec2(0.5, 0.235), vec2(0.11, 0.05));
+  float cssRim = cssPair(vMapUv, vec2(0.43, 0.3), vec2(0.026, 0.007));
+  // flush of the effort: cheeks, ears, a little on the nose
+  float cssFlushM = max(cssCheek, 0.8 * cssEar) + 0.4 * cssNose;
+  diffuseColor.rgb *= mix(vec3(1.0), vec3(1.0, 0.8, 0.78), clamp(cssFace.x * cssFlushM, 0.0, 1.0));
+  cssThinK = cssFace.z * max(cssEar, max(cssNostril, 0.6 * cssLip));
+  float cssGloss = cssFace.y * max(cssBrow, cssNose) * 0.14 + cssFace.w * cssRim * 0.32;
+#else
+  float cssGloss = 0.0;
+#endif
+`;
+
+export function applySkinShader(m: Material, look: SkinLook, detail: boolean, face = false) {
   if (!SKIN_SHADER_OK) return;
   const uniforms = {
     cssWrap: { value: look.wrap },
@@ -86,15 +131,54 @@ export function applySkinShader(m: Material, look: SkinLook, detail: boolean) {
     cssRoughVar: { value: look.roughVar },
     cssTintVar: { value: look.tintVar },
     cssGrade: { value: new Vector3(look.sat ?? 1, look.gain ?? 1, look.warm ?? 0) },
+    cssPenumbra: { value: skin220() ? 1 : 0 },
   };
   m.userData.cssSkin = uniforms;
+  if (face) m.userData.cssFaceSkin = true;
+  if (look.cleanBody && !face) m.userData.cssVictorBodyClean = true;
   m.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
     Object.assign(shader.uniforms, uniforms);
-    let f = shader.fragmentShader.replace('#include <common>', `#include <common>\n${HEADER}`);
+    let f = shader.fragmentShader.replace('#include <common>', `#include <common>\n${HEADER}${face ? FACE_HEADER : ''}`);
+    if (face) {
+      const fr: FaceRenderUniforms = m.userData.cssFaceRender ?? newFaceRenderUniforms();
+      shader.uniforms.cssFace = fr.cssFace;
+    }
     f = f.replace('#include <lights_physical_pars_fragment>', LIGHTS_PARS).replace('#include <lights_fragment_begin>', LIGHTS_BEGIN);
     f = f.replace(
       '#include <map_fragment>',
       `#include <map_fragment>
+  // 1.48.0 Victor BODY only: attenuate small baked-in spots in the photographic albedo.
+  // Filter RGB locally, preserving coarse muscle illumination and leaving head/eyes untouched.
+  // The body texture is unchanged on disk; the shader is reversible.
+#ifdef USE_MAP
+${look.cleanBody && !face ? `
+  vec2 cssD = vec2(0.004, 0.006);
+  vec3 cssNeighbour = (
+    texture2D(map, vMapUv + vec2(cssD.x, 0.0)).rgb +
+    texture2D(map, vMapUv - vec2(cssD.x, 0.0)).rgb +
+    texture2D(map, vMapUv + vec2(0.0, cssD.y)).rgb +
+    texture2D(map, vMapUv - vec2(0.0, cssD.y)).rgb
+  ) * 0.25;
+  // A gentle neighbour mix only where albedo visibly differs locally;
+  // original shading/skin colour dominates in stable areas.
+  // 1.48.0 waist seam cleanup: a second, wider footprint resolves a narrow
+  // horizontal colour band without painting over the original muscle normals.
+  // Work only on Victor's body and only on significant local chroma outliers.
+  vec2 cssWide = vec2(0.012, 0.018);
+  vec3 cssWideNeighbour = (
+    texture2D(map, vMapUv + vec2(cssWide.x, 0.0)).rgb +
+    texture2D(map, vMapUv - vec2(cssWide.x, 0.0)).rgb +
+    texture2D(map, vMapUv + vec2(0.0, cssWide.y)).rgb +
+    texture2D(map, vMapUv - vec2(0.0, cssWide.y)).rgb
+  ) * 0.25;
+  vec3 cssOriginalTexel = texture2D(map, vMapUv).rgb;
+  vec3 cssLocalTarget = mix(cssNeighbour, cssWideNeighbour, 0.55);
+  float cssSpot = smoothstep(0.025, 0.105, length(cssOriginalTexel - cssLocalTarget));
+  // Preserve the glTF base colour, and bound any correction near UV island edges.
+  vec3 cssNeighbourRatio = clamp(cssLocalTarget / max(cssOriginalTexel, vec3(0.04)), vec3(0.78), vec3(1.22));
+  diffuseColor.rgb *= mix(vec3(1.0), cssNeighbourRatio, 0.88 * cssSpot);
+` : ''}
+#endif
   diffuseColor.rgb = cssGradeRgb(diffuseColor.rgb);
 #ifdef USE_MAP
   // tint: slow variations (blotches a few centimetres wide), warmer or cooler
@@ -107,14 +191,14 @@ export function applySkinShader(m: Material, look: SkinLook, detail: boolean) {
   diffuseColor.rgb *= 1.0 - cssPore * cssPores;
 #else
   float cssT = 0.5; float cssPore = 0.0;
-#endif`,
+#endif${face ? FACE_BODY : '\n  float cssGloss = 0.0;'}`,
     );
     f = f.replace(
       '#include <roughnessmap_fragment>',
       `#include <roughnessmap_fragment>
-  roughnessFactor = clamp(roughnessFactor + cssRoughVar * (cssT - 0.5) * 2.0 + cssPore * cssPores * 2.0, 0.25, 0.95);`,
+  roughnessFactor = clamp(roughnessFactor + cssRoughVar * (cssT - 0.5) * 2.0 + cssPore * cssPores * 2.0 - cssGloss, 0.2, 0.95);`,
     );
     shader.fragmentShader = f;
   };
-  m.customProgramCacheKey = () => `css-skin-${detail ? 1 : 0}`;
+  m.customProgramCacheKey = () => `css-skin-${detail ? 1 : 0}${skin220() ? '-v220' : ''}${face ? '-face144' : ''}${look.cleanBody && !face ? '-victor-clean148-waist2' : ''}`;
 }

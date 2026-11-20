@@ -11,6 +11,8 @@ import { onBackButton } from '../../platform/native';
 interface Layer {
   id: number;
   close: () => void;
+  /** 1.42.0: a guard stays in place after Back (see pushGuard) */
+  guard?: boolean;
 }
 
 const stack: Layer[] = [];
@@ -32,16 +34,34 @@ function install() {
       return;
     }
     // Back pressed by the user: the top layer closes, the page stays
-    stack.pop()?.close();
+    const top = stack[stack.length - 1];
+    if (!top) return;
+    if (!top.guard) {
+      stack.pop();
+      top.close();
+      return;
+    }
+    // a guard answers and stays: its history entry, just used by this Back, is put back (unless it left by itself)
+    top.close();
+    if (stack.includes(top)) pushEntry(top.id);
   });
   // Android (Capacitor): the back button closes the top layer first
   onBackButton(() => {
     const top = stack[stack.length - 1];
     if (!top) return false;
     top.close();
-    popLayer(top.id);
+    // a guard keeps its place and its history entry (the native button did not use it)
+    if (!top.guard) popLayer(top.id);
     return true;
   });
+}
+
+function pushEntry(id: number) {
+  try {
+    window.history.pushState({ ...(window.history.state ?? {}), cssLayer: id }, '');
+  } catch {
+    // no history (sandboxed frame): the layer still closes with its own buttons
+  }
 }
 
 /** opens a layer; `close` is called when Back is pressed while it is on top */
@@ -49,11 +69,22 @@ export function pushLayer(close: () => void): number {
   install();
   const id = ++seq;
   stack.push({ id, close });
-  try {
-    window.history.pushState({ ...(window.history.state ?? {}), cssLayer: id }, '');
-  } catch {
-    // no history (sandboxed frame): the layer still closes with its own buttons
-  }
+  pushEntry(id);
+  return id;
+}
+
+/**
+ * 1.42.0 (Youssef, 2026-11-11: « Revois aussi le retour arrière quand on est en plein écran »; rule validated the
+ * same day: « un Retour = un seul pas en arrière »): a guard is a layer that stays. Each Back (Android button, back
+ * gesture, browser) calls `onBack` and the page is kept, until the screen removes the guard with popLayer (which
+ * also gives the moment to really leave, through its `then`). Used by the session: Back leaves the fullscreen first,
+ * then pauses and asks before leaving; it never leaves by itself.
+ */
+export function pushGuard(onBack: () => void): number {
+  install();
+  const id = ++seq;
+  stack.push({ id, close: onBack, guard: true });
+  pushEntry(id);
   return id;
 }
 

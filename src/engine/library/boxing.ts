@@ -2,7 +2,8 @@
  * Punches, defences and footwork (all disciplines use them, with their own stance).
  * Orthodox; southpaw versions are mirrored automatically.
  */
-import { Author, StanceStyle, add, edit, driveToward } from '../author';
+import { Author, StanceStyle, add, edit, driveToward, lagHand } from '../author';
+import { V230 } from '../v230';
 import type { Motion } from '../motion';
 import { Vector3 } from 'three';
 import { Pose, deg, v3 } from '../pose';
@@ -329,6 +330,9 @@ function uppercut(a: Author, side: 'L' | 'R'): Motion {
   // v1.33.1: an earlier hip turn, with the chest intentionally late during the drive.
   // The unchanged impact pose lets the thorax catch up at contact.
   const drive = driveToward(dip, hit, { pelvis: 0.78, chest: 0.26, hips: 0.55, feet: 0.7 });
+  // 2.3.0 (armLag): the fist rose with the turning trunk and was fastest 100 ms before the impact on the MMA and
+  // muay-thaï guards (extension-v032.test, failing since 2.1.0); it now rides less of the drive and rises last
+  if (V230.armLag) lagHand(a, dip, drive, side, 0.45);
   return {
     id: `uppercut-${side === 'L' ? 'avant' : 'arriere'}`,
     punchFeel: true,
@@ -346,17 +350,29 @@ function uppercut(a: Author, side: 'L' | 'R'): Motion {
   };
 }
 
+/**
+ * 2.3.0 (overhandPath). Before: the fist was cocked 20 cm above the shoulder, beside the ear, with the elbow up (a
+ * throw, the blow announced), then reached the chin with the elbow pointing up. On the way, the upper arm went past
+ * its external rotation (≈ 110° for 90° possible): the elbow turned over in 1/60 s on Kadir (158°) and swung 50 to 70°
+ * on the others. Now the fist stays at the height of the guard and a little forward while the hips drop, and the
+ * elbow comes up to shoulder height and out at the impact: the « over the top » arc, without the announcement.
+ */
+const OVERHAND = {
+  before: { up: 0.2, fwd: 0.02, load: v3(-1, 0.4, -0.4), hit: v3(-0.6, 0.8, -0.2) },
+  after: { up: 0.06, fwd: 0.12, load: v3(-1, 0.4, -0.4), hit: v3(-1, 0.3, -0.4) },
+};
 /** MMA overhand: looping rear punch over the top, with a level drop */
 function overhand(a: Author): Motion {
   const g = a.guard();
   const s = a.s;
   const C = a.target('chin', 0.6);
+  const OH_TUNE = V230.overhandPath ? OVERHAND.after : OVERHAND.before;
   const load = edit(g, (d) => {
     d.hips.y -= 0.05 * s;
     d.pelvis.yaw += deg(-6);
     d.chest.roll += deg(-6);
     const sh = a.shoulder(g, 'R');
-    d.handR = a.hand('world', v3(sh.x - 0.12 * s, sh.y + 0.2 * s, sh.z + 0.02 * s), v3(-1, 0.4, -0.4), 0.3);
+    d.handR = a.hand('world', v3(sh.x - 0.12 * s, sh.y + OH_TUNE.up * s, sh.z + OH_TUNE.fwd * s), OH_TUNE.load, 0.3);
   });
   const hit = edit(g, (d) => {
     d.hips.y -= 0.1 * s;
@@ -372,7 +388,7 @@ function overhand(a: Author): Motion {
     }
     d.handL.pos = add(d.handL.pos, { z: -0.08 * s, y: 0.03 * s });
   });
-  hit.handR = a.hand('world', a.reach(hit, 'R', add(C, { y: -0.02 * s }), 0.92), v3(-0.6, 0.8, -0.2), 0.95);
+  hit.handR = a.hand('world', a.reach(hit, 'R', add(C, { y: -0.02 * s }), 0.92), OH_TUNE.hit, 0.95);
   return {
     id: 'overhand',
     punchFeel: true,
@@ -543,6 +559,10 @@ function pullBack(a: Author): Motion {
     d.chest.yaw += deg(-6);
     if (d.footR.mode === 'ground') d.footR.heel = deg(5);
     if (d.footL.mode === 'ground') d.footL.heel = deg(10);
+    // 1.46.0: leaning back brings the belly forward under the chest; the guard moves a little forward with it
+    // (the rear forearm went into the trunk)
+    d.handR.pos = add(d.handR.pos, { z: 0.06 * s });
+    d.handL.pos = add(d.handL.pos, { z: 0.03 * s });
   });
   return {
     id: 'retrait',

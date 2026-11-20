@@ -1,0 +1,98 @@
+[
+  {
+    "name": "amara-face",
+    "champion": "mma-amara",
+    "az": 0,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 158235
+  },
+  {
+    "name": "amara-face",
+    "champion": "mma-amara",
+    "az": 0,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 158556
+  },
+  {
+    "name": "amara-three-quarter",
+    "champion": "mma-amara",
+    "az": 35,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 155074
+  },
+  {
+    "name": "amara-three-quarter",
+    "champion": "mma-amara",
+    "az": 35,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 155353
+  },
+  {
+    "name": "amara-profile",
+    "champion": "mma-amara",
+    "az": 90,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 188866
+  },
+  {
+    "name": "amara-profile",
+    "champion": "mma-amara",
+    "az": 90,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 189262
+  },
+  {
+    "name": "victor-face",
+    "champion": "victor",
+    "az": 0,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 205891
+  },
+  {
+    "name": "victor-face",
+    "champion": "victor",
+    "az": 0,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 205969
+  },
+  {
+    "name": "victor-three-quarter",
+    "champion": "victor",
+    "az": 35,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 198092
+  },
+  {
+    "name": "victor-three-quarter",
+    "champion": "victor",
+    "az": 35,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 197961
+  },
+  {
+    "name": "victor-profile",
+    "champion": "victor",
+    "az": 90,
+    "label": "avant",
+    "status": "ok",
+    "bytes": 239670
+  },
+  {
+    "name": "victor-profile",
+    "champion": "victor",
+    "az": 90,
+    "label": "apres",
+    "status": "ok",
+    "bytes": 239474
+  }
+]

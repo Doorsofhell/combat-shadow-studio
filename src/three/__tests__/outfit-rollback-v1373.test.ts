@@ -2,15 +2,21 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 
-/** Prevent re-introducing the shorts regression seen after the 1.37.1 rebuild. */
+/** Prevent re-introducing the shorts regression seen after the 1.37.1 rebuild.
+ * 1.46.0 (Youssef 15/11, Kadir plus réaliste : cou, mâchoire, trapèzes) : new body, and the three outfits that cover
+ * the neck and the trapezius (judo, bjj, bjj-nogi) follow it by tools/generator/kadir/tenues_suivent.py (garment
+ * points moved with the body, hidden skin keys renamed); the shorts and the other outfits keep their 1.37.0 bytes.
+ * 1.56.0 (Youssef 15/11 « kimonos trop gros, trop épais », option B « Tombé » choisie le 17/11) : judo and bjj rebuilt
+ * on the current body by outfits.py (GI_STYLE tombe: real cloth thicknesses, the cloth spans the hollows; then the cut of Youssef's reference sheets: straight wide trouser legs and sleeves). New approved
+ * fingerprints for these two only; the 1.46 ones are in the git history. The shorts guard is untouched. */
 const GOOD_1370 = {
   'boxe': '9c4a33b36d2468a9f653cce3e62260e69c3c9664',
   'kickboxing': '8cbced0c2a190539c7f3c172da3e9ca4ed4e4010',
   'muaythai': 'c6c183d9a4784ad02d5390eddf272ff6772b41a1',
   'mma': '0408bed276844fa7d85e469aab825fe301ef1e0c',
-  'judo': '9ec4ec99f383d5bde97f9ea46efc9d78e131e804',
-  'bjj': '18546da1ff3acb931583d642b2e04e53ec1cbb4c',
-  'bjj-nogi': 'fdbeded76c3b976e6c95d81001529cc692ac3518',
+  'judo': 'd6e9adaeff0a9ce8d629f748d84655efa00f08c6',
+  'bjj': '5b34f461f1fb7e8ea090461ee22a5ce20f46eb41',
+  'bjj-nogi': 'cadc6b5cc30f20cd87b98bd9dfbbe2d027393fcc',
 } as const;
 function gitSha(path: string) {
   const data = readFileSync(path);
@@ -24,6 +30,6 @@ describe('v1.37.3 — rollback non régressif des shorts de Kadir', () => {
     });
   }
   test('modèle corporel Kadir intact', () => {
-    expect(gitSha('public/coaches/mma-kadir/photo.glb')).toBe('9b720189cdd3a9f27e55c14d0a90fb423b3801a2');
+    expect(gitSha('public/coaches/mma-kadir/photo.glb')).toBe('c31999b521a53267262e77679afbc53d594c4ae2');
   });
 });

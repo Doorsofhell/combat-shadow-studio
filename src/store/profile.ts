@@ -69,7 +69,7 @@ export interface Profile {
   limitations: string;
   mainDiscipline: DisciplineId;
   coach: CoachId | null;
-  /** 1.5: which coach of that body type (ALL_COACHES id: mma-kadir, nael, mma-amara, inaya); absent = Kadir or Amara */
+  /** 1.5: which coach of that body type (ALL_COACHES id: mma-kadir, nael, victor, mma-amara, inaya, kanya); absent = Kadir or Amara */
   champion?: string | null;
   coachAi: CoachAiPrefs;
   /** the questionnaire answers stay on this device unless the user exports them or turns on sync */

@@ -124,4 +124,4 @@ describe.each(COACHES)('équipements v0.43, %s', (coach) => {
   });
 });
 
-// 1.37: the test of the sculpted glove of the generated coach is removed with it (kept in « backup CS/ »)
+// 1.37: the test of the sculpted glove of the generated coach is removed with it (kept in « _ARCHIVES_HORS_APPLICATION/anciennes-versions/backup-CS/ »)

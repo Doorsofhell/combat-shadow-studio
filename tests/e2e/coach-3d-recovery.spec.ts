@@ -131,6 +131,8 @@ test('Réglages › Affichage 3D : journal lisible et retour à la qualité choi
   test.setTimeout(60_000);
   await seed(page);
   await page.evaluate(() => {
+    // 1.56.3: a level saved before 1.56.3 is put back to 0 once (false alarms); this one is a real incident of 1.56.3
+    localStorage.setItem('css-3d-fix-1563', '1');
     localStorage.setItem('css-3d-level', JSON.stringify({ level: 2, at: Date.now() }));
     localStorage.setItem('css-3d-diag', JSON.stringify([{ t: new Date().toISOString(), kind: 'contexte-perdu', msg: 'qualité abaissée au niveau 2' }]));
   });

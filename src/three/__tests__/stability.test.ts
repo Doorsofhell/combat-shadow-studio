@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest';
 import { CALM_MS, _reloadStability, resetStability, stabilityLevel, stepDown, stepUp } from '../safe3d';
-import { clearDiag, diagText, log3d, readDiag } from '../diag3d';
+import { clearDiag, diagText, incidentCount, log3d, readDiag } from '../diag3d';
 import { isGraphicsError } from '../webglProbe';
 
 /**
@@ -48,7 +48,35 @@ describe('niveau de stabilité 3D', () => {
   });
 });
 
+describe('1.56.3 : faux incidents des versions précédentes', () => {
+  test('un niveau enregistré avant 1.56.3 est remis à 0 une seule fois, avec une ligne au journal', () => {
+    localStorage.setItem('css-3d-level', JSON.stringify({ level: 2, at: Date.now() }));
+    expect(stabilityLevel()).toBe(0);
+    expect(readDiag().some((e) => e.kind === 'qualite' && /niveau 2 remis à 0/.test(e.msg))).toBe(true);
+    // les vrais incidents comptés ensuite sont gardés
+    expect(stepDown()).toBe(1);
+    _reloadStability();
+    expect(stabilityLevel()).toBe(1);
+  });
+
+  test('un appareil sans niveau enregistré n’est pas touché', () => {
+    expect(stabilityLevel()).toBe(0);
+    expect(stepDown()).toBe(1);
+    _reloadStability();
+    expect(stabilityLevel()).toBe(1);
+    expect(readDiag()).toHaveLength(0);
+  });
+});
+
 describe('journal 3D', () => {
+  test('compte les incidents à part des lignes de routine', () => {
+    log3d('mesure', '60 img/s');
+    log3d('demarrage', 'coach');
+    log3d('contexte-perdu', 'qualité abaissée au niveau 1');
+    log3d('echec', 'accueil · erreur WebGL');
+    expect(incidentCount()).toBe(2);
+  });
+
   test('garde les 80 derniers évènements, lisibles en texte', () => {
     clearDiag();
     for (let i = 0; i < 100; i++) log3d('mesure', `n${i}`);

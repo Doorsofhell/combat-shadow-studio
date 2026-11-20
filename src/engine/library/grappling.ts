@@ -458,8 +458,10 @@ function uchikomiOsoto(author: Author): Motion {
   const Lf = v3(L0.x + 0.06 * s, 0, L0.z + 0.24 * s);
   const shY = a.shoulder(g, 'R').y;
   const pullHands = (d: Pose, k: number) => {
+    // 1.41.1 (traversées du corps): the lapel hand pushes a little further in front, so that the right forearm stays
+    // out of the chest as it leans in (up to 14,8 cm before)
     d.handL = a.hand('world', v3(0.22 * s, a.m.hipsRest.y + 0.08 * s, d.hips.z + 0.05 * s), v3(0.8, -1, -0.3), 0.3, 0.9);
-    d.handR = a.hand('world', v3(0.0, shY - 0.1 * s - k * 0.04 * s, d.hips.z + 0.42 * s), v3(-0.7, -1, -0.1), 0.5, 0.9);
+    d.handR = a.hand('world', v3(-0.04 * s, shY - 0.1 * s - k * 0.04 * s, d.hips.z + 0.5 * s), v3(-0.7, -1, -0.1), 0.5, 0.9);
   };
   const stepIn = edit(g, (d) => {
     d.hips = v3(Lf.x - 0.04 * s, d.hips.y - 0.03 * s, Lf.z - 0.08 * s);

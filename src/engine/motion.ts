@@ -2,8 +2,9 @@
  * Keyframed motions built on the pose model, and their sampling.
  */
 import { Quaternion, Vector3 } from 'three';
-import { Pose, ResolvedFoot, ResolvedHand, ResolvedPose, blendJoint, mirrorPose, quatFromRot, toVec } from './pose';
+import { Pose, type V3, ResolvedFoot, ResolvedHand, ResolvedPose, blendJoint, mirrorPose, quatFromRot, toVec } from './pose';
 import type { CoachRig } from './rig';
+import { V230 } from './v230';
 
 export type Ease = 'linear' | 'inOut' | 'out' | 'in' | 'snap' | 'strike' | 'load';
 export type BodyState = 'stand' | 'ground';
@@ -158,6 +159,7 @@ function rotationVector(q0: Quaternion, q1: Quaternion) {
 
 const ZERO = new Vector3();
 const _q = new Quaternion();
+const _q2 = new Quaternion();
 const _v = new Vector3();
 const PUNCH_UP = new Vector3(0, 1, 0);
 const PUNCH_ANGLE = Math.PI / 180;
@@ -353,7 +355,11 @@ export class MotionSampler {
    */
   private chainWeight(t: number) {
     if (this.motion.balance || this.motion.startState === 'ground' || this.motion.endState === 'ground') return 0;
-    let d = Math.min(t, this.duration - t);
+    // 2.3.0 (chainLead): a punch lands in 0.13 to 0.32 s; faded in over 0.15 s the lead barely acted before the
+    // impact and the hips and the shoulders reached their top speed together (measured on every coach). On the
+    // punches it now grows over 0.06 s (smooth start: no jump from the guard), so the hips open first.
+    const fadeIn = V230.chainLead && PUNCH_ID.test(this.motion.id) ? CHAIN_FADE_PUNCH : CHAIN_FADE;
+    let d = Math.min(t * (CHAIN_FADE / fadeIn), this.duration - t);
     for (const [a, b] of this.airborne) d = Math.min(d, t < a ? a - t : t > b ? t - b : 0);
     return smooth(d / CHAIN_FADE);
   }
@@ -416,10 +422,12 @@ export class MotionSampler {
         const pole = pr ? { x: pr.x, y: pr.y, z: pr.z } : undefined;
         const pv = off(side === 'footL' ? 'pivotL' : 'pivotR').clone();
         const bv = off(side === 'footL' ? 'ballL' : 'ballR');
+        // 1.41.0: past a slow glide, the foot travels on a low arc instead of being dragged along the mat
+        const lift = glideLift(pa.ball, pb.ball, h, u, this.rig.metrics.height);
         return this.rig.resolveFoot(
           {
             mode: 'ground',
-            ball: { x: lerp(pa.ball.x, pb.ball.x, u) + bv.x, y: lerp(pa.ball.y, pb.ball.y, u) + bv.y, z: lerp(pa.ball.z, pb.ball.z, u) + bv.z },
+            ball: { x: lerp(pa.ball.x, pb.ball.x, u) + bv.x, y: lerp(pa.ball.y, pb.ball.y, u) + bv.y + lift, z: lerp(pa.ball.z, pb.ball.z, u) + bv.z },
             yaw: lerp(pa.yaw, pb.yaw, u) + pv.x,
             heel: Math.max(0, lerp(pa.heel, pb.heel, u) + pv.y),
             pole,
@@ -430,11 +438,11 @@ export class MotionSampler {
       const fa = a[side];
       const fb = b[side];
       return {
-        ankle: fa.ankle.clone().lerp(fb.ankle, u).add(off(side)),
+        ankle: this.airAnkle(a, b, side, hips, pelvis, u).add(off(side)).add(_up.set(0, this.lowLift(fa, fb, h, u), 0)),
         rot: fa.rot.clone().slerp(fb.rot, u),
         toeFlat: lerp(fa.toeFlat, fb.toeFlat, u),
         heel: lerp(fa.heel, fb.heel, u),
-        pole: fa.pole.clone().lerp(fb.pole, u).normalize(),
+        pole: blendPole(fa.pole.clone(), fb.pole, u),
         point: lerp(fa.point, fb.point, u),
         joint: blendJoint(fa.joint, fb.joint, u),
         jointW: lerp(fa.jointW, fb.jointW, u),
@@ -450,7 +458,7 @@ export class MotionSampler {
       const hb = this.rig.resolveHand(b.pose[side], frame);
       return {
         pos: ha.pos.lerp(hb.pos, u).add(off(side).applyQuaternion(frame.q)),
-        pole: ha.pole.lerp(hb.pole, u).normalize(),
+        pole: blendPole(ha.pole, hb.pole, u),
         pron: lerp(ha.pron, hb.pron, u),
         fist: lerp(ha.fist, hb.fist, u),
         wrist: lerp(ha.wrist, hb.wrist, u),
@@ -471,6 +479,64 @@ export class MotionSampler {
       footL,
       footR,
     };
+  }
+
+  /**
+   * 2.3.0 (legArc): where a foot in the air is between two key poses. A leg swings from its hip: the ankle's
+   * distance to the hip and its direction from it are interpolated (the hip itself moving with the pelvis), instead
+   * of a straight line between the two ankle positions. Measured before (docs/v230/audit/avant.json): when a high
+   * kick came back to its chamber the straight line passed within 26 cm of the hip, the knee folded to its stop
+   * and whipped across, 27 % of the coach's height in 1/60 s, on every coach. Feet near the floor (steps, take-offs
+   * and landings, ground work) keep the straight line: an arc about the hip would dip toward the mat.
+   */
+  private airAnkle(a: CachedKey, b: CachedKey, side: 'footL' | 'footR', hips: Vector3, pelvis: Quaternion, u: number): Vector3 {
+    const fa = a[side];
+    const fb = b[side];
+    const straight = fa.ankle.clone().lerp(fb.ankle, u);
+    if (!V230.legArc || u <= 0 || u >= 1) return straight;
+    const pa = a.pose[side];
+    const pb = b.pose[side];
+    if (pa.mode !== 'air' || pb.mode !== 'air' || pa.pinned || pb.pinned) return straight;
+    const m = this.rig.metrics;
+    const s = m.height / 1.8;
+    // fully about the hip once both ends are a shin's length above the floor, not at all below 15 cm
+    const low = Math.min(fa.ankle.y, fb.ankle.y);
+    const w = smooth((low - 0.15 * s) / (m.shin * 0.6));
+    if (w <= 0) return straight;
+    const sd = side === 'footL' ? 'L' : 'R';
+    // scratch vectors (no allocation per image): hip joints of both keys, then the hip now
+    const da = _arcA.copy(this.hipOffset[sd]).applyQuaternion(a.pelvis).add(a.hips).negate().add(fa.ankle);
+    const db = _arcB.copy(this.hipOffset[sd]).applyQuaternion(b.pelvis).add(b.hips).negate().add(fb.ankle);
+    const la = da.length();
+    const lb = db.length();
+    if (la < 1e-4 || lb < 1e-4) return straight;
+    // only when one end has the leg stretched out (an extended kick coming back or going out): a knee strike folds
+    // and unfolds its leg near the hip, where the straight path keeps the shin clear of the other leg
+    if (Math.max(la, lb) < LEG_ARC_REACH * (m.thigh + m.shin)) return straight;
+    da.divideScalar(la);
+    db.divideScalar(lb);
+    if (da.dot(db) < -0.95) return straight;
+    const turn = _q.setFromUnitVectors(da, db);
+    const dir = da.applyQuaternion(_q2.identity().slerp(turn, u));
+    const arc = _arcB.copy(this.hipOffset[sd]).applyQuaternion(pelvis).add(hips).addScaledVector(dir, la + (lb - la) * u);
+    return straight.lerp(arc, w);
+  }
+
+  /**
+   * 1.41.0 (lot 2): a foot that leaves the floor or sets down on it while travelling low and far (a take-off or a
+   * landing almost flat along the mat, a leg swept along the floor) dragged its toes on the mat, up to 15 cm per
+   * image (sit-out, changement de base, relevé technique, sprawl, judo entries). The same low arc as a planted foot
+   * (glideLift) lifts it, faded out as soon as the written path rises steeply (kicks, knees, steps keep theirs).
+   */
+  private lowLift(fa: ResolvedFoot, fb: ResolvedFoot, h: number, u: number) {
+    const m = this.rig.metrics;
+    const low = (f: ResolvedFoot) => f.toeFlat > 0 || f.ankle.y < m.ballRestY + m.ankleFromBall.y + 0.03;
+    if (!low(fa) && !low(fb)) return 0;
+    const dh = Math.hypot(fb.ankle.x - fa.ankle.x, fb.ankle.z - fa.ankle.z);
+    if (dh < 1e-3) return 0;
+    const shallow = smooth(1 - Math.abs(fb.ankle.y - fa.ankle.y) / dh / 0.5);
+    if (shallow <= 0) return 0;
+    return shallow * glideLift(fa.ankle, fb.ankle, h, u, m.height);
   }
 
   /**
@@ -501,6 +567,62 @@ export class MotionSampler {
   }
 }
 
+/**
+ * 1.41.0 (lot 2, pieds qui glissent, Youssef 2026-11-14): a foot written on the floor at both ends of a segment but at
+ * two different places was dragged along the mat between them, up to 20 cm per image, 12 m/s (switch kick, sit-out,
+ * changement de base, relevé technique, judo and wrestling entries; docs/audit-biomecanique/MESURES_GLISSEMENT.md). A
+ * foot that carries weight cannot slide that fast: past a slow glide (pivots, suri-ashi, a shuffle) the foot now leaves
+ * the mat on a low arc and sets down at the written place. A foot that stays in place, or glides slowly, is unchanged.
+ */
+export const GLIDE_SPEED = { from: 0.35, full: 0.75 };
+/**
+ * 1.55 (Youssef 2026-11-17, « n'oublie sa taille » : gestes proportionnels à la taille du coach). The speeds above are
+ * for a 1.8 m body: every step of the library is written in body lengths (Author.s = height / 1.8) over the same time,
+ * so a smaller coach walks the same step more slowly in metres per second. Compared in metres per second, Kanya at
+ * 1.68 m lifted her stepping foot less than at 1.73 m (kuzushi: 3.8 mm instead of 4.7 mm at the first image, the foot
+ * then read as dragged along the mat). The speed is now compared per body length: the same step gets the same arc,
+ * scaled to the body, whatever the coach's height.
+ */
+export const glideSpeedOf = (d: number, h: number, height: number) => d / h / (height / 1.8);
+/** highest lift of the arc (m, for a 1.8 m body), and its share of the distance travelled */
+export const GLIDE_LIFT = { max: 0.045, share: 0.15 };
+
+/** height added to a foot that travels on the floor from a to b in h seconds, at eased progress u (m) */
+export function glideLift(a: V3, b: V3, h: number, u: number, height: number): number {
+  if (u <= 0 || u >= 1 || h <= 0) return 0;
+  const d = Math.hypot(b.x - a.x, b.z - a.z);
+  const w = smooth((glideSpeedOf(d, h, height) - GLIDE_SPEED.from) / (GLIDE_SPEED.full - GLIDE_SPEED.from));
+  if (w <= 0) return 0;
+  return w * Math.min(GLIDE_LIFT.max * (height / 1.8), GLIDE_LIFT.share * d) * Math.sin(Math.PI * u);
+}
+
+/**
+ * 2.3.0 (poleSlerp): where the elbow or the knee points, between two key poses. A straight blend of two directions
+ * that are far apart (the arms crossed on the chest, elbows down, then slapping the mat, elbow up: ukemi) passes
+ * close to zero length halfway, and the normalised direction turned over in one image (169° in 1/60 s on every
+ * coach). It now turns at a steady rate from one to the other. Close directions blend as before.
+ */
+export function blendPole(a: Vector3, b: Vector3, u: number): Vector3 {
+  const la = a.length();
+  const lb = b.length();
+  if (!V230.poleSlerp || la < 1e-6 || lb < 1e-6) return a.lerp(b, u).normalize();
+  const na = a.divideScalar(la);
+  const nb = b.clone().divideScalar(lb);
+  const c = na.dot(nb);
+  if (c > 0.5) return na.lerp(nb, u).normalize();
+  // the turn axis: perpendicular to both, or for exactly opposite directions any axis perpendicular to the first
+  const axis = new Vector3().crossVectors(na, nb);
+  if (axis.lengthSq() < 1e-8) axis.crossVectors(na, Math.abs(na.y) < 0.9 ? _yAxis : _xAxis);
+  axis.normalize();
+  return na.applyAxisAngle(axis, Math.acos(Math.max(-1, Math.min(1, c))) * u);
+}
+const _yAxis = new Vector3(0, 1, 0);
+const _arcA = new Vector3();
+const _arcB = new Vector3();
+/** 2.3.0 legArc: share of the leg's length at which one end counts as an extended leg */
+const LEG_ARC_REACH = 0.8;
+const _xAxis = new Vector3(1, 0, 0);
+
 /** seconds the legs and hips are ahead of the trunk and the arms, and the head behind */
 const CHAIN_LEGS = 0.05;
 const CHAIN_HEAD = 0.035;
@@ -508,6 +630,11 @@ const CHAIN_HEAD = 0.035;
 const CHAIN_MAX_TURN = (10 * Math.PI) / 180;
 /** seconds over which the shift grows at the start of a motion and fades at its end */
 const CHAIN_FADE = 0.15;
+/** 2.3.0: the same fade at the start of a punch (see chainWeight) */
+const CHAIN_FADE_PUNCH = 0.06;
+/** the punches (by name, orthodox and southpaw: the punch accents of 1.33.2 are a separate switch) */
+const PUNCH_ID = /^(jab|direct|crochet|uppercut|overhand)/;
+const _up = new Vector3();
 const smooth = (x: number) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
 
 /** a planted foot, or one just off the floor (pinned above its place at a take-off or a landing) */

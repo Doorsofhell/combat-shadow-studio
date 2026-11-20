@@ -1,3 +1,4 @@
+import { isHeadSkin, newFaceRenderUniforms, type FaceRenderUniforms } from './human/faceRender';
 import { applySkinShader, DEFAULT_SKIN, type SkinLook } from './skinShader';
 import { BufferAttribute, BufferGeometry, DoubleSide, FrontSide, Material, MeshPhysicalMaterial, MeshStandardMaterial, SRGBColorSpace, type MeshStandardMaterialParameters } from 'three';
 
@@ -82,23 +83,124 @@ export type PhotoLook = SkinLook;
  * had 1.5 and 1.35.)
  */
 export const SKIN_LOOK: Record<string, SkinLook> = {
-  'mma-kadir': { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, wrap: 0.45, shadowLift: 0.36 },
+  // 1.48.0: individual, mobile-friendly calibration; colours and anatomical relief unchanged.
+  'mma-kadir': { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, roughVar: 0.14, tintVar: 0.05, wrap: 0.45, shadowLift: 0.36 },
+  // 1.47.1 Amara-only semi-realistic skin study: retain original relief, wrap, colour and geometry;
+  // slightly enrich high-quality roughness and tint variation without touching other coaches.
   // 1.37.8: only Amara, shader-only: clearer muscle highlights without any mesh, garment or rig change.
   // Keep colour, pores and skin texture identical; small gain to normal-map relief and local contrast.
-  'mma-amara': { ...DEFAULT_SKIN, relief: 1.21, pores: 0.03, wrap: 0.43, shadowLift: 0.33 },
+  'mma-amara': { ...DEFAULT_SKIN, relief: 1.21, pores: 0.03, roughVar: 0.15, tintVar: 0.055, wrap: 0.43, shadowLift: 0.33 },
   // 1.11 Naël and Inaya: Rocketbox photo skins like Kadir and Amara (same relief maps); lighter skins, the
   // scattering a little warmer
   // 1.21 same light as Kadir (Inaya got Amara's in 1.20): the wider wrap softened the shadows between the muscles
-  nael: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, wrap: 0.45, shadowLift: 0.34, tint: [1, 0.55, 0.42] },
+  nael: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, roughVar: 0.13, tintVar: 0.045, wrap: 0.45, shadowLift: 0.34, tint: [1, 0.55, 0.42] },
   // 1.20 (Youssef 05/11 14:09, Amara's muscles « bien dessinés »): Inaya's wrapped light was wider than Amara's
   // (0.55 for 0.45) and softened the shadows between the muscles; same as Amara now
-  inaya: { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, wrap: 0.45, shadowLift: 0.32, tint: [1, 0.52, 0.38], sat: 1.12, gain: 0.8, warm: 0.12 },
+  // 1.43 Victor: the Kadir photo skin repainted (tan of Youssef's sheets): Kadir's light and relief
+  victor: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.022, roughVar: 0.11, tintVar: 0.018, wrap: 0.45, shadowLift: 0.36, cleanBody: true },
+  inaya: { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, roughVar: 0.12, tintVar: 0.045, wrap: 0.45, shadowLift: 0.32, tint: [1, 0.52, 0.38], sat: 1.12, gain: 0.8, warm: 0.12 },
+  // 1.51 Kanya: Inaya's photo skin repainted to the tone of Youssef's sheets (the texture already carries the tone: no
+  // gain, the light and relief of Inaya's body)
+  kanya: { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, roughVar: 0.12, tintVar: 0.04, wrap: 0.45, shadowLift: 0.32, tint: [1, 0.52, 0.38] },
 };
+
+/** 1.48 premium material finish: calibrated individually, never changes body proportions or facial expressions. */
+export const PREMIUM_FINISH: Partial<Record<keyof typeof SKIN_LOOK, {
+  bodySheen: number; faceSheen: number; bodySpecular: number; faceSpecular: number; eyeRoughness: number; hairScale: number;
+}>> = {
+  'mma-kadir': { bodySheen: 0.12, faceSheen: 0.13, bodySpecular: 0.24, faceSpecular: 0.25, eyeRoughness: 0.20, hairScale: 1 },
+  'mma-amara': { bodySheen: 0.15, faceSheen: 0.14, bodySpecular: 0.27, faceSpecular: 0.26, eyeRoughness: 0.19, hairScale: 0.92 },
+  nael: { bodySheen: 0.14, faceSheen: 0.13, bodySpecular: 0.27, faceSpecular: 0.26, eyeRoughness: 0.19, hairScale: 0.96 },
+  inaya: { bodySheen: 0.13, faceSheen: 0.12, bodySpecular: 0.25, faceSpecular: 0.24, eyeRoughness: 0.20, hairScale: 0.97 },
+  victor: { bodySheen: 0.12, faceSheen: 0.13, bodySpecular: 0.24, faceSpecular: 0.26, eyeRoughness: 0.20, hairScale: 0.98 },
+  kanya: { bodySheen: 0.13, faceSheen: 0.12, bodySpecular: 0.25, faceSpecular: 0.24, eyeRoughness: 0.20, hairScale: 0.97 },
+};
+
+/** 1.50.0 isolated optical pilot — NEVER changes vertices, neck or GLSL. */
+export const FIGHTER_PILOT_150: Partial<Record<keyof typeof SKIN_LOOK, {
+  faceSheen: number;
+  bodySheen: number;
+  faceSpecular: number;
+  bodySpecular: number;
+  sheenRoughnessFace: number;
+  sheenRoughnessBody: number;
+  eyeRoughness: number;
+  hairScale: number;
+}>> = {
+  'mma-amara': {
+    faceSheen: 0.17, bodySheen: 0.19, faceSpecular: 0.33, bodySpecular: 0.35,
+    sheenRoughnessFace: 0.76, sheenRoughnessBody: 0.78,
+    eyeRoughness: 0.16, hairScale: 0.89,
+  },
+  victor: {
+    faceSheen: 0.15, bodySheen: 0.16, faceSpecular: 0.31, bodySpecular: 0.32,
+    sheenRoughnessFace: 0.77, sheenRoughnessBody: 0.79,
+    eyeRoughness: 0.17, hairScale: 0.93,
+  },
+  // 1.51.0: individual non-GLSL optical profiles, preserving each coach's identity.
+  'mma-kadir': {
+    faceSheen: 0.16, bodySheen: 0.17, faceSpecular: 0.31, bodySpecular: 0.33,
+    sheenRoughnessFace: 0.77, sheenRoughnessBody: 0.79,
+    eyeRoughness: 0.175, hairScale: 0.96,
+  },
+  nael: {
+    faceSheen: 0.16, bodySheen: 0.17, faceSpecular: 0.32, bodySpecular: 0.33,
+    sheenRoughnessFace: 0.77, sheenRoughnessBody: 0.79,
+    eyeRoughness: 0.16, hairScale: 0.93,
+  },
+  inaya: {
+    faceSheen: 0.15, bodySheen: 0.16, faceSpecular: 0.30, bodySpecular: 0.31,
+    sheenRoughnessFace: 0.78, sheenRoughnessBody: 0.80,
+    eyeRoughness: 0.175, hairScale: 0.94,
+  },
+  // 1.54.0 Kanya: built on Inaya's body and photo skin, she takes Inaya's validated profile
+  kanya: {
+    faceSheen: 0.15, bodySheen: 0.16, faceSpecular: 0.30, bodySpecular: 0.31,
+    sheenRoughnessFace: 0.78, sheenRoughnessBody: 0.80,
+    eyeRoughness: 0.175, hairScale: 0.94,
+  },
+};
+
+function pilot150(look: SkinLook) {
+  look = source(look);
+  const id = Object.keys(SKIN_LOOK).find((k) => SKIN_LOOK[k] === look);
+  return id ? FIGHTER_PILOT_150[id] : undefined;
+}
+
+function premiumFinish(look: SkinLook) {
+  look = source(look);
+  const id = Object.keys(SKIN_LOOK).find((k) => SKIN_LOOK[k] === look);
+  return id ? PREMIUM_FINISH[id] : undefined;
+}
 
 export function skinLookFor(url: string): SkinLook {
   const id = Object.keys(SKIN_LOOK).find((k) => url.includes(`/${k}/`));
-  return id ? SKIN_LOOK[id] : DEFAULT_SKIN;
+  const look = id ? SKIN_LOOK[id] : DEFAULT_SKIN;
+  const fx = skinIsolation();
+  if (!fx) return look;
+  // 2.2.0 Lab only (?fx=pores,teinte,...): the same look with the named effects switched off, to find which effect
+  // makes a defect (Youssef 19/11 § 5 « isoler chaque effet »). Never set by the app itself.
+  const x: SkinLook = { ...look };
+  if (fx.has('relief')) x.relief = 0;
+  if (fx.has('diffusion')) { x.wrap = 0; }
+  if (fx.has('ombres')) x.shadowLift = 0;
+  if (fx.has('pores')) x.pores = 0;
+  if (fx.has('rugosite')) x.roughVar = 0;
+  if (fx.has('teinte')) x.tintVar = 0;
+  if (fx.has('etalonnage')) { x.sat = 1; x.gain = 1; x.warm = 0; }
+  if (fx.has('nettoyage')) x.cleanBody = false;
+  isolated.set(x, look);
+  return x;
 }
+
+/** 2.2.0 effets coupés pour l'étude d'isolation du Lab (?fx=), null dans l'application */
+export function skinIsolation(): Set<string> | null {
+  const f = (globalThis as { __cssSkinFx?: string }).__cssSkinFx;
+  return f ? new Set(f.split(',')) : null;
+}
+/** the look a Lab isolation copy was made from (the per-coach finish tables are keyed by the original) */
+const isolated = new WeakMap<SkinLook, SkinLook>();
+const source = (look: SkinLook) => isolated.get(look) ?? look;
 
 /**
  * The material drawn for one part of a photo coach. Skin: closed surface, front faces only (as in 1.9: the back
@@ -109,8 +211,13 @@ export function skinLookFor(url: string): SkinLook {
  */
 export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, quality: 'haute' | 'basse', look: PhotoLook): MeshStandardMaterial {
   if (old.map) old.map.colorSpace = SRGBColorSpace;
-  // v0.31: anisotropic filtering keeps the skin's detail at grazing angles (4 samples: cheap on phones)
-  for (const t of [old.map, old.normalMap, old.roughnessMap]) if (t) t.anisotropy = 4;
+  // 1.49.0 experimental premium filter: increase texture clarity at grazing
+  // viewing angles only in 'haute'. Does NOT change resolution, UVs or geometry.
+  // The source glTF texture objects are cached; never reduce a higher value.
+  const filtering = quality === 'haute' && premiumFinish(look) ? 8 : 4;
+  for (const t of [old.map, old.normalMap, old.roughnessMap]) {
+    if (t) t.anisotropy = Math.max(t.anisotropy, filtering);
+  }
   const base = standardParams(old);
   const hi = quality === 'haute';
   switch (part) {
@@ -119,12 +226,39 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
       // 1.12: a model can ask for its body skin from both sides (`bothSides` in the glTF material's extras, set by
       // tools/generator/rocketbox/both_sides.py): Inaya's halter straps make a fold whose inner wall faces away
       const side = old.userData?.bothSides ? DoubleSide : FrontSide;
-      const p: MeshStandardMaterialParameters = { ...base, normalScale, side, metalness: 0, roughness: 0.58, transparent: false, alphaTest: 0 };
+      // 1.46 Kadir: a body roughness map (matte boxer, skin less smooth than the shared 0.58): the map gives the value
+      const rough = old.roughnessMap ? 1 : 0.58;
+      const p: MeshStandardMaterialParameters = { ...base, normalScale, side, metalness: 0, roughness: rough, transparent: false, alphaTest: 0 };
       const m = hi
         ? new MeshPhysicalMaterial({ ...p, sheen: 0.3, sheenRoughness: 0.6, sheenColor: '#c98a72', specularIntensity: 0.4 })
-        : new MeshStandardMaterial({ ...p, roughness: 0.6 });
+        : new MeshStandardMaterial({ ...p, roughness: old.roughnessMap ? 1 : 0.6 });
+      // 1.48.0: calibrated material finish on each photo coach (not a copy of Amara's face).
+      const finish = premiumFinish(look);
+      if (hi && finish && m instanceof MeshPhysicalMaterial) {
+        const head = isHeadSkin(old);
+        m.sheen = head ? finish.faceSheen : finish.bodySheen;
+        m.sheenRoughness = head ? 0.86 : 0.84;
+        m.specularIntensity = head ? finish.faceSpecular : finish.bodySpecular;
+        // 1.49.0: restrained high-quality premium lighting response.
+        // Kept to material parameters — no GLSL rewriting after 1.48.1.
+        m.sheenRoughness = head ? 0.79 : 0.81;
+        m.specularIntensity = Math.min(0.38, m.specularIntensity + 0.04);
+        const fighter = pilot150(look);
+        if (fighter) {
+          m.sheen = head ? fighter.faceSheen : fighter.bodySheen;
+          m.sheenRoughness = head ? fighter.sheenRoughnessFace : fighter.sheenRoughnessBody;
+          m.specularIntensity = head ? fighter.faceSpecular : fighter.bodySpecular;
+          m.userData.cssFighterPilot150 = true;
+        }
+        if (skinIsolation()?.has('brillance')) { m.sheen = 0; m.specularIntensity = 0.2; }
+        m.userData.cssPremium149 = true;
+        m.userData.cssPremiumFinish = true;
+        // Historic regression flags retained for the Amara-specific test.
+        if (source(look) === SKIN_LOOK['mma-amara']) m.userData[head ? 'cssAmaraFaceFinish' : 'cssAmaraBodyFinish'] = true;
+      }
       // scattering and lifted shadows in both qualities (a few instructions), pores in high quality only
-      applySkinShader(m, look, hi);
+      // 1.44 the head's skin also carries the face's soft zones (src/three/human/faceRender.ts)
+      applySkinShader(m, look, hi, isHeadSkin(old));
       return m;
     }
     case 'yeux': {
@@ -134,11 +268,38 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
       const cut = old.transparent || old.alphaTest > 0 ? 0.5 : 0;
       const p: MeshStandardMaterialParameters = { ...base, metalness: 0, roughness: 0.18, transparent: false, alphaTest: cut, depthWrite: true };
       const m = hi ? new MeshPhysicalMaterial({ ...p, clearcoat: 1, clearcoatRoughness: 0.04, specularIntensity: 0.8 }) : new MeshStandardMaterial({ ...p, roughness: 0.12 });
+      // 1.48.0: subtle corneal highlights, with individual roughness.
+      const eyeFinish = premiumFinish(look);
+      if (hi && eyeFinish && m instanceof MeshPhysicalMaterial) {
+        m.roughness = eyeFinish.eyeRoughness;
+        m.clearcoatRoughness = 0.045;
+        m.specularIntensity = 0.78;
+        m.roughness = Math.max(0.14, eyeFinish.eyeRoughness - 0.025);
+        m.clearcoatRoughness = 0.038;
+        m.userData.cssPremium149 = true;
+        const fighter = pilot150(look);
+        if (fighter) {
+          m.roughness = fighter.eyeRoughness;
+          m.userData.cssFighterPilot150 = true;
+        }
+        m.userData.cssPremiumEyes = true;
+      }
       eyeCatchlight(m);
       return m;
     }
     case 'cheveux': {
       const m = new MeshStandardMaterial({ ...base, metalness: 0, roughness: Math.max(0.55, old.roughness), side: DoubleSide, transparent: false, alphaTest: 0.4, alphaToCoverage: true, depthWrite: true });
+      // Per-coach hair finish; never alter alpha edges, geometry or depth order.
+      const hairFinish = premiumFinish(look);
+      if (hi && hairFinish) {
+        m.roughness = Math.max(0.48, old.roughness * hairFinish.hairScale * 0.94);
+        const fighter = pilot150(look);
+        if (fighter) {
+          m.roughness = Math.max(0.48, old.roughness * fighter.hairScale);
+          m.userData.cssFighterPilot150 = true;
+        }
+        m.userData.cssPremium149 = true;
+      }
       fadeHairEnds(m);
       return m;
     }
@@ -155,22 +316,30 @@ export function photoMaterial(old: MeshStandardMaterial, part: PhotoPart, qualit
  * gets one: a sharp highlight of a soft light just above the viewer, computed in view space (it follows the camera, as
  * the window reflected in a real eye does), a few instructions, both qualities.
  */
-export const EYE_CATCHLIGHT = { dir: [-0.18, 0.05, 1] as [number, number, number], sharpness: 260, strength: 2.2 };
+// 1.40.3 (Youssef 13/11 23:24: « le point blanc dans les yeux fait trop, soit retire soit réduit beaucoup »): the dot
+// was a white disc about a third of the iris wide. Now about 5 times dimmer and smaller: a faint wet glint, no dot.
+export const EYE_CATCHLIGHT = { dir: [-0.18, 0.05, 1] as [number, number, number], sharpness: 700, strength: 0.45 };
 
 export function eyeCatchlight(m: Material) {
   const [x, y, z] = EYE_CATCHLIGHT.dir;
   m.onBeforeCompile = (shader) => {
-    shader.fragmentShader = shader.fragmentShader.replace(
+    const fr: FaceRenderUniforms = m.userData.cssFaceRender ?? newFaceRenderUniforms();
+    shader.uniforms.cssEyeUp = fr.cssEyeUp;
+    shader.uniforms.cssLidShade = fr.cssLidShade;
+    shader.fragmentShader = shader.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 cssEyeUp;\nuniform float cssLidShade;').replace(
       '#include <opaque_fragment>',
       `{
         vec3 cssV = normalize(vViewPosition);
         vec3 cssH = normalize(normalize(vec3(${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)})) + cssV);
         outgoingLight += vec3(${EYE_CATCHLIGHT.strength.toFixed(3)}) * pow(max(dot(normalize(normal), cssH), 0.0), ${EYE_CATCHLIGHT.sharpness.toFixed(1)});
+        // 1.44 the upper lid shades the top of the eyeball (the head's up, not the eye's: the shade stays as the eye
+        // turns), softly
+        outgoingLight *= 1.0 - cssLidShade * smoothstep(0.15, 0.7, dot(normalize(normal), cssEyeUp));
       }
       #include <opaque_fragment>`,
     );
   };
-  m.customProgramCacheKey = () => 'css-eye-catchlight-v139';
+  m.customProgramCacheKey = () => 'css-eye-catchlight-v1403-lid144';
   m.userData.cssCatchlight = true;
 }
 

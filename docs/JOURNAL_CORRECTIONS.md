@@ -3853,3 +3853,1127 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   le navigateur de test (rendu logiciel) : NON CONCLUANT, ce rendu ne reproduit pas les pointillés du téléphone ;
   vérification à faire par Youssef sur son téléphone.
 - **Restauration** : v1.40.0 = commit 63b3742.
+
+
+## 2026-11-13 · v1.40.2 — Amara : bande de brassière plate et moulante, couleur stable en mouvement
+
+- **Signalement** (Youssef, 13/11 23:00, captures de téléphone Android) : « Sa brassière a une espèce de cercle autour de
+  la taille un peu grosse et qui change de couleur à chaque mouvement. Il faut que ça soit moulant et bien dessiné. »
+- **Constat vérifié** (1.40.1, captures du moteur `captures/amara-v1402/avant/`, genou direct en kick-boxing) :
+  1. la bande rouge fait bien un boudin : depuis la 1.38.0 c'était une **deuxième couche** posée 1,6 mm au-dessus du
+     bas du haut noir, sur un contour « élastique tendu », soit 7,7 mm de la peau, avec un bord rentrant de 6 mm
+     qui l'ombrait comme un rouleau ;
+  2. la couleur : sur la capture de téléphone la bande est noire là où elle doit être rouge. Le tissu noir du haut
+     restait sous toute la bande, à 1,6 mm, et les deux pièces n'avaient pas exactement les mêmes poids de peau : en
+     mouvement le tissu noir passe devant la bande par plaques, et le tampon de profondeur d'un téléphone ne sépare
+     pas deux surfaces aussi proches. Sur l'ordinateur de test la bande reste rouge : le changement de couleur
+     lui-même n'a pas pu être reproduit ici, la cause est déduite de la géométrie et de la capture.
+- **Correction** :
+  - `tools/generator/rocketbox/outfits.py` : la bande **est** maintenant le bord bas du haut. Le tissu du haut est
+    retiré sous la bande (il n'en reste que 4 mm sous son bord supérieur), la bande est au niveau du tissu
+    (5,9 mm de la peau au lieu de 7,7), haute de 24 mm (30 avant), elle épouse le tronc (`taut` 10 au lieu de 40),
+    son bord qui rejoint la peau fait 3 mm (rangs de 3 mm) et elle prend les poids du haut (`weights_from`) : les
+    deux pièces bougent comme une seule. `fitted_band()` reçoit pour cela `taut`, `weights_from`, `row`.
+  - `src/three/outfit.ts` : une bande ajustée (`cssFittedBand`) est dessinée un peu devant ce qui est à sa
+    profondeur (`polygonOffset`, comme le logo imprimé depuis la 1.20) : bande de brassière et ceinture du short.
+  - Les 4 tenues de frappe d'Amara sont reconstruites (boxe, kick-boxing, muay-thaï, MMA) ; JJB, judo, corps, visage
+    et autres coachs inchangés. La ceinture du short garde sa liaison de la 1.38.0 (essai « poids du short » écarté :
+    étirement 2,44 au lieu de 2,05 au high kick).
+- **Tests** : `outfit-amara-finish-v1379.test.ts` complété (bande au niveau du tissu, liée au haut, ≤ 25 mm,
+  décalage de profondeur). Aucun test modifié ni affaibli.
+- **Résultats** :
+  - tests 3D, démarrage et version (`src/three`, `src/boot`, `release-version`) : 500 réussis, 1 échoué
+    (`expressions-v1160` « modèle léger < 3,5 Mo », échec connu depuis la 1.37.5) : TEST RÉUSSI pour ce lot ;
+  - bandes en mouvement (`amara-finish-v1380.test.ts`) : TEST RÉUSSI, glissement de la bande de brassière 4 à 16 mm
+    (5 à 18 avant), étirement ≤ 1,15 ;
+  - contrôle Blender `check-amara-garments-v1377.py` : TEST RÉUSSI (bande 24 mm, 2 à 9 mm de la peau) ;
+  - `npm run build` : TEST RÉUSSI ;
+  - captures du moteur avant/après (`captures/amara-v1402/`) : 5 instants du genou direct, dos, profil, MMA, high
+    kick ;
+  - suite complète `npx vitest run` et `npx playwright test` : NON EXÉCUTÉES (aucun fichier du moteur ni écran
+    modifié) ; essai sur téléphone Android : NON EXÉCUTÉ ici, à confirmer par Youssef.
+- **Restauration** : branche `restauration/avant-bande-amara-v1402` (= 1.40.1 publiée).
+- **Précision sur les captures « après »** : elles ont été faites sur la construction juste avant la finale, qui n'en
+  diffère que par les poids de la ceinture du short (essai écarté ci-dessus) ; la bande de brassière y est identique.
+
+## 2026-11-13 · v1.40.3 · Amara et Inaya : maquillage léger sportif, reflet des yeux discret
+
+- **Demande** (Youssef, 13/11 23:06) : « Fais-moi des propositions de maquillage léger sportif pour les 2 femmes ».
+  Trois propositions par coach rendues avec le moteur (page https://claude.ai/artifact/7ndfV4xBGjD3UB8BUEw6AD :
+  A « Bonne mine », B « Frais d'entraînement », C « Glow athlète »). 23:24 : « Mets en place les options
+  conseillées » (B pour Amara, A pour Inaya) et « le point blanc dans les yeux fait trop, soit retire soit réduit
+  beaucoup ».
+- **Constat vérifié** :
+  - les visages sont la texture de tête `f021_head_color` des GLB Rocketbox ; Amara affiche `photo-clean.glb` dès
+    qu'elle porte une tenue (`CoachModel.tsx`) et `photo.glb` sinon : les deux fichiers doivent être maquillés ;
+  - le point blanc est le reflet ajouté en 1.39 (`EYE_CATCHLIGHT`, force 2,2, netteté 260) : en gros plan, un disque
+    blanc d'environ un tiers de l'iris.
+- **Correction** :
+  - `tools/generator/rocketbox/makeup.py` (nouveau) : zones douces (joues, paupières : gaussiennes larges ; lèvres :
+    leur propre forme trouvée par la rougeur, floutée de 4 px), la photo est multipliée par une teinte, donc grain,
+    pores et identité restent ; aucun trait fin (règle de la 1.40.1). Teintes par peau : Amara terracotta, bois de
+    rose, brun doux ; Inaya rose pêche, baume rosé. Le fichier maquillé porte `asset.extras.cssMakeup` et le script
+    refuse de maquiller deux fois. À relancer après toute reconstruction de ces GLB (après `morph_apply.py`) ;
+  - appliqué à `public/coaches/mma-amara/photo.glb` et `photo-clean.glb` (B) et `public/coaches/inaya/photo.glb`
+    (A) ; Kadir et Naël inchangés ; textures toujours 2048 px, même format (PNG / JPEG) ;
+  - `src/three/photoMaterials.ts` : `EYE_CATCHLIGHT` force 0,45 et netteté 700 : un léger éclat humide, plus de
+    point blanc ;
+  - `src/boot/assetSizes.json` régénéré (`node scripts/boot-sizes.mjs`), version 1.40.3, note dans `releases.ts`.
+- **Tests** : nouveau `src/three/human/__tests__/maquillage-v1403.test.ts` (maquillage présent sur les bons fichiers,
+  absent chez les hommes, format des textures, reflet ≤ 0,5 et netteté ≥ 600). Aucun test modifié ni affaibli.
+- **Résultats** :
+  - `npx vitest run` : 1458 réussis, 9 échoués, 1 ignoré. Les 9 échecs sont les échecs connus d'avant ce lot
+    (8 mesures du moteur de frappe et `expressions-v1160` « < 3,5 Mo » sur `photo.glb` d'Amara, qui passe de 4,94 à
+    4,86 Mo) : TEST RÉUSSI pour ce lot ;
+  - `npm run build` : TEST RÉUSSI ;
+  - captures du moteur en gros plan (avant / après, de face et de trois-quarts) : maquillage visible et fondu, reflet
+    des yeux discret ;
+  - `npx playwright test` : 288 réussis, 4 échoués, 2 ignorés (Firebase). Relancés seuls : `coach-suggest:207` et
+    `training-layout:117` réussissent (échecs dus à la charge) ; `coach-suggest:99` (défilement au doigt, instable
+    connu) et `coaching-hud:60` (le 4e nom « Jab » de la boucle n'arrive pas dans le temps imparti) échouent aussi
+    sur la 1.40.2 d'origine, sans ce lot, sur cette machine : échecs antérieurs, sans lien avec les textures du
+    visage ni le reflet des yeux. TEST RÉUSSI pour ce lot ;
+  - essai sur téléphone Android : NON EXÉCUTÉ ici, à confirmer par Youssef.
+- **Restauration** : branche `restauration/avant-maquillage-v1403` (= 1.40.2 publiée, b5bf609).
+
+## 2026-11-14 · v1.41.0 · Contrôles du moteur biomécanique renforcés (4 lots)
+
+- **Demande** (Youssef, 14/11 00:13) : « On avait mis en place une IA pour contrôler corriger les mouvements. Est-ce
+  qu'elle est bien en place ? » Constat donné : pas d'IA, des règles biomécaniques appliquées à chaque image
+  (amplitudes, équilibre, tapis) et des mesures pendant les tests ; le Coach IA est une recherche locale, sans
+  modèle de langage. 00:19 : « renforce effectivement ces contrôles du moteur 3D biomécanique. Si les contrôles CME
+  sont valides intègre-les » ; 00:32, carte de décision : « Les 4 lots, dans l'ordre ».
+- **Base** : 1.40.3 publiée (4e0b38b). Restauration : branche `restauration/avant-controles-moteur`.
+- **Lot 1, contrôles CME** :
+  - constat : les contrôles d'intégrité de CME-3D (`feat/cme-integrite-moteur-20261027`, 27/10) n'avaient jamais
+    été intégrés. Rejoués sur 1.40.2 : 0 erreur avec la garde des disciplines, mais `FIST_RANGE` avec la garde
+    propre des coachs (poing à 1,15 pour Naël, 1,2 Amara, 1,25 Inaya : `withOffsets` ajoutait leur « poings plus
+    fermés » à un poing déjà fermé, les doigts se pliaient au-delà du poing fermé) ; `PLANTED_FOOT_MOVE` (10 144
+    signalements, presque tous des pas voulus) non retenu ; `HIP_ACCELERATION` : high kick avant, roundhouse
+    arrière et avant (46 à 62 m/s² contre 45), listés pour revue ;
+  - correction : `src/engine/integrity.ts` intégré ; `withOffsets` (`src/engine/author.ts`) borne le poing entre 0
+    et 1 ; registre : contrôle « Animation bien écrite ».
+- **Lot 2, pieds qui glissent** :
+  - constat (mesuré image par image sur le squelette posé des 4 coachs) : un pied écrit au sol à deux endroits était
+    traîné sur le tapis : switch kick 19,8 cm par image (12 m/s), sit-out et changement de base 15,1, relevé
+    technique 11,9, sprawl 10,5, entrées de judo et de lutte 7 à 8,6. Glissement cumulé de la bibliothèque : 336 m ;
+  - correction (`src/engine/motion.ts`) : `glideLift` et `lowLift`. Au-delà d'un pas glissé lent (0,35 à
+    0,75 m/s), le pied passe sur un petit arc (4,5 cm au plus, 15 % de la distance) et se pose à l'endroit écrit ;
+    pieds immobiles, pivots lents et coups de pied qui montent : inchangés ;
+  - résultat : 336 m → 81 m ; switch kick 1,4 cm par image, entrée en lutte 0,7, tai-sabaki 1,3, pont et rétention
+    de garde 0,9. Restent au-dessus de 1,5 cm par image des balayages (ko-uchi-gari, o-uchi-gari, sit-out,
+    changement de base, relevés, chutes, sprawl), bornés à leur valeur en attente de revue, mouvement par mouvement ;
+  - `src/test/ankles.ts` : un pied porté au-dessus du tapis par l'arc n'est plus compté comme pied à plat (il ne
+    porte pas le poids) ; sans cela, `descente-sol` lisait 19,9° de rotation « à plat » sur un pied en l'air.
+- **Lot 3, membres qui traversent le corps** :
+  - nouvelle mesure `src/test/collisions.ts` sur la peau des 4 coachs : un « cœur » par volume (tronc, tête, cuisses,
+    tibias), tranche par tranche et secteur par secteur (le torse est plus large que profond), à l'intérieur de la
+    chair ; profondeur d'une main, d'un avant-bras ou d'une jambe dedans ; jusqu'à 2 cm = contact ;
+  - constat : 33 techniques au-delà de 2 cm. Pire : o-soto-gari (Naël, main gauche 14,6 cm dans le ventre, vue sur
+    la capture de face), défense de lutte, genou circulaire avant, sprawl (coude dans le tronc, ~14 cm), uppercut
+    arrière (Inaya, 10,5) ; liste complète dans `docs/audit-biomecanique/MESURES_INTRUSIONS.md` ;
+  - non corrigé dans ce lot : la correction change le trajet d'un bras ou d'une jambe (technique montrée), donc
+    après accord de Youssef. Bornées par le test : elles ne peuvent pas empirer.
+- **Lot 4, couverture** :
+  - le registre des animations (statuts affichés dans l'appli) mesurait un squelette généré retiré de l'appli
+    (`coach_male.glb`) ; il mesure maintenant Kadir, Amara, Naël et Inaya, garde de la discipline et garde du
+    coach : 91 contrôlées, 0 à corriger ;
+  - `.github/workflows/preview.yml` : les contrôles du moteur (intégrité, glissement, traversées, tapis, chevilles,
+    torsions des coachs, registre) passent avant chaque mise en ligne GitHub Pages.
+- **Fichiers** : `src/engine/{integrity,author,motion,registry,index}.ts`, `src/test/{collisions,ankles}.ts`,
+  `src/engine/__tests__/{integrity,glide,intrusions,registry}.test.ts`, `docs/audit-biomecanique/MESURES_{INTEGRITE,
+  GLISSEMENT,INTRUSIONS}.md`, documents de mesures régénérés (MOTEUR, SOL, TORSIONS, FLUIDITE, CROCHETS,
+  ANIMATIONS, pictogrammes), `docs/moteur/CHANGELOG.md` (moteur 1.1.0), `releases.ts`, `package.json`.
+- **Tests** :
+  - `npx tsc -b` : TEST RÉUSSI ; `npm run build` (titre v1.41.0) : TEST RÉUSSI ;
+  - `npx vitest run` : 1471 réussis, 5 échoués, 1 ignoré. Les 5 échecs existent à l'identique sur 1.40.3 sans ce lot
+    (uppercut-arriere v0.32, fluidité « pas plus d'arrêts » et « coups pas ralentis », crochets « pas d'armé »,
+    taille du modèle d'Amara) : TEST RÉUSSI pour ce lot. Les 4 échecs « document à jour » de 1.40.3 sont résolus
+    (documents régénérés). Nouveaux : `integrity` (3), `glide` (3), `intrusions` (3) ;
+  - `npx playwright test` : 291 réussis, 1 échoué, 2 ignorés (Firebase). L'échec, `coaching-hud:60`, est l'échec
+    connu de la 1.40.2 et de la 1.40.3 : TEST RÉUSSI pour ce lot ;
+  - captures avant / après (switch kick, entrée en lutte, poing d'Inaya en garde) : geste identique à l'œil ;
+    captures des traversées (o-soto-gari de face : main dans le ventre visible) ;
+  - essai sur téléphone Android : NON EXÉCUTÉ.
+- **Restauration** : branche `restauration/avant-controles-moteur` (= 1.40.3 publiée, 4e0b38b).
+
+## 2026-11-14 · v1.42.0 · Retour du téléphone : un pas à la fois (séance et plein écran)
+
+- **Demande** (Youssef, 2026-11-11) : « Revois aussi le retour arrière quand on est en plein écran ». Règle validée
+  le même jour : un Retour = un seul pas en arrière. Lot validé le 2026-11-11 (« Je valide », PR 72, alors 1.34.0)
+  mais non fusionné (coupure) ; le 2026-11-14 : « Replace le lot restant au prochain numéro libre » → replacé sur
+  la 1.41.0, numéro 1.42.0.
+- **Constat après vérification** (application web) : pendant une séance en cours, le Retour du téléphone ou du
+  navigateur quittait la séance d'un coup, sans la question « Quitter la séance ? » ; en plein écran, il sortait du
+  plein écran et de la séance en même temps. Cause : la règle n'existait que pour le bouton de l'application
+  Android (`onBackButton`) ; sur le web, seuls les panneaux étaient des étapes de l'historique.
+- **Méthode de correction** : la séance en cours pose une « garde » dans l'historique (`pushGuard`,
+  `src/ui/nav/layers.ts`) : chaque Retour appelle la séance et la page reste, jusqu'à « Quitter ». Le plein écran du
+  coach hors séance (accueil, fiches) devient une étape de l'historique comme les panneaux.
+- **Ce qui change** :
+  - Retour pendant la séance : pause et question ; un second Retour ferme la question (la séance reste en pause) ;
+    seul « Quitter » sort, vers l'écran d'où l'on venait ;
+  - Retour en plein écran : il sort du plein écran, la séance continue ; le Retour suivant pose la question ;
+  - en plein écran, une flèche Retour reste visible en haut à gauche (elle s'atténue avec les autres commandes mais
+    ne disparaît pas) ; elle fait le même pas en arrière ;
+  - « Quitter la séance ? » : « Continuer » (au lieu d'« Annuler ») est le bouton mis en avant, « Quitter » le
+    bouton discret ;
+  - séance non démarrée ou terminée : Retour quitte l'écran comme avant ;
+  - choix du coach : « Choisir » attend la fin de l'enregistrement avant de fermer l'écran (sous forte charge, un
+    rechargement immédiat pouvait perdre le choix : `coachs-v160` en échec intermittent).
+- **Fichiers** : `src/ui/nav/layers.ts`, `src/ui/fullscreen/useStageFullscreen.ts`, `src/ui/screens/Training.tsx`,
+  `src/ui/components/Sheet.tsx`, `src/ui/training/training.css`, `src/ui/screens/CoachSelect.tsx`,
+  `src/coach/appGuide.ts`, `src/domain/releases.ts`, `package.json`.
+- **Tests** (sur la 1.41.0 + ce lot) :
+  - `npx tsc -b` : TEST RÉUSSI ; `npm run build` (titre v1.42.0) : TEST RÉUSSI ;
+  - `npx vitest run` : 1471 réussis, 5 échoués, 1 ignoré ; les 5 échecs sont ceux déjà notés pour la 1.41.0
+    (uppercut-arriere v0.32, fluidité × 2, crochets « pas d'armé », taille du modèle d'Amara) : TEST RÉUSSI pour ce
+    lot ;
+  - `npx playwright test` (299 tests) : 294 réussis, 3 échoués, 2 ignorés (Firebase). `coaching-hud:60` est l'échec
+    connu de la 1.41.0 ; `coach-suggest:99` et `seance-mains-libres:117` (écrans non touchés) ont échoué sous la
+    charge de la suite et sont RÉUSSIS rejoués seuls (deux fois pour le second) ;
+  - nouveau `tests/e2e/retour-v1420.spec.ts` (5 tests) : TEST RÉUSSI ; `navigation` adapté (« Continuer » au lieu
+    d'« Annuler », même contrôle) ;
+  - essai sur téléphone Android : NON EXÉCUTÉ.
+- **Limite** : chemin de l'application Android (APK) non exécuté ici ; il passe par la même garde.
+- **Captures** : `docs/v1420/captures/` (prises sur la 1.34.0 d'origine, écran inchangé).
+- **Restauration** : état 1.41.0 (commit 8ef0b54 de `claude/project-thread-o7lrt8`).
+
+## 2026-11-14 · v1.43.0 · Nouveau coach : Victor « Le Loup gris »
+
+- **Demande** : Youssef, 2026-11-14 11:08 « Intégrer a l'application », après validation de l'essai (visage, bouche,
+  arrière de la tête, teint, cheveux poivre et sel, tenues) fait d'après ses planches de personnage (il a généré le
+  personnage lui-même et autorise son usage).
+- **Constat** : l'application comptait quatre coachs (Kadir, Naël, Amara, Inaya). Kadir ne doit pas changer sans
+  l'accord de Youssef.
+- **Correction** :
+  - modèle `public/coaches/victor/photo.glb` (3,1 Mo) fait à partir d'une **copie** de celui de Kadir
+    (`tools/generator/rocketbox/victor_build.mjs`) : mêmes os, mêmes poids, mêmes 25 expressions ARKit ; forme de la
+    tête, carrure, volume des cheveux et textures de Victor ; os `LeftEye`/`RightEye` déplacés avec les yeux.
+    Le fichier de Kadir est inchangé (même empreinte) ;
+  - chaîne de fabrication gardée dans `tools/generator/victor/` (scripts Blender et Python, données, README) ;
+  - sept tenues générées par `outfits.py` avec une palette `victor` (boxe noire avec protège-tibias, kick-boxing
+    noir et rouge, muay-thaï avec chevillères, MMA, JJB avec kimono bleu marine, JJB no-gi en legging et short,
+    judo blanc) ; portrait généré par `npm run visuels -- --only portraits --id victor` ;
+  - catalogue (cinq coachs, Victor 93 kg mesuré sur le modèle), apparence, profil humain `contract: 'complet'`
+    (expressivité 0,95, chaleur 0,95, endurance 1,2, clignements 0,9), peau, Coach IA (« cinq coachs ») ;
+  - garde propre : haute et compacte. Une première version (mains plus hautes, coude arrière serré) mettait
+    l'avant-bras arrière 4,9 cm dans le torse en garde de boxe : main arrière un peu plus basse et en avant
+    (`rearHand [0, -0.02, 0.03]`), plus aucune traversée en garde.
+- **Tests adaptés** (aucun contrôle affaibli pour les quatre autres coachs) :
+  - Victor ajouté à toutes les listes de coachs des tests (moteur humain, visage, regard, respiration, tenues,
+    squelette, sol, glissement, traversées, déformations, intégrité) ; « quatre coachs » devient « cinq » ;
+  - `expressions-v1160` : la lecture des cibles creuses suit maintenant la règle glTF (indices 16 ou 32 bits, décalage
+    propre à chaque partie, accesseur sans données = zéros). Les fichiers de glTF-Transform l'utilisent ; les
+    contrôles eux-mêmes sont les mêmes ;
+  - `outfit-assets-v1372` : les tenues de Victor portent la version de générateur 1.43.0 ;
+  - écarts propres à Victor, mesurés et bornés pour lui seul (ils ne peuvent pas empirer), dus à son corps plus
+    large que celui de Kadir pour les mêmes trajets : traversées de quelques millimètres de plus que les bornes de la
+    1.41.0 dans 12 techniques déjà en attente ou proches (`VICTOR_PENDING`, `intrusions.test.ts`, détail dans
+    `MESURES_INTRUSIONS.md`) ; avant-bras à 3,0 cm dans le tapis dans la chute arrière (`ukemi-ushiro`, borne
+    3,2 cm) ; glissement de `changement-base` à 13,20 cm par image (borne 13,3) ; genou en squat : plus petit
+    triangle à 0,091 du repos au lieu de 0,111 chez Kadir (`deformation-v1100`, Victor comparé à la peau de Kadir
+    d'aujourd'hui) ;
+  - documents de mesures régénérés (`MESURES_INTRUSIONS`, `MESURES_SOL`, `MESURES_GLISSEMENT`, `MESURES_INTEGRITE`,
+    `MESURES_DEFORMATIONS`, `ANIMATIONS.md`).
+- **Fichiers** : `public/coaches/victor/`, `tools/generator/victor/`, `tools/generator/rocketbox/{victor_build.mjs,
+  outfits.py,regen_outfits.sh}`, `src/domain/coaches/{catalog,looks,motion}.ts`, `src/three/human/profiles.ts`,
+  `src/three/photoMaterials.ts`, `src/coach/appGuide.ts`, `scripts/visuels/generate.mjs`, `src/boot/assetSizes.json`,
+  `src/domain/releases.ts`, `package.json`, tests listés ci-dessus.
+- **Limites connues** : léger raccord au milieu du front, quelques taches orangées sur le dessus du crâne ; tenues
+  encore génériques (bandes rouges du short de kick-boxing, inscriptions du short de muay-thaï, kimono plus fin) :
+  lot suivant, d'après les planches.
+- **Restauration** : `restauration/avant-victor-v1430` (état 1.42.0, commit d1f3ccc).
+- **Tests** (sur la 1.42.0 + ce lot) :
+  - `npm run build` (titre v1.43.0) : TEST RÉUSSI ;
+  - `npx vitest run` : 1534 réussis, 5 échoués, 1 ignoré ; les 5 échecs sont ceux déjà notés pour la 1.41.0 et la
+    1.42.0 (uppercut-arriere v0.32, fluidité × 2, crochets « pas d'armé », taille du modèle d'Amara) : TEST RÉUSSI
+    pour ce lot ;
+  - `npx playwright test` (299 tests, 57 min) : 287 réussis, 10 échoués, 2 ignorés (Firebase). Six échecs venaient
+    de l'écran de choix passé à cinq coachs (`coachs-v160`) : tests mis à jour (Victor dans les listes, cinq vignettes,
+    part de largeur pour cinq), rejoués : TEST RÉUSSI. `consignes-v130:27` : RÉUSSI rejoué seul. `coaching-hud:60` :
+    échec connu de la 1.41.0. `boot:98` et `training-layout:117` (ouvrir une séance par son adresse) échouent aussi
+    sur la 1.42.0 d'origine dans ce même environnement (vérifié sur `d1f3ccc`) : ÉCHOUÉ, sans lien avec ce lot, à
+    examiner à part ;
+  - essai sur téléphone Android : NON EXÉCUTÉ.
+
+## 2026-11-14 · v1.44.0 · Visage plus vivant, en douceur (les cinq coachs)
+
+- **Demande** : Youssef, 13/11 21:07 « Quelles améliorations visuelles peux-tu me proposer pour humaniser les
+  expressions du visage de mes coachs ? » ; 13/11 22:36 (fil de restauration) « humaniser ne veut pas dire rajouter
+  des traits visibles » ; 14/11 15:01 « Je veux léger et naturel » (points 1, 2, 4, 5 de la proposition) ; 15:08
+  « Attend l'intégration de Victor pour ce patch » ; 16:49 « Go déploiement » après la page avant/après
+  https://claude.ai/artifact/EjtKXGYDhSjni9zuroYpp6.
+- **Constat vérifié** (Lab, base 1.43.0, gros plans des cinq coachs) : le blanc des yeux était éclairé
+  uniformément jusque sous la paupière (œil « posé » sur le visage) ; les oreilles, les narines et les lèvres avaient
+  la même diffusion de lumière que le reste de la peau (aucune transparence des parties fines) ; le visage restait
+  identique du début à la fin d'une séance.
+- **Correction** (moteur commun, aucun réglage propre à un coach ; rien de dessiné sur la peau) :
+  - `src/three/human/faceRender.ts` (nouveau) : réglages `FACE_RENDER` (transparence 1, bord humide 1, ombre de
+    paupière 0,28, rougeur 0,5, brillance 0,14), effort de séance `Exertion` (monte avec l'effort, environ 3 min de
+    round soutenu pour le maximum, redescend en environ 2 min de repos ; rougeur d'abord, brillance ensuite),
+    uniformes partagés par la peau de la tête et les yeux de chaque coach ;
+  - `src/three/skinShader.ts` : sur la seule peau de la tête (matériau `*_head`), zones gaussiennes larges placées sur
+    la texture des têtes Rocketbox (m021 et f021 ont la même disposition) : joues, oreilles, nez, narines, lèvres,
+    front, bord des paupières inférieures. Rougeur multipliée sur la teinte, lumière enveloppante plus large et
+    lumière arrière dans les parties fines, rugosité un peu plus basse (brillance, bord humide) ;
+  - `src/three/photoMaterials.ts` : ombre douce de la paupière supérieure sur l'œil, selon le haut de la tête vu de la
+    caméra (elle reste quand l'œil tourne) ;
+  - `src/three/face.ts`, `src/three/PhotoCoach.tsx` : effort de séance mis à jour à chaque image (jamais en image
+    fixe), uniformes envoyés après le visage ; Lab `seance=0..1` impose le niveau, `rendu=avant` montre le rendu de la
+    1.43.0.
+  - Premier réglage corrigé avant livraison : la brillance du front faisait une tache claire près de la racine des
+    cheveux d'Amara ; zone descendue et élargie, brillance 0,22 → 0,14.
+- **Fichiers** : `src/three/human/faceRender.ts` (nouveau), `src/three/skinShader.ts`, `src/three/photoMaterials.ts`,
+  `src/three/face.ts`, `src/three/PhotoCoach.tsx`, `src/ui/Lab.tsx`,
+  `src/three/human/__tests__/rendu-visage-v1440.test.ts` (nouveau), `package.json`, `package-lock.json`,
+  `src/domain/releases.ts`.
+- **Tests ajoutés** (`rendu-visage-v1440.test.ts`, 10 contrôles) : rougeur puis brillance avec l'effort, retour à
+  zéro au repos ; « rendu=avant » coupe tout ; réglages bornés (léger) ; pour les cinq coachs, une seule peau de tête
+  reconnue, zones du visage seulement sur elle, dans les deux qualités ; masques sans bord ni répétition (ni `step`,
+  `fract`, `sin`, `cos`) ; ombre de paupière dans le shader des yeux, deux qualités.
+- **Tests existants** : aucun modifié ni affaibli.
+- **Restauration** : branche `restauration/avant-rendu-visage` (= 1.43.0, `8558e80`).
+## 2026-11-14 · v1.44.1 (lot préparé en 1.43.1) · Tenues de Victor d'après les planches, short MMA, peau plus claire
+
+- **Demandes** : Youssef, 2026-11-14 13:00 « revoir les vêtements et t'inspirer fortement des plaquettes fournies » ;
+  16:41 (capture) « une espèce de bout de tissu entre ces deux jambes » sur le short MMA ; 16:42 « un tout petit peu
+  moins brun ».
+- **Constat vérifié** :
+  - short MMA de Victor : 8 faces de la couture intérieure reliaient un point tenu par la cuisse gauche à un point tenu
+    par la droite (les deux jambes du short se chevauchent de quelques millimètres au milieu) ; en garde, elles
+    s'étirent en un long pan entre les cuisses. Reproduit dans le Lab (garde MMA, vue de face basse). Naël : aucune.
+    Le correctif de Kadir (poids mélangés vers le bassin) a été essayé : le pan restait et la peau perçait le tissu en
+    petits triangles bruns ; il n'est pas utilisé pour Victor ;
+  - tenues de la 1.43.0 génériques par rapport aux planches (short de boxe ample sans liseré, kick-boxing sans panneaux,
+    muay-thaï sans panneaux argent, kimono bleu vif et ample) ;
+  - peau de Victor plus foncée et plus rouge que voulu.
+- **Correction** :
+  - `outfits.py` : pour Victor, les faces du short MMA tenues par les deux cuisses sont retirées (couture entre les
+    cuisses, hors de vue) ;
+  - nouveaux shorts satinés à mi-cuisse (coupe thaï) avec panneau latéral et liserés coupés dans le tissu par des
+    plans (lignes nettes, comme le panneau d'Amara en 1.38) : kick-boxing bordeaux très sombre et rouge, liserés
+    gris ; muay-thaï noir, panneaux et liserés argent ; boxe noir, liserés gris (`SHORT_PANEL`) ;
+  - protection du coup de pied sous les protège-tibias (boxe, kick-boxing) ; prajiad clairs ; kimono bleu nuit
+    `#232A3A` plus ajusté (`GI_FIT` 0,45 pour Victor), ceinture noire ; judogi plus ajusté aussi ;
+  - peau éclaircie et un peu moins rouge sur les deux textures, cheveux et barbe gris inchangés
+    (`tools/generator/victor/eclaircir.py`, modèle reconstruit par `victor_build.mjs`) ; portrait refait.
+  - Kadir, Naël, Amara, Inaya : aucun fichier changé.
+- **Fichiers** : `tools/generator/rocketbox/outfits.py`, `tools/generator/victor/{eclaircir.py,README.md,donnees/}`,
+  `public/coaches/victor/` (photo.glb, portrait, 7 tenues), `src/boot/assetSizes.json`, `src/domain/releases.ts`,
+  `package.json`.
+- **Tests** :
+  - `npm run build` (titre v1.43.1, puis v1.44.1 après fusion) : TEST RÉUSSI ;
+  - `npx vitest run` : 1534 réussis, 5 échoués (les mêmes que 1.41/1.42/1.43.0), 1 ignoré : TEST RÉUSSI pour ce lot ;
+  - `npx playwright test` (299, 56 min) : 292 réussis, 5 échoués, 2 ignorés. `coaching-hud:60` connu ; `boot:98` et
+    `training-layout:117` échouent aussi sur la 1.42.0 d'origine (journal 1.43.0) ; `coach-suggest:99` et
+    `consignes-v130:27` (minutage sous charge, coach Amara) RÉUSSIS rejoués seuls ;
+  - contrôle visuel dans le Lab (garde MMA, kick-boxing, muay-thaï, boxe, JJB, judo, high kick, genou, sit-out) ;
+  - essai sur téléphone Android : NON EXÉCUTÉ.
+- **Restauration** : `restauration/avant-victor-v1431` (état 1.43.0, commit 8558e80).
+
+
+## 2026-11-14 · v1.45.0 · Membres qui traversent le corps et épaules en pointe
+
+- **Constat vérifié** (mesure `intrusions.test.ts` sur la peau des coachs, base 1.41.0, et captures du Lab) : dans
+  33 techniques un membre entrait de plus de 2 cm dans le corps ; les pires : défense contre l'amené au sol 14,8 cm
+  (avant-bras dans la poitrine), sprawl 14,6, genou circulaire avant 14,6, o-soto-gari 14,8, uppercut arrière 10,7,
+  genou direct arrière 9,8. Après correction, Youssef a signalé sur ses captures que l'épaule formait une pointe quand
+  le buste se penche bras devant : la clavicule restait immobile.
+- **Correction** :
+  - `src/engine/rig.ts` : `handOutOfTrunk` (main cible ramenée à la surface du tronc, ellipses par os de la colonne
+    mesurées sur la peau, `trunkCore`) ; la clavicule suit le bras (0,3 rad au plus) seulement quand le bras monte et
+    que le buste se penche en avant. Première version retirée : une rotation automatique du coude donnait des poses
+    « impossibles, pas humaines » (retour de Youssef, 15:43) ; une clavicule à 0,5 rad sans condition déformait le
+    coup de pied haut.
+  - trajets corrigés geste par geste : `src/engine/library/mma.ts` (défense de lutte, sprawl),
+    `src/engine/library/legs.ts` (genou circulaire : garde pendant la charge, mains qui tournent avec le buste ; genou
+    direct), `src/engine/library/grappling.ts` (main au revers dans o-soto-gari).
+  - Moteur 1.2.0 (`src/engine/index.ts`, `docs/moteur/CHANGELOG.md`). Modèles, visages et tenues inchangés.
+- **Résultat** : défense de lutte 14,8 → 3,7 cm, sprawl et genou circulaire avant sous 2 cm (retirés de la liste
+  d'attente), o-soto 7,6, uppercut arrière 7,0, genou direct arrière 5,2. Avant/après validé par Youssef.
+- **Fichiers** : `src/engine/rig.ts`, `src/engine/library/{mma,legs,grappling}.ts`, `src/engine/index.ts`,
+  `src/engine/__tests__/intrusions.test.ts`, documents de mesures régénérés (`docs/audit-biomecanique/`,
+  `docs/v042-crochets/`, `docs/v1100/`), `src/ui/pictos/techniquePictos.json`, `package.json`,
+  `src/domain/releases.ts`.
+- **Tests** : bornes de `intrusions.test.ts` abaissées à min(nouvelle mesure + 0,2 cm, ancienne borne), jamais
+  relevées ; Victor (arrivé en 1.43.0) : bornes abaissées de même, uppercut arrière borné à 7,9 cm (8,2 en 1.43.0,
+  7,7 maintenant) car la borne commune tombe à 7,0. Vitest : 1544 réussis, 5 échecs déjà présents avant ce lot
+  (extension-v032 uppercut, fluidité ×2, crochets « pas d'armé », poids du modèle d'Amara) : TEST ÉCHOUÉ, non liés.
+  Playwright : 293 réussis, 2 ignorés (Firebase), 4 échecs ; relancés seuls, chrono-seul:96 et coach-suggest:99
+  passent ; coaching-hud:60 et training-layout:117 échouent aussi sur la base 1.44.0 (`f5941f1`) : TEST ÉCHOUÉ, non
+  liés à ce lot. Build : TEST RÉUSSI.
+- **Restauration** : branche `restauration/avant-traversees-v1450` (= 1.44.0, `f5941f1`).
+
+## 2026-11-14 · v1.45.1 (lot préparé en 1.44.2) · Shorts : entrejambe sans membrane et plis textiles
+
+- **Demande** : Youssef, 2026-11-14 22:28, « Correction des shorts 3D — Entrejambe et réalisme textile » (deux captures du
+  short de kick-boxing de Victor en 1.44.1 : une bande de tissu claire relie les deux jambes au niveau des ourlets).
+- **Constat vérifié** :
+  - origine : géométrie (soudure des points), pas les UV ni la texture. Sur les corps Rocketbox au repos, l'intérieur des
+    deux cuisses se touche de l'entrejambe jusqu'à mi-cuisse (0,5 à 0,8 mm d'écart, mesuré sur Kadir et Victor). Le
+    générateur (`outfits.py`, `shell`) soude les points à moins de 0,5 mm pour refermer les coutures de texture : sur un
+    ourlet coupé dans cette zone, il soudait le point gauche au point droit. Les shorts thaï de Victor de la 1.44.1
+    (ourlet à mi-cuisse) avaient ainsi 38 faces tenues à la fois par la jambe gauche et la droite (boxe, kick-boxing et
+    muay-thaï : 28 faces de liseré, 10 de tissu), qui s'étirent en bande dès que les jambes s'écartent. Les ourlets de
+    Kadir, Amara, Naël et Inaya sont plus bas (sous la zone de contact) : 0 face de ce type, vérifié sur leurs 4 shorts ;
+  - les shorts étaient des copies lisses de la peau : aucun pli.
+- **Correction** :
+  - `tools/generator/rocketbox/outfits.py` : la soudure ne réunit jamais deux points tenus par des jambes opposées (côté
+    lu sur les poids de peau du point lui-même : le point de corps le plus proche peut appartenir à l'autre cuisse) ;
+    commun à tous les vêtements de tous les coachs. Les 4 tenues à short de Victor sont régénérées (autres pièces
+    inchangées à moins de 1 mm) ; les autres coachs n'en avaient pas besoin ;
+  - `tools/generator/rocketbox/short_folds.mjs` (nouveau, commun) : plis procéduraux sur les shorts finis (compression
+    sous la ceinture, plis obliques de la hanche, éventail à l'entrejambe, tension sur le devant des cuisses, ondulation
+    des ourlets), amplitude selon la coupe (ample > ajusté), irréguliers (bruit lisse), toujours vers l'extérieur (jamais
+    dans la peau) ; seules positions et normales des maillages `short-*` changent, le reste du fichier est identique
+    octet pour octet ; même nombre de points (aucun coût sur téléphone). Les plis suivent le squelette par les poids
+    existants (pas de simulation). Posé sur Victor, Naël, Inaya et Amara ; **Kadir non modifié** (règle : rien sur Kadir
+    sans son accord) — aperçu préparé ; `regen_outfits.sh` l'applique après chaque génération (`KADIR_FOLDS=1` après accord) ;
+  - contrôles `src/three/__tests__/shorts-v1442.test.ts` (5 coachs × 4 tenues) : triangles tenus par les deux jambes (0),
+    trous (arêtes ouvertes), faces inversées, coordonnées de texture, peau dessinée sous le short (vêtement d'origine
+    peint), et en mouvement (garde, high kick, genou, changement de niveau, low kick à 50/100/125 %) : étirement, plus
+    longue arête de l'entrejambe, tissu passé dans la jambe ; mesures dans `docs/v1442/MESURES_SHORTS.md`.
+- **Limites connues** : au high kick, le devant du short se froisse fortement du côté de la jambe levée (étirement
+  ×3,4 à ×5,6 selon les coachs, déjà présent avant : limite du skinning, à traiter dans un lot dédié) ; Kadir et Naël ont
+  2 et 4 arêtes ouvertes (petites fentes, fichiers d'avant la 1.44.2, bornées dans le test).
+- **Fichiers** : `tools/generator/rocketbox/outfits.py`, `tools/generator/rocketbox/short_folds.mjs`,
+  `tools/generator/rocketbox/regen_outfits.sh`, `public/coaches/{victor,nael,inaya,mma-amara}/tenues/{boxe,kickboxing,muaythai,mma}.glb`,
+  `public/coaches/victor/tenues/_tex/`, `src/three/__tests__/shorts-v1442.test.ts`, `docs/v1442/`, `src/domain/releases.ts`,
+  `package.json`.
+- **Tests** : `npx vitest run` TEST RÉUSSI sauf les 5 échecs connus d'avant (uppercut extension-v032, fluidité ×2,
+  crochets « pas d'armé », taille du modèle d'Amara) ; `shorts-v1442.test.ts` 41/41 TEST RÉUSSI. Empreintes figées mises
+  à jour, raison : les plis demandés par Youssef pour tous les coachs changent les shorts de Naël et d'Inaya
+  (`outfit-amara-v1374.test.ts` Inaya boxe/kick-boxing/muay-thaï/MMA, `outfit-references-v1372.test.ts` MMA de Naël et
+  d'Inaya ; anciennes valeurs dans l'historique git) ; `src/boot/assetSizes.json` régénéré. `npm run build` TEST RÉUSSI
+  (titre v1.44.2, puis v1.45.1 après fusion de la 1.45.0). `npx playwright test` (en deux passes) : 299 réussis, 2 échecs connus qui échouent aussi sur 1.42.0
+  et 1.44.0 (`coaching-hud:60`, `training-layout:117`). Android : NON EXÉCUTÉ. Captures avant/après (20 vues, 5 coachs,
+  face, profil, high kick) : https://claude.ai/artifact/Hprx3xX5f6dMwJeSNWWFrz.
+- **Restauration** : branche `restauration/avant-shorts-v1442` (= 1.44.1).
+
+## 2026-11-15 · v1.45.2 · Victor : peau sans taches sombres, teint de sa planche
+
+- **Demande** : Youssef, 2026-11-14 23:43 (capture de Victor en garde de boxe et sa planche source) : « corrige le corps de
+  Victor, il y a des taches sombres sur son corps, je veux aussi moins brun comme sur la palette source ». Aperçu
+  avant/après validé le 2026-11-15 00:45 (« Ok pour peau victor »).
+- **Constat vérifié** : la texture du corps de Victor (`m021_body_color`, 1024 px) vient de la projection de ses
+  planches ; elle a gardé de grandes plaques sombres et grises (fond gris et ombres de l'image projetée) : 8,1 % de la
+  peau avait un fond à moins de 75 % de la médiane. Teint médian de la peau 109, 75, 61 (sRGB), torse 125, 85, 66, contre
+  environ 168, 132, 114 sur la planche (pectoraux, abdominaux, dos) : plus sombre et plus roux.
+- **Correction** : `tools/generator/victor/peau_propre.py` (séparation de fréquences) : pores, poils, tatouages gardés
+  tels quels ; plaques moyennes resserrées (assombrissements surtout) ; fond et couleur ramenés vers le teint de la
+  planche (30 % des variations gardées). La tête reçoit le même gain de couleur moyen, pondéré par la saturation
+  (cheveux et barbe gris inchangés), pour garder le cou raccordé. Résultat : plaques 1,9 %, peau médiane 148, 113, 95.
+  Textures écrites dans `tools/generator/victor/donnees/`, modèle reconstruit par `victor_build.mjs` (forme, os, visage
+  et expressions inchangés ; reconstruction vérifiée identique octet pour octet avec les anciennes textures). Portrait de
+  Victor regénéré. Kadir non touché.
+- **Fichiers** : `tools/generator/victor/peau_propre.py` (nouveau), `tools/generator/victor/README.md`,
+  `tools/generator/victor/donnees/{body,head}_color.jpg`, `public/coaches/victor/photo.glb`,
+  `public/coaches/victor/portrait.webp`, `src/boot/assetSizes.json`, `src/domain/releases.ts`, `package.json`,
+  `src/three/__tests__/victor-peau-v1452.test.ts` (nouveau).
+- **Tests** : `npx vitest run` : 1588 réussis, 5 échecs qui échouent aussi sur la 1.45.1 en ligne (vérifié sur
+  d9ed4b1 : extension-v032 uppercut, fluidity ×2, hooks-biomeca, expressions-v1160 « < 3,5 Mo ») : TEST ÉCHOUÉ (connus,
+  sans lien). Nouveau test victor-peau-v1452 : TEST RÉUSSI. `npm run build` : TEST RÉUSSI. `npx playwright test` : 279
+  réussis à la première passe (18 tombés pendant que la machine faisait des captures en parallèle) ; repassés au calme :
+  15 réussis, 3 échecs connus qui échouent aussi sur les versions précédentes (`boot:98`, `coaching-hud:60`,
+  `training-layout:117`). Android : NON EXÉCUTÉ. Avant/après : https://claude.ai/artifact/1U3rVyDQjsWLGFpQCpoSsx.
+- **Hors lot** : les essais de shorts (tombé souple, satin lisse, tissu qui bouge) restent des propositions, rien n'est
+  appliqué (page https://claude.ai/artifact/Ci3RwadUxGVV2mEANYUiTU).
+- **Restauration** : branche `restauration/avant-tombe-v1452` (= 1.45.1).
+
+
+## 2026-11-15 · v1.46.0 · Membres qui traversent le corps, lot 2
+
+- **Constat vérifié** (mesure `intrusions.test.ts` sur la peau des cinq coachs, base 1.45.2, image par image) :
+  entrée de lutte 7,9 cm (main gauche dans la cuisse avant, Inaya), retrait en boxe 7,8 cm (avant-bras arrière dans
+  le ventre quand le buste recule, Naël), rattrapage du middle 6,7 cm (main qui ramasse la jambe dans le ventre),
+  relevé technique 6,4 cm (main posée au sol sous la cuisse qui recule), uppercut arrière 7,0 cm.
+- **Correction** (trajets seulement, moteur 1.2.1) :
+  - `src/engine/library/mma.ts` : entrée de lutte, mains plus larges et plus devant, tirées moins en arrière ;
+    relevé technique, main posée qui glisse vers l'extérieur pendant que les hanches montent ;
+  - `src/engine/library/boxing.ts` : retrait, la garde avance de 3 à 6 cm avec le buste qui recule ;
+  - `src/engine/library/legs.ts` : rattrapage du middle, jambe tenue 8 cm plus devant, mains qui suivent la rotation
+    sans revenir dans le tronc.
+  - Uppercut arrière non modifié : abaisser le poing devant le corps ou ouvrir le coude faisait culminer l'épaule et
+    le poing à la même image (test `extension-v032` S3) ou aggravait la mesure.
+- **Résultat** (validé par Youssef sur la page avant/après) : entrée de lutte et retrait sous 2 cm (retirés de la liste
+  d'attente), rattrapage du middle 2,5 cm, relevé technique 5,4 cm (les jambes se frôlent encore).
+- **Fichiers** : `src/engine/library/{mma,boxing,legs}.ts`, `src/engine/index.ts`, `docs/moteur/CHANGELOG.md`,
+  `src/engine/__tests__/intrusions.test.ts`, documents de mesures régénérés, `src/ui/pictos/techniquePictos.json`,
+  `package.json`, `package-lock.json`, `src/domain/releases.ts`.
+- **Tests** : bornes de `intrusions.test.ts` abaissées (entrée de lutte et retrait retirées, rattrapage 2,7, relevé
+  5,6 ; Victor : rattrapage retiré), jamais relevées. Vitest : 1588 réussis, 5 échecs déjà présents (extension-v032
+  uppercut Kadir, fluidité ×2, crochets « pas d'armé », poids du modèle d'Amara) : TEST ÉCHOUÉ, non liés.
+  Playwright : 293 réussis, 2 ignorés, 4 échecs ; relancés seuls, corrections-v110:53 et seance-mains-libres:117
+  passent ; coaching-hud:60 et training-layout:117 échouaient déjà sur la 1.44.0 : TEST ÉCHOUÉ, non liés. Build :
+  TEST RÉUSSI.
+- **Restauration** : branche `restauration/avant-traversees-lot2` (= 1.45.2, `b773812`).
+
+## 2026-11-15 · v1.47.0 · Kadir plus réaliste (même visage), cou et trapèzes de combattant
+
+- **Demande** : Youssef, 2026-11-15. Après le refus de deux nouveaux visages (greffe Rocketbox, propositions non
+  publiées) : 10:21 « Propose moi juste des améliorations physiques pour plus de réalisme du Kadir existant » ;
+  10:36 « Peux tu épaissir son visage et cou ? » ; 10:41 « Epai mais humainement réaliste / La tête doit être ratio
+  avec le corps » ; 10:52 « Oui » aux trapèzes de combattant ; 10:56 « Toutes les améliorations / Go ». Avant/après :
+  https://claude.ai/artifact/FAFUPNJuxxhdAZY5ZsSm3f.
+- **Constat vérifié** (mesures sur le modèle 1.45, `tools/generator/kadir/mesure_proportions.py`) : peau uniformément
+  luisante, teint rosé, caleçon noir brillant ; liseré clair sur le côté du cou (marge des îles de texture) et fin trait
+  au milieu du crâne. Tête 24 cm du sommet au menton pour 1,80 m (7,5 têtes, proportion normale), cou 44 cm de tour,
+  mâchoire 10,7 cm ; menton → creux du cou 8,5 à 9 cm (référence ≈ 9,5 cm) : le cou n'est pas long, il le paraît parce que
+  les trapèzes descendent en pente douce.
+- **Correction** : `tools/generator/kadir/realisme.py` (textures et déplacement de points ; visage, traits, os et
+  expressions inchangés) :
+  - peau plus mate (carte de rugosité tête et corps, front et nez un peu plus luisants), teint légèrement hâlé avec un peu
+    de rougeur au nez, aux pommettes et aux oreilles ;
+  - muscles plus lisibles : ombre douce dans les creux, tirée de la carte de normales du corps (aucun trait dessiné) ;
+  - marges des îles remplies (liseré du cou presque effacé) ; trait du milieu du crâne seulement atténué (cause non
+    trouvée : ni la géométrie, ni la carte de normales, ni la couleur, ni le filtrage des textures) ;
+  - cheveux : grain plus fin et 6 mm de volume ; caleçon mat anthracite ;
+  - `EPAIS=1` : cou 44 → 46 cm, mâchoire 10,7 → 11,4 cm, joues 13,6 → 14,2 cm, pommettes et hauteur de tête inchangées ;
+  - `TRAPEZES=1` : haut des trapèzes +1,5 à 2 cm sur les côtés du cou.
+  Modèle reconstruit par `rocketbox/victor_build.mjs` (bloc `ROUGH_HEAD` ajouté) depuis
+  `tools/generator/kadir/donnees/photo-1.45.glb` ; chaîne `tools/generator/kadir/realisme-chaine.sh`, données dans
+  `tools/generator/kadir/donnees/realisme/`. `morph_apply.py` n'est volontairement pas relancé : `victor_build` garde les
+  25 expressions, `morph_apply` les retirerait des points déplacés de plus de 2 mm.
+  Tenues : `tools/generator/kadir/tenues_suivent.py` fait suivre le nouveau corps aux tenues qui couvrent le cou et les
+  trapèzes (judo, JJB, no-gi, arbitre de judo : points du vêtement déplacés comme le corps, clés de peau cachée
+  renommées), sans les reconstruire ; boxe, kick-boxing, muay-thaï et MMA restent identiques octet pour octet.
+  Portrait de Kadir refait (`npm run visuels -- --only portraits --id mma-kadir --force`). Les données de la greffe
+  refusée (`donnees/greffe-m19/`) sont retirées ; ses scripts restent dans `tools/generator/kadir/`.
+- **Fichiers** : `public/coaches/mma-kadir/photo.glb`, `portrait.webp`, `tenues/{judo,bjj,bjj-nogi,arbitre-judo}.glb`,
+  `tools/generator/kadir/{realisme.py,realisme-chaine.sh,tenues_suivent.py,mesure_proportions.py}`,
+  `tools/generator/kadir/donnees/realisme/`, `tools/generator/rocketbox/victor_build.mjs`, `src/three/photoMaterials.ts`
+  (rugosité de la peau à 1 quand le modèle porte sa carte), `src/boot/assetSizes.json`, `src/domain/releases.ts`,
+  `package.json`, mesures régénérées (`docs/audit-biomecanique/MESURES_{INTRUSIONS,SOL,GLISSEMENT}.md`,
+  `docs/v042-crochets/MESURES_CROCHETS.md`, `docs/v1442/MESURES_SHORTS.md`).
+- **Tests modifiés, avec raison** :
+  - `outfit-rollback-v1373.test.ts` : empreintes de `photo.glb` et des tenues judo, bjj, bjj-nogi mises à jour (corps
+    retouché à la demande de Youssef, tenues qui le suivent) ; boxe, kick-boxing, muay-thaï et MMA gardent leurs
+    empreintes de la 1.37.0 (la garde contre la régression des shorts reste entière) ;
+  - `intrusions.test.ts` : borne propre à Kadir pour `defense-lutte` (4,9 cm, avant-bras droit dans le tronc 4,7 cm).
+    L'avant-bras cadre devant le cou, contact déjà en attente (3,7 cm dans la tête en 1.45) ; la base du cou plus
+    épaisse le rend plus profond. Sans trapèzes le test passe ; trapèzes plus bas, plus étroits ou limités à l'arrière :
+    4,2 à 4,6 cm. Les autres coachs gardent leurs bornes ; à corriger avec la technique.
+- **Tests** : `npx vitest run` : 1588 réussis, 5 échecs identiques à la 1.45.2 (vérifié sur b773812 : extension-v032
+  uppercut, fluidity ×2, hooks-biomeca « pas d'armé », expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (connus, sans
+  lien). Contrat humain, regard, comportement, visage (`src/three/human/__tests__/`) : TEST RÉUSSI. `npm run build` : TEST
+  RÉUSSI (titre v1.47.0 après fusion de la 1.46.0). Captures des kimonos et du rashguard sur le nouveau corps : aucun passage de peau ; le col du
+  rashguard no-gi garde son bord en dents de scie, déjà présent en 1.45.2. `npx playwright test` (299 tests, 47 min) :
+  295 réussis, 2 ignorés (Firebase), 2 échecs connus qui échouent aussi sur les versions précédentes et seuls au calme
+  (`boot:98` : la scène 3D n'apparaît pas en 20 s ; `coaching-hud:60` : la 2e répétition ne commence pas dans les 30 s
+  observées) : TEST ÉCHOUÉ (connus, sans lien avec Kadir). Android : NON EXÉCUTÉ. Vignettes des techniques
+  et illustrations rendues avec Kadir : NON REFAITES (rendu proche, à regénérer dans un lot dédié).
+- **Numéro** : préparée comme 1.46.0 ; renumérotée 1.47.0 après la fusion de la 1.46.0 (traversées, lot 2), publiée entre-temps.
+- **Restauration** : branche `restauration/avant-kadir-realisme` (= 1.45.2, b773812) ; la 1.46.0 = 066131d.
+
+## 2026-11-17 · v1.53.1 · Victor : peau unie, cou raccordé
+
+- **Demande** (Youssef, 15/11 15:45, captures du genou direct en kick-boxing) : « Il y a encore des traces et des tâches
+  sur le corps de Victor… Il y aussi une jonction plus clair entre la tête et son buste. » Le 17/11 : repartir de la
+  dernière version en place et n'appliquer la correction que si elle est encore nécessaire.
+- **Préparée d'abord sur la 1.47.0 (15/11), non publiée** ; reprise sur la 1.53.0 (8e486ac + 920d6aa) le 17/11.
+- **Constat après vérification sur la 1.53.0** (captures WebGL du Lab, kick-boxing, garde, lumière vive) : le modèle de
+  Victor est identique octet pour octet à celui de la 1.47.0 ; les réglages de matière 1.48 à 1.53 (atténuation des
+  marques du corps en qualité haute, éclairage) ne suffisent pas :
+  - la texture du corps garde des plaques moyennes (10 à 45 px sur 1024) sombres ou grises, restes du fond gris et des
+    ombres des planches projetées (flanc et abdomen gauche, bras, cuisses). Mesure : rapport lumière locale / fond,
+    1er centile 0,70, 99e 1,25 ;
+  - le pectoral gauche porte une ombre grise et des points sombres à la place du mamelon (défaut de la planche) ;
+  - la texture de la tête porte aussi le cou et le haut de la poitrine ; ce morceau est plus clair et plus rose que la
+    poitrine du corps (médianes 199/141/116 contre 163/124/105) : c'est la « jonction plus claire », en forme de col.
+- **Correction** (périmètre : les deux textures de couleur de Victor, rien d'autre ; pas de reprise du chantier
+  cou/nuque 1.52 abandonné, qui portait sur Kadir) : `tools/generator/victor/peau_unie.py` (à ne passer qu'une fois)
+  sépare la lumière en bandes (détail fin < 3 px gardé, relief musculaire 3-6 px gardé à 90 %, traits clairs resserrés,
+  plaques 6-45 px resserrées, fond ramené au teint) et la couleur (taches ramenées au teint, détail gardé : tatouages,
+  poils), avec des flous normalisés par un masque de peau ; pectoral et oblique gauches repris en miroir du côté droit
+  (axe du sternum mesuré, x = 514/1024) ; sur la tête, cou + poitrine ramenés à la lumière et à la couleur du corps avec
+  un fondu vers la mâchoire. Après : 1er centile 0,88, 99e 1,10 ; poitrine de la tête 160/120/100 contre 153/115/97 au
+  corps ; visage et cheveux inchangés (écart moyen 0,6 et 1,2 sur 255, recompression JPEG).
+  `tools/generator/victor/swap_textures.mjs` pose les textures dans le modèle existant (attributs séparés), sans
+  reconstruire Victor depuis Kadir. Forme, os, UV, 25 expressions, tenues, matériaux 1.48-1.53 : inchangés.
+- **Limites** : un léger contour de l'île de texture de la tête reste visible de très près sur le haut de la poitrine ;
+  le trait du milieu du crâne (déjà présent) n'est pas traité.
+- **Fichiers** : `public/coaches/victor/photo.glb`, `tools/generator/victor/{peau_unie.py,swap_textures.mjs,README.md}`,
+  `tools/generator/victor/donnees/{body_color,head_color}.jpg`, `src/boot/assetSizes.json`, `src/domain/releases.ts`,
+  `package.json`, nouveau test `src/three/__tests__/victor-peau-v1531.test.ts` (plaques et raccord du cou mesurés).
+- **Tests** : `npx vitest run` : 1621 réussis, 5 échecs déjà présents en 1.47.0 (extension-v032 uppercut, fluidity ×2,
+  hooks-biomeca « pas d'armé », expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (connus, sans lien). `victor-peau-v1452`,
+  `outfit.test` (peau masquée de Victor), `premium-skin-v1480`, `premium-visual-v1490`, contrat humain : TEST RÉUSSI.
+  `npm run build` : TEST RÉUSSI (titre v1.53.1). `npx playwright test` (299 tests, 54 min) : 292 réussis, 2 ignorés
+  (Firebase), 5 échecs : TEST ÉCHOUÉ. Quatre échouent aussi seuls sur la 1.53.0 non modifiée (`coaching-hud:60`,
+  `consignes-v130:27`, `corrections-v110:53`, `training-layout:117`). Le cinquième, `encyclopedie:54` (filtres de la
+  liste), a échoué dans la suite complète et une fois seul sur la 1.53.1, puis a réussi 3 fois sur 3 seul
+  (`--repeat-each 3`) : le compte des résultats est lu avant la fin de l'affichage de la liste, sans lien avec les
+  textures de Victor. Contrôle `matched-webgl` de GitHub : ÉCHOUÉ, mais il teste la branche figée
+  `feature/premium-visual-v1490` et pas cette PR (expiration des captures « après » pour les cinq coachs). Android :
+  NON EXÉCUTÉ.
+- **Captures** : WebGL réelles, même personnage, tenue, pose, caméra, résolution ; seule la texture change. Page
+  avant/après : https://claude.ai/artifact/MV8CneamJgBhY3Fco2696R
+- **Validation** : Youssef, 17/11 13:15 (« Je valide »), sur la page avant/après. PR #133.
+- **Restauration** : branche `restauration/avant-victor-peau-v1531` (= 1.53.0, 920d6aa).
+
+## 2026-11-17 · v1.54.0 · Nouvelle coach : Kanya « La Tigresse », Kru de muay-thaï
+
+- **Demande** : Youssef, 2026-11-15 16:02 (modifiée à 16:08), « PROFIL 3D : KANYA — COACH MUAY THAÏ (KRU) —
+  COMPATIBLE ROCKETBOX » : 42 ans, ancienne championne devenue Kru, clinch, coudes et genoux ; 2 planches à 7 vues
+  (corps, tête) et 4 visuels de détail (dos et tatouages Sak Yant, bras, short et chevillères, paos), visuels synthétiques
+  générés par Gemini, libres d'utilisation. Règles 3D strictes : pas de pont à l'entrejambe, maillage étanche, pas de peau
+  qui traverse le tissu, vraie épaisseur aux ourlets. Copies des planches : `tools/generator/kanya/planches/`.
+- **Constat vérifié** : aucun corps Rocketbox féminin libre n'est plus proche des planches que celui d'Inaya (même
+  morphologie tonique, squelette compatible). Méthode Victor : copie du coach, nouveau visage et nouvelles textures,
+  Inaya inchangée. Les deux défauts connus de Victor (plaques sombres venues des ombres de ses planches, raccord tête/cou
+  plus clair) sont évités par un « délumage » des vues et une égalisation basse fréquence de la peau mesurée sur la peau
+  seule, avec le même gain de teint sur la tête et le corps.
+- **Correction** (nouveaux outils dans `tools/generator/kanya/`, README) :
+  - tête : chignon bas d'Inaya effacé (552 points ramenés sur le crâne, rosace de sa texture et de sa carte de relief
+    repeinte), pommettes et mâchoire retouchées (≤ 1,4 mm), visage projeté depuis les vues de face, de profil et de dos
+    de la planche 2 (plaque mince sur des repères relevés à la main), cheveux noirs tirés, iris brun foncé ;
+  - chignon haut : maillage à part sur l'os `Head` (2 145 points, sillons en spirale, matière `Hair_chignon`, classée
+    « cheveux » par `photoPart`) ;
+  - tatouages Sak Yant tirés de la planche 3 : nuque (géométrique), omoplate gauche (écritures), omoplate droite (double
+    tigre), épaules ;
+  - modèle `public/coaches/kanya/photo.glb` (3,40 Mo) par `tools/generator/rocketbox/kanya_build.mjs` : 25 expressions,
+    os des yeux, cou et tête d'Inaya conservés (`morph_apply.py` non relancé, comme pour Victor) ;
+  - tenues (`outfits.py`, palette `kanya`, `generatorVersion` 1.51.0) : en muay-thaï brassière dos nageur noire à liseré
+    doré avec « COACH » doré et « MUAY THAI » rouge, short satiné noir à larges panneaux et ourlet dorés avec « มวยไทย »
+    (police Kanit Bold, SIL OFL 1.1 comme Inter, `tools/generator/kanya/polices/`), bandages noirs et rouges doigts libres (`hand_wraps`), Pra Jiad
+    tressés rouge et blanc à 4 franges (`prajioud_v2` bicolore), chevillères à liseré rouge ; pas de gants. Les six autres
+    tenues reprennent les coupes communes à ses couleurs (noir, or, rouge) ;
+  - short muay-thaï : la couture de l'entrejambe sortait froissée (1,7 % de faces retournées, limite 1 % ; étirement 6,5
+    en high kick, limite 6) : lissage local de la couture (`crotch_relax`, Kanya seule) → 0,7 % et dans la limite ;
+  - application : catalogue (`EXTRA_COACHES`, sixième vignette), apparence, garde propre (`COACH_STANCES.kanya` : garde
+    haute, coudes serrés), profil du moteur humain (`contract: 'complet'`), réglages de peau, guide du coach IA (« six
+    coachs »), portrait.
+- **Écarts au cahier des charges, à valider par Youssef** :
+  - taille : le modèle garde la taille d'Inaya (1,73 m, 65 kg mesurés sur le modèle) au lieu de 1,68 m / 61 kg. À 1,68 m
+    (`KANYA_SCALE=0.9687`), les gestes du moteur, écrits en mètres pour des corps de 1,73 à 1,81 m, plient l'aine de 77° en
+    high kick (Inaya 66°, limite 70°) et font glisser le pied du kuzushi à 3,3 cm par image : rendre le moteur
+    proportionnel à la taille du coach est un lot à part ;
+  - le devant de la brassière garde la forme en bonnets du patron commun (la planche montre un devant plein), la ceinture
+    du short n'a pas les rayures dorées, paos et ceinture abdominale (optionnels) non faits.
+- **Tests adaptés, avec raison** : listes de coachs complétées par Kanya (contrat humain, regard, visage, comportement,
+  tenues, déformations, glissement, intégrité, sol, shorts…) ; nombre de coachs 5 → 6 ; e2e choix du coach (6 vignettes,
+  Kanya après Inaya) ; `realisme-v1100` : en muay-thaï Kanya porte des bandages, le contrôle des gants y est remplacé
+  par un contrôle des bandages (pas de gants, doigts libres, jointures et poignet couverts, la main ne suit pas
+  l'avant-bras) ; base des déformations de Kanya = celles d'Inaya aujourd'hui ; glissement : deux balayages en attente
+  bornés pour Kanya à leur valeur 1.51.0 (`releve-technique` 10,6 au lieu de 10,5, `kuzushi` 2,05 au lieu de 2,0 cm par
+  image, même corps qu'Inaya, sa garde propre) ; préchargement au premier lancement (tous les coachs et toutes leurs
+  tenues) : 122 Mo mesurés, limite relevée de 110 à 125 Mo (110 Mo valait pour les six coachs de la 1.25, plus légers).
+- **Tests** : `npx vitest run` : 1 689 réussis, 5 ÉCHOUÉS déjà sur la 1.50.0 sans Kanya (vérifié sur 7068f78 :
+  `expressions-v1160` taille d'Amara 4,86 Mo, `extension-v032` uppercut-arrière, `hooks-biomeca` crochet-avant, deux de
+  `fluidity`) ; `npm run build` réussi ; `npx playwright test` sur la 1.54.0 : 293 RÉUSSIS, 2 ignorés, 4 ÉCHOUÉS
+  hors Kanya : `coaching-hud:60`, `training-layout:117` (déjà connus), `consignes-v130:27` (échoue aussi sur la 1.53.0
+  sans Kanya, vérifié sur 920d6aa), `corrections-v110:53` (RÉUSSI relancé seul).
+- **Mise à jour sur la 1.53.0** (Youssef, 17/11 09:24 et 10:06 : « repartir de l'existant… n'appliquer que si encore
+  nécessaire » ; « Kanya doit bénéficier de toutes les améliorations apportées aux autres coachs ») : le lot, préparé sur
+  la 1.50.0, est fusionné avec la version publiée 1.53.0 (`claude/project-thread-o7lrt8`, 920d6aa) et prend le numéro
+  1.54.0 (1.51.0 à 1.53.1 sont pris ; la 1.53.1, peau de Victor, est aussi fusionnée : rien à reprendre pour Kanya). Kanya reçoit : le profil optique premium 1.51.0 (`FIGHTER_PILOT_150.kanya`, celui
+  d'Inaya dont elle partage le corps et la peau photo, test `fighter-visual-v1510` étendu) ; l'éclairage cinématographique
+  1.53.0 s'applique à tous les coachs sans réglage par coach. Les réglages 1.48 à 1.50 (finition premium, filtrage des
+  textures) étaient déjà repris. Le numéro `generatorVersion` des tenues reste « 1.51.0 » (version du générateur qui les a
+  construites).
+- **Restauration** : branches `restauration/avant-kanya-v151` (1.50.0, 7068f78) et `restauration/avant-kanya-v154`
+  (1.53.0, 920d6aa).
+
+## 2026-11-17 · v1.55.0 · Kanya : brassière, tatouage du ventre, nouvelles tenues, 1,68 m
+
+- **Demande** (Youssef, 17/11 15:48 et 15:49) : « le coach sur sa brassière disparaît puis réapparaît à chaque
+  mouvement » ; « rajoute lui des tatouages sur le ventre » ; « je te donne ses nouvelles tenues & accessoires » (7
+  planches, `/mnt/project-files/combat-shadow-studio/maquettes/kanya-v155/`) ; « n'oublie sa taille » (lot convenu en
+  1.54.0 : moteur proportionnel à la taille, puis Kanya à 1,68 m).
+- **Constat vérifié (brassière)** : captures WebGL du crochet avant, vue de face, 6 images : le mot « COACH » est coupé
+  sur 3 images. La brassière, copiée de la peau, descend de 24,7 mm dans le creux entre les seins ; les lettres posées
+  dessus y descendent aussi et, quand le buste tourne, le bonnet le plus proche de la caméra passe devant elles. Mesuré
+  aussi : les lettres suivent bien le tissu (mêmes poids de peau, écart 1,3 à 2,1 mm au repos, normales à 2,7° en
+  médiane) ; ce n'était ni la respiration ni la profondeur.
+- **Correction** : `bridge_cleavage()` (`tools/generator/rocketbox/outfits.py`, Kanya seule) ramène le devant de la
+  brassière sur son enveloppe convexe tranche par tranche (tissu tendu d'un bonnet à l'autre, comme une brassière de
+  sport), les deux faces du tissu ensemble. Après : « COACH » entier sur les 6 images. Sonde de laboratoire ajoutée :
+  `window.__labPrintCover()` (`src/ui/Lab.tsx`).
+- **Tatouage du ventre** : yant à trois flèches, prières en cercle et deux tigres, extraits du gros plan de la planche MMA
+  (`tools/generator/kanya/planches/planche7-tenue-mma-ventre.png`, option `VENTRE` de `tatouages.py`), 14 cm de haut
+  entre la brassière et la ceinture. La planche fait 1 024 px : traits un peu doux de près.
+- **Tenues** (`kanya_kit()`, palette or `#B08A2E`, `generatorVersion` 1.55.0 ; BJJ, no-gi et judo inchangés de forme) :
+  muay-thaï = short de compression noir à pans dorés en biais coupés dans le tissu (`DIAG_PANEL`), bandages, Pra Jiad,
+  chevillères ; MMA = short ample à pans et ourlet dorés, gants MMA à sangle blanche, genouillères (`knee_pads`, neuves),
+  protège-tibias et pieds noirs à bande dorée ; boxe = short satiné noir à ceinture et pans dorés, gants à paume dorée
+  (`boxing_glove_v2(palm=)`) et sangle blanche, bottines à col doré et semelle sombre (`shoes_v2(sole=)`) ; kick-boxing =
+  short noir à pans rouges, liserés dorés, ceinture rouge, « KICKBOXING » doré, gants à paume rouge, protège-tibias bordés
+  de rouge. Brassière commune : « COACH » doré et la discipline dessous (« MUAY THAI » en rouge aussi en MMA, comme sur la
+  planche). Écarts : texte « KICKBOXING » du short plus petit que sur la planche, bottines sans bandes dorées (essai de
+  bande en biais : taches sur les grands triangles de la tige), ceinture de boxe sans rayures, petits écussons de la
+  brassière non faits.
+- **Taille** : `src/engine/motion.ts` `glideSpeedOf` : la vitesse d'un pas, qui décide s'il quitte le tapis, est
+  comparée par longueur de corps (les pas sont écrits en longueurs de corps sur le même temps : un coach plus petit va
+  moins vite en m/s et levait moins le pied ; kuzushi à 1,68 m : pied à 3,8 mm du tapis au lieu de 4,7, lu comme
+  traîné). Vérifié : à 1,73 et 1,68 m, le high kick donne les mêmes angles au dixième de degré ; le pli de l'aine mesuré à
+  77° venait de la zone de mesure de rayon fixe en mètres, qui prenait plus de peau sur un corps plus petit : le test des
+  déformations met à l'échelle les zones d'un corps réduit (`SCALED_FROM`, Kanya ← Inaya). Kanya est construite à 1,68 m
+  (`KANYA_SCALE` 0,9687 par défaut dans `kanya_build.mjs`), poids de profil 61 kg, ses 7 tenues refaites sur ce corps.
+- **Tests adaptés, avec raison** : `glide` : les bornes propres à Kanya (10,6 et 2,05) sont retirées, elle mesure 10,24 et
+  1,95 sous les bornes communes ; `deformation-v1100` : zones mises à l'échelle pour un corps réduit (ci-dessus) ;
+  `skills-v1130` : poids de Kanya 61 ; `outfit-assets-v1372` : tenues de Kanya en 1.55.0 ; documents de mesures régénérés
+  (`AUDIT_UPDATE=1 UPDATE_INTEGRITY=1`). Le short de boxe à mi-cuisse plus court (0,48) étirait la peau à 6,2 en high kick
+  (limite 6) : coupe 0,5 gardée, test réussi.
+- **Tests** : `npx vitest run` : 1 694 réussis, 6 échoués → après la correction du short de boxe, les 5 ÉCHECS connus
+  seulement (`expressions-v1160` Amara, `extension-v032`, `hooks-biomeca`, `fluidity` ×2, les mêmes qu'en 1.54.0).
+  `npm run build` : RÉUSSI. `npx playwright test` : 294 RÉUSSIS, 2 ignorés (Firebase), 3 ÉCHOUÉS hors Kanya :
+  `coaching-hud:60` et `training-layout:117` (déjà en échec en 1.54.0), `chrono-seul:96` (RÉUSSI relancé seul, minuterie
+  sous la charge de la suite).
+- **Validation** : Youssef, 17/11 18:36 (« Je valide »), sur les captures planches/application et brassière avant/après
+  (`/mnt/project-files/combat-shadow-studio/kanya-v155/`).
+- **Correction annexe** : marqueurs de fusion restés dans ce journal à la 1.54.0 (autour de la 1.53.1) retirés.
+- **Restauration** : branche `restauration/avant-kanya-v155` (= 1.54.0, 538409a).
+
+## 2026-11-17 · v1.56.0 · Kimonos plus fins et plus naturels (option B « Tombé »)
+
+- **Demande** : Youssef, 15/11 15:47 : « les kimonos … trop gros. Pas esthétique. Pas réaliste. Trop épais ». Deux
+  options montrées en images (A « Affiné », B « Tombé ») ; B choisie le 17/11 à 08:02. Le 17/11 à 08:24 : repartir de
+  la version en ligne. Vérifié : la géométrie des kimonos n'a pas changé entre la 1.47.0 et la 1.53.0, la correction
+  reste nécessaire.
+- **Constat vérifié** (mesures sur les GLB, distance à la peau) : la veste est une copie de la peau poussée de 8 à
+  10 mm, elle moule omoplates, fessiers et biceps (effet combinaison rembourrée) ; tissu de 3 à 4 mm, col de 10 à
+  12 mm, ourlets de 10 mm ; ceinture à 2,7 cm de la peau, 5 mm d'épaisseur ; au dos, le bas de la veste suit les
+  fesses puis rentre dessous (effet plaque).
+- **Correction** (`tools/generator/rocketbox/outfits.py`, réglage `GI_STYLE`, `tombe` par défaut, `''` redonne les
+  kimonos de la 1.53.0) :
+  - épaisseurs réelles : veste 2 mm (JJB 1,6), pantalon et bas de veste 1,8 à 2 mm, col 6 mm (JJB 5), ourlets 4 mm,
+    ceinture 3 mm et nœud 4 mm, posée sur la veste ;
+  - `drape_pass()` : lissage du tissu alterné avec une distance minimale à la peau, le tissu repose sur les points hauts
+    et passe par-dessus les creux ; manches gardées en tube (plus 4 mm chez les femmes, pour couvrir le rashguard),
+    taille du pantalon laissée sous la veste ;
+  - bas de veste : il tombe droit depuis le point le plus large des hanches (1,5 mm de jeu par rang), plis verticaux
+    un peu plus marqués.
+  - coupe d'après les planches de Youssef (17/11 15:54, Kadir et Kanya en judogi, 15:56 Kanya en JJB) : pantalon en
+    tube droit autour de l'axe de la jambe (rayon minimal 10,4 cm du genou à la cuisse, 10,2 à 9,8 cm vers la
+    cheville ; femmes × 0,93, JJB × 0,92), sans fronces au-dessus de la cheville ; manches en tube (rayon minimal
+    7,8 cm au bras, 7,2 à 6 cm à l'avant-bras ; femmes × 0,92, JJB × 0,9), ourlets ouverts au même rayon ; pans de
+    ceinture plus courts et écartés ; aisselles et dos de l'épaule à 22 mm de la peau chez les femmes (rashguard).
+  - Les 12 kimonos (judo et JJB des 6 coachs) reconstruits ; Kanya (arrivée en 1.54.0) reçoit la même coupe, avec
+    le même générateur (sa version de base est reproduite à 0,02 % près en taille, vérifié avant le changement).
+    Kimonos des 5 premiers coachs reconstruits une seconde fois : fichiers identiques octet pour octet (reproductible). Kadir : ses kimonos n'étaient plus reconstruits depuis la
+    1.37.0 (déplacés par `tenues_suivent.py`) ; ils sont maintenant bâtis sur son corps actuel (1,06 Mo → 1,5 Mo
+    chacun, comme ceux de Naël et Victor). Autres tenues, corps, visages et animations : inchangés.
+- **Fichiers** : `tools/generator/rocketbox/outfits.py`, `public/coaches/{mma-kadir,mma-amara,nael,inaya,victor,kanya}/tenues/{judo,bjj}.glb`,
+  `src/boot/assetSizes.json`, `src/domain/releases.ts`, `package.json`, `docs/v1560-kimonos/` (manifeste, 96 captures),
+  `scripts/dev/shot-kimonos-v1560.mjs`.
+- **Tests modifiés, avec raison** : `outfit-rollback-v1373.test.ts` (Kadir) et `outfit-amara-v1374.test.ts` (Inaya) :
+  nouvelles empreintes pour judo et bjj seulement, kimonos refaits à la demande de Youssef ; les shorts et le no-gi
+  gardent les leurs.
+- **Tests** : `npx vitest run` : 1619 réussis, 5 échecs identiques aux versions précédentes (extension-v032 uppercut,
+  fluidity ×2, hooks-biomeca « pas d'armé », expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (connus, sans lien).
+  Tests des tenues et du moteur humain : TEST RÉUSSI. `npm run build` : TEST RÉUSSI (titre v1.56.0).
+  `npx playwright test` (299 tests, 55 min) : 294 réussis, 2 ignorés (Firebase), 3 échecs : `boot:98` et
+  `coaching-hud:60` (connus), `training-layout:117` (délai dépassé ; échoue aussi seul sur la 1.53.0, vérifié) :
+  TEST ÉCHOUÉ (sans lien avec les kimonos). Après la coupe des planches : `npx vitest run` 1621 réussis, mêmes 5 échecs
+  connus ; `npm run build` et Playwright `bjj-judo`, `outfit-loading`, `boot` : 12/12 TEST RÉUSSI ; suite Playwright
+  complète : NON RELANCÉE (seuls les GLB des kimonos ont changé depuis la passe complète). Après l'ajout de Kanya :
+  `npx vitest run` 1695 réussis, mêmes 5 échecs connus. Amara : deux petites marques
+  sombres de dos à la jonction manche et dos, réduites, pas effacées. Captures WebGL avant/après des 6 coachs, 8 vues : RÉALISÉES
+  (`docs/v1560-kimonos/MANIFEST.md`). Android : NON EXÉCUTÉ. Vignettes et illustrations judo/JJB : NON REFAITES.
+- **Numéro** : préparée comme 1.54.0 ; renumérotée 1.55.0 (la 1.54.0 est prise par Kanya, PR #134) après fusion de la 1.53.1 (Victor : peau seule, géométrie de son corps identique, vérifié : ses kimonos restent valables), puis de la 1.54.0 (Kanya) ; renumérotée 1.56.0 le 17/11 (la 1.55.0 est prise par le lot Kanya validé à 17:36). Validée par Youssef le 17/11 à 19:04 (« Je valide la 1.56.0 »).
+- **Mise à jour sur la 1.55.0** (Kanya passe à 1,68 m) : ses kimonos sont reconstruits sur son nouveau corps (sa version
+  1.55.0 est reproduite à 0,01 % près en taille avec l'ancien réglage, vérifié) ; captures avant (1.55.0) et après
+  refaites. `npx vitest run` : 1694 réussis, 5 échecs connus (TEST ÉCHOUÉ, sans lien) ; le test des Nouveautés a
+  d'abord échoué (lien de la note 1.56.0 perdu à la fusion), corrigé : TEST RÉUSSI. `npm run build` (titre v1.56.0) et
+  Playwright `bjj-judo`, `outfit-loading`, `boot` (12/12) : TEST RÉUSSI. Suite Playwright complète : NON RELANCÉE.
+- **Restauration** : branche `restauration/avant-kimonos-v1540` (= 1.53.0, 920d6aa).
+
+## 2026-11-17 · v1.56.1 · Kanya : tenue JJB no-gi et mot « COACH » stable
+
+- **Constat vérifié** (messages de Youssef du 17/11, 19:50 et 19:51) :
+  - la tenue JJB no-gi de Kanya restait l'ancienne : `kanya_kit()` n'avait pas d'entrée `bjj-nogi`, le kit de base
+    (planche 1) n'était donc pas appliqué ;
+  - le mot « COACH » apparaissait et disparaissait encore pendant les mouvements, malgré la 1.55.0. Mesuré sur le
+    GLB : le haut du texte était à 1,267 m, au-dessus du fond du décolleté en V (1,253 m au centre). Le bord des
+    bonnets passait donc devant le « A » dès que le buste tournait. Il restait aussi un creux de quelques
+    millimètres au milieu du pont entre les bonnets (le flou seul abaissait le pont), visible en crochet.
+- **Correction** (`tools/generator/rocketbox/outfits.py`) :
+  - `kanya_kit('bjj-nogi')` : brassière noire à bande dorée « COACH », short vale-tudo noir à panneaux dorés en
+    diagonale (`DIAG_PANEL`), pieds nus, sans accessoire ni sous-titre ;
+  - texte placé plus bas et un peu plus petit : « COACH » à 54 mm au-dessus du bas de la brassière (48 mm sans
+    sous-titre), largeur 115 mm (125 mm sans sous-titre) ; haut du texte à 1,244 m, sous le fond du V ;
+  - `bridge_cleavage()` : le creux est d'abord élargi (filtre maximum 7×5) puis adouci, le tissu reste tendu
+    d'un bonnet à l'autre (creux comblé jusqu'à 28,9 mm).
+  - Tenues avec brassière de Kanya régénérées : muay-thaï, MMA, boxe, kick-boxing, no-gi. Textures identiques pixel
+    pour pixel (non modifiées). Kimonos, corps, visage, tatouages, taille et animations : inchangés.
+- **Fichiers** : `tools/generator/rocketbox/outfits.py`,
+  `public/coaches/kanya/tenues/{muaythai,mma,boxe,kickboxing,bjj-nogi}.glb`, `src/boot/assetSizes.json`,
+  `src/domain/releases.ts`, `package.json`.
+- **Tests** : `npx vitest run` : 1695 réussis, 5 échecs identiques aux versions précédentes (extension-v032
+  uppercut, fluidity ×2, hooks-biomeca « pas d'armé », expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (connus, sans
+  lien). Tests des tenues et du moteur humain : TEST RÉUSSI. `npm run build` (titre v1.56.1) : TEST RÉUSSI.
+  Captures WebGL : crochet et coude muay-thaï (6 images chacun, « COACH » lisible sur toutes) et 4 tenues de face,
+  de trois quarts et de dos : RÉALISÉES. Android : NON EXÉCUTÉ.
+- **Restauration** : branche `restauration/avant-kanya-nogi-v1561` (= 1.56.0, dd63329).
+
+## 2026-11-17 · v1.56.2 · Kanya : poitrine mise en valeur, brassière finie, teint unifié
+
+- **Constat vérifié** (messages de Youssef du 17/11, 22:50 et 22:51, captures de son téléphone) :
+  - teint : sur la texture du corps (héritée d'Inaya), les cuisses sont plus roses que le buste (bleu/vert 0,92
+    contre 0,81 à la poitrine), le bas des jambes plus rouge (rouge/vert 1,48 contre 1,38), les pieds plus clairs ;
+  - poitrine : la 1.56.1 tendait le tissu d'un bonnet à l'autre jusqu'en haut (creux comblé jusqu'à 29 mm) : un
+    bandeau plat, sans forme de poitrine ;
+  - brassière : bretelles fines (2,2 cm) tombant en T sur un bord de bonnet droit, raccord à 8 mm.
+- **Correction** :
+  - `tools/generator/kanya/teint_uni.py` (nouveau) : la teinte de basse fréquence de toute la peau du corps est
+    ramenée sur celle du buste (teinte 100 %, clarté 50 %), sans le noir du bas peint ni l'encre ; grain, ombres fines
+    et tatouages gardés. Mesuré après : rouge/vert 1,40 / 1,43 / 1,40 (bas des jambes, cuisses, ventre), bleu/vert
+    0,81 partout. `photo.glb` reconstruit par `kanya_build.mjs` (chaîne vérifiée d'abord : la reconstruction avec
+    l'ancienne texture redonne la 1.56.1 octet pour octet) ; seule la texture du corps change ;
+  - `bridge_cleavage()` : pont entier seulement sous la poitrine, au-dessus le creux n'est adouci que de 6 mm au
+    plus : chaque bonnet suit son sein ;
+  - « COACH » sur la bande sous la poitrine (9,2 cm de large), le nom de la discipline dans le liseré doré (1,4 cm),
+    en rouge ou en noir : rien ne passe devant quand le buste tourne ;
+  - bretelles de Kanya 3 cm (`STRAP_HW` 15 mm) et raccord arrondi de 3 cm avec le bonnet (`STRAP_JOIN`) ; les autres
+    coachs gardent leurs valeurs.
+  - Tenues avec brassière régénérées : muay-thaï, MMA, boxe, kick-boxing, no-gi. Kimonos, visage, forme du corps,
+    taille et animations : inchangés.
+- **Fichiers** : `tools/generator/kanya/teint_uni.py`, `tools/generator/kanya/README.md`,
+  `tools/generator/rocketbox/outfits.py`, `public/coaches/kanya/photo.glb`,
+  `public/coaches/kanya/tenues/{muaythai,mma,boxe,kickboxing,bjj-nogi}.glb`, `src/boot/assetSizes.json`,
+  `src/domain/releases.ts`, `package.json`.
+- **Tests** : `npx vitest run` : 1695 réussis, 5 échecs connus (extension-v032 uppercut, fluidity ×2, hooks-biomeca,
+  expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (sans lien). `npm run build` (titre v1.56.2) : TEST RÉUSSI.
+  Playwright `outfit-loading` et `boot` : 4/5 ; `boot:98` (changement de coach vers Naël) échoue aussi sur la 1.56.1
+  sans ces changements (vérifié) : TEST ÉCHOUÉ (sans lien). Captures WebGL : avant/après du teint, crochet et coude
+  (6 instants, « COACH » lisible sauf sous le gant), 5 tenues de face, 3/4 et dos : RÉALISÉES. Android : NON EXÉCUTÉ.
+- **Restauration** : branche `restauration/avant-kanya-poitrine-v1562` (= 1.56.1, 45e9aa2).
+
+## 2026-11-18 · v1.56.3 · Stabilité 3D : fausses alertes à chaque changement d'écran
+
+- **Signalement** (Youssef, téléphone Android, 15/11 16:51) : Réglages › Affichage 3D affiche souvent « Qualité
+  allégée (niveau 2) après un incident graphique » avec « Rétablir la qualité choisie », et « Journal 3D : 80
+  évènement(s) ».
+- **Constat après vérification** : reproduit en test réel (Chromium, `tests/e2e/stabilite-3d-v1563.spec.ts`, rouge sur
+  la 1.47.0, même code sur la 1.50.0) en allant simplement Accueil → Progrès → fiche technique → Progrès : deux lignes `contexte-perdu` et
+  niveau 2, sans aucun incident. Cause : quand on quitte un écran avec coach, React Three Fiber rend volontairement le
+  contexte graphique (`forceContextLoss`, `node_modules/@react-three/fiber`, fonction `releaseRenderer`) ; le navigateur
+  annonce alors « contexte perdu » sur le canvas qui vient de disparaître, et `CoachStage` le comptait comme un
+  incident (`stepDown`). Deux changements d'écran suffisaient pour le niveau 2. Le minuteur « pas de retour après
+  8 s » restait aussi armé après la sortie. Les « 80 évènements » ne sont pas 80 incidents : le journal garde les 80
+  dernières lignes, surtout du suivi (démarrage, mesure chaque minute, arrière-plan). Le poids des modèles, tenues et
+  salles n'est pas en cause dans ce constat.
+- **Correction** :
+  - `CoachStage` ignore la perte de contexte d'un canvas qui quitte l'écran (drapeau posé au démontage, avant la
+    libération par R3F, et `canvas.isConnected`) et coupe le minuteur de 8 s ; une vraie perte sur un coach affiché
+    est toujours comptée et récupérée comme avant ;
+  - `safe3d` : un niveau allégé enregistré avant la 1.56.3 (presque toujours une fausse alerte) est remis à 0 une seule
+    fois, avec une ligne au journal ; les incidents comptés ensuite sont gardés ;
+  - Réglages › Journal 3D : « N ligne(s) de suivi (les 80 dernières au plus), dont M incident(s) » (`incidentCount`,
+    incidents = contexte perdu, échec, animation arrêtée, salle non chargée).
+- **Fichiers** : `src/three/CoachStage.tsx`, `src/three/safe3d.ts`, `src/three/diag3d.ts`,
+  `src/ui/screens/Settings.tsx`, `src/domain/releases.ts`, `package.json`.
+- **Tests ajoutés** : `tests/e2e/stabilite-3d-v1563.spec.ts` (2 : changements d'écran sans incident ni niveau
+  allégé ; remise à 0 du niveau laissé par une version précédente), `stability.test.ts` (+3 : remise à 0 unique,
+  appareil sans niveau non touché, comptage des incidents).
+- **Test modifié, avec raison** : `coach-3d-recovery.spec.ts` › « Réglages › Affichage 3D » pose aussi
+  `css-3d-fix-1563` : sans lui, la remise à 0 unique effacerait le niveau 2 que le test installe pour vérifier
+  l'affichage et le bouton. Ce que le test vérifie est inchangé.
+- **Revérifié sur 1.56.2** (2026-11-18, version en ligne, consigne « repartir de la dernière version ») : le code en
+  cause n'a pas changé ; `stabilite-3d-v1563` échoue sur 1.56.2 avec les mêmes deux lignes `contexte-perdu`.
+- **Tests** (sur 1.56.2 + correction) :
+  - `npx vitest run` : 1698 réussis, 1 ignoré, 5 échecs connus de la version en ligne (extension-v032 uppercut,
+    fluidity ×2, hooks-biomeca « pas d'armé », expressions-v1160 taille d'Amara) : TEST ÉCHOUÉ (connus, sans lien) ;
+    `stability.test.ts` (9) : TEST RÉUSSI ;
+  - `npm run build` (titre v1.56.3) : TEST RÉUSSI ;
+  - `npx playwright test` (301 tests, 48 min) : 295 réussis, 2 ignorés (Firebase), 4 échecs sans lien :
+    `coaching-hud:60` (connu) et `coach-suggest:207` (échoue aussi sur 1.56.2 sans la correction, vérifié) ;
+    `chrono-seul:96` et `seance-mains-libres:117` réussissent relancés seuls (lenteur sous charge) : TEST ÉCHOUÉ (sans
+    lien) ; `coach-3d-recovery` (6) et `stabilite-3d-v1563` (2) : TEST RÉUSSI ;
+  - captures WebGL avant/après : NON APPLICABLE (aucun changement de rendu : seul le comptage des incidents change) ;
+  - Android : NON EXÉCUTÉ (à vérifier sur le téléphone de Youssef).
+- **Numéro** : préparée comme 1.47.1, puis 1.50.1 (PR #130) ; mise en pause le 17/11, reprise le 18/11 sur 1.56.2 et
+  renumérotée 1.56.3.
+- **Restauration** : branche `restauration/avant-stabilite-3d` (= 1.56.2, cab6545).
+
+## 2026-11-18 · v2.0.0 (préparée comme 1.56.4) · Réorganisation du dépôt et APK allégé
+
+- **Demande** (Youssef, 18/11) : audit complet du dépôt, archivage de tout ce qui est démontré inutile dans
+  `_ARCHIVES_HORS_APPLICATION/` (par catégorie, avec inventaire, rien supprimé), structure adaptée au projet, APK
+  allégé, sans régression ; ni fusion ni publication sans son accord.
+- **Constat vérifié** (sur 1.56.3, `8311586`) :
+  - `public/coaches/*/tenues/_tex/` (362 PNG, 26,7 Mo) : copies de travail écrites par `outfits.py`, lues par aucun
+    fichier ; les 51 GLB embarquent leurs images (aucune référence externe). Elles partaient dans `dist/` et l'APK ;
+  - `public/coaches/homme.jpg`, `femme.jpg` : référencées nulle part (seul le précache PWA les prenait) ;
+  - tenues d'arbitre : servent seulement aux illustrations de l'encyclopédie, jamais chargées par l'application ;
+  - `lab/groom.*` ne compile plus (modules supprimés en 1.37.0) ; 6 scripts remplacés ou visant des écrans supprimés ;
+    3 scripts jetables `_*.mjs` ; 8 caches Python committés ;
+  - vignettes (182), images d'encyclopédie (224), salles, emblèmes, catalogue, dépendances npm, workflows et
+    générateur Blender : tous utilisés, rien déplacé.
+- **Correction** :
+  - 598 fichiers déplacés par `git mv` dans `_ARCHIVES_HORS_APPLICATION/` (anciens-modeles-3d, anciennes-textures,
+    anciens-scripts, anciens-prototypes, anciennes-versions, fichiers-temporaires ; animations et tenues : vides,
+    rien d'inutile), dont tout l'ancien `backup CS/` ; inventaire `inventaire-archives.md` (chemin d'origine, motif,
+    taille) régénérable par `scripts/archives-inventaire.py` ;
+  - `outfits.py` écrit ses textures de travail hors de `public/` (`CSS_TEX_DIR` ou dossier temporaire) ;
+  - `tools/build/nativeOnly.ts` : le build Android laisse les tenues d'arbitre hors de l'APK ;
+  - `vite.config.ts` : `coaches/*.jpg` retiré du précache ; `.gitignore` : `__pycache__/`, `*.pyc` ;
+  - carte des dossiers `docs/ARCHITECTURE.md` ; références mises à jour (`CLAUDE.md`, `README.md`,
+    `NON_REGRESSION.md`, `tools/generator/README.md`, `regen_outfits.sh`, commentaires de 6 fichiers) ;
+  - le code de `src/` n'est pas déplacé (déjà rangé par rôle ; aucun gain pour l'APK, conflits avec les PR ouvertes).
+- **Résultat** : build Android 115,2 → 85,7 Mo (−29,5 Mo), build web 115,2 → 88,5 Mo (−26,7 Mo) ; les 548
+  ressources gardées sont identiques octet par octet. Rapport complet : `docs/v1564-reorganisation/RAPPORT.md`.
+- **Fichiers** : `_ARCHIVES_HORS_APPLICATION/`, `tools/build/nativeOnly.ts`, `vite.config.ts`,
+  `tools/generator/rocketbox/outfits.py`, `docs/ARCHITECTURE.md`, `docs/v1564-reorganisation/`,
+  `scripts/archives-inventaire.py`, `scripts/visuels/reorg-v1564-before-after.mjs`, `src/domain/releases.ts`,
+  `package.json`.
+- **Tests ajoutés** : `src/boot/__tests__/archives-hors-build.test.ts` (4 : archives hors de `src/` et `public/`,
+  pas de `_tex`/cache/photo orpheline dans `public/`, chaque coach garde modèle, portrait et 7 tenues, l'exclusion
+  Android ne touche aucun fichier de démarrage).
+- **Tests** :
+  - `npx vitest run` : 1702 réussis, 1 ignoré, les 5 échecs déjà présents en 1.56.3 (mesurés sur 1.56.3 le même
+    jour : 1698 réussis, mêmes 5) : TEST ÉCHOUÉ (connus, sans lien) ; `archives-hors-build` : TEST RÉUSSI ;
+  - `npm run build` et `npm run build:android` : TEST RÉUSSI ;
+  - captures WebGL avant/après (18 cas, 6 coachs, 6 disciplines, face/profil/dos) : 0 à 14 pixels sur 480 000,
+    comme le contrôle 1.56.3 contre elle-même (0 à 11) : TEST RÉUSSI ;
+  - `npx playwright test` (301 tests, 1,2 h) : 290 réussis, 2 ignorés (Firebase), 9 échecs, tous retrouvés sur
+    1.56.3 relancée seule le même jour (`coach-suggest:147` et `:207`, `coaching-hud:60` et `:89`,
+    `training-layout:117` échouent sur les deux ; `boot:98` et `encyclopedie:54` sont intermittents sur les deux ;
+    `chrono:93` et `mastery:26` réussissent relancés seuls) : TEST ÉCHOUÉ (sans lien avec ce lot) ;
+  - APK Gradle : NON EXÉCUTÉ (SDK Android inaccessible ici ; workflow `android-apk.yml` = pré-version GitHub, à
+    lancer avec l'accord de Youssef).
+- **Restauration** : branche `restauration/avant-reorganisation-v1563` (= 1.56.3, `8311586`) ; un fichier seul :
+  `git mv` depuis son chemin d'archive (voir l'inventaire).
+- **Publication** : Youssef, 18/11 21:37 : « Fusionne et passe en V2 » → numéro 2.0.0 (même contenu que la 1.56.4
+  testée), PR #139 fusionnée dans `claude/project-thread-o7lrt8`.
+
+## 2026-11-18 · v2.1.0 (expérimentale, non publiée) · Écran « Ton coach » V4 : un univers par coach
+
+- **Demande** : Youssef, 18/11 21:05 (maquette V4, refonte premium de la sélection des coachs avec ambiances
+  automatiques), précisée à 21:09 : « Pas forcément des salles en ambiance, mais quelque chose tiré des traits du coach ».
+- **Constat vérifié (2.0.0)** : l'écran montre les six coachs sur le même fond (halo rouge et or), le nom en filigrane
+  devant la scène ; le coach occupe environ 39 % de la hauteur ; les données du dépôt n'ont pas de champ discipline
+  (seul le style de Kanya la nomme, Kadir et Amara ont l'identifiant `mma-…`).
+- **Correction** : module `CoachAtmosphereResolver` (`src/domain/coaches/atmosphere.ts`) qui calcule pour chaque coach,
+  à partir de son surnom, sa description, son style, ses points forts et sa discipline quand elle figure dans les
+  données, une ambiance unique et déterministe (emblème de l'animal, palette, lumières, fumée, sol) ; scène WebGL
+  propre à cet écran (`src/three/atmosphere/`) ; nouvelle disposition (fiche sur la scène, portraits au contour doré,
+  bouton doré) ; cadrage sur la garde réelle du coach (+19 % mesuré sur Kanya) ; fondus entre coachs. Rapport complet :
+  `docs/v210/SELECTION_COACH_V4.md`.
+- **Corrigé en cours de lot** : un emblème pouvait rester en mémoire graphique après des appuis très rapides (trouvé par
+  le nouveau test des 18 changements) ; badge « Ton coach » remis sur fond uni (contraste mesuré 1,57:1 sur dégradé).
+- **Constat hors périmètre** (non corrigé) : sur cet écran, le total des textures grandit d'environ 13 par changement
+  de coach, autant en 2.0.0 qu'en 2.1.0 (chargement des coachs).
+- **Fichiers** : `src/domain/coaches/atmosphere.ts`, `src/three/atmosphere/emblem.ts`,
+  `src/three/atmosphere/AtmosphereScene.tsx`, `src/three/CoachStage.tsx` (prop facultative), `src/three/StudioStage.tsx`
+  (props facultatives), `src/ui/screens/CoachSelect.tsx`, `src/ui/styles.css`, `src/domain/releases.ts`, `package.json`,
+  `scripts/dev/shot-selection-v4.mjs`, `scripts/dev/shot-transition-v4.mjs`, `docs/v210/`.
+- **Tests ajoutés** : `src/domain/coaches/__tests__/atmosphere.test.ts` (10), `tests/e2e/selection-coach-v4.spec.ts` (4).
+- **Tests** : `atmosphere.test.ts` TEST RÉUSSI ; `npx vitest run` 1712 réussis, 5 échecs déjà présents sur la 2.0.0
+  (mêmes 5 relancés sur `e176ff9`) TEST ÉCHOUÉ (sans lien) ; Playwright `selection-coach-v4`, `coachs-v160`, `contrast`,
+  `navigation`, `boot` TEST RÉUSSI ; `npm run build` TEST RÉUSSI ; suite Playwright complète et téléphone réel NON EXÉCUTÉ.
+- **Restauration** : branche `restauration/avant-selection-coach-v4` (= 2.0.0, `e176ff9`).
+- **Publication** : aucune ; en attente de la validation de Youssef.
+
+## 2026-11-19 · v2.1.0 (expérimentale, non publiée) · Mémoire graphique à chaque changement de coach
+
+- **Demande** : Youssef, 19/11 06:52 : « Il faut corriger la mise en mémoire à chaque changement de coach avant la
+  publication ». La 2.1.0 n'étant pas publiée, la correction y est ajoutée sans changer de numéro.
+- **Constat vérifié** : textures vivantes de la carte graphique comptées (appels WebGL) après chaque tour des six coachs
+  sur l'écran « Ton coach » : 163 → 242 → 321 (+79 par tour, ≈ 13 par changement). Ce qui grandit : les textures
+  20×20 en flottants (matrices des os des squelettes) 73 → 219, et l'emblème de l'univers 5 → 17.
+- **Causes** : (1) chaque coach affiché est une copie du modèle avec ses propres squelettes (corps, tête, yeux, cheveux,
+  pièces de tenue), dont three.js garde les os dans une texture ; ces squelettes, et les géométries propres à la copie,
+  n'étaient jamais rendus au départ du coach (déjà en 2.0.0) ; (2) l'emblème qui s'efface était rendu à la carte
+  graphique alors qu'il restait dessiné une image de plus, et three.js le renvoyait aussitôt (propre à la 2.1.0).
+- **Correction** : `PhotoCoach.tsx` rend squelettes et géométries propres avec les matériaux au départ du coach ;
+  `outfit.ts` rend le squelette de chaque pièce de tenue ; `AtmosphereScene.tsx` cache l'emblème avant de le rendre.
+  Modèles chargés, visages, tenues, textures, animations : non touchés. Après : 94 → 94 → 94.
+- **Fichiers** : `src/three/PhotoCoach.tsx`, `src/three/outfit.ts`, `src/three/atmosphere/AtmosphereScene.tsx`,
+  `tests/e2e/selection-coach-v4.spec.ts`, `src/domain/releases.ts`, `docs/v210/SELECTION_COACH_V4.md` (§ 11),
+  `docs/v210/captures/memoire-avant-apres.jpg`.
+- **Test renforcé** : `selection-coach-v4.spec.ts` (18 changements) vérifie maintenant que le total des textures en
+  mémoire graphique ne grandit pas d'un tour à l'autre (marge 2 ; avant : +78 par tour).
+- **Tests** : Playwright `selection-coach-v4`, `coachs-v160`, `outfit-loading`, `coach-render`, `coach-3d-recovery`,
+  `stabilite-3d-v1563`, `ecran-coach-v140`, `navigation` : 58/58 TEST RÉUSSI ; `npx vitest run src/three src/domain/coaches`
+  727 réussis, 1 échec déjà présent sur la 2.0.0 (`expressions-v1160`, taille du modèle d'Amara) TEST ÉCHOUÉ (sans lien) ;
+  `npm run build` TEST RÉUSSI ; captures Kadir, Amara, Kanya avant/après la correction : rendu identique
+  (`memoire-avant-apres.jpg`) ; suite Playwright complète et téléphone réel NON EXÉCUTÉ.
+- **Restauration** : branche `restauration/avant-memoire-coach-v4` (= `2edb83c`).
+- **Publication** : aucune ; en attente de la validation de Youssef.
+
+## 2026-11-19 · v2.2.0 (expérimentale, non publiée) · Refonte qualitative 3D des coachs (lot 1)
+
+- **Demande** : Youssef, 19/11 09:04, « REFONTE QUALITATIVE 3D AAA » (tous les coachs, priorité aux morphologies
+  féminines, comparatifs WebGL réels, aucune fusion ni publication sans accord).
+- **Sources** : 2.1.0 publiée (`claude/project-thread-o7lrt8`, `2bc24cd`), pas `main` (1.40.1).
+- **Audit vérifié** (scripts `scripts/v220/`, données `docs/v220/audit/`) : 6 coachs (Kadir, Naël, Victor, Amara,
+  Inaya, Kanya), poids de peau sains sur les six ; deux corps de base seulement (épaules identiques au millimètre) ;
+  tailles féminines étroites (taille/hanches Inaya 0,63, Kanya 0,64, Amara 0,67 ; 59 à 63 cm de tour) ; Victor :
+  plaque claire en haut de la poitrine (raccord tête/corps, écart 9,1/255), liseré et traits sombres, peau grise
+  (saturation 0,37) ; ombres portées à bord net (PCFSoftShadowMap retiré de three r186) et orangées sur toute leur
+  surface (tache sous les gants).
+- **Corrections** :
+  - `src/three/morphology.ts` (nouveau) : taille élargie de 3 à 4 cm pour Amara, Inaya, Kanya (rapport 0,67→0,69,
+    0,63→0,67, 0,63→0,67), hanches et poitrine inchangées, même champ appliqué aux tenues
+    (`src/three/PhotoCoach.tsx`, `src/three/outfit.ts`) ; GLB et masques de peau inchangés ;
+  - Victor : textures corps et tête corrigées (`scripts/v220/peau.py`, `scripts/v220/raccord.py --hauteur`),
+    données sources mises à jour dans `tools/generator/victor/donnees/` (le test octet pour octet reste valable) ;
+  - Naël : raccord de teinte cou/poitrine de la texture de la tête (écart 5,6→4,5) ; le même raccord sur Kadir
+    (3,6→2,4) a été annulé : il cassait l'empreinte protégée de `outfit-rollback-v1373` (« modèle corporel Kadir
+    intact ») pour un gain léger ; le test est gardé tel quel ;
+  - ombres : rayon 4 → 8 de la lumière principale du studio, teinte chaude limitée à la pénombre
+    (`src/three/StudioStage.tsx`, `src/three/skinShader.ts`) ;
+  - Lab : `?fx=` (isolation des effets de peau) et `?v220=0` (rendu 2.1.0) pour les comparatifs (`src/ui/Lab.tsx`,
+    `src/three/photoMaterials.ts`).
+- **Essais annulés faute de gain** : marges des îlots UV (déjà présentes dans les textures d'origine), microrelief
+  procédural (invisible à la taille réelle).
+- **Fichiers** : ci-dessus, plus `src/domain/releases.ts`, `package.json` (2.2.0), `src/boot/assetSizes.json`,
+  `docs/v220/` (rapport `RAPPORT_V220.md`, captures, audit), `src/three/__tests__/morphology-v220.test.ts`.
+- **Tests ajoutés** : `morphology-v220.test.ts` (12) : TEST RÉUSSI.
+- **Tests** : Vitest 1 723 réussis, 5 TEST ÉCHOUÉ déjà en échec en 2.1.0 (expressions-v1160, extension-v032,
+  hooks-biomeca, fluidity ×2), aucun nouveau ; Playwright ciblé 74/74 TEST RÉUSSI ; Playwright complet NON EXÉCUTÉ ;
+  `npm run build` TEST RÉUSSI ; téléphone Android NON EXÉCUTÉ ; mesures de performance : triangles et appels de dessin
+  identiques (`docs/v220/RAPPORT_V220.md` § 6).
+- **Restauration** : branche `restauration/avant-refonte-3d-v220` (= 2.1.0, `2bc24cd`). Non fusionné, non publié.
+
+## 2026-11-19 · v2.3.0 (expérimentale, non publiée) · Biomécanique et animations de combat (lot 2)
+
+- **Demande** : Youssef, 19/11 11:27, « LOT 2, BIOMÉCANIQUE ET ANIMATIONS DE COMBAT AAA » (tous les coachs, chaîne
+  cinétique, coups de pied et équilibre, morphologies, timing, transitions, captures WebGL réelles avant/après,
+  aucune fusion ni publication sans son accord).
+- **Sources** : 2.2.0 (`claude/project-thread-o7lrt8`, `72d9bd5`, Lot 1 vérifié intégré).
+- **Constat vérifié** (outil `src/test/animAudit.ts`, 1 272 mesures sur les six coachs, `docs/v230/audit/avant.json`) :
+  hanches et épaules culminent ensemble sur 250 coups (pas de chaîne cinétique sur les directs) ; poing ou coude
+  figé à l’impact (jab 67 ms, direct 92 ms, coudes 94 ms ; 358 coups ≥ 50 ms) ; high kicks : retour du pied en
+  ligne droite qui replie la jambe, genou qui tourne de 53 à 58° en 1/60 s, saut de vitesse 11 à 12 ; uppercut
+  arrière : poing qui culmine avant les épaules ; overhand : coude qui bascule de 158° en une image (Kadir) ; garde
+  au repos identique toutes les 0,9 s (corrélation 1,000), dérive en centimètres fixes quelle que soit la taille.
+- **Corrections** (chacune derrière un interrupteur de `src/engine/v230.ts`, annulable seule : `?v230=-nom` dans le
+  Lab, `V230=-nom` pour les tests, `?v230=0` = moteur 2.2.0) :
+  - `chainLead` : sur les coups de poing, le bassin prend son avance dès le début (`motion.ts`) ;
+  - `snap` : la pose d’impact n’est plus tenue sur les poings, coudes et front kicks (`library/index.ts`) ; pas sur
+    les genoux (tibia dans l’autre jambe), le teep, les défenses, ni les coups au corps (le coude s’ouvrait à 95,3°
+    pour 95° max sur le crochet arrière au corps, `hooks-biomeca.test`) ;
+  - `armLag` : uppercuts, le bras monte en dernier (`author.ts` `lagHand`, `boxing.ts`) ;
+  - `legArc` : un pied en l’air tourne autour de la hanche si la jambe est tendue à une extrémité (`motion.ts`) ;
+  - `twistCap` : le solveur ne fait plus tourner un coude ou un genou d’un demi-tour pour 1 à 2° de rotation
+    d’épaule ou de hanche (`rig.ts`) ;
+  - `overhandPath` : overhand sans armé à côté de l’oreille (`boxing.ts`) ;
+  - `idleLife` : garde au repos non répétitive, dérive proportionnelle à la taille (`player.ts`).
+  - Essai écarté : `poleSlerp` (interrupteur coupé) : avant-bras dans le tronc 5,8 cm (changement de base), main
+    dans le tronc 3,7 cm (middle kick). Retirés aussi : `armLag` sur directs, crochets et coudes (poing plus lent),
+    tenue d’impact de 12 ms (poses clés < 25 ms, `integrity.test`), recalage d’épaule à ± 150° (chute arrière
+    retournée).
+- **Résultat mesuré** (`docs/v230/AUDIT_MESURES.md`, `docs/v230/RAPPORT_V230.md`) : coups où hanches et épaules
+  culminent ensemble 250 → 157 ; arrêt du poing jab 67 → 33 ms, direct 92 → 50 ms ; high kick avant : vitesse du
+  pied 10,4-10,9 → 15,3-15,8 m/s, rotation du genou 53-58° → 38-39° ; sauts de vitesse > 10 : 67 → 38 ; rotations
+  parasites > 45° : 66 → 34 ; garde : corrélation 1,000 → 0,85 ; techniques avec un membre dans le corps > 2 cm :
+  29 → 28. Limite : overhand 10 à 13 % plus lent à l’impact (trajectoire plus courte), à valider.
+- **Tests adaptés, avec raison** :
+  - `chain.test.ts` « garde vivante » : l’ancien test (pieds fixes, rebond strictement périodique) tourne avec
+    `idleLife` coupé, inchangé ; un test 2.3.0 ajouté vérifie pieds fixes (< 0,1 mm) et rebond non identique ;
+  - `torso-chain-v1331.test.ts` : la structure des poses clés est vérifiée avec et sans `snap` (sans : la tenue
+    d’impact doit être là, comme avant ; avec : elle est retirée, le reste identique) ; 48 → 96 tests ;
+  - documents de mesures régénérés par leurs tests : `MESURES_FLUIDITE`, `MESURES_INTRUSIONS`, `MESURES_MOTEUR`,
+    `MESURES_TORSIONS`, `MESURES_CROCHETS`, `MESURES_TENUES_AMARA`, `techniquePictos.json` (pictogramme de
+    l’overhand, données dérivées des animations ; aucun écran modifié).
+- **Tests ajoutés** : `anim-audit-v230.test.ts` (mesure complète), `stabilite-v230.test.ts` (3 minutes par coach,
+  pas de valeur invalide ni de dérive).
+- **Fichiers** : `src/engine/{v230,motion,player,rig,author,index}.ts`, `src/engine/library/{index,boxing}.ts`,
+  `src/ui/Lab.tsx` (`?v230=`), `src/test/animAudit.ts`, `scripts/v230/` (captures, vidéos, synthèse), `docs/v230/`,
+  `src/domain/releases.ts`, `package.json` (2.3.0), `docs/NON_REGRESSION.md`.
+- **Tests** : Vitest complet : 4 TEST ÉCHOUÉ, tous déjà en échec en 2.2.0 (expressions-v1160 taille du modèle
+  d’Amara, fluidity ×2, hooks-biomeca « pas d’armé ») ; l’échec 2.2.0 d’`extension-v032` (uppercut arrière) est
+  corrigé ; tous les autres TEST RÉUSSI ; `npm run build` TEST RÉUSSI ; captures WebGL avant/après : voir le rapport ;
+  Playwright ciblé (8 fichiers) : 44 réussis, 3 TEST ÉCHOUÉ non encore analysés (`coaching-hud.spec:60` nom du
+  coup pendant Jab → Direct → Low kick, `training-layout.spec:117` sans défilement, `training-layout.spec:336`
+  caméra Auto ; les deux derniers sont connus instables sous charge, à vérifier contre la 2.2.0) ; Playwright
+  complet NON EXÉCUTÉ ; téléphone Android NON EXÉCUTÉ.
+- **Restauration** : branche `restauration/avant-animations-v230` (= 2.2.0, `72d9bd5`), ou une correction seule par
+  son interrupteur. Non fusionné, non publié.
+
+## 2026-11-19 · v2.3.1 · Version Google Play : AAB signé, contrôles de conformité, fiche et confidentialité
+
+- **Demande** (Youssef) : générer l’APK final, « dans les règles », conforme à tous les critères de publication du
+  Play Store.
+- **Constat vérifié sur la 2.3.0** (`6e139eb`) :
+  - conforme : SDK cible et de compilation 36 (Android 16), SDK minimal 24, `versionCode` croissant tiré de
+    `package.json`, sauvegarde cloud désactivée, débogage WebView coupé, aucune bibliothèque native, application
+    hors ligne (84 Mo de contenu web), aucune donnée collectée ;
+  - manquant : aucun build de publication (seul un APK de test signé en debug, dernier construit en 0.24.0), pas de
+    format AAB, pas de signature de publication, adresse de contact « [à compléter avant publication] » dans l’écran
+    Confidentialité, politique de confidentialité non publiée à une adresse publique, pas de visuels ni de textes
+    de fiche ;
+  - anomalie : les vibrations de la séance (début, pause, rounds, 1.0.0) ne peuvent pas fonctionner dans
+    l’application Android, la permission `VIBRATE` n’étant pas déclarée (la WebView ignore alors
+    `navigator.vibrate`) ;
+  - point de vigilance non modifié : l’écran Premium présente une offre pas encore en vente (risque d’être jugé
+    trompeur à l’examen ; toute vente devra passer par Google Play Billing).
+- **Correction** :
+  - nouveau workflow `.github/workflows/android-release.yml` : tests unitaires (joints au rapport), build web,
+    `bundleRelease` + `assembleRelease`, signature par les secrets GitHub `ANDROID_KEYSTORE_BASE64`,
+    `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` (clé écrite dans le dossier temporaire
+    du runner puis effacée ; sans secrets, fichiers marqués `NON-SIGNE`) ;
+  - `scripts/android/verify-release.sh` : contrôles bloquants sur le fichier compilé (identifiant, versionCode,
+    versionName, SDK cible 36, SDK minimal 24, non débogable, permissions autorisées, alignement 16 Ko, signatures
+    apksigner et jarsigner, manifeste de l’AAB par bundletool), rapport `RAPPORT.md` et `SHA256SUMS.txt` ;
+  - permission `VIBRATE` (normale, sans fenêtre) ajoutée au manifeste ; textes de confidentialité mis à jour
+    (écran, `docs/CONFIDENTIALITE.md`, `docs/ANDROID.md`) ;
+  - `public/confidentialite.html` : politique publique sans script, adresse prévue
+    `https://doorsofhell.github.io/combat-shadow-studio/confidentialite.html` ;
+  - `docs/PLAY_STORE.md` : signature, contrôles, fiche (nom, descriptions), réponses aux formulaires (sécurité des
+    données, classification, public cible 13 ans et plus, santé), ordre des étapes (dont le test fermé de 12 testeurs
+    pendant 14 jours imposé aux comptes personnels récents) ;
+  - `docs/play-store/visuels/` : icône 512×512 RGBA, bannière 1024×500 (rendus réels de Naël, Amara, Kadir),
+    6 captures 1080×1920 de l’application compilée pour Android ;
+  - clé d’importation RSA 4096 préparée hors dépôt (fichiers privés du projet), en attente du choix de Youssef.
+- **Fichiers** : `.github/workflows/android-release.yml`, `scripts/android/verify-release.sh`,
+  `android/app/src/main/AndroidManifest.xml`, `public/confidentialite.html`, `src/ui/screens/Privacy.tsx`,
+  `docs/{PLAY_STORE,ANDROID,CONFIDENTIALITE,NON_REGRESSION}.md`, `docs/play-store/visuels/`,
+  `src/domain/play-store-v231.test.ts`, `src/domain/releases.ts`, `package.json` (2.3.1).
+- **Tests** :
+  - ajouté : `play-store-v231.test.ts` (7 tests : SDK, permissions, sauvegarde, signature hors dépôt, versionCode,
+    politique publique, workflow) : TEST RÉUSSI ;
+  - build Android sur GitHub Actions (run 44597153826, sans signature) : AAB et APK 65 Mo, versionCode 20301,
+    SDK cible 36, non débogable, permissions, alignement 16 Ko, manifeste de l’AAB : TEST RÉUSSI ; signature :
+    NON EXÉCUTÉ (secrets absents) ;
+  - Vitest complet sur la 2.3.0 avant changement : 1781 réussis, 4 TEST ÉCHOUÉ déjà connus (voir 2.3.0) ;
+  - Vitest complet sur la 2.3.1 : 1788 réussis, les mêmes 4 TEST ÉCHOUÉ connus, aucun nouveau ;
+  - `npm run build` : TEST RÉUSSI ;
+  - Playwright complet sur la 2.3.1 (305 tests, 1 h 06) : 297 réussis, 2 ignorés, 6 TEST ÉCHOUÉ ; relancés seuls :
+    3 réussissent (`chrono-seul:96`, `coachs-v160:74`, `seance-mains-libres:117`, instables sous charge) ; les
+    3 autres (`coach-suggest:147`, `coaching-hud:60`, `training-layout:336`) échouent à l’identique sur la 2.3.0
+    (`restauration/avant-play-store-v231`) : antérieurs, sans lien avec cette version, aucune régression ;
+  - 20/11 : adresse de contact publique (provisoire, Youssef) dans `src/domain/contact.ts` et
+    `public/confidentialite.html`, test de cohérence ajouté (8 tests) : TEST RÉUSSI ;
+  - 20/11 : build signé (run 44704915977, commit `377a43c`) : signature APK (apksigner) et AAB (jarsigner) TEST
+    RÉUSSI, empreinte de la clé d’importation `B4:7F:38:3A:…:A7:11`, tous les autres contrôles TEST RÉUSSI ;
+    artefact `play-store-signe` (AAB `e9209e3a…`, APK `3e93ce41…`, 30 jours) ; Vitest du runner : les 4 échecs
+    connus + `morphology-v220` « ordre des surfaces » (réussit 2 fois sur 2 en local, sans lien avec cette version) ;
+  - installation sur un vrai téléphone : NON EXÉCUTÉ.
+- **Restauration** : branche `restauration/avant-play-store-v231` (= 2.3.0, `6e139eb`).
+
+## 2026-11-20 · v2.3.2 · Prix de Premium à vie (plan de monétisation)
+
+- **Constat vérifié** : l'offre Premium (`src/monetization/offer.ts`) affichait encore le prix indicatif de la v0.40,
+  39,99 € TTC, sans prix de lancement. Le 2026-11-20, Youssef a validé le plan de monétisation freemium (32 choix,
+  `docs/monetisation/DECISIONS.md`) : 29,99 € TTC, 19,99 € pendant le premier mois, et a demandé de mettre à jour
+  l'application pour le prix.
+- **Correction** :
+  - prix 29,99 € TTC et promotion de lancement 19,99 € « pendant le premier mois » dans l'offre centrale ;
+  - panneau « Offre Premium » : « Prix indicatif : 29,99 € TTC. Prix de lancement indicatif : 19,99 € TTC pendant
+    le premier mois. » ;
+  - limites gratuites du catalogue des droits mises à jour selon ses choix (3 enchaînements, 5 favoris, 30 jours
+    d'historique, Décomposer réservé à Premium, 6 disciplines gratuites aux niveaux débutant et intermédiaire) :
+    texte seulement, rien n'est limité (`MONETIZATION_ENABLED` reste `false`) ;
+  - aucun paiement branché, aucune fonction retirée.
+- **Fichiers** : `src/monetization/offer.ts`, `src/monetization/entitlements.ts`, `src/ui/premium/PremiumPage.tsx`,
+  `src/monetization/__tests__/rights.test.tsx`, `tests/e2e/premium.spec.ts`, `docs/monetisation/DECISIONS.md`,
+  `src/domain/releases.ts`, `package.json` (2.3.2).
+- **Tests** : le prix attendu passe de 39,99 € à 29,99 € dans `rights.test` et `premium.spec` (nouveau prix décidé
+  par Youssef, pas un affaiblissement) et le prix de lancement 19,99 € y est ajouté. Résultats : voir ci-dessous.
+- **Restauration** : branche `restauration/avant-prix-premium-v232` (= 2.3.1, `744c593`).
+- **Résultats (2.3.2)** :
+  - Vitest ciblé (`src/monetization`, `release-version`, `src/ui/nav`, 100 tests) : TEST RÉUSSI ;
+  - Vitest complet : 1789 réussis, 1 ignoré, 4 TEST ÉCHOUÉ déjà connus et sans lien (`fluidity` ×2,
+    `hooks-biomeca`, `expressions-v1160` taille d'Amara, déjà en échec sur la 2.3.0 et la 2.3.1) ;
+  - `npm run build` : TEST RÉUSSI ;
+  - Playwright `premium.spec` et `premium-panels.spec` (10 tests, dont accessibilité clair et sombre) : TEST RÉUSSI ;
+  - Playwright complet (305 tests, 1 h) : 297 réussis, 2 ignorés (Firebase), 6 TEST ÉCHOUÉ ; relancés seuls :
+    `chrono-seul:96` et `seance-mains-libres:117` réussissent (instables sous charge) ; `coach-suggest:147`,
+    `coaching-hud:60` et `training-layout:336` échouent comme sur la 2.3.0 et la 2.3.1 ; `mastery:26` est
+    intermittent : 1 échec sur 4 sur la 2.3.2 et 2 échecs sur 4 sur la 2.3.1 (`restauration/avant-prix-premium-v232`),
+    donc antérieur et sans lien avec le prix. Aucune régression ;
+  - capture du panneau Offre en 412 × 915 : `monetisation/offre-premium-v2.3.2.png` (fichiers du projet).

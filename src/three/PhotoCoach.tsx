@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import type { GLTFLoader } from 'three-stdlib';
-import { Material, Mesh, MeshStandardMaterial, Object3D, Vector3, type SkinnedMesh } from 'three';
+import { BufferGeometry, Material, Mesh, MeshStandardMaterial, Object3D, Vector3, type Skeleton, type SkinnedMesh } from 'three';
 import { applyBreath, Breath } from './breath';
 import { Sway } from './sway';
 import { hairFadeAttribute, photoMaterial, photoPart, skinLookFor } from './photoMaterials';
@@ -10,11 +10,13 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
 import { restoreReferencePose, setLegLength } from './pose';
 import { dropStillMorphs, FaceAnimator, type FaceOptions } from './face';
 import { applyWrinkles, WRINKLES_ON_COACHES } from './human/wrinkles';
+import { newFaceRenderUniforms, shareFaceRender } from './human/faceRender';
 import { bakeAmaraCleanSurface } from './amaraCleanSurface';
 import type { HumanSignals } from './human/behavior';
 import { humanProfileFor } from './human/profiles';
 import { CoachRig } from '../engine';
 import { useOutfit, type OutfitId, type OutfitStatus } from './outfit';
+import { applyMorphology, morphologyFor } from './morphology';
 
 /**
  * v0.29 Ultra-réaliste coach built on a photo-textured avatar of the Microsoft Rocketbox library (MIT,
@@ -60,7 +62,10 @@ export function PhotoCoach({
   const scene = useMemo(() => {
     // 1.10: skin calibrated per coach (relief, scattering, pores: photoMaterials.ts SKIN_LOOK)
     const look = skinLookFor(url);
+    const morpho = morphologyFor(url);
     const s = cloneSkinned(gltf.scene);
+    // 2.1.0: what this copy owns in graphics memory, given back when it leaves (see the cleanup below)
+    const owned: BufferGeometry[] = [];
     s.traverse((o) => {
       const m = o as Mesh;
       if (!m.isMesh) return;
@@ -69,7 +74,14 @@ export function PhotoCoach({
       // Amara only: optional extra target on the body stores the old swimsuit surface
       // flattened in the actual rendered model. Bake BEFORE removing static morphs.
       // All seven existing hideBody masks still use the original unbaked vertex keys.
+      const loaded = m.geometry;
       if (!bakeAmaraCleanSurface(m)) dropStillMorphs(m);
+      // 2.2.0: the coach's own morphology (src/three/morphology.ts), on the body only, the garments get the same field
+      if (morpho && /body/i.test((m.material as Material).name) && (m as SkinnedMesh).isSkinnedMesh) {
+        if (m.geometry === loaded) m.geometry = loaded.clone();
+        applyMorphology(m.geometry, morpho, (m as SkinnedMesh).skeleton);
+      }
+      if (m.geometry !== loaded) owned.push(m.geometry);
       // 1.10: each part classified (skin, eyes, hair, brows, lashes) and rebuilt from all its source properties
       // (src/three/photoMaterials.ts): before, « opacity » sent the eyes, brows and lashes to the hair branch
       const part = photoPart(m.material as Material);
@@ -78,6 +90,7 @@ export function PhotoCoach({
       if (part === 'peau' && (m as SkinnedMesh).isSkinnedMesh) applyBreath(m.material as Material, breath.uniformsFor(m as SkinnedMesh));
     });
     restoreReferencePose(s);
+    s.userData.cssOwnedGeometries = owned;
     return s;
   }, [gltf, quality, url, breath]);
   // 1.9: blinks, gaze and the effort of the strikes on the facial bones (src/three/face.ts); after the rig's pose
@@ -95,6 +108,12 @@ export function PhotoCoach({
       });
     return f;
   }, [scene, url]);
+  // 1.44 the face's rendering (src/three/human/faceRender.ts): one set of uniforms for the head's skin and the eyes
+  const faceRender = useMemo(() => {
+    const u = newFaceRenderUniforms();
+    shareFaceRender(scene, u);
+    return u;
+  }, [scene]);
   const rig = useMemo(() => {
     restoreReferencePose(scene);
     setLegLength(scene, legLength);
@@ -109,12 +128,21 @@ export function PhotoCoach({
   }, [scene, shadows]);
   // v0.29: the materials made for this quality are freed when the quality changes or the coach leaves
   // (they used to stay in graphics memory; the textures belong to the loaded model and stay shared)
+  // 2.1.0 (Youssef, 2026-11-19 « corriger la mise en mémoire à chaque changement de coach »): the copy's own
+  // skeletons (each one keeps its bone matrices in a texture) and its own geometries are given back too: about
+  // thirteen textures used to stay in graphics memory at every coach change
   useEffect(
-    () => () =>
+    () => () => {
+      const skeletons = new Set<Skeleton>();
       scene.traverse((o) => {
         const m = o as Mesh;
-        if (m.isMesh) (m.material as MeshStandardMaterial).dispose();
-      }),
+        if (!m.isMesh) return;
+        (m.material as MeshStandardMaterial).dispose();
+        if ((m as SkinnedMesh).isSkinnedMesh && !o.name.startsWith('tenue:')) skeletons.add((m as SkinnedMesh).skeleton);
+      });
+      for (const k of skeletons) k.dispose();
+      for (const g of (scene.userData.cssOwnedGeometries as BufferGeometry[] | undefined) ?? []) g.dispose();
+    },
     [scene],
   );
   useEffect(() => onRig(rig), [rig, onRig]);
@@ -158,6 +186,7 @@ export function PhotoCoach({
     face.setViewer(camera.getWorldPosition(viewerPos));
     face.update(Math.min(dt, 0.05), fo, human);
     face.updateWrinkles(camera);
+    face.updateRender(faceRender, camera);
     // still images (Lab, portraits): the chest at rest, so two captures of the same instant are the same
     breath.update(fo?.still ? 0 : dt, face.state.effort);
     if (fo?.still) breath.amount.value.set(0, 0, 0, 0);

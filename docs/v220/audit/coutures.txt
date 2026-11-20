@@ -1,0 +1,13 @@
+# Essai annulé (marges UV refaites) : texels noirs dans la bande hors des îlots, textures 2.1.0 → textures à marges refaites. Aucun gain : marges déjà présentes.
+mma-kadir body: noir le long des coutures 0.0 % → 0.0 %
+mma-kadir head: noir le long des coutures 1.2 % → 1.3 %
+nael body: noir le long des coutures 0.0 % → 0.0 %
+nael head: noir le long des coutures 0.9 % → 1.0 %
+victor body: noir le long des coutures 0.0 % → 0.0 %
+victor head: noir le long des coutures 0.4 % → 0.8 %
+mma-amara body: noir le long des coutures 0.0 % → 0.0 %
+mma-amara head: noir le long des coutures 8.2 % → 8.9 %
+inaya body: noir le long des coutures 0.0 % → 0.0 %
+inaya head: noir le long des coutures 0.6 % → 0.6 %
+kanya body: noir le long des coutures 0.3 % → 0.3 %
+kanya head: noir le long des coutures 12.7 % → 13.1 %

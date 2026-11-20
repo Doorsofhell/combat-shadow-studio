@@ -1,5 +1,6 @@
 import { PageHead } from '../components';
 import { AppIcon } from '../icons';
+import { PUBLISHER_EMAIL } from '../../domain/contact';
 
 /** Privacy policy, same content as docs/CONFIDENTIALITE.md. */
 export function Privacy() {
@@ -63,7 +64,7 @@ export function Privacy() {
 
         <h2>Application Android</h2>
         <ul>
-          <li>Seule la permission INTERNET est demandée aujourd’hui (permission normale, sans fenêtre d’autorisation), utilisée pour afficher l’application.</li>
+          <li>Deux permissions normales sont déclarées, sans fenêtre d’autorisation : INTERNET, pour afficher l’application, et VIBRATE, pour les vibrations qui marquent le début, la pause et les rounds d’une séance.</li>
           <li>La sauvegarde dans le cloud et le transfert vers un nouvel appareil sont désactivés : tes données ne quittent pas le téléphone. Pour les déplacer, utilise l’export JSON.</li>
         </ul>
 
@@ -88,9 +89,8 @@ export function Privacy() {
 
         <h2>Contact</h2>
         <p>
-          Adresse e-mail de l’éditeur : <b>[à compléter avant publication]</b>.
+          Adresse e-mail de l’éditeur : <a href={`mailto:${PUBLISHER_EMAIL}`}>{PUBLISHER_EMAIL}</a>.
         </p>
-        <p className="small muted">Cette adresse doit être renseignée par l’éditeur avant la publication de l’application.</p>
       </article>
     </div>
   );

@@ -61,14 +61,15 @@ function shot(a: Author): Motion {
     d.chest = { yaw: deg(-4), pitch: deg(22), roll: 0 };
     d.head = { yaw: 0, pitch: deg(-30), roll: 0 };
     const kneeY = 0.5 * s;
-    d.handL = a.hand('world', v3(0.2 * s, kneeY, d.hips.z + 0.42 * s), v3(0.6, -0.4, -0.6), -0.3, 0.7, deg(10));
-    d.handR = a.hand('world', v3(-0.18 * s, kneeY + 0.02 * s, d.hips.z + 0.4 * s), v3(-0.6, -0.4, -0.6), -0.3, 0.7, deg(10));
+    // 1.46.0: hands wider and further forward, outside the coach's own lead knee (the left hand went into the left thigh)
+    d.handL = a.hand('world', v3(0.27 * s, kneeY + 0.04 * s, d.hips.z + 0.5 * s), v3(0.6, -0.4, -0.6), -0.3, 0.7, deg(10));
+    d.handR = a.hand('world', v3(-0.22 * s, kneeY + 0.06 * s, d.hips.z + 0.48 * s), v3(-0.6, -0.4, -0.6), -0.3, 0.7, deg(10));
   });
   const drive = edit(pen, (d) => {
     d.hips.z += 0.06 * s;
     d.hips.y += 0.04 * s;
-    d.handL.pos = add(d.handL.pos, { z: -0.12 * s, x: -0.06 * s });
-    d.handR.pos = add(d.handR.pos, { z: -0.12 * s, x: 0.06 * s });
+    d.handL.pos = add(d.handL.pos, { z: -0.08 * s, x: -0.04 * s });
+    d.handR.pos = add(d.handR.pos, { z: -0.08 * s, x: 0.04 * s });
     d.chest.pitch -= deg(6);
   });
   const recover = edit(low, (d) => {
@@ -165,9 +166,11 @@ function sprawl(a: Author): Motion {
   const g = a.guard();
   const s = a.s;
   /** hands on the attacker's head and shoulders (imaginary), pressing down and away */
-  const press = (d: Pose, y: number, z: number) => {
-    d.handL = a.hand('world', v3(0.17 * s, y, z), v3(0.6, 0.1, -0.8), 1, 0, deg(-70));
-    d.handR = a.hand('world', v3(-0.17 * s, y, z), v3(-0.6, 0.1, -0.8), 1, 0, deg(-70));
+  // 1.41.1 (traversées du corps): on the way down the hands come wider, elbows out, so that the rear forearm does
+  // not cross the chest as it bends forward (up to 14 cm in the body before)
+  const press = (d: Pose, y: number, z: number, x = 0.17, py = 0.1) => {
+    d.handL = a.hand('world', v3(x * s, y, z), v3(0.6, py, -0.8), 1, 0, deg(-70));
+    d.handR = a.hand('world', v3(-x * s, y, z), v3(-0.6, py, -0.8), 1, 0, deg(-70));
   };
   const drop = edit(g, (d) => {
     d.hips.y -= 0.3 * s;
@@ -175,7 +178,7 @@ function sprawl(a: Author): Motion {
     d.pelvis.pitch += deg(40);
     d.chest.pitch += deg(20);
     d.head.pitch += deg(-35);
-    press(d, 0.5 * s, 0.42 * s);
+    press(d, 0.5 * s, 0.6 * s, 0.34, -0.6);
   });
   const kick = edit(drop, (d) => {
     press(d, 0.06 * s, 0.4 * s);
@@ -257,8 +260,8 @@ function takedownDefence(a: Author): Motion {
     const y = a.target('body').y - 0.12 * s;
     // elbows back and close to the body, not flared to the side: the hands frame the opponent's
     // shoulders without the upper arm turning in on itself
-    d.handL = a.hand('world', v3(0.16 * s, y, 0.42 * s), v3(0.4, -0.45, -0.8), 1, 0.3, deg(-30));
-    d.handR = a.hand('world', v3(-0.16 * s, y, 0.4 * s), v3(-0.4, -0.45, -0.8), 1, 0.3, deg(-30));
+    d.handL = a.hand('world', v3(0.18 * s, y, 0.54 * s), v3(0.5, -0.75, -0.4), 1, 0.3, deg(-30));
+    d.handR = a.hand('world', v3(-0.24 * s, y, 0.6 * s), v3(-0.6, -0.75, -0.35), 1, 0.3, deg(-30));
   });
   return {
     id: 'defense-lutte',
@@ -364,13 +367,16 @@ function standUp(a: Author): Motion {
     d.pelvis = { yaw: deg(-35), pitch: deg(-5), roll: deg(-25) };
     d.chest = { yaw: deg(20), pitch: deg(30), roll: deg(10) };
     d.footL = a.air(v3(0.05 * s, 0.12 * s, -0.15 * s), deg(-30), deg(20), 0, v3(0.6, -0.4, 1), 0);
+    // 1.46.0: the posted hand slides out while the hips rise, so the swinging leg passes inside it
+    d.handL = { ...d.handL, pos: add(d.handL.pos, { x: 0.12 * s }) };
   });
   const swing = edit(lift, (d) => {
     d.hips = v3(0.04 * s, 0.62 * s, -0.3 * s);
     d.pelvis = { yaw: deg(-30), pitch: deg(25), roll: deg(-6) };
     d.chest = { yaw: deg(10), pitch: deg(25), roll: 0 };
     d.footL = a.ground(v3(0.1 * s, 0, -0.62 * s), deg(-40), deg(30));
-    d.handL = a.hand('world', v3(0.3 * s, 0.2 * s, -0.42 * s), v3(0.4, 0.4, 0.6), 1, 0.3, deg(-40));
+    // 1.46.0: the posted hand stays wider, so the leg passes inside it (the left thigh went over the hand)
+    d.handL = a.hand('world', v3(0.42 * s, 0.2 * s, -0.42 * s), v3(0.4, 0.4, 0.6), 1, 0.3, deg(-40));
   });
   // land in a guard that is rotated: the rear foot is now the left; rebuild the orthodox guard by a short step
   const rise = edit(g, (d) => {

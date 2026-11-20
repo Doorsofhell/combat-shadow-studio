@@ -1,0 +1,55 @@
+name: v1.50.0 - Pilot WebGL before-after validation
+
+on:
+  pull_request:
+    branches:
+      - claude/project-thread-o7lrt8
+    paths-ignore:
+      - 'captures/v1500/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  pilot-webgl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - name: Checkout isolated 1.50.0 prototype
+        uses: actions/checkout@v4
+        with:
+          ref: feature/streetfighter-visual-v1500
+          persist-credentials: true
+      - name: Checkout exact production 1.49.0 baseline
+        uses: actions/checkout@v4
+        with:
+          ref: 74ec25031dc92668a58f0652201276449e9f6722
+          path: reference-v1490
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies in both versions
+        run: |
+          npm ci
+          npm ci --prefix reference-v1490
+      - name: Run material and regression tests
+        run: npm run test -- src/three/__tests__/premium-visual-v1490.test.ts src/three/__tests__/premium-skin-v1480.test.ts src/three/__tests__/amara-semi-realiste-v1471.test.ts
+      - name: Build experimental application (no deployment)
+        run: npm run build
+      - name: Verify previously generated paired real WebGL captures
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, statSync } from 'node:fs';
+          const dir='captures/v1500';
+          const manifest=JSON.parse(readFileSync(dir+'/manifest.json','utf8'));
+          if (manifest.length !== 12 || manifest.some(x => x.status !== 'ok')) throw Error('Expected 12 successful real WebGL captures');
+          for (const x of manifest) {
+            const file=dir+'/'+x.label+'/'+x.name+'.png';
+            const bytes=statSync(file).size;
+            if (bytes < 15000) throw Error('Missing/empty capture '+file);
+            console.log(file, bytes);
+          }
+          NODE

@@ -1,0 +1,93 @@
+name: v1.53 - cinematic premium light matched WebGL (no deployment)
+
+on:
+  push:
+    branches:
+      - experiment/cinematic-lighting-v1530
+    paths-ignore:
+      - 'captures/v1530-lighting/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cinematic-v1530-preview
+  cancel-in-progress: false
+
+jobs:
+  render-ab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout isolated experiment
+        uses: actions/checkout@v4
+        with:
+          ref: experiment/cinematic-lighting-v1530
+          persist-credentials: true
+      - name: Checkout exact published v1.51.0 baseline
+        uses: actions/checkout@v4
+        with:
+          ref: d7169f22799dd09d12ca35a298caf09df7ba9d0e
+          path: reference-v1510
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install both versions and headless Chromium
+        run: |
+          npm ci
+          npm ci --prefix reference-v1510
+          npx playwright install --with-deps chromium
+      - name: Verify app bundle and existing quality checks
+        run: |
+          npm run test -- src/three/__tests__/premium-skin-v1480.test.ts src/domain/release-version.test.ts
+          npm run build
+      - name: Capture real matching WebGL frames
+        run: node scripts/visuels/v1530-cinematic-before-after.mjs
+      - name: Compose six true side-by-side comparisons
+        run: |
+          python3 -m pip install --user pillow
+          python3 - <<'PY'
+          from PIL import Image,ImageDraw
+          from pathlib import Path
+          import json
+          root=Path('captures/v1530-lighting')
+          manifest=json.loads((root/'manifest.json').read_text())
+          assert len(manifest)==12 and all(x['status']=='ok' for x in manifest)
+          out=root/'comparatifs'
+          out.mkdir(exist_ok=True)
+          for coach in ('kadir','amara'):
+            for angle in ('front','three-quarter','profile'):
+              name=f'{coach}-{angle}.png'
+              a=Image.open(root/'avant'/name).convert('RGB')
+              b=Image.open(root/'apres'/name).convert('RGB')
+              assert a.size==b.size
+              w,h=a.size
+              board=Image.new('RGB',(w*2,h+40),'#16171c')
+              board.paste(a,(0,40))
+              board.paste(b,(w,40))
+              d=ImageDraw.Draw(board)
+              d.text((18,12),'AVANT — v1.51.0',fill='white')
+              d.text((w+18,12),'APRES — v1.53.0 expérimental',fill='white')
+              board.save(out/name,optimize=True)
+          print('Six matched WebGL comparisons ready')
+          PY
+      - name: Commit comparison images to experiment only
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add captures/v1530-lighting/
+          if ! git diff --cached --quiet; then
+            git commit -m "test(1.53): verified cinematic lighting real WebGL A/B [skip ci]"
+            git push origin HEAD:experiment/cinematic-lighting-v1530
+          fi
+      - name: Upload comparison artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cinematic-v1530-webgl
+          path: captures/v1530-lighting/
+          if-no-files-found: warn
