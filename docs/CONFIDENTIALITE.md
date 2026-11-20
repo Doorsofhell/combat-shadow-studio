@@ -102,6 +102,5 @@ Note : selon les définitions de Google Play, des données traitées uniquement 
 
 ## Contact
 
-Adresse e-mail de l’éditeur : **[À COMPLÉTER AVANT PUBLICATION]**.
-
-Cette adresse doit obligatoirement être renseignée ici et dans l’écran Confidentialité de l’application (`src/ui/screens/Privacy.tsx`) avant la publication sur Google Play.
+Adresse e-mail de l’éditeur : **y.benjelloun@gmail.com** (provisoire, 20/11/2026). Elle est définie dans
+`src/domain/contact.ts` et dans `public/confidentialite.html` (un test vérifie qu’elles sont identiques).

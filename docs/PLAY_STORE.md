@@ -79,7 +79,8 @@ téléphone 1080×1920 (captures réelles de l’application, coachs Rocketbox M
 > d’un professionnel de santé en cas de doute.
 
 - **Catégorie** : Santé et remise en forme. **Tags** : boxe, arts martiaux, entraînement.
-- **Coordonnées** : adresse e-mail de contact (obligatoire, publique) **(Youssef)**.
+- **Coordonnées** : adresse e-mail de contact publique `y.benjelloun@gmail.com` (provisoire ; à changer dans
+  `src/domain/contact.ts`, `public/confidentialite.html` et la Play Console).
 - **Politique de confidentialité** : `https://doorsofhell.github.io/combat-shadow-studio/confidentialite.html`
   (`public/confidentialite.html`, en ligne une fois la branche déployée sur GitHub Pages).
 

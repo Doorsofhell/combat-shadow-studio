@@ -1,5 +1,6 @@
 import { PageHead } from '../components';
 import { AppIcon } from '../icons';
+import { PUBLISHER_EMAIL } from '../../domain/contact';
 
 /** Privacy policy, same content as docs/CONFIDENTIALITE.md. */
 export function Privacy() {
@@ -88,9 +89,8 @@ export function Privacy() {
 
         <h2>Contact</h2>
         <p>
-          Adresse e-mail de l’éditeur : <b>[à compléter avant publication]</b>.
+          Adresse e-mail de l’éditeur : <a href={`mailto:${PUBLISHER_EMAIL}`}>{PUBLISHER_EMAIL}</a>.
         </p>
-        <p className="small muted">Cette adresse doit être renseignée par l’éditeur avant la publication de l’application.</p>
       </article>
     </div>
   );

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import pkg from '../../package.json';
+import { PUBLISHER_EMAIL } from './contact';
 
 /**
  * v2.3.1 (Youssef 2026-11-19, « APK final … tous les critères pour une publication dans le Play Store ») : ce que la
@@ -51,6 +52,12 @@ describe('conformité Google Play (sources Android)', () => {
     expect(html).toContain('INTERNET');
     expect(html).toContain('VIBRATE');
     expect(html).toMatch(/data-contact/);
+  });
+
+  test('adresse de contact renseignée, identique dans l’application et la page publique', () => {
+    expect(PUBLISHER_EMAIL).toMatch(/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/);
+    expect(read('public/confidentialite.html')).toContain(`data-contact href="mailto:${PUBLISHER_EMAIL}">${PUBLISHER_EMAIL}<`);
+    expect(read('src/ui/screens/Privacy.tsx')).not.toMatch(/à compléter/);
   });
 
   test('le workflow de publication produit un AAB et passe les contrôles', () => {
