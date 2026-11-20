@@ -4944,3 +4944,36 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     connus + `morphology-v220` « ordre des surfaces » (réussit 2 fois sur 2 en local, sans lien avec cette version) ;
   - installation sur un vrai téléphone : NON EXÉCUTÉ.
 - **Restauration** : branche `restauration/avant-play-store-v231` (= 2.3.0, `6e139eb`).
+
+## 2026-11-20 · v2.3.2 · Prix de Premium à vie (plan de monétisation)
+
+- **Constat vérifié** : l'offre Premium (`src/monetization/offer.ts`) affichait encore le prix indicatif de la v0.40,
+  39,99 € TTC, sans prix de lancement. Le 2026-11-20, Youssef a validé le plan de monétisation freemium (32 choix,
+  `docs/monetisation/DECISIONS.md`) : 29,99 € TTC, 19,99 € pendant le premier mois, et a demandé de mettre à jour
+  l'application pour le prix.
+- **Correction** :
+  - prix 29,99 € TTC et promotion de lancement 19,99 € « pendant le premier mois » dans l'offre centrale ;
+  - panneau « Offre Premium » : « Prix indicatif : 29,99 € TTC. Prix de lancement indicatif : 19,99 € TTC pendant
+    le premier mois. » ;
+  - limites gratuites du catalogue des droits mises à jour selon ses choix (3 enchaînements, 5 favoris, 30 jours
+    d'historique, Décomposer réservé à Premium, 6 disciplines gratuites aux niveaux débutant et intermédiaire) :
+    texte seulement, rien n'est limité (`MONETIZATION_ENABLED` reste `false`) ;
+  - aucun paiement branché, aucune fonction retirée.
+- **Fichiers** : `src/monetization/offer.ts`, `src/monetization/entitlements.ts`, `src/ui/premium/PremiumPage.tsx`,
+  `src/monetization/__tests__/rights.test.tsx`, `tests/e2e/premium.spec.ts`, `docs/monetisation/DECISIONS.md`,
+  `src/domain/releases.ts`, `package.json` (2.3.2).
+- **Tests** : le prix attendu passe de 39,99 € à 29,99 € dans `rights.test` et `premium.spec` (nouveau prix décidé
+  par Youssef, pas un affaiblissement) et le prix de lancement 19,99 € y est ajouté. Résultats : voir ci-dessous.
+- **Restauration** : branche `restauration/avant-prix-premium-v232` (= 2.3.1, `744c593`).
+- **Résultats (2.3.2)** :
+  - Vitest ciblé (`src/monetization`, `release-version`, `src/ui/nav`, 100 tests) : TEST RÉUSSI ;
+  - Vitest complet : 1789 réussis, 1 ignoré, 4 TEST ÉCHOUÉ déjà connus et sans lien (`fluidity` ×2,
+    `hooks-biomeca`, `expressions-v1160` taille d'Amara, déjà en échec sur la 2.3.0 et la 2.3.1) ;
+  - `npm run build` : TEST RÉUSSI ;
+  - Playwright `premium.spec` et `premium-panels.spec` (10 tests, dont accessibilité clair et sombre) : TEST RÉUSSI ;
+  - Playwright complet (305 tests, 1 h) : 297 réussis, 2 ignorés (Firebase), 6 TEST ÉCHOUÉ ; relancés seuls :
+    `chrono-seul:96` et `seance-mains-libres:117` réussissent (instables sous charge) ; `coach-suggest:147`,
+    `coaching-hud:60` et `training-layout:336` échouent comme sur la 2.3.0 et la 2.3.1 ; `mastery:26` est
+    intermittent : 1 échec sur 4 sur la 2.3.2 et 2 échecs sur 4 sur la 2.3.1 (`restauration/avant-prix-premium-v232`),
+    donc antérieur et sans lien avec le prix. Aucune régression ;
+  - capture du panneau Offre en 412 × 915 : `monetisation/offre-premium-v2.3.2.png` (fichiers du projet).

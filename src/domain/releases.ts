@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.3.2',
+      releaseDate: '2026-11-20',
+      title: 'Nouveau prix de Premium à vie',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Premium à vie passe à 29,99 € TTC (au lieu de 39,99 €), avec un prix de lancement de 19,99 € pendant le premier mois. Ces prix restent indicatifs : le paiement n’est pas encore ouvert et tout reste accessible.' },
+      ],
+      links: [{ label: 'Premium', to: '/premium' }],
+    },
+    {
       version: '2.3.1',
       releaseDate: '2026-11-19',
       title: 'Préparation de la version Google Play',
