@@ -4977,3 +4977,54 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     intermittent : 1 échec sur 4 sur la 2.3.2 et 2 échecs sur 4 sur la 2.3.1 (`restauration/avant-prix-premium-v232`),
     donc antérieur et sans lien avec le prix. Aucune régression ;
   - capture du panneau Offre en 412 × 915 : `monetisation/offre-premium-v2.3.2.png` (fichiers du projet).
+
+## 2026-11-20 · v2.3.4 · Cache des modèles 3D : une seule règle par fichier, version vérifiée
+
+- **Signalement (Youssef, P0)** : dans `vite.config.ts`, les fichiers de `coaches/` et `salles/` correspondent à deux
+  règles de cache successives (CacheFirst puis NetworkFirst) ; la première peut empêcher la seconde.
+- **Constat vérifié (v2.3.2)** :
+  - Workbox répond avec la **première** route qui correspond (`workbox-routing/Router.js`, boucle `for (const route
+    of routes)` qui s'arrête au premier résultat). Le `sw.js` construit enregistre bien CacheFirst avant NetworkFirst :
+    la règle NetworkFirst ne s'appliquait **jamais** aux coachs ni aux salles, seulement aux tenues d'arbitre (et à
+    `models/`, dossier qui n'existe plus). Son commentaire (« un modèle changé est retéléchargé ») était faux ;
+  - le renouvellement d'un GLB reposait donc uniquement sur l'écran de démarrage (empreinte, 1.34). Une copie qu'il
+    n'a pas vérifiée (« Entrer sans attendre », démarrage interrompu) et les **portraits des coachs** (absents de
+    l'écran de démarrage) restaient l'ancienne version pour toujours ;
+  - preuve sur la v2.3.2 construite : une copie périmée posée dans `css-modeles` est servie telle quelle pour le
+    modèle de la coach (4 octets au lieu de 3,8 Mo) et pour son portrait (3 octets au lieu de 23 Ko). Même essai sur
+    la 2.3.4 : les vrais fichiers sont servis ;
+  - le test de mise à jour a aussi montré que GitHub Pages envoie `max-age=600` : sans précaution, la règle « réseau
+    d'abord » recevait jusqu'à 10 min la copie du navigateur au lieu du serveur.
+- **Correction (responsabilités clarifiées, `tools/build/swModeles.ts`)** :
+  - **précache** Workbox : seulement l'application (code, pages, petites images), jamais la 3D (inchangé, gain de
+    la 1.10.1 conservé) ;
+  - **cache PWA `css-modeles`**, deux règles qui ne se chevauchent plus (l'ordre n'a plus d'effet) :
+    A. fichiers de l'écran de démarrage (modèles, tenues, salles) : CacheFirst, réponse immédiate depuis le téléphone
+    (gain de la 1.25/1.34 conservé) **seulement si la copie gardée a l'empreinte de cette version** ; sinon le
+    serveur est interrogé, et hors ligne l'ancienne copie répond plutôt que pas de coach ;
+    B. autres fichiers de ces dossiers (portraits, tenues d'arbitre) : NetworkFirst, copie gardée après 4 s ou hors
+    ligne ;
+  - les deux règles interrogent le serveur lui-même (`no-cache` : une courte réponse « non modifié » si rien n'a
+    changé), jamais la copie de 10 min du navigateur ;
+  - **versionnement** : l'empreinte de chaque fichier (SHA-1 des octets servis, déjà calculée pour l'écran de
+    démarrage) est écrite dans `sw.js` au build ; le service worker marque chaque copie gardée de son empreinte
+    (en-tête `x-css-empreinte`), et l'écran de démarrage lit cette marque avant sa note locale. Une copie gardée
+    avant la 2.3.4 (sans marque) est vérifiée une fois par ses octets puis marquée : rien n'est retéléchargé pour
+    rien ;
+  - rien n'a changé dans les adresses des modèles, le chargement 3D ni la reprise WebGL.
+- **Fichiers** : `tools/build/swModeles.ts` (nouveau), `tools/build/bootModels.ts` (empreintes partagées, dossier
+  public en paramètre), `vite.config.ts`, `src/boot/preload.ts`, `src/boot/__tests__/cache-modeles-v234.test.ts`,
+  `src/boot/__tests__/cache-modeles-page-v234.test.ts`, `tests/e2e/maj-modeles-v234.spec.ts`.
+- **Tests** :
+  - nouveaux Vitest (15) : chaque fichier de l'écran de démarrage ne prend que la règle versionnée, les portraits et
+    tenues d'arbitre que la règle réseau, aucun fichier ne correspond aux deux ; le plugin **tel qu'écrit dans
+    sw.js** (texte relu) sert une copie de cette version, refuse une autre version, vérifie une copie sans marque,
+    interroge le serveur sans cache HTTP, répond hors ligne ; l'écran de démarrage lit la marque : TEST RÉUSSI ;
+  - nouveau Playwright `maj-modeles-v234.spec` : une vraie version 2 de l'application est construite avec le modèle
+    de la coach et son portrait modifiés, puis servie comme GitHub Pages (max-age, ETag) au même navigateur, sans
+    jamais vider le cache : le coach gardé devient la version 2, une ancienne copie remise en place (avec ou sans
+    marque) n'est plus servie, le nouveau portrait arrive : TEST RÉUSSI ;
+  - Vitest complet : 1804 réussis, 1 ignoré, 4 TEST ÉCHOUÉ déjà connus et sans lien (`fluidity` ×2,
+    `hooks-biomeca`, `expressions-v1160`, les mêmes que sur la 2.3.2) ;
+  - `npm run build` : TEST RÉUSSI.
+- **Restauration** : branche `restauration/avant-cache-3d-v232` (= 2.3.2, `d5b3b9b`).
