@@ -4971,5 +4971,9 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     `hooks-biomeca`, `expressions-v1160` taille d'Amara, déjà en échec sur la 2.3.0 et la 2.3.1) ;
   - `npm run build` : TEST RÉUSSI ;
   - Playwright `premium.spec` et `premium-panels.spec` (10 tests, dont accessibilité clair et sombre) : TEST RÉUSSI ;
-  - Playwright complet : NON EXÉCUTÉ (environ 1 h ; à lancer avant la fusion) ;
+  - Playwright complet (305 tests, 1 h) : 297 réussis, 2 ignorés (Firebase), 6 TEST ÉCHOUÉ ; relancés seuls :
+    `chrono-seul:96` et `seance-mains-libres:117` réussissent (instables sous charge) ; `coach-suggest:147`,
+    `coaching-hud:60` et `training-layout:336` échouent comme sur la 2.3.0 et la 2.3.1 ; `mastery:26` est
+    intermittent : 1 échec sur 4 sur la 2.3.2 et 2 échecs sur 4 sur la 2.3.1 (`restauration/avant-prix-premium-v232`),
+    donc antérieur et sans lien avec le prix. Aucune régression ;
   - capture du panneau Offre en 412 × 915 : `monetisation/offre-premium-v2.3.2.png` (fichiers du projet).
