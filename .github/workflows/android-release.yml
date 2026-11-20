@@ -57,20 +57,12 @@ jobs:
           KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          if [ -n "$KS_B64" ] && [ -n "$KS_PASS" ] && [ -n "$KEY_ALIAS" ]; then
-            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
-            {
-              echo "storeFile=$RUNNER_TEMP/upload.jks"
-              echo "storePassword=$KS_PASS"
-              echo "keyAlias=$KEY_ALIAS"
-              echo "keyPassword=${KEY_PASS:-$KS_PASS}"
-            } > android/keystore.properties
-            echo "signed=1" >> "$GITHUB_OUTPUT"
-          else
-            echo "::warning::Secrets de signature absents : AAB et APK NON SIGNÉS (impossible à envoyer au Play Store)."
-            echo "signed=0" >> "$GITHUB_OUTPUT"
-          fi
+          # secrets créés par Youssef le 20/11/2026 sous d'autres noms : reconnus par leur contenu
+          CANDIDATE_1: ${{ secrets.PERE_MERE }}
+          CANDIDATE_2: ${{ secrets.TOWN }}
+          CANDIDATE_3: ${{ secrets.POKEMON }}
+          CANDIDATE_4: ${{ secrets.SAHABA }}
+        run: bash scripts/android/setup-signing.sh
 
       - name: Build web + AAB + APK de publication
         run: npm run build:android && cd android && ./gradlew bundleRelease assembleRelease --stacktrace
