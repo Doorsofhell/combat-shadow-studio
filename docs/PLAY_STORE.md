@@ -14,6 +14,9 @@ propriétaire du compte peut faire sont marquées **(Youssef)**.
   - `combat-shadow-studio-vX.Y.Z.apk` : le même build en APK signé, pour l’installer directement sur un téléphone ;
   - `SHA256SUMS.txt`, `RAPPORT.md` (contrôles ci-dessous), `apk-cert.txt` (empreinte de la clé).
 - Sans les secrets de signature, les fichiers portent `NON-SIGNE` : ils prouvent seulement que tout compile.
+- Quand le build est signé, les mêmes fichiers sont aussi rangés sans limite de durée dans la version GitHub en
+  brouillon `play-vX.Y.Z` (Releases du dépôt, visible seulement par le propriétaire) ; l’artefact du run, lui,
+  s’efface après 30 jours.
 
 ### Secrets GitHub de la clé **(Youssef)**
 

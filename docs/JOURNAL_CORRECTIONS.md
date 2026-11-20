@@ -4942,5 +4942,8 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     RÉUSSI, empreinte de la clé d’importation `B4:7F:38:3A:…:A7:11`, tous les autres contrôles TEST RÉUSSI ;
     artefact `play-store-signe` (AAB `e9209e3a…`, APK `3e93ce41…`, 30 jours) ; Vitest du runner : les 4 échecs
     connus + `morphology-v220` « ordre des surfaces » (réussit 2 fois sur 2 en local, sans lien avec cette version) ;
+  - 20/11 (Youssef : « laisse-le dans le dépôt ») : les fichiers signés sont aussi rangés dans la version GitHub
+    en brouillon `play-v2.3.1` (sans limite de durée), en plus de l’artefact de 30 jours ; même version 2.3.1,
+    seul le workflow change ;
   - installation sur un vrai téléphone : NON EXÉCUTÉ.
 - **Restauration** : branche `restauration/avant-play-store-v231` (= 2.3.0, `6e139eb`).

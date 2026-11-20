@@ -19,7 +19,7 @@ on:
       - .github/workflows/android-release.yml
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: android-release
@@ -77,3 +77,20 @@ jobs:
           name: play-store-${{ steps.key.outputs.signed == '1' && 'signe' || 'NON-SIGNE' }}
           path: out-release/
           retention-days: 30
+
+      # v2.3.1 (Youssef 20/11/2026 : « laisse-le dans le dépôt ») : l'artefact du run s'efface après 30 jours ;
+      # les fichiers signés sont aussi rangés, sans limite de durée, dans une version GitHub en brouillon
+      # (visible seulement par les personnes qui ont accès en écriture au dépôt).
+      - name: Version GitHub en brouillon (fichiers signés seulement)
+        if: steps.key.outputs.signed == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V=$(node -p "require('./package.json').version")
+          TAG="play-v$V"
+          NOTES="Combat Shadow Studio v$V pour Google Play. Envoyer le fichier .aab dans la Play Console ; le fichier .apk s'installe directement sur un téléphone. Contrôles : voir RAPPORT.md. Commit ${GITHUB_SHA::7}."
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" out-release/* --clobber
+          else
+            gh release create "$TAG" out-release/* --draft --target "$GITHUB_SHA" --title "Combat Shadow Studio v$V (Google Play)" --notes "$NOTES"
+          fi
