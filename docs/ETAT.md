@@ -1,34 +1,65 @@
-# État du projet (17 octobre 2026)
+<!-- GÉNÉRÉ:etat — ne pas modifier à la main, lancer « npm run docs:sync » -->
+# État du projet — version 2.3.4
 
-Version web publiée pour test. L’APK et l’AAB définitifs ne sont pas produits (en attente de validation de la Web App).
+Dernière version annoncée dans Nouveautés : **2.3.4** du 20 novembre 2026, « Coachs et salles toujours à jour » (119 versions au total).
 
-## Vérifié automatiquement
+## Version et publication
 
-- **137 tests unitaires (Vitest)**, 136 exécutés et réussis, 1 ignoré (test sur émulateur Firebase, lancé à part) :
-  - animations : chaque technique dans chaque discipline, gardes orthodoxe et gaucher, appuis fixes, pas de téléportation ;
-  - caméra pédagogique : cadrage de chaque technique en portrait et paysage, angle stable des combinaisons, décomposition ;
-  - réparation des anciennes sauvegardes de combattant (le créateur est retiré en 1.37.0) ;
-  - réalité augmentée : démarrage, refus de caméra, fin de session, placement (navigateur simulé) ;
-  - bibliothèque de 1 100 combinaisons : validation, recherche, statuts ;
-  - coach IA : intentions, exemples du cahier des charges, adaptation au niveau, honnêteté (« je ne te vois pas »), demandes dangereuses ;
-  - comptes : migration des données, séparation par utilisateur, chiffrement des limitations, fusion des synchronisations.
-- **18 parcours Playwright** (navigateur Chromium, rendu logiciel), 16 réussis et 2 ignorés (émulateur Firebase) :
-  - premier lancement, entraînement avec pause, créateur d’enchaînements, programme, réglages ;
-  - écran d’entraînement sans défilement : 5 tailles d’écran en portrait et en paysage, texte agrandi à 115 % et 130 %, mode Décomposer ;
-  - « Demander au coach » : pause automatique, réponse, ralenti, sans masquer les consignes ;
-  - mode invité, profil, export et suppression des données.
-- Comptes e-mail et synchronisation testés sur les **émulateurs** Firebase (pas sur un vrai projet).
+| Élément | Valeur | Origine |
+| --- | --- | --- |
+| Version de l’application | 2.3.4 | `package.json` (source unique) |
+| Titre de la page, Réglages › À propos, écran de démarrage | v2.3.4 | injectée au build (`vite.config.ts`) |
+| Android versionName / versionCode | 2.3.4 / 20304 | `scripts/android-version.mjs` (x × 10000 + y × 100 + z) |
+| Nouveautés | 2.3.4 | première entrée de `src/domain/releases.ts` |
+| Informations de publication | `version.json` | écrit à chaque build (`tools/build/releaseInfo.ts`) |
+
+Version testable en ligne (GitHub Pages) : https://doorsofhell.github.io/combat-shadow-studio/ ; version réellement déployée : https://doorsofhell.github.io/combat-shadow-studio/version.json
+
+## Contenu réel de l’application
+
+| Discipline | Techniques | Exercices | Combinaisons des légendes |
+| --- | ---: | ---: | ---: |
+| Boxe anglaise | 30 | 49 | 348 |
+| Kick-boxing | 46 | 56 | 286 |
+| MMA | 54 | 48 | 348 |
+| Muay-thaï | 54 | 48 | 310 |
+| Jiu-jitsu brésilien | 13 | 25 | 96 |
+| Judo | 15 | 28 | 108 |
+| **Total** | **91** | **254** | **1 496** |
+
+- Six disciplines, quatre niveaux : Débutant, Intermédiaire, Avancé, Expert.
+- 91 techniques (une technique commune à plusieurs disciplines compte une fois dans le total).
+- 254 exercices et 49 programmes.
+- 6 coachs 3D : Kadir « L’Aigle », Naël « Le Faucon », Victor « Le Loup gris », Amara « La Lionne », Inaya « La Panthère », Kanya « La Tigresse ».
+- Catalogue des légendes 1.1.0 (2026-10-20) : 107 champions, 1 496 combinaisons (1 496 inspirées).
+- Catalogue des programmes : 30 enchaînements.
+<!-- FIN GÉNÉRÉ:etat -->
+
+> Tout ce qui précède est généré depuis `package.json`, `src/domain/releases.ts` et les catalogues réels
+> (`src/domain/projectFacts.ts`). `src/domain/version-sync.test.ts` échoue si ce fichier ou le README ne
+> correspondent plus à l’application. La suite est tenue à la main ; l’historique complet est dans
+> `docs/JOURNAL_CORRECTIONS.md`.
+
+## Publication (mis à jour à la main le 20 novembre 2026)
+
+- Web app : déployée par `.github/workflows/preview.yml` (GitHub Pages) à chaque envoi sur la branche de
+  production `claude/project-thread-o7lrt8`. La branche `main` n’est pas la branche de production et peut être en
+  retard : toujours repartir de la dernière version déployée.
+- Android : AAB et APK signés par `.github/workflows/android-release.yml` (voir `docs/PLAY_STORE.md`). La 2.3.1
+  (versionCode 20301) a été signée pour le Play Store ; chaque nouvel envoi demande une version plus haute.
+- Play Store : compte personnel, donc test fermé obligatoire (12 testeurs pendant 14 jours) avant la production ;
+  à faire par le propriétaire dans la Play Console.
+- Premium : prix affichés à titre indicatif ; le paiement n’est pas ouvert.
 
 ## Non vérifié à ce jour
 
-- Tout ce qui demande un vrai téléphone Android : fluidité du coach 3D, voix française, réalité augmentée, APK.
-- Connexion Google, vérification d’e-mail réelle, synchronisation réelle : aucun projet Firebase configuré.
-- Questions vocales hors ligne : pas de moteur de reconnaissance vocale hors ligne intégré (étude dans `COACH_IA.md`).
-- IA embarquée (modèle de langage sur l’appareil) : étudiée, non intégrée ; le coach répond aujourd’hui avec la base pédagogique locale.
+- Ce qui demande un vrai téléphone n’est pas testé automatiquement ici : fluidité du coach 3D, voix française,
+  réalité augmentée, installation de l’AAB par le Play Store.
+- Les combinaisons des légendes sont toutes « inspirées » du style des champions (comptage ci-dessus) : aucune n’est
+  « vérifiée » sur une vidéo de combat.
 
 ## Limites connues
 
-- Les 1 100 combinaisons sont toutes « inspirées » du style des champions : aucune n’est encore « vérifiée » sur une vidéo de combat.
-- (1.37.0) Un seul rendu, Ultra-réaliste : quatre coachs photo Microsoft Rocketbox. Les coachs générés et le créateur de combattant sont retirés (`backup CS/`).
-- Animations par poses clés, pas de capture de mouvement.
-- Le bouton retour du système ne déclenche pas la confirmation « modifications non enregistrées » du créateur d’enchaînements.
+- Animations par poses clés résolues par notre moteur, pas de capture de mouvement.
+- Un seul rendu (Ultra-réaliste, depuis la 1.37.0) ; les éléments retirés sont rangés dans
+  `_ARCHIVES_HORS_APPLICATION/`.

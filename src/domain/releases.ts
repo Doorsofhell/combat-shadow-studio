@@ -49,6 +49,28 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.3.4',
+      releaseDate: '2026-11-20',
+      title: 'Coachs et salles toujours à jour',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Après une mise à jour, un coach, une tenue ou une salle modifiés sont toujours téléchargés à nouveau : le téléphone ne garde plus une ancienne version, sans avoir à vider le cache.' },
+        { category: 'corrections', text: 'Les portraits des coachs suivent aussi les mises à jour. Hors ligne, la copie gardée sur le téléphone reste utilisée.' },
+      ],
+      links: [],
+    },
+    {
+      version: '2.3.3',
+      releaseDate: '2026-11-20',
+      title: 'Numéro de version et documentation à jour',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Le numéro de version vient maintenant d’une seule source : le titre, l’écran À propos, l’application Android et Nouveautés affichent toujours le même.' },
+        { category: 'corrections', text: 'La présentation de l’application et l’état du projet sont générés depuis le contenu réel : six disciplines, et le nombre exact de techniques, d’exercices, de combinaisons et de coachs.' },
+      ],
+      links: [{ label: 'À propos', to: '/reglages/a-propos' }],
+    },
+    {
       version: '2.3.2',
       releaseDate: '2026-11-20',
       title: 'Nouveau prix de Premium à vie',
