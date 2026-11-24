@@ -247,11 +247,17 @@ def main(cfg):
         gn = outt[neck].mean(0) / np.maximum(outt[fsel].mean(0), 1e-4)
         # le visage, tourné un peu vers le bas, reçoit moins la lumière haute de la scène que le cou et le buste : un
         # supplément mesuré à l'écran (captures du Lab) le ramène au teint du buste
-        gn = gn * C.get('raccord_plus', 1.0)
         gn = 1 + (np.clip(gn, 0.7, 1.6) - 1) * C['raccord_cou']
         print('raccord du cou', gn.round(3))
         ramp = smooth(chin_y - 0.03, chin_y + 0.01, y)[..., None] * (~VE)[..., None]
         outt = np.clip(outt * (1 + (gn - 1) * ramp), 0, 1)
+        # le supplément de lumière ne vaut que pour le bas du visage (joues, bouche, menton, tournés vers le bas) : le
+        # front et le crâne, tournés vers la lumière haute, le recevaient en trop (Youssef 24/11 : visage d'Amara plus
+        # clair que sa peau). Plein sous les yeux, nul au-dessus des sourcils
+        rp = C.get('raccord_plus', 1.0)
+        if rp != 1.0:
+            low = smooth(ey + 0.035, ey - 0.01, y) * ramp[..., 0]
+            outt = np.clip(outt * (1 + (rp - 1) * low)[..., None], 0, 1)
     np.save(C['work'] + '-poids.npy', W.astype(np.float16))
     Image.fromarray((outt * 255).astype(np.uint8)).save(C['work'] + '-tete.png')
     # corps : même gain (raccord du cou)

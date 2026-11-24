@@ -120,6 +120,20 @@ def sculpt(g, C):
                 wm = wm * smooth(-0.2, 0.4, Nu @ dv)
             D += Nu * (bz['h'] * env * wm)[:, None]
 
+    # 2.4.0 (24/11, aisselles de Victor) : le creux de l'aisselle porte à la fois les poids du bras et du tronc ; un
+    # volume posé au repos y est étiré quand le bras monte (deformation-v1100.test.ts). Déplacement atténué autour du
+    # creux (sous l'épaule, côté tronc), en gaussienne
+    for ax in C.get('aisselles', []):
+        for side in ('Left', 'Right'):
+            sx = 1 if side == 'Left' else -1
+            j = J[side + 'Arm']
+            c = j + np.array(ax.get('pos', [-0.02, -0.07, 0.0])) * np.array([sx, 1, 1])
+            # le côté gauche du modèle est en x positif si l'os est en x positif
+            if np.sign(j[0]) != sx and abs(j[0]) > 0.02:
+                c = j + np.array(ax.get('pos', [-0.02, -0.07, 0.0])) * np.array([-sx, 1, 1])
+            d = np.linalg.norm(Pu - c, axis=1) / ax.get('rayon', 0.07)
+            D *= (1 - ax.get('force', 0.85) * np.exp(-d ** 2 * 2))[:, None]
+
     # pas de déplacement de la tête au-dessus du cou (visage du prototype gardé) ni des mains et des pieds
     keep = wof(['Head'] + [n for n in names if n.startswith('Face_') or n.endswith('Eye')])
     keep = keep + wof([n for n in names if 'Hand' in n and n not in ('LeftHand', 'RightHand')]) + wof(['LeftToeBase', 'RightToeBase'])

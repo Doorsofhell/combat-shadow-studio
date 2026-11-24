@@ -5307,3 +5307,19 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Captures réelles** : 6 gestes de Victor avant/après (garde, crochet, uppercut, middle kick, blocage au corps, pont).
 - **Version** : inchangée, rien publié. **Restauration** : commit `28f2c52` (avant l'adaptation),
   `restauration/avant-coachs-fideles-v240` (= 2.3.5).
+
+## 2026-11-24 · prototype 2 de la 2.4.0 (non publié) · Teint du visage d'Amara
+
+- **Demande** (Youssef, 24/11 12 h 01, capture à l'appui) : « Victor OK. Amara : son visage pas top, il est plus clair
+  que sa peau, il faut que ça fasse naturel. »
+- **Constat vérifié** (capture du Lab, buste, mesures de couleur à l'écran) : joues et cou de même teinte, mais front et
+  haut du visage nettement plus clairs et plus beiges (196/144/111 contre 120/69/45 au cou). Cause : le supplément de
+  lumière (`raccord_plus` 1,3) posé au prototype 2 pour le bas du visage, tourné vers le bas, était appliqué à toute la
+  tête, y compris au front qui reçoit déjà la lumière haute de la scène.
+- **Correction** : `tools/generator/fideles/visage.py`, le supplément ne vaut plus que sous les yeux (nul au-dessus des
+  sourcils, fondu entre les deux) ; Amara `raccord_plus` 1,15 (`configs/amara2.json`). Modèles d'Amara reconstruits
+  (`photo.glb`, `photo-clean.glb`), géométrie et tenues inchangées. Front mesuré 159/112/82, joues 116/63/40, cou
+  117/67/44.
+- **Tests** : vitest `src/three` 735/739 : `expressions-v1160` (taille, déjà en échec avant), `shorts-v1442` ×2 (déjà
+  notés au prototype 2), `morphology-v220` « ordre des surfaces » échoue sous la charge de la suite (délai) et passe seul
+  (12/12). Captures avant/après du visage. Rien publié.
