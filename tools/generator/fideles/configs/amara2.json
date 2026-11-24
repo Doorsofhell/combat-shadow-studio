@@ -36,5 +36,6 @@
  "contraste": 0.9,
  "saturation": 0.8,
  "raccord_cou": 1.0,
- "raccord_plus": 1.15
+ "raccord_plus": 1.15,
+ "raccord_teinte": 0.3
 }

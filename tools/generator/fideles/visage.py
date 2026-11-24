@@ -247,6 +247,10 @@ def main(cfg):
         gn = outt[neck].mean(0) / np.maximum(outt[fsel].mean(0), 1e-4)
         # le visage, tourné un peu vers le bas, reçoit moins la lumière haute de la scène que le cou et le buste : un
         # supplément mesuré à l'écran (captures du Lab) le ramène au teint du buste
+        # part de la correction de teinte (1 : teinte du cou ; 0 : seulement sa luminance, la teinte du visage gardée)
+        tk = C.get('raccord_teinte', 1.0)
+        gl = float(outt[neck].mean(0) @ np.array([0.3, 0.59, 0.11])) / max(float(outt[fsel].mean(0) @ np.array([0.3, 0.59, 0.11])), 1e-4)
+        gn = gl + (gn - gl) * tk
         gn = 1 + (np.clip(gn, 0.7, 1.6) - 1) * C['raccord_cou']
         print('raccord du cou', gn.round(3))
         ramp = smooth(chin_y - 0.03, chin_y + 0.01, y)[..., None] * (~VE)[..., None]

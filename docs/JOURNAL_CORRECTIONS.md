@@ -5351,3 +5351,16 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   charge de la suite (délai) et passe seul. Playwright : NON EXÉCUTÉ. Captures avant/après (face, dos, torse, garde) :
   silhouette quasi identique.
 - **Version** : inchangée, rien publié.
+
+## 2026-11-24 · prototype 2 de la 2.4.0 (non publié) · Teint du visage d'Amara, second passage
+
+- **Demande** (Youssef, 24/11 13 h 58) : « je ne vois pas la maj sur le visage de Amara ».
+- **Constat vérifié** : la page de comparaison montrait encore, en haut de la section Amara, les vues du 20/11 (seule
+  une nouvelle image avait été ajoutée plus bas). Sur les nouvelles captures, le front restait plus beige que le buste
+  (proportion de rouge 0,452 contre 0,473) : le raccord prenait toute la teinte du cou, moins chaude que celle des
+  épaules.
+- **Correction** : `visage.py`, réglage `raccord_teinte` (part de la teinte du cou reprise, le reste en luminance) ;
+  Amara 0,3 (`configs/amara2.json`). Modèles d'Amara reconstruits. Mesuré : front 0,463, buste 0,473, joues 0,543,
+  cou 0,513. Toutes les vues d'Amara de la page refaites.
+- **Tests** : vitest `src/three` + `src/boot` 562/566, échecs déjà notés (taille d'Amara, shorts ×2, morphology sous
+  charge). Rien publié.
