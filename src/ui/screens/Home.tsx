@@ -182,7 +182,10 @@ export function Home() {
           <div className="hero-name" data-testid="fighter-name">
             {name}
           </div>
-          <button type="button" className="home-coach-change" onClick={() => coachUi.open('coach')} aria-label={`Changer de coach (${name})`} data-testid="home-change-coach">
+          {/* 2.8.1 (Youssef, 2026-11-24 17:49: « dans l'écran principal, en cas de changement de coach arriver direct sur
+              la fenêtre en grand ») : « Changer » opens the big coach screen; the panel (a tap on the coach) keeps its
+              « Ton coach » row, and the other screens keep the 2.7.0 way */}
+          <button type="button" className="home-coach-change" onClick={() => nav('/coach')} aria-label={`Changer de coach (${name})`} data-testid="home-change-coach">
             <CoachFace coach={champ} />
             <span>Changer</span>
           </button>

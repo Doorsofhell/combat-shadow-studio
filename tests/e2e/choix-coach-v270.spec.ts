@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { seedProfile } from './nav-helpers';
+import { seedProfile, showCoachTools } from './nav-helpers';
 
 /**
  * 2.7 (Youssef, 2026-11-24: « c'est compliqué de choisir le coach et de le visualiser, je veux que ça soit plus
@@ -24,7 +24,8 @@ async function faceShown(page: Page, sel: string) {
   );
 }
 
-test('Accueil : « Changer » ouvre « Ton coach » en un geste, six visages avec leur nom, le coach change aussitôt', async ({ page }) => {
+// 2.8.1 (Youssef, 2026-11-24 17:49): « Changer » of the home opens the big coach screen directly
+test('Accueil : « Changer » ouvre directement le grand écran du coach ; le choix revient sur l’Accueil', async ({ page }) => {
   await seedProfile(page, { coach: 'homme', champion: 'mma-kadir' }, { stageFsHintSeen: true });
   await page.goto('/');
   await expect(page.getByTestId('fighter-name')).toHaveText('Kadir');
@@ -32,6 +33,23 @@ test('Accueil : « Changer » ouvre « Ton coach » en un geste, six visages ave
   await expect(change).toBeVisible();
   await expect(change).toHaveAccessibleName('Changer de coach (Kadir)');
   await change.click();
+  await expect(page).toHaveURL(/#\/coach$/);
+  await expect(page.getByTestId('coach-panel')).toHaveCount(0);
+  await expect(page.locator('.star-thumb')).toHaveCount(6);
+  await expect(page.getByTestId('coach-homme')).toHaveAttribute('aria-checked', 'true');
+  await page.getByTestId('coach-inaya').click();
+  await page.getByTestId('coach-valider').click();
+  await expect(page.getByTestId('fighter-name')).toHaveText('Inaya');
+  await expect(page.getByTestId('home-change-coach')).toHaveAccessibleName('Changer de coach (Inaya)');
+});
+
+// 2.7 (option A): the coach's panel of the home (a tap on the coach) shows « Ton coach » first, six faces with their name
+test('Accueil : le panneau du coach montre « Ton coach », six visages avec leur nom, le coach change aussitôt', async ({ page }) => {
+  await seedProfile(page, { coach: 'homme', champion: 'mma-kadir' }, { stageFsHintSeen: true });
+  await page.goto('/');
+  await expect(page.getByTestId('fighter-name')).toHaveText('Kadir');
+  // (2.8.1: « Changer » now opens the big screen; the panel is opened by a tap on the coach)
+  await showCoachTools(page);
   const sec = page.getByTestId('cp-coach');
   await expect(sec).toBeVisible();
   // not folded: « Options avancées » stays closed and no longer holds the coach
