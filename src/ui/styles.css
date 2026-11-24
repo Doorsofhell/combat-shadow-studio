@@ -35,6 +35,16 @@
   --toast-bg: #273344;
   --overlay: rgba(11, 15, 20, 0.86);
   --backdrop: rgba(3, 5, 8, 0.62);
+  /* 2.7: the glass of the options sheets, as the « Options du coach » panel (coach-panel.css); a little more opaque
+     (0.8 / 0.86 instead of 0.6 / 0.74) because these sheets open over text, not over the plain 3D stage */
+  --glass-bg: rgba(20, 25, 33, 0.8);
+  --glass-solid: rgba(20, 25, 33, 0.95);
+  --glass-line: rgba(255, 255, 255, 0.12);
+  --glass-sep: rgba(255, 255, 255, 0.08);
+  --glass-chip: rgba(255, 255, 255, 0.04);
+  --glass-scrim: rgba(5, 7, 10, 0.42);
+  --glass-scrim-lite: rgba(5, 7, 10, 0.55);
+  --glass-track: rgba(255, 255, 255, 0.18);
   --nav-bg: rgba(11, 15, 20, 0.985);
   --track: rgba(255, 255, 255, 0.1);
   /* icon tiles of the charter: soft relief, never a strong shadow */
@@ -76,6 +86,14 @@
   --toast-bg: #ffffff;
   --overlay: rgba(255, 255, 255, 0.9);
   --backdrop: rgba(17, 18, 20, 0.42);
+  --glass-bg: rgba(255, 255, 255, 0.86);
+  --glass-solid: rgba(255, 255, 255, 0.97);
+  --glass-line: rgba(10, 20, 30, 0.12);
+  --glass-sep: rgba(10, 20, 30, 0.08);
+  --glass-chip: rgba(10, 20, 30, 0.03);
+  --glass-scrim: rgba(235, 239, 244, 0.3);
+  --glass-scrim-lite: rgba(17, 18, 20, 0.42);
+  --glass-track: rgba(10, 20, 30, 0.16);
   --nav-bg: rgba(255, 255, 255, 0.985);
   --track: rgba(17, 18, 20, 0.1);
   --tile: linear-gradient(160deg, #ffffff 0%, #eceef2 100%);
@@ -2058,16 +2076,28 @@ button.panel-row {
   outline-offset: 2px;
 }
 
-/* -------------------------------------------------- sheet / modal */
+/* -------------------------------------------------- sheet / modal
+   2.7 (Youssef, 2026-11-24): every options sheet in the glass of the « Options du coach » panel: floating card with
+   rounded corners, blurred glass over a light blurred scrim, grip and round close button. On a device without a
+   blur it can afford (quality « basse », 3D in safe mode) the sheet is plain and nearly opaque (.lite). */
 .ds-backdrop {
   position: fixed;
   inset: 0;
-  background: var(--backdrop);
+  background: var(--glass-scrim);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
   z-index: 40;
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  padding: 12px max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  overscroll-behavior: contain;
   animation: backdrop-in var(--t-med) var(--ease) both;
+}
+.ds-backdrop.lite {
+  background: var(--glass-scrim-lite);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .ds-backdrop.center {
@@ -2083,41 +2113,62 @@ button.panel-row {
 
 .ds-sheet {
   width: 100%;
-  max-width: 640px;
-  max-height: 88dvh;
-  overflow: auto;
-  overscroll-behavior: contain;
-  background: var(--sheet);
-  color: var(--ink);
-  border-radius: 22px 22px 0 0;
-  padding: 8px max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+  max-width: 560px;
+  max-height: min(88dvh, 100%);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  animation: sheet-in var(--t-med) var(--ease) both;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid var(--glass-line);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: var(--ink);
+  border-radius: 26px;
+  outline: none;
+  transition: transform 0.18s ease-out;
+  animation: sheet-in 0.2s ease-out both;
+}
+.ds-backdrop.lite .ds-sheet {
+  background: var(--glass-solid);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .ds-backdrop.center .ds-sheet {
-  border-radius: 20px;
   max-width: 440px;
   animation-name: modal-in;
-  padding-top: 18px;
 }
 
-.ds-sheet .grab {
-  width: 40px;
-  height: 4px;
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--ink), transparent 75%);
-  align-self: center;
-  margin: 4px 0 0;
+/* the grip and the title stay on top; a swipe down from them closes the sheet */
+.ds-sheet .ds-top {
   flex: none;
+  padding: 8px 16px 0;
+  touch-action: none;
+  cursor: grab;
+}
+.ds-backdrop.center .ds-sheet .ds-top {
+  padding-top: 16px;
+  cursor: default;
+}
+.ds-sheet .grab {
+  display: block;
+  width: 40px;
+  height: 5px;
+  border-radius: 5px;
+  background: var(--glass-track);
+  margin: 0 auto 6px;
 }
 
 .ds-sheet .sheet-head {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--glass-sep);
+}
+
+.ds-sheet .sheet-head h2 {
+  margin: 0;
 }
 
 .ds-sheet .sheet-head .grow {
@@ -2125,17 +2176,47 @@ button.panel-row {
   min-width: 0;
 }
 
+/* the round close button of the glass panels */
+.glass-x {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-line);
+  background: var(--glass-chip);
+  color: inherit;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.glass-x:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* the content scrolls under the head */
+.ds-sheet .ds-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .ds-sheet .sticky-cta {
   position: sticky;
-  bottom: calc(-1 * max(18px, env(safe-area-inset-bottom)));
-  margin: 0 -18px calc(-1 * max(18px, env(safe-area-inset-bottom)));
-  padding: 12px 18px max(18px, env(safe-area-inset-bottom));
-  background: linear-gradient(to bottom, transparent, var(--sheet) 30%);
+  bottom: -16px;
+  margin: 0 -16px -16px;
+  padding: 12px 16px 16px;
+  background: linear-gradient(to bottom, transparent, var(--glass-solid) 30%);
+  border-radius: 0 0 26px 26px;
 }
 
 @keyframes sheet-in {
   from {
-    transform: translateY(24px);
+    transform: translateY(16px) scale(0.98);
     opacity: 0;
   }
 }
@@ -2144,6 +2225,14 @@ button.panel-row {
   from {
     transform: scale(0.97);
     opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-backdrop,
+  .ds-sheet {
+    animation: none;
+    transition: none;
   }
 }
 
@@ -3038,7 +3127,7 @@ details.fold > summary h3 { margin: 0; }
   max-width: 420px;
   max-height: min(70vh, 560px);
   overflow-y: auto;
-  border-radius: 20px;
+  border-radius: 26px;
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
   z-index: 31;
   animation: bubble-in 0.18s ease-out;

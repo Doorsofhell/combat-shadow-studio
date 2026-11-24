@@ -5264,3 +5264,53 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   9 TEST RÉUSSI) ; Vitest `src/domain` + `src/store` 270 TEST RÉUSSI ; `npm run build` TEST RÉUSSI (titre v2.6.0) ;
   Playwright Nouveautés (`navigation.spec`) TEST RÉUSSI.
 - **Restauration** : `restauration/avant-panneau-coach-v240` (= 2.4.0, `1684b73`).
+
+## 2026-11-24 · candidat après la 2.6.0 (non publié) · Panneaux d’options en verre partout
+
+- **Demande** (Youssef, 24/11 09:50 : « je veux ce type de panneau partout dans l'application quand on ouvre des
+  options », puis « OK ») : le verre du panneau « Options du coach » (2.6.0) sur toutes les fenêtres d’options, avec
+  les mêmes règles de fermeture.
+- **Constat après vérification** (2.6.0, `1707e71`, captures réelles 360 px jour et nuit) :
+  - trois styles différents : la fenêtre commune `Sheet` (16 usages : Progrès, Profil, Chrono, Discipline, Objectifs,
+    photo, confirmations) collée au bas de l’écran, opaque, croix simple ; les panneaux de la barre (`NavPanel` : menu
+    « Plus », recherche, Nouveautés, panneaux Premium) avec leur propre fond ; les fenêtres de la séance (Comment
+    faire, Enchaînement, réalité augmentée) et Collections des Légendes écrites à part (`.sheet`, fond blanc en dur) ;
+  - Retour : seuls les panneaux de la barre et le panneau du coach se fermaient ; sur les fenêtres `Sheet`, les
+    fenêtres de la séance et le Coach IA, Retour quittait la page avec la fenêtre ouverte ;
+  - aucune de ces fenêtres ne se fermait en glissant vers le bas ; dans le plein écran du navigateur, les fenêtres
+    `Sheet` n’étaient pas visibles (elles s’ouvraient sous l’élément plein écran).
+- **Correction** :
+  - module commun `src/ui/components/glass.ts` : repli sans flou (repris du panneau du coach), glisser vers le bas
+    (`useSwipeDown`), Retour (`useBackLayer` : couche d’historique posée juste après l’affichage, retirée à la
+    fermeture, reposée si la page revient pendant que la fenêtre est encore affichée), voile qui avale le toucher
+    (`scrimHandlers`), et `SheetLeaveButton` / `useSheetDismiss` pour qu’une action qui change de page retire d’abord
+    l’entrée de la fenêtre (Retour depuis la page suivante ne repasse pas par une copie de la page) ;
+  - `Sheet` : carte flottante en verre (coins 26 px, flou 16 px, voile flouté 3 px), poignée et titre fixes en haut
+    (le contenu défile dessous), bouton rond, Échap pour la fenêtre du dessus seulement, liens internes suivis après
+    fermeture, affichage dans le plein écran ; `ConfirmDialog` passe ses deux choix par `SheetLeaveButton` ;
+  - `NavPanel` (menu « Plus », recherche, Nouveautés, Premium) : même verre, poignée glissable et bouton rond ; la
+    recherche plein écran prend le verre opaque ; le menu ⋮ garde sa forme de menu, en verre ;
+  - Coach IA : même verre et mêmes coins, Retour le ferme ; il reste un panneau de conversation sans voile (on peut
+    toujours utiliser l’écran), une action qui ouvre une page ferme d’abord le panneau ;
+  - séance : Comment faire et Enchaînement passent par `Sheet` (le bouton « Fermer » du bas, doublon du bouton rond,
+    est retiré, ainsi que l’étiquette « Enchaînement » répétée sous le titre) ; réalité augmentée et Collections aussi ;
+    l’ancien style `.sheet` de `training.css` est retiré (plus utilisé) ;
+  - teintes `--glass-*` dans `styles.css` : un peu plus opaques que le panneau du coach (0,8 nuit / 0,86 jour au lieu
+    de 0,6 / 0,74) car ces fenêtres s’ouvrent sur du texte ; le panneau du coach n’est pas modifié.
+- **Fichiers** : `src/ui/components/{glass.ts,Sheet.tsx,index.ts}`, `src/ui/nav/{NavSheets.tsx,nav.css}`,
+  `src/ui/coach-ai/{CoachBubble.tsx,coachAi.css}`, `src/ui/screens/{Training,Discipline,Champions}.tsx`,
+  `src/ui/training/{ArMode.tsx,training.css}`, `src/ui/styles.css`, `scripts/dev/shot-sheets.mjs`.
+- **Tests ajoutés** : `tests/e2e/panneaux-verre.spec.ts` (9 cas : verre, coins et marges à 360 px ; Retour ferme et
+  reste ; Échap et bouton rond sans entrée d’historique en trop ; toucher à côté sans clic derrière ; petit glissé qui
+  revient, grand glissé qui ferme ; confirmation fermée par Retour, « Annuler » reste ; « S’entraîner » puis Retour,
+  une étape à la fois ; recherche ; Coach IA).
+- **Résultats** :
+  - `npx tsc --noEmit` et `npm run build` : TEST RÉUSSI ;
+  - `npx vitest run` : 1 844 TEST RÉUSSI, 4 TEST ÉCHOUÉ déjà présents sur la 2.6.0 non modifiée (vérifié :
+    expressions-v1160 taille du modèle, fluidity ×2, hooks-biomeca « pas d’armé »), 1 ignoré ;
+  - `panneaux-verre.spec` : 9 TEST RÉUSSI ;
+  - Playwright complet : voir la ligne ajoutée ci-dessous ;
+  - téléphone Android réel : NON EXÉCUTÉ.
+- **Captures** : `/mnt/project-files/combat-shadow-studio/maquettes/panneaux-verre-2026-11-24/` (`avant/`, `apres/`,
+  `cote/`), 11 fenêtres × jour et nuit à 360 × 780 ; script `scripts/dev/shot-sheets.mjs`.
+- **Restauration** : `restauration/avant-panneaux-verre-v260` (= 2.6.0, `1707e71`).

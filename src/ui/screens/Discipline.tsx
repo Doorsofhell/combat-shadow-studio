@@ -11,7 +11,7 @@ import { useSettings } from '../../store/settings';
 import { formatDuration, useStats } from '../../store/stats';
 import { useGoals } from '../../store/goals';
 import { MODE_HELP, MODE_LABEL } from '../training/plan';
-import { DisciplineArtwork, EmptyState, KickboxingStyleChip, LevelPips, MenuChip, PageHead, Segmented, Sheet, useKbStyle } from '../components';
+import { DisciplineArtwork, EmptyState, KickboxingStyleChip, LevelPips, MenuChip, PageHead, Segmented, Sheet, SheetLeaveButton, useKbStyle } from '../components';
 import { filterExercises } from '../../domain/kickboxingStyles';
 import { AppIcon, DisciplineIcon } from '../icons';
 import { PremiumMarker } from '../premium/PremiumMarker';
@@ -175,9 +175,9 @@ export function ExerciseSheet({ ex, onClose }: { ex: Exercise; onClose: () => vo
       eyebrow={`${DISCIPLINES.find((d) => d.id === ex.discipline)!.name} · ${LEVELS.find((l) => l.id === ex.level)!.name}`}
       onClose={onClose}
       footer={
-        <button type="button" className="btn primary block lg" onClick={go} data-testid="go-training">
+        <SheetLeaveButton className="btn primary block lg" onLeave={go} data-testid="go-training">
           <AppIcon id="play" /> S’entraîner
-        </button>
+        </SheetLeaveButton>
       }
     >
       <p className="muted">{ex.description}</p>

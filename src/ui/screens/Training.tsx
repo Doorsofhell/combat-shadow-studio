@@ -34,7 +34,7 @@ import { NavIcon } from '../nav/NavIcon';
 import { useNavActions } from '../nav/store';
 import { useSmartBack, vibrate } from '../nav/BottomBar';
 import { popLayer, pushGuard } from '../nav/layers';
-import { ConfirmDialog } from '../components/Sheet';
+import { ConfirmDialog, Sheet } from '../components/Sheet';
 import { useResume } from '../../store/resume';
 import { ResumeSnapshot, matchesPlan, sessionQuery } from '../../domain/resume';
 import { useHydrated } from '../../store/useHydrated';
@@ -854,8 +854,7 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
       )}
 
       {guideId && (
-        <div className="sheet-backdrop" onClick={() => setGuideId(null)}>
-          <div className="sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Comment faire">
+        <Sheet title="Comment faire" onClose={() => setGuideId(null)} testId="guide-sheet">
             <div className="row" style={{ gap: 6 }}>
               {[...new Set(seq)].map((id) => (
                 <button key={id} className={`chip ${guideId === id ? 'on' : ''}`} onClick={() => setGuideId(id)}>
@@ -864,21 +863,14 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
               ))}
             </div>
             <GuideCard id={guideId} southpaw={southpaw} title />
-            <button className="btn dark block" onClick={() => setGuideId(null)}>
-              Fermer
-            </button>
-          </div>
-        </div>
+        </Sheet>
       )}
 
       {sheet && (
-        <div className="sheet-backdrop" onClick={() => setSheet(false)}>
-          <div className="sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Enchaînement" data-testid="sequence-sheet">
+        <Sheet title="Enchaînement" onClose={() => setSheet(false)} testId="sequence-sheet">
             {/* 2.4: the coach, the guard, the camera, the floor marks, the speed and the sounds of this former « Options »
-                sheet are in the coach's panel; the list of the session stays here */}
-            <h2>Enchaînement</h2>
+                sheet are in the coach's panel; the list of the session stays here. 2.7: in the glass of the options */}
             <div className="stack">
-              <span className="label">Enchaînement</span>
               <ol className="small" style={{ margin: 0, paddingLeft: 20 }}>
                 {plan.items.map((it, i) => (
                   <li key={i} style={{ fontWeight: i === view.itemIndex ? 800 : 400, padding: '3px 0', cursor: 'pointer' }} onClick={() => (goto(i), setSheet(false))}>
@@ -888,11 +880,7 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
                 ))}
               </ol>
             </div>
-            <button className="btn dark block" onClick={() => setSheet(false)}>
-              Fermer
-            </button>
-          </div>
-        </div>
+        </Sheet>
       )}
     </div>
   );

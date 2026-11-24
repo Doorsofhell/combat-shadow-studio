@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { ArBridge } from '../../ar/ArBridge';
 import { detectAr, ArSupport } from '../../ar/support';
+import { Sheet } from '../components/Sheet';
 
 export function useArView(bridge: ArBridge) {
   return useSyncExternalStore(
@@ -26,21 +27,19 @@ export function ArIntroSheet({ bridge, overlayRoot, onClose, onBeforeStart }: { 
   }, []);
 
   return (
-    <div className="sheet-backdrop" onClick={onClose}>
-      <div className="sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Réalité augmentée" data-testid="ar-sheet">
-        <h2>Coach en réalité augmentée</h2>
+    <Sheet title="Coach en réalité augmentée" onClose={onClose} testId="ar-sheet">
         <p className="small">
           Ton coach apparaît dans ta pièce, posé sur le sol, à travers la caméra arrière. Il fait exactement les mêmes mouvements, avec les mêmes compteurs et
           consignes que sur fond blanc.
         </p>
-        <div className="card stack" style={{ background: 'var(--bg-soft, #f6f6f6)' }}>
+        <div className="card stack" style={{ background: 'var(--glass-chip)', border: '1px solid var(--glass-line)' }}>
           <b className="small">Caméra et confidentialité</b>
           <ul className="small" style={{ margin: 0, paddingLeft: 18 }}>
             <li>La caméra ne s’ouvre qu’après ton accord et se ferme dès que tu quittes la réalité augmentée ou l’entraînement.</li>
             <li>Les images sont traitées uniquement sur ton téléphone : aucune vidéo, aucune photo, rien n’est envoyé.</li>
           </ul>
         </div>
-        <div className="card stack" style={{ background: 'var(--bg-soft, #f6f6f6)' }}>
+        <div className="card stack" style={{ background: 'var(--glass-chip)', border: '1px solid var(--glass-line)' }}>
           <b className="small">Sécurité</b>
           <ul className="small" style={{ margin: 0, paddingLeft: 18 }}>
             <li>Dégage un espace d’au moins 2 m × 2 m, sans meuble ni obstacle, et place le coach dans une zone libre.</li>
@@ -80,8 +79,7 @@ export function ArIntroSheet({ bridge, overlayRoot, onClose, onBeforeStart }: { 
         <button className="btn block" onClick={onClose}>
           Rester sur fond blanc
         </button>
-      </div>
-    </div>
+    </Sheet>
   );
 }
 

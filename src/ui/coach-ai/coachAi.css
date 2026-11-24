@@ -19,7 +19,8 @@
   --red-soft: rgba(225, 29, 47, 0.2);
   --gold: #d4af37;
   --gold-soft: rgba(212, 175, 55, 0.16);
-  --cai-glass: rgba(17, 23, 32, 0.94);
+  /* 2.7: the glass of the « Options du coach » panel, like every options sheet */
+  --cai-glass: var(--glass-bg);
   --cai-card: #1f2937;
   --cai-card-hover: #283445;
   --cai-shadow: 0 18px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
@@ -32,7 +33,7 @@
   max-width: 560px;
   max-height: min(52dvh, 420px);
   padding: 14px 12px 12px;
-  border-radius: 20px;
+  border-radius: 26px;
   background: var(--cai-glass);
   border: 1px solid var(--line);
   box-shadow: var(--cai-shadow);
@@ -52,7 +53,7 @@
   --red-soft: #fdecef;
   --gold: #7d5f22;
   --gold-soft: rgba(125, 95, 34, 0.12);
-  --cai-glass: rgba(255, 255, 255, 0.95);
+  --cai-glass: var(--glass-bg);
   --cai-card: #f3f4f6;
   --cai-card-hover: #eceef2;
   --cai-shadow: 0 18px 44px rgba(17, 18, 20, 0.18), 0 0 0 1px rgba(17, 18, 20, 0.04);
@@ -60,8 +61,8 @@
 }
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .cai-panel {
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
-    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    backdrop-filter: blur(16px) saturate(1.2);
   }
 }
 /* gold line of the coach, along the top edge */
