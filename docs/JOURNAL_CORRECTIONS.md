@@ -5160,3 +5160,69 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   avant/après `docs/v240/captures/`, vidéos `docs/v240/videos/` ; téléphone Android NON EXÉCUTÉ.
 - **Restauration** : `restauration/avant-animations-lot3` (= 2.3.2, `d5b3b9b`), ou une correction seule par son
   interrupteur. Validée par Youssef le 20/11 à 15 h 50 (« je valide ») ; PR #147 fusionnée après intégration de la 2.3.6.
+
+## 2026-11-24 · base 2.4.0 · Panneau « Options du coach » (EXPÉRIMENTAL, non déployé)
+
+- **Statut** : branche `claude/project-thread-kn0nc0`, PR sans fusion. Ni fusion, ni GitHub Pages, ni APK, ni entrée
+  dans les Nouveautés tant que Youssef n’a pas validé. Version inchangée (2.4.0).
+- **Demande** : Youssef, 20/11 13:25, « REFONTE PREMIUM DU PANNEAU D'OPTIONS DU COACH » (V6 Floating Glass + V7 Smart
+  Control) ; audit et maquettes livrés le 20/11, recommandations validées à 14 h 32 (« je valide les recommandations »).
+- **Constat vérifié (2.3.5 puis 2.4.0)** : un toucher sur le coach montrait des boutons posés sur lui (lecture,
+  vitesse, plein écran, son, angles), différents selon l’écran ; la séance avait en plus une zone Caméra en bas et une
+  feuille « Options d’entraînement » dans Plus ; la fiche avait une ligne Assimilée / Encore du mal sous le lecteur ;
+  l’Accueil une puce « Changer de coach » ; la fiche n’avait pas d’angle Auto.
+- **Correction** :
+  - un seul panneau en verre `src/ui/coach-panel/CoachPanel.tsx` (+ `coach-panel.css`), ouvert par un toucher court
+    sur le coach dans le module commun `CoachScreen` (Accueil, fiche, séance) : Mon apprentissage (Acquis / Encore du
+    mal / En apprentissage), Angle de vue (Auto, Face, 3/4, Profil, autres angles, rotation, zoom, gros plan),
+    Vitesse (valeurs et bornes d’avant), Voix et volume réel, Plein écran, Réinitialiser la vue, Options avancées
+    repliables (coach, garde, repères au sol, annonces, impacts, volume des effets, liens Coachs et Réglages) ;
+  - chaque choix s’applique tout de suite, le panneau reste ouvert, pas de « Valider » ;
+  - fermeture : toucher à côté (voile qui avale pointeur, souris et clic, gardé pendant l’animation de fermeture),
+    glisser la poignée vers le bas, Retour (couche d’historique `nav/layers.ts`, `dropLayer` ajouté), Échap ; focus
+    piégé puis rendu ; le panneau suit le plein écran natif ;
+  - statuts : `setMastery` dans `src/store/goals.ts` ; « En apprentissage » = pas de marque, donc aucune migration, les
+    anciens statuts sont lus tels quels ; même identifiant de technique partout ; aucun XP ;
+  - séance : « Caméra » de la barre ouvre le panneau sur l’angle de vue ; Plus › « Options du coach » ouvre le panneau ;
+    nouvelle entrée Plus › « Enchaînement » pour la liste de la séance ; la zone Caméra du bas et le bouton pause du
+    coach sont retirés (la pause reste dans la barre) ; ouvrir le panneau ne met jamais en pause ;
+  - fiche : angle Auto ajouté (vue conseillée par technique) ; la ligne Assimilée / Encore du mal est retirée
+    (`Playback.tsx`), le filtre et les liserés du catalogue restent ;
+  - Accueil : « Changer de coach » passe dans Options avancées ;
+  - plein écran : quand les commandes sont estompées, un toucher les réaffiche seulement (il n’ouvre pas aussi le
+    panneau) (`useStageFullscreen.ts`) ;
+  - repli sans flou si qualité basse, mode sûr 3D ou `backdrop-filter` absent ; aucune animation en mouvement réduit ;
+    aucun GLB, animation ou squelette modifié ;
+  - Coach IA : textes du guide mis à jour (`src/coach/appGuide.ts`) ; astuce « touche le coach pour ses options, deux
+    fois pour le plein écran ».
+- **Fichiers** : `src/ui/coach-panel/*`, `src/ui/coach-screen/CoachScreen.tsx` et `coach-screen.css`,
+  `src/ui/screens/{Training,Library,Home}.tsx`, `src/ui/components/Playback.tsx`, `src/ui/fullscreen/*`,
+  `src/ui/nav/layers.ts`, `src/store/goals.ts`, `src/coach/appGuide.ts`, `src/ui/styles.css`.
+- **Tests ajoutés** : `tests/e2e/panneau-coach.spec.ts` (10 cas : Échap, glisser la poignée, Retour, aucun clic qui
+  traverse sur fiche et séance y compris pendant la fermeture, séance non mise en pause, persistance après
+  rechargement, réinitialiser la vue, anciens statuts gardés et synchronisés fiche ↔ séance sans XP, glisser et pincer
+  n’ouvrent pas, 360 × 640 avec défilement interne, clavier et lecteur d’écran, aucun bouton hors panneau, mouvement
+  réduit et repli sans flou, fluidité ouvert / fermé) ; `src/store/__tests__/mastery.test.ts` (setMastery, 2 cas).
+- **Tests adaptés, avec raison** (les boutons visés n’existent plus ; mêmes vérifications, faites dans le panneau) :
+  `ecran-coach-v140` (réécrit : le toucher ouvre le panneau), `training-layout` (zone Caméra → section Angle de vue,
+  mêmes contrôles de taille sur 6 formats, délai porté à 300 s car chaque format recharge la séance ; Auto ; ralenti ;
+  repères ; changer de coach), `consignes-v130` (plein écran, angles de la fiche, haut-parleur → interrupteur Voix et
+  volume), `corrections-v110` (vitesse), `seance-mains-libres` (toucher pendant la pause : ouvre le panneau, toujours en
+  pause), `mastery` et `aucune-perte-v100` (statut dans le panneau), `technique-nav`, `navigation` (Caméra, Options du
+  coach, Enchaînement), `coachs-v160` (Changer de coach via Options avancées), `coach-render` et `outfit-loading`
+  (coach dans Options avancées), `fullscreen-dbltap` (texte de l’astuce, plein écran du panneau, toucher sur commandes
+  estompées, deux appuis lents), `appGuide.test` (nouveaux libellés). Aucun test supprimé.
+- **Résultats** :
+  - `npx vitest run` : 1 818 TEST RÉUSSI, 4 TEST ÉCHOUÉ déjà présents sur la 2.4.0 (expressions-v1160 taille du modèle,
+    fluidity ×2, hooks-biomeca « pas d’armé »), 1 ignoré ;
+  - `npx tsc -b` et `npm run build` : TEST RÉUSSI ;
+  - Playwright complet (321) : 312 TEST RÉUSSI, 2 ignorés (Firebase), 7 TEST ÉCHOUÉ au premier passage ; 5 liés au
+    panneau corrigés puis TEST RÉUSSI en relance ciblée (aucune-perte-v100:113, fullscreen-dbltap complet,
+    outfit-loading, training-layout:240 et :308) ; 2 TEST ÉCHOUÉ aussi sur un build de la 2.4.0 non modifiée
+    (coach-suggest:147, coaching-hud:60), défauts antérieurs ;
+  - `coachs-v160` 360×640 « Le voir bouger » : TEST ÉCHOUÉ une fois au premier passage, TEST RÉUSSI dans le passage
+    complet suivant (écran du choix de coach non modifié) ;
+  - téléphone Android réel : NON EXÉCUTÉ.
+- **Captures** : `/mnt/project-files/combat-shadow-studio/maquettes/panneau-coach-2026-11-24/` (412 × 915 sombre,
+  360 × 640, mode jour) ; avant : `.../panneau-coach-2026-11-20/`.
+- **Restauration** : `restauration/avant-panneau-coach-v240` (= 2.4.0, `1684b73`).
