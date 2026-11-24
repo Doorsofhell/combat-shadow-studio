@@ -325,6 +325,63 @@ def main(cfg):
         ferme = nd.gaussian_filter(ferme, (1.0 * Sx, 1.0 * Sx, 0))
         trait = nd.gaussian_filter(zone * smooth(0.2, 0.6, lm / max(C['levres_modele'], 1e-6) + 0.3), 2 * Sx) * 0.9
         outt = outt * (1 - trait[..., None]) + ferme * trait[..., None]
+    if C.get('maquillage'):
+        # 24/11 (Youssef, image « voici ce que je voudrais pour les femmes ») : maquillage soigné des coachs femmes, placé
+        # par les repères du visage (même méthode pour Amara, Inaya et Kanya) : peau lissée, sourcils plus denses,
+        # ombre à paupières, ras des cils assombri (bande floue, jamais un trait net), blush, lèvres rosées un peu
+        # brillantes. Chaque zone est un flou large mesuré en millimètres sur le visage ; la teinte multiplie la photo
+        mq = C['maquillage']
+        vis = VM & (~VE) & (facing > -0.2)
+        def dist_poly(ids):
+            pts = X3b[list(ids)]
+            d = np.full((S, S), np.inf, np.float32)
+            for a, b in zip(pts[:-1], pts[1:]):
+                ab = b - a; t = np.clip(((PM - a) @ ab) / max(float(ab @ ab), 1e-12), 0, 1)
+                d = np.minimum(d, np.linalg.norm(PM - (a + t[..., None] * ab), axis=-1))
+            return np.where(vis, d, np.inf)
+        def teinte(zone, rgb):
+            nonlocal outt
+            outt = np.clip(outt * (1 + zone[..., None] * (np.array(rgb, np.float32) - 1)), 0, 1)
+        gs = lambda d, sig: np.exp(-0.5 * (d / sig) ** 2)
+        # peau lissée : grain gardé à moitié sur le visage, hors sourcils, yeux et lèvres
+        if mq.get('lisse'):
+            keep = np.zeros((S, S), np.float32)
+            for ids in ((70, 63, 105, 66, 107), (300, 293, 334, 296, 336)):
+                keep = np.maximum(keep, gs(dist_poly(ids), 0.006))
+            for ids in ((33, 160, 158, 133, 153, 144, 33), (263, 387, 385, 362, 380, 373, 263), (61, 0, 291, 17, 61)):
+                keep = np.maximum(keep, gs(dist_poly(ids), 0.007))
+            flou = nd.gaussian_filter(outt, (6 * S / 2048, 6 * S / 2048, 0))
+            a = (W * (1 - keep) * mq['lisse'])[..., None]
+            outt = outt * (1 - a) + flou * a
+        # sourcils dessinés sans le bout intérieur (107, 336) : un sourcil foncé jusqu'au nez donne un air froncé
+        brows = [(70, 63, 105, 66), (300, 293, 334, 296)]
+        lids = [(33, 246, 161, 160, 159, 158, 157, 173, 133), (263, 466, 388, 387, 386, 385, 384, 398, 362)]
+        if mq.get('sourcils'):
+            z = sum(gs(dist_poly(ids), 0.0024) for ids in brows)
+            teinte(np.clip(z, 0, 1) * mq['sourcils'], mq.get('sourcils_teinte', (0.62, 0.56, 0.54)))
+        if mq.get('paupieres'):
+            z = sum(gs(dist_poly(ids), 0.0055) for ids in lids) * (PM[..., 1] > X3b[159, 1] - 0.002)
+            teinte(np.clip(z, 0, 1) * mq['paupieres'], mq.get('paupieres_teinte', (0.86, 0.76, 0.72)))
+        if mq.get('cils'):
+            # ras des cils du haut, épaissi vers le coin extérieur (petite aile douce)
+            z = np.zeros((S, S), np.float32)
+            for ids in lids:
+                d = dist_poly(ids)
+                z = np.maximum(z, gs(d, 0.0015))
+                z = np.maximum(z, gs(dist_poly((ids[2], ids[1], ids[0])), 0.0018) * 0.8)
+            teinte(np.clip(z, 0, 1) * mq['cils'], (0.2, 0.17, 0.17))
+        if mq.get('blush'):
+            z = gs(np.minimum(dist_poly((50, 50)), dist_poly((280, 280))), 0.012)
+            teinte(z * mq['blush'], mq.get('blush_teinte', (1.08, 0.93, 0.92)))
+        if mq.get('levres'):
+            rr2 = outt[..., 0] - outt[..., 1]
+            around = gs(dist_poly((61, 0, 291, 17, 61)), 0.006)
+            base = np.median(rr2[(around > 0.05) & (around < 0.3)])
+            lm2 = nd.gaussian_filter(np.clip((rr2 - base) / 0.06, 0, 1) * (around > 0.3), 3 * S / 2048)
+            teinte(lm2 * mq['levres'], mq.get('levres_teinte', (1.12, 0.9, 0.9)))
+            # reflet doux au milieu de la lèvre du bas
+            hl = gs(dist_poly((14, 17)), 0.0025) * lm2
+            outt = np.clip(outt + (hl * mq.get('brillance', 0.0))[..., None] * 0.25, 0, 1)
     Image.fromarray((outt * 255).astype(np.uint8)).save(C['work'] + '-tete.png')
     # corps : même gain (raccord du cou)
     new_img = {}

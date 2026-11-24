@@ -36,5 +36,36 @@
  ],
  "qualite": 85,
  "sourcils_neutres": true,
- "coins_bouche": 0.0015
+ "coins_bouche": 0.0015,
+ "maquillage": {
+  "lisse": 0.6,
+  "sourcils": 0.75,
+  "paupieres": 0.8,
+  "cils": 1.0,
+  "blush": 0.45,
+  "levres": 0.8,
+  "brillance": 0.6,
+  "paupieres_teinte": [
+   0.82,
+   0.7,
+   0.68
+  ],
+  "blush_teinte": [
+   1.08,
+   0.95,
+   0.95
+  ],
+  "levres_teinte": [
+   1.1,
+   0.9,
+   0.96
+  ],
+  "sourcils_teinte": [
+   0.62,
+   0.52,
+   0.45
+  ]
+ },
+ "levres": 0.0016,
+ "levres_modele": 1
 }

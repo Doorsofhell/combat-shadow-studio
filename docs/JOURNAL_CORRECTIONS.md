@@ -5449,3 +5449,19 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   Victor, moteur humain, démarrage : TEST RÉUSSI. `outfit-rollback-v1373` : empreinte de Kadir mise à jour (visage
   seulement). Reste l'échec déjà noté de la taille d'Amara. Playwright NON EXÉCUTÉ. Rien publié.
 - **Restauration** : commit a855a108.
+
+## 2026-11-24 · prototype 2 de la 2.4.0 (non publié) · Maquillage soigné des trois coachs femmes (image de Youssef)
+
+- **Demande** (Youssef, 24/11 23 h 27, image `tools/generator/fideles/references/souhait-femmes-2026-11-24.png`) :
+  « voici ce que je voudrais pour les femmes » : visages maquillés, lèvres pulpeuses, peau lisse, sourcils dessinés,
+  coiffures en queue de cheval avec mèches.
+- **Corrections** (visage seulement) : `visage.py`, option `maquillage` placée par les repères du visage (même
+  méthode pour les trois) : peau lissée hors sourcils, yeux et lèvres ; sourcils plus denses sans leur bout intérieur
+  (pas d'air froncé) ; ombre à paupières ; ras des cils du haut assombri en bande floue ; blush ; lèvres rosées avec
+  un reflet doux. Inaya et Kanya : lèvres plus pleines (`levres` 1,6 mm, `levres_modele`), comme Amara. Configs
+  `amara2`, `inaya2`, `kanya2`. Géométrie d'Amara contrôlée identique (corps et tête).
+- **Pas encore fait** : les coiffures de l'image (queue de cheval, mèches libres) demandent de vrais cheveux en 3D,
+  les cheveux actuels sont peints sur le crâne ; proposé comme lot suivant.
+- **Tests** : vitest `src/three` + `src/boot` 770/773, échecs déjà notés (taille et shorts d'Amara). Playwright NON
+  EXÉCUTÉ. Rien publié.
+- **Restauration** : commit e72c0d70.
