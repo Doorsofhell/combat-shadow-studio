@@ -1,0 +1,1193 @@
+{
+ "errors": [],
+ "shots": [
+  {
+   "coach": "mma-kadir",
+   "motion": "garde",
+   "instant": "garde",
+   "version": "avant",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=boxe&motion=garde&frame=1&az=35&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/mma-kadir_garde_garde_avant.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "garde",
+   "instant": "garde",
+   "version": "apres",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=boxe&motion=garde&frame=1&az=35&el=8",
+   "file": "docs/v250/captures/raw/mma-kadir_garde_garde_apres.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "crochet",
+   "instant": "armement",
+   "version": "avant",
+   "t": 0.12,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/mma-kadir_crochet_armement_avant.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "crochet",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/mma-kadir_crochet_impact_avant.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "crochet",
+   "instant": "armement",
+   "version": "apres",
+   "t": 0.12,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12",
+   "file": "docs/v250/captures/raw/mma-kadir_crochet_armement_apres.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "crochet",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12",
+   "file": "docs/v250/captures/raw/mma-kadir_crochet_impact_apres.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "coup-de-pied-haut",
+   "instant": "armement",
+   "version": "avant",
+   "t": 0.264,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/mma-kadir_coup-de-pied-haut_armement_avant.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "coup-de-pied-haut",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/mma-kadir_coup-de-pied-haut_impact_avant.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "coup-de-pied-haut",
+   "instant": "armement",
+   "version": "apres",
+   "t": 0.264,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8",
+   "file": "docs/v250/captures/raw/mma-kadir_coup-de-pied-haut_armement_apres.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "coup-de-pied-haut",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8",
+   "file": "docs/v250/captures/raw/mma-kadir_coup-de-pied-haut_impact_apres.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "sprawl",
+   "instant": "descente",
+   "version": "avant",
+   "t": 0.312,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=mma&tech=sprawl&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/mma-kadir_sprawl_descente_avant.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "sprawl",
+   "instant": "bas",
+   "version": "avant",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=mma&tech=sprawl&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/mma-kadir_sprawl_bas_avant.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "sprawl",
+   "instant": "descente",
+   "version": "apres",
+   "t": 0.312,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=mma&tech=sprawl&az=90&el=15",
+   "file": "docs/v250/captures/raw/mma-kadir_sprawl_descente_apres.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "sprawl",
+   "instant": "bas",
+   "version": "apres",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=mma&tech=sprawl&az=90&el=15",
+   "file": "docs/v250/captures/raw/mma-kadir_sprawl_bas_apres.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "garde-zoom",
+   "instant": "garde",
+   "version": "avant",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=boxe&motion=garde&span=0.75&fy=1.3&az=35&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/mma-kadir_garde-zoom_garde_avant.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "garde-zoom",
+   "instant": "garde",
+   "version": "apres",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=boxe&motion=garde&span=0.75&fy=1.3&az=35&el=8",
+   "file": "docs/v250/captures/raw/mma-kadir_garde-zoom_garde_apres.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "crochet-zoom",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=boxe&tech=crochet-avant&span=0.75&fy=1.35&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/mma-kadir_crochet-zoom_impact_avant.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "crochet-zoom",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=boxe&tech=crochet-avant&span=0.75&fy=1.35&az=55&el=12",
+   "file": "docs/v250/captures/raw/mma-kadir_crochet-zoom_impact_apres.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "coup-de-pied-haut-zoom",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=kickboxing&tech=high-kick-arriere&span=0.9&fy=0.95&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/mma-kadir_coup-de-pied-haut-zoom_impact_avant.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "coup-de-pied-haut-zoom",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=kickboxing&tech=high-kick-arriere&span=0.9&fy=0.95&az=60&el=8",
+   "file": "docs/v250/captures/raw/mma-kadir_coup-de-pied-haut-zoom_impact_apres.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "sprawl-zoom",
+   "instant": "bas",
+   "version": "avant",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=mma&tech=sprawl&span=0.7&fy=0.35&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/mma-kadir_sprawl-zoom_bas_avant.png"
+  },
+  {
+   "coach": "mma-kadir",
+   "motion": "sprawl-zoom",
+   "instant": "bas",
+   "version": "apres",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=mma&tech=sprawl&span=0.7&fy=0.35&az=90&el=15",
+   "file": "docs/v250/captures/raw/mma-kadir_sprawl-zoom_bas_apres.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "garde",
+   "instant": "garde",
+   "version": "avant",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=boxe&motion=garde&frame=1&az=35&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/mma-amara_garde_garde_avant.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "garde",
+   "instant": "garde",
+   "version": "apres",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=boxe&motion=garde&frame=1&az=35&el=8",
+   "file": "docs/v250/captures/raw/mma-amara_garde_garde_apres.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "crochet",
+   "instant": "armement",
+   "version": "avant",
+   "t": 0.12,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/mma-amara_crochet_armement_avant.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "crochet",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/mma-amara_crochet_impact_avant.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "crochet",
+   "instant": "armement",
+   "version": "apres",
+   "t": 0.12,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12",
+   "file": "docs/v250/captures/raw/mma-amara_crochet_armement_apres.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "crochet",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12",
+   "file": "docs/v250/captures/raw/mma-amara_crochet_impact_apres.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "coup-de-pied-haut",
+   "instant": "armement",
+   "version": "avant",
+   "t": 0.264,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/mma-amara_coup-de-pied-haut_armement_avant.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "coup-de-pied-haut",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/mma-amara_coup-de-pied-haut_impact_avant.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "coup-de-pied-haut",
+   "instant": "armement",
+   "version": "apres",
+   "t": 0.264,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8",
+   "file": "docs/v250/captures/raw/mma-amara_coup-de-pied-haut_armement_apres.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "coup-de-pied-haut",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8",
+   "file": "docs/v250/captures/raw/mma-amara_coup-de-pied-haut_impact_apres.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "sprawl",
+   "instant": "descente",
+   "version": "avant",
+   "t": 0.312,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=mma&tech=sprawl&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/mma-amara_sprawl_descente_avant.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "sprawl",
+   "instant": "bas",
+   "version": "avant",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=mma&tech=sprawl&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/mma-amara_sprawl_bas_avant.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "sprawl",
+   "instant": "descente",
+   "version": "apres",
+   "t": 0.312,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=mma&tech=sprawl&az=90&el=15",
+   "file": "docs/v250/captures/raw/mma-amara_sprawl_descente_apres.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "sprawl",
+   "instant": "bas",
+   "version": "apres",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=mma&tech=sprawl&az=90&el=15",
+   "file": "docs/v250/captures/raw/mma-amara_sprawl_bas_apres.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "garde-zoom",
+   "instant": "garde",
+   "version": "avant",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=boxe&motion=garde&span=0.75&fy=1.3&az=35&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/mma-amara_garde-zoom_garde_avant.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "garde-zoom",
+   "instant": "garde",
+   "version": "apres",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=boxe&motion=garde&span=0.75&fy=1.3&az=35&el=8",
+   "file": "docs/v250/captures/raw/mma-amara_garde-zoom_garde_apres.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "crochet-zoom",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=boxe&tech=crochet-avant&span=0.75&fy=1.35&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/mma-amara_crochet-zoom_impact_avant.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "crochet-zoom",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=boxe&tech=crochet-avant&span=0.75&fy=1.35&az=55&el=12",
+   "file": "docs/v250/captures/raw/mma-amara_crochet-zoom_impact_apres.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "coup-de-pied-haut-zoom",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=kickboxing&tech=high-kick-arriere&span=0.9&fy=0.95&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/mma-amara_coup-de-pied-haut-zoom_impact_avant.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "coup-de-pied-haut-zoom",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=kickboxing&tech=high-kick-arriere&span=0.9&fy=0.95&az=60&el=8",
+   "file": "docs/v250/captures/raw/mma-amara_coup-de-pied-haut-zoom_impact_apres.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "sprawl-zoom",
+   "instant": "bas",
+   "version": "avant",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=mma&tech=sprawl&span=0.7&fy=0.35&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/mma-amara_sprawl-zoom_bas_avant.png"
+  },
+  {
+   "coach": "mma-amara",
+   "motion": "sprawl-zoom",
+   "instant": "bas",
+   "version": "apres",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=mma-amara&look=realiste&d=mma&tech=sprawl&span=0.7&fy=0.35&az=90&el=15",
+   "file": "docs/v250/captures/raw/mma-amara_sprawl-zoom_bas_apres.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "garde",
+   "instant": "garde",
+   "version": "avant",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=boxe&motion=garde&frame=1&az=35&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/nael_garde_garde_avant.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "garde",
+   "instant": "garde",
+   "version": "apres",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=boxe&motion=garde&frame=1&az=35&el=8",
+   "file": "docs/v250/captures/raw/nael_garde_garde_apres.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "crochet",
+   "instant": "armement",
+   "version": "avant",
+   "t": 0.12,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/nael_crochet_armement_avant.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "crochet",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/nael_crochet_impact_avant.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "crochet",
+   "instant": "armement",
+   "version": "apres",
+   "t": 0.12,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12",
+   "file": "docs/v250/captures/raw/nael_crochet_armement_apres.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "crochet",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12",
+   "file": "docs/v250/captures/raw/nael_crochet_impact_apres.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "coup-de-pied-haut",
+   "instant": "armement",
+   "version": "avant",
+   "t": 0.264,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/nael_coup-de-pied-haut_armement_avant.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "coup-de-pied-haut",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/nael_coup-de-pied-haut_impact_avant.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "coup-de-pied-haut",
+   "instant": "armement",
+   "version": "apres",
+   "t": 0.264,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8",
+   "file": "docs/v250/captures/raw/nael_coup-de-pied-haut_armement_apres.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "coup-de-pied-haut",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8",
+   "file": "docs/v250/captures/raw/nael_coup-de-pied-haut_impact_apres.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "sprawl",
+   "instant": "descente",
+   "version": "avant",
+   "t": 0.312,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=mma&tech=sprawl&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/nael_sprawl_descente_avant.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "sprawl",
+   "instant": "bas",
+   "version": "avant",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=mma&tech=sprawl&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/nael_sprawl_bas_avant.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "sprawl",
+   "instant": "descente",
+   "version": "apres",
+   "t": 0.312,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=mma&tech=sprawl&az=90&el=15",
+   "file": "docs/v250/captures/raw/nael_sprawl_descente_apres.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "sprawl",
+   "instant": "bas",
+   "version": "apres",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=mma&tech=sprawl&az=90&el=15",
+   "file": "docs/v250/captures/raw/nael_sprawl_bas_apres.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "garde-zoom",
+   "instant": "garde",
+   "version": "avant",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=boxe&motion=garde&span=0.75&fy=1.3&az=35&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/nael_garde-zoom_garde_avant.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "garde-zoom",
+   "instant": "garde",
+   "version": "apres",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=boxe&motion=garde&span=0.75&fy=1.3&az=35&el=8",
+   "file": "docs/v250/captures/raw/nael_garde-zoom_garde_apres.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "crochet-zoom",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=boxe&tech=crochet-avant&span=0.75&fy=1.35&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/nael_crochet-zoom_impact_avant.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "crochet-zoom",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=boxe&tech=crochet-avant&span=0.75&fy=1.35&az=55&el=12",
+   "file": "docs/v250/captures/raw/nael_crochet-zoom_impact_apres.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "coup-de-pied-haut-zoom",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=kickboxing&tech=high-kick-arriere&span=0.9&fy=0.95&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/nael_coup-de-pied-haut-zoom_impact_avant.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "coup-de-pied-haut-zoom",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=kickboxing&tech=high-kick-arriere&span=0.9&fy=0.95&az=60&el=8",
+   "file": "docs/v250/captures/raw/nael_coup-de-pied-haut-zoom_impact_apres.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "sprawl-zoom",
+   "instant": "bas",
+   "version": "avant",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=mma&tech=sprawl&span=0.7&fy=0.35&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/nael_sprawl-zoom_bas_avant.png"
+  },
+  {
+   "coach": "nael",
+   "motion": "sprawl-zoom",
+   "instant": "bas",
+   "version": "apres",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=nael&look=realiste&d=mma&tech=sprawl&span=0.7&fy=0.35&az=90&el=15",
+   "file": "docs/v250/captures/raw/nael_sprawl-zoom_bas_apres.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "garde",
+   "instant": "garde",
+   "version": "avant",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=boxe&motion=garde&frame=1&az=35&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/victor_garde_garde_avant.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "garde",
+   "instant": "garde",
+   "version": "apres",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=boxe&motion=garde&frame=1&az=35&el=8",
+   "file": "docs/v250/captures/raw/victor_garde_garde_apres.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "crochet",
+   "instant": "armement",
+   "version": "avant",
+   "t": 0.12,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/victor_crochet_armement_avant.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "crochet",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/victor_crochet_impact_avant.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "crochet",
+   "instant": "armement",
+   "version": "apres",
+   "t": 0.12,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12",
+   "file": "docs/v250/captures/raw/victor_crochet_armement_apres.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "crochet",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12",
+   "file": "docs/v250/captures/raw/victor_crochet_impact_apres.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "coup-de-pied-haut",
+   "instant": "armement",
+   "version": "avant",
+   "t": 0.264,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/victor_coup-de-pied-haut_armement_avant.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "coup-de-pied-haut",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/victor_coup-de-pied-haut_impact_avant.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "coup-de-pied-haut",
+   "instant": "armement",
+   "version": "apres",
+   "t": 0.264,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8",
+   "file": "docs/v250/captures/raw/victor_coup-de-pied-haut_armement_apres.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "coup-de-pied-haut",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8",
+   "file": "docs/v250/captures/raw/victor_coup-de-pied-haut_impact_apres.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "sprawl",
+   "instant": "descente",
+   "version": "avant",
+   "t": 0.312,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=mma&tech=sprawl&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/victor_sprawl_descente_avant.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "sprawl",
+   "instant": "bas",
+   "version": "avant",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=mma&tech=sprawl&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/victor_sprawl_bas_avant.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "sprawl",
+   "instant": "descente",
+   "version": "apres",
+   "t": 0.312,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=mma&tech=sprawl&az=90&el=15",
+   "file": "docs/v250/captures/raw/victor_sprawl_descente_apres.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "sprawl",
+   "instant": "bas",
+   "version": "apres",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=mma&tech=sprawl&az=90&el=15",
+   "file": "docs/v250/captures/raw/victor_sprawl_bas_apres.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "garde-zoom",
+   "instant": "garde",
+   "version": "avant",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=boxe&motion=garde&span=0.75&fy=1.3&az=35&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/victor_garde-zoom_garde_avant.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "garde-zoom",
+   "instant": "garde",
+   "version": "apres",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=boxe&motion=garde&span=0.75&fy=1.3&az=35&el=8",
+   "file": "docs/v250/captures/raw/victor_garde-zoom_garde_apres.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "crochet-zoom",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=boxe&tech=crochet-avant&span=0.75&fy=1.35&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/victor_crochet-zoom_impact_avant.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "crochet-zoom",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=boxe&tech=crochet-avant&span=0.75&fy=1.35&az=55&el=12",
+   "file": "docs/v250/captures/raw/victor_crochet-zoom_impact_apres.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "coup-de-pied-haut-zoom",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=kickboxing&tech=high-kick-arriere&span=0.9&fy=0.95&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/victor_coup-de-pied-haut-zoom_impact_avant.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "coup-de-pied-haut-zoom",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=kickboxing&tech=high-kick-arriere&span=0.9&fy=0.95&az=60&el=8",
+   "file": "docs/v250/captures/raw/victor_coup-de-pied-haut-zoom_impact_apres.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "sprawl-zoom",
+   "instant": "bas",
+   "version": "avant",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=mma&tech=sprawl&span=0.7&fy=0.35&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/victor_sprawl-zoom_bas_avant.png"
+  },
+  {
+   "coach": "victor",
+   "motion": "sprawl-zoom",
+   "instant": "bas",
+   "version": "apres",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=victor&look=realiste&d=mma&tech=sprawl&span=0.7&fy=0.35&az=90&el=15",
+   "file": "docs/v250/captures/raw/victor_sprawl-zoom_bas_apres.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "garde",
+   "instant": "garde",
+   "version": "avant",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=boxe&motion=garde&frame=1&az=35&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/inaya_garde_garde_avant.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "garde",
+   "instant": "garde",
+   "version": "apres",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=boxe&motion=garde&frame=1&az=35&el=8",
+   "file": "docs/v250/captures/raw/inaya_garde_garde_apres.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "crochet",
+   "instant": "armement",
+   "version": "avant",
+   "t": 0.12,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/inaya_crochet_armement_avant.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "crochet",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/inaya_crochet_impact_avant.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "crochet",
+   "instant": "armement",
+   "version": "apres",
+   "t": 0.12,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12",
+   "file": "docs/v250/captures/raw/inaya_crochet_armement_apres.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "crochet",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12",
+   "file": "docs/v250/captures/raw/inaya_crochet_impact_apres.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "coup-de-pied-haut",
+   "instant": "armement",
+   "version": "avant",
+   "t": 0.264,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/inaya_coup-de-pied-haut_armement_avant.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "coup-de-pied-haut",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/inaya_coup-de-pied-haut_impact_avant.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "coup-de-pied-haut",
+   "instant": "armement",
+   "version": "apres",
+   "t": 0.264,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8",
+   "file": "docs/v250/captures/raw/inaya_coup-de-pied-haut_armement_apres.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "coup-de-pied-haut",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8",
+   "file": "docs/v250/captures/raw/inaya_coup-de-pied-haut_impact_apres.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "sprawl",
+   "instant": "descente",
+   "version": "avant",
+   "t": 0.312,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=mma&tech=sprawl&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/inaya_sprawl_descente_avant.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "sprawl",
+   "instant": "bas",
+   "version": "avant",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=mma&tech=sprawl&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/inaya_sprawl_bas_avant.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "sprawl",
+   "instant": "descente",
+   "version": "apres",
+   "t": 0.312,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=mma&tech=sprawl&az=90&el=15",
+   "file": "docs/v250/captures/raw/inaya_sprawl_descente_apres.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "sprawl",
+   "instant": "bas",
+   "version": "apres",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=mma&tech=sprawl&az=90&el=15",
+   "file": "docs/v250/captures/raw/inaya_sprawl_bas_apres.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "garde-zoom",
+   "instant": "garde",
+   "version": "avant",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=boxe&motion=garde&span=0.75&fy=1.3&az=35&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/inaya_garde-zoom_garde_avant.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "garde-zoom",
+   "instant": "garde",
+   "version": "apres",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=boxe&motion=garde&span=0.75&fy=1.3&az=35&el=8",
+   "file": "docs/v250/captures/raw/inaya_garde-zoom_garde_apres.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "crochet-zoom",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=boxe&tech=crochet-avant&span=0.75&fy=1.35&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/inaya_crochet-zoom_impact_avant.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "crochet-zoom",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=boxe&tech=crochet-avant&span=0.75&fy=1.35&az=55&el=12",
+   "file": "docs/v250/captures/raw/inaya_crochet-zoom_impact_apres.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "coup-de-pied-haut-zoom",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=kickboxing&tech=high-kick-arriere&span=0.9&fy=0.95&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/inaya_coup-de-pied-haut-zoom_impact_avant.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "coup-de-pied-haut-zoom",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=kickboxing&tech=high-kick-arriere&span=0.9&fy=0.95&az=60&el=8",
+   "file": "docs/v250/captures/raw/inaya_coup-de-pied-haut-zoom_impact_apres.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "sprawl-zoom",
+   "instant": "bas",
+   "version": "avant",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=mma&tech=sprawl&span=0.7&fy=0.35&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/inaya_sprawl-zoom_bas_avant.png"
+  },
+  {
+   "coach": "inaya",
+   "motion": "sprawl-zoom",
+   "instant": "bas",
+   "version": "apres",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=inaya&look=realiste&d=mma&tech=sprawl&span=0.7&fy=0.35&az=90&el=15",
+   "file": "docs/v250/captures/raw/inaya_sprawl-zoom_bas_apres.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "garde",
+   "instant": "garde",
+   "version": "avant",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=boxe&motion=garde&frame=1&az=35&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/kanya_garde_garde_avant.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "garde",
+   "instant": "garde",
+   "version": "apres",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=boxe&motion=garde&frame=1&az=35&el=8",
+   "file": "docs/v250/captures/raw/kanya_garde_garde_apres.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "crochet",
+   "instant": "armement",
+   "version": "avant",
+   "t": 0.12,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/kanya_crochet_armement_avant.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "crochet",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/kanya_crochet_impact_avant.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "crochet",
+   "instant": "armement",
+   "version": "apres",
+   "t": 0.12,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12",
+   "file": "docs/v250/captures/raw/kanya_crochet_armement_apres.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "crochet",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=boxe&tech=crochet-avant&az=55&el=12",
+   "file": "docs/v250/captures/raw/kanya_crochet_impact_apres.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "coup-de-pied-haut",
+   "instant": "armement",
+   "version": "avant",
+   "t": 0.264,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/kanya_coup-de-pied-haut_armement_avant.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "coup-de-pied-haut",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/kanya_coup-de-pied-haut_impact_avant.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "coup-de-pied-haut",
+   "instant": "armement",
+   "version": "apres",
+   "t": 0.264,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8",
+   "file": "docs/v250/captures/raw/kanya_coup-de-pied-haut_armement_apres.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "coup-de-pied-haut",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=kickboxing&tech=high-kick-arriere&az=60&el=8",
+   "file": "docs/v250/captures/raw/kanya_coup-de-pied-haut_impact_apres.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "sprawl",
+   "instant": "descente",
+   "version": "avant",
+   "t": 0.312,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=mma&tech=sprawl&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/kanya_sprawl_descente_avant.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "sprawl",
+   "instant": "bas",
+   "version": "avant",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=mma&tech=sprawl&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/kanya_sprawl_bas_avant.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "sprawl",
+   "instant": "descente",
+   "version": "apres",
+   "t": 0.312,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=mma&tech=sprawl&az=90&el=15",
+   "file": "docs/v250/captures/raw/kanya_sprawl_descente_apres.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "sprawl",
+   "instant": "bas",
+   "version": "apres",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=mma&tech=sprawl&az=90&el=15",
+   "file": "docs/v250/captures/raw/kanya_sprawl_bas_apres.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "garde-zoom",
+   "instant": "garde",
+   "version": "avant",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=boxe&motion=garde&span=0.75&fy=1.3&az=35&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/kanya_garde-zoom_garde_avant.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "garde-zoom",
+   "instant": "garde",
+   "version": "apres",
+   "t": 0,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=boxe&motion=garde&span=0.75&fy=1.3&az=35&el=8",
+   "file": "docs/v250/captures/raw/kanya_garde-zoom_garde_apres.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "crochet-zoom",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=boxe&tech=crochet-avant&span=0.75&fy=1.35&az=55&el=12&torsion=0",
+   "file": "docs/v250/captures/raw/kanya_crochet-zoom_impact_avant.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "crochet-zoom",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.2,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=boxe&tech=crochet-avant&span=0.75&fy=1.35&az=55&el=12",
+   "file": "docs/v250/captures/raw/kanya_crochet-zoom_impact_apres.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "coup-de-pied-haut-zoom",
+   "instant": "impact",
+   "version": "avant",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=kickboxing&tech=high-kick-arriere&span=0.9&fy=0.95&az=60&el=8&torsion=0",
+   "file": "docs/v250/captures/raw/kanya_coup-de-pied-haut-zoom_impact_avant.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "coup-de-pied-haut-zoom",
+   "instant": "impact",
+   "version": "apres",
+   "t": 0.44,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=kickboxing&tech=high-kick-arriere&span=0.9&fy=0.95&az=60&el=8",
+   "file": "docs/v250/captures/raw/kanya_coup-de-pied-haut-zoom_impact_apres.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "sprawl-zoom",
+   "instant": "bas",
+   "version": "avant",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=mma&tech=sprawl&span=0.7&fy=0.35&az=90&el=15&torsion=0",
+   "file": "docs/v250/captures/raw/kanya_sprawl-zoom_bas_avant.png"
+  },
+  {
+   "coach": "kanya",
+   "motion": "sprawl-zoom",
+   "instant": "bas",
+   "version": "apres",
+   "t": 0.52,
+   "url": "http://localhost:4180/#/lab?champion=kanya&look=realiste&d=mma&tech=sprawl&span=0.7&fy=0.35&az=90&el=15",
+   "file": "docs/v250/captures/raw/kanya_sprawl-zoom_bas_apres.png"
+  }
+ ]
+}

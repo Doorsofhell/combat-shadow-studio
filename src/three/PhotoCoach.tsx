@@ -17,6 +17,7 @@ import { humanProfileFor } from './human/profiles';
 import { CoachRig } from '../engine';
 import { useOutfit, type OutfitId, type OutfitStatus } from './outfit';
 import { applyMorphology, morphologyFor } from './morphology';
+import { ownGeometry, setTwistRig, torsionOn, twistRigOf, TwistRig } from './twist';
 
 /**
  * v0.29 Ultra-réaliste coach built on a photo-textured avatar of the Microsoft Rocketbox library (MIT,
@@ -90,6 +91,23 @@ export function PhotoCoach({
       if (part === 'peau' && (m as SkinnedMesh).isSkinnedMesh) applyBreath(m.material as Material, breath.uniformsFor(m as SkinnedMesh));
     });
     restoreReferencePose(s);
+    // 2.5.0: twist bones and half bones of the joints (src/three/twist.ts): weights redistributed on a copy of the
+    // body's geometry, main bones untouched; ?torsion=0 for the comparisons
+    if (torsionOn()) {
+      const twist = new TwistRig(s);
+      s.traverse((o) => {
+        const m = o as SkinnedMesh;
+        if (!m.isSkinnedMesh) return;
+        const before = m.geometry;
+        ownGeometry(m, m.geometry, owned);
+        if (!twist.bind(m) && m.geometry !== before) {
+          owned.pop()?.dispose();
+          m.geometry = before;
+        }
+      });
+      setTwistRig(s, twist);
+      restoreReferencePose(s);
+    }
     s.userData.cssOwnedGeometries = owned;
     return s;
   }, [gltf, quality, url, breath]);
@@ -162,10 +180,25 @@ export function PhotoCoach({
   const sway = useMemo(() => new Sway(), []);
   const decorate = useCallback(
     (g: SkinnedMesh) => {
+      // 2.5.0: the garment follows the twist and half bones like the body (src/three/twist.ts)
+      const twist = twistRigOf(scene);
+      if (twist) {
+        const loaded = g.geometry;
+        ownGeometry(g, loaded);
+        if (twist.bind(g)) {
+          // given back when the garment is taken off, or with the coach's copy when the coach leaves
+          const own = g.geometry;
+          (scene.userData.cssOwnedGeometries as BufferGeometry[] | undefined)?.push(own);
+          g.addEventListener('removed', () => own.dispose());
+        } else {
+          g.geometry.dispose();
+          g.geometry = loaded;
+        }
+      }
       applyBreath(g.material as Material, breath.uniformsFor(g));
       sway.add(g, outfit === 'judo');
     },
-    [breath, sway, outfit],
+    [breath, sway, outfit, scene],
   );
   const dressed = useOutfit(scene, outfitUrl, outfit, quality, extendLoader, prepare, decorate);
   useEffect(() => onOutfit?.(dressed), [dressed, onOutfit]);
@@ -177,8 +210,11 @@ export function PhotoCoach({
   if (import.meta.env.DEV) (globalThis as { __photoScene?: Object3D }).__photoScene = scene;
   if (import.meta.env.DEV) (globalThis as { __faceAnim?: FaceAnimator }).__faceAnim = face;
   const viewerPos = useMemo(() => new Vector3(), []);
+  const twistRig = useMemo(() => twistRigOf(scene), [scene]);
   useFrame((_, dt) => {
     onFrame(rig, Math.min(dt, 0.05));
+    // 2.5.0: the helper bones follow the pose of this image (main bones only, src/three/twist.ts)
+    twistRig?.update();
     // fixed images (Lab, portraits) ask for a still face, or impose an expression: window.__cssFace
     const fo = (globalThis as { __cssFace?: FaceOptions }).__cssFace;
     face.setBreath(fo?.still ? null : breath.amount.value.x);
