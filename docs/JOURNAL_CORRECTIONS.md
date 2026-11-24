@@ -5183,5 +5183,9 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   présents en 2.4.0 (expressions-v1160, fluidity ×2, hooks-biomeca « pas d'armé », vérifiés sur la 2.4.0 sans le
   changement), tous les autres TEST RÉUSSI (contrat du moteur humain, limites de torsion et chevilles compris) ;
   `npm run build` TEST RÉUSSI ; captures WebGL avant/après des six coachs `docs/v250/captures/` (132 images, 0 erreur) ;
-  Playwright : voir la PR ; téléphone Android NON EXÉCUTÉ.
+  Playwright complet (311) : 304 TEST RÉUSSI, 2 ignorés, 5 TEST ÉCHOUÉ au premier passage. `selection-coach-v4:56`
+  venait de ce lot (copies des géométries des tenues jamais rendues au changement de coach, 34 au lieu de ≤ 23) :
+  corrigé (copie rangée avec celles du coach), TEST RÉUSSI. `boot:98` et `mastery:26` échouent aussi sur la 2.4.0
+  (build refait, vérifié) ; `coaching-hud:60` défaut antérieur connu ; `coach-suggest:147` instable connu ;
+  téléphone Android NON EXÉCUTÉ.
 - **Restauration** : `restauration/avant-torsion-v240` (= 2.4.0), ou `?torsion=0`. Rapport `docs/v250/RAPPORT_TORSION.md`.

@@ -185,8 +185,12 @@ export function PhotoCoach({
       if (twist) {
         const loaded = g.geometry;
         ownGeometry(g, loaded);
-        if (twist.bind(g)) g.addEventListener('removed', () => g.geometry.dispose());
-        else {
+        if (twist.bind(g)) {
+          // given back when the garment is taken off, or with the coach's copy when the coach leaves
+          const own = g.geometry;
+          (scene.userData.cssOwnedGeometries as BufferGeometry[] | undefined)?.push(own);
+          g.addEventListener('removed', () => own.dispose());
+        } else {
           g.geometry.dispose();
           g.geometry = loaded;
         }
