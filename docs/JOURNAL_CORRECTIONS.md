@@ -5265,3 +5265,45 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Captures réelles** (moteur WebGL, Lab) : 12 vues par coach avant/après + éclairage cinéma.
 - **Version** : inchangée tant que Youssef n'a pas validé. **Restauration** : `restauration/avant-coachs-fideles-v240`
   (= 2.3.5) ; modèles 2.3.5 dans `_ARCHIVES_HORS_APPLICATION/anciens-modeles-3d/avant-coachs-fideles-v240/`.
+
+## 2026-11-24 · prototype 2 de la 2.4.0 (non publié) · Gestes adaptés à la carrure de Victor
+
+- **Demande** (Youssef, 24/11 08 h 48, carte de décision) : « Adapter les gestes à Victor » : il garde 1,88 m et sa
+  carrure puissante ; les gestes s'adaptent au gabarit de chaque coach. Base : la branche du prototype, fusionnée avec
+  la 2.5.0 (os de torsion, `28f2c52`).
+- **Constats vérifiés** : (1) les gestes sont écrits pour le tronc de Kadir mis à l'échelle de la taille seulement
+  (`author.ts`) ; poitrine de Victor 4,5 mm plus épaisse que celle de Kadir à taille égale (mesurée sur tous les points
+  de peau de Spine1 et Spine2), les quatre autres coachs plus fins ; d'où ~20 gestes où l'avant-bras ou la jambe entrait
+  0,4 à 0,8 cm plus loin qu'en 2.5.0 ; (2) à 1,88 m un même geste parcourt 4 % de tapis en plus par image : glissement
+  des pieds (8 gestes de sol) et « saut de 25 cm » au registre (défense de lutte) ; (3) le plus grand point de la
+  silhouette échantillonnée (`readOutline`) bouge d'un centimètre avec le nombre de points du modèle : inutilisable pour
+  une correction d'un centimètre (Kadir aurait été décalé de 1,3 cm dans l'application).
+- **Corrections** :
+  - `src/engine/rig.ts` : `girthPush` (profondeur de poitrine en plus de celle de Kadir × 4, nulle sous 3 mm) ; une main
+    écrite dans le repère de la poitrine, basse (des hanches au bas de la poitrine) et près du tronc, avance d'autant ;
+    bras tendu et garde inchangés. Victor : 1,6 à 2 cm ; Kadir, Amara, Naël, Inaya, Kanya : 0. Essayés et écartés :
+    écarter les mains sur les côtés (avant-bras de la garde plus enfoncé) et avancer aussi la garde (pli de l'aisselle) ;
+  - `src/domain/coaches/motion.ts` : garde de Victor, main arrière 1,5 cm plus en avant ;
+  - `tools/generator/fideles/configs/victor-corps.json` : cuisse de Victor ramenée à celle de Kadir (gain 0) ; modèle et
+    7 tenues reconstruits ; textures inchangées (vérifié) ;
+  - `src/engine/registry.ts` et `glide.test.ts` : saut entre deux images et glissement des pieds comparés à 1,80 m pour
+    un coach plus grand (comme `glideSpeedOf`, qui compare les pas par longueur de corps) ; les coachs plus petits
+    gardent leur mesure brute.
+- **Test modifié (raison écrite)** : `intrusions.test.ts`, bornes de Victor remises à la mesure de son nouveau corps,
+  règle de la 1.45.0 (min(nouvelle + 0,2, avant)) : 7 abaissées (dont l'uppercut arrière 7,9 → 6,0, ukemi-yoko 7,6 →
+  7,5), 7 relevées : pont 5,4 → 6,2 (mains en repère du sol contre un ventre plus épais), middle kick arrière 4,1 → 4,6
+  (main arrière qui passe devant la poitrine), sit-out, ko-uchi-gari, changement de base, single-leg, genou en clinch
+  (moins de 0,5 mm au-dessus de l'ancienne borne).
+- **Tests** : `tsc` TEST RÉUSSI ; `npm run build` TEST RÉUSSI ; vitest complet 1838/1847 (9 = 8 échecs + 1 ignoré) :
+  - intrusions, glissement, registre, contact au sol, torsion (2.5.0) : TEST RÉUSSI ;
+  - déjà en échec avant : `fluidity` ×2, `hooks-biomeca` ×2, `expressions-v1160` (taille d'Amara) ;
+  - TEST ÉCHOUÉ, `deformation-v1100` Victor (non borné, montré à Youssef) : pli et étirement des aisselles plus forts
+    que Kadir en garde, jab, crochet, bras levés, squat, garde au sol (étirement jusqu'à 4,4 pour 3,8 permis, pli au
+    sol 71,8° pour 57°) et pli de l'aine au high kick (116° pour 106°). Vérifié : le modèle 2.3.5 de Victor passe ; la
+    seule mise à 1,88 m donne déjà l'aine et le pli au sol ; le reste vient du torse sculpté (deltoïde seul retiré :
+    encore en échec) ;
+  - TEST ÉCHOUÉ (prototype 2, inchangé) : `shorts-v1442` d'Amara ×2 ;
+  - Playwright : NON EXÉCUTÉ (prototype en attente de validation).
+- **Captures réelles** : 6 gestes de Victor avant/après (garde, crochet, uppercut, middle kick, blocage au corps, pont).
+- **Version** : inchangée, rien publié. **Restauration** : commit `28f2c52` (avant l'adaptation),
+  `restauration/avant-coachs-fideles-v240` (= 2.3.5).

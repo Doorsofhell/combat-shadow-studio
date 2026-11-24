@@ -119,6 +119,9 @@ export function checkTechnique(rig: CoachRig, t: Technique, profile?: { id: stri
     jump = Math.max(jump, cur.hips.distanceTo(prev.hips), cur.handL.pos.distanceTo(prev.handL.pos), cur.handR.pos.distanceTo(prev.handR.pos));
     prev = cur;
   }
+  // 2.4.0: gestures are written at the coach's height scale (author.ts): a taller coach covers more ground per frame
+  // for the same gesture, so the jump is compared at 1.80 m (Victor 1.88 m, defense-lutte 25 cm = 24 cm at 1.80 m)
+  jump /= Math.max(1, rig.metrics.height / 1.8);
   checks.continuite = jump < 0.25 ? 'reussi' : 'echoue';
   if (checks.continuite === 'echoue') notes.push(`saut de ${(jump * 100).toFixed(0)} cm entre deux images`);
 

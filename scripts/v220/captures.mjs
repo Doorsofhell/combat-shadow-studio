@@ -27,6 +27,8 @@ export const VIEWS = {
   '14-tenue-judo-mouvement': `d=judo&frame=1&motion=garde&az=30&el=8&${L}`,
   '15-dos-garde': `d=mma&frame=1&motion=garde&az=200&el=10&${L}`,
   '16-amenee': `tech=double-leg&d=mma&at=1&az=60&el=8&${L}`,
+  '17-blocage-corps': `tech=blocage-corps-avant&d=boxe&at=1&az=30&el=8&${L}`,
+  '18-pont': `tech=pont&d=bjj&at=1&az=70&el=20&${L}`,
   '05d-visage-trois-quarts': `d=mma&rest=1&az=35&el=2&span=0.13&fy=1.66&${L}`,
 };
 // hauteur visée proportionnelle à la taille mesurée du modèle (scripts/v220/anatomie.py), calée sur Kadir

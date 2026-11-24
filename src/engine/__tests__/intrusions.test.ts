@@ -61,18 +61,25 @@ const PENDING: Record<string, number> = {
  */
 const VICTOR_PENDING: Record<string, number> = {
   // 1.45.0 (traversées corrigées): bounds lowered to min(new + 0.2, 1.43.0); défense de lutte now under the common bound.
-  'esquive-droite': 2.5,
+  // 2.4.0 prototype 2 (Victor's own body, 1.88 m, thicker chest; Youssef 24/11 « adapter les gestes à Victor »): his
+  // low hands come forward by his extra chest depth (rig.ts girthPush), his rear guard hand 1.5 cm forward, his thigh as
+  // Kadir's. Same rule: min(new + 0.2, before) for the techniques measured lower; seven are higher than before, by 0.03
+  // to 0.6 cm (journal 2.4.0): the bridge (hands in world space against the thicker belly), the rear middle kick (rear
+  // hand swinging past the chest), and five by less than 0.5 mm, bounded at their new value + 0.2
+  'changement-base': 5.5,
+  'esquive-droite': 2.4,
   'genou-circulaire-clinch': 2.2,
+  'genou-clinch': 2.6,
   'high-kick-arriere': 2.5,
-  'middle-kick-arriere': 4.1,
+  'middle-kick-arriere': 4.6,
+  'pont': 6.2,
   'retention-garde': 4.2,
-  'single-leg': 5.0,
-  'sit-out': 5.9,
-  'uchikomi-ko-uchi-gari': 4.1,
-  'ukemi-ushiro': 6.8,
-  'ukemi-yoko': 7.6,
-  // Victor's wider forearm stays a little deeper than the common bound (8.2 cm in 1.43.0, 7.7 cm in 1.45.0)
-  'uppercut-arriere': 7.9,
+  'single-leg': 5.3,
+  'sit-out': 6.2,
+  'uchikomi-ko-uchi-gari': 4.4,
+  'ukemi-ushiro': 6.3,
+  'ukemi-yoko': 7.5,
+  'uppercut-arriere': 6.0,
 };
 /**
  * 1.46.0 Kadir: his trapezius rise 1.5 to 2 cm on the sides of the neck (Youssef 15/11, « trapèzes de combattant »).

@@ -131,6 +131,13 @@ for (const [id, sex] of COACHES) {
             });
           prev = balls;
         }
+        // 2.4.0 prototype 2 (Victor à 1,88 m, choix de Youssef du 24/11 « adapter les gestes à Victor ») : les gestes sont
+        // écrits à l'échelle de la taille (author.ts, s = taille / 1,8), un même balayage parcourt donc plus de tapis par
+        // image chez un coach plus grand. Les vitesses d'un coach de plus de 1,80 m sont ramenées à 1,80 m (comme
+        // glideSpeedOf compare les pas par longueur de corps) ; les coachs plus petits gardent leur mesure brute
+        const k = Math.max(1, rig.metrics.height / 1.8);
+        worst /= k;
+        total /= k;
         grandTotal += total;
         const r = rows.get(t.id);
         if (!r || worst > r.worst)

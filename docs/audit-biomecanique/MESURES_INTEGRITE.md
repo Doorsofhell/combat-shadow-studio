@@ -17,7 +17,7 @@ Lus sur les images clés seulement (pas sur le mouvement joué) : hanches à plu
 | Technique (animation) | Coach | Contrôle | Pire valeur | Styles |
 |---|---|---|---|---|
 | `high-kick-arriere` | mma-kadir | HIP_ACCELERATION | abrupt change of hip speed (47 m/s²) | bjj |
-| `high-kick-arriere` | victor | HIP_ACCELERATION | abrupt change of hip speed (46 m/s²) | bjj |
+| `high-kick-arriere` | victor | HIP_ACCELERATION | abrupt change of hip speed (47 m/s²) | bjj |
 | `high-kick-avant` | inaya | HIP_ACCELERATION | abrupt change of hip speed (52 m/s²) | mma, bjj |
 | `high-kick-avant` | kanya | HIP_ACCELERATION | abrupt change of hip speed (50 m/s²) | mma, bjj |
 | `high-kick-avant` | mma-amara | HIP_ACCELERATION | abrupt change of hip speed (51 m/s²) | mma, bjj |

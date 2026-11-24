@@ -84,6 +84,21 @@ const CLAVICLE_FOLLOW = { angle: 0.3, from: 70 * (Math.PI / 180), span: 30 * (Ma
 const TRUNK_CORE = 0.85;
 /** 1.41.1: thickness of the hand around its bone (m, for a 1.80 m body) */
 const ARM_PAD = { hand: 0.045 };
+/**
+ * 2.4.0 (prototype 2, Youssef 24/11 « adapter les gestes à Victor ») : les gestes sont écrits pour le tronc de Kadir
+ * mis à l'échelle de la taille (author.ts). Profondeur de la poitrine de Kadir devant Spine1 et Spine2, divisée par
+ * taille / 1,8 (sur tous les points de sa peau). Un coach à la poitrine plus épaisse à taille égale avance d'autant ses
+ * mains basses près du tronc (girthPush) ; un coach plus fin ne change pas. Essayés et écartés (24/11) : écarter les
+ * mains sur les côtés (l'avant-bras de la garde entrait plus dans le tronc) et avancer aussi les mains de la garde (pli
+ * de l'aisselle plus marqué, deformation-v1100.test.ts) ; la garde de Victor est réglée dans son profil.
+ */
+const GIRTH_REF = [0.1545, 0.1654];
+/**
+ * épaisseur de poitrine en plus -> avancée des mains : l'avant-bras, le deltoïde et les pectoraux d'un coach plus massif
+ * sont plus épais eux aussi (Victor : 4,5 mm de poitrine en plus, mains avancées de 1,6 à 2 cm ; réglé sur la mesure des
+ * traversées, intrusions.test.ts, 24/11)
+ */
+const GIRTH_GAIN = 4;
 
 function worldQuat(o: Object3D, out: Quaternion) {
   o.matrixWorld.decompose(tmpV, out, tmpV2);
@@ -200,6 +215,8 @@ export class CoachRig {
    * it (handOutOfTrunk).
    */
   private trunkCore: { bone: BoneRest; y0: number; y1: number; w: number; f: number; b: number }[] = [];
+  /** 2.4.0: how far the hands written in the chest frame near the trunk are moved forward for a thicker trunk */
+  girthPush = 0;
   /** rest axis of the spine (pelvis toward the neck): the trunk twists about it */
   private spineAxis = new Vector3(0, 1, 0);
 
@@ -340,6 +357,7 @@ export class CoachRig {
     this.trunkSkin = pick(['Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'LeftShoulder', 'RightShoulder']);
     this.legSkin = pick(['LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg']);
     this.trunkCore = this.measureTrunkCore(outline);
+    this.girthPush = this.measureGirthPush(rootInv);
     for (const sd of SIDES) {
       this.footOutline[sd] = pick([`${sideName(sd)}Foot`, `${sideName(sd)}ToeBase`]);
       this.handOutline[sd] = pick(['', ...FINGERS.flatMap((f) => [1, 2, 3].map((i) => `${f}${i}`))].map((x) => `${sideName(sd)}Hand${x}`));
@@ -574,10 +592,61 @@ export class CoachRig {
     };
   }
 
+  /**
+   * 2.4.0: extra width plus front depth of this coach's chest over Kadir's at the same height (0 when not thicker). Read
+   * on every point of the skin carried by Spine1 and Spine2 (not the sampled outline, whose widest point moves by a
+   * centimetre with the number of points of the model): half width at the sides, depth in front of the bone.
+   */
+  private measureGirthPush(rootInv: Matrix4) {
+    const names = ['Spine1', 'Spine2'];
+    const ext = names.map(() => ({ f: 0 }));
+    const bones = names.map((n) => this.bones.get(n));
+    if (bones.some((b) => !b)) return 0;
+    const v = new Vector3();
+    this.root.traverse((o) => {
+      const m = o as SkinnedMesh;
+      if (!m.isSkinnedMesh || !m.skeleton) return;
+      const pos = m.geometry.getAttribute('position');
+      const rest = REST_SKIN.get(m.geometry);
+      const si = rest?.index ?? m.geometry.getAttribute('skinIndex');
+      const sw = rest?.weight ?? m.geometry.getAttribute('skinWeight');
+      if (!pos || !si || !sw) return;
+      const toRoot = rootInv.clone().multiply(m.matrixWorld);
+      for (let i = 0; i < pos.count; i++) {
+        let best = 0;
+        for (let k = 1; k < 4; k++) if (sw.getComponent(i, k) > sw.getComponent(i, best)) best = k;
+        const b = names.indexOf(m.skeleton.bones[si.getComponent(i, best)]?.name.replace(/:/g, '') ?? '');
+        if (b < 0) continue;
+        m.applyBoneTransform(i, v.fromBufferAttribute(pos, i)).applyMatrix4(toRoot);
+        const at = bones[b]!.worldPos;
+        ext[b].f = Math.max(ext[b].f, v.z - at.z);
+      }
+    });
+    const k = this.metrics.height / 1.8;
+    const f = Math.max(...ext.map((e, i) => e.f / k - GIRTH_REF[i]));
+    // moins de 3 mm d'écart (précision de la mesure, Naël) : rien
+    return f > 0.003 ? f * k * GIRTH_GAIN : 0;
+  }
+
+  /**
+   * 2.4.0: a hand written in the chest frame near the trunk and under the guard (from the hips to the bottom of the
+   * chest, not at arm's reach) is moved forward by the coach's extra girth, so his forearm stays where Kadir's is from
+   * his skin. Far from the trunk (arm extended) and at guard height nothing changes: same reach, same guard.
+   */
+  private girthAdjust(pos: Vector3) {
+    const g = this.girthPush;
+    if (!g) return;
+    const k = this.metrics.height / 1.8;
+    const ramp = (a: number, b: number, x: number) => Math.min(1, Math.max(0, (x - a) / (b - a)));
+    const near = (1 - ramp(0.32 * k, 0.5 * k, Math.hypot(pos.x, pos.z))) * ramp(-0.75 * k, -0.6 * k, pos.y) * (1 - ramp(0, 0.08 * k, pos.y));
+    pos.z += g * near * ramp(-0.05 * k, 0.05 * k, pos.z);
+  }
+
   resolveHand(h: HandPose, frame: { origin: Vector3; q: Quaternion }): ResolvedHand {
     const pos = toVec(h.pos);
     const pole = toVec(h.pole).normalize();
     if (h.space === 'chest') {
+      this.girthAdjust(pos);
       pos.applyQuaternion(frame.q).add(frame.origin);
       pole.applyQuaternion(frame.q);
     }
