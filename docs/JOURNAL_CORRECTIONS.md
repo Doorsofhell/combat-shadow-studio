@@ -5449,4 +5449,11 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - captures réelles avant (2.8.1) / après (2.8.2), mêmes écrans, 412 × 915 : fichiers du projet
     `monetisation/diamants-v2.8.2/comparatif-*.jpg` ;
   - Playwright complet : NON EXÉCUTÉ à ce stade (lancé ensuite, résultat ajouté avant la fusion).
+- **Retour de Youssef** (2026-11-25 00:34) : « pas forcément un diamant, faut trouver autre chose pour ne pas surcharger
+  des icônes ou options ». Quatre marquages comparés sur captures réelles (diamant, point, coin, liseré :
+  `monetisation/marquage-premium/planche-*.jpg`) ; appliqué en attendant son choix : option C recommandée, coin doré
+  en haut à droite des cartes Premium (programmes, exercices, techniques, coachs), petit point doré sur les boutons et
+  options (Décomposer, options du chrono), le diamant ne reste que sur les titres d'écran. Le marquage reste lu
+  « Premium » par les lecteurs d'écran. Tests Premium (vitest 22, Playwright 11) et build : TEST RÉUSSI ; captures
+  avant/après refaites avec le coin doré.
 - **Restauration** : branche `restauration/avant-diamants-v282` (= 2.8.1, `2969a77`).

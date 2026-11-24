@@ -408,3 +408,42 @@
   right: -8px;
   margin: 0;
 }
+
+/* 2.8.2 (Youssef, 2026-11-25 « pas forcément un diamant… ne pas surcharger », option C « coin doré ») : une carte
+   Premium (programme, exercice, technique, coach) porte un petit coin doré en haut à droite, sans icône dans son titre ;
+   un bouton ou une option porte un petit point doré. Le diamant reste seulement sur les titres d'écran (PremiumMarker). */
+.premium-tag svg {
+  display: none;
+}
+.premium-tag::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 25%, transparent);
+}
+:is(.prog-card, .ex-card, .tech-card, .crow-card, .star-thumb) .premium-tag {
+  /* still read by screen readers (« Premium »), drawn as the corner of the card */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  margin: 0;
+}
+:is(.prog-card, .ex-card, .tech-card, .crow-card, .star-thumb):has(.premium-tag) {
+  position: relative;
+  overflow: hidden;
+}
+:is(.prog-card, .ex-card, .tech-card, .crow-card, .star-thumb):has(.premium-tag)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 3;
+  border-style: solid;
+  border-width: 0 16px 16px 0;
+  border-color: transparent var(--gold) transparent transparent;
+  pointer-events: none;
+}

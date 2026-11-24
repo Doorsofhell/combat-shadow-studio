@@ -31,8 +31,9 @@ export function PremiumMarker({ feature, size = 16 }: { feature: EntitlementId; 
 }
 
 /**
- * 2.8.2 (Youssef, 2026-11-24, « le petit diamant sur tous les items, options, programmes »): the diamond of ONE item
- * (a programme, an exercise, a technique, a coach, a button). Not a button: it sits inside cards and buttons that keep
+ * 2.8.2 (Youssef, 2026-11-24, « le petit diamant sur tous les items, options, programmes », then 2026-11-25 « pas
+ * forcément un diamant… ne pas surcharger », option C): the mark of ONE item. Drawn by premium.css as a gold corner on a
+ * card (programme, exercise, technique, coach) and as a small gold dot on a button or an option. Not a button: it sits inside cards and buttons that keep
  * their own action, and the item stays open. Named for screen readers; nothing for a Premium user.
  */
 export function PremiumTag({ feature, size = 14 }: { feature: EntitlementId; size?: number }) {
