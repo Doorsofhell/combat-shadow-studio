@@ -4,6 +4,7 @@
  * Throws, passes, pins and submissions need a partner: they are described in fiches, never animated
  * here as solo drills.
  */
+import { V230 } from '../v230';
 import { Author, edit } from '../author';
 import type { Motion } from '../motion';
 import { Pose, deg, v3 } from '../pose';
@@ -475,12 +476,15 @@ function uchikomiOsoto(author: Author): Motion {
     d.chest.pitch += deg(6);
     d.footR = a.air(v3(R0.x + 0.1 * s, 0.3 * s, Lf.z + 0.3 * s), deg(-10), deg(30), 0, v3(-0.1, 0.4, 1), deg(20));
   });
+  // 2.4.0 (sotoPole): in the reap the knee of the leg swept back points down to the mat. It was written pointing back
+  // (-z), opposite to the swing's knee pointing forward: the blend between the two passed through no direction at all
+  // and the knee whipped round 83 to 90° in 1/60 s on every coach (speed jump 25 heights/s)
   const reap = edit(stepIn, (d) => {
     d.hips = v3(Lf.x - 0.02 * s, d.hips.y + 0.01 * s, Lf.z);
     d.pelvis.pitch += deg(22);
     d.chest.pitch += deg(16);
     d.head.pitch += deg(-14);
-    d.footR = a.air(v3(R0.x + 0.06 * s, 0.42 * s, Lf.z - 0.42 * s), deg(-10), deg(40), 0, v3(-0.1, -0.6, -1), deg(30));
+    d.footR = a.air(v3(R0.x + 0.06 * s, 0.42 * s, Lf.z - 0.42 * s), deg(-10), deg(40), 0, V230.sotoPole ? v3(-0.1, -1, 0.3) : v3(-0.1, -0.6, -1), deg(30));
     pullHands(d, 1);
   });
   const down = edit(stepIn, (d) => {

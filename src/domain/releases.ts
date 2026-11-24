@@ -49,6 +49,40 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.5.0',
+      releaseDate: '2026-11-20',
+      title: 'Épaules, coudes, hanches et genoux qui gardent leur volume',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Les six coachs ont des os de torsion au bras, à l’avant-bras et à la cuisse : quand le bras ou le poignet tourne, la peau tourne progressivement sur toute la longueur au lieu de se pincer au coude ou au poignet.' },
+        { category: 'ameliorations', text: 'L’épaule, le coude, la hanche et le genou gardent leur volume quand ils se plient (crochet, coup de pied haut, sprawl) : ils ne s’écrasent plus vers l’articulation. Les mouvements eux-mêmes ne changent pas.' },
+      ],
+      links: [{ label: 'S’entraîner', to: '/entrainer' }],
+    },
+    {
+      version: '2.4.0',
+      releaseDate: '2026-11-20',
+      title: 'Sprawl, o-soto-gari et genoux plus naturels',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Sprawl : les mains descendent plus bas et moins loin ; le coude ne tourne plus d’un coup autour du bras pendant la descente.' },
+        { category: 'ameliorations', text: 'O-soto-gari (judo) : le genou de la jambe qui fauche passe par le bas au lieu de basculer d’un côté à l’autre.' },
+        { category: 'ameliorations', text: 'Coups de genou : le genou ne reste plus figé au bout du coup, il commence à redescendre pendant que les mains reviennent en garde (arrêt de 150 à environ 60 ms). Les genoux en clinch gardent leur rythme.' },
+      ],
+      links: [{ label: 'S’entraîner', to: '/entrainer' }],
+    },
+    {
+      version: '2.3.6',
+      releaseDate: '2026-11-20',
+      title: 'Coachs et salles toujours à jour',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Après une mise à jour, un coach, une tenue ou une salle modifiés sont toujours téléchargés à nouveau : le téléphone ne garde plus une ancienne version, sans avoir à vider le cache.' },
+        { category: 'corrections', text: 'Les portraits des coachs suivent aussi les mises à jour. Hors ligne, la copie gardée sur le téléphone reste utilisée.' },
+      ],
+      links: [],
+    },
+    {
       version: '2.3.5',
       releaseDate: '2026-11-20',
       title: 'Retour protégé dans le créateur',

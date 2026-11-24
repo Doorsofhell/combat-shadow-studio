@@ -346,8 +346,22 @@ test('caméra Auto : pas de vue de haut sur les coups, et elle tourne avec le co
   // the coach has turned after the first pivot: the camera keeps the same angle relative to him
   await expect.poll(async () => (await camera(page)).coachYaw, { timeout: 90_000, intervals: [500] }).toBeLessThan(-30);
   await expect(page.getByTestId('current-move')).toHaveText('Direct arrière');
-  await settle(page);
+  // 2.3.0: the moves are shorter (no frozen impact), the direct is on screen about 3 s: a fixed 3.5 s wait read the
+  // camera of the next step (a pivot, seen from higher on purpose). Wait until the camera has stopped moving, and
+  // read it while the direct is still being played.
+  await expect
+    .poll(
+      async () => {
+        const a = await camera(page);
+        await page.waitForTimeout(300);
+        const b = await camera(page);
+        return Math.abs(a.az - b.az) + Math.abs(a.el - b.el);
+      },
+      { timeout: 3000, intervals: [0] },
+    )
+    .toBeLessThan(0.5);
   const after = await camera(page);
+  await expect(page.getByTestId('current-move'), 'caméra lue pendant le direct').toHaveText('Direct arrière', { timeout: 1 });
   expect(Math.abs(after.az - after.coachYaw - start.az), 'angle par rapport au coach').toBeLessThan(6);
   expect(after.el, 'direct vu presque à hauteur d’homme').toBeLessThan(12);
 });

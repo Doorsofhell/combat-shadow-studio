@@ -2,6 +2,7 @@
  * MMA solo work: level changes, takedown entries without a partner, sprawl, ground mobility
  * and technical stand-up. These are shadow adaptations: no opponent is represented.
  */
+import { V230 } from '../v230';
 import { Author, add, edit } from '../author';
 import type { Motion } from '../motion';
 import { Pose, deg, v3 } from '../pose';
@@ -178,7 +179,12 @@ function sprawl(a: Author): Motion {
     d.pelvis.pitch += deg(40);
     d.chest.pitch += deg(20);
     d.head.pitch += deg(-35);
-    press(d, 0.5 * s, 0.6 * s, 0.34, -0.6);
+    // 2.4.0 (sprawlPath): the hands go lower and less far on the way down (0.35 × 0.5 instead of 0.5 × 0.6 of the
+    // height): with the trunk bending forward over arms held high and far, the upper arm rose past 110° from the chest
+    // and its internal rotation hit the shoulder's stop, where the elbow could only settle by whipping round the arm
+    // (163° in 1/60 s on Kadir, 113° on Victor, 82° on Naël)
+    const [hy, hz] = V230.sprawlPath ? [0.35, 0.5] : [0.5, 0.6];
+    press(d, hy * s, hz * s, 0.34, -0.6);
   });
   const kick = edit(drop, (d) => {
     press(d, 0.06 * s, 0.4 * s);

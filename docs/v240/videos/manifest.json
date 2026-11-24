@@ -1,0 +1,50 @@
+[
+ {
+  "coach": "mma-kadir",
+  "tech": "sprawl",
+  "ver": "avant",
+  "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=mma&tech=sprawl&az=90&el=8&v230=-sprawlPath,-sotoPole,-kneeRelease",
+  "duration": 1.56,
+  "images": 50
+ },
+ {
+  "coach": "mma-kadir",
+  "tech": "sprawl",
+  "ver": "apres",
+  "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=mma&tech=sprawl&az=90&el=8",
+  "duration": 1.56,
+  "images": 50
+ },
+ {
+  "coach": "mma-kadir",
+  "tech": "uchikomi-o-soto-gari",
+  "ver": "avant",
+  "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=judo&tech=uchikomi-o-soto-gari&az=60&el=8&v230=-sprawlPath,-sotoPole,-kneeRelease",
+  "duration": 1.9,
+  "images": 60
+ },
+ {
+  "coach": "mma-kadir",
+  "tech": "uchikomi-o-soto-gari",
+  "ver": "apres",
+  "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=judo&tech=uchikomi-o-soto-gari&az=60&el=8",
+  "duration": 1.9,
+  "images": 60
+ },
+ {
+  "coach": "mma-kadir",
+  "tech": "genou-direct-arriere",
+  "ver": "avant",
+  "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=muaythai&tech=genou-direct-arriere&az=45&el=8&v230=-sprawlPath,-sotoPole,-kneeRelease",
+  "duration": 0.88,
+  "images": 42
+ },
+ {
+  "coach": "mma-kadir",
+  "tech": "genou-direct-arriere",
+  "ver": "apres",
+  "url": "http://localhost:4180/#/lab?champion=mma-kadir&look=realiste&d=muaythai&tech=genou-direct-arriere&az=45&el=8",
+  "duration": 0.88,
+  "images": 42
+ }
+]
