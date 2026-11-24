@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.8.1',
+      releaseDate: '2026-11-24',
+      title: 'Changer de coach depuis l’Accueil : directement en grand',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Sur l’Accueil, « Changer » à côté du nom de ton coach ouvre directement le grand écran des coachs : tu le vois en grand avant de le choisir. Depuis les autres écrans, rien ne change.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '2.8.0',
       releaseDate: '2026-11-24',
       title: 'Toutes les fenêtres d’options en verre',

@@ -5390,3 +5390,21 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `npm run docs:sync` ; après fusion de la 2.7.0 : `tsc` TEST RÉUSSI, Vitest `src/domain`, `src/store`, `src/ui` 440 TEST
   RÉUSSI, `npm run build` TEST RÉUSSI (version 2.8.0), Playwright `panneaux-verre`, `choix-coach-v270`, `panneau-coach`,
   `navigation` 52 TEST RÉUSSI.
+
+## 2026-11-24 · v2.8.1 · Accueil : « Changer » ouvre directement le grand écran du coach
+
+- **Demande** : Youssef, 24/11 17 h 49, « dans l'écran principal, je veux en cas de changement de coach arriver direct
+  sur la fenêtre en grand, depuis les autres écrans on garde le fonctionnement validé ».
+- **Constat vérifié (2.8.0)** : sur l’Accueil, « Changer » à côté du nom ouvrait le panneau du coach sur « Ton coach »
+  (six petits visages), et il fallait toucher « Voir les coachs en grand » pour voir le coach en 3D.
+- **Correction** : `src/ui/screens/Home.tsx`, « Changer » ouvre `#/coach` (grand coach 3D, flèches, bande des six,
+  « Garder / Choisir ») ; « Garder / Choisir » ramène à l’Accueil. Le panneau (toucher le coach) garde sa ligne « Ton
+  coach » ; fiche, séance, Réglages et Bienvenue inchangés.
+- **Tests adaptés, avec raison** : `choix-coach-v270` (le premier cas suivait « Changer » vers le panneau : il vérifie
+  maintenant l’arrivée sur le grand écran et le retour avec le nouveau coach ; les contrôles du panneau « Ton coach »,
+  six visages, noms, changement immédiat et mémoire, sont gardés dans un cas qui ouvre le panneau par un toucher sur
+  le coach), `coachs-v160` (plus de clic intermédiaire sur « Voir les coachs en grand »).
+- **Tests** : `choix-coach-v270` + `coachs-v160` 13 TEST RÉUSSI ; `npx tsc -b`, `npm run build`, `npm run docs:sync`
+  TEST RÉUSSI ; téléphone Android NON EXÉCUTÉ.
+- **Captures** : `/mnt/project-files/combat-shadow-studio/maquettes/accueil-changer-coach-2026-11-24/avant-apres.png`.
+- **Restauration** : `restauration/avant-accueil-coach-v281` (= 2.8.0, `6b35692`).
