@@ -5,7 +5,7 @@
     "az": 0,
     "label": "avant",
     "status": "ok",
-    "bytes": 204553
+    "bytes": 204543
   },
   {
     "name": "kadir-face",
@@ -13,7 +13,7 @@
     "az": 0,
     "label": "apres",
     "status": "ok",
-    "bytes": 204774
+    "bytes": 204714
   },
   {
     "name": "amara-face",
@@ -21,7 +21,7 @@
     "az": 0,
     "label": "avant",
     "status": "ok",
-    "bytes": 158059
+    "bytes": 157955
   },
   {
     "name": "amara-face",
@@ -29,7 +29,7 @@
     "az": 0,
     "label": "apres",
     "status": "ok",
-    "bytes": 158266
+    "bytes": 158275
   },
   {
     "name": "nael-face",
@@ -37,7 +37,7 @@
     "az": 0,
     "label": "avant",
     "status": "ok",
-    "bytes": 204926
+    "bytes": 204937
   },
   {
     "name": "nael-face",
@@ -53,7 +53,7 @@
     "az": 0,
     "label": "avant",
     "status": "ok",
-    "bytes": 180143
+    "bytes": 180154
   },
   {
     "name": "inaya-face",
@@ -61,7 +61,7 @@
     "az": 0,
     "label": "apres",
     "status": "ok",
-    "bytes": 180295
+    "bytes": 180298
   },
   {
     "name": "victor-face",
@@ -69,7 +69,7 @@
     "az": 0,
     "label": "avant",
     "status": "ok",
-    "bytes": 205893
+    "bytes": 205869
   },
   {
     "name": "victor-face",
@@ -77,7 +77,7 @@
     "az": 0,
     "label": "apres",
     "status": "ok",
-    "bytes": 205942
+    "bytes": 205914
   },
   {
     "name": "amara-three-quarter",
@@ -85,7 +85,7 @@
     "az": 35,
     "label": "avant",
     "status": "ok",
-    "bytes": 154701
+    "bytes": 154640
   },
   {
     "name": "amara-three-quarter",
@@ -93,7 +93,7 @@
     "az": 35,
     "label": "apres",
     "status": "ok",
-    "bytes": 155073
+    "bytes": 155032
   },
   {
     "name": "victor-three-quarter",
@@ -101,7 +101,7 @@
     "az": 35,
     "label": "avant",
     "status": "ok",
-    "bytes": 198016
+    "bytes": 197992
   },
   {
     "name": "victor-three-quarter",
@@ -109,6 +109,6 @@
     "az": 35,
     "label": "apres",
     "status": "ok",
-    "bytes": 198092
+    "bytes": 198097
   }
 ]
