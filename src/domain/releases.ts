@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.7.0',
+      releaseDate: '2026-11-24',
+      title: 'Toutes les fenêtres d’options en verre',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Toutes les fenêtres d’options ont maintenant le même verre que le panneau du coach : Progrès, Profil, Chrono, Discipline, Objectifs, confirmations, menu Plus, recherche, Coach IA, et en séance Enchaînement et Comment faire.' },
+        { category: 'ameliorations', text: 'Elles se ferment toutes de la même façon : en touchant à côté (sans rien activer derrière), en glissant la poignée vers le bas, avec le bouton rond, Retour ou Échap.' },
+        { category: 'corrections', text: 'Retour ferme d’abord la fenêtre ouverte et tu restes sur la page. Avant, sur la plupart de ces fenêtres, Retour quittait la page.' },
+      ],
+      links: [{ label: 'Voir tes progrès', to: '/stats' }],
+    },
+    {
       version: '2.6.0',
       releaseDate: '2026-11-24',
       title: 'Un seul panneau d’options pour le coach',

@@ -5265,7 +5265,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   Playwright Nouveautés (`navigation.spec`) TEST RÉUSSI.
 - **Restauration** : `restauration/avant-panneau-coach-v240` (= 2.4.0, `1684b73`).
 
-## 2026-11-24 · candidat après la 2.6.0 (non publié) · Panneaux d’options en verre partout
+## 2026-11-24 · v2.7.0 · Panneaux d’options en verre partout
 
 - **Demande** (Youssef, 24/11 09:50 : « je veux ce type de panneau partout dans l'application quand on ouvre des
   options », puis « OK ») : le verre du panneau « Options du coach » (2.6.0) sur toutes les fenêtres d’options, avec
@@ -5326,3 +5326,5 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Captures** : `/mnt/project-files/combat-shadow-studio/maquettes/panneaux-verre-2026-11-24/` (`avant/`, `apres/`,
   `cote/`), 11 fenêtres × jour et nuit à 360 × 780 ; script `scripts/dev/shot-sheets.mjs`.
 - **Restauration** : `restauration/avant-panneaux-verre-v260` (= 2.6.0, `1707e71`).
+- **Publication 2.7.0** (Youssef, 24/11 17:20 : « Je valide ») : `package.json` 2.7.0, note dans `src/domain/releases.ts`,
+  `npm run docs:sync`.
