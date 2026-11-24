@@ -38,5 +38,7 @@
  "raccord_cou": 1.0,
  "raccord_plus": 1.15,
  "raccord_teinte": 0.3,
- "coins_bouche": 0.0015
+ "coins_bouche": 0.0015,
+ "levres": 0.0016,
+ "levres_modele": 1
 }

@@ -5389,3 +5389,22 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests** : `tsc` TEST RÉUSSI ; vitest `src/three` + `src/boot` 769/773 (contrat, regard, comportement, visage du
   moteur humain : TEST RÉUSSI) ; échecs déjà notés (taille d'Amara, shorts ×2, morphology sous charge). Captures
   avant/après au repos, concentration et effort. Rien publié.
+
+## 2026-11-24 · prototype 2 de la 2.4.0 (non publié) · Lèvres d'Amara : points aux commissures retirés, lèvres plus pleines
+
+- **Demande** (Youssef, 24/11) : « il y a des petits points sur le coin des lèvres / essaye de grossir un peu les
+  lèvres pour les rendre au goût du jour », puis « épaissir et rendre un chouia pulpeuse ».
+- **Constat vérifié** : deux causes. 1) Géométrie : le réglage de profondeur recule les commissures de 6 à 8 mm, mais
+  l'intérieur de la bouche (normales de côté ou vers l'arrière) n'était pas déplacé par le champ ; il ressortait devant
+  les coins en deux points sombres (sommets 9038, 6300, 9994, 6382 : 7 à 8 mm devant la peau du coin après le champ).
+  2) Texture : la bande de la planche dessinait un trait sombre fin entre les lèvres, fini par deux points.
+- **Corrections** (`tools/generator/fideles/visage.py`) : `bouche_suit` (par défaut) : tout ce qui est dans l'ellipse
+  de la bouche suit le même champ que les lèvres, l'intérieur reste derrière (mesuré : 6 à 7 mm derrière la peau des
+  coins) ; `levres` (contour du haut monté, du bas descendu, les deux un peu en avant, ligne entre les lèvres fixe :
+  la bouche ne s'ouvre pas), Amara 1,6 mm ; `levres_modele` (couleur des lèvres du modèle au teint du visage, trait
+  sombre bouché par fermeture morphologique, fait après les raccords de teint). `configs/amara2.json` mis à jour,
+  modèles d'Amara reconstruits, `src/boot/assetSizes.json` regénéré.
+- **Tests** : `tsc` TEST RÉUSSI ; vitest `src/three` + `src/boot` : 4 échecs déjà notés (taille d'Amara, shorts ×2,
+  morphology sous charge, qui passe seule 12/12), le reste TEST RÉUSSI. Playwright NON EXÉCUTÉ. Captures avant/après
+  de face et de trois quarts. Rien publié.
+- **Restauration** : commit précédent 552bbe8e.

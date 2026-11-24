@@ -99,6 +99,15 @@ def main(cfg):
     # 2.4.0 (Youssef 24/11 « adoucis son visage ») : coins de la bouche remontés (61, 291 et leurs voisins de la
     # commissure, lèvre du haut et du bas ensemble : la bouche ne s'ouvre pas) au lieu de reprendre leur chute sur la
     # planche ; en mètres, vers le haut
+    # lèvres un peu plus pleines (Youssef 24/11 « au goût du jour ») : contour extérieur du haut vers le haut, du bas vers
+    # le bas, et les deux un peu en avant ; la ligne entre les lèvres (13, 14) ne bouge pas, la bouche ne s'ouvre pas
+    full = C.get('levres', 0.0)
+    if full:
+        for k, i in enumerate(sh):
+            up = {0: 1.0, 37: 0.8, 267: 0.8}.get(int(i), 0.0)
+            down = {17: 1.0, 84: 0.8, 314: 0.8}.get(int(i), 0.0)
+            if up or down:
+                dxy[k, 1] += full * (up - down)
     lift = C.get('coins_bouche', 0.0)
     if lift:
         for k, i in enumerate(sh):
@@ -118,6 +127,9 @@ def main(cfg):
         print('profondeur : écart moyen (mm)', round(float(np.abs(dz).mean() * 1000), 2), 'max', round(float(np.abs(dz).max() * 1000), 2))
     else:
         dz = np.zeros(len(sh))
+    if full:
+        for k, i in enumerate(sh):
+            dz[k] += full * 0.8 * {0: 1.0, 37: 0.8, 267: 0.8, 17: 1.0, 84: 0.8, 314: 0.8}.get(int(i), 0.0)
     dxy = np.hstack([dxy, dz[:, None]])
     src = np.vstack([X3[sh, :2], X3[anc, :2]])
     dst = np.vstack([dxy, np.zeros((len(anc), 3))])
@@ -129,6 +141,13 @@ def main(cfg):
     chin_y = X3[152, 1]
     def field(P, N):
         wv = smooth(-0.1, 0.45, N[:, 2]) * smooth(chin_y - 0.025, chin_y - 0.002, P[:, 1]) * smooth(ez - 0.06, ez - 0.02, P[:, 2])
+        # 2.4.0 (Youssef 24/11 « petits points au coin des lèvres ») : l'intérieur de la bouche (normales de côté ou vers
+        # l'arrière) restait en place quand la profondeur reculait les commissures de 6 à 8 mm ; il ressortait devant
+        # elles en deux points sombres. Tout ce qui est dans l'ellipse de la bouche suit le même champ que les lèvres
+        if C.get('bouche_suit', True):
+            mc = (X3[61] + X3[291]) / 2; rx = np.linalg.norm(X3[61, :2] - X3[291, :2]) / 2 + 0.008
+            e = ((P[:, 0] - mc[0]) / rx) ** 2 + ((P[:, 1] - mc[1]) / 0.016) ** 2
+            wv = np.maximum(wv, smooth(1.0, 0.6, e) * smooth(mc[2] - 0.05, mc[2] - 0.035, P[:, 2]))
         D = tps(P[:, :2]) * wv[:, None]
         # garde-fou : les globes et le pourtour immédiat des yeux ne bougent pas (os LeftEye/RightEye inchangés)
         for e in ('LeftEye', 'RightEye'):
@@ -272,6 +291,28 @@ def main(cfg):
             low = smooth(ey + 0.035, ey - 0.01, y) * ramp[..., 0]
             outt = np.clip(outt * (1 + (rp - 1) * low)[..., None], 0, 1)
     np.save(C['work'] + '-poids.npy', W.astype(np.float16))
+    if C.get('levres_modele'):
+        # 2.4.0 (Youssef 24/11 : « petits points au coin des lèvres », lèvres trop fines) : la bande de la planche
+        # dessinait un trait sombre fin entre les lèvres, terminé par deux points aux commissures, et des taches rouges
+        # vives sur la lèvre du haut. Sur les lèvres du modèle (rouges : rouge moins vert au-dessus de celui de la peau,
+        # autour de la bouche) on reprend la couleur du modèle, au teint du visage, et on adoucit le trait. Fait après les raccords
+        # de teint : les texels de la jonction des lèvres (cachés de face, VE) n'y sont pas éclaircis et redessinaient le trait
+        rr = tex[..., 0] - tex[..., 1]
+        Sx = tex.shape[0] / 2048
+        yy, xx = np.mgrid[0:tex.shape[0], 0:tex.shape[1]] / Sx
+        zone = smooth(905, 935, xx) * smooth(1140, 1110, xx) * smooth(770, 795, yy) * smooth(900, 878, yy)
+        lm = nd.gaussian_filter(smooth(0.25, 0.31, rr) * zone, 3 * Sx)
+        lm = np.clip(lm * 1.4, 0, 1) * C['levres_modele']
+        flou = nd.gaussian_filter(outt, (2.5 * Sx, 2.5 * Sx, 0))
+        outt = outt * (1 - lm[..., None]) + (0.5 * t2 * (outt.mean((0, 1)) / np.maximum(t2.mean((0, 1)), 1e-4)) + 0.5 * flou) * lm[..., None]
+        # trait fin et sombre (et ses points aux commissures) : bouché par une fermeture morphologique (un trait plus
+        # fin que 9 texels disparaît, les formes plus larges restent), puis fondu ; la jonction des lèvres reste dans
+        # l'ombrage du modèle
+        k = max(3, int(round(9 * Sx)) | 1)
+        ferme = np.stack([nd.grey_closing(outt[..., c], size=(k, k)) for c in range(3)], -1)
+        ferme = nd.gaussian_filter(ferme, (1.0 * Sx, 1.0 * Sx, 0))
+        trait = nd.gaussian_filter(zone * smooth(0.2, 0.6, lm / max(C['levres_modele'], 1e-6) + 0.3), 2 * Sx) * 0.9
+        outt = outt * (1 - trait[..., None]) + ferme * trait[..., None]
     Image.fromarray((outt * 255).astype(np.uint8)).save(C['work'] + '-tete.png')
     # corps : même gain (raccord du cou)
     new_img = {}
