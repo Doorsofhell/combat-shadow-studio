@@ -5175,8 +5175,8 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `rig.ts` + `engine/index.ts` (`REST_SKIN` : les mesures du moteur lisent les poids d'origine). Interrupteur Lab
   `?torsion=0`. GLB, os principaux, animations, limites et moteur humain inchangés.
 - **Résultat mesuré** (`docs/v250/MESURES_TORSION.md`) : épaule 44,4 → 20,6 %, coude 35,4 → 22,2 %, hanche
-  34,4 → 13,2 %, genou 22,1 → 9,0 % ; aucune articulation pire qu'avant ; au repos écart ≤ 0,003 mm ; suivi 3 à 11 µs
-  par image, redistribution 4 à 30 ms par corps au chargement.
+  34,4 → 13,2 %, genou 22,1 → 9,0 % ; aucune articulation pire qu'avant ; au repos écart ≤ 0,003 mm ; suivi 3 à 20 µs selon les passages
+  par image, redistribution 4 à 35 ms par corps au chargement.
 - **Coordination** : le fil « Reproduire les six coachs » garde la main sur les GLB d'Amara et Victor ; la correction
   se fait au chargement et s'appliquera à leurs nouveaux modèles sans rien refaire.
 - **Tests** : nouveau `src/three/__tests__/torsion-v250.test.ts` (26 tests) ; Vitest complet : 4 TEST ÉCHOUÉ déjà

@@ -56,8 +56,8 @@ tenue, mouvement, instant, caméra et lumière : `docs/v250/captures/raw/` (mani
 
 ## 5. Performances
 
-- Suivi des 22 os d'aide : 3 à 11 µs par image (Node, cette machine), pour 16 667 µs par image à 60 i/s.
-- Redistribution des poids au chargement : 4 à 30 ms pour un corps entier (Node).
+- Suivi des 22 os d'aide : 3 à 20 µs selon les passages par image (Node, cette machine), pour 16 667 µs par image à 60 i/s.
+- Redistribution des poids au chargement : 4 à 35 ms pour un corps entier (Node).
 - Carte graphique : même nombre d'influences par point (4), donc même calcul de peau ; 22 matrices d'os en plus
   (80 → 102) dans la texture des os.
 - Téléphone Android réel : **NON EXÉCUTÉ** (pas de téléphone ici). À vérifier par Youssef sur la page de test.
