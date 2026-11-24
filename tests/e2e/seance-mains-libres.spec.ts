@@ -32,28 +32,30 @@ test('séance : mains libres, toucher la scène montre les commandes sans pause,
   for (const a of ['decompose', 'camera', 'menu']) await expect(bar(page).locator(`[data-action="${a}"]`), a).toBeHidden();
   await expect(bar(page).locator('[data-action="back"]')).toBeVisible();
   expect(await vibrations(page)).toContainEqual([60, 40, 90]);
-  // one tap on the stage: the commands of the coach, the session goes on (once the time for a double tap has passed)
+  // one tap on the stage: the coach's panel (2.4), the session goes on (once the time for a double tap has passed)
   const stage = page.getByTestId('training-stage');
   const box = (await stage.boundingBox())!;
-  await expect(page.getByTestId('coach-tools')).toHaveCount(0);
+  await expect(page.getByTestId('coach-panel')).toHaveCount(0);
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-  await expect(page.getByTestId('coach-tools')).toBeVisible();
+  await expect(page.getByTestId('coach-panel')).toBeVisible();
   await expect(stage).toHaveAttribute('data-ui', 'on');
   await expect(page.getByTestId('phase')).not.toHaveText('Pause');
-  // the next tap hides them
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-  await expect(page.getByTestId('coach-tools')).toHaveCount(0);
+  // a tap outside the panel closes it, and only it: the session goes on
+  await page.mouse.click(4, 4);
+  await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
   await expect(page.getByTestId('phase')).not.toHaveText('Pause');
-  // the pause of the commands
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-  await page.getByTestId('coach-pause').click();
+  // 2.4: the pause is the one of the bar (the duplicate in the coach zone is gone)
+  await page.getByTestId('pause').click();
   await expect(page.getByTestId('phase')).toHaveText('Pause');
   await expect(page.getByTestId('resume')).toBeVisible();
   expect(await vibrations(page)).toContainEqual([30, 40, 30]);
   for (const a of ['decompose', 'camera', 'menu']) await expect(bar(page).locator(`[data-action="${a}"]`), a).toBeVisible();
-  // a tap during the pause does not restart the session: Reprendre does
+  // a tap during the pause does not restart the session (2.4: it opens the coach's panel): Reprendre does
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-  await page.waitForTimeout(500);
+  await expect(page.getByTestId('coach-panel')).toBeVisible();
+  await expect(page.getByTestId('phase')).toHaveText('Pause');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
   await expect(page.getByTestId('phase')).toHaveText('Pause');
   await page.getByTestId('resume').click();
   await expect(page.getByTestId('pause')).toBeVisible();

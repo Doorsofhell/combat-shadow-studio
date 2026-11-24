@@ -286,15 +286,24 @@ test.describe('393×851', () => {
     await seedProfile(page);
     await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
     await expect(page.getByTestId('exercise-name')).toBeVisible();
+    // 2.4: « Caméra » opens the coach's panel on « Angle de vue »; the panel covers the bar, which stays drawn behind it
     await bar(page).locator('[data-action="camera"]').click();
     await expect(bar(page).locator('[data-action="camera"]')).toHaveAttribute('aria-pressed', 'true');
-    await bar(page).locator('[data-action="camera"]').click();
+    await expect(page.getByTestId('cp-camera')).toBeVisible();
+    await expect(bar(page)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
     await expect(bar(page).locator('[data-action="camera"]')).toHaveAttribute('aria-pressed', 'false');
     await openMenu(page);
-    // 1.1.0: the Coach IA through « Rechercher », which stays in « Plus » during the session
-    for (const id of ['cmd-restart', 'cmd-prev', 'cmd-next', 'how-to', 'slow', 'options', 'cmd-search']) await expect(page.getByTestId(id)).toHaveCount(1);
+    // 1.1.0: the Coach IA through « Rechercher », which stays in « Plus » during the session; 2.4: « Options du coach »
+    // opens the coach's panel, « Enchaînement » the list of the session
+    for (const id of ['cmd-restart', 'cmd-prev', 'cmd-next', 'how-to', 'slow', 'options', 'cmd-sequence', 'cmd-search']) await expect(page.getByTestId(id)).toHaveCount(1);
     await page.getByTestId('options').click();
-    const opts = page.getByRole('dialog', { name: 'Options d’entraînement' });
+    await expect(page.getByRole('dialog', { name: 'Options du coach' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
+    await menuCommand(page, 'cmd-sequence');
+    const opts = page.getByRole('dialog', { name: 'Enchaînement' });
     await expect(opts).toBeVisible();
     // a modal sheet of the session is never under the bar: its last button can be reached, the bar comes back after
     await expect(bar(page)).toBeHidden();

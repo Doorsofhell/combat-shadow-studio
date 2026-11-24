@@ -3426,12 +3426,12 @@ html.stage-fs-open body {
   cursor: pointer;
 }
 .fs-hint-close:hover { color: var(--c-text); }
-/* home hero: its « Changer de coach » chip is top right, the tip goes top left */
+/* home hero: the tip goes top left (2.4: « Changer de coach » is in the coach's panel, the corner is free) */
 .hero-stage .fs-hint {
   left: max(16px, var(--gutter, 16px));
   transform: none;
   top: 12px;
-  max-width: calc(100% - 210px);
+  max-width: calc(100% - 80px);
 }
 @media (prefers-reduced-motion: reduce) {
   .fs-ui { transition: none; }
@@ -4385,14 +4385,6 @@ html.stage-fs-open body {
   height: auto;
   min-height: 140px;
   max-height: none;
-}
-.home-coach-chg {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
 }
 .home-go {
   appearance: none;

@@ -26,3 +26,31 @@ describe('maîtrise d’une technique', () => {
     expect(useGoals.getState().mastery).toEqual({});
   });
 });
+
+// 2.4 (panneau « Options du coach », Youssef 2026-11-20): « Mon apprentissage » sets a state directly (no toggle),
+// « En apprentissage » = no mark; the marks of other techniques are never touched, no new state is invented
+describe('setMastery (panneau du coach)', () => {
+  beforeEach(() => useGoals.getState().clear());
+
+  it('pose un état, le remplace, et « En apprentissage » (null) efface la marque', () => {
+    useGoals.getState().setMastery('jab', 'acquise');
+    expect(useGoals.getState().mastery).toEqual({ jab: 'acquise' });
+    useGoals.getState().setMastery('jab', 'acquise');
+    expect(useGoals.getState().mastery.jab).toBe('acquise');
+    useGoals.getState().setMastery('jab', 'a-revoir');
+    expect(useGoals.getState().mastery).toEqual({ jab: 'a-revoir' });
+    useGoals.getState().setMastery('jab', null);
+    expect(useGoals.getState().mastery).toEqual({});
+  });
+
+  it('garde les marques anciennes des autres techniques et ne change rien si l’état est le même', () => {
+    useGoals.setState({ mastery: { direct: 'acquise', 'combo:abc': 'a-revoir' } });
+    const before = useGoals.getState();
+    useGoals.getState().setMastery('direct', 'acquise');
+    expect(useGoals.getState()).toBe(before);
+    useGoals.getState().setMastery('crochet', 'a-revoir');
+    expect(useGoals.getState().mastery).toEqual({ direct: 'acquise', 'combo:abc': 'a-revoir', crochet: 'a-revoir' });
+    useGoals.getState().setMastery('inconnue', null);
+    expect(useGoals.getState().mastery).toEqual({ direct: 'acquise', 'combo:abc': 'a-revoir', crochet: 'a-revoir' });
+  });
+});
