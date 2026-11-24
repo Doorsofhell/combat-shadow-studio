@@ -16,7 +16,8 @@ import { NavIcon } from '../nav/NavIcon';
 import { useKbStyle } from '../components/KickboxingStyle';
 import { techniquesFor } from '../../domain/techniques';
 import { filterTechniques } from '../../domain/kickboxingStyles';
-import { CoachScreen } from '../coach-screen/CoachScreen';
+import { CoachScreen, useCoachUi } from '../coach-screen/CoachScreen';
+import { CoachFace } from '../coach-row/CoachRow';
 import { techniqueOfTheDay } from '../../domain/quickPicks';
 
 /** the 3D bundle (three.js, R3F) stays out of the main chunk */
@@ -44,7 +45,10 @@ export function Home() {
   const level = LEVELS.find((l) => l.id === profile.levels[disc.id])!;
   // 0.24: the coach on stage is Kadir or Amara (1.37: always, the fallback render with the custom fighter is gone)
   const coach = profile.coach ?? 'homme';
-  const name = championFor(profile.coach, profile.champion).name;
+  const champ = championFor(profile.coach, profile.champion);
+  const name = champ.name;
+  // 2.7 (option A « Un seul sélecteur »): « Changer » next to the name opens the coach's panel on « Ton coach »
+  const coachUi = useCoachUi();
 
   const thisWeek = weekKey(new Date().toISOString());
   const week = sessions.filter((s) => weekKey(s.start) === thisWeek);
@@ -178,6 +182,10 @@ export function Home() {
           <div className="hero-name" data-testid="fighter-name">
             {name}
           </div>
+          <button type="button" className="home-coach-change" onClick={() => coachUi.open('coach')} aria-label={`Changer de coach (${name})`} data-testid="home-change-coach">
+            <CoachFace coach={champ} />
+            <span>Changer</span>
+          </button>
         </div>
         <div className="hero home-hero">
           {/* 1.4.0: the coach screen of the app (the same module everywhere): a tap shows the sound and the
@@ -191,6 +199,7 @@ export function Home() {
             stageHidden
             fallback={<StageFallback />}
             panel={{ advanced: { coach: true, guard: true } }}
+            ui={coachUi}
             stage={
               <CoachStage
                 backdrop="dark"

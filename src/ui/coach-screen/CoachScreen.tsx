@@ -123,7 +123,8 @@ export function CoachScreen({
   const ref = screenRef ?? ownRef;
   const ownUi = useCoachUi();
   const ui = outerUi ?? ownUi;
-  const ownFs = useStageFullscreen(outerFs ? NO_REF : ref, { onTap: ownUi.toggle });
+  // 2.7: a screen may hold the panel's state (the home opens it from « Changer »): the tap on the coach toggles that one
+  const ownFs = useStageFullscreen(outerFs ? NO_REF : ref, { onTap: ui.toggle });
   const fs = outerFs ?? ownFs;
   const voice = useSettings((s) => s.settings.voice);
   const volume = useSettings((s) => s.settings.voiceVolume);
