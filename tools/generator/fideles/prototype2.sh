@@ -8,7 +8,7 @@ set -e
 TRAVAIL=${TRAVAIL:?dossier de travail}
 F=$(cd "$(dirname "$0")" && pwd)
 mkdir -p "$TRAVAIL/w" "$TRAVAIL/w2" "$TRAVAIL/w3" "$TRAVAIL/w4"
-for n in amara2 victor2 amara-corps victor-corps amara-peau victor-peau; do
+for n in amara2 victor2 amara-corps victor-corps amara-peau victor-peau kadir2 nael2 inaya2 kanya2 kadir-peau nael-peau inaya-peau kanya-peau; do
   sed "s#\$TRAVAIL#$TRAVAIL#g" "$F/configs/$n.json" > "$TRAVAIL/w/$n.json"
 done
 for c in amara2 victor2; do python3 "$F/visage.py" "$TRAVAIL/w/$c.json"; done
@@ -18,4 +18,11 @@ for f in amara-photo amara-photo-clean; do node "$F/taille.mjs" "$TRAVAIL/w3/$f.
 node "$F/taille.mjs" "$TRAVAIL/w3/victor-photo.glb" "$TRAVAIL/w3/victor-photo.glb" 1.88
 python3 "$F/peau.py" "$TRAVAIL/w/amara-peau.json"
 python3 "$F/peau.py" "$TRAVAIL/w/victor-peau.json"
-echo "modèles prêts dans $TRAVAIL/w4 (à copier dans public/coaches/mma-amara et victor)"
+# 24/11 (Youssef « je valide ») : Kadir, Naël, Inaya, Kanya : visage et peau seulement (corps et taille gardés : les
+# tenues restent ajustées)
+for n in kadir nael inaya kanya; do
+  python3 "$F/visage.py" "$TRAVAIL/w/${n}2.json"
+  cp "$TRAVAIL/w2/$n-photo.glb" "$TRAVAIL/w3/$n-photo.glb"
+  python3 "$F/peau.py" "$TRAVAIL/w/$n-peau.json"
+done
+echo "modèles prêts dans $TRAVAIL/w4 (à copier dans public/coaches/<id>/photo.glb)"

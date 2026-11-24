@@ -253,6 +253,10 @@ def main(cfg):
         nz = rng.random((S, S)); nz = nd.gaussian_filter(nz, 1.1); nz = (nz - nz.min()) / (nz.max() - nz.min())
         hair = smooth(0.45, 0.65, nz)
         poivre = np.where(nd.gaussian_filter(rng.random((S, S)), 0.6) > 0.55, 0.50, 0.20)[..., None] * np.array([1, 0.96, 0.92])
+        if bc.get('couleur'):
+            # barbe d'une couleur (Kadir : brun très foncé) : deux teintes proches au lieu du poivre et sel
+            h = bc['couleur']; tgt = np.array([int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)])
+            poivre = np.where(nd.gaussian_filter(rng.random((S, S)), 0.6) > 0.55, 1.35, 0.8)[..., None] * tgt
         a = (zone * (bc.get('ombre', 0.35) + bc.get('poils', 0.55) * hair))[..., None]
         outt = outt * (1 - a) + poivre * a
     if C.get('iris'):
@@ -319,10 +323,10 @@ def main(cfg):
     for i, im in enumerate(g.j['images']):
         nm = im.get('name', '')
         if 'head_color' in nm:
-            b = io.BytesIO(); Image.fromarray((outt * 255).astype(np.uint8)).save(b, 'JPEG', quality=92); new_img[i] = b.getvalue()
+            b = io.BytesIO(); Image.fromarray((outt * 255).astype(np.uint8)).save(b, 'JPEG', quality=C.get('qualite', 92)); new_img[i] = b.getvalue()
         if 'body_color' in nm and C.get('tone', True):
             body = np.asarray(g.image('body_color')).astype(np.float32) / 255
-            b = io.BytesIO(); Image.fromarray((np.clip(body * gain, 0, 1) * 255).astype(np.uint8)).save(b, 'JPEG', quality=92); new_img[i] = b.getvalue()
+            b = io.BytesIO(); Image.fromarray((np.clip(body * gain, 0, 1) * 255).astype(np.uint8)).save(b, 'JPEG', quality=C.get('qualite', 92)); new_img[i] = b.getvalue()
     for out in C['out']:
         gg = Glb(out['from']) if 'from' in out else g
         imgs = {}
@@ -331,11 +335,11 @@ def main(cfg):
             if 'head_color' in nm:
                 # même format que l'image d'origine (test maquillage-v1403)
                 b = io.BytesIO(); hi8 = Image.fromarray((outt * 255).astype(np.uint8))
-                hi8.save(b, 'PNG', optimize=True) if im.get('mimeType') == 'image/png' else hi8.save(b, 'JPEG', quality=92)
+                hi8.save(b, 'PNG', optimize=True) if im.get('mimeType') == 'image/png' else hi8.save(b, 'JPEG', quality=C.get('qualite', 92))
                 imgs[i] = b.getvalue()
             if 'body_color' in nm and C.get('tone', True):
                 body = np.asarray(gg.image('body_color')).astype(np.float32) / 255
-                b = io.BytesIO(); Image.fromarray((np.clip(body * gain, 0, 1) * 255).astype(np.uint8)).save(b, 'JPEG', quality=92); imgs[i] = b.getvalue()
+                b = io.BytesIO(); Image.fromarray((np.clip(body * gain, 0, 1) * 255).astype(np.uint8)).save(b, 'JPEG', quality=C.get('qualite', 92)); imgs[i] = b.getvalue()
         hr = [r for r in prim_refs(gg) if r[0].endswith('_head')][0]
         Pv, Nv, _ = field(gg.acc(hr[1]).astype(np.float64), gg.acc(hr[2]).astype(np.float64))
         if out.get('textures'):

@@ -23,8 +23,8 @@ Résultat : 27 techniques dépassent 2 cm. Elles sont bornées à leur valeur pa
 | `genou-circulaire-arriere` | 4,5 | jambe droite dans la cuisse gauche | mma-kadir kickboxing | 0,54 s |
 | `shoulder-roll` | 4,2 | avant-bras droit dans le tronc | nael boxing | 0,20 s |
 | `single-leg` | 3,9 | avant-bras gauche dans le tronc | mma-kadir bjj | 0,74 s |
-| `coude-montant-arriere` | 3,9 | main droite dans la tête | mma-kadir muaythai | 0,34 s |
 | `uchikomi-ko-uchi-gari` | 3,7 | jambe gauche dans la cuisse droite | inaya judo | 0,67 s |
+| `coude-montant-arriere` | 3,6 | main droite dans la tête | mma-kadir muaythai | 0,34 s |
 | `switch-kick` | 3,5 | main gauche dans le tronc | inaya kickboxing | 0,60 s |
 | `middle-kick-arriere` | 3,3 | main droite dans le tronc | mma-kadir mma | 0,40 s |
 | `retention-garde` | 3,2 | avant-bras gauche dans le tronc | mma-kadir bjj | 1,99 s |

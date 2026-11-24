@@ -5408,3 +5408,26 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   morphology sous charge, qui passe seule 12/12), le reste TEST RÉUSSI. Playwright NON EXÉCUTÉ. Captures avant/après
   de face et de trois quarts. Rien publié.
 - **Restauration** : commit précédent 552bbe8e.
+
+## 2026-11-24 · prototype 2 de la 2.4.0 (non publié) · Méthode étendue à Kadir, Naël, Inaya et Kanya
+
+- **Demande** (Youssef, 24/11 17 h 21) : « Je valide » (prototypes Amara et Victor) ; on passe aux 4 autres coachs.
+- **Sauvegarde** : modèles 2.3.5 de Kadir, Naël, Inaya et Kanya copiés dans
+  `_ARCHIVES_HORS_APPLICATION/anciens-modeles-3d/avant-coachs-fideles-v240/public/coaches/` (sources de la chaîne).
+- **Corrections** : `tools/generator/fideles/visage.py` puis `peau.py` sur chaque modèle (configs `kadir2`, `nael2`,
+  `inaya2`, `kanya2` et `*-peau.json`) : forme et texture du visage rapprochées du gros plan de la planche, traits de
+  la planche modérés (`bande` 0,3 : pas de plis marqués), teint raccordé au cou, iris de la planche, peau du corps
+  sans ombrage cuit. Kadir : planche de trois quarts, donc forme et profondeur réduites (0,5 et 0,2) ; nouvelle option
+  `barbe_courte.couleur` (barbe brun très foncé, plus fournie). Nouvelle option `qualite` (JPEG 85) dans `visage.py`
+  et `peau.py` : les 4 modèles restent sous 3,5 Mo et le démarrage sous son budget de 125 Mo (`preload.test`).
+  Corps, squelette, poids, taille et tenues inchangés (aucune mise à l'échelle : les tenues gardent leur ajustement).
+  `prototype2.sh` refait aussi ces 4 modèles.
+- **Tests** : `tsc` TEST RÉUSSI. vitest `src/three` + `src/boot` + `src/engine` : nouveaux échecs corrigés
+  (`preload` : budget dépassé de 0,05 Mo, corrigé par la qualité JPEG ; `expressions-v1160` taille de Kanya, idem ;
+  `intrusions` : document de mesures regénéré, `coude-montant-arriere` de Kadir main dans la tête 3,6 cm, sous sa
+  borne). `outfit-rollback-v1373` « modèle corporel Kadir intact » : empreinte mise à jour, changement voulu (visage
+  et peau seulement), ancienne empreinte et raison écrites dans le test. Restent les échecs déjà notés (taille
+  d'Amara, shorts d'Amara ×2, fluidity ×2, hooks-biomeca ×2, morphology sous charge). Moteur humain (contrat, regard,
+  comportement, visage) TEST RÉUSSI pour les 6 coachs. Playwright NON EXÉCUTÉ. Captures avant/après de face et de
+  trois quarts des 4 coachs. Rien publié.
+- **Restauration** : commit 3666a0fc (avant ce lot), modèles d'origine dans l'archive ci-dessus.

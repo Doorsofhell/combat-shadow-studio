@@ -71,7 +71,7 @@ if __name__ == '__main__':
         imgs = {}
         for i, im in enumerate(g.j['images']):
             if 'body_color' in im.get('name', ''):
-                b = io.BytesIO(); Image.fromarray((cache * 255 + 0.5).astype(np.uint8)).save(b, 'JPEG', quality=92)
+                b = io.BytesIO(); Image.fromarray((cache * 255 + 0.5).astype(np.uint8)).save(b, 'JPEG', quality=C.get('qualite', 92))
                 imgs[i] = b.getvalue()
         save(g, dst, new_img=imgs)
         print('écrit', dst)

@@ -29,7 +29,11 @@ describe('v1.37.3 — rollback non régressif des shorts de Kadir', () => {
       expect(gitSha('public/coaches/mma-kadir/tenues/' + outfit + '.glb')).toBe(expected);
     });
   }
+  // 2.4.0 prototype 2 (Youssef 24/11 « je valide » : méthode d'Amara et Victor étendue aux 4 autres coachs) : visage de
+  // Kadir rapproché de sa planche et peau sans ombrage cuit (tools/generator/fideles, configs/kadir2.json, kadir-peau.json).
+  // Corps, squelette et poids inchangés (aucune mise à l'échelle) : les tenues et les shorts gardent leurs empreintes.
+  // Empreinte 2.3.5 : c31999b521a53267262e77679afbc53d594c4ae2 (modèle archivé dans _ARCHIVES_HORS_APPLICATION).
   test('modèle corporel Kadir intact', () => {
-    expect(gitSha('public/coaches/mma-kadir/photo.glb')).toBe('c31999b521a53267262e77679afbc53d594c4ae2');
+    expect(gitSha('public/coaches/mma-kadir/photo.glb')).toBe('c819c926d1eb3bb6c08034e728e5ab57a9a27b0e');
   });
 });
