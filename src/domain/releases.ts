@@ -49,6 +49,19 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.6.0',
+      releaseDate: '2026-11-24',
+      title: 'Un seul panneau d’options pour le coach',
+      isMajor: false,
+      changes: [
+        { category: 'fonctionnalites', text: 'Touche le coach (Accueil, fiche d’une technique, séance) : un panneau en verre s’ouvre avec tous ses réglages au même endroit. Mon apprentissage, angle de vue, vitesse, voix et volume, plein écran, réinitialiser la vue, et des options avancées (coach, garde, repères au sol, sons).' },
+        { category: 'ameliorations', text: 'Chaque choix s’applique tout de suite et le panneau reste ouvert. Il se ferme en touchant à côté, en le glissant vers le bas, avec Retour ou Échap ; ce toucher n’active jamais ce qu’il y a derrière, et la séance ne s’arrête pas.' },
+        { category: 'ameliorations', text: 'Les statuts Acquis, Encore du mal et En apprentissage sont les mêmes sur la fiche et en séance. Tes anciens statuts sont gardés.' },
+        { category: 'ameliorations', text: 'La fiche d’une technique a maintenant un angle Auto, comme la séance. En séance, Plus › Enchaînement montre la liste des techniques.' },
+      ],
+      links: [{ label: 'Voir une technique', to: '/techniques' }],
+    },
+    {
       version: '2.5.0',
       releaseDate: '2026-11-20',
       title: 'Épaules, coudes, hanches et genoux qui gardent leur volume',

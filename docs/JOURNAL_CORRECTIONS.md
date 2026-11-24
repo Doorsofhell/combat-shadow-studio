@@ -5190,10 +5190,10 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   téléphone Android NON EXÉCUTÉ.
 - **Restauration** : `restauration/avant-torsion-v240` (= 2.4.0), ou `?torsion=0`. Rapport `docs/v250/RAPPORT_TORSION.md`.
 
-## 2026-11-24 · base 2.5.0 · Panneau « Options du coach » (EXPÉRIMENTAL, non déployé)
+## 2026-11-24 · v2.6.0 · Panneau « Options du coach »
 
-- **Statut** : branche `claude/project-thread-kn0nc0`, PR sans fusion. Ni fusion, ni GitHub Pages, ni APK, ni entrée
-  dans les Nouveautés tant que Youssef n’a pas validé. Version inchangée (2.5.0 après fusion de la base).
+- **Statut** : développé comme version de test (PR #150, branche `claude/project-thread-kn0nc0`) ; validé par Youssef
+  le 24/11 à 12 h (« je valide »), puis version 2.6.0, note des Nouveautés et fusion.
 - **Demande** : Youssef, 20/11 13:25, « REFONTE PREMIUM DU PANNEAU D'OPTIONS DU COACH » (V6 Floating Glass + V7 Smart
   Control) ; audit et maquettes livrés le 20/11, recommandations validées à 14 h 32 (« je valide les recommandations »).
 - **Constat vérifié (2.3.5 puis 2.4.0)** : un toucher sur le coach montrait des boutons posés sur lui (lecture,
@@ -5260,4 +5260,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Après fusion de la base 2.5.0** (24/11) : `tsc -b`, build et Vitest ciblé (store, coach, torsion-v250, 121) TEST
   RÉUSSI ; `panneau-coach`, `ecran-coach-v140`, `mastery`, `training-layout:240` (18) TEST RÉUSSI. Le test « aucun clic
   ne traverse » mesure maintenant le panneau une fois son entrée finie (il mesurait pendant l’animation).
+- **Publication 2.6.0** : `package.json` 2.6.0, note dans `src/domain/releases.ts`, `npm run docs:sync` (README, ETAT,
+  9 TEST RÉUSSI) ; Vitest `src/domain` + `src/store` 270 TEST RÉUSSI ; `npm run build` TEST RÉUSSI (titre v2.6.0) ;
+  Playwright Nouveautés (`navigation.spec`) TEST RÉUSSI.
 - **Restauration** : `restauration/avant-panneau-coach-v240` (= 2.4.0, `1684b73`).
