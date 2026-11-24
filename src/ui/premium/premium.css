@@ -14,6 +14,15 @@
   cursor: pointer;
   flex: none;
 }
+.premium-tag {
+  display: inline-grid;
+  place-items: center;
+  vertical-align: -2px;
+  margin-left: 5px;
+  flex: none;
+  line-height: 0;
+}
+
 .premium-marker:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: -4px;
@@ -387,4 +396,15 @@
   .premium-gem {
     margin-bottom: 0;
   }
+}
+
+/* 2.8.2: the diamond of a Premium button of the bar, at the top right of its icon */
+.nav-ico:has(.premium-tag) {
+  position: relative;
+}
+.nav-ico .premium-tag {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  margin: 0;
 }

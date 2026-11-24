@@ -14,7 +14,8 @@ import { MODE_HELP, MODE_LABEL } from '../training/plan';
 import { DisciplineArtwork, EmptyState, KickboxingStyleChip, LevelPips, MenuChip, PageHead, Segmented, Sheet, SheetLeaveButton, useKbStyle } from '../components';
 import { filterExercises } from '../../domain/kickboxingStyles';
 import { AppIcon, DisciplineIcon } from '../icons';
-import { PremiumMarker } from '../premium/PremiumMarker';
+import { PremiumMarker, PremiumTag } from '../premium/PremiumMarker';
+import { isPremiumLevel } from '../../monetization/premiumItems';
 
 export const KIND_LABEL: Record<Exercise['kind'], string> = {
   technique: 'Technique',
@@ -42,6 +43,7 @@ export function ExerciseList({ list, onOpen }: { list: Exercise[]; onOpen: (id: 
           <span className="body">
             <span className="title">
               {e.name}
+              {isPremiumLevel(e.level) && <PremiumTag feature="advanced_techniques" />}
               {fav.includes(e.id) && <AppIcon id="favorite" size={14} tone="accent" label="Favori" style={{ marginLeft: 6, verticalAlign: -1 }} />}
             </span>
             <span className="row" style={{ gap: 6 }}>
@@ -118,7 +120,7 @@ export function DisciplinePage() {
           lead={<LevelPips index={LEVELS.indexOf(lvl)} />}
           testId="level-chip"
           testPrefix="level-"
-          options={LEVELS.map((l, i) => ({ id: l.id, label: l.name, description: l.goal, lead: <LevelPips index={i} /> }))}
+          options={LEVELS.map((l, i) => ({ id: l.id, label: l.name, description: l.goal, lead: <>{<LevelPips index={i} />}{isPremiumLevel(l.id) && <PremiumTag feature="advanced_techniques" />}</> }))}
         />
         {disc.id === 'kickboxing' && <KickboxingStyleChip />}
         <MenuChip

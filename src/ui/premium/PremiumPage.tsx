@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { PREMIUM_CATEGORIES, PREMIUM_COMING_SOON } from '../../monetization/entitlements';
+import { PREMIUM_BENEFITS, PREMIUM_CATEGORIES, PREMIUM_COMING_SOON, benefitAvailable } from '../../monetization/entitlements';
 import { PREMIUM_OFFER, formatPrice } from '../../monetization/offer';
 import { purchaseAvailable, restorePurchases, type RestoreResult } from '../../monetization/purchases';
 import { usePremiumStatus } from '../../monetization/rights';
@@ -106,10 +106,13 @@ export function PremiumPage() {
             </li>
           ))}
         </ul>
-        <p className="premium-soon" data-testid="premium-soon">
-          <NavIcon id="clock" />
-          {PREMIUM_COMING_SOON} : à venir
-        </p>
+        {/* 2.8.2: shown only while a benefit does not exist yet; the coaches and the chronometer options exist now */}
+        {PREMIUM_BENEFITS.some((b) => !benefitAvailable(b)) && (
+          <p className="premium-soon" data-testid="premium-soon">
+            <NavIcon id="clock" />
+            {PREMIUM_COMING_SOON} : à venir
+          </p>
+        )}
       </section>
 
       {premium ? (

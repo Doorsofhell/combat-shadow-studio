@@ -1,16 +1,16 @@
 <!-- GÉNÉRÉ:etat — ne pas modifier à la main, lancer « npm run docs:sync » -->
-# État du projet — version 2.8.1
+# État du projet — version 2.8.2
 
-Dernière version annoncée dans Nouveautés : **2.8.1** du 24 novembre 2026, « Changer de coach depuis l’Accueil : directement en grand » (126 versions au total).
+Dernière version annoncée dans Nouveautés : **2.8.2** du 24 novembre 2026, « Le diamant Premium sur chaque élément » (127 versions au total).
 
 ## Version et publication
 
 | Élément | Valeur | Origine |
 | --- | --- | --- |
-| Version de l’application | 2.8.1 | `package.json` (source unique) |
-| Titre de la page, Réglages › À propos, écran de démarrage | v2.8.1 | injectée au build (`vite.config.ts`) |
-| Android versionName / versionCode | 2.8.1 / 20801 | `scripts/android-version.mjs` (x × 10000 + y × 100 + z) |
-| Nouveautés | 2.8.1 | première entrée de `src/domain/releases.ts` |
+| Version de l’application | 2.8.2 | `package.json` (source unique) |
+| Titre de la page, Réglages › À propos, écran de démarrage | v2.8.2 | injectée au build (`vite.config.ts`) |
+| Android versionName / versionCode | 2.8.2 / 20802 | `scripts/android-version.mjs` (x × 10000 + y × 100 + z) |
+| Nouveautés | 2.8.2 | première entrée de `src/domain/releases.ts` |
 | Informations de publication | `version.json` | écrit à chaque build (`tools/build/releaseInfo.ts`) |
 
 Version testable en ligne (GitHub Pages) : https://doorsofhell.github.io/combat-shadow-studio/ ; version réellement déployée : https://doorsofhell.github.io/combat-shadow-studio/version.json

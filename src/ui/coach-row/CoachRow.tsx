@@ -1,5 +1,7 @@
 import { ALL_COACHES, type ChampionCoach } from '../../domain/coaches/catalog';
 import { AppIcon } from '../icons';
+import { PremiumTag } from '../premium/PremiumMarker';
+import { isPremiumCoach } from '../../monetization/premiumItems';
 import './coach-row.css';
 
 /**
@@ -40,7 +42,10 @@ export function CoachRow({
             data-testid={testIdOf(c)}
           >
             <CoachFace coach={c} />
-            <span className="crow-name">{c.name}</span>
+            <span className="crow-name">
+              {c.name}
+              {isPremiumCoach(c.id) && <PremiumTag feature="all_fighters" size={12} />}
+            </span>
             {on && (
               <span className="crow-tick" aria-hidden>
                 <AppIcon id="check" size={12} />

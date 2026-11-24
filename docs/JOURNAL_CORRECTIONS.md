@@ -5408,3 +5408,45 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   TEST RÉUSSI ; téléphone Android NON EXÉCUTÉ.
 - **Captures** : `/mnt/project-files/combat-shadow-studio/maquettes/accueil-changer-coach-2026-11-24/avant-apres.png`.
 - **Restauration** : `restauration/avant-accueil-coach-v281` (= 2.8.0, `6b35692`).
+
+## 2026-11-24 · v2.8.2 · Le diamant Premium sur chaque élément
+
+- **Demande** (Youssef, 2026-11-24 23:30) : « ajoute le petit diamant sur tous les items, options, programmes.
+  Entraînement premium ».
+- **Constat vérifié sur la 2.8.1** : un seul diamant par écran ou section (règle v0.40 « jamais sur chaque ligne ») :
+  titre Programmes, filtre de niveau avancé/expert, Champions, Favoris, Historique, Créateur, Conseils techniques,
+  Décomposer de l'écran d'étude. Aucun diamant sur les programmes, exercices, fiches, coachs ni sur les boutons et
+  options. Les coachs et les options du chrono étaient encore notés « prévus » dans le catalogue des droits alors
+  qu'ils existent.
+- **Correction** :
+  - `src/monetization/premiumItems.ts` : règles par élément d'après les choix du 2026-11-20
+    (`docs/monetisation/DECISIONS.md`, section 2.8.2) ;
+  - `PremiumTag` (`src/ui/premium/PremiumMarker.tsx`) : diamant d'un élément, non cliquable (il est posé dans des
+    cartes et des boutons qui gardent leur action), nommé « Premium », absent pour un utilisateur Premium ;
+  - diamant sur : chaque programme Premium (liste et fiche), chaque exercice avancé/expert, les niveaux avancé et
+    expert du menu Niveau, les fiches techniques Premium (tuiles, favoris, titre de la fiche), Naël, Inaya, Victor et
+    Kanya (rangée des coachs, grand écran du coach), le bouton Décomposer de la barre (entraînement, combinaison) et
+    des Légendes, les options Préparation, Alerte avant la fin et Intensité ;
+  - catalogue des droits : `all_fighters` et `advanced_timer` passent à « implémenté », avec diamant ; la bande
+    « Combattants et réglages avancés : à venir » de la page Premium ne s'affiche plus, puisque tout ce qu'elle
+    annonçait existe ;
+  - rien n'est verrouillé : `MONETIZATION_ENABLED` reste `false`.
+- **Fichiers** : `src/monetization/{premiumItems,entitlements}.ts`, `src/ui/premium/{PremiumMarker.tsx,PremiumPage.tsx,premium.css}`,
+  `src/ui/components/Cards.tsx`, `src/ui/nav/{config.ts,BottomBar.tsx}`, `src/ui/coach-row/CoachRow.tsx`,
+  `src/ui/screens/{CoachSelect,Discipline,Library,Programs,Stats,Train,Champions}.tsx`, `src/ui/training/TimerOptions.tsx`,
+  `docs/monetisation/DECISIONS.md`, `src/domain/releases.ts`, `package.json` (2.8.2), README et `docs/ETAT.md` (docs:sync).
+- **Tests** :
+  - ajouté : `src/monetization/__tests__/premium-items.test.tsx` (7 tests : niveaux, coachs, programmes, fiches,
+    rien verrouillé, un diamant par exercice avancé/expert, diamant non cliquable et masqué pour Premium) : TEST RÉUSSI ;
+  - modifiés, raison écrite : `rights.test` et `premium.spec` attendaient `all_fighters` sans diamant et la bande
+    « à venir » ; les coachs et les options du chrono existent désormais et leur choix commercial est fait, donc ils
+    portent le diamant et la bande disparaît (la bande est contrôlée absente, aucune vérification retirée) ;
+  - ajouté : `premium.spec` « 2.8.2 : un diamant sur chaque élément Premium » (programmes, exercices, coachs, barre) :
+    TEST RÉUSSI ;
+  - Vitest complet : 1851 réussis, 1 ignoré, 4 TEST ÉCHOUÉ déjà connus et sans lien (`fluidity` ×2, `hooks-biomeca`,
+    `expressions-v1160`) ;
+  - `npm run build` : TEST RÉUSSI ; Playwright `premium.spec` + `premium-panels.spec` (11) : TEST RÉUSSI ;
+  - captures réelles avant (2.8.1) / après (2.8.2), mêmes écrans, 412 × 915 : fichiers du projet
+    `monetisation/diamants-v2.8.2/comparatif-*.jpg` ;
+  - Playwright complet : NON EXÉCUTÉ à ce stade (lancé ensuite, résultat ajouté avant la fusion).
+- **Restauration** : branche `restauration/avant-diamants-v282` (= 2.8.1, `2969a77`).

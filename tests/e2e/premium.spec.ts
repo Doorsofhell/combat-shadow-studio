@@ -45,7 +45,8 @@ test('Réglages › Premium : la page v0.45, l’offre et aucun paiement possibl
   await expect(p).toContainText('Tous tes entraînements. Sans limites.');
   await expect(page.getByTestId('premium-terms')).toHaveText('Un paiement. À vie. Sans abonnement.');
   await expect(page.getByTestId('premium-benefits').locator('.premium-grid li')).toHaveCount(6);
-  await expect(page.getByTestId('premium-soon')).toHaveText('Combattants et réglages avancés : à venir');
+  // 2.8.2: the coaches and the chronometer options exist now: no « à venir » band left
+  await expect(page.getByTestId('premium-soon')).toHaveCount(0);
   // the bar of the page, in the mockup's order
   // 1.1.0: Retour in the bar, Avantages, FAQ and Restaurer in the ⋮ at the top right
   await expect(page.getByTestId('bottom-bar').locator('.nav-btn')).toHaveText(['Retour']);
@@ -118,4 +119,35 @@ test('un diamant ouvre la page Premium sans déclencher la carte autour', async 
   await page.getByTestId('premium-unlimited_combos').click();
   await expect(page).toHaveURL(/#\/premium\?f=unlimited_combos$/);
   await expect(page.getByTestId('premium-page')).toBeVisible();
+});
+
+// 2.8.2 (Youssef, 2026-11-24, « le petit diamant sur tous les items, options, programmes »): every Premium item
+// carries its own small diamond (docs/monetisation/DECISIONS.md); the free ones carry none; everything stays open
+test('2.8.2 : un diamant sur chaque élément Premium, aucun sur les éléments gratuits', async ({ page }) => {
+  // programmes: the free beginner programme has none, an expert one has its diamond and still opens
+  await page.goto('/#/programmes');
+  await expect(page.getByTestId('prog-boxe-initiation-4-semaines').getByTestId('premium-tag')).toHaveCount(0);
+  const expert = page.getByTestId('prog-boxe-rounds-expert');
+  await expect(expert.getByTestId('premium-tag')).toBeVisible();
+  await expert.click();
+  await expect(page.getByTestId('start-program')).toBeEnabled();
+  await expect(page.locator('.page-head [data-testid="premium-tag"], h1 [data-testid="premium-tag"]').first()).toBeVisible();
+  // exercises: each expert exercise has one, no beginner exercise has one
+  await page.goto('/#/discipline/boxe?niveau=expert');
+  const ex = page.locator('.ex-card');
+  await expect(ex.first()).toBeVisible();
+  const n = await ex.count();
+  expect(n).toBeGreaterThan(0);
+  await expect(page.locator('.ex-card [data-testid="premium-tag"]')).toHaveCount(n);
+  await page.goto('/#/discipline/boxe?niveau=debutant');
+  await expect(page.locator('.ex-card').first()).toBeVisible();
+  await expect(page.locator('.ex-card [data-testid="premium-tag"]')).toHaveCount(0);
+  // coaches: Kadir and Amara free, the four others Premium
+  await page.goto('/#/coach');
+  await expect(page.getByTestId('coach-homme').getByTestId('premium-tag')).toHaveCount(0);
+  await expect(page.getByTestId('coach-femme').getByTestId('premium-tag')).toHaveCount(0);
+  for (const id of ['nael', 'inaya', 'victor', 'kanya']) await expect(page.getByTestId(`coach-${id}`).getByTestId('premium-tag')).toHaveCount(1);
+  // the Décomposer button of the training bar
+  await page.goto('/#/entrainement?ex=boxe-debutant-02&mode=libre');
+  await expect(page.locator('[data-action="decompose"] [data-testid="premium-tag"]')).toBeVisible();
 });

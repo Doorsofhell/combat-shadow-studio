@@ -5,6 +5,8 @@ import { DISCIPLINES, DisciplineId, LEVELS, LevelId, TechniqueMode } from '../..
 import { MODE_LABEL } from '../../domain/partner';
 import { STATUS_HELP, STATUS_LABEL, animationStatusOf } from '../../domain/animationStatus';
 import { AppIcon, DisciplineIcon, LevelIcon } from '../icons';
+import { PremiumTag } from '../premium/PremiumMarker';
+import type { EntitlementId } from '../../monetization/entitlements';
 import type { Mastery } from '../../store/goals';
 
 /** Premium discipline card: the official discipline icon, name in Rajdhani, current level. */
@@ -61,7 +63,7 @@ export function AnimationBadge({ id }: { id: string }) {
 }
 
 /** One technique / exercise row card (link). */
-export function TechniqueCard({ to, title, description, glyph, thumb, favorite, meta, testId, tile, mastery, selected }: { to: string; title: string; description?: string; glyph?: string; thumb?: string; favorite?: boolean; meta?: ReactNode; testId?: string; tile?: boolean; mastery?: Mastery; /** v0.32: the technique the bar's « Technique » button opens */ selected?: boolean }) {
+export function TechniqueCard({ to, title, description, glyph, thumb, favorite, meta, testId, tile, mastery, selected, premium }: { to: string; title: string; description?: string; glyph?: string; thumb?: string; favorite?: boolean; meta?: ReactNode; testId?: string; tile?: boolean; mastery?: Mastery; /** v0.32: the technique the bar's « Technique » button opens */ selected?: boolean; /** 2.8.2: the diamond of a Premium item */ premium?: EntitlementId }) {
   // 0.24 catalogue: a large picture tile (the coach doing the move) with the name only; the
   // description stays on the technique sheet
   if (tile && thumb)
@@ -74,6 +76,7 @@ export function TechniqueCard({ to, title, description, glyph, thumb, favorite, 
         <span className="body">
           <span className="title">
             {title}
+            {premium && <PremiumTag feature={premium} />}
             {favorite && <AppIcon id="favorite" size={14} className="fav" label="Favori" style={{ marginLeft: 6, verticalAlign: -1 }} />}
           </span>
           {meta}
@@ -92,6 +95,7 @@ export function TechniqueCard({ to, title, description, glyph, thumb, favorite, 
       <span className="body">
         <span className="title" style={{ display: 'block' }}>
           {title}
+          {premium && <PremiumTag feature={premium} />}
           {favorite && <AppIcon id="favorite" size={14} className="fav" label="Favori" style={{ marginLeft: 6, verticalAlign: -1 }} />}
         </span>
         {description && <span className="desc">{description}</span>}

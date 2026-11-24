@@ -1,4 +1,5 @@
 import { Segmented, Toggle } from '../components';
+import { PremiumMarker } from '../premium/PremiumMarker';
 import { useSettings } from '../../store/settings';
 import { INTENSITY_HELP, INTENSITY_LABEL, type CardioIntensity, type CardioOptions } from './plan';
 
@@ -49,7 +50,9 @@ export function CardioOptionsPicker() {
         <Segmented label="Nombre de cycles" value={c.cycles} onChange={(v) => patch({ cycles: v })} options={[5, 8, 10, 12].map((s) => ({ id: s, label: String(s) }))} />
       </div>
       <div className="stack" style={{ gap: 8 }}>
-        <span className="label">Intensité</span>
+        <span className="label">
+          Intensité <PremiumMarker feature="advanced_timer" />
+        </span>
         <Segmented label="Intensité" value={c.intensity} onChange={(v) => patch({ intensity: v })} options={INTENSITIES.map((i) => ({ id: i, label: INTENSITY_LABEL[i] }))} />
         <p className="small muted" data-testid="intensity-help">
           {INTENSITY_HELP[c.intensity]}
@@ -67,11 +70,15 @@ export function ChronoOptions() {
   return (
     <div className="stack" style={{ gap: 10 }} data-testid="chrono-options">
       <div className="stack" style={{ gap: 8 }}>
-        <span className="label">Préparation</span>
+        <span className="label">
+          Préparation <PremiumMarker feature="advanced_timer" />
+        </span>
         <Segmented label="Préparation avant de commencer" value={s.prepSec} onChange={(v) => set({ prepSec: v })} options={[3, 5, 10, 15].map((v) => ({ id: v, label: `${v} s` }))} />
       </div>
       <div className="stack" style={{ gap: 8 }}>
-        <span className="label">Alerte avant la fin</span>
+        <span className="label">
+          Alerte avant la fin <PremiumMarker feature="advanced_timer" />
+        </span>
         <Segmented
           label="Alerte avant la fin du round"
           value={s.roundWarnSec}

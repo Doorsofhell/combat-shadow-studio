@@ -9,7 +9,8 @@ import { EmptyState, PageHead } from '../components';
 import { AppIcon, LevelIcon } from '../icons';
 import { useResume } from '../../store/resume';
 import { Programmes } from './Train';
-import { PremiumMarker } from '../premium/PremiumMarker';
+import { PremiumMarker, PremiumTag } from '../premium/PremiumMarker';
+import { isPremiumProgram } from '../../monetization/premiumItems';
 import './train.css';
 
 const PHASE_LABEL: Record<ProgramBlock['phase'], string> = {
@@ -85,7 +86,7 @@ export function ProgramPage() {
   const cool = sessions[0].blocks.filter((b) => b.phase === 'recuperation');
   return (
     <div className="page prog-page">
-      <PageHead title={p.name} eyebrow={`${discName(p.discipline)} · ${levelName}`} fallback="/programmes" />
+      <PageHead title={p.name} eyebrow={`${discName(p.discipline)} · ${levelName}`} fallback="/programmes" badge={isPremiumProgram(p) ? <PremiumTag feature="all_programs" size={16} /> : undefined} />
       {p.description && <p data-testid="prog-description">{p.description}</p>}
       <div className="stat-tiles">
         <div className="stat-tile">

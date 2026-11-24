@@ -1,4 +1,5 @@
 import type { NavIconId } from './icons';
+import type { EntitlementId } from '../../monetization/entitlements';
 
 /**
  * v0.32 (Youssef, 2026-10-22, « PROMPT MAÎTRE — Refonte intégrale de la navigation dynamique premium »): one bottom
@@ -21,6 +22,8 @@ export interface NavSlot {
   action: NavAction;
   /** v0.44: only when the rule of slotRole() does not fit this place */
   role?: NavRole;
+  /** 2.8.2: the button opens a Premium feature: it carries the small diamond */
+  premium?: EntitlementId;
 }
 
 /**
@@ -112,7 +115,7 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
     MENU,
   ],
   // 5.2 / 5.3 — the mockup's `train`; place 2 is drawn from the session state (see TOGGLE)
-  entrainement: [BACK, { icon: 'play', label: 'Démarrer', action: 'toggle' }, { icon: 'scan', label: 'Décomposer', action: 'decompose' }, { icon: 'camera', label: 'Caméra', action: 'camera' }, MENU],
+  entrainement: [BACK, { icon: 'play', label: 'Démarrer', action: 'toggle' }, { icon: 'scan', label: 'Décomposer', action: 'decompose', premium: 'advanced_breakdown' }, { icon: 'camera', label: 'Caméra', action: 'camera' }, MENU],
   // 5.4 — the mockup's `tech`
   // 1.1.0: Rechercher is a place of the bar, scoped to the techniques here (LibraryNav.tsx)
   techniques: [BACK, { icon: 'filter', label: 'Filtres', action: 'filters' }, { icon: 'play', label: 'Technique', action: 'open-selected' }, MENU],
@@ -158,7 +161,7 @@ export const NAV_CONFIG: Record<NavScreen, NavSlot[]> = {
   'createur-editeur': [BACK, { icon: 'plus', label: 'Ajouter', action: 'add' }, { icon: 'save', label: 'Enregistrer', action: 'save' }, { icon: 'close', label: 'Annuler', action: 'cancel' }, MENU],
   historique: [BACK, { icon: 'chart', label: 'Statistiques', action: 'nav:/stats' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, { icon: 'calendar', label: 'Objectifs', action: 'nav:/objectifs' }, MENU],
   objectifs: [BACK, { icon: 'chart', label: 'Statistiques', action: 'nav:/stats' }, { icon: 'history', label: 'Historique', action: 'nav:/historique' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, MENU],
-  combinaison: [BACK, { icon: 'play', label: 'S’entraîner', action: 'train' }, { icon: 'scan', label: 'Décomposer', action: 'decompose' }, { icon: 'heart', label: 'Favoris', action: 'favorite' }, MENU],
+  combinaison: [BACK, { icon: 'play', label: 'S’entraîner', action: 'train' }, { icon: 'scan', label: 'Décomposer', action: 'decompose', premium: 'advanced_breakdown' }, { icon: 'heart', label: 'Favoris', action: 'favorite' }, MENU],
   coach: [BACK, { icon: 'user', label: 'Profil', action: 'nav:/profil' }, { icon: 'dumbbell', label: 'Entraîner', action: 'nav:/entrainer' }, { icon: 'settings', label: 'Réglages', action: 'nav:/reglages' }, MENU],
   'coach-ia': PLACES,
   // 1.0.0: the favourites, a tab of Entraîner (formerly a tab of the library of techniques)

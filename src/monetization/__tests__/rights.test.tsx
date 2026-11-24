@@ -54,7 +54,8 @@ describe('catalogue des droits', () => {
   it('la page n’annonce comme disponible que ce qui existe', () => {
     expect(PREMIUM_BENEFITS).toHaveLength(8);
     expect(PREMIUM_BENEFITS[0].label).toBe('Création illimitée d’enchaînements personnalisés');
-    expect(PREMIUM_BENEFITS.filter((b) => !benefitAvailable(b)).map((b) => b.label)).toEqual(['Tous les combattants', 'Réglages avancés d’entraînement']);
+    // 2.8.2: the coaches and the chronometer options exist now, so every benefit announced is available
+    expect(PREMIUM_BENEFITS.filter((b) => !benefitAvailable(b)).map((b) => b.label)).toEqual([]);
   });
   it('prix centralisé, indicatif', () => {
     expect(formatPrice()).toBe('29,99 € TTC');
@@ -73,8 +74,10 @@ describe('statut Free (préparation)', () => {
       expect(canAccessFeature(id), id).toBe(true);
     }
     expect(shouldShowPremiumMarker('unlimited_combos')).toBe(true);
-    // undecided or not built: no marker
-    expect(shouldShowPremiumMarker('all_fighters')).toBe(false);
+    // 2.8.2: the coaches and the chronometer options exist now and their commercial choice is made (Youssef,
+    // 2026-11-20): they carry the diamond too; a feature without a marker would still show none
+    expect(shouldShowPremiumMarker('all_fighters')).toBe(true);
+    expect(ENTITLEMENTS.filter((e) => !e.marker).every((e) => !shouldShowPremiumMarker(e.id))).toBe(true);
   });
   it('le marqueur ouvre la page Premium sans déclencher l’action autour de lui', () => {
     let cardClicks = 0;
@@ -91,13 +94,13 @@ describe('statut Free (préparation)', () => {
   });
   // v0.45 (Youssef, 2026-10-23, « Refonte page Premium à vie »): one line of terms instead of four cards, the six
   // categories in a 2 × 3 grid, the price and the purchase only in the « Offre Premium » panel
-  it('page v0.45 : une seule mention commerciale, six catégories, une bande « à venir », un seul bouton', () => {
+  it('page v0.45 : une seule mention commerciale, six catégories, plus de bande « à venir » (2.8.2), un seul bouton', () => {
     const el = mount(<PremiumPage />);
     expect(el.querySelector('[data-testid="premium-terms"]')!.textContent).toBe('Un paiement. À vie. Sans abonnement.');
     expect([...el.querySelectorAll('.premium-grid li')].map((l) => l.textContent)).toEqual(['Enchaînements', 'Coaching 3D', '6 disciplines', 'Programmes', 'Statistiques', 'Historique']);
-    expect(el.querySelector('[data-testid="premium-soon"]')!.textContent).toBe('Combattants et réglages avancés : à venir');
-    // the band names exactly the benefits that do not exist yet
-    expect(PREMIUM_BENEFITS.filter((b) => !benefitAvailable(b)).map((b) => b.label)).toEqual(['Tous les combattants', 'Réglages avancés d’entraînement']);
+    // 2.8.2: the « à venir » band names the benefits that do not exist yet; there are none left, so it is gone
+    expect(PREMIUM_BENEFITS.filter((b) => !benefitAvailable(b))).toEqual([]);
+    expect(el.querySelector('[data-testid="premium-soon"]')).toBeNull();
     // every category is backed by features that exist
     for (const c of PREMIUM_CATEGORIES) expect(benefitAvailable(c), c.id).toBe(true);
     expect(el.querySelectorAll('button')).toHaveLength(1);

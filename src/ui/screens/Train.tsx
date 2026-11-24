@@ -33,6 +33,8 @@ import { championFor } from '../../domain/coaches/catalog';
 import { DisciplineLabel, EmptyState, FilterChips, PageHead, SectionHead } from '../components';
 import { ExerciseSheet } from './Discipline';
 import { AppIcon, DisciplineIcon, LevelIcon } from '../icons';
+import { PremiumTag } from '../premium/PremiumMarker';
+import { isPremiumProgram } from '../../monetization/premiumItems';
 import { DisciplineEmblem } from '../emblems';
 import { DisciplineArtwork } from '../components/DisciplineArtwork';
 import { NavIcon } from '../nav/NavIcon';
@@ -626,7 +628,10 @@ export function Programmes({ thumbs = false }: { thumbs?: boolean }) {
                 )}
                 <span className="body">
                   <span className="eyebrow">{thumbs && p.discipline !== 'mixte' ? <DisciplineLabel id={p.discipline} name={discName(p.discipline)} /> : discName(p.discipline)}</span>
-                  <span className="title">{p.name}</span>
+                  <span className="title">
+                    {p.name}
+                    {isPremiumProgram(p) && <PremiumTag feature="all_programs" />}
+                  </span>
                   <span className="prog-tags">
                     <span>{p.durationMin} min</span>
                     <span>

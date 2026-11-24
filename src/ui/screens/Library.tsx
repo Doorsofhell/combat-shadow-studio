@@ -26,7 +26,8 @@ import { CAMERA_PRESETS } from '../components/Playback';
 import { stageAzimuth, techniqueView } from '../../domain/camera';
 import { exerciseForTechnique } from '../../domain/quickPicks';
 import { TechniqueFilter, neighbours, parseTechniqueFilter, sheetQuery, techniqueCatalogue } from './techniqueOrder';
-import { PremiumMarker } from '../premium/PremiumMarker';
+import { PremiumMarker, PremiumTag } from '../premium/PremiumMarker';
+import { isPremiumTechnique } from '../../monetization/premiumItems';
 
 const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
 
@@ -148,6 +149,7 @@ function TechniquesTab({ d, setD, cat, setCat }: { d: DisciplineId; setD: (d: Di
             favorite={fav.includes(t.id)}
             mastery={mastery[t.id]}
             selected={selected === t.id}
+            premium={isPremiumTechnique(t.id) ? 'advanced_techniques' : undefined}
             meta={d === 'kickboxing' ? <KbOnlyBadge id={t.id} /> : undefined}
           />
         ))}
@@ -212,7 +214,7 @@ export function FavoritesList() {
           <SectionHead title="Techniques" />
           <div className="stack" style={{ gap: 8 }}>
             {techs.map((t) => (
-              <TechniqueCard key={t.id} to={`/techniques/${t.id}`} title={t.name} description={t.description} thumb={t.id} favorite />
+              <TechniqueCard key={t.id} to={`/techniques/${t.id}`} title={t.name} description={t.description} thumb={t.id} favorite premium={isPremiumTechnique(t.id) ? 'advanced_techniques' : undefined} />
             ))}
           </div>
         </section>
@@ -360,6 +362,7 @@ export function TechniquePage() {
         title={t.name}
         eyebrow={CATEGORY_LABEL[t.category]}
         fallback="/techniques"
+        badge={isPremiumTechnique(t.id) ? <PremiumTag feature="advanced_techniques" size={16} /> : undefined}
         right={
           <button type="button" className="btn icon ghost" aria-pressed={fav} aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'} onClick={() => toggleFav(t.id)} style={{ marginRight: -10 }}>
             {fav ? <AppIcon id="favorite" tone="accent" /> : <AppIcon id="favoriteOutline" />}

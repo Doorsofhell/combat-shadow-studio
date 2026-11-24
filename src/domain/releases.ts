@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.8.2',
+      releaseDate: '2026-11-24',
+      title: 'Le diamant Premium sur chaque élément',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Un petit diamant doré marque désormais chaque élément qui sera Premium : les exercices et les fiches techniques des niveaux avancé et expert, les programmes (sauf un programme débutant gratuit par discipline), les coachs Naël, Inaya, Victor et Kanya, le bouton Décomposer et les options avancées du chronomètre. Tout reste accessible : le paiement n’est pas encore ouvert.' },
+      ],
+      links: [{ label: 'Premium', to: '/premium' }],
+    },
+    {
       version: '2.8.1',
       releaseDate: '2026-11-24',
       title: 'Changer de coach depuis l’Accueil : directement en grand',

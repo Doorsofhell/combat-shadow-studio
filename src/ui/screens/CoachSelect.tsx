@@ -11,6 +11,8 @@ import { playerSteps } from '../training/plan';
 import { NavIcon } from '../nav/NavIcon';
 import { chooseCoach } from '../components/fighter';
 import { AppIcon } from '../icons';
+import { PremiumTag } from '../premium/PremiumMarker';
+import { isPremiumCoach } from '../../monetization/premiumItems';
 import { CoachRow } from '../coach-row/CoachRow';
 
 /** the four coaches (Kadir, Naël, Amara, Inaya; 1.37: Axel and Kaila removed). The stored coach stays 'homme' / 'femme', the profile's
@@ -50,7 +52,10 @@ export function CoachPicker({ value, onChange }: { value?: string | null; onChan
       {c ? (
         <section className="coach-sheet compact" data-testid={`coach-details-${c.id}`} aria-live="polite" aria-label={`Fiche de ${c.name}`}>
           <div className="who">
-            <span className="name">{c.name}</span>
+            <span className="name">
+              {c.name}
+              {isPremiumCoach(c.id) && <PremiumTag feature="all_fighters" size={16} />}
+            </span>
             <span className="nick">« {c.nickname} »</span>
             <span className="style">{c.style}</span>
             {/* 2.7: height and weight on one line (the former bars took the room of the faces above) */}
@@ -258,7 +263,10 @@ export function CoachSelect() {
           <div className="star-row">
             <div className="star-who">
               <span className="star-nick">« {c.nickname} »</span>
-              <div className="star-name">{c.name}</div>
+              <div className="star-name">
+                {c.name}
+                {isPremiumCoach(c.id) && <PremiumTag feature="all_fighters" size={18} />}
+              </div>
               <span className="star-style">{c.style}</span>
             </div>
             <span className="star-facts num-figure" data-testid="star-facts">
@@ -297,6 +305,7 @@ export function CoachSelect() {
               {/* 2.7 (option A « Un seul sélecteur »): each portrait carries the coach's name */}
               <span className="star-thumb-name" aria-hidden>
                 {x.name}
+                {isPremiumCoach(x.id) && <PremiumTag feature="all_fighters" size={11} />}
               </span>
               {on && (
                 <span className="tick" aria-hidden>
