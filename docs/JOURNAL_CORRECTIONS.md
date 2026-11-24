@@ -5476,3 +5476,16 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   comportement, visage TEST RÉUSSI) ; échecs déjà notés (taille et shorts d'Amara). Playwright NON EXÉCUTÉ. Rien
   publié.
 - **Restauration** : commit c8850802.
+
+## 2026-11-25 · prototype 2 de la 2.4.0 (non publié) · Coachs femmes rapprochées de la maquette de Youssef
+
+- **Demande** (Youssef, 25/11 0 h 16) : « essaye de rapprocher de la maquette » (image
+  `references/souhait-femmes-2026-11-24.png`, visages de face).
+- **Correction** : la maquette devient la référence du visage d'Amara, Inaya et Kanya dans `visage.py` (configs
+  `*2.json` : `ref`, `ref_box`, forme 1,0, profondeur 0,6, traits 0,3, sourcils de la maquette gardés : ils ne froncent
+  pas). Forme, teint et léger sourire viennent de la maquette ; maquillage d'appoint réduit (sourcils, cils, lèvres,
+  blush) ; yeux agrandis de 14 % (clignement vérifié fermé). Cheveux inchangés (choix de Youssef). Anciennes
+  références (planches) dans l'historique git des configs.
+- **Tests** : vitest `src/three` + `src/boot` + intrusions + déformations 781/784, échecs déjà notés (taille et shorts
+  d'Amara). Playwright NON EXÉCUTÉ. Rien publié.
+- **Restauration** : commit bb2f70d2.

@@ -1,12 +1,12 @@
 {
  "task": "$TRAVAIL/face_landmarker.task",
  "src": "_ARCHIVES_HORS_APPLICATION/anciens-modeles-3d/avant-coachs-fideles-v240/public/coaches/mma-amara/photo.glb",
- "ref": "tools/generator/fideles/references/amara-planche.png",
+ "ref": "tools/generator/fideles/references/souhait-femmes-2026-11-24.png",
  "ref_box": [
-  1250,
-  40,
-  1530,
-  295
+  1560,
+  440,
+  1871,
+  810
  ],
  "work": "$TRAVAIL/w2/amara",
  "out": [
@@ -27,12 +27,12 @@
   0.15,
   0.5
  ],
- "profondeur": 0.8,
+ "profondeur": 0.6,
  "oeil": [
   0.012,
   0.02
  ],
- "bande": 0.5,
+ "bande": 0.3,
  "contraste": 0.9,
  "saturation": 0.8,
  "raccord_cou": 1.0,
@@ -42,12 +42,12 @@
  "levres": 0.0016,
  "levres_modele": 1,
  "maquillage": {
-  "lisse": 0.6,
-  "sourcils": 0.45,
-  "paupieres": 0.8,
-  "cils": 1.0,
-  "blush": 0.45,
-  "levres": 0.8,
+  "lisse": 0.4,
+  "sourcils": 0.35,
+  "paupieres": 0.3,
+  "cils": 0.8,
+  "blush": 0.3,
+  "levres": 0.6,
   "brillance": 0.6,
   "paupieres_teinte": [
    0.82,
@@ -70,5 +70,6 @@
    0.43
   ]
  },
- "yeux": 0.1
+ "yeux": 0.14,
+ "sourcils_neutres": false
 }
