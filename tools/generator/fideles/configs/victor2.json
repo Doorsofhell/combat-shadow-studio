@@ -39,8 +39,10 @@
   0.012,
   0.02
  ],
- "bande": 0.95,
+ "bande": 0.3,
  "contraste": 0.9,
  "saturation": 0.8,
- "raccord_cou": 0.8
+ "raccord_cou": 0.8,
+ "sourcils_neutres": true,
+ "coins_bouche": 0.0015
 }

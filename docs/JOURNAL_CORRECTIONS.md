@@ -5431,3 +5431,21 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   comportement, visage) TEST RÉUSSI pour les 6 coachs. Playwright NON EXÉCUTÉ. Captures avant/après de face et de
   trois quarts des 4 coachs. Rien publié.
 - **Restauration** : commit 3666a0fc (avant ce lot), modèles d'origine dans l'archive ci-dessus.
+
+## 2026-11-24 · prototype 2 de la 2.4.0 (non publié) · Visages des 6 coachs plus doux, moins crispés et homogènes
+
+- **Demande** (Youssef, 24/11 19 h 32) : « des visages plus doux et moins crispés, humains et homogènes ».
+- **Constat vérifié** : les planches ont un air sévère ; la chaîne en recopiait le froncement (sourcils abaissés et
+  rapprochés), les coins de bouche tombants et, pour Victor, les rides (`bande` 0,95). Les profils du moteur humain
+  étaient hétérogènes (Amara « doux », les autres « calme » par défaut ; chaleur de 0,8 à 1,15).
+- **Corrections** : `visage.py`, option `sourcils_neutres` (forme des sourcils reprise seulement vers le haut, à
+  moitié, jamais vers le bas ni vers le milieu). Kadir, Naël, Inaya, Kanya : `sourcils_neutres`, `coins_bouche` 1,5 mm,
+  `bande` 0,05. Victor : idem avec `bande` 0,3 (rides de la planche très atténuées), visage seulement : corps
+  identique au livré (contrôlé : écart nul sur le corps et le cou) ; `configs/victor-corps.json` remis sur la
+  configuration réellement livrée (la copie du dépôt différait de quelques valeurs), textures de référence
+  `fideles/victor/` réexportées. `src/three/human/profiles.ts` : les 6 coachs au visage de repos « doux »,
+  expressivité 0,85, chaleur ≥ 1 (le moteur commun ne change pas).
+- **Tests** : `tsc` TEST RÉUSSI ; déformation, intrusions (document regénéré), contact au tapis, tenues, peau de
+  Victor, moteur humain, démarrage : TEST RÉUSSI. `outfit-rollback-v1373` : empreinte de Kadir mise à jour (visage
+  seulement). Reste l'échec déjà noté de la taille d'Amara. Playwright NON EXÉCUTÉ. Rien publié.
+- **Restauration** : commit a855a108.

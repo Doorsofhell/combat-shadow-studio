@@ -108,6 +108,14 @@ def main(cfg):
             down = {17: 1.0, 84: 0.8, 314: 0.8}.get(int(i), 0.0)
             if up or down:
                 dxy[k, 1] += full * (up - down)
+    # 24/11 (Youssef « des visages plus doux et moins crispés, humains et homogènes ») : les planches ont un air sévère
+    # (sourcils bas et rapprochés). La forme des sourcils n'est reprise que vers le haut, à moitié, jamais vers le bas ni
+    # vers le milieu : on garde l'ossature du visage, pas le froncement
+    if C.get('sourcils_neutres'):
+        for k, i in enumerate(sh):
+            if int(i) in (70, 63, 105, 66, 107, 336, 296, 334, 293, 300):
+                dxy[k, 0] = 0.0
+                dxy[k, 1] = max(dxy[k, 1], 0.0) * 0.5
     lift = C.get('coins_bouche', 0.0)
     if lift:
         for k, i in enumerate(sh):
