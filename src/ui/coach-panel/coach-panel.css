@@ -63,6 +63,16 @@
   justify-content: center;
   pointer-events: none;
 }
+/* on a phone held upright the panel sits low and never takes the whole height: the top of the coach stays visible,
+   and that free band is where a tap closes it (the body of the panel scrolls instead) */
+@media (orientation: portrait) {
+  .cpn-place {
+    align-items: flex-end;
+  }
+  .cpn-place > .cpn {
+    max-height: 76%;
+  }
+}
 .cpn {
   pointer-events: auto;
   width: min(100%, 460px);

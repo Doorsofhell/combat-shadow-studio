@@ -5218,6 +5218,9 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - fiche : angle Auto ajouté (vue conseillée par technique) ; la ligne Assimilée / Encore du mal est retirée
     (`Playback.tsx`), le filtre et les liserés du catalogue restent ;
   - Accueil : « Changer de coach » passe dans Options avancées ;
+  - en portrait, le panneau est posé en bas et prend au plus 76 % de la hauteur : le haut du coach reste visible et
+    sert de zone pour fermer d’un toucher (avant, en séance, le panneau couvrait presque tout l’écran et il ne restait
+    que 16 px autour pour toucher à côté) ;
   - plein écran : quand les commandes sont estompées, un toucher les réaffiche seulement (il n’ouvre pas aussi le
     panneau) (`useStageFullscreen.ts`) ;
   - repli sans flou si qualité basse, mode sûr 3D ou `backdrop-filter` absent ; aucune animation en mouvement réduit ;
@@ -5254,4 +5257,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - téléphone Android réel : NON EXÉCUTÉ.
 - **Captures** : `/mnt/project-files/combat-shadow-studio/maquettes/panneau-coach-2026-11-24/` (412 × 915 sombre,
   360 × 640, mode jour) ; avant : `.../panneau-coach-2026-11-20/`.
+- **Après fusion de la base 2.5.0** (24/11) : `tsc -b`, build et Vitest ciblé (store, coach, torsion-v250, 121) TEST
+  RÉUSSI ; `panneau-coach`, `ecran-coach-v140`, `mastery`, `training-layout:240` (18) TEST RÉUSSI. Le test « aucun clic
+  ne traverse » mesure maintenant le panneau une fois son entrée finie (il mesurait pendant l’animation).
 - **Restauration** : `restauration/avant-panneau-coach-v240` (= 2.4.0, `1684b73`).

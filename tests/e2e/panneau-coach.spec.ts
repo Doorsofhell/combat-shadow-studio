@@ -57,6 +57,10 @@ async function seedGoals(page: Page, mastery: Record<string, string>) {
   await page.goto('about:blank');
 }
 
+/** the panel has finished coming in (its rectangle is measured after its entry animation) */
+const settled = (page: Page) =>
+  page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || !(a.effect as KeyframeEffect | null)?.target?.closest?.('.cpn-root')));
+
 async function openFiche(page: Page) {
   await page.goto(FICHE);
   await expect(page.getByTestId('technique-stage').locator('canvas')).toBeVisible({ timeout: 60_000 });
@@ -105,6 +109,7 @@ test('aucun clic ne traverse : un toucher à côté ferme le panneau sans touche
     await expect(page.locator('.coach-screen canvas')).toBeVisible({ timeout: 60_000 });
     const url = page.url();
     await showCoachTools(page);
+    await settled(page);
     // every button or link of the screen left uncovered by the panel (the scrim is over them): each one counts the
     // clicks that would reach it
     const targets = await page.evaluate(() => {
@@ -127,7 +132,10 @@ test('aucun clic ne traverse : un toucher à côté ferme le panneau sans touche
     });
     expect(targets.length, `${path} : des commandes restent sous le voile`).toBeGreaterThan(0);
     for (const [k, t] of targets.entries()) {
-      if (k > 0) await showCoachTools(page);
+      if (k > 0) {
+        await showCoachTools(page);
+        await settled(page);
+      }
       await page.mouse.click(t.x, t.y);
       await expect(page.getByTestId('coach-panel-root'), t.id).toHaveCount(0);
       expect(await page.evaluate(() => (window as unknown as { __hits: number }).__hits), `${path} : le toucher a atteint ${t.id}`).toBe(0);
