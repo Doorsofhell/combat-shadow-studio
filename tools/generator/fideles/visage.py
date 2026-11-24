@@ -161,6 +161,17 @@ def main(cfg):
         for e in ('LeftEye', 'RightEye'):
             D *= smooth(*C.get('oeil', (0.016, 0.026)), np.linalg.norm(P - J[e], axis=1))[:, None]
         P1 = P + D
+        # 24/11 (Youssef « les yeux ok » : yeux un peu plus grands, comme sur son image) : globe, paupières et pourtour
+        # agrandis ensemble autour de l'os de l'œil (inchangé : le regard tourne pareil), plein jusqu'à 20 mm, nul à 30 mm ;
+        # les écarts des expressions (clignement…) sont agrandis du même facteur à l'écriture
+        sv = np.ones(len(P))
+        if C.get('yeux'):
+            for e in ('LeftEye', 'RightEye'):
+                k = 1 + C['yeux'] * smooth(0.03, 0.02, np.linalg.norm(P1 - J[e], axis=1))
+                P1 = J[e] + (P1 - J[e]) * k[:, None]
+                sv = sv * k
+            D = P1 - P
+        field.sv = sv
         gn0 = vertex_normals(P, T); gn1 = vertex_normals(P1, T)
         N1 = N + (gn1 - gn0); N1 /= np.maximum(np.linalg.norm(N1, axis=1, keepdims=True), 1e-12)
         moved = np.linalg.norm(D, axis=1) > 1e-7
@@ -413,7 +424,27 @@ def main(cfg):
                 for k in ('head_color', 'body_color'):
                     if k in im.get('name', '') and i in imgs:
                         open(os.path.join(out['textures'], k + ('.png' if imgs[i][:4] == b'\x89PNG' else '.jpg')), 'wb').write(imgs[i])
-        save(gg, out['path'], {hr[1]: Pv.astype(np.float32), hr[2]: Nv.astype(np.float32)}, imgs)
+        views = {}
+        if C.get('yeux'):
+            sv = field.sv
+            for m in gg.j['meshes']:
+                for pr in m['primitives']:
+                    if pr['attributes']['POSITION'] != hr[1]:
+                        continue
+                    for t in pr.get('targets', []):
+                        a = gg.j['accessors'][t['POSITION']]
+                        sp = a.get('sparse')
+                        if not sp or sp['values']['bufferView'] in views:
+                            continue
+                        bi = gg.j['bufferViews'][sp['indices']['bufferView']]; bvv = gg.j['bufferViews'][sp['values']['bufferView']]
+                        idx = np.frombuffer(gg.bin, np.uint32 if sp['indices']['componentType'] == 5125 else np.uint16, sp['count'], bi.get('byteOffset', 0) + sp['indices'].get('byteOffset', 0))
+                        off = bvv.get('byteOffset', 0) + sp['values'].get('byteOffset', 0)
+                        val = np.frombuffer(gg.bin, np.float32, sp['count'] * 3, off).reshape(-1, 3) * sv[idx.astype(np.int64)][:, None]
+                        raw = bytearray(gg.bin[bvv.get('byteOffset', 0):bvv.get('byteOffset', 0) + bvv['byteLength']])
+                        o2 = sp['values'].get('byteOffset', 0)
+                        raw[o2:o2 + val.astype(np.float32).nbytes] = val.astype(np.float32).tobytes()
+                        views[sp['values']['bufferView']] = bytes(raw)
+        save(gg, out['path'], {hr[1]: Pv.astype(np.float32), hr[2]: Nv.astype(np.float32)}, imgs, new_views=views)
         print('écrit', out['path'])
     # contrôle : rendu de face après
     img2, _, _ = front_view(P1, T, UV, outt, (-0.11, 0.11, ey - 0.14, ey + 0.11), px)

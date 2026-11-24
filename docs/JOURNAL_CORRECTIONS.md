@@ -5465,3 +5465,14 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests** : vitest `src/three` + `src/boot` 770/773, échecs déjà notés (taille et shorts d'Amara). Playwright NON
   EXÉCUTÉ. Rien publié.
 - **Restauration** : commit e72c0d70.
+
+## 2026-11-24 · prototype 2 de la 2.4.0 (non publié) · Yeux des coachs femmes un peu plus grands
+
+- **Demande** (Youssef, 24/11 23 h 55) : « les yeux ok » (yeux plus grands, comme sur son image ; cheveux gardés).
+- **Correction** : `visage.py`, option `yeux` : globe, paupières et pourtour agrandis ensemble de 10 % autour de l'os
+  de l'œil (os inchangé : le regard tourne pareil), plein jusqu'à 20 mm, nul à 30 mm ; les écarts des 25 expressions
+  sont agrandis du même facteur (clignement toujours fermé, vérifié en capture). Amara, Inaya, Kanya.
+- **Tests** : vitest `src/three` + `src/boot` + intrusions + déformations 781/784 (moteur humain : contrat, regard,
+  comportement, visage TEST RÉUSSI) ; échecs déjà notés (taille et shorts d'Amara). Playwright NON EXÉCUTÉ. Rien
+  publié.
+- **Restauration** : commit c8850802.
