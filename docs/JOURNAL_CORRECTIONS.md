@@ -5309,7 +5309,19 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - `npx vitest run` : 1 844 TEST RÉUSSI, 4 TEST ÉCHOUÉ déjà présents sur la 2.6.0 non modifiée (vérifié :
     expressions-v1160 taille du modèle, fluidity ×2, hooks-biomeca « pas d’armé »), 1 ignoré ;
   - `panneaux-verre.spec` : 9 TEST RÉUSSI ;
-  - Playwright complet : voir la ligne ajoutée ci-dessous ;
+  - Playwright complet (330, 1 h 30, pendant une partie du temps des captures tournaient en même temps sur la
+    machine) : 318 TEST RÉUSSI, 2 ignorés (Firebase), 10 TEST ÉCHOUÉ ; relance seule des 8 qui ne sont pas des défauts
+    connus : boot:98, panneau-coach:329, selection-coach-v4:56, stabilite-3d-v1563:35, training-layout:117 et :240 TEST
+    RÉUSSI (échecs dus à la charge de la machine) ; deux vrais défauts trouvés et corrigés :
+    - `navigation:285` : la barre du bas restait visible sous la fenêtre Enchaînement de la séance (la règle CSS visait
+      l’ancienne `.sheet-backdrop`) → règle `body:has(.training):has(.ds-backdrop) .nav-bottom` dans `training.css`,
+      puis TEST RÉUSSI ;
+    - `panneaux-verre:77` : à la souris, un premier glissé sélectionnait le titre, et le glissé suivant devenait un
+      glisser-déposer du navigateur qui annulait le geste → `user-select: none` sur la poignée et le titre
+      (`.ds-top`, `.nav-grab`), puis 27 TEST RÉUSSI sur 27 (le fichier 3 fois de suite) ;
+    - coach-suggest:147 et coaching-hud:60 : TEST ÉCHOUÉ, défauts déjà présents sur la 2.4.0 et la 2.6.0 ;
+  - CI GitHub « Matched WebGL » (compare deux anciennes branches fixes, n’utilise pas le code de cette PR) : TEST
+    ÉCHOUÉ au premier passage, TEST RÉUSSI à la relance ;
   - téléphone Android réel : NON EXÉCUTÉ.
 - **Captures** : `/mnt/project-files/combat-shadow-studio/maquettes/panneaux-verre-2026-11-24/` (`avant/`, `apres/`,
   `cote/`), 11 fenêtres × jour et nuit à 360 × 780 ; script `scripts/dev/shot-sheets.mjs`.

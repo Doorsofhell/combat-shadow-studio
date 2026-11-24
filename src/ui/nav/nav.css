@@ -201,6 +201,8 @@
 .nav-grab {
   flex: none;
   touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .nav-sheet.sheet .nav-grab {
   cursor: grab;

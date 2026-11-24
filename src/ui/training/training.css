@@ -871,8 +871,9 @@ body:has(.training.immersive.fs-idle) .nav-bottom {
 }
 
 /* v0.32: the session screen is a fixed layer (its own stacking context), so its modal sheet cannot rise above the
-   bottom bar by z-index: while it is open the bar steps aside, as under any modal */
-body:has(.training .sheet-backdrop) .nav-bottom {
+   bottom bar by z-index: while it is open the bar steps aside, as under any modal. 2.7: the sheets of the session are
+   the glass Sheet, opened over the page (.ds-backdrop) */
+body:has(.training):has(.ds-backdrop) .nav-bottom {
   visibility: hidden;
 }
 

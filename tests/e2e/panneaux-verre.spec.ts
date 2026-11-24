@@ -76,6 +76,7 @@ test('un toucher en dehors ferme le panneau sans rien déclencher derrière', as
 
 test('glisser la poignée vers le bas ferme le panneau ; un petit glissé le laisse revenir', async ({ page }) => {
   await openChronoOptions(page);
+  await page.waitForTimeout(400); // the grip is measured once the sheet's short rise is over
   const grip = (await page.getByTestId('sheet-grip').locator('.grab').boundingBox())!;
   const x = grip.x + grip.width / 2;
   const y = grip.y + grip.height / 2;
@@ -85,6 +86,7 @@ test('glisser la poignée vers le bas ferme le panneau ; un petit glissé le lai
   await page.mouse.move(x, y + 15, { steps: 6 });
   await page.mouse.up();
   await expect(sheet(page)).toBeVisible();
+  await page.waitForTimeout(300); // it has come back to its place
   // a long one: it closes
   await page.mouse.move(x, y);
   await page.mouse.down();

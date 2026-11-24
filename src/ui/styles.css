@@ -2144,6 +2144,9 @@ button.panel-row {
   flex: none;
   padding: 8px 16px 0;
   touch-action: none;
+  /* a drag of the grip never selects the title (a selected text would start the browser's own drag and cancel it) */
+  -webkit-user-select: none;
+  user-select: none;
   cursor: grab;
 }
 .ds-backdrop.center .ds-sheet .ds-top {
