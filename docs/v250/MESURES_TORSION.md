@@ -8,7 +8,7 @@ volume atteint (100 % = celui du repos). Avant = poids de peau du modèle charg�
 
 | Articulation | Écart moyen avant | Écart moyen après |
 |---|---|---|
-| épaule | 44,4 % | 20,5 % |
+| épaule | 44,2 % | 20,3 % |
 | coude | 35,2 % | 21,9 % |
 | poignet | 5,0 % | 4,3 % |
 | hanche | 34,4 % | 13,2 % |
@@ -96,22 +96,22 @@ volume atteint (100 % = celui du repos). Avant = poids de peau du modèle charg�
 | inaya | sprawl | poignet | 13,0 % | 9,9 % | 87,0 % | 90,1 % |
 | inaya | sprawl | hanche | 59,6 % | 37,3 % | 40,4 % | 62,7 % |
 | inaya | sprawl | genou | 32,1 % | 12,8 % | 67,9 % | 87,2 % |
-| victor | garde | épaule | 54,4 % | 29,2 % | 45,6 % | 70,8 % |
+| victor | garde | épaule | 52,8 % | 27,8 % | 47,2 % | 72,2 % |
 | victor | garde | coude | 42,7 % | 26,6 % | 57,3 % | 73,4 % |
 | victor | garde | poignet | 2,0 % | 1,9 % | 98,0 % | 98,1 % |
 | victor | garde | hanche | 13,3 % | 2,8 % | 86,7 % | 102,2 % |
 | victor | garde | genou | 14,9 % | 1,9 % | 85,1 % | 98,1 % |
-| victor | crochet | épaule | 59,9 % | 36,6 % | 40,1 % | 63,4 % |
+| victor | crochet | épaule | 58,5 % | 35,6 % | 41,5 % | 64,4 % |
 | victor | crochet | coude | 42,7 % | 26,6 % | 57,3 % | 73,4 % |
 | victor | crochet | poignet | 4,3 % | 2,7 % | 95,7 % | 97,3 % |
 | victor | crochet | hanche | 14,4 % | 5,6 % | 85,6 % | 101,7 % |
 | victor | crochet | genou | 16,8 % | 2,6 % | 83,2 % | 97,4 % |
-| victor | coup de pied haut | épaule | 55,1 % | 32,4 % | 44,9 % | 67,6 % |
+| victor | coup de pied haut | épaule | 53,3 % | 30,7 % | 46,7 % | 69,3 % |
 | victor | coup de pied haut | coude | 45,4 % | 29,7 % | 54,6 % | 70,3 % |
 | victor | coup de pied haut | poignet | 1,9 % | 1,9 % | 98,1 % | 98,1 % |
 | victor | coup de pied haut | hanche | 45,7 % | 9,3 % | 54,3 % | 95,2 % |
 | victor | coup de pied haut | genou | 38,9 % | 18,7 % | 61,1 % | 81,3 % |
-| victor | sprawl | épaule | 65,4 % | 20,8 % | 34,6 % | 79,2 % |
+| victor | sprawl | épaule | 65,2 % | 20,4 % | 34,8 % | 80,8 % |
 | victor | sprawl | coude | 36,8 % | 20,1 % | 63,2 % | 79,9 % |
 | victor | sprawl | poignet | 12,4 % | 12,3 % | 87,6 % | 87,7 % |
 | victor | sprawl | hanche | 62,8 % | 11,4 % | 37,2 % | 88,6 % |
@@ -139,6 +139,6 @@ volume atteint (100 % = celui du repos). Avant = poids de peau du modèle charg�
 
 Points dont les poids changent : mma-kadir 18,7 %, mma-amara 12,3 %, nael 18,7 %, inaya 25,3 %, victor 18,7 %, kanya 23,9 %.
 Os de la peau (corps) : mma-kadir 80 → 102, mma-amara 81 → 103, nael 80 → 102, inaya 80 → 102, victor 80 → 102, kanya 80 → 102 ; même nombre d’influences par point (4) : le calcul de la peau par la carte graphique ne change pas.
-Suivi des 22 os d’aide, par image (Node, cette machine) : mma-kadir 21 µs, mma-amara 10 µs, nael 5 µs, inaya 4 µs, victor 9 µs, kanya 7 µs (une image à 60 i/s dure 16 667 µs).
-Redistribution des poids au chargement (corps entier, Node, cette machine) : mma-kadir 23 ms, mma-amara 21 ms, nael 56 ms, inaya 8 ms, victor 8 ms, kanya 10 ms.
+Suivi des 22 os d’aide, par image (Node, cette machine) : mma-kadir 24 µs, mma-amara 13 µs, nael 11 µs, inaya 4 µs, victor 4 µs, kanya 5 µs (une image à 60 i/s dure 16 667 µs).
+Redistribution des poids au chargement (corps entier, Node, cette machine) : mma-kadir 27 ms, mma-amara 27 ms, nael 59 ms, inaya 23 ms, victor 45 ms, kanya 58 ms.
 Écart au repos entre avant et après (doit être nul) : mma-kadir 0.003 mm, mma-amara 0.000 mm, nael 0.000 mm, inaya 0.000 mm, victor 0.003 mm, kanya 0.000 mm.

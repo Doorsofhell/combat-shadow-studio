@@ -41,14 +41,12 @@ export const COACH_STANCES: Record<string, StanceOffsets> = {
     rearHeel: deg(5),
   },
   // 1.43 Victor « Le Loup gris »: vétéran, garde haute et compacte, menton rentré, poings fermés près du visage
-  // 2.4.0: main arrière 1,5 cm plus en avant (poitrine plus épaisse du prototype 2 : l'avant-bras de la garde restait
-  // contre les pectoraux, intrusions.test.ts)
   victor: {
     knee: 0.02,
     pelvisYaw: deg(-3),
     chestPitch: deg(4),
     leadHand: [0, 0.01, 0],
-    rearHand: [0, -0.02, 0.045],
+    rearHand: [0, -0.02, 0.03],
     fist: 0.2,
     rearHeel: deg(4),
   },

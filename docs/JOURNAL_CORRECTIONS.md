@@ -5323,3 +5323,31 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests** : vitest `src/three` 735/739 : `expressions-v1160` (taille, déjà en échec avant), `shorts-v1442` ×2 (déjà
   notés au prototype 2), `morphology-v220` « ordre des surfaces » échoue sous la charge de la suite (délai) et passe seul
   (12/12). Captures avant/après du visage. Rien publié.
+
+## 2026-11-24 · prototype 2 de la 2.4.0 (non publié) · Aisselles et aine de Victor
+
+- **Demande** (Youssef, 24/11 12 h, carte de décision) : « Corriger avant de valider » les écarts de déformation de
+  Victor (aisselles quand les bras montent, aine au high kick) ; puis « Victor OK » sur l'allure.
+- **Constats vérifiés** (`deformation-v1100`, mesure par mesure, variantes du modèle construites une à une) :
+  (1) aine au high kick 116° pour 106°, et pli de l'aisselle en garde au sol : déjà présents sur le même modèle
+  seulement mis à 1,88 m ; la zone de mesure a un rayon fixe en mètres et prend d'autres triangles sur un corps plus
+  grand (même cas que Kanya en 1.55) ; (2) étirement et pli des aisselles : l'élargissement latéral du haut du tronc
+  (+3 %) et le volume des dorsaux, posés au repos sur des points qui portent aussi les poids du bras ; le deltoïde et
+  le bras n'y sont presque pour rien ; (3) la main arrière de garde avancée de 1,5 cm (lot précédent) tirait l'aisselle
+  en garde (2,51 permis, 2,56 mesuré) ; (4) avec ce torse, la poitrine de Victor n'est plus que 1 à 2 mm plus profonde
+  que celle de Kadir : l'avancée des mains (`girthPush`) ne changeait plus rien.
+- **Corrections** : `tools/generator/fideles/corps.py`, réglage « aisselles » (déplacement atténué en gaussienne autour
+  du creux de l'aisselle) ; `configs/victor-corps.json` sans élargissement du haut du tronc ni dorsaux, creux des
+  aisselles laissé au modèle (pectoraux, deltoïdes, trapèzes, cou, bras gardés) ; modèle et 7 tenues reconstruits,
+  textures de référence du test ré-exportées (`tools/generator/fideles/victor/`) ; garde de Victor rendue à celle de la
+  2.5.0 ; `girthPush` retiré de `rig.ts` (rig identique à la 2.5.0). Glissement et saut d'image à 1,80 m : gardés.
+- **Tests modifiés (raison écrite)** : `deformation-v1100`, Victor mesuré avec des zones mises à l'échelle de sa taille
+  (`SCALED_FROM`, comme Kanya) ; `intrusions`, bornes de Victor remesurées sur ce corps (mesure arrondie + 0,2) :
+  de 0 à 0,4 cm au-dessus de la 2.5.0 (ukemi-yoko 7,6 → 7,9, pont 5,4 → 5,8, jab 2,0 → 2,4, esquive droite 2,5 → 2,8,
+  check-hook 2,7 → 3,0, les autres de 0,2 à 0,3), uppercut arrière inchangé (7,9).
+- **Tests** : `tsc` TEST RÉUSSI ; `npm run build` TEST RÉUSSI ; vitest complet : déformations de Victor TEST RÉUSSI,
+  intrusions, glissement, registre, contact au sol, torsion TEST RÉUSSI ; restent `fluidity` ×2, `hooks-biomeca` ×2,
+  `expressions-v1160` (déjà en échec avant), `shorts-v1442` ×2 (Amara, prototype 2) ; `morphology-v220` échoue sous la
+  charge de la suite (délai) et passe seul. Playwright : NON EXÉCUTÉ. Captures avant/après (face, dos, torse, garde) :
+  silhouette quasi identique.
+- **Version** : inchangée, rien publié.

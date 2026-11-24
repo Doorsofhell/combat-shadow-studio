@@ -97,7 +97,10 @@ function measure(b: SkinnedBody, rest: Float32Array, posed: Float32Array, inRegi
  * and the fold measured there rose from 66° to 77° with an identical high kick. The zones of a scaled body are scaled
  * with it (ratio of the heights of the head joint), so the same skin is measured on both
  */
-const SCALED_FROM: Partial<Record<(typeof COACHES)[number], (typeof COACHES)[number]>> = { kanya: 'inaya' };
+// 2.4.0 prototype 2: Victor at 1.88 m is measured against Kadir (1.81 m) the same way (Victor 2.3.5 was Kadir's
+// height); with fixed zones his groin zone at the high kick read 116° for 106° (Youssef 24/11, verified: the same
+// model only scaled to 1.88 m gave it too)
+const SCALED_FROM: Partial<Record<(typeof COACHES)[number], (typeof COACHES)[number]>> = { kanya: 'inaya', victor: 'mma-kadir' };
 const headYCache = new Map<string, number>();
 function headY(id: string) {
   if (!headYCache.has(id)) {

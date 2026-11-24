@@ -168,7 +168,7 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 | victor | kickboxing | high kick | 4.26 | 85.6 | 2.6 % |
 | victor | kickboxing | genou | 3.66 | 85.1 | 2.3 % |
 | victor | kickboxing | changement de niveau | 3.12 | 80.8 | 2.0 % |
-| victor | kickboxing | low kick | 2.67 | 68.3 | 2.7 % |
+| victor | kickboxing | low kick | 2.68 | 68.3 | 2.7 % |
 | victor | muaythai | garde | 2.10 | 65.5 | 2.0 % |
 | victor | muaythai | high kick | 4.16 | 85.5 | 2.4 % |
 | victor | muaythai | genou | 3.65 | 87.5 | 2.3 % |
@@ -176,8 +176,8 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 | victor | muaythai | low kick | 2.39 | 69.5 | 2.5 % |
 | victor | mma | garde | 2.46 | 71.2 | 0.9 % |
 | victor | mma | high kick | 4.26 | 90.4 | 1.3 % |
-| victor | mma | genou | 3.14 | 90.3 | 1.1 % |
-| victor | mma | changement de niveau | 3.38 | 93.3 | 1.0 % |
+| victor | mma | genou | 3.15 | 90.3 | 1.1 % |
+| victor | mma | changement de niveau | 3.39 | 93.3 | 1.0 % |
 | victor | mma | low kick | 2.90 | 80.9 | 1.1 % |
 | kanya | boxe | garde | 2.37 | 52.6 | 1.1 % |
 | kanya | boxe | high kick | 5.33 | 89.1 | 1.6 % |

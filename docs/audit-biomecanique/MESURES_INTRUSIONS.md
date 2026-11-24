@@ -42,28 +42,29 @@ Même mesure sur la peau de Victor (corps de Kadir élargi : torse, avant-bras, 
 
 | Technique | Pire profondeur (cm) | Quoi | Où | Instant |
 |---|---|---|---|---|
-| `ukemi-yoko` | 7,3 | avant-bras gauche dans le tronc | victor judo | 1,32 s |
+| `ukemi-yoko` | 7,7 | avant-bras gauche dans le tronc | victor judo | 1,39 s |
+| `uppercut-arriere` | 7,6 | avant-bras droit dans le tronc | victor boxing | 0,13 s |
 | `uchikomi-o-goshi` | 7,1 | jambe droite dans la cuisse gauche | victor judo | 1,06 s |
 | `uchikomi-seoi` | 7,0 | jambe droite dans la cuisse gauche | victor judo | 1,04 s |
+| `ukemi-ushiro` | 6,8 | avant-bras gauche dans le tronc | victor judo | 1,45 s |
 | `uchikomi-o-soto-gari` | 6,1 | main gauche dans le tronc | victor judo | 1,24 s |
-| `ukemi-ushiro` | 6,1 | avant-bras gauche dans le tronc | victor judo | 2,84 s |
-| `pont` | 6,0 | main droite dans le tronc | victor bjj | 0,93 s |
 | `sit-out` | 5,9 | avant-bras gauche dans le tronc | victor bjj | 0,53 s |
-| `uppercut-arriere` | 5,7 | avant-bras droit dans le tronc | victor boxing | 0,13 s |
-| `genou-direct-arriere` | 5,3 | jambe droite dans la cuisse gauche | victor mma | 0,54 s |
+| `pont` | 5,5 | main droite dans le tronc | victor bjj | 0,93 s |
+| `genou-direct-arriere` | 5,4 | jambe droite dans la cuisse gauche | victor mma | 0,54 s |
 | `changement-base` | 5,2 | avant-bras gauche dans le tronc | victor bjj | 1,47 s |
 | `single-leg` | 5,0 | avant-bras gauche dans le tronc | victor bjj | 0,74 s |
 | `genou-circulaire-arriere` | 5,0 | jambe gauche dans la cuisse droite | victor kickboxing | 0,54 s |
 | `releve-technique` | 5,0 | jambe droite dans la cuisse gauche | victor bjj | 0,61 s |
-| `middle-kick-arriere` | 4,4 | main droite dans le tronc | victor kickboxing | 0,40 s |
+| `shoulder-roll` | 4,4 | avant-bras droit dans le tronc | victor boxing | 0,20 s |
 | `retention-garde` | 4,2 | avant-bras droit dans le tronc | victor bjj | 1,26 s |
 | `uchikomi-ko-uchi-gari` | 4,1 | jambe gauche dans la cuisse droite | victor judo | 0,80 s |
-| `shoulder-roll` | 3,8 | avant-bras droit dans le tronc | victor boxing | 0,20 s |
-| `crochet-avant` | 3,0 | avant-bras droit dans le tronc | victor boxing | 0,19 s |
-| `blocage-corps-avant` | 2,7 | avant-bras droit dans le tronc | victor boxing | 0,19 s |
-| `rattrapage-middle` | 2,6 | avant-bras droit dans le tronc | victor muaythai | 0,78 s |
-| `check-hook` | 2,5 | avant-bras droit dans le tronc | victor boxing | 0,27 s |
+| `middle-kick-arriere` | 4,1 | main droite dans le tronc | victor kickboxing | 0,40 s |
+| `crochet-avant` | 3,4 | avant-bras droit dans le tronc | victor boxing | 0,19 s |
+| `blocage-corps-avant` | 2,9 | avant-bras droit dans le tronc | victor boxing | 0,19 s |
+| `check-hook` | 2,8 | avant-bras droit dans le tronc | victor boxing | 0,27 s |
+| `esquive-droite` | 2,6 | avant-bras droit dans le tronc | victor boxing | 0,20 s |
+| `rattrapage-middle` | 2,5 | avant-bras droit dans le tronc | victor muaythai | 0,78 s |
+| `high-kick-arriere` | 2,5 | main droite dans le tronc | victor mma | 0,40 s |
 | `genou-clinch` | 2,3 | jambe droite dans la cuisse gauche | victor muaythai | 0,61 s |
-| `high-kick-arriere` | 2,3 | main droite dans le tronc | victor kickboxing | 0,40 s |
-| `esquive-droite` | 2,2 | avant-bras droit dans le tronc | victor boxing | 0,20 s |
 | `genou-circulaire-clinch` | 2,1 | jambe droite dans la cuisse gauche | victor muaythai | 0,61 s |
+| `jab` | 2,1 | avant-bras droit dans le tronc | victor boxing | 0,14 s |

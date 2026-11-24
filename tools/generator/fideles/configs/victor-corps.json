@@ -1,5 +1,5 @@
 {
- "note": "Victor 1,88 m, 95-100 kg : pectoraux, deltoïdes, trapèzes, bras et cou plus épais, transitions anatomiques",
+ "note": "Victor 1,88 m, 95-100 kg : pectoraux, deltoïdes, trapèzes, bras et cou plus épais, transitions anatomiques ; 24/11 : sans élargissement du haut du tronc ni dorsaux, creux des aisselles laissé au modèle (deformation-v1100)",
  "taille": 1.88,
  "segments": [
   {
@@ -41,22 +41,6 @@
    "gain": 0.0,
    "centre": 0.45,
    "largeur": 0.9
-  },
-  {
-   "a": "Spine1",
-   "b": "Spine2",
-   "os": [
-    "Spine1",
-    "Spine2"
-   ],
-   "gain": 0.03,
-   "centre": 0.8,
-   "largeur": 1.0,
-   "orient": [
-    0.6,
-    1,
-    0.8
-   ]
   }
  ],
  "bosses": [
@@ -130,29 +114,6 @@
     "Neck",
     "Spine2"
    ]
-  },
-  {
-   "os": "Spine2",
-   "pos": [
-    0.11,
-    -0.04,
-    -0.07
-   ],
-   "rayon": [
-    0.08,
-    0.14,
-    0.08
-   ],
-   "h": 0.006,
-   "dir": [
-    0.4,
-    0,
-    -1
-   ],
-   "os_poids": [
-    "Spine2",
-    "Spine1"
-   ]
   }
  ],
  "lissage": 5,
@@ -160,6 +121,12 @@
   {
    "src": "$TRAVAIL/w2/victor-photo.glb",
    "path": "$TRAVAIL/w3/victor-photo.glb"
+  }
+ ],
+ "aisselles": [
+  {
+   "rayon": 0.1,
+   "force": 1.0
   }
  ]
 }

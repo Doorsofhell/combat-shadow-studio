@@ -61,25 +61,28 @@ const PENDING: Record<string, number> = {
  */
 const VICTOR_PENDING: Record<string, number> = {
   // 1.45.0 (traversées corrigées): bounds lowered to min(new + 0.2, 1.43.0); défense de lutte now under the common bound.
-  // 2.4.0 prototype 2 (Victor's own body, 1.88 m, thicker chest; Youssef 24/11 « adapter les gestes à Victor »): his
-  // low hands come forward by his extra chest depth (rig.ts girthPush), his rear guard hand 1.5 cm forward, his thigh as
-  // Kadir's. Same rule: min(new + 0.2, before) for the techniques measured lower; seven are higher than before, by 0.03
-  // to 0.6 cm (journal 2.4.0): the bridge (hands in world space against the thicker belly), the rear middle kick (rear
-  // hand swinging past the chest), and five by less than 0.5 mm, bounded at their new value + 0.2
+  // 2.4.0 prototype 2 (Victor's own body: 1.88 m, pectorals, deltoids, trapezius and neck sculpted; Youssef 24/11
+  // « adapter les gestes à Victor », then « corriger les aisselles »): his upper trunk is no longer widened at the sides
+  // (armpits, deformation-v1100), his chest is 1 to 2 mm deeper than Kadir's. Bounds remeasured on this body, same
+  // rule (measure rounded up + 0.2): 0 to 0.4 cm above 2.5.0, listed in docs/JOURNAL_CORRECTIONS.md (2.4.0). Tried and
+  // dropped (24/11): hands moved forward by the chest depth (too small now to change anything), rear guard hand 1.5 cm
+  // forward (armpit stretch in guard over Kadir's bound)
   'changement-base': 5.5,
-  'esquive-droite': 2.4,
-  'genou-circulaire-clinch': 2.2,
+  'check-hook': 3.0,
+  'esquive-droite': 2.8,
+  'genou-circulaire-clinch': 2.4,
   'genou-clinch': 2.6,
-  'high-kick-arriere': 2.5,
-  'middle-kick-arriere': 4.6,
-  'pont': 6.2,
-  'retention-garde': 4.2,
+  'high-kick-arriere': 2.7,
+  'jab': 2.4,
+  'middle-kick-arriere': 4.4,
+  'pont': 5.8,
+  'retention-garde': 4.4,
   'single-leg': 5.3,
   'sit-out': 6.2,
   'uchikomi-ko-uchi-gari': 4.4,
-  'ukemi-ushiro': 6.3,
-  'ukemi-yoko': 7.5,
-  'uppercut-arriere': 6.0,
+  'ukemi-ushiro': 7.0,
+  'ukemi-yoko': 7.9,
+  'uppercut-arriere': 7.9,
 };
 /**
  * 1.46.0 Kadir: his trapezius rise 1.5 to 2 cm on the sides of the neck (Youssef 15/11, « trapèzes de combattant »).
