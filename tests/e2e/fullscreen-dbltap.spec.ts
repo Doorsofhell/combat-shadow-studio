@@ -1,6 +1,6 @@
 import { expect, Locator, Page, test } from '@playwright/test';
 import { DEFAULT_PROFILE } from '../../src/store/profile';
-import { openCoachIA } from './nav-helpers';
+import { openCoachIA, showCoachTools } from './nav-helpers';
 
 /**
  * 0.27 (Youssef, 2026-10-20 22:09: « Un double clique sur la fenêtre du coach permet un plein écran total, étudie et
@@ -180,8 +180,14 @@ for (const vp of [
       expect(Math.abs(after.info.top - after.band.bottom)).toBeLessThanOrEqual(1);
       expect(after.bottom.top).toBeGreaterThanOrEqual(after.info.bottom - 1);
     }
-    // the button does the same, and its twin exits
-    await page.getByTestId('fullscreen').click();
+    // the button does the same (2.4: « Plein écran » of the coach's panel, which stays open; Échap closes the panel
+    // only, the fullscreen stays), and its twin exits
+    await showCoachTools(page);
+    await page.getByTestId('cp-fullscreen').click();
+    await expect(page.getByTestId('training')).toHaveClass(/immersive/);
+    await expect(page.getByTestId('coach-panel')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
     await expect(page.getByTestId('training')).toHaveClass(/immersive/);
     // a tap shows the controls if they have faded, then the exit button
     await exitByButton(page);
