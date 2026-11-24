@@ -238,6 +238,9 @@ test('demander au coach : pause, réponse hors ligne, ralenti, sans défilement 
 // bottom of 0.x is gone). The same commands (Auto, the angles, rotation, zoom, back to the advised angle) are checked:
 // reachable at every size, big enough for a finger, none cut; the panel is over the coach on purpose (glass).
 test('Caméra : le panneau du coach s’ouvre sur l’angle de vue, tout à portée sans déborder', async ({ page }) => {
+  // six sizes, each one reloads the session and measures every control of the panel (about 25 s per size with the
+  // software renderer of the tests): more time, the same checks
+  test.setTimeout(300_000);
   await seed(page);
   for (const s of SIZES) {
     await page.setViewportSize({ width: s.width, height: s.height });

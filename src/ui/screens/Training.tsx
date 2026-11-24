@@ -518,7 +518,8 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
     camera: st.tech
       ? undefined
       : {
-          value: isAuto ? 'auto' : camMode,
+          // Auto adjusted by a turn or a zoom is no longer « Auto » (no chip checked, the line under them says it)
+          value: isAuto ? 'auto' : camMode === 'auto' ? 'auto-ajuste' : camMode,
           options: QUICK_ANGLES,
           more: MORE_ANGLES,
           onChange: (id) => (id === 'auto' ? resetCam() : chooseAngle(id as CameraMode)),

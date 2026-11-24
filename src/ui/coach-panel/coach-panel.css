@@ -255,6 +255,15 @@
 .cpn-seg .cpn-chip {
   padding: 6px 8px;
 }
+/* « Mon apprentissage »: three states side by side; the icon goes above the word so « En apprentissage » fits a
+   360 px screen without being cut */
+.cpn-seg:not(.two) .cpn-chip {
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 2px;
+  font-size: 0.8em;
+  min-height: 52px;
+}
 .cpn-chip.small {
   min-height: 36px;
   font-size: 0.8em;

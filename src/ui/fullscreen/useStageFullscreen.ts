@@ -63,6 +63,9 @@ export function useStageFullscreen(
   const tapRef = opts.tapRef ?? ref;
   const [active, setActive] = useState(false);
   const [idle, setIdle] = useState(false);
+  /** 2.4 (panneau du coach): read by the tap handler, a tap on faded controls only brings them back */
+  const idleRef = useRef(false);
+  idleRef.current = idle;
   const activeRef = useRef(false);
   const timer = useRef<number | undefined>(undefined);
   const onChange = useRef(opts.onChange);
@@ -133,9 +136,12 @@ export function useStageFullscreen(
       window.clearTimeout(tapTimer.current);
       if (r === 'double') toggle();
       else if (r === 'tap') {
+        // 2.4: in full screen with the controls faded, the tap only brings them back (it does not open the coach's
+        // panel too: the person first sees the controls, a next tap opens the panel)
+        const wakeOnly = activeRef.current && idleRef.current;
         if (activeRef.current) wake();
         // a single tap only once the time for a second one has passed
-        if (onTap.current) tapTimer.current = window.setTimeout(() => onTap.current?.(), DOUBLE_TAP_GAP + 20);
+        if (onTap.current && !wakeOnly) tapTimer.current = window.setTimeout(() => onTap.current?.(), DOUBLE_TAP_GAP + 20);
       }
     };
     const cancel = (e: PointerEvent) => d.cancel(e.pointerId);

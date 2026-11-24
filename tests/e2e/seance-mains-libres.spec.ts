@@ -50,9 +50,12 @@ test('séance : mains libres, toucher la scène montre les commandes sans pause,
   await expect(page.getByTestId('resume')).toBeVisible();
   expect(await vibrations(page)).toContainEqual([30, 40, 30]);
   for (const a of ['decompose', 'camera', 'menu']) await expect(bar(page).locator(`[data-action="${a}"]`), a).toBeVisible();
-  // a tap during the pause does not restart the session: Reprendre does
+  // a tap during the pause does not restart the session (2.4: it opens the coach's panel): Reprendre does
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-  await page.waitForTimeout(500);
+  await expect(page.getByTestId('coach-panel')).toBeVisible();
+  await expect(page.getByTestId('phase')).toHaveText('Pause');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
   await expect(page.getByTestId('phase')).toHaveText('Pause');
   await page.getByTestId('resume').click();
   await expect(page.getByTestId('pause')).toBeVisible();

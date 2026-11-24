@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { bar, closeCoachPanel, seedProfile, showCoachTools } from './nav-helpers';
+import { closeCoachPanel, seedProfile, showCoachTools } from './nav-helpers';
 
 /**
  * 2.4 (Youssef, 2026-11-20, « REFONTE PREMIUM DU PANNEAU D'OPTIONS DU COACH », V6 Floating Glass + V7 Smart Control):
@@ -100,27 +100,50 @@ test('fermeture : Échap, glisser la poignée vers le bas, Retour Android (un Re
 
 test('aucun clic ne traverse : un toucher à côté ferme le panneau sans toucher l’élément derrière', async ({ page }) => {
   await seedProfile(page, {}, { stageFsHintSeen: true });
+  for (const path of [SEANCE, FICHE]) {
+    await page.goto(path);
+    await expect(page.locator('.coach-screen canvas')).toBeVisible({ timeout: 60_000 });
+    const url = page.url();
+    await showCoachTools(page);
+    // every button or link of the screen left uncovered by the panel (the scrim is over them): each one counts the
+    // clicks that would reach it
+    const targets = await page.evaluate(() => {
+      const w = window as unknown as { __hits: number };
+      w.__hits = 0;
+      const pr = document.querySelector('[data-testid=coach-panel]')!.getBoundingClientRect();
+      const out: { x: number; y: number; id: string }[] = [];
+      document.querySelectorAll<HTMLElement>('#root button:not(.sr-only), #root a').forEach((e) => {
+        const r = e.getBoundingClientRect();
+        if (r.width < 12 || r.height < 12) return;
+        const x = r.left + r.width / 2;
+        const y = r.top + r.height / 2;
+        if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) return;
+        if (x >= pr.left && x <= pr.right && y >= pr.top && y <= pr.bottom) return;
+        e.addEventListener('click', () => w.__hits++, true);
+        e.addEventListener('pointerdown', () => w.__hits++, true);
+        out.push({ x, y, id: e.dataset.testid ?? e.getAttribute('aria-label') ?? e.tagName });
+      });
+      return out;
+    });
+    expect(targets.length, `${path} : des commandes restent sous le voile`).toBeGreaterThan(0);
+    for (const [k, t] of targets.entries()) {
+      if (k > 0) await showCoachTools(page);
+      await page.mouse.click(t.x, t.y);
+      await expect(page.getByTestId('coach-panel-root'), t.id).toHaveCount(0);
+      expect(await page.evaluate(() => (window as unknown as { __hits: number }).__hits), `${path} : le toucher a atteint ${t.id}`).toBe(0);
+      expect(page.url(), t.id).toBe(url);
+    }
+    // the background stays blocked during the closing animation: a second tap right after the first one does nothing
+    await showCoachTools(page);
+    await page.mouse.click(targets[0].x, targets[0].y);
+    await page.mouse.click(targets[0].x, targets[0].y);
+    await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
+    expect(await page.evaluate(() => (window as unknown as { __hits: number }).__hits), `${path} : deuxième toucher`).toBe(0);
+    expect(page.url()).toBe(url);
+  }
+  // the session did not start
   await page.goto(SEANCE);
-  await expect(page.getByTestId('training-stage').locator('canvas')).toBeVisible({ timeout: 60_000 });
-  // the big « Démarrer » of the bar is right behind the scrim: a tap there closes the panel, the session does not start
-  await showCoachTools(page);
-  const start = (await page.getByTestId('start').boundingBox())!;
-  await page.mouse.click(start.x + start.width / 2, start.y + start.height / 2);
-  await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
   await expect(page.getByTestId('start')).toBeVisible();
-  await expect(page.getByTestId('pause')).toHaveCount(0);
-  // the same with a link of the bar: the screen stays
-  await showCoachTools(page);
-  const home = (await bar(page).getByTestId('nav-accueil').boundingBox())!;
-  await page.mouse.click(home.x + home.width / 2, home.y + home.height / 2);
-  await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
-  await expect(page).toHaveURL(/entrainement/);
-  // the background is blocked during the closing animation too: a second tap right after the first one does nothing
-  await showCoachTools(page);
-  await page.mouse.click(start.x + start.width / 2, start.y + start.height / 2);
-  await page.mouse.click(start.x + start.width / 2, start.y + start.height / 2);
-  await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
-  await expect(page.getByTestId('pause')).toHaveCount(0);
 });
 
 test('séance en cours : ouvrir le panneau ne met pas en pause et ne remet rien à zéro', async ({ page }) => {
