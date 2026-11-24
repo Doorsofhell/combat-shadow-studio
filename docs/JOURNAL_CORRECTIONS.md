@@ -5161,10 +5161,39 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Restauration** : `restauration/avant-animations-lot3` (= 2.3.2, `d5b3b9b`), ou une correction seule par son
   interrupteur. Validée par Youssef le 20/11 à 15 h 50 (« je valide ») ; PR #147 fusionnée après intégration de la 2.3.6.
 
-## 2026-11-24 · base 2.4.0 · Panneau « Options du coach » (EXPÉRIMENTAL, non déployé)
+## 2026-11-20 · v2.5.0 · Os de torsion et corrections de volume aux articulations (six coachs)
+
+- **Demande** : Youssef, 20/11 15:53, « oui je veux l'appliquer tout de suite aux coachs » (proposition du fil
+  « Reproduire les six coachs de référence »). Base : dernière version en ligne (2.4.0, `1684b73`).
+- **Constat vérifié** : aucun os de torsion ni correction de volume dans les six `photo.glb` (80 os, 81 pour Amara) ;
+  l'avant-bras tourne d'un bloc dès le coude (55 % de la pronation, `rig.ts`). Mesuré avec le vrai moteur sur garde,
+  crochet, coup de pied haut et sprawl : perte de volume moyenne épaule 44 %, coude 35 %, hanche 34 %, genou 22 %
+  (pire : épaule de Kadir au sprawl, 70 %).
+- **Correction** : `src/three/twist.ts` (nouveau) : 22 os d'aide ajoutés au chargement (torsion bras ×2, avant-bras ×3,
+  cuisse ×2, demi-os épaule, coude, hanche, genou, par côté), suivis après chaque image depuis les os principaux ;
+  poids de peau redistribués sur une copie (corps et tenues), 4 influences par point. `PhotoCoach.tsx` (branchement),
+  `rig.ts` + `engine/index.ts` (`REST_SKIN` : les mesures du moteur lisent les poids d'origine). Interrupteur Lab
+  `?torsion=0`. GLB, os principaux, animations, limites et moteur humain inchangés.
+- **Résultat mesuré** (`docs/v250/MESURES_TORSION.md`) : épaule 44,4 → 20,6 %, coude 35,4 → 22,2 %, hanche
+  34,4 → 13,2 %, genou 22,1 → 9,0 % ; aucune articulation pire qu'avant ; au repos écart ≤ 0,003 mm ; suivi 3 à 20 µs selon les passages
+  par image, redistribution 4 à 35 ms par corps au chargement.
+- **Coordination** : le fil « Reproduire les six coachs » garde la main sur les GLB d'Amara et Victor ; la correction
+  se fait au chargement et s'appliquera à leurs nouveaux modèles sans rien refaire.
+- **Tests** : nouveau `src/three/__tests__/torsion-v250.test.ts` (26 tests) ; Vitest complet : 4 TEST ÉCHOUÉ déjà
+  présents en 2.4.0 (expressions-v1160, fluidity ×2, hooks-biomeca « pas d'armé », vérifiés sur la 2.4.0 sans le
+  changement), tous les autres TEST RÉUSSI (contrat du moteur humain, limites de torsion et chevilles compris) ;
+  `npm run build` TEST RÉUSSI ; captures WebGL avant/après des six coachs `docs/v250/captures/` (132 images, 0 erreur) ;
+  Playwright complet (311) : 304 TEST RÉUSSI, 2 ignorés, 5 TEST ÉCHOUÉ au premier passage. `selection-coach-v4:56`
+  venait de ce lot (copies des géométries des tenues jamais rendues au changement de coach, 34 au lieu de ≤ 23) :
+  corrigé (copie rangée avec celles du coach), TEST RÉUSSI. `boot:98` et `mastery:26` échouent aussi sur la 2.4.0
+  (build refait, vérifié) ; `coaching-hud:60` défaut antérieur connu ; `coach-suggest:147` instable connu ;
+  téléphone Android NON EXÉCUTÉ.
+- **Restauration** : `restauration/avant-torsion-v240` (= 2.4.0), ou `?torsion=0`. Rapport `docs/v250/RAPPORT_TORSION.md`.
+
+## 2026-11-24 · base 2.5.0 · Panneau « Options du coach » (EXPÉRIMENTAL, non déployé)
 
 - **Statut** : branche `claude/project-thread-kn0nc0`, PR sans fusion. Ni fusion, ni GitHub Pages, ni APK, ni entrée
-  dans les Nouveautés tant que Youssef n’a pas validé. Version inchangée (2.4.0).
+  dans les Nouveautés tant que Youssef n’a pas validé. Version inchangée (2.5.0 après fusion de la base).
 - **Demande** : Youssef, 20/11 13:25, « REFONTE PREMIUM DU PANNEAU D'OPTIONS DU COACH » (V6 Floating Glass + V7 Smart
   Control) ; audit et maquettes livrés le 20/11, recommandations validées à 14 h 32 (« je valide les recommandations »).
 - **Constat vérifié (2.3.5 puis 2.4.0)** : un toucher sur le coach montrait des boutons posés sur lui (lecture,
