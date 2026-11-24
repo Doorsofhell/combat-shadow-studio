@@ -96,6 +96,15 @@ def main(cfg):
     dxy = (A2i @ r.T).T * alpha
     lim = C.get('shape_max', 0.006)
     nrm = np.linalg.norm(dxy, axis=1, keepdims=True); dxy = dxy * np.minimum(1, lim / np.maximum(nrm, 1e-9))
+    # 2.4.0 (Youssef 24/11 « adoucis son visage ») : coins de la bouche remontés (61, 291 et leurs voisins de la
+    # commissure, lèvre du haut et du bas ensemble : la bouche ne s'ouvre pas) au lieu de reprendre leur chute sur la
+    # planche ; en mètres, vers le haut
+    lift = C.get('coins_bouche', 0.0)
+    if lift:
+        for k, i in enumerate(sh):
+            w = {61: 1.0, 291: 1.0, 146: 0.8, 375: 0.8, 185: 0.8, 409: 0.8, 78: 1.0, 308: 1.0, 95: 0.8, 324: 0.8, 191: 0.8, 415: 0.8}.get(int(i), 0.0)
+            if w:
+                dxy[k, 1] = max(dxy[k, 1], 0.0) + lift * w
     anc = np.array([i for i in EYE_ANCHOR if ok[i]])
     # profondeur (prototype 2) : même estimateur MediaPipe sur le rendu du modèle et sur l'image, ramené en mètres et
     # centré sur les yeux ; le modèle regarde vers +Z, MediaPipe compte la profondeur vers la caméra en négatif

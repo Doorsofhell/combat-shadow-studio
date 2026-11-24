@@ -5376,3 +5376,16 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Correction** : Amara `bande` 0,5 (`configs/amara2.json`), traits de la planche à moitié ; modèles reconstruits.
 - **Tests** : expressions et moteur humain TEST RÉUSSI (sauf taille, déjà en échec). Captures avant/après et 4 états
   (neutre, encouragement, concentration, effort). Rien publié.
+
+## 2026-11-24 · prototype 2 de la 2.4.0 (non publié) · Visage et expressions d'Amara adoucis
+
+- **Demande** (Youssef, 24/11 14 h 52) : « oui je veux que tu adoucisses son visage et ses expressions ».
+- **Constat** : coins de la bouche tombants (forme reprise de la planche) ; profil d'Amara réglé « expressive à
+  l'effort » (expressivité 1,1) avec le visage de repos par défaut (« calme »).
+- **Corrections** : `visage.py`, réglage `coins_bouche` (commissures remontées dans le champ de forme, lèvres ensemble) ;
+  Amara 1,5 mm (`configs/amara2.json`), modèles reconstruits. `src/three/human/profiles.ts` : Amara `faceBase: 'doux'`
+  (base existante du moteur commun : sourcils intérieurs à peine levés, coins de la bouche détendus), expressivité
+  0,85, chaleur 1,15. Aucune logique faciale propre au coach (règle CLAUDE.md : seulement son profil).
+- **Tests** : `tsc` TEST RÉUSSI ; vitest `src/three` + `src/boot` 769/773 (contrat, regard, comportement, visage du
+  moteur humain : TEST RÉUSSI) ; échecs déjà notés (taille d'Amara, shorts ×2, morphology sous charge). Captures
+  avant/après au repos, concentration et effort. Rien publié.

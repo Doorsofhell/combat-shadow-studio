@@ -39,8 +39,9 @@ const p = (id: string, traits: Partial<BehaviorTraits> = {}, blinkRate = 1, cont
 export const HUMAN_PROFILES: Record<string, HumanProfile> = {
   // Kadir, lutteur patient : visage posé, sourit peu
   'mma-kadir': p('mma-kadir', { expressiveness: 1, warmth: 0.8, stamina: 1.2 }, 0.95),
-  // Amara, frappeuse : expressive à l'effort
-  'mma-amara': p('mma-amara', { expressiveness: 1.1, warmth: 1, stamina: 1 }, 1),
+  // Amara, frappeuse : expressive à l'effort. 2.4.0 (Youssef 24/11 « adoucis son visage et ses expressions ») : visage
+  // doux au repos, effort et concentration moins marqués, sourires un peu plus fréquents
+  'mma-amara': { ...p('mma-amara', { expressiveness: 0.85, warmth: 1.15, stamina: 1 }, 1), faceBase: 'doux' },
   nael: p('nael', { expressiveness: 1, warmth: 1.1, stamina: 1 }, 1.05),
   inaya: p('inaya', { expressiveness: 1.05, warmth: 1, stamina: 1.1 }, 1),
   // 1.43 Victor, vétéran posé : visage calme, sourire rare mais chaleureux, endurant
