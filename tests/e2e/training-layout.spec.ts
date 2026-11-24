@@ -239,8 +239,9 @@ test('demander au coach : pause, réponse hors ligne, ralenti, sans défilement 
 // reachable at every size, big enough for a finger, none cut; the panel is over the coach on purpose (glass).
 test('Caméra : le panneau du coach s’ouvre sur l’angle de vue, tout à portée sans déborder', async ({ page }) => {
   // six sizes, each one reloads the session and measures every control of the panel (about 25 s per size with the
-  // software renderer of the tests): more time, the same checks
-  test.setTimeout(300_000);
+  // software renderer of the tests): more time, the same checks. 2.7: the panel of the session holds « Ton coach » (six
+  // faces) before the advanced options, a little more to scroll and measure: 420 s (5.1 min measured), same checks
+  test.setTimeout(420_000);
   await seed(page);
   for (const s of SIZES) {
     await page.setViewportSize({ width: s.width, height: s.height });
@@ -443,7 +444,7 @@ test('changer de coach pendant l’entraînement : la coach femme s’affiche', 
   await page.setViewportSize({ width: 393, height: 851 });
   await open(page, `/#/entrainement?ex=boxe-debutant-02&mode=technique`);
   await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'homme');
-  // 2.4: the coach is chosen in the coach's panel, « Options avancées »
+  // 2.4: the coach is chosen in the coach's panel; 2.7: in « Ton coach », no longer inside « Options avancées »
   await menuCommand(page, 'options');
   await page.getByTestId('cp-advanced').click();
   // 0.24: the two coaches are named Kadir and Amara

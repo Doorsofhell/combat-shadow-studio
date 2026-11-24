@@ -49,7 +49,7 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
-      version: '2.7.0',
+      version: '2.8.0',
       releaseDate: '2026-11-24',
       title: 'Toutes les fenêtres d’options en verre',
       isMajor: false,
@@ -59,6 +59,18 @@ export const RELEASES: readonly Release[] = (
         { category: 'corrections', text: 'Retour ferme d’abord la fenêtre ouverte et tu restes sur la page. Avant, sur la plupart de ces fenêtres, Retour quittait la page.' },
       ],
       links: [{ label: 'Voir tes progrès', to: '/stats' }],
+    },
+    {
+      version: '2.7.0',
+      releaseDate: '2026-11-24',
+      title: 'Choisir son coach en un geste',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Sur l’Accueil, le bouton « Changer » à côté du nom de ton coach ouvre directement « Ton coach » : les six coachs avec leur visage et leur nom. Touche-en un, il devient ton coach tout de suite.' },
+        { category: 'ameliorations', text: 'Le choix du coach n’est plus caché dans « Options avancées » : il est visible dès l’ouverture des options du coach, sur l’Accueil, la fiche d’une technique et en séance.' },
+        { category: 'ameliorations', text: 'Une seule présentation partout : la même rangée de visages dans les options du coach, Réglages › Mon coach et au premier lancement. Les vignettes de l’écran Coach portent aussi le nom de chaque coach.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
     },
     {
       version: '2.6.0',

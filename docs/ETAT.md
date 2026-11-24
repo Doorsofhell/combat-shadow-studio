@@ -1,16 +1,16 @@
 <!-- GÉNÉRÉ:etat — ne pas modifier à la main, lancer « npm run docs:sync » -->
-# État du projet — version 2.7.0
+# État du projet — version 2.8.0
 
-Dernière version annoncée dans Nouveautés : **2.7.0** du 24 novembre 2026, « Toutes les fenêtres d’options en verre » (124 versions au total).
+Dernière version annoncée dans Nouveautés : **2.8.0** du 24 novembre 2026, « Toutes les fenêtres d’options en verre » (125 versions au total).
 
 ## Version et publication
 
 | Élément | Valeur | Origine |
 | --- | --- | --- |
-| Version de l’application | 2.7.0 | `package.json` (source unique) |
-| Titre de la page, Réglages › À propos, écran de démarrage | v2.7.0 | injectée au build (`vite.config.ts`) |
-| Android versionName / versionCode | 2.7.0 / 20700 | `scripts/android-version.mjs` (x × 10000 + y × 100 + z) |
-| Nouveautés | 2.7.0 | première entrée de `src/domain/releases.ts` |
+| Version de l’application | 2.8.0 | `package.json` (source unique) |
+| Titre de la page, Réglages › À propos, écran de démarrage | v2.8.0 | injectée au build (`vite.config.ts`) |
+| Android versionName / versionCode | 2.8.0 / 20800 | `scripts/android-version.mjs` (x × 10000 + y × 100 + z) |
+| Nouveautés | 2.8.0 | première entrée de `src/domain/releases.ts` |
 | Informations de publication | `version.json` | écrit à chaque build (`tools/build/releaseInfo.ts`) |
 
 Version testable en ligne (GitHub Pages) : https://doorsofhell.github.io/combat-shadow-studio/ ; version réellement déployée : https://doorsofhell.github.io/combat-shadow-studio/version.json

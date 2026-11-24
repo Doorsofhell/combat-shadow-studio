@@ -1,0 +1,174 @@
+/* 2.7 « Un seul sélecteur » : la rangée de coachs commune (panneau, Réglages, premier lancement) */
+.crow {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+.crow-card {
+  appearance: none;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.crow-face {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: #10151d;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.crow-face img {
+  position: absolute;
+  max-width: none;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.crow-name {
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--muted, #a7afbb);
+}
+.crow-card.on .crow-face {
+  border-color: var(--gold, #d4af37);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.45);
+}
+.crow-card.on .crow-name {
+  color: var(--gold, #d4af37);
+}
+.crow-card.mine:not(.on) .crow-face::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold, #d4af37);
+}
+.crow-tick {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--gold, #d4af37);
+  color: #1a1405;
+}
+.crow-card:focus-visible {
+  outline: none;
+}
+.crow-card:focus-visible .crow-face {
+  outline: 2px solid var(--gold, #d4af37);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .crow-face {
+    transition: none;
+  }
+}
+/* the coach screen's strip: each portrait carries its name */
+.star-thumb .star-thumb-name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 2px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  color: #fff;
+  /* an opaque band: the name stays readable (WCAG AA) whatever the portrait behind it */
+  background: rgba(0, 0, 0, 0.82);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+/* Réglages and first launch: the facts of the chosen coach under the row, without the former big portrait */
+.coach-sel .coach-sheet.compact {
+  grid-template-columns: 1fr;
+}
+/* the home: « Changer » next to the coach's name */
+.home-coach-change {
+  appearance: none;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 3px 12px 3px 3px;
+  border-radius: 999px;
+  border: 1px solid var(--gold, #d4af37);
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--gold, #d4af37);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.home-coach-change .crow-face {
+  width: 28px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 0;
+}
+.home-coach-change .crow-face img {
+  object-position: 50% 30%;
+  transform: scale(1.25);
+  transform-origin: 50% 30%;
+}
+.home-coach-change:focus-visible {
+  outline: 2px solid var(--gold, #d4af37);
+  outline-offset: 2px;
+}
+.home-coach-change {
+  pointer-events: auto;
+}
+@media (max-height: 700px) {
+  .home-coach-head:has(.home-coach-change) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .home-coach-change {
+    margin-left: 0;
+  }
+}
+.coach-sheet .coach-measures {
+  margin-top: 2px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+/* the coaches not looked at stay dimmed by their portrait only, never by their name */
+.star-strip .star-thumb,
+.coach-v4 .star-strip .star-thumb {
+  opacity: 1;
+}
+.star-strip .star-thumb:not(.on) img {
+  opacity: 0.75;
+}

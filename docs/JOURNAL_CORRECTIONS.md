@@ -5265,7 +5265,66 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   Playwright Nouveautés (`navigation.spec`) TEST RÉUSSI.
 - **Restauration** : `restauration/avant-panneau-coach-v240` (= 2.4.0, `1684b73`).
 
-## 2026-11-24 · v2.7.0 · Panneaux d’options en verre partout
+## 2026-11-24 · v2.7.0 · Choisir son coach en un geste (option A « Un seul sélecteur, partout »)
+
+- **Demande** (Youssef, 24/11 11:15) : « c’est compliqué de choisir le coach et de le visualiser, je veux que ça soit
+  plus simple ». Audit et trois maquettes (https://claude.ai/artifact/XkbCLkm2M69KAu5ZFSFdDs), option A choisie à
+  12:54.
+- **Constat vérifié sur la 2.6.0 en ligne** (captures 393 × 851) : le même choix existait à quatre endroits avec trois
+  présentations. Accueil : aucun indice qu’on peut changer de coach. Panneau « Options du coach » : choix replié dans
+  « Options avancées », noms seuls sans visage (`CoachPanel.tsx`, `AdvancedSection`). Écran Coach : six vignettes de
+  50 à 56 px sans nom. Réglages › Mon coach et Bienvenue : l’ancien `CoachPicker` (photo fixe et barres de taille et
+  de poids).
+- **Correction** :
+  - un composant commun `src/ui/coach-row/CoachRow.tsx` : six cartes visage + nom, coche sur le coach choisi ; les
+    visages sont de petites images `public/coaches/<id>/visage.webp` (200 × 250, environ 3 Ko) découpées une fois dans
+    chaque portrait par `tools/generator/visages/visages.py` ;
+  - panneau : nouvelle section « Ton coach » (`data-section="coach"`, `cp-coach-<id>`), visible sans rien déplier ; en
+    tête sur l’Accueil, juste avant « Options avancées » sur la fiche et en séance (apprentissage et angle restent en
+    haut) ; « Options avancées » ne contient plus le coach ; nouveau `PanelSection` `'coach'` ;
+  - Accueil : bouton « Changer » (visage + mot) à côté du nom, ouvre le panneau sur « Ton coach »
+    (`home-change-coach`) ; `CoachScreen` : le toucher sur le coach ouvre le panneau tenu par l’écran quand il en
+    fournit un (`ui`) ;
+  - Réglages et Bienvenue : `CoachPicker` utilise la même rangée ; fiche compacte (nom, surnom, style, taille et
+    poids sur une ligne, garde, points forts), sans la grande photo ni les barres ;
+  - écran Coach : chaque vignette porte le nom du coach sur un bandeau opaque (même hauteur 50/56 px) ; les vignettes
+    non regardées sont assombries par leur image seule, jamais par leur nom (contraste AA).
+- **Inchangé** : coachs, visages, tenues, animations ; coach enregistré au même endroit (`profile.coach`,
+  `profile.champion`), aucune migration ; règles d’ouverture et de fermeture du panneau 2.6.0.
+- **Limite connue** : sur l’Accueil, le panneau couvre la zone du coach ; le nom et le surnom changent tout de suite,
+  la 3D se voit en fermant le panneau ou avec « Voir les coachs en grand ».
+- **Fichiers** : `src/ui/coach-row/CoachRow.tsx`, `src/ui/coach-row/coach-row.css`,
+  `src/ui/coach-panel/CoachPanel.tsx`, `src/ui/coach-panel/coach-panel.css`, `src/ui/coach-screen/CoachScreen.tsx`,
+  `src/ui/screens/Home.tsx`, `src/ui/screens/CoachSelect.tsx`, `src/domain/releases.ts`, `package.json`,
+  `public/coaches/*/visage.webp`, `tools/generator/visages/visages.py`,
+  `scripts/dev/shot-choix-coach-audit.mjs`, `scripts/dev/shot-choix-coach-apres.mjs`.
+- **Tests ajoutés** : `tests/e2e/choix-coach-v270.spec.ts` (5 : Changer en un geste et coach changé, toucher sur le
+  coach, ordre des sections sur la fiche, Réglages et premier lancement, noms de l’écran Coach).
+- **Tests adaptés, avec raison** (le coach n’est plus dans « Options avancées », choix A de Youssef) :
+  `outfit-loading` (coach choisi dans « Ton coach »), `coachs-v160` (« Changer » de l’Accueil, puis « Voir les coachs
+  en grand »), `training-layout` « Caméra » (commentaire ; délai porté de 300 à 420 s : le panneau de la séance a une
+  section de plus, mesuré 5,1 min sur la machine de test, mêmes vérifications). Aucun test supprimé.
+- **Résultats** :
+  - `npx tsc -b` et `npm run build` : TEST RÉUSSI ;
+  - `npx vitest run` : 1 844 TEST RÉUSSI, 4 TEST ÉCHOUÉ identiques sur la 2.6.0 non modifiée (fluidity ×2,
+    hooks-biomeca « pas d’armé », expressions-v1160 taille du modèle d’Amara), 1 ignoré ;
+  - `choix-coach-v270` (5) : TEST RÉUSSI ;
+  - Playwright complet (326) : arrêté par la limite de 90 min de la session à 318/326 ; 8 TEST ÉCHOUÉ au premier
+    passage. Deux venaient de ce lot et sont corrigés : contraste des noms sur les vignettes de l’écran Coach (bandeau
+    opaque) puis TEST RÉUSSI ; la relance ciblée (50 : nouveaux tests, contraste, panneau-coach, coachs-v160,
+    outfit-loading, selection-coach-v4, visuels-studio, training-layout complet dont les 8 tests non atteints) : 45
+    TEST RÉUSSI ;
+  - TEST ÉCHOUÉ aussi sur un build de la 2.6.0 non modifiée, relancé le même jour sur la même machine (lente : environ
+    300 ms par image du coach) : panneau-coach:329 (fluidité, 333 ms sur la 2.6.0), selection-coach-v4:56 (géométries
+    34 > 23 sur la 2.6.0), boot:98 (3D de la séance en plus de 20 s) ; déjà connus avant : coach-suggest:147,
+    coaching-hud:60 ; encyclopedie:54 TEST RÉUSSI en relance ;
+  - training-layout:240 (Caméra, six tailles) : TEST ÉCHOUÉ par délai à 300 s, TEST RÉUSSI en 5,1 min avec toutes ses
+    vérifications ; délai porté à 420 s ;
+  - téléphone Android réel : NON EXÉCUTÉ.
+- **Captures** : `/mnt/project-files/combat-shadow-studio/maquettes/choix-coach-2026-11-24/` (avant) et `.../apres/`.
+- **Restauration** : `restauration/avant-choix-coach-v260` (= 2.6.0, `1707e71`).
+
+## 2026-11-24 · v2.8.0 · Panneaux d’options en verre partout
 
 - **Demande** (Youssef, 24/11 09:50 : « je veux ce type de panneau partout dans l'application quand on ouvre des
   options », puis « OK ») : le verre du panneau « Options du coach » (2.6.0) sur toutes les fenêtres d’options, avec
@@ -5325,6 +5384,9 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - téléphone Android réel : NON EXÉCUTÉ.
 - **Captures** : `/mnt/project-files/combat-shadow-studio/maquettes/panneaux-verre-2026-11-24/` (`avant/`, `apres/`,
   `cote/`), 11 fenêtres × jour et nuit à 360 × 780 ; script `scripts/dev/shot-sheets.mjs`.
-- **Restauration** : `restauration/avant-panneaux-verre-v260` (= 2.6.0, `1707e71`).
-- **Publication 2.7.0** (Youssef, 24/11 17:20 : « Je valide ») : `package.json` 2.7.0, note dans `src/domain/releases.ts`,
-  `npm run docs:sync`.
+- **Restauration** : `restauration/avant-panneaux-verre-v260` (= 2.6.0, `1707e71`) ; avant la publication : 2.7.0 `f77a6fb`.
+- **Publication 2.8.0** (Youssef, 24/11 17:20 : « Je valide ») : la 2.7.0 (choix du coach, #152) a été fusionnée
+  entre-temps, ce lot devient donc la 2.8.0 ; base 2.7.0 fusionnée dans la branche ; `package.json` 2.8.0, note dans `src/domain/releases.ts`,
+  `npm run docs:sync` ; après fusion de la 2.7.0 : `tsc` TEST RÉUSSI, Vitest `src/domain`, `src/store`, `src/ui` 440 TEST
+  RÉUSSI, `npm run build` TEST RÉUSSI (version 2.8.0), Playwright `panneaux-verre`, `choix-coach-v270`, `panneau-coach`,
+  `navigation` 52 TEST RÉUSSI.
