@@ -3949,10 +3949,11 @@ C = {
     'nael': dict(boxe=('#F4F4F5', '#1D4E89'), kick=('#1D4E89', '#F4F4F5'), thai=('#0F6B57', '#D4AF37'), mma=('#24344D', '#101521'), gi='#17181C', judo='#1B3F8B', belt='#121212', glove='#1D4E89', glove2='#F4F4F5', rash='#1D4E89', praj='#F4F4F5', mmag=('#1D4E89', '#F4F4F5', '#F4F4F5'), logo='#D4AF37'),
     # 1.19 (Youssef 05/11 « change la couleur »): carbon black and raspberry pink, the CS mark printed in white and pink
     'inaya': dict(boxe=('#D6336C', '#17171C'), kick=('#17171C', '#D6336C'), thai=('#F4F4F5', '#D6336C'), mma=('#17171C', '#D6336C'), gi='#1B3F8B', judo='#1B3F8B', belt='#121212', glove='#D6336C', glove2='#17171C', rash='#D6336C', praj='#D6336C', mmag=('#17171C', '#D6336C', '#D6336C'), logo='#D6336C'),
+    # 2.4.0 prototype 2 (planche de Youssef 20/11) : MMA noir à liserés et sangles jaunes
     # Victor (essai, planches de Youssef 2026-11-14): noir partout, liseré blanc/argent, kick-boxing noir et rouge, kimono bleu marine
     # 1.51 Kanya (planches de Youssef 2026-11-15) : noir et or, rouge des bandages et des Pra Jiad ; kimono de JJB noir
     'kanya': dict(boxe=('#141519', '#C9A23A'), kick=('#141519', '#B3122A'), thai=('#141519', '#C9A23A'), mma=('#141519', '#C9A23A'), gi='#141519', judo='#F7F6F2', belt='#121212', glove='#141519', glove2='#B3122A', rash='#141519', praj='#B3122A', mmag=('#141519', '#141519', '#C9A23A'), logo='#C9A23A'),
-    'victor': dict(boxe=('#141519', '#141519'), kick=('#141519', '#B3122A'), thai=('#141519', '#C9CCD1'), mma=('#1A1B1F', '#3A3D43'), gi='#232A3A', judo='#F7F6F2', belt='#1D1F1A', glove='#141519', glove2='#F4F4F5', rash='#141519', praj='#E4E4E0', mmag=('#141519', '#141519', '#3A3D43'), logo='#C9CCD1'),
+    'victor': dict(boxe=('#141519', '#141519'), kick=('#141519', '#B3122A'), thai=('#141519', '#C9CCD1'), mma=('#141519', '#E0B526'), gi='#232A3A', judo='#F7F6F2', belt='#1D1F1A', glove='#141519', glove2='#F4F4F5', rash='#141519', praj='#E4E4E0', mmag=('#141519', '#E0B526', '#3A3D43'), logo='#C9CCD1'),
 }[os.environ.get('PALETTE') or sex]
 # 1.12 (Youssef, 04/11, decision « Brassière sans bretelles au cou »): Inaya's boxing and kick-boxing tops are bandeaus;
 # her sports body's halter straps run round the neck and a strapped bra copied over them came out torn there

@@ -97,20 +97,33 @@ def main(cfg):
     lim = C.get('shape_max', 0.006)
     nrm = np.linalg.norm(dxy, axis=1, keepdims=True); dxy = dxy * np.minimum(1, lim / np.maximum(nrm, 1e-9))
     anc = np.array([i for i in EYE_ANCHOR if ok[i]])
+    # profondeur (prototype 2) : même estimateur MediaPipe sur le rendu du modèle et sur l'image, ramené en mètres et
+    # centré sur les yeux ; le modèle regarde vers +Z, MediaPipe compte la profondeur vers la caméra en négatif
+    az = C.get('profondeur', 0.0)
+    if az:
+        sref = np.sqrt(abs(np.linalg.det(A2)))
+        zr = Lr[:, 2] / sref; zm = Lm[:, 2] * px
+        zr = zr - zr[anc].mean(); zm = zm - zm[anc].mean()
+        dz = -(zr[sh] - zm[sh]) * az
+        dz = np.clip(dz, -lim, lim)
+        print('profondeur : écart moyen (mm)', round(float(np.abs(dz).mean() * 1000), 2), 'max', round(float(np.abs(dz).max() * 1000), 2))
+    else:
+        dz = np.zeros(len(sh))
+    dxy = np.hstack([dxy, dz[:, None]])
     src = np.vstack([X3[sh, :2], X3[anc, :2]])
-    dst = np.vstack([dxy, np.zeros((len(anc), 2))])
+    dst = np.vstack([dxy, np.zeros((len(anc), 3))])
     # anneau de points fixes autour du visage (crâne, oreilles, cou)
     cx = 0.0; cy = ey - 0.035
     ring = np.array([[cx + 0.11 * np.cos(t), cy + 0.14 * np.sin(t)] for t in np.linspace(0, 2 * np.pi, 24, endpoint=False)])
-    src = np.vstack([src, ring]); dst = np.vstack([dst, np.zeros((len(ring), 2))])
+    src = np.vstack([src, ring]); dst = np.vstack([dst, np.zeros((len(ring), 3))])
     tps = RBFInterpolator(src, dst, kernel='thin_plate_spline', smoothing=C.get('shape_smooth', 2e-5))
     chin_y = X3[152, 1]
     def field(P, N):
         wv = smooth(-0.1, 0.45, N[:, 2]) * smooth(chin_y - 0.025, chin_y - 0.002, P[:, 1]) * smooth(ez - 0.06, ez - 0.02, P[:, 2])
-        D = np.zeros_like(P); D[:, :2] = tps(P[:, :2]) * wv[:, None]
+        D = tps(P[:, :2]) * wv[:, None]
         # garde-fou : les globes et le pourtour immédiat des yeux ne bougent pas (os LeftEye/RightEye inchangés)
         for e in ('LeftEye', 'RightEye'):
-            D *= smooth(0.016, 0.026, np.linalg.norm(P - J[e], axis=1))[:, None]
+            D *= smooth(*C.get('oeil', (0.016, 0.026)), np.linalg.norm(P - J[e], axis=1))[:, None]
         P1 = P + D
         gn0 = vertex_normals(P, T); gn1 = vertex_normals(P1, T)
         N1 = N + (gn1 - gn0); N1 /= np.maximum(np.linalg.norm(N1, axis=1, keepdims=True), 1e-12)
@@ -120,7 +133,7 @@ def main(cfg):
     P1, N1, D = field(P0, N0)
     print('déplacement max (mm)', round(float(np.abs(D).max() * 1000), 2), 'points bougés', int((np.linalg.norm(D, axis=1) > 1e-5).sum()))
     # repères déplacés par le même champ, caméra réajustée
-    X3b = X3.copy(); X3b[:, :2] += tps(X3[:, :2]) * smooth(chin_y - 0.025, chin_y - 0.002, X3[:, 1])[:, None]
+    X3b = X3.copy(); X3b += tps(X3[:, :2]) * smooth(chin_y - 0.025, chin_y - 0.002, X3[:, 1])[:, None]
     M = fit_affine(X3b[base_idx], Lr[base_idx, :2])
     sh_res = np.linalg.norm(proj(M, X3b[sh]) - Lr[sh, :2], axis=1).mean()
     print('écart des repères de forme après (px)', round(float(sh_res), 2), 'avant', round(float(np.linalg.norm(r, axis=1).mean()), 2))
@@ -171,7 +184,17 @@ def main(cfg):
     m0 = t2[sel].mean(0)
     lo = m0 + (lo - m0) * C.get('contraste', 0.8)
     g0 = lo @ np.array([0.3, 0.59, 0.11]); lo = g0[..., None] + (lo - g0[..., None]) * C.get('saturation', 0.85)
-    face = np.clip(lo + hi * C.get('detail', 1.0), 0, 1)
+    if C.get('bande'):
+        # prototype 2 : de l'image on ne prend que les traits (bande de fréquences moyennes : sourcils, cils, lèvres,
+        # plis) et la couleur locale ; l'ombrage d'ensemble vient de la peau du modèle, elle-même aplatie (pas d'ombres
+        # cuites autour des yeux ni de visage « durci »)
+        s2 = C.get('bande_large', 36)
+        bl = nd.gaussian_filter(t2, (s2, s2, 0))
+        bl = m0 + (bl - m0) * C.get('aplat', 0.55)
+        band = lo - nd.gaussian_filter(lo, (s2, s2, 0))
+        face = np.clip(bl + band * C.get('bande', 1.0) + hi * C.get('detail', 1.0), 0, 1)
+    else:
+        face = np.clip(lo + hi * C.get('detail', 1.0), 0, 1)
     outt = t2 * (1 - W[..., None]) + face * W[..., None]
     if C.get('poivre_sel'):
         # cheveux et barbe poivre et sel (planche de Victor) : texels sombres hors du visage projeté, plus clairs sur
@@ -181,7 +204,7 @@ def main(cfg):
         dark = smooth(0.30, 0.16, l) * VM * (~VE)
         y = PM[..., 1]; x = np.abs(PM[..., 0]); zf = PM[..., 2]
         top = smooth(ey + 0.07, ey + 0.11, y)
-        side = smooth(0.035, 0.07, x) * smooth(ey - 0.06, ey - 0.02, y)
+        side = smooth(0.035, 0.07, x) * smooth(ey - 0.06, ey - 0.02, y) * smooth(ey + 0.075, ey + 0.045, y)
         beard = smooth(ey - 0.04, ey - 0.07, y)
         amt = dark * np.clip(ps.get('tempes', 0.75) * side + ps.get('dessus', 0.35) * top + ps.get('barbe', 0.6) * beard * (1 - W), 0, 1)
         rng = np.random.default_rng(7)
@@ -213,6 +236,22 @@ def main(cfg):
         l = (outt @ np.array([0.3, 0.59, 0.11]))[..., None]
         col = np.clip(l / (tgt @ np.array([0.3, 0.59, 0.11])) * tgt, 0, 1)
         outt = outt * (1 - a) + col * a
+    if C.get('raccord_cou'):
+        # 2.4.0 prototype 2 : le visage (et le crâne) ramenés sur le teint du cou, lui-même raccordé au corps ; le gain
+        # par canal retire aussi la dominante rouge-orange du visage (Youssef 20/11 14:30) ; il s'efface vers le cou
+        y = PM[..., 1]
+        neck = VM * (~VE) * smooth(chin_y - 0.075, chin_y - 0.06, y) * smooth(chin_y - 0.025, chin_y - 0.04, y)
+        lum0 = outt @ np.array([0.3, 0.59, 0.11])
+        neck = (neck > 0.5) & (lum0 > 0.12)
+        fsel = (W > 0.6) & (lum0 > 0.12)
+        gn = outt[neck].mean(0) / np.maximum(outt[fsel].mean(0), 1e-4)
+        # le visage, tourné un peu vers le bas, reçoit moins la lumière haute de la scène que le cou et le buste : un
+        # supplément mesuré à l'écran (captures du Lab) le ramène au teint du buste
+        gn = gn * C.get('raccord_plus', 1.0)
+        gn = 1 + (np.clip(gn, 0.7, 1.6) - 1) * C['raccord_cou']
+        print('raccord du cou', gn.round(3))
+        ramp = smooth(chin_y - 0.03, chin_y + 0.01, y)[..., None] * (~VE)[..., None]
+        outt = np.clip(outt * (1 + (gn - 1) * ramp), 0, 1)
     np.save(C['work'] + '-poids.npy', W.astype(np.float16))
     Image.fromarray((outt * 255).astype(np.uint8)).save(C['work'] + '-tete.png')
     # corps : même gain (raccord du cou)

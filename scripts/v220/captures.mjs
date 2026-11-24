@@ -14,6 +14,7 @@ export const VIEWS = {
   '03-profil-droit': `d=mma&rest=1&az=-90&el=6&span=1.08&fy=0.92&${L}`,
   '04-dos': `d=mma&rest=1&az=180&el=6&span=1.08&fy=0.92&${L}`,
   '05b-visage-face': `d=mma&rest=1&az=0&el=2&span=0.13&fy=1.66&${L}`,
+  '05c-visage-profil': `d=mma&rest=1&az=90&el=2&span=0.13&fy=1.66&${L}`,
   '05-visage': `d=mma&rest=1&az=18&el=4&span=0.15&fy=1.63&${L}`,
   '06-torse-epaules-cou': `d=mma&rest=1&az=20&el=6&span=0.36&fy=1.30&${L}`,
   '07-abdomen-bassin-hanches': `d=mma&rest=1&az=25&el=4&span=0.34&fy=1.05&${L}`,
@@ -25,6 +26,8 @@ export const VIEWS = {
   '13-coup-de-pied': `tech=middle-kick-arriere&d=muaythai&at=1&az=40&el=8&${L}`,
   '14-tenue-judo-mouvement': `d=judo&frame=1&motion=garde&az=30&el=8&${L}`,
   '15-dos-garde': `d=mma&frame=1&motion=garde&az=200&el=10&${L}`,
+  '16-amenee': `tech=double-leg&d=mma&at=1&az=60&el=8&${L}`,
+  '05d-visage-trois-quarts': `d=mma&rest=1&az=35&el=2&span=0.13&fy=1.66&${L}`,
 };
 // hauteur visée proportionnelle à la taille mesurée du modèle (scripts/v220/anatomie.py), calée sur Kadir
 const SCALE = { 'mma-kadir': 1, victor: 1, nael: 0.998, 'mma-amara': 0.958, inaya: 0.96, kanya: 0.9375 };

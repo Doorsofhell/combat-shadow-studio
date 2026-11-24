@@ -81,12 +81,12 @@ class Glb:
         return {nd.get('name', str(i)): world(i)[:3, 3] for i, nd in enumerate(nodes)}
 
 
-def save(g, path, new_acc=None, new_img=None):
+def save(g, path, new_acc=None, new_img=None, new_views=None):
     """réécrit le glb : accesseurs remplacés (même nombre d'éléments, même type) et images remplacées (octets)"""
     import copy
     new_acc = new_acc or {}; new_img = new_img or {}
     j = copy.deepcopy(g.j)
-    view_data = {}
+    view_data = dict(new_views or {})
     for ai, arr in new_acc.items():
         a = j['accessors'][ai]
         bv = j['bufferViews'][a['bufferView']]

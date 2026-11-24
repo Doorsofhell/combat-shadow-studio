@@ -1,0 +1,40 @@
+{
+ "task": "$TRAVAIL/face_landmarker.task",
+ "src": "_ARCHIVES_HORS_APPLICATION/anciens-modeles-3d/avant-coachs-fideles-v240/public/coaches/mma-amara/photo.glb",
+ "ref": "tools/generator/fideles/references/amara-planche.png",
+ "ref_box": [
+  1250,
+  40,
+  1530,
+  295
+ ],
+ "work": "$TRAVAIL/w2/amara",
+ "out": [
+  {
+   "path": "$TRAVAIL/w2/amara-photo.glb"
+  },
+  {
+   "from": "_ARCHIVES_HORS_APPLICATION/anciens-modeles-3d/avant-coachs-fideles-v240/public/coaches/mma-amara/photo-clean.glb",
+   "path": "$TRAVAIL/w2/amara-photo-clean.glb"
+  }
+ ],
+ "tone_amount": 0.0,
+ "delight": 1.0,
+ "mask_erode": 10,
+ "shape": 1.0,
+ "shape_max": 0.009,
+ "facing": [
+  0.15,
+  0.5
+ ],
+ "profondeur": 0.8,
+ "oeil": [
+  0.012,
+  0.02
+ ],
+ "bande": 1.0,
+ "contraste": 0.9,
+ "saturation": 0.8,
+ "raccord_cou": 1.0,
+ "raccord_plus": 1.3
+}
