@@ -8,6 +8,7 @@ import { useProfile } from '../../store/profile';
 import { GROUND_MARK_LABEL, GroundMarkId, useSettings } from '../../store/settings';
 import { AppIcon } from '../icons';
 import { pickChampion, useChosenCoach } from '../screens/CoachSelect';
+import { CoachRow } from '../coach-row/CoachRow';
 import './coach-panel.css';
 
 /**
@@ -49,7 +50,8 @@ export interface CoachPanelConfig {
   advanced?: { coach?: boolean; guard?: boolean; groundMarks?: boolean; announce?: boolean; impacts?: boolean };
 }
 
-export type PanelSection = 'camera';
+/** 2.7: 'coach' opens it on « Ton coach » (the home's « Changer ») */
+export type PanelSection = 'camera' | 'coach';
 
 export const speedLabel = (v: number) => `×${String(Math.round(v * 100) / 100).replace('.', ',')}`;
 
@@ -203,6 +205,7 @@ function PanelView({ closing, onClose, config, section, title }: { closing: bool
   };
 
   const c = config;
+  const coachFirst = !!c.advanced?.coach && !(c.learning && c.learning.items.length > 0) && !c.camera;
   return (
     <div className={`cpn-root${closing ? ' closing' : ''}${lite ? ' lite' : ''}`} data-testid="coach-panel-root" data-state={closing ? 'closing' : 'open'}>
       <div
@@ -242,6 +245,9 @@ function PanelView({ closing, onClose, config, section, title }: { closing: bool
             </header>
           </div>
           <div className="cpn-body" ref={body}>
+            {/* 2.7 (option A « Un seul sélecteur »): the coach is no longer folded in « Options avancées »: first on a
+                screen without technique to rate or camera (the home), else just before the advanced options */}
+            {coachFirst && <CoachSection leaveTo={leaveTo} />}
             {c.learning && c.learning.items.length > 0 && <LearningSection items={c.learning.items} current={c.learning.current ?? null} />}
             {c.camera && <CameraSection cam={c.camera} />}
             {c.speed && <SpeedSection speed={c.speed} />}
@@ -262,6 +268,7 @@ function PanelView({ closing, onClose, config, section, title }: { closing: bool
                 )}
               </div>
             )}
+            {c.advanced?.coach && !coachFirst && <CoachSection leaveTo={leaveTo} />}
             {c.advanced && <AdvancedSection adv={c.advanced} leaveTo={leaveTo} />}
           </div>
         </section>
@@ -473,43 +480,46 @@ function AudioSection() {
   );
 }
 
+/**
+ * 2.7 (Youssef, 2026-11-24, option A « Un seul sélecteur, partout »): « Ton coach », the row of coaches with their face
+ * and name. A touch changes the coach at once: the coach behind the glass is the new one, seen in 3D before closing.
+ */
+function CoachSection({ leaveTo }: { leaveTo: (to: string) => void }) {
+  const chosen = useChosenCoach();
+  const coach = ALL_COACHES.find((c) => c.id === chosen);
+  return (
+    <div className="cpn-sec" data-section="coach" data-testid="cp-coach">
+      <div className="cpn-lab">
+        <AppIcon id="fighter" size={18} />
+        <span>Ton coach</span>
+        <small className="cpn-coach-nick">{coach ? `« ${coach.nickname} »` : ''}</small>
+      </div>
+      <CoachRow value={chosen} onPick={pickChampion} testIdOf={(c) => `cp-coach-${c.id}`} label="Coach" />
+      <button type="button" className="cpn-link" onClick={() => leaveTo('/coach')} data-testid="cp-coach-gallery">
+        Voir les coachs en grand
+        <AppIcon id="chevron" size={14} />
+      </button>
+    </div>
+  );
+}
+
+/** 2.7: « Options avancées » no longer holds the coach (CoachSection) */
 function AdvancedSection({ adv, leaveTo }: { adv: NonNullable<CoachPanelConfig['advanced']>; leaveTo: (to: string) => void }) {
   const [open, setOpen] = useState(false);
-  const chosen = useChosenCoach();
   const guard = useProfile((s) => s.profile.guard);
   const update = useProfile((s) => s.update);
   const settings = useSettings((s) => s.settings);
   const set = useSettings((s) => s.set);
-  const coach = ALL_COACHES.find((c) => c.id === chosen);
   return (
     <div className="cpn-sec" data-section="advanced">
       <button type="button" className="cpn-lab cpn-fold" aria-expanded={open} onClick={() => setOpen(!open)} data-testid="cp-advanced">
         <AppIcon id="settings" size={18} />
         <span>Options avancées</span>
-        <small>
-          {coach?.name ?? ''}
-          {adv.guard ? ` · ${guard === 'gaucher' ? 'gaucher' : 'orthodoxe'}` : ''}
-        </small>
+        <small>{adv.guard ? (guard === 'gaucher' ? 'gaucher' : 'orthodoxe') : ''}</small>
         <AppIcon id="chevronDown" size={16} className="cpn-turn" />
       </button>
       {open && (
         <div className="cpn-adv" data-testid="cp-advanced-body">
-          {adv.coach && (
-            <div className="cpn-group">
-              <span className="cpn-cap">Coach</span>
-              <div className="cpn-chips" role="radiogroup" aria-label="Coach">
-                {ALL_COACHES.map((c) => (
-                  <button key={c.id} type="button" role="radio" aria-checked={chosen === c.id} className={`cpn-chip${chosen === c.id ? ' on' : ''}`} onClick={() => pickChampion(c)} data-testid={`cp-coach-${c.id}`}>
-                    {c.name}
-                  </button>
-                ))}
-              </div>
-              <button type="button" className="cpn-link" onClick={() => leaveTo('/coach')} data-testid="cp-coach-gallery">
-                Voir les coachs en détail
-                <AppIcon id="chevron" size={14} />
-              </button>
-            </div>
-          )}
           {adv.guard && (
             <div className="cpn-group">
               <span className="cpn-cap">Garde</span>

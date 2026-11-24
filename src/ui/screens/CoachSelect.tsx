@@ -11,6 +11,7 @@ import { playerSteps } from '../training/plan';
 import { NavIcon } from '../nav/NavIcon';
 import { chooseCoach } from '../components/fighter';
 import { AppIcon } from '../icons';
+import { CoachRow } from '../coach-row/CoachRow';
 
 /** the four coaches (Kadir, Naël, Amara, Inaya; 1.37: Axel and Kaila removed). The stored coach stays 'homme' / 'femme', the profile's
  * `champion` names the coach of that body type. */
@@ -29,8 +30,6 @@ export function pickChampion(c: ChampionCoach) {
   st.update({ coach: c.coach, champion: c.id });
 }
 
-const heightM = (h: string) => Number(h.replace(/[^0-9,]/g, '').replace(',', '.'));
-const pct = (x: number, lo: number, hi: number) => Math.max(4, Math.min(100, ((x - lo) / (hi - lo)) * 100));
 
 /**
  * 1.13 (Youssef 2026-11-04, option B: « des barres comme des barres de progression pour les habiletés, poids,
@@ -46,57 +45,18 @@ export function CoachPicker({ value, onChange }: { value?: string | null; onChan
   const c = ALL_COACHES.find((x) => x.id === current) ?? null;
   return (
     <div className="coach-sel">
-      <div className="coach-pick" role="radiogroup" aria-label="Choix du coach">
-        {ALL_COACHES.map((x) => {
-          const on = current === x.id;
-          return (
-            <button
-              key={x.id}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              aria-label={`${x.name} « ${x.nickname} »`}
-              className={`coach-card ${on ? 'on' : ''}`}
-              onClick={() => (onChange ?? pickChampion)(x)}
-              data-testid={testIdOf(x)}
-            >
-              <img src={x.portrait} alt="" loading="eager" />
-              <span className="lbl">{x.name}</span>
-              {on && (
-                <span className="tick" aria-hidden>
-                  <AppIcon id="check" size={12} />
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* 2.7 (option A « Un seul sélecteur, partout »): the same row of faces and names as the coach's panel */}
+      <CoachRow value={current} mine={value === undefined ? null : stored} onPick={(x) => (onChange ?? pickChampion)(x)} testIdOf={testIdOf} />
       {c ? (
-        <section className="coach-sheet" data-testid={`coach-details-${c.id}`} aria-live="polite" aria-label={`Fiche de ${c.name}`}>
-          <img src={c.portrait} alt="" />
+        <section className="coach-sheet compact" data-testid={`coach-details-${c.id}`} aria-live="polite" aria-label={`Fiche de ${c.name}`}>
           <div className="who">
             <span className="name">{c.name}</span>
             <span className="nick">« {c.nickname} »</span>
             <span className="style">{c.style}</span>
-            <span className="gab">
-              <span className="row">
-                <b>Taille</b>
-                <span>{c.height}</span>
-              </span>
-              <span className="bar" aria-hidden>
-                <span style={{ width: `${pct(heightM(c.height), 1.5, 2.0)}%` }} />
-              </span>
-              {c.weightKg ? (
-                <>
-                  <span className="row">
-                    <b>Poids</b>
-                    <span>{c.weightKg} kg</span>
-                  </span>
-                  <span className="bar" aria-hidden>
-                    <span style={{ width: `${pct(c.weightKg, 45, 105)}%` }} />
-                  </span>
-                </>
-              ) : null}
+            {/* 2.7: height and weight on one line (the former bars took the room of the faces above) */}
+            <span className="coach-measures num-figure">
+              {c.height}
+              {c.weightKg ? ` · ${c.weightKg} kg` : ''}
             </span>
           </div>
           {/* 1.32.0 (Youssef, 2026-11-11): the bars « profil de style sur 10 » were estimates, not measures: the sheet
@@ -334,6 +294,10 @@ export function CoachSelect() {
           return (
             <button key={x.id} type="button" role="radio" aria-checked={on} aria-label={`${x.name} « ${x.nickname} »${chosen === x.id ? ', ton coach' : ''}`} className={`star-thumb ${on ? 'on' : ''} ${chosen === x.id ? 'mine' : ''}`} onClick={() => show(x.id)} data-testid={testIdOf(x)}>
               <img src={x.portrait} alt="" loading="eager" />
+              {/* 2.7 (option A « Un seul sélecteur »): each portrait carries the coach's name */}
+              <span className="star-thumb-name" aria-hidden>
+                {x.name}
+              </span>
               {on && (
                 <span className="tick" aria-hidden>
                   <AppIcon id="check" size={12} />

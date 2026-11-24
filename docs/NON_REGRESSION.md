@@ -33,6 +33,7 @@ chaque lot, point de restauration, rapport (TEST RÉUSSI / ÉCHOUÉ / NON EXÉCU
 | `restauration/avant-play-store-v231` | `6e139eb` (2.3.0) | Avant la version Google Play 2.3.1 (build AAB signé, contrôles Play Store, permission VIBRATE, politique publique) |
 | `restauration/avant-version-unique-v233` | `d5b3b9b` (2.3.2) | Avant la source unique de version et la documentation générée (2.3.3) |
 | `restauration/avant-panneau-coach-v240` | `1684b73` (2.4.0) | Avant le panneau « Options du coach » (expérimental, branche `claude/project-thread-kn0nc0`) |
+| `restauration/avant-choix-coach-v260` | `1707e71` (2.6.0) | Avant « Choisir son coach en un geste » (option A, branche `claude/project-thread-fm0ib9`) |
 
 Les étiquettes Git (tags) ne passent pas par le proxy de l’environnement : chaque point de restauration est donc une
 branche `restauration/...` sur GitHub. Retour arrière : `git checkout restauration/<nom>`.
@@ -121,6 +122,7 @@ décrivent l'état de référence d'origine (historique).
 | Coachs 3D | (1.37.0) Un seul rendu Ultra-réaliste, quatre coachs Rocketbox ; anciens réglages (style, « Précédente ») et anciens choix Axel / Kaila convertis sans perte ; chevilles dans les amplitudes ; vignettes du choix de coach sur une ligne, rotation gauche-droite seulement | `ankle-range.test`, `settings-style.test`, `contract.test`, `coach-render.spec`, `coachs-v160.spec`, `moteur-lumiere.spec` | captures de la PR 1.37.0 |
 | Retour avec modifications non enregistrées (2.3.5) | Créateur d’enchaînements : Retour du téléphone, geste retour et Retour du navigateur ferment d’abord un panneau, puis demandent ; un deuxième Retour garde le brouillon ; seul « Abandonner » sort ; sans modification, sortie directe ; après Enregistrer, pas de retour dans l’éditeur | `retour-createur.spec` (5), `leave-guard-android.test` (3), `createur-v2.spec` | – |
 | Panneau « Options du coach » (2.4, expérimental) | Un toucher court ouvre, glisser / pincer / double toucher non ; aucun bouton de réglage sur le coach fermé ; fermeture par toucher à côté (sans traverser), poignée, Retour, Échap ; choix appliqués sans fermer ; séance jamais mise en pause ; statuts Acquis / Encore du mal / En apprentissage identiques partout, anciens gardés, sans XP ; 360 × 640 sans coupure | `panneau-coach.spec` (10), `ecran-coach-v140.spec`, `mastery.spec`, `mastery.test`, `training-layout.spec` (Caméra, Auto) | `maquettes/panneau-coach-2026-11-24/` |
+| Choix du coach en un geste (2.7) | « Changer » de l’Accueil ouvre « Ton coach » ; six visages avec leur nom, la même rangée dans le panneau, Réglages et Bienvenue ; le coach change aussitôt et reste après rechargement ; « Ton coach » jamais replié dans « Options avancées » ; vignettes de l’écran Coach nommées, contraste AA | `choix-coach-v270.spec` (5), `coachs-v160.spec`, `outfit-loading.spec`, `contrast.spec`, `training-layout.spec` | `maquettes/choix-coach-2026-11-24/` |
 | Réalité augmentée | Démarrage, refus, arrêt caméra | `ar.test` | non applicable sans appareil |
 
 Commandes : `npx tsc -b`, `npx vitest run`, `npx vite build` puis

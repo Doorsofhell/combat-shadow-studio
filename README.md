@@ -1,7 +1,7 @@
 # Combat Shadow Studio
 
 <!-- GÉNÉRÉ:presentation — ne pas modifier à la main, lancer « npm run docs:sync » -->
-Version **2.6.0** (24 novembre 2026) : Un seul panneau d’options pour le coach. Version testable en ligne : https://doorsofhell.github.io/combat-shadow-studio/
+Version **2.7.0** (24 novembre 2026) : Choisir son coach en un geste. Version testable en ligne : https://doorsofhell.github.io/combat-shadow-studio/
 
 Application d’entraînement solo en shadow boxing, guidée par un coach 3D, pour six disciplines :
 boxe anglaise, kick-boxing, MMA, muay-thaï, jiu-jitsu brésilien et judo, sur quatre niveaux (débutant, intermédiaire, avancé, expert).

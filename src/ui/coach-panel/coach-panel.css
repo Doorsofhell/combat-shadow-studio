@@ -474,3 +474,28 @@
   padding: 0;
   cursor: pointer;
 }
+
+/* 2.7 « Ton coach » (option A, Youssef 2026-11-24): the row of coaches, visible without unfolding anything */
+.cpn-sec[data-section='coach'] {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cpn-coach-nick {
+  margin-left: auto;
+  color: var(--cpn-muted);
+  font-weight: 500;
+  font-size: 0.82em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cpn-sec[data-section='coach'] .cpn-link {
+  align-self: flex-start;
+}
+.cpn .crow-name {
+  color: var(--cpn-muted);
+}
+.cpn .crow-card.on .crow-name {
+  color: var(--gold, #d4af37);
+}
