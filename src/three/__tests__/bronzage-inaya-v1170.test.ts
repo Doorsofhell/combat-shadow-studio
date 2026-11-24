@@ -16,7 +16,8 @@ describe('bronzage léger d’Inaya', () => {
   });
   test('les autres coachs ne changent pas', () => {
     for (const [id, l] of Object.entries(SKIN_LOOK)) {
-      if (id === 'inaya') continue;
+      // 2.4.0 prototype 2 : Amara et Victor recalibrés à la demande de Youssef (dominante orange retirée, journal 2.4.0)
+      if (id === 'inaya' || id === 'mma-amara' || id === 'victor') continue;
       expect([l.sat ?? 1, l.gain ?? 1, l.warm ?? 0], id).toEqual([1, 1, 0]);
     }
   });

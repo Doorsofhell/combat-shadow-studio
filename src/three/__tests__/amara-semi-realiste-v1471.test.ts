@@ -7,18 +7,20 @@ import { dressOutfitMaterial } from '../outfit';
 /** 1.47.1: optical-only pilot; no changes to body, rig, clothes geometry or other coaches. */
 describe('Amara 1.47.1 — isolated semi-realistic material pilot', () => {
   const amara = skinLookFor('/coaches/mma-amara/photo-clean.glb');
-  test('preserves the established 1.47 anatomy/colour/lighting profile', () => {
-    expect(amara.relief).toBe(1.21);
+  // 2.4.0 prototype 2 (Youssef 20/11 14:30 « supprimer la dominante orange », « pas d'ombres musculaires cuites ») :
+  // profil recalibré à sa demande (journal 2.4.0) ; le test garde les valeurs exactes, pour toute dérive future
+  test('preserves the established 2.4.0 anatomy/colour/lighting profile', () => {
+    expect(amara.relief).toBe(1.0);
     expect(amara.pores).toBe(0.03);
     expect(amara.wrap).toBe(0.43);
-    expect(amara.shadowLift).toBe(0.33);
-    expect(amara.sat).toBeUndefined();
-    expect(amara.gain).toBeUndefined();
-    expect(amara.warm).toBeUndefined();
+    expect(amara.shadowLift).toBe(0.36);
+    expect(amara.sat).toBe(0.84);
+    expect(amara.gain).toBe(1.06);
+    expect(amara.warm).toBe(-0.07);
   });
   test('introduces only restrained skin optical variation', () => {
     expect(amara.roughVar).toBe(0.15);
-    expect(amara.tintVar).toBe(0.055);
+    expect(amara.tintVar).toBe(0.04);
     expect(amara.roughVar).toBeGreaterThan(DEFAULT_SKIN.roughVar);
   });
   test.each(['mma-kadir', 'nael', 'inaya', 'victor', 'kanya'])('%s retains independent skin values', (id) => {
@@ -32,7 +34,7 @@ describe('Amara 1.47.1 — isolated semi-realistic material pilot', () => {
     const revised = photoMaterial(src, 'peau', quality, amara);
     expect(src.roughness).toBe(0.58);
     expect(src.normalScale.x).toBe(1);
-    expect(revised.normalScale.x).toBeCloseTo(1.21);
+    expect(revised.normalScale.x).toBeCloseTo(1.0);
     revised.dispose(); src.dispose();
   });
   test('face-only natural finish preserves body and other coaches', () => {

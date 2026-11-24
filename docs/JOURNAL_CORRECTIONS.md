@@ -5093,3 +5093,50 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   page https://claude.ai/artifact/3PN2BSBi4H5Pyy8Mm1CGky) ; Playwright : NON EXÉCUTÉ (prototype, avant validation).
 - **Version** : pas de changement de version ni de note de Nouveautés tant que Youssef n'a pas validé (rien publié).
 - **Restauration** : `restauration/avant-coachs-fideles-v240` (= 2.3.5, a0c40f3).
+
+## 2026-11-24 · prototype 2 de la 2.4.0 (non publié) · Amara et Victor : visage, corps, taille, peau, tenue MMA
+
+- **Demande** (Youssef, 20/11 14 h 30, « Retour sur les prototypes 3D Amara et Victor ») : le prototype 1 n'est pas
+  validé (« surtout du contraste et du relief ») ; transformation qualitative profonde, géométrie modifiable,
+  comparaisons A (géométrie), B (rendu final), C (anatomie), D (animation), évaluation par élément ; ne pas généraliser,
+  ne rien publier ni fusionner. Os de torsion : confiés au fil dédié (Youssef 20/11 14 h 53).
+- **Constats vérifiés** : (1) visage : têtes Rocketbox à peine déformées (3 mm de face) ; (2) textures : éclairage du
+  studio Rocketbox cuit dans la couleur (creux sombres, muscles dessinés et taches chez Victor) ; (3) peau d'Amara à
+  dominante orange (réglage du shader) ; (4) visage d'Amara plus sombre que son cou dans le moteur alors que sa
+  texture est juste : un visage tourné un peu vers le bas reçoit moins la lumière haute de la scène (vérifié sans
+  ombres portées, sans relief, sans étalonnage : même écart) ; (5) tailles 1,73 m et 1,81 m pour 1,70 et 1,88 sur les
+  planches.
+- **Corrections (prototype)** :
+  - `tools/generator/fideles/visage.py` : profondeur tirée des repères MediaPipe (jusqu'à 9 mm), texture en
+    bande-passante (traits de la planche, ombrage du modèle aplati), raccord du visage au teint du cou ; gris de Victor
+    limité aux tempes et aux côtés ;
+  - `corps.py` (nouveau) : volumes autour des os et muscles posés le long des normales, pondérés par les poids de peau,
+    champ lissé sur la surface ; points, normales seulement (os, poids, UV, 25 expressions gardés). Amara : bras −10 %,
+    avant-bras −6 %, épaules et taille affinées, hanches et fessiers légèrement marqués. Victor : pectoraux, deltoïdes,
+    trapèzes, dorsaux, cou +6 %, bras +4 %, haut du tronc +3 %, cuisses +3 % ;
+  - `taille.mjs` (nouveau, gltf-transform, méthode de Kanya) : Amara 1,70 m, Victor 1,88 m (points, écarts des
+    expressions, translations des os, matrices de liaison ; attributs séparés comme les autres modèles) ;
+  - `peau.py` (nouveau) : délitage de la couleur du corps (basse fréquence et bande moyenne de la luminance retirées sur
+    la peau seule, grain gardé, rien près de la couture du cou), taches de chroma de Victor ramenées ;
+  - `src/three/photoMaterials.ts` : SKIN_LOOK d'Amara (relief 1,0, sat 0,84, gain 1,06, warm −0,07, diffusion moins
+    rouge) et de Victor (relief 1,05, sat 0,88, warm −0,04) ;
+  - tenues : les 7 d'Amara et de Victor régénérées sur le nouveau squelette (la taille change les os) ; MMA de Victor
+    noir à ceinture et sangles jaunes (`outfits.py`, palette `victor`), MMA d'Amara = kit de référence (`AMARA_MMA_REF=1`) ;
+  - Lab : `?ombres=0|cheveux` (diagnostic, jamais réglé par l'application) ; vues `05c`, `05d`, `16-amenee` dans
+    `scripts/v220/captures.mjs`. Chaîne complète : `tools/generator/fideles/prototype2.sh`.
+- **Défauts trouvés et corrigés pendant le lot** : décalage des points par primitive dans `corps.py` (tête écrasée,
+  rendu de 10 s par image) ; écarts d'expressions creux mis à l'échelle plusieurs fois ; GLB écrit entrelacé par
+  gltf-transform (les tests lisent des attributs séparés).
+- **Tests modifiés (raison écrite)** : `amara-semi-realiste-v1471`, `amara-skin-v1378` (valeurs de peau d'Amara
+  recalibrées à la demande), `bronzage-inaya-v1170` (Amara et Victor ont désormais un étalonnage), `victor-peau-v1452`
+  (textures de référence ré-exportées). Documents de mesures régénérés (`AUDIT_UPDATE`, `UPDATE_INTEGRITY`).
+- **Tests** : `tsc` TEST RÉUSSI ; `npm run build` TEST RÉUSSI ; vitest complet 1793/1806 :
+  - déjà en échec en 2.3.5 : `fluidity` ×2, `hooks-biomeca` ×2, `expressions-v1160` (Amara > 3,5 Mo : 5,1 Mo, 4,86 en 2.3.5) ;
+  - TEST ÉCHOUÉ, nouveaux (passent en 2.3.5, vérifié sur a0c40f3) : Victor `intrusions` (avant-bras dans le tronc
+    jusqu'à 7,9 cm sur ~20 gestes, carrure), `glide` et `registry` ×2 (pieds qui glissent sur 8 gestes de sol, taille
+    1,88 m), `deformation-v1100` (pli de l'aisselle en garde 66,6° pour 66,5° permis) ; Amara `shorts-v1442` ×2 (peau
+    sous le short de muay-thaï 6,3 % pour 6 %, étirement au high kick 6,1 pour 6) ;
+  - Playwright : NON EXÉCUTÉ (prototype en attente de validation).
+- **Captures réelles** (moteur WebGL, Lab) : 12 vues par coach avant/après + éclairage cinéma.
+- **Version** : inchangée tant que Youssef n'a pas validé. **Restauration** : `restauration/avant-coachs-fideles-v240`
+  (= 2.3.5) ; modèles 2.3.5 dans `_ARCHIVES_HORS_APPLICATION/anciens-modeles-3d/avant-coachs-fideles-v240/`.

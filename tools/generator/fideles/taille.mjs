@@ -2,11 +2,12 @@
 // (tools/generator/rocketbox/kanya_build.mjs) : points, écarts des expressions, translations des os, matrices de
 // liaison ; aucun nœud mis à l'échelle (le moteur lit les os tels quels).
 //   node tools/generator/fideles/taille.mjs entrée.glb sortie.glb hauteur_m
-import { NodeIO } from '@gltf-transform/core';
+import { NodeIO, VertexLayout } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 
 const [src, out, h] = process.argv.slice(2);
-const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
+// attributs séparés, comme kanya_build.mjs (les tests lisent les points sans entrelacement)
+const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).setVertexLayout(VertexLayout.SEPARATE);
 const doc = await io.read(src);
 const root = doc.getRoot();
 let top = -Infinity;
