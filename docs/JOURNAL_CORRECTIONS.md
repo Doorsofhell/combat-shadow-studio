@@ -5364,3 +5364,15 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   cou 0,513. Toutes les vues d'Amara de la page refaites.
 - **Tests** : vitest `src/three` + `src/boot` 562/566, échecs déjà notés (taille d'Amara, shorts ×2, morphology sous
   charge). Rien publié.
+
+## 2026-11-24 · prototype 2 de la 2.4.0 (non publié) · Visage d'Amara moins crispé
+
+- **Demande** (Youssef, 24/11 14 h 25) : « possible d'avoir un visage un peu moins crispé ? as-tu implémenté les
+  expressions ? »
+- **Constat vérifié** : les traits repris de la planche (`bande` 1,0 dans `visage.py`) marquaient fort les sourcils, le
+  creux sous les yeux et les plis nez-bouche : air sévère au repos. Expressions : les 25 expressions ARKit du modèle
+  sont gardées et pilotées par le moteur humain commun (respiration, clignements, regard, sourires, 8 états) ;
+  `expressions-v1160` et `src/three/human` passent (hors taille du fichier d'Amara, déjà en échec).
+- **Correction** : Amara `bande` 0,5 (`configs/amara2.json`), traits de la planche à moitié ; modèles reconstruits.
+- **Tests** : expressions et moteur humain TEST RÉUSSI (sauf taille, déjà en échec). Captures avant/après et 4 états
+  (neutre, encouragement, concentration, effort). Rien publié.

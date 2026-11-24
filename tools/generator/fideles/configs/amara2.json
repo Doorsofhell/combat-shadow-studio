@@ -32,7 +32,7 @@
   0.012,
   0.02
  ],
- "bande": 1.0,
+ "bande": 0.5,
  "contraste": 0.9,
  "saturation": 0.8,
  "raccord_cou": 1.0,
