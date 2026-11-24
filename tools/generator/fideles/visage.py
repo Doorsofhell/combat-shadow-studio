@@ -364,6 +364,26 @@ def main(cfg):
             flou = nd.gaussian_filter(outt, (6 * S / 2048, 6 * S / 2048, 0))
             a = (W * (1 - keep) * mq['lisse'])[..., None]
             outt = outt * (1 - a) + flou * a
+        if mq.get('aplat'):
+            # peau unie (25/11, « fais mieux ») : taches et ombre cuite sous la mâchoire retirées ; la luminance de
+            # basse fréquence de la peau du visage et du dessous de la mâchoire est ramenée vers sa moyenne large
+            # (l'ombrage vient de l'éclairage du moteur), teinte, grain, sourcils, yeux et lèvres gardés
+            keep2 = np.zeros((S, S), np.float32)
+            for ids in ((70, 63, 105, 66, 107), (300, 293, 334, 296, 336)):
+                keep2 = np.maximum(keep2, gs(dist_poly(ids), 0.005))
+            for ids in ((33, 160, 158, 133, 153, 144, 33), (263, 387, 385, 362, 380, 373, 263), (61, 0, 291, 17, 61)):
+                keep2 = np.maximum(keep2, gs(dist_poly(ids), 0.006))
+            y = PM[..., 1]; zf = PM[..., 2]
+            reg = np.maximum(nd.gaussian_filter((W > 0.05).astype(np.float32), 8),
+                             smooth(chin_y - 0.06, chin_y - 0.04, y) * smooth(chin_y + 0.035, chin_y + 0.015, y) * smooth(ez - 0.09, ez - 0.07, zf))
+            lum = outt @ np.array([0.3, 0.59, 0.11])
+            m = (vis & (lum > 0.08)).astype(np.float32) * np.clip(reg * 1.5, 0, 1)
+            s1 = 10 * S / 2048; s2 = 70 * S / 2048
+            low = nd.gaussian_filter(lum * m, s1) / (nd.gaussian_filter(m, s1) + 1e-4)
+            big = nd.gaussian_filter(lum * m, s2) / (nd.gaussian_filter(m, s2) + 1e-4)
+            ratio = np.clip(big / np.maximum(low, 0.03), 0.75, 1.45) ** mq['aplat']
+            a = m * (1 - keep2)
+            outt = np.clip(outt * (1 + (ratio - 1) * a)[..., None], 0, 1)
         # sourcils dessinés sans le bout intérieur (107, 336) : un sourcil foncé jusqu'au nez donne un air froncé
         brows = [(70, 63, 105, 66), (300, 293, 334, 296)]
         lids = [(33, 246, 161, 160, 159, 158, 157, 173, 133), (263, 466, 388, 387, 386, 385, 384, 398, 362)]

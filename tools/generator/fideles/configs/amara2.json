@@ -22,7 +22,7 @@
  "delight": 1.0,
  "mask_erode": 10,
  "shape": 1.0,
- "shape_max": 0.009,
+ "shape_max": 0.012,
  "facing": [
   0.15,
   0.5
@@ -39,13 +39,13 @@
  "raccord_plus": 1.15,
  "raccord_teinte": 0.3,
  "coins_bouche": 0.0015,
- "levres": 0.0016,
+ "levres": 0.0022,
  "levres_modele": 1,
  "maquillage": {
-  "lisse": 0.4,
+  "lisse": 0.6,
   "sourcils": 0.35,
   "paupieres": 0.3,
-  "cils": 0.8,
+  "cils": 1.0,
   "blush": 0.3,
   "levres": 0.6,
   "brillance": 0.6,
@@ -68,7 +68,8 @@
    0.5,
    0.45,
    0.43
-  ]
+  ],
+  "aplat": 0.8
  },
  "yeux": 0.14,
  "sourcils_neutres": false

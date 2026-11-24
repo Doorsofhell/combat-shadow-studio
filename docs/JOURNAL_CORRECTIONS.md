@@ -5489,3 +5489,20 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests** : vitest `src/three` + `src/boot` + intrusions + déformations 781/784, échecs déjà notés (taille et shorts
   d'Amara). Playwright NON EXÉCUTÉ. Rien publié.
 - **Restauration** : commit bb2f70d2.
+
+## 2026-11-25 · prototype 2 de la 2.4.0 (non publié) · Coachs femmes : peau unie et visage encore plus proche de la maquette
+
+- **Demande** (Youssef, 25/11 0 h 30) : « fais mieux ».
+- **Constat vérifié** : la texture du visage, vue à plat, est déjà proche de la maquette ; l'écart à l'écran venait
+  surtout du rendu de la peau (Inaya : réglage « bronzage » 1.17 saturé et orangé, taches de teinte du shader,
+  ombres dures sous la mâchoire), puis de la forme bridée (déplacement max 9 mm) et des lèvres.
+- **Corrections** : `visage.py`, option `maquillage.aplat` (luminance basse fréquence de la peau du visage et du
+  dessous de la mâchoire ramenée vers sa moyenne large, sourcils, yeux et lèvres gardés). Configs des trois femmes :
+  `shape_max` 12 mm, `levres` 2,2 mm, peau plus lisse, cils et sourcils plus marqués. `photoMaterials.ts` : Inaya
+  plus claire et moins orangée (sat 1,0, gain 0,92, chaleur 0,03 : léger hâle gardé), relief 1,0, taches de teinte
+  0,015, ombres plus douces (wrap 0,48, shadowLift 0,4) ; Kanya : mêmes relief, taches et ombres. Amara : réglage de
+  peau inchangé.
+- **Tests** : `amara-skin-v1378` « Kadir, Nael and Inaya keep the previous skin profile » : valeurs d'Inaya mises à
+  jour (changement demandé, anciennes valeurs en commentaire) ; `bronzage-inaya-v1170` passe toujours (léger hâle).
+  vitest `src/three` 736/739, échecs déjà notés (taille et shorts d'Amara). Playwright NON EXÉCUTÉ. Rien publié.
+- **Restauration** : commit 3082513a.

@@ -101,10 +101,12 @@ export const SKIN_LOOK: Record<string, SkinLook> = {
   // 1.43 Victor: the Kadir photo skin repainted (tan of Youssef's sheets): Kadir's light and relief
   // 2.4.0 prototype 2 (« supprimer les taches et marbrures ») : teinte moins saturée, relief cuit adouci
   victor: { ...DEFAULT_SKIN, relief: 1.05, pores: 0.022, roughVar: 0.11, tintVar: 0.012, wrap: 0.45, shadowLift: 0.38, cleanBody: true, tint: [1, 0.56, 0.44], sat: 0.88, warm: -0.04 },
-  inaya: { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, roughVar: 0.12, tintVar: 0.045, wrap: 0.45, shadowLift: 0.32, tint: [1, 0.52, 0.38], sat: 1.12, gain: 0.8, warm: 0.12 },
+  // 2.4.0 prototype 2 (Youssef 25/11, maquette des femmes, « fais mieux ») : peau plus claire et unie, ombres plus douces
+  inaya: { ...DEFAULT_SKIN, relief: 1.0, pores: 0.025, roughVar: 0.12, tintVar: 0.015, wrap: 0.48, shadowLift: 0.4, tint: [1, 0.52, 0.38], sat: 1.0, gain: 0.92, warm: 0.03 },
   // 1.51 Kanya: Inaya's photo skin repainted to the tone of Youssef's sheets (the texture already carries the tone: no
   // gain, the light and relief of Inaya's body)
-  kanya: { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, roughVar: 0.12, tintVar: 0.04, wrap: 0.45, shadowLift: 0.32, tint: [1, 0.52, 0.38] },
+  // 2.4.0 prototype 2 (maquette des femmes) : peau unie, ombres plus douces
+  kanya: { ...DEFAULT_SKIN, relief: 1.0, pores: 0.025, roughVar: 0.12, tintVar: 0.015, wrap: 0.48, shadowLift: 0.4, tint: [1, 0.52, 0.38] },
 };
 
 /** 1.48 premium material finish: calibrated individually, never changes body proportions or facial expressions. */

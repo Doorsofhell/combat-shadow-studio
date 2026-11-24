@@ -23,8 +23,10 @@ describe('Amara v1.37.8 — correction optique isolée, sans géométrie', () =>
     const nael = skinLookFor(path('nael'));
     expect([nael.relief, nael.pores, nael.wrap, nael.shadowLift]).toEqual([1.2, 0.035, 0.45, 0.34]);
     const inaya = skinLookFor(path('inaya'));
-    expect([inaya.relief, inaya.pores, inaya.wrap, inaya.shadowLift]).toEqual([1.15, 0.03, 0.45, 0.32]);
-    expect([inaya.sat, inaya.gain, inaya.warm]).toEqual([1.12, 0.8, 0.12]);
+    // 2.4.0 prototype 2 (Youssef 25/11, maquette des femmes, « fais mieux ») : peau d'Inaya plus claire et unie, ombres
+    // plus douces, toujours un léger hâle (bronzage-inaya-v1170) ; avant : [1.15, 0.03, 0.45, 0.32] et [1.12, 0.8, 0.12]
+    expect([inaya.relief, inaya.pores, inaya.wrap, inaya.shadowLift]).toEqual([1.0, 0.025, 0.48, 0.4]);
+    expect([inaya.sat, inaya.gain, inaya.warm]).toEqual([1.0, 0.92, 0.03]);
   });
 
   test.each(['haute', 'basse'] as const)('normal map relief is adjusted only in %s, preserving the source material', (quality) => {
@@ -33,7 +35,7 @@ describe('Amara v1.37.8 — correction optique isolée, sans géométrie', () =>
     const inaya = photoMaterial(source, 'peau', quality, skinLookFor(path('inaya')));
     expect(amara.normalScale.x).toBeCloseTo(0.8 * 1.0);
     expect(amara.normalScale.y).toBeCloseTo(0.6 * 1.0);
-    expect(inaya.normalScale.x).toBeCloseTo(0.8 * 1.15);
+    expect(inaya.normalScale.x).toBeCloseTo(0.8 * 1.0);
     expect(source.normalScale.x).toBe(0.8);
     expect(source.normalScale.y).toBe(0.6);
     if (quality === 'haute') expect(amara).toBeInstanceOf(MeshPhysicalMaterial);
