@@ -146,49 +146,74 @@
   inset: 0;
   z-index: 60;
 }
+/* 2.7 (Youssef, 2026-11-24): the glass of the « Options du coach » panel (tokens --glass-* in styles.css): a floating
+   card with rounded corners over a light blurred scrim, grip, round close button; plain and nearly opaque (.lite) when
+   the device cannot afford the blur */
 .nav-scrim {
   position: absolute;
   inset: 0;
-  background: #0008;
+  background: var(--glass-scrim);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  touch-action: none;
+}
+.nav-overlay.lite .nav-scrim {
+  background: var(--glass-scrim-lite);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 .nav-sheet {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
   margin: 0 auto;
   max-width: 560px;
   max-height: min(86dvh, 720px);
   display: flex;
   flex-direction: column;
-  background: var(--sheet);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
   color: var(--ink);
-  border-top: 1px solid var(--line);
-  border-radius: 22px 22px 0 0;
-  padding: 12px max(17px, env(safe-area-inset-right)) calc(22px + env(safe-area-inset-bottom)) max(17px, env(safe-area-inset-left));
-  box-shadow: 0 -12px 35px #0002;
-  animation: nav-sheetin 0.22s ease both;
+  border: 1px solid var(--glass-line);
+  border-radius: 26px;
+  padding: 8px 16px 16px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: transform 0.18s ease-out;
+  animation: nav-sheetin 0.2s ease-out both;
   outline: none;
+}
+.nav-overlay.lite .nav-sheet {
+  background: var(--glass-solid);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 .nav-sheet.wide {
   max-width: 640px;
 }
 @keyframes nav-sheetin {
   from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
   }
 }
-.nav-handle {
-  height: 4px;
-  width: 36px;
-  background: var(--muted);
-  opacity: 0.4;
-  border-radius: 5px;
-  margin: 0 auto 16px;
+.nav-grab {
   flex: none;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.nav-sheet.sheet .nav-grab {
+  cursor: grab;
+}
+.nav-handle {
+  display: block;
+  width: 40px;
+  height: 5px;
+  border-radius: 5px;
+  background: var(--glass-track);
+  margin: 0 auto 6px;
 }
 .nav-sheet-title {
   font-weight: 800;
@@ -202,15 +227,17 @@
   z-index: 29;
 }
 .nav-overlay.above-bar .nav-sheet {
+  bottom: 8px;
   max-height: calc(100% - 24px);
-  border-radius: 22px 22px 0 0;
   padding-bottom: 16px;
 }
 .nav-sheet-head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--glass-sep);
   flex: none;
 }
 .nav-sheet-head .nav-sheet-title {
@@ -1162,6 +1189,8 @@ html[data-chrono-run] .nav-topright {
 /* the menu of the ⋮ (Material 3 menu): under the button, at the top right */
 .nav-overlay.menu .nav-scrim {
   background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 .nav-sheet.menu {
   top: calc(env(safe-area-inset-top) + 64px);
@@ -1173,8 +1202,7 @@ html[data-chrono-run] .nav-topright {
   max-width: min(320px, calc(100vw - 20px));
   max-height: calc(100dvh - 200px);
   padding: 8px 0;
-  border: 0;
-  border-radius: 16px;
+  border-radius: 20px;
   box-shadow: 0 8px 28px #0006;
   transform-origin: top right;
   animation: nav-menuin 0.16s ease both;
@@ -1228,6 +1256,9 @@ html[data-chrono-run] .nav-topright {
   max-height: none;
   border: 0;
   border-radius: 0;
+  box-shadow: none;
+  /* the search takes the whole screen: the glass is the opaque one (no page showing through its results) */
+  background: var(--glass-solid);
   padding-top: calc(env(safe-area-inset-top) + 12px);
   animation: nav-fullin 0.18s ease both;
 }

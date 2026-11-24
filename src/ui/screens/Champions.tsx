@@ -17,7 +17,7 @@ import { useCustom } from '../../store/custom';
 import { useSettings } from '../../store/settings';
 import { MODE_HELP, MODE_LABEL } from '../training/plan';
 import { PageHead } from '../App';
-import { DisciplineCard, DisciplineLabel, QueryChip, SectionHead } from '../components';
+import { DisciplineCard, DisciplineLabel, QueryChip, SectionHead, Sheet } from '../components';
 import { AppIcon, DisciplineIcon, LevelIcon, type GlyphId } from '../icons';
 import { useNavActions } from '../nav/store';
 import { setSelection } from '../nav/selection';
@@ -1092,10 +1092,7 @@ function CollectionSheet({ comboId, onClose }: { comboId: string; onClose: () =>
   const { collections, createCollection, addToCollection, removeFromCollection } = useCatalogUser();
   const [name, setName] = useState('');
   return (
-    <div className="ds-backdrop" onClick={onClose}>
-      <div className="ds-sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Ajouter à une collection">
-        <span className="grab" />
-        <h2>Ajouter à une collection</h2>
+    <Sheet title="Ajouter à une collection" onClose={onClose}>
         {collections.length > 0 ? (
           <div className="row" style={{ gap: 6 }}>
             {collections.map((col) => {
@@ -1127,8 +1124,7 @@ function CollectionSheet({ comboId, onClose }: { comboId: string; onClose: () =>
         <button className="btn block" onClick={onClose}>
           Terminé
         </button>
-      </div>
-    </div>
+    </Sheet>
   );
 }
 
