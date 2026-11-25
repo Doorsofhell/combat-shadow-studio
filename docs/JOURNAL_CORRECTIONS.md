@@ -5977,4 +5977,10 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests** : `vitest src/three src/engine` : 1247 réussis, 5 échoués, tous déjà en échec en 2.10.0 (fluidity ×2,
   hooks-biomeca ×2, taille d'Amara > 3,5 Mo) ; `src/boot` 34/34. Playwright NON EXÉCUTÉ (prototype). Captures :
   `/mnt/project-files/coachs-fideles/focus-visage-2026-11-25/amara-kanya-v2.jpg`, `amara-cheveux-avant-apres.jpg`.
+- **Tests de publication 2.10.1** : `npx vitest run` : TEST ÉCHOUÉ sur 5 tests sur 1878, les mêmes qu'en 2.10.0 (fluidity ×2,
+  hooks-biomeca ×2, taille du modèle d'Amara) ; 1872 réussis. `npx playwright test` : 327 réussis, 2 ignorés (Firebase),
+  8 échoués : 5 déjà instables ou en échec en 2.10.0 (boot:98, coach-suggest:147, coaching-hud:60, retour-v1420:29,
+  selection-coach-v4:56) ; training-layout:117 et :240 TEST RÉUSSI relancés seuls ; panneau-coach:329 (fluidité, rendu
+  CPU) échoué une 2e fois avec les tests de caméra en parallèle, puis TEST RÉUSSI 2 fois sur 2 seul, comme en 2.10.0 (2/2) :
+  mesure sensible à la charge, aucun test modifié.
 - **Restauration** : `restauration/avant-focus-visage-v2101` (= 2.10.0).
