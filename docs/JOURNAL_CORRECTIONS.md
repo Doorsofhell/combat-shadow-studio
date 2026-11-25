@@ -6104,7 +6104,8 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - `npx tsc --noEmit` : TEST RÉUSSI ;
   - avant fusion, sur la 2.10.1 : `npx vitest run` identique avant et après le lot (1872 réussis, les 5 échecs connus
     que la 2.10.2 a corrigés depuis), `npm run build` : TEST RÉUSSI ;
-  - après fusion : `npx vitest run`, `npm run build` et `npx playwright test` (`CHROMIUM_PATH=/opt/pw-browsers/chromium`) :
-    NON EXÉCUTÉ au moment de ce commit (en cours) ; résultats ajoutés au commit suivant.
+  - après fusion : `npx vitest run` : 1877 TEST RÉUSSI, 1 ignoré, 0 échec ; `npm run build` : TEST RÉUSSI ;
+  - `npx playwright test` (`CHROMIUM_PATH=/opt/pw-browsers/chromium`) : NON EXÉCUTÉ au moment de ce commit (en cours) ;
+    résultat ajouté au commit suivant.
   - Numéro : prévu en 2.10.2, renuméroté 2.10.3 car la 2.10.2 (crochets, poids d'Amara) a été publiée entre-temps.
 - **Restauration** : `restauration/avant-cycles-2102` (= commit `cca3ecd`, 2.10.1 + outillage graphify).
