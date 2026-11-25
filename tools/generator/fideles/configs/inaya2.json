@@ -2,7 +2,7 @@
  "task": "$TRAVAIL/face_landmarker.task",
  "tone_amount": 0.3,
  "delight": 0.8,
- "mask_erode": 10,
+ "mask_erode": 14,
  "shape": 1.0,
  "shape_max": 0.012,
  "facing": [
@@ -36,15 +36,15 @@
  ],
  "qualite": 85,
  "sourcils_neutres": false,
- "coins_bouche": 0.0015,
+ "coins_bouche": 0.0008,
  "maquillage": {
   "lisse": 0.6,
   "sourcils": 0.8,
   "paupieres": 0.3,
   "cils": 1.0,
   "blush": 0.3,
-  "levres": 0.6,
-  "brillance": 0.6,
+  "levres": 0.0,
+  "brillance": 0.5,
   "paupieres_teinte": [
    0.82,
    0.7,
@@ -56,18 +56,21 @@
    0.95
   ],
   "levres_teinte": [
-   1.1,
-   0.9,
-   0.96
+   0.98,
+   0.72,
+   0.77
   ],
   "sourcils_teinte": [
    0.62,
    0.52,
    0.45
   ],
-  "aplat": 0.8
+  "aplat": 0.8,
+  "levres_contour": 1.0,
+  "levres_couleur": "#BC6660"
  },
- "levres": 0.0022,
- "levres_modele": 1,
- "yeux": 0.14
+ "levres": 0.0016,
+ "levres_modele": 0,
+ "yeux": 0.14,
+ "levres_fit": true
 }

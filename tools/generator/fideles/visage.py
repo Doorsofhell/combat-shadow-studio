@@ -91,7 +91,10 @@ def main(cfg):
     # ----- forme
     alpha = C.get('shape', 0.8)
     A2 = M[:, :2]; A2i = np.linalg.pinv(A2)
-    sh = np.array([i for i in SHAPE if ok[i]])
+    # 25/11 (Youssef « j'aime pas les lèvres, rapproche-toi du modèle fourni ») : tout le contour extérieur des lèvres de
+    # l'image est repris (arc du haut, largeur, volume du centre), pas seulement 10 points
+    LEVRES_CONTOUR = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 84, 181, 91, 146]
+    sh = np.array([i for i in SHAPE + ([k for k in LEVRES_CONTOUR if k not in SHAPE] if C.get('levres_fit') else []) if ok[i]])
     r = Lr[sh, :2] - proj(M, X3[sh])
     dxy = (A2i @ r.T).T * alpha
     lim = C.get('shape_max', 0.006)
@@ -404,6 +407,34 @@ def main(cfg):
         if mq.get('blush'):
             z = gs(np.minimum(dist_poly((50, 50)), dist_poly((280, 280))), 0.012)
             teinte(z * mq['blush'], mq.get('blush_teinte', (1.08, 0.93, 0.92)))
+        if mq.get('levres_contour'):
+            # 25/11 : lèvres colorées dans le contour des repères (calé sur l'image fournie), pas seulement dans le rouge
+            # d'origine du modèle (lèvre du haut trop fine) ; bords fondus sur 1 mm
+            ys, xs = np.nonzero(vis)
+            pv = PM[ys, xs]
+            def texel(k):
+                i = int(np.argmin(np.linalg.norm(pv - X3b[k], axis=1))); return xs[i] + 0.5, ys[i] + 0.5
+            poly = MPath(np.array([texel(k) for k in LEVRES_CONTOUR]))
+            x0_, x1_ = int(min(texel(k)[0] for k in LEVRES_CONTOUR)) - 20, int(max(texel(k)[0] for k in LEVRES_CONTOUR)) + 20
+            y0_, y1_ = int(min(texel(k)[1] for k in LEVRES_CONTOUR)) - 20, int(max(texel(k)[1] for k in LEVRES_CONTOUR)) + 20
+            gy, gx = np.mgrid[y0_:y1_, x0_:x1_]
+            lc = np.zeros((S, S), np.float32)
+            lc[y0_:y1_, x0_:x1_] = poly.contains_points(np.stack([gx.ravel() + .5, gy.ravel() + .5], 1)).reshape(gy.shape)
+            lc = nd.gaussian_filter(lc, 1.5 * S / 2048) * vis
+            if mq.get('levres_couleur'):
+                # couleur donnée (prise sur l'image fournie) en moyenne, relief de luminance du modèle gardé : rose sans dominante orange
+                h = mq['levres_couleur']; tgt = np.array([int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)], np.float32)
+                l0 = (outt @ np.array([0.3, 0.59, 0.11], np.float32))[..., None]
+                col = np.clip(l0 / max(float(l0[lc > 0.5].mean()), 1e-3) * tgt, 0, 1)
+                a = (lc * mq['levres_contour'])[..., None]
+                outt = outt * (1 - a) + col * a
+            else:
+                teinte(lc * mq['levres_contour'], mq.get('levres_teinte', (0.98, 0.72, 0.77)))
+            # jonction des lèvres un peu plus marquée, très floue (pas un trait)
+            jl = gs(dist_poly((78, 81, 13, 311, 308)), 0.0008) * lc
+            teinte(jl * 0.8, (0.75, 0.62, 0.64))
+            hl = gs(dist_poly((14, 17)), 0.003) * lc
+            outt = np.clip(outt + (hl * mq.get('brillance', 0.0))[..., None] * 0.2, 0, 1)
         if mq.get('levres'):
             rr2 = outt[..., 0] - outt[..., 1]
             around = gs(dist_poly((61, 0, 291, 17, 61)), 0.006)

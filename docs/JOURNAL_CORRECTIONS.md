@@ -5506,3 +5506,20 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   jour (changement demandé, anciennes valeurs en commentaire) ; `bronzage-inaya-v1170` passe toujours (léger hâle).
   vitest `src/three` 736/739, échecs déjà notés (taille et shorts d'Amara). Playwright NON EXÉCUTÉ. Rien publié.
 - **Restauration** : commit 3082513a.
+
+## 2026-11-25 · prototype 2 de la 2.4.0 (non publié) · Lèvres des coachs femmes calées sur la maquette
+
+- **Demande** (Youssef, 25/11) : « J'aime pas les lèvres. Rapproche toi du model fourni ».
+- **Constat vérifié** (gros plans de la bouche, face, trois quarts, sourire, bouche ouverte) : la couleur des lèvres
+  ne suivait que le rouge d'origine du modèle Rocketbox, donc lèvre du haut trop fine et bord flou ; teinte trop
+  pâle et rose froid. Pour Amara, la teinte de la texture (158, 90, 82) paraissait mauve à côté de sa peau orangée :
+  c'est le rapport lèvres/peau qui compte, pas la couleur seule.
+- **Corrections** : `visage.py`, option `levres_fit` (les 20 repères du contour des lèvres guident aussi la forme)
+  et `maquillage.levres_contour` / `levres_couleur` (polygone des repères rempli, bords fondus sur 1,5 px, couleur
+  donnée avec le relief de luminance du modèle gardé ; jonction des lèvres un peu plus marquée et reflet doux, sans
+  trait). Couleurs prises sur la maquette : Inaya #BC6660, Kanya #AE5E56, Amara #96463E (rapport lèvres/peau de la
+  maquette). Configs `amara2`, `inaya2`, `kanya2` alignées sur les modèles livrés (`mask_erode` 14, `coins_bouche`
+  0,8 mm). Planche : `/mnt/project-files/coachs-fideles/femmes-levres.jpg`.
+- **Tests** : `tsc` TEST RÉUSSI ; vitest `src/three` + `src/boot` + intrusions 774/777, échecs déjà notés (taille et
+  shorts d'Amara). Playwright NON EXÉCUTÉ. Rien publié.
+- **Restauration** : commit aadc5bc0.
