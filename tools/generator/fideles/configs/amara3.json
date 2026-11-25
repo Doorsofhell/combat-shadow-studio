@@ -71,7 +71,9 @@
   ],
   "aplat": 0.35,
   "levres_contour": 1.0,
-  "levres_couleur": "#96463E"
+  "levres_couleur": "#96463E",
+  "levres_relief": 0.4,
+  "pourtour_uni": 1.0
  },
  "yeux": 0.0,
  "sourcils_neutres": false,
