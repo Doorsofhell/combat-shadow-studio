@@ -110,6 +110,10 @@ test('après le démarrage, choisir un autre coach ne télécharge rien et ne re
   await page.goto('/#/coach');
   await page.getByTestId('coach-nael').click();
   await page.getByTestId('coach-valider').click();
+  // 2.10.2: « Choisir » closes the screen once the choice is written (1.42.0, asynchronous): wait for it, otherwise
+  // that closing landed after the jump to the session and the test looked for the stage on the Accueil (seen in the
+  // full suite, 2.8.1 to 2.10.1)
+  await expect(page).not.toHaveURL(/#\/coach/);
   await expect(page.getByTestId('boot-screen')).toHaveCount(0);
   await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
   await expect(page.locator('.tr-stage canvas')).toBeVisible();

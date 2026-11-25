@@ -37,7 +37,7 @@ Généré par `src/three/__tests__/amara-finish-v1380.test.ts` : la bande de bra
 | kickboxing | ceinture-short | garde | 9.5 | 12.6 | 1.24 |
 | kickboxing | ceinture-short | jab | 11.1 | 13.1 | 1.21 |
 | kickboxing | ceinture-short | cross (direct) | 4.6 | 6.9 | 1.21 |
-| kickboxing | ceinture-short | crochet (rotation du buste) | 15.3 | 17.8 | 1.35 |
+| kickboxing | ceinture-short | crochet (rotation du buste) | 15.3 | 17.7 | 1.35 |
 | kickboxing | ceinture-short | low kick arrière | 10.3 | 18.6 | 1.74 |
 | kickboxing | ceinture-short | low kick avant | 22.7 | 28.1 | 1.30 |
 | kickboxing | ceinture-short | middle kick | 21.4 | 28.0 | 1.80 |

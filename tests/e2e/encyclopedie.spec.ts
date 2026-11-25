@@ -56,9 +56,9 @@ test('filtres combinés : sous-catégorie, discipline et recherche ; aucun résu
   await expect(results(page).first()).toBeVisible();
   const all = await results(page).count();
   await page.getByTestId('enc-sub').selectOption('pieds');
-  const feet = await results(page).count();
-  expect(feet).toBeGreaterThan(0);
-  expect(feet).toBeLessThan(all);
+  // 2.10.2: the list is redrawn after the choice; the count was read once, sometimes before (44 for 44 in the full suite)
+  await expect.poll(() => results(page).count()).toBeLessThan(all);
+  expect(await results(page).count()).toBeGreaterThan(0);
   await page.getByTestId('enc-d-muaythai').click();
   await expect(page.getByTestId('enc-d-muaythai')).toHaveAttribute('aria-checked', 'true');
   await expect(page).toHaveURL(/f=techniques/);

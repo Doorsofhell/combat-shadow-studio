@@ -32,9 +32,9 @@ async function open(page: Page, path: string) {
 }
 
 /** what the band shows at every frame for `ms`: the names (in order, repeats collapsed) and the most shown at once */
-async function watchBand(page: Page, ms: number) {
+async function watchBand(page: Page, ms: number, until = 0) {
   return page.evaluate(
-    (ms) =>
+    ([ms, until]) =>
       new Promise<{ seq: string[]; maxAtOnce: number; empty: number; frames: number }>((res) => {
         const seq: string[] = [];
         let maxAtOnce = 0;
@@ -48,17 +48,21 @@ async function watchBand(page: Page, ms: number) {
           const now = names[0] ?? '';
           if (!now) empty++;
           if (seq[seq.length - 1] !== now) seq.push(now);
-          if (performance.now() - t0 < ms) requestAnimationFrame(step);
+          // 2.10.2: `until` names seen (and the band emptied after them) end the watch early: the frame rate of the
+          // test browser varies with the load of the machine (54 frames in 30 s seen), the motions with it
+          const seen = seq.filter(Boolean).length;
+          const done = until > 0 && (seen > until || (seen === until && !now));
+          if (!done && performance.now() - t0 < ms) requestAnimationFrame(step);
           else res({ seq, maxAtOnce, empty, frames });
         };
         requestAnimationFrame(step);
       }),
-    ms,
+    [ms, until] as const,
   );
 }
 
 test('Jab → Direct arrière → Low kick droit : chaque nom pendant son coup, rien en garde, jamais deux à la fois', async ({ page }) => {
-  test.setTimeout(150_000);
+  test.setTimeout(300_000);
   await seed(page);
   await page.setViewportSize({ width: 393, height: 851 });
   await open(page, '/#/entrainement?ex=kickboxing-debutant-10&mode=technique');
@@ -73,7 +77,9 @@ test('Jab → Direct arrière → Low kick droit : chaque nom pendant son coup, 
   await expect(page.getByTestId('move-band')).toHaveAttribute('data-move', '');
   await expect(page.getByTestId('phase')).not.toHaveText('Prépare-toi', { timeout: 10_000 });
   // (the browser of the tests draws few frames per second: the motions take longer in real time, never shorter)
-  const r = await watchBand(page, 30_000);
+  // 2.10.2: watched until the first move of the second repetition has been shown and left (at most 3 min) instead of
+  // a fixed 30 s, too short when the machine is loaded (failing since 2.3.0, only « Jab », « Direct arrière » seen)
+  const r = await watchBand(page, 180_000, 4);
   const names = r.seq.filter(Boolean);
   // the order of the combination, each move once per repetition, with the band empty between two repetitions
   expect(names.slice(0, 4)).toEqual(['Jab', 'Direct arrière', 'Low kick droit', 'Jab']);
