@@ -1,16 +1,16 @@
 <!-- GÉNÉRÉ:etat — ne pas modifier à la main, lancer « npm run docs:sync » -->
-# État du projet — version 2.9.0
+# État du projet — version 2.10.0
 
-Dernière version annoncée dans Nouveautés : **2.9.0** du 25 novembre 2026, « Shadow Pro : les contenus Premium repérés sans surcharge » (127 versions au total).
+Dernière version annoncée dans Nouveautés : **2.10.0** du 25 novembre 2026, « Les six coachs plus fidèles à leurs fiches » (128 versions au total).
 
 ## Version et publication
 
 | Élément | Valeur | Origine |
 | --- | --- | --- |
-| Version de l’application | 2.9.0 | `package.json` (source unique) |
-| Titre de la page, Réglages › À propos, écran de démarrage | v2.9.0 | injectée au build (`vite.config.ts`) |
-| Android versionName / versionCode | 2.9.0 / 20900 | `scripts/android-version.mjs` (x × 10000 + y × 100 + z) |
-| Nouveautés | 2.9.0 | première entrée de `src/domain/releases.ts` |
+| Version de l’application | 2.10.0 | `package.json` (source unique) |
+| Titre de la page, Réglages › À propos, écran de démarrage | v2.10.0 | injectée au build (`vite.config.ts`) |
+| Android versionName / versionCode | 2.10.0 / 21000 | `scripts/android-version.mjs` (x × 10000 + y × 100 + z) |
+| Nouveautés | 2.10.0 | première entrée de `src/domain/releases.ts` |
 | Informations de publication | `version.json` | écrit à chaque build (`tools/build/releaseInfo.ts`) |
 
 Version testable en ligne (GitHub Pages) : https://doorsofhell.github.io/combat-shadow-studio/ ; version réellement déployée : https://doorsofhell.github.io/combat-shadow-studio/version.json
