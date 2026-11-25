@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.10.1',
+      releaseDate: '2026-11-25',
+      title: 'Amara et Kanya plus proches de leurs fiches',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Les visages d’Amara et de Kanya suivent maintenant leur fiche « Focus visage » : sourcils plus marqués, regard déterminé, lèvres naturelles, menton plus dessiné, sans petit sourire au repos.' },
+        { category: 'ameliorations', text: 'Les lèvres d’Amara et de Kanya ont une seule teinte et la peau autour est unie.' },
+        { category: 'ameliorations', text: 'Les cheveux d’Amara ont plus de volume, avec un chignon plus gros.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '2.10.0',
       releaseDate: '2026-11-25',
       title: 'Les six coachs plus fidèles à leurs fiches',

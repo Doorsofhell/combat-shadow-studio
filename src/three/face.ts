@@ -78,13 +78,17 @@ export const FACE_GAIN = { rest: 2.5, effort: 2 } as const;
  * of a coach. Up to 1.39 the rest was a face of concentration (brows lowered, eyes narrowed: the « actuel » base).
  * focus: share of that concentration kept at rest; w: expressions added at rest (gone during the strike).
  */
-export type FaceBaseId = 'actuel' | 'calme' | 'doux' | 'vif';
+export type FaceBaseId = 'actuel' | 'calme' | 'doux' | 'vif' | 'determine';
 export const FACE_BASES: Record<FaceBaseId, { focus: number; w: Partial<Record<FaceExpression, number>> }> = {
   actuel: { focus: 1, w: {} },
   // relaxed: brows neutral, lids a little heavy, a hint of narrowing
   calme: { focus: 0.15, w: { EyeBlinkLeft: 0.1, EyeBlinkRight: 0.1, EyeSquintLeft: 0.04, EyeSquintRight: 0.04 } },
   // relaxed and kind: the inner brows barely raised, the corners of the mouth soft
   doux: { focus: 0.15, w: { EyeBlinkLeft: 0.08, EyeBlinkRight: 0.08, BrowInnerUp: 0.14, MouthSmileLeft: 0.08, MouthSmileRight: 0.07, CheekSquintLeft: 0.05, CheekSquintRight: 0.04 } },
+  // 2.10.1 (Youssef 25/11, planche « Focus visage » d'Amara et de Kanya, neutre = regard déterminé) : paupières un peu
+  // lourdes, regard légèrement plissé, aucun sourire ; sourcils laissés au calme (la planche les montre bas : ils sont
+  // dessinés bas dans la texture), bouche jamais serrée
+  determine: { focus: 0.2, w: { EyeBlinkLeft: 0.16, EyeBlinkRight: 0.16, EyeSquintLeft: 0.12, EyeSquintRight: 0.12 } },
   // relaxed and awake: eyes a little more open
   vif: { focus: 0.25, w: { EyeWideLeft: 0.1, EyeWideRight: 0.1, BrowInnerUp: 0.07 } },
 };

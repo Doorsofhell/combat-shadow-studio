@@ -21,7 +21,7 @@ export interface HumanProfile {
   /** factor on the blink rate (1 = every 3 to 6 s) */
   blinkRate: number;
   /** 1.40 the face at rest (src/three/face.ts FACE_BASES); the default one when absent */
-  faceBase?: 'actuel' | 'calme' | 'doux' | 'vif';
+  faceBase?: 'actuel' | 'calme' | 'doux' | 'vif' | 'determine';
 }
 
 /** older models allowed a degraded face (facial bones only, no expressions). Never add a new coach here. */
@@ -44,13 +44,15 @@ export const HUMAN_PROFILES: Record<string, HumanProfile> = {
   'mma-kadir': { ...p('mma-kadir', { expressiveness: 0.85, warmth: 1, stamina: 1.2 }, 0.95), faceBase: 'doux' },
   // Amara, frappeuse : expressive à l'effort. 2.4.0 (Youssef 24/11 « adoucis son visage et ses expressions ») : visage
   // doux au repos, effort et concentration moins marqués, sourires un peu plus fréquents
-  'mma-amara': { ...p('mma-amara', { expressiveness: 0.85, warmth: 1.15, stamina: 1 }, 1), faceBase: 'doux' },
+  // 2.10.1 (Youssef 25/11 « les visages d'Amara et de Kanya ont régressé », planche « Focus visage ») : repos
+  // « déterminé » comme sur la planche (paupières un peu lourdes, sans sourire)
+  'mma-amara': { ...p('mma-amara', { expressiveness: 0.85, warmth: 1.15, stamina: 1 }, 1), faceBase: 'determine' },
   nael: { ...p('nael', { expressiveness: 0.85, warmth: 1.15, stamina: 1 }, 1.05), faceBase: 'doux' },
   inaya: { ...p('inaya', { expressiveness: 0.85, warmth: 1.15, stamina: 1.1 }, 1), faceBase: 'doux' },
   // 1.43 Victor, vétéran posé : visage calme, sourire rare mais chaleureux, endurant
   victor: { ...p('victor', { expressiveness: 0.85, warmth: 1, stamina: 1.2 }, 0.9), faceBase: 'doux' },
   // 1.51 Kanya, Kru : regard calme et déterminé, visage peu expressif, sourire rare, très endurante
-  kanya: { ...p('kanya', { expressiveness: 0.85, warmth: 1, stamina: 1.25 }, 0.9), faceBase: 'doux' },
+  kanya: { ...p('kanya', { expressiveness: 0.85, warmth: 1, stamina: 1.25 }, 0.9), faceBase: 'determine' },
 };
 
 /** standard profile, given automatically to a model the registry does not know (its tests will still fail) */

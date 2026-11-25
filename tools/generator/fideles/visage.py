@@ -444,11 +444,32 @@ def main(cfg):
                 # couleur donnée (prise sur l'image fournie) en moyenne, relief de luminance du modèle gardé : rose sans dominante orange
                 h = mq['levres_couleur']; tgt = np.array([int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)], np.float32)
                 l0 = (outt @ np.array([0.3, 0.59, 0.11], np.float32))[..., None]
-                col = np.clip(l0 / max(float(l0[lc > 0.5].mean()), 1e-3) * tgt, 0, 1)
+                rel = l0 / max(float(l0[lc > 0.5].mean()), 1e-3)
+                # 25/11 13 h 19 (Youssef « la teinte autour de ses lèvres n'est pas uniforme ») : relief de luminance du
+                # modèle gardé en partie seulement (lèvre du haut brune, lèvre du bas rose avant)
+                rel = 1 + (rel - 1) * mq.get('levres_relief', 1.0)
+                col = np.clip(rel * tgt, 0, 1)
                 a = (lc * mq['levres_contour'])[..., None]
                 outt = outt * (1 - a) + col * a
             else:
                 teinte(lc * mq['levres_contour'], mq.get('levres_teinte', (0.98, 0.72, 0.77)))
+            if mq.get('pourtour_uni'):
+                # 25/11 13 h 19 : peau autour des lèvres unie (bande sombre sous la lèvre du bas, zones claires et
+                # sombres aux coins) : dans un anneau de 14 mm autour du contour des lèvres, la luminance de basse
+                # fréquence (4 mm) est ramenée vers celle de la peau à grande échelle (15 mm) ; lèvres, teinte et grain
+                # gardés, bord de l'anneau fondu
+                dl_ = dist_poly(tuple(LEVRES_CONTOUR) + (LEVRES_CONTOUR[0],))
+                ring = (1 - lc) * smooth(0.016, 0.010, dl_) * vis
+                lum2 = outt @ np.array([0.3, 0.59, 0.11], np.float32)
+                skin = (1 - lc) * vis
+                # texels par millimètre, mesurés entre les coins de la bouche
+                px_m = float(np.hypot(*np.subtract(texel(61), texel(291)))) / (1000 * float(np.linalg.norm(X3b[61] - X3b[291])))
+                print('pourtour des lèvres : %.1f texels/mm' % px_m)
+                def blur(x, mm):
+                    return nd.gaussian_filter(x * skin, mm * px_m) / np.maximum(nd.gaussian_filter(skin, mm * px_m), 1e-4)
+                lo4 = blur(lum2, 4); lo15 = blur(lum2, 15)
+                k = np.clip(lo15 / np.maximum(lo4, 1e-3), 0.7, 1.4) ** (ring * mq['pourtour_uni'])
+                outt = np.clip(outt * k[..., None], 0, 1)
             # jonction des lèvres un peu plus marquée, très floue (pas un trait)
             jl = gs(dist_poly((78, 81, 13, 311, 308)), 0.0008) * lc
             teinte(jl * 0.8, (0.75, 0.62, 0.64))
