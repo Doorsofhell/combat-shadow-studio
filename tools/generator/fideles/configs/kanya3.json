@@ -1,0 +1,76 @@
+{
+ "task": "$TRAVAIL/face_landmarker.task",
+ "tone_amount": 0.3,
+ "delight": 0.8,
+ "mask_erode": 14,
+ "shape": 1.0,
+ "shape_max": 0.012,
+ "facing": [
+  0.1,
+  0.45
+ ],
+ "profondeur": 0.6,
+ "oeil": [
+  0.012,
+  0.02
+ ],
+ "bande": 0.85,
+ "contraste": 1.0,
+ "saturation": 0.9,
+ "raccord_cou": 1.0,
+ "raccord_teinte": 0.3,
+ "src": "_ARCHIVES_HORS_APPLICATION/anciens-modeles-3d/avant-coachs-fideles-v240/public/coaches/kanya/photo.glb",
+ "ref": "tools/generator/fideles/references/kanya-focus-visage.png",
+ "work": "$TRAVAIL/w2/kanya",
+ "iris": "#5B3A22",
+ "ref_box": [
+  0,
+  0,
+  630,
+  675
+ ],
+ "out": [
+  {
+   "path": "$TRAVAIL/w2/kanya-photo.glb"
+  }
+ ],
+ "qualite": 85,
+ "sourcils_neutres": false,
+ "coins_bouche": 0.0008,
+ "maquillage": {
+  "lisse": 0.3,
+  "sourcils": 0.6,
+  "paupieres": 0.15,
+  "cils": 1.0,
+  "blush": 0.0,
+  "levres": 0.0,
+  "brillance": 0.5,
+  "paupieres_teinte": [
+   0.82,
+   0.7,
+   0.68
+  ],
+  "blush_teinte": [
+   1.08,
+   0.95,
+   0.95
+  ],
+  "levres_teinte": [
+   0.98,
+   0.72,
+   0.77
+  ],
+  "sourcils_teinte": [
+   0.36,
+   0.32,
+   0.3
+  ],
+  "aplat": 0.35,
+  "levres_contour": 1.0,
+  "levres_couleur": "#AE5E56"
+ },
+ "levres": 0.0016,
+ "levres_modele": 0,
+ "yeux": 0.0,
+ "levres_fit": true
+}

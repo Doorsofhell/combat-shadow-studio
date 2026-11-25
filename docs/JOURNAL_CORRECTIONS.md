@@ -5920,3 +5920,30 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   l'historique git. vitest `src/three` + `src/boot` + intrusions 783/784, seul échec : taille du fichier d'Amara (déjà
   en 2.3.5). Playwright NON EXÉCUTÉ. Rien publié.
 - **Restauration** : commit 0230e4be (ou `restauration/avant-tenues-v240`).
+
+## 2026-11-25 · prototype 2.10.1 (non publié) · Visages d'Amara et de Kanya calés sur la planche « Focus visage »
+
+- **Demande** (Youssef, 25/11 13 h 42) : « les visages d'Amara et de Kanya ont régressé, rapproche-toi au max » de sa
+  planche « Comparatif focus visage » (face, 3/4, profil, dos, 6 expressions).
+- **Constat vérifié** (captures WebGL du Lab, 2.9.0 et 2.10.0 côte à côte avec la planche) : en 2.10.0 les deux visages
+  ont été calés sur la maquette du 24/11 (`souhait-femmes`) avec yeux agrandis, lèvres pleines et rosées, blush, peau
+  aplatie et repos « doux » (petit sourire) : visages ronds et « poupée ». La planche montre l'inverse : sourcils
+  denses et bas, paupières un peu lourdes, pommettes et mâchoire marquées, lèvres naturelles, regard déterminé.
+- **Correction** :
+  - nouvelles configurations `tools/generator/fideles/configs/{amara3,kanya3}.json`, référence = vue de face de la
+    planche (`references/{amara,kanya}-focus-visage.png`, agrandie ×3, planche entière dans
+    `focus-visage-amara-kanya.png`) : yeux non agrandis (`yeux` 0), forme des lèvres de la 2.10.0 retirée (les lèvres
+    suivent la planche), plus de blush, relief du visage gardé (`bande` 0,85, `aplat` 0,35, `lisse` 0,3, contraste 1),
+    sourcils plus denses et plus sombres (Kanya un peu moins qu'Amara, comme sur la planche) ; corps, taille, peau du
+    corps et tenues inchangés (même chaîne visage → corps → taille → peau qu'en 2.10.0) ;
+  - moteur humain : nouveau visage de repos `determine` (`src/three/face.ts`, `FACE_BASES`) : paupières un peu lourdes,
+    regard légèrement plissé, aucun sourire, sourcils laissés au calme ; donné à Amara et Kanya dans leur profil
+    (`src/three/human/profiles.ts`). Un premier essai avec les sourcils abaissés dépassait le critère « sourcils à peine
+    froncés » (0,169 pour 0,15) : retiré, le test n'a pas été changé.
+- **Fichiers** : `public/coaches/mma-amara/photo.glb`, `photo-clean.glb`, `public/coaches/kanya/photo.glb`,
+  `src/three/face.ts`, `src/three/human/profiles.ts`, `src/ui/Lab.tsx` (commentaire), configurations et références.
+- **Tests** : `vitest src/three src/domain` : 987 réussis, 3 échoués → après correction du visage de repos, TEST RÉUSSI
+  pour `src/three/human` (170/170) ; TEST ÉCHOUÉ `expressions-v1160` « moins de 3,5 Mo » pour Amara, déjà en échec
+  avant (5,0 Mo en 2.10.0). Captures avant/après : `/mnt/project-files/coachs-fideles/focus-visage-2026-11-25/`.
+  Playwright NON EXÉCUTÉ (prototype).
+- **Restauration** : branche `restauration/avant-focus-visage-v2101` (= 2.10.0).
