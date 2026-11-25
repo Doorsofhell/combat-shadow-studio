@@ -5521,6 +5521,10 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - ajouté `tests/e2e-sim/shadow-pro.spec.ts` (6 tests sur l'aperçu : gratuit, expiré, Premium, mixte, 360 × 640 clair
     et sombre) : TEST RÉUSSI ;
   - Vitest Premium 35/35, Playwright `premium.spec` + `premium-panels.spec` 11/11, `npm run build` : TEST RÉUSSI ;
+  - Playwright complet (commit `0ac1f3f`) : 328 TEST RÉUSSI, 2 NON EXÉCUTÉ (Firebase), 7 TEST ÉCHOUÉ ; six échouaient
+    déjà en 2.8.1 (`boot:98`, `coach-suggest:147`, `coaching-hud:60`, `panneau-coach:329`, `retour-v1420:29`,
+    `selection-coach-v4:56`) ; le septième, `training-layout:117`, a dépassé son délai de 120 s dans la suite (test de
+    près de 2 min sur cette machine chargée) et relancé seul deux fois : TEST RÉUSSI les deux fois. Aucun test affaibli ;
   - application Android : NON EXÉCUTÉ (aucun APK construit pour une version expérimentale ; même code web) ;
   - captures réelles : fichiers du projet `monetisation/shadow-pro-v2.9.0/` (avant 2.8.1 / Gratuit / Premium,
     clair/sombre, programmes gratuit, mixte, tout PRO, 360 px).
