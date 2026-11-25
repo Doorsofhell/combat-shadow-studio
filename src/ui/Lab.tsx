@@ -57,7 +57,7 @@ export function Lab() {
     (globalThis as { __cssSeance?: number }).__cssSeance = q.get('seance') !== null ? Number(q.get('seance')) : undefined;
     (globalThis as { __cssRenduAvant?: boolean }).__cssRenduAvant = q.get('rendu') === 'avant';
     (globalThis as { __cssNeckBack?: number }).__cssNeckBack = q.get('nuque') !== null ? Number(q.get('nuque')) : undefined;
-    // 1.40 visage=actuel|calme|doux|vif: the face at rest (src/three/face.ts FACE_BASES), for the comparisons
+    // 1.40 visage=actuel|calme|doux|vif|determine: the face at rest (src/three/face.ts FACE_BASES), for the comparisons
     (globalThis as { __cssFaceBase?: string }).__cssFaceBase = q.get('visage') ?? undefined;
     // 2.2.0 v220=0: the coach as in 2.1.0 (no morphology, no skin finish of 2.2.0), for the side-by-side comparisons
     (globalThis as { __cssMorpho?: boolean }).__cssMorpho = q.get('v220') === '0' ? false : undefined;

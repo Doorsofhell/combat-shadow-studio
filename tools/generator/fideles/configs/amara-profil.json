@@ -1,0 +1,23 @@
+{
+ "ref": "tools/generator/fideles/references/focus-visage-amara-kanya.png",
+ "ref_box": [
+  1040,
+  60,
+  1190,
+  300
+ ],
+ "sens": "droite",
+ "fichiers": [
+  [
+   "$TRAVAIL/w2/amara-photo.glb",
+   "$TRAVAIL/w2/amara-photo.glb"
+  ],
+  [
+   "$TRAVAIL/w2/amara-photo-clean.glb",
+   "$TRAVAIL/w2/amara-photo-clean.glb"
+  ]
+ ],
+ "max": 0.004,
+ "de_mm": 88,
+ "fondu_mm": 12
+}

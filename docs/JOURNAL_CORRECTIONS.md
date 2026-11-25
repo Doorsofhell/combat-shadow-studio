@@ -5920,3 +5920,67 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   l'historique git. vitest `src/three` + `src/boot` + intrusions 783/784, seul échec : taille du fichier d'Amara (déjà
   en 2.3.5). Playwright NON EXÉCUTÉ. Rien publié.
 - **Restauration** : commit 0230e4be (ou `restauration/avant-tenues-v240`).
+
+## 2026-11-25 · prototype 2.10.1 (non publié) · Visages d'Amara et de Kanya calés sur la planche « Focus visage »
+
+- **Demande** (Youssef, 25/11 13 h 42) : « les visages d'Amara et de Kanya ont régressé, rapproche-toi au max » de sa
+  planche « Comparatif focus visage » (face, 3/4, profil, dos, 6 expressions).
+- **Constat vérifié** (captures WebGL du Lab, 2.9.0 et 2.10.0 côte à côte avec la planche) : en 2.10.0 les deux visages
+  ont été calés sur la maquette du 24/11 (`souhait-femmes`) avec yeux agrandis, lèvres pleines et rosées, blush, peau
+  aplatie et repos « doux » (petit sourire) : visages ronds et « poupée ». La planche montre l'inverse : sourcils
+  denses et bas, paupières un peu lourdes, pommettes et mâchoire marquées, lèvres naturelles, regard déterminé.
+- **Correction** :
+  - nouvelles configurations `tools/generator/fideles/configs/{amara3,kanya3}.json`, référence = vue de face de la
+    planche (`references/{amara,kanya}-focus-visage.png`, agrandie ×3, planche entière dans
+    `focus-visage-amara-kanya.png`) : yeux non agrandis (`yeux` 0), forme des lèvres de la 2.10.0 retirée (les lèvres
+    suivent la planche), plus de blush, relief du visage gardé (`bande` 0,85, `aplat` 0,35, `lisse` 0,3, contraste 1),
+    sourcils plus denses et plus sombres (Kanya un peu moins qu'Amara, comme sur la planche) ; corps, taille, peau du
+    corps et tenues inchangés (même chaîne visage → corps → taille → peau qu'en 2.10.0) ;
+  - moteur humain : nouveau visage de repos `determine` (`src/three/face.ts`, `FACE_BASES`) : paupières un peu lourdes,
+    regard légèrement plissé, aucun sourire, sourcils laissés au calme ; donné à Amara et Kanya dans leur profil
+    (`src/three/human/profiles.ts`). Un premier essai avec les sourcils abaissés dépassait le critère « sourcils à peine
+    froncés » (0,169 pour 0,15) : retiré, le test n'a pas été changé.
+- **Fichiers** : `public/coaches/mma-amara/photo.glb`, `photo-clean.glb`, `public/coaches/kanya/photo.glb`,
+  `src/three/face.ts`, `src/three/human/profiles.ts`, `src/ui/Lab.tsx` (commentaire), configurations et références.
+- **Tests** : `vitest src/three src/domain` : 987 réussis, 3 échoués → après correction du visage de repos, TEST RÉUSSI
+  pour `src/three/human` (170/170) ; TEST ÉCHOUÉ `expressions-v1160` « moins de 3,5 Mo » pour Amara, déjà en échec
+  avant (5,0 Mo en 2.10.0). Captures avant/après : `/mnt/project-files/coachs-fideles/focus-visage-2026-11-25/`.
+  Playwright NON EXÉCUTÉ (prototype).
+- **Restauration** : branche `restauration/avant-focus-visage-v2101` (= 2.10.0).
+
+## 2026-11-25 · prototype 2.10.1 (non publié, suite) · Amara : lèvres et cheveux ; Amara et Kanya : profil du visage
+
+- **Demandes** (Youssef, 25/11) : 14 h 19 « Pour Amara très bien, mais améliore juste un petit peu la teinte autour de
+  ses lèvres, elle n'est pas uniforme » ; 14 h 19 « Donne aussi un peu de volume aux cheveux de Amara » ; 14 h 38 « revoir
+  la morphologie du visage pour que ça ressemble à la maquette » (14 h 46 : « les 2 »).
+- **Constats vérifiés** (gros plan WebGL de la bouche, texture de la tête) : lèvre du haut brune et lèvre du bas rose
+  (relief de luminance du modèle gardé en entier), bande sombre sous la lèvre du bas, zones claires et sombres aux coins.
+  Cheveux : peints sur le crâne, sans volume. Profil : `visage.py` ne cale que la vue de face ; menton fuyant et nez,
+  lèvres moins avancés que sur la vue de profil de la planche.
+- **Corrections** :
+  - `visage.py`, maquillage : `levres_relief` (part du relief de luminance gardée dans la couleur des lèvres, 0,4) et
+    `pourtour_uni` (anneau de 14 mm autour du contour des lèvres : luminance de basse fréquence ramenée vers celle de la
+    peau à grande échelle ; teinte, grain et lèvres gardés). Amara et Kanya (chez Kanya, il retire aussi une ombre de
+    « moustache » apportée par la planche) ;
+  - `tools/generator/fideles/cheveux.py` (nouveau) : crâne peint soulevé le long de sa normale (9 mm, moins sur les
+    côtés), chignon agrandi ×1,35 depuis son attache. Garde-fou : le sommet de la tête ne monte pas, car le moteur prend
+    la taille du coach au sommet du maillage (`rig.ts`, `metrics.height`) et y proportionne les gestes : un premier essai
+    qui montait de 9 mm faisait échouer `intrusions.test.ts` (Amara, uchikomi o-soto-gari, main dans le tronc 11,2 cm
+    pour 7,5) ; corrigé dans l'outil, le test n'a pas été changé ;
+  - `tools/generator/fideles/profil.py` (nouveau) : profil de la planche (peau la plus en avant par ligne) et coupe
+    médiane de la tête, posés l'un sur l'autre par la racine du nez et le bas du menton ; l'écart d'avancée est appliqué
+    en profondeur, fondu sur les côtés, nul autour des yeux, normales recalculées. Essais : appliqué du front au menton,
+    il déformait le visage d'Amara (nez de la planche plus bas que celui du modèle) et creusait des plis aux lèvres de
+    Kanya ; gardé sous la lèvre du bas seulement (`de_mm` 78 Kanya, 88 Amara ; 6 et 4 mm au plus) : menton plus marqué ;
+  - chaîne : visage → profil → corps → taille → peau → cheveux (Amara). Configurations
+    `configs/{amara3,kanya3,amara-profil,kanya-profil}.json`. `src/boot/assetSizes.json` régénéré.
+- **Tests** : `vitest src/three src/engine` : 1247 réussis, 5 échoués, tous déjà en échec en 2.10.0 (fluidity ×2,
+  hooks-biomeca ×2, taille d'Amara > 3,5 Mo) ; `src/boot` 34/34. Playwright NON EXÉCUTÉ (prototype). Captures :
+  `/mnt/project-files/coachs-fideles/focus-visage-2026-11-25/amara-kanya-v2.jpg`, `amara-cheveux-avant-apres.jpg`.
+- **Tests de publication 2.10.1** : `npx vitest run` : TEST ÉCHOUÉ sur 5 tests sur 1878, les mêmes qu'en 2.10.0 (fluidity ×2,
+  hooks-biomeca ×2, taille du modèle d'Amara) ; 1872 réussis. `npx playwright test` : 327 réussis, 2 ignorés (Firebase),
+  8 échoués : 5 déjà instables ou en échec en 2.10.0 (boot:98, coach-suggest:147, coaching-hud:60, retour-v1420:29,
+  selection-coach-v4:56) ; training-layout:117 et :240 TEST RÉUSSI relancés seuls ; panneau-coach:329 (fluidité, rendu
+  CPU) échoué une 2e fois avec les tests de caméra en parallèle, puis TEST RÉUSSI 2 fois sur 2 seul, comme en 2.10.0 (2/2) :
+  mesure sensible à la charge, aucun test modifié.
+- **Restauration** : `restauration/avant-focus-visage-v2101` (= 2.10.0).
