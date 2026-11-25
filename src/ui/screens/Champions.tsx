@@ -16,7 +16,7 @@ import { useCatalog, useCatalogUser } from '../../store/catalog';
 import { useCustom } from '../../store/custom';
 import { useSettings } from '../../store/settings';
 import { MODE_HELP, MODE_LABEL } from '../training/plan';
-import { PageHead } from '../App';
+import { PageHead } from '../components/PageHead';
 import { DisciplineCard, DisciplineLabel, QueryChip, SectionHead, Sheet } from '../components';
 import { AppIcon, DisciplineIcon, LevelIcon, type GlyphId } from '../icons';
 import { useNavActions } from '../nav/store';

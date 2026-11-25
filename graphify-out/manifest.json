@@ -1942,10 +1942,10 @@
     "semantic_hash": "058ecf025c83f7d642ed8cdc9cbc6088"
   },
   "src/engine/phases.ts": {
-    "mtime": 1795631140.9406033,
-    "seen": 1795637957.4629834,
-    "ast_hash": "ec4727e9ee0901176e2b92d262a28542",
-    "semantic_hash": "ec4727e9ee0901176e2b92d262a28542"
+    "mtime": 1795639140.4196577,
+    "seen": 1795639194.508477,
+    "ast_hash": "07e0b237c609631275ad84d910c2e0f0",
+    "semantic_hash": ""
   },
   "src/engine/player.ts": {
     "mtime": 1795631140.9406033,
@@ -1978,10 +1978,10 @@
     "semantic_hash": "9e31d67395edf49910aafcda8081fd06"
   },
   "src/engine/study.ts": {
-    "mtime": 1795631140.9406033,
-    "seen": 1795637957.463117,
-    "ast_hash": "082ef39dbdbd986b0974a158623f4468",
-    "semantic_hash": "082ef39dbdbd986b0974a158623f4468"
+    "mtime": 1795639165.5274863,
+    "seen": 1795639194.5084872,
+    "ast_hash": "0b56d63255d7c580295c490e55a37d0d",
+    "semantic_hash": ""
   },
   "src/engine/v230.ts": {
     "mtime": 1795631140.9407575,
@@ -2536,10 +2536,10 @@
     "semantic_hash": "e32b1e4330da06f5386e2b3a9cf02bb8"
   },
   "src/three/face.ts": {
-    "mtime": 1795631140.9461496,
-    "seen": 1795637957.46501,
-    "ast_hash": "deaeabe085dd08a8543b100ef11680e3",
-    "semantic_hash": "deaeabe085dd08a8543b100ef11680e3"
+    "mtime": 1795639140.4213014,
+    "seen": 1795639194.5086029,
+    "ast_hash": "5d7440a31646cdb589137d1864c82fbb",
+    "semantic_hash": ""
   },
   "src/three/framing.ts": {
     "mtime": 1795631140.9461496,
@@ -2614,10 +2614,10 @@
     "semantic_hash": "f283e96e053588420dae62bb0f109574"
   },
   "src/three/human/capabilities.ts": {
-    "mtime": 1795631140.9466965,
-    "seen": 1795637957.465299,
-    "ast_hash": "f3760d584c06aeee639f6e79c5a5b85d",
-    "semantic_hash": "f3760d584c06aeee639f6e79c5a5b85d"
+    "mtime": 1795639140.4218001,
+    "seen": 1795639194.5086179,
+    "ast_hash": "46e276ecbb92ca67e3e8c4ca7023b4ac",
+    "semantic_hash": ""
   },
   "src/three/human/faceRender.ts": {
     "mtime": 1795631140.9466965,
@@ -3088,16 +3088,16 @@
     "semantic_hash": "6a3a7b81d783bd8493e03da30d404607"
   },
   "src/ui/nav/NavSheets.tsx": {
-    "mtime": 1795631140.9517856,
-    "seen": 1795637957.4668748,
-    "ast_hash": "9a032dd30abb0a4146afc63cabd752ef",
-    "semantic_hash": "9a032dd30abb0a4146afc63cabd752ef"
+    "mtime": 1795639165.5247204,
+    "seen": 1795639194.5087152,
+    "ast_hash": "42343c32e1aadddf066cf4c3b286d7fb",
+    "semantic_hash": ""
   },
   "src/ui/nav/SearchSheet.tsx": {
-    "mtime": 1795631140.9517856,
-    "seen": 1795637957.4668944,
-    "ast_hash": "746e2fcdb9bb2ddfd85f89ebbe79f7cc",
-    "semantic_hash": "746e2fcdb9bb2ddfd85f89ebbe79f7cc"
+    "mtime": 1795639150.5088518,
+    "seen": 1795639194.5087166,
+    "ast_hash": "f27d2110ac09ee68979d3b578663ef2d",
+    "semantic_hash": ""
   },
   "src/ui/nav/SectionTabs.tsx": {
     "mtime": 1795631140.9517856,
@@ -3215,10 +3215,10 @@
     "semantic_hash": "46ee1d284ac6127da94fec83b400aa87"
   },
   "src/ui/screens/Champions.tsx": {
-    "mtime": 1795631140.9529831,
-    "seen": 1795637957.467295,
-    "ast_hash": "cf46adc10125c931f2df617b7f00d1f1",
-    "semantic_hash": "cf46adc10125c931f2df617b7f00d1f1"
+    "mtime": 1795639140.4225297,
+    "seen": 1795639194.50874,
+    "ast_hash": "9f9df26d79e4ff2a7195b2de923c0218",
+    "semantic_hash": ""
   },
   "src/ui/screens/CoachHistory.tsx": {
     "mtime": 1795631140.9538755,
@@ -4619,5 +4619,1295 @@
     "seen": 1795637957.4715586,
     "ast_hash": "6b8355cc71e3191ac13b6a247075f5b9",
     "semantic_hash": "6b8355cc71e3191ac13b6a247075f5b9"
+  },
+  "src/engine/analysis.ts": {
+    "mtime": 1795639140.4188821,
+    "seen": 1795639194.5084436,
+    "ast_hash": "8d1e184971c8100a29288bf77ba6f0d5",
+    "semantic_hash": ""
+  },
+  "src/three/human/expressions.ts": {
+    "mtime": 1795639140.4202893,
+    "seen": 1795639194.508619,
+    "ast_hash": "b6189142866b11277a1b33725e4af522",
+    "semantic_hash": ""
+  },
+  "src/ui/nav/NavPanel.tsx": {
+    "mtime": 1795639150.5077827,
+    "seen": 1795639194.5087142,
+    "ast_hash": "c8d28bc80feb8b99df68c6d07f43017d",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1795631138.7659254,
+    "seen": 1795639194.5090964,
+    "ast_hash": "7b25ff7027752eb8eb691ea4de3e34e9",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1795638001.1266572,
+    "seen": 1795639194.509098,
+    "ast_hash": "f7554bbdeeedfd394d34da87824586aa",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1795631138.7659254,
+    "seen": 1795639194.5090992,
+    "ast_hash": "a6589981cc215ac074c9c62fa1165e9b",
+    "semantic_hash": ""
+  },
+  "docs/AMARA_MMA_COMPRESSION_REFERENCE.md": {
+    "mtime": 1795631139.623194,
+    "seen": 1795639194.5091,
+    "ast_hash": "01caddd35d51e70f6c5fc6ccca1a07b7",
+    "semantic_hash": ""
+  },
+  "docs/AMARA_SEMI_REALISTE_V1471.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.5091012,
+    "ast_hash": "d02f7a9f2e9c1c60f2f82cbd933fe073",
+    "semantic_hash": ""
+  },
+  "docs/AMARA_TENUES_V1379.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.509102,
+    "ast_hash": "661bbc9aecadb4b0e2948756938a8d16",
+    "semantic_hash": ""
+  },
+  "docs/ANDROID.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.509103,
+    "ast_hash": "6498c27daf4557679aa42d41419ce6d0",
+    "semantic_hash": ""
+  },
+  "docs/ANIMATIONS.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.5091038,
+    "ast_hash": "9408d69fece06936902ec86b7a14747c",
+    "semantic_hash": ""
+  },
+  "docs/AR.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.5091047,
+    "ast_hash": "1b5123530b43b14280c782958abd324f",
+    "semantic_hash": ""
+  },
+  "docs/ARCHITECTURE.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.5091057,
+    "ast_hash": "916fa04e854b3d30d098822160956fbc",
+    "semantic_hash": ""
+  },
+  "docs/AUDIT_DISCIPLINES.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.5091066,
+    "ast_hash": "ca1d9831ba7c62eb4bb807a1b86f0940",
+    "semantic_hash": ""
+  },
+  "docs/CATALOGUE.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.5091078,
+    "ast_hash": "45e02681f155a9830c18f25d44bec262",
+    "semantic_hash": ""
+  },
+  "docs/COACH_IA.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.509109,
+    "ast_hash": "9c558618efd983023c7a20ce4f3b462c",
+    "semantic_hash": ""
+  },
+  "docs/COMPTES.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.5091097,
+    "ast_hash": "f3e28d2ae1f34a2afd305862e555a425",
+    "semantic_hash": ""
+  },
+  "docs/CONFIDENTIALITE.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.5091105,
+    "ast_hash": "aee428b9cbe3080e965e2d6cee0e1a7a",
+    "semantic_hash": ""
+  },
+  "docs/DEPLOIEMENT.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.5091116,
+    "ast_hash": "403b16f738345e66721cca7cd6adcc24",
+    "semantic_hash": ""
+  },
+  "docs/DESIGN.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.5091124,
+    "ast_hash": "37c7e18ae78329516e6b1d5251b15e7f",
+    "semantic_hash": ""
+  },
+  "docs/ENRICHISSEMENT_DISCIPLINES.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.5091133,
+    "ast_hash": "bf82923d879752706dbb4ca434b4ae68",
+    "semantic_hash": ""
+  },
+  "docs/ETAT.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.509114,
+    "ast_hash": "b7f19d2631efdeaa8c029aa2c6bc90b0",
+    "semantic_hash": ""
+  },
+  "docs/HUMAN_CHARACTER_STANDARDS.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.5091152,
+    "ast_hash": "119d7fd4ed6b5dcd4605a7ef660a4b92",
+    "semantic_hash": ""
+  },
+  "docs/JOURNAL_CORRECTIONS.md": {
+    "mtime": 1795638001.1278327,
+    "seen": 1795639194.509116,
+    "ast_hash": "e74b67f7eca6520a7862db112539dc5a",
+    "semantic_hash": ""
+  },
+  "docs/LEGENDES.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.509117,
+    "ast_hash": "ada09572deeca48d424ca46d5ce06b41",
+    "semantic_hash": ""
+  },
+  "docs/LICENCES.md": {
+    "mtime": 1795631139.626163,
+    "seen": 1795639194.5091178,
+    "ast_hash": "db19c98e46a827721ee34506aa5c034a",
+    "semantic_hash": ""
+  },
+  "docs/NON_REGRESSION.md": {
+    "mtime": 1795631139.6287575,
+    "seen": 1795639194.5091188,
+    "ast_hash": "7cfe5e820d67cdc89e4964198f253605",
+    "semantic_hash": ""
+  },
+  "docs/PLAY_STORE.md": {
+    "mtime": 1795631139.6287575,
+    "seen": 1795639194.5091197,
+    "ast_hash": "1ee895eb8c09bc86c377082dcec05b16",
+    "semantic_hash": ""
+  },
+  "docs/PROGRES.md": {
+    "mtime": 1795631139.6287575,
+    "seen": 1795639194.5091207,
+    "ast_hash": "79a6cd9cbe70869f843e5748c75e420c",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/ANOMALIES.md": {
+    "mtime": 1795631139.6287575,
+    "seen": 1795639194.5091221,
+    "ast_hash": "29c42d74ad5f224dfc96ccc41f677f09",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/AUDIT_MOTEUR.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.509123,
+    "ast_hash": "68a4d940983cbedf1b68e8cd4f8df1c6",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/BIBLIOGRAPHIE.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.5091238,
+    "ast_hash": "e9d191f7006837ef5fcc42d5cf88fe41",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/INVENTAIRE.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.5091245,
+    "ast_hash": "df19592cc5a7f20f3b232ed36b19b130",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/MESURES_CHEVILLES.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.5091255,
+    "ast_hash": "824e658e3f26a60441ef47780f85a013",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/MESURES_FLUIDITE.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.5091264,
+    "ast_hash": "f40adb824914cdc409b82868d11f30e7",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/MESURES_GLISSEMENT.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.5091274,
+    "ast_hash": "a7fdc45c212c68250693529a0cc3e23d",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/MESURES_INTEGRITE.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.5091283,
+    "ast_hash": "ff60fc31a09ec0c65a13ac4b6b6d71ab",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/MESURES_INTRUSIONS.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.5091293,
+    "ast_hash": "8db9045e50fddb2d241e7451497f1665",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/MESURES_MOTEUR.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.5091302,
+    "ast_hash": "4b068f6b358fe6e8bdc9580e90bb8537",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/MESURES_SOL.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.509131,
+    "ast_hash": "548a2fd1032d2e7afc7af62bf9809491",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/MESURES_TORSIONS.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.5091321,
+    "ast_hash": "f3f3cdcbdd8f22bf7feb70f01684f116",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/METHODE.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.5091329,
+    "ast_hash": "2d2e396b0b7c7526736b42a229f354ef",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/PLAN_CORRECTION.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.5091338,
+    "ast_hash": "98c673475567aed940dca262e48af2d0",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/README.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.5091345,
+    "ast_hash": "f4fae2e79e1baaeb60d0c056b2f3424b",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/REGISTRE_VIDEOS.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.5091357,
+    "ast_hash": "21e80abc3408a16034cbfdc16d36fdfe",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/recherche/boxe.md": {
+    "mtime": 1795631139.630556,
+    "seen": 1795639194.5091367,
+    "ast_hash": "37b9bc1fb587f5988662347c63320418",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/recherche/judo-bjj.md": {
+    "mtime": 1795631139.6321967,
+    "seen": 1795639194.5091374,
+    "ast_hash": "f28cd2f060195c2362a674946abe56ba",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/recherche/kickboxing-muaythai.md": {
+    "mtime": 1795631139.6321967,
+    "seen": 1795639194.509138,
+    "ast_hash": "b242dbd59d10df6338d9557964130cea",
+    "semantic_hash": ""
+  },
+  "docs/audit-biomecanique/recherche/mma.md": {
+    "mtime": 1795631139.6321967,
+    "seen": 1795639194.509139,
+    "ast_hash": "24189cbae8c5425219e7282a5355ffa6",
+    "semantic_hash": ""
+  },
+  "docs/catalogue-valide/SOURCES.md": {
+    "mtime": 1795631139.6321967,
+    "seen": 1795639194.5091398,
+    "ast_hash": "74196dca0138cb2fd3a23bd5621beb87",
+    "semantic_hash": ""
+  },
+  "docs/coachs-3d/CORRECTIFS_IDENTIFIES.md": {
+    "mtime": 1795631139.633698,
+    "seen": 1795639194.5091407,
+    "ast_hash": "d577f8399209f117be2b5dcd09eeb4fb",
+    "semantic_hash": ""
+  },
+  "docs/coachs-champions/AUDIT.md": {
+    "mtime": 1795631139.633698,
+    "seen": 1795639194.5091414,
+    "ast_hash": "fb29f8fd9e6704451979629ecc2a5111",
+    "semantic_hash": ""
+  },
+  "docs/coachs-champions/CATALOGUE.md": {
+    "mtime": 1795631139.6355925,
+    "seen": 1795639194.5091422,
+    "ast_hash": "b71136fbeb99bba5d8fbef1446519d35",
+    "semantic_hash": ""
+  },
+  "docs/coachs-champions/PLAN.md": {
+    "mtime": 1795631139.6355925,
+    "seen": 1795639194.5091484,
+    "ast_hash": "5f04a670df0b586cab45a32e5d13106c",
+    "semantic_hash": ""
+  },
+  "docs/design/navigation-dynamique-reference.html": {
+    "mtime": 1795631139.6355925,
+    "seen": 1795639194.5091496,
+    "ast_hash": "115cf77c2972980e6b5ff57b655af204",
+    "semantic_hash": ""
+  },
+  "docs/design/progres/README.md": {
+    "mtime": 1795631139.6487575,
+    "seen": 1795639194.5091505,
+    "ast_hash": "07094858f7299aec00f74e0467f319ff",
+    "semantic_hash": ""
+  },
+  "docs/icones/INVENTAIRE.md": {
+    "mtime": 1795631139.6647575,
+    "seen": 1795639194.5091517,
+    "ast_hash": "58f25f355747f08c0f62d26912e66d2d",
+    "semantic_hash": ""
+  },
+  "docs/icones/README.md": {
+    "mtime": 1795631139.6673028,
+    "seen": 1795639194.5091531,
+    "ast_hash": "cbb5b5b7746d8b6227aa995b8ce72dbe",
+    "semantic_hash": ""
+  },
+  "docs/monetisation/DECISIONS.md": {
+    "mtime": 1795631139.6807575,
+    "seen": 1795639194.509154,
+    "ast_hash": "0e659ef12ed84bc6104735452e8ec93d",
+    "semantic_hash": ""
+  },
+  "docs/moteur/CHANGELOG.md": {
+    "mtime": 1795631139.6807575,
+    "seen": 1795639194.5091548,
+    "ast_hash": "afa6dc7e90bd05c2f4d9057f2e769abe",
+    "semantic_hash": ""
+  },
+  "docs/moteur/README.md": {
+    "mtime": 1795631139.6857874,
+    "seen": 1795639194.5091555,
+    "ast_hash": "cb9fc954b96bfa642bd98bf2d86b64a7",
+    "semantic_hash": ""
+  },
+  "docs/v029/AUDIT_REALISME.md": {
+    "mtime": 1795631139.6927574,
+    "seen": 1795639194.5091567,
+    "ast_hash": "14506da49e52b280205ad38d664cd880",
+    "semantic_hash": ""
+  },
+  "docs/v029/BIOMECA_LOT1.md": {
+    "mtime": 1795631139.697284,
+    "seen": 1795639194.5091577,
+    "ast_hash": "7160061802f38119f49fa67a5b5d8a02",
+    "semantic_hash": ""
+  },
+  "docs/v029/CORRECTIF_3D.md": {
+    "mtime": 1795631139.697284,
+    "seen": 1795639194.5091584,
+    "ast_hash": "27beca2c70f2f3161a398de446f592b3",
+    "semantic_hash": ""
+  },
+  "docs/v029/LOT1_PILOSITE.md": {
+    "mtime": 1795631139.697284,
+    "seen": 1795639194.5091593,
+    "ast_hash": "1f3fba54b2a583a84692e65a9f7ee914",
+    "semantic_hash": ""
+  },
+  "docs/v029/LOT2_PEAU.md": {
+    "mtime": 1795631139.697284,
+    "seen": 1795639194.5091608,
+    "ast_hash": "e9cf12484ecf3ba359ff8fe650d5655e",
+    "semantic_hash": ""
+  },
+  "docs/v029/ROCKETBOX.md": {
+    "mtime": 1795631139.697284,
+    "seen": 1795639194.5091615,
+    "ast_hash": "58433c697e7cc27f89fb72655f596c6b",
+    "semantic_hash": ""
+  },
+  "docs/v031/MOTEUR_3D.md": {
+    "mtime": 1795631139.7007575,
+    "seen": 1795639194.5091622,
+    "ast_hash": "be1409c1ed27f8fc545b7a49d102c813",
+    "semantic_hash": ""
+  },
+  "docs/v032/EXTENSION.md": {
+    "mtime": 1795631139.7039177,
+    "seen": 1795639194.5091634,
+    "ast_hash": "2d1144da32197884e77eb6bc29db9304",
+    "semantic_hash": ""
+  },
+  "docs/v032/NAVIGATION.md": {
+    "mtime": 1795631139.7054267,
+    "seen": 1795639194.509164,
+    "ast_hash": "d0a94588eb4ff9f6f5ecee7459a51397",
+    "semantic_hash": ""
+  },
+  "docs/v032/TENUES_PREMIUM.md": {
+    "mtime": 1795631139.7054267,
+    "seen": 1795639194.509165,
+    "ast_hash": "1abbee443942083406c74135ce68ce48",
+    "semantic_hash": ""
+  },
+  "docs/v033/EMBLEMES.md": {
+    "mtime": 1795631139.7054267,
+    "seen": 1795639194.509166,
+    "ast_hash": "ea411a5e988d0b32a64e4633916525a2",
+    "semantic_hash": ""
+  },
+  "docs/v033/ENTRAINER.md": {
+    "mtime": 1795631139.7060015,
+    "seen": 1795639194.509167,
+    "ast_hash": "78c2d433b11658bc00bac55499cb1bef",
+    "semantic_hash": ""
+  },
+  "docs/v034/PROGRES.md": {
+    "mtime": 1795631139.7065895,
+    "seen": 1795639194.5091677,
+    "ast_hash": "9fe25f621b314092739516894001be72",
+    "semantic_hash": ""
+  },
+  "docs/v035/COACHING_HUD.md": {
+    "mtime": 1795631139.7100415,
+    "seen": 1795639194.5091686,
+    "ast_hash": "247a218e30ab8a78d0681ee7dec858d6",
+    "semantic_hash": ""
+  },
+  "docs/v035/verif-poses-v034.test.ts.txt": {
+    "mtime": 1795631139.7167575,
+    "seen": 1795639194.5091696,
+    "ast_hash": "dca3fce35c7cbba6041b10789dbbbd53",
+    "semantic_hash": ""
+  },
+  "docs/v036/ENTRAINER_TECHNIQUES.md": {
+    "mtime": 1795631139.7167575,
+    "seen": 1795639194.5091708,
+    "ast_hash": "a2b32096737cb093da449e4b62388c71",
+    "semantic_hash": ""
+  },
+  "docs/v037/COMPTES_V037.md": {
+    "mtime": 1795631139.7196438,
+    "seen": 1795639194.5091715,
+    "ast_hash": "6399242262636531d5fd2580eb402c52",
+    "semantic_hash": ""
+  },
+  "docs/v038/CREATEUR_V2.md": {
+    "mtime": 1795631139.7224588,
+    "seen": 1795639194.5091724,
+    "ast_hash": "6e93ca93d9fa14a644b78b39a4484302",
+    "semantic_hash": ""
+  },
+  "docs/v039/PROGRES_V2.md": {
+    "mtime": 1795631139.7287574,
+    "seen": 1795639194.5091732,
+    "ast_hash": "8ac6bfd8e42db3e65a099725e1ea5717",
+    "semantic_hash": ""
+  },
+  "docs/v040/PREMIUM.md": {
+    "mtime": 1795631139.7419198,
+    "seen": 1795639194.5091743,
+    "ast_hash": "bbacf540ee1723b9b9919beeb3af0ec9",
+    "semantic_hash": ""
+  },
+  "docs/v041/INVENTAIRE_PROGRAMMES.md": {
+    "mtime": 1795631139.7487574,
+    "seen": 1795639194.5091753,
+    "ast_hash": "840fc99afe08ed16c0ab72192659da42",
+    "semantic_hash": ""
+  },
+  "docs/v041/MATRICE_SOURCES.md": {
+    "mtime": 1795631139.753693,
+    "seen": 1795639194.509176,
+    "ast_hash": "e6c92d6b69ea21022dcbf5eb7c7ac886",
+    "semantic_hash": ""
+  },
+  "docs/v041/NON_EXECUTABLES.md": {
+    "mtime": 1795631139.753693,
+    "seen": 1795639194.5091767,
+    "ast_hash": "d4f55e0c793a90778b4d0443764be073",
+    "semantic_hash": ""
+  },
+  "docs/v041/PROGRAMMES.md": {
+    "mtime": 1795631139.753693,
+    "seen": 1795639194.5091777,
+    "ast_hash": "99bd2641f40499a496df588e150d5308",
+    "semantic_hash": ""
+  },
+  "docs/v042-crochets/MESURES_CROCHETS.md": {
+    "mtime": 1795631139.764868,
+    "seen": 1795639194.5091786,
+    "ast_hash": "c0497b376053ba8244a6c0236b32500b",
+    "semantic_hash": ""
+  },
+  "docs/v042-crochets/RAPPORT.md": {
+    "mtime": 1795631139.7681186,
+    "seen": 1795639194.5091796,
+    "ast_hash": "12ad581732d6e2dc3dada3a86fadf4d2",
+    "semantic_hash": ""
+  },
+  "docs/v043-equipements/AUDIT.md": {
+    "mtime": 1795631139.7727575,
+    "seen": 1795639194.5091808,
+    "ast_hash": "73d71377b41ad4a5ec15571b8ae13ea3",
+    "semantic_hash": ""
+  },
+  "docs/v043-equipements/RAPPORT.md": {
+    "mtime": 1795631139.776388,
+    "seen": 1795639194.5091817,
+    "ast_hash": "78b3496e24580208fd15f7ca35cc7897",
+    "semantic_hash": ""
+  },
+  "docs/v044-navigation/NAVIGATION_CONTEXTUELLE.md": {
+    "mtime": 1795631139.7847574,
+    "seen": 1795639194.5091827,
+    "ast_hash": "80130af89ae551ae4adaf0026517663c",
+    "semantic_hash": ""
+  },
+  "docs/v045-premium/RAPPORT.md": {
+    "mtime": 1795631139.7899678,
+    "seen": 1795639194.5091834,
+    "ast_hash": "f4f13aae3fdc3144b0bb7a3ad8d5d55f",
+    "semantic_hash": ""
+  },
+  "docs/v0451-navigation/BARRE_MONOCHROME.md": {
+    "mtime": 1795631139.8007574,
+    "seen": 1795639194.5091846,
+    "ast_hash": "b420550496f8234766900adc68217151",
+    "semantic_hash": ""
+  },
+  "docs/v046-encyclopedie/ILLUSTRATIONS.md": {
+    "mtime": 1795631139.806274,
+    "seen": 1795639194.5091856,
+    "ast_hash": "16c61bd8607e6ff3915df615744ec8ad",
+    "semantic_hash": ""
+  },
+  "docs/v046-encyclopedie/INVENTAIRE.md": {
+    "mtime": 1795631139.8072212,
+    "seen": 1795639194.5091863,
+    "ast_hash": "ccd3fe8d794d3414ddde0a20f01f55b9",
+    "semantic_hash": ""
+  },
+  "docs/v046-encyclopedie/RAPPORT.md": {
+    "mtime": 1795631139.8072212,
+    "seen": 1795639194.509187,
+    "ast_hash": "10257c9a5697d2f45149a4f7f3844d23",
+    "semantic_hash": ""
+  },
+  "docs/v046-encyclopedie/SOURCES.md": {
+    "mtime": 1795631139.8072212,
+    "seen": 1795639194.5091882,
+    "ast_hash": "d6bf10b2b36a47d7ec7218afbe11b448",
+    "semantic_hash": ""
+  },
+  "docs/v047-chrono/RAPPORT.md": {
+    "mtime": 1795631139.8167574,
+    "seen": 1795639194.509189,
+    "ast_hash": "c77eda6e2845e51ca44146c691f381ca",
+    "semantic_hash": ""
+  },
+  "docs/v048-chrono/RAPPORT.md": {
+    "mtime": 1795631139.8247573,
+    "seen": 1795639194.5091898,
+    "ast_hash": "2f6a595e61463f50c6ad4692ae0406ef",
+    "semantic_hash": ""
+  },
+  "docs/v049-moteur/RAPPORT.md": {
+    "mtime": 1795631139.8327575,
+    "seen": 1795639194.5091908,
+    "ast_hash": "6688f46d0939c32dbf8c86efa5705d85",
+    "semantic_hash": ""
+  },
+  "docs/v100/RAPPORT.md": {
+    "mtime": 1795631139.8407574,
+    "seen": 1795639194.5091918,
+    "ast_hash": "5b2b0162bd05bc33d15723869de12eb7",
+    "semantic_hash": ""
+  },
+  "docs/v110/RAPPORT.md": {
+    "mtime": 1795631139.864773,
+    "seen": 1795639194.5091927,
+    "ast_hash": "e3d1eeeb2810fc609c8b54d375498e11",
+    "semantic_hash": ""
+  },
+  "docs/v1100/MESURES_DEFORMATIONS.md": {
+    "mtime": 1795638906.1758866,
+    "seen": 1795639194.5091934,
+    "ast_hash": "72f8455c1cadce895febc13044eec2af",
+    "semantic_hash": ""
+  },
+  "docs/v1100/RAPPORT.md": {
+    "mtime": 1795631139.8740163,
+    "seen": 1795639194.5091941,
+    "ast_hash": "aa60b5ed1ee365998f98be3a37705b5b",
+    "semantic_hash": ""
+  },
+  "docs/v120/RAPPORT.md": {
+    "mtime": 1795631139.9138775,
+    "seen": 1795639194.509195,
+    "ast_hash": "91f68e8cd68380fb72aa74ff035139c4",
+    "semantic_hash": ""
+  },
+  "docs/v1240/SALLES.md": {
+    "mtime": 1795631139.9247575,
+    "seen": 1795639194.5091963,
+    "ast_hash": "269230d1f1766b5ecd089641c514533d",
+    "semantic_hash": ""
+  },
+  "docs/v130/RAPPORT.md": {
+    "mtime": 1795631139.9607575,
+    "seen": 1795639194.5091972,
+    "ast_hash": "c8342e1720cef03fc5721297edf6604a",
+    "semantic_hash": ""
+  },
+  "docs/v1380/MESURES_TENUES_AMARA.md": {
+    "mtime": 1795638899.6958861,
+    "seen": 1795639194.5091984,
+    "ast_hash": "73d5382beecf92e1717c5a423110b207",
+    "semantic_hash": ""
+  },
+  "docs/v140/RAPPORT.md": {
+    "mtime": 1795631139.9887574,
+    "seen": 1795639194.5091991,
+    "ast_hash": "5f326cd4162f0601a1a0ad5e9a97e937",
+    "semantic_hash": ""
+  },
+  "docs/v1442/MESURES_SHORTS.md": {
+    "mtime": 1795638906.5518866,
+    "seen": 1795639194.5091999,
+    "ast_hash": "818f20a713fe5e72f9f186fe7411d211",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/MANIFEST.md": {
+    "mtime": 1795631139.9973161,
+    "seen": 1795639194.5092008,
+    "ast_hash": "09ca3b6f3398a441ebcbef816190e659",
+    "semantic_hash": ""
+  },
+  "docs/v1560-kimonos/MANIFEST.md": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.509202,
+    "ast_hash": "338447b8d2453d47ac0913f046164d9b",
+    "semantic_hash": ""
+  },
+  "docs/v1564-reorganisation/RAPPORT.md": {
+    "mtime": 1795631140.0287576,
+    "seen": 1795639194.509203,
+    "ast_hash": "dee28d8f42522a7274e3ae4181023b41",
+    "semantic_hash": ""
+  },
+  "docs/v210/SELECTION_COACH_V4.md": {
+    "mtime": 1795631140.0287576,
+    "seen": 1795639194.509204,
+    "ast_hash": "0eb8f49de4e72d041bf512ea9f56b695",
+    "semantic_hash": ""
+  },
+  "docs/v220/RAPPORT_V220.md": {
+    "mtime": 1795631140.0447574,
+    "seen": 1795639194.509205,
+    "ast_hash": "31364265af7391d386a6b30488dcccc2",
+    "semantic_hash": ""
+  },
+  "docs/v220/audit/coutures.txt": {
+    "mtime": 1795631140.0495117,
+    "seen": 1795639194.5092058,
+    "ast_hash": "988fef302d0823421bc567675b0db929",
+    "semantic_hash": ""
+  },
+  "docs/v230/AUDIT_MESURES.md": {
+    "mtime": 1795631140.0847576,
+    "seen": 1795639194.5092068,
+    "ast_hash": "f90161495b0dbedd37003d0d45f8a027",
+    "semantic_hash": ""
+  },
+  "docs/v230/RAPPORT_V230.md": {
+    "mtime": 1795631140.0868027,
+    "seen": 1795639194.5092075,
+    "ast_hash": "69d2e490188d1a743ff160dcf69b8edf",
+    "semantic_hash": ""
+  },
+  "docs/v240/MESURES_PLIS_SHORTS.md": {
+    "mtime": 1795638976.2838907,
+    "seen": 1795639194.5092087,
+    "ast_hash": "2963e7b6a215f91b7c765be5d1943128",
+    "semantic_hash": ""
+  },
+  "docs/v240/RAPPORT_LOT3.md": {
+    "mtime": 1795631140.1143987,
+    "seen": 1795639194.5092096,
+    "ast_hash": "6fda40f68b325403a7fd71699f94e1e9",
+    "semantic_hash": ""
+  },
+  "docs/v250/MESURES_TORSION.md": {
+    "mtime": 1795638912.755887,
+    "seen": 1795639194.5092106,
+    "ast_hash": "7165406eb16f763f0d42ec102a09cc26",
+    "semantic_hash": ""
+  },
+  "docs/v250/RAPPORT_TORSION.md": {
+    "mtime": 1795631140.1233487,
+    "seen": 1795639194.5092113,
+    "ast_hash": "c8a45a7286c2325f3fe6b5dda7c68fb2",
+    "semantic_hash": ""
+  },
+  "docs/visuels/CONTROLE_POSES.md": {
+    "mtime": 1795631140.1967576,
+    "seen": 1795639194.5092125,
+    "ast_hash": "7ce0d7f15439f49d444093ccfe627713",
+    "semantic_hash": ""
+  },
+  "docs/visuels/README.md": {
+    "mtime": 1795631140.201388,
+    "seen": 1795639194.5092134,
+    "ast_hash": "1ea2028cc8bcc8fbd2ef695d635382a2",
+    "semantic_hash": ""
+  },
+  "index.html": {
+    "mtime": 1795631140.2047575,
+    "seen": 1795639194.5092142,
+    "ast_hash": "16c9f8f96095c270286f6a9e3697627d",
+    "semantic_hash": ""
+  },
+  "tools/generator/README.md": {
+    "mtime": 1795631141.0704968,
+    "seen": 1795639194.509215,
+    "ast_hash": "018f466f681fa70d8919af3b8d945636",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/README.md": {
+    "mtime": 1795631141.0708435,
+    "seen": 1795639194.5092163,
+    "ast_hash": "9f25017394172689774b1bb85a59ce87",
+    "semantic_hash": ""
+  },
+  "tools/generator/kadir/donnees/realisme/README.md": {
+    "mtime": 1795631141.2847576,
+    "seen": 1795639194.5092173,
+    "ast_hash": "42466819bb2d7a05fbe182015dd2a415",
+    "semantic_hash": ""
+  },
+  "tools/generator/kanya/README.md": {
+    "mtime": 1795631141.3000712,
+    "seen": 1795639194.509218,
+    "ast_hash": "787e4e76f41b281feb9a9734d96e6823",
+    "semantic_hash": ""
+  },
+  "tools/generator/kanya/polices/OFL-Kanit.txt": {
+    "mtime": 1795631141.3077192,
+    "seen": 1795639194.509219,
+    "ast_hash": "33725eba28b9e10018525fb642d60e55",
+    "semantic_hash": ""
+  },
+  "tools/generator/victor/README.md": {
+    "mtime": 1795631141.3087575,
+    "seen": 1795639194.50922,
+    "ast_hash": "78adaa90b9bb5714e022169cb56e8f27",
+    "semantic_hash": ""
+  },
+  "tools/icon-lab/index.html": {
+    "mtime": 1795631141.3167574,
+    "seen": 1795639194.5092206,
+    "ast_hash": "006c2cc9bba23842f5e5990cd9f621e9",
+    "semantic_hash": ""
+  },
+  "docs/design/progres/Combat_Shadow_Studio_Plaquette_Progres.pdf": {
+    "mtime": 1795631139.6487575,
+    "seen": 1795639194.5092213,
+    "ast_hash": "cc7bc873fc767d44be6b7c9f04ea6da0",
+    "semantic_hash": ""
+  },
+  "docs/design/progres/maquettes-progres-10-ecrans.png": {
+    "mtime": 1795631139.6607575,
+    "seen": 1795639194.5092225,
+    "ast_hash": "72df207972cb50beb82199dc55799c36",
+    "semantic_hash": ""
+  },
+  "docs/ecrans-entrainement.png": {
+    "mtime": 1795631139.6647575,
+    "seen": 1795639194.5092235,
+    "ast_hash": "aee08e24922a7ef84e83841f605e28ad",
+    "semantic_hash": ""
+  },
+  "docs/icones/planche-controle.png": {
+    "mtime": 1795631139.6807575,
+    "seen": 1795639194.5092242,
+    "ast_hash": "64591e2ddcc5a07ae429f33e66b3d05e",
+    "semantic_hash": ""
+  },
+  "docs/play-store/visuels/banniere-1024x500.png": {
+    "mtime": 1795631139.6858442,
+    "seen": 1795639194.5092254,
+    "ast_hash": "3888e7bfeb47ca3b454e7a2a84d85f7f",
+    "semantic_hash": ""
+  },
+  "docs/play-store/visuels/capture-1-accueil.png": {
+    "mtime": 1795631139.687228,
+    "seen": 1795639194.5092266,
+    "ast_hash": "157bc83b7162b0519967ee6f2074d309",
+    "semantic_hash": ""
+  },
+  "docs/play-store/visuels/capture-2-entrainer.png": {
+    "mtime": 1795631139.6887574,
+    "seen": 1795639194.5092273,
+    "ast_hash": "01b8c1fbc0a021da1496f42d283d6d78",
+    "semantic_hash": ""
+  },
+  "docs/play-store/visuels/capture-3-seance.png": {
+    "mtime": 1795631139.6887574,
+    "seen": 1795639194.5092282,
+    "ast_hash": "b77b1f12a5e70206de706f2dcfbcfe4f",
+    "semantic_hash": ""
+  },
+  "docs/play-store/visuels/capture-4-techniques.png": {
+    "mtime": 1795631139.6887574,
+    "seen": 1795639194.509229,
+    "ast_hash": "22e111007f529a9fb9bb9f5e7cf99b61",
+    "semantic_hash": ""
+  },
+  "docs/play-store/visuels/capture-5-coach.png": {
+    "mtime": 1795631139.6927574,
+    "seen": 1795639194.50923,
+    "ast_hash": "4bc3ada4efc9d3a9cd08ea7cbc355a36",
+    "semantic_hash": ""
+  },
+  "docs/play-store/visuels/capture-6-encyclopedie.png": {
+    "mtime": 1795631139.6927574,
+    "seen": 1795639194.5092309,
+    "ast_hash": "b3fd18cf67ab7bf4bda16ea4284b817f",
+    "semantic_hash": ""
+  },
+  "docs/play-store/visuels/icone-512.png": {
+    "mtime": 1795631139.6927574,
+    "seen": 1795639194.5092316,
+    "ast_hash": "4048581c8d59a27f8c4a5b31dfce50e7",
+    "semantic_hash": ""
+  },
+  "docs/v048-chrono/planche-clair.png": {
+    "mtime": 1795631139.830061,
+    "seen": 1795639194.5092323,
+    "ast_hash": "a8538248a4209abc860fd6be9ac2ea42",
+    "semantic_hash": ""
+  },
+  "docs/v048-chrono/planche-sombre.png": {
+    "mtime": 1795631139.8327575,
+    "seen": 1795639194.5092335,
+    "ast_hash": "82e12c812ab3d7e15131777dbb7a0a7d",
+    "semantic_hash": ""
+  },
+  "docs/v049-moteur/avant-apres-lumiere.png": {
+    "mtime": 1795631139.8353355,
+    "seen": 1795639194.5092344,
+    "ast_hash": "d80a519d08d1c4902bd48d5622082e5e",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-bjj.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.5092354,
+    "ast_hash": "cb405e1de7bfe993bc1ad7122a9599d2",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-boxe.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.5092363,
+    "ast_hash": "c0dbf13af82dc5833da5b69c5761f1db",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-bras.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.5092373,
+    "ast_hash": "0bca8b3a28f226ade9a5df11a18e69b4",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-cheville.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.5092382,
+    "ast_hash": "726760667c0ffac55abe5e73f280cd61",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-clinch.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.5092392,
+    "ast_hash": "0948fd0416d7c5121451499f6145b05e",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-coude.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.5092402,
+    "ast_hash": "a6a15e6617c92b24431b75dc20323f4a",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-dos.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.509241,
+    "ast_hash": "f42f0593348224d810ec74abe4f9052d",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-face.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.509242,
+    "ast_hash": "8109eaf59b0d25269d2161f93e4b9f71",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-genou.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.5092428,
+    "ast_hash": "d4405ca1c3662e6382d93af0952e52ce",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-hk.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.5092442,
+    "ast_hash": "882780e6d0ab3eb7f23fe6da45eadc05",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-judo.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.509245,
+    "ast_hash": "323e425e48e8036999c5b386557129a9",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-kick.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.5092459,
+    "ast_hash": "fdbc41f037fb78bb544d2de637978bd3",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-mma.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.509247,
+    "ast_hash": "b09a394a8add9ca4618ce15d5e624123",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-profil.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.509248,
+    "ast_hash": "45c1ef589575ae4869c1e44d6dd1e0a0",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-short.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.509249,
+    "ast_hash": "bc070db3a2a9c1af39ebc31472419cbd",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-tete-dos.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.5092497,
+    "ast_hash": "791191e867c249526642433888f71fe6",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-tete-face.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.5092509,
+    "ast_hash": "639c2d08d8c85e5cf1ab701a750d2e7b",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-tete-profil.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.5092516,
+    "ast_hash": "4163021234be2ec4ca9ce2fffb340d9f",
+    "semantic_hash": ""
+  },
+  "docs/v1540/kanya/k-trois-quarts.jpg": {
+    "mtime": 1795631139.9973426,
+    "seen": 1795639194.5092525,
+    "ast_hash": "09c0845e7e9309171b51d1e58f4a938e",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/amara-focus-visage.png": {
+    "mtime": 1795631141.0710962,
+    "seen": 1795639194.5092533,
+    "ast_hash": "bb20ff730782bdba871117eadf0c262e",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/amara-pied.png": {
+    "mtime": 1795631141.0727575,
+    "seen": 1795639194.5092545,
+    "ast_hash": "78958dbc990b6f9659e567a938b25dd9",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/amara-planche.png": {
+    "mtime": 1795631141.0767574,
+    "seen": 1795639194.5092552,
+    "ast_hash": "f13eb93f0397eee618f42646fc387904",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/amara-planche2.png": {
+    "mtime": 1795631141.0807576,
+    "seen": 1795639194.5092561,
+    "ast_hash": "30c701578736c8750d638ea895959ea4",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/ensemble-6-coachs.png": {
+    "mtime": 1795631141.0887575,
+    "seen": 1795639194.509257,
+    "ast_hash": "178e4fe632fcd1471b833d294126febd",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/focus-visage-amara-kanya.png": {
+    "mtime": 1795631141.0927575,
+    "seen": 1795639194.5092578,
+    "ast_hash": "c776d6d84b41c278539ebe50af56cd3d",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/inaya-pied.png": {
+    "mtime": 1795631141.0967574,
+    "seen": 1795639194.5092587,
+    "ast_hash": "8c6fab577d3fcde9fa56acb6811a99da",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/inaya-planche.png": {
+    "mtime": 1795631141.1007576,
+    "seen": 1795639194.5092595,
+    "ast_hash": "7a7fe15bc4c45888e5e4dac068f356af",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/inaya-planche2.png": {
+    "mtime": 1795631141.1047575,
+    "seen": 1795639194.5092607,
+    "ast_hash": "ba860306e1e8907acc200c5c909b4bfd",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/kadir-pied.png": {
+    "mtime": 1795631141.1087575,
+    "seen": 1795639194.5092614,
+    "ast_hash": "99eabb5ad7643f5c49bdfe3920a2d646",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/kadir-planche.png": {
+    "mtime": 1795631141.1167576,
+    "seen": 1795639194.5092623,
+    "ast_hash": "73f83bfcc738fa36c6cbc1c16917fe80",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/kadir-planche2.png": {
+    "mtime": 1795631141.1207576,
+    "seen": 1795639194.509263,
+    "ast_hash": "d9c0c0e428238532eeb792b231d6d26c",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/kanya-focus-visage.png": {
+    "mtime": 1795631141.1207576,
+    "seen": 1795639194.5092642,
+    "ast_hash": "5c89e8d809a64f921773001213acb644",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/kanya-pied.png": {
+    "mtime": 1795631141.1247575,
+    "seen": 1795639194.509265,
+    "ast_hash": "42793e5764b71999ec6775252bad538e",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/kanya-planche.png": {
+    "mtime": 1795631141.1287575,
+    "seen": 1795639194.509266,
+    "ast_hash": "762ac56e87aa015d6439bb969d696bb3",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/kanya-planche2.png": {
+    "mtime": 1795631141.1327574,
+    "seen": 1795639194.5092666,
+    "ast_hash": "9bad114dcd513b798802831ae1046b7a",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/nael-pied.png": {
+    "mtime": 1795631141.1327574,
+    "seen": 1795639194.5092678,
+    "ast_hash": "37f033b0b73904d68012ee726b28a0f6",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/nael-planche.png": {
+    "mtime": 1795631141.1407576,
+    "seen": 1795639194.5092685,
+    "ast_hash": "fe2a945376baec943f2beb0ed80096c7",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/nael-planche2.png": {
+    "mtime": 1795631141.1447575,
+    "seen": 1795639194.5092692,
+    "ast_hash": "668b96d19f50a54af0d038b6a4f8fa6c",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/premier-envoi-amara-blonde.png": {
+    "mtime": 1795631141.1607575,
+    "seen": 1795639194.5092702,
+    "ast_hash": "9ddccfbf8588b7d45b47e8d3ca70cdcd",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/premier-envoi-inaya-brune.png": {
+    "mtime": 1795631141.1727576,
+    "seen": 1795639194.5092716,
+    "ast_hash": "10242b78e1b6c7648682dd721aa29dab",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/premier-envoi-kanya.png": {
+    "mtime": 1795631141.1887574,
+    "seen": 1795639194.5092726,
+    "ast_hash": "274daccf27055052b120dd307b794d94",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/premier-envoi-nael-barbu.png": {
+    "mtime": 1795631141.2047575,
+    "seen": 1795639194.5092733,
+    "ast_hash": "3f46a00659598cc93eec49b2c2c25f17",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/premier-envoi-victor-brun.png": {
+    "mtime": 1795631141.2167575,
+    "seen": 1795639194.5092745,
+    "ast_hash": "9501cfef90d2ce7c5da96c89bada96ad",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/souhait-femmes-2026-11-24.png": {
+    "mtime": 1795631141.2287576,
+    "seen": 1795639194.5092752,
+    "ast_hash": "9d1d4a0fae4d5d12905993e6f9cf53df",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/victor-pied.png": {
+    "mtime": 1795631141.2487576,
+    "seen": 1795639194.5092762,
+    "ast_hash": "e84fec15e47eb4d2a7490cffba23d808",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/victor-planche.png": {
+    "mtime": 1795631141.2527575,
+    "seen": 1795639194.5092769,
+    "ast_hash": "0e499fe4567e18356387b369011b1972",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/references/victor-planche2.png": {
+    "mtime": 1795631141.2607574,
+    "seen": 1795639194.509278,
+    "ast_hash": "b75cfac47455dba82553ffaeecaefad2",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/victor/body_color.jpg": {
+    "mtime": 1795631141.2607574,
+    "seen": 1795639194.5092788,
+    "ast_hash": "7791f4cf66535646854733e431a49a6f",
+    "semantic_hash": ""
+  },
+  "tools/generator/fideles/victor/head_color.jpg": {
+    "mtime": 1795631141.2647576,
+    "seen": 1795639194.5092797,
+    "ast_hash": "9611c4c9addd8b6a72d29a670f620c53",
+    "semantic_hash": ""
+  },
+  "tools/generator/kadir/donnees/realisme/corps.jpg": {
+    "mtime": 1795631141.2867708,
+    "seen": 1795639194.5092804,
+    "ast_hash": "6f90043cc18809fcb587b23c31bf4bc9",
+    "semantic_hash": ""
+  },
+  "tools/generator/kadir/donnees/realisme/normale.jpg": {
+    "mtime": 1795631141.2927575,
+    "seen": 1795639194.5092816,
+    "ast_hash": "d95d6512e9bb735e0b03a07b6eeebfef",
+    "semantic_hash": ""
+  },
+  "tools/generator/kadir/donnees/realisme/rugosite.jpg": {
+    "mtime": 1795631141.2927575,
+    "seen": 1795639194.5092826,
+    "ast_hash": "092d32a3da42ad560b0d06b876e0080b",
+    "semantic_hash": ""
+  },
+  "tools/generator/kadir/donnees/realisme/rugosite_tete.jpg": {
+    "mtime": 1795631141.2927575,
+    "seen": 1795639194.5092833,
+    "ast_hash": "923b60984393882846b2fd7382e5c2fb",
+    "semantic_hash": ""
+  },
+  "tools/generator/kadir/donnees/realisme/tete.jpg": {
+    "mtime": 1795631141.2967575,
+    "seen": 1795639194.509284,
+    "ast_hash": "e1a01cb516b8e541f1ea551dddc97367",
+    "semantic_hash": ""
+  },
+  "tools/generator/kadir/planches/planche1-corps-base.jpg": {
+    "mtime": 1795631141.2967575,
+    "seen": 1795639194.509285,
+    "ast_hash": "b9b127c0965c0095622bf8e5e06e2ff0",
+    "semantic_hash": ""
+  },
+  "tools/generator/kadir/planches/planche2-corps-tenue.jpg": {
+    "mtime": 1795631141.3000712,
+    "seen": 1795639194.509286,
+    "ast_hash": "83d956a22b743a5eeee556f81852dd68",
+    "semantic_hash": ""
+  },
+  "tools/generator/kadir/planches/planche3-tete-dessus.jpg": {
+    "mtime": 1795631141.3000712,
+    "seen": 1795639194.5092869,
+    "ast_hash": "c28c732f3ae7bd14c5a870b00a164a31",
+    "semantic_hash": ""
+  },
+  "tools/generator/kadir/planches/planche4-tete-profil.jpg": {
+    "mtime": 1795631141.3000712,
+    "seen": 1795639194.5092878,
+    "ast_hash": "2353dd90be32021a2754273a81cdafc3",
+    "semantic_hash": ""
+  },
+  "tools/generator/kadir/planches/planche5-buste-7vues.jpg": {
+    "mtime": 1795631141.3000712,
+    "seen": 1795639194.5092888,
+    "ast_hash": "e5235c2b596ee9569d4f13f7a92ce4bf",
+    "semantic_hash": ""
+  },
+  "tools/generator/kanya/planches/planche1-corps-7vues.jpg": {
+    "mtime": 1795631141.3021934,
+    "seen": 1795639194.5092897,
+    "ast_hash": "eb4630287418bd66c0c1746823ef9299",
+    "semantic_hash": ""
+  },
+  "tools/generator/kanya/planches/planche2-tete-7vues.jpg": {
+    "mtime": 1795631141.303114,
+    "seen": 1795639194.5092905,
+    "ast_hash": "676771097fff4ca687186a8bf5cd8fb1",
+    "semantic_hash": ""
+  },
+  "tools/generator/kanya/planches/planche3-dos-tatouages.jpg": {
+    "mtime": 1795631141.303114,
+    "seen": 1795639194.5092912,
+    "ast_hash": "50f4c896b07edfd1c6519f51beeb12c7",
+    "semantic_hash": ""
+  },
+  "tools/generator/kanya/planches/planche4-bras.jpg": {
+    "mtime": 1795631141.303114,
+    "seen": 1795639194.5092924,
+    "ast_hash": "5b990d4b800b677e6a032075813c9200",
+    "semantic_hash": ""
+  },
+  "tools/generator/kanya/planches/planche5-short-chevilleres.jpg": {
+    "mtime": 1795631141.303114,
+    "seen": 1795639194.509293,
+    "ast_hash": "8b908b207b95a69f451fd5092d9bc214",
+    "semantic_hash": ""
+  },
+  "tools/generator/kanya/planches/planche6-paos.jpg": {
+    "mtime": 1795631141.303114,
+    "seen": 1795639194.5092943,
+    "ast_hash": "e1aed2947e510253eddd1962c2117afb",
+    "semantic_hash": ""
+  },
+  "tools/generator/kanya/planches/planche7-tenue-mma-ventre.png": {
+    "mtime": 1795631141.3047576,
+    "seen": 1795639194.509295,
+    "ast_hash": "51e22b6a8f33e329621dfc5cb8df0185",
+    "semantic_hash": ""
+  },
+  "tools/generator/victor/donnees/body_color.jpg": {
+    "mtime": 1795631141.3112872,
+    "seen": 1795639194.5092962,
+    "ast_hash": "56e84f13d34f19f4a9caa448fef6072b",
+    "semantic_hash": ""
+  },
+  "tools/generator/victor/donnees/head_color.jpg": {
+    "mtime": 1795631141.3167574,
+    "seen": 1795639194.509297,
+    "ast_hash": "277646641f08b70d4a957c8e83fc8b3e",
+    "semantic_hash": ""
+  },
+  "package-lock.json": {
+    "mtime": 1795631140.2047575,
+    "seen": 1795639194.509307,
+    "ast_hash": "19eab77fca3534a3f058cfdc08903bea",
+    "semantic_hash": ""
   }
 }

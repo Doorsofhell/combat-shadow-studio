@@ -3,6 +3,7 @@ import { BehaviorEngine, HUMAN_STATES, NEUTRAL_MOOD, type HumanSignals, type Hum
 import { faceCapabilities, type FaceCapabilities } from './human/capabilities';
 import { DEFAULT_PROFILE, type HumanProfile } from './human/profiles';
 import { MicroLife } from './human/micro';
+import { FACE_EXPRESSIONS } from './human/expressions';
 import { FaceWrinkles } from './human/wrinkles';
 import { Exertion, updateFaceRender, type FaceRenderUniforms } from './human/faceRender';
 import type { Camera } from 'three';
@@ -39,13 +40,7 @@ export interface FaceOptions {
   state?: HumanState;
 }
 
-/** the expressions used, by ARKit name (the model's targets are named AK_nn_<name>) */
-export const FACE_EXPRESSIONS = [
-  'BrowDownLeft', 'BrowDownRight', 'BrowInnerUp', 'CheekPuff', 'CheekSquintLeft', 'CheekSquintRight', 'EyeBlinkLeft',
-  'EyeBlinkRight', 'EyeSquintLeft', 'EyeSquintRight', 'EyeWideLeft', 'EyeWideRight', 'JawOpen', 'MouthClose',
-  'MouthFrownLeft', 'MouthFrownRight', 'MouthFunnel', 'MouthPressLeft', 'MouthPressRight', 'MouthSmileLeft',
-  'MouthSmileRight', 'MouthStretchLeft', 'MouthStretchRight', 'NoseSneerLeft', 'NoseSneerRight',
-] as const;
+export { FACE_EXPRESSIONS } from './human/expressions';
 export type FaceExpression = (typeof FACE_EXPRESSIONS)[number];
 
 /**

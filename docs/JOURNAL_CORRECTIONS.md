@@ -6000,3 +6000,31 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Fichiers** : `CLAUDE.md`, `.claude/`, `.graphifyignore`, `.gitignore`, `graphify-out/`.
 - **Tests** : NON APPLICABLE (aucun fichier source, test ou build modifié).
 - **Restauration** : commit `4ba4ccd` (2.10.1, avant l'outillage).
+
+## 2026-11-25 · 2.10.2 · Dépendances circulaires supprimées (priorité 1 de l'analyse graphify)
+
+- **Constat** (graphe graphify, puis vérifié dans le code) : quatre paires de modules s'importaient en boucle à
+  l'exécution, ce qui peut laisser une valeur `undefined` selon l'ordre de chargement :
+  - `engine/phases.ts` ↔ `engine/study.ts` (`analyseMotion` / `techniquePhases`) ;
+  - `three/face.ts` → `human/profiles.ts` → `human/capabilities.ts` → `face.ts` (`FACE_EXPRESSIONS`) ;
+  - `ui/nav/NavSheets.tsx` ↔ `ui/nav/SearchSheet.tsx` (`NavPanel` / `SearchSheet`) ;
+  - `ui/App.tsx` ↔ `ui/screens/Champions.tsx` (`PageHead`, simplement ré-exporté par `App.tsx`).
+- **Correction** (déplacements seulement, aucune logique modifiée, anciens exports conservés) :
+  - `analyseMotion`, `Effector`, `StudyAnalysis` déplacés dans `src/engine/analysis.ts` (ré-exportés par `study.ts`) ;
+  - `FACE_EXPRESSIONS` déplacé dans `src/three/human/expressions.ts` (ré-exporté par `face.ts`) : moteur humain
+    commun inchangé, aucune logique faciale touchée ;
+  - `NavPanel` déplacé dans `src/ui/nav/NavPanel.tsx` (ré-exporté par `NavSheets.tsx`) ;
+  - `Champions.tsx` importe `PageHead` depuis `components/PageHead`.
+  - Restent trois cycles d'imports de types seulement, sans effet à l'exécution (`limits`/`rig`,
+    `faqMore`/`knowledge`, `coachHost`/`CoachAskPanel`). `graphify update .` : « Import Cycles : None detected ».
+- **Fichiers** : `src/engine/{analysis,study,phases}.ts`, `src/three/face.ts`, `src/three/human/{expressions,capabilities}.ts`,
+  `src/ui/nav/{NavPanel,NavSheets,SearchSheet}.tsx`, `src/ui/screens/Champions.tsx`, version et note 2.10.2.
+- **Tests** :
+  - `npx tsc --noEmit` : TEST RÉUSSI ;
+  - `npx vitest run` avant (2.10.1) et après : 1872 réussis, 5 échoués, les mêmes des deux côtés (fluidity ×2,
+    hooks-biomeca ×2, taille du modèle d'Amara), déjà en échec en 2.10.0 : TEST ÉCHOUÉ sur ces 5, aucune régression ;
+  - `npm run build` : TEST RÉUSSI ;
+  - `npx playwright test` : NON EXÉCUTÉ au moment de ce commit (passage en cours avec
+    `CHROMIUM_PATH=/opt/pw-browsers/chromium` ; un premier passage sans cette variable a échoué faute de navigateur,
+    cause d'environnement) ; résultat ajouté ci-dessous.
+- **Restauration** : `restauration/avant-cycles-2102` (= commit `cca3ecd`, 2.10.1 + outillage graphify).

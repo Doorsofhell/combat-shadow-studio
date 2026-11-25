@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.10.2',
+      releaseDate: '2026-11-25',
+      title: 'Code plus solide',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Le code de l’application est mieux organisé : quatre modules qui dépendaient les uns des autres en boucle sont séparés, ce qui évite des erreurs de chargement difficiles à repérer. Rien ne change à l’écran.' },
+      ],
+      links: [],
+    },
+    {
       version: '2.10.1',
       releaseDate: '2026-11-25',
       title: 'Amara et Kanya plus proches de leurs fiches',
