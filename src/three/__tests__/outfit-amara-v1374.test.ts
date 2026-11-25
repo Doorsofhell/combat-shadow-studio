@@ -10,11 +10,13 @@ const OUTFITS = ['boxe', 'kickboxing', 'muaythai', 'mma', 'bjj', 'bjj-nogi', 'ju
 // every other byte unchanged). New approved fingerprints; the 1.38.0 ones are in the git history
 // 1.56.0 (Youssef 15/11 « kimonos trop gros, trop épais », option B « Tombé » choisie le 17/11): judo and bjj rebuilt with
 // GI_STYLE tombe (outfits.py). New approved fingerprints for these two; the shorts and no-gi keep theirs
+// 2.4.0 prototype 2 (Youssef 25/11, carte « Oui, toutes les tenues ») : ourlets des quatre shorts redressés par tools/generator/rocketbox/hem_straight.py (hauteur
+// des points du bas seulement, dents de 2 à 3 mm). Nouvelles empreintes approuvées pour ces quatre ; anciennes dans l'historique git
 const INAYA_GIT_SHA: Record<(typeof OUTFITS)[number], string> = {
-  boxe: '8338964c3f0a4d61920fe3bef5c069fe309838a8',
-  kickboxing: '5f7c4c668075aab7cacaf82eff0bb40d0657412e',
-  muaythai: '494810268d8faefa74813250af7a0e863eba8b71',
-  mma: 'af445c42b327b865fa0538899c59a1f2374a5c2f',
+  boxe: '10718409a3b5a9201d58d9d6cdb08009d73e8df3',
+  kickboxing: 'c54579782c17681208e210e4f5357975a8f37de3',
+  muaythai: 'e63ef7df1e51307baf80fb796aad6ed68288a10c',
+  mma: 'df7b9b652c3b25c7a58d758abadd60ec399a1823',
   bjj: 'c1a66341247c5eb7bfaa6f50d3e65429d3134ab4',
   'bjj-nogi': 'f874d571568e3d5c3abb7023954410fd3d2e594c',
   judo: 'fc2ed9316ddc3c009a0dd5aef509595a18636659',

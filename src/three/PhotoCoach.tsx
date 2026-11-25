@@ -139,8 +139,10 @@ export function PhotoCoach({
     return new CoachRig(scene);
   }, [scene, legLength]);
   useEffect(() => {
+    // 2.4.0 Lab ?ombres=0|cheveux : diagnostic des ombres portées sur le visage (jamais réglé par l'application)
+    const lab = (globalThis as { __cssLabShadow?: string }).__cssLabShadow;
     scene.traverse((o: Object3D) => {
-      o.castShadow = shadows;
+      o.castShadow = shadows && lab !== '0' && !(lab === 'cheveux' && /hair|lash|brow|cil|sourcil|cheveu/i.test(o.name + ((o as { material?: { name?: string } }).material?.name ?? '')));
       o.receiveShadow = shadows;
     });
   }, [scene, shadows]);

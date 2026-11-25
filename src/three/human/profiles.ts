@@ -37,16 +37,20 @@ const p = (id: string, traits: Partial<BehaviorTraits> = {}, blinkRate = 1, cont
 });
 
 export const HUMAN_PROFILES: Record<string, HumanProfile> = {
+  // 2.4.0 (Youssef 24/11 « des visages plus doux et moins crispés, humains et homogènes ») : les 6 coachs ont le même
+  // visage de repos « doux », la même expressivité (0,85) et une chaleur d'au moins 1 ; seuls les sourires, le
+  // clignement et l'endurance gardent de petites différences de caractère
   // Kadir, lutteur patient : visage posé, sourit peu
-  'mma-kadir': p('mma-kadir', { expressiveness: 1, warmth: 0.8, stamina: 1.2 }, 0.95),
-  // Amara, frappeuse : expressive à l'effort
-  'mma-amara': p('mma-amara', { expressiveness: 1.1, warmth: 1, stamina: 1 }, 1),
-  nael: p('nael', { expressiveness: 1, warmth: 1.1, stamina: 1 }, 1.05),
-  inaya: p('inaya', { expressiveness: 1.05, warmth: 1, stamina: 1.1 }, 1),
+  'mma-kadir': { ...p('mma-kadir', { expressiveness: 0.85, warmth: 1, stamina: 1.2 }, 0.95), faceBase: 'doux' },
+  // Amara, frappeuse : expressive à l'effort. 2.4.0 (Youssef 24/11 « adoucis son visage et ses expressions ») : visage
+  // doux au repos, effort et concentration moins marqués, sourires un peu plus fréquents
+  'mma-amara': { ...p('mma-amara', { expressiveness: 0.85, warmth: 1.15, stamina: 1 }, 1), faceBase: 'doux' },
+  nael: { ...p('nael', { expressiveness: 0.85, warmth: 1.15, stamina: 1 }, 1.05), faceBase: 'doux' },
+  inaya: { ...p('inaya', { expressiveness: 0.85, warmth: 1.15, stamina: 1.1 }, 1), faceBase: 'doux' },
   // 1.43 Victor, vétéran posé : visage calme, sourire rare mais chaleureux, endurant
-  victor: p('victor', { expressiveness: 0.95, warmth: 0.95, stamina: 1.2 }, 0.9),
+  victor: { ...p('victor', { expressiveness: 0.85, warmth: 1, stamina: 1.2 }, 0.9), faceBase: 'doux' },
   // 1.51 Kanya, Kru : regard calme et déterminé, visage peu expressif, sourire rare, très endurante
-  kanya: p('kanya', { expressiveness: 0.9, warmth: 0.85, stamina: 1.25 }, 0.9),
+  kanya: { ...p('kanya', { expressiveness: 0.85, warmth: 1, stamina: 1.25 }, 0.9), faceBase: 'doux' },
 };
 
 /** standard profile, given automatically to a model the registry does not know (its tests will still fail) */

@@ -9,11 +9,14 @@ import { describe, expect, test } from 'vitest';
  * 1.56.0 (Youssef 15/11 « kimonos trop gros, trop épais », option B « Tombé » choisie le 17/11) : judo and bjj rebuilt
  * on the current body by outfits.py (GI_STYLE tombe: real cloth thicknesses, the cloth spans the hollows; then the cut of Youssef's reference sheets: straight wide trouser legs and sleeves). New approved
  * fingerprints for these two only; the 1.46 ones are in the git history. The shorts guard is untouched. */
+// 2.4.0 prototype 2 (Youssef 25/11, carte « Oui, toutes les tenues », avec l'accord de Youssef pour Kadir) : seuls les ourlets des quatre shorts sont redressés
+// (tools/generator/rocketbox/hem_straight.py, hauteur des points du bas seulement) ; le reste des fichiers est celui de
+// 1.37.0. Nouvelles empreintes des shorts ; celles de 1.37.0 dans l'historique git
 const GOOD_1370 = {
-  'boxe': '9c4a33b36d2468a9f653cce3e62260e69c3c9664',
-  'kickboxing': '8cbced0c2a190539c7f3c172da3e9ca4ed4e4010',
-  'muaythai': 'c6c183d9a4784ad02d5390eddf272ff6772b41a1',
-  'mma': '0408bed276844fa7d85e469aab825fe301ef1e0c',
+  'boxe': '0e8fc11dd7addc2b68c1ee2f40a4ef3a46b130eb',
+  'kickboxing': '15fc5e5de085c4539273a81f966841ebdd81f243',
+  'muaythai': '9dc7195993f4a5428e378d78bde0693d41792652',
+  'mma': 'f82288c5e17ca9a919c86a53d74b278a4dea5d7d',
   'judo': 'd6e9adaeff0a9ce8d629f748d84655efa00f08c6',
   'bjj': '5b34f461f1fb7e8ea090461ee22a5ce20f46eb41',
   'bjj-nogi': 'cadc6b5cc30f20cd87b98bd9dfbbe2d027393fcc',
@@ -29,7 +32,11 @@ describe('v1.37.3 — rollback non régressif des shorts de Kadir', () => {
       expect(gitSha('public/coaches/mma-kadir/tenues/' + outfit + '.glb')).toBe(expected);
     });
   }
+  // 2.4.0 prototype 2 (Youssef 24/11 « je valide » : méthode d'Amara et Victor étendue aux 4 autres coachs) : visage de
+  // Kadir rapproché de sa planche et peau sans ombrage cuit (tools/generator/fideles, configs/kadir2.json, kadir-peau.json).
+  // Corps, squelette et poids inchangés (aucune mise à l'échelle) : les tenues et les shorts gardent leurs empreintes.
+  // Empreinte 2.3.5 : c31999b521a53267262e77679afbc53d594c4ae2 (modèle archivé dans _ARCHIVES_HORS_APPLICATION).
   test('modèle corporel Kadir intact', () => {
-    expect(gitSha('public/coaches/mma-kadir/photo.glb')).toBe('c31999b521a53267262e77679afbc53d594c4ae2');
+    expect(gitSha('public/coaches/mma-kadir/photo.glb')).toBe('357dd8d634238cb3d55462136847dfe73d35d1d5');
   });
 });

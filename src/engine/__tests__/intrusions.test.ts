@@ -61,17 +61,27 @@ const PENDING: Record<string, number> = {
  */
 const VICTOR_PENDING: Record<string, number> = {
   // 1.45.0 (traversées corrigées): bounds lowered to min(new + 0.2, 1.43.0); défense de lutte now under the common bound.
-  'esquive-droite': 2.5,
-  'genou-circulaire-clinch': 2.2,
-  'high-kick-arriere': 2.5,
-  'middle-kick-arriere': 4.1,
-  'retention-garde': 4.2,
-  'single-leg': 5.0,
-  'sit-out': 5.9,
-  'uchikomi-ko-uchi-gari': 4.1,
-  'ukemi-ushiro': 6.8,
-  'ukemi-yoko': 7.6,
-  // Victor's wider forearm stays a little deeper than the common bound (8.2 cm in 1.43.0, 7.7 cm in 1.45.0)
+  // 2.4.0 prototype 2 (Victor's own body: 1.88 m, pectorals, deltoids, trapezius and neck sculpted; Youssef 24/11
+  // « adapter les gestes à Victor », then « corriger les aisselles »): his upper trunk is no longer widened at the sides
+  // (armpits, deformation-v1100), his chest is 1 to 2 mm deeper than Kadir's. Bounds remeasured on this body, same
+  // rule (measure rounded up + 0.2): 0 to 0.4 cm above 2.5.0, listed in docs/JOURNAL_CORRECTIONS.md (2.4.0). Tried and
+  // dropped (24/11): hands moved forward by the chest depth (too small now to change anything), rear guard hand 1.5 cm
+  // forward (armpit stretch in guard over Kadir's bound)
+  'changement-base': 5.5,
+  'check-hook': 3.0,
+  'esquive-droite': 2.8,
+  'genou-circulaire-clinch': 2.4,
+  'genou-clinch': 2.6,
+  'high-kick-arriere': 2.7,
+  'jab': 2.4,
+  'middle-kick-arriere': 4.4,
+  'pont': 5.8,
+  'retention-garde': 4.4,
+  'single-leg': 5.3,
+  'sit-out': 6.2,
+  'uchikomi-ko-uchi-gari': 4.4,
+  'ukemi-ushiro': 7.0,
+  'ukemi-yoko': 7.9,
   'uppercut-arriere': 7.9,
 };
 /**

@@ -1,0 +1,15 @@
+{
+ "glb": [
+  [
+   "$TRAVAIL/w3/amara-photo.glb",
+   "$TRAVAIL/w4/amara-photo.glb"
+  ],
+  [
+   "$TRAVAIL/w3/amara-photo-clean.glb",
+   "$TRAVAIL/w4/amara-photo-clean.glb"
+  ]
+ ],
+ "sigma": 28,
+ "force": 0.7,
+ "bande": 0.6
+}

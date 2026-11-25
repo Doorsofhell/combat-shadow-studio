@@ -49,6 +49,19 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.10.0',
+      releaseDate: '2026-11-25',
+      title: 'Les six coachs plus fidèles à leurs fiches',
+      isMajor: true,
+      changes: [
+        { category: 'ameliorations', text: 'Les visages des six coachs sont rapprochés de leurs fiches de référence : traits plus doux, sourcils détendus, peau plus naturelle sans ombres dessinées.' },
+        { category: 'ameliorations', text: 'Amara mesure maintenant 1,70 m et Victor 1,88 m, comme sur leurs fiches. Victor a une carrure plus puissante et ses gestes sont adaptés à son gabarit.' },
+        { category: 'ameliorations', text: 'Amara, Inaya et Kanya ont un maquillage soigné, des yeux un peu plus grands et des lèvres plus pleines, chacune avec sa propre forme de bouche et sa couleur.' },
+        { category: 'corrections', text: 'Shorts de tous les coachs : le bas des jambes forme une ligne nette au lieu de petites dents, le tissu suit mieux la cuisse aux coups de pied et aux genoux (moins de plis et de taches), et la peau ne passe plus sous la ceinture du short thaï d’Amara.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '2.9.0',
       releaseDate: '2026-11-25',
       title: 'Shadow Pro : les contenus Premium repérés sans surcharge',

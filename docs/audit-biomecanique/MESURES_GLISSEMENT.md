@@ -6,35 +6,35 @@ Mesure : à 60 images par seconde, sur le squelette posé de Kadir, Amara, Naël
 
 Correction 1.41.0 (moteur, `glideLift` et `lowLift` dans `src/engine/motion.ts`) : un pied écrit au sol à deux endroits différents, ou qui décolle et se pose en restant bas, était traîné sur le tapis. Au-delà d’un pas glissé lent, il quitte maintenant le tapis sur un petit arc (4,5 cm au plus) et se pose à l’endroit écrit. Les pieds immobiles, les pivots lents et les coups de pied qui montent franchement ne changent pas.
 
-Glissement cumulé de toute la bibliothèque (6 coachs, droitier et gaucher) : 121 m (1.40.3, même mesure : 336 m).
+Glissement cumulé de toute la bibliothèque (6 coachs, droitier et gaucher) : 120 m (1.40.3, même mesure : 336 m).
 
 | Technique | Pire glissement 1.40.3 (cm / image) | Pire glissement (cm / image) | Pire cas | Limite |
 |---|---|---|---|---|
 | `sit-out` | 15,1 | 13,68 | inaya bjj gaucher | 13,7 (balayage, en attente) |
-| `changement-base` | 15,1 | 13,20 | victor bjj gaucher | 13,2 (balayage, en attente) |
+| `changement-base` | 15,1 | 13,14 | victor bjj gaucher | 13,2 (balayage, en attente) |
 | `releve-technique` | 11,9 | 10,44 | inaya mma | 10,5 (balayage, en attente) |
-| `uchikomi-ko-uchi-gari` | 8,6 | 8,65 | mma-amara judo | 8,7 (balayage, en attente) |
-| `uchikomi-o-uchi-gari` | 6,6 | 6,58 | nael judo gaucher | 6,6 (balayage, en attente) |
-| `releve-genoux` | 6,3 | 4,25 | mma-amara bjj | 4,3 (balayage, en attente) |
-| `ukemi-yoko` | 3,1 | 3,15 | mma-amara judo | 3,2 (balayage, en attente) |
-| `sprawl` | 10,5 | 2,81 | victor mma | 2,9 (balayage, en attente) |
-| `defense-lutte` | 5,8 | 2,57 | victor mma | 2,6 (balayage, en attente) |
-| `ukemi-ushiro` | 2,3 | 2,29 | mma-amara judo gaucher | 2,3 (balayage, en attente) |
-| `uchikomi-o-goshi` | 7,5 | 2,07 | victor judo | 2,1 (balayage, en attente) |
-| `kuzushi` | 3,5 | 1,95 | kanya judo gaucher | 2,0 (balayage, en attente) |
-| `uchikomi-seoi` | 8,3 | 1,84 | victor judo | 1,9 (balayage, en attente) |
-| `single-leg` | 7,0 | 1,84 | victor mma | 1,9 (balayage, en attente) |
-| `switch-kick` | 19,8 | 1,37 | victor kickboxing gaucher | 1,5 |
-| `tai-sabaki` | 7,5 | 1,28 | mma-kadir judo | 1,5 |
-| `check-arriere` | 1,1 | 0,99 | mma-kadir mma | 1,5 |
-| `descente-sol` | 6,7 | 0,89 | mma-kadir bjj gaucher | 1,5 |
+| `uchikomi-ko-uchi-gari` | 8,6 | 8,60 | inaya judo | 8,7 (balayage, en attente) |
+| `uchikomi-o-uchi-gari` | 6,6 | 6,56 | nael judo gaucher | 6,6 (balayage, en attente) |
+| `releve-genoux` | 6,3 | 4,23 | inaya bjj | 4,3 (balayage, en attente) |
+| `ukemi-yoko` | 3,1 | 3,15 | inaya judo | 3,2 (balayage, en attente) |
+| `sprawl` | 10,5 | 2,80 | victor mma | 2,9 (balayage, en attente) |
+| `defense-lutte` | 5,8 | 2,56 | nael mma | 2,6 (balayage, en attente) |
+| `ukemi-ushiro` | 2,3 | 2,25 | mma-amara judo gaucher | 2,3 (balayage, en attente) |
+| `uchikomi-o-goshi` | 7,5 | 2,06 | nael judo | 2,1 (balayage, en attente) |
+| `kuzushi` | 3,5 | 1,95 | mma-amara judo gaucher | 2,0 (balayage, en attente) |
+| `uchikomi-seoi` | 8,3 | 1,83 | nael judo | 1,9 (balayage, en attente) |
+| `single-leg` | 7,0 | 1,83 | nael mma | 1,9 (balayage, en attente) |
+| `switch-kick` | 19,8 | 1,36 | victor kickboxing gaucher | 1,5 |
+| `tai-sabaki` | 7,5 | 1,27 | mma-kadir judo | 1,5 |
+| `check-arriere` | 1,1 | 0,98 | mma-kadir mma | 1,5 |
+| `descente-sol` | 6,7 | 0,88 | mma-kadir bjj gaucher | 1,5 |
 | `pont` | 4,4 | 0,88 | inaya bjj gaucher | 1,5 |
 | `retention-garde` | 4,4 | 0,88 | inaya bjj gaucher | 1,5 |
-| `entree-lutte` | 7,6 | 0,67 | victor mma | 1,5 |
+| `entree-lutte` | 7,6 | 0,66 | nael bjj | 1,5 |
 | `check-hook` | < 1 | 0,55 | mma-kadir mma | 1,5 |
-| `ayumi-ashi` | 1,5 | 0,55 | victor judo | 1,5 |
-| `uchikomi-o-soto-gari` | 3,7 | 0,49 | kanya judo gaucher | 1,5 |
-| `sortie-hanche` | 4,4 | 0,39 | victor mma | 1,5 |
+| `ayumi-ashi` | 1,5 | 0,54 | victor judo | 1,5 |
+| `uchikomi-o-soto-gari` | 3,7 | 0,49 | mma-amara judo gaucher | 1,5 |
+| `sortie-hanche` | 4,4 | 0,39 | nael mma | 1,5 |
 
 ## Balayages encore au-dessus de 1,5 cm par image (en attente de revue)
 

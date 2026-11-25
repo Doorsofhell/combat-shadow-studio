@@ -1,0 +1,132 @@
+{
+ "note": "Victor 1,88 m, 95-100 kg : pectoraux, deltoïdes, trapèzes, bras et cou plus épais, transitions anatomiques ; 24/11 : sans élargissement du haut du tronc ni dorsaux, creux des aisselles laissé au modèle (deformation-v1100)",
+ "taille": 1.88,
+ "segments": [
+  {
+   "a": "LeftArm",
+   "b": "LeftForeArm",
+   "os": [
+    "LeftArm"
+   ],
+   "gain": 0.04,
+   "centre": 0.45,
+   "largeur": 0.9
+  },
+  {
+   "a": "LeftForeArm",
+   "b": "LeftHand",
+   "os": [
+    "LeftForeArm"
+   ],
+   "gain": 0.0,
+   "centre": 0.3,
+   "largeur": 0.8
+  },
+  {
+   "a": "Neck",
+   "b": "Head",
+   "os": [
+    "Neck"
+   ],
+   "gain": 0.06,
+   "centre": 0.2,
+   "largeur": 1.2
+  },
+  {
+   "a": "LeftUpLeg",
+   "b": "LeftLeg",
+   "os": [
+    "LeftUpLeg"
+   ],
+   "gain": 0.0,
+   "centre": 0.45,
+   "largeur": 0.9
+  }
+ ],
+ "bosses": [
+  {
+   "os": "Spine2",
+   "pos": [
+    0.085,
+    0.03,
+    0.12
+   ],
+   "rayon": [
+    0.085,
+    0.08,
+    0.08
+   ],
+   "h": 0.007,
+   "dir": [
+    0,
+    0,
+    1
+   ],
+   "os_poids": [
+    "Spine2",
+    "Spine1",
+    "LeftShoulder"
+   ]
+  },
+  {
+   "os": "LeftArm",
+   "pos": [
+    0.01,
+    0.0,
+    0.0
+   ],
+   "rayon": [
+    0.09,
+    0.1,
+    0.11
+   ],
+   "h": 0.005,
+   "dir": [
+    1,
+    0.3,
+    0
+   ],
+   "os_poids": [
+    "LeftArm",
+    "LeftShoulder"
+   ]
+  },
+  {
+   "os": "LeftShoulder",
+   "pos": [
+    -0.01,
+    0.05,
+    -0.04
+   ],
+   "rayon": [
+    0.09,
+    0.07,
+    0.08
+   ],
+   "h": 0.009,
+   "dir": [
+    0,
+    1,
+    -0.3
+   ],
+   "os_poids": [
+    "LeftShoulder",
+    "Neck",
+    "Spine2"
+   ]
+  }
+ ],
+ "lissage": 5,
+ "out": [
+  {
+   "src": "$TRAVAIL/w2/victor-photo.glb",
+   "path": "$TRAVAIL/w3/victor-photo.glb"
+  }
+ ],
+ "aisselles": [
+  {
+   "rayon": 0.1,
+   "force": 1.0
+  }
+ ]
+}
