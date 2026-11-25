@@ -5,9 +5,9 @@ Généré par `src/three/__tests__/plis-shorts-v240.test.ts`. Part des triangles
 | coach | tenue | high kick % | genou % | low kick % |
 |---|---|---|---|---|
 | mma-kadir | boxe | 2.10 | 3.29 | 1.91 |
-| mma-kadir | kickboxing | 1.89 | 3.09 | 1.60 |
+| mma-kadir | kickboxing | 1.91 | 3.09 | 1.60 |
 | mma-kadir | muaythai | 1.68 | 3.01 | 1.13 |
-| mma-kadir | mma | 2.18 | 3.15 | 2.52 |
+| mma-kadir | mma | 2.20 | 3.17 | 2.54 |
 | mma-amara | boxe | 1.63 | 2.59 | 0.84 |
 | mma-amara | kickboxing | 1.13 | 2.21 | 0.57 |
 | mma-amara | muaythai | 1.48 | 1.62 | 0.54 |
@@ -16,10 +16,10 @@ Généré par `src/three/__tests__/plis-shorts-v240.test.ts`. Part des triangles
 | nael | kickboxing | 1.28 | 2.53 | 1.09 |
 | nael | muaythai | 1.17 | 1.97 | 0.71 |
 | nael | mma | 2.00 | 3.80 | 2.20 |
-| inaya | boxe | 1.68 | 3.01 | 0.86 |
-| inaya | kickboxing | 1.23 | 3.02 | 0.40 |
-| inaya | muaythai | 1.62 | 2.36 | 0.54 |
-| inaya | mma | 1.89 | 3.26 | 1.27 |
+| inaya | boxe | 1.68 | 3.01 | 0.87 |
+| inaya | kickboxing | 1.23 | 3.02 | 0.41 |
+| inaya | muaythai | 1.62 | 2.41 | 0.59 |
+| inaya | mma | 1.90 | 3.28 | 1.27 |
 | victor | boxe | 1.46 | 2.65 | 1.04 |
 | victor | kickboxing | 1.43 | 2.59 | 0.87 |
 | victor | muaythai | 1.40 | 2.15 | 0.57 |

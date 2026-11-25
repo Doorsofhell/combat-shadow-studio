@@ -12,13 +12,13 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 
 | coach | tenue | pièce | triangles | deux jambes | arêtes ouvertes | inversées | UV | peau dessinée |
 |---|---|---|---|---|---|---|---|---|
-| mma-kadir | boxe | short-boxe | 4008 | 0 | 2 | 5 | 0 | 1.2 % |
+| mma-kadir | boxe | short-boxe | 4008 | 0 | 2 | 8 | 0 | 1.2 % |
 | mma-kadir | boxe | short-boxe | 2080 | 0 | 0 | 0 | 0 | 0.0 % |
-| mma-kadir | kickboxing | short-kick | 4204 | 0 | 2 | 4 | 0 | 1.0 % |
+| mma-kadir | kickboxing | short-kick | 4204 | 0 | 2 | 15 | 0 | 1.0 % |
 | mma-kadir | kickboxing | short-kick | 1920 | 0 | 0 | 0 | 0 | 0.0 % |
 | mma-kadir | muaythai | short-thai | 3792 | 0 | 2 | 7 | 0 | 1.5 % |
 | mma-kadir | muaythai | short-thai | 2216 | 0 | 0 | 5 | 0 | 0.0 % |
-| mma-kadir | mma | short-vale-tudo | 4012 | 0 | 2 | 7 | 0 | 1.1 % |
+| mma-kadir | mma | short-vale-tudo | 4012 | 0 | 2 | 9 | 0 | 1.1 % |
 | mma-kadir | mma | short-vale-tudo | 1864 | 0 | 0 | 0 | 0 | 67.2 % |
 | mma-amara | boxe | short-boxe | 7952 | 0 | 0 | 40 | 0 | 0.0 % |
 | mma-amara | kickboxing | short-kick | 7700 | 0 | 0 | 24 | 0 | 0.0 % |
@@ -34,11 +34,11 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 | nael | muaythai | short-thai | 3402 | 0 | 0 | 3 | 0 | 0.0 % |
 | nael | mma | short-vale-tudo | 5592 | 0 | 4 | 8 | 0 | 1.6 % |
 | nael | mma | short-vale-tudo | 2960 | 0 | 0 | 0 | 0 | 72.6 % |
-| inaya | boxe | short-boxe | 5238 | 0 | 0 | 23 | 0 | 0.0 % |
+| inaya | boxe | short-boxe | 5238 | 0 | 0 | 24 | 0 | 0.0 % |
 | inaya | boxe | short-boxe | 2902 | 0 | 0 | 0 | 0 | 0.0 % |
-| inaya | kickboxing | short-kick | 5298 | 0 | 0 | 4 | 0 | 0.0 % |
+| inaya | kickboxing | short-kick | 5298 | 0 | 0 | 7 | 0 | 0.0 % |
 | inaya | kickboxing | short-kick | 2442 | 0 | 0 | 2 | 0 | 0.0 % |
-| inaya | muaythai | short-thai | 5140 | 0 | 0 | 39 | 0 | 0.0 % |
+| inaya | muaythai | short-thai | 5140 | 0 | 0 | 41 | 0 | 0.0 % |
 | inaya | muaythai | short-thai | 2988 | 0 | 0 | 0 | 0 | 0.0 % |
 | inaya | mma | short-surshort | 5032 | 0 | 0 | 31 | 0 | 0.0 % |
 | inaya | mma | short-surshort | 2592 | 0 | 0 | 0 | 0 | 0.0 % |
@@ -94,7 +94,7 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 | mma-kadir | kickboxing | low kick | 2.27 | 75.5 | 0.2 % |
 | mma-kadir | muaythai | garde | 1.86 | 64.3 | 0.6 % |
 | mma-kadir | muaythai | high kick | 3.42 | 90.5 | 1.3 % |
-| mma-kadir | muaythai | genou | 2.94 | 93.8 | 1.6 % |
+| mma-kadir | muaythai | genou | 2.94 | 93.8 | 1.5 % |
 | mma-kadir | muaythai | changement de niveau | 2.34 | 86.6 | 0.4 % |
 | mma-kadir | muaythai | low kick | 2.12 | 74.6 | 1.2 % |
 | mma-kadir | mma | garde | 2.16 | 70.4 | 0.9 % |
@@ -159,9 +159,9 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 | inaya | muaythai | low kick | 1.92 | 79.1 | 1.3 % |
 | inaya | mma | garde | 2.05 | 63.0 | 0.6 % |
 | inaya | mma | high kick | 4.02 | 109.9 | 0.9 % |
-| inaya | mma | genou | 2.67 | 97.2 | 1.4 % |
+| inaya | mma | genou | 2.67 | 97.2 | 1.5 % |
 | inaya | mma | changement de niveau | 2.63 | 81.0 | 0.6 % |
-| inaya | mma | low kick | 2.36 | 79.4 | 1.0 % |
+| inaya | mma | low kick | 2.35 | 79.4 | 1.0 % |
 | victor | boxe | garde | 2.16 | 64.3 | 1.6 % |
 | victor | boxe | high kick | 4.01 | 66.1 | 2.7 % |
 | victor | boxe | genou | 2.79 | 64.9 | 3.0 % |

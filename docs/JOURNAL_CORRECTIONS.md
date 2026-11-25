@@ -5564,3 +5564,17 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `shorts-v1442` 49/49 (les 2 échecs d'Amara corrigés) ; vitest `src/three` + `src/boot` + intrusions 783/784, seul échec : taille du fichier
   d'Amara (déjà en 2.3.5). Playwright NON EXÉCUTÉ. Rien publié.
 - **Restauration** : branche `restauration/avant-tenues-v240` (= commit fdc3dc37).
+
+## 2026-11-25 · prototype 2 de la 2.4.0 (non publié) · Ourlets des tenues verrouillées (Inaya, Kadir, MMA de Naël)
+
+- **Demande** (Youssef, 25/11 10 h 28, carte de décision) : « Oui, toutes les tenues ».
+- **Constat vérifié** : mêmes dents de 2 à 3 mm au bas des shorts d'Inaya (4 tenues), de Kadir (4) et du MMA de Naël,
+  laissés de côté au lot précédent parce que verrouillés par empreinte.
+- **Correction** : `hem_straight.py` sur ces 9 fichiers (hauteur des points du bas seulement ; poids, coupe, couleurs,
+  peau masquée inchangés ; pas de lissage des poids sur ces tenues). Planche :
+  `/mnt/project-files/coachs-fideles/tenues-audit/ourlets-inaya-kadir.jpg`.
+- **Tests modifiés (raison écrite : accord de Youssef)** : empreintes de `outfit-rollback-v1373` (4 shorts de Kadir),
+  `outfit-amara-v1374` (4 shorts d'Inaya), `outfit-references-v1372` (MMA de Naël et d'Inaya) ; anciennes dans
+  l'historique git. vitest `src/three` + `src/boot` + intrusions 783/784, seul échec : taille du fichier d'Amara (déjà
+  en 2.3.5). Playwright NON EXÉCUTÉ. Rien publié.
+- **Restauration** : commit 0230e4be (ou `restauration/avant-tenues-v240`).
