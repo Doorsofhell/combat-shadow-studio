@@ -1,0 +1,12 @@
+{
+ "glb": [
+  [
+   "$TRAVAIL/w3/inaya-photo.glb",
+   "$TRAVAIL/w4/inaya-photo.glb"
+  ]
+ ],
+ "sigma": 28,
+ "force": 0.7,
+ "bande": 0.6,
+ "qualite": 85
+}

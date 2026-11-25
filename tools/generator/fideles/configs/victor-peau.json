@@ -1,0 +1,12 @@
+{
+ "glb": [
+  [
+   "$TRAVAIL/w3/victor-photo.glb",
+   "$TRAVAIL/w4/victor-photo.glb"
+  ]
+ ],
+ "sigma": 28,
+ "force": 0.7,
+ "marbrure": 0.7,
+ "bande": 0.75
+}

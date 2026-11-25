@@ -29,22 +29,22 @@ Généré par `src/engine/__tests__/hooks-biomeca.test.ts` (`AUDIT_UPDATE=1` pou
 | Kadir (Ultra-réaliste) | muay-thaï | crochet-arriere | 94.2° | 6.7 | 26.4 | 8.5 | -7.6 | 9.9° | 2.67 | 0.218 / 0.230 | 8.7° | 16.7° |
 | Kadir (Ultra-réaliste) | muay-thaï | crochet-avant-corps | 85.3° | -9.7 | 24.4 | 11.3 | -11.3 | 17.5° | 1.12 | 0.185 / 0.200 | 2.8° | -22.8° |
 | Kadir (Ultra-réaliste) | muay-thaï | crochet-arriere-corps | 88.2° | -9.2 | 22.8 | 14.6 | -14.6 | 12.1° | 1.62 | 0.217 / 0.230 | 3.8° | 16.8° |
-| Amara (Ultra-réaliste) | boxe | crochet-avant | 70.0° | 5.9 | 24.4 | -2.8 | 2.8 | 50.2° | 1.16 | 0.183 / 0.200 | 6.9° | -14.4° |
-| Amara (Ultra-réaliste) | boxe | crochet-arriere | 91.0° | 6.3 | 20.0 | 14.0 | -13.6 | -5.2° | 1.93 | 0.210 / 0.230 | 9.7° | 10.1° |
-| Amara (Ultra-réaliste) | boxe | crochet-avant-corps | 79.7° | -10.1 | 22.9 | 3.6 | -3.5 | 40.4° | 1.05 | 0.185 / 0.200 | 4.8° | -14.1° |
-| Amara (Ultra-réaliste) | boxe | crochet-arriere-corps | 93.5° | -6.7 | 17.4 | 17.1 | -17.1 | 6.9° | 1.58 | 0.208 / 0.230 | 5.3° | 9.0° |
-| Amara (Ultra-réaliste) | kick-boxing | crochet-avant | 76.4° | 4.9 | 24.7 | -1.8 | 1.8 | 41.6° | 1.19 | 0.183 / 0.200 | 7.4° | -16.2° |
-| Amara (Ultra-réaliste) | kick-boxing | crochet-arriere | 91.7° | 5.3 | 21.3 | 12.5 | -12.0 | -2.6° | 1.89 | 0.210 / 0.230 | 8.6° | 10.1° |
-| Amara (Ultra-réaliste) | kick-boxing | crochet-avant-corps | 79.5° | -10.1 | 22.8 | 4.0 | -3.9 | 33.9° | 1.07 | 0.185 / 0.200 | 4.3° | -15.2° |
-| Amara (Ultra-réaliste) | kick-boxing | crochet-arriere-corps | 93.3° | -7.7 | 18.0 | 16.0 | -16.0 | 7.0° | 1.54 | 0.208 / 0.230 | 4.3° | 9.2° |
-| Amara (Ultra-réaliste) | MMA | crochet-avant | 84.7° | 6.2 | 24.4 | 2.4 | -2.3 | 36.6° | 1.23 | 0.191 / 0.200 | 8.5° | -13.2° |
-| Amara (Ultra-réaliste) | MMA | crochet-arriere | 95.0° | 6.1 | 22.1 | 10.7 | -9.8 | 15.4° | 2.48 | 0.218 / 0.230 | 7.8° | 12.0° |
-| Amara (Ultra-réaliste) | MMA | crochet-avant-corps | 84.0° | -6.3 | 22.3 | 10.1 | -10.1 | 33.2° | 1.09 | 0.185 / 0.200 | 4.7° | -13.0° |
-| Amara (Ultra-réaliste) | MMA | crochet-arriere-corps | 92.7° | -3.6 | 18.4 | 16.9 | -16.9 | 13.0° | 1.81 | 0.217 / 0.230 | 5.0° | 10.9° |
-| Amara (Ultra-réaliste) | muay-thaï | crochet-avant | 90.6° | 4.1 | 24.4 | 5.0 | -4.9 | 12.0° | 1.13 | 0.191 / 0.200 | 8.1° | -22.6° |
-| Amara (Ultra-réaliste) | muay-thaï | crochet-arriere | 94.4° | 3.0 | 21.7 | 12.6 | -11.9 | -12.4° | 2.35 | 0.218 / 0.230 | 6.4° | 16.1° |
-| Amara (Ultra-réaliste) | muay-thaï | crochet-avant-corps | 85.3° | -11.5 | 21.4 | 7.0 | -7.0 | 16.8° | 1.03 | 0.185 / 0.200 | 4.0° | -21.6° |
-| Amara (Ultra-réaliste) | muay-thaï | crochet-arriere-corps | 92.2° | -11.5 | 18.1 | 13.3 | -13.2 | 4.1° | 1.45 | 0.217 / 0.230 | 3.6° | 15.6° |
+| Amara (Ultra-réaliste) | boxe | crochet-avant | 70.9° | 5.8 | 24.0 | -2.8 | 2.8 | 49.9° | 1.16 | 0.183 / 0.200 | 6.9° | -14.4° |
+| Amara (Ultra-réaliste) | boxe | crochet-arriere | 91.0° | 6.2 | 19.7 | 13.8 | -13.4 | -5.2° | 1.93 | 0.210 / 0.230 | 9.7° | 10.1° |
+| Amara (Ultra-réaliste) | boxe | crochet-avant-corps | 79.7° | -9.9 | 22.5 | 3.5 | -3.4 | 40.4° | 1.05 | 0.185 / 0.200 | 4.8° | -14.1° |
+| Amara (Ultra-réaliste) | boxe | crochet-arriere-corps | 93.5° | -6.6 | 17.1 | 16.8 | -16.8 | 6.9° | 1.58 | 0.208 / 0.230 | 5.3° | 9.0° |
+| Amara (Ultra-réaliste) | kick-boxing | crochet-avant | 76.4° | 4.8 | 24.3 | -1.7 | 1.7 | 41.6° | 1.19 | 0.183 / 0.200 | 7.4° | -16.2° |
+| Amara (Ultra-réaliste) | kick-boxing | crochet-arriere | 91.7° | 5.2 | 20.9 | 12.3 | -11.8 | -2.6° | 1.89 | 0.210 / 0.230 | 8.6° | 10.1° |
+| Amara (Ultra-réaliste) | kick-boxing | crochet-avant-corps | 79.5° | -9.9 | 22.4 | 3.9 | -3.8 | 33.9° | 1.07 | 0.185 / 0.200 | 4.3° | -15.2° |
+| Amara (Ultra-réaliste) | kick-boxing | crochet-arriere-corps | 93.3° | -7.6 | 17.7 | 15.7 | -15.7 | 7.0° | 1.54 | 0.208 / 0.230 | 4.3° | 9.2° |
+| Amara (Ultra-réaliste) | MMA | crochet-avant | 84.7° | 6.1 | 24.0 | 2.4 | -2.3 | 36.6° | 1.23 | 0.191 / 0.200 | 8.5° | -13.2° |
+| Amara (Ultra-réaliste) | MMA | crochet-arriere | 95.0° | 5.9 | 21.9 | 10.2 | -9.3 | 16.5° | 2.49 | 0.218 / 0.230 | 7.9° | 12.0° |
+| Amara (Ultra-réaliste) | MMA | crochet-avant-corps | 84.0° | -6.2 | 21.9 | 9.9 | -9.9 | 33.2° | 1.09 | 0.185 / 0.200 | 4.7° | -13.0° |
+| Amara (Ultra-réaliste) | MMA | crochet-arriere-corps | 92.7° | -3.7 | 18.3 | 16.3 | -16.3 | 13.7° | 1.81 | 0.217 / 0.230 | 5.1° | 10.9° |
+| Amara (Ultra-réaliste) | muay-thaï | crochet-avant | 90.6° | 4.0 | 24.0 | 4.9 | -4.9 | 12.0° | 1.13 | 0.191 / 0.200 | 8.1° | -22.6° |
+| Amara (Ultra-réaliste) | muay-thaï | crochet-arriere | 94.4° | 2.9 | 21.3 | 12.4 | -11.7 | -12.4° | 2.35 | 0.218 / 0.230 | 6.4° | 16.1° |
+| Amara (Ultra-réaliste) | muay-thaï | crochet-avant-corps | 85.3° | -11.3 | 21.0 | 6.8 | -6.8 | 16.8° | 1.03 | 0.185 / 0.200 | 4.0° | -21.6° |
+| Amara (Ultra-réaliste) | muay-thaï | crochet-arriere-corps | 92.2° | -11.3 | 17.8 | 13.0 | -13.0 | 4.1° | 1.45 | 0.217 / 0.230 | 3.6° | 15.6° |
 | Kadir (modèle généré) | boxe | crochet-avant | 68.1° | 6.5 | 25.2 | -3.8 | 3.8 | 58.6° | 1.65 | 0.183 / 0.200 | 7.9° | -15.4° |
 | Kadir (modèle généré) | boxe | crochet-arriere | 85.5° | 8.5 | 23.0 | 9.3 | -8.8 | 19.3° | 2.19 | 0.210 / 0.230 | 8.6° | 10.5° |
 | Kadir (modèle généré) | boxe | crochet-avant-corps | 75.0° | -8.7 | 24.1 | 5.8 | -5.7 | 41.3° | 1.18 | 0.185 / 0.200 | 4.1° | -15.1° |

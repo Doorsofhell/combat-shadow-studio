@@ -17,17 +17,18 @@ Lus sur les images clés seulement (pas sur le mouvement joué) : hanches à plu
 | Technique (animation) | Coach | Contrôle | Pire valeur | Styles |
 |---|---|---|---|---|
 | `high-kick-arriere` | mma-kadir | HIP_ACCELERATION | abrupt change of hip speed (47 m/s²) | bjj |
+| `high-kick-arriere` | victor | HIP_ACCELERATION | abrupt change of hip speed (46 m/s²) | bjj |
 | `high-kick-avant` | inaya | HIP_ACCELERATION | abrupt change of hip speed (52 m/s²) | mma, bjj |
 | `high-kick-avant` | kanya | HIP_ACCELERATION | abrupt change of hip speed (50 m/s²) | mma, bjj |
-| `high-kick-avant` | mma-amara | HIP_ACCELERATION | abrupt change of hip speed (52 m/s²) | mma, bjj |
+| `high-kick-avant` | mma-amara | HIP_ACCELERATION | abrupt change of hip speed (51 m/s²) | mma, bjj |
 | `high-kick-avant` | mma-kadir | HIP_ACCELERATION | abrupt change of hip speed (62 m/s²) | boxing, kickboxing, mma, muaythai, bjj, judo |
 | `high-kick-avant` | nael | HIP_ACCELERATION | abrupt change of hip speed (58 m/s²) | mma, bjj |
-| `high-kick-avant` | victor | HIP_ACCELERATION | abrupt change of hip speed (58 m/s²) | mma, bjj, judo |
+| `high-kick-avant` | victor | HIP_ACCELERATION | abrupt change of hip speed (61 m/s²) | kickboxing, mma, bjj, judo |
 | `roundhouse-arriere` | inaya | HIP_ACCELERATION | abrupt change of hip speed (46 m/s²) | bjj |
-| `roundhouse-arriere` | mma-amara | HIP_ACCELERATION | abrupt change of hip speed (46 m/s²) | bjj |
+| `roundhouse-arriere` | mma-amara | HIP_ACCELERATION | abrupt change of hip speed (45 m/s²) | bjj |
 | `roundhouse-arriere` | mma-kadir | HIP_ACCELERATION | abrupt change of hip speed (61 m/s²) | boxing, mma, bjj |
 | `roundhouse-arriere` | nael | HIP_ACCELERATION | abrupt change of hip speed (56 m/s²) | mma, bjj |
-| `roundhouse-arriere` | victor | HIP_ACCELERATION | abrupt change of hip speed (57 m/s²) | mma, bjj |
+| `roundhouse-arriere` | victor | HIP_ACCELERATION | abrupt change of hip speed (60 m/s²) | boxing, mma, bjj |
 | `roundhouse-avant` | mma-kadir | HIP_ACCELERATION | abrupt change of hip speed (47 m/s²) | bjj |
 
 ## Contrôle non retenu

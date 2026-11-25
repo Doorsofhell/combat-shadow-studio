@@ -89,7 +89,9 @@ export const SKIN_LOOK: Record<string, SkinLook> = {
   // slightly enrich high-quality roughness and tint variation without touching other coaches.
   // 1.37.8: only Amara, shader-only: clearer muscle highlights without any mesh, garment or rig change.
   // Keep colour, pores and skin texture identical; small gain to normal-map relief and local contrast.
-  'mma-amara': { ...DEFAULT_SKIN, relief: 1.21, pores: 0.03, roughVar: 0.15, tintVar: 0.055, wrap: 0.43, shadowLift: 0.33 },
+  // 2.4.0 prototype 2 (Youssef 20/11 14:30 « supprimer la dominante orange », « peau mate naturelle », « pas d'ombres
+  // musculaires cuites ») : teinte désaturée et refroidie, diffusion moins rouge, relief de l'anatomie adouci
+  'mma-amara': { ...DEFAULT_SKIN, relief: 1.0, pores: 0.03, roughVar: 0.15, tintVar: 0.04, wrap: 0.43, shadowLift: 0.36, tint: [1, 0.6, 0.48], sat: 0.84, gain: 1.06, warm: -0.07 },
   // 1.11 Naël and Inaya: Rocketbox photo skins like Kadir and Amara (same relief maps); lighter skins, the
   // scattering a little warmer
   // 1.21 same light as Kadir (Inaya got Amara's in 1.20): the wider wrap softened the shadows between the muscles
@@ -97,11 +99,14 @@ export const SKIN_LOOK: Record<string, SkinLook> = {
   // 1.20 (Youssef 05/11 14:09, Amara's muscles « bien dessinés »): Inaya's wrapped light was wider than Amara's
   // (0.55 for 0.45) and softened the shadows between the muscles; same as Amara now
   // 1.43 Victor: the Kadir photo skin repainted (tan of Youssef's sheets): Kadir's light and relief
-  victor: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.022, roughVar: 0.11, tintVar: 0.018, wrap: 0.45, shadowLift: 0.36, cleanBody: true },
-  inaya: { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, roughVar: 0.12, tintVar: 0.045, wrap: 0.45, shadowLift: 0.32, tint: [1, 0.52, 0.38], sat: 1.12, gain: 0.8, warm: 0.12 },
+  // 2.4.0 prototype 2 (« supprimer les taches et marbrures ») : teinte moins saturée, relief cuit adouci
+  victor: { ...DEFAULT_SKIN, relief: 1.05, pores: 0.022, roughVar: 0.11, tintVar: 0.012, wrap: 0.45, shadowLift: 0.38, cleanBody: true, tint: [1, 0.56, 0.44], sat: 0.88, warm: -0.04 },
+  // 2.4.0 prototype 2 (Youssef 25/11, maquette des femmes, « fais mieux ») : peau plus claire et unie, ombres plus douces
+  inaya: { ...DEFAULT_SKIN, relief: 1.0, pores: 0.025, roughVar: 0.12, tintVar: 0.015, wrap: 0.48, shadowLift: 0.4, tint: [1, 0.52, 0.38], sat: 1.0, gain: 0.92, warm: 0.03 },
   // 1.51 Kanya: Inaya's photo skin repainted to the tone of Youssef's sheets (the texture already carries the tone: no
   // gain, the light and relief of Inaya's body)
-  kanya: { ...DEFAULT_SKIN, relief: 1.15, pores: 0.03, roughVar: 0.12, tintVar: 0.04, wrap: 0.45, shadowLift: 0.32, tint: [1, 0.52, 0.38] },
+  // 2.4.0 prototype 2 (maquette des femmes) : peau unie, ombres plus douces
+  kanya: { ...DEFAULT_SKIN, relief: 1.0, pores: 0.025, roughVar: 0.12, tintVar: 0.015, wrap: 0.48, shadowLift: 0.4, tint: [1, 0.52, 0.38] },
 };
 
 /** 1.48 premium material finish: calibrated individually, never changes body proportions or facial expressions. */

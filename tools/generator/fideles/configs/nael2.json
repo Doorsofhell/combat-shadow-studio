@@ -1,0 +1,40 @@
+{
+ "task": "$TRAVAIL/face_landmarker.task",
+ "tone_amount": 0.3,
+ "delight": 0.8,
+ "mask_erode": 10,
+ "shape": 1.0,
+ "shape_max": 0.009,
+ "facing": [
+  0.1,
+  0.45
+ ],
+ "profondeur": 0.6,
+ "oeil": [
+  0.012,
+  0.02
+ ],
+ "bande": 0.05,
+ "contraste": 0.9,
+ "saturation": 0.8,
+ "raccord_cou": 1.0,
+ "raccord_teinte": 0.3,
+ "src": "_ARCHIVES_HORS_APPLICATION/anciens-modeles-3d/avant-coachs-fideles-v240/public/coaches/nael/photo.glb",
+ "ref": "tools/generator/fideles/references/nael-planche.png",
+ "work": "$TRAVAIL/w2/nael",
+ "iris": "#3F7FC0",
+ "ref_box": [
+  1250,
+  45,
+  1530,
+  290
+ ],
+ "out": [
+  {
+   "path": "$TRAVAIL/w2/nael-photo.glb"
+  }
+ ],
+ "qualite": 85,
+ "sourcils_neutres": true,
+ "coins_bouche": 0.0015
+}

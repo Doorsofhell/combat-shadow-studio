@@ -67,6 +67,7 @@ export function Lab() {
     setV230FromQuery(q.get('v230'));
     // 2.2.0 fx=pores,teinte,rugosite,diffusion,ombres,relief,etalonnage,brillance,nettoyage: skin effects switched off
     (globalThis as { __cssSkinFx?: string }).__cssSkinFx = q.get('fx') ?? undefined;
+    (globalThis as { __cssLabShadow?: string }).__cssLabShadow = q.get('ombres') ?? undefined;
   }, [q]);
   const envelope = useRef<Envelope | null>(null);
   const origin = useRef({ x: 0, z: 0, yaw: 0 });

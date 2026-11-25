@@ -1,0 +1,86 @@
+{
+ "task": "$TRAVAIL/face_landmarker.task",
+ "src": "_ARCHIVES_HORS_APPLICATION/anciens-modeles-3d/avant-coachs-fideles-v240/public/coaches/mma-amara/photo.glb",
+ "ref": "tools/generator/fideles/references/souhait-femmes-2026-11-24.png",
+ "ref_box": [
+  1560,
+  440,
+  1871,
+  810
+ ],
+ "work": "$TRAVAIL/w2/amara",
+ "out": [
+  {
+   "path": "$TRAVAIL/w2/amara-photo.glb"
+  },
+  {
+   "from": "_ARCHIVES_HORS_APPLICATION/anciens-modeles-3d/avant-coachs-fideles-v240/public/coaches/mma-amara/photo-clean.glb",
+   "path": "$TRAVAIL/w2/amara-photo-clean.glb"
+  }
+ ],
+ "tone_amount": 0.0,
+ "delight": 1.0,
+ "mask_erode": 14,
+ "shape": 1.0,
+ "shape_max": 0.012,
+ "facing": [
+  0.15,
+  0.5
+ ],
+ "profondeur": 0.6,
+ "oeil": [
+  0.012,
+  0.02
+ ],
+ "bande": 0.3,
+ "contraste": 0.9,
+ "saturation": 0.8,
+ "raccord_cou": 1.0,
+ "raccord_plus": 1.15,
+ "raccord_teinte": 0.3,
+ "coins_bouche": 0.0008,
+ "levres": 0.0016,
+ "levres_modele": 0,
+ "maquillage": {
+  "lisse": 0.6,
+  "sourcils": 0.35,
+  "paupieres": 0.3,
+  "cils": 1.0,
+  "blush": 0.3,
+  "levres": 0.0,
+  "brillance": 0.5,
+  "paupieres_teinte": [
+   0.82,
+   0.7,
+   0.68
+  ],
+  "blush_teinte": [
+   1.08,
+   0.95,
+   0.95
+  ],
+  "levres_teinte": [
+   0.98,
+   0.72,
+   0.77
+  ],
+  "sourcils_teinte": [
+   0.5,
+   0.45,
+   0.43
+  ],
+  "aplat": 0.8,
+  "levres_contour": 1.0,
+  "levres_couleur": "#96463E"
+ },
+ "yeux": 0.14,
+ "sourcils_neutres": false,
+ "levres_fit": true,
+ "bouche_forme": {
+  "largeur": 0.0012,
+  "haut": 0.003,
+  "bas": 0.003,
+  "arc": -0.0008,
+  "avant": 0.002
+ }
+}

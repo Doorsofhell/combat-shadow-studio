@@ -8,14 +8,16 @@ import { describe, expect, test } from 'vitest';
  */
 // 1.44.2: Naël's and Inaya's MMA shorts take the textile folds (short_folds.mjs, Youssef 14/11 « mutualiser… pour tous les
 // coachs »); only the short's positions and normals change. Fingerprints of 1.37.2 in the git history
+// 2.4.0 prototype 2 (Youssef 25/11, carte « Oui, toutes les tenues ») : ourlets redressés (tools/generator/rocketbox/hem_straight.py, hauteur des points du bas
+// seulement). Nouvelles empreintes ; celles de 1.44.2 dans l'historique git
 const references = [
   {
     coach: 'nael',
-    sha: '08481bf54bd7c191d870a4a1ff50b0ab3c4895d5',
+    sha: '3c23114b72b875f7af8845eaea5eadc124766f7c',
   },
   {
     coach: 'inaya',
-    sha: 'af445c42b327b865fa0538899c59a1f2374a5c2f',
+    sha: 'df7b9b652c3b25c7a58d758abadd60ec399a1823',
   },
 ] as const;
 

@@ -1,0 +1,48 @@
+{
+ "task": "$TRAVAIL/face_landmarker.task",
+ "src": "_ARCHIVES_HORS_APPLICATION/anciens-modeles-3d/avant-coachs-fideles-v240/public/coaches/victor/photo.glb",
+ "ref": "tools/generator/fideles/references/victor-planche.png",
+ "ref_box": [
+  1250,
+  45,
+  1530,
+  290
+ ],
+ "work": "$TRAVAIL/w2/victor",
+ "tone_amount": 0.3,
+ "delight": 0.8,
+ "mask_erode": 10,
+ "out": [
+  {
+   "path": "$TRAVAIL/w2/victor-photo.glb",
+   "textures": "tools/generator/fideles/victor"
+  }
+ ],
+ "poivre_sel": {
+  "tempes": 0.8,
+  "dessus": 0.15,
+  "barbe": 0.55
+ },
+ "shape": 1.0,
+ "shape_max": 0.009,
+ "facing": [
+  0.1,
+  0.45
+ ],
+ "iris": "#6B4A2E",
+ "barbe_courte": {
+  "ombre": 0.25,
+  "poils": 0.4
+ },
+ "profondeur": 0.8,
+ "oeil": [
+  0.012,
+  0.02
+ ],
+ "bande": 0.3,
+ "contraste": 0.9,
+ "saturation": 0.8,
+ "raccord_cou": 0.8,
+ "sourcils_neutres": true,
+ "coins_bouche": 0.0015
+}
