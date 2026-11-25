@@ -75,8 +75,8 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | Genou direct (`genou-direct-arriere`) | genou | 0,8 | 2 % | 0,50 | 3,0 (LeftToeBase) | 12° | 0,01 |
 | Genou circulaire (`genou-circulaire-arriere`) | genou | 0,7 | 2 % | 0,50 | 3,0 (LeftToeBase) | 29° | 0,01 |
 | Jab (`jab`) | poing | 0,7 | 13 % | 0,00 | 3,0 (LeftToeBase) | 20° | 0,00 |
+| Crochet gauche au corps (`crochet-avant-corps`) | poing | 0,6 | 23 % | 0,00 | 3,0 (LeftToeBase) | 26° | 0,00 |
 | Blocage haut (`blocage-haut`) | defense | 0,6 | 61 % | 0,00 | 3,0 (LeftToeBase) | 6° | 0,00 |
-| Crochet gauche au corps (`crochet-avant-corps`) | poing | 0,6 | 11 % | 0,00 | 3,0 (LeftToeBase) | 26° | 0,00 |
 | Sortie de hanche (shrimp) (`sortie-hanche`) | sol | 0,3 | 0 % | 0,00 | 3,0 (RightToeBase) | 28° | 0,34 |
 | Position de garde (`garde`) | garde | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 6° | 0,00 |
 | Direct arrière (`direct`) | poing | 0,0 | 0 % | 0,00 | 3,0 (LeftToeBase) | 17° | 0,00 |
@@ -116,13 +116,13 @@ Ce sont des **mesures**, pas des verdicts : leur lecture est dans [AUDIT_MOTEUR.
 | `bjj-avance-06` | releve-genoux → descente-sol → sit-out → releve-technique | 17,3 | 11,19 | 7,05 |
 | `bjj-expert-04` | changement-niveau → entree-lutte → single-leg → descente-sol → sit-out → sortie-hanche → releve-technique | 17,3 | 11,19 | 7,05 |
 | `mma-avance-09` | jab → sortie-angle → direct → pivot-droite → crochet-avant → low-kick-arriere | 13,1 | 4,35 | 4,13 |
-| `mma-expert-05` | feinte-jab → jab → direct → sortie-angle → crochet-avant → direct → high-kick-arriere | 16,1 | 4,24 | 4,02 |
 | `mma-intermediaire-04` | feinte-jab → jab → direct → sortie-angle | 11,3 | 4,22 | 4,00 |
 | `mma-intermediaire-11` | jab → middle-kick-arriere → sortie-angle | 15,5 | 4,22 | 4,00 |
+| `mma-expert-05` | feinte-jab → jab → direct → sortie-angle → crochet-avant → direct → high-kick-arriere | 16,1 | 4,18 | 3,96 |
 | `mma-avance-04` | low-kick-arriere → direct → crochet-avant → sortie-angle → jab | 13,1 | 4,18 | 3,96 |
-| `boxe-avance-03` | jab → direct → sortie-angle → crochet-avant → direct | 13,1 | 4,11 | 3,89 |
 | `kickboxing-expert-10` | jab → sortie-angle → direct → low-kick-arriere → pivot-droite → crochet-avant → middle-kick-arriere | 13,7 | 4,08 | 3,85 |
-| `kickboxing-avance-07` | jab → direct → sortie-angle → crochet-avant → low-kick-arriere | 12,8 | 3,97 | 3,75 |
+| `boxe-avance-03` | jab → direct → sortie-angle → crochet-avant → direct | 13,1 | 4,01 | 3,79 |
+| `kickboxing-avance-07` | jab → direct → sortie-angle → crochet-avant → low-kick-arriere | 12,8 | 3,93 | 3,71 |
 | `judo-expert-05` | ukemi-ushiro → ukemi-yoko → ukemi-ushiro | 17,5 | 4,19 | 1,96 |
 | `bjj-debutant-07` | ukemi-ushiro | 9,0 | 4,19 | 1,96 |
 | `judo-debutant-07` | ukemi-ushiro | 9,0 | 4,19 | 1,96 |

@@ -27,6 +27,11 @@
  *   longer whips round between the swing and the reap (grappling.ts).
  * - kneeRelease (2.4.0, lot 3): knee strikes (not in the clinch), the knee starts down while the hands go back to
  *   guard instead of waiting at the impact (stop 150 ms → about 60 ms) (legs.ts).
+ * - hookDirect (2.10.2): the four hooks no longer pass through the « drive » key of 1.33.1, where the fist stayed at
+ *   the guard while the pelvis turned, then swept round late: path 1.6 to 2.8 times the straight line from guard to
+ *   impact (hooks-biomeca « pas d'armé », 1.4 at most, USA Boxing [boxe-S2] « no wind-up ») and, on the generic
+ *   coach, more robot stops and a slower body hook (fluidity.test), all failing since 1.33.1. The pelvis still leads
+ *   the shoulders, now through chainLead (hooks-biomeca « les hanches tournent avant le buste » passes either way).
  * - idleLife: the guard's bounce no longer repeats identically every 0.9 s (correlation 0.999 from one bounce to
  *   the next), and the living guard's drift scales with the coach's height.
  */
@@ -42,9 +47,10 @@ export interface V230Flags {
   sprawlPath: boolean;
   sotoPole: boolean;
   kneeRelease: boolean;
+  hookDirect: boolean;
 }
 
-export const V230: V230Flags = { legArc: true, chainLead: true, snap: true, idleLife: true, armLag: true, twistCap: true, poleSlerp: false, overhandPath: true, sprawlPath: true, sotoPole: true, kneeRelease: true };
+export const V230: V230Flags = { legArc: true, chainLead: true, snap: true, idleLife: true, armLag: true, twistCap: true, poleSlerp: false, overhandPath: true, sprawlPath: true, sotoPole: true, kneeRelease: true, hookDirect: true };
 
 /** signature of the switches, for the caches built from them (motion library) */
 export const v230Key = () => (Object.keys(V230) as (keyof V230Flags)[]).map((k) => (V230[k] ? 1 : 0)).join('');

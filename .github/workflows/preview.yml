@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry1.outputs.page_url || steps.deployment_retry2.outputs.page_url }}
 
     steps:
       - name: Checkout
@@ -77,6 +77,30 @@ jobs:
         with:
           path: dist
 
+      # 2.10.2: on 2026-11-24/25 the deploy step failed 7 times with « Fetching artifact metadata failed… No artifacts
+      # named "github-pages" were found » although the upload had succeeded (GitHub API incident); only a manual
+      # re-run much later passed. The deploy is now tried again in the same run, after 2 then 5 minutes; the job still
+      # fails if the third try fails, so a version is never shown as deployed when it is not.
       - name: Deploy
         id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+
+      - name: Wait before retrying the deploy (1/2)
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 120
+
+      - name: Deploy (retry 1)
+        id: deployment_retry1
+        if: steps.deployment.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+
+      - name: Wait before retrying the deploy (2/2)
+        if: steps.deployment.outcome == 'failure' && steps.deployment_retry1.outcome == 'failure'
+        run: sleep 300
+
+      - name: Deploy (retry 2)
+        id: deployment_retry2
+        if: steps.deployment.outcome == 'failure' && steps.deployment_retry1.outcome == 'failure'
         uses: actions/deploy-pages@v4

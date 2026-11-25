@@ -500,9 +500,10 @@ def main(cfg):
         for i, im in enumerate(gg.j['images']):
             nm = im.get('name', '')
             if 'head_color' in nm:
-                # même format que l'image d'origine (test maquillage-v1403)
+                # 2.10.2 : toujours en JPEG (le PNG d'origine d'Amara faisait 2 Mo, photo.glb 5,0 Mo pour 3,5 Mo au plus,
+                # test expressions-v1160) ; même taille 2048 px (test maquillage-v1403)
                 b = io.BytesIO(); hi8 = Image.fromarray((outt * 255).astype(np.uint8))
-                hi8.save(b, 'PNG', optimize=True) if im.get('mimeType') == 'image/png' else hi8.save(b, 'JPEG', quality=C.get('qualite', 92))
+                hi8.save(b, 'JPEG', quality=C.get('qualite', 92))
                 imgs[i] = b.getvalue()
             if 'body_color' in nm and C.get('tone', True):
                 body = np.asarray(gg.image('body_color')).astype(np.float32) / 255

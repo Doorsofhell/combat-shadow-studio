@@ -28,11 +28,11 @@ Résultat : 27 techniques dépassent 2 cm. Elles sont bornées à leur valeur pa
 | `switch-kick` | 3,5 | main gauche dans le tronc | inaya kickboxing | 0,60 s |
 | `middle-kick-arriere` | 3,3 | main droite dans le tronc | mma-kadir mma | 0,40 s |
 | `retention-garde` | 3,2 | avant-bras gauche dans le tronc | mma-kadir bjj | 1,99 s |
-| `crochet-avant` | 3,2 | avant-bras droit dans le tronc | nael boxing | 0,19 s |
 | `blocage-corps-avant` | 2,7 | avant-bras droit dans le tronc | nael boxing | 0,25 s |
 | `releve-genoux` | 2,5 | main gauche dans la cuisse gauche | inaya bjj | 0,80 s |
 | `rattrapage-middle` | 2,5 | avant-bras droit dans le tronc | nael muaythai | 0,78 s |
 | `check-hook` | 2,5 | avant-bras droit dans le tronc | nael boxing | 0,27 s |
+| `crochet-avant` | 2,5 | avant-bras droit dans le tronc | nael boxing | 0,19 s |
 | `esquive-droite` | 2,1 | avant-bras droit dans le tronc | nael boxing | 0,20 s |
 | `genou-clinch` | 2,1 | jambe droite dans la cuisse gauche | mma-kadir muaythai | 0,61 s |
 
@@ -59,8 +59,8 @@ Même mesure sur la peau de Victor (corps de Kadir élargi : torse, avant-bras, 
 | `retention-garde` | 4,2 | avant-bras droit dans le tronc | victor bjj | 1,26 s |
 | `uchikomi-ko-uchi-gari` | 4,1 | jambe gauche dans la cuisse droite | victor judo | 0,80 s |
 | `middle-kick-arriere` | 4,1 | main droite dans le tronc | victor kickboxing | 0,40 s |
-| `crochet-avant` | 3,4 | avant-bras droit dans le tronc | victor boxing | 0,19 s |
 | `blocage-corps-avant` | 2,9 | avant-bras droit dans le tronc | victor boxing | 0,19 s |
+| `crochet-avant` | 2,8 | avant-bras droit dans le tronc | victor boxing | 0,19 s |
 | `check-hook` | 2,8 | avant-bras droit dans le tronc | victor boxing | 0,27 s |
 | `esquive-droite` | 2,6 | avant-bras droit dans le tronc | victor boxing | 0,20 s |
 | `rattrapage-middle` | 2,5 | avant-bras droit dans le tronc | victor muaythai | 0,78 s |
