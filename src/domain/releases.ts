@@ -49,6 +49,109 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.9.0',
+      releaseDate: '2026-11-25',
+      title: 'Shadow Pro : les contenus Premium repérés sans surcharge',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Un petit badge « PRO » suit le nom de chaque contenu Shadow Pro : les exercices et les fiches techniques des niveaux avancé et expert, les programmes (sauf un programme débutant gratuit par discipline), les coachs Naël, Inaya, Victor et Kanya, le mode Décomposer et les options avancées du chronomètre. Rien d’autre ne change sur les cartes.' },
+        { category: 'ameliorations', text: 'Quand le paiement sera ouvert, un petit cadenas doré remplacera la flèche ou le bouton de lancement d’un contenu réservé, et un toucher ouvrira l’offre. Un programme qui mélange séances gratuites et Shadow Pro affichera par exemple « 3/6 PRO » et ses séances gratuites resteront ouvertes. Aujourd’hui, tout reste accessible.' },
+        { category: 'ameliorations', text: 'Un membre Shadow Pro verra un petit bouclier doré « PRO » à côté de son nom dans le profil.' },
+      ],
+      links: [{ label: 'Shadow Pro', to: '/premium' }],
+    },
+    {
+      version: '2.8.1',
+      releaseDate: '2026-11-24',
+      title: 'Changer de coach depuis l’Accueil : directement en grand',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Sur l’Accueil, « Changer » à côté du nom de ton coach ouvre directement le grand écran des coachs : tu le vois en grand avant de le choisir. Depuis les autres écrans, rien ne change.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
+      version: '2.8.0',
+      releaseDate: '2026-11-24',
+      title: 'Toutes les fenêtres d’options en verre',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Toutes les fenêtres d’options ont maintenant le même verre que le panneau du coach : Progrès, Profil, Chrono, Discipline, Objectifs, confirmations, menu Plus, recherche, Coach IA, et en séance Enchaînement et Comment faire.' },
+        { category: 'ameliorations', text: 'Elles se ferment toutes de la même façon : en touchant à côté (sans rien activer derrière), en glissant la poignée vers le bas, avec le bouton rond, Retour ou Échap.' },
+        { category: 'corrections', text: 'Retour ferme d’abord la fenêtre ouverte et tu restes sur la page. Avant, sur la plupart de ces fenêtres, Retour quittait la page.' },
+      ],
+      links: [{ label: 'Voir tes progrès', to: '/stats' }],
+    },
+    {
+      version: '2.7.0',
+      releaseDate: '2026-11-24',
+      title: 'Choisir son coach en un geste',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Sur l’Accueil, le bouton « Changer » à côté du nom de ton coach ouvre directement « Ton coach » : les six coachs avec leur visage et leur nom. Touche-en un, il devient ton coach tout de suite.' },
+        { category: 'ameliorations', text: 'Le choix du coach n’est plus caché dans « Options avancées » : il est visible dès l’ouverture des options du coach, sur l’Accueil, la fiche d’une technique et en séance.' },
+        { category: 'ameliorations', text: 'Une seule présentation partout : la même rangée de visages dans les options du coach, Réglages › Mon coach et au premier lancement. Les vignettes de l’écran Coach portent aussi le nom de chaque coach.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
+      version: '2.6.0',
+      releaseDate: '2026-11-24',
+      title: 'Un seul panneau d’options pour le coach',
+      isMajor: false,
+      changes: [
+        { category: 'fonctionnalites', text: 'Touche le coach (Accueil, fiche d’une technique, séance) : un panneau en verre s’ouvre avec tous ses réglages au même endroit. Mon apprentissage, angle de vue, vitesse, voix et volume, plein écran, réinitialiser la vue, et des options avancées (coach, garde, repères au sol, sons).' },
+        { category: 'ameliorations', text: 'Chaque choix s’applique tout de suite et le panneau reste ouvert. Il se ferme en touchant à côté, en le glissant vers le bas, avec Retour ou Échap ; ce toucher n’active jamais ce qu’il y a derrière, et la séance ne s’arrête pas.' },
+        { category: 'ameliorations', text: 'Les statuts Acquis, Encore du mal et En apprentissage sont les mêmes sur la fiche et en séance. Tes anciens statuts sont gardés.' },
+        { category: 'ameliorations', text: 'La fiche d’une technique a maintenant un angle Auto, comme la séance. En séance, Plus › Enchaînement montre la liste des techniques.' },
+      ],
+      links: [{ label: 'Voir une technique', to: '/techniques' }],
+    },
+    {
+      version: '2.5.0',
+      releaseDate: '2026-11-20',
+      title: 'Épaules, coudes, hanches et genoux qui gardent leur volume',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Les six coachs ont des os de torsion au bras, à l’avant-bras et à la cuisse : quand le bras ou le poignet tourne, la peau tourne progressivement sur toute la longueur au lieu de se pincer au coude ou au poignet.' },
+        { category: 'ameliorations', text: 'L’épaule, le coude, la hanche et le genou gardent leur volume quand ils se plient (crochet, coup de pied haut, sprawl) : ils ne s’écrasent plus vers l’articulation. Les mouvements eux-mêmes ne changent pas.' },
+      ],
+      links: [{ label: 'S’entraîner', to: '/entrainer' }],
+    },
+    {
+      version: '2.4.0',
+      releaseDate: '2026-11-20',
+      title: 'Sprawl, o-soto-gari et genoux plus naturels',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Sprawl : les mains descendent plus bas et moins loin ; le coude ne tourne plus d’un coup autour du bras pendant la descente.' },
+        { category: 'ameliorations', text: 'O-soto-gari (judo) : le genou de la jambe qui fauche passe par le bas au lieu de basculer d’un côté à l’autre.' },
+        { category: 'ameliorations', text: 'Coups de genou : le genou ne reste plus figé au bout du coup, il commence à redescendre pendant que les mains reviennent en garde (arrêt de 150 à environ 60 ms). Les genoux en clinch gardent leur rythme.' },
+      ],
+      links: [{ label: 'S’entraîner', to: '/entrainer' }],
+    },
+    {
+      version: '2.3.6',
+      releaseDate: '2026-11-20',
+      title: 'Coachs et salles toujours à jour',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Après une mise à jour, un coach, une tenue ou une salle modifiés sont toujours téléchargés à nouveau : le téléphone ne garde plus une ancienne version, sans avoir à vider le cache.' },
+        { category: 'corrections', text: 'Les portraits des coachs suivent aussi les mises à jour. Hors ligne, la copie gardée sur le téléphone reste utilisée.' },
+      ],
+      links: [],
+    },
+    {
+      version: '2.3.5',
+      releaseDate: '2026-11-20',
+      title: 'Retour protégé dans le créateur',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Créateur d’enchaînements : le bouton Retour du téléphone (ou du navigateur) ne fait plus perdre tes modifications. Il ferme d’abord le panneau ouvert, puis demande « Abandonner les modifications ? ». Un deuxième Retour ferme la question et garde ton brouillon.' },
+      ],
+      links: [{ label: 'Créateur', to: '/createur' }],
+    },
+    {
       version: '2.3.3',
       releaseDate: '2026-11-20',
       title: 'Numéro de version et documentation à jour',

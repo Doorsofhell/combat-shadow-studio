@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openSetting, seedProfile, showCoachTools } from './nav-helpers';
+import { closeCoachPanel, openSetting, seedProfile, showCoachTools } from './nav-helpers';
 import { INSTRUCTIONS } from '../../src/domain/instructions';
 
 /**
@@ -47,9 +47,10 @@ test('la consigne principale, puis chaque point clé, une ligne à la fois, avec
 
 test('la pause arrête l’enchaînement, la reprise le relance', async ({ page }) => {
   await startJab(page, { consigneSec: 2.5 });
-  // 1.4.0: the fullscreen is in the commands of the coach, shown by a tap on it
+  // 2.4: the fullscreen is in the coach's panel, opened by a tap on it (the panel stays open after a choice)
   await showCoachTools(page);
-  await page.getByTestId('fullscreen').click();
+  await page.getByTestId('cp-fullscreen').click();
+  await closeCoachPanel(page);
   const band = page.getByTestId('consignes');
   await expect(band).toBeVisible();
   // in fullscreen a tap on the stage shows the controls; the pause is the main control
@@ -74,7 +75,8 @@ test('le texte ne couvre jamais le coach : la caméra garde ses pieds au-dessus 
   for (const fs of [false, true]) {
     if (fs) {
       await showCoachTools(page);
-      await page.getByTestId('fullscreen').click();
+      await page.getByTestId('cp-fullscreen').click();
+      await closeCoachPanel(page);
     }
     await expect.poll(async () => (await camera(page)).insetBottom ?? 0, { timeout: 20_000 }).toBeGreaterThan(0.05);
     await page.waitForTimeout(2500);
@@ -110,18 +112,21 @@ test('Réglages : « Point du moment » remet la bande d’avant, le temps se ch
   await expect(page.getByTestId('consignes')).toHaveCount(0);
 });
 
-test('fiche technique : « S’entraîner » toujours actif, et les angles de caméra visibles au-dessus', async ({ page }) => {
+test('fiche technique : « S’entraîner » toujours actif, et les angles de caméra dans le panneau du coach', async ({ page }) => {
   await seedProfile(page, { disciplines: ['mma'], mainDiscipline: 'mma' });
   // no MMA exercise works the high kick of the front leg: the technique is trained alone
   await page.goto('/#/techniques/high-kick-avant?d=mma');
   const train = page.getByTestId('nav-train');
   await expect(train).toBeEnabled();
-  // 1.4.0: the angles are in the commands of the coach (a tap on it), inside its zone
+  // 2.4: the angles are in the coach's panel (a tap on it); the panel is over the screen, so the former check « angles
+  // above the button » became: the angle applies, then the panel closes and the button is there, still enabled
   await showCoachTools(page);
-  const cam = page.getByTestId('coach-angles').getByRole('radio', { name: 'Face', exact: true });
+  const cam = page.getByTestId('cp-camera').getByRole('radio', { name: 'Face', exact: true });
   await expect(cam).toBeVisible();
-  const [c, b] = await Promise.all([cam.boundingBox(), train.boundingBox()]);
-  expect(c!.y + c!.height, 'angles au-dessus du bouton').toBeLessThanOrEqual(b!.y);
+  await cam.click();
+  await expect(cam).toHaveAttribute('aria-checked', 'true');
+  await closeCoachPanel(page);
+  await expect(train).toBeEnabled();
   await train.click();
   await expect(page).toHaveURL(/#\/entrainement\?tech=high-kick-avant&d=mma/);
   await expect(page.getByTestId('exercise-name')).toContainText('High kick');
@@ -156,27 +161,31 @@ test('Mes infos et Réglages : plus de ⋮ en haut à droite, leur contenu reste
   await expect(page.getByTestId('bottom-bar').locator('[data-tab="progres"]')).toBeVisible();
 });
 
-test('haut-parleur sous la vitesse et le plein écran : chaque toucher passe au cran suivant, l’icône montre le volume', async ({ page }) => {
+// 2.4: the four-step speaker of 1.3.0 became the « Voix du coach » switch and the volume slider of the coach's panel
+// (the real volume of Réglages, 0 to 100 %); the same saved settings are checked
+test('voix du coach dans le panneau : interrupteur et volume réel, les mêmes réglages que Réglages', async ({ page }) => {
   await seedProfile(page);
   await page.goto('/#/entrainement?ex=boxe-debutant-02&mode=technique');
-  const sound = page.getByTestId('sound');
-  // 1.4.0: in the commands of the coach, shown by a tap on it
   await showCoachTools(page);
-  await expect(sound).toBeVisible();
-  // under the two tools already there, on the right of the stage
-  const [spd, fs, snd] = await Promise.all([page.locator('.coach-tools .btn').first().boundingBox(), page.getByTestId('fullscreen').boundingBox(), sound.boundingBox()]);
-  expect(snd!.y).toBeGreaterThan(fs!.y + fs!.height - 1);
-  expect(Math.abs(snd!.x + snd!.width - (fs!.x + fs!.width))).toBeLessThan(2);
-  expect(spd!.y).toBeLessThan(fs!.y);
-  // voice on at 100 % by default: loud, then off, low, medium, loud
-  await expect(sound).toHaveAttribute('data-level', '3');
-  for (const level of ['0', '1', '2', '3']) {
-    await sound.click();
-    await expect(sound).toHaveAttribute('data-level', level);
-    await expect(sound.locator('.sound-steps i.on')).toHaveCount(Number(level));
-  }
+  const voice = page.getByTestId('cp-voice');
+  const volume = page.getByTestId('cp-volume');
+  // voice on at 100 % by default
+  await expect(voice).toHaveAttribute('aria-checked', 'true');
+  await expect(volume).toHaveValue('1');
+  // a lower volume, then off: the slider follows, the panel stays open
+  await volume.fill('0.35');
+  await expect(volume).toHaveAttribute('aria-valuetext', '35 %');
+  await voice.click();
+  await expect(voice).toHaveAttribute('aria-checked', 'false');
+  await expect(volume).toBeDisabled();
+  await expect(page.getByTestId('coach-panel')).toBeVisible();
+  // back on: the volume chosen before comes back
+  await voice.click();
+  await expect(volume).toHaveAttribute('aria-valuetext', '35 %');
   // the same setting as Réglages › Voix et sons
-  await sound.click();
+  await voice.click();
+  await closeCoachPanel(page);
+  await expect(page.getByTestId('coach-muted')).toBeVisible();
   await page.goto('/#/reglages/voix');
   await expect(page.getByTestId('set-voix')).toContainText('Voix coupée');
 });

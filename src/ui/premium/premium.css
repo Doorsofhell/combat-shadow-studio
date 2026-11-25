@@ -14,6 +14,15 @@
   cursor: pointer;
   flex: none;
 }
+.premium-tag {
+  display: inline-grid;
+  place-items: center;
+  vertical-align: -2px;
+  margin-left: 5px;
+  flex: none;
+  line-height: 0;
+}
+
 .premium-marker:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: -4px;
@@ -387,4 +396,95 @@
   .premium-gem {
     margin-bottom: 0;
   }
+}
+
+/* 2.9.0 (Youssef, 2026-11-25, « Identification visuelle Freemium / Premium »): SHADOW PRO marks. Palette: or #D4AF37,
+   or lumineux #F5D88B, bronze #99702E; in the light theme the text takes the darker bronze of --c-gold (#7d5f22) so
+   10-11 px stays readable (AA). No shadow, no animation, no glow; the badge never makes a card taller. */
+:root {
+  --pro-ink: #e2c15a;
+  --pro-bg: rgba(212, 175, 55, 0.11);
+  --pro-line: rgba(212, 175, 55, 0.32);
+}
+:root[data-theme='light'] {
+  --pro-ink: #7d5f22;
+  --pro-bg: rgba(153, 112, 46, 0.1);
+  --pro-line: rgba(153, 112, 46, 0.35);
+}
+/* media cards drawn on the dark backdrop keep the dark ink in both themes */
+.dark-scope {
+  --pro-ink: #e2c15a;
+  --pro-bg: rgba(212, 175, 55, 0.14);
+}
+.pro-badge {
+  display: inline-block;
+  flex: none;
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--pro-bg);
+  color: var(--pro-ink);
+  font-family: var(--font-text);
+  font-size: 10.5px;
+  font-weight: 600;
+  font-style: normal;
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  vertical-align: 0.2em;
+  text-transform: uppercase;
+  /* never stretches a title line: the line keeps its own height */
+  max-height: 1.6em;
+}
+/* the title badge of a free user is a button (opens the offer): a 32 px target around the small badge */
+.premium-marker .pro-badge {
+  margin-left: 0;
+}
+.pro-lock {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  color: var(--pro-ink);
+  line-height: 0;
+}
+.pro-lock .app-icon {
+  color: var(--pro-ink);
+  fill: currentColor;
+}
+.pro-shield {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px 2px 5px;
+  border-radius: 999px;
+  background: var(--pro-bg);
+  color: var(--pro-ink);
+  font-family: var(--font-text);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.pro-shield .app-icon {
+  color: var(--pro-ink);
+}
+.pro-shield.compact {
+  padding: 1px 5px 1px 3px;
+  font-size: 10px;
+}
+/* the avatar of a Premium user: a thin gold ring, only where an avatar is drawn */
+.pro-avatar {
+  box-shadow: 0 0 0 2px var(--pro-line), 0 0 0 1px var(--pro-ink) inset;
+}
+.acc-name .pro-shield {
+  margin-left: 10px;
+  vertical-align: 0.35em;
+  letter-spacing: 0.06em;
+}
+/* on a filled button (red « Lancer », gold « Choisir ») the padlock takes the button's own text colour */
+.btn:is(.primary, .star-cta) .pro-lock,
+.btn:is(.primary, .star-cta) .pro-lock .app-icon {
+  color: currentColor;
 }

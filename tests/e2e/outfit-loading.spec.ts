@@ -53,8 +53,10 @@ test('le coach n’apparaît jamais sans sa tenue : premier chargement, discipli
   await shownDressed(page, 'muaythai', 'changement de discipline (muay-thaï)');
 
   // coach change during the training
+  // 2.4: « Options du coach » opens the coach's panel; 2.7 (option A « Un seul sélecteur », Youssef 2026-11-24): the
+  // coach is no longer folded in « Options avancées », its row of faces is in « Ton coach »
   await menuCommand(page, 'options');
-  await page.getByRole('button', { name: 'Amara' }).click();
+  await page.getByTestId('cp-coach').getByRole('radio', { name: /Amara/ }).click();
   await expect(page.locator('[data-coach]')).toHaveAttribute('data-coach', 'femme');
   await shownDressed(page, 'muaythai', 'changement de coach (Amara)');
   await page.keyboard.press('Escape');

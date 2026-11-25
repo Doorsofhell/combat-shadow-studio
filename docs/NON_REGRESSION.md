@@ -32,6 +32,11 @@ chaque lot, point de restauration, rapport (TEST RÉUSSI / ÉCHOUÉ / NON EXÉCU
 | `restauration/lot-4b` | v0.8.0 | Consigne principale et 3 à 5 points clés par technique, point de la phase en cours mis en évidence |
 | `restauration/avant-play-store-v231` | `6e139eb` (2.3.0) | Avant la version Google Play 2.3.1 (build AAB signé, contrôles Play Store, permission VIBRATE, politique publique) |
 | `restauration/avant-version-unique-v233` | `d5b3b9b` (2.3.2) | Avant la source unique de version et la documentation générée (2.3.3) |
+| `restauration/avant-panneau-coach-v240` | `1684b73` (2.4.0) | Avant le panneau « Options du coach » (expérimental, branche `claude/project-thread-kn0nc0`) |
+| `restauration/avant-choix-coach-v260` | `1707e71` (2.6.0) | Avant « Choisir son coach en un geste » (option A, branche `claude/project-thread-fm0ib9`) |
+| `restauration/avant-panneaux-verre-v260` | `1707e71` (2.6.0) | Avant les fenêtres d’options en verre (branche `claude/project-thread-0014ib`) |
+| `restauration/avant-diamants-v282` | `2969a77` (2.8.1) | Dernière version en production avant le marquage Premium (diamant puis Shadow Pro) |
+| `restauration/avant-shadow-pro-v290` | `6b7a872` (2.8.2, non publiée) | Avant le badge PRO et le cadenas Shadow Pro (2.9.0, branche `claude/project-thread-zl3kk4`) |
 
 Les étiquettes Git (tags) ne passent pas par le proxy de l’environnement : chaque point de restauration est donc une
 branche `restauration/...` sur GitHub. Retour arrière : `git checkout restauration/<nom>`.
@@ -85,7 +90,7 @@ décrivent l'état de référence d'origine (historique).
   (le short) au premier affichage de l’éditeur. Non reproduit depuis ; à surveiller.
 - Signalé par Youssef : certains textes sont peu lisibles ou masqués par les couleurs.
 - Cartes des disciplines : grand titre en filigrane coupé et superposé à l’image.
-- Le geste retour du système ne déclenche pas la confirmation de l’éditeur.
+- ~~Le geste retour du système ne déclenche pas la confirmation de l’éditeur.~~ Corrigé en 2.3.5 (`retour-createur.spec`).
 - Gants de boxe et garde : le visage est caché dans la vue de face de l’éditeur.
 
 ## Matrice de non-régression
@@ -118,6 +123,11 @@ décrivent l'état de référence d'origine (historique).
 | Performances | Pas de dégradation non justifiée | taille des fichiers du build | – |
 | Coach IA | Réponses hors ligne, pause, ralenti | `coach.test`, `training-layout.spec` | – |
 | Coachs 3D | (1.37.0) Un seul rendu Ultra-réaliste, quatre coachs Rocketbox ; anciens réglages (style, « Précédente ») et anciens choix Axel / Kaila convertis sans perte ; chevilles dans les amplitudes ; vignettes du choix de coach sur une ligne, rotation gauche-droite seulement | `ankle-range.test`, `settings-style.test`, `contract.test`, `coach-render.spec`, `coachs-v160.spec`, `moteur-lumiere.spec` | captures de la PR 1.37.0 |
+| Retour avec modifications non enregistrées (2.3.5) | Créateur d’enchaînements : Retour du téléphone, geste retour et Retour du navigateur ferment d’abord un panneau, puis demandent ; un deuxième Retour garde le brouillon ; seul « Abandonner » sort ; sans modification, sortie directe ; après Enregistrer, pas de retour dans l’éditeur | `retour-createur.spec` (5), `leave-guard-android.test` (3), `createur-v2.spec` | – |
+| Panneau « Options du coach » (2.4, expérimental) | Un toucher court ouvre, glisser / pincer / double toucher non ; aucun bouton de réglage sur le coach fermé ; fermeture par toucher à côté (sans traverser), poignée, Retour, Échap ; choix appliqués sans fermer ; séance jamais mise en pause ; statuts Acquis / Encore du mal / En apprentissage identiques partout, anciens gardés, sans XP ; 360 × 640 sans coupure | `panneau-coach.spec` (10), `ecran-coach-v140.spec`, `mastery.spec`, `mastery.test`, `training-layout.spec` (Caméra, Auto) | `maquettes/panneau-coach-2026-11-24/` |
+| Choix du coach en un geste (2.7) | « Changer » de l’Accueil ouvre « Ton coach » ; six visages avec leur nom, la même rangée dans le panneau, Réglages et Bienvenue ; le coach change aussitôt et reste après rechargement ; « Ton coach » jamais replié dans « Options avancées » ; vignettes de l’écran Coach nommées, contraste AA | `choix-coach-v270.spec` (5), `coachs-v160.spec`, `outfit-loading.spec`, `contrast.spec`, `training-layout.spec` | `maquettes/choix-coach-2026-11-24/` |
+| Fenêtres d’options en verre (après 2.6.0) | Même verre que le panneau du coach ; fermeture par toucher à côté (sans clic derrière), poignée, bouton rond, Échap, Retour qui reste sur la page ; action qui change de page sans entrée d’historique en trop ; 360 px jour et nuit | `panneaux-verre.spec` (9), `navigation.spec` (Enchaînement, menu) | `maquettes/panneaux-verre-2026-11-24/` |
+| Shadow Pro (2.9.0) | Badge « PRO » sur chaque contenu Premium et rien sur les gratuits ; aucun cadenas en production ; barre du bas inchangée ; simulation absente du build de production ; avec la simulation : cadenas et gardes pour Gratuit et Expiré, rien pour Premium, programme mixte « 3/6 PRO » | `shadow-pro.test`, `premium-items.test`, `rights.test`, `premium.spec`, `tests/e2e-sim/shadow-pro.spec` (`-c playwright.sim.config.ts`) | |
 | Réalité augmentée | Démarrage, refus, arrêt caméra | `ar.test` | non applicable sans appareil |
 
 Commandes : `npx tsc -b`, `npx vitest run`, `npx vite build` puis

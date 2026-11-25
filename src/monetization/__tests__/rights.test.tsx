@@ -2,7 +2,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ENTITLEMENTS, PREMIUM_BENEFITS, PREMIUM_CATEGORIES, benefitAvailable, type EntitlementId } from '../entitlements';
+import { ENTITLEMENTS, ENTITLEMENT_BY_ID, PREMIUM_BENEFITS, PREMIUM_CATEGORIES, benefitAvailable, type EntitlementId } from '../entitlements';
 import { restorePurchases, setPurchaseProvider, type PurchaseProvider } from '../purchases';
 import { formatPrice, PREMIUM_OFFER } from '../offer';
 import { MONETIZATION_ENABLED, NO_PURCHASE_SOURCE, canAccessFeature, hasPremium, isPremiumFeature, premiumStatus, setRightsSource, shouldShowPremiumMarker } from '../rights';
@@ -54,7 +54,8 @@ describe('catalogue des droits', () => {
   it('la page n’annonce comme disponible que ce qui existe', () => {
     expect(PREMIUM_BENEFITS).toHaveLength(8);
     expect(PREMIUM_BENEFITS[0].label).toBe('Création illimitée d’enchaînements personnalisés');
-    expect(PREMIUM_BENEFITS.filter((b) => !benefitAvailable(b)).map((b) => b.label)).toEqual(['Tous les combattants', 'Réglages avancés d’entraînement']);
+    // 2.8.2: the coaches and the chronometer options exist now, so every benefit announced is available
+    expect(PREMIUM_BENEFITS.filter((b) => !benefitAvailable(b)).map((b) => b.label)).toEqual([]);
   });
   it('prix centralisé, indicatif', () => {
     expect(formatPrice()).toBe('29,99 € TTC');
@@ -73,8 +74,10 @@ describe('statut Free (préparation)', () => {
       expect(canAccessFeature(id), id).toBe(true);
     }
     expect(shouldShowPremiumMarker('unlimited_combos')).toBe(true);
-    // undecided or not built: no marker
-    expect(shouldShowPremiumMarker('all_fighters')).toBe(false);
+    // 2.8.2: the coaches and the chronometer options exist now and their commercial choice is made (Youssef,
+    // 2026-11-20): they carry the diamond too; a feature without a marker would still show none
+    expect(shouldShowPremiumMarker('all_fighters')).toBe(true);
+    expect(ENTITLEMENTS.filter((e) => !e.marker).every((e) => !shouldShowPremiumMarker(e.id))).toBe(true);
   });
   it('le marqueur ouvre la page Premium sans déclencher l’action autour de lui', () => {
     let cardClicks = 0;
@@ -84,20 +87,21 @@ describe('statut Free (préparation)', () => {
       </button>,
     );
     const m = el.querySelector('[data-testid="premium-unlimited_combos"]') as HTMLButtonElement;
-    expect(m.getAttribute('aria-label')).toBe('Premium : Enchaînements personnels illimités. Voir l’offre Premium à vie');
+    expect(m.getAttribute('aria-label')).toBe('Shadow Pro : Enchaînements personnels illimités. Voir l’offre');
+    expect(m.textContent).toBe('PRO');
     act(() => m.click());
     expect(cardClicks).toBe(0);
     expect(el.querySelector('[data-testid="on-premium"]')).not.toBeNull();
   });
   // v0.45 (Youssef, 2026-10-23, « Refonte page Premium à vie »): one line of terms instead of four cards, the six
   // categories in a 2 × 3 grid, the price and the purchase only in the « Offre Premium » panel
-  it('page v0.45 : une seule mention commerciale, six catégories, une bande « à venir », un seul bouton', () => {
+  it('page v0.45 : une seule mention commerciale, six catégories, plus de bande « à venir » (2.8.2), un seul bouton', () => {
     const el = mount(<PremiumPage />);
     expect(el.querySelector('[data-testid="premium-terms"]')!.textContent).toBe('Un paiement. À vie. Sans abonnement.');
     expect([...el.querySelectorAll('.premium-grid li')].map((l) => l.textContent)).toEqual(['Enchaînements', 'Coaching 3D', '6 disciplines', 'Programmes', 'Statistiques', 'Historique']);
-    expect(el.querySelector('[data-testid="premium-soon"]')!.textContent).toBe('Combattants et réglages avancés : à venir');
-    // the band names exactly the benefits that do not exist yet
-    expect(PREMIUM_BENEFITS.filter((b) => !benefitAvailable(b)).map((b) => b.label)).toEqual(['Tous les combattants', 'Réglages avancés d’entraînement']);
+    // 2.8.2: the « à venir » band names the benefits that do not exist yet; there are none left, so it is gone
+    expect(PREMIUM_BENEFITS.filter((b) => !benefitAvailable(b))).toEqual([]);
+    expect(el.querySelector('[data-testid="premium-soon"]')).toBeNull();
     // every category is backed by features that exist
     for (const c of PREMIUM_CATEGORIES) expect(benefitAvailable(c), c.id).toBe(true);
     expect(el.querySelectorAll('button')).toHaveLength(1);
@@ -123,11 +127,13 @@ describe('statut Free (préparation)', () => {
 });
 
 describe('statut Premium (injecté par le test)', () => {
-  it('marqueurs masqués sans espace résiduel, tout reste accessible', () => {
+  // 2.9.0 (Youssef, §5): for a Premium user the PRO badges stay (they name what the purchase brings), without any
+  // link to the offer (« aucune sollicitation commerciale »), and everything opens
+  it('badges PRO gardés, sans lien vers l’offre, tout reste accessible', () => {
     setRightsSource(PREMIUM);
     expect(hasPremium()).toBe(true);
     for (const id of ids as EntitlementId[]) {
-      expect(shouldShowPremiumMarker(id)).toBe(false);
+      expect(shouldShowPremiumMarker(id)).toBe(!!ENTITLEMENT_BY_ID.get(id)!.marker);
       expect(canAccessFeature(id)).toBe(true);
     }
     const el = mount(
@@ -135,7 +141,8 @@ describe('statut Premium (injecté par le test)', () => {
         Mes enchaînements<PremiumMarker feature="unlimited_combos" />
       </h2>,
     );
-    expect(el.querySelector('h2')!.innerHTML).toBe('Mes enchaînements');
+    expect(el.querySelector('h2')!.textContent).toBe('Mes enchaînementsPRO');
+    expect(el.querySelector('button')).toBeNull();
   });
   it('page : « Premium à vie activé », ni prix ni bouton de paiement', () => {
     setRightsSource(PREMIUM);
@@ -145,11 +152,11 @@ describe('statut Premium (injecté par le test)', () => {
     expect(el.querySelector('[data-testid="premium-pay"]')).toBeNull();
     expect(el.querySelector('[data-testid="premium-price"]')).toBeNull();
   });
-  it('le marqueur disparaît dès que le statut change', () => {
+  it('le marqueur suit le statut aussitôt : bouton vers l’offre en gratuit, simple badge en Premium', () => {
     const el = mount(<PremiumMarker feature="full_history" />);
-    expect(el.querySelector('[data-premium="full_history"]')).not.toBeNull();
+    expect(el.querySelector('[data-premium="full_history"]')!.tagName).toBe('BUTTON');
     act(() => setRightsSource(PREMIUM));
-    expect(el.querySelector('[data-premium="full_history"]')).toBeNull();
+    expect(el.querySelector('[data-premium="full_history"]')!.tagName).toBe('SPAN');
   });
 });
 

@@ -1,6 +1,6 @@
 import { expect, Locator, Page, test } from '@playwright/test';
 import { DEFAULT_PROFILE } from '../../src/store/profile';
-import { openCoachIA } from './nav-helpers';
+import { openCoachIA, showCoachTools } from './nav-helpers';
 
 /**
  * 0.27 (Youssef, 2026-10-20 22:09: « Un double clique sur la fenêtre du coach permet un plein écran total, étudie et
@@ -80,6 +80,9 @@ test('accueil : double tap = plein écran total ; commandes masquées puis réaf
   await page.mouse.click(b.x + b.width / 2, b.y + b.height * 0.4);
   await expect(stage).not.toHaveClass(/fs-idle/);
   await expect(exit).toHaveCSS('opacity', '1');
+  // 2.4: that tap only brought the controls back, it did not open the coach's panel too
+  await page.waitForTimeout(500);
+  await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
   await exitByButton(page);
   await expect(stage).toHaveAttribute('data-fullscreen', 'false');
   expect(await page.evaluate(() => !!document.fullscreenElement)).toBe(false);
@@ -120,6 +123,13 @@ test('un glisser tourne la caméra sans basculer en plein écran ; deux appuis l
   await page.mouse.click(x, y);
   await page.waitForTimeout(300);
   await expect(stage).toHaveAttribute('data-fullscreen', 'false');
+  // 2.4: a slow tap is a single tap, it opens (or closes) the coach's panel once the time for a double tap has passed:
+  // closed again here
+  await page.waitForTimeout(800);
+  await expect(async () => {
+    if ((await page.getByTestId('coach-panel-root').count()) > 0) await page.keyboard.press('Escape');
+    await expect(page.getByTestId('coach-panel-root')).toHaveCount(0, { timeout: 1000 });
+  }).toPass({ timeout: 10_000 });
   // a real double tap does switch it
   await page.waitForTimeout(600);
   await dbl(page, stage);
@@ -180,19 +190,32 @@ for (const vp of [
       expect(Math.abs(after.info.top - after.band.bottom)).toBeLessThanOrEqual(1);
       expect(after.bottom.top).toBeGreaterThanOrEqual(after.info.bottom - 1);
     }
-    // the button does the same, and its twin exits
-    await page.getByTestId('fullscreen').click();
+    // the button does the same (2.4: « Plein écran » of the coach's panel, which stays open; Échap closes the panel
+    // only, the fullscreen stays), and its twin exits
+    await showCoachTools(page);
+    await page.getByTestId('cp-fullscreen').click();
     await expect(page.getByTestId('training')).toHaveClass(/immersive/);
-    // a tap shows the controls if they have faded, then the exit button
-    await exitByButton(page);
+    await expect(page.getByTestId('coach-panel')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
+    await expect(page.getByTestId('training')).toHaveClass(/immersive/);
+    // its twin exits (2.4: the same « Plein écran » tile of the panel, pressed; the exit button that the tap showed over
+    // the coach of the session in 1.4.0 is gone, « Retour : quitter le plein écran » stays at the top)
+    await showCoachTools(page);
+    await expect(page.getByTestId('cp-fullscreen')).toHaveAttribute('aria-pressed', 'true');
+    await page.getByTestId('cp-fullscreen').click();
     await expect(page.getByTestId('training')).not.toHaveClass(/immersive/);
+    await expect(page.getByTestId('cp-fullscreen')).toHaveAttribute('aria-pressed', 'false');
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
+    await expect(page.getByTestId('phase')).not.toHaveText('Pause');
   });
 
 test('astuce unique : affichée une fois, fermée pour de bon', async ({ page }) => {
   await seed(page);
   await page.goto('/#/');
   const hint = page.getByTestId('fs-hint');
-  await expect(hint).toHaveText('Astuce : touche deux fois le coach pour le plein écran');
+  await expect(hint).toHaveText('Astuce : touche le coach pour ses options, deux fois pour le plein écran');
   await hint.getByRole('button', { name: 'Fermer l’astuce' }).click();
   await expect(hint).toHaveCount(0);
   // the settings are written to the device asynchronously

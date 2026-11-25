@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react';
-import { useGoals, type Mastery } from '../../store/goals';
 import { AppIcon } from '../icons';
 import { Segmented } from './Chips';
 
@@ -37,41 +35,5 @@ export function CameraControls({ value, onChange, presets = CAMERA_PRESETS }: { 
   return <Segmented options={presets} value={value} onChange={onChange} label="Angle de caméra" />;
 }
 
-const MASTERY_LABEL: Record<Mastery, string> = { acquise: 'Assimilée', 'a-revoir': 'Encore du mal' };
-
-/**
- * 0.24 (Youssef, option F of 2026-10-20): a small two-icon switch next to the playback bar. the tick marks the
- * technique as assimilated, the circular arrow as still hard; tapping the active one again clears it. The name of the
- * state shows for a moment after a tap.
- */
-export function MasterySwitch({ id }: { id: string }) {
-  const value = useGoals((s) => s.mastery[id]);
-  const toggle = useGoals((s) => s.toggleMastery);
-  const [said, setSaid] = useState<string | null>(null);
-  useEffect(() => {
-    if (!said) return;
-    const t = setTimeout(() => setSaid(null), 1400);
-    return () => clearTimeout(t);
-  }, [said]);
-  const tap = (m: Mastery) => {
-    toggle(id, m);
-    setSaid(value === m ? 'Marque retirée' : MASTERY_LABEL[m]);
-  };
-  return (
-    <div className="mastery-switch" role="group" aria-label="Où en es-tu sur cette technique ?" data-testid="mastery-switch">
-      {(['acquise', 'a-revoir'] as const).map((m, i) => (
-        <span key={m} className="ms-cell">
-          {i === 1 && <span className="ms-sep" aria-hidden />}
-          <button type="button" className={`ms-btn ${m} ${value === m ? 'on' : ''}`} aria-pressed={value === m} aria-label={MASTERY_LABEL[m]} title={MASTERY_LABEL[m]} onClick={() => tap(m)} data-testid={`mastery-${m}`}>
-            <AppIcon id={m === 'acquise' ? 'mastered' : 'struggling'} size={20} />
-          </button>
-        </span>
-      ))}
-      {said && (
-        <span className="ms-said" role="status">
-          {said}
-        </span>
-      )}
-    </div>
-  );
-}
+// 2.4: the former two-icon mastery switch under the sheet's coach (0.24, option F) is now « Mon apprentissage » in the
+// coach's panel (src/ui/coach-panel/CoachPanel.tsx), with the same saved states

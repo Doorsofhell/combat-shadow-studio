@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useCoachBubble } from '../coach-ai/coachHost';
 import { RELEASES, RELEASE_CATEGORY_LABEL, releaseDateLabel } from '../../domain/releases';
 import { AppIcon } from '../icons';
+import { overlayHost, scrimHandlers, useGlassLite, useSwipeDown } from '../components/glass';
 import { popLayer, pushLayer } from './layers';
 import { NavIcon } from './NavIcon';
 import { leave, useNavStore, type MenuCommand } from './store';
@@ -79,26 +80,34 @@ export function NavPanel({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // 2.7: the glass of the « Options du coach » panel; a swipe down from the grip or the title closes a bottom sheet
+  const lite = useGlassLite();
+  const swipe = useSwipeDown(onClose);
+  const grab = variant === 'sheet';
   return createPortal(
-    <div className={`nav-overlay ${aboveBar ? 'above-bar' : ''} ${variant}`}>
-      <div className="nav-scrim" onClick={onClose} data-testid="nav-scrim" />
-      <section className={`nav-sheet ${wide ? 'wide' : ''} ${variant}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={ref} data-testid={testId}>
-        {variant === 'sheet' && <div className="nav-handle" aria-hidden />}
-        {variant === 'menu' ? null : closable ? (
-          <div className="nav-sheet-head">
-            <h2 className="nav-sheet-title">{title}</h2>
-            <button type="button" className="nav-sheet-close" onClick={onClose} aria-label="Fermer" data-testid="panel-close">
-              <NavIcon id="close" />
-            </button>
+    <div className={`nav-overlay glass ${aboveBar ? 'above-bar' : ''} ${variant}${lite ? ' lite' : ''}`}>
+      <div className="nav-scrim" {...scrimHandlers(onClose)} data-testid="nav-scrim" />
+      <section className={`nav-sheet ${wide ? 'wide' : ''} ${variant}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={ref} data-testid={testId} data-no-double-tap style={swipe.style}>
+        {variant !== 'menu' && (
+          <div className="nav-grab" {...(grab ? swipe.handlers : {})} data-testid="nav-sheet-grip">
+            {grab && <div className="nav-handle" aria-hidden />}
+            {closable || grab ? (
+              <div className="nav-sheet-head">
+                <h2 className="nav-sheet-title">{title}</h2>
+                <button type="button" className="glass-x" onClick={onClose} aria-label="Fermer" data-testid="panel-close">
+                  <NavIcon id="close" />
+                </button>
+              </div>
+            ) : (
+              <div className="nav-sheet-title">{title}</div>
+            )}
           </div>
-        ) : (
-          <div className="nav-sheet-title">{title}</div>
         )}
         <div className="nav-sheet-body">{children}</div>
       </section>
     </div>,
     // inside the total fullscreen of the coach when it is on, else over the page
-    document.fullscreenElement ?? document.body,
+    overlayHost(),
   );
 }
 

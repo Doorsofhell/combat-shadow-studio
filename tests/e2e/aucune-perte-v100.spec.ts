@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { bar, closeMenu, menuItem, openSetting, seedProfile, tapAction } from './nav-helpers';
+import { bar, closeCoachPanel, closeMenu, menuItem, openSetting, seedProfile, showCoachTools, tapAction } from './nav-helpers';
 
 /**
  * 1.0.0 (refonte ergonomique, lot 5): the control promised in the validated plan (« Où va chaque contenu », Youssef,
@@ -122,7 +122,10 @@ test('plan, lignes 14 à 17 : Apprendre (techniques, maîtrise et à revoir, fic
   // a sheet of technique, its Maîtrise switch; « À revoir » comes back in the catalogue
   await page.locator('a[href*="#/techniques/"]').first().click();
   await expect(page.getByTestId('technique-page')).toBeVisible();
-  await page.getByRole('button', { name: /Encore du mal/ }).first().click();
+  // 2.4: « Encore du mal » is in « Mon apprentissage » of the coach's panel (a tap on the coach)
+  await showCoachTools(page);
+  await page.getByTestId('cp-learn-a-revoir').click();
+  await closeCoachPanel(page);
   await place(page, 'techniques');
   await expect(page.getByText(/À revoir \(1\)/).first()).toBeVisible();
   // the sheet of a technique with a partner

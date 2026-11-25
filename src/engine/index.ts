@@ -13,7 +13,7 @@
 export const ENGINE_VERSION = '1.2.1';
 
 // the skeleton and its limits
-export { CoachRig, KNEE_MAX_FLEX, type Side } from './rig';
+export { CoachRig, KNEE_MAX_FLEX, REST_SKIN, type Side } from './rig';
 export { PLANTED_LIMIT } from './limits';
 export { ankleAngles } from './joints';
 export { centreOfMass } from './balance';

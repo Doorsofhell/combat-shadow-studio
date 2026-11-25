@@ -11,10 +11,11 @@ import { useSettings } from '../../store/settings';
 import { formatDuration, useStats } from '../../store/stats';
 import { useGoals } from '../../store/goals';
 import { MODE_HELP, MODE_LABEL } from '../training/plan';
-import { DisciplineArtwork, EmptyState, KickboxingStyleChip, LevelPips, MenuChip, PageHead, Segmented, Sheet, useKbStyle } from '../components';
+import { DisciplineArtwork, EmptyState, KickboxingStyleChip, LevelPips, MenuChip, PageHead, Segmented, Sheet, SheetLeaveButton, useKbStyle } from '../components';
 import { filterExercises } from '../../domain/kickboxingStyles';
 import { AppIcon, DisciplineIcon } from '../icons';
-import { PremiumMarker } from '../premium/PremiumMarker';
+import { PremiumMarker, PremiumTag, ProLock, useProGate } from '../premium/PremiumMarker';
+import { ITEM_RIGHT, canOpenExercise, isPremiumLevel, isProExercise } from '../../monetization/premiumItems';
 
 export const KIND_LABEL: Record<Exercise['kind'], string> = {
   technique: 'Technique',
@@ -31,17 +32,30 @@ type KindFilter = Exercise['kind'] | 'tout';
 export function ExerciseList({ list, onOpen }: { list: Exercise[]; onOpen: (id: string) => void }) {
   const perExercise = useStats((s) => s.perExercise);
   const fav = useGoals((s) => s.favExercises);
+  const gate = useProGate();
   if (!list.length) return <EmptyState title="Aucun exercice pour ce filtre" text="Essaie une autre catégorie ou un autre niveau." />;
   return (
     <div className="stack" style={{ gap: 8 }}>
       {list.map((e, i) => (
-        <button key={e.id} type="button" className="card link ex-card" onClick={() => onOpen(e.id)} data-testid={`ex-${e.id}`}>
+        <button
+          key={e.id}
+          type="button"
+          className="card link ex-card"
+          onClick={(ev) => {
+            gate(ITEM_RIGHT.exercise, !canOpenExercise(e))(ev);
+            if (!ev.defaultPrevented) onOpen(e.id);
+          }}
+          data-testid={`ex-${e.id}`}
+          data-locked={!canOpenExercise(e) || undefined}
+        >
           <TechThumb id={keyTechnique(e.sequence)}>
             <span className="num">{i + 1}</span>
           </TechThumb>
           <span className="body">
             <span className="title">
               {e.name}
+              {isProExercise(e) && <PremiumTag feature="advanced_techniques" />}
+              {!canOpenExercise(e) && <ProLock size={13} />}
               {fav.includes(e.id) && <AppIcon id="favorite" size={14} tone="accent" label="Favori" style={{ marginLeft: 6, verticalAlign: -1 }} />}
             </span>
             <span className="row" style={{ gap: 6 }}>
@@ -118,7 +132,7 @@ export function DisciplinePage() {
           lead={<LevelPips index={LEVELS.indexOf(lvl)} />}
           testId="level-chip"
           testPrefix="level-"
-          options={LEVELS.map((l, i) => ({ id: l.id, label: l.name, description: l.goal, lead: <LevelPips index={i} /> }))}
+          options={LEVELS.map((l, i) => ({ id: l.id, label: l.name, description: l.goal, lead: <LevelPips index={i} />, badge: isPremiumLevel(l.id) ? <PremiumTag feature="advanced_techniques" /> : undefined }))}
         />
         {disc.id === 'kickboxing' && <KickboxingStyleChip />}
         <MenuChip
@@ -175,9 +189,9 @@ export function ExerciseSheet({ ex, onClose }: { ex: Exercise; onClose: () => vo
       eyebrow={`${DISCIPLINES.find((d) => d.id === ex.discipline)!.name} · ${LEVELS.find((l) => l.id === ex.level)!.name}`}
       onClose={onClose}
       footer={
-        <button type="button" className="btn primary block lg" onClick={go} data-testid="go-training">
+        <SheetLeaveButton className="btn primary block lg" onLeave={go} data-testid="go-training">
           <AppIcon id="play" /> S’entraîner
-        </button>
+        </SheetLeaveButton>
       }
     >
       <p className="muted">{ex.description}</p>

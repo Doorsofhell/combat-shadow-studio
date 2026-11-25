@@ -21,6 +21,12 @@
  *   straight blend. No gain on the ukemi it was meant for (the flip there comes from the shoulder reading), and the
  *   forearm went through the trunk on the changement de base (5,8 cm) and the hand on the middle kick (3,7 cm).
  * - overhandPath: the overhand's fist is no longer cocked beside the ear (see boxing.ts, OVERHAND).
+ * - sprawlPath (2.4.0, lot 3): the sprawl's hands go lower and less far on the way down: the shoulder no longer
+ *   reaches its stop with the arm raised high, where the elbow whipped round (mma.ts).
+ * - sotoPole (2.4.0, lot 3): o-soto-gari, the knee of the reaping leg points down instead of back; the knee no
+ *   longer whips round between the swing and the reap (grappling.ts).
+ * - kneeRelease (2.4.0, lot 3): knee strikes (not in the clinch), the knee starts down while the hands go back to
+ *   guard instead of waiting at the impact (stop 150 ms → about 60 ms) (legs.ts).
  * - idleLife: the guard's bounce no longer repeats identically every 0.9 s (correlation 0.999 from one bounce to
  *   the next), and the living guard's drift scales with the coach's height.
  */
@@ -33,9 +39,12 @@ export interface V230Flags {
   twistCap: boolean;
   poleSlerp: boolean;
   overhandPath: boolean;
+  sprawlPath: boolean;
+  sotoPole: boolean;
+  kneeRelease: boolean;
 }
 
-export const V230: V230Flags = { legArc: true, chainLead: true, snap: true, idleLife: true, armLag: true, twistCap: true, poleSlerp: false, overhandPath: true };
+export const V230: V230Flags = { legArc: true, chainLead: true, snap: true, idleLife: true, armLag: true, twistCap: true, poleSlerp: false, overhandPath: true, sprawlPath: true, sotoPole: true, kneeRelease: true };
 
 /** signature of the switches, for the caches built from them (motion library) */
 export const v230Key = () => (Object.keys(V230) as (keyof V230Flags)[]).map((k) => (V230[k] ? 1 : 0)).join('');

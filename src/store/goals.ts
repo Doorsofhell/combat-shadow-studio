@@ -35,6 +35,11 @@ interface GoalsState {
   toggleTerm: (id: string) => void;
   /** sets the state, or clears it when the same state is chosen again */
   toggleMastery: (id: string, m: Mastery) => void;
+  /**
+   * 2.4 (panneau « Options du coach », Youssef 2026-11-20): sets the state directly; `null` is « En apprentissage »,
+   * i.e. no mark, so the states saved before keep their meaning and nothing is migrated
+   */
+  setMastery: (id: string, m: Mastery | null) => void;
   clear: () => void;
 }
 
@@ -61,6 +66,14 @@ export const useGoals = create<GoalsState>()(
           const next = { ...s.mastery };
           if (next[id] === m) delete next[id];
           else next[id] = m;
+          return { mastery: next };
+        }),
+      setMastery: (id, m) =>
+        setState((s) => {
+          if ((s.mastery[id] ?? null) === m) return s;
+          const next = { ...s.mastery };
+          if (m) next[id] = m;
+          else delete next[id];
           return { mastery: next };
         }),
       clear: () => setState({ goals: DEFAULT_GOALS, favTechniques: [], favExercises: [], favTerms: [], mastery: {} }),

@@ -20,7 +20,10 @@ test('six coachs : Amara choisie au premier lancement, Naël depuis « Changer d
   await page.reload();
   await expect(page.getByTestId('fighter-name')).toHaveText('Amara');
 
-  await page.getByRole('link', { name: /Changer de coach/ }).click();
+  // 2.4: « Changer de coach » is in the coach's panel; 2.7 (option A): « Changer » next to the name opens it on « Ton
+  // coach », visible without unfolding « Options avancées »
+  // 2.8.1: « Changer » of the home opens the big coach screen directly
+  await page.getByTestId('home-change-coach').click();
   await expect(page).toHaveURL(/#\/coach$/);
   // only the coaches and the button to confirm; 1.32.0 (« La vedette »): the coach looked at in 3D, the strip of six (1.51.0)
   await expect(page.locator('.star-thumb')).toHaveCount(6);

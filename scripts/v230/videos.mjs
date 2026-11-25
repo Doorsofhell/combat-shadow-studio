@@ -7,8 +7,8 @@ import { execFileSync } from 'node:child_process';
 
 const [OUT = 'docs/v230/videos', coachArg = 'mma-kadir,mma-amara', techArg = 'direct,uppercut-arriere,overhand,high-kick-avant'] = process.argv.slice(2);
 const PORT = process.env.PORT ?? 4180;
-const DISC = { overhand: 'mma', 'teep-avant': 'muaythai', 'genou-direct-arriere': 'muaythai', 'middle-kick-arriere': 'muaythai', 'low-kick-arriere': 'kickboxing', 'high-kick-avant': 'kickboxing' };
-const AZ = { jab: 60, direct: 60, 'crochet-arriere': 35, 'uppercut-arriere': 60, overhand: 60, 'teep-avant': 90 };
+const DISC = { overhand: 'mma', sprawl: 'mma', 'uchikomi-o-soto-gari': 'judo', 'teep-avant': 'muaythai', 'genou-direct-arriere': 'muaythai', 'middle-kick-arriere': 'muaythai', 'low-kick-arriere': 'kickboxing', 'high-kick-avant': 'kickboxing' };
+const AZ = { sprawl: 90, 'uchikomi-o-soto-gari': 60, jab: 60, direct: 60, 'crochet-arriere': 35, 'uppercut-arriere': 60, overhand: 60, 'teep-avant': 90 };
 const FPS = 30;
 mkdirSync(OUT, { recursive: true });
 const b = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH ?? '/opt/pw-browsers/chromium', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
@@ -18,7 +18,7 @@ for (const coach of coachArg.split(',')) {
   for (const tech of techArg.split(',')) {
     const dirs = {};
     for (const ver of ['avant', 'apres']) {
-      const url = `http://localhost:${PORT}/#/lab?champion=${coach}&look=realiste&d=${DISC[tech] ?? 'boxe'}&tech=${tech}&az=${AZ[tech] ?? 45}&el=8${ver === 'avant' ? '&v230=0' : ''}`;
+      const url = `http://localhost:${PORT}/#/lab?champion=${coach}&look=realiste&d=${DISC[tech] ?? 'boxe'}&tech=${tech}&az=${AZ[tech] ?? 45}&el=8${ver === 'avant' ? `&v230=${process.env.AVANT ?? '0'}` : ''}`;
       await p.goto('about:blank');
       await p.goto(url);
       await p.waitForFunction(() => window.__labReady === true, null, { timeout: 300000 });
