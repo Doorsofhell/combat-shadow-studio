@@ -5984,3 +5984,85 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   CPU) échoué une 2e fois avec les tests de caméra en parallèle, puis TEST RÉUSSI 2 fois sur 2 seul, comme en 2.10.0 (2/2) :
   mesure sensible à la charge, aucun test modifié.
 - **Restauration** : `restauration/avant-focus-visage-v2101` (= 2.10.0).
+
+## 2026-11-25 · 2.10.2 (non publiée, attend « je valide ») · Correction des blocages restés ouverts
+
+- **Demande** (Youssef, 25/11 17 h 54) : « corrige tous les blocages déjà rencontrés et non résolus ».
+- **Inventaire vérifié** (journal relu depuis la 1.33, tests relancés sur la 2.10.1 en production, `4ba4ccd`) :
+  - Vitest : 5 TEST ÉCHOUÉ sur 1878, les mêmes depuis des semaines : `expressions-v1160` « moins de 3,5 Mo » (Amara),
+    `fluidity` ×2 (« pas plus d’arrêts », « coups pas ralentis »), `hooks-biomeca` ×2 (« pas d’armé », coude d’Amara à 95,0°
+    en MMA) ;
+  - Playwright, les 5 échecs connus relancés seuls : `retour-v1420:29`, `selection-coach-v4:56`, `coaching-hud:60`,
+    `coach-suggest:147` TEST ÉCHOUÉ ; `boot:98` TEST RÉUSSI (instable sous charge seulement) ;
+  - déploiement GitHub Pages : 7 exécutions de `preview.yml` en échec le 24/11 (171) et le 25/11 (173 à 177) à l’étape
+    Deploy, journal du run 45587207212 : « Fetching artifact metadata failed… No artifacts named "github-pages" were
+    found », alors que l’envoi de l’artefact avait réussi ; seule une relance manuelle plus tard est passée ;
+  - APK refusé par Play Protect (18/10) : en attente de la capture d’écran et de la version d’Android de Youssef, NON
+    APPLICABLE ici (rien à corriger sans ces informations).
+- **Lot 1 · Poids du modèle d’Amara** — Constat : `photo.glb` 5,04 Mo ; sa texture couleur de tête est un PNG de 2,05 Mo
+  (les cinq autres coachs et `photo-clean.glb` sont en JPEG), gardé tel quel par `visage.py` (« même format que
+  l’image d’origine »). Correction : `tools/generator/fideles/tete_jpeg.py` réenregistre cette seule image en JPEG
+  qualité 92 (PSNR 50,1 dB, écart max 24/255) ; toutes les autres données du fichier sont identiques à l’octet près
+  (18 vues comparées) ; `visage.py` écrit désormais toujours du JPEG. Résultat : 3,40 Mo (2,41 Mo une fois compressé par
+  le build, au lieu d’environ 4 Mo). `maquillage-v1403` attendait un PNG pour ce fichier : il attend maintenant un JPEG,
+  raison écrite dans le test (format commun aux autres coachs, poids exigé par `expressions-v1160`), et vérifie en plus
+  la taille 2048 × 2048 que son nom annonçait sans la contrôler. Capture WebGL avant/après, mêmes réglages :
+  `docs/v2102/captures/amara-visage.jpg` (3/4 : aucun pixel différent de plus de 8/255 ; face : 1,1 % des pixels, au
+  niveau des paupières, le visage vivant clignant à des instants différents).
+- **Lot 1 · Crochets et fluidité** — Constat : les deux tests échouent depuis la 1.33.1 (12/11, lot fait hors de ce
+  suivi), vérifié sur 1.40.3, 1.41, 1.45, 1.46, 1.55, 1.56.3, 2.0.0 et 2.1.0. Cause trouvée en retirant une seule pose :
+  la pose « drive » ajoutée aux quatre crochets en 1.33.1 garde le poing dans la garde pendant que le bassin tourne, puis
+  le poing rattrape en balayant avec le buste : chemin de 1,6 à 2,8 fois la ligne droite (1,4 au plus, « no wind-up »
+  [boxe-S2]), coude d’Amara à 95,0° en MMA, et sur le coach générique un arrêt de plus au crochet avant et 3 % de vitesse
+  perdue au crochet avant au corps. Essais écartés (mesurés) : poing ramené vers la cible dans cette pose (vitesse
+  d’impact perdue jusqu’à 12 %), poing fixe dans la pièce (coude derrière les épaules jusqu’à 9 cm), arrêt de la pose
+  complète ou de la main seule (rotation externe de l’épaule 61 à 75° pour 60°). Correction : interrupteur
+  `V230.hookDirect` (`src/engine/v230.ts`, Lab `?v230=-hookDirect` pour l’avant) : les crochets n’ont plus cette pose,
+  le bassin mène toujours (test « les hanches tournent avant le buste ») ; la main arrière du crochet avant est 5 mm
+  plus en avant, car sans cette pose l’avant-bras arrière de Victor entrait de 3,5 cm dans le buste (3,4 avant) :
+  maintenant Victor 2,8 cm, Naël 2,5 (3,2 avant). `torso-chain-v1331` contrôlait la présence de cette pose (ratios
+  0,72/0,26) : pour les crochets il contrôle maintenant, sur le corps posé, que le bassin atteint sa rotation la plus
+  rapide avant les épaules et qu’à mi-chemin il a fait une plus grande part de sa rotation (raison dans le test) ;
+  les uppercuts gardent le contrôle d’origine. Pictogrammes des crochets régénérés (`PICTOS_WRITE=1`, seuls
+  `crochet-avant` et `crochet-avant-corps` changent). Captures avant/après : `docs/v2102/captures/crochet-{avant,arriere}.jpg`.
+- **Lot 2 · Tests e2e** (aucun seuil ni contrôle retiré) :
+  - `retour-v1420:29` — Constat : la question « Quitter la séance ? » est la feuille en verre depuis la 2.7 et la barre
+    du bas s’efface sous toute feuille de la séance (`training.css`) : « Reprendre » existe mais est masqué, le test le
+    voulait visible. Le test vérifie maintenant, la question ouverte, que la barre porte « Reprendre » et plus « Pause »
+    et qu’elle est masquée ; « Reprendre » visible reste contrôlé dès la question fermée. 5/5 TEST RÉUSSI ;
+  - `selection-coach-v4:56` — Constat : 26 géométries après 12 changements, 34 après 18. Relevé coach par coach sur 30
+    changements : à partir du 2e tour les nombres se répètent à l’identique (Kadir 34, Victor 34, Amara 43, Inaya 43,
+    Kanya 46), donc pas de fuite ; les 12 clics partaient d’un coup et des coachs n’étaient jamais affichés pendant le
+    « tour de chauffe ». Chaque coach est maintenant attendu jusqu’à son affichage ; seuils inchangés. TEST RÉUSSI ;
+  - `coaching-hud:60` — Constat : 54 images en 30 s dans le navigateur de test chargé, la deuxième répétition n’avait
+    pas commencé (« Jab », « Direct arrière » seulement). Le bandeau est suivi jusqu’au premier coup de la répétition
+    suivante (3 min au plus) au lieu de 30 s fixes, mêmes contrôles. 5/5 TEST RÉUSSI ;
+  - `coach-suggest:147` — Constat : une recharge de la séance par question (8 ou plus), le délai fixe de 120 s s’épuisait
+    avant les dernières. Délai proportionnel au nombre de questions. Fichier complet (flèches, double tap compris) 7/7
+    TEST RÉUSSI.
+  - trouvés dans la suite complète puis corrigés de la même façon (aucun contrôle retiré) : `boot:98` — « Choisir »
+    ferme l’écran du coach après l’écriture du choix (asynchrone, 1.42.0) et cette fermeture arrivait après le saut vers
+    la séance : le test cherchait la scène sur l’Accueil ; il attend maintenant la fermeture. `encyclopedie:54` — le
+    nombre de résultats était lu une fois, parfois avant que la liste filtrée soit redessinée (44 pour 44) ; lu jusqu’à
+    ce qu’il baisse. `pulsation-v140:14` — 3 éclairages en 30 s sous charge ; 90 s pour voir les 4 exigés, mêmes écarts
+    minimaux.
+- **Lot 3 · Déploiement** — `preview.yml` : si l’étape Deploy échoue, elle est retentée dans le même run après 2 puis
+  5 minutes ; le job échoue encore si le 3e essai échoue (une version n’est jamais annoncée déployée à tort).
+- **Fichiers** : `public/coaches/mma-amara/photo.glb`, `src/boot/assetSizes.json`, `tools/generator/fideles/{tete_jpeg,visage}.py`,
+  `src/engine/{v230.ts,library/boxing.ts}`, `src/ui/pictos/techniquePictos.json`, tests ci-dessus, documents de mesures
+  régénérés (`AUDIT_UPDATE=1`), `.github/workflows/preview.yml`, `scripts/dev/shot-{hooks,amara-visage}-v2102.mjs`,
+  `src/domain/releases.ts`, `package.json` (2.10.2), `docs/NON_REGRESSION.md`.
+- **Tests** :
+  - `npx vitest run` : 1877 TEST RÉUSSI, 1 ignoré, 0 échec (5 TEST ÉCHOUÉ avant, sur la 2.10.1) ;
+  - `npm run build` : TEST RÉUSSI (`version.json` 2.10.2) ;
+  - `npx playwright test` complet (337, 1 h 18, build 2.10.2) : 332 TEST RÉUSSI, 2 NON EXÉCUTÉ (Firebase), 3 TEST ÉCHOUÉ
+    (`boot:98`, `encyclopedie:54`, `pulsation-v140:14`, voir lot 2) ; tous les échecs connus des versions précédentes
+    (`coach-suggest`, `coaching-hud:60`, `retour-v1420:29`, `selection-coach-v4:56`, `panneau-coach:329`,
+    `training-layout:117` et `:240`) TEST RÉUSSI dans cette suite ; après correction, les trois fichiers relancés :
+    20/20 TEST RÉUSSI ;
+  - captures WebGL réelles avant/après : TEST RÉUSSI, aucune erreur WebGL (`docs/v2102/captures/`) ;
+  - workflow `preview.yml` avec reprises : NON EXÉCUTÉ (il ne tourne qu’à la publication ; YAML vérifié) ;
+  - application Android : NON EXÉCUTÉ ; APK refusé par Play Protect : NON APPLICABLE, en attente des informations de
+    Youssef.
+- **Restauration** : `restauration/avant-blocages-v2102` (= 2.10.1, `4ba4ccd`) ; avant des crochets seuls : Lab
+  `?v230=-hookDirect` ou `V230=-hookDirect` pour les tests.

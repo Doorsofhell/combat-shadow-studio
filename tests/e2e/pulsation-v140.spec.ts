@@ -12,6 +12,7 @@ test.use({ viewport: { width: 393, height: 851 } });
 test.describe.configure({ timeout: 180_000 });
 
 test('séance : l’écran s’éclaire au décompte et à chaque coup annoncé, jamais plus de 3 fois par seconde', async ({ page }) => {
+  test.setTimeout(180_000);
   await page.addInitScript(() => {
     const w = window as unknown as { __flash: number[] };
     w.__flash = [];
@@ -29,7 +30,9 @@ test('séance : l’écran s’éclaire au décompte et à chaque coup annoncé,
   await expect(root).not.toHaveAttribute('data-pulses', /.+/);
   await page.getByTestId('start').click();
   // the countdown, then the moves called
-  await expect.poll(async () => Number((await root.getAttribute('data-pulses')) ?? 0), { timeout: 30_000 }).toBeGreaterThanOrEqual(4);
+  // 2.10.2: 90 s instead of 30: the moves follow the frames drawn, few in the test browser when the machine is loaded
+  // (3 pulses after 30 s in the full suite); still 4 pulses required, at least 330 ms apart
+  await expect.poll(async () => Number((await root.getAttribute('data-pulses')) ?? 0), { timeout: 90_000 }).toBeGreaterThanOrEqual(4);
   const flashes = await page.evaluate(() => (window as unknown as { __flash: number[] }).__flash);
   for (let i = 1; i < flashes.length; i++) expect(flashes[i] - flashes[i - 1], `écart ${i}`).toBeGreaterThanOrEqual(330);
   // the flash never takes a tap and never covers the coach with colour at rest
