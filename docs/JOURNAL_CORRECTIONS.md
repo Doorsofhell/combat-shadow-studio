@@ -5538,3 +5538,29 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests** : `tsc` TEST RÉUSSI ; vitest `src/three` + `src/boot` + intrusions 774/777, échecs déjà notés (taille et
   shorts d'Amara). Playwright NON EXÉCUTÉ. Rien publié.
 - **Restauration** : commit 1054f2a1.
+
+## 2026-11-25 · prototype 2 de la 2.4.0 (non publié) · Tenues : corrections sans refonte (shorts)
+
+- **Demande** (Youssef, 25/11 9 h) : « juste correction amélioration tenue, pas de refonte ».
+- **Constat vérifié** (captures réelles du moteur, 6 coachs × 6 tenues en garde, de dos, au high kick et au genou ;
+  tests) : gants, kimonos, hauts et protège-tibias propres ; tous les défauts sont sur les shorts :
+  1. ourlets en dents de scie (points du bas à 2 à 3,5 mm de hauteur d'écart d'un voisin à l'autre) ;
+  2. Amara : 6,3 % de peau dessinée sous le short thaï (limite 6 %, sous la ceinture), short MMA étiré 6,1 fois au
+     high kick (limite 6) par la couture d'entrejambe (parts des cuisses qui changent brutalement d'un point à l'autre) ;
+  3. au coup de pied et au genou, 2 à 4 % des triangles des shorts se retournent (taches sombres, « trous », tissu
+     froissé à l'aine) : les poids de peau plient tout le tissu au pli de la hanche.
+- **Corrections** (outils de post-traitement, coupes, couleurs, logos, UV et textures inchangés) :
+  - `tools/generator/rocketbox/hem_straight.py` : rangée du bas de chaque jambe posée sur une ligne lisse (hauteur
+    seulement) ; Amara, Victor, Kanya, Naël (sauf MMA). Inaya, Kadir et le MMA de Naël, tenues validées et verrouillées
+    par empreinte, attendent la réponse de Youssef ;
+  - `hide_under.py` : peau sous la ceinture du short masquée (Amara, 4 tenues) ;
+  - `short_poids.py` : poids de peau du short lissés (couture d'entrejambe d'Amara, puis `--auto` hanches et cuisses,
+    sans jamais tenir un point à plus de 0,49 par les deux cuisses : pas de membrane) ; Amara, Kanya, Victor et Naël
+    (sauf MMA : le MMA de Victor garde ses faces d'entrejambe retirées en 1.43.1, son étirement en garde passait à 3,5).
+- **Mesures** : étirement au high kick d'Amara MMA 6,11 -> 5,08 ; triangles retournés au genou (exemples) Naël thaï
+  2,94 -> 1,97 %, Amara thaï 2,51 -> 1,62 %, Victor boxe 3,27 -> 2,65 % (`docs/v240/MESURES_PLIS_SHORTS.md`) ; tissu
+  dans la jambe un peu plus haut par endroits (Naël boxe 1,1 -> 1,7 %, limite 4 %).
+- **Tests** : nouveau `src/three/__tests__/plis-shorts-v240.test.ts` (limite 4,5 %, 3 % pour les shorts traités) ;
+  `shorts-v1442` 49/49 (les 2 échecs d'Amara corrigés) ; vitest `src/three` + `src/boot` + intrusions 783/784, seul échec : taille du fichier
+  d'Amara (déjà en 2.3.5). Playwright NON EXÉCUTÉ. Rien publié.
+- **Restauration** : branche `restauration/avant-tenues-v240` (= commit fdc3dc37).
