@@ -67,7 +67,9 @@
   ],
   "aplat": 0.35,
   "levres_contour": 1.0,
-  "levres_couleur": "#AE5E56"
+  "levres_couleur": "#AE5E56",
+  "levres_relief": 0.4,
+  "pourtour_uni": 1.0
  },
  "levres": 0.0016,
  "levres_modele": 0,
