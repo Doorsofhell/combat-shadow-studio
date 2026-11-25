@@ -11,6 +11,10 @@ import { playerSteps } from '../training/plan';
 import { NavIcon } from '../nav/NavIcon';
 import { chooseCoach } from '../components/fighter';
 import { AppIcon } from '../icons';
+import { LaunchOrLock, PremiumTag, ProLock } from '../premium/PremiumMarker';
+import '../coach-row/coach-row.css';
+import { useRights } from '../../monetization/rights';
+import { ITEM_RIGHT, canOpenCoach, isPremiumCoach } from '../../monetization/premiumItems';
 import { CoachRow } from '../coach-row/CoachRow';
 
 /** the four coaches (Kadir, Naël, Amara, Inaya; 1.37: Axel and Kaila removed). The stored coach stays 'homme' / 'femme', the profile's
@@ -25,9 +29,12 @@ export function useChosenCoach(): string | null {
 }
 
 export function pickChampion(c: ChampionCoach) {
+  // 2.9.0: a locked coach is never written, whichever screen asks (the padlocks are only the visible part)
+  if (!canOpenCoach(c.id)) return false;
   chooseCoach(c.coach);
   const st = useProfile.getState();
   st.update({ coach: c.coach, champion: c.id });
+  return true;
 }
 
 
@@ -50,7 +57,10 @@ export function CoachPicker({ value, onChange }: { value?: string | null; onChan
       {c ? (
         <section className="coach-sheet compact" data-testid={`coach-details-${c.id}`} aria-live="polite" aria-label={`Fiche de ${c.name}`}>
           <div className="who">
-            <span className="name">{c.name}</span>
+            <span className="name">
+              {c.name}
+              {isPremiumCoach(c.id) && <PremiumTag feature="all_fighters" size={16} />}
+            </span>
             <span className="nick">« {c.nickname} »</span>
             <span className="style">{c.style}</span>
             {/* 2.7: height and weight on one line (the former bars took the room of the faces above) */}
@@ -94,6 +104,7 @@ const testIdOf = (c: ChampionCoach) => (c.id === CHAMPIONS.homme.id ? 'coach-hom
  * measured on the 3D models (the weight only when it is measured).
  */
 export function CoachSelect() {
+  useRights();
   const [q] = useSearchParams();
   const first = q.get('first') === '1';
   const chosen = useChosenCoach();
@@ -185,7 +196,7 @@ export function CoachSelect() {
   }, [ready]);
   const done = () => {
     if (mine) return leave();
-    pickChampion(c);
+    if (!pickChampion(c)) return nav(`/premium?f=${ITEM_RIGHT.coach}`);
     // 1.42.0: the screen closes once the choice is written on the phone (a few milliseconds), so closing or
     // reloading the application right after « Choisir » never loses it
     void profileWrites().then(leave, leave);
@@ -258,7 +269,10 @@ export function CoachSelect() {
           <div className="star-row">
             <div className="star-who">
               <span className="star-nick">« {c.nickname} »</span>
-              <div className="star-name">{c.name}</div>
+              <div className="star-name">
+                {c.name}
+                {isPremiumCoach(c.id) && <PremiumTag feature="all_fighters" />}
+              </div>
               <span className="star-style">{c.style}</span>
             </div>
             <span className="star-facts num-figure" data-testid="star-facts">
@@ -298,6 +312,13 @@ export function CoachSelect() {
               <span className="star-thumb-name" aria-hidden>
                 {x.name}
               </span>
+              {/* 2.9.0: on a portrait this narrow the PRO badge sits at its top left, the name stays whole */}
+              {isPremiumCoach(x.id) && <PremiumTag feature="all_fighters" />}
+              {!on && !canOpenCoach(x.id) && (
+                <span className="crow-lock">
+                  <ProLock size={12} />
+                </span>
+              )}
               {on && (
                 <span className="tick" aria-hidden>
                   <AppIcon id="check" size={12} />
@@ -309,7 +330,9 @@ export function CoachSelect() {
       </div>
 
       <button type="button" className={`btn block lg star-cta star-cta-gold ${mine ? 'is-mine' : ''}`} onClick={done} data-testid="coach-valider">
-        <AppIcon id="check" size={22} />
+        <LaunchOrLock locked={!canOpenCoach(c.id)} size={20}>
+          <AppIcon id="check" size={22} />
+        </LaunchOrLock>
         <span>{mine ? `Garder ${c.name}` : `Choisir ${c.name}`}</span>
       </button>
     </div>

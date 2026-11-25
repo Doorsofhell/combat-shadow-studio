@@ -172,3 +172,33 @@
 .star-strip .star-thumb:not(.on) img {
   opacity: 0.75;
 }
+
+/* 2.9.0 SHADOW PRO: on the narrow faces the PRO badge sits at the top left; the padlock of a locked coach
+   sits where the tick of the chosen one goes */
+:is(.crow-card, .star-thumb) > .pro-badge {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  z-index: 2;
+  margin: 0;
+  padding: 1px 4px;
+  font-size: 9.5px;
+  /* on a photo, the dark ink of the badge keeps its contrast in both themes */
+  background: rgba(11, 15, 20, 0.72);
+  color: #e2c15a;
+}
+.crow-lock {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(11, 15, 20, 0.72);
+}
+/* the dot of « ton coach » sits at the top left of a portrait of the V4 strip: the badge moves beside it */
+.coach-v4 .star-thumb.mine > .pro-badge {
+  left: 16px;
+}

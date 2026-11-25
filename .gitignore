@@ -18,3 +18,4 @@ tsconfig.tsbuildinfo
 .cache/
 __pycache__/
 *.pyc
+dist-sim

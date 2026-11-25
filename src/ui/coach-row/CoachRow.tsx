@@ -1,5 +1,7 @@
 import { ALL_COACHES, type ChampionCoach } from '../../domain/coaches/catalog';
 import { AppIcon } from '../icons';
+import { PremiumTag, ProLock, useProGate } from '../premium/PremiumMarker';
+import { ITEM_RIGHT, canOpenCoach, isPremiumCoach } from '../../monetization/premiumItems';
 import './coach-row.css';
 
 /**
@@ -24,6 +26,7 @@ export function CoachRow({
   mine?: string | null;
   label?: string;
 }) {
+  const gate = useProGate();
   return (
     <div className="crow" role="radiogroup" aria-label={label}>
       {ALL_COACHES.map((c) => {
@@ -36,11 +39,23 @@ export function CoachRow({
             aria-checked={on}
             aria-label={`${c.name} « ${c.nickname} »${mine === c.id ? ', ton coach' : ''}`}
             className={`crow-card${on ? ' on' : ''}${mine === c.id ? ' mine' : ''}`}
-            onClick={() => onPick(c)}
+            onClick={(ev) => {
+              // 2.9.0: a locked coach opens Shadow Pro instead of being chosen
+              gate(ITEM_RIGHT.coach, !canOpenCoach(c.id))(ev);
+              if (!ev.defaultPrevented) onPick(c);
+            }}
             data-testid={testIdOf(c)}
+            data-locked={!canOpenCoach(c.id) || undefined}
           >
             <CoachFace coach={c} />
             <span className="crow-name">{c.name}</span>
+            {/* 2.9.0: on a face this narrow the PRO badge sits at its top left, the name stays whole */}
+            {isPremiumCoach(c.id) && <PremiumTag feature="all_fighters" />}
+            {!canOpenCoach(c.id) && (
+              <span className="crow-lock">
+                <ProLock size={12} />
+              </span>
+            )}
             {on && (
               <span className="crow-tick" aria-hidden>
                 <AppIcon id="check" size={12} />

@@ -39,3 +39,33 @@ après le test de l'APK en situation réelle.
 | 30 | Page Premium avant l'achat réel | Masquée dans la première version Play Store |
 | 31 | Statut vendeur | Compte personnel déclaré « commerçant » |
 | 32 | Calendrier | Après le test de l'APK en situation réelle |
+
+## 2.8.2 · le petit diamant sur chaque élément Premium (Youssef, 2026-11-24)
+
+Règles appliquées, dans `src/monetization/premiumItems.ts` (rien n'est verrouillé) :
+
+- exercices : niveaux avancé et expert ;
+- programmes : tous sauf un programme débutant gratuit par discipline (`boxe-initiation-4-semaines`,
+  `kick-fondamentaux-debutant`, `mma-fondamentaux-debutant`, `muay-fondamentaux`, `judo-deplacements-debutant`,
+  `bjj-bases-debutant`) : 43 programmes sur 49 portent le diamant, dont les 3 programmes multi-disciplines ;
+- fiches techniques : une technique est Premium quand le premier niveau où un exercice la pratique (toutes disciplines
+  confondues) est avancé ou expert ; 16 techniques sur 91 : pivot extérieur, direct au corps, crochet droit,
+  uppercut gauche, roll de l'autre côté, front kick arrière, low kick gauche, middle kick gauche, high kick gauche,
+  roundhouse jambe avant, genou circulaire avant, coude remontant avant, genou circulaire dans le clinch, feinte
+  d'épaule, uchikomi d'o-uchi-gari, uchikomi de ko-uchi-gari ; les 6 techniques qu'aucun exercice n'utilise restent
+  gratuites ;
+- coachs : Naël, Inaya, Victor et Kanya ;
+- boutons et options : Décomposer (barre de l'entraînement et des combinaisons, bouton des Légendes), options du
+  chronomètre Préparation, Alerte avant la fin et Intensité du cardio.
+
+Non marqués élément par élément (choix encore ouverts) : la sélection gratuite de légendes (nombre à fixer), les
+enchaînements, favoris et historique au-delà des quotas (3, 5, 30 jours) ; leur diamant reste sur le titre de l'écran.
+
+## 2.9.0 · Shadow Pro (Youssef, 2026-11-25)
+
+Le diamant et le coin doré de la 2.8.2 sont remplacés par l'identité **SHADOW PRO** : micro-badge « PRO » après le
+titre de chaque contenu Premium (même pour un membre), petit cadenas doré seulement quand l'accès est réellement
+fermé (jamais en production tant que le paiement n'est pas branché), « x/y PRO » pour un programme mixte, bouclier
+doré « PRO » dans le profil d'un membre, aucune marque « FREE ». La répartition gratuit / Premium ci-dessus ne change
+pas ; avec elle, aucun programme du catalogue n'est mixte. Abonnement expiré = achat remboursé (Premium à vie n'expire
+pas). Utilisateur non connecté = profil invité, traité comme gratuit.

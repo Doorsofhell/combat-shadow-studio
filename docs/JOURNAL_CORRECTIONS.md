@@ -5408,3 +5408,125 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   TEST RÉUSSI ; téléphone Android NON EXÉCUTÉ.
 - **Captures** : `/mnt/project-files/combat-shadow-studio/maquettes/accueil-changer-coach-2026-11-24/avant-apres.png`.
 - **Restauration** : `restauration/avant-accueil-coach-v281` (= 2.8.0, `6b35692`).
+
+## 2026-11-24 · v2.8.2 · Le diamant Premium sur chaque élément
+
+- **Demande** (Youssef, 2026-11-24 23:30) : « ajoute le petit diamant sur tous les items, options, programmes.
+  Entraînement premium ».
+- **Constat vérifié sur la 2.8.1** : un seul diamant par écran ou section (règle v0.40 « jamais sur chaque ligne ») :
+  titre Programmes, filtre de niveau avancé/expert, Champions, Favoris, Historique, Créateur, Conseils techniques,
+  Décomposer de l'écran d'étude. Aucun diamant sur les programmes, exercices, fiches, coachs ni sur les boutons et
+  options. Les coachs et les options du chrono étaient encore notés « prévus » dans le catalogue des droits alors
+  qu'ils existent.
+- **Correction** :
+  - `src/monetization/premiumItems.ts` : règles par élément d'après les choix du 2026-11-20
+    (`docs/monetisation/DECISIONS.md`, section 2.8.2) ;
+  - `PremiumTag` (`src/ui/premium/PremiumMarker.tsx`) : diamant d'un élément, non cliquable (il est posé dans des
+    cartes et des boutons qui gardent leur action), nommé « Premium », absent pour un utilisateur Premium ;
+  - diamant sur : chaque programme Premium (liste et fiche), chaque exercice avancé/expert, les niveaux avancé et
+    expert du menu Niveau, les fiches techniques Premium (tuiles, favoris, titre de la fiche), Naël, Inaya, Victor et
+    Kanya (rangée des coachs, grand écran du coach), le bouton Décomposer de la barre (entraînement, combinaison) et
+    des Légendes, les options Préparation, Alerte avant la fin et Intensité ;
+  - catalogue des droits : `all_fighters` et `advanced_timer` passent à « implémenté », avec diamant ; la bande
+    « Combattants et réglages avancés : à venir » de la page Premium ne s'affiche plus, puisque tout ce qu'elle
+    annonçait existe ;
+  - rien n'est verrouillé : `MONETIZATION_ENABLED` reste `false`.
+- **Fichiers** : `src/monetization/{premiumItems,entitlements}.ts`, `src/ui/premium/{PremiumMarker.tsx,PremiumPage.tsx,premium.css}`,
+  `src/ui/components/Cards.tsx`, `src/ui/nav/{config.ts,BottomBar.tsx}`, `src/ui/coach-row/CoachRow.tsx`,
+  `src/ui/screens/{CoachSelect,Discipline,Library,Programs,Stats,Train,Champions}.tsx`, `src/ui/training/TimerOptions.tsx`,
+  `docs/monetisation/DECISIONS.md`, `src/domain/releases.ts`, `package.json` (2.8.2), README et `docs/ETAT.md` (docs:sync).
+- **Tests** :
+  - ajouté : `src/monetization/__tests__/premium-items.test.tsx` (7 tests : niveaux, coachs, programmes, fiches,
+    rien verrouillé, un diamant par exercice avancé/expert, diamant non cliquable et masqué pour Premium) : TEST RÉUSSI ;
+  - modifiés, raison écrite : `rights.test` et `premium.spec` attendaient `all_fighters` sans diamant et la bande
+    « à venir » ; les coachs et les options du chrono existent désormais et leur choix commercial est fait, donc ils
+    portent le diamant et la bande disparaît (la bande est contrôlée absente, aucune vérification retirée) ;
+  - ajouté : `premium.spec` « 2.8.2 : un diamant sur chaque élément Premium » (programmes, exercices, coachs, barre) :
+    TEST RÉUSSI ;
+  - Vitest complet : 1851 réussis, 1 ignoré, 4 TEST ÉCHOUÉ déjà connus et sans lien (`fluidity` ×2, `hooks-biomeca`,
+    `expressions-v1160`) ;
+  - `npm run build` : TEST RÉUSSI ; Playwright `premium.spec` + `premium-panels.spec` (11) : TEST RÉUSSI ;
+  - captures réelles avant (2.8.1) / après (2.8.2), mêmes écrans, 412 × 915 : fichiers du projet
+    `monetisation/diamants-v2.8.2/comparatif-*.jpg` ;
+  - Playwright complet (commit `bb2158cd`, coin doré, 2026-11-25) : 330 TEST RÉUSSI, 2 NON EXÉCUTÉ (Firebase),
+    5 TEST ÉCHOUÉ, tous déjà présents en 2.8.1 : `chrono-seul:96`, `coach-suggest:147`, `coaching-hud:60` (connus) ;
+    `retour-v1420:29` (bouton « Reprendre » caché sous la question de sortie) et `selection-coach-v4:56` (34 géométries
+    au lieu de 31 au plus après 18 changements de coach) : relancés seuls deux fois sur 2.8.2 puis deux fois sur 2.8.1
+    (`2969a77`, même machine) : TEST ÉCHOUÉ les deux fois sur les deux versions, donc sans lien avec ce lot ; à
+    corriger dans un lot dédié. Aucun test affaibli.
+- **Retour de Youssef** (2026-11-25 00:34) : « pas forcément un diamant, faut trouver autre chose pour ne pas surcharger
+  des icônes ou options ». Quatre marquages comparés sur captures réelles (diamant, point, coin, liseré :
+  `monetisation/marquage-premium/planche-*.jpg`) ; appliqué en attendant son choix : option C recommandée, coin doré
+  en haut à droite des cartes Premium (programmes, exercices, techniques, coachs), petit point doré sur les boutons et
+  options (Décomposer, options du chrono), le diamant ne reste que sur les titres d'écran. Le marquage reste lu
+  « Premium » par les lecteurs d'écran. Tests Premium (vitest 22, Playwright 11) et build : TEST RÉUSSI ; captures
+  avant/après refaites avec le coin doré.
+- **Restauration** : branche `restauration/avant-diamants-v282` (= 2.8.1, `2969a77`).
+
+## 2026-11-25 · v2.9.0 · Shadow Pro : badge PRO, cadenas, programmes mixtes (version expérimentale)
+
+- **Demande** (Youssef, 2026-11-25 07:48, « Shadow Studio — Identification visuelle des contenus Freemium et
+  Premium ») : un système homogène et minimaliste, nom commercial SHADOW PRO, micro-badge « PRO » à droite du titre de
+  chaque contenu Premium, petit cadenas doré seulement pour une restriction réelle (à la place de l'icône de lancement),
+  « 3/6 PRO » pour un programme mixte calculé dynamiquement, bouclier doré « PRO » dans le profil d'un membre, aucune
+  marque « FREE », barre du bas inchangée, règles centralisées, gardes qui ne reposent pas sur un bouton caché,
+  version expérimentale isolée, rien en production avant sa validation. Remplace le diamant puis le coin doré de la
+  2.8.2 (jamais publiée).
+- **Constat vérifié avant de coder** :
+  - la gestion des droits existe déjà et reste la seule source : `src/monetization/rights.ts` (statut, `canAccessFeature`)
+    et `src/monetization/premiumItems.ts` (règles par élément, 2.8.2) ;
+  - mais aucun achat réel n'est branché (`MONETIZATION_ENABLED = false`, aucun fournisseur dans `purchases.ts`) : en
+    production rien n'est verrouillé, donc aucun cadenas ne s'affiche ; c'est voulu et signalé à Youssef ;
+  - « abonnement expiré » : Premium à vie n'expire pas ; le cas réel est l'achat remboursé, qui ramène au statut gratuit ;
+  - « utilisateur non authentifié » : l'application n'a que des profils locaux (invité) ; il est traité comme gratuit ;
+  - avec les règles commerciales actuelles, aucun programme n'est mixte (43 entièrement PRO, 6 gratuits) : le calcul
+    existe et est testé, l'exemple « 3/6 PRO » n'existe que dans l'aperçu.
+- **Correction** :
+  - règles : `restrictionsActive()`, `isFeatureLocked()`, `useRights()` (rights.ts) ; `ITEM_RIGHT`, `canOpenExercise`,
+    `canOpenTechnique`, `canOpenCoach`, `isProSession`, `programProShare`, `canOpenSession`, `isProgramLocked`,
+    `lockedTrainingRight` (premiumItems.ts). L'appartenance au catalogue (badge) et l'accès (cadenas) sont deux
+    questions séparées ;
+  - composants centraux (`src/ui/premium/PremiumMarker.tsx`) : `ProBadge`, `PremiumTag`, `PremiumMarker` (titres :
+    bouton vers l'offre pour un gratuit, simple badge pour un membre), `ProgramProBadge`, `ProLock`, `LaunchOrLock`,
+    `ProShield`, `useProGate` ; styles et couleurs (or #D4AF37, or lumineux #F5D88B, bronze #99702E, fond à 11 %,
+    encre bronze foncé #7d5f22 en clair pour rester lisible à 10,5 px) dans `premium.css` ;
+  - gardes : l'écran d'entraînement refuse une adresse d'exercice, de séance ou de technique verrouillée ; la fiche
+    technique verrouillée renvoie vers Shadow Pro ; `pickChampion` n'enregistre jamais un coach verrouillé ;
+    Décomposer et les options avancées du chrono ouvrent l'offre quand ils sont verrouillés ;
+  - écrans : programmes (carte, fiche, semaines, exercices utilisés d'un programme mixte), exercices, fiches
+    techniques, favoris, coachs (rangée et grand écran : badge en haut à gauche du portrait, trop étroit pour le nom
+    + PRO), bouton Décomposer des Légendes, options du chrono, menu des niveaux (`MenuChip` gagne un emplacement
+    `badge`), profil (bouclier, contour doré de l'avatar, carte « Shadow Pro » avec le bouclier au lieu du diamant) ;
+  - retirés : le badge du titre « Programmes » (6 programmes y sont gratuits) et la marque sur la barre du bas
+    (2.8.2), la barre redevient celle de la 2.8.1 ;
+  - aperçu seulement (`VITE_PREMIUM_SIMULATION=1`, `src/monetization/simulation.tsx`) : sélecteur Réel / Gratuit /
+    Premium / Expiré et programme d'exemple « 3/6 PRO » ; absent du build de production (vérifié : aucune trace dans
+    `dist/assets`) ;
+  - version 2.9.0 (`package.json`, `releases.ts` remplace l'entrée 2.8.2 jamais publiée), README et ETAT régénérés.
+- **Fichiers** : `src/monetization/{rights.ts,premiumItems.ts,simulation.tsx}`, `src/main.tsx`,
+  `src/ui/premium/{PremiumMarker.tsx,premium.css}`, `src/ui/components/{Cards.tsx,MenuChip.tsx}`,
+  `src/ui/coach-row/{CoachRow.tsx,coach-row.css}`, `src/ui/screens/{Train,Programs,Discipline,Library,Stats,Champions,
+  CoachSelect,Training}.tsx`, `src/ui/screens/account/Profile.tsx`, `src/ui/training/TimerOptions.tsx`,
+  `src/ui/nav/{BottomBar.tsx,config.ts}` (remis comme en 2.8.1), `playwright.sim.config.ts`,
+  `tests/e2e-sim/shadow-pro.spec.ts`, `tests/e2e/premium.spec.ts`, tests unitaires, `docs/NON_REGRESSION.md`,
+  `docs/monetisation/DECISIONS.md`.
+- **Tests** :
+  - ajouté `src/monetization/__tests__/shadow-pro.test.tsx` (14 tests : production sans verrou, gratuit/invité,
+    remboursé, Premium, bouclier absent en gratuit, programme gratuit / tout PRO / mixte 3/6 / séance mixte, gardes,
+    coach jamais enregistré, carte verrouillée, composants) : TEST RÉUSSI ;
+  - modifiés, raison écrite : `rights.test` et `premium-items.test` attendaient que le marqueur disparaisse pour un
+    membre Premium ; Youssef demande que les badges PRO restent visibles (§5) ; chaque contrôle d'accès est gardé ;
+    `premium.spec` attendait un diamant sur le titre « Programmes » et sur Décomposer dans la barre : le titre n'a plus
+    de badge (programmes gratuits dans la liste, chaque carte porte le sien) et la barre ne change pas (§7) ;
+  - ajouté `tests/e2e-sim/shadow-pro.spec.ts` (6 tests sur l'aperçu : gratuit, expiré, Premium, mixte, 360 × 640 clair
+    et sombre) : TEST RÉUSSI ;
+  - Vitest Premium 35/35, Playwright `premium.spec` + `premium-panels.spec` 11/11, `npm run build` : TEST RÉUSSI ;
+  - Playwright complet (commit `0ac1f3f`) : 328 TEST RÉUSSI, 2 NON EXÉCUTÉ (Firebase), 7 TEST ÉCHOUÉ ; six échouaient
+    déjà en 2.8.1 (`boot:98`, `coach-suggest:147`, `coaching-hud:60`, `panneau-coach:329`, `retour-v1420:29`,
+    `selection-coach-v4:56`) ; le septième, `training-layout:117`, a dépassé son délai de 120 s dans la suite (test de
+    près de 2 min sur cette machine chargée) et relancé seul deux fois : TEST RÉUSSI les deux fois. Aucun test affaibli ;
+  - application Android : NON EXÉCUTÉ (aucun APK construit pour une version expérimentale ; même code web) ;
+  - captures réelles : fichiers du projet `monetisation/shadow-pro-v2.9.0/` (avant 2.8.1 / Gratuit / Premium,
+    clair/sombre, programmes gratuit, mixte, tout PRO, 360 px).
+- **Restauration** : `restauration/avant-diamants-v282` (= 2.8.1 en production, `2969a77`) ou
+  `restauration/avant-shadow-pro-v290` (= 2.8.2 non publiée, `6b7a872`).

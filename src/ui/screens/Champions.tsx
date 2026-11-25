@@ -23,7 +23,8 @@ import { useNavActions } from '../nav/store';
 import { setSelection } from '../nav/selection';
 import { LegendPanels } from './LegendNav';
 import { DnaBar, DnaFlower, DnaLegend } from '../components/LegendDna';
-import { PremiumMarker } from '../premium/PremiumMarker';
+import { LaunchOrLock, PremiumMarker, PremiumTag } from '../premium/PremiumMarker';
+import { isFeatureLocked } from '../../monetization/rights';
 
 const DISC_NAME = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.name])) as Record<DisciplineId, string>;
 const DISC_SHORT = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.short])) as Record<DisciplineId, string>;
@@ -882,7 +883,11 @@ export function ComboPage() {
             </span>
           </button>
           <button className="btn sm secondary" disabled={!playable} onClick={() => train('technique', true)} data-testid="cat-study">
-            <AppIcon id="decompose" size={18} /> Décomposer
+            <LaunchOrLock locked={isFeatureLocked('advanced_breakdown')} size={16}>
+              <AppIcon id="decompose" size={18} />
+            </LaunchOrLock>{' '}
+            Décomposer
+            <PremiumTag feature="advanced_breakdown" />
           </button>
         </div>
         {showModes && (

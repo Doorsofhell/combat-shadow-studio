@@ -1,4 +1,14 @@
 import { Segmented, Toggle } from '../components';
+import { PremiumMarker, ProLock } from '../premium/PremiumMarker';
+import { useNavigate } from 'react-router-dom';
+import { isFeatureLocked, useRights } from '../../monetization/rights';
+
+/** 2.9.0: the advanced timer options, locked for a free user once the limits apply: a tap opens Shadow Pro */
+function useTimerGate() {
+  useRights();
+  const nav = useNavigate();
+  return { lockedTimer: isFeatureLocked('advanced_timer'), toOffer: () => nav('/premium?f=advanced_timer') };
+}
 import { useSettings } from '../../store/settings';
 import { INTENSITY_HELP, INTENSITY_LABEL, type CardioIntensity, type CardioOptions } from './plan';
 
@@ -31,6 +41,7 @@ export function cardioFromQuery(q: URLSearchParams, fallback: CardioOptions): Ca
 }
 
 export function CardioOptionsPicker() {
+  const { lockedTimer, toOffer } = useTimerGate();
   const c = useSettings((s) => s.settings.cardio);
   const set = useSettings((s) => s.set);
   const patch = (p: Partial<CardioOptions>) => set({ cardio: { ...c, ...p } });
@@ -49,8 +60,11 @@ export function CardioOptionsPicker() {
         <Segmented label="Nombre de cycles" value={c.cycles} onChange={(v) => patch({ cycles: v })} options={[5, 8, 10, 12].map((s) => ({ id: s, label: String(s) }))} />
       </div>
       <div className="stack" style={{ gap: 8 }}>
-        <span className="label">Intensité</span>
-        <Segmented label="Intensité" value={c.intensity} onChange={(v) => patch({ intensity: v })} options={INTENSITIES.map((i) => ({ id: i, label: INTENSITY_LABEL[i] }))} />
+        <span className="label">
+          Intensité <PremiumMarker feature="advanced_timer" />
+          {lockedTimer && <ProLock size={12} />}
+        </span>
+        <Segmented label="Intensité" value={c.intensity} onChange={(v) => (lockedTimer ? toOffer() : patch({ intensity: v }))} options={INTENSITIES.map((i) => ({ id: i, label: INTENSITY_LABEL[i] }))} />
         <p className="small muted" data-testid="intensity-help">
           {INTENSITY_HELP[c.intensity]}
         </p>
@@ -62,20 +76,27 @@ export function CardioOptionsPicker() {
 
 /** preparation, warning before the end, gongs and voice: shared by Rounds and Cardio */
 export function ChronoOptions() {
+  const { lockedTimer, toOffer } = useTimerGate();
   const s = useSettings((x) => x.settings);
   const set = useSettings((x) => x.set);
   return (
     <div className="stack" style={{ gap: 10 }} data-testid="chrono-options">
       <div className="stack" style={{ gap: 8 }}>
-        <span className="label">Préparation</span>
-        <Segmented label="Préparation avant de commencer" value={s.prepSec} onChange={(v) => set({ prepSec: v })} options={[3, 5, 10, 15].map((v) => ({ id: v, label: `${v} s` }))} />
+        <span className="label">
+          Préparation <PremiumMarker feature="advanced_timer" />
+          {lockedTimer && <ProLock size={12} />}
+        </span>
+        <Segmented label="Préparation avant de commencer" value={s.prepSec} onChange={(v) => (lockedTimer ? toOffer() : set({ prepSec: v }))} options={[3, 5, 10, 15].map((v) => ({ id: v, label: `${v} s` }))} />
       </div>
       <div className="stack" style={{ gap: 8 }}>
-        <span className="label">Alerte avant la fin</span>
+        <span className="label">
+          Alerte avant la fin <PremiumMarker feature="advanced_timer" />
+          {lockedTimer && <ProLock size={12} />}
+        </span>
         <Segmented
           label="Alerte avant la fin du round"
           value={s.roundWarnSec}
-          onChange={(v) => set({ roundWarnSec: v })}
+          onChange={(v) => (lockedTimer ? toOffer() : set({ roundWarnSec: v }))}
           options={[
             { id: 0, label: 'Aucune' },
             { id: 10, label: '10 s' },
