@@ -70,8 +70,16 @@ test('V4 : dix-huit changements de coach de suite, ni erreur ni accumulation en 
     await expect.poll(async () => (await atmo(page))?.layers, { timeout: 30_000 }).toBe(1);
     await page.waitForTimeout(3000);
   };
-  // deux premiers tours : chaque coach et sa tenue passent une fois par la carte graphique (cache du moteur, déjà là en 2.0.0)
-  for (let i = 0; i < 12; i++) await page.getByTestId('star-next').click();
+  // deux premiers tours : chaque coach et sa tenue passent une fois par la carte graphique (cache du moteur, déjà là en 2.0.0).
+  // 2.10.2 : chaque coach du tour est attendu jusqu'à son affichage. Avant, les douze clics partaient d'un coup, des coachs
+  // n'étaient jamais affichés et leur premier passage tombait dans le tour mesuré : 26 géométries après 12 puis 34 après 18.
+  // Relevé coach par coach sur 30 changements (2.10.1) : après le 2e tour les nombres se répètent à l'identique à chaque
+  // tour (Kadir 34, Victor 34, Amara 43, Inaya 43, Kanya 46), donc pas d'accumulation. Seuils inchangés.
+  for (let i = 0; i < 12; i++) {
+    await page.getByTestId('star-next').click();
+    await expect(page.getByTestId('star-stage')).toHaveAttribute('data-ready', 'true', { timeout: 60_000 });
+    await page.waitForTimeout(1500);
+  }
   await settle();
   const after6 = (await atmo(page))!;
   for (let i = 0; i < 6; i++) await page.getByTestId('star-next').click();

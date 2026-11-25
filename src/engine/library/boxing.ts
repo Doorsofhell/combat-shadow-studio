@@ -168,7 +168,9 @@ function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
         d.footL.yaw += deg(-H.leadPivot);
         d.footL.heel = Math.max(d.footL.heel, deg(H.leadHeel));
       }
-      d.handR.pos = add(d.handR.pos, { y: 0.01 * s });
+      // 2.10.2 (V230.hookDirect): the rear guard hand a few millimetres further out, so that without the drive key
+      // the rear forearm does not press into the chest at the impact (intrusions.test: Victor 3.4 → 2.8 cm, Naël 3.2 → 2.5)
+      d.handR.pos = add(d.handR.pos, { y: 0.01 * s, z: (V230.hookDirect ? 0.005 : 0) * s });
     } else {
       d.pelvis.yaw += deg(H.rearPelvis);
       d.chest.yaw += deg(H.rearChest);
@@ -272,7 +274,9 @@ function hook(a: Author, side: 'L' | 'R', target: 'chin' | 'body'): Motion {
       // the fist leaves the guard from rest and keeps accelerating until the impact: no flow through this key,
       // which would spend its speed early (fluidity.test: speed at impact)
       { t: t1, pose: wind, ease: 'load', hold: true },
-      { t: t1 + (t2 - t1) * 0.48, pose: drive, ease: 'load' },
+      // 2.10.2 (V230.hookDirect): no « drive » key, the fist goes from the guard to the target without sweeping
+      // round with the trunk; the pelvis still turns first (MotionSampler chainLead, hooks-biomeca timing test)
+      ...(V230.hookDirect ? [] : [{ t: t1 + (t2 - t1) * 0.48, pose: drive, ease: 'load' as const }]),
       { t: t2, pose: hit, ease: 'strike' },
       { t: t2 + 0.03, pose: hit, ease: 'linear' },
       { t: t3, pose: g, ease: 'inOut' },

@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.10.2',
+      releaseDate: '2026-11-25',
+      title: 'Crochets plus directs et application plus légère',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Les crochets partent directement de la garde vers la cible, sans faire le tour avec le buste : le poing prend le chemin le plus court et arrive plus vite, les hanches tournent toujours avant les épaules.' },
+        { category: 'corrections', text: 'Pendant un crochet avant, la main arrière reste bien devant le visage sans s’enfoncer dans le buste.' },
+        { category: 'ameliorations', text: 'Le modèle d’Amara est plus léger (3,4 Mo au lieu de 5,0 Mo) avec exactement le même visage : il se charge plus vite sur téléphone.' },
+      ],
+      links: [{ label: 'Voir les techniques', to: '/techniques' }],
+    },
+    {
       version: '2.10.1',
       releaseDate: '2026-11-25',
       title: 'Amara et Kanya plus proches de leurs fiches',
