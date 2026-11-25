@@ -54,3 +54,16 @@ comportement. En résumé :
 - Lab de captures : `#/lab?champion=<id>&look=realiste&d=<discipline>&frame=1&motion=garde&az=&el=&span=&fy=`,
   `etat=<état>` pour un état du comportement, `expr=Nom:poids` pour une expression, `face=live` pour le visage vivant.
 - Après toute reconstruction d'un `photo.glb` Rocketbox : relancer `tools/generator/rocketbox/morph_apply.py`.
+
+## graphify (graphe de connaissances du code)
+
+Le graphe est dans `graphify-out/` (nœuds centraux, communautés, relations entre fichiers). Outil :
+`uv tool install graphifyy` ; les hooks de `.claude/settings.json` appellent `/root/.local/bin/graphify`.
+
+- Si `graphify-out/graph.json` existe, lancer `graphify query "<question>"` avant la première recherche ou lecture de
+  source pour une question sur le code, et mettre cette règle dans le prompt de chaque sous-agent qui explore le code.
+  Ne lire les fichiers bruts que pour les lignes déjà localisées. `graphify path "<A>" "<B>"` pour une relation,
+  `graphify explain "<concept>"` pour un concept, `graphify section "<titre>"` pour une section Markdown.
+- `graphify-out/GRAPH_REPORT.md` seulement pour une revue globale de l'architecture.
+- Après une modification du code, lancer `graphify update .` (analyse syntaxique seule, sans coût d'API).
+- `graphify-out/graph.json` est réécrit en entier à chaque reconstruction : un gros diff est normal.

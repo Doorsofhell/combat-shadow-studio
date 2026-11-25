@@ -5984,3 +5984,19 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   CPU) échoué une 2e fois avec les tests de caméra en parallèle, puis TEST RÉUSSI 2 fois sur 2 seul, comme en 2.10.0 (2/2) :
   mesure sensible à la charge, aucun test modifié.
 - **Restauration** : `restauration/avant-focus-visage-v2101` (= 2.10.0).
+
+## 2026-11-25 · 2.10.1 (sans changement de version) · Outillage : graphe de connaissances graphify
+
+- **Constat** : demande du propriétaire d'installer graphify (`graphifyy`) et d'analyser le projet.
+- **Correction** (outillage de développement seulement, aucun code de l'application touché, donc pas de nouvelle
+  version) :
+  - `uv tool install graphifyy` puis `graphify claude install` : section graphify dans `CLAUDE.md` (traduite en
+    français) et hooks dans `.claude/settings.json` ;
+  - skill copié dans `.claude/skills/graphify/` (`graphify install --platform claude` l'écrit dans `~/.claude`) ;
+  - `.graphifyignore` : archives, captures, `public/`, `android/` et squelettes de test exclus ;
+  - analyse `graphify extract . --code-only` puis `graphify cluster-only . --no-label` : 756 fichiers de code,
+    6124 nœuds, 17751 liens, 190 communautés (non nommées : pas de clé d'API). Docs Markdown non analysés.
+  - `graphify-out/cache/` ignoré par git.
+- **Fichiers** : `CLAUDE.md`, `.claude/`, `.graphifyignore`, `.gitignore`, `graphify-out/`.
+- **Tests** : NON APPLICABLE (aucun fichier source, test ou build modifié).
+- **Restauration** : commit `4ba4ccd` (2.10.1, avant l'outillage).

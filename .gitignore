@@ -19,3 +19,4 @@ tsconfig.tsbuildinfo
 __pycache__/
 *.pyc
 dist-sim
+graphify-out/cache/
