@@ -27,7 +27,8 @@ import { stageAzimuth, techniqueView } from '../../domain/camera';
 import { exerciseForTechnique } from '../../domain/quickPicks';
 import { TechniqueFilter, neighbours, parseTechniqueFilter, sheetQuery, techniqueCatalogue } from './techniqueOrder';
 import { PremiumMarker, PremiumTag } from '../premium/PremiumMarker';
-import { isPremiumTechnique } from '../../monetization/premiumItems';
+import { ITEM_RIGHT, canOpenTechnique, isPremiumTechnique } from '../../monetization/premiumItems';
+import { useRights } from '../../monetization/rights';
 
 const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
 
@@ -150,6 +151,7 @@ function TechniquesTab({ d, setD, cat, setCat }: { d: DisciplineId; setD: (d: Di
             mastery={mastery[t.id]}
             selected={selected === t.id}
             premium={isPremiumTechnique(t.id) ? 'advanced_techniques' : undefined}
+            locked={!canOpenTechnique(t.id)}
             meta={d === 'kickboxing' ? <KbOnlyBadge id={t.id} /> : undefined}
           />
         ))}
@@ -214,7 +216,8 @@ export function FavoritesList() {
           <SectionHead title="Techniques" />
           <div className="stack" style={{ gap: 8 }}>
             {techs.map((t) => (
-              <TechniqueCard key={t.id} to={`/techniques/${t.id}`} title={t.name} description={t.description} thumb={t.id} favorite premium={isPremiumTechnique(t.id) ? 'advanced_techniques' : undefined} />
+              <TechniqueCard key={t.id} to={`/techniques/${t.id}`} title={t.name} description={t.description} thumb={t.id} favorite premium={isPremiumTechnique(t.id) ? 'advanced_techniques' : undefined}
+            locked={!canOpenTechnique(t.id)} />
             ))}
           </div>
         </section>
@@ -225,6 +228,7 @@ export function FavoritesList() {
 }
 
 export function TechniquePage() {
+  useRights();
   const { id } = useParams();
   const [q] = useSearchParams();
   const t = id ? TECHNIQUE_BY_ID.get(id) : undefined;
@@ -356,6 +360,8 @@ export function TechniquePage() {
   }, [cam, t, d, profile.guard]);
 
   if (!t) return <EmptyState title="Technique introuvable" action={<Link to="/techniques" className="btn">Retour aux techniques</Link>} />;
+  // 2.9.0: the sheet of a locked technique is never shown, whatever the address
+  if (!canOpenTechnique(t.id)) return <Navigate to={`/premium?f=${ITEM_RIGHT.technique}`} replace />;
   return (
     <div className="page tech-page" style={{ gap: 16 }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} data-testid="technique-page">
       <PageHead

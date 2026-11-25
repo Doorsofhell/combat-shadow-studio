@@ -5462,3 +5462,67 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   « Premium » par les lecteurs d'écran. Tests Premium (vitest 22, Playwright 11) et build : TEST RÉUSSI ; captures
   avant/après refaites avec le coin doré.
 - **Restauration** : branche `restauration/avant-diamants-v282` (= 2.8.1, `2969a77`).
+
+## 2026-11-25 · v2.9.0 · Shadow Pro : badge PRO, cadenas, programmes mixtes (version expérimentale)
+
+- **Demande** (Youssef, 2026-11-25 07:48, « Shadow Studio — Identification visuelle des contenus Freemium et
+  Premium ») : un système homogène et minimaliste, nom commercial SHADOW PRO, micro-badge « PRO » à droite du titre de
+  chaque contenu Premium, petit cadenas doré seulement pour une restriction réelle (à la place de l'icône de lancement),
+  « 3/6 PRO » pour un programme mixte calculé dynamiquement, bouclier doré « PRO » dans le profil d'un membre, aucune
+  marque « FREE », barre du bas inchangée, règles centralisées, gardes qui ne reposent pas sur un bouton caché,
+  version expérimentale isolée, rien en production avant sa validation. Remplace le diamant puis le coin doré de la
+  2.8.2 (jamais publiée).
+- **Constat vérifié avant de coder** :
+  - la gestion des droits existe déjà et reste la seule source : `src/monetization/rights.ts` (statut, `canAccessFeature`)
+    et `src/monetization/premiumItems.ts` (règles par élément, 2.8.2) ;
+  - mais aucun achat réel n'est branché (`MONETIZATION_ENABLED = false`, aucun fournisseur dans `purchases.ts`) : en
+    production rien n'est verrouillé, donc aucun cadenas ne s'affiche ; c'est voulu et signalé à Youssef ;
+  - « abonnement expiré » : Premium à vie n'expire pas ; le cas réel est l'achat remboursé, qui ramène au statut gratuit ;
+  - « utilisateur non authentifié » : l'application n'a que des profils locaux (invité) ; il est traité comme gratuit ;
+  - avec les règles commerciales actuelles, aucun programme n'est mixte (43 entièrement PRO, 6 gratuits) : le calcul
+    existe et est testé, l'exemple « 3/6 PRO » n'existe que dans l'aperçu.
+- **Correction** :
+  - règles : `restrictionsActive()`, `isFeatureLocked()`, `useRights()` (rights.ts) ; `ITEM_RIGHT`, `canOpenExercise`,
+    `canOpenTechnique`, `canOpenCoach`, `isProSession`, `programProShare`, `canOpenSession`, `isProgramLocked`,
+    `lockedTrainingRight` (premiumItems.ts). L'appartenance au catalogue (badge) et l'accès (cadenas) sont deux
+    questions séparées ;
+  - composants centraux (`src/ui/premium/PremiumMarker.tsx`) : `ProBadge`, `PremiumTag`, `PremiumMarker` (titres :
+    bouton vers l'offre pour un gratuit, simple badge pour un membre), `ProgramProBadge`, `ProLock`, `LaunchOrLock`,
+    `ProShield`, `useProGate` ; styles et couleurs (or #D4AF37, or lumineux #F5D88B, bronze #99702E, fond à 11 %,
+    encre bronze foncé #7d5f22 en clair pour rester lisible à 10,5 px) dans `premium.css` ;
+  - gardes : l'écran d'entraînement refuse une adresse d'exercice, de séance ou de technique verrouillée ; la fiche
+    technique verrouillée renvoie vers Shadow Pro ; `pickChampion` n'enregistre jamais un coach verrouillé ;
+    Décomposer et les options avancées du chrono ouvrent l'offre quand ils sont verrouillés ;
+  - écrans : programmes (carte, fiche, semaines, exercices utilisés d'un programme mixte), exercices, fiches
+    techniques, favoris, coachs (rangée et grand écran : badge en haut à gauche du portrait, trop étroit pour le nom
+    + PRO), bouton Décomposer des Légendes, options du chrono, menu des niveaux (`MenuChip` gagne un emplacement
+    `badge`), profil (bouclier, contour doré de l'avatar, carte « Shadow Pro » avec le bouclier au lieu du diamant) ;
+  - retirés : le badge du titre « Programmes » (6 programmes y sont gratuits) et la marque sur la barre du bas
+    (2.8.2), la barre redevient celle de la 2.8.1 ;
+  - aperçu seulement (`VITE_PREMIUM_SIMULATION=1`, `src/monetization/simulation.tsx`) : sélecteur Réel / Gratuit /
+    Premium / Expiré et programme d'exemple « 3/6 PRO » ; absent du build de production (vérifié : aucune trace dans
+    `dist/assets`) ;
+  - version 2.9.0 (`package.json`, `releases.ts` remplace l'entrée 2.8.2 jamais publiée), README et ETAT régénérés.
+- **Fichiers** : `src/monetization/{rights.ts,premiumItems.ts,simulation.tsx}`, `src/main.tsx`,
+  `src/ui/premium/{PremiumMarker.tsx,premium.css}`, `src/ui/components/{Cards.tsx,MenuChip.tsx}`,
+  `src/ui/coach-row/{CoachRow.tsx,coach-row.css}`, `src/ui/screens/{Train,Programs,Discipline,Library,Stats,Champions,
+  CoachSelect,Training}.tsx`, `src/ui/screens/account/Profile.tsx`, `src/ui/training/TimerOptions.tsx`,
+  `src/ui/nav/{BottomBar.tsx,config.ts}` (remis comme en 2.8.1), `playwright.sim.config.ts`,
+  `tests/e2e-sim/shadow-pro.spec.ts`, `tests/e2e/premium.spec.ts`, tests unitaires, `docs/NON_REGRESSION.md`,
+  `docs/monetisation/DECISIONS.md`.
+- **Tests** :
+  - ajouté `src/monetization/__tests__/shadow-pro.test.tsx` (14 tests : production sans verrou, gratuit/invité,
+    remboursé, Premium, bouclier absent en gratuit, programme gratuit / tout PRO / mixte 3/6 / séance mixte, gardes,
+    coach jamais enregistré, carte verrouillée, composants) : TEST RÉUSSI ;
+  - modifiés, raison écrite : `rights.test` et `premium-items.test` attendaient que le marqueur disparaisse pour un
+    membre Premium ; Youssef demande que les badges PRO restent visibles (§5) ; chaque contrôle d'accès est gardé ;
+    `premium.spec` attendait un diamant sur le titre « Programmes » et sur Décomposer dans la barre : le titre n'a plus
+    de badge (programmes gratuits dans la liste, chaque carte porte le sien) et la barre ne change pas (§7) ;
+  - ajouté `tests/e2e-sim/shadow-pro.spec.ts` (6 tests sur l'aperçu : gratuit, expiré, Premium, mixte, 360 × 640 clair
+    et sombre) : TEST RÉUSSI ;
+  - Vitest Premium 35/35, Playwright `premium.spec` + `premium-panels.spec` 11/11, `npm run build` : TEST RÉUSSI ;
+  - application Android : NON EXÉCUTÉ (aucun APK construit pour une version expérimentale ; même code web) ;
+  - captures réelles : fichiers du projet `monetisation/shadow-pro-v2.9.0/` (avant 2.8.1 / Gratuit / Premium,
+    clair/sombre, programmes gratuit, mixte, tout PRO, 360 px).
+- **Restauration** : `restauration/avant-diamants-v282` (= 2.8.1 en production, `2969a77`) ou
+  `restauration/avant-shadow-pro-v290` (= 2.8.2 non publiée, `6b7a872`).

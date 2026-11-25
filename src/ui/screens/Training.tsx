@@ -1,6 +1,8 @@
 import '../training/training.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { isFeatureLocked, useRights } from '../../monetization/rights';
+import { lockedTrainingRight } from '../../monetization/premiumItems';
 import { CoachStage } from '../../three/CoachStage';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
@@ -94,6 +96,11 @@ export function Training() {
   const snapshot = useMemo<ResumeSnapshot | null>(() => (reprise && !fresh ? snapshots.find((x) => x.query === query) ?? null : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [reprise, fresh, query, resumeReady]);
+
+  // 2.9.0: a locked item never starts, whatever the address (the padlock on its card is only the visible part)
+  useRights();
+  const lockRight = lockedTrainingRight(q);
+  if (lockRight) return <Navigate to={`/premium?f=${lockRight}`} replace />;
 
   if ((catId && !catalog && !catalogError) || (reprise && !resumeReady)) return <div className="loading">Chargement…</div>;
 
@@ -244,6 +251,8 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
     return () => window.clearTimeout(id);
   }, [closeUp]);
   const openStudy = (id: string) => {
+    // 2.9.0: Décomposer is Shadow Pro; when locked for this user the tap opens the offer (the bar keeps its look)
+    if (isFeatureLocked('advanced_breakdown')) return nav('/premium?f=advanced_breakdown');
     pause();
     setStudyRot(0);
     st.open(id);

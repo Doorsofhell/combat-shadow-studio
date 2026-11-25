@@ -80,13 +80,16 @@ describe('le petit diamant', () => {
       expect(!!card.querySelector('[data-testid="premium-tag"]'), e.id).toBe(isPremiumLevel(e.level));
     }
   });
-  it('n’est pas un bouton, est nommé, et disparaît pour un utilisateur Premium', () => {
+  // 2.9.0 (Youssef, 2026-11-25, §5 « les micro-badges PRO restent visibles » pour un utilisateur Premium): the badge
+  // names the catalogue for everyone; before 2.9.0 it disappeared for a Premium user
+  it('n’est pas un bouton, est nommé « Contenu Shadow Pro », dit PRO et reste visible pour un utilisateur Premium', () => {
     const el = mount(<PremiumTag feature="all_programs" />);
     const tag = el.querySelector('[data-testid="premium-tag"]')!;
     expect(tag.tagName).toBe('SPAN');
-    expect(tag.getAttribute('aria-label')).toBe('Premium');
+    expect(tag.getAttribute('aria-label')).toBe('Contenu Shadow Pro');
+    expect(tag.textContent).toBe('PRO');
     act(() => setRightsSource({ id: 'test', status: () => 'premium_lifetime' }));
-    expect(el.querySelector('[data-testid="premium-tag"]')).toBeNull();
-    expect(el.innerHTML).toBe('');
+    expect(el.querySelector('[data-testid="premium-tag"]')!.textContent).toBe('PRO');
+    expect(el.querySelector('button')).toBeNull();
   });
 });

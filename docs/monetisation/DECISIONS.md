@@ -60,3 +60,12 @@ Règles appliquées, dans `src/monetization/premiumItems.ts` (rien n'est verroui
 
 Non marqués élément par élément (choix encore ouverts) : la sélection gratuite de légendes (nombre à fixer), les
 enchaînements, favoris et historique au-delà des quotas (3, 5, 30 jours) ; leur diamant reste sur le titre de l'écran.
+
+## 2.9.0 · Shadow Pro (Youssef, 2026-11-25)
+
+Le diamant et le coin doré de la 2.8.2 sont remplacés par l'identité **SHADOW PRO** : micro-badge « PRO » après le
+titre de chaque contenu Premium (même pour un membre), petit cadenas doré seulement quand l'accès est réellement
+fermé (jamais en production tant que le paiement n'est pas branché), « x/y PRO » pour un programme mixte, bouclier
+doré « PRO » dans le profil d'un membre, aucune marque « FREE ». La répartition gratuit / Premium ci-dessus ne change
+pas ; avec elle, aucun programme du catalogue n'est mixte. Abonnement expiré = achat remboursé (Premium à vie n'expire
+pas). Utilisateur non connecté = profil invité, traité comme gratuit.

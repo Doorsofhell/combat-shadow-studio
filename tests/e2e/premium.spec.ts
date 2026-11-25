@@ -86,9 +86,11 @@ test('les diamants sont visibles et les fonctions restent ouvertes', async ({ pa
   await expect(page.getByTestId('premium-advanced_techniques')).toHaveCount(0);
   await page.goto('/#/discipline/boxe?niveau=expert');
   await expect(page.getByTestId('premium-advanced_techniques')).toBeVisible();
-  // programmes: one diamond on the title, the programmes still open
+  // programmes: the programmes still open. 2.9.0 (Youssef, « ne jamais afficher un programme mixte comme entièrement
+  // verrouillé », six programmes gratuits): no badge on the screen title, each Premium programme carries its own PRO
   await page.goto('/#/programmes');
-  await expect(page.getByTestId('premium-all_programs')).toHaveCount(1);
+  await expect(page.getByTestId('premium-all_programs')).toHaveCount(0);
+  await expect(page.locator('.prog-card .pro-badge').first()).toHaveText('PRO');
   await page.locator('a.prog-card').first().click(); // 0.41: the catalogue tiles are the programme cards
   await expect(page.getByTestId('start-program')).toBeEnabled();
   // legends, favourites, history, voice
@@ -121,17 +123,19 @@ test('un diamant ouvre la page Premium sans déclencher la carte autour', async 
   await expect(page.getByTestId('premium-page')).toBeVisible();
 });
 
-// 2.8.2 (Youssef, 2026-11-24, « le petit diamant sur tous les items, options, programmes »): every Premium item
-// carries its own small diamond (docs/monetisation/DECISIONS.md); the free ones carry none; everything stays open
-test('2.8.2 : un diamant sur chaque élément Premium, aucun sur les éléments gratuits', async ({ page }) => {
-  // programmes: the free beginner programme has none, an expert one has its diamond and still opens
+// 2.8.2 (Youssef, 2026-11-24, « le petit diamant sur tous les items, options, programmes »), 2.9.0 (Youssef, 2026-11-25,
+// « Identification visuelle Freemium / Premium »): every Premium item carries its own « PRO » micro-badge; the free ones
+// carry none; nothing is locked in production (no padlock); the bottom bar stays as in 2.8.1 (§7)
+test('2.9.0 : un badge PRO sur chaque élément Premium, aucun sur les gratuits, aucun cadenas en production', async ({ page }) => {
+  // programmes: the free beginner programme has none, an expert one has its badge and still opens
   await page.goto('/#/programmes');
   await expect(page.getByTestId('prog-boxe-initiation-4-semaines').getByTestId('premium-tag')).toHaveCount(0);
   const expert = page.getByTestId('prog-boxe-rounds-expert');
-  await expect(expert.getByTestId('premium-tag')).toBeVisible();
+  await expect(expert.getByTestId('premium-tag')).toHaveText('PRO');
+  await expect(page.getByTestId('pro-lock')).toHaveCount(0);
   await expert.click();
   await expect(page.getByTestId('start-program')).toBeEnabled();
-  await expect(page.locator('.page-head [data-testid="premium-tag"], h1 [data-testid="premium-tag"]').first()).toBeVisible();
+  await expect(page.locator('.page-head [data-testid="premium-tag"], h1 [data-testid="premium-tag"]').first()).toHaveText('PRO');
   // exercises: each expert exercise has one, no beginner exercise has one
   await page.goto('/#/discipline/boxe?niveau=expert');
   const ex = page.locator('.ex-card');
@@ -139,6 +143,7 @@ test('2.8.2 : un diamant sur chaque élément Premium, aucun sur les éléments 
   const n = await ex.count();
   expect(n).toBeGreaterThan(0);
   await expect(page.locator('.ex-card [data-testid="premium-tag"]')).toHaveCount(n);
+  await expect(page.getByTestId('pro-lock')).toHaveCount(0);
   await page.goto('/#/discipline/boxe?niveau=debutant');
   await expect(page.locator('.ex-card').first()).toBeVisible();
   await expect(page.locator('.ex-card [data-testid="premium-tag"]')).toHaveCount(0);
@@ -147,7 +152,11 @@ test('2.8.2 : un diamant sur chaque élément Premium, aucun sur les éléments 
   await expect(page.getByTestId('coach-homme').getByTestId('premium-tag')).toHaveCount(0);
   await expect(page.getByTestId('coach-femme').getByTestId('premium-tag')).toHaveCount(0);
   for (const id of ['nael', 'inaya', 'victor', 'kanya']) await expect(page.getByTestId(`coach-${id}`).getByTestId('premium-tag')).toHaveCount(1);
-  // the Décomposer button of the training bar
+  // the training bar is unchanged (no mark on Décomposer); the Décomposer button of a legend carries its PRO
   await page.goto('/#/entrainement?ex=boxe-debutant-02&mode=libre');
-  await expect(page.locator('[data-action="decompose"] [data-testid="premium-tag"]')).toBeVisible();
+  await expect(page.locator('[data-action="decompose"]')).toBeVisible();
+  await expect(page.locator('[data-testid="bottom-bar"] .pro-badge, [data-testid="bottom-bar"] [data-testid="premium-tag"]')).toHaveCount(0);
+  // the simulation of the preview build is not in production
+  expect(await page.evaluate(() => '__cssSimRights' in window)).toBe(false);
+  await expect(page.getByTestId('sim-rights')).toHaveCount(0);
 });

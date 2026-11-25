@@ -33,8 +33,8 @@ import { championFor } from '../../domain/coaches/catalog';
 import { DisciplineLabel, EmptyState, FilterChips, PageHead, SectionHead } from '../components';
 import { ExerciseSheet } from './Discipline';
 import { AppIcon, DisciplineIcon, LevelIcon } from '../icons';
-import { PremiumTag } from '../premium/PremiumMarker';
-import { isPremiumProgram } from '../../monetization/premiumItems';
+import { LaunchOrLock, ProgramProBadge, useProGate } from '../premium/PremiumMarker';
+import { ITEM_RIGHT, isProgramLocked, programProShare } from '../../monetization/premiumItems';
 import { DisciplineEmblem } from '../emblems';
 import { DisciplineArtwork } from '../components/DisciplineArtwork';
 import { NavIcon } from '../nav/NavIcon';
@@ -539,6 +539,7 @@ export function Programmes({ thumbs = false }: { thumbs?: boolean }) {
   const panel = usePanel();
   const snapshots = useResume((s) => s.snapshots);
   const runs = useResume((s) => s.programs);
+  const gate = useProGate();
   const list = filterPrograms(PROGRAMS, f);
   const set = (p: Partial<ProgramFilters>) =>
     setF((x) => {
@@ -618,7 +619,7 @@ export function Programmes({ thumbs = false }: { thumbs?: boolean }) {
             const st = programStatus(p, snapshots, runs);
             const lvl = programLevel(p);
             return (
-              <Link key={p.id} to={`/programmes/${p.id}`} className="card link prog-card" data-testid={`prog-${p.id}`} data-status={st.key}>
+              <Link key={p.id} to={`/programmes/${p.id}`} className="card link prog-card" data-testid={`prog-${p.id}`} data-status={st.key} data-pro={programProShare(p).kind} data-locked={isProgramLocked(p) || undefined} onClick={gate(ITEM_RIGHT.program, isProgramLocked(p))}>
                 {thumbs ? (
                   <TechThumb id={programTechnique(p)} />
                 ) : (
@@ -630,7 +631,7 @@ export function Programmes({ thumbs = false }: { thumbs?: boolean }) {
                   <span className="eyebrow">{thumbs && p.discipline !== 'mixte' ? <DisciplineLabel id={p.discipline} name={discName(p.discipline)} /> : discName(p.discipline)}</span>
                   <span className="title">
                     {p.name}
-                    {isPremiumProgram(p) && <PremiumTag feature="all_programs" />}
+                    <ProgramProBadge share={programProShare(p)} />
                   </span>
                   <span className="prog-tags">
                     <span>{p.durationMin} min</span>
@@ -647,7 +648,9 @@ export function Programmes({ thumbs = false }: { thumbs?: boolean }) {
                     </span>
                   )}
                 </span>
-                <AppIcon id="chevron" />
+                <LaunchOrLock locked={isProgramLocked(p)}>
+                  <AppIcon id="chevron" />
+                </LaunchOrLock>
               </Link>
             );
           })}

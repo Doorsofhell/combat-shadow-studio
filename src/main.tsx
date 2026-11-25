@@ -17,6 +17,9 @@ async function boot() {
     root.render(<Lab />);
     return;
   }
+  // 2.9.0: the preview build only (VITE_PREMIUM_SIMULATION=1) can simulate Gratuit / Premium / Expiré; the production
+  // build drops this branch and the module entirely
+  if (import.meta.env.VITE_PREMIUM_SIMULATION === '1') (await import('./monetization/simulation')).installSimulation();
   const { App } = await import('./ui/App');
   root.render(
     <StrictMode>

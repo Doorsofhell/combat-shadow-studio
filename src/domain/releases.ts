@@ -49,14 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
-      version: '2.8.2',
-      releaseDate: '2026-11-24',
-      title: 'Les éléments Premium repérés d’un coup d’œil',
+      version: '2.9.0',
+      releaseDate: '2026-11-25',
+      title: 'Shadow Pro : les contenus Premium repérés sans surcharge',
       isMajor: false,
       changes: [
-        { category: 'ameliorations', text: 'Un petit coin doré marque désormais chaque carte qui sera Premium : les exercices et les fiches techniques des niveaux avancé et expert, les programmes (sauf un programme débutant gratuit par discipline), les coachs Naël, Inaya, Victor et Kanya. Un petit point doré marque le bouton Décomposer et les options avancées du chronomètre. Tout reste accessible : le paiement n’est pas encore ouvert.' },
+        { category: 'ameliorations', text: 'Un petit badge « PRO » suit le nom de chaque contenu Shadow Pro : les exercices et les fiches techniques des niveaux avancé et expert, les programmes (sauf un programme débutant gratuit par discipline), les coachs Naël, Inaya, Victor et Kanya, le mode Décomposer et les options avancées du chronomètre. Rien d’autre ne change sur les cartes.' },
+        { category: 'ameliorations', text: 'Quand le paiement sera ouvert, un petit cadenas doré remplacera la flèche ou le bouton de lancement d’un contenu réservé, et un toucher ouvrira l’offre. Un programme qui mélange séances gratuites et Shadow Pro affichera par exemple « 3/6 PRO » et ses séances gratuites resteront ouvertes. Aujourd’hui, tout reste accessible.' },
+        { category: 'ameliorations', text: 'Un membre Shadow Pro verra un petit bouclier doré « PRO » à côté de son nom dans le profil.' },
       ],
-      links: [{ label: 'Premium', to: '/premium' }],
+      links: [{ label: 'Shadow Pro', to: '/premium' }],
     },
     {
       version: '2.8.1',

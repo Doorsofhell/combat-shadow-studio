@@ -398,52 +398,93 @@
   }
 }
 
-/* 2.8.2: the diamond of a Premium button of the bar, at the top right of its icon */
-.nav-ico:has(.premium-tag) {
-  position: relative;
+/* 2.9.0 (Youssef, 2026-11-25, « Identification visuelle Freemium / Premium »): SHADOW PRO marks. Palette: or #D4AF37,
+   or lumineux #F5D88B, bronze #99702E; in the light theme the text takes the darker bronze of --c-gold (#7d5f22) so
+   10-11 px stays readable (AA). No shadow, no animation, no glow; the badge never makes a card taller. */
+:root {
+  --pro-ink: #e2c15a;
+  --pro-bg: rgba(212, 175, 55, 0.11);
+  --pro-line: rgba(212, 175, 55, 0.32);
 }
-.nav-ico .premium-tag {
-  position: absolute;
-  top: -4px;
-  right: -8px;
-  margin: 0;
+:root[data-theme='light'] {
+  --pro-ink: #7d5f22;
+  --pro-bg: rgba(153, 112, 46, 0.1);
+  --pro-line: rgba(153, 112, 46, 0.35);
 }
-
-/* 2.8.2 (Youssef, 2026-11-25 « pas forcément un diamant… ne pas surcharger », option C « coin doré ») : une carte
-   Premium (programme, exercice, technique, coach) porte un petit coin doré en haut à droite, sans icône dans son titre ;
-   un bouton ou une option porte un petit point doré. Le diamant reste seulement sur les titres d'écran (PremiumMarker). */
-.premium-tag svg {
-  display: none;
+/* media cards drawn on the dark backdrop keep the dark ink in both themes */
+.dark-scope {
+  --pro-ink: #e2c15a;
+  --pro-bg: rgba(212, 175, 55, 0.14);
 }
-.premium-tag::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--gold);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 25%, transparent);
+.pro-badge {
+  display: inline-block;
+  flex: none;
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--pro-bg);
+  color: var(--pro-ink);
+  font-family: var(--font-text);
+  font-size: 10.5px;
+  font-weight: 600;
+  font-style: normal;
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  vertical-align: 0.2em;
+  text-transform: uppercase;
+  /* never stretches a title line: the line keeps its own height */
+  max-height: 1.6em;
 }
-:is(.prog-card, .ex-card, .tech-card, .crow-card, .star-thumb) .premium-tag {
-  /* still read by screen readers (« Premium »), drawn as the corner of the card */
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  margin: 0;
+/* the title badge of a free user is a button (opens the offer): a 32 px target around the small badge */
+.premium-marker .pro-badge {
+  margin-left: 0;
 }
-:is(.prog-card, .ex-card, .tech-card, .crow-card, .star-thumb):has(.premium-tag) {
-  position: relative;
-  overflow: hidden;
+.pro-lock {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  color: var(--pro-ink);
+  line-height: 0;
 }
-:is(.prog-card, .ex-card, .tech-card, .crow-card, .star-thumb):has(.premium-tag)::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 3;
-  border-style: solid;
-  border-width: 0 16px 16px 0;
-  border-color: transparent var(--gold) transparent transparent;
-  pointer-events: none;
+.pro-lock .app-icon {
+  color: var(--pro-ink);
+  fill: currentColor;
+}
+.pro-shield {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px 2px 5px;
+  border-radius: 999px;
+  background: var(--pro-bg);
+  color: var(--pro-ink);
+  font-family: var(--font-text);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.pro-shield .app-icon {
+  color: var(--pro-ink);
+}
+.pro-shield.compact {
+  padding: 1px 5px 1px 3px;
+  font-size: 10px;
+}
+/* the avatar of a Premium user: a thin gold ring, only where an avatar is drawn */
+.pro-avatar {
+  box-shadow: 0 0 0 2px var(--pro-line), 0 0 0 1px var(--pro-ink) inset;
+}
+.acc-name .pro-shield {
+  margin-left: 10px;
+  vertical-align: 0.35em;
+  letter-spacing: 0.06em;
+}
+/* on a filled button (red « Lancer », gold « Choisir ») the padlock takes the button's own text colour */
+.btn:is(.primary, .star-cta) .pro-lock,
+.btn:is(.primary, .star-cta) .pro-lock .app-icon {
+  color: currentColor;
 }

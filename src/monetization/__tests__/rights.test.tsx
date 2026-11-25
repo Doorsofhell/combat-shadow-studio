@@ -2,7 +2,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ENTITLEMENTS, PREMIUM_BENEFITS, PREMIUM_CATEGORIES, benefitAvailable, type EntitlementId } from '../entitlements';
+import { ENTITLEMENTS, ENTITLEMENT_BY_ID, PREMIUM_BENEFITS, PREMIUM_CATEGORIES, benefitAvailable, type EntitlementId } from '../entitlements';
 import { restorePurchases, setPurchaseProvider, type PurchaseProvider } from '../purchases';
 import { formatPrice, PREMIUM_OFFER } from '../offer';
 import { MONETIZATION_ENABLED, NO_PURCHASE_SOURCE, canAccessFeature, hasPremium, isPremiumFeature, premiumStatus, setRightsSource, shouldShowPremiumMarker } from '../rights';
@@ -87,7 +87,8 @@ describe('statut Free (préparation)', () => {
       </button>,
     );
     const m = el.querySelector('[data-testid="premium-unlimited_combos"]') as HTMLButtonElement;
-    expect(m.getAttribute('aria-label')).toBe('Premium : Enchaînements personnels illimités. Voir l’offre Premium à vie');
+    expect(m.getAttribute('aria-label')).toBe('Shadow Pro : Enchaînements personnels illimités. Voir l’offre');
+    expect(m.textContent).toBe('PRO');
     act(() => m.click());
     expect(cardClicks).toBe(0);
     expect(el.querySelector('[data-testid="on-premium"]')).not.toBeNull();
@@ -126,11 +127,13 @@ describe('statut Free (préparation)', () => {
 });
 
 describe('statut Premium (injecté par le test)', () => {
-  it('marqueurs masqués sans espace résiduel, tout reste accessible', () => {
+  // 2.9.0 (Youssef, §5): for a Premium user the PRO badges stay (they name what the purchase brings), without any
+  // link to the offer (« aucune sollicitation commerciale »), and everything opens
+  it('badges PRO gardés, sans lien vers l’offre, tout reste accessible', () => {
     setRightsSource(PREMIUM);
     expect(hasPremium()).toBe(true);
     for (const id of ids as EntitlementId[]) {
-      expect(shouldShowPremiumMarker(id)).toBe(false);
+      expect(shouldShowPremiumMarker(id)).toBe(!!ENTITLEMENT_BY_ID.get(id)!.marker);
       expect(canAccessFeature(id)).toBe(true);
     }
     const el = mount(
@@ -138,7 +141,8 @@ describe('statut Premium (injecté par le test)', () => {
         Mes enchaînements<PremiumMarker feature="unlimited_combos" />
       </h2>,
     );
-    expect(el.querySelector('h2')!.innerHTML).toBe('Mes enchaînements');
+    expect(el.querySelector('h2')!.textContent).toBe('Mes enchaînementsPRO');
+    expect(el.querySelector('button')).toBeNull();
   });
   it('page : « Premium à vie activé », ni prix ni bouton de paiement', () => {
     setRightsSource(PREMIUM);
@@ -148,11 +152,11 @@ describe('statut Premium (injecté par le test)', () => {
     expect(el.querySelector('[data-testid="premium-pay"]')).toBeNull();
     expect(el.querySelector('[data-testid="premium-price"]')).toBeNull();
   });
-  it('le marqueur disparaît dès que le statut change', () => {
+  it('le marqueur suit le statut aussitôt : bouton vers l’offre en gratuit, simple badge en Premium', () => {
     const el = mount(<PremiumMarker feature="full_history" />);
-    expect(el.querySelector('[data-premium="full_history"]')).not.toBeNull();
+    expect(el.querySelector('[data-premium="full_history"]')!.tagName).toBe('BUTTON');
     act(() => setRightsSource(PREMIUM));
-    expect(el.querySelector('[data-premium="full_history"]')).toBeNull();
+    expect(el.querySelector('[data-premium="full_history"]')!.tagName).toBe('SPAN');
   });
 });
 

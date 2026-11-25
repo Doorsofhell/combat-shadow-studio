@@ -1,5 +1,4 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { PremiumTag } from '../premium/PremiumMarker';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LATEST_RELEASE, hasUnseenRelease } from '../../domain/releases';
@@ -219,7 +218,6 @@ export function BottomBar() {
         {/* keyed on the icon: a new icon at the same place plays the swap */}
         <span className="nav-ico swap" key={icon}>
           <NavIcon id={icon} />
-          {slot.premium && <PremiumTag feature={slot.premium} size={11} />}
         </span>
         <small>{label}</small>
       </button>
