@@ -11,6 +11,11 @@ import { playerSteps } from '../training/plan';
 import { NavIcon } from '../nav/NavIcon';
 import { chooseCoach } from '../components/fighter';
 import { AppIcon } from '../icons';
+import { LaunchOrLock, PremiumTag, ProLock } from '../premium/PremiumMarker';
+import '../coach-row/coach-row.css';
+import { useRights } from '../../monetization/rights';
+import { ITEM_RIGHT, canOpenCoach, isPremiumCoach } from '../../monetization/premiumItems';
+import { CoachRow } from '../coach-row/CoachRow';
 
 /** the four coaches (Kadir, Naël, Amara, Inaya; 1.37: Axel and Kaila removed). The stored coach stays 'homme' / 'femme', the profile's
  * `champion` names the coach of that body type. */
@@ -24,13 +29,14 @@ export function useChosenCoach(): string | null {
 }
 
 export function pickChampion(c: ChampionCoach) {
+  // 2.9.0: a locked coach is never written, whichever screen asks (the padlocks are only the visible part)
+  if (!canOpenCoach(c.id)) return false;
   chooseCoach(c.coach);
   const st = useProfile.getState();
   st.update({ coach: c.coach, champion: c.id });
+  return true;
 }
 
-const heightM = (h: string) => Number(h.replace(/[^0-9,]/g, '').replace(',', '.'));
-const pct = (x: number, lo: number, hi: number) => Math.max(4, Math.min(100, ((x - lo) / (hi - lo)) * 100));
 
 /**
  * 1.13 (Youssef 2026-11-04, option B: « des barres comme des barres de progression pour les habiletés, poids,
@@ -46,57 +52,21 @@ export function CoachPicker({ value, onChange }: { value?: string | null; onChan
   const c = ALL_COACHES.find((x) => x.id === current) ?? null;
   return (
     <div className="coach-sel">
-      <div className="coach-pick" role="radiogroup" aria-label="Choix du coach">
-        {ALL_COACHES.map((x) => {
-          const on = current === x.id;
-          return (
-            <button
-              key={x.id}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              aria-label={`${x.name} « ${x.nickname} »`}
-              className={`coach-card ${on ? 'on' : ''}`}
-              onClick={() => (onChange ?? pickChampion)(x)}
-              data-testid={testIdOf(x)}
-            >
-              <img src={x.portrait} alt="" loading="eager" />
-              <span className="lbl">{x.name}</span>
-              {on && (
-                <span className="tick" aria-hidden>
-                  <AppIcon id="check" size={12} />
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* 2.7 (option A « Un seul sélecteur, partout »): the same row of faces and names as the coach's panel */}
+      <CoachRow value={current} mine={value === undefined ? null : stored} onPick={(x) => (onChange ?? pickChampion)(x)} testIdOf={testIdOf} />
       {c ? (
-        <section className="coach-sheet" data-testid={`coach-details-${c.id}`} aria-live="polite" aria-label={`Fiche de ${c.name}`}>
-          <img src={c.portrait} alt="" />
+        <section className="coach-sheet compact" data-testid={`coach-details-${c.id}`} aria-live="polite" aria-label={`Fiche de ${c.name}`}>
           <div className="who">
-            <span className="name">{c.name}</span>
+            <span className="name">
+              {c.name}
+              {isPremiumCoach(c.id) && <PremiumTag feature="all_fighters" size={16} />}
+            </span>
             <span className="nick">« {c.nickname} »</span>
             <span className="style">{c.style}</span>
-            <span className="gab">
-              <span className="row">
-                <b>Taille</b>
-                <span>{c.height}</span>
-              </span>
-              <span className="bar" aria-hidden>
-                <span style={{ width: `${pct(heightM(c.height), 1.5, 2.0)}%` }} />
-              </span>
-              {c.weightKg ? (
-                <>
-                  <span className="row">
-                    <b>Poids</b>
-                    <span>{c.weightKg} kg</span>
-                  </span>
-                  <span className="bar" aria-hidden>
-                    <span style={{ width: `${pct(c.weightKg, 45, 105)}%` }} />
-                  </span>
-                </>
-              ) : null}
+            {/* 2.7: height and weight on one line (the former bars took the room of the faces above) */}
+            <span className="coach-measures num-figure">
+              {c.height}
+              {c.weightKg ? ` · ${c.weightKg} kg` : ''}
             </span>
           </div>
           {/* 1.32.0 (Youssef, 2026-11-11): the bars « profil de style sur 10 » were estimates, not measures: the sheet
@@ -134,6 +104,7 @@ const testIdOf = (c: ChampionCoach) => (c.id === CHAMPIONS.homme.id ? 'coach-hom
  * measured on the 3D models (the weight only when it is measured).
  */
 export function CoachSelect() {
+  useRights();
   const [q] = useSearchParams();
   const first = q.get('first') === '1';
   const chosen = useChosenCoach();
@@ -225,7 +196,7 @@ export function CoachSelect() {
   }, [ready]);
   const done = () => {
     if (mine) return leave();
-    pickChampion(c);
+    if (!pickChampion(c)) return nav(`/premium?f=${ITEM_RIGHT.coach}`);
     // 1.42.0: the screen closes once the choice is written on the phone (a few milliseconds), so closing or
     // reloading the application right after « Choisir » never loses it
     void profileWrites().then(leave, leave);
@@ -298,7 +269,10 @@ export function CoachSelect() {
           <div className="star-row">
             <div className="star-who">
               <span className="star-nick">« {c.nickname} »</span>
-              <div className="star-name">{c.name}</div>
+              <div className="star-name">
+                {c.name}
+                {isPremiumCoach(c.id) && <PremiumTag feature="all_fighters" />}
+              </div>
               <span className="star-style">{c.style}</span>
             </div>
             <span className="star-facts num-figure" data-testid="star-facts">
@@ -334,6 +308,17 @@ export function CoachSelect() {
           return (
             <button key={x.id} type="button" role="radio" aria-checked={on} aria-label={`${x.name} « ${x.nickname} »${chosen === x.id ? ', ton coach' : ''}`} className={`star-thumb ${on ? 'on' : ''} ${chosen === x.id ? 'mine' : ''}`} onClick={() => show(x.id)} data-testid={testIdOf(x)}>
               <img src={x.portrait} alt="" loading="eager" />
+              {/* 2.7 (option A « Un seul sélecteur »): each portrait carries the coach's name */}
+              <span className="star-thumb-name" aria-hidden>
+                {x.name}
+              </span>
+              {/* 2.9.0: on a portrait this narrow the PRO badge sits at its top left, the name stays whole */}
+              {isPremiumCoach(x.id) && <PremiumTag feature="all_fighters" />}
+              {!on && !canOpenCoach(x.id) && (
+                <span className="crow-lock">
+                  <ProLock size={12} />
+                </span>
+              )}
               {on && (
                 <span className="tick" aria-hidden>
                   <AppIcon id="check" size={12} />
@@ -345,7 +330,9 @@ export function CoachSelect() {
       </div>
 
       <button type="button" className={`btn block lg star-cta star-cta-gold ${mine ? 'is-mine' : ''}`} onClick={done} data-testid="coach-valider">
-        <AppIcon id="check" size={22} />
+        <LaunchOrLock locked={!canOpenCoach(c.id)} size={20}>
+          <AppIcon id="check" size={22} />
+        </LaunchOrLock>
         <span>{mine ? `Garder ${c.name}` : `Choisir ${c.name}`}</span>
       </button>
     </div>

@@ -7,6 +7,7 @@ import { useSettings } from '../../store/settings';
 import { CoachAskPanel } from './CoachAskPanel';
 import { useCoachBubble } from './coachHost';
 import { useCoachContext } from './useCoachContext';
+import { useBackLayer } from '../components/glass';
 
 /**
  * Screens without the bubble: onboarding (the profile is not made yet, and its buttons sit at the
@@ -49,20 +50,25 @@ export function CoachBubble() {
     return () => window.removeEventListener('keydown', onKey);
   }, [open, setOpen]);
 
+  // 2.7: like every options panel, Back (Android button, back gesture, browser) closes it first and stays on the page
+  const shown = open && !hidden && profile.completed && (!hosted || !!host);
+  const dismiss = useBackLayer(shown, () => setOpen(false));
+
   if (hidden || !profile.completed) return null;
   // the training screen shows it once the session is ready (its stage is the bubble's place)
   if (hosted && !host) return null;
   const inHost = hosted ? host : null;
 
   const onAction = (a: CoachAction) => {
-    if (!inHost) setOpen(false);
-    act(a);
+    // out of the session the panel and its history entry go first (an action may open another page)
+    if (!inHost) dismiss(() => act(a));
+    else act(a);
   };
 
   if (!open) return null;
   const panel = (
     <div className={inHost ? `tr-ask size-${size}` : `coach-bubble-panel size-${size} from-pill`} role="dialog" aria-label="Coach IA" data-testid="coach-bubble-panel">
-      <CoachAskPanel context={context} onAction={onAction} onClose={() => setOpen(false)} />
+      <CoachAskPanel context={context} onAction={onAction} onClose={() => dismiss()} />
     </div>
   );
   // in the training stage the open panel takes the lower part of the stage

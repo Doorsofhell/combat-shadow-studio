@@ -9,7 +9,9 @@ import { EmptyState, PageHead } from '../components';
 import { AppIcon, LevelIcon } from '../icons';
 import { useResume } from '../../store/resume';
 import { Programmes } from './Train';
-import { PremiumMarker } from '../premium/PremiumMarker';
+import { LaunchOrLock, PremiumTag, ProLock, ProgramProBadge } from '../premium/PremiumMarker';
+import { canOpenSession, isPremiumProgram, isProExercise, isProSession, programProShare } from '../../monetization/premiumItems';
+import { useRights } from '../../monetization/rights';
 import './train.css';
 
 const PHASE_LABEL: Record<ProgramBlock['phase'], string> = {
@@ -27,7 +29,7 @@ const dur = (s: number) => (s >= 60 ? `${s % 60 ? (s / 60).toFixed(1).replace('.
 export function Programs() {
   return (
     <div className="page">
-      <PageHead title="Programmes" eyebrow="Séances guidées" fallback="/entrainer" badge={<PremiumMarker feature="all_programs" />} />
+      <PageHead title="Programmes" eyebrow="Séances guidées" fallback="/entrainer" />
       <Programmes thumbs />
       <Link to="/createur/nouveau" className="btn secondary block">
         <AppIcon id="add" size={18} /> Créer mon propre enchaînement
@@ -72,11 +74,15 @@ export function ProgramPage() {
   const p = id ? PROGRAM_BY_ID.get(id) : undefined;
   const runs = useResume((s) => s.programs);
   const pr = p ? programProgress(p, runs[p.id]?.count ?? 0) : null;
-  const start = () => p && pr && nav(`/entrainement?${programQuery(p, pr.next)}`);
+  useRights();
+  const nextLocked = !!p && !!pr && !canOpenSession(p, pr.next);
+  // 2.9.0: a locked session opens the Shadow Pro page instead (the training screen checks again)
+  const start = () => p && pr && nav(nextLocked ? `/premium?f=${isPremiumProgram(p) ? 'all_programs' : 'advanced_techniques'}` : `/entrainement?${programQuery(p, pr.next)}`);
   // v0.32 bar: « Démarrer » starts the programme (its next session), as the button of the page
   useNavActions({ start: p && { run: start, ariaLabel: `Démarrer : ${p.name}` } });
   if (!p || !pr) return <EmptyState title="Programme introuvable" action={<Link to="/programmes" className="btn">Voir les programmes</Link>} />;
   const sessions = programSessions(p);
+  const share = programProShare(p);
   const total = Math.round(programSeconds(p, pr.next) / 60);
   const lvl = programLevel(p);
   const levelName = LEVELS.find((l) => l.id === lvl)?.name ?? lvl;
@@ -85,7 +91,7 @@ export function ProgramPage() {
   const cool = sessions[0].blocks.filter((b) => b.phase === 'recuperation');
   return (
     <div className="page prog-page">
-      <PageHead title={p.name} eyebrow={`${discName(p.discipline)} · ${levelName}`} fallback="/programmes" />
+      <PageHead title={p.name} eyebrow={`${discName(p.discipline)} · ${levelName}`} fallback="/programmes" badge={<ProgramProBadge share={share} />} />
       {p.description && <p data-testid="prog-description">{p.description}</p>}
       <div className="stat-tiles">
         <div className="stat-tile">
@@ -123,7 +129,10 @@ export function ProgramPage() {
       </div>
 
       <button type="button" className="btn primary block lg" onClick={start} data-testid="start-program">
-        <AppIcon id="play" /> {pr.done && !pr.finished ? `Continuer · semaine ${pr.week}` : 'Lancer le programme'}
+        <LaunchOrLock locked={nextLocked} size={20}>
+          <AppIcon id="play" />
+        </LaunchOrLock>{' '}
+        {pr.done && !pr.finished ? `Continuer · semaine ${pr.week}` : 'Lancer le programme'}
       </button>
 
       <section className="card stack" aria-labelledby="pg-about">
@@ -194,6 +203,8 @@ export function ProgramPage() {
           <details key={i} className="card prog-week" open={i === pr.next} data-testid={`prog-week-${s.week}`}>
             <summary>
               <b>{sessions.length > 1 ? `Semaine ${s.week}` : 'Séance'}</b>
+              {share.kind === 'mixte' && isProSession(p, s.blocks) && <PremiumTag feature="advanced_techniques" />}
+              {!canOpenSession(p, i) && <ProLock size={13} />}
               <span className="small muted"> · {Math.round(programSessionMinutes(p, i))} min</span>
               {i === pr.next && !pr.finished && <span className="badge"> Prochaine</span>}
               {s.focus && <span className="small muted block">{s.focus}</span>}
@@ -209,7 +220,10 @@ export function ProgramPage() {
         </h2>
         <ul className="small prog-ex">
           {exercises.map((e) => (
-            <li key={e.id}>{e.name}</li>
+            <li key={e.id}>
+              {e.name}
+              {share.kind === 'mixte' && isProExercise(e) && <PremiumTag feature="advanced_techniques" />}
+            </li>
           ))}
         </ul>
       </section>

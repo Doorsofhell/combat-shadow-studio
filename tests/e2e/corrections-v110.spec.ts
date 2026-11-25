@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { bar, closeMenu, menuItem, seedProfile, showCoachTools } from './nav-helpers';
+import { bar, closeCoachPanel, closeMenu, menuItem, seedProfile, showCoachTools } from './nav-helpers';
 
 /**
  * 1.1.0 (Youssef, 2026-10-27/28): the corrections asked on the 1.0.0 — the magnifier in the bar and the photo with
@@ -93,18 +93,20 @@ test('sans défilement : les 6 disciplines et le chrono de combat tiennent dans 
 test('séance : la vitesse sur le coach dès le départ, pas de grand compte à rebours', async ({ page }) => {
   await seedProfile(page);
   await page.goto('/#/entrainement?ex=boxe-debutant-01&mode=technique');
-  // the speed of the exercise (a beginner's exercise may start slower than ×1); 1.4.0: in the commands of the coach,
-  // shown by one tap on it
+  // the speed of the exercise (a beginner's exercise may start slower than ×1); 2.4: in the coach's panel, opened by
+  // one tap on it; the same range as before (×0,25 to ×1,5)
   await showCoachTools(page);
-  await expect(page.getByTestId('speed-tool')).toHaveText(/^×[0-9],?[0-9]*$/);
-  await page.getByTestId('speed-tool').click();
-  await expect(page.getByTestId('speed-choices').getByRole('radio')).toHaveText(['×0,25', '×0,5', '×0,75', '×1', '×1,25', '×1,5']);
-  await page.getByTestId('speed-0-5').click();
-  await expect(page.getByTestId('speed-tool')).toHaveText('×0,5');
+  const speed = page.getByTestId('cp-speed');
+  await expect(page.getByTestId('cp-speed-value')).toHaveText(/^×[0-9],?[0-9]*$/);
+  await expect(speed).toHaveAttribute('min', '0.25');
+  await expect(speed).toHaveAttribute('max', '1.5');
+  await speed.fill('0.5');
+  await expect(page.getByTestId('cp-speed-value')).toHaveText('×0,5');
+  await closeCoachPanel(page);
   await page.getByTestId('start').click();
   await expect(page.locator('.countdown')).toHaveCount(0);
   await showCoachTools(page);
-  await expect(page.getByTestId('speed-tool')).toBeVisible();
+  await expect(page.getByTestId('cp-speed-value')).toHaveText('×0,5');
 });
 
 test('objectifs : les jours sur une ligne de 7, plusieurs choix, gardés', async ({ page }) => {

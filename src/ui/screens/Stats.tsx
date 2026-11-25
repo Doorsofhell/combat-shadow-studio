@@ -8,6 +8,7 @@ import { SessionRecord, formatDuration, localDay, sum, useStats, weekKey } from 
 import { useGoals } from '../../store/goals';
 import { MODE_LABEL } from '../training/plan';
 import { PremiumMarker } from '../premium/PremiumMarker';
+import { canOpenTechnique, isPremiumTechnique } from '../../monetization/premiumItems';
 import { DisciplineLabel, EmptyState, FilterChips, GoalRing, PageHead, ProgressBar, SectionHead, Sheet, TechniqueCard, toast } from '../components';
 import { AppIcon } from '../icons';
 
@@ -105,7 +106,7 @@ export function Goals() {
         ) : (
           <div className="stack" style={{ gap: 8 }}>
             {favs.map((t) => (
-              <TechniqueCard key={t!.id} to={`/techniques/${t!.id}`} title={t!.name} favorite />
+              <TechniqueCard key={t!.id} to={`/techniques/${t!.id}`} title={t!.name} favorite premium={isPremiumTechnique(t!.id) ? 'advanced_techniques' : undefined} locked={!canOpenTechnique(t!.id)} />
             ))}
           </div>
         )}

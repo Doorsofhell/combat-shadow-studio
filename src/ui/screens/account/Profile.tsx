@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { ProShield } from '../../premium/PremiumMarker';
+import { hasPremium, useRights } from '../../../monetization/rights';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { DISCIPLINES, DisciplineId, LEVELS, LevelId } from '../../../domain/types';
 import { Difficulty, Profile, SPORT_GOALS, ageFrom, displayName, initials, useProfile } from '../../../store/profile';
@@ -84,8 +86,10 @@ export function Avatar({ profile, size = 72 }: { profile: Profile; size?: number
   // the personal photo always wins; a missing picture (other device, signed out) falls back to the coach or initials
   const src = profile.avatar === 'photo' ? photo : profile.avatar === 'google' ? googlePhoto : null;
   const useFighter = (profile.avatar === 'fighter' || (profile.avatar !== 'initiales' && !src)) && fighter;
+  useRights();
+  const pro = hasPremium();
   return (
-    <span className="acc-avatar" style={{ width: size, height: size }} aria-hidden data-avatar={src ? profile.avatar : useFighter ? 'fighter' : 'initiales'}>
+    <span className={`acc-avatar${pro ? ' pro-avatar' : ''}`} style={{ width: size, height: size }} aria-hidden data-avatar={src ? profile.avatar : useFighter ? 'fighter' : 'initiales'}>
       {src ? (
         <img src={src} alt="" referrerPolicy="no-referrer" />
       ) : useFighter ? (
@@ -106,6 +110,7 @@ export function Avatar({ profile, size = 72 }: { profile: Profile; size?: number
  * pratique, Mon parcours). Display, Coach IA, privacy and data moved to Réglages, nothing removed.
  */
 export function ProfilePage() {
+  useRights();
   const profile = useProfile((s) => s.profile);
   const update = useProfile((s) => s.update);
   const canStoreLimitations = useProfile((s) => s.canStoreLimitations);
@@ -171,6 +176,8 @@ export function ProfilePage() {
         <div className="grow" style={{ minWidth: 0 }}>
           <h1 className="acc-name" data-testid="profile-name">
             {name}
+            {/* 2.9.0: a Premium user's status (nothing for a free user) */}
+            <ProShield />
           </h1>
           <span className="acc-badge" data-testid="profile-level">
             <DisciplineIcon id={profile.mainDiscipline} size={16} />
@@ -212,10 +219,13 @@ export function ProfilePage() {
 
       <Link to="/premium" className="acc-card prem" data-testid="compte-premium">
         <span className="acc-card-text">
-          <b>Premium à vie</b>
-          <small>Voir ce qui est prévu</small>
+          {/* 2.9.0 (Youssef, « Nom commercial : SHADOW PRO », « symbole : bouclier martial doré »): one symbol */}
+          <b>Shadow Pro</b>
+          <small>{hasPremium() ? 'Actif : tout est débloqué' : 'Premium à vie · voir ce qui est prévu'}</small>
         </span>
-        <NavIcon id="diamond" />
+        <span className="pro-lock" aria-hidden>
+          <AppIcon id="shield" size={22} />
+        </span>
       </Link>
       <Link to="/objectifs" className="acc-card" data-testid="compte-goal" aria-label={goalOn ? `Objectif de la semaine : ${goalText}` : 'Objectif de la semaine : aucun objectif fixé'}>
         <span className="acc-card-text">

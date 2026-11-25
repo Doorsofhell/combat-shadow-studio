@@ -9,6 +9,8 @@ export interface MenuChipOption<T> {
   /** a line under the name, in the menu only (the rules of a style, what a level is for) */
   description?: ReactNode;
   lead?: ReactNode;
+  /** 2.9.0: a mark right after the name (the PRO badge of a Premium level) */
+  badge?: ReactNode;
 }
 
 /**
@@ -138,7 +140,10 @@ export function MenuChip<T extends string>({
               >
                 {o.lead && <span className="menu-pop-lead">{o.lead}</span>}
                 <span className="menu-pop-t">
-                  {o.label}
+                  <span className="menu-pop-name">
+                    {o.label}
+                    {o.badge}
+                  </span>
                   {o.description && <small>{o.description}</small>}
                 </span>
                 <span className="menu-pop-ck">{o.id === value && <NavIcon id="check" />}</span>

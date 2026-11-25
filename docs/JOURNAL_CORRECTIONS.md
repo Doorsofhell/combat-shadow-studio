@@ -5189,6 +5189,348 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   (build refait, vérifié) ; `coaching-hud:60` défaut antérieur connu ; `coach-suggest:147` instable connu ;
   téléphone Android NON EXÉCUTÉ.
 - **Restauration** : `restauration/avant-torsion-v240` (= 2.4.0), ou `?torsion=0`. Rapport `docs/v250/RAPPORT_TORSION.md`.
+
+## 2026-11-24 · v2.6.0 · Panneau « Options du coach »
+
+- **Statut** : développé comme version de test (PR #150, branche `claude/project-thread-kn0nc0`) ; validé par Youssef
+  le 24/11 à 12 h (« je valide »), puis version 2.6.0, note des Nouveautés et fusion.
+- **Demande** : Youssef, 20/11 13:25, « REFONTE PREMIUM DU PANNEAU D'OPTIONS DU COACH » (V6 Floating Glass + V7 Smart
+  Control) ; audit et maquettes livrés le 20/11, recommandations validées à 14 h 32 (« je valide les recommandations »).
+- **Constat vérifié (2.3.5 puis 2.4.0)** : un toucher sur le coach montrait des boutons posés sur lui (lecture,
+  vitesse, plein écran, son, angles), différents selon l’écran ; la séance avait en plus une zone Caméra en bas et une
+  feuille « Options d’entraînement » dans Plus ; la fiche avait une ligne Assimilée / Encore du mal sous le lecteur ;
+  l’Accueil une puce « Changer de coach » ; la fiche n’avait pas d’angle Auto.
+- **Correction** :
+  - un seul panneau en verre `src/ui/coach-panel/CoachPanel.tsx` (+ `coach-panel.css`), ouvert par un toucher court
+    sur le coach dans le module commun `CoachScreen` (Accueil, fiche, séance) : Mon apprentissage (Acquis / Encore du
+    mal / En apprentissage), Angle de vue (Auto, Face, 3/4, Profil, autres angles, rotation, zoom, gros plan),
+    Vitesse (valeurs et bornes d’avant), Voix et volume réel, Plein écran, Réinitialiser la vue, Options avancées
+    repliables (coach, garde, repères au sol, annonces, impacts, volume des effets, liens Coachs et Réglages) ;
+  - chaque choix s’applique tout de suite, le panneau reste ouvert, pas de « Valider » ;
+  - fermeture : toucher à côté (voile qui avale pointeur, souris et clic, gardé pendant l’animation de fermeture),
+    glisser la poignée vers le bas, Retour (couche d’historique `nav/layers.ts`, `dropLayer` ajouté), Échap ; focus
+    piégé puis rendu ; le panneau suit le plein écran natif ;
+  - statuts : `setMastery` dans `src/store/goals.ts` ; « En apprentissage » = pas de marque, donc aucune migration, les
+    anciens statuts sont lus tels quels ; même identifiant de technique partout ; aucun XP ;
+  - séance : « Caméra » de la barre ouvre le panneau sur l’angle de vue ; Plus › « Options du coach » ouvre le panneau ;
+    nouvelle entrée Plus › « Enchaînement » pour la liste de la séance ; la zone Caméra du bas et le bouton pause du
+    coach sont retirés (la pause reste dans la barre) ; ouvrir le panneau ne met jamais en pause ;
+  - fiche : angle Auto ajouté (vue conseillée par technique) ; la ligne Assimilée / Encore du mal est retirée
+    (`Playback.tsx`), le filtre et les liserés du catalogue restent ;
+  - Accueil : « Changer de coach » passe dans Options avancées ;
+  - en portrait, le panneau est posé en bas et prend au plus 76 % de la hauteur : le haut du coach reste visible et
+    sert de zone pour fermer d’un toucher (avant, en séance, le panneau couvrait presque tout l’écran et il ne restait
+    que 16 px autour pour toucher à côté) ;
+  - plein écran : quand les commandes sont estompées, un toucher les réaffiche seulement (il n’ouvre pas aussi le
+    panneau) (`useStageFullscreen.ts`) ;
+  - repli sans flou si qualité basse, mode sûr 3D ou `backdrop-filter` absent ; aucune animation en mouvement réduit ;
+    aucun GLB, animation ou squelette modifié ;
+  - Coach IA : textes du guide mis à jour (`src/coach/appGuide.ts`) ; astuce « touche le coach pour ses options, deux
+    fois pour le plein écran ».
+- **Fichiers** : `src/ui/coach-panel/*`, `src/ui/coach-screen/CoachScreen.tsx` et `coach-screen.css`,
+  `src/ui/screens/{Training,Library,Home}.tsx`, `src/ui/components/Playback.tsx`, `src/ui/fullscreen/*`,
+  `src/ui/nav/layers.ts`, `src/store/goals.ts`, `src/coach/appGuide.ts`, `src/ui/styles.css`.
+- **Tests ajoutés** : `tests/e2e/panneau-coach.spec.ts` (10 cas : Échap, glisser la poignée, Retour, aucun clic qui
+  traverse sur fiche et séance y compris pendant la fermeture, séance non mise en pause, persistance après
+  rechargement, réinitialiser la vue, anciens statuts gardés et synchronisés fiche ↔ séance sans XP, glisser et pincer
+  n’ouvrent pas, 360 × 640 avec défilement interne, clavier et lecteur d’écran, aucun bouton hors panneau, mouvement
+  réduit et repli sans flou, fluidité ouvert / fermé) ; `src/store/__tests__/mastery.test.ts` (setMastery, 2 cas).
+- **Tests adaptés, avec raison** (les boutons visés n’existent plus ; mêmes vérifications, faites dans le panneau) :
+  `ecran-coach-v140` (réécrit : le toucher ouvre le panneau), `training-layout` (zone Caméra → section Angle de vue,
+  mêmes contrôles de taille sur 6 formats, délai porté à 300 s car chaque format recharge la séance ; Auto ; ralenti ;
+  repères ; changer de coach), `consignes-v130` (plein écran, angles de la fiche, haut-parleur → interrupteur Voix et
+  volume), `corrections-v110` (vitesse), `seance-mains-libres` (toucher pendant la pause : ouvre le panneau, toujours en
+  pause), `mastery` et `aucune-perte-v100` (statut dans le panneau), `technique-nav`, `navigation` (Caméra, Options du
+  coach, Enchaînement), `coachs-v160` (Changer de coach via Options avancées), `coach-render` et `outfit-loading`
+  (coach dans Options avancées), `fullscreen-dbltap` (texte de l’astuce, plein écran du panneau, toucher sur commandes
+  estompées, deux appuis lents), `appGuide.test` (nouveaux libellés). Aucun test supprimé.
+- **Résultats** :
+  - `npx vitest run` : 1 818 TEST RÉUSSI, 4 TEST ÉCHOUÉ déjà présents sur la 2.4.0 (expressions-v1160 taille du modèle,
+    fluidity ×2, hooks-biomeca « pas d’armé »), 1 ignoré ;
+  - `npx tsc -b` et `npm run build` : TEST RÉUSSI ;
+  - Playwright complet (321) : 312 TEST RÉUSSI, 2 ignorés (Firebase), 7 TEST ÉCHOUÉ au premier passage ; 5 liés au
+    panneau corrigés puis TEST RÉUSSI en relance ciblée (aucune-perte-v100:113, fullscreen-dbltap complet,
+    outfit-loading, training-layout:240 et :308) ; 2 TEST ÉCHOUÉ aussi sur un build de la 2.4.0 non modifiée
+    (coach-suggest:147, coaching-hud:60), défauts antérieurs ;
+  - `coachs-v160` 360×640 « Le voir bouger » : TEST ÉCHOUÉ une fois au premier passage, TEST RÉUSSI dans le passage
+    complet suivant (écran du choix de coach non modifié) ;
+  - téléphone Android réel : NON EXÉCUTÉ.
+- **Captures** : `/mnt/project-files/combat-shadow-studio/maquettes/panneau-coach-2026-11-24/` (412 × 915 sombre,
+  360 × 640, mode jour) ; avant : `.../panneau-coach-2026-11-20/`.
+- **Après fusion de la base 2.5.0** (24/11) : `tsc -b`, build et Vitest ciblé (store, coach, torsion-v250, 121) TEST
+  RÉUSSI ; `panneau-coach`, `ecran-coach-v140`, `mastery`, `training-layout:240` (18) TEST RÉUSSI. Le test « aucun clic
+  ne traverse » mesure maintenant le panneau une fois son entrée finie (il mesurait pendant l’animation).
+- **Publication 2.6.0** : `package.json` 2.6.0, note dans `src/domain/releases.ts`, `npm run docs:sync` (README, ETAT,
+  9 TEST RÉUSSI) ; Vitest `src/domain` + `src/store` 270 TEST RÉUSSI ; `npm run build` TEST RÉUSSI (titre v2.6.0) ;
+  Playwright Nouveautés (`navigation.spec`) TEST RÉUSSI.
+- **Restauration** : `restauration/avant-panneau-coach-v240` (= 2.4.0, `1684b73`).
+
+## 2026-11-24 · v2.7.0 · Choisir son coach en un geste (option A « Un seul sélecteur, partout »)
+
+- **Demande** (Youssef, 24/11 11:15) : « c’est compliqué de choisir le coach et de le visualiser, je veux que ça soit
+  plus simple ». Audit et trois maquettes (https://claude.ai/artifact/XkbCLkm2M69KAu5ZFSFdDs), option A choisie à
+  12:54.
+- **Constat vérifié sur la 2.6.0 en ligne** (captures 393 × 851) : le même choix existait à quatre endroits avec trois
+  présentations. Accueil : aucun indice qu’on peut changer de coach. Panneau « Options du coach » : choix replié dans
+  « Options avancées », noms seuls sans visage (`CoachPanel.tsx`, `AdvancedSection`). Écran Coach : six vignettes de
+  50 à 56 px sans nom. Réglages › Mon coach et Bienvenue : l’ancien `CoachPicker` (photo fixe et barres de taille et
+  de poids).
+- **Correction** :
+  - un composant commun `src/ui/coach-row/CoachRow.tsx` : six cartes visage + nom, coche sur le coach choisi ; les
+    visages sont de petites images `public/coaches/<id>/visage.webp` (200 × 250, environ 3 Ko) découpées une fois dans
+    chaque portrait par `tools/generator/visages/visages.py` ;
+  - panneau : nouvelle section « Ton coach » (`data-section="coach"`, `cp-coach-<id>`), visible sans rien déplier ; en
+    tête sur l’Accueil, juste avant « Options avancées » sur la fiche et en séance (apprentissage et angle restent en
+    haut) ; « Options avancées » ne contient plus le coach ; nouveau `PanelSection` `'coach'` ;
+  - Accueil : bouton « Changer » (visage + mot) à côté du nom, ouvre le panneau sur « Ton coach »
+    (`home-change-coach`) ; `CoachScreen` : le toucher sur le coach ouvre le panneau tenu par l’écran quand il en
+    fournit un (`ui`) ;
+  - Réglages et Bienvenue : `CoachPicker` utilise la même rangée ; fiche compacte (nom, surnom, style, taille et
+    poids sur une ligne, garde, points forts), sans la grande photo ni les barres ;
+  - écran Coach : chaque vignette porte le nom du coach sur un bandeau opaque (même hauteur 50/56 px) ; les vignettes
+    non regardées sont assombries par leur image seule, jamais par leur nom (contraste AA).
+- **Inchangé** : coachs, visages, tenues, animations ; coach enregistré au même endroit (`profile.coach`,
+  `profile.champion`), aucune migration ; règles d’ouverture et de fermeture du panneau 2.6.0.
+- **Limite connue** : sur l’Accueil, le panneau couvre la zone du coach ; le nom et le surnom changent tout de suite,
+  la 3D se voit en fermant le panneau ou avec « Voir les coachs en grand ».
+- **Fichiers** : `src/ui/coach-row/CoachRow.tsx`, `src/ui/coach-row/coach-row.css`,
+  `src/ui/coach-panel/CoachPanel.tsx`, `src/ui/coach-panel/coach-panel.css`, `src/ui/coach-screen/CoachScreen.tsx`,
+  `src/ui/screens/Home.tsx`, `src/ui/screens/CoachSelect.tsx`, `src/domain/releases.ts`, `package.json`,
+  `public/coaches/*/visage.webp`, `tools/generator/visages/visages.py`,
+  `scripts/dev/shot-choix-coach-audit.mjs`, `scripts/dev/shot-choix-coach-apres.mjs`.
+- **Tests ajoutés** : `tests/e2e/choix-coach-v270.spec.ts` (5 : Changer en un geste et coach changé, toucher sur le
+  coach, ordre des sections sur la fiche, Réglages et premier lancement, noms de l’écran Coach).
+- **Tests adaptés, avec raison** (le coach n’est plus dans « Options avancées », choix A de Youssef) :
+  `outfit-loading` (coach choisi dans « Ton coach »), `coachs-v160` (« Changer » de l’Accueil, puis « Voir les coachs
+  en grand »), `training-layout` « Caméra » (commentaire ; délai porté de 300 à 420 s : le panneau de la séance a une
+  section de plus, mesuré 5,1 min sur la machine de test, mêmes vérifications). Aucun test supprimé.
+- **Résultats** :
+  - `npx tsc -b` et `npm run build` : TEST RÉUSSI ;
+  - `npx vitest run` : 1 844 TEST RÉUSSI, 4 TEST ÉCHOUÉ identiques sur la 2.6.0 non modifiée (fluidity ×2,
+    hooks-biomeca « pas d’armé », expressions-v1160 taille du modèle d’Amara), 1 ignoré ;
+  - `choix-coach-v270` (5) : TEST RÉUSSI ;
+  - Playwright complet (326) : arrêté par la limite de 90 min de la session à 318/326 ; 8 TEST ÉCHOUÉ au premier
+    passage. Deux venaient de ce lot et sont corrigés : contraste des noms sur les vignettes de l’écran Coach (bandeau
+    opaque) puis TEST RÉUSSI ; la relance ciblée (50 : nouveaux tests, contraste, panneau-coach, coachs-v160,
+    outfit-loading, selection-coach-v4, visuels-studio, training-layout complet dont les 8 tests non atteints) : 45
+    TEST RÉUSSI ;
+  - TEST ÉCHOUÉ aussi sur un build de la 2.6.0 non modifiée, relancé le même jour sur la même machine (lente : environ
+    300 ms par image du coach) : panneau-coach:329 (fluidité, 333 ms sur la 2.6.0), selection-coach-v4:56 (géométries
+    34 > 23 sur la 2.6.0), boot:98 (3D de la séance en plus de 20 s) ; déjà connus avant : coach-suggest:147,
+    coaching-hud:60 ; encyclopedie:54 TEST RÉUSSI en relance ;
+  - training-layout:240 (Caméra, six tailles) : TEST ÉCHOUÉ par délai à 300 s, TEST RÉUSSI en 5,1 min avec toutes ses
+    vérifications ; délai porté à 420 s ;
+  - téléphone Android réel : NON EXÉCUTÉ.
+- **Captures** : `/mnt/project-files/combat-shadow-studio/maquettes/choix-coach-2026-11-24/` (avant) et `.../apres/`.
+- **Restauration** : `restauration/avant-choix-coach-v260` (= 2.6.0, `1707e71`).
+
+## 2026-11-24 · v2.8.0 · Panneaux d’options en verre partout
+
+- **Demande** (Youssef, 24/11 09:50 : « je veux ce type de panneau partout dans l'application quand on ouvre des
+  options », puis « OK ») : le verre du panneau « Options du coach » (2.6.0) sur toutes les fenêtres d’options, avec
+  les mêmes règles de fermeture.
+- **Constat après vérification** (2.6.0, `1707e71`, captures réelles 360 px jour et nuit) :
+  - trois styles différents : la fenêtre commune `Sheet` (16 usages : Progrès, Profil, Chrono, Discipline, Objectifs,
+    photo, confirmations) collée au bas de l’écran, opaque, croix simple ; les panneaux de la barre (`NavPanel` : menu
+    « Plus », recherche, Nouveautés, panneaux Premium) avec leur propre fond ; les fenêtres de la séance (Comment
+    faire, Enchaînement, réalité augmentée) et Collections des Légendes écrites à part (`.sheet`, fond blanc en dur) ;
+  - Retour : seuls les panneaux de la barre et le panneau du coach se fermaient ; sur les fenêtres `Sheet`, les
+    fenêtres de la séance et le Coach IA, Retour quittait la page avec la fenêtre ouverte ;
+  - aucune de ces fenêtres ne se fermait en glissant vers le bas ; dans le plein écran du navigateur, les fenêtres
+    `Sheet` n’étaient pas visibles (elles s’ouvraient sous l’élément plein écran).
+- **Correction** :
+  - module commun `src/ui/components/glass.ts` : repli sans flou (repris du panneau du coach), glisser vers le bas
+    (`useSwipeDown`), Retour (`useBackLayer` : couche d’historique posée juste après l’affichage, retirée à la
+    fermeture, reposée si la page revient pendant que la fenêtre est encore affichée), voile qui avale le toucher
+    (`scrimHandlers`), et `SheetLeaveButton` / `useSheetDismiss` pour qu’une action qui change de page retire d’abord
+    l’entrée de la fenêtre (Retour depuis la page suivante ne repasse pas par une copie de la page) ;
+  - `Sheet` : carte flottante en verre (coins 26 px, flou 16 px, voile flouté 3 px), poignée et titre fixes en haut
+    (le contenu défile dessous), bouton rond, Échap pour la fenêtre du dessus seulement, liens internes suivis après
+    fermeture, affichage dans le plein écran ; `ConfirmDialog` passe ses deux choix par `SheetLeaveButton` ;
+  - `NavPanel` (menu « Plus », recherche, Nouveautés, Premium) : même verre, poignée glissable et bouton rond ; la
+    recherche plein écran prend le verre opaque ; le menu ⋮ garde sa forme de menu, en verre ;
+  - Coach IA : même verre et mêmes coins, Retour le ferme ; il reste un panneau de conversation sans voile (on peut
+    toujours utiliser l’écran), une action qui ouvre une page ferme d’abord le panneau ;
+  - séance : Comment faire et Enchaînement passent par `Sheet` (le bouton « Fermer » du bas, doublon du bouton rond,
+    est retiré, ainsi que l’étiquette « Enchaînement » répétée sous le titre) ; réalité augmentée et Collections aussi ;
+    l’ancien style `.sheet` de `training.css` est retiré (plus utilisé) ;
+  - teintes `--glass-*` dans `styles.css` : un peu plus opaques que le panneau du coach (0,8 nuit / 0,86 jour au lieu
+    de 0,6 / 0,74) car ces fenêtres s’ouvrent sur du texte ; le panneau du coach n’est pas modifié.
+- **Fichiers** : `src/ui/components/{glass.ts,Sheet.tsx,index.ts}`, `src/ui/nav/{NavSheets.tsx,nav.css}`,
+  `src/ui/coach-ai/{CoachBubble.tsx,coachAi.css}`, `src/ui/screens/{Training,Discipline,Champions}.tsx`,
+  `src/ui/training/{ArMode.tsx,training.css}`, `src/ui/styles.css`, `scripts/dev/shot-sheets.mjs`.
+- **Tests ajoutés** : `tests/e2e/panneaux-verre.spec.ts` (9 cas : verre, coins et marges à 360 px ; Retour ferme et
+  reste ; Échap et bouton rond sans entrée d’historique en trop ; toucher à côté sans clic derrière ; petit glissé qui
+  revient, grand glissé qui ferme ; confirmation fermée par Retour, « Annuler » reste ; « S’entraîner » puis Retour,
+  une étape à la fois ; recherche ; Coach IA).
+- **Résultats** :
+  - `npx tsc --noEmit` et `npm run build` : TEST RÉUSSI ;
+  - `npx vitest run` : 1 844 TEST RÉUSSI, 4 TEST ÉCHOUÉ déjà présents sur la 2.6.0 non modifiée (vérifié :
+    expressions-v1160 taille du modèle, fluidity ×2, hooks-biomeca « pas d’armé »), 1 ignoré ;
+  - `panneaux-verre.spec` : 9 TEST RÉUSSI ;
+  - Playwright complet (330, 1 h 30, pendant une partie du temps des captures tournaient en même temps sur la
+    machine) : 318 TEST RÉUSSI, 2 ignorés (Firebase), 10 TEST ÉCHOUÉ ; relance seule des 8 qui ne sont pas des défauts
+    connus : boot:98, panneau-coach:329, selection-coach-v4:56, stabilite-3d-v1563:35, training-layout:117 et :240 TEST
+    RÉUSSI (échecs dus à la charge de la machine) ; deux vrais défauts trouvés et corrigés :
+    - `navigation:285` : la barre du bas restait visible sous la fenêtre Enchaînement de la séance (la règle CSS visait
+      l’ancienne `.sheet-backdrop`) → règle `body:has(.training):has(.ds-backdrop) .nav-bottom` dans `training.css`,
+      puis TEST RÉUSSI ;
+    - `panneaux-verre:77` : à la souris, un premier glissé sélectionnait le titre, et le glissé suivant devenait un
+      glisser-déposer du navigateur qui annulait le geste → `user-select: none` sur la poignée et le titre
+      (`.ds-top`, `.nav-grab`), puis 27 TEST RÉUSSI sur 27 (le fichier 3 fois de suite) ;
+    - coach-suggest:147 et coaching-hud:60 : TEST ÉCHOUÉ, défauts déjà présents sur la 2.4.0 et la 2.6.0 ;
+  - CI GitHub « Matched WebGL » (compare deux anciennes branches fixes, n’utilise pas le code de cette PR) : TEST
+    ÉCHOUÉ au premier passage, TEST RÉUSSI à la relance ;
+  - téléphone Android réel : NON EXÉCUTÉ.
+- **Captures** : `/mnt/project-files/combat-shadow-studio/maquettes/panneaux-verre-2026-11-24/` (`avant/`, `apres/`,
+  `cote/`), 11 fenêtres × jour et nuit à 360 × 780 ; script `scripts/dev/shot-sheets.mjs`.
+- **Restauration** : `restauration/avant-panneaux-verre-v260` (= 2.6.0, `1707e71`) ; avant la publication : 2.7.0 `f77a6fb`.
+- **Publication 2.8.0** (Youssef, 24/11 17:20 : « Je valide ») : la 2.7.0 (choix du coach, #152) a été fusionnée
+  entre-temps, ce lot devient donc la 2.8.0 ; base 2.7.0 fusionnée dans la branche ; `package.json` 2.8.0, note dans `src/domain/releases.ts`,
+  `npm run docs:sync` ; après fusion de la 2.7.0 : `tsc` TEST RÉUSSI, Vitest `src/domain`, `src/store`, `src/ui` 440 TEST
+  RÉUSSI, `npm run build` TEST RÉUSSI (version 2.8.0), Playwright `panneaux-verre`, `choix-coach-v270`, `panneau-coach`,
+  `navigation` 52 TEST RÉUSSI.
+
+## 2026-11-24 · v2.8.1 · Accueil : « Changer » ouvre directement le grand écran du coach
+
+- **Demande** : Youssef, 24/11 17 h 49, « dans l'écran principal, je veux en cas de changement de coach arriver direct
+  sur la fenêtre en grand, depuis les autres écrans on garde le fonctionnement validé ».
+- **Constat vérifié (2.8.0)** : sur l’Accueil, « Changer » à côté du nom ouvrait le panneau du coach sur « Ton coach »
+  (six petits visages), et il fallait toucher « Voir les coachs en grand » pour voir le coach en 3D.
+- **Correction** : `src/ui/screens/Home.tsx`, « Changer » ouvre `#/coach` (grand coach 3D, flèches, bande des six,
+  « Garder / Choisir ») ; « Garder / Choisir » ramène à l’Accueil. Le panneau (toucher le coach) garde sa ligne « Ton
+  coach » ; fiche, séance, Réglages et Bienvenue inchangés.
+- **Tests adaptés, avec raison** : `choix-coach-v270` (le premier cas suivait « Changer » vers le panneau : il vérifie
+  maintenant l’arrivée sur le grand écran et le retour avec le nouveau coach ; les contrôles du panneau « Ton coach »,
+  six visages, noms, changement immédiat et mémoire, sont gardés dans un cas qui ouvre le panneau par un toucher sur
+  le coach), `coachs-v160` (plus de clic intermédiaire sur « Voir les coachs en grand »).
+- **Tests** : `choix-coach-v270` + `coachs-v160` 13 TEST RÉUSSI ; `npx tsc -b`, `npm run build`, `npm run docs:sync`
+  TEST RÉUSSI ; téléphone Android NON EXÉCUTÉ.
+- **Captures** : `/mnt/project-files/combat-shadow-studio/maquettes/accueil-changer-coach-2026-11-24/avant-apres.png`.
+- **Restauration** : `restauration/avant-accueil-coach-v281` (= 2.8.0, `6b35692`).
+
+## 2026-11-24 · v2.8.2 · Le diamant Premium sur chaque élément
+
+- **Demande** (Youssef, 2026-11-24 23:30) : « ajoute le petit diamant sur tous les items, options, programmes.
+  Entraînement premium ».
+- **Constat vérifié sur la 2.8.1** : un seul diamant par écran ou section (règle v0.40 « jamais sur chaque ligne ») :
+  titre Programmes, filtre de niveau avancé/expert, Champions, Favoris, Historique, Créateur, Conseils techniques,
+  Décomposer de l'écran d'étude. Aucun diamant sur les programmes, exercices, fiches, coachs ni sur les boutons et
+  options. Les coachs et les options du chrono étaient encore notés « prévus » dans le catalogue des droits alors
+  qu'ils existent.
+- **Correction** :
+  - `src/monetization/premiumItems.ts` : règles par élément d'après les choix du 2026-11-20
+    (`docs/monetisation/DECISIONS.md`, section 2.8.2) ;
+  - `PremiumTag` (`src/ui/premium/PremiumMarker.tsx`) : diamant d'un élément, non cliquable (il est posé dans des
+    cartes et des boutons qui gardent leur action), nommé « Premium », absent pour un utilisateur Premium ;
+  - diamant sur : chaque programme Premium (liste et fiche), chaque exercice avancé/expert, les niveaux avancé et
+    expert du menu Niveau, les fiches techniques Premium (tuiles, favoris, titre de la fiche), Naël, Inaya, Victor et
+    Kanya (rangée des coachs, grand écran du coach), le bouton Décomposer de la barre (entraînement, combinaison) et
+    des Légendes, les options Préparation, Alerte avant la fin et Intensité ;
+  - catalogue des droits : `all_fighters` et `advanced_timer` passent à « implémenté », avec diamant ; la bande
+    « Combattants et réglages avancés : à venir » de la page Premium ne s'affiche plus, puisque tout ce qu'elle
+    annonçait existe ;
+  - rien n'est verrouillé : `MONETIZATION_ENABLED` reste `false`.
+- **Fichiers** : `src/monetization/{premiumItems,entitlements}.ts`, `src/ui/premium/{PremiumMarker.tsx,PremiumPage.tsx,premium.css}`,
+  `src/ui/components/Cards.tsx`, `src/ui/nav/{config.ts,BottomBar.tsx}`, `src/ui/coach-row/CoachRow.tsx`,
+  `src/ui/screens/{CoachSelect,Discipline,Library,Programs,Stats,Train,Champions}.tsx`, `src/ui/training/TimerOptions.tsx`,
+  `docs/monetisation/DECISIONS.md`, `src/domain/releases.ts`, `package.json` (2.8.2), README et `docs/ETAT.md` (docs:sync).
+- **Tests** :
+  - ajouté : `src/monetization/__tests__/premium-items.test.tsx` (7 tests : niveaux, coachs, programmes, fiches,
+    rien verrouillé, un diamant par exercice avancé/expert, diamant non cliquable et masqué pour Premium) : TEST RÉUSSI ;
+  - modifiés, raison écrite : `rights.test` et `premium.spec` attendaient `all_fighters` sans diamant et la bande
+    « à venir » ; les coachs et les options du chrono existent désormais et leur choix commercial est fait, donc ils
+    portent le diamant et la bande disparaît (la bande est contrôlée absente, aucune vérification retirée) ;
+  - ajouté : `premium.spec` « 2.8.2 : un diamant sur chaque élément Premium » (programmes, exercices, coachs, barre) :
+    TEST RÉUSSI ;
+  - Vitest complet : 1851 réussis, 1 ignoré, 4 TEST ÉCHOUÉ déjà connus et sans lien (`fluidity` ×2, `hooks-biomeca`,
+    `expressions-v1160`) ;
+  - `npm run build` : TEST RÉUSSI ; Playwright `premium.spec` + `premium-panels.spec` (11) : TEST RÉUSSI ;
+  - captures réelles avant (2.8.1) / après (2.8.2), mêmes écrans, 412 × 915 : fichiers du projet
+    `monetisation/diamants-v2.8.2/comparatif-*.jpg` ;
+  - Playwright complet (commit `bb2158cd`, coin doré, 2026-11-25) : 330 TEST RÉUSSI, 2 NON EXÉCUTÉ (Firebase),
+    5 TEST ÉCHOUÉ, tous déjà présents en 2.8.1 : `chrono-seul:96`, `coach-suggest:147`, `coaching-hud:60` (connus) ;
+    `retour-v1420:29` (bouton « Reprendre » caché sous la question de sortie) et `selection-coach-v4:56` (34 géométries
+    au lieu de 31 au plus après 18 changements de coach) : relancés seuls deux fois sur 2.8.2 puis deux fois sur 2.8.1
+    (`2969a77`, même machine) : TEST ÉCHOUÉ les deux fois sur les deux versions, donc sans lien avec ce lot ; à
+    corriger dans un lot dédié. Aucun test affaibli.
+- **Retour de Youssef** (2026-11-25 00:34) : « pas forcément un diamant, faut trouver autre chose pour ne pas surcharger
+  des icônes ou options ». Quatre marquages comparés sur captures réelles (diamant, point, coin, liseré :
+  `monetisation/marquage-premium/planche-*.jpg`) ; appliqué en attendant son choix : option C recommandée, coin doré
+  en haut à droite des cartes Premium (programmes, exercices, techniques, coachs), petit point doré sur les boutons et
+  options (Décomposer, options du chrono), le diamant ne reste que sur les titres d'écran. Le marquage reste lu
+  « Premium » par les lecteurs d'écran. Tests Premium (vitest 22, Playwright 11) et build : TEST RÉUSSI ; captures
+  avant/après refaites avec le coin doré.
+- **Restauration** : branche `restauration/avant-diamants-v282` (= 2.8.1, `2969a77`).
+
+## 2026-11-25 · v2.9.0 · Shadow Pro : badge PRO, cadenas, programmes mixtes (version expérimentale)
+
+- **Demande** (Youssef, 2026-11-25 07:48, « Shadow Studio — Identification visuelle des contenus Freemium et
+  Premium ») : un système homogène et minimaliste, nom commercial SHADOW PRO, micro-badge « PRO » à droite du titre de
+  chaque contenu Premium, petit cadenas doré seulement pour une restriction réelle (à la place de l'icône de lancement),
+  « 3/6 PRO » pour un programme mixte calculé dynamiquement, bouclier doré « PRO » dans le profil d'un membre, aucune
+  marque « FREE », barre du bas inchangée, règles centralisées, gardes qui ne reposent pas sur un bouton caché,
+  version expérimentale isolée, rien en production avant sa validation. Remplace le diamant puis le coin doré de la
+  2.8.2 (jamais publiée).
+- **Constat vérifié avant de coder** :
+  - la gestion des droits existe déjà et reste la seule source : `src/monetization/rights.ts` (statut, `canAccessFeature`)
+    et `src/monetization/premiumItems.ts` (règles par élément, 2.8.2) ;
+  - mais aucun achat réel n'est branché (`MONETIZATION_ENABLED = false`, aucun fournisseur dans `purchases.ts`) : en
+    production rien n'est verrouillé, donc aucun cadenas ne s'affiche ; c'est voulu et signalé à Youssef ;
+  - « abonnement expiré » : Premium à vie n'expire pas ; le cas réel est l'achat remboursé, qui ramène au statut gratuit ;
+  - « utilisateur non authentifié » : l'application n'a que des profils locaux (invité) ; il est traité comme gratuit ;
+  - avec les règles commerciales actuelles, aucun programme n'est mixte (43 entièrement PRO, 6 gratuits) : le calcul
+    existe et est testé, l'exemple « 3/6 PRO » n'existe que dans l'aperçu.
+- **Correction** :
+  - règles : `restrictionsActive()`, `isFeatureLocked()`, `useRights()` (rights.ts) ; `ITEM_RIGHT`, `canOpenExercise`,
+    `canOpenTechnique`, `canOpenCoach`, `isProSession`, `programProShare`, `canOpenSession`, `isProgramLocked`,
+    `lockedTrainingRight` (premiumItems.ts). L'appartenance au catalogue (badge) et l'accès (cadenas) sont deux
+    questions séparées ;
+  - composants centraux (`src/ui/premium/PremiumMarker.tsx`) : `ProBadge`, `PremiumTag`, `PremiumMarker` (titres :
+    bouton vers l'offre pour un gratuit, simple badge pour un membre), `ProgramProBadge`, `ProLock`, `LaunchOrLock`,
+    `ProShield`, `useProGate` ; styles et couleurs (or #D4AF37, or lumineux #F5D88B, bronze #99702E, fond à 11 %,
+    encre bronze foncé #7d5f22 en clair pour rester lisible à 10,5 px) dans `premium.css` ;
+  - gardes : l'écran d'entraînement refuse une adresse d'exercice, de séance ou de technique verrouillée ; la fiche
+    technique verrouillée renvoie vers Shadow Pro ; `pickChampion` n'enregistre jamais un coach verrouillé ;
+    Décomposer et les options avancées du chrono ouvrent l'offre quand ils sont verrouillés ;
+  - écrans : programmes (carte, fiche, semaines, exercices utilisés d'un programme mixte), exercices, fiches
+    techniques, favoris, coachs (rangée et grand écran : badge en haut à gauche du portrait, trop étroit pour le nom
+    + PRO), bouton Décomposer des Légendes, options du chrono, menu des niveaux (`MenuChip` gagne un emplacement
+    `badge`), profil (bouclier, contour doré de l'avatar, carte « Shadow Pro » avec le bouclier au lieu du diamant) ;
+  - retirés : le badge du titre « Programmes » (6 programmes y sont gratuits) et la marque sur la barre du bas
+    (2.8.2), la barre redevient celle de la 2.8.1 ;
+  - aperçu seulement (`VITE_PREMIUM_SIMULATION=1`, `src/monetization/simulation.tsx`) : sélecteur Réel / Gratuit /
+    Premium / Expiré et programme d'exemple « 3/6 PRO » ; absent du build de production (vérifié : aucune trace dans
+    `dist/assets`) ;
+  - version 2.9.0 (`package.json`, `releases.ts` remplace l'entrée 2.8.2 jamais publiée), README et ETAT régénérés.
+- **Fichiers** : `src/monetization/{rights.ts,premiumItems.ts,simulation.tsx}`, `src/main.tsx`,
+  `src/ui/premium/{PremiumMarker.tsx,premium.css}`, `src/ui/components/{Cards.tsx,MenuChip.tsx}`,
+  `src/ui/coach-row/{CoachRow.tsx,coach-row.css}`, `src/ui/screens/{Train,Programs,Discipline,Library,Stats,Champions,
+  CoachSelect,Training}.tsx`, `src/ui/screens/account/Profile.tsx`, `src/ui/training/TimerOptions.tsx`,
+  `src/ui/nav/{BottomBar.tsx,config.ts}` (remis comme en 2.8.1), `playwright.sim.config.ts`,
+  `tests/e2e-sim/shadow-pro.spec.ts`, `tests/e2e/premium.spec.ts`, tests unitaires, `docs/NON_REGRESSION.md`,
+  `docs/monetisation/DECISIONS.md`.
+- **Tests** :
+  - ajouté `src/monetization/__tests__/shadow-pro.test.tsx` (14 tests : production sans verrou, gratuit/invité,
+    remboursé, Premium, bouclier absent en gratuit, programme gratuit / tout PRO / mixte 3/6 / séance mixte, gardes,
+    coach jamais enregistré, carte verrouillée, composants) : TEST RÉUSSI ;
+  - modifiés, raison écrite : `rights.test` et `premium-items.test` attendaient que le marqueur disparaisse pour un
+    membre Premium ; Youssef demande que les badges PRO restent visibles (§5) ; chaque contrôle d'accès est gardé ;
+    `premium.spec` attendait un diamant sur le titre « Programmes » et sur Décomposer dans la barre : le titre n'a plus
+    de badge (programmes gratuits dans la liste, chaque carte porte le sien) et la barre ne change pas (§7) ;
+  - ajouté `tests/e2e-sim/shadow-pro.spec.ts` (6 tests sur l'aperçu : gratuit, expiré, Premium, mixte, 360 × 640 clair
+    et sombre) : TEST RÉUSSI ;
+  - Vitest Premium 35/35, Playwright `premium.spec` + `premium-panels.spec` 11/11, `npm run build` : TEST RÉUSSI ;
+  - Playwright complet (commit `0ac1f3f`) : 328 TEST RÉUSSI, 2 NON EXÉCUTÉ (Firebase), 7 TEST ÉCHOUÉ ; six échouaient
+    déjà en 2.8.1 (`boot:98`, `coach-suggest:147`, `coaching-hud:60`, `panneau-coach:329`, `retour-v1420:29`,
+    `selection-coach-v4:56`) ; le septième, `training-layout:117`, a dépassé son délai de 120 s dans la suite (test de
+    près de 2 min sur cette machine chargée) et relancé seul deux fois : TEST RÉUSSI les deux fois. Aucun test affaibli ;
+  - application Android : NON EXÉCUTÉ (aucun APK construit pour une version expérimentale ; même code web) ;
+  - captures réelles : fichiers du projet `monetisation/shadow-pro-v2.9.0/` (avant 2.8.1 / Gratuit / Premium,
+    clair/sombre, programmes gratuit, mixte, tout PRO, 360 px).
+- **Restauration** : `restauration/avant-diamants-v282` (= 2.8.1 en production, `2969a77`) ou
+  `restauration/avant-shadow-pro-v290` (= 2.8.2 non publiée, `6b7a872`).
+
 ## 2026-11-20 · prototype 2.4.0 (non publié) · Coachs fidèles aux planches : Amara et Victor
 
 - **Demande** (Youssef, 20/11 14 h 38, « Reproduction 3D fidèle des six coachs de référence ») : reproduire dans le

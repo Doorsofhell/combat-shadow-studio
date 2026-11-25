@@ -17,13 +17,14 @@ import { useCustom } from '../../store/custom';
 import { useSettings } from '../../store/settings';
 import { MODE_HELP, MODE_LABEL } from '../training/plan';
 import { PageHead } from '../App';
-import { DisciplineCard, DisciplineLabel, QueryChip, SectionHead } from '../components';
+import { DisciplineCard, DisciplineLabel, QueryChip, SectionHead, Sheet } from '../components';
 import { AppIcon, DisciplineIcon, LevelIcon, type GlyphId } from '../icons';
 import { useNavActions } from '../nav/store';
 import { setSelection } from '../nav/selection';
 import { LegendPanels } from './LegendNav';
 import { DnaBar, DnaFlower, DnaLegend } from '../components/LegendDna';
-import { PremiumMarker } from '../premium/PremiumMarker';
+import { LaunchOrLock, PremiumMarker, PremiumTag } from '../premium/PremiumMarker';
+import { isFeatureLocked } from '../../monetization/rights';
 
 const DISC_NAME = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.name])) as Record<DisciplineId, string>;
 const DISC_SHORT = Object.fromEntries(DISCIPLINES.map((d) => [d.id, d.short])) as Record<DisciplineId, string>;
@@ -882,7 +883,11 @@ export function ComboPage() {
             </span>
           </button>
           <button className="btn sm secondary" disabled={!playable} onClick={() => train('technique', true)} data-testid="cat-study">
-            <AppIcon id="decompose" size={18} /> Décomposer
+            <LaunchOrLock locked={isFeatureLocked('advanced_breakdown')} size={16}>
+              <AppIcon id="decompose" size={18} />
+            </LaunchOrLock>{' '}
+            Décomposer
+            <PremiumTag feature="advanced_breakdown" />
           </button>
         </div>
         {showModes && (
@@ -1092,10 +1097,7 @@ function CollectionSheet({ comboId, onClose }: { comboId: string; onClose: () =>
   const { collections, createCollection, addToCollection, removeFromCollection } = useCatalogUser();
   const [name, setName] = useState('');
   return (
-    <div className="ds-backdrop" onClick={onClose}>
-      <div className="ds-sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Ajouter à une collection">
-        <span className="grab" />
-        <h2>Ajouter à une collection</h2>
+    <Sheet title="Ajouter à une collection" onClose={onClose}>
         {collections.length > 0 ? (
           <div className="row" style={{ gap: 6 }}>
             {collections.map((col) => {
@@ -1127,8 +1129,7 @@ function CollectionSheet({ comboId, onClose }: { comboId: string; onClose: () =>
         <button className="btn block" onClick={onClose}>
           Terminé
         </button>
-      </div>
-    </div>
+    </Sheet>
   );
 }
 

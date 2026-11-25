@@ -72,8 +72,10 @@ test('1.37 : aucun choix de style ni de version de rendu, plus d’écran « Mon
   await expect(page.getByTestId('editor-panel')).toHaveCount(0);
 
   await open(page, '/#/entrainement?ex=boxe-debutant-01&mode=technique');
+  // 2.4: « Options du coach » opens the coach's panel (its « Options avancées » hold the coach)
   await menuCommand(page, 'options');
-  await expect(page.getByRole('dialog', { name: 'Options d’entraînement' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Options du coach' })).toBeVisible();
+  await page.getByTestId('cp-advanced').click();
   await expect(page.getByTestId('training-coach-look')).toHaveCount(0);
   await expect(page.getByRole('radio', { name: 'Anime' })).toHaveCount(0);
 });

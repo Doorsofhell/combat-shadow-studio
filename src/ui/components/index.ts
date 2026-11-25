@@ -17,3 +17,4 @@ export * from './Toast';
 export * from './KickboxingStyle';
 export * from './MenuChip';
 export * from './SettingsList';
+export * from './glass';

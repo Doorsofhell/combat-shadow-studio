@@ -1,5 +1,6 @@
 import { expect, Page, test } from '@playwright/test';
 import { DEFAULT_PROFILE } from '../../src/store/profile';
+import { closeCoachPanel, showCoachTools } from './nav-helpers';
 
 /**
  * 0.25 (Youssef, 2026-10-20 12:30): « quand je rentre dans une technique, il faudrait que je puisse aller
@@ -65,8 +66,10 @@ test('fiche technique : précédente / suivante dans l’ordre du catalogue, Ret
   await expect(title(page)).toHaveText(names[2]);
   await page.getByTestId('technique-prev').click();
   await expect(title(page)).toHaveText(names[1]);
-  // the mastery switch and favourites are still there
-  await expect(page.getByTestId('mastery-switch')).toBeVisible();
+  // the mastery (2.4: in the coach's panel) and favourites are still there
+  await showCoachTools(page);
+  await expect(page.getByTestId('cp-learning')).toContainText(names[1]);
+  await closeCoachPanel(page);
   await expect(page.getByRole('button', { name: 'Ajouter aux favoris' })).toBeVisible();
 
   // swipe on the page body: left = next, right = previous
@@ -119,8 +122,10 @@ test('fiche technique : la liste filtrée (catégorie, « À revoir ») est suiv
   const all = await tileNames(page);
   for (const i of [1, 3]) {
     await tiles(page).nth(i).click();
-    await page.getByTestId('mastery-a-revoir').click();
-    await expect(page.getByTestId('mastery-a-revoir')).toHaveAttribute('aria-pressed', 'true');
+    await showCoachTools(page);
+    await page.getByTestId('cp-learn-a-revoir').click();
+    await expect(page.getByTestId('cp-learn-a-revoir')).toHaveAttribute('aria-checked', 'true');
+    await closeCoachPanel(page);
     await page.goBack();
   }
   await page.getByRole('radio', { name: 'À revoir (2)' }).click();
@@ -131,7 +136,9 @@ test('fiche technique : la liste filtrée (catégorie, « À revoir ») est suiv
   await expect(page.getByTestId('technique-position')).toHaveText('1 / 2');
   await expect(page.getByTestId('technique-next')).toHaveAttribute('aria-label', `Technique suivante : ${all[3]}`);
   // marked « acquise » on the way: the sheet keeps its list, the next one is still reachable
-  await page.getByTestId('mastery-acquise').click();
+  await showCoachTools(page);
+  await page.getByTestId('cp-learn-acquise').click();
+  await closeCoachPanel(page);
   await page.getByTestId('technique-next').click();
   await expect(title(page)).toHaveText(all[3]);
 });

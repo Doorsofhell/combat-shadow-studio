@@ -106,6 +106,15 @@ export function popLayer(id: number, then?: () => void) {
   } else then?.();
 }
 
+/**
+ * 2.4: a layer whose screen is gone (unmounted while open): it leaves the stack, its history entry is left as it is
+ * (a later Back on that entry finds no layer and does nothing)
+ */
+export function dropLayer(id: number) {
+  const i = stack.findIndex((l) => l.id === id);
+  if (i >= 0) stack.splice(i, 1);
+}
+
 /** a page left with layers still open (a link inside a sheet): they are forgotten, the history is left as it is */
 export function forgetLayers() {
   stack.length = 0;

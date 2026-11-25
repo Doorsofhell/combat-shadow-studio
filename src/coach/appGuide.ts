@@ -96,10 +96,10 @@ export const APP_GUIDE: GuideEntry[] = [
       'Le gros bouton de l’écran est au-dessus de la barre ; les autres boutons de l’écran sont dans le ⋮, en haut à droite :\n' +
       '• Séance : « Démarrer », qui devient « Pause » puis « Reprendre » au même endroit, « Décomposer » et « Caméra », en bas pendant la séance.\n' +
       '• Techniques : « Filtres » et « Technique », qui rouvre la dernière technique choisie. « Rechercher », la loupe en haut à droite, cherche d’abord parmi les techniques.\n' +
-      '• Fiche d’une technique : « S’entraîner », « Ralenti » (au quart de la vitesse) et « Maîtrise » (la marque comme assimilée ; touche encore pour la retirer).\n' +
+      '• Fiche d’une technique : « S’entraîner », « Ralenti » (au quart de la vitesse) et « Maîtrise » (la marque comme acquise ; touche encore pour la retirer). Touche le coach pour ouvrir ses options : ton apprentissage (Acquis, Encore du mal, En apprentissage), l’angle de vue, la vitesse, la voix, le plein écran.\n' +
       '• Progrès : « Période », « Statistiques » et « Historique ».\n' +
       '• Légendes : « Disciplines » et « Légende » ; sur la fiche d’une légende, « Parcours », « Techniques » et « Favoris ».\n' +
-      'Sur l’accueil : la grande barre de recherche avec « Chrono », les raccourcis « Reprendre ta séance » et « Technique du jour », et le bouton « Commencer » dans la carte de ton coach. Les autres gestes d’un écran sont aussi dans le ⋮ : par exemple « Au hasard » et « À revoir » dans les techniques ; pendant une séance, ils sont dans « Plus » : « Exercice suivant », « Comment faire ? », « Options » et « Rechercher ».\n' +
+      'Sur l’accueil : la grande barre de recherche avec « Chrono », les raccourcis « Reprendre ta séance » et « Technique du jour », et le bouton « Commencer » dans la carte de ton coach. Les autres gestes d’un écran sont aussi dans le ⋮ : par exemple « Au hasard » et « À revoir » dans les techniques ; pendant une séance, ils sont dans « Plus » : « Exercice suivant », « Comment faire ? », « Options du coach », « Enchaînement » et « Rechercher ».\n' +
       'Pour me parler, touche la loupe « Rechercher » en haut à droite et écris ta question : ma réponse s’affiche en haut, et les résultats de l’application juste en dessous. Pour un simple mot, touche « Demander au coach » ou l’étoile ✦ dans le champ (« Demander au Coach IA ») ; avec le champ vide, l’étoile ouvre ma fenêtre en grand. Le même champ trouve aussi les techniques, les mots de l’encyclopédie, les programmes et les réglages, et d’abord ce qui est sur l’écran où tu es (par exemple les équipements). Les anciens boutons flottants (pilule et bulle) n’existent plus.',
   },
   {
@@ -175,10 +175,10 @@ export const APP_GUIDE: GuideEntry[] = [
     answer:
       'Dans le studio, ton coach exécute les mouvements et tu les fais en même temps.\n' +
       '• En bas : « Retour », « Démarrer » (qui devient « Pause » puis « Reprendre » au même endroit), « Décomposer », « Caméra » et « Plus ». Si tu touches Retour pendant la séance, ou le retour de ton téléphone, elle se met en pause et l’application te demande avant de quitter : « Continuer » ou « Quitter ». En plein écran, le retour sort d’abord du plein écran et une flèche Retour reste visible en haut à gauche.\n' +
-      '• Mains libres : pendant la séance, seuls Retour et Pause restent, pour un téléphone posé devant toi. Touche le coach une fois : ses commandes apparaissent sur lui (pause, vitesse, plein écran, son, angles), sans arrêter la séance ; touche-le encore une fois pour les cacher. À la pause, Décomposer, Caméra et Plus reviennent. Le téléphone vibre au départ, à la pause et à chaque round, s’il sait le faire.\n' +
+      '• Mains libres : pendant la séance, seuls Retour et Pause restent, pour un téléphone posé devant toi. Touche le coach une fois : le panneau « Options du coach » s’ouvre par-dessus, sans arrêter la séance ; touche à côté, glisse-le vers le bas ou fais Retour pour le fermer. À la pause, Décomposer, Caméra et Plus reviennent. Le téléphone vibre au départ, à la pause et à chaque round, s’il sait le faire.\n' +
       '• Sous le coach : le mouvement en cours, la consigne et le point clé du moment, puis le temps de séance, le cumul et les répétitions. Seul le temps de travail actif est compté.\n' +
-      '• Dans « Plus » : « Recommencer », « Exercice précédent », « Exercice suivant », « Comment faire ? », « Ralenti » et « Options ».\n' +
-      '• Sur le coach, après un toucher : la pause, la vitesse (touche-la pour choisir de ×0,25 à ×1,5), le zoom, le plein écran, le haut-parleur (chaque toucher passe au cran suivant : coupé, faible, moyen, fort) et, en haut à gauche, les angles. En haut, « AR » pour la réalité augmentée. Si la voix est coupée, un petit haut-parleur barré reste dans le coin.',
+      '• Dans « Plus » : « Recommencer », « Exercice précédent », « Exercice suivant », « Comment faire ? », « Ralenti », « Options du coach » et « Enchaînement ».\n' +
+      '• Le panneau « Options du coach » (un toucher sur le coach, ou « Caméra ») : ton apprentissage des techniques de l’exercice, l’angle de vue (Auto, Face, 3/4, Profil et les autres angles, la rotation, le zoom, le gros plan), la vitesse de ×0,25 à ×1,5, la voix et son volume, le plein écran, « Réinitialiser la vue » et, dans « Options avancées », le coach, la garde, les repères au sol, l’annonce des coups et les sons d’impact. Tout s’applique tout de suite. En haut, « AR » pour la réalité augmentée. Si la voix est coupée, un petit haut-parleur barré reste dans le coin.',
   },
   {
     id: 'decomposer',
@@ -207,7 +207,7 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['entrainement'],
     answer:
       'Le bouton « Ralenti » fait passer le coach à un quart de sa vitesse : tu vois ainsi chaque détail du geste. Touche-le encore pour revenir à la vitesse normale.\n' +
-      'Dès le démarrage, touche la vitesse en haut à droite du coach (×1) : tu choisis de ×0,25 à ×1,5. Pour régler encore plus finement, ouvre « Options » (dans « Plus ») : le curseur « Vitesse d’exécution » va de ×0,25 à ×1,5.\n' +
+      'Dès le démarrage, touche le coach : dans ses options, le curseur « Vitesse d’animation » va de ×0,25 à ×1,5, et la séance continue pendant que tu règles.\n' +
       'Sur la fiche d’une technique, la barre de lecture a aussi son réglage de vitesse.',
   },
   {
@@ -248,13 +248,12 @@ export const APP_GUIDE: GuideEntry[] = [
     keywords: ['roue', 'parametres de la seance', 'options d entrainement', 'options', 'reperes au sol', 'marques au sol', 'les reperes', 'enchainement en cours', 'annonce des coups'],
     screens: ['entrainement'],
     answer:
-      'Dans le studio, « Options » (dans « Plus ») ouvre les options de la séance :\n' +
-      '• le coach (Kadir, Naël, Amara ou Inaya) ;\n' +
+      'Dans le studio, touche le coach (ou « Options du coach » dans « Plus ») : le panneau des options s’ouvre ; « Options avancées » y regroupe :\n' +
+      '• le coach (Kadir, Naël, Victor, Amara, Inaya ou Kanya) ;\n' +
       '• ta garde : orthodoxe (gauche devant) ou gaucher (droite devant) ;\n' +
-      '• l’angle de caméra ;\n' +
       '• les repères au sol : position et orientation des pieds, pied avant ou arrière, direction du pivot, trajectoires ;\n' +
-      '• la vitesse d’exécution, la voix, l’annonce des coups et les sons d’impact ;\n' +
-      '• la liste de l’enchaînement : touche un exercice pour y aller.',
+      '• l’annonce des coups, les sons d’impact et leur volume.\n' +
+      'L’angle de vue, la vitesse et la voix sont en haut du même panneau. La liste de l’enchaînement est dans « Plus » › « Enchaînement » : touche un exercice pour y aller.',
   },
 
   // ------------------------------------------------------------------ coachs et rendu
@@ -266,7 +265,7 @@ export const APP_GUIDE: GuideEntry[] = [
     answer:
       'Tu as six coachs : Kadir « L’Aigle », lutteur patient à la pression constante ; Naël « Le Faucon », contreur rapide ; Victor « Le Loup gris », vétéran calme et technique ; Amara « La Lionne », frappeuse puissante à la garde haute ; Inaya « La Panthère », explosive, qui frappe des jambes à distance ; Kanya « La Tigresse », Kru de muay-thaï, reine du clinch, des coudes et des genoux. Tous montrent les mêmes techniques.\n' +
       'L’écran de choix montre le coach en grand et en 3D : fais-le tourner du doigt, passe au suivant avec les flèches, les six vignettes ou en balayant sa fiche, et touche l’icône ronde de lecture pour le voir bouger. Rien ne change tant que tu n’as pas touché « Choisir ».\n' +
-      'Pour l’ouvrir : « Changer de coach » sur l’accueil, « Mon coach » dans Compte, Réglages puis « Mon coach », ou « Options » pendant une séance. Tes statistiques sont conservées.',
+      'Pour l’ouvrir : touche ton coach sur l’accueil puis « Options avancées », « Mon coach » dans Compte, Réglages puis « Mon coach », ou les options du coach pendant une séance. Tes statistiques sont conservées.',
     action: { to: '/coach', label: 'Choisir mon coach' },
   },
   {
@@ -311,7 +310,7 @@ export const APP_GUIDE: GuideEntry[] = [
     ],
     screens: ['technique'],
     answer:
-      'Sur la fiche d’une technique, à côté de la barre de lecture, il y a deux petites icônes : la coche verte veut dire « Assimilée », la flèche orange « Encore du mal ». Touche celle qui te correspond ; touche-la encore pour retirer la marque.\n' +
+      'Touche ton coach, sur la fiche d’une technique ou pendant une séance : en haut du panneau, « Mon apprentissage » propose « Acquis », « Encore du mal » et « En apprentissage » (aucune marque). C’est ton ressenti, rien n’est noté automatiquement, et le même choix vaut partout où la technique apparaît.\n' +
       'Ensuite, dans le catalogue, la vignette porte un liseré coloré en bas (vert ou orange), le filtre « À revoir » regroupe les techniques où tu as encore du mal, et l’onglet Maîtrise de Progrès fait le bilan.\n' +
       'C’est toi qui décides : je ne te vois pas, donc je ne note rien à ta place.',
     action: { to: '/techniques', label: 'Ouvrir Techniques' },
@@ -416,7 +415,7 @@ export const APP_GUIDE: GuideEntry[] = [
     answer:
       'Dans Progrès, la ligne Techniques fait le bilan de tes marques pour la discipline choisie : combien de techniques sont « Assimilées », combien sont « À revoir » et combien ne sont pas encore évaluées, avec un anneau et une barre verte et orange.\n' +
       'Les techniques à revoir sont listées, avec un lien vers leur fiche. Cet onglet ne dépend pas de la période : une marque n’a pas de date.\n' +
-      'Pour marquer une technique, va sur sa fiche et touche la coche verte ou la flèche orange à côté de la barre de lecture.',
+      'Pour marquer une technique, touche ton coach (sur sa fiche ou pendant une séance) et choisis dans « Mon apprentissage ».',
     action: { to: '/stats', label: 'Ouvrir Progrès' },
   },
   {
@@ -500,7 +499,7 @@ export const APP_GUIDE: GuideEntry[] = [
     screens: ['reglages-voix'],
     answer:
       'Dans Réglages, « Voix et sons » : la voix du coach, l’annonce de chaque mouvement, les conseils techniques (en mode Technique), les sons d’impact, le volume de la voix et celui des effets (cloche, bips). « Tester la voix » et « Tester la cloche » te permettent d’essayer.\n' +
-      'La voix utilise celles installées sur ton appareil. Pendant une séance, les « Options » du studio permettent aussi de couper la voix ou les sons.',
+      'La voix utilise celles installées sur ton appareil. Pendant une séance, touche le coach : ses options permettent aussi de couper la voix, de régler son volume ou les sons.',
     action: { to: '/reglages/voix', label: 'Ouvrir Voix et sons' },
   },
   {

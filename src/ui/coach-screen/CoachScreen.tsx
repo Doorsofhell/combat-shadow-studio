@@ -1,73 +1,59 @@
-import { ReactNode, RefObject, Suspense, useCallback, useRef, useState } from 'react';
+import { ReactNode, RefObject, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useSettings } from '../../store/settings';
-import { AppIcon } from '../icons';
 import { FsExit, FsHint } from '../fullscreen/FullscreenStage';
 import { useStageFullscreen } from '../fullscreen/useStageFullscreen';
 import { StageGuard } from '../components/StageGuard';
-import { SoundButton, SpeakerIcon } from '../training/SoundButton';
+import { SpeakerIcon } from '../training/SoundButton';
+import { CoachPanel, type CoachPanelConfig, type PanelSection } from '../coach-panel/CoachPanel';
+import { dropLayer, popLayer, pushLayer } from '../nav/layers';
 import './coach-screen.css';
 
-/** the screens that call the module; each one gives it its own movement and its own commands */
+/** the screens that call the module; each one gives it its own movement and its own options */
 export type CoachContext = 'accueil' | 'fiche' | 'seance' | 'apercu';
 
 export type FsApi = ReturnType<typeof useStageFullscreen>;
 
-/** the speeds offered in the coach zone */
-export const SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5];
-export const speedText = (v: number) => `×${String(Math.round(v * 100) / 100).replace('.', ',')}`;
-
-/** the speed of the coach: its value; a touch shows the speeds next to it, one more touch picks one */
-export function SpeedTool({ speed, onChange, speeds = SPEEDS }: { speed: number; onChange: (v: number) => void; speeds?: number[] }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className={`speed-tool ${open ? 'open' : ''}`}>
-      <button type="button" className={`btn ${open ? 'on' : ''}`} onClick={() => setOpen(!open)} aria-expanded={open} aria-label={`Vitesse d’exécution : ${speedText(speed)}`} data-testid="speed-tool">
-        {speedText(speed)}
-      </button>
-      {open && (
-        <div className="speed-choices" role="radiogroup" aria-label="Vitesse d’exécution" data-testid="speed-choices">
-          {speeds.map((v) => {
-            const on = Math.abs(v - speed) < 0.01;
-            return (
-              <button
-                key={v}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                className={`btn ${on ? 'on' : ''}`}
-                onClick={() => {
-                  onChange(v);
-                  setOpen(false);
-                }}
-                data-testid={`speed-${String(v).replace('.', '-')}`}
-              >
-                {speedText(v)}
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/** what a screen gives to the commands of the coach zone; a command left out is not shown */
-export interface CoachCommands {
-  /** the speaker of the coach's voice (one tap per step) */
-  sound?: boolean;
-  speed?: { value: number; onChange: (v: number) => void; speeds?: number[] };
-  angles?: { value: string | number; options: { id: string | number; label: string }[]; onChange: (id: string | number) => void };
-  /** the pause of the session, inside the zone of the coach */
-  pause?: { paused: boolean; onToggle: () => void };
-  /** other buttons of the screen, shown with the others (Zoom of the séance) */
-  extra?: ReactNode;
-}
-
-/** the commands of the coach zone: hidden at rest, a tap on the coach shows them, the next tap hides them */
+/**
+ * The « Options du coach » panel of the coach zone (2.4; it replaced the buttons that a tap showed over the coach in
+ * 1.4.0). A tap on the coach opens it. It is a history layer: Back (Android button, back gesture, browser) closes it
+ * and nothing else. `open` is called from event handlers only (a tap, a button), as the layers ask.
+ */
 export function useCoachUi() {
-  const [shown, setShown] = useState(false);
-  const toggle = useCallback(() => setShown((s) => !s), []);
-  return { shown, setShown, toggle };
+  const [shown, setShownState] = useState(false);
+  const [section, setSection] = useState<PanelSection | undefined>(undefined);
+  const shownRef = useRef(false);
+  const layer = useRef<number | null>(null);
+  const open = useCallback((sec?: PanelSection) => {
+    setSection(sec);
+    if (shownRef.current) return;
+    shownRef.current = true;
+    setShownState(true);
+    layer.current = pushLayer(() => {
+      // Back pressed: the layer is already gone, only the panel closes
+      layer.current = null;
+      shownRef.current = false;
+      setShownState(false);
+    });
+  }, []);
+  const close = useCallback((then?: () => void) => {
+    if (!shownRef.current) return then?.();
+    shownRef.current = false;
+    setShownState(false);
+    const id = layer.current;
+    layer.current = null;
+    if (id !== null) popLayer(id, then);
+    else then?.();
+  }, []);
+  const toggle = useCallback(() => (shownRef.current ? close() : open()), [open, close]);
+  const setShown = useCallback((on: boolean) => (on ? open() : close()), [open, close]);
+  // a screen left while its panel is open: the layer goes with it
+  useEffect(
+    () => () => {
+      if (layer.current !== null) dropLayer(layer.current);
+    },
+    [],
+  );
+  return { shown, section, open, close, toggle, setShown };
 }
 export type CoachUi = ReturnType<typeof useCoachUi>;
 
@@ -79,7 +65,7 @@ const NO_REF: RefObject<HTMLElement | null> = { current: null };
  * montre les commandes sans pause, le toucher suivant les cache »): THE coach screen of the app, the same on the
  * home, the technique sheet, the session and the coach preview. Each screen gives it the coach (its 3D stage) and
  * its commands; the module brings the rest, the same everywhere:
- *   - one tap on the coach shows the commands in its zone (right column), the next tap hides them;
+ *   - one tap on the coach opens the « Options du coach » panel (2.4, CoachPanel; it replaced the buttons of 1.4.0);
  *   - a double tap shows the coach alone on the whole screen (useStageFullscreen), the way out stays at hand;
  *   - when the voice is off, a small crossed speaker stays in a corner, so a muted coach never goes unnoticed;
  *   - the 3D guard (resume after a lost GPU context) and the loading placeholder;
@@ -97,11 +83,12 @@ export function CoachScreen({
   stageHidden = false,
   stageLabel,
   fallback,
-  commands = {},
+  panel = {},
   children,
   fs: outerFs,
   ui: outerUi,
   hint = true,
+  sound = true,
   screenRef,
   style,
 }: {
@@ -119,7 +106,10 @@ export function CoachScreen({
   /** what a screen reader says of the coach (the preview, where the coach can be turned around) */
   stageLabel?: string;
   fallback?: ReactNode;
-  commands?: CoachCommands;
+  /** what the panel offers on this screen (2.4): the sections left out are not shown */
+  panel?: CoachPanelConfig;
+  /** the voice can be heard on this screen: a crossed speaker shows when it is off */
+  sound?: boolean;
   /** what the screen shows over the coach (instructions, legends…) */
   children?: ReactNode;
   /** the session's own fullscreen and commands state; by default the module keeps its own */
@@ -133,46 +123,19 @@ export function CoachScreen({
   const ref = screenRef ?? ownRef;
   const ownUi = useCoachUi();
   const ui = outerUi ?? ownUi;
-  const ownFs = useStageFullscreen(outerFs ? NO_REF : ref, { onTap: ownUi.toggle });
+  // 2.7: a screen may hold the panel's state (the home opens it from « Changer »): the tap on the coach toggles that one
+  const ownFs = useStageFullscreen(outerFs ? NO_REF : ref, { onTap: ui.toggle });
   const fs = outerFs ?? ownFs;
   const voice = useSettings((s) => s.settings.voice);
   const volume = useSettings((s) => s.settings.voiceVolume);
-  const muted = !!commands.sound && (!voice || volume <= 0);
+  const muted = sound && (!voice || volume <= 0);
 
   const own = !outerFs;
-  const c = commands;
+  // the panel gives the plein écran of this screen (its own, or the session's)
+  const config: CoachPanelConfig = { ...panel, fullscreen: { active: fs.active, onToggle: fs.active ? fs.exit : fs.enter } };
   const tools = (
     <>
-      {ui.shown && (
-        <div className="coach-tools" data-testid="coach-tools" data-no-double-tap>
-          {c.pause && (
-            <button type="button" className="btn" onClick={c.pause.onToggle} aria-label={c.pause.paused ? 'Reprendre la séance' : 'Mettre la séance en pause'} data-testid="coach-pause">
-              <AppIcon id={c.pause.paused ? 'play' : 'pause'} />
-            </button>
-          )}
-          {c.speed && <SpeedTool speed={c.speed.value} onChange={c.speed.onChange} speeds={c.speed.speeds} />}
-          {c.extra}
-          {fs.active ? (
-            <button type="button" className="btn on" onClick={fs.exit} aria-label="Quitter le plein écran" data-testid={own ? 'coach-fs-exit' : 'fs-exit'}>
-              <AppIcon id="exitFullscreen" />
-            </button>
-          ) : (
-            <button type="button" className="btn" onClick={fs.enter} aria-label="Plein écran : le coach seul, sur tout l’écran" data-testid="fullscreen">
-              <AppIcon id="fullscreen" />
-            </button>
-          )}
-          {c.sound && <SoundButton />}
-        </div>
-      )}
-      {ui.shown && c.angles && (
-        <div className="coach-angles" role="radiogroup" aria-label="Angle de caméra" data-testid="coach-angles" data-no-double-tap>
-          {c.angles.options.map((o) => (
-            <button key={o.id} type="button" role="radio" aria-checked={o.id === c.angles!.value} className={`btn ${o.id === c.angles!.value ? 'on' : ''}`} onClick={() => c.angles!.onChange(o.id)}>
-              {o.label}
-            </button>
-          ))}
-        </div>
-      )}
+      <CoachPanel open={ui.shown} onClose={ui.close} config={config} section={ui.section} />
       {muted && !ui.shown && (
         <span className="coach-muted" role="img" aria-label="Voix du coach coupée" data-testid="coach-muted">
           <SpeakerIcon level={0} size={16} />
@@ -180,7 +143,7 @@ export function CoachScreen({
       )}
       {/* for the keyboard and screen readers: the same as a tap on the coach */}
       <button type="button" className="sr-only coach-ui-toggle" onClick={ui.toggle} aria-expanded={ui.shown} data-testid="coach-ui-toggle">
-        {ui.shown ? 'Masquer les commandes du coach' : 'Afficher les commandes du coach'}
+        Options du coach
       </button>
     </>
   );

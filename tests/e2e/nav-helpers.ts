@@ -123,15 +123,21 @@ export async function openSetting(page: Page, id: string) {
 }
 
 /**
- * 1.4.0 (Youssef, 2026-10-28, option A): the commands of the coach (speed, angles, fullscreen, speaker, pause) are
- * hidden at rest; one tap on the coach shows them. Shows them if they are hidden (the same as that tap, through the
- * button kept for the keyboard and screen readers).
+ * 2.4 (panneau « Options du coach », Youssef 2026-11-20): one tap on the coach opens its panel (it replaced the commands
+ * that the tap showed over the coach in 1.4.0). Opens it if it is closed (the same as that tap, through the button kept
+ * for the keyboard and screen readers).
  */
 export async function showCoachTools(page: Page) {
-  const tools = page.getByTestId('coach-tools');
-  // a screen that has just opened may still be mounting its coach (the profile loads): tap again until they show
+  const panel = page.getByTestId('coach-panel');
+  // a screen that has just opened may still be mounting its coach (the profile loads): tap again until it shows
   await expect(async () => {
-    if (!(await tools.isVisible())) await page.getByTestId('coach-ui-toggle').dispatchEvent('click');
-    await expect(tools).toBeVisible({ timeout: 1000 });
+    if (!(await panel.isVisible())) await page.getByTestId('coach-ui-toggle').dispatchEvent('click');
+    await expect(panel).toBeVisible({ timeout: 1000 });
   }).toPass({ timeout: 30_000 });
+}
+
+/** closes the coach's panel with its close button and waits until nothing of it is left (the scrim included) */
+export async function closeCoachPanel(page: Page) {
+  await page.getByTestId('coach-panel-close').click();
+  await expect(page.getByTestId('coach-panel-root')).toHaveCount(0);
 }
