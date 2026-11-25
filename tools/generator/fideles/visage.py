@@ -111,6 +111,23 @@ def main(cfg):
             down = {17: 1.0, 84: 0.8, 314: 0.8}.get(int(i), 0.0)
             if up or down:
                 dxy[k, 1] += full * (up - down)
+    # 25/11 (Youssef « peux-tu différencier la forme des lèvres ? ») : forme propre à chaque coach, en mètres, ajoutée
+    # après la reprise de la maquette. largeur : coins vers l'extérieur ; haut / bas : épaisseur de la lèvre du haut / du
+    # bas (contour extérieur seulement, la ligne entre les lèvres 13-14 ne bouge pas : la bouche ne s'ouvre pas) ; arc :
+    # pointes de l'arc de Cupidon vers le haut et creux du milieu vers le bas (négatif : arc plus rond) ; avant : volume
+    bf = C.get('bouche_forme') or {}
+    BF_HAUT = {0: 1.0, 37: 1.0, 267: 1.0, 39: 0.8, 269: 0.8, 40: 0.55, 270: 0.55, 185: 0.3, 409: 0.3}
+    BF_BAS = {17: 1.0, 84: 1.0, 314: 1.0, 181: 0.85, 405: 0.85, 91: 0.6, 321: 0.6, 146: 0.3, 375: 0.3}
+    BF_LARGE = {61: 1.0, 291: 1.0, 146: 0.6, 375: 0.6, 185: 0.6, 409: 0.6, 91: 0.3, 321: 0.3, 40: 0.3, 270: 0.3}
+    BF_ARC = {37: 1.0, 267: 1.0, 0: -0.8, 39: 0.4, 269: 0.4}
+    bf_dz = {}
+    if bf:
+        for k, i in enumerate(sh):
+            i = int(i); x = X3[i, 0]
+            dxy[k, 1] += bf.get('haut', 0.0) * BF_HAUT.get(i, 0.0) - bf.get('bas', 0.0) * BF_BAS.get(i, 0.0) \
+                + bf.get('arc', 0.0) * BF_ARC.get(i, 0.0)
+            dxy[k, 0] += bf.get('largeur', 0.0) * BF_LARGE.get(i, 0.0) * np.sign(x)
+            bf_dz[i] = bf.get('avant', 0.0) * max(BF_HAUT.get(i, 0.0), BF_BAS.get(i, 0.0))
     # 24/11 (Youssef « des visages plus doux et moins crispés, humains et homogènes ») : les planches ont un air sévère
     # (sourcils bas et rapprochés). La forme des sourcils n'est reprise que vers le haut, à moitié, jamais vers le bas ni
     # vers le milieu : on garde l'ossature du visage, pas le froncement
@@ -141,6 +158,8 @@ def main(cfg):
     if full:
         for k, i in enumerate(sh):
             dz[k] += full * 0.8 * {0: 1.0, 37: 0.8, 267: 0.8, 17: 1.0, 84: 0.8, 314: 0.8}.get(int(i), 0.0)
+    for k, i in enumerate(sh):
+        dz[k] += bf_dz.get(int(i), 0.0)
     dxy = np.hstack([dxy, dz[:, None]])
     src = np.vstack([X3[sh, :2], X3[anc, :2]])
     dst = np.vstack([dxy, np.zeros((len(anc), 3))])

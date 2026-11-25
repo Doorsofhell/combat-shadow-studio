@@ -5523,3 +5523,18 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Tests** : `tsc` TEST RÉUSSI ; vitest `src/three` + `src/boot` + intrusions 774/777, échecs déjà notés (taille et
   shorts d'Amara). Playwright NON EXÉCUTÉ. Rien publié.
 - **Restauration** : commit aadc5bc0.
+
+## 2026-11-25 · prototype 2 de la 2.4.0 (non publié) · Une forme de lèvres propre à chaque coach femme
+
+- **Demande** (Youssef, 25/11 8 h 13) : « Peux-tu différencier la forme des lèvres ? »
+- **Constat vérifié** (gros plans de la bouche) : les trois bouches reprenaient la même maquette et la même méthode,
+  donc elles se ressemblaient (même largeur, même épaisseur, même arc).
+- **Correction** : `visage.py`, option `bouche_forme` (en mètres, ajoutée après la reprise de la maquette) : `largeur`
+  (coins vers l'extérieur), `haut` / `bas` (épaisseur de chaque lèvre par le contour extérieur ; la ligne entre les
+  lèvres ne bouge pas, la bouche ne s'ouvre pas), `arc` (arc de Cupidon plus marqué ou plus rond), `avant` (volume).
+  La couleur suit le nouveau contour. Inaya : lèvres fines et larges, arc marqué ; Kanya : bouche plus étroite en
+  cœur, lèvre du bas pleine ; Amara : lèvres pleines, arc rond. Planche :
+  `/mnt/project-files/coachs-fideles/femmes-formes-levres.jpg` (face, trois quarts, sourire, bouche ouverte).
+- **Tests** : `tsc` TEST RÉUSSI ; vitest `src/three` + `src/boot` + intrusions 774/777, échecs déjà notés (taille et
+  shorts d'Amara). Playwright NON EXÉCUTÉ. Rien publié.
+- **Restauration** : commit 1054f2a1.

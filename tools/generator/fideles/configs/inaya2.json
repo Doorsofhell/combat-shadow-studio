@@ -72,5 +72,12 @@
  "levres": 0.0016,
  "levres_modele": 0,
  "yeux": 0.14,
- "levres_fit": true
+ "levres_fit": true,
+ "bouche_forme": {
+  "largeur": 0.003,
+  "haut": -0.0008,
+  "bas": 0.0002,
+  "arc": 0.0015,
+  "avant": 0.0
+ }
 }

@@ -75,5 +75,12 @@
  },
  "yeux": 0.14,
  "sourcils_neutres": false,
- "levres_fit": true
+ "levres_fit": true,
+ "bouche_forme": {
+  "largeur": 0.0012,
+  "haut": 0.003,
+  "bas": 0.003,
+  "arc": -0.0008,
+  "avant": 0.002
+ }
 }
