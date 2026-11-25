@@ -5448,7 +5448,12 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - `npm run build` : TEST RÉUSSI ; Playwright `premium.spec` + `premium-panels.spec` (11) : TEST RÉUSSI ;
   - captures réelles avant (2.8.1) / après (2.8.2), mêmes écrans, 412 × 915 : fichiers du projet
     `monetisation/diamants-v2.8.2/comparatif-*.jpg` ;
-  - Playwright complet : NON EXÉCUTÉ à ce stade (lancé ensuite, résultat ajouté avant la fusion).
+  - Playwright complet (commit `bb2158cd`, coin doré, 2026-11-25) : 330 TEST RÉUSSI, 2 NON EXÉCUTÉ (Firebase),
+    5 TEST ÉCHOUÉ, tous déjà présents en 2.8.1 : `chrono-seul:96`, `coach-suggest:147`, `coaching-hud:60` (connus) ;
+    `retour-v1420:29` (bouton « Reprendre » caché sous la question de sortie) et `selection-coach-v4:56` (34 géométries
+    au lieu de 31 au plus après 18 changements de coach) : relancés seuls deux fois sur 2.8.2 puis deux fois sur 2.8.1
+    (`2969a77`, même machine) : TEST ÉCHOUÉ les deux fois sur les deux versions, donc sans lien avec ce lot ; à
+    corriger dans un lot dédié. Aucun test affaibli.
 - **Retour de Youssef** (2026-11-25 00:34) : « pas forcément un diamant, faut trouver autre chose pour ne pas surcharger
   des icônes ou options ». Quatre marquages comparés sur captures réelles (diamant, point, coin, liseré :
   `monetisation/marquage-premium/planche-*.jpg`) ; appliqué en attendant son choix : option C recommandée, coin doré
