@@ -31,7 +31,14 @@ test('Retour du téléphone pendant la séance : pause et question, jamais de so
   await page.goBack();
   await expect(page).toHaveURL(/entrainement\?ex=boxe-debutant-01/);
   await expect(dialog(page)).toBeVisible();
-  await expect(page.getByTestId('resume')).toBeVisible();
+  // 2.10.2: since 2.7 the question is the glass Sheet and, as under every sheet of the session, the bottom bar steps
+  // aside (training.css, body:has(.training):has(.ds-backdrop) .nav-bottom). The session is still checked paused behind
+  // the question: the bar holds « Reprendre » and no « Pause » (it was asked visible, hidden by design since 2.7, failing
+  // since then); it is checked visible again below, as soon as the question closes.
+  await expect(page.getByTestId('resume')).toBeAttached();
+  await expect(page.getByTestId('resume')).toHaveAttribute('aria-label', 'Reprendre');
+  await expect(page.getByTestId('pause')).toHaveCount(0);
+  await expect(page.locator('.nav-bottom')).toHaveCSS('visibility', 'hidden');
   // « Continuer » is the highlighted choice, « Quitter » the quiet one
   await expect(page.getByTestId('confirm-cancel')).toHaveText('Continuer');
   await expect(page.getByTestId('confirm-cancel')).toHaveClass(/primary/);

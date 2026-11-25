@@ -5,6 +5,7 @@ import { getLibrary, getMotion } from '../library';
 import type { StanceStyle } from '../author';
 import type { Motion } from '../motion';
 import { V230 } from '../v230';
+import { hookSummary, sampleHook } from '../../test/hooks';
 
 /**
  * v1.33.1: the authored pelvis turns before the thorax, then both reach the
@@ -24,6 +25,29 @@ function phase(from: number, drive: number, impact: number): number {
   const span = impact - from;
   expect(Math.abs(span)).toBeGreaterThan(1e-5);
   return (drive - from) / span;
+}
+
+/**
+ * 2.10.2 (V230.hookDirect): the hooks no longer have the « drive » key (the fist swept round with the trunk, path up to
+ * 2.8 times the straight line, hooks-biomeca « pas d'armé » and fluidity.test failing since 1.33.1). Their pelvis
+ * lead is then checked where it is seen, on the posed body: the pelvis reaches its fastest turn before the shoulders,
+ * and halfway from the preparation to the impact it has done a larger share of its turn than the shoulders.
+ */
+function verifyHookLead(rig: CoachRig, m: Motion, snapped: boolean, southpaw: boolean, id: string) {
+  const [start, load, impact] = m.keys;
+  expect(m.keys.length).toBe(snapped ? 4 : 5);
+  expect(start.t).toBe(0);
+  expect(load.t).toBeLessThan(impact.t);
+  expect(impact.t).toBe(m.impacts[0]);
+  expect(m.keys[m.keys.length - 1].pose).toEqual(start.pose);
+  const side = id.startsWith('crochet-avant') !== southpaw ? 'L' : 'R';
+  const f = sampleHook(rig, m, side);
+  const s = hookSummary(f, m.impacts[0]);
+  expect(s.timing.pelvis).toBeLessThanOrEqual(s.timing.chest + 1e-6);
+  const at = (t: number) => f.reduce((b, x) => (Math.abs(x.t - t) < Math.abs(b.t - t) ? x : b));
+  const [f0, fm, f1] = [at(load.t), at((load.t + impact.t) / 2), at(impact.t)];
+  const share = (g: (x: (typeof f)[number]) => number) => (g(fm) - g(f0)) / (g(f1) - g(f0));
+  expect(share((x) => x.pelvisYaw)).toBeGreaterThan(share((x) => x.chestYaw));
 }
 
 function verifyLead(m: Motion, isUppercut: boolean, snapped: boolean) {
@@ -64,15 +88,17 @@ describe('v1.33.1 — bassin en avance sur le buste', () => {
     for (const style of STYLES) {
       for (const id of STRIKES) {
         const snapped = snap && !id.endsWith('-corps');
+        const check = (m: Motion, southpaw: boolean) =>
+          id.startsWith('crochet') && V230.hookDirect ? verifyHookLead(rig, m, snapped, southpaw, id) : verifyLead(m, id.startsWith('uppercut'), snapped);
         test(`${style} ${id} : rotation du bassin avant celle des épaules${tag}`, () => {
           const m = getMotion(libOf(style), id, false);
           expect(m).toBeDefined();
-          verifyLead(m!, id.startsWith('uppercut'), snapped);
+          check(m!, false);
         });
         test(`${style} ${id} : même timing en garde gauchère${tag}`, () => {
           const m = getMotion(libOf(style), id, true);
           expect(m).toBeDefined();
-          verifyLead(m!, id.startsWith('uppercut'), snapped);
+          check(m!, true);
         });
       }
     }

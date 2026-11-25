@@ -10,6 +10,23 @@ function glbJson(path: string) {
   return JSON.parse(b.subarray(20, 20 + n).toString('utf8'));
 }
 const makeup = (path: string) => glbJson(path).asset?.extras?.cssMakeup;
+/** bytes of one buffer view of the GLB binary chunk */
+function glbImage(path: string, view: number) {
+  const b = readFileSync(path);
+  const n = b.readUInt32LE(12);
+  const v = JSON.parse(b.subarray(20, 20 + n).toString('utf8')).bufferViews[view];
+  return b.subarray(20 + n + 8).subarray(v.byteOffset ?? 0, (v.byteOffset ?? 0) + v.byteLength);
+}
+/** [width, height] read from the JPEG start-of-frame marker */
+function jpegSize(d: Buffer): [number, number] {
+  let i = 2;
+  while (i < d.length) {
+    const m = d[i + 1];
+    if (m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc) return [d.readUInt16BE(i + 7), d.readUInt16BE(i + 5)];
+    i += 2 + d.readUInt16BE(i + 2);
+  }
+  return [0, 0];
+}
 
 describe('1.40.3 maquillage léger sportif', () => {
   test('Amara porte « Frais d’entraînement » (B) avec et sans tenue', () => {
@@ -21,14 +38,19 @@ describe('1.40.3 maquillage léger sportif', () => {
   test('les coachs hommes ne sont pas maquillés', () => {
     for (const c of ['mma-kadir', 'nael']) expect(makeup(`public/coaches/${c}/photo.glb`)).toBeUndefined();
   });
+  // 2.10.2 : la tête d'Amara (photo.glb) passe de PNG à JPEG, comme photo-clean.glb et les cinq autres coachs. Raison :
+  // le PNG pesait 2 Mo et mettait photo.glb à 5,0 Mo, au-delà des 3,5 Mo exigés par expressions-v1160 (perte de
+  // performance mobile = critère bloquant). Même image (PSNR 50 dB), même taille ; la taille 2048 px, annoncée par le
+  // nom du test mais jamais vérifiée, l'est maintenant.
   test('la texture de tête reste à 2048 px dans le même format', () => {
     for (const [p, mime] of [
-      ['public/coaches/mma-amara/photo.glb', 'image/png'],
+      ['public/coaches/mma-amara/photo.glb', 'image/jpeg'],
       ['public/coaches/mma-amara/photo-clean.glb', 'image/jpeg'],
       ['public/coaches/inaya/photo.glb', 'image/jpeg'],
     ]) {
       const head = glbJson(p).images.find((i: { name?: string }) => i.name === 'f021_head_color');
       expect(head.mimeType).toBe(mime);
+      expect(jpegSize(glbImage(p, head.bufferView)), p).toEqual([2048, 2048]);
     }
   });
 });

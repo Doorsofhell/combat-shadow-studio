@@ -151,6 +151,9 @@ test('questions suggérées : chaque question répond, une seule fois, et propos
   // the learner's own examples for a rear straight in MMA
   for (const q of ['Comment bien pivoter mon pied arrière ?', 'Comment utiliser ma hanche pour frapper ?', 'Où placer ma main avant ?', 'Comment éviter de perdre l’équilibre ?', 'Comment revenir rapidement en garde ?', 'Quelle est la différence entre jab et direct ?'])
     expect(qs).toContain(q);
+  // 2.10.2: one reload of the session per question (8 or more): the fixed 120 s ran out on a loaded machine before the
+  // last ones (failing since 2.6.0, « locator.tap: Test timeout » while reopening). Same checks, time per question.
+  test.setTimeout(60_000 + qs.length * 40_000);
   for (const q of qs.filter((x) => !x.startsWith('Montre-moi'))) {
     await forgetShownQuestions(page);
     await openCoach(page, exerciseOn('mma', 'direct'));
