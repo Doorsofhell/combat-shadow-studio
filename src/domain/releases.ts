@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.10.6',
+      releaseDate: '2026-11-26',
+      title: 'Une application plus légère à ouvrir',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'L’historique complet des versions n’est plus chargé avec la barre du bas sur chaque écran : il arrive seulement quand tu ouvres « Nouveautés ». La pastille rouge des nouveautés marche comme avant.' },
+        { category: 'corrections', text: 'Trois paires de fichiers du code dépendaient l’une de l’autre (mode Décomposer, recherche, visage des coachs). Elles sont séparées : rien ne change à l’écran, mais l’application démarre sur des bases plus sûres.' },
+      ],
+      links: [],
+    },
+    {
       version: '2.10.5',
       releaseDate: '2026-11-26',
       title: 'Ton coach dans son univers, dès l’accueil',
@@ -1686,12 +1697,9 @@ export const RELEASES: readonly Release[] = (
 
 export const LATEST_RELEASE = RELEASES[0];
 
-/** a version the user has not opened yet: the red dots of Menu and Nouveautés */
+/** a version the user has not opened yet (2.10.6: the app reads the same test from releaseNotice.ts, without this
+ *  history) */
 export const hasUnseenRelease = (seen: string | null | undefined) => seen !== LATEST_RELEASE.version;
 
-/** 2026-10-22 → « 22 octobre 2026 » */
-export function releaseDateLabel(iso: string) {
-  const [y, m, d] = iso.split('-').map(Number);
-  const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-  return `${d} ${months[m - 1]} ${y}`;
-}
+// 2.10.6: kept here for the readers of this file
+export { releaseDateLabel } from './releaseNotice';

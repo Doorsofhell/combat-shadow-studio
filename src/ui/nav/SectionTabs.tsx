@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
-import { hasUnseenRelease } from '../../domain/releases';
+import { hasUnseenRelease } from '../../domain/releaseNotice';
 import { isHubScreen, isRootPath, navScreen, sectionTabsFor } from './config';
 import { haptic } from './BottomBar';
 import { leave, useNavStore } from './store';

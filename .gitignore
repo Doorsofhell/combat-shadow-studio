@@ -19,3 +19,6 @@ tsconfig.tsbuildinfo
 __pycache__/
 *.pyc
 dist-sim
+
+# Sortie générée par graphify (reconstruite avec `graphify update .`)
+graphify-out/

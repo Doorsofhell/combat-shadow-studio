@@ -210,6 +210,8 @@ test.describe('393×851', () => {
     await page.getByTestId('reglages-nouveautes').click();
     const news = page.getByTestId('news-sheet');
     await expect(news).toBeVisible();
+    // 2.10.6: the list is loaded when the panel opens (NewsList chunk): wait for it before reading it
+    await expect(news.getByTestId('news-list')).toBeVisible();
     const versions = await news.locator('[data-version]').evaluateAll((a) => a.map((x) => x.getAttribute('data-version')));
     // the newest note first (the former fixed « 1.9.0 » went stale with every release)
     expect(versions[0]).toBe(RELEASES[0].version);

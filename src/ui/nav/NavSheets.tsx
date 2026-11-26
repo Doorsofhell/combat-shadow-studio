@@ -1,115 +1,23 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
+import { Suspense, lazy, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCoachBubble } from '../coach-ai/coachHost';
-import { RELEASES, RELEASE_CATEGORY_LABEL, releaseDateLabel } from '../../domain/releases';
 import { AppIcon } from '../icons';
-import { overlayHost, scrimHandlers, useGlassLite, useSwipeDown } from '../components/glass';
 import { popLayer, pushLayer } from './layers';
 import { NavIcon } from './NavIcon';
 import { leave, useNavStore, type MenuCommand } from './store';
 import { haptic, openSearch } from './BottomBar';
 import { NO_TABS, PRIMARY, backInRow, dockSlots, navScreen } from './config';
 import type { NavIconId } from './icons';
+import { NavPanel } from './NavPanel';
 import { SearchSheet } from './SearchSheet';
 
-/** the panels open now, the last one on top */
-const openPanels: object[] = [];
+// 2.10.6: NavPanel lives in its own file (SearchSheet needs it; the two files imported each other). Kept exported
+// here for the screens that import it from NavSheets.
+export { NavPanel };
 
-/**
- * The mockup's bottom sheet (`.scrim` + `.sheet`, 220 ms `sheetin`): scrim that closes it, rounded top, handle and
- * title. A dialog: the focus moves into it, Tab stays inside, Échap and Back close it, and the focus goes back to
- * the button that opened it.
- */
-export function NavPanel({
-  title,
-  onClose,
-  children,
-  testId,
-  wide,
-  closable,
-  aboveBar,
-  variant = 'sheet',
-}: {
-  title: string;
-  onClose: () => void;
-  children: ReactNode;
-  testId?: string;
-  wide?: boolean;
-  /** v0.45: a close cross beside the title (Premium panels) */
-  closable?: boolean;
-  /** v0.45: the sheet stops above the bottom bar, which stays visible and usable (Premium panels) */
-  aboveBar?: boolean;
-  /** 1.1.0: 'menu' = the Android menu of the ⋮ at the top right (no handle, no title); 'full' = the whole screen
-   *  (search) */
-  variant?: 'sheet' | 'menu' | 'full';
-}) {
-  const ref = useRef<HTMLElement>(null);
-  const opener = useRef<Element | null>(typeof document !== 'undefined' ? document.activeElement : null);
-  useEffect(() => {
-    const el = ref.current;
-    el?.focus();
-    // 1.1.0: panels can be stacked (the ⋮ menu over a panel of Premium): only the top one answers Escape
-    const me = {};
-    openPanels.push(me);
-    const onKey = (e: KeyboardEvent) => {
-      if (openPanels[openPanels.length - 1] !== me) return;
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        onClose();
-      } else if (e.key === 'Tab' && el) {
-        const f = [...el.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')];
-        if (!f.length) return;
-        const first = f[0];
-        const last = f[f.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-    window.addEventListener('keydown', onKey, true);
-    const back = opener.current;
-    return () => {
-      openPanels.splice(openPanels.indexOf(me), 1);
-      window.removeEventListener('keydown', onKey, true);
-      if (back instanceof HTMLElement && back.isConnected) back.focus();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  // 2.7: the glass of the « Options du coach » panel; a swipe down from the grip or the title closes a bottom sheet
-  const lite = useGlassLite();
-  const swipe = useSwipeDown(onClose);
-  const grab = variant === 'sheet';
-  return createPortal(
-    <div className={`nav-overlay glass ${aboveBar ? 'above-bar' : ''} ${variant}${lite ? ' lite' : ''}`}>
-      <div className="nav-scrim" {...scrimHandlers(onClose)} data-testid="nav-scrim" />
-      <section className={`nav-sheet ${wide ? 'wide' : ''} ${variant}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={ref} data-testid={testId} data-no-double-tap style={swipe.style}>
-        {variant !== 'menu' && (
-          <div className="nav-grab" {...(grab ? swipe.handlers : {})} data-testid="nav-sheet-grip">
-            {grab && <div className="nav-handle" aria-hidden />}
-            {closable || grab ? (
-              <div className="nav-sheet-head">
-                <h2 className="nav-sheet-title">{title}</h2>
-                <button type="button" className="glass-x" onClick={onClose} aria-label="Fermer" data-testid="panel-close">
-                  <NavIcon id="close" />
-                </button>
-              </div>
-            ) : (
-              <div className="nav-sheet-title">{title}</div>
-            )}
-          </div>
-        )}
-        <div className="nav-sheet-body">{children}</div>
-      </section>
-    </div>,
-    // inside the total fullscreen of the coach when it is on, else over the page
-    overlayHost(),
-  );
-}
+/** 2.10.6: the whole history of the versions is loaded only when « Nouveautés » opens, not with the bar */
+const NewsList = lazy(() => import('./NewsList'));
+
 
 /**
  * A contextual panel of a screen (filters, search, period…), opened from a button of the bar: a history layer, so
@@ -205,40 +113,9 @@ export function NavSheets() {
   if (sheet === 'news') {
     return (
       <NavPanel title="Nouveautés" onClose={() => close()} testId="news-sheet" wide>
-        <div className="news-list" data-testid="news-list">
-          {RELEASES.map((r, i) => (
-            <article key={r.version} className="nav-version" data-version={r.version} aria-labelledby={`v-${r.version}`}>
-              <b id={`v-${r.version}`}>
-                Version {r.version}
-                {i === 0 ? ' · la plus récente' : ''}
-              </b>
-              <div className="nav-version-meta">
-                {releaseDateLabel(r.releaseDate)} · {r.title}
-              </div>
-              {r.categories.map((c) => (
-                <div key={c} className="nav-version-cat">
-                  <span>{RELEASE_CATEGORY_LABEL[c]}</span>
-                  <ul>
-                    {r.changes
-                      .filter((x) => x.category === c)
-                      .map((x, k) => (
-                        <li key={k}>{x.text}</li>
-                      ))}
-                  </ul>
-                </div>
-              ))}
-              {r.links.length > 0 && (
-                <div className="nav-version-links">
-                  {r.links.map((l) => (
-                    <button key={l.to} type="button" className="nav-action" onClick={() => go(l.to)}>
-                      {l.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </article>
-          ))}
-        </div>
+        <Suspense fallback={<div className="news-list" data-testid="news-loading" aria-busy="true" />}>
+          <NewsList onGo={go} />
+        </Suspense>
         <div className="nav-actions">
           <button type="button" className="nav-action primary" onClick={() => close()} data-testid="news-close">
             Fermer

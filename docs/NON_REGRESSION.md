@@ -39,6 +39,7 @@ chaque lot, point de restauration, rapport (TEST RÉUSSI / ÉCHOUÉ / NON EXÉCU
 | `restauration/avant-shadow-pro-v290` | `6b7a872` (2.8.2, non publiée) | Avant le badge PRO et le cadenas Shadow Pro (2.9.0, branche `claude/project-thread-zl3kk4`) |
 | `restauration/avant-blocages-v2102` | `4ba4ccd` (2.10.1) | Avant la correction des blocages restés ouverts (2.10.2, branche `claude/project-thread-2fe4i1`) |
 | `restauration/avant-accueil-univers-v2105` | `010461f` (2.10.4) | Avant l’univers du coach dans la carte « Ton coach » de l’Accueil (2.10.5, branche `claude/project-thread-oi1ydx`) |
+| `restauration/avant-boucles-v2106` | `6256cc2` (2.10.5) | Avant la fin des dépendances circulaires et le chargement à la demande des Nouveautés (2.10.6, branche `claude/project-thread-a0dixk`) |
 
 Les étiquettes Git (tags) ne passent pas par le proxy de l’environnement : chaque point de restauration est donc une
 branche `restauration/...` sur GitHub. Retour arrière : `git checkout restauration/<nom>`.
@@ -133,6 +134,7 @@ décrivent l'état de référence d'origine (historique).
 | Crochets directs (2.10.2) | Le poing va de la garde à la cible (chemin ≤ 1,4 fois la ligne droite), coude 55–95°, bassin avant les épaules mesuré sur le corps, pas plus d’arrêts ni de vitesse perdue par le lissage, avant-bras arrière hors du buste (Victor ≤ 3,5 cm) ; avant/après : `?v230=-hookDirect` | `hooks-biomeca.test`, `fluidity.test`, `torso-chain-v1331.test`, `intrusions.test`, `pictos.test` | `docs/v2102/captures/` |
 | Poids des modèles (2.10.2) | Chaque `photo.glb` sous 3,5 Mo, texture de tête en JPEG 2048 px | `expressions-v1160.test`, `maquillage-v1403.test` | `docs/v2102/captures/amara-visage.jpg` |
 | Univers du coach sur l’Accueil (2.10.5) | La carte « Ton coach » montre le coach dans son univers avec le même composant que l’écran du choix (`CoachUniverseStage`), sombre dans les deux thèmes ; « Changer », son, « Commencer » intacts ; l’univers suit le coach choisi, sans textures laissées | `coach-universe.test`, `accueil-univers-v2105.spec`, `selection-coach-v4.spec` | `docs/v2105/captures/` |
+| Code sans boucles, Nouveautés à la demande (2.10.6) | Aucun fichier de `src/` n’importe un fichier qui l’importe ; la barre, le menu, les Réglages et le profil lisent la dernière version dans `releaseNotice.ts`, seule la liste des Nouveautés (chargée à l’ouverture) lit `releases.ts` ; pastille rouge et liste inchangées | `chargement-v2106.test`, `nav.test`, `navigation.spec` | non applicable (rien de visuel) |
 | Réalité augmentée | Démarrage, refus, arrêt caméra | `ar.test` | non applicable sans appareil |
 
 Commandes : `npx tsc -b`, `npx vitest run`, `npx vite build` puis

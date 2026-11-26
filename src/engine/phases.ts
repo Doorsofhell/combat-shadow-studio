@@ -9,7 +9,7 @@ import { Quaternion, Vector3 } from 'three';
 import { MotionSampler, duration, type Motion } from './motion';
 import type { ResolvedPose } from './pose';
 import type { CoachRig } from './rig';
-import { analyseMotion, type Effector, type StudyAnalysis } from './study';
+import { analyseMotion, type Effector, type StudyAnalysis } from './analysis';
 import type { TechniqueCategory } from '../domain/types';
 
 /** body parts a phase draws attention to (highlighted on the coach) */
