@@ -1,4 +1,4 @@
-import { lazy, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
@@ -18,10 +18,10 @@ import { techniquesFor } from '../../domain/techniques';
 import { filterTechniques } from '../../domain/kickboxingStyles';
 import { CoachScreen, useCoachUi } from '../coach-screen/CoachScreen';
 import { CoachFace } from '../coach-row/CoachRow';
+import { CoachUniverseStage, atmosphereOf, universeVars } from '../coach-universe/CoachUniverse';
 import { techniqueOfTheDay } from '../../domain/quickPicks';
 
 /** the 3D bundle (three.js, R3F) stays out of the main chunk */
-const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
 
 const RESUMABLE: TrainingMode[] = ['libre', 'technique', 'cardio', 'rounds'];
 const NO_EVENTS: PlayerEvents = {};
@@ -44,8 +44,9 @@ export function Home() {
   const disc = DISCIPLINES.find((d) => d.id === profile.mainDiscipline)!;
   const level = LEVELS.find((l) => l.id === profile.levels[disc.id])!;
   // 0.24: the coach on stage is Kadir or Amara (1.37: always, the fallback render with the custom fighter is gone)
-  const coach = profile.coach ?? 'homme';
   const champ = championFor(profile.coach, profile.champion);
+  // 2.10.5: his universe, the one of the coach choice
+  const atmo = atmosphereOf(champ);
   const name = champ.name;
   // 2.7 (option A « Un seul sélecteur »): « Changer » next to the name opens the coach's panel on « Ton coach »
   const coachUi = useCoachUi();
@@ -176,7 +177,9 @@ export function Home() {
         )}
       </div>
 
-      <section className="home-coach" aria-label={`${name}, ${disc.name}`}>
+      {/* 2.10.5 (Youssef, 2026-11-26): the coach stands in his own universe, the same component as the coach choice
+          (src/ui/coach-universe): his colours, his emblem with the big name, the light streaks and the ring on the floor */}
+      <section className="home-coach home-universe" aria-label={`${name}, ${disc.name}`} style={universeVars(atmo)} data-atmo={atmo.atmosphere.motif} data-testid="home-universe">
         <div className="home-coach-head">
           <span className="eyebrow">Ton coach</span>
           <div className="hero-name" data-testid="fighter-name">
@@ -204,9 +207,8 @@ export function Home() {
             panel={{ advanced: { coach: true, guard: true } }}
             ui={coachUi}
             stage={
-              <CoachStage
-                backdrop="dark"
-                coach={coach}
+              <CoachUniverseStage
+                champion={champ}
                 discipline={profile.mainDiscipline}
                 southpaw={profile.guard === 'gaucher'}
                 cameraAngle={25}
