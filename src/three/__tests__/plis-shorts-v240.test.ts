@@ -23,8 +23,14 @@ import type { DisciplineId } from '../../domain/types';
  * Limites : 4,5 % pour tous (avant : 3,9 % au pire), 3 % pour les shorts traités (au genou : 3,2 à 3,7 % avant).
  */
 const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor', 'kanya'];
+// 2.10.4 (Youssef 26/11, « les tenues de MMA et kick boxing d'Amara ont été altérées, on dirait des déchirures ») :
+// le lissage de short_poids.py décollait ces deux shorts de la cuisse et la peau passait devant le tissu (captures
+// du Lab, docs/v2104/). Ils reviennent à leur version 2.7.0 sans ce lissage : limite commune de 4,5 %, celle d'avant le
+// traitement (mesuré 3,3 % au pire, genou en kickboxing ; 3,2 à 3,7 % avant le traitement de 2.4.0).
+const UNTREATED_AMARA = ['mma', 'kickboxing'];
 const TREATED = (coach: string, outfit: string) =>
-  ['mma-amara', 'kanya'].includes(coach) || (['nael', 'victor'].includes(coach) && outfit !== 'mma');
+  (coach === 'mma-amara' && !UNTREATED_AMARA.includes(outfit)) || coach === 'kanya' ||
+  (['nael', 'victor'].includes(coach) && outfit !== 'mma');
 const OUTFITS: [string, DisciplineId][] = [['boxe', 'boxe'], ['kickboxing', 'kickboxing'], ['muaythai', 'muaythai'], ['mma', 'mma']];
 const MOVES: [string, string][] = [['high kick', 'high-kick-arriere'], ['genou', 'genou-direct-arriere'], ['low kick', 'low-kick-arriere']];
 const bodyFile = (c: string) => `coaches/${c}/${c === 'mma-amara' ? 'photo-clean' : 'photo'}.glb`;
