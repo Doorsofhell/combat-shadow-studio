@@ -6106,3 +6106,9 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   les attend maintenant dans `uid-1/stats-2026-t4` et vérifie que l’ancien document n’est plus écrit (même contrôle,
   nouvel emplacement) ; « supprimer mes données » vérifie en plus qu’il ne reste aucun document du compte.
 - **Restauration** : `restauration/avant-sync-v2103` (= 2.10.2, `39c7dda`).
+- **Tests** :
+  - `npx vitest run` : 1 884 TEST RÉUSSI ; `npm run build` : TEST RÉUSSI ; émulateur Firebase : NON EXÉCUTÉ (absent).
+  - `npx playwright test` complet (337, 1 h 18, build 2.10.3) : 332 TEST RÉUSSI, 2 NON EXÉCUTÉ (Firebase), 3 échecs
+    relancés seuls : `chrono-seul:68` et `maj-modeles-v236:137` TEST RÉUSSI ; `coachs-v160:77` (360×640, libellé
+    « Revenir en garde ») échoue une fois sur deux, aussi sur la 2.10.2 sans cette correction (vérifié dans une copie
+    de `39c7dda`), puis TEST RÉUSSI deux fois de suite : instabilité existante, sans lien avec la synchronisation.
