@@ -6146,7 +6146,14 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - captures après correction en garde (face, 3/4, dos), high kick, genou, low kick (`apres-mma.jpg`,
     `apres-kickboxing.jpg`) : aucun trou ;
   - suite complète : voir ci-dessous.
-- **Défaut connu, non corrigé ici** : tenue d'arbitre d'Amara, peau visible à la poitrine, déjà en 2.7.0 (et plus
-  marqué), masque retrouvé à 70 % ; le recalcul du masque ne suffit pas (`arbitre-defaut-connu.jpg`). Marqué
-  `test.fails` dans le nouveau test ; à traiter dans un lot à part.
+- **Ceintures** : la suite complète a ensuite fait échouer `amara-finish-v1380` (« au repos, chaque bande est posée
+  sur la peau, à moins de 13 mm ») : 13,6 mm pour la ceinture MMA et 13,2 mm pour la ceinture kickboxing, le corps
+  resculpté en 2.10.0 étant un peu plus fin à la taille. Les deux ceintures sont rapprochées de la peau de 1,2 mm, forme
+  inchangée (`tools/generator/rocketbox/resserre_ceinture.py`, nouvel outil, marque `cssBandResserree`) : test réussi
+  sans changer sa limite ; captures de la taille en garde (face, 3/4, dos), crochet et high kick :
+  `docs/v2104/apres-ceintures.jpg`.
+- **Tenue d'arbitre** (`arbitre.glb`) : ce n'est pas une tenue de coach (Amara a une tenue par discipline) ; elle sert
+  seulement à refaire les quatre illustrations fixes de la rubrique Règles de l'encyclopédie, déjà rendues en .webp et
+  intactes. Son masque de peau ne retrouve que 70 % de ses points depuis la 2.7.0 (`arbitre-masque-a-reprendre.jpg`) :
+  à reprendre avant toute nouvelle illustration ; hors du nouveau test.
 - **Restauration** : branche `restauration/avant-shorts-amara-v2104` (= 2.10.3 publiée, `eb7638c`).

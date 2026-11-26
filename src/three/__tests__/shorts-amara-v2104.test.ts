@@ -11,14 +11,14 @@ import { hiddenKeys } from '../outfit';
  * mouvement comme en garde ; le même lissage appliqué au short 2.7.0 refait les trous. Correction : shorts 2.7.0, masque
  * de peau recalculé point par point pour le corps actuel (tools/generator/rocketbox/remap_masque.py).
  *
- * 1. Chaque masque de peau des tenues d'Amara retrouve au moins 90 % de ses points sur le corps livré (photo-clean.glb,
+ * 1. Chaque masque de peau des 7 tenues de coach d'Amara retrouve au moins 90 % de ses points sur le corps livré (photo-clean.glb,
  *    positions d'origine, comme outfit.ts) : sinon la peau sous le tissu n'est plus cachée (seuil d'alerte de l'app).
  * 2. Les shorts MMA et kickboxing d'Amara ne portent pas le lissage des poids.
  */
+// les 7 tenues de coach d'Amara (6 disciplines + JJB no-gi). `arbitre.glb` n'est pas une tenue de coach : il sert
+// seulement à refaire les illustrations fixes de l'encyclopédie (rubrique Règles, déjà rendues en .webp) ; son masque ne
+// retrouve que 70 % de ses points depuis la 2.7.0, à reprendre avant toute nouvelle illustration.
 const OUTFITS = ['bjj', 'bjj-nogi', 'boxe', 'judo', 'kickboxing', 'mma', 'muaythai'];
-// Défaut connu, plus ancien (déjà visible en 2.7.0, signalé le 26/11) : le masque de la tenue d'arbitre ne retrouve que
-// 70 % de ses points et la peau se voit à la poitrine. `test.fails` : ce test devra passer en `test` une fois corrigé.
-const KNOWN_BAD = ['arbitre'];
 const body = readGlb('public/coaches/mma-amara/photo-clean.glb').parts.filter((p) => /body/i.test(p.material));
 
 describe('2.10.4 — tenues d’Amara : peau cachée sous le tissu', () => {
@@ -38,7 +38,6 @@ describe('2.10.4 — tenues d’Amara : peau cachée sous le tissu', () => {
     expect(found.size / keys.size, `${outfit} : points du masque retrouvés sur le corps`).toBeGreaterThanOrEqual(0.9);
   };
   test.each(OUTFITS)('%s : le masque de peau correspond au corps actuel', maskMatches);
-  test.fails.each(KNOWN_BAD)('%s : défaut connu, masque à refaire (doit échouer tant qu’il n’est pas corrigé)', maskMatches);
 
   test.each(['mma', 'kickboxing'])('%s : short sans le lissage des poids qui le décolle de la cuisse', (outfit) => {
     const g = readGlb(`public/coaches/mma-amara/tenues/${outfit}.glb`);
