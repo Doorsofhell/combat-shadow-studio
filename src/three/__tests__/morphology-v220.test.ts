@@ -144,7 +144,7 @@ describe('2.2.0 morphologies individuelles', () => {
         }
       }
     }
-  });
+  }, 30_000); // 2.10.7 : ~2,7 s seul, plus de 5 s sur une machine GitHub à 2 cœurs pendant la suite complète (mêmes vérifications)
 
   test.each(['mma-amara', 'inaya', 'kanya'])('%s : chaque tenue reçoit le même champ que le corps (aucun écart nouveau)', async (id) => {
     const files = readdirSync(`${PUB}/${id}/tenues`).filter((f) => f.endsWith('.glb'));
