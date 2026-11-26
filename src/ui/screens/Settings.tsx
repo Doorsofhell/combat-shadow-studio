@@ -2,7 +2,7 @@ import { championFor } from '../../domain/coaches/catalog';
 import { DISCIPLINES, LEVELS } from '../../domain/types';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { LATEST_RELEASE, hasUnseenRelease } from '../../domain/releases';
+import { LATEST_RELEASE_VERSION, hasUnseenRelease } from '../../domain/releaseNotice';
 import { openNews } from '../nav/BottomBar';
 import { CONSIGNE_SECS, PULSE_STYLES, PulseStyle, useSettings } from '../../store/settings';
 import { useProfile } from '../../store/profile';
@@ -184,7 +184,7 @@ export function SettingsPage() {
           <SetAction
             icon="notifications"
             title="Nouveautés"
-            summary={`Version ${LATEST_RELEASE.version}${unseen ? ' · à découvrir' : ''}`}
+            summary={`Version ${LATEST_RELEASE_VERSION}${unseen ? ' · à découvrir' : ''}`}
             dot={unseen}
             dotTestId="news-dot"
             onClick={openNews}

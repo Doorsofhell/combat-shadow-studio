@@ -1,6 +1,7 @@
 import { Bone, Mesh, Object3D, Quaternion, Vector3 } from 'three';
 import { BehaviorEngine, HUMAN_STATES, NEUTRAL_MOOD, type HumanSignals, type HumanState, type Mood } from './human/behavior';
 import { faceCapabilities, type FaceCapabilities } from './human/capabilities';
+import { FACE_EXPRESSIONS, type FaceExpression } from './human/expressions';
 import { DEFAULT_PROFILE, type HumanProfile } from './human/profiles';
 import { MicroLife } from './human/micro';
 import { FaceWrinkles } from './human/wrinkles';
@@ -39,14 +40,9 @@ export interface FaceOptions {
   state?: HumanState;
 }
 
-/** the expressions used, by ARKit name (the model's targets are named AK_nn_<name>) */
-export const FACE_EXPRESSIONS = [
-  'BrowDownLeft', 'BrowDownRight', 'BrowInnerUp', 'CheekPuff', 'CheekSquintLeft', 'CheekSquintRight', 'EyeBlinkLeft',
-  'EyeBlinkRight', 'EyeSquintLeft', 'EyeSquintRight', 'EyeWideLeft', 'EyeWideRight', 'JawOpen', 'MouthClose',
-  'MouthFrownLeft', 'MouthFrownRight', 'MouthFunnel', 'MouthPressLeft', 'MouthPressRight', 'MouthSmileLeft',
-  'MouthSmileRight', 'MouthStretchLeft', 'MouthStretchRight', 'NoseSneerLeft', 'NoseSneerRight',
-] as const;
-export type FaceExpression = (typeof FACE_EXPRESSIONS)[number];
+// 2.10.6: the list lives in human/expressions.ts (capabilities.ts needs it; face.ts and capabilities.ts imported
+// each other). Re-exported for the readers of this file.
+export { FACE_EXPRESSIONS, type FaceExpression } from './human/expressions';
 
 /**
  * the face for a given blink (0..1), effort (0..1) and exhale (0..1): weights of the expressions. Effort: brows

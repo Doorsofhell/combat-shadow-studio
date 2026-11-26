@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LATEST_RELEASE, hasUnseenRelease } from '../../domain/releases';
+import { LATEST_RELEASE_VERSION, hasUnseenRelease } from '../../domain/releaseNotice';
 import { usePhoto } from '../../store/photo';
 import { initials, useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
@@ -62,7 +62,7 @@ export function openSearch() {
 export function openNews() {
   const st = useNavStore.getState();
   if (st.sheet) return;
-  useSettings.getState().set({ newsSeenVersion: LATEST_RELEASE.version });
+  useSettings.getState().set({ newsSeenVersion: LATEST_RELEASE_VERSION });
   const layer = pushLayer(() => useNavStore.getState().setSheet(null));
   st.setSheet('news', layer);
 }
