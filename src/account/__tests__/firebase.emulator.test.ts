@@ -56,6 +56,10 @@ describe.skipIf(!RUN)('Firebase (émulateurs)', () => {
 
     // v0.37: only the six known collections; the future Premium licence is readable, never writable by the app
     await expect(db.push(u.uid, 'evil', { ...doc, collection: 'evil' })).rejects.toBeTruthy();
+    // 2.10.3: one history document per quarter is accepted, nothing else that looks like it
+    await db.push(u.uid, 'stats-2026-t4', { ...doc, collection: 'stats-2026-t4' });
+    await expect(db.push(u.uid, 'stats-2026-t5', { ...doc, collection: 'stats-2026-t5' })).rejects.toBeTruthy();
+    expect(await db.list!(u.uid)).toContain('stats-2026-t4');
     const fs = await import('firebase/firestore');
     const store = fs.getFirestore(await firebaseApp(cfg));
     const premium = fs.doc(store, 'users', u.uid, 'entitlements', 'premium');
