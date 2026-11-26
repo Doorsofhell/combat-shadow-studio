@@ -6144,7 +6144,10 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     changement ;
   - captures après correction en garde (face, 3/4, dos), high kick, genou, low kick (`apres-mma.jpg`,
     `apres-kickboxing.jpg`) : aucun trou ;
-  - suite complète : voir ci-dessous.
+  - suite complète sur la 2.10.4 finale : Vitest TEST RÉUSSI (1886 réussis, 1 ignoré, 158 fichiers) ; `npm run build` TEST RÉUSSI ;
+    Playwright 333 TEST RÉUSSI, 2 NON EXÉCUTÉ (Firebase), 2 ÉCHOUÉ en fin de suite (1,5 h) : `chrono-seul.spec.ts:96` et
+    `training-layout.spec.ts:117`, sans lien avec les tenues ; relancés seuls : 2 TEST RÉUSSI (instabilité sous charge, non une régression) ;
+    Android réel NON EXÉCUTÉ.
 - **Ceintures** : la suite complète a ensuite fait échouer `amara-finish-v1380` (« au repos, chaque bande est posée
   sur la peau, à moins de 13 mm ») : 13,6 mm pour la ceinture MMA et 13,2 mm pour la ceinture kickboxing, le corps
   resculpté en 2.10.0 étant un peu plus fin à la taille. Les deux ceintures sont rapprochées de la peau de 1,2 mm, forme
