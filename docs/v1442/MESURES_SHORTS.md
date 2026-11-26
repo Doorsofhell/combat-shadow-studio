@@ -21,11 +21,11 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 | mma-kadir | mma | short-vale-tudo | 4012 | 0 | 2 | 9 | 0 | 1.1 % |
 | mma-kadir | mma | short-vale-tudo | 1864 | 0 | 0 | 0 | 0 | 67.2 % |
 | mma-amara | boxe | short-boxe | 7952 | 0 | 0 | 40 | 0 | 0.0 % |
-| mma-amara | kickboxing | short-kick | 7700 | 0 | 0 | 24 | 0 | 0.0 % |
+| mma-amara | kickboxing | short-kick | 7788 | 0 | 0 | 15 | 0 | 5.4 % |
 | mma-amara | muaythai | short-thai | 7900 | 0 | 0 | 40 | 0 | 0.0 % |
-| mma-amara | mma | short-vale-tudo | 8594 | 0 | 0 | 23 | 0 | 0.0 % |
-| mma-amara | mma | short-vale-tudo | 280 | 0 | 0 | 0 | 0 | 0.0 % |
-| mma-amara | mma | short-vale-tudo | 130 | 0 | 0 | 0 | 0 | 0.0 % |
+| mma-amara | mma | short-vale-tudo | 8716 | 0 | 0 | 10 | 0 | 5.3 % |
+| mma-amara | mma | short-vale-tudo | 294 | 0 | 0 | 0 | 0 | 0.0 % |
+| mma-amara | mma | short-vale-tudo | 122 | 0 | 0 | 0 | 0 | 0.0 % |
 | nael | boxe | short-boxe | 5484 | 0 | 4 | 22 | 0 | 1.6 % |
 | nael | boxe | short-boxe | 3300 | 0 | 0 | 1 | 0 | 0.0 % |
 | nael | kickboxing | short-kick | 5838 | 0 | 4 | 12 | 0 | 1.8 % |
@@ -107,31 +107,31 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 | mma-amara | boxe | genou | 2.31 | 71.5 | 1.2 % |
 | mma-amara | boxe | changement de niveau | 2.38 | 71.8 | 0.9 % |
 | mma-amara | boxe | low kick | 2.17 | 68.4 | 0.7 % |
-| mma-amara | kickboxing | garde | 1.67 | 63.9 | 0.0 % |
-| mma-amara | kickboxing | high kick | 4.07 | 87.3 | 0.4 % |
-| mma-amara | kickboxing | genou | 2.46 | 72.2 | 0.5 % |
-| mma-amara | kickboxing | changement de niveau | 2.37 | 71.2 | 0.3 % |
-| mma-amara | kickboxing | low kick | 2.12 | 67.9 | 0.2 % |
+| mma-amara | kickboxing | garde | 1.91 | 65.2 | 0.3 % |
+| mma-amara | kickboxing | high kick | 5.12 | 112.8 | 0.6 % |
+| mma-amara | kickboxing | genou | 2.81 | 93.6 | 0.9 % |
+| mma-amara | kickboxing | changement de niveau | 2.76 | 77.3 | 0.4 % |
+| mma-amara | kickboxing | low kick | 2.46 | 72.2 | 0.6 % |
 | mma-amara | muaythai | garde | 1.56 | 66.4 | 0.3 % |
 | mma-amara | muaythai | high kick | 3.81 | 84.1 | 1.3 % |
 | mma-amara | muaythai | genou | 2.36 | 72.2 | 2.1 % |
 | mma-amara | muaythai | changement de niveau | 2.05 | 71.5 | 0.5 % |
 | mma-amara | muaythai | low kick | 1.84 | 71.2 | 1.0 % |
-| mma-amara | mma | garde | 2.21 | 53.0 | 0.4 % |
-| mma-amara | mma | high kick | 5.08 | 61.8 | 1.0 % |
-| mma-amara | mma | genou | 2.76 | 57.3 | 1.5 % |
-| mma-amara | mma | changement de niveau | 2.86 | 50.8 | 0.8 % |
-| mma-amara | mma | low kick | 2.55 | 58.6 | 1.1 % |
+| mma-amara | mma | garde | 2.53 | 56.2 | 0.6 % |
+| mma-amara | mma | high kick | 5.68 | 91.1 | 1.2 % |
+| mma-amara | mma | genou | 3.23 | 79.9 | 1.9 % |
+| mma-amara | mma | changement de niveau | 3.53 | 71.3 | 0.8 % |
+| mma-amara | mma | low kick | 2.92 | 67.3 | 1.0 % |
 | nael | boxe | garde | 1.75 | 59.8 | 0.6 % |
 | nael | boxe | high kick | 3.19 | 65.3 | 1.7 % |
 | nael | boxe | genou | 2.39 | 65.4 | 1.7 % |
 | nael | boxe | changement de niveau | 2.28 | 63.9 | 1.2 % |
 | nael | boxe | low kick | 2.12 | 61.4 | 1.1 % |
-| nael | kickboxing | garde | 1.70 | 56.8 | 0.5 % |
-| nael | kickboxing | high kick | 3.31 | 64.6 | 1.1 % |
-| nael | kickboxing | genou | 2.40 | 65.5 | 1.1 % |
-| nael | kickboxing | changement de niveau | 2.32 | 63.3 | 0.9 % |
-| nael | kickboxing | low kick | 2.07 | 60.1 | 0.8 % |
+| nael | kickboxing | garde | 2.11 | 58.5 | 0.5 % |
+| nael | kickboxing | high kick | 3.86 | 91.9 | 0.6 % |
+| nael | kickboxing | genou | 3.05 | 87.6 | 0.5 % |
+| nael | kickboxing | changement de niveau | 2.66 | 81.8 | 0.6 % |
+| nael | kickboxing | low kick | 2.33 | 70.6 | 0.5 % |
 | nael | muaythai | garde | 1.56 | 64.4 | 0.7 % |
 | nael | muaythai | high kick | 3.01 | 65.2 | 2.0 % |
 | nael | muaythai | genou | 2.45 | 66.7 | 3.0 % |
@@ -192,11 +192,11 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 | kanya | kickboxing | genou | 2.73 | 55.4 | 1.9 % |
 | kanya | kickboxing | changement de niveau | 2.68 | 47.0 | 1.5 % |
 | kanya | kickboxing | low kick | 2.38 | 59.0 | 1.4 % |
-| kanya | muaythai | garde | 1.62 | 61.7 | 0.2 % |
-| kanya | muaythai | high kick | 3.83 | 75.6 | 0.8 % |
-| kanya | muaythai | genou | 2.57 | 66.1 | 0.9 % |
-| kanya | muaythai | changement de niveau | 2.25 | 59.4 | 0.3 % |
-| kanya | muaythai | low kick | 1.94 | 67.7 | 0.5 % |
+| kanya | muaythai | garde | 1.81 | 61.5 | 0.2 % |
+| kanya | muaythai | high kick | 4.82 | 104.7 | 0.6 % |
+| kanya | muaythai | genou | 2.90 | 83.2 | 0.6 % |
+| kanya | muaythai | changement de niveau | 2.72 | 70.9 | 0.3 % |
+| kanya | muaythai | low kick | 2.17 | 74.4 | 0.5 % |
 | kanya | mma | garde | 2.25 | 47.1 | 1.2 % |
 | kanya | mma | high kick | 5.01 | 55.1 | 1.7 % |
 | kanya | mma | genou | 2.73 | 50.9 | 2.0 % |

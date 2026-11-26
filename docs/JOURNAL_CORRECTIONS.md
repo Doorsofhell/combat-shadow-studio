@@ -6112,3 +6112,62 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     relancés seuls : `chrono-seul:68` et `maj-modeles-v236:137` TEST RÉUSSI ; `coachs-v160:77` (360×640, libellé
     « Revenir en garde ») échoue une fois sur deux, aussi sur la 2.10.2 sans cette correction (vérifié dans une copie
     de `39c7dda`), puis TEST RÉUSSI deux fois de suite : instabilité existante, sans lien avec la synchronisation.
+
+## 2026-11-26 · 2.10.4 · Shorts d'Amara en MMA et kickboxing : la peau passait à travers (« déchirures »)
+
+- **Signalement** : « Les tenues de MMA et kick boxing de Amara ont été altérées, on dirait des déchirures » (captures du
+  site en ligne, 2.10.2, en garde).
+- **Constat vérifié** (captures WebGL du Lab, Amara en garde, de face et de 3/4, `docs/v2104/`) :
+  - short intact en 2.7.0 ; peau des cuisses visible à travers le tissu, bords en dents de scie, en 2.10.0, 2.10.1 et
+    2.10.2 (`versions-mma.jpg`, `versions-kickboxing.jpg`) ;
+  - essai croisé : corps 2.10.2 + tenue 2.7.0 intact, corps 2.7.0 + tenue 2.10.2 troué (`avant-croise-*.jpg`) : la
+    cause est dans les fichiers de tenue, pas dans le corps ni dans le visage ;
+  - les shorts 2.10.0 ont été réajustés sur le corps resculpté (points déplacés de 9 mm en médiane, 22 mm au plus) puis
+    lissés par `tools/generator/rocketbox/short_poids.py --auto` (marque `cssShortPoids`, prototype « 2.4.0 », plis
+    retournés). Ce lissage décolle le short de la cuisse : appliqué au short 2.7.0, il refait les trous
+    (`essai-lissage-ecarte.jpg`). Boxe, muay-thaï et no-gi d'Amara : intacts.
+  - pourquoi les tests ne l'ont pas vu : `shorts-v1442` mesure le tissu qui s'enfonce *par rapport au repos* et le masque
+    de peau calculé sur le fichier, pas le rendu une fois la morphologie du coach appliquée.
+- **Correction** :
+  - shorts MMA et kickboxing d'Amara repris de la 2.7.0, sans le lissage des poids ; leur masque de peau (`hideBody`)
+    recalculé point par point pour le corps actuel (`tools/generator/rocketbox/remap_masque.py`, nouvel outil) : 3596
+    et 9270 points cachés, autant qu'en 2.7.0 sur l'ancien corps. Corps, visage, couleurs, textures et autres tenues
+    inchangés. `src/boot/assetSizes.json` régénéré.
+  - ce qui est perdu : les ourlets redressés et les plis lissés de 2.10.0 sur ces deux shorts (aucune différence visible
+    sur les captures).
+- **Tests** :
+  - nouveau `src/three/__tests__/shorts-amara-v2104.test.ts` : le masque de chaque tenue d'Amara retrouve au moins 90 %
+    de ses points sur le corps livré ; les shorts MMA et kickboxing ne portent pas le lissage. Il échoue sur les fichiers
+    2.10.2 (marque `cssShortPoids`) ;
+  - `plis-shorts-v240` modifié, raison : la limite de 3 % des shorts « traités » ne vaut plus pour ces deux shorts, dont
+    le traitement est retiré parce qu'il crée le défaut ; ils reprennent la limite commune de 4,5 % d'avant le traitement
+    (mesuré 3,3 % au pire, genou en kickboxing). Aucune autre limite changée. `shorts-v1442` : TEST RÉUSSI sans
+    changement ;
+  - captures après correction en garde (face, 3/4, dos), high kick, genou, low kick (`apres-mma.jpg`,
+    `apres-kickboxing.jpg`) : aucun trou ;
+  - suite complète : voir ci-dessous.
+- **Ceintures** : la suite complète a ensuite fait échouer `amara-finish-v1380` (« au repos, chaque bande est posée
+  sur la peau, à moins de 13 mm ») : 13,6 mm pour la ceinture MMA et 13,2 mm pour la ceinture kickboxing, le corps
+  resculpté en 2.10.0 étant un peu plus fin à la taille. Les deux ceintures sont rapprochées de la peau de 1,2 mm, forme
+  inchangée (`tools/generator/rocketbox/resserre_ceinture.py`, nouvel outil, marque `cssBandResserree`) : test réussi
+  sans changer sa limite ; captures de la taille en garde (face, 3/4, dos), crochet et high kick :
+  `docs/v2104/apres-ceintures.jpg`.
+- **Tenue d'arbitre** (`arbitre.glb`) : ce n'est pas une tenue de coach (Amara a une tenue par discipline) ; elle sert
+  seulement à refaire les quatre illustrations fixes de la rubrique Règles de l'encyclopédie, déjà rendues en .webp et
+  intactes. Son masque de peau ne retrouve que 70 % de ses points depuis la 2.7.0 (`arbitre-masque-a-reprendre.jpg`) :
+  à reprendre avant toute nouvelle illustration ; hors du nouveau test.
+- **Reprise sur la 2.10.3 publiée** (Youssef, 26/11 14 h 42, captures du téléphone : « les shorts de mma & kick sont
+  déchirés pour AMARA ») : cette correction, préparée le matin sur une branche non publiée, est reprise telle quelle
+  sur la 2.10.3 en ligne (`eb7638c`) et revérifiée à l'écran (défaut reproduit sur la 2.10.3, absent après). En plus :
+  - ourlets des deux shorts d'Amara redressés à nouveau (`hem_straight.py`, hauteur des points du bas seulement ; 2,5
+    et 3,5 mm d'écart -> 0) : les fichiers 2.7.0 avaient perdu ce redressement ;
+  - contrôle des 24 shorts des six coachs (garde, face et 3/4 des deux côtés) : mêmes plaques de peau, plus petites, sur
+    le short thaï de Kanya et le short kickboxing de Naël, eux aussi lissés par `short_poids.py --auto`. Leur maillage
+    est celui de la 2.9.0 : leurs poids d'avant le lissage sont repris (`tools/generator/rocketbox/poids_avant.py`,
+    nouvel outil, marque `cssPoidsAvant` ; points, ourlets, UV, couleurs et masque inchangés). Plus de plaques.
+    Les autres shorts lissés (Kanya MMA, kickboxing, boxe ; Naël boxe, muay-thaï ; Victor ; Amara boxe et muay-thaï) :
+    aucun défaut visible, laissés tels quels ;
+  - tests : `shorts-amara-v2104` vérifie aussi ces deux shorts ; `plis-shorts-v240` leur donne la limite commune de
+    4,5 % (raison : traitement retiré parce qu'il crée le défaut) ;
+  - planche avant / après : `docs/v2104/avant-apres-2104.jpg`.
+- **Restauration** : branche `restauration/avant-shorts-amara-v2104` (= 2.10.3 publiée, `eb7638c`).

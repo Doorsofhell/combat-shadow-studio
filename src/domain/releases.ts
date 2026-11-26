@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.10.4',
+      releaseDate: '2026-11-26',
+      title: 'Shorts d’Amara réparés',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Les shorts d’Amara en MMA et en kickboxing ne laissent plus voir la peau des cuisses à travers le tissu : plus d’effet de déchirure, en garde comme pendant les coups de pied.' },
+        { category: 'corrections', text: 'Même petit défaut corrigé sur le short de muay-thaï de Kanya et le short de kickboxing de Naël ; les autres shorts des six coachs ont été vérifiés.' },
+      ],
+      links: [],
+    },
+    {
       version: '2.10.3',
       releaseDate: '2026-11-26',
       title: 'Sauvegarde en ligne plus solide',
