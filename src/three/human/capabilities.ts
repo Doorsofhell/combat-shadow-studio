@@ -9,7 +9,7 @@
  * - minimal: eyes or head only (gaze and head life, no expressions);
  * - aucun: no head bone at all (the generated fallback models): the body behaviour of the motion engine only.
  */
-import { FACE_EXPRESSIONS } from '../face';
+import { FACE_EXPRESSIONS } from './expressions';
 
 export type FaceLevel = 'complet' | 'os' | 'minimal' | 'aucun';
 

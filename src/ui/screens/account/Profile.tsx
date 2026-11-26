@@ -33,7 +33,7 @@ import { DisciplineLabel, Chip, ConfirmDialog, PanelRow, Segmented, SetGroup, Se
 import { AppIcon, DisciplineIcon } from '../../icons';
 import { NavIcon } from '../../nav/NavIcon';
 import { openNews } from '../../nav/BottomBar';
-import { hasUnseenRelease } from '../../../domain/releases';
+import { hasUnseenRelease } from '../../../domain/releaseNotice';
 import { useSettings } from '../../../store/settings';
 import { PasswordField } from './SignIn';
 import { BmiCard } from './BmiCard';

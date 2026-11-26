@@ -6170,6 +6170,11 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - tests : `shorts-amara-v2104` vérifie aussi ces deux shorts ; `plis-shorts-v240` leur donne la limite commune de
     4,5 % (raison : traitement retiré parce qu'il crée le défaut) ;
   - planche avant / après : `docs/v2104/avant-apres-2104.jpg`.
+- **Tests de publication (2.10.4, sur l'arbre fusionné)** : `npx vitest run` 1 895 TEST RÉUSSI (1 ignoré) ; `npm run build`
+  TEST RÉUSSI ; `npx playwright test` complet (337, 1 h 24) : 333 TEST RÉUSSI, 2 NON EXÉCUTÉ (Firebase), 2 échecs
+  relancés seuls : `chrono-seul:96` TEST RÉUSSI ; `coachs-v160:77` (400×820) échoue encore une fois puis TEST RÉUSSI
+  4 fois sur 4 : instabilité déjà notée en 2.10.3, sans lien avec les tenues. Publiée le 26/11 à 15 h 31 (Paris) après
+  « je valide » : PR #159 (`0316e08`), GitHub Pages vérifié (`version.json` 2.10.4).
 - **Restauration** : branche `restauration/avant-shorts-amara-v2104` (= 2.10.3 publiée, `eb7638c`).
 
 ## 2026-11-26 · v2.10.5 · L'univers du coach dans la carte « Ton coach » de l'Accueil
@@ -6210,3 +6215,45 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   quelques plans de fumée, sans post-traitement) ; elle suit la qualité choisie (emblème en 384×540 en qualité légère).
   Non mesuré sur un vrai téléphone.
 - **Restauration** : branche `restauration/avant-accueil-univers-v2105` (= 2.10.4 publiée, `010461f`).
+
+## 2026-11-26 · v2.10.6 · Code sans boucles et Nouveautés chargées à la demande
+
+- **Demande** (Youssef, 26/11 20 h 56, après le graphe du code graphify de la 2.10.5) : propositions 1 et 2.
+- **Constat vérifié sur la 2.10.5 publiée** (`6256cc2`) :
+  - le graphe (`graphify update .`, 7 437 nœuds) et une recherche dans `src/` trouvent trois paires de fichiers qui
+    s'importent l'une l'autre : `engine/phases.ts` ↔ `engine/study.ts`, `ui/nav/NavSheets.tsx` ↔
+    `ui/nav/SearchSheet.tsx`, `three/face.ts` ↔ `three/human/capabilities.ts`. Aucune panne constatée, mais l'ordre
+    de chargement de ces fichiers décide si une valeur est déjà définie quand l'autre la lit ;
+  - `releases.ts` (tout l'historique, 115 ko de source) était importé par la barre du bas, le menu, les Réglages et le
+    profil, juste pour comparer la dernière version vue : le morceau `BottomBar` pesait 114,6 ko (32,3 ko gzip) et
+    se chargeait sur chaque écran.
+- **Correction** (aucun changement de comportement ni d'affichage) :
+  - `src/engine/analysis.ts` (nouveau) reçoit `analyseMotion`, `Effector` et `StudyAnalysis`, sans modification ;
+    `study.ts` les réexporte ;
+  - `src/ui/nav/NavPanel.tsx` (nouveau) reçoit `NavPanel`, sans modification ; `NavSheets.tsx` le réexporte ;
+  - `src/three/human/expressions.ts` (nouveau) reçoit la liste `FACE_EXPRESSIONS`, sans modification ; `face.ts` la
+    réexporte. Moteur humain, visages et expressions inchangés ;
+  - `src/domain/releaseNotice.ts` (nouveau) : dernière version = version du paquet (`VITE_APP_VERSION`, sans
+    « -protoN »), `hasUnseenRelease`, `releaseDateLabel`. La barre, le menu des sections, les Réglages et le profil
+    le lisent ; la liste des Nouveautés passe dans `src/ui/nav/NewsList.tsx`, chargée (`lazy`) à l'ouverture du
+    panneau.
+- **Mesure** (`npm run build` puis ouverture de l'app dans Chromium, même machine) : `BottomBar` 114,6 → 16,6 ko
+  (32,3 → 5,1 ko gzip) ; nouveau morceau `NewsList` 99,4 ko chargé seulement à l'ouverture des Nouveautés ; JS
+  téléchargé à l'ouverture de l'app 2 264 → 2 169 ko (−4 %). Le plus gros morceau restant est `atmosphere`
+  (925 ko), non touché ici.
+- **Fichiers** : `src/engine/{analysis,study,phases}.ts`, `src/three/face.ts`, `src/three/human/{expressions,capabilities}.ts`,
+  `src/ui/nav/{NavPanel,NewsList,NavSheets,SearchSheet,BottomBar,SectionTabs}.tsx`, `src/ui/screens/Settings.tsx`,
+  `src/ui/screens/account/Profile.tsx`, `src/domain/{releaseNotice,releases}.ts`, `package.json`, `README.md`,
+  `docs/ETAT.md`, `docs/NON_REGRESSION.md`, `tests/e2e/navigation.spec.ts`, `.graphifyignore`, `.gitignore` (sortie `graphify-out/`).
+- **Tests** :
+  - nouveau `src/ui/nav/__tests__/chargement-v2106.test.ts` (4) : aucun fichier de `src/` n'importe un fichier qui
+    l'importe ; les trois boucles sont cassées ; la dernière version de la barre est la première des Nouveautés et
+    celle du paquet ; seule `NewsList.tsx` (chargée à la demande) lit `releases.ts` dans l'app : TEST RÉUSSI ;
+  - Vitest complet : 1 903 TEST RÉUSSI (1 ignoré) ; `npx tsc -b` et `npm run build` : TEST RÉUSSI ;
+  - Playwright complet (340, 1 h 12) : 337 TEST RÉUSSI, 2 NON EXÉCUTÉ (Firebase), 1 ÉCHOUÉ :
+    `navigation.spec:196` lisait les versions dès l'ouverture du panneau, avant l'arrivée de la liste chargée à la
+    demande. Le test attend maintenant que la liste soit affichée avant de la lire (mêmes vérifications, aucune
+    retirée) ; `navigation.spec` relancé seul (28) : TEST RÉUSSI. La liste est dans le précache hors ligne
+    (`dist/sw.js` contient `NewsList`).
+- **Captures** : NON APPLICABLE (rien ne change à l'écran).
+- **Restauration** : branche `restauration/avant-boucles-v2106` (= 2.10.5 publiée, `6256cc2`).

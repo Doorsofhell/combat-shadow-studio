@@ -6,7 +6,7 @@ import { useCatalog } from '../../store/catalog';
 import { useCoachAi } from '../../store/coachAi';
 import { useCoachContext } from '../coach-ai/useCoachContext';
 import { NavIcon } from './NavIcon';
-import { NavPanel } from './NavSheets';
+import { NavPanel } from './NavPanel';
 import { haptic } from './BottomBar';
 import { useSearchScopeStore } from './store';
 import { useLocation } from 'react-router-dom';
