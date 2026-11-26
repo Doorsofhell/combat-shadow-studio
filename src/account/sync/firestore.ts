@@ -23,8 +23,23 @@ export async function createFirestoreAdapter(cfg: FirebaseWebConfig, emulator?: 
     db = m.getFirestore(app);
   }
   const ref = (uid: string, c: string) => m.doc(db, 'users', uid, 'sync', c);
+  // 2.10.3: listing reads the documents anyway; a pull in the next 10 s (the same pass) uses that copy once
+  const listed = new Map<string, SyncDoc>();
+  let listedAt = 0;
   return {
+    list: async (uid) => {
+      const snap = await m.getDocs(m.collection(db, 'users', uid, 'sync'));
+      listed.clear();
+      listedAt = Date.now();
+      snap.forEach((d) => void listed.set(`${uid}/${d.id}`, d.data() as SyncDoc));
+      return snap.docs.map((d) => d.id);
+    },
     pull: async (uid, c) => {
+      const hit = Date.now() - listedAt < 10_000 ? listed.get(`${uid}/${c}`) : undefined;
+      if (hit) {
+        listed.delete(`${uid}/${c}`);
+        return hit;
+      }
       const snap = await m.getDoc(ref(uid, c));
       return snap.exists() ? (snap.data() as SyncDoc) : null;
     },

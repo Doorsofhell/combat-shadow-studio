@@ -17,6 +17,13 @@ export interface CollectionDef {
   snapshot(): Snapshot;
   apply(s: Snapshot): void;
   subscribe(cb: () => void): () => void;
+  /** 2.10.3: not sent while a training session runs (the engine sends it at the pause and at the end) */
+  hold?: boolean;
+  /**
+   * 2.10.3: a document from older versions that is read once per device and never written again. Its live items are
+   * added to the store unless one of the documents whose name starts with `into` already knows them (live or deleted).
+   */
+  importOnly?: { into: string };
 }
 
 /** profile fields that never leave the device */
@@ -46,16 +53,45 @@ const profileDef: CollectionDef = {
   subscribe: (cb) => useProfile.subscribe((s, p) => s.profile !== p.profile && cb()),
 };
 
-const statsDef: CollectionDef = {
-  name: 'stats',
-  snapshot: () => ({ fields: {}, items: byId(useStats.getState().sessions) }),
+/**
+ * 2.10.3 (audit ponytail n°1): the history is split into one document per quarter (`stats-2026-t4`), because
+ * Firestore refuses a document over 1 MiB and one document for the whole history reached it after ~2 000 records.
+ * A quarter holds at most a few hundred records. The quarter is read from the UTC start, the same on every device.
+ */
+export const STATS_PREFIX = 'stats-';
+export const LEGACY_STATS = 'stats';
+export const statsShardOf = (start: string) => `${STATS_PREFIX}${start.slice(0, 4)}-t${Math.floor((Number(start.slice(5, 7)) - 1) / 3) + 1}`;
+export const isStatsShard = (name: string) => /^stats-\d{4}-t[1-4]$/.test(name);
+
+function setSessions(sessions: SessionRecord[]) {
+  sessions.sort((a, b) => a.start.localeCompare(b.start));
+  const perExercise: Record<string, number> = {};
+  for (const s of sessions) perExercise[s.exerciseId] = (perExercise[s.exerciseId] ?? 0) + s.activeSec;
+  useStats.setState({ sessions, perExercise });
+}
+
+export function statsShardDef(name: string): CollectionDef {
+  const mine = (s: SessionRecord) => statsShardOf(s.start) === name;
+  return {
+    name,
+    hold: true,
+    snapshot: () => ({ fields: {}, items: byId(useStats.getState().sessions.filter(mine)) }),
+    apply: ({ items }) => setSessions([...useStats.getState().sessions.filter((s) => !mine(s)), ...(Object.values(items) as SessionRecord[])]),
+    subscribe: (cb) => useStats.subscribe((s, p) => s.sessions !== p.sessions && cb()),
+  };
+}
+
+/** the single history document of versions up to 2.10.2: read once, never written (older devices may still use it) */
+const legacyStatsDef: CollectionDef = {
+  name: LEGACY_STATS,
+  importOnly: { into: STATS_PREFIX },
+  snapshot: () => ({ fields: {}, items: {} }),
   apply: ({ items }) => {
-    const sessions = (Object.values(items) as SessionRecord[]).sort((a, b) => a.start.localeCompare(b.start));
-    const perExercise: Record<string, number> = {};
-    for (const s of sessions) perExercise[s.exerciseId] = (perExercise[s.exerciseId] ?? 0) + s.activeSec;
-    useStats.setState({ sessions, perExercise });
+    const known = new Set(useStats.getState().sessions.map((s) => s.id));
+    const added = (Object.values(items) as SessionRecord[]).filter((s) => s && typeof s.id === 'string' && typeof s.start === 'string' && !known.has(s.id));
+    if (added.length) setSessions([...useStats.getState().sessions, ...added]);
   },
-  subscribe: (cb) => useStats.subscribe((s, p) => s.sessions !== p.sessions && cb()),
+  subscribe: () => () => undefined,
 };
 
 const customDef: CollectionDef = {
@@ -126,5 +162,17 @@ const catalogDef: CollectionDef = {
   subscribe: (cb) => useCatalogUser.subscribe((s, p) => (s.favorites !== p.favorites || s.collections !== p.collections || s.history !== p.history || s.imported !== p.imported) && cb()),
 };
 
-/** synchronised collections. The settings stay on the device; AI coach data is not synchronised. */
-export const COLLECTIONS: CollectionDef[] = [profileDef, statsDef, customDef, goalsDef, fightersDef, catalogDef];
+/** synchronised collections with a fixed name. The settings stay on the device; AI coach data is not synchronised. */
+export const COLLECTIONS: CollectionDef[] = [profileDef, customDef, goalsDef, fightersDef, catalogDef];
+
+/**
+ * every collection the engine handles: the fixed ones, one per quarter of history (known on this device or found on
+ * the server) and the old single history document, read last.
+ */
+export function syncDefs(remote: string[] = []): CollectionDef[] {
+  const shards = new Set([...useStats.getState().sessions.map((s) => statsShardOf(s.start)), ...remote.filter(isStatsShard)]);
+  return [...COLLECTIONS, ...[...shards].sort().map(statsShardDef), legacyStatsDef];
+}
+
+/** names to delete for « Supprimer mes données »: everything this device knows plus what the server lists */
+export const allSyncNames = (remote: string[] = []) => [...new Set([...syncDefs(remote).map((d) => d.name), ...remote])];

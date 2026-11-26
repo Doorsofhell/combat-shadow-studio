@@ -6066,3 +6066,49 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     Youssef.
 - **Restauration** : `restauration/avant-blocages-v2102` (= 2.10.1, `4ba4ccd`) ; avant des crochets seuls : Lab
   `?v230=-hookDirect` ou `V230=-hookDirect` pour les tests.
+
+## 2026-11-26 · v2.10.3 · Sauvegarde en ligne : historique par trimestre, pas d’envoi pendant la séance (audit ponytail n°1 et n°2)
+
+- **Demande** : Youssef, « corrige les deux défauts de la sauvegarde en ligne trouvés par l’audit » (audit ponytail du
+  26/11, `/mnt/project-files/audits/ponytail-audit-2026-11-26.md`).
+- **Constat n°1 (vérifié dans le code)** : tout l’historique d’un compte partait dans un seul document Firestore
+  `users/{uid}/sync/stats`, et Firestore refuse un document de plus de 1 Mio. Mesure du nouveau test : trois ans à
+  10 exercices par jour donnent un document bien au-delà de la limite. La synchronisation traitait les six collections
+  dans un seul `try` : dès que les stats échouaient, combinaisons, objectifs, combattants et catalogue n’étaient plus
+  envoyés non plus, avec un message générique.
+- **Constat n°2 (vérifié dans le code)** : pendant une séance, le temps est écrit toutes les 5 s et chaque répétition
+  ajoute une écriture ; chaque changement relançait 1,5 s plus tard une synchronisation complète (6 lectures et la
+  réécriture du document entier des stats). Environ 720 écritures et 4 300 lectures par heure d’entraînement, pour un
+  quota gratuit de 20 000 écritures et 50 000 lectures par jour pour tout le projet.
+- **Correction** :
+  - historique découpé en un document par trimestre (`stats-2026-t4`, trimestre lu sur la date UTC de début, la même
+    sur tous les appareils). Trois ans intensifs : chaque document reste sous la moitié de la limite (test) ;
+  - l’ancien document `stats` (2.10.2 et avant) est lu une fois par appareil, jamais réécrit ni effacé par la 2.10.3
+    (un appareil resté en 2.10.2 continue de l’utiliser) ; une séance déjà connue ou supprimée dans un trimestre n’est
+    pas ramenée ;
+  - garde de taille avant l’envoi (900 000 octets) avec un message clair, et chaque collection a son propre essai :
+    une collection refusée reste en file d’attente sans bloquer les autres ;
+  - un changement local ne relit et n’envoie que sa collection (1 lecture + 1 écriture) ; le passage complet n’a lieu
+    qu’au démarrage, au retour du réseau et sur « Synchroniser ». Le passage complet liste les documents du compte
+    (pour trouver les trimestres créés par un autre appareil) et réutilise cette lecture pour ne pas lire deux fois ;
+  - pendant une séance (`src/account/syncHold.ts`, posé par `useSession` tant que la séance tourne), l’historique est
+    seulement écrit sur l’appareil ; il est envoyé une fois à la pause, à la fin ou en quittant la séance ;
+  - « Supprimer mes données » et la suppression du compte effacent aussi tous les trimestres listés sur le serveur ;
+  - règles Firestore : `stats-AAAA-tN` accepté en plus des six noms existants.
+- **À faire par Youssef** : déployer les nouvelles règles (`npx firebase-tools deploy --only firestore:rules`, ou les
+  coller dans la console Firebase). Tant qu’elles ne sont pas déployées, l’historique reste sur l’appareil (rien n’est
+  perdu) et le reste de la sauvegarde continue ; le message « accès refusé » s’affiche.
+- **Fichiers** : `src/account/sync/{engine,collections,firestore}.ts`, `src/account/session.ts`,
+  `src/account/syncHold.ts` (nouveau), `src/ui/training/useSession.ts`, `firestore.rules`,
+  `src/account/__tests__/sync-audit.test.ts` (nouveau, 7 tests), `src/account/__tests__/session.test.ts`,
+  `src/account/__tests__/firebase.emulator.test.ts`, `src/domain/releases.ts`, `package.json` (2.10.3).
+- **Tests modifiés (raison)** : `session.test` « synchronisation activée » attendait les stats dans `uid-1/stats` ; il
+  les attend maintenant dans `uid-1/stats-2026-t4` et vérifie que l’ancien document n’est plus écrit (même contrôle,
+  nouvel emplacement) ; « supprimer mes données » vérifie en plus qu’il ne reste aucun document du compte.
+- **Restauration** : `restauration/avant-sync-v2103` (= 2.10.2, `39c7dda`).
+- **Tests** :
+  - `npx vitest run` : 1 884 TEST RÉUSSI ; `npm run build` : TEST RÉUSSI ; émulateur Firebase : NON EXÉCUTÉ (absent).
+  - `npx playwright test` complet (337, 1 h 18, build 2.10.3) : 332 TEST RÉUSSI, 2 NON EXÉCUTÉ (Firebase), 3 échecs
+    relancés seuls : `chrono-seul:68` et `maj-modeles-v236:137` TEST RÉUSSI ; `coachs-v160:77` (360×640, libellé
+    « Revenir en garde ») échoue une fois sur deux, aussi sur la 2.10.2 sans cette correction (vérifié dans une copie
+    de `39c7dda`), puis TEST RÉUSSI deux fois de suite : instabilité existante, sans lien avec la synchronisation.

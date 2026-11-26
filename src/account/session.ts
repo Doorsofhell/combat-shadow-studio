@@ -7,7 +7,8 @@ import { scopeForUid, switchScope, wipeScope } from './scope';
 import { useSyncPrefs } from './syncPrefs';
 import { SyncEngine } from './sync/engine';
 import type { SyncAdapter, SyncState, SyncStatus } from './sync/engine';
-import { COLLECTIONS } from './sync/collections';
+import { allSyncNames, syncDefs } from './sync/collections';
+import { onTrainingHold, trainingHeld } from './syncHold';
 
 interface AccountState {
   status: 'loading' | 'guest' | 'signedIn';
@@ -66,6 +67,7 @@ export async function initAccount() {
   await adopt(user);
   p.onChange((u) => void adopt(u));
   useSyncPrefs.subscribe((s, prev) => s.enabled !== prev.enabled && void serial(() => restartSync()));
+  onTrainingHold((on) => engine?.setHold(on));
 }
 
 function adopt(user: AuthUser | null) {
@@ -103,12 +105,13 @@ async function restartSync() {
   const e = new SyncEngine({
     adapter,
     uid: user.uid,
-    defs: COLLECTIONS,
+    defs: syncDefs,
     load: () => scopedGet<SyncState>('css-sync-state', scope),
     save: (s) => scopedSet('css-sync-state', s, scope),
     onStatus: (s) => engine === e && useAccount.setState({ sync: s }),
   });
   engine = e;
+  e.setHold(trainingHeld());
   await e.start();
 }
 
@@ -205,7 +208,7 @@ export async function deleteMyData(): Promise<{ remote: boolean }> {
     const adapter = await getAdapter(user.uid).catch(() => null);
     if (adapter) {
       try {
-        await adapter.deleteAll(user.uid, COLLECTIONS.map((c) => c.name));
+        await adapter.deleteAll(user.uid, allSyncNames(await adapter.list?.(user.uid)));
         remote = true;
       } catch {
         throw new AuthError('remote-delete-failed', 'Impossible de supprimer la copie en ligne pour l’instant (connexion ?). Rien n’a été effacé ; réessaie une fois en ligne.');
@@ -225,7 +228,7 @@ export async function deleteAccount() {
   const adapter = await getAdapter(user.uid).catch(() => null);
   if (adapter) {
     try {
-      await adapter.deleteAll(user.uid, COLLECTIONS.map((c) => c.name));
+      await adapter.deleteAll(user.uid, allSyncNames(await adapter.list?.(user.uid)));
     } catch {
       throw new AuthError('remote-delete-failed', 'Impossible de supprimer tes données en ligne pour l’instant (connexion ?). Ton compte n’a pas été supprimé ; réessaie une fois en ligne.');
     }

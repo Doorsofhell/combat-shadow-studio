@@ -125,7 +125,9 @@ describe('comptes : invité, création, connexion, synchronisation, suppression'
     expect(prof?.fields.pseudo.value).toBe('Yan');
     expect(prof?.fields).not.toHaveProperty('limitations');
     expect(JSON.stringify([...server.data.values()])).not.toContain('genou');
-    expect(Object.keys(server.data.get('uid-1/stats')!.items)).toEqual(['s1#a']);
+    // 2.10.3: the history goes to its quarter's document (2026-10-10 → 4th quarter), never to the old single one
+    expect(Object.keys(server.data.get('uid-1/stats-2026-t4')!.items)).toEqual(['s1#a']);
+    expect(server.data.has('uid-1/stats')).toBe(false);
     expect(useAccount.getState().sync?.phase).toBe('idle');
   });
 
@@ -155,6 +157,7 @@ describe('comptes : invité, création, connexion, synchronisation, suppression'
     const r = await deleteMyData();
     expect(r.remote).toBe(true);
     for (const c of COLLECTIONS) expect(server.data.has(`uid-1/${c.name}`)).toBe(false);
+    expect([...server.data.keys()].filter((k) => k.startsWith('uid-1/'))).toEqual([]);
     expect(useProfile.getState().profile.pseudo).toBe('');
     expect(useProfile.getState().profile.completed).toBe(false);
     expect((await keys()).map(String).filter((k) => k.startsWith('u:fb-uid-1:'))).toEqual([]);

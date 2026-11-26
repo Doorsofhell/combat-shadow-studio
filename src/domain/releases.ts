@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.10.3',
+      releaseDate: '2026-11-26',
+      title: 'Sauvegarde en ligne plus solide',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'La sauvegarde en ligne range ton historique par trimestre : elle continue de fonctionner même après des années de séances, au lieu de se bloquer quand l’historique devenait trop gros.' },
+        { category: 'corrections', text: 'Si une partie de la sauvegarde échoue, le reste (profil, combinaisons, objectifs, favoris) est quand même sauvegardé, et le message dit ce qui se passe.' },
+        { category: 'ameliorations', text: 'Pendant une séance, l’application n’envoie plus rien en ligne toutes les quelques secondes : ton temps est enregistré sur le téléphone et sauvegardé une seule fois, à la pause ou à la fin.' },
+      ],
+      links: [{ label: 'Voir mon compte', to: '/profil' }],
+    },
+    {
       version: '2.10.2',
       releaseDate: '2026-11-25',
       title: 'Crochets plus directs et application plus légère',
