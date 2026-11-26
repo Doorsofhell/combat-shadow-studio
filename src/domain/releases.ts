@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.10.5',
+      releaseDate: '2026-11-26',
+      title: 'Ton coach dans son univers, dès l’accueil',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Sur l’accueil, la fenêtre « Ton coach » reprend l’ambiance de l’écran du choix du coach : ses couleurs, son grand nom en fond avec son emblème, les traits de lumière et l’anneau au sol. Chaque coach a la sienne.' },
+        { category: 'ameliorations', text: 'C’est le même décor que l’écran du choix, partagé par les deux : il change en même temps partout. « Changer », le son et « Commencer » restent à leur place.' },
+      ],
+      links: [{ label: 'Voir les coachs', to: '/coach' }],
+    },
+    {
       version: '2.10.4',
       releaseDate: '2026-11-26',
       title: 'Shorts d’Amara réparés',

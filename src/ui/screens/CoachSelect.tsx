@@ -1,6 +1,6 @@
 import { ALL_COACHES, CHAMPIONS, championFor, type ChampionCoach } from '../../domain/coaches/catalog';
-import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { resolveAll } from '../../domain/coaches/atmosphere';
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { CoachUniverseStage, atmosphereOf, universeVars } from '../coach-universe/CoachUniverse';
 import type { GlyphId } from '../icons/glyphs';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { profileWrites, useProfile } from '../../store/profile';
@@ -91,7 +91,6 @@ export function CoachPicker({ value, onChange }: { value?: string | null; onChan
   );
 }
 
-const CoachStage = lazy(() => import('../../three/CoachStage').then((m) => ({ default: m.CoachStage })));
 const NO_EVENTS: PlayerEvents = {};
 const testIdOf = (c: ChampionCoach) => (c.id === CHAMPIONS.homme.id ? 'coach-homme' : c.id === CHAMPIONS.femme.id ? 'coach-femme' : `coach-${c.id}`);
 
@@ -202,8 +201,8 @@ export function CoachSelect() {
     void profileWrites().then(leave, leave);
   };
   // V4 (Youssef, 2026-11-18): the coach's own universe, drawn from his traits (CoachAtmosphereResolver), around him in 3D
-  const atmo = ATMOSPHERES.get(c.id)!;
-  const stageAtmo = useMemo(() => ({ value: atmo, name: c.name }), [atmo, c.name]);
+  // 2.10.5: the same universe as the coach card of the home (src/ui/coach-universe, one component for both)
+  const atmo = atmosphereOf(c);
   // the sheet lies over the bottom of the stage: the camera frames the coach in the part left free above it (head to feet)
   const stageRef = useRef<HTMLDivElement>(null);
   const infoRef = useRef<HTMLElement>(null);
@@ -234,7 +233,7 @@ export function CoachSelect() {
   const view = useMemo(() => ({ az: 0, el: 6, zoom: 1.04, focus: 0.52, inset: { top: inset.top, right: 0, bottom: inset.bottom, left: 0 } }), [inset.top, inset.bottom]);
   // the camera fits the guard of this coach (his own size), and widens while he shows his techniques
   const frameIds = useMemo(() => (moving ? demo.map((t) => t.id) : ['garde']), [moving, demo]);
-  const vars = { '--atmo-primary': atmo.palette.primary, '--atmo-accent': atmo.palette.accent, '--atmo-deep': atmo.palette.sky[1] } as React.CSSProperties;
+  const vars = universeVars(atmo);
   return (
     <div className="page coach-select coach-star coach-v4" data-testid="coach-star" data-coach={c.id} style={vars}>
       <h1 className="sr-only">Choisis ton coach</h1>
@@ -244,7 +243,7 @@ export function CoachSelect() {
         </span>
         <Suspense fallback={<img className="star-still" src={c.portrait} alt="" />}>
           <div className="star-3d">
-            <CoachStage backdrop="dark" coach={c.coach} champion={c.id} discipline={disc} southpaw={profile.guard === 'gaucher'} view={view} frameIds={frameIds} free turnOnly quality={settings.quality} events={NO_EVENTS} onPlayer={onPlayer} atmosphere={stageAtmo} />
+            <CoachUniverseStage champion={c} discipline={disc} southpaw={profile.guard === 'gaucher'} view={view} frameIds={frameIds} free turnOnly quality={settings.quality} events={NO_EVENTS} onPlayer={onPlayer} />
           </div>
         </Suspense>
         {mine && (
@@ -339,8 +338,6 @@ export function CoachSelect() {
   );
 }
 
-/** V4 : les ambiances de tous les coachs, calculées une fois (déterministes, chacune unique) */
-const ATMOSPHERES = resolveAll(ALL_COACHES);
 
 /** V4 : l'icône d'une spécialité, d'après ses mots (une icône neutre si aucun ne correspond) */
 const STRENGTH_ICONS: [RegExp, GlyphId][] = [
