@@ -6289,6 +6289,34 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Fichiers** : `.github/workflows/ci.yml` (nouveau), 10 workflows archivés, `_ARCHIVES_HORS_APPLICATION/inventaire-archives.md`,
   `src/domain/exercises.ts`, `src/domain/__tests__/exercise-ids-v2107.test.ts` (nouveau), `src/boot/__tests__/ci-v2107.test.ts`
   (nouveau), `src/domain/releases.ts`, `package.json`, `package-lock.json`, `README.md`, `docs/ETAT.md`, `docs/NON_REGRESSION.md`.
-- **Tests** : voir le bilan de la PR (résultats complétés ci-dessous).
+- **Premier passage du nouveau CI** (PR #162, machines GitHub, 4 parts Playwright) : 10 échecs sur ~2 250 tests, aucun
+  lié aux changements du lot (tous passent dans la session cloud). Causes vérifiées et corrections, sans retirer ni
+  assouplir aucune vérification :
+  - `morphology-v220.test` (champ de morphologie) : 2,7 s seul, plus de 5 s (délai par défaut de Vitest) sur GitHub
+    pendant la suite complète → délai explicite de 30 s pour ce test ;
+  - `fullscreen-dbltap.spec` (3) : Playwright lançait par défaut le « headless shell », qui gère le plein écran
+    autrement (reproduit ici avec ce navigateur) → `playwright.config.ts` prend le Chromium complet (`channel:
+    'chromium'`) quand `CHROMIUM_PATH` n'est pas fourni, comme dans les sessions cloud ;
+  - `chrono-seul.spec:68` : le rechargement arrivait avant l'écriture (asynchrone, IndexedDB) du dernier « − » → le
+    test attend la valeur enregistrée avant de recharger ;
+  - `consignes-v130.spec:27` : l'horloge d'une consigne compte au plus 250 ms par image (`ConsigneBand`), donc une
+    consigne dure plus de 2,5 s quand les images sont lentes → le test attend chaque changement de ligne (30 s max)
+    au lieu d'échantillonner toutes les 2,5 s ; mêmes vérifications d'ordre et de nombre ;
+  - `contrast.spec` (2) : 26 écrans dans un seul test de 5 min, dépassé sur GitHub → un test par écran et par thème
+    (52 tests, mêmes écrans, même audit) : TEST RÉUSSI ici (53/53, 7,2 min) ;
+  - `panneau-coach.spec:329` (fluidité, panneau ouvert) : la mesure « fermé » commençait avant que le coach soit
+    dessiné (16,7 ms, scène vide) → elle attend maintenant le coach dessiné (`__cssDress.shown` > 20).
+- **Constat restant** : `panneau-coach.spec:329` reste ÉCHOUÉ sur GitHub après cette correction (fermé 100 à 150 ms,
+  ouvert 183 à 267 ms par image, soit +80 % ; seuil +60 %) alors qu'il passe ici (83 → 100 ms). GitHub dessine la 3D
+  sans carte graphique : le flou (`backdrop-filter`) du panneau coûte cher. Problème antérieur au lot, mis en évidence
+  par le nouveau CI ; le test n'est pas assoupli. Correction proposée à Youssef : retirer le flou du panneau quand
+  l'appareil peine (repli « lite » déjà prévu par `canBlur`).
+- **Tests** :
+  - nouveaux `exercise-ids-v2107.test` (3) et `ci-v2107.test` (2) : TEST RÉUSSI ;
+  - session cloud : `npx tsc -b` et `npm run build` : TEST RÉUSSI ; Vitest complet : 1 900 réussis, 1 ignoré, 6 échecs
+    dus au changement de version fait pendant l'exécution, les 3 fichiers relancés ensuite : TEST RÉUSSI ; Playwright :
+    les 7 fichiers corrigés relancés seuls : TEST RÉUSSI ;
+  - GitHub (3e passage, commit `52b9e46`) : types, Vitest complet (1 909) et construction : TEST RÉUSSI ; Playwright
+    parts 2/4 et 3/4 : TEST RÉUSSI sauf `panneau-coach.spec:329` ÉCHOUÉ (voir ci-dessus).
 - **Captures** : NON APPLICABLE (rien ne change à l'écran).
 - **Restauration** : branche `restauration/avant-fiabilite-v2107` (= 2.10.6 publiée, `91b40d0`).
