@@ -6257,3 +6257,38 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     (`dist/sw.js` contient `NewsList`).
 - **Captures** : NON APPLICABLE (rien ne change à l'écran).
 - **Restauration** : branche `restauration/avant-boucles-v2106` (= 2.10.5 publiée, `6256cc2`).
+
+## 2026-11-26 · v2.10.7 · Fiabilité : tests sur chaque PR, anciens workflows rangés, identifiants d'exercices figés
+
+- **Demande** (Youssef, 26/11 23 h 16) : « Lance dev 1 / 2 + applicatif 1 » parmi les pistes proposées sur la 2.10.6.
+- **Constat vérifié sur la 2.10.6 publiée** (`91b40d0`) :
+  - aucun workflow ne lançait la suite complète : `preview.yml` ne passe que 19 fichiers de tests choisis (moteur,
+    tenues, version) juste avant de publier ; Vitest complet et Playwright n'étaient lancés qu'à la main ;
+  - 13 workflows dans `.github/workflows/`, dont 10 ponctuels (1.37.5 à 1.53 : diagnostics d'Amara, captures WebGL
+    avant/après) qui se déclenchaient sur chaque push ou chaque PR vers la branche de production. « Tenues 1.37.7 -
+    Amara contrôlée » (`amara-v1377.yml`) a 65 exécutions et ses trois dernières (2.10.4, 2.10.5, 2.10.6) sont en
+    échec ;
+  - `src/domain/exercises.ts` calculait l'identifiant d'un exercice d'après sa position dans la liste de son niveau
+    (`${discipline}-${level}-NN`). L'historique, les statistiques, la maîtrise et la synchronisation Firestore sont
+    rangés par `exerciseId` : insérer ou retirer un exercice au milieu d'une liste aurait attribué la progression d'un
+    utilisateur à un autre exercice. Jusqu'ici, les ajouts avaient toujours été mis en fin de liste (commentaires
+    v0.28.0), donc aucun identifiant n'a encore bougé.
+- **Correction** :
+  - nouveau `.github/workflows/ci.yml` (sur chaque PR et à la demande, ne publie rien) : `npm run typecheck`, Vitest
+    complet, `npm run build`, puis Playwright complet réparti sur 4 machines (`--shard=N/4`, Chromium installé par
+    Playwright, traces coupées, `test-results/` gardé 7 jours en cas d'échec). `preview.yml` (publication) inchangé ;
+  - les 10 workflows ponctuels sont déplacés avec `git mv` dans
+    `_ARCHIVES_HORS_APPLICATION/anciens-scripts/.github/workflows/` (motif WORKFLOW ajouté à
+    `inventaire-archives.md`) ; restent actifs `preview.yml`, `android-apk.yml`, `android-release.yml` et `ci.yml`.
+    Les scripts qu'ils appelaient restent dans `scripts/` ;
+  - chaque ligne de `exercises.ts` porte maintenant son identifiant en dur (réécriture mécanique : les 254
+    identifiants et le contenu de chaque exercice sont identiques octet pour octet à la 2.10.6, comparaison JSON de
+    `EXERCISES` avant/après). `build()` refuse un identifiant hors de sa discipline/son niveau, le module refuse un
+    doublon ou la réutilisation d'un identifiant de `RETIRED_EXERCISE_IDS` (vide). Aucune migration des données
+    locales ni Firestore n'est nécessaire, puisqu'aucun identifiant ne change.
+- **Fichiers** : `.github/workflows/ci.yml` (nouveau), 10 workflows archivés, `_ARCHIVES_HORS_APPLICATION/inventaire-archives.md`,
+  `src/domain/exercises.ts`, `src/domain/__tests__/exercise-ids-v2107.test.ts` (nouveau), `src/boot/__tests__/ci-v2107.test.ts`
+  (nouveau), `src/domain/releases.ts`, `package.json`, `package-lock.json`, `README.md`, `docs/ETAT.md`, `docs/NON_REGRESSION.md`.
+- **Tests** : voir le bilan de la PR (résultats complétés ci-dessous).
+- **Captures** : NON APPLICABLE (rien ne change à l'écran).
+- **Restauration** : branche `restauration/avant-fiabilite-v2107` (= 2.10.6 publiée, `91b40d0`).

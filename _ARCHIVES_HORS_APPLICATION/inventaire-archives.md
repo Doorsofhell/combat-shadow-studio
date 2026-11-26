@@ -18,11 +18,11 @@ Créé en 1.56.4 (18/11/2026), réorganisation du dépôt demandée par Youssef 
 | `anciennes-textures/` | 362 | 26.7 Mo | TEX |
 | `anciennes-animations/` | 0 | 0.0 Mo | aucun fichier dont l’inutilité soit démontrée |
 | `anciennes-tenues/` | 0 | 0.0 Mo | aucun fichier dont l’inutilité soit démontrée |
-| `anciens-scripts/` | 34 | 0.2 Mo | AMARA, BACKUP, EDITOR, GROOM |
+| `anciens-scripts/` | 44 | 0.2 Mo | AMARA, BACKUP, EDITOR, GROOM, WORKFLOW |
 | `anciens-prototypes/` | 2 | 0.0 Mo | GROOM |
 | `anciennes-versions/` | 55 | 1.9 Mo | BACKUP, JPG |
 | `fichiers-temporaires/` | 9 | 0.1 Mo | PYC, TMP |
-| **Total** | **598** | **97.2 Mo** | |
+| **Total** | **608** | **97.2 Mo** | |
 
 Codes des motifs :
 
@@ -34,6 +34,7 @@ Codes des motifs :
 - **GROOM** : Banc d'essai des cheveux en cartes (0.29). Il importe `CoachStyle` de `src/three/CoachModel.tsx` et le module `groom`, tous deux supprimés en 1.37.0 : il ne compile plus. `shot-groom.mjs` ne servait qu'à ce banc.
 - **EDITOR** : Captures du créateur de combattant aléatoire : `shot-random.mjs` importe `src/editor/random.ts` (supprimé en 1.37.0) et `shot-editor-random.mjs` ouvre l'écran `/combattant` (supprimé en 1.37.0).
 - **AMARA** : Recettes successives des tenues d'Amara 1.37.4 à 1.37.6, remplacées par `scripts/dev/regenerate-amara-v1377.sh` et `check-amara-garments-v1377.py` (utilisés par `.github/workflows/amara-v1377.yml`). Aucun workflow, script ni test ne les appelle ; le workflow 1.37.6 qui les lançait est lui-même archivé depuis la 1.37.7.
+- **WORKFLOW** (2.10.7, 26/11/2026) : dix workflows GitHub ponctuels des versions 1.37.5 à 1.53 (diagnostics et captures d'Amara, comparaisons WebGL avant/après), rangés dans `anciens-scripts/.github/workflows/` (GitHub n'exécute que le `.github/workflows/` de la racine). Leur version est livrée depuis longtemps ; « Tenues 1.37.7 » (`amara-v1377.yml`) échouait à chaque push sur la branche de production (65 exécutions, dont les trois dernières, 2.10.4 à 2.10.6, en échec) et les autres se déclenchaient sur chaque PR vers cette branche. Les scripts qu'ils appelaient restent dans `scripts/` (utilisables à la main). Restent actifs : `preview.yml`, `android-apk.yml`, `android-release.yml` et le nouveau `ci.yml`.
 
 ## Catégories sans fichier
 
@@ -554,6 +555,16 @@ Codes des motifs :
 
 | Chemin d'origine | Motif | Octets |
 |---|---|---:|
+| `.github/workflows/amara-finish-v1380.yml` | WORKFLOW | 1481 |
+| `.github/workflows/amara-skin-v1378.yml` | WORKFLOW | 1496 |
+| `.github/workflows/amara-v1377.yml` | WORKFLOW | 4842 |
+| `.github/workflows/audit-amara-mma-v1376.yml` | WORKFLOW | 990 |
+| `.github/workflows/audit-amara-torso-v1375.yml` | WORKFLOW | 1026 |
+| `.github/workflows/cinematic-v1530-webgl.yml` | WORKFLOW | 3412 |
+| `.github/workflows/fighter-visual-v1510.yml` | WORKFLOW | 1972 |
+| `.github/workflows/premium-skin-v1480.yml` | WORKFLOW | 1120 |
+| `.github/workflows/premium-visual-v1490.yml` | WORKFLOW | 2217 |
+| `.github/workflows/visual-v1500-pilot.yml` | WORKFLOW | 1985 |
 | `backup CS/v1.37-ultra-realiste/tools/generator/README.md` | BACKUP | 3526 |
 | `backup CS/v1.37-ultra-realiste/tools/generator/anatomy.py` | BACKUP | 7174 |
 | `backup CS/v1.37-ultra-realiste/tools/generator/build.py` | BACKUP | 33572 |

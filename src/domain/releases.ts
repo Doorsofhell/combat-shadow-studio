@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.10.7',
+      releaseDate: '2026-11-26',
+      title: 'Ta progression mieux protégée',
+      isMajor: false,
+      changes: [
+        { category: 'corrections', text: 'Chaque exercice garde maintenant son identifiant pour toujours. Avant, ajouter un exercice au milieu d’une liste aurait pu attribuer ton historique, tes séances et ta maîtrise à un autre exercice. Rien ne change pour toi : ta progression reste exactement la même.' },
+        { category: 'ameliorations', text: 'Tous les tests de l’application tournent maintenant automatiquement avant chaque mise à jour. Les vieux contrôles qui ne servaient plus ont été rangés.' },
+      ],
+      links: [],
+    },
+    {
       version: '2.10.6',
       releaseDate: '2026-11-26',
       title: 'Une application plus légère à ouvrir',
