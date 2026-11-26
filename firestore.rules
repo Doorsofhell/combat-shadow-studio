@@ -16,7 +16,8 @@ service cloud.firestore {
       allow read, delete: if isOwner(uid);
       // one document per synchronised collection (Firestore caps a document at 1 MiB)
       allow create, update: if isOwner(uid)
-        && collection in ['profile', 'stats', 'custom', 'goals', 'fighters', 'catalog']
+        // 2.10.3: the history is one document per quarter (stats-2026-t4); 'stats' stays for versions up to 2.10.2
+        && (collection in ['profile', 'stats', 'custom', 'goals', 'fighters', 'catalog'] || collection.matches('stats-[0-9]{4}-t[1-4]'))
         && request.resource.data.keys().hasAll(['schema', 'collection', 'updatedAt', 'fields', 'items'])
         && request.resource.data.schema == 1
         && request.resource.data.collection == collection;

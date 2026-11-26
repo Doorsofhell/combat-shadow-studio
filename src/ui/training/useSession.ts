@@ -9,6 +9,7 @@ import { beep, bell, impact, restSignal, unlockAudio } from '../../audio/sound';
 import { Plan, playerSteps } from './plan';
 import { pulse } from './pulse';
 import { keepScreenOn, onAppPause } from '../../platform/native';
+import { setTrainingHold } from '../../account/syncHold';
 import { useResume } from '../../store/resume';
 import { createMoveStore } from './moveStore';
 import { RESUME_VERSION, ResumePhase, ResumeSnapshot, workProgress } from '../../domain/resume';
@@ -473,6 +474,8 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
   const active = !tl.paused && tl.phase !== 'pret' && tl.phase !== 'termine';
   useEffect(() => {
     void keepScreenOn(active);
+    // 2.10.3: the online backup waits for the pause or the end (one send instead of one every few seconds)
+    setTrainingHold(active);
   }, [active]);
   useEffect(() => () => void keepScreenOn(false), []);
 
@@ -495,6 +498,8 @@ export function useSession(plan: Plan, persistOpts?: SessionPersist) {
     const rec = recordOf(tl.itemIndex);
     if (rec) useStats.getState().annotate(rec.id, summaryOf(tl, plan, 'terminee'));
   }, [finished]); // eslint-disable-line react-hooks/exhaustive-deps
+  // declared last: on leaving, the hold ends after the time and the summary above are written (one send)
+  useEffect(() => () => setTrainingHold(false), []);
 
   const view: SessionView = {
     phase: tl.phase,

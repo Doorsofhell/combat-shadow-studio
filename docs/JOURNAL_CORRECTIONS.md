@@ -6066,3 +6066,108 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     Youssef.
 - **Restauration** : `restauration/avant-blocages-v2102` (= 2.10.1, `4ba4ccd`) ; avant des crochets seuls : Lab
   `?v230=-hookDirect` ou `V230=-hookDirect` pour les tests.
+
+## 2026-11-26 · v2.10.3 · Sauvegarde en ligne : historique par trimestre, pas d’envoi pendant la séance (audit ponytail n°1 et n°2)
+
+- **Demande** : Youssef, « corrige les deux défauts de la sauvegarde en ligne trouvés par l’audit » (audit ponytail du
+  26/11, `/mnt/project-files/audits/ponytail-audit-2026-11-26.md`).
+- **Constat n°1 (vérifié dans le code)** : tout l’historique d’un compte partait dans un seul document Firestore
+  `users/{uid}/sync/stats`, et Firestore refuse un document de plus de 1 Mio. Mesure du nouveau test : trois ans à
+  10 exercices par jour donnent un document bien au-delà de la limite. La synchronisation traitait les six collections
+  dans un seul `try` : dès que les stats échouaient, combinaisons, objectifs, combattants et catalogue n’étaient plus
+  envoyés non plus, avec un message générique.
+- **Constat n°2 (vérifié dans le code)** : pendant une séance, le temps est écrit toutes les 5 s et chaque répétition
+  ajoute une écriture ; chaque changement relançait 1,5 s plus tard une synchronisation complète (6 lectures et la
+  réécriture du document entier des stats). Environ 720 écritures et 4 300 lectures par heure d’entraînement, pour un
+  quota gratuit de 20 000 écritures et 50 000 lectures par jour pour tout le projet.
+- **Correction** :
+  - historique découpé en un document par trimestre (`stats-2026-t4`, trimestre lu sur la date UTC de début, la même
+    sur tous les appareils). Trois ans intensifs : chaque document reste sous la moitié de la limite (test) ;
+  - l’ancien document `stats` (2.10.2 et avant) est lu une fois par appareil, jamais réécrit ni effacé par la 2.10.3
+    (un appareil resté en 2.10.2 continue de l’utiliser) ; une séance déjà connue ou supprimée dans un trimestre n’est
+    pas ramenée ;
+  - garde de taille avant l’envoi (900 000 octets) avec un message clair, et chaque collection a son propre essai :
+    une collection refusée reste en file d’attente sans bloquer les autres ;
+  - un changement local ne relit et n’envoie que sa collection (1 lecture + 1 écriture) ; le passage complet n’a lieu
+    qu’au démarrage, au retour du réseau et sur « Synchroniser ». Le passage complet liste les documents du compte
+    (pour trouver les trimestres créés par un autre appareil) et réutilise cette lecture pour ne pas lire deux fois ;
+  - pendant une séance (`src/account/syncHold.ts`, posé par `useSession` tant que la séance tourne), l’historique est
+    seulement écrit sur l’appareil ; il est envoyé une fois à la pause, à la fin ou en quittant la séance ;
+  - « Supprimer mes données » et la suppression du compte effacent aussi tous les trimestres listés sur le serveur ;
+  - règles Firestore : `stats-AAAA-tN` accepté en plus des six noms existants.
+- **À faire par Youssef** : déployer les nouvelles règles (`npx firebase-tools deploy --only firestore:rules`, ou les
+  coller dans la console Firebase). Tant qu’elles ne sont pas déployées, l’historique reste sur l’appareil (rien n’est
+  perdu) et le reste de la sauvegarde continue ; le message « accès refusé » s’affiche.
+- **Fichiers** : `src/account/sync/{engine,collections,firestore}.ts`, `src/account/session.ts`,
+  `src/account/syncHold.ts` (nouveau), `src/ui/training/useSession.ts`, `firestore.rules`,
+  `src/account/__tests__/sync-audit.test.ts` (nouveau, 7 tests), `src/account/__tests__/session.test.ts`,
+  `src/account/__tests__/firebase.emulator.test.ts`, `src/domain/releases.ts`, `package.json` (2.10.3).
+- **Tests modifiés (raison)** : `session.test` « synchronisation activée » attendait les stats dans `uid-1/stats` ; il
+  les attend maintenant dans `uid-1/stats-2026-t4` et vérifie que l’ancien document n’est plus écrit (même contrôle,
+  nouvel emplacement) ; « supprimer mes données » vérifie en plus qu’il ne reste aucun document du compte.
+- **Restauration** : `restauration/avant-sync-v2103` (= 2.10.2, `39c7dda`).
+- **Tests** :
+  - `npx vitest run` : 1 884 TEST RÉUSSI ; `npm run build` : TEST RÉUSSI ; émulateur Firebase : NON EXÉCUTÉ (absent).
+  - `npx playwright test` complet (337, 1 h 18, build 2.10.3) : 332 TEST RÉUSSI, 2 NON EXÉCUTÉ (Firebase), 3 échecs
+    relancés seuls : `chrono-seul:68` et `maj-modeles-v236:137` TEST RÉUSSI ; `coachs-v160:77` (360×640, libellé
+    « Revenir en garde ») échoue une fois sur deux, aussi sur la 2.10.2 sans cette correction (vérifié dans une copie
+    de `39c7dda`), puis TEST RÉUSSI deux fois de suite : instabilité existante, sans lien avec la synchronisation.
+
+## 2026-11-26 · 2.10.4 · Shorts d'Amara en MMA et kickboxing : la peau passait à travers (« déchirures »)
+
+- **Signalement** : « Les tenues de MMA et kick boxing de Amara ont été altérées, on dirait des déchirures » (captures du
+  site en ligne, 2.10.2, en garde).
+- **Constat vérifié** (captures WebGL du Lab, Amara en garde, de face et de 3/4, `docs/v2104/`) :
+  - short intact en 2.7.0 ; peau des cuisses visible à travers le tissu, bords en dents de scie, en 2.10.0, 2.10.1 et
+    2.10.2 (`versions-mma.jpg`, `versions-kickboxing.jpg`) ;
+  - essai croisé : corps 2.10.2 + tenue 2.7.0 intact, corps 2.7.0 + tenue 2.10.2 troué (`avant-croise-*.jpg`) : la
+    cause est dans les fichiers de tenue, pas dans le corps ni dans le visage ;
+  - les shorts 2.10.0 ont été réajustés sur le corps resculpté (points déplacés de 9 mm en médiane, 22 mm au plus) puis
+    lissés par `tools/generator/rocketbox/short_poids.py --auto` (marque `cssShortPoids`, prototype « 2.4.0 », plis
+    retournés). Ce lissage décolle le short de la cuisse : appliqué au short 2.7.0, il refait les trous
+    (`essai-lissage-ecarte.jpg`). Boxe, muay-thaï et no-gi d'Amara : intacts.
+  - pourquoi les tests ne l'ont pas vu : `shorts-v1442` mesure le tissu qui s'enfonce *par rapport au repos* et le masque
+    de peau calculé sur le fichier, pas le rendu une fois la morphologie du coach appliquée.
+- **Correction** :
+  - shorts MMA et kickboxing d'Amara repris de la 2.7.0, sans le lissage des poids ; leur masque de peau (`hideBody`)
+    recalculé point par point pour le corps actuel (`tools/generator/rocketbox/remap_masque.py`, nouvel outil) : 3596
+    et 9270 points cachés, autant qu'en 2.7.0 sur l'ancien corps. Corps, visage, couleurs, textures et autres tenues
+    inchangés. `src/boot/assetSizes.json` régénéré.
+  - ce qui est perdu : les ourlets redressés et les plis lissés de 2.10.0 sur ces deux shorts (aucune différence visible
+    sur les captures).
+- **Tests** :
+  - nouveau `src/three/__tests__/shorts-amara-v2104.test.ts` : le masque de chaque tenue d'Amara retrouve au moins 90 %
+    de ses points sur le corps livré ; les shorts MMA et kickboxing ne portent pas le lissage. Il échoue sur les fichiers
+    2.10.2 (marque `cssShortPoids`) ;
+  - `plis-shorts-v240` modifié, raison : la limite de 3 % des shorts « traités » ne vaut plus pour ces deux shorts, dont
+    le traitement est retiré parce qu'il crée le défaut ; ils reprennent la limite commune de 4,5 % d'avant le traitement
+    (mesuré 3,3 % au pire, genou en kickboxing). Aucune autre limite changée. `shorts-v1442` : TEST RÉUSSI sans
+    changement ;
+  - captures après correction en garde (face, 3/4, dos), high kick, genou, low kick (`apres-mma.jpg`,
+    `apres-kickboxing.jpg`) : aucun trou ;
+  - suite complète : voir ci-dessous.
+- **Ceintures** : la suite complète a ensuite fait échouer `amara-finish-v1380` (« au repos, chaque bande est posée
+  sur la peau, à moins de 13 mm ») : 13,6 mm pour la ceinture MMA et 13,2 mm pour la ceinture kickboxing, le corps
+  resculpté en 2.10.0 étant un peu plus fin à la taille. Les deux ceintures sont rapprochées de la peau de 1,2 mm, forme
+  inchangée (`tools/generator/rocketbox/resserre_ceinture.py`, nouvel outil, marque `cssBandResserree`) : test réussi
+  sans changer sa limite ; captures de la taille en garde (face, 3/4, dos), crochet et high kick :
+  `docs/v2104/apres-ceintures.jpg`.
+- **Tenue d'arbitre** (`arbitre.glb`) : ce n'est pas une tenue de coach (Amara a une tenue par discipline) ; elle sert
+  seulement à refaire les quatre illustrations fixes de la rubrique Règles de l'encyclopédie, déjà rendues en .webp et
+  intactes. Son masque de peau ne retrouve que 70 % de ses points depuis la 2.7.0 (`arbitre-masque-a-reprendre.jpg`) :
+  à reprendre avant toute nouvelle illustration ; hors du nouveau test.
+- **Reprise sur la 2.10.3 publiée** (Youssef, 26/11 14 h 42, captures du téléphone : « les shorts de mma & kick sont
+  déchirés pour AMARA ») : cette correction, préparée le matin sur une branche non publiée, est reprise telle quelle
+  sur la 2.10.3 en ligne (`eb7638c`) et revérifiée à l'écran (défaut reproduit sur la 2.10.3, absent après). En plus :
+  - ourlets des deux shorts d'Amara redressés à nouveau (`hem_straight.py`, hauteur des points du bas seulement ; 2,5
+    et 3,5 mm d'écart -> 0) : les fichiers 2.7.0 avaient perdu ce redressement ;
+  - contrôle des 24 shorts des six coachs (garde, face et 3/4 des deux côtés) : mêmes plaques de peau, plus petites, sur
+    le short thaï de Kanya et le short kickboxing de Naël, eux aussi lissés par `short_poids.py --auto`. Leur maillage
+    est celui de la 2.9.0 : leurs poids d'avant le lissage sont repris (`tools/generator/rocketbox/poids_avant.py`,
+    nouvel outil, marque `cssPoidsAvant` ; points, ourlets, UV, couleurs et masque inchangés). Plus de plaques.
+    Les autres shorts lissés (Kanya MMA, kickboxing, boxe ; Naël boxe, muay-thaï ; Victor ; Amara boxe et muay-thaï) :
+    aucun défaut visible, laissés tels quels ;
+  - tests : `shorts-amara-v2104` vérifie aussi ces deux shorts ; `plis-shorts-v240` leur donne la limite commune de
+    4,5 % (raison : traitement retiré parce qu'il crée le défaut) ;
+  - planche avant / après : `docs/v2104/avant-apres-2104.jpg`.
+- **Restauration** : branche `restauration/avant-shorts-amara-v2104` (= 2.10.3 publiée, `eb7638c`).
