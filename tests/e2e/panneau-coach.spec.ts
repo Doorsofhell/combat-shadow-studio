@@ -329,6 +329,11 @@ test('aucun bouton de réglage hors du panneau (fiche, séance), mouvement rédu
 test('performance : le panneau ouvert ne fait pas chuter la fluidité du coach', async ({ page }) => {
   await seedProfile(page, {}, { stageFsHintSeen: true });
   await openFiche(page);
+  // 2.10.7: measure only once the coach is really drawn (dressed, more than 20 images). On a GitHub machine the
+  // « closed » measure started before the model was on screen (16.7 ms, empty scene) and was compared with the coach
+  // drawn with the panel open (233 ms): the comparison was between two different scenes.
+  const shown = () => page.evaluate(() => (window as unknown as { __cssDress?: { shown: number } }).__cssDress?.shown ?? 0);
+  await expect.poll(shown, { timeout: 90_000, message: 'coach dessiné' }).toBeGreaterThan(20);
   await page.waitForTimeout(3000);
   /** median time between two frames over 2 s (ms) */
   const frame = () =>
