@@ -6066,3 +6066,22 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     Youssef.
 - **Restauration** : `restauration/avant-blocages-v2102` (= 2.10.1, `4ba4ccd`) ; avant des crochets seuls : Lab
   `?v230=-hookDirect` ou `V230=-hookDirect` pour les tests.
+
+## 2026-11-26 · 2.10.2 (outil de développement, pas de nouvelle version de l’app) · Installation de graphify
+
+- **Demande** : installer graphify (`uv tool install graphifyy`) pour tout Claude Code et générer le graphe initial du
+  projet.
+- **Constat vérifié** : le paquet PyPI `graphifyy` (0.9.120) renvoie au dépôt officiel `Graphify-Labs/graphify` et à
+  graphify.com ; le README de ce dépôt explique que le nom `graphifyy` est provisoire, le temps de récupérer
+  `graphify`. Le paquet fournit bien la commande `graphify`. Licence non précisée sur PyPI : outil de développement
+  seulement, rien n’est intégré à l’application.
+- **Correction / ajout** :
+  - installation globale de Claude Code (`graphify install --platform claude`) : compétence `/graphify` et section
+    dans `~/.claude/CLAUDE.md`, hors du dépôt (environnement cloud de ce fil seulement) ;
+  - `.graphifyignore` : exclut `_ARCHIVES_HORS_APPLICATION/` (hors application) et `graphify-out/` ;
+  - `.gitignore` : `graphify-out/` (graphe local, régénéré par `graphify update .`, environ 17 Mo) ;
+  - graphe initial sans IA (analyse du code) : 916 fichiers, 7768 nœuds, 20967 liens, 307 groupes.
+- **Fichiers** : `.graphifyignore`, `.gitignore`, `docs/JOURNAL_CORRECTIONS.md`.
+- **Tests** : `graphify god-nodes` et `graphify explain FaceAnimator` : TEST RÉUSSI ; `npx vitest run`,
+  `npx playwright test`, `npm run build` : NON APPLICABLE (aucun fichier de l’application modifié).
+- **Restauration** : supprimer `.graphifyignore` et la ligne `graphify-out/` de `.gitignore` ; `graphify uninstall`.
