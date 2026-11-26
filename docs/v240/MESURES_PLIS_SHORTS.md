@@ -9,9 +9,9 @@ Généré par `src/three/__tests__/plis-shorts-v240.test.ts`. Part des triangles
 | mma-kadir | muaythai | 1.68 | 3.01 | 1.13 |
 | mma-kadir | mma | 2.20 | 3.17 | 2.54 |
 | mma-amara | boxe | 1.63 | 2.59 | 0.84 |
-| mma-amara | kickboxing | 1.13 | 2.21 | 0.57 |
+| mma-amara | kickboxing | 1.05 | 3.29 | 0.64 |
 | mma-amara | muaythai | 1.48 | 1.62 | 0.54 |
-| mma-amara | mma | 1.64 | 2.49 | 0.60 |
+| mma-amara | mma | 1.76 | 3.04 | 0.82 |
 | nael | boxe | 1.21 | 2.89 | 1.06 |
 | nael | kickboxing | 1.28 | 2.53 | 1.09 |
 | nael | muaythai | 1.17 | 1.97 | 0.71 |
