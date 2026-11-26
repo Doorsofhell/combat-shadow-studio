@@ -6156,4 +6156,18 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   seulement à refaire les quatre illustrations fixes de la rubrique Règles de l'encyclopédie, déjà rendues en .webp et
   intactes. Son masque de peau ne retrouve que 70 % de ses points depuis la 2.7.0 (`arbitre-masque-a-reprendre.jpg`) :
   à reprendre avant toute nouvelle illustration ; hors du nouveau test.
+- **Reprise sur la 2.10.3 publiée** (Youssef, 26/11 14 h 42, captures du téléphone : « les shorts de mma & kick sont
+  déchirés pour AMARA ») : cette correction, préparée le matin sur une branche non publiée, est reprise telle quelle
+  sur la 2.10.3 en ligne (`eb7638c`) et revérifiée à l'écran (défaut reproduit sur la 2.10.3, absent après). En plus :
+  - ourlets des deux shorts d'Amara redressés à nouveau (`hem_straight.py`, hauteur des points du bas seulement ; 2,5
+    et 3,5 mm d'écart -> 0) : les fichiers 2.7.0 avaient perdu ce redressement ;
+  - contrôle des 24 shorts des six coachs (garde, face et 3/4 des deux côtés) : mêmes plaques de peau, plus petites, sur
+    le short thaï de Kanya et le short kickboxing de Naël, eux aussi lissés par `short_poids.py --auto`. Leur maillage
+    est celui de la 2.9.0 : leurs poids d'avant le lissage sont repris (`tools/generator/rocketbox/poids_avant.py`,
+    nouvel outil, marque `cssPoidsAvant` ; points, ourlets, UV, couleurs et masque inchangés). Plus de plaques.
+    Les autres shorts lissés (Kanya MMA, kickboxing, boxe ; Naël boxe, muay-thaï ; Victor ; Amara boxe et muay-thaï) :
+    aucun défaut visible, laissés tels quels ;
+  - tests : `shorts-amara-v2104` vérifie aussi ces deux shorts ; `plis-shorts-v240` leur donne la limite commune de
+    4,5 % (raison : traitement retiré parce qu'il crée le défaut) ;
+  - planche avant / après : `docs/v2104/avant-apres-2104.jpg`.
 - **Restauration** : branche `restauration/avant-shorts-amara-v2104` (= 2.10.3 publiée, `eb7638c`).

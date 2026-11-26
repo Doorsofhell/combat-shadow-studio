@@ -39,8 +39,9 @@ describe('2.10.4 — tenues d’Amara : peau cachée sous le tissu', () => {
   };
   test.each(OUTFITS)('%s : le masque de peau correspond au corps actuel', maskMatches);
 
-  test.each(['mma', 'kickboxing'])('%s : short sans le lissage des poids qui le décolle de la cuisse', (outfit) => {
-    const g = readGlb(`public/coaches/mma-amara/tenues/${outfit}.glb`);
+  // Kanya (muay-thaï) et Naël (kickboxing) : mêmes plaques de peau, plus petites (captures du Lab en garde, 26/11)
+  test.each([['mma-amara', 'mma'], ['mma-amara', 'kickboxing'], ['kanya', 'muaythai'], ['nael', 'kickboxing']])('%s %s : short sans le lissage des poids qui le décolle de la cuisse', (coach, outfit) => {
+    const g = readGlb(`public/coaches/${coach}/tenues/${outfit}.glb`);
     const extras = (g.json as unknown as { asset: { extras?: Record<string, unknown> } }).asset.extras ?? {};
     expect(extras.cssShortPoids, 'marque du lissage short_poids.py').toBeUndefined();
   });

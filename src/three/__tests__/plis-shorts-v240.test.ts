@@ -27,10 +27,12 @@ const COACHES = ['mma-kadir', 'mma-amara', 'nael', 'inaya', 'victor', 'kanya'];
 // le lissage de short_poids.py décollait ces deux shorts de la cuisse et la peau passait devant le tissu (captures
 // du Lab, docs/v2104/). Ils reviennent à leur version 2.7.0 sans ce lissage : limite commune de 4,5 %, celle d'avant le
 // traitement (mesuré 3,3 % au pire, genou en kickboxing ; 3,2 à 3,7 % avant le traitement de 2.4.0).
-const UNTREATED_AMARA = ['mma', 'kickboxing'];
+// Même défaut, plus petit, vérifié ensuite sur le short thaï de Kanya et le short kickboxing de Naël : leurs poids
+// d'avant le lissage sont repris (tools/generator/rocketbox/poids_avant.py), même limite commune de 4,5 %.
+const UNTREATED: Record<string, string[]> = { 'mma-amara': ['mma', 'kickboxing'], kanya: ['muaythai'], nael: ['kickboxing'] };
 const TREATED = (coach: string, outfit: string) =>
-  (coach === 'mma-amara' && !UNTREATED_AMARA.includes(outfit)) || coach === 'kanya' ||
-  (['nael', 'victor'].includes(coach) && outfit !== 'mma');
+  !(UNTREATED[coach] ?? []).includes(outfit) &&
+  (coach === 'mma-amara' || coach === 'kanya' || (['nael', 'victor'].includes(coach) && outfit !== 'mma'));
 const OUTFITS: [string, DisciplineId][] = [['boxe', 'boxe'], ['kickboxing', 'kickboxing'], ['muaythai', 'muaythai'], ['mma', 'mma']];
 const MOVES: [string, string][] = [['high kick', 'high-kick-arriere'], ['genou', 'genou-direct-arriere'], ['low kick', 'low-kick-arriere']];
 const bodyFile = (c: string) => `coaches/${c}/${c === 'mma-amara' ? 'photo-clean' : 'photo'}.glb`;
