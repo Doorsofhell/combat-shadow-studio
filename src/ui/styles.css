@@ -5130,3 +5130,33 @@ html[data-back-chip] .page.coach-star.coach-select:not(:has(> .page-head:first-c
     transition: none;
   }
 }
+
+/* ==========================================================================
+   2.10.5 (Youssef, 2026-11-26 : « reprendre dans la fenêtre mon coach de la page d'accueil l'ambiance du choix de coach
+   plein écran ») : la carte « Ton coach » de l'Accueil montre le coach dans son univers, avec le même composant que l'écran
+   du choix (src/ui/coach-universe/CoachUniverse.tsx). Comme sur cet écran, la carte est toujours sombre, quel que soit le
+   thème : son fond prend la nuit du coach (--atmo-deep), le nom et « Ton coach » passent en clair, la bordure prend sa couleur.
+   ========================================================================== */
+.home-coach.home-universe {
+  --atmo-primary: #d4af37;
+  --atmo-accent: #f4e2a6;
+  --atmo-deep: #060606;
+  /* « Changer » garde l'or vif de l'écran du choix (en thème clair, l'or foncé ne se lirait pas sur la nuit du coach) */
+  --gold: #f2c230;
+  background: var(--atmo-deep);
+  border-color: color-mix(in srgb, var(--atmo-primary) 38%, transparent);
+  color: #f5f5f7;
+  transition:
+    background-color 0.6s ease,
+    border-color 0.6s ease;
+}
+.home-universe .home-coach-head .eyebrow {
+  color: color-mix(in srgb, var(--atmo-accent) 70%, #ffffff);
+}
+.home-universe .home-coach-head .hero-name {
+  color: #ffffff;
+}
+.home-universe .hero.home-hero {
+  background: var(--atmo-deep);
+  transition: background-color 0.6s ease;
+}

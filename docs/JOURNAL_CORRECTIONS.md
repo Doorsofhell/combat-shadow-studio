@@ -6171,3 +6171,42 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     4,5 % (raison : traitement retiré parce qu'il crée le défaut) ;
   - planche avant / après : `docs/v2104/avant-apres-2104.jpg`.
 - **Restauration** : branche `restauration/avant-shorts-amara-v2104` (= 2.10.3 publiée, `eb7638c`).
+
+## 2026-11-26 · v2.10.5 · L'univers du coach dans la carte « Ton coach » de l'Accueil
+
+- **Demande** (Youssef, 26/11 15 h 10, deux captures) : « reprendre dans la fenêtre mon coach de la page d'accueil
+  l'ambiance du choix de coach plein écran ; il faudrait réutiliser le même composant ».
+- **Constat vérifié sur la 2.10.4 publiée** (`010461f`) : la carte « Ton coach » montait sa propre scène `CoachStage`
+  sur fond gris clair (studio), sans ambiance ; l'écran du choix (`/coach`) montait une autre `CoachStage` avec
+  l'univers V4 du coach (`AtmosphereScene` : ciel, emblème avec le grand nom, traits de lumière, anneau au sol), et
+  calculait seul les ambiances (`resolveAll` dans `CoachSelect.tsx`).
+- **Correction** :
+  - nouveau composant partagé `src/ui/coach-universe/CoachUniverse.tsx` : `CoachUniverseStage` (la scène 3D du coach
+    dans son univers, chargée à la demande), `atmosphereOf` (ambiances calculées une seule fois pour tous les coachs)
+    et `universeVars` (couleurs de l'univers en variables CSS) ;
+  - l'écran du choix et l'Accueil passent tous les deux par ce composant ; ni l'un ni l'autre ne monte plus
+    `CoachStage` lui-même. Chaque écran garde son cadrage et ses commandes ;
+  - la carte de l'Accueil est sombre dans les deux thèmes, comme l'écran du choix : fond = nuit du coach, « Ton
+    coach » et le nom en clair, bordure à la couleur du coach, « Changer » en or vif (l'or foncé du thème clair ne se
+    lisait pas sur ce fond). Taille de la carte, « Changer », son, astuce, plein écran et « Commencer » inchangés ;
+  - ambiances, emblèmes, coachs, tenues, animations : inchangés.
+- **Fichiers** : `src/ui/coach-universe/CoachUniverse.tsx` (nouveau), `src/ui/screens/Home.tsx`,
+  `src/ui/screens/CoachSelect.tsx`, `src/ui/styles.css`, `src/domain/releases.ts`, `package.json`, `README.md`,
+  `docs/ETAT.md`, `docs/NON_REGRESSION.md`, `scripts/dev/shot-accueil-univers.mjs` (nouveau).
+- **Tests** :
+  - nouveau `src/ui/coach-universe/__tests__/coach-universe.test.ts` : les deux écrans utilisent `CoachUniverseStage`
+    et ne montent pas `CoachStage` eux-mêmes ; chaque coach garde exactement l'ambiance de la 2.10.4 : TEST RÉUSSI ;
+  - nouveau `tests/e2e/accueil-univers-v2105.spec.ts` (3 tests) : Naël dans son univers sur l'Accueil en thème clair
+    et sombre (carte sombre, nom clair, commandes présentes) ; même univers sur l'Accueil et l'écran du choix ;
+    après le choix de Kadir l'Accueil prend son univers, une seule couche d'emblème, au plus 2 textures d'ambiance :
+    TEST RÉUSSI ;
+  - `selection-coach-v4.spec` (4) et `choix-coach-v270.spec` (6) sans changement : TEST RÉUSSI ;
+  - Vitest complet : 1 900 tests, TEST RÉUSSI après `npm run docs:sync` (README et ETAT portaient encore 2.10.4) ;
+    `npx tsc -b` et `npm run build` : TEST RÉUSSI ;
+  - Playwright complet : voir la PR.
+- **Captures** réelles WebGL, mêmes réglages avant/après (Naël et Amara, muay-thaï, 393×851 et 1000×960) :
+  `docs/v2105/captures/` (planche `planche-avant-apres.jpg`).
+- **Limite** : l'univers ajoute à l'Accueil la scène de l'écran du choix (une sphère, un panneau d'emblème, un disque,
+  quelques plans de fumée, sans post-traitement) ; elle suit la qualité choisie (emblème en 384×540 en qualité légère).
+  Non mesuré sur un vrai téléphone.
+- **Restauration** : branche `restauration/avant-accueil-univers-v2105` (= 2.10.4 publiée, `010461f`).
