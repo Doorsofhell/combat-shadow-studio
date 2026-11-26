@@ -6170,4 +6170,9 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   - tests : `shorts-amara-v2104` vérifie aussi ces deux shorts ; `plis-shorts-v240` leur donne la limite commune de
     4,5 % (raison : traitement retiré parce qu'il crée le défaut) ;
   - planche avant / après : `docs/v2104/avant-apres-2104.jpg`.
+- **Tests de publication (2.10.4, sur l'arbre fusionné)** : `npx vitest run` 1 895 TEST RÉUSSI (1 ignoré) ; `npm run build`
+  TEST RÉUSSI ; `npx playwright test` complet (337, 1 h 24) : 333 TEST RÉUSSI, 2 NON EXÉCUTÉ (Firebase), 2 échecs
+  relancés seuls : `chrono-seul:96` TEST RÉUSSI ; `coachs-v160:77` (400×820) échoue encore une fois puis TEST RÉUSSI
+  4 fois sur 4 : instabilité déjà notée en 2.10.3, sans lien avec les tenues. Publiée le 26/11 à 15 h 31 (Paris) après
+  « je valide » : PR #159 (`0316e08`), GitHub Pages vérifié (`version.json` 2.10.4).
 - **Restauration** : branche `restauration/avant-shorts-amara-v2104` (= 2.10.3 publiée, `eb7638c`).
