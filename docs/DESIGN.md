@@ -1,5 +1,8 @@
 # Design system — DARK COMBAT PREMIUM
 
+> **Référence à jour depuis le 27 novembre 2026 : `DESIGN.md` à la racine** (format lu par Impeccable, valeurs relevées
+> dans le code). Certaines couleurs ci-dessous datent d’une charte antérieure ; en cas d’écart, le code et `/DESIGN.md` font foi.
+
 Menus sombres et sobres, combattants 3D au premier plan, écran d’entraînement blanc (studio).
 
 ## Tokens (`src/ui/styles.css`, `:root`)
