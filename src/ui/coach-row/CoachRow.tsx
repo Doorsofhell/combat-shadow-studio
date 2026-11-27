@@ -1,6 +1,6 @@
 import { ALL_COACHES, type ChampionCoach } from '../../domain/coaches/catalog';
 import { AppIcon } from '../icons';
-import { PremiumTag, ProLock, useProGate } from '../premium/PremiumMarker';
+import { CoachProTag, ProLock, useProGate } from '../premium/PremiumMarker';
 import { ITEM_RIGHT, canOpenCoach, isPremiumCoach } from '../../monetization/premiumItems';
 import './coach-row.css';
 
@@ -50,7 +50,7 @@ export function CoachRow({
             <CoachFace coach={c} />
             <span className="crow-name">{c.name}</span>
             {/* 2.9.0: on a face this narrow the PRO badge sits at its top left, the name stays whole */}
-            {isPremiumCoach(c.id) && <PremiumTag feature="all_fighters" />}
+            {isPremiumCoach(c.id) && <CoachProTag />}
             {!canOpenCoach(c.id) && (
               <span className="crow-lock">
                 <ProLock size={12} />

@@ -6325,3 +6325,43 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `training-layout.spec:117` et `:349`, `chrono-seul.spec:119`, `consignes-v130.spec:50`), puis retirer cette ligne.
 - **Captures** : NON APPLICABLE (rien ne change à l'écran).
 - **Restauration** : branche `restauration/avant-fiabilite-v2107` (= 2.10.6 publiée, `91b40d0`).
+
+## 2026-11-27 · v2.10.8 · Parcours des écrans (conseils 1, 3, 4, 5, 6, 7)
+
+- **Demande** (Youssef, 27/11 11 h 31, fil « Parcours des écrans ») : appliquer les conseils 1, 3, 4, 5, 6 et 7 de la
+  liste du 26/11 ; pour 2 et 8, des maquettes à choisir, sans code.
+- **Constats vérifiés** (captures de `/mnt/project-files/ergonomie-2026-11-26/` et code de la 2.10.7) :
+  - 1 : « Commencer » de l'Accueil (`Home.tsx`) ouvrait `/discipline/<d>?ex=…`, donc la fiche d'exercice, puis
+    « S'entraîner », puis « Démarrer » : une étape et une touche de plus que nécessaire ;
+  - 3 : `CoachRow` et `CoachSelect` affichaient « PRO » sur 4 coachs sur 6 alors que `MONETIZATION_ENABLED` est faux et
+    que tous s'ouvrent ;
+  - 4 : `hasUnseenRelease(null)` est vrai, donc la pastille « nouvelle version » apparaissait dès le premier lancement ;
+  - 5 : Bienvenue disait « tu pourras le personnaliser » alors que l'éditeur de coach n'existe plus (et renvoyait vers un
+    « onglet Coach » supprimé) ;
+  - 6 : l'astuce « touche le coach » (`FsHint`) s'affichait en haut de l'image, sur la tête du coach, et revenait dans la
+    séance si elle n'avait pas été fermée à la main sur l'Accueil ;
+  - 7 : la fiche d'exercice lisait `ex.instructions` (4 consignes au plus, souvent 1) alors que la séance affiche
+    `instructionOf()` (phrase du geste et ses points clés).
+- **Correction** :
+  - 1 : « Commencer » ouvre `/entrainement?ex=<id>&mode=<dernier mode utilisé>` (Libre au premier lancement). Le mode
+    se change dans « Plus » › « Mode » (`src/ui/training/ModeSheet.tsx`, mêmes choix que la fiche : Libre, Technique,
+    Cardio avec ses intervalles, Rounds avec durée, repos, nombre) avant « Démarrer » ; l'exercice reste le même ;
+  - 3 : `CoachProTag` (`PremiumMarker.tsx`) : le badge PRO d'un coach n'apparaît que si les restrictions sont actives
+    (paiement ou simulation de l'aperçu). Les autres badges PRO (programmes, exercices, techniques) sont inchangés ;
+  - 4 : à la fin de Bienvenue, `newsSeenVersion` prend la version courante si elle est vide ;
+  - 5 : texte de Bienvenue corrigé (plus de « personnaliser », plus d'« onglet Coach ») ;
+  - 6 : l'astuce est en bas de l'image, disparaît seule après 8 s, et quitter l'écran après 1,5 s de lecture la compte
+    comme vue : elle ne s'affiche qu'une fois, sur l'Accueil ou dans la séance ;
+  - 7 : `ExerciseInstructions` (`Discipline.tsx`) montre, pour chaque geste de l'exercice, la phrase et les points clés de
+    la séance.
+- **Fichiers** : `src/ui/screens/{Home,Training,Discipline,Onboarding}.tsx`, `src/ui/training/ModeSheet.tsx`,
+  `src/ui/premium/PremiumMarker.tsx`, `src/ui/coach-row/CoachRow.tsx`, `src/ui/screens/CoachSelect.tsx`,
+  `src/ui/fullscreen/FullscreenStage.tsx`, `src/ui/styles.css`, `src/domain/releases.ts`, `package.json`, `README.md`,
+  `docs/ETAT.md`.
+- **Tests** : nouveau `tests/e2e/parcours-v2108.spec.ts` (6 scénarios, un par conseil). Tests mis à jour parce que le
+  parcours a changé, sans rien assouplir : `accueil-recherche.spec` et `navigation.spec` (« Commencer » arrive sur la
+  séance prête et non plus sur la fiche) ; `premium.spec` (aucun badge PRO sur les coachs tant que tout est gratuit,
+  le badge reste vérifié avec la simulation par `tests/e2e-sim/shadow-pro.spec.ts`).
+- **Maquettes 2 et 8** : https://claude.ai/artifact/WVSczqDUGL4unyTcyX1SyS (Bienvenue raccourcie 2A/2B ; Accueil autour
+  d'un seul « Commencer » 8A/8B). Rien n'est codé.
+- **Restauration** : branche `restauration/avant-parcours-v2107` (= 2.10.7, `e6c66c7`).

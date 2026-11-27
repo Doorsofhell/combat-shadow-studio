@@ -10,6 +10,8 @@ import { championFor, type ChampionCoach } from '../../domain/coaches/catalog';
 import { DisciplineLabel, DisciplineCard, LevelSelector } from '../components';
 import { chooseCoach } from '../components/fighter';
 import { AppIcon } from '../icons';
+import { useSettings } from '../../store/settings';
+import { LATEST_RELEASE_VERSION } from '../../domain/releaseNotice';
 
 export const GOALS = SPORT_GOALS;
 
@@ -54,6 +56,9 @@ export function Onboarding() {
   };
   const finish = () => {
     update({ ...p, coach: coach ?? p.coach, completed: true });
+    // 2.10.8 (conseil 4): the very first launch has nothing « new » to discover; the dot on Compte starts with the next version
+    const st = useSettings.getState();
+    if (st.settings.newsSeenVersion == null) st.set({ newsSeenVersion: LATEST_RELEASE_VERSION });
     nav('/', { replace: true });
   };
   const rec = step === 6 ? recommend(p) : null;
@@ -123,7 +128,7 @@ export function Onboarding() {
         {step === 1 && (
           <>
             <h2>Choisis ton coach</h2>
-            <p className="muted">Obligatoire pour continuer. Il deviendra ton combattant : tu pourras le personnaliser et en changer à tout moment, sans perdre tes statistiques.</p>
+            <p className="muted">Obligatoire pour continuer. Il deviendra ton combattant : tu pourras en changer à tout moment, sans perdre tes statistiques.</p>
             <CoachPicker value={coach ? championFor(coach, p.champion).id : null} onChange={pickCoach} />
           </>
         )}
@@ -288,7 +293,7 @@ export function Onboarding() {
               </div>
             ))}
             <p className="small muted row nowrap" style={{ gap: 8 }}>
-              <AppIcon id="fighter" size={18} /> Tu pourras tout personnaliser plus tard dans l’onglet Coach.
+              <AppIcon id="fighter" size={18} /> Tu pourras changer de coach et de réglages quand tu veux, depuis l’Accueil et le Compte.
             </p>
           </>
         )}

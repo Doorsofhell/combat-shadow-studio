@@ -3483,9 +3483,10 @@ html.stage-fs-open body {
   outline-offset: 2px;
 }
 /* the one-time tip: small, solid, at the top of the view between its corner tools */
+/* 2.10.8: at the bottom of the view, never over the head of the coach */
 .fs-hint {
   position: absolute;
-  top: 10px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 4;
@@ -3518,12 +3519,13 @@ html.stage-fs-open body {
   cursor: pointer;
 }
 .fs-hint-close:hover { color: var(--c-text); }
-/* home hero: the tip goes top left (2.4: « Changer de coach » is in the coach's panel, the corner is free) */
+/* home hero: the tip goes bottom left, « Commencer » keeps the bottom right */
 .hero-stage .fs-hint {
   left: max(16px, var(--gutter, 16px));
   transform: none;
-  top: 12px;
-  max-width: calc(100% - 80px);
+  top: auto;
+  bottom: 12px;
+  max-width: calc(100% - 190px);
 }
 @media (prefers-reduced-motion: reduce) {
   .fs-ui { transition: none; }

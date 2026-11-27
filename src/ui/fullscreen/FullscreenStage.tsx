@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useSettings } from '../../store/settings';
 import { AppIcon } from '../icons';
 
@@ -14,6 +15,17 @@ export function FsExit({ onExit }: { onExit: () => void }) {
 export function FsHint() {
   const seen = useSettings((s) => s.settings.stageFsHintSeen);
   const set = useSettings((s) => s.set);
+  // 2.10.8 (Youssef, 2026-11-27, « Parcours des écrans », conseil 6): shown ONCE, on the Accueil or in the session, never
+  // both. It leaves by itself after 8 s, and leaving the screen after it was read (1.5 s) counts as seen too.
+  useEffect(() => {
+    if (seen) return;
+    const t0 = Date.now();
+    const timer = window.setTimeout(() => useSettings.getState().set({ stageFsHintSeen: true }), 8000);
+    return () => {
+      window.clearTimeout(timer);
+      if (Date.now() - t0 >= 1500 && !useSettings.getState().settings.stageFsHintSeen) useSettings.getState().set({ stageFsHintSeen: true });
+    };
+  }, [seen]);
   if (seen) return null;
   return (
     <div className="fs-hint" role="note" data-testid="fs-hint" data-no-double-tap>

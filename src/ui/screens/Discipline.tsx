@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { DISCIPLINES, DisciplineId, Exercise, LEVELS, LevelId, TrainingMode } from '../../domain/types';
 import { EXERCISE_BY_ID, exercisesFor } from '../../domain/exercises';
 import { TECHNIQUE_BY_ID } from '../../domain/techniques';
+import { instructionOf } from '../../domain/instructions';
 import { useProfile } from '../../store/profile';
 import { useSettings } from '../../store/settings';
 import { formatDuration, useStats } from '../../store/stats';
@@ -161,6 +162,37 @@ export function DisciplinePage() {
   );
 }
 
+/** the instructions of every distinct move of the exercise, as the session shows them */
+export function ExerciseInstructions({ ex }: { ex: Exercise }) {
+  const ids = [...new Set(ex.sequence)].filter((id) => TECHNIQUE_BY_ID.has(id));
+  const many = ids.length > 1;
+  const blocks = ids.map((id) => ({ id, name: TECHNIQUE_BY_ID.get(id)!.name, ins: instructionOf(TECHNIQUE_BY_ID.get(id)!) }));
+  if (!blocks.length) {
+    return ex.instructions.length > 0 ? (
+      <ul className="plain-list small">
+        {ex.instructions.map((x, i) => (
+          <li key={i}>{x}</li>
+        ))}
+      </ul>
+    ) : null;
+  }
+  return (
+    <div className="stack" style={{ gap: 10 }} data-testid="ex-instructions">
+      {blocks.map((b) => (
+        <div key={b.id} className="stack" style={{ gap: 4 }}>
+          {many && <b className="small">{b.name}</b>}
+          <p className="small" style={{ margin: 0 }}>{b.ins.main}</p>
+          <ul className="plain-list small">
+            {b.ins.points.map((pt, i) => (
+              <li key={i}>{pt.text}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const MODES: TrainingMode[] = ['libre', 'technique', 'cardio', 'rounds'];
 
 export function ExerciseSheet({ ex, onClose }: { ex: Exercise; onClose: () => void }) {
@@ -202,13 +234,9 @@ export function ExerciseSheet({ ex, onClose }: { ex: Exercise; onClose: () => vo
           </Link>
         ))}
       </div>
-      {ex.instructions.length > 0 && (
-        <ul className="plain-list small">
-          {ex.instructions.map((s, i) => (
-            <li key={i}>{s}</li>
-          ))}
-        </ul>
-      )}
+      {/* 2.10.8 (conseil 7): the same instructions as the session (domain/instructions.ts: the sentence of the technique and its
+          key points), for each move of the exercise; before, the sheet read the 4 first cues of the exercise (often 1) */}
+      <ExerciseInstructions ex={ex} />
       {ex.soloNote && <div className="note">{ex.soloNote}</div>}
       <button type="button" className="btn ghost" style={{ alignSelf: 'flex-start', marginLeft: -12 }} aria-pressed={fav} onClick={() => toggleFav(ex.id)}>
         {fav ? <AppIcon id="favorite" tone="accent" /> : <AppIcon id="favoriteOutline" />}
