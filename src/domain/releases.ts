@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.14.0',
+      releaseDate: '2026-11-27',
+      title: 'Des shorts qui bougent avec le coach',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Les shorts larges de boxe, de kick-boxing et de muay-thaï suivent maintenant le coach avec un léger retard, puis se calent à nouveau, comme un vrai tissu. Le mouvement est discret (moins d’un centimètre) et ne change rien à la technique.' },
+      ],
+      links: [],
+    },
+    {
       version: '2.12.0',
       releaseDate: '2026-11-27',
       title: 'Une peau plus naturelle pour Kadir et Naël',

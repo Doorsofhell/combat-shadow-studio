@@ -26,10 +26,13 @@ const tmpN = new Matrix3();
 const tmpV = new Vector3();
 
 /** the garments that swing: names given by tools/generator/rocketbox/outfits.py */
-export function swingKind(name: string): 'jupe' | 'pan' | null {
+export function swingKind(name: string): 'jupe' | 'pan' | 'short' | null {
   const n = name.replace(/^tenue:/, '');
   if (n.startsWith('jupe-veste')) return 'jupe';
   if (/^pan-/.test(n)) return 'pan';
+  // 2.14.0: the wide shorts (boxing, kick-boxing, muay-thai) lag a little behind the hips; the fitted vale-tudo and
+  // compression shorts and the belts (« ceinture-short-… ») stay put
+  if (/^short-(?:boxe|kick|thai)/.test(n)) return 'short';
   return null;
 }
 
@@ -68,8 +71,10 @@ export class Sway {
     const u = { cssSway: { value: new Vector4() } };
     applySway(mesh.material as Material, u);
     // metres in the world: the swing never exceeds a few centimetres; the tails are lighter than the skirt
-    const gain = (kind === 'pan' ? 0.075 : 0.05) * (heavy ? 0.7 : 1);
-    const stiff = (kind === 'pan' ? 70 : 90) * (heavy ? 1.3 : 1);
+    // the shorts: at most about 1 cm at the hem (the legs are narrower than the hem, nothing goes through the thigh),
+    // heavier satin than a belt tail, so a stiffer and quicker spring
+    const gain = (kind === 'pan' ? 0.075 : kind === 'short' ? 0.006 : 0.05) * (heavy ? 0.7 : 1);
+    const stiff = (kind === 'pan' ? 70 : kind === 'short' ? 120 : 90) * (heavy ? 1.3 : 1);
     this.list.push({ mesh, hips, bottom, prev: null, off: new Vector3(), vel: new Vector3(), u, gain, stiff });
     return true;
   }

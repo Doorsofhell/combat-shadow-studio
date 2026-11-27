@@ -6483,3 +6483,22 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   PostToolUse/Stop/SessionStart rejoués : TEST RÉUSSI ; `impeccable doctor` sans erreur bloquante : TEST RÉUSSI ;
   `npx vitest run` (1 915 réussis, 1 ignoré) : TEST RÉUSSI ; `npm run build` : TEST RÉUSSI ; Playwright : NON APPLICABLE (aucun changement de l'application).
 - **Restauration** : branche `restauration/avant-impeccable` (= 2.11.1, `aff1793c`).
+
+## 2026-11-27 · v2.14.0 · Humaniser les coachs : les shorts larges bougent avec le coach
+
+- **Demande** (Youssef, 27/11, « A b c puis d e », « Go ») : lot E de l'audit, fluidité.
+- **Constat vérifié** : seuls le kimono (pans, jupe) et les bouts de ceinture avaient un mouvement secondaire
+  (`src/three/sway.ts`, 1.10) ; les shorts larges de boxe, de kick-boxing et de muay-thaï suivaient le bassin d'un seul
+  bloc, d'où un côté « rigide » en mouvement.
+- **Correction** (rendu seul, jamais la technique) : `swingKind` reconnaît `short-boxe`, `short-kick` et `short-thai` ;
+  même ressort amorti que les pans, mais au plus 1 cm au bas du short (0 à la ceinture), ressort plus raide et plus
+  vif (satin plus lourd qu'un bout de ceinture). Les shorts ajustés (vale-tudo, compression) et les ceintures
+  (`ceinture-short-…`) ne bougent pas. Aucun modèle, texture ni os modifié ; au repos (images fixes, pause) le short
+  est exactement à sa place.
+- **Non fait** : le retour amorti des bras après la frappe. Il exigerait de toucher au moteur d'animation validé
+  (`src/engine`), avec un risque sur les tests de biomécanique ; à proposer à part si Youssef le veut.
+- **Fichiers** : `src/three/sway.ts`, `src/three/__tests__/sway.test.ts`, `package.json`, `src/domain/releases.ts`.
+- **Tests** : 2 nouveaux tests dans `sway.test.ts` (pièces concernées ; bornes de 1 cm, retour au repos). Contrôle réel
+  (Lab, qualité haute) : les 3 tenues de Kadir, d'Amara et de Naël chargent sans erreur de shader et portent le
+  mouvement sur leurs shorts, pas sur la ceinture d'Amara.
+- **Restauration** : branche de la 2.12.0 (PR #166) ; avant elle, `restauration/avant-peau-v2120` (= 2.11.0).
