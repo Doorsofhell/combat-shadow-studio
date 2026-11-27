@@ -7,14 +7,13 @@ import { expect, test } from '@playwright/test';
  */
 test('six coachs : Amara choisie au premier lancement, Naël depuis « Changer de coach » (liste seule)', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('next').click();
   for (const id of ['coach-homme', 'coach-nael', 'coach-victor', 'coach-femme', 'coach-inaya', 'coach-kanya']) await expect(page.getByTestId(id), id).toBeVisible();
   await expect(page.getByTestId('coach-axel')).toHaveCount(0);
   await expect(page.getByTestId('coach-kaila')).toHaveCount(0);
   await page.getByTestId('coach-femme').click();
   await expect(page.getByTestId('coach-femme')).toHaveAttribute('aria-checked', 'true');
   await page.getByTestId('next').click();
-  for (let i = 0; i < 4; i++) await page.getByTestId('next').click();
+  for (let i = 0; i < 2; i++) await page.getByTestId('next').click();
   await page.getByTestId('finish').click();
   await expect(page.getByTestId('fighter-name')).toHaveText('Amara');
   await page.reload();
@@ -77,10 +76,9 @@ for (const [w, h] of [
   test(`écran de choix ${w}x${h} : les six, la fiche et « Valider » tiennent sur un écran, un appui montre la fiche`, async ({ page }) => {
     await page.setViewportSize({ width: w, height: h });
     await page.goto('/');
-    await page.getByTestId('next').click();
     await page.getByTestId('coach-nael').click();
     await page.getByTestId('next').click();
-    for (let i = 0; i < 4; i++) await page.getByTestId('next').click();
+    for (let i = 0; i < 2; i++) await page.getByTestId('next').click();
     await page.getByTestId('finish').click();
     await page.goto('/#/coach');
     await expect(page.locator('.star-thumb')).toHaveCount(6);
@@ -133,12 +131,11 @@ for (const [w, h] of [
 /** 1.11 (Youssef 2026-11-03 23:03: « créé 2 joueurs supplémentaires, ne remplace pas les autres »): Naël and Inaya */
 test('Naël et Inaya se choisissent comme les autres, leur fiche a leurs propres détails', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('next').click();
   await page.getByTestId('coach-inaya').click();
   await expect(page.getByTestId('coach-inaya')).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByTestId('coach-details-inaya')).toContainText('La Panthère');
   await page.getByTestId('next').click();
-  for (let i = 0; i < 4; i++) await page.getByTestId('next').click();
+  for (let i = 0; i < 2; i++) await page.getByTestId('next').click();
   await page.getByTestId('finish').click();
   await expect(page.getByTestId('fighter-name')).toHaveText('Inaya');
   await page.goto('/#/coach');

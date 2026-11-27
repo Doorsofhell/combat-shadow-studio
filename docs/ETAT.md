@@ -1,7 +1,7 @@
 <!-- GÉNÉRÉ:etat — ne pas modifier à la main, lancer « npm run docs:sync » -->
 # État du projet — version 2.12.0
 
-Dernière version annoncée dans Nouveautés : **2.12.0** du 27 novembre 2026, « Une peau plus naturelle pour Kadir et Naël » (138 versions au total).
+Dernière version annoncée dans Nouveautés : **2.12.0** du 27 novembre 2026, « Une peau plus naturelle pour Kadir et Naël » (139 versions au total).
 
 ## Version et publication
 

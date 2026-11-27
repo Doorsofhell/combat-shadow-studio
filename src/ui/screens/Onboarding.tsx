@@ -4,12 +4,10 @@ import { Profile, SPORT_GOALS, useProfile } from '../../store/profile';
 import { useAccount } from '../../account/session';
 import { useFighters } from '../../store/fighters';
 import { DISCIPLINES, DisciplineId, LEVELS, LevelId } from '../../domain/types';
-import { recommend } from '../../domain/recommend';
 import { CoachPicker } from './CoachSelect';
 import { championFor, type ChampionCoach } from '../../domain/coaches/catalog';
-import { DisciplineLabel, DisciplineCard, LevelSelector } from '../components';
+import { DisciplineCard, LevelSelector } from '../components';
 import { chooseCoach } from '../components/fighter';
-import { AppIcon } from '../icons';
 import { useSettings } from '../../store/settings';
 import { LATEST_RELEASE_VERSION } from '../../domain/releaseNotice';
 
@@ -22,14 +20,9 @@ const EXPERIENCE: { id: Profile['experience']; label: string; sub: string }[] = 
   { id: 'competition', label: 'Compétition', sub: 'Combats officiels' },
 ];
 
-const STEPS = ['Bienvenue', 'Coach', 'Garde', 'Discipline', 'Niveau', 'Objectifs', 'C’est parti'];
+const STEPS = ['Coach', 'Garde', 'Discipline', 'Niveau'];
 
-function num(v: string) {
-  const n = Number(v.replace(',', '.'));
-  return v.trim() === '' || !Number.isFinite(n) ? undefined : n;
-}
-
-/** First launch, 7 short steps. Answers stay on this device. */
+/** First launch, 4 short steps (2.11.1): coach, guard, discipline, level; goals and body data are asked later in Compte. Answers stay on this device. */
 export function Onboarding() {
   const stored = useProfile((s) => s.profile);
   const update = useProfile((s) => s.update);
@@ -40,7 +33,7 @@ export function Onboarding() {
   const accountsOn = useAccount((s) => s.capabilities.email && s.status === 'guest');
   const set = (x: Partial<Profile>) => setP((o) => ({ ...o, ...x }));
   const coach = fighter?.look.sex ?? p.coach;
-  const canNext = step !== 1 || !!coach;
+  const canNext = step !== 0 || !!coach;
 
   const pickCoach = (c: ChampionCoach) => {
     chooseCoach(c.coach, true);
@@ -61,7 +54,6 @@ export function Onboarding() {
     if (st.settings.newsSeenVersion == null) st.set({ newsSeenVersion: LATEST_RELEASE_VERSION });
     nav('/', { replace: true });
   };
-  const rec = step === 6 ? recommend(p) : null;
 
   return (
     <div className="page no-nav ob">
@@ -85,56 +77,24 @@ export function Onboarding() {
       <div className="ob-body" key={step}>
         {step === 0 && (
           <>
-            <h1 className="ob-hero">
-              Entraîne-toi seul,
-              <br />
-              <em>guidé par un coach 3D</em>
-            </h1>
-            <p className="muted">Boxe anglaise, kick-boxing, MMA, muay-thaï, judo et jiu-jitsu brésilien, du niveau débutant à expert. Ton coach montre chaque mouvement, tu le suis comme dans un miroir de salle.</p>
-            <ul className="feature-list">
-              <li>
-                <span className="icon-tile red" aria-hidden>
-                  <AppIcon id="train" />
-                </span>
-                <span>Plus de 60 techniques animées et des centaines d’exercices</span>
-              </li>
-              <li>
-                <span className="icon-tile" aria-hidden>
-                  <AppIcon id="progress" />
-                </span>
-                <span>Programmes, rounds chronométrés et suivi de ta progression</span>
-              </li>
-              <li>
-                <span className="icon-tile" aria-hidden>
-                  <AppIcon id="privacy" />
-                </span>
-                <span>
-                  Tes réponses restent sur cet appareil. <Link to="/confidentialite">Confidentialité</Link>
-                </span>
-              </li>
-            </ul>
-            <div className="field">
-              <label htmlFor="pseudo">Comment le coach doit-il t’appeler ?</label>
-              <input id="pseudo" className="input" value={p.pseudo} maxLength={24} onChange={(e) => set({ pseudo: e.target.value })} placeholder="Ton pseudo (facultatif)" autoComplete="nickname" data-testid="pseudo" />
-            </div>
-            {accountsOn && (
-              <Link to="/connexion" className="small">
-                J’ai déjà un compte
-              </Link>
-            )}
+            <h2>Choisis ton coach</h2>
+            <p className="muted">Il t’accompagne à chaque séance. Tu pourras en changer à tout moment, sans perdre tes statistiques.</p>
+            <CoachPicker value={coach ? championFor(coach, p.champion).id : null} onChange={pickCoach} />
+            {/* 2.11.1 (2A): the welcome page is gone; the two things it carried that still matter stay here */}
+            <p className="small muted">
+              Tes réponses restent sur cet appareil. <Link to="/confidentialite">Confidentialité</Link>
+              {accountsOn && (
+                <>
+                  {' · '}
+                  <Link to="/connexion">J’ai déjà un compte</Link>
+                </>
+              )}
+            </p>
           </>
         )}
+
 
         {step === 1 && (
-          <>
-            <h2>Choisis ton coach</h2>
-            <p className="muted">Obligatoire pour continuer. Il deviendra ton combattant : tu pourras en changer à tout moment, sans perdre tes statistiques.</p>
-            <CoachPicker value={coach ? championFor(coach, p.champion).id : null} onChange={pickCoach} />
-          </>
-        )}
-
-
-        {step === 2 && (
           <>
             <h2>Ta garde</h2>
             <div className="choice-grid" role="radiogroup" aria-label="Garde">
@@ -151,7 +111,7 @@ export function Onboarding() {
           </>
         )}
 
-        {step === 3 && (
+        {step === 2 && (
           <>
             <h2>Ta discipline principale</h2>
             <p className="small muted">Toutes les disciplines restent accessibles ; celle-ci sert à te proposer des exercices.</p>
@@ -163,7 +123,7 @@ export function Onboarding() {
           </>
         )}
 
-        {step === 4 && (
+        {step === 3 && (
           <>
             <h2>Ton niveau</h2>
             <div className="choice-grid" role="radiogroup" aria-label="Expérience des sports de combat">
@@ -199,104 +159,6 @@ export function Onboarding() {
           </>
         )}
 
-        {step === 5 && (
-          <>
-            <h2>Tes objectifs</h2>
-            <div className="choice-grid">
-              {GOALS.map((g) => {
-                const on = p.goals.includes(g.id);
-                return (
-                  <button key={g.id} type="button" aria-pressed={on} className="choice" onClick={() => set({ goals: on ? p.goals.filter((x) => x !== g.id) : [...p.goals, g.id] })}>
-                    {g.label}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="field">
-              <label htmlFor="jours" className="row between">
-                <span>Séances par semaine</span>
-                <b className="num-figure" style={{ fontSize: '1.2rem' }}>
-                  {p.daysPerWeek}
-                </b>
-              </label>
-              <input id="jours" type="range" min={1} max={7} value={p.daysPerWeek} onChange={(e) => set({ daysPerWeek: Number(e.target.value) })} />
-            </div>
-            <div className="stack" style={{ gap: 8 }}>
-              <span className="label">Durée d’une séance</span>
-              <div className="row" role="radiogroup" aria-label="Durée d’une séance" style={{ gap: 8 }}>
-                {[10, 15, 20, 30, 45, 60].map((m) => (
-                  <button key={m} type="button" role="radio" aria-checked={p.sessionMinutes === m} className={`chip ${p.sessionMinutes === m ? 'on' : ''}`} onClick={() => set({ sessionMinutes: m })}>
-                    {m} min
-                  </button>
-                ))}
-              </div>
-            </div>
-            <details className="card">
-              <summary style={{ cursor: 'pointer', minHeight: 32, fontWeight: 600 }}>Informations facultatives</summary>
-              <div className="stack" style={{ marginTop: 12 }}>
-                <div className="grid2" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                  <div className="field">
-                    <label htmlFor="age">Âge</label>
-                    <input id="age" className="input" inputMode="numeric" value={p.age ?? ''} onChange={(e) => set({ age: num(e.target.value) })} placeholder="ans" />
-                  </div>
-                  <div className="field">
-                    <label htmlFor="taille">Taille</label>
-                    <input id="taille" className="input" inputMode="numeric" value={p.heightCm ?? ''} onChange={(e) => set({ heightCm: num(e.target.value) })} placeholder="cm" />
-                  </div>
-                  <div className="field">
-                    <label htmlFor="poids">Poids</label>
-                    <input id="poids" className="input" inputMode="decimal" value={p.weightKg ?? ''} onChange={(e) => set({ weightKg: num(e.target.value) })} placeholder="kg" />
-                  </div>
-                </div>
-                <div className="field">
-                  <label htmlFor="lim">Limitations physiques ou blessures</label>
-                  <textarea id="lim" className="input" value={p.limitations} onChange={(e) => set({ limitations: e.target.value })} placeholder="Par exemple : genou droit fragile" />
-                  <span className="small muted">Cette application ne remplace pas un avis médical.</span>
-                </div>
-              </div>
-            </details>
-          </>
-        )}
-
-        {step === 6 && rec && (
-          <>
-            <h1 className="ob-hero">
-              Prêt,
-              <br />
-              <em>{fighter?.name ?? 'combattant'}</em>
-            </h1>
-            <div className="card stack">
-              <div className="eyebrow">Point de départ</div>
-              <h3>
-                <DisciplineLabel id={rec.discipline} name={DISCIPLINES.find((d) => d.id === rec.discipline)?.name ?? ''} /> · {LEVELS.find((l) => l.id === rec.level)!.name}
-              </h3>
-              <ul className="plain-list small">
-                {rec.exercises.map((e) => (
-                  <li key={e.id}>{e.name}</li>
-                ))}
-              </ul>
-              <p className="small muted">Vitesse conseillée : ×{rec.speed.toFixed(2)}</p>
-            </div>
-            {rec.programs.length > 0 && (
-              <div className="card stack">
-                <div className="eyebrow">Programmes adaptés</div>
-                {rec.programs.map((x) => (
-                  <div key={x.id}>
-                    {x.name} <span className="muted small">· {x.durationMin} min</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {rec.notes.map((n, i) => (
-              <div key={i} className="note">
-                {n}
-              </div>
-            ))}
-            <p className="small muted row nowrap" style={{ gap: 8 }}>
-              <AppIcon id="fighter" size={18} /> Tu pourras changer de coach et de réglages quand tu veux, depuis l’Accueil et le Compte.
-            </p>
-          </>
-        )}
       </div>
 
       <div className="ob-foot">
@@ -307,11 +169,11 @@ export function Onboarding() {
         )}
         {step < STEPS.length - 1 ? (
           <button type="button" className="btn primary" style={{ flex: 1 }} disabled={!canNext} onClick={next} data-testid="next">
-            {step === 1 && !coach ? 'Choisis un coach' : step === 0 ? 'Commencer' : 'Continuer'}
+            {step === 0 && !coach ? 'Choisis un coach' : 'Continuer'}
           </button>
         ) : (
           <button type="button" className="btn primary" style={{ flex: 1 }} onClick={finish} data-testid="finish">
-            Aller à l’accueil
+            Commencer
           </button>
         )}
       </div>

@@ -59,6 +59,18 @@ export const RELEASES: readonly Release[] = (
       links: [],
     },
     {
+      version: '2.11.1',
+      releaseDate: '2026-11-27',
+      title: 'Un départ plus simple',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Bienvenue tient en quatre écrans : ton coach, ta garde, ta discipline et ton niveau. Les objectifs, le rythme, la taille et le poids se renseignent plus tard dans Compte, grâce à une carte « Complète ton profil » que tu peux fermer.' },
+        { category: 'ameliorations', text: 'L’Accueil montre ta séance prête à démarrer et un seul gros bouton « Commencer ». Si tu as une séance en cours, « Reprendre ta séance » prend sa place. Techniques, Chrono, Créer et Coach IA sont réunis sur une rangée sous le coach.' },
+        { category: 'ameliorations', text: 'La recherche est maintenant la loupe en haut à droite, sur l’Accueil comme sur les autres écrans.' },
+      ],
+      links: [],
+    },
+    {
       version: '2.11.0',
       releaseDate: '2026-11-27',
       title: 'Des coachs plus vivants : gants, tenues et lumière',
