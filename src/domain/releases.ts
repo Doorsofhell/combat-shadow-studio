@@ -49,6 +49,16 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.12.0',
+      releaseDate: '2026-11-27',
+      title: 'Une peau plus naturelle pour Kadir et Naël',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Kadir et Naël perdent leur teint trop orange : la peau est plus naturelle, comme celle d’Amara et de Victor. Leurs visages, leurs muscles et leur silhouette ne changent pas.' },
+      ],
+      links: [],
+    },
+    {
       version: '2.11.0',
       releaseDate: '2026-11-27',
       title: 'Des coachs plus vivants : gants, tenues et lumière',

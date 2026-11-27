@@ -6413,3 +6413,23 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `/mnt/project-files/humaniser-coachs/v2110/`.
 - **Restauration** : branche `restauration/avant-humanisation-sf-v2110` (= 2.10.7 publiée, `e6c66c7`) ; intégrée
   après la 2.10.8 (fusion de `f8de7b2` dans la branche, sans rien écraser : version, Nouveautés et journal gardés).
+
+## 2026-11-27 · v2.12.0 · Humaniser les coachs : peau de Kadir et de Naël moins orange
+
+- **Demande** (Youssef, 27/11, choix « A b c puis d e » puis « Go ») : lot D de l'audit « Humaniser les coachs ».
+- **Constat vérifié** (captures WebGL du Lab, visages de face et trois quarts, gants en garde) : la peau de Kadir et de
+  Naël garde la dominante orange saturée que Amara et Victor avaient perdue en 2.4.0 ; le visage paraît peint plutôt
+  qu'éclairé, surtout en lumière du studio (fond clair).
+- **Correction** (étalonnage de la couleur seul, `SKIN_LOOK` de `src/three/photoMaterials.ts`) : Kadir saturation 0,86,
+  teinte −0,06, diffusion de la lumière un peu moins rouge ; Naël saturation 0,88, teinte −0,05, diffusion un peu
+  moins rouge. Relief de l'anatomie, pores, lumière, gain, modèles, textures, UV et visages inchangés.
+- **Fichiers** : `src/three/photoMaterials.ts`, `src/three/__tests__/bronzage-inaya-v1170.test.ts`, `package.json`,
+  `src/domain/releases.ts`.
+- **Test modifié (raison écrite)** : `bronzage-inaya-v1170` « les autres coachs ne changent pas » ne laisse plus passer
+  que les coachs recalibrés à la demande de Youssef ; Kadir et Naël y rejoignent Amara, Victor et Inaya, avec un test
+  qui fixe leur nouvel étalonnage (saturation 0,8 à 1, teinte négative, gain et relief inchangés).
+- **Tests** : `tsc` TEST RÉUSSI ; Vitest `src/three` 765 sur 765 TEST RÉUSSI ; Vitest complet 1 916 réussis,
+  1 ignoré TEST RÉUSSI ; build et Playwright : voir la CI de la PR.
+- **Captures** : réelles (Lab), avant/après, lumière du studio et lumière vive. En lumière vive (défaut) la différence
+  est plus discrète : le fond sombre et la lumière froide atténuent déjà l'orange.
+- **Restauration** : branche `restauration/avant-peau-v2120` (= 2.11.0, `7781656`).

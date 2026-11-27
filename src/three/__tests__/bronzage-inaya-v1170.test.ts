@@ -14,10 +14,20 @@ describe('bronzage léger d’Inaya', () => {
     expect(l.sat).toBeGreaterThanOrEqual(1);
     expect(l.sat).toBeLessThanOrEqual(1.2);
   });
+  test('Kadir et Naël : dominante orange retirée (2.12.0), sans toucher au relief ni à la lumière', () => {
+    for (const id of ['mma-kadir', 'nael']) {
+      const l = SKIN_LOOK[id];
+      expect(l.sat, id).toBeLessThan(1);
+      expect(l.sat, id).toBeGreaterThanOrEqual(0.8);
+      expect(l.warm, id).toBeLessThan(0);
+      expect(l.gain ?? 1, id).toBe(1);
+      expect(l.relief, id).toBe(1.2);
+    }
+  });
   test('les autres coachs ne changent pas', () => {
     for (const [id, l] of Object.entries(SKIN_LOOK)) {
-      // 2.4.0 prototype 2 : Amara et Victor recalibrés à la demande de Youssef (dominante orange retirée, journal 2.4.0)
-      if (id === 'inaya' || id === 'mma-amara' || id === 'victor') continue;
+      // 2.4.0 prototype 2 : Amara et Victor recalibrés à la demande de Youssef (dominante orange retirée, journal 2.4.0) ; 2.12.0 : Kadir et Naël de même (journal 2.12.0)
+      if (id === 'inaya' || id === 'mma-amara' || id === 'victor' || id === 'mma-kadir' || id === 'nael') continue;
       expect([l.sat ?? 1, l.gain ?? 1, l.warm ?? 0], id).toEqual([1, 1, 0]);
     }
   });
