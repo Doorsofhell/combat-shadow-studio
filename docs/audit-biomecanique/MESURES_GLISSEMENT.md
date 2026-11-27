@@ -19,7 +19,7 @@ Glissement cumulé de toute la bibliothèque (6 coachs, droitier et gaucher) : 1
 | `ukemi-yoko` | 3,1 | 3,15 | inaya judo | 3,2 (balayage, en attente) |
 | `sprawl` | 10,5 | 2,80 | victor mma | 2,9 (balayage, en attente) |
 | `defense-lutte` | 5,8 | 2,56 | nael mma | 2,6 (balayage, en attente) |
-| `ukemi-ushiro` | 2,3 | 2,25 | mma-amara judo gaucher | 2,3 (balayage, en attente) |
+| `ukemi-ushiro` | 2,3 | 2,24 | mma-amara judo gaucher | 2,3 (balayage, en attente) |
 | `uchikomi-o-goshi` | 7,5 | 2,06 | nael judo | 2,1 (balayage, en attente) |
 | `kuzushi` | 3,5 | 1,95 | mma-amara judo gaucher | 2,0 (balayage, en attente) |
 | `uchikomi-seoi` | 8,3 | 1,83 | nael judo | 1,9 (balayage, en attente) |

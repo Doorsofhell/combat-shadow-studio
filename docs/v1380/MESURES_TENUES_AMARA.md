@@ -33,7 +33,7 @@ Généré par `src/three/__tests__/amara-finish-v1380.test.ts` : la bande de bra
 | kickboxing | bande-brassiere | low kick avant | 17.8 | 22.3 | 1.09 |
 | kickboxing | bande-brassiere | middle kick | 15.6 | 19.4 | 1.13 |
 | kickboxing | bande-brassiere | high kick | 16.9 | 20.8 | 1.16 |
-| kickboxing | bande-brassiere | changement de niveau (hanches, genoux) | 9.1 | 11.2 | 1.12 |
+| kickboxing | bande-brassiere | changement de niveau (hanches, genoux) | 9.1 | 11.2 | 1.16 |
 | kickboxing | ceinture-short | garde | 9.7 | 13.6 | 1.27 |
 | kickboxing | ceinture-short | jab | 11.2 | 14.0 | 1.23 |
 | kickboxing | ceinture-short | cross (direct) | 4.8 | 7.7 | 1.23 |

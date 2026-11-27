@@ -49,6 +49,17 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.12.1',
+      releaseDate: '2026-11-27',
+      title: 'Des cous plus naturels et les visages d’Amara et d’Inaya d’avant',
+      isMajor: false,
+      changes: [
+        { category: 'coachs', text: 'Le cou et les trapèzes des six coachs retrouvent leur ombrage naturel : fini l’effet « cou d’autruche » apparu avec la version 2.10.0.' },
+        { category: 'coachs', text: 'Amara et Inaya retrouvent leur visage de la version 2.3.1 (forme du visage, regard, teint). La peau, les expressions à l’effort et les tenues restent ceux d’aujourd’hui.' },
+      ],
+      links: [],
+    },
+    {
       version: '2.12.0',
       releaseDate: '2026-11-27',
       title: 'Une peau plus naturelle pour Kadir et Naël',

@@ -34,7 +34,7 @@ Généré par `src/engine/__tests__/hooks-biomeca.test.ts` (`AUDIT_UPDATE=1` pou
 | Amara (Ultra-réaliste) | boxe | crochet-avant-corps | 79.4° | -9.9 | 22.5 | 3.6 | -3.5 | 40.2° | 1.03 | 0.160 / 0.200 | 4.8° | -14.1° |
 | Amara (Ultra-réaliste) | boxe | crochet-arriere-corps | 93.2° | -6.6 | 17.1 | 16.8 | -16.8 | 6.8° | 1.33 | 0.208 / 0.230 | 5.3° | 9.0° |
 | Amara (Ultra-réaliste) | kick-boxing | crochet-avant | 75.7° | 4.9 | 24.3 | -1.7 | 1.7 | 41.6° | 1.05 | 0.166 / 0.200 | 7.4° | -16.1° |
-| Amara (Ultra-réaliste) | kick-boxing | crochet-arriere | 90.5° | 5.4 | 21.0 | 12.0 | -11.9 | -2.6° | 1.27 | 0.210 / 0.230 | 8.6° | 9.8° |
+| Amara (Ultra-réaliste) | kick-boxing | crochet-arriere | 90.5° | 5.4 | 21.0 | 12.1 | -11.9 | -2.6° | 1.27 | 0.210 / 0.230 | 8.6° | 9.8° |
 | Amara (Ultra-réaliste) | kick-boxing | crochet-avant-corps | 79.2° | -9.8 | 22.4 | 4.0 | -3.9 | 33.9° | 1.04 | 0.168 / 0.200 | 4.3° | -15.2° |
 | Amara (Ultra-réaliste) | kick-boxing | crochet-arriere-corps | 93.1° | -7.5 | 17.6 | 15.8 | -15.8 | 7.0° | 1.29 | 0.208 / 0.230 | 4.3° | 9.2° |
 | Amara (Ultra-réaliste) | MMA | crochet-avant | 83.9° | 6.3 | 23.9 | 2.4 | -2.3 | 36.8° | 1.06 | 0.166 / 0.200 | 7.2° | -13.2° |
