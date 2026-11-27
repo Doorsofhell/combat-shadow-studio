@@ -6413,3 +6413,24 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `/mnt/project-files/humaniser-coachs/v2110/`.
 - **Restauration** : branche `restauration/avant-humanisation-sf-v2110` (= 2.10.7 publiée, `e6c66c7`) ; intégrée
   après la 2.10.8 (fusion de `f8de7b2` dans la branche, sans rien écraser : version, Nouveautés et journal gardés).
+
+## 2026-11-27 · v2.11.1 (inchangée) · Outil de design Impeccable installé dans le projet
+
+- **Demande** (Youssef, 27/11 13 h 59) : intégrer durablement Impeccable au dépôt, en local au projet, configurer
+  skills, commandes et hooks, créer ou compléter PRODUCT.md, DESIGN.md et CLAUDE.md, vérifier l'accès depuis les
+  prochaines sessions (y compris l'application mobile Claude), sans toucher à l'interface ni à la version.
+- **Constat vérifié** : paquet npm `impeccable` 4.11.1 (Paul Bakaus, Apache-2.0), sans script d'installation caché, moteur
+  téléchargé depuis GitHub et vérifié par SHA-256. `npx impeccable install` échoue dans le cloud : `impeccable.style` est
+  bloqué par le réseau. `docs/DESIGN.md` avait des couleurs d'une charte antérieure (fond `#101116` au lieu de
+  `#0b0f14` dans `src/ui/styles.css`) et pas les sections attendues par Impeccable.
+- **Correction** : installateur officiel avec le paquet local (`IMPECCABLE_BUNDLE_PATH` = clone de
+  github.com/pbakaus/impeccable, commit `2fc5e14`) ; hooks déplacés de `.claude/settings.local.json` vers
+  `.claude/settings.json` pour toutes les sessions ; `PRODUCT.md` (méthode `init`, points « [À CONFIRMER] ») et
+  `DESIGN.md` (méthode `document`, jetons relevés dans le CSS) à la racine ; renvoi en tête de `docs/DESIGN.md` ; section
+  « Design UI/UX : Impeccable » dans `CLAUDE.md` ; bilan `docs/IMPECCABLE.md`. Aucun fichier de `src/` modifié.
+- **Fichiers** : `.claude/skills/impeccable/`, `.claude/agents/impeccable-*.md`, `.claude/settings.json`, `PRODUCT.md`,
+  `DESIGN.md`, `docs/DESIGN.md`, `docs/IMPECCABLE.md`, `CLAUDE.md`.
+- **Tests** : nouvelle session Claude Code dans le dépôt, skill et 5 agents listés : TEST RÉUSSI ; hooks
+  PostToolUse/Stop/SessionStart rejoués : TEST RÉUSSI ; `impeccable doctor` sans erreur bloquante : TEST RÉUSSI ;
+  `npx vitest run` (1 915 réussis, 1 ignoré) : TEST RÉUSSI ; `npm run build` : TEST RÉUSSI ; Playwright : NON APPLICABLE (aucun changement de l'application).
+- **Restauration** : branche `restauration/avant-impeccable` (= 2.11.1, `aff1793c`).
