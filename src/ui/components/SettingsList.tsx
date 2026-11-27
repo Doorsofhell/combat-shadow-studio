@@ -67,7 +67,7 @@ export function SetGroup({ title, children }: { title: string; children: ReactNo
 }
 
 /** a row of the list; `children` is what it shows once opened (rendered only while open) */
-export function SetItem({ id, icon, title, summary, dot, tone, children }: { id: string; icon: GlyphId; title: string; summary?: ReactNode; dot?: boolean; tone?: 'premium'; children: ReactNode }) {
+export function SetItem({ id, icon, title, summary, dot, dotLabel = 'nouveau', tone, children }: { id: string; icon: GlyphId; title: string; summary?: ReactNode; dot?: boolean; dotLabel?: string; tone?: 'premium'; children: ReactNode }) {
   const s = useContext(Ctx)!;
   const on = s.open === id;
   return (
@@ -79,7 +79,7 @@ export function SetItem({ id, icon, title, summary, dot, tone, children }: { id:
         <span className="set-tx">
           <b>
             {title}
-            {dot && <i className="me-dot" aria-label="nouveau" />}
+            {dot && <i className="me-dot" aria-label={dotLabel} />}
           </b>
           {summary && <span>{summary}</span>}
         </span>
