@@ -451,7 +451,9 @@ test.describe('393×851', () => {
     // Séance rapide opens the recommended exercise of the main discipline
     await page.goto('/#/');
     await page.getByTestId('home-cta').click();
-    await expect(bar(page)).toHaveAttribute('data-screen', /^(discipline|entrainer)$/);
+    // 2.10.8: the session itself, ready to start (it used to be the exercise sheet of the discipline)
+    await expect(bar(page)).toHaveAttribute('data-screen', /^(entrainement|seance|discipline|entrainer)$/);
+    await expect(page).toHaveURL(/#\/entrainement\?ex=/);
   });
 
   test('au clavier : vrais boutons, focus visible, Entrée lance l’action', async ({ page }) => {

@@ -66,8 +66,12 @@ export function Home() {
     p.play();
   }, []);
 
+  // 2.10.8 (Youssef, 2026-11-27, « Parcours des écrans », conseil 1): « Commencer » opens the session of the recommended
+  // exercise straight away, ready to start, in the last mode used (Libre the first time); the mode is changed in the
+  // session's « Plus » menu. Before: it opened the exercise sheet of the discipline, one more screen and one more tap.
+  const lastMode: TrainingMode = last && RESUMABLE.includes(last.mode) ? last.mode : 'libre';
   const start = () => {
-    if (recEx) nav(`/discipline/${recEx.discipline}?niveau=${recEx.level}&ex=${recEx.id}`);
+    if (recEx) nav(`/entrainement?ex=${encodeURIComponent(recEx.id)}&mode=${lastMode}`);
     else nav('/entrainer');
   };
   const update = useProfile((s) => s.update);

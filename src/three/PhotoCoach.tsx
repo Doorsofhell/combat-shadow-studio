@@ -4,6 +4,7 @@ import { useGLTF } from '@react-three/drei';
 import type { GLTFLoader } from 'three-stdlib';
 import { BufferGeometry, Material, Mesh, MeshStandardMaterial, Object3D, Vector3, type Skeleton, type SkinnedMesh } from 'three';
 import { applyBreath, Breath } from './breath';
+import { applyFinish, finishKindOf } from './finish';
 import { Sway } from './sway';
 import { hairFadeAttribute, photoMaterial, photoPart, skinLookFor } from './photoMaterials';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
@@ -89,6 +90,8 @@ export function PhotoCoach({
       if (part === 'cheveux') hairFadeAttribute(m.geometry);
       m.material = photoMaterial(m.material as MeshStandardMaterial, part, quality, look);
       if (part === 'peau' && (m as SkinnedMesh).isSkinnedMesh) applyBreath(m.material as Material, breath.uniformsFor(m as SkinnedMesh));
+      // 2.11.0: the edge light of the fight studio on the skin (src/three/finish.ts)
+      if (part === 'peau') applyFinish(m.material as Material, 'peau', quality === 'haute');
     });
     restoreReferencePose(s);
     // 2.5.0: twist bones and half bones of the joints (src/three/twist.ts): weights redistributed on a copy of the
@@ -198,9 +201,11 @@ export function PhotoCoach({
         }
       }
       applyBreath(g.material as Material, breath.uniformsFor(g));
+      // 2.11.0: leather grain, satin, ribs and knit, and the edge light, on the garments and gloves (src/three/finish.ts)
+      applyFinish(g.material as Material, finishKindOf(g.material as Material), quality === 'haute');
       sway.add(g, outfit === 'judo');
     },
-    [breath, sway, outfit, scene],
+    [breath, sway, outfit, scene, quality],
   );
   const dressed = useOutfit(scene, outfitUrl, outfit, quality, extendLoader, prepare, decorate);
   useEffect(() => onOutfit?.(dressed), [dressed, onOutfit]);
