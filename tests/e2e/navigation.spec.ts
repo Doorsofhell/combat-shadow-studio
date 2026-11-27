@@ -177,7 +177,12 @@ test.describe('393×851', () => {
     // 1.31.0 (nouvelle ergonomie, lot 3): the first page of Compte has four quick tiles instead of the tabs; the tabs
     // « Mes infos / Réglages » show on Réglages
     await expect(page.getByTestId('section-tabs')).toHaveCount(0);
-    for (const id of ['compte-coach', 'compte-reglages', 'compte-coach-ia', 'compte-news', 'compte-premium', 'compte-goal']) await expect(page.getByTestId(id), id).toBeVisible();
+    for (const id of ['compte-coach', 'compte-reglages', 'compte-coach-ia', 'compte-news']) await expect(page.getByTestId(id), id).toBeVisible();
+    // 2.13.0 (Compte en onglets): the weekly goal is in Ma pratique, Shadow Pro in Mon compte
+    await page.getByTestId('acc-tab-pratique').click();
+    await expect(page.getByTestId('compte-goal')).toBeVisible();
+    await page.getByTestId('acc-tab-compte').click();
+    await expect(page.getByTestId('compte-premium')).toBeVisible();
     await page.getByTestId('compte-reglages').click();
     await expect(page).toHaveURL(/#\/reglages$/);
     await expect(page.getByTestId('section-tabs').locator('button')).toHaveText(['Mes infos', 'Réglages']);

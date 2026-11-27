@@ -117,6 +117,16 @@ export async function barSlots(page: Page) {
  */
 export async function openSetting(page: Page, id: string) {
   const row = page.getByTestId(`set-${id}`);
+  // 2.13.0: Compte shows one tab at a time (Moi / Ma pratique / Mon compte): the row may be in another tab
+  // (a screen that is still opening is given a moment first, so the tabs of a page being left are never clicked)
+  await row.waitFor({ state: 'attached', timeout: 2000 }).catch(() => {});
+  const tabs = page.locator('[data-testid^="acc-tab-"]');
+  if ((await row.count()) === 0 && /#\/profil(\?|$)/.test(page.url()) && (await tabs.count()) > 0) {
+    for (const t of await tabs.all()) {
+      await t.click();
+      if (await row.waitFor({ state: 'attached', timeout: 1500 }).then(() => true, () => false)) break;
+    }
+  }
   await row.scrollIntoViewIfNeeded();
   if ((await row.getAttribute('aria-expanded')) !== 'true') await row.click();
   await expect(row).toHaveAttribute('aria-expanded', 'true');

@@ -180,6 +180,12 @@ retour au toucher par léger changement de fond et d'échelle (140 ms).
 
 `src/ui/nav/` : `BottomBar`, `NavSheets`, `NavPanel`, `SearchSheet`, `SectionTabs`.
 
+Onglets à l'intérieur d'un écran (2.13.0, Compte : Moi / Ma pratique / Mon compte) : `Tabs variant="section"`, mêmes
+pastilles que `SectionTabs` (rayon 999 px, onglet ouvert en encre pleine), largeur partagée ; collés en haut au
+défilement en laissant 58 px à la loupe ; glissement latéral par `useSwipeSteps` (`src/ui/nav/swipe.ts`, même règle que
+les onglets d'espace) ; contenu qui entre du côté d'où il vient (`--t-med`, `--ease`), coupé si `prefers-reduced-motion`.
+Point rouge `.me-dot` sur un onglet ou une ligne = quelque chose à compléter.
+
 ### Coach 3D (composant signature)
 
 `src/three/CoachStage.tsx` et `PhotoCoach.tsx`. Règles obligatoires dans `docs/HUMAN_CHARACTER_STANDARDS.md` :
