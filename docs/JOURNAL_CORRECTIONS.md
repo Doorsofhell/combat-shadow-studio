@@ -6318,5 +6318,10 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     les 7 fichiers corrigés relancés seuls : TEST RÉUSSI ;
   - GitHub (3e passage, commit `52b9e46`) : types, Vitest complet (1 909) et construction : TEST RÉUSSI ; Playwright
     parts 2/4 et 3/4 : TEST RÉUSSI sauf `panneau-coach.spec:329` ÉCHOUÉ (voir ci-dessus).
+- **Décision** (Youssef, 27/11 8 h 02, carte « Publier, Playwright informatif ») : dans `ci.yml`, le travail
+  Playwright est `continue-on-error: true` ; ses résultats restent visibles sur chaque PR mais ne la bloquent pas.
+  Types, Vitest et construction bloquent. Aucun test n'est retiré ni assoupli. À faire : lot dédié pour fiabiliser
+  les 6 tests 3D restants sur GitHub (`panneau-coach.spec:329`, `stabilite-3d-v1563.spec:35`,
+  `training-layout.spec:117` et `:349`, `chrono-seul.spec:119`, `consignes-v130.spec:50`), puis retirer cette ligne.
 - **Captures** : NON APPLICABLE (rien ne change à l'écran).
 - **Restauration** : branche `restauration/avant-fiabilite-v2107` (= 2.10.6 publiée, `91b40d0`).

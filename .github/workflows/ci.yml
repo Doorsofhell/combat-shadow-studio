@@ -36,6 +36,10 @@ jobs:
     name: Playwright ${{ matrix.shard }}/4
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    # 2.10.7 (choix de Youssef, 27/11 « Publier, Playwright informatif ») : les résultats s'affichent sans bloquer la PR.
+    # Les machines GitHub dessinent la 3D sans carte graphique et quelques tests 3D y échouent alors qu'ils passent en
+    # session cloud (détail dans docs/JOURNAL_CORRECTIONS.md). Un lot dédié les fiabilise, puis cette ligne est retirée.
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
