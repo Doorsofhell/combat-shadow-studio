@@ -77,7 +77,7 @@ export function openNews() {
  * The height of the whole is measured and given to the pages as --nav-h, so nothing hides behind it.
  */
 /** 1.3.0: screens whose every action is already on the page or in the bar */
-const NO_KEBAB: ReadonlySet<string> = new Set(['profil', 'parametres']);
+const NO_KEBAB: ReadonlySet<string> = new Set(['profil', 'parametres', 'accueil']);
 
 export function BottomBar() {
   const loc = useLocation();
@@ -239,8 +239,8 @@ export function BottomBar() {
   const hasOptions = options.length > 0 || (!inRow && hasMore && !NO_KEBAB.has(screen));
   const searchOn = sheet === 'search';
   // not on the full-screen tools (session, chronometer, fighter studio): their own buttons sit at the top right
-  // 1.30.0: on the home the search is the big bar of the page itself
-  const topRight = tabs && !inRow && screen !== 'accueil' && (
+  // 2.11.1: the magnifier is on the home too (the big search bar of the page is gone)
+  const topRight = tabs && !inRow && (
     <div className={`nav-topright ${tabsShown ? 'in-tabs' : ''}`} data-testid="nav-topright">
       {hasOptions && menuSlot && (
         <button

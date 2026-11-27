@@ -124,7 +124,6 @@ test('Réglages › Mon coach et premier lancement : la même rangée de visages
   await page.evaluate(() => indexedDB.deleteDatabase('keyval-store'));
   await page.goto('about:blank');
   await page.goto('/');
-  await page.getByTestId('next').click();
   await expect(page.locator('.coach-sel .crow-card')).toHaveCount(6);
   await expect(page.getByTestId('coach-details-none')).toBeVisible();
 });
