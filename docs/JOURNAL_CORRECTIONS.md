@@ -6257,3 +6257,71 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     (`dist/sw.js` contient `NewsList`).
 - **Captures** : NON APPLICABLE (rien ne change à l'écran).
 - **Restauration** : branche `restauration/avant-boucles-v2106` (= 2.10.5 publiée, `6256cc2`).
+
+## 2026-11-26 · v2.10.7 · Fiabilité : tests sur chaque PR, anciens workflows rangés, identifiants d'exercices figés
+
+- **Demande** (Youssef, 26/11 23 h 16) : « Lance dev 1 / 2 + applicatif 1 » parmi les pistes proposées sur la 2.10.6.
+- **Constat vérifié sur la 2.10.6 publiée** (`91b40d0`) :
+  - aucun workflow ne lançait la suite complète : `preview.yml` ne passe que 19 fichiers de tests choisis (moteur,
+    tenues, version) juste avant de publier ; Vitest complet et Playwright n'étaient lancés qu'à la main ;
+  - 13 workflows dans `.github/workflows/`, dont 10 ponctuels (1.37.5 à 1.53 : diagnostics d'Amara, captures WebGL
+    avant/après) qui se déclenchaient sur chaque push ou chaque PR vers la branche de production. « Tenues 1.37.7 -
+    Amara contrôlée » (`amara-v1377.yml`) a 65 exécutions et ses trois dernières (2.10.4, 2.10.5, 2.10.6) sont en
+    échec ;
+  - `src/domain/exercises.ts` calculait l'identifiant d'un exercice d'après sa position dans la liste de son niveau
+    (`${discipline}-${level}-NN`). L'historique, les statistiques, la maîtrise et la synchronisation Firestore sont
+    rangés par `exerciseId` : insérer ou retirer un exercice au milieu d'une liste aurait attribué la progression d'un
+    utilisateur à un autre exercice. Jusqu'ici, les ajouts avaient toujours été mis en fin de liste (commentaires
+    v0.28.0), donc aucun identifiant n'a encore bougé.
+- **Correction** :
+  - nouveau `.github/workflows/ci.yml` (sur chaque PR et à la demande, ne publie rien) : `npm run typecheck`, Vitest
+    complet, `npm run build`, puis Playwright complet réparti sur 4 machines (`--shard=N/4`, Chromium installé par
+    Playwright, traces coupées, `test-results/` gardé 7 jours en cas d'échec). `preview.yml` (publication) inchangé ;
+  - les 10 workflows ponctuels sont déplacés avec `git mv` dans
+    `_ARCHIVES_HORS_APPLICATION/anciens-scripts/.github/workflows/` (motif WORKFLOW ajouté à
+    `inventaire-archives.md`) ; restent actifs `preview.yml`, `android-apk.yml`, `android-release.yml` et `ci.yml`.
+    Les scripts qu'ils appelaient restent dans `scripts/` ;
+  - chaque ligne de `exercises.ts` porte maintenant son identifiant en dur (réécriture mécanique : les 254
+    identifiants et le contenu de chaque exercice sont identiques octet pour octet à la 2.10.6, comparaison JSON de
+    `EXERCISES` avant/après). `build()` refuse un identifiant hors de sa discipline/son niveau, le module refuse un
+    doublon ou la réutilisation d'un identifiant de `RETIRED_EXERCISE_IDS` (vide). Aucune migration des données
+    locales ni Firestore n'est nécessaire, puisqu'aucun identifiant ne change.
+- **Fichiers** : `.github/workflows/ci.yml` (nouveau), 10 workflows archivés, `_ARCHIVES_HORS_APPLICATION/inventaire-archives.md`,
+  `src/domain/exercises.ts`, `src/domain/__tests__/exercise-ids-v2107.test.ts` (nouveau), `src/boot/__tests__/ci-v2107.test.ts`
+  (nouveau), `src/domain/releases.ts`, `package.json`, `package-lock.json`, `README.md`, `docs/ETAT.md`, `docs/NON_REGRESSION.md`.
+- **Premier passage du nouveau CI** (PR #162, machines GitHub, 4 parts Playwright) : 10 échecs sur ~2 250 tests, aucun
+  lié aux changements du lot (tous passent dans la session cloud). Causes vérifiées et corrections, sans retirer ni
+  assouplir aucune vérification :
+  - `morphology-v220.test` (champ de morphologie) : 2,7 s seul, plus de 5 s (délai par défaut de Vitest) sur GitHub
+    pendant la suite complète → délai explicite de 30 s pour ce test ;
+  - `fullscreen-dbltap.spec` (3) : Playwright lançait par défaut le « headless shell », qui gère le plein écran
+    autrement (reproduit ici avec ce navigateur) → `playwright.config.ts` prend le Chromium complet (`channel:
+    'chromium'`) quand `CHROMIUM_PATH` n'est pas fourni, comme dans les sessions cloud ;
+  - `chrono-seul.spec:68` : le rechargement arrivait avant l'écriture (asynchrone, IndexedDB) du dernier « − » → le
+    test attend la valeur enregistrée avant de recharger ;
+  - `consignes-v130.spec:27` : l'horloge d'une consigne compte au plus 250 ms par image (`ConsigneBand`), donc une
+    consigne dure plus de 2,5 s quand les images sont lentes → le test attend chaque changement de ligne (30 s max)
+    au lieu d'échantillonner toutes les 2,5 s ; mêmes vérifications d'ordre et de nombre ;
+  - `contrast.spec` (2) : 26 écrans dans un seul test de 5 min, dépassé sur GitHub → un test par écran et par thème
+    (52 tests, mêmes écrans, même audit) : TEST RÉUSSI ici (53/53, 7,2 min) ;
+  - `panneau-coach.spec:329` (fluidité, panneau ouvert) : la mesure « fermé » commençait avant que le coach soit
+    dessiné (16,7 ms, scène vide) → elle attend maintenant le coach dessiné (`__cssDress.shown` > 20).
+- **Constat restant** : `panneau-coach.spec:329` reste ÉCHOUÉ sur GitHub après cette correction (fermé 100 à 150 ms,
+  ouvert 183 à 267 ms par image, soit +80 % ; seuil +60 %) alors qu'il passe ici (83 → 100 ms). GitHub dessine la 3D
+  sans carte graphique : le flou (`backdrop-filter`) du panneau coûte cher. Problème antérieur au lot, mis en évidence
+  par le nouveau CI ; le test n'est pas assoupli. Correction proposée à Youssef : retirer le flou du panneau quand
+  l'appareil peine (repli « lite » déjà prévu par `canBlur`).
+- **Tests** :
+  - nouveaux `exercise-ids-v2107.test` (3) et `ci-v2107.test` (2) : TEST RÉUSSI ;
+  - session cloud : `npx tsc -b` et `npm run build` : TEST RÉUSSI ; Vitest complet : 1 900 réussis, 1 ignoré, 6 échecs
+    dus au changement de version fait pendant l'exécution, les 3 fichiers relancés ensuite : TEST RÉUSSI ; Playwright :
+    les 7 fichiers corrigés relancés seuls : TEST RÉUSSI ;
+  - GitHub (3e passage, commit `52b9e46`) : types, Vitest complet (1 909) et construction : TEST RÉUSSI ; Playwright
+    parts 2/4 et 3/4 : TEST RÉUSSI sauf `panneau-coach.spec:329` ÉCHOUÉ (voir ci-dessus).
+- **Décision** (Youssef, 27/11 8 h 02, carte « Publier, Playwright informatif ») : dans `ci.yml`, le travail
+  Playwright est `continue-on-error: true` ; ses résultats restent visibles sur chaque PR mais ne la bloquent pas.
+  Types, Vitest et construction bloquent. Aucun test n'est retiré ni assoupli. À faire : lot dédié pour fiabiliser
+  les 6 tests 3D restants sur GitHub (`panneau-coach.spec:329`, `stabilite-3d-v1563.spec:35`,
+  `training-layout.spec:117` et `:349`, `chrono-seul.spec:119`, `consignes-v130.spec:50`), puis retirer cette ligne.
+- **Captures** : NON APPLICABLE (rien ne change à l'écran).
+- **Restauration** : branche `restauration/avant-fiabilite-v2107` (= 2.10.6 publiée, `91b40d0`).

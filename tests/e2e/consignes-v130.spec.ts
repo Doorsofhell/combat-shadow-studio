@@ -31,11 +31,13 @@ test('la consigne principale, puis chaque point clé, une ligne à la fois, avec
   await expect(page.getByTestId('consigne-line')).toHaveCount(1);
   await expect(band.locator('.cons-segs i')).toHaveCount(JAB.points.length + 1);
   // one line after the other, in the order of the sheet, then again
-  const seen: string[] = [];
-  for (let i = 0; i < JAB.points.length + 2; i++) {
-    const text = (await page.getByTestId('consigne-line').textContent())!;
-    if (seen.at(-1) !== text) seen.push(text);
-    await page.waitForTimeout(2500);
+  // 2.10.7: the clock of a line counts at most 250 ms per image (ConsigneBand), so on a slow machine (GitHub,
+  // images over 250 ms) a line lasts longer than 2,5 s: each change is awaited instead of sampled every 2,5 s
+  const line = () => page.getByTestId('consigne-line').textContent().then((t) => t ?? '');
+  const seen: string[] = [await line()];
+  for (let i = 0; i < 4; i++) {
+    await expect.poll(line, { timeout: 30_000 }).not.toBe(seen.at(-1));
+    seen.push(await line());
   }
   const all = [JAB.main, ...JAB.points.map((p) => p.text)];
   const start = all.indexOf(seen[0]);
