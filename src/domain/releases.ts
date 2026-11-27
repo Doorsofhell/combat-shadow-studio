@@ -49,6 +49,18 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
+      version: '2.11.0',
+      releaseDate: '2026-11-27',
+      title: 'Des coachs plus vivants : gants, tenues et lumière',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Les gants de boxe ressemblent à du vrai cuir : fini les reflets blancs en taches qui les faisaient paraître en plastique, place à un reflet doux et à un grain fin. Les gants MMA, les protège-tibias et les chaussures en profitent aussi.' },
+        { category: 'ameliorations', text: 'Les tenues ont une vraie matière : satin des shorts dont la brillance suit les plis, côtes de la ceinture élastique, maille fine des hauts.' },
+        { category: 'ameliorations', text: 'Une lumière de bord détache la silhouette du coach, comme dans une salle de combat. Elle prend les couleurs de la salle de ta discipline et marche aussi sur téléphone.' },
+      ],
+      links: [],
+    },
+    {
       version: '2.10.8',
       releaseDate: '2026-11-27',
       title: 'Un chemin plus court jusqu’à ta séance',

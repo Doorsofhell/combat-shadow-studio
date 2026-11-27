@@ -68,6 +68,10 @@ export function Lab() {
     // 2.2.0 fx=pores,teinte,rugosite,diffusion,ombres,relief,etalonnage,brillance,nettoyage: skin effects switched off
     (globalThis as { __cssSkinFx?: string }).__cssSkinFx = q.get('fx') ?? undefined;
     (globalThis as { __cssLabShadow?: string }).__cssLabShadow = q.get('ombres') ?? undefined;
+    // 2.11.0 rim=0: no edge light; matiere=0: no leather grain, satin, ribs or knit (src/three/finish.ts), for the
+    // side-by-side comparisons
+    (globalThis as { __cssRim2110?: boolean }).__cssRim2110 = q.get('rim') === '0' ? false : undefined;
+    (globalThis as { __cssMatiere2110?: boolean }).__cssMatiere2110 = q.get('matiere') === '0' ? false : undefined;
   }, [q]);
   const envelope = useRef<Envelope | null>(null);
   const origin = useRef({ x: 0, z: 0, yaw: 0 });
