@@ -6523,3 +6523,28 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Captures avant/après** : `/mnt/project-files/compte-onglets-v2130/` (Chromium réel, 412 × 915, Jour et Nuit) ; page
   https://claude.ai/artifact/Aons6fiXc3RdryQhAivxtJ.
 - **Restauration** : branche `restauration/avant-compte-onglets-v2130` (= 2.12.0, `d167cfb`).
+
+## 2026-11-27 · v2.13.0 (inchangée) · Mémoire de Claude réorganisée en règles et skills
+
+- **Demande** (Youssef, 27/11 15 h 43, validée à 16 h 25) : la mémoire du projet sature. Il faut la réduire à moins de
+  100 lignes, ranger les règles techniques dans `.claude/rules/` (chargées selon les fichiers touchés) et les
+  procédures dans `.claude/skills/`.
+- **Constat vérifié** : la mémoire projet faisait 141 lignes (38 Ko, tronquée à la lecture) et comptait 73 notes
+  liées (250 Ko), dont environ 85 % d'historique de versions déjà présent dans ce journal. Les règles permanentes
+  étaient dispersées dans une quinzaine de notes, et deux se contredisaient (licences : CC0/MIT contre CC-BY autorisé).
+- **Correction** :
+  - 9 fichiers `.claude/rules/` avec `paths:` : `coachs-3d`, `moteur-animation`, `interface`, `contenu-domaine`,
+    `tests`, `comptes-firebase`, `android`, `pwa-cache` et `monetisation` ;
+  - 4 skills : `publier-version`, `construire-apk`, `captures-avant-apres` et `graphe-code` ;
+  - `CLAUDE.md` allégé (76 → 54 lignes) : le détail « Personnages 3D » et « Repères techniques » est passé dans
+    `coachs-3d.md` sans perte ;
+  - arbitrages de Youssef : licences CC0 ou MIT seulement ; plus d'artefact claude.ai principal (Pages seul) ;
+    barre d'avancement gardée ; PR libres, mais fusion seulement après « je valide ».
+  - Aucun fichier de l'application n'est modifié.
+- **Fichiers** : `.claude/rules/*.md`, `.claude/skills/{publier-version,construire-apk,captures-avant-apres,graphe-code}/SKILL.md`,
+  `CLAUDE.md`, `docs/JOURNAL_CORRECTIONS.md`.
+- **Tests** : nouvelle session `claude -p` dans le dépôt : à la lecture de `src/three/face.ts`, seule
+  `coachs-3d.md` est chargée, et les 5 skills de projet sont listés : TEST RÉUSSI. Vitest, build et Playwright :
+  NON APPLICABLE (aucun changement de l'application).
+- **Restauration** : branche `restauration/avant-memoire-modulaire` (= main 2.12.0, `ef2b476`) ; la version de
+  production 2.13.0 (`c499454`) n'est pas modifiée.
