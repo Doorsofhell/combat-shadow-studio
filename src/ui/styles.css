@@ -4303,7 +4303,7 @@ html.stage-fs-open body {
   gap: 0;
   overflow-x: auto;
   scrollbar-width: none;
-  margin: 0 calc(-1 * var(--gutter));
+  margin: 6px calc(-1 * var(--gutter)) 0;
   padding: 0 var(--gutter);
   border-bottom: 1px solid var(--line);
   flex: none;
@@ -4342,6 +4342,45 @@ html.stage-fs-open body {
   outline: 2px solid var(--ink);
   outline-offset: -2px;
   border-radius: 8px;
+}
+/* 2.11.1 (proposition 8A): the four accesses under the coach, one row */
+.home-access {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.home-access-item {
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 4px;
+  border-radius: 14px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+}
+.home-access-item svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.home-access-item:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 .home-ask {
   display: flex;

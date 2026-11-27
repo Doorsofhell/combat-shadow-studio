@@ -108,7 +108,10 @@ describe('1.0.0 lot 3 : accueil et recherche', () => {
     // 2026-11-11): the page carries « Commencer » (coach card) and « Reprendre ta séance » (shortcut)
     expect(PRIMARY.accueil).toBeUndefined();
     const home = readFileSync('src/ui/screens/Home.tsx', 'utf8');
-    for (const id of ['home-cta', 'resume-last', 'tile-daily', 'tile-chrono', 'app-search', 'home-goal', 'home-prog', 'home-foryou']) expect(home, id).toContain(`data-testid="${id}"`);
+    // 2.11.1 (8A): the big search bar of the page is gone, the magnifier of the bar serves the home too; the session
+    // prepared and the row of accesses replace the two shortcuts
+    for (const id of ['home-cta', 'resume-last', 'next-session', 'home-access', 'home-techniques', 'tile-daily', 'tile-chrono', 'home-create', 'home-coach-ia', 'home-goal', 'home-prog', 'home-foryou']) expect(home, id).toContain(`data-testid="${id}"`);
+    expect(readFileSync('src/ui/nav/BottomBar.tsx', 'utf8')).not.toMatch(/screen !== 'accueil'/);
   });
   it('1.29.0 (barre flottante) : quatre places, « Rechercher » en haut à droite de chaque écran à places, jamais en séance', () => {
     // 1.1.0: the magnifier was a place of the bar and Profil the photo at the top right; 1.29.0 (Youssef, 2026-11-11,

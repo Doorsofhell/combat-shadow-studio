@@ -82,6 +82,8 @@ export interface Settings {
   coachPanelSize: CoachPanelSize;
   /** 0.27: the one-time tip « touche deux fois le coach pour le plein écran » was shown and dismissed (or used) */
   stageFsHintSeen: boolean;
+  /** 2.11.1: the card « Complète ton profil » of Compte was closed by the user (never shown again) */
+  profileCardHidden: boolean;
   /**
    * 0.31 (Youssef, 2026-10-22: « tenues… automatiquement selon la discipline… possibilité de les désactiver »):
    * the Ultra-réaliste coaches wear the outfit of the discipline. On by default; older saves get it through `merge`.
@@ -146,6 +148,7 @@ export const DEFAULT_SETTINGS: Settings = {
   actionPillCollapsed: false,
   coachPanelSize: 'normal',
   stageFsHintSeen: false,
+  profileCardHidden: false,
   coachOutfit: true,
   bjjOutfit: 'gi',
   newsSeenVersion: null,

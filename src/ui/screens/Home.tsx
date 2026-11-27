@@ -11,7 +11,6 @@ import { championFor } from '../../domain/coaches/catalog';
 import type { ComboPlayer, PlayerEvents } from '../../engine';
 import { MODE_LABEL } from '../training/plan';
 import { DisciplineIcon } from '../icons';
-import { haptic, openSearch } from '../nav/BottomBar';
 import { NavIcon } from '../nav/NavIcon';
 import { useKbStyle } from '../components/KickboxingStyle';
 import { techniquesFor } from '../../domain/techniques';
@@ -116,28 +115,9 @@ export function Home() {
         ))}
       </div>
 
-      {/* the big action bar: the search of the app (« Rechercher ou demander au coach »), the chronometer next to it */}
-      <div className="home-ask">
-        <button
-          type="button"
-          className="home-ask-go"
-          aria-label="Rechercher ou demander au coach"
-          aria-haspopup="dialog"
-          data-testid="app-search"
-          onClick={() => {
-            haptic();
-            openSearch();
-          }}
-        >
-          <NavIcon id="search" />
-          <span>Que veux-tu travailler ?</span>
-        </button>
-        <Link to="/chrono" className="home-ask-chip" data-testid="tile-chrono" aria-label="Chrono seul">
-          <NavIcon id="stopwatch" />
-          Chrono
-        </Link>
-      </div>
-
+      {/* 2.11.1 (Youssef, 2026-11-27, proposition 8A): one session shown, one big « Commencer » (in the coach's card).
+          « Reprendre ta séance » takes the place of the prepared session when one is in progress. The search is the
+          magnifier of the bar; the access that used to crowd this page are one row of four under the coach. */}
       <div className="home-list">
         {resume && last ? (
           <Link to={resume} className="home-row" data-testid="resume-last" data-disc={last.discipline}>
@@ -154,30 +134,17 @@ export function Home() {
             <NavIcon id="chevron" />
           </Link>
         ) : (
-          <Link to={`/discipline/${disc.id}`} className="home-row" data-testid="resume-last" data-disc={disc.id}>
+          <div className="home-row" data-testid="next-session" data-disc={disc.id}>
             <span className="home-row-ico" aria-hidden>
               <NavIcon id="dumbbell" />
             </span>
             <span className="home-row-text">
-              <b>Ta discipline</b>
+              <b>{recEx ? recEx.name : disc.name}</b>
               <small>
-                {disc.name} · {level.name}
+                Prête à démarrer · {MODE_LABEL[lastMode]} · {level.name}
               </small>
             </span>
-            <NavIcon id="chevron" />
-          </Link>
-        )}
-        {daily && (
-          <Link to={`/techniques/${daily.id}?d=${main}`} className="home-row" data-testid="tile-daily">
-            <span className="home-row-ico" aria-hidden>
-              <NavIcon id="star" />
-            </span>
-            <span className="home-row-text">
-              <b>Technique du jour</b>
-              <small>{daily.name}</small>
-            </span>
-            <NavIcon id="chevron" />
-          </Link>
+          </div>
         )}
       </div>
 
@@ -230,6 +197,25 @@ export function Home() {
         </div>
       </section>
 
+      <nav className="home-access" aria-label="Accès rapides" data-testid="home-access">
+        <Link to={`/techniques?d=${main}`} className="home-access-item" data-testid="home-techniques">
+          <NavIcon id="book" />
+          Techniques
+        </Link>
+        <Link to="/chrono" className="home-access-item" data-testid="tile-chrono" aria-label="Chrono seul">
+          <NavIcon id="stopwatch" />
+          Chrono
+        </Link>
+        <Link to="/createur" className="home-access-item" data-testid="home-create">
+          <NavIcon id="plus" />
+          Créer
+        </Link>
+        <Link to="/coach-ia" className="home-access-item" data-testid="home-coach-ia">
+          <NavIcon id="coach" />
+          Coach IA
+        </Link>
+      </nav>
+
       <section className="home-foryou" aria-labelledby="home-h-foryou">
         <h2 id="home-h-foryou">Pour toi</h2>
         <div className="home-rounds">
@@ -264,18 +250,14 @@ export function Home() {
               <span>À revoir</span>
             </Link>
           )}
-          <Link to="/createur" className="home-round" data-testid="home-create">
-            <i>
-              <NavIcon id="plus" />
-            </i>
-            <span>Créer</span>
-          </Link>
-          <Link to="/coach-ia" className="home-round" data-testid="home-coach-ia">
-            <i>
-              <NavIcon id="coach" />
-            </i>
-            <span>Coach IA</span>
-          </Link>
+          {daily && (
+            <Link to={`/techniques/${daily.id}?d=${main}`} className="home-round" data-testid="tile-daily" aria-label={`Technique du jour : ${daily.name}`}>
+              <i>
+                <NavIcon id="star" />
+              </i>
+              <span>Technique du jour</span>
+            </Link>
+          )}
         </div>
       </section>
     </div>

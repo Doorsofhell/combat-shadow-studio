@@ -6413,3 +6413,32 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `/mnt/project-files/humaniser-coachs/v2110/`.
 - **Restauration** : branche `restauration/avant-humanisation-sf-v2110` (= 2.10.7 publiée, `e6c66c7`) ; intégrée
   après la 2.10.8 (fusion de `f8de7b2` dans la branche, sans rien écraser : version, Nouveautés et journal gardés).
+
+## 2026-11-27 · v2.11.1 · Bienvenue en 4 écrans (2A) et Accueil à un seul « Commencer » (8A)
+
+- **Demande** (Youssef, 27/11 12 h 46, « Job pour la version conseiller ») : réaliser les versions conseillées des
+  maquettes 2 (2A) et 8 (8A) de https://claude.ai/artifact/WVSczqDUGL4unyTcyX1SyS.
+- **Constat vérifié** (captures réelles de la 2.11.0, `/mnt/project-files/parcours-2026-11-27/captures/`) :
+  Bienvenue comptait 7 écrans et 8 touches avant l'Accueil (accueil, coach, garde, discipline, niveau, objectifs, « C'est
+  parti ») ; l'Accueil proposait six entrées vers les mêmes endroits (barre de recherche, Chrono, « Ta discipline »,
+  « Technique du jour », coach, six pastilles « Pour toi »).
+- **Correction** :
+  - 2A : Bienvenue en 4 écrans (coach, garde, discipline, niveau). Le lien Confidentialité et « J'ai déjà un compte » sont
+    sur l'écran du coach. Objectifs, rythme, taille, poids et limitations ne sont plus demandés au départ : la carte
+    « Complète ton profil » de Compte (visible tant que les objectifs, la taille ou le poids manquent) ouvre la section
+    Objectifs, et se ferme pour de bon (`settings.profileCardHidden`). Le pseudo se règle dans Compte › Identité ;
+  - 8A : l'Accueil montre la séance prête à démarrer (`next-session`) à la place de « Ta discipline » ; « Reprendre ta
+    séance » (`resume-last`) la remplace quand une séance existe. Un seul « Commencer » (carte du coach). Une rangée de
+    quatre accès sous le coach : Techniques, Chrono, Créer, Coach IA. « Technique du jour » passe dans « Pour toi ».
+    La grande barre de recherche disparaît : la loupe de la barre sert aussi l'Accueil (le ⋮ y reste absent) ;
+  - textes du Coach IA (`appGuide.ts`) mis à jour. Rien n'est retiré des fonctions.
+- **Fichiers** : `src/ui/screens/{Onboarding,Home}.tsx`, `src/ui/screens/account/Profile.tsx`,
+  `src/ui/nav/BottomBar.tsx`, `src/store/settings.ts`, `src/ui/styles.css`, `src/coach/appGuide.ts`,
+  `src/domain/releases.ts`, `README.md` et `docs/ETAT.md` (par `docs:sync`), `package.json`.
+- **Tests** : nouveaux scénarios dans `tests/e2e/parcours-v2108.spec.ts` (2A, 8A, reprise). Adaptés parce que le parcours
+  a changé, sans rien assouplir : `app`, `account`, `coachs-v160`, `choix-coach-v270` (plus d'écran d'accueil ni
+  d'objectifs dans Bienvenue ; le pseudo se saisit dans Compte), `accueil-recherche`, `aucune-perte-v100`, `navigation`
+  (séance prête et rangée d'accès, loupe de la barre sur l'Accueil), `refonte.test` et `appGuide.test` (mêmes contrôles
+  sur les nouveaux identifiants et mots).
+- **Captures avant/après** : `bienvenue-avant-apres.jpg`, `accueil-compte-avant-apres.jpg` (rendu WebGL réel, 393 × 851).
+- **Restauration** : branche `restauration/avant-bienvenue-accueil-v2110` (= 2.11.0, `7781656`).
