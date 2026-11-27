@@ -84,7 +84,7 @@ export type PhotoLook = SkinLook;
  */
 export const SKIN_LOOK: Record<string, SkinLook> = {
   // 1.48.0: individual, mobile-friendly calibration; colours and anatomical relief unchanged.
-  'mma-kadir': { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, roughVar: 0.14, tintVar: 0.05, wrap: 0.45, shadowLift: 0.36 },
+  'mma-kadir': { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, roughVar: 0.14, tintVar: 0.05, wrap: 0.45, shadowLift: 0.36, tint: [1, 0.56, 0.44], sat: 0.86, warm: -0.06 },
   // 1.47.1 Amara-only semi-realistic skin study: retain original relief, wrap, colour and geometry;
   // slightly enrich high-quality roughness and tint variation without touching other coaches.
   // 1.37.8: only Amara, shader-only: clearer muscle highlights without any mesh, garment or rig change.
@@ -95,7 +95,7 @@ export const SKIN_LOOK: Record<string, SkinLook> = {
   // 1.11 Naël and Inaya: Rocketbox photo skins like Kadir and Amara (same relief maps); lighter skins, the
   // scattering a little warmer
   // 1.21 same light as Kadir (Inaya got Amara's in 1.20): the wider wrap softened the shadows between the muscles
-  nael: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, roughVar: 0.13, tintVar: 0.045, wrap: 0.45, shadowLift: 0.34, tint: [1, 0.55, 0.42] },
+  nael: { ...DEFAULT_SKIN, relief: 1.2, pores: 0.035, roughVar: 0.13, tintVar: 0.045, wrap: 0.45, shadowLift: 0.34, tint: [1, 0.58, 0.46], sat: 0.88, warm: -0.05 },
   // 1.20 (Youssef 05/11 14:09, Amara's muscles « bien dessinés »): Inaya's wrapped light was wider than Amara's
   // (0.55 for 0.45) and softened the shadows between the muscles; same as Amara now
   // 1.43 Victor: the Kadir photo skin repainted (tan of Youssef's sheets): Kadir's light and relief

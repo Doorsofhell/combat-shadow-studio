@@ -2,15 +2,14 @@ import { expect, Page, test } from '@playwright/test';
 
 async function onboard(page: Page, coach: 'homme' | 'femme') {
   await page.goto('/');
-  await expect(page.getByText('Entraîne-toi seul')).toBeVisible();
-  await page.getByTestId('next').click();
+  // 2.11.1 (2A): the first screen is the coach choice (the welcome page is gone)
   // coach choice is mandatory, nothing is preselected
   await expect(page.getByTestId('next')).toBeDisabled();
   await page.getByTestId(`coach-${coach}`).click();
   await expect(page.getByTestId('next')).toBeEnabled();
   await page.getByTestId('next').click();
-  // guard, discipline, level, goals (0.24: the "Apparence" step is gone, the coach is Kadir or Amara)
-  for (let i = 0; i < 4; i++) await page.getByTestId('next').click();
+  // guard, discipline, level (2.11.1: the goals step is now in Compte)
+  for (let i = 0; i < 2; i++) await page.getByTestId('next').click();
   await page.getByTestId('finish').click();
   await expect(page.getByTestId('home-cta')).toBeVisible();
 }

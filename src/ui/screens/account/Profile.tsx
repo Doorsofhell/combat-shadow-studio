@@ -135,6 +135,8 @@ export function ProfilePage() {
   // the weekly goal, real figures only (the same reading as the home)
   const goals = useGoals((s) => s.goals);
   const unseen = hasUnseenRelease(useSettings((s) => s.settings.newsSeenVersion));
+  const profileCardHidden = useSettings((s) => s.settings.profileCardHidden);
+  const setSettings = useSettings((s) => s.set);
   const week = sessions.filter((s) => weekKey(s.start) === thisWeek);
   const weekMin = Math.round(weekSec / 60);
   const goalOn = goals.weeklyMinutes > 0 || goals.weeklySessions > 0;
@@ -227,6 +229,19 @@ export function ProfilePage() {
           <AppIcon id="shield" size={22} />
         </span>
       </Link>
+      {/* 2.11.1 (Youssef, 2026-11-27, proposition 2A): Bienvenue no longer asks the goals, the rhythm or the body data;
+          this card does, when they are missing, and it never blocks anything (it can be closed for good) */}
+      {!profileCardHidden && (profile.goals.length === 0 || !profile.heightCm || !profile.weightKg) && (
+        <div className="acc-card" data-testid="compte-complete">
+          <Link to="/profil?ouvert=objectifs" className="acc-card-text" style={{ textDecoration: 'none', color: 'inherit' }} data-testid="compte-complete-go">
+            <b>Complète ton profil</b>
+            <small>Objectifs, rythme, taille et poids : facultatif, pour des séances mieux adaptées.</small>
+          </Link>
+          <button type="button" className="btn ghost sm" onClick={() => setSettings({ profileCardHidden: true })} aria-label="Fermer : ne plus afficher" data-testid="compte-complete-close">
+            <AppIcon id="close" size={16} />
+          </button>
+        </div>
+      )}
       <Link to="/objectifs" className="acc-card" data-testid="compte-goal" aria-label={goalOn ? `Objectif de la semaine : ${goalText}` : 'Objectif de la semaine : aucun objectif fixé'}>
         <span className="acc-card-text">
           <b>Objectif de la semaine</b>

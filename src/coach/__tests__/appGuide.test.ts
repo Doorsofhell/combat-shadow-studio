@@ -173,7 +173,7 @@ describe('guide de l’application : contenu', () => {
     const homeSrc = readFileSync(resolve(process.cwd(), 'src/ui/screens/Home.tsx'), 'utf8');
     // 1.30.0 (nouvelle ergonomie, lot 2): the words of the new home (« Séance rapide » became « Commencer », in the
     // coach's card; « Reprendre ta séance » is the first shortcut)
-    for (const w of ['Technique du jour', 'Reprendre ta séance', 'Que veux-tu travailler ?', 'Pour toi']) {
+    for (const w of ['Technique du jour', 'Reprendre ta séance', 'Pour toi']) {
       expect(homeSrc, w).toContain(`>${w}<`);
       expect(by('screen-accueil'), w).toContain(`« ${w} »`);
     }

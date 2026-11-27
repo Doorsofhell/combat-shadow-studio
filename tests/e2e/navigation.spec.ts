@@ -62,10 +62,10 @@ test.describe('393×851', () => {
       // Compte is a place of the bar; the magnifier is at the top right, or in the row of the chronometer; in the
       // session both are hidden (« Rechercher » is in « Plus »)
       await expect(bar(page).getByTestId('nav-profil')).toHaveCount(screen === 'entrainement' ? 0 : 1);
-      // 1.30.0: on the home the search is the big bar of the page itself
-      await expect(bar(page).getByTestId('app-search')).toHaveCount(screen === 'entrainement' || screen === 'accueil' ? 0 : 1);
-      await expect(bar(page).locator('.nav-topright').getByTestId('app-search')).toHaveCount(back === 'row' || screen === 'accueil' ? 0 : 1);
-      if (screen === 'accueil') await expect(page.locator('.page.home').getByTestId('app-search')).toHaveCount(1);
+      // 2.11.1 (8A): the big search bar of the home is gone, the magnifier at the top right serves the home too
+      await expect(bar(page).getByTestId('app-search')).toHaveCount(screen === 'entrainement' ? 0 : 1);
+      await expect(bar(page).locator('.nav-topright').getByTestId('app-search')).toHaveCount(back === 'row' ? 0 : 1);
+      if (screen === 'accueil') await expect(page.locator('.page.home').getByTestId('app-search')).toHaveCount(0);
       // the five places, the same everywhere except the hands-free session
       const tabs = bar(page).locator('.nav-tab');
       if (screen === 'entrainement') await expect(tabs).toHaveCount(0);

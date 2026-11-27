@@ -27,14 +27,16 @@ async function idbDump(page: Page): Promise<Record<string, unknown>> {
 }
 
 async function onboard(page: Page, pseudo: string) {
-  await expect(page.getByText('Entraîne-toi seul')).toBeVisible();
-  await page.getByTestId('pseudo').fill(pseudo);
-  await page.getByTestId('next').click();
+  // 2.11.1 (2A): four steps (coach, guard, discipline, level); the pseudo is now asked in Compte › Identité
   await page.getByTestId('coach-homme').click();
   await page.getByTestId('next').click();
-  // 0.24: no "Apparence" step any more (the coach is Kadir or Amara)
-  for (let i = 0; i < 4; i++) await page.getByTestId('next').click();
+  for (let i = 0; i < 2; i++) await page.getByTestId('next').click();
   await page.getByTestId('finish').click();
+  await expect(page.getByTestId('home-cta')).toBeVisible();
+  await page.getByTestId('nav-profil').click();
+  await openSetting(page, 'identite');
+  await page.getByTestId('pseudo-input').fill(pseudo);
+  await page.getByTestId('nav-accueil').click();
   await expect(page.getByTestId('home-cta')).toBeVisible();
 }
 
@@ -109,9 +111,9 @@ test('compte : mode invité, profil modifié conservé, export, suppression des 
   // delete my data
   await page.getByTestId('delete-my-data').click();
   await page.getByRole('dialog').getByRole('button', { name: 'Supprimer' }).click();
-  await expect(page.getByText('Entraîne-toi seul')).toBeVisible();
+  await expect(page.getByTestId('coach-homme')).toBeVisible(); // 2.11.1: Bienvenue opens on the coach choice
   await page.reload();
-  await expect(page.getByText('Entraîne-toi seul')).toBeVisible();
+  await expect(page.getByTestId('coach-homme')).toBeVisible(); // 2.11.1: Bienvenue opens on the coach choice
   const after = await idbDump(page);
   const left = Object.entries(after).filter(([k]) => k.startsWith('u:local:'));
   for (const [, v] of left) expect(String(v)).not.toContain('Yanis');
@@ -181,7 +183,7 @@ test.describe(() => {
     await openSetting(page, 'compte');
     await page.getByTestId('sign-out').click();
     await page.getByRole('dialog').getByRole('button', { name: 'Se déconnecter' }).click();
-    await expect(page.getByText('Entraîne-toi seul')).toBeVisible();
+    await expect(page.getByTestId('coach-homme')).toBeVisible(); // 2.11.1: Bienvenue opens on the coach choice
     await page.goto(`${FB}#/connexion`);
     await page.getByLabel('Adresse e-mail').fill(email);
     await page.getByLabel('Mot de passe', { exact: true }).fill('mauvais123');
@@ -196,7 +198,7 @@ test.describe(() => {
     await page.getByTestId('delete-account').click();
     await page.getByLabel('Confirme avec ton mot de passe').fill('motdepasse1');
     await page.getByRole('dialog').getByRole('button', { name: 'Supprimer' }).click();
-    await expect(page.getByText('Entraîne-toi seul')).toBeVisible();
+    await expect(page.getByTestId('coach-homme')).toBeVisible(); // 2.11.1: Bienvenue opens on the coach choice
     expect((await request.get(docUrl, { headers: { Authorization: 'Bearer owner' } })).status()).toBe(404);
     const keys = Object.keys(await idbDump(page));
     expect(keys.filter((k) => k.startsWith(`u:${scope}:`))).toEqual([]);

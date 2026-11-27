@@ -40,8 +40,11 @@ test('Accueil sans historique : « Commencer », trois tuiles, objectif à fixer
   await expect(cta).toHaveAttribute('data-action', 'start');
   await expect(cta).toHaveText('Commencer');
   await expect(bar(page).locator('.nav-primary')).toHaveCount(0);
-  await expect(page.getByTestId('resume-last')).toContainText('Ta discipline');
-  await expect(page.locator('.home-row')).toHaveCount(2);
+  // 2.11.1 (8A): no history, so the session prepared is shown (not a shortcut), the accesses are one row of four
+  await expect(page.getByTestId('resume-last')).toHaveCount(0);
+  await expect(page.getByTestId('next-session')).toContainText('Prête à démarrer');
+  await expect(page.locator('.home-row')).toHaveCount(1);
+  await expect(page.getByTestId('home-access').locator('a')).toHaveCount(4);
   await expect(page.getByTestId('tile-daily')).toContainText('Technique du jour');
   await expect(page.getByTestId('tile-chrono')).toContainText('Chrono');
   // no goal: the round says so to screen readers and shows no figure, no gauge
@@ -100,10 +103,10 @@ test('Accueil : toucher la discipline la change parmi les six, sans rien effacer
   await picker.getByTestId('pick-judo').click();
   await expect(picker.getByTestId('pick-judo')).toHaveAttribute('aria-pressed', 'true');
   await expect(picker.locator('[aria-pressed="true"]')).toHaveCount(1);
-  await expect(page.getByTestId('resume-last')).toHaveAttribute('data-disc', 'judo');
-  await expect(page.getByTestId('resume-last')).toContainText('Judo');
+  // 2.11.1: with no history the session prepared follows the discipline
+  await expect(page.getByTestId('next-session')).toHaveAttribute('data-disc', 'judo');
   await page.reload();
-  await expect(page.getByTestId('resume-last')).toHaveAttribute('data-disc', 'judo');
+  await expect(page.getByTestId('next-session')).toHaveAttribute('data-disc', 'judo');
   await expect(page.getByTestId('pick-judo')).toHaveAttribute('aria-pressed', 'true');
   // the tab of the discipline is inside the screen
   const box = await page.getByTestId('pick-judo').boundingBox();
@@ -116,10 +119,10 @@ test('Accueil : toucher la discipline la change parmi les six, sans rien effacer
 test('Rechercher : une place de la barre sur chaque écran, dans « Plus » en séance ; trouve et ouvre', async ({ page }) => {
   await seedProfile(page);
   // 1.29.0 (barre flottante): « Rechercher » is the magnifier at the top right of every screen with the places
-  // 1.30.0: on the home it is the big bar « Que veux-tu travailler ? » of the page, not repeated at the top right
+  // 2.11.1 (8A): the big bar of the home is gone, the magnifier at the top right serves the home too
   await page.goto('/#/');
-  await expect(page.locator('.page.home').getByTestId('app-search')).toContainText('Que veux-tu travailler ?');
   await expect(page.getByTestId('app-search')).toHaveCount(1);
+  await expect(page.locator('.page.home').getByTestId('app-search')).toHaveCount(0);
   await expect(bar(page).locator('.nav-tab')).toHaveCount(4);
   for (const path of ['/entrainer', '/profil', '/techniques/jab?d=boxe', '/techniques?d=boxe', '/stats']) {
     await page.goto(`/#${path}`);
@@ -185,7 +188,7 @@ for (const theme of ['clair', 'sombre'] as const) {
     await page.addInitScript((t) => localStorage.setItem('css-theme', t), theme);
     await seedProfile(page);
     await page.goto('/#/');
-    await expect(page.locator('.home-row')).toHaveCount(2);
+    await expect(page.locator('.home-row')).toHaveCount(1);
     // the six discipline tabs are all inside the small screen, none cut at the edge
     const tabs = await page.locator('.home-dtab').evaluateAll((bs) => bs.map((b) => [b.getBoundingClientRect().left, b.getBoundingClientRect().right]));
     expect(tabs).toHaveLength(6);

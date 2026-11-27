@@ -81,14 +81,62 @@ test('l’astuce « touche le coach » : une seule fois, sur l’Accueil ou dans
 
 test('premier lancement : pas de texte de personnalisation, pas de pastille « nouvelle version » sur Compte', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('next').click();
   await expect(page.getByText('tu pourras le personnaliser')).toHaveCount(0);
   await expect(page.locator('[data-testid^="coach-"] .pro-badge')).toHaveCount(0);
   await page.getByTestId('coach-homme').click();
-  await page.getByTestId('next').click();
-  for (let i = 0; i < 4; i++) await page.getByTestId('next').click();
+  for (let i = 0; i < 3; i++) await page.getByTestId('next').click();
   await page.getByTestId('finish').click();
   await expect(page.getByTestId('home-cta')).toBeVisible();
   await expect(bar(page).getByTestId('menu-dot')).toHaveCount(0);
   await expect(bar(page).locator('.nav-dot')).toHaveCount(0);
+});
+
+/**
+ * 2.11.1 (Youssef, 2026-11-27, propositions 2A et 8A): Bienvenue in four steps (coach, guard, discipline, level), the
+ * goals and the body data asked later by a card of Compte; the home with one prepared session, one « Commencer » and a
+ * row of four accesses.
+ */
+test('2A : Bienvenue en quatre écrans, puis la carte « Complète ton profil » dans Compte, jamais bloquante', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuemax', '4');
+  await expect(page.getByTestId('next')).toBeDisabled();
+  await page.getByTestId('coach-femme').click();
+  await page.getByTestId('next').click();
+  await expect(page.getByTestId('guard-orthodoxe')).toBeVisible();
+  await page.getByTestId('next').click();
+  await expect(page.getByTestId('main-boxe')).toBeVisible();
+  await page.getByTestId('next').click();
+  await expect(page.getByTestId('next')).toHaveCount(0);
+  await page.getByTestId('finish').click();
+  await expect(page.getByTestId('home-cta')).toBeVisible();
+  await page.getByTestId('nav-profil').click();
+  const card = page.getByTestId('compte-complete');
+  await expect(card).toBeVisible();
+  await page.getByTestId('compte-complete-go').click();
+  await expect(page.getByTestId('pf-goal-vitesse')).toBeVisible();
+  await page.getByTestId('nav-profil').click();
+  await page.getByTestId('compte-complete-close').click();
+  await expect(card).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByTestId('compte-complete')).toHaveCount(0);
+});
+
+test('8A : l’accueil montre une séance prête, un seul « Commencer » et quatre accès ; la loupe de la barre cherche', async ({ page }) => {
+  await seedProfile(page, {}, { stageFsHintSeen: true });
+  await page.goto('/#/');
+  await expect(page.getByTestId('next-session')).toContainText('Prête à démarrer');
+  await expect(page.getByTestId('home-cta')).toHaveCount(1);
+  await expect(page.getByTestId('home-access').locator('a')).toHaveText(['Techniques', 'Chrono', 'Créer', 'Coach IA']);
+  await expect(page.getByTestId('tile-daily')).toBeVisible();
+  await expect(page.getByTestId('home-goal')).toBeVisible();
+  await page.getByTestId('app-search').click();
+  await expect(page.getByTestId('search-ai')).toBeVisible();
+});
+
+test('8A : « Reprendre ta séance » remplace la séance prête quand une séance existe', async ({ page }) => {
+  await seedProfile(page, {}, { stageFsHintSeen: true });
+  await seedStats(page, 'technique');
+  await page.goto('/#/');
+  await expect(page.getByTestId('resume-last')).toContainText('Reprendre ta séance');
+  await expect(page.getByTestId('next-session')).toHaveCount(0);
 });
