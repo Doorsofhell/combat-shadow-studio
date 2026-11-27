@@ -105,10 +105,10 @@ Généré par `src/three/__tests__/shorts-v1442.test.ts`.
 | mma-amara | boxe | garde | 1.71 | 64.4 | 0.2 % |
 | mma-amara | boxe | high kick | 4.00 | 87.9 | 0.9 % |
 | mma-amara | boxe | genou | 2.31 | 71.5 | 1.2 % |
-| mma-amara | boxe | changement de niveau | 2.38 | 71.8 | 0.9 % |
+| mma-amara | boxe | changement de niveau | 2.38 | 71.9 | 0.9 % |
 | mma-amara | boxe | low kick | 2.17 | 68.4 | 0.7 % |
 | mma-amara | kickboxing | garde | 1.91 | 65.2 | 0.3 % |
-| mma-amara | kickboxing | high kick | 5.12 | 112.8 | 0.6 % |
+| mma-amara | kickboxing | high kick | 5.11 | 112.8 | 0.6 % |
 | mma-amara | kickboxing | genou | 2.81 | 93.6 | 0.9 % |
 | mma-amara | kickboxing | changement de niveau | 2.76 | 77.3 | 0.4 % |
 | mma-amara | kickboxing | low kick | 2.46 | 72.2 | 0.6 % |

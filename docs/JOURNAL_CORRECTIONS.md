@@ -6484,6 +6484,33 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `npx vitest run` (1 915 réussis, 1 ignoré) : TEST RÉUSSI ; `npm run build` : TEST RÉUSSI ; Playwright : NON APPLICABLE (aucun changement de l'application).
 - **Restauration** : branche `restauration/avant-impeccable` (= 2.11.1, `aff1793c`).
 
+## 2026-11-27 · v2.13.1 · Humaniser les coachs : cous « autruche » et visages d'Amara et d'Inaya
+
+- **Signalement** (Youssef, 27/11, captures du téléphone sur la 2.12.0) : « régression sur les cous, on dirait une autruche », sur tous les coachs ;
+  puis : « je voudrais récupérer les visages d'Amara et d'Inaya de la 2.3.1 », peau, expressions à l'effort et le reste gardés.
+- **Constat vérifié** (captures du Lab, même plan, builds 2.3.2, 2.9.0, 2.10.0 et 2.12.0 ; `scripts/v2110/captures.mjs`) : le cou court et épais aux
+  trapèzes marqués est encore là en 2.9.0 et disparaît en **2.10.0**. Mesures sur les fichiers `photo.glb` : os (Neck, Head) et maillage du corps
+  inchangés pour Kadir, Naël, Inaya, Kanya (têtes de 1 à 9 mm au plus) ; seul Amara (retaillée, ×0,9829) et Victor (1,88 m) ont changé de taille. En
+  revanche l'image de couleur du corps et celle de la tête ont été refaites pour les six coachs : le « délitage » de `peau.py` a retiré l'ombrage
+  basse fréquence qui donnait leur volume aux trapèzes et au cou. Le cou paraît plat donc long. Les visages d'Amara et d'Inaya de la 2.3.1 sont les
+  mêmes fichiers que ceux de la 2.9.0. La 2.11.0 (lumière de bord) et la 2.12.0 (teinte) ne sont pas en cause.
+- **Correction** (`tools/generator/fideles/restaure_cou.mjs`, `neck.py`) : (1) Kadir, Naël, Victor, Kanya : images actuelles gardées, seul l'ombrage
+  du cou et des trapèzes de la 2.9.0 est rendu à l'image de la tête (rapport de luminance à grande échelle, bande y 1,40-1,54 m, limité à 0,82-1,12) ;
+  (2) Amara (`photo.glb`, `photo-clean.glb`) et Inaya : corps et tête de la 2.9.0 (images de couleur, forme du visage, 25 expressions), la tête d'Amara
+  remise à l'échelle 0,9829 et raccordée au corps actuel par un fondu de position entre 1,44 et 1,50 m (sans fente au cou). Os, poids, tenues, SKIN_LOOK,
+  moteur du visage et de la peau : inchangés. Un simple retour de l'image du corps de la 2.9.0 pour Kadir a été essayé puis écarté (tache claire
+  sur le haut du torse : c'est ce que le délitage corrigeait).
+- **Fichiers** : `public/coaches/{mma-kadir,nael,victor,kanya,inaya}/photo.glb`, `public/coaches/mma-amara/{photo,photo-clean}.glb`,
+  `src/boot/assetSizes.json`, `tools/generator/fideles/{restaure_cou.mjs,neck.py}`, `src/domain/releases.ts`, `package.json`, README/ETAT (docs:sync).
+- **Limites** : l'effet est net pour Amara et Inaya et Kanya, plus discret pour Kadir, Naël et Victor.
+- **Restauration** : branche `restauration/avant-cou-v2121` (= 2.12.0, d167cfb).
+- **Garde-fous mis à jour (raison écrite, aucun test affaibli)** : `outfit-rollback-v1373` (empreinte du `photo.glb` de Kadir : seule l'image de
+  couleur de la tête change) et `victor-peau-v1452` (la texture de tête livrée reste égale à son fichier source, `tools/generator/fideles/victor/head_color.jpg`,
+  remplacé par la version avec ombrage du cou). Les tests de peau masquée sous les tenues, de squelette et de poids passent sans changement.
+- **Documents de mesures régénérés** (`AUDIT_UPDATE=1`, méthode du projet) : écarts de 0,01 cm (glissement `ukemi-ushiro`) et 0,1 point dans les mesures
+  de shorts d'Amara, dus à sa tête de la 2.9.0 remise à l'échelle ; rien d'autre ne bouge.
+- **Tests** : tsc propre ; Vitest complet 1916 réussis, 1 ignoré (TEST RÉUSSI) ; Playwright : CI (4 tranches), pas de passage local complet (trop long).
+
 ## 2026-11-27 · v2.13.0 · Compte en trois onglets glissants
 
 - **Demande** (Youssef, 27/11 13 h 50) : alléger l'écran Compte en rangeant « Moi », « Ma pratique » et « Mon compte »

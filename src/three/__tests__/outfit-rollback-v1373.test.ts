@@ -36,7 +36,10 @@ describe('v1.37.3 — rollback non régressif des shorts de Kadir', () => {
   // Kadir rapproché de sa planche et peau sans ombrage cuit (tools/generator/fideles, configs/kadir2.json, kadir-peau.json).
   // Corps, squelette et poids inchangés (aucune mise à l'échelle) : les tenues et les shorts gardent leurs empreintes.
   // Empreinte 2.3.5 : c31999b521a53267262e77679afbc53d594c4ae2 (modèle archivé dans _ARCHIVES_HORS_APPLICATION).
+  // 2.12.1 (Youssef 27/11 « le problème de cou concerne tous les coachs ») : seule l'image de couleur de la tête reprend
+  // l'ombrage du cou et des trapèzes de la 2.9.0 (tools/generator/fideles/restaure_cou.mjs). Maillage, os, poids et
+  // squelette inchangés (le test de peau masquée sous les tenues le prouve). Empreinte 2.4.0 : 357dd8d634238cb3d55462136847dfe73d35d1d5.
   test('modèle corporel Kadir intact', () => {
-    expect(gitSha('public/coaches/mma-kadir/photo.glb')).toBe('357dd8d634238cb3d55462136847dfe73d35d1d5');
+    expect(gitSha('public/coaches/mma-kadir/photo.glb')).toBe('cbdb75c59b59b287e6e38957ec46154e259861bd');
   });
 });
