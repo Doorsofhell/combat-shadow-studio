@@ -6359,3 +6359,16 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
     `scripts/v2110/captures.mjs` (vues gants et tenues, `LIGHT=`, `MOBILE=1`).
 - **Fichiers** : `src/three/finish.ts`, `src/three/PhotoCoach.tsx`, `src/three/rooms/RoomScene.tsx`, `src/ui/Lab.tsx`,
   `src/three/__tests__/finish-v2110.test.ts`, `scripts/v2110/captures.mjs`, `package.json`, `src/domain/releases.ts`.
+- **Tests** : `tsc` TEST RÉUSSI ; `npm run build` TEST RÉUSSI ; Vitest complet 1 915 réussis, 1 ignoré : TEST
+  RÉUSSI (les 3 contrôles `version-sync` ont échoué juste après le passage en 2.11.0, puis réussi après
+  `npm run docs:sync`, comme à chaque nouvelle version) ; nouveau test `finish-v2110` (7) TEST RÉUSSI ; Playwright sur
+  GitHub (PR #164, 4 lots) : 385 réussis, 2 ignorés, 5 ÉCHOUÉ, tous déjà en échec en 2.10.7 sur les machines GitHub
+  sans carte graphique (`panneau-coach:329`, `stabilite-3d-v1563:35`, `training-layout:117` et `:349`,
+  `consignes-v130:50`) ; aucun nouvel échec. En local (rendu logiciel, sous charge des captures), `chrono:93` a échoué
+  une fois sur un délai ; il réussit sur GitHub.
+- **Captures** : réelles (WebGL, Lab), avant (2.10.6/2.10.7) et après, mêmes vues pour les 6 coachs : visages de face,
+  gants en garde, garde complète, crochet, coup de pied, tenue de boxe ; fond sombre (lumière vive). Deux défauts vus en
+  capture et corrigés avant la PR : lumière de bord qui grisait les cheveux peints d'Amara (elle prend maintenant la
+  couleur de la peau, sur le seul contour), moiré des côtes de ceinture. Planches :
+  `/mnt/project-files/humaniser-coachs/v2110/`.
+- **Restauration** : branche `restauration/avant-humanisation-sf-v2110` (= 2.10.7 publiée, `e6c66c7`).
