@@ -6325,3 +6325,37 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `training-layout.spec:117` et `:349`, `chrono-seul.spec:119`, `consignes-v130.spec:50`), puis retirer cette ligne.
 - **Captures** : NON APPLICABLE (rien ne change à l'écran).
 - **Restauration** : branche `restauration/avant-fiabilite-v2107` (= 2.10.6 publiée, `91b40d0`).
+
+## 2026-11-27 · v2.11.0 · Humaniser les coachs : gants en cuir, matières des tenues, lumière de bord
+
+- **Demande** (Youssef, 26/11 23 h 39) : « humanise au maximum les coachs… rendu et fluidité » au niveau de Street
+  Fighter 6 PS5, « gants de boxe, accessoires et habits les plus naturels et réalistes possible ». Le jeu sert
+  uniquement de repère de qualité : rien n'en est copié. Audit sur la 2.10.6 (42 captures réelles), propositions
+  A à E ; choix de Youssef le 27/11 à 8 h 00 : « A b c puis d e ». Ce lot livre A, B et C ; D (peau) et E (fluidité)
+  suivront.
+- **Constats vérifiés** (captures WebGL du Lab, mêmes vues pour les 6 coachs) :
+  - gants : reflets en taches blanches, dus à la texture de relief « cuir » (étirée sur les UV) sous un vernis
+    brillant (rugosité 0,42, vernis 0,25) : ils lisaient comme du plastique ;
+  - shorts, ceintures et hauts d'une couleur unie sans tissage ni brillance variable ;
+  - pas de lumière de bord sur le studio clair ; sur téléphone (qualité automatique, écran tactile) aucune ombre portée
+    sur le coach (choix de stabilité de la 0.29, gardé) : silhouette plate ;
+  - correction de l'audit : les ombres ne sont pas « dures » ; three.js r186 a bien retiré le mode doux, mais la
+    2.2.0 compense déjà par un rayon de flou de 8 (le message de la console reste).
+- **Correction** (rendu seul : aucun modèle, texture, UV, poids de peau ni géométrie de tenue modifié ; les tenues
+  verrouillées par empreinte et les visages validés sont intacts) :
+  - nouveau `src/three/finish.ts` ajouté à chaque matériau du coach et de ses tenues, après ses propres changements
+    (peau, respiration, balancement), jamais deux fois, jamais sur les logos ;
+  - A. lumière de bord dans les shaders du coach (elle n'éclaire que lui, sans carte d'ombre, aussi sur téléphone),
+    calculée sur la forme de la surface et non sur sa texture de relief (pas de trait clair le long des plis) ; dans une
+    salle immersive elle prend les couleurs de ses lumières de contre-jour, plus douce (`RoomLights`) ;
+  - B. cuir : relief de l'ancienne texture ×0,3, rugosité ≥ 0,5, vernis ≤ 0,18 et plus mat, grain fin (≈ 1,2 et
+    0,5 mm) et brillance qui varie sur la surface ; gants de boxe et MMA, protège-tibias, chaussures ;
+  - C. satin des shorts (brillance qui varie sur quelques centimètres), côtes de 4 mm sur les ceintures élastiques,
+    maille fine des hauts et shorts de compression, tissage léger des autres tissus ;
+  - les motifs sont calculés sur la position de repos du vêtement (ils suivent le tissu) et disparaissent avant d'être
+    plus fins qu'un pixel : un premier réglage (côtes de 2,5 mm) créait un moiré en chevrons sur la ceinture d'Amara,
+    vu en capture et corrigé avant livraison ;
+  - Lab : `rim=0` (sans lumière de bord) et `matiere=0` (sans motifs) pour les comparaisons ; outil de captures
+    `scripts/v2110/captures.mjs` (vues gants et tenues, `LIGHT=`, `MOBILE=1`).
+- **Fichiers** : `src/three/finish.ts`, `src/three/PhotoCoach.tsx`, `src/three/rooms/RoomScene.tsx`, `src/ui/Lab.tsx`,
+  `src/three/__tests__/finish-v2110.test.ts`, `scripts/v2110/captures.mjs`, `package.json`, `src/domain/releases.ts`.

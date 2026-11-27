@@ -22,6 +22,7 @@ import {
   Vector3,
 } from 'three';
 import { GroundedSkybox } from 'three/examples/jsm/objects/GroundedSkybox.js';
+import { DEFAULT_RIM, setCoachRim } from '../finish';
 import { ROOM_EYE, ROOM_LAYER, ROOM_RADIUS, decodeDepth, roomDir, roomMesh, swingAngle, type RoomData, type RoomSpec } from './rooms';
 import { LIFE, stutterAt, sweepAt, swayOf } from './life';
 
@@ -324,6 +325,12 @@ export function RoomLights({ spec, shadows }: { spec: RoomSpec; shadows: boolean
   const key = useRef<DirectionalLight>(null);
   const fill = useRef<DirectionalLight>(null);
   const amb = useRef<AmbientLight>(null);
+  // 2.11.0: the coach's edge light (src/three/finish.ts) takes the colours of the room's rim lights, lighter: the room
+  // already lights the coach from behind with them
+  useEffect(() => {
+    setCoachRim(spec.rim.color, 0.5, spec.rim2?.color ?? spec.rim.color, spec.rim2 ? 0.25 : 0);
+    return () => setCoachRim(DEFAULT_RIM.color, DEFAULT_RIM.k);
+  }, [spec]);
   useFrame(() => {
     const k = 1 - roomDip.value;
     if (key.current) key.current.intensity = spec.key.intensity * k;

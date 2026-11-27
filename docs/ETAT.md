@@ -1,16 +1,16 @@
 <!-- GÉNÉRÉ:etat — ne pas modifier à la main, lancer « npm run docs:sync » -->
-# État du projet — version 2.10.7
+# État du projet — version 2.11.0
 
-Dernière version annoncée dans Nouveautés : **2.10.7** du 26 novembre 2026, « Ta progression mieux protégée » (135 versions au total).
+Dernière version annoncée dans Nouveautés : **2.11.0** du 27 novembre 2026, « Des coachs plus vivants : gants, tenues et lumière » (136 versions au total).
 
 ## Version et publication
 
 | Élément | Valeur | Origine |
 | --- | --- | --- |
-| Version de l’application | 2.10.7 | `package.json` (source unique) |
-| Titre de la page, Réglages › À propos, écran de démarrage | v2.10.7 | injectée au build (`vite.config.ts`) |
-| Android versionName / versionCode | 2.10.7 / 21007 | `scripts/android-version.mjs` (x × 10000 + y × 100 + z) |
-| Nouveautés | 2.10.7 | première entrée de `src/domain/releases.ts` |
+| Version de l’application | 2.11.0 | `package.json` (source unique) |
+| Titre de la page, Réglages › À propos, écran de démarrage | v2.11.0 | injectée au build (`vite.config.ts`) |
+| Android versionName / versionCode | 2.11.0 / 21100 | `scripts/android-version.mjs` (x × 10000 + y × 100 + z) |
+| Nouveautés | 2.11.0 | première entrée de `src/domain/releases.ts` |
 | Informations de publication | `version.json` | écrit à chaque build (`tools/build/releaseInfo.ts`) |
 
 Version testable en ligne (GitHub Pages) : https://doorsofhell.github.io/combat-shadow-studio/ ; version réellement déployée : https://doorsofhell.github.io/combat-shadow-studio/version.json
