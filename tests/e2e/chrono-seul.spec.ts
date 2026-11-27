@@ -20,6 +20,27 @@ async function stats(page: Page) {
 const rgb = (page: Page) => page.getByTestId('chrono-run').evaluate((e) => getComputedStyle(e).backgroundColor.match(/\d+/g)!.map(Number));
 
 /** taps − until the value reads `to` (a button at its bound is disabled, so the count is never guessed) */
+/** rounds and rest of the chrono as saved in IndexedDB (the settings store, any user scope) */
+const savedChrono = (page: Page) =>
+  page.evaluate(
+    () =>
+      new Promise<{ rounds: number; rest: number } | null>((res) => {
+        const r = indexedDB.open('keyval-store');
+        r.onerror = () => res(null);
+        r.onsuccess = () => {
+          const all = r.result.transaction('keyval').objectStore('keyval');
+          const keys = all.getAllKeys();
+          const vals = all.getAll();
+          vals.onsuccess = () => {
+            const i = (keys.result as string[]).findIndex((k) => String(k).endsWith('css-settings'));
+            if (i < 0) return res(null);
+            const c = JSON.parse(vals.result[i] as string)?.state?.settings?.chrono;
+            res(c ? { rounds: c.rounds, rest: c.rest } : null);
+          };
+        };
+      }),
+  );
+
 async function minusTo(page: Page, id: string, to: string) {
   for (let i = 0; i < 30 && (await page.getByTestId(`chrono-value-${id}`).textContent()) !== to; i++) await page.getByTestId(`chrono-minus-${id}`).click();
 }
@@ -87,7 +108,9 @@ test('réglages : formats prêts, + et − bornés, total affiché, mémorisés 
   await minusTo(page, 'rest', '0:00');
   await expect(page.getByTestId('chrono-value-rest')).toHaveText('0:00');
   await expect(page.getByTestId('chrono-minus-rest')).toBeDisabled();
-  // kept after a reload
+  // kept after a reload. 2.10.7: the settings are written to IndexedDB asynchronously; on a GitHub machine the reload
+  // came before the last « − » was written (rest 0:10 after the reload). Wait for the saved value, then reload.
+  await expect.poll(() => savedChrono(page), { timeout: 20_000 }).toEqual({ rounds: 6, rest: 0 });
   await page.reload();
   await expect(page.getByTestId('chrono-value-rounds')).toHaveText('6');
   await expect(page.getByTestId('chrono-value-rest')).toHaveText('0:00');

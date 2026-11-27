@@ -1,0 +1,65 @@
+# 2.10.7 : la suite complète tourne sur GitHub à chaque PR (avant, preview.yml ne lançait que quelques tests moteur
+# juste avant de publier). Ce workflow ne publie rien : il vérifie seulement. Le déploiement reste dans preview.yml.
+name: Tests complets (CI)
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unitaires:
+    name: Types, Vitest et construction
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Vérification des types (tsc)
+        run: npm run typecheck
+      - name: Tests unitaires (Vitest, suite complète)
+        run: npm run test
+      - name: Construction (npm run build)
+        run: npm run build
+
+  e2e:
+    name: Playwright ${{ matrix.shard }}/4
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    # 2.10.7 (choix de Youssef, 27/11 « Publier, Playwright informatif ») : les résultats s'affichent sans bloquer la PR.
+    # Les machines GitHub dessinent la 3D sans carte graphique et quelques tests 3D y échouent alors qu'ils passent en
+    # session cloud (détail dans docs/JOURNAL_CORRECTIONS.md). Un lot dédié les fiabilise, puis cette ligne est retirée.
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Installer Chromium pour Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Tests de bout en bout (Playwright, part ${{ matrix.shard }}/4)
+        run: npx playwright test --shard=${{ matrix.shard }}/4 --trace off --reporter=list
+      - name: Rapport en cas d'échec
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-echecs-${{ matrix.shard }}
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore

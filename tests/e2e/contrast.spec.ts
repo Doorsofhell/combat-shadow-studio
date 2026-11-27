@@ -161,21 +161,22 @@ async function audit(page: Page, label: string) {
   return bad;
 }
 
+// 2.10.7: one test per screen (same screens, same audit): the 26 screens in one test took 3 min here and went past
+// its 5 min budget on a GitHub machine; a failure now also names its screen
 for (const scheme of ['dark', 'light'] as const) {
-  test(`contraste des textes (WCAG AA), thème système ${scheme}`, async ({ page }) => {
-    test.setTimeout(300_000);
-    await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' });
-    await seed(page);
-    const bad: string[] = [];
-    for (const [name, path] of SCREENS) {
+  for (const [name, path] of SCREENS) {
+    test(`contraste des textes (WCAG AA), thème système ${scheme} : ${name}`, async ({ page }) => {
+      test.setTimeout(180_000);
+      await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' });
+      await seed(page);
       await page.goto('about:blank');
       await page.goto(path);
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(name === 'entrainement' || name === 'coach-editeur' ? 2500 : 600);
-      bad.push(...(await audit(page, name)));
-    }
-    expect(bad, bad.join('\n')).toEqual([]);
-  });
+      const bad = await audit(page, name);
+      expect(bad, bad.join('\n')).toEqual([]);
+    });
+  }
 }
 
 test('contraste des états : survol, appui, champ vide', async ({ page }) => {
