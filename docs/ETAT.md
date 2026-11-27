@@ -1,7 +1,7 @@
 <!-- GÉNÉRÉ:etat — ne pas modifier à la main, lancer « npm run docs:sync » -->
 # État du projet — version 2.11.0
 
-Dernière version annoncée dans Nouveautés : **2.11.0** du 27 novembre 2026, « Des coachs plus vivants : gants, tenues et lumière » (136 versions au total).
+Dernière version annoncée dans Nouveautés : **2.11.0** du 27 novembre 2026, « Des coachs plus vivants : gants, tenues et lumière » (137 versions au total).
 
 ## Version et publication
 

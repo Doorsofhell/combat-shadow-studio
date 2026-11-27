@@ -1,7 +1,7 @@
 import type { MouseEvent, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ENTITLEMENT_BY_ID, type EntitlementId } from '../../monetization/entitlements';
-import { hasPremium, isFeatureLocked, shouldShowPremiumMarker, useRights } from '../../monetization/rights';
+import { hasPremium, isFeatureLocked, restrictionsActive, shouldShowPremiumMarker, useRights } from '../../monetization/rights';
 import type { ProgramShare } from '../../monetization/premiumItems';
 import { AppIcon } from '../icons';
 import './premium.css';
@@ -56,6 +56,17 @@ export function PremiumTag({ feature }: { feature: EntitlementId; size?: number 
   useRights();
   if (!shouldShowPremiumMarker(feature)) return null;
   return <ProBadge feature={feature} testid="premium-tag" />;
+}
+
+/**
+ * 2.10.8 (Youssef, 2026-11-27, « Parcours des écrans », conseil 3): the PRO badge of a coach is shown only once the Pro
+ * offer exists (payment on, or the preview simulation). While MONETIZATION_ENABLED is false every coach opens, so a
+ * « PRO » on five of the six faces (choice screen, Bienvenue, Accueil row) promised a paywall that is not there.
+ */
+export function CoachProTag() {
+  useRights();
+  if (!restrictionsActive()) return null;
+  return <PremiumTag feature="all_fighters" />;
 }
 
 /** a programme: nothing when free, « PRO » when every session is, « 3/6 PRO » when mixed (computed, never stored) */

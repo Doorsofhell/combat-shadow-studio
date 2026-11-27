@@ -61,6 +61,19 @@ export const RELEASES: readonly Release[] = (
       links: [],
     },
     {
+      version: '2.10.8',
+      releaseDate: '2026-11-27',
+      title: 'Un chemin plus court jusqu’à ta séance',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: '« Commencer » sur l’Accueil ouvre directement ta séance, prête à démarrer, dans le dernier mode que tu as utilisé. Pour changer de mode (Libre, Technique, Cardio, Rounds), ouvre « Plus » puis « Mode » avant d’appuyer sur « Démarrer ».' },
+        { category: 'ameliorations', text: 'La fiche d’un exercice affiche maintenant les mêmes consignes que la séance : la phrase qui explique le geste et ses points clés.' },
+        { category: 'ameliorations', text: 'L’astuce « touche le coach » n’apparaît plus qu’une seule fois, en bas de l’image, et ne cache plus la tête du coach.' },
+        { category: 'corrections', text: 'Les étiquettes « PRO » ne s’affichent plus sur les coachs tant que tout est gratuit. Au premier lancement, la pastille « nouvelle version » n’apparaît plus sur Compte, et le texte de Bienvenue ne promet plus une personnalisation qui n’existe pas.' },
+      ],
+      links: [],
+    },
+    {
       version: '2.10.7',
       releaseDate: '2026-11-26',
       title: 'Ta progression mieux protégée',

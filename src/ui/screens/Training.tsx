@@ -26,6 +26,7 @@ import type { StageView } from '../../three/StudioStage';
 import { StudyPanel, useStudy } from '../training/Study';
 import { MoveBand, MoveName } from '../training/MoveBand';
 import { ConsigneBand } from '../training/ConsigneBand';
+import { ModeSheet, withMode } from '../training/ModeSheet';
 import { CoachScreen, useCoachUi } from '../coach-screen/CoachScreen';
 import type { CoachPanelConfig } from '../coach-panel/CoachPanel';
 import { usePulseFlash } from '../training/pulse';
@@ -165,6 +166,8 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
   const [camRot, setCamRot] = useState(0);
   const [camZoom, setCamZoom] = useState(1);
   const [sheet, setSheet] = useState(false);
+  const [modeSheet, setModeSheet] = useState(false);
+  const [curQ] = useSearchParams();
   const [guideId, setGuideId] = useState<string | null>(null);
   // 0.25 (Youssef, 2026-10-20 12:30): the coach is the app's one floating bubble; this screen is its
   // host (see coachHost.ts), « asking » is the bubble's panel being open
@@ -573,6 +576,8 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
       // 2.4: the options of the coach are its panel; the list of the session keeps its own sheet
       { id: 'options', label: 'Options du coach', icon: 'options', run: () => coachUi.open(), testId: 'options' },
       { id: 'enchainement', label: 'Enchaînement', icon: { glyph: 'list' }, run: () => setSheet(true), testId: 'cmd-sequence' },
+      // 2.10.8: « Commencer » of the home opens the session ready, in the last mode used; the mode is changed here, before « Démarrer »
+      { id: 'mode', label: `Mode : ${MODE_LABEL[plan.mode]}`, icon: 'options', run: () => setModeSheet(true), disabled: running || !(curQ.get('ex') || curQ.get('tech')), testId: 'cmd-mode' },
     ],
   );
 
@@ -873,6 +878,17 @@ function TrainingView({ plan, persist }: { plan: Plan; persist: Omit<SessionPers
             </div>
             <GuideCard id={guideId} southpaw={southpaw} title />
         </Sheet>
+      )}
+
+      {modeSheet && (
+        <ModeSheet
+          current={plan.mode}
+          onClose={() => setModeSheet(false)}
+          onApply={(m, o) => {
+            setModeSheet(false);
+            nav(`/entrainement?${withMode(curQ, m, o)}`, { replace: true });
+          }}
+        />
       )}
 
       {sheet && (
