@@ -139,6 +139,6 @@ volume atteint (100 % = celui du repos). Avant = poids de peau du modèle charg�
 
 Points dont les poids changent : mma-kadir 18,7 %, mma-amara 12,3 %, nael 18,7 %, inaya 25,3 %, victor 18,7 %, kanya 23,9 %.
 Os de la peau (corps) : mma-kadir 80 → 102, mma-amara 81 → 103, nael 80 → 102, inaya 80 → 102, victor 80 → 102, kanya 80 → 102 ; même nombre d’influences par point (4) : le calcul de la peau par la carte graphique ne change pas.
-Suivi des 22 os d’aide, par image (Node, cette machine) : mma-kadir 24 µs, mma-amara 13 µs, nael 9 µs, inaya 9 µs, victor 6 µs, kanya 8 µs (une image à 60 i/s dure 16 667 µs).
-Redistribution des poids au chargement (corps entier, Node, cette machine) : mma-kadir 23 ms, mma-amara 20 ms, nael 48 ms, inaya 31 ms, victor 6 ms, kanya 25 ms.
+Suivi des 22 os d’aide, par image (Node, cette machine) : mma-kadir 23 µs, mma-amara 14 µs, nael 9 µs, inaya 8 µs, victor 6 µs, kanya 8 µs (une image à 60 i/s dure 16 667 µs).
+Redistribution des poids au chargement (corps entier, Node, cette machine) : mma-kadir 30 ms, mma-amara 25 ms, nael 60 ms, inaya 12 ms, victor 5 ms, kanya 35 ms.
 Écart au repos entre avant et après (doit être nul) : mma-kadir 0.003 mm, mma-amara 0.000 mm, nael 0.000 mm, inaya 0.000 mm, victor 0.003 mm, kanya 0.000 mm.

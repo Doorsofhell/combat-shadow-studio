@@ -110,15 +110,18 @@ test('2A : Bienvenue en quatre écrans, puis la carte « Complète ton profil »
   await page.getByTestId('finish').click();
   await expect(page.getByTestId('home-cta')).toBeVisible();
   await page.getByTestId('nav-profil').click();
-  const card = page.getByTestId('compte-complete');
-  await expect(card).toBeVisible();
-  await page.getByTestId('compte-complete-go').click();
-  await expect(page.getByTestId('pf-goal-vitesse')).toBeVisible();
-  await page.getByTestId('nav-profil').click();
-  await page.getByTestId('compte-complete-close').click();
-  await expect(card).toHaveCount(0);
+  // 2.13.0 (Compte en onglets, Youssef « ok pour tes propositions »): the « Complète ton profil » card became a red dot
+  // on the tab and on the row still to fill in (Moi › Âge, taille, poids; Ma pratique › Objectifs)
+  await expect(page.getByTestId('acc-dot-moi')).toBeVisible();
+  await expect(page.locator('[data-set-item="corps"] .me-dot')).toBeVisible();
+  await page.getByTestId('acc-tab-pratique').click();
+  await expect(page.getByTestId('acc-dot-pratique')).toBeVisible();
+  await page.getByTestId('set-objectifs').click();
+  await page.getByTestId('pf-goal-vitesse').click();
+  await expect(page.getByTestId('acc-dot-pratique')).toHaveCount(0);
   await page.reload();
-  await expect(page.getByTestId('compte-complete')).toHaveCount(0);
+  await expect(page.getByTestId('acc-dot-pratique')).toHaveCount(0);
+  await expect(page.getByTestId('acc-dot-moi')).toBeVisible();
 });
 
 test('8A : l’accueil montre une séance prête, un seul « Commencer » et quatre accès ; la loupe de la barre cherche', async ({ page }) => {

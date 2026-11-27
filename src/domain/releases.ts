@@ -49,7 +49,7 @@ const withCategories = (r: Draft): Release => ({ ...r, categories: ORDER.filter(
 export const RELEASES: readonly Release[] = (
   [
     {
-      version: '2.12.1',
+      version: '2.13.1',
       releaseDate: '2026-11-27',
       title: 'Des cous plus naturels et les visages d’Amara et d’Inaya d’avant',
       isMajor: false,
@@ -58,6 +58,18 @@ export const RELEASES: readonly Release[] = (
         { category: 'coachs', text: 'Amara et Inaya retrouvent leur visage de la version 2.3.1 (forme du visage, regard, teint). La peau, les expressions à l’effort et les tenues restent ceux d’aujourd’hui.' },
       ],
       links: [],
+    },
+    {
+      version: '2.13.0',
+      releaseDate: '2026-11-27',
+      title: 'Compte plus léger, en trois onglets',
+      isMajor: false,
+      changes: [
+        { category: 'ameliorations', text: 'Compte se range en trois onglets : Moi, Ma pratique et Mon compte. Glisse l’écran vers la gauche ou la droite pour passer de l’un à l’autre, comme sur Progrès. Les onglets restent en haut quand tu fais défiler.' },
+        { category: 'ameliorations', text: 'Les quatre accès rapides (Mon coach, Réglages, Coach IA, Nouveautés) tiennent sur une seule rangée. L’objectif de la semaine est dans Ma pratique ; Shadow Pro et tes chiffres d’activité sont dans Mon compte.' },
+        { category: 'ameliorations', text: 'Un petit point rouge sur un onglet et sur une ligne te montre ce qu’il reste à remplir, à la place de la carte « Complète ton profil ».' },
+      ],
+      links: [{ label: 'Ouvrir Compte', to: '/profil' }],
     },
     {
       version: '2.12.0',

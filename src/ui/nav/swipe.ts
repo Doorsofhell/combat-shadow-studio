@@ -1,3 +1,4 @@
+import { RefObject, useEffect, useRef } from 'react';
 import type { SectionTab } from './config';
 
 /**
@@ -32,4 +33,41 @@ export function swipeBlocked(target: Element | null): boolean {
     }
   }
   return false;
+}
+
+/**
+ * 2.13.0 (Youssef 2026-11-27, Compte « en onglets, je bascule par swipe comme sur Progrès »): the same quick sideways
+ * swipe, inside one screen, on one element (its tabs are not the tabs of a space). `onSwipe(1)` = next, -1 = previous.
+ * Never while a dialog is open, never from a field, a slider or a row that scrolls sideways (swipeBlocked). The element
+ * must stay mounted (put the ref on a wrapper that does not change with the tab).
+ */
+export function useSwipeSteps(ref: RefObject<HTMLElement | null>, onSwipe: (dir: -1 | 1) => void): void {
+  const cb = useRef(onSwipe);
+  cb.current = onSwipe;
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let start: { x: number; y: number; t: number } | null = null;
+    const down = (e: TouchEvent) => {
+      const f = e.touches[0];
+      start = e.touches.length === 1 && !swipeBlocked(e.target as Element) ? { x: f.clientX, y: f.clientY, t: e.timeStamp } : null;
+    };
+    const up = (e: TouchEvent) => {
+      const s = start;
+      start = null;
+      const f = e.changedTouches[0];
+      if (!s || !f || e.touches.length > 0 || document.querySelector('[role="dialog"]')) return;
+      const dir = swipeDirection(f.clientX - s.x, f.clientY - s.y, e.timeStamp - s.t);
+      if (dir) cb.current(dir);
+    };
+    const cancel = () => (start = null);
+    el.addEventListener('touchstart', down, { passive: true });
+    el.addEventListener('touchend', up, { passive: true });
+    el.addEventListener('touchcancel', cancel, { passive: true });
+    return () => {
+      el.removeEventListener('touchstart', down);
+      el.removeEventListener('touchend', up);
+      el.removeEventListener('touchcancel', cancel);
+    };
+  }, [ref]);
 }

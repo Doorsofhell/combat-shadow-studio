@@ -6484,7 +6484,7 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
   `npx vitest run` (1 915 réussis, 1 ignoré) : TEST RÉUSSI ; `npm run build` : TEST RÉUSSI ; Playwright : NON APPLICABLE (aucun changement de l'application).
 - **Restauration** : branche `restauration/avant-impeccable` (= 2.11.1, `aff1793c`).
 
-## 2026-11-27 · v2.12.1 · Humaniser les coachs : cous « autruche » et visages d'Amara et d'Inaya
+## 2026-11-27 · v2.13.1 · Humaniser les coachs : cous « autruche » et visages d'Amara et d'Inaya
 
 - **Signalement** (Youssef, 27/11, captures du téléphone sur la 2.12.0) : « régression sur les cous, on dirait une autruche », sur tous les coachs ;
   puis : « je voudrais récupérer les visages d'Amara et d'Inaya de la 2.3.1 », peau, expressions à l'effort et le reste gardés.
@@ -6510,3 +6510,43 @@ ci-dessus sont publiées ensemble en v0.28.0 (pas de publication séparée de la
 - **Documents de mesures régénérés** (`AUDIT_UPDATE=1`, méthode du projet) : écarts de 0,01 cm (glissement `ukemi-ushiro`) et 0,1 point dans les mesures
   de shorts d'Amara, dus à sa tête de la 2.9.0 remise à l'échelle ; rien d'autre ne bouge.
 - **Tests** : tsc propre ; Vitest complet 1916 réussis, 1 ignoré (TEST RÉUSSI) ; Playwright : CI (4 tranches), pas de passage local complet (trop long).
+
+## 2026-11-27 · v2.13.0 · Compte en trois onglets glissants
+
+- **Demande** (Youssef, 27/11 13 h 50) : alléger l'écran Compte en rangeant « Moi », « Ma pratique » et « Mon compte »
+  dans des onglets qu'on change en glissant à gauche ou à droite, comme sur Progrès, en réutilisant les composants en
+  place. Proposition sur captures réelles (https://claude.ai/artifact/Aons6fiXc3RdryQhAivxtJ) puis, à 14 h 02, « propose
+  des améliorations », et à 14 h 59 « ok pour tes propositions ».
+- **Constat vérifié** (2.12.0) : Compte empilait l'en-tête, quatre grandes tuiles sur deux rangées, les cartes Shadow Pro,
+  « Complète ton profil » et Objectif de la semaine, puis les trois groupes de lignes (Moi, Ma pratique, Mon parcours) : il
+  fallait défiler longtemps pour atteindre Mon parcours.
+- **Correction** :
+  - trois onglets Moi / Ma pratique / Mon compte sous les accès rapides, avec les pastilles des onglets de Progrès
+    (`Tabs` reçoit la variante `section`) ; un seul groupe affiché ; glissement latéral par `useSwipeSteps`
+    (`src/ui/nav/swipe.ts`, même règle de longueur et de vitesse que Progrès, jamais depuis un champ, un curseur ou une
+    feuille) ; le contenu entre du côté d'où il vient (coupé si « réduire les animations ») ;
+  - l'onglet ouvert est gardé dans l'adresse (`?onglet=`) ; un lien vers une ligne (`?ouvert=objectifs`) ouvre le bon onglet ;
+  - les onglets restent collés en haut quand on défile, en laissant la place de la loupe ;
+  - accès rapides sur une seule rangée (icône au-dessus du nom, 64 px de haut) ;
+  - « Objectif de la semaine » passe dans Ma pratique ; Shadow Pro et les trois chiffres d'activité (temps total, séances,
+    cette semaine) dans Mon compte ; la ligne « Mon activité » devient un lien vers Progrès ;
+  - la carte « Complète ton profil » (2.11.1) devient un point rouge sur l'onglet et sur la ligne à remplir (Âge, taille,
+    poids ; Objectifs) ; si la carte avait été fermée pour de bon (`profileCardHidden`), les points restent cachés ;
+  - le groupe « Mon parcours » s'appelle « Mon compte ». Rien n'est supprimé.
+  - passe Impeccable (`polish`) : durées et courbe des jetons `--t-fast`, `--t-med`, `--ease` ; `impeccable detect` :
+    0 défaut (seule remarque : rayon 999 px des pastilles, identique aux onglets de Progrès) ; `DESIGN.md` complété.
+- **Fichiers** : `src/ui/screens/account/Profile.tsx`, `src/ui/screens/account/account.css`, `src/ui/components/Tabs.tsx`,
+  `src/ui/components/SettingsList.tsx` (libellé du point), `src/ui/nav/swipe.ts`, `src/domain/releases.ts`, `DESIGN.md`,
+  `scripts/dev/shot-compte-onglets.mjs` (captures).
+- **Tests** : nouveau `tests/e2e/compte-onglets-v2130.spec.ts` (6 cas : glissement dans les deux sens et aux bouts,
+  rien de perdu, lien vers une ligne, onglets collés à côté de la loupe, rangée unique de 48 px mini, points rouges) :
+  TEST RÉUSSI. Tests adaptés sans rien retirer de leur contrôle : `nav-helpers.openSetting` ouvre d'abord l'onglet de la
+  ligne ; `profil-v120` (les chiffres de « Mon activité » sont vérifiés dans Mon compte, puis le lien vers Progrès) ;
+  `parcours-v2108` (la carte devient les points rouges, qui disparaissent quand on remplit) ; `navigation` (l'objectif et
+  Shadow Pro sont cherchés dans leur onglet) ; `aucune-perte-v100` (Compte peut garder `?onglet=` dans l'adresse).
+  `npx vitest run` : 1 916 réussis, 1 ignoré : TEST RÉUSSI. Playwright ciblé (compte-onglets, profil-v120, parcours-v2108,
+  navigation, account, aucune-perte-v100, profile-imc, profile-photo, contrast, discipline-art, premium, app ; 150 tests, 4 ignorés) : TEST RÉUSSI ;
+  suite complète : CI GitHub de la PR. `npm run build` : TEST RÉUSSI.
+- **Captures avant/après** : `/mnt/project-files/compte-onglets-v2130/` (Chromium réel, 412 × 915, Jour et Nuit) ; page
+  https://claude.ai/artifact/Aons6fiXc3RdryQhAivxtJ.
+- **Restauration** : branche `restauration/avant-compte-onglets-v2130` (= 2.12.0, `d167cfb`).

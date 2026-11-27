@@ -48,7 +48,6 @@ test('Mes infos : chaque ligne se déploie et montre son contenu, une seule à l
     ['disciplines', 'pf-disc-boxe'],
     ['objectifs', 'pf-goal-coordination'],
     ['limitations', 'show-limitations'],
-    ['activite', 'pf-total'],
   ];
   for (const [id, inside] of rows) {
     await openSetting(page, id);
@@ -59,6 +58,12 @@ test('Mes infos : chaque ligne se déploie et montre son contenu, une seule à l
     await openSetting(page, id);
     await expect(page.locator(`[data-set-item="${id}"] .set-body`), id).toBeVisible();
   }
+  // 2.13.0 (Compte en onglets, Youssef « ok pour tes propositions »): the figures of « Mon activité » are shown at once
+  // in Mon compte, and the row became a link to Progrès
+  await page.getByTestId('acc-tab-compte').click();
+  await expect(page.getByTestId('pf-total')).toBeVisible();
+  await page.getByTestId('pf-activite').click();
+  await expect(page).toHaveURL(/#\/stats$/);
 });
 
 test('Réglages : tout l’ancien contenu (Réglages, Mon coach, Coach IA, données) est dans la liste', async ({ page }) => {
