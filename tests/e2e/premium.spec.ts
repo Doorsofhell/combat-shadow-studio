@@ -147,11 +147,12 @@ test('2.9.0 : un badge PRO sur chaque élément Premium, aucun sur les gratuits,
   await page.goto('/#/discipline/boxe?niveau=debutant');
   await expect(page.locator('.ex-card').first()).toBeVisible();
   await expect(page.locator('.ex-card [data-testid="premium-tag"]')).toHaveCount(0);
-  // coaches: Kadir and Amara free, the four others Premium
+  // coaches (2.10.8, conseil 3): while payment is off, no coach carries a PRO badge (all open); the badge comes back with
+  // the offer (kept by tests/e2e-sim/shadow-pro.spec.ts, simulation on)
   await page.goto('/#/coach');
   await expect(page.getByTestId('coach-homme').getByTestId('premium-tag')).toHaveCount(0);
   await expect(page.getByTestId('coach-femme').getByTestId('premium-tag')).toHaveCount(0);
-  for (const id of ['nael', 'inaya', 'victor', 'kanya']) await expect(page.getByTestId(`coach-${id}`).getByTestId('premium-tag')).toHaveCount(1);
+  for (const id of ['nael', 'inaya', 'victor', 'kanya']) await expect(page.getByTestId(`coach-${id}`).getByTestId('premium-tag')).toHaveCount(0);
   // the training bar is unchanged (no mark on Décomposer); the Décomposer button of a legend carries its PRO
   await page.goto('/#/entrainement?ex=boxe-debutant-02&mode=libre');
   await expect(page.locator('[data-action="decompose"]')).toBeVisible();

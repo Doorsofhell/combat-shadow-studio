@@ -11,7 +11,7 @@ import { playerSteps } from '../training/plan';
 import { NavIcon } from '../nav/NavIcon';
 import { chooseCoach } from '../components/fighter';
 import { AppIcon } from '../icons';
-import { LaunchOrLock, PremiumTag, ProLock } from '../premium/PremiumMarker';
+import { CoachProTag, LaunchOrLock, ProLock } from '../premium/PremiumMarker';
 import '../coach-row/coach-row.css';
 import { useRights } from '../../monetization/rights';
 import { ITEM_RIGHT, canOpenCoach, isPremiumCoach } from '../../monetization/premiumItems';
@@ -59,7 +59,7 @@ export function CoachPicker({ value, onChange }: { value?: string | null; onChan
           <div className="who">
             <span className="name">
               {c.name}
-              {isPremiumCoach(c.id) && <PremiumTag feature="all_fighters" size={16} />}
+              {isPremiumCoach(c.id) && <CoachProTag />}
             </span>
             <span className="nick">« {c.nickname} »</span>
             <span className="style">{c.style}</span>
@@ -270,7 +270,7 @@ export function CoachSelect() {
               <span className="star-nick">« {c.nickname} »</span>
               <div className="star-name">
                 {c.name}
-                {isPremiumCoach(c.id) && <PremiumTag feature="all_fighters" />}
+                {isPremiumCoach(c.id) && <CoachProTag />}
               </div>
               <span className="star-style">{c.style}</span>
             </div>
@@ -312,7 +312,7 @@ export function CoachSelect() {
                 {x.name}
               </span>
               {/* 2.9.0: on a portrait this narrow the PRO badge sits at its top left, the name stays whole */}
-              {isPremiumCoach(x.id) && <PremiumTag feature="all_fighters" />}
+              {isPremiumCoach(x.id) && <CoachProTag />}
               {!on && !canOpenCoach(x.id) && (
                 <span className="crow-lock">
                   <ProLock size={12} />

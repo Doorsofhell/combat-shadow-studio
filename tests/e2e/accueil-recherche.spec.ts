@@ -68,9 +68,10 @@ test('Accueil sans historique : « Commencer », trois tuiles, objectif à fixer
   await page.getByTestId('home-coach-ia').click();
   await expect(page).toHaveURL(/#\/coach-ia$/);
   await page.goBack();
-  // « Commencer » opens the recommended session of the discipline
+  // 2.10.8 (conseil 1): « Commencer » opens the recommended session itself, ready to start (Libre the first time)
   await page.getByTestId('home-cta').click();
-  await expect(page).toHaveURL(/#\/discipline\/boxe\?niveau=[a-z]+&ex=boxe-/);
+  await expect(page).toHaveURL(/#\/entrainement\?ex=boxe-[a-z0-9-]+&mode=libre$/);
+  await expect(page.getByTestId('start')).toBeVisible();
 });
 
 test('Accueil avec une séance : « Reprendre » relance la dernière séance, la jauge montre les vrais chiffres', async ({ page }) => {
