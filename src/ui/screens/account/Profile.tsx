@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ProShield } from '../../premium/PremiumMarker';
 import { hasPremium, useRights } from '../../../monetization/rights';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -29,10 +29,11 @@ import { useSyncPrefs } from '../../../account/syncPrefs';
 import { buildFullExport } from '../../../account/export';
 import { passwordProblem, emailLooksValid } from '../../../account/auth/types';
 import type { SignInMethod } from '../../../account/auth/types';
-import { DisciplineLabel, Chip, ConfirmDialog, PanelRow, Segmented, SetGroup, SetItem, SetLink, SettingsList, Sheet, StatTile, Toggle, toast } from '../../components';
+import { DisciplineLabel, Chip, ConfirmDialog, PanelRow, Segmented, SetGroup, SetAction, SetItem, SetLink, SettingsList, Sheet, StatTile, Tabs, Toggle, toast } from '../../components';
 import { AppIcon, DisciplineIcon } from '../../icons';
 import { NavIcon } from '../../nav/NavIcon';
-import { openNews } from '../../nav/BottomBar';
+import { haptic, openNews } from '../../nav/BottomBar';
+import { useSwipeSteps } from '../../nav/swipe';
 import { hasUnseenRelease } from '../../../domain/releaseNotice';
 import { useSettings } from '../../../store/settings';
 import { PasswordField } from './SignIn';
@@ -104,6 +105,25 @@ export function Avatar({ profile, size = 72 }: { profile: Profile; size?: number
   );
 }
 
+type AccTab = 'moi' | 'pratique' | 'compte';
+const ACC_TABS: { id: AccTab; label: string }[] = [
+  { id: 'moi', label: 'Moi' },
+  { id: 'pratique', label: 'Ma pratique' },
+  { id: 'compte', label: 'Mon compte' },
+];
+/** the tab of each row of the list (a link ?ouvert=<row> opens its tab) */
+export const TAB_OF_ROW: Record<string, AccTab> = {
+  identite: 'moi',
+  corps: 'moi',
+  disciplines: 'pratique',
+  garde: 'pratique',
+  rythme: 'pratique',
+  objectifs: 'pratique',
+  limitations: 'pratique',
+  favoris: 'compte',
+  compte: 'compte',
+};
+
 /**
  * Profile › Mes infos. 1.2.0 (Youssef, 2026-10-28: « pareil dans mes infos : une seule liste dont chaque option se
  * déploie au toucher », proposition B « Groupes Android »): what describes the user, one list in groups (Moi, Ma
@@ -120,7 +140,34 @@ export function ProfilePage() {
   const favE = useGoals((s) => s.favExercises.length);
   const favC = useCatalogUser((s) => s.favorites.length);
   const { status, user, capabilities: caps } = useAccount();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
+  // the open tab lives in the address (?onglet=), so Back and a link to a row (?ouvert=objectifs) land on the right tab
+  const asked = params.get('onglet');
+  const tab: AccTab = ACC_TABS.some((t) => t.id === asked) ? (asked as AccTab) : (TAB_OF_ROW[params.get('ouvert') ?? ''] ?? 'moi');
+  const [slide, setSlide] = useState(0);
+  const swipeZone = useRef<HTMLDivElement>(null);
+  const order = ACC_TABS.map((x) => x.id);
+  const pick = (t: AccTab) => {
+    if (t === tab) return;
+    setSlide(order.indexOf(t) > order.indexOf(tab) ? 1 : -1);
+    haptic();
+    setParams({ onglet: t }, { replace: true });
+  };
+  useSwipeSteps(swipeZone, (dir) => {
+    const next = order[order.indexOf(tab) + dir];
+    if (next) pick(next);
+  });
+  // the tabs stay at the top of the screen once the page scrolls under them; there they leave room for the magnifier
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    const onScroll = () => {
+      const el = document.querySelector('.acc-tabs');
+      if (el) setStuck(el.getBoundingClientRect().top <= parseFloat(getComputedStyle(el).top || '0') + 0.5);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const [showLim, setShowLim] = useState(false);
   const [dialog, setDialog] = useState<null | 'signout' | 'delete' | 'link-email' | 'photo' | 'email' | 'password'>(null);
@@ -136,7 +183,15 @@ export function ProfilePage() {
   const goals = useGoals((s) => s.goals);
   const unseen = hasUnseenRelease(useSettings((s) => s.settings.newsSeenVersion));
   const profileCardHidden = useSettings((s) => s.settings.profileCardHidden);
-  const setSettings = useSettings((s) => s.set);
+  // 2.13.0: what is still to fill in (the « Complète ton profil » card of 2.11.1 became these dots; closing that card
+  // for good, profileCardHidden, still hides them)
+  const toFill = { corps: !profileCardHidden && (!profile.heightCm || !profile.weightKg), objectifs: !profileCardHidden && profile.goals.length === 0 };
+  const tabItems = ACC_TABS.map((t) => ({
+    ...t,
+    testId: `acc-tab-${t.id}`,
+    dot: t.id === 'moi' ? toFill.corps : t.id === 'pratique' ? toFill.objectifs : false,
+    dotTestId: `acc-dot-${t.id}`,
+  }));
   const week = sessions.filter((s) => weekKey(s.start) === thisWeek);
   const weekMin = Math.round(weekSec / 60);
   const goalOn = goals.weeklyMinutes > 0 || goals.weeklySessions > 0;
@@ -219,42 +274,6 @@ export function ProfilePage() {
         </button>
       </nav>
 
-      <Link to="/premium" className="acc-card prem" data-testid="compte-premium">
-        <span className="acc-card-text">
-          {/* 2.9.0 (Youssef, « Nom commercial : SHADOW PRO », « symbole : bouclier martial doré »): one symbol */}
-          <b>Shadow Pro</b>
-          <small>{hasPremium() ? 'Actif : tout est débloqué' : 'Premium à vie · voir ce qui est prévu'}</small>
-        </span>
-        <span className="pro-lock" aria-hidden>
-          <AppIcon id="shield" size={22} />
-        </span>
-      </Link>
-      {/* 2.11.1 (Youssef, 2026-11-27, proposition 2A): Bienvenue no longer asks the goals, the rhythm or the body data;
-          this card does, when they are missing, and it never blocks anything (it can be closed for good) */}
-      {!profileCardHidden && (profile.goals.length === 0 || !profile.heightCm || !profile.weightKg) && (
-        <div className="acc-card" data-testid="compte-complete">
-          <Link to="/profil?ouvert=objectifs" className="acc-card-text" style={{ textDecoration: 'none', color: 'inherit' }} data-testid="compte-complete-go">
-            <b>Complète ton profil</b>
-            <small>Objectifs, rythme, taille et poids : facultatif, pour des séances mieux adaptées.</small>
-          </Link>
-          <button type="button" className="btn ghost sm" onClick={() => setSettings({ profileCardHidden: true })} aria-label="Fermer : ne plus afficher" data-testid="compte-complete-close">
-            <AppIcon id="close" size={16} />
-          </button>
-        </div>
-      )}
-      <Link to="/objectifs" className="acc-card" data-testid="compte-goal" aria-label={goalOn ? `Objectif de la semaine : ${goalText}` : 'Objectif de la semaine : aucun objectif fixé'}>
-        <span className="acc-card-text">
-          <b>Objectif de la semaine</b>
-          <small className={goalOn ? 'num-figure' : undefined}>{goalOn ? goalText : 'Aucun objectif fixé. Touche pour en choisir un.'}</small>
-        </span>
-        {goalOn ? (
-          <i className={`acc-ring ${goalRatio >= 1 ? 'gold' : ''}`} style={{ ['--p' as string]: Math.min(1, goalRatio) }} role="progressbar" aria-label="Objectif hebdomadaire" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(1, goalRatio) * 100)}>
-            {Math.round(Math.min(1, goalRatio) * 100)} %
-          </i>
-        ) : (
-          <NavIcon id="chevron" />
-        )}
-      </Link>
 
       {err && (
         <div className="note err" role="alert">
@@ -262,274 +281,320 @@ export function ProfilePage() {
         </div>
       )}
 
-      <SettingsList initial={params.get('ouvert')} testId="infos-list">
-        <SetGroup title="Moi">
-          <SetItem id="identite" icon="profile" title="Identité" summary={[profile.pseudo || 'Sans pseudo', AVATAR[profile.avatar]].filter(Boolean).join(' · ')}>
-            <div className="acc-fields">
-              <TextField id="pf-pseudo" label="Pseudo" value={profile.pseudo} onChange={(v) => update({ pseudo: v })} placeholder="Comment le coach t’appelle" hint="Utilisé par le coach pour s’adresser à toi." maxLength={24} testId="pseudo-input" autoComplete="nickname" />
-              <div className="grid2">
-                <TextField id="pf-prenom" label="Prénom (facultatif)" value={profile.firstName ?? ''} onChange={(v) => update({ firstName: v || undefined })} autoComplete="given-name" />
-                <TextField id="pf-nom" label="Nom (facultatif)" value={profile.lastName ?? ''} onChange={(v) => update({ lastName: v || undefined })} autoComplete="family-name" />
+      {/* 2.13.0 (Youssef 2026-11-27: « Moi, ma pratique et mon compte, je les veux dans des espèces d'onglets où je
+          bascule par swipe à droite ou à gauche comme sur Progrès », puis « ok pour tes propositions »): three tabs with
+          the pills of Progrès, kept at the top while the page scrolls; one group at a time; a sideways swipe on the
+          content goes to the next or previous tab. The cards went into their tab (Objectif de la semaine → Ma pratique,
+          Shadow Pro and the activity figures → Mon compte); the « Complète ton profil » card became a red dot on the
+          tab and on the row to fill in. Nothing removed. */}
+      <div className={`acc-tabs ${stuck ? 'stuck' : ''}`}>
+        <Tabs label="Rubriques du compte" variant="section" value={tab} onChange={(t) => pick(t)} items={tabItems} testId="acc-tabs" />
+      </div>
+      <div ref={swipeZone} className="acc-swipe">
+        <div className={`acc-panel ${slide > 0 ? 'from-right' : slide < 0 ? 'from-left' : ''}`} key={tab} role="tabpanel" aria-label={ACC_TABS.find((t) => t.id === tab)!.label} data-testid={`acc-panel-${tab}`}>
+          {tab === 'pratique' && (
+            <Link to="/objectifs" className="acc-card" data-testid="compte-goal" aria-label={goalOn ? `Objectif de la semaine : ${goalText}` : 'Objectif de la semaine : aucun objectif fixé'}>
+              <span className="acc-card-text">
+                <b>Objectif de la semaine</b>
+                <small className={goalOn ? 'num-figure' : undefined}>{goalOn ? goalText : 'Aucun objectif fixé. Touche pour en choisir un.'}</small>
+              </span>
+              {goalOn ? (
+                <i className={`acc-ring ${goalRatio >= 1 ? 'gold' : ''}`} style={{ ['--p' as string]: Math.min(1, goalRatio) }} role="progressbar" aria-label="Objectif hebdomadaire" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(1, goalRatio) * 100)}>
+                  {Math.round(Math.min(1, goalRatio) * 100)} %
+                </i>
+              ) : (
+                <NavIcon id="chevron" />
+              )}
+            </Link>
+          )}
+          {tab === 'compte' && (
+            <>
+              <div className="stat-tiles" data-testid="acc-stats">
+                <StatTile value={formatDuration(sum(sessions))} label="Temps actif total" testId="pf-total" />
+                <StatTile value={sessionCount(sessions)} label="Séances" />
+                <StatTile value={formatDuration(weekSec)} label="Cette semaine" />
               </div>
-            </div>
-            <PanelRow label="Avatar" column>
-              <Segmented
-                label="Avatar"
-                value={profile.avatar}
-                onChange={(a) => (a === 'photo' && !hasPhoto ? setDialog('photo') : update({ avatar: a }))}
-                options={[
-                  { id: 'fighter', label: 'Mon coach' },
-                  { id: 'initiales', label: 'Initiales' },
-                  { id: 'photo', label: 'Ma photo' },
-                  ...(status === 'signedIn' && user?.photoURL ? [{ id: 'google' as const, label: 'Google' }] : []),
-                ]}
-              />
-              <button type="button" className="btn secondary sm" onClick={() => setDialog('photo')} data-testid="photo-open">
-                <AppIcon id="camera" size={18} /> {hasPhoto ? 'Changer ou supprimer ma photo' : 'Ajouter une photo'}
-              </button>
-            </PanelRow>
-          </SetItem>
-          <SetItem
-            id="corps"
-            icon="details"
-            title="Âge, taille, poids"
-            summary={[age !== undefined ? `${age} ans` : null, profile.heightCm ? `${profile.heightCm} cm` : null, profile.weightKg ? `${profile.weightKg} kg` : null].filter(Boolean).join(' · ') || 'Facultatif, non renseigné'}
-          >
-            <div className="acc-fields">
-              <div className="grid2">
-                <div className="field">
-                  <label htmlFor="pf-naissance">Date de naissance</label>
-                  <input id="pf-naissance" className="input" type="date" max={today()} value={profile.birthDate ?? ''} onChange={(e) => update({ birthDate: e.target.value || undefined })} />
-                </div>
-                {birthAge !== undefined ? (
-                  <div className="field">
-                    <span className="label">Âge</span>
-                    <span className="input" aria-live="polite">
-                      {birthAge} ans
-                    </span>
+              <Link to="/premium" className="acc-card prem" data-testid="compte-premium">
+                <span className="acc-card-text">
+                  {/* 2.9.0 (Youssef, « Nom commercial : SHADOW PRO », « symbole : bouclier martial doré »): one symbol */}
+                  <b>Shadow Pro</b>
+                  <small>{hasPremium() ? 'Actif : tout est débloqué' : 'Premium à vie · voir ce qui est prévu'}</small>
+                </span>
+                <span className="pro-lock" aria-hidden>
+                  <AppIcon id="shield" size={22} />
+                </span>
+              </Link>
+            </>
+          )}
+          <SettingsList initial={params.get('ouvert')} testId="infos-list">
+            {tab === 'moi' && (
+              <SetGroup title="Moi">
+                <SetItem id="identite" icon="profile" title="Identité" summary={[profile.pseudo || 'Sans pseudo', AVATAR[profile.avatar]].filter(Boolean).join(' · ')}>
+                  <div className="acc-fields">
+                    <TextField id="pf-pseudo" label="Pseudo" value={profile.pseudo} onChange={(v) => update({ pseudo: v })} placeholder="Comment le coach t’appelle" hint="Utilisé par le coach pour s’adresser à toi." maxLength={24} testId="pseudo-input" autoComplete="nickname" />
+                    <div className="grid2">
+                      <TextField id="pf-prenom" label="Prénom (facultatif)" value={profile.firstName ?? ''} onChange={(v) => update({ firstName: v || undefined })} autoComplete="given-name" />
+                      <TextField id="pf-nom" label="Nom (facultatif)" value={profile.lastName ?? ''} onChange={(v) => update({ lastName: v || undefined })} autoComplete="family-name" />
+                    </div>
                   </div>
-                ) : (
-                  <NumField id="pf-age" label="Ou ton âge" unit="ans" value={profile.age} min={5} max={120} onChange={(v) => update({ age: v })} />
-                )}
-              </div>
-              <div className="grid2">
-                <NumField id="pf-taille" label="Taille" unit="cm" value={profile.heightCm} min={80} max={250} onChange={(v) => update({ heightCm: v })} />
-                <NumField id="pf-poids" label="Poids" unit="kg" value={profile.weightKg} min={20} max={300} onChange={(v) => update({ weightKg: v })} />
-              </div>
-              <p className="small muted">Facultatif. Ces mesures servent seulement à ton suivi : l’application n’en tire aucune conclusion sur ta santé ni ton aptitude.</p>
-              <BmiCard heightCm={profile.heightCm} weightKg={profile.weightKg} age={birthAge ?? profile.age} />
-            </div>
-          </SetItem>
-        </SetGroup>
-
-        <SetGroup title="Ma pratique">
-          <SetItem
-            id="disciplines"
-            icon="train"
-            title="Disciplines et niveaux"
-            summary={`${discName(profile.mainDiscipline)} ${levelName(profile.mainDiscipline).toLowerCase()}${practised.length > 1 ? ` · ${practised.length} disciplines` : ''}${profile.yearsExperience !== undefined ? ` · ${profile.yearsExperience} an${profile.yearsExperience > 1 ? 's' : ''}` : ''}`}
-          >
-            <PanelRow label="Disciplines pratiquées" column>
-              <div className="row" style={{ gap: 8 }} role="group" aria-label="Disciplines pratiquées">
-                {DISCIPLINES.map((d) => (
-                  <Chip key={d.id} on={practised.includes(d.id)} onClick={() => toggleDiscipline(d.id)} testId={`pf-disc-${d.id}`}>
-                    <DisciplineLabel id={d.id} name={d.name} />
-                  </Chip>
-                ))}
-              </div>
-            </PanelRow>
-            {practised.map((d) => (
-              <PanelRow key={d} label={`Niveau en ${discName(d).toLowerCase()}`}>
-                <select aria-label={`Niveau en ${discName(d)}`} className="input" style={{ width: 'auto' }} value={profile.levels[d]} onChange={(e) => update({ levels: { ...profile.levels, [d]: e.target.value as LevelId } })}>
-                  {LEVELS.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.name}
-                    </option>
-                  ))}
-                </select>
-              </PanelRow>
-            ))}
-            {practised.length > 1 && (
-              <PanelRow label="Discipline principale">
-                <select aria-label="Discipline principale" className="input" style={{ width: 'auto' }} value={profile.mainDiscipline} onChange={(e) => update({ mainDiscipline: e.target.value as DisciplineId })}>
-                  {practised.map((d) => (
-                    <option key={d} value={d}>
-                      {discName(d)}
-                    </option>
-                  ))}
-                </select>
-              </PanelRow>
+                  <PanelRow label="Avatar" column>
+                    <Segmented
+                      label="Avatar"
+                      value={profile.avatar}
+                      onChange={(a) => (a === 'photo' && !hasPhoto ? setDialog('photo') : update({ avatar: a }))}
+                      options={[
+                        { id: 'fighter', label: 'Mon coach' },
+                        { id: 'initiales', label: 'Initiales' },
+                        { id: 'photo', label: 'Ma photo' },
+                        ...(status === 'signedIn' && user?.photoURL ? [{ id: 'google' as const, label: 'Google' }] : []),
+                      ]}
+                    />
+                    <button type="button" className="btn secondary sm" onClick={() => setDialog('photo')} data-testid="photo-open">
+                      <AppIcon id="camera" size={18} /> {hasPhoto ? 'Changer ou supprimer ma photo' : 'Ajouter une photo'}
+                    </button>
+                  </PanelRow>
+                </SetItem>
+                <SetItem
+                  id="corps"
+                  dot={toFill.corps}
+            dotLabel="à compléter"
+                  icon="details"
+                  title="Âge, taille, poids"
+                  summary={[age !== undefined ? `${age} ans` : null, profile.heightCm ? `${profile.heightCm} cm` : null, profile.weightKg ? `${profile.weightKg} kg` : null].filter(Boolean).join(' · ') || 'Facultatif, non renseigné'}
+                >
+                  <div className="acc-fields">
+                    <div className="grid2">
+                      <div className="field">
+                        <label htmlFor="pf-naissance">Date de naissance</label>
+                        <input id="pf-naissance" className="input" type="date" max={today()} value={profile.birthDate ?? ''} onChange={(e) => update({ birthDate: e.target.value || undefined })} />
+                      </div>
+                      {birthAge !== undefined ? (
+                        <div className="field">
+                          <span className="label">Âge</span>
+                          <span className="input" aria-live="polite">
+                            {birthAge} ans
+                          </span>
+                        </div>
+                      ) : (
+                        <NumField id="pf-age" label="Ou ton âge" unit="ans" value={profile.age} min={5} max={120} onChange={(v) => update({ age: v })} />
+                      )}
+                    </div>
+                    <div className="grid2">
+                      <NumField id="pf-taille" label="Taille" unit="cm" value={profile.heightCm} min={80} max={250} onChange={(v) => update({ heightCm: v })} />
+                      <NumField id="pf-poids" label="Poids" unit="kg" value={profile.weightKg} min={20} max={300} onChange={(v) => update({ weightKg: v })} />
+                    </div>
+                    <p className="small muted">Facultatif. Ces mesures servent seulement à ton suivi : l’application n’en tire aucune conclusion sur ta santé ni ton aptitude.</p>
+                    <BmiCard heightCm={profile.heightCm} weightKg={profile.weightKg} age={birthAge ?? profile.age} />
+                  </div>
+                </SetItem>
+              </SetGroup>
             )}
-            <div className="acc-fields">
-              <NumField id="pf-annees" label="Années de pratique" unit="ans" value={profile.yearsExperience} min={0} max={80} onChange={(v) => update({ yearsExperience: v })} />
-            </div>
-          </SetItem>
-          <SetItem id="garde" icon="shield" title="Garde" summary={profile.guard === 'gaucher' ? 'Gaucher' : 'Orthodoxe'}>
-            <PanelRow label="Garde" column>
-              <Segmented
-                label="Garde"
-                value={profile.guard}
-                onChange={(g) => update({ guard: g })}
-                options={[
-                  { id: 'orthodoxe', label: 'Orthodoxe' },
-                  { id: 'gaucher', label: 'Gaucher' },
-                ]}
-              />
-            </PanelRow>
-          </SetItem>
-          <SetItem id="rythme" icon="calendar" title="Rythme" summary={`${profile.daysPerWeek} séance${profile.daysPerWeek > 1 ? 's' : ''} par semaine · ${profile.sessionMinutes} min · ${DIFF[profile.difficulty]}`}>
-            <PanelRow label="Séances par semaine" column>
-              <Segmented label="Séances par semaine" value={profile.daysPerWeek} onChange={(v) => update({ daysPerWeek: v })} options={[1, 2, 3, 4, 5, 6, 7].map((n) => ({ id: n, label: String(n) }))} />
-            </PanelRow>
-            <PanelRow label="Durée habituelle d’une séance" column>
-              <Segmented label="Durée habituelle d’une séance" value={profile.sessionMinutes} onChange={(v) => update({ sessionMinutes: v })} options={[10, 15, 20, 30, 45, 60].map((m) => ({ id: m, label: `${m}` }))} />
-              <span className="hint">En minutes.</span>
-            </PanelRow>
-            <PanelRow label="Difficulté préférée" column>
-              <Segmented<Difficulty>
-                label="Difficulté préférée"
-                value={profile.difficulty}
-                onChange={(v) => update({ difficulty: v })}
-                options={[
-                  { id: 'douce', label: 'Douce' },
-                  { id: 'progressive', label: 'Progressive' },
-                  { id: 'exigeante', label: 'Exigeante' },
-                ]}
-              />
-            </PanelRow>
-          </SetItem>
-          <SetItem id="objectifs" icon="target" title="Objectifs" summary={goalNames.length ? goalNames.join(', ') : 'Aucun choisi'}>
-            <PanelRow label="Objectifs" column>
-              <div className="row" style={{ gap: 8 }} role="group" aria-label="Objectifs">
-                {SPORT_GOALS.map((g) => {
-                  const on = profile.goals.includes(g.id);
-                  return (
-                    <Chip key={g.id} on={on} onClick={() => update({ goals: on ? profile.goals.filter((x) => x !== g.id) : [...profile.goals, g.id] })} testId={`pf-goal-${g.id}`}>
-                      {g.label}
-                    </Chip>
-                  );
-                })}
-              </div>
-            </PanelRow>
-          </SetItem>
-          <SetItem id="limitations" icon="shield" title="Limitations physiques" summary={profile.limitations ? 'Renseigné · reste sur ce téléphone' : 'Facultatif · reste sur ce téléphone'}>
-          <div className="panel-row col">
-            <span className="small muted">
-              Facultatif. Chiffré sur cet appareil, jamais synchronisé ni envoyé. Sert uniquement à te rappeler de ménager une zone ; ce n’est ni un avis ni un diagnostic médical.
-            </span>
-            {!canStoreLimitations && <div className="note warn">Le chiffrement n’est pas disponible dans ce navigateur : ce que tu écris ici ne sera pas enregistré.</div>}
-            {showLim ? (
-              <>
-                <label htmlFor="pf-lim" className="label">
-                  Limitations ou blessures
-                </label>
-                <textarea id="pf-lim" className="input" value={profile.limitations} maxLength={500} onChange={(e) => update({ limitations: e.target.value })} placeholder="Par exemple : genou droit fragile" />
-                <div className="row" style={{ gap: 8 }}>
-                  <button type="button" className="btn secondary sm" onClick={() => setShowLim(false)}>
-                    Masquer
-                  </button>
-                  {profile.limitations && (
-                    <button type="button" className="btn ghost sm" onClick={() => update({ limitations: '' })}>
-                      Effacer
+            {tab === 'pratique' && (
+              <SetGroup title="Ma pratique">
+                <SetItem
+                  id="disciplines"
+                  icon="train"
+                  title="Disciplines et niveaux"
+                  summary={`${discName(profile.mainDiscipline)} ${levelName(profile.mainDiscipline).toLowerCase()}${practised.length > 1 ? ` · ${practised.length} disciplines` : ''}${profile.yearsExperience !== undefined ? ` · ${profile.yearsExperience} an${profile.yearsExperience > 1 ? 's' : ''}` : ''}`}
+                >
+                  <PanelRow label="Disciplines pratiquées" column>
+                    <div className="row" style={{ gap: 8 }} role="group" aria-label="Disciplines pratiquées">
+                      {DISCIPLINES.map((d) => (
+                        <Chip key={d.id} on={practised.includes(d.id)} onClick={() => toggleDiscipline(d.id)} testId={`pf-disc-${d.id}`}>
+                          <DisciplineLabel id={d.id} name={d.name} />
+                        </Chip>
+                      ))}
+                    </div>
+                  </PanelRow>
+                  {practised.map((d) => (
+                    <PanelRow key={d} label={`Niveau en ${discName(d).toLowerCase()}`}>
+                      <select aria-label={`Niveau en ${discName(d)}`} className="input" style={{ width: 'auto' }} value={profile.levels[d]} onChange={(e) => update({ levels: { ...profile.levels, [d]: e.target.value as LevelId } })}>
+                        {LEVELS.map((l) => (
+                          <option key={l.id} value={l.id}>
+                            {l.name}
+                          </option>
+                        ))}
+                      </select>
+                    </PanelRow>
+                  ))}
+                  {practised.length > 1 && (
+                    <PanelRow label="Discipline principale">
+                      <select aria-label="Discipline principale" className="input" style={{ width: 'auto' }} value={profile.mainDiscipline} onChange={(e) => update({ mainDiscipline: e.target.value as DisciplineId })}>
+                        {practised.map((d) => (
+                          <option key={d} value={d}>
+                            {discName(d)}
+                          </option>
+                        ))}
+                      </select>
+                    </PanelRow>
+                  )}
+                  <div className="acc-fields">
+                    <NumField id="pf-annees" label="Années de pratique" unit="ans" value={profile.yearsExperience} min={0} max={80} onChange={(v) => update({ yearsExperience: v })} />
+                  </div>
+                </SetItem>
+                <SetItem id="garde" icon="shield" title="Garde" summary={profile.guard === 'gaucher' ? 'Gaucher' : 'Orthodoxe'}>
+                  <PanelRow label="Garde" column>
+                    <Segmented
+                      label="Garde"
+                      value={profile.guard}
+                      onChange={(g) => update({ guard: g })}
+                      options={[
+                        { id: 'orthodoxe', label: 'Orthodoxe' },
+                        { id: 'gaucher', label: 'Gaucher' },
+                      ]}
+                    />
+                  </PanelRow>
+                </SetItem>
+                <SetItem id="rythme" icon="calendar" title="Rythme" summary={`${profile.daysPerWeek} séance${profile.daysPerWeek > 1 ? 's' : ''} par semaine · ${profile.sessionMinutes} min · ${DIFF[profile.difficulty]}`}>
+                  <PanelRow label="Séances par semaine" column>
+                    <Segmented label="Séances par semaine" value={profile.daysPerWeek} onChange={(v) => update({ daysPerWeek: v })} options={[1, 2, 3, 4, 5, 6, 7].map((n) => ({ id: n, label: String(n) }))} />
+                  </PanelRow>
+                  <PanelRow label="Durée habituelle d’une séance" column>
+                    <Segmented label="Durée habituelle d’une séance" value={profile.sessionMinutes} onChange={(v) => update({ sessionMinutes: v })} options={[10, 15, 20, 30, 45, 60].map((m) => ({ id: m, label: `${m}` }))} />
+                    <span className="hint">En minutes.</span>
+                  </PanelRow>
+                  <PanelRow label="Difficulté préférée" column>
+                    <Segmented<Difficulty>
+                      label="Difficulté préférée"
+                      value={profile.difficulty}
+                      onChange={(v) => update({ difficulty: v })}
+                      options={[
+                        { id: 'douce', label: 'Douce' },
+                        { id: 'progressive', label: 'Progressive' },
+                        { id: 'exigeante', label: 'Exigeante' },
+                      ]}
+                    />
+                  </PanelRow>
+                </SetItem>
+                <SetItem id="objectifs" dot={toFill.objectifs} dotLabel="à compléter" icon="target" title="Objectifs" summary={goalNames.length ? goalNames.join(', ') : 'Aucun choisi'}>
+                  <PanelRow label="Objectifs" column>
+                    <div className="row" style={{ gap: 8 }} role="group" aria-label="Objectifs">
+                      {SPORT_GOALS.map((g) => {
+                        const on = profile.goals.includes(g.id);
+                        return (
+                          <Chip key={g.id} on={on} onClick={() => update({ goals: on ? profile.goals.filter((x) => x !== g.id) : [...profile.goals, g.id] })} testId={`pf-goal-${g.id}`}>
+                            {g.label}
+                          </Chip>
+                        );
+                      })}
+                    </div>
+                  </PanelRow>
+                </SetItem>
+                <SetItem id="limitations" icon="shield" title="Limitations physiques" summary={profile.limitations ? 'Renseigné · reste sur ce téléphone' : 'Facultatif · reste sur ce téléphone'}>
+                <div className="panel-row col">
+                  <span className="small muted">
+                    Facultatif. Chiffré sur cet appareil, jamais synchronisé ni envoyé. Sert uniquement à te rappeler de ménager une zone ; ce n’est ni un avis ni un diagnostic médical.
+                  </span>
+                  {!canStoreLimitations && <div className="note warn">Le chiffrement n’est pas disponible dans ce navigateur : ce que tu écris ici ne sera pas enregistré.</div>}
+                  {showLim ? (
+                    <>
+                      <label htmlFor="pf-lim" className="label">
+                        Limitations ou blessures
+                      </label>
+                      <textarea id="pf-lim" className="input" value={profile.limitations} maxLength={500} onChange={(e) => update({ limitations: e.target.value })} placeholder="Par exemple : genou droit fragile" />
+                      <div className="row" style={{ gap: 8 }}>
+                        <button type="button" className="btn secondary sm" onClick={() => setShowLim(false)}>
+                          Masquer
+                        </button>
+                        {profile.limitations && (
+                          <button type="button" className="btn ghost sm" onClick={() => update({ limitations: '' })}>
+                            Effacer
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <button type="button" className="btn secondary sm" onClick={() => setShowLim(true)} data-testid="show-limitations">
+                      {profile.limitations ? 'Afficher (renseigné)' : 'Renseigner'}
                     </button>
                   )}
                 </div>
-              </>
-            ) : (
-              <button type="button" className="btn secondary sm" onClick={() => setShowLim(true)} data-testid="show-limitations">
-                {profile.limitations ? 'Afficher (renseigné)' : 'Renseigner'}
-              </button>
+                </SetItem>
+              </SetGroup>
             )}
-          </div>
-          </SetItem>
-        </SetGroup>
-
-        <SetGroup title="Mon parcours">
-          <SetItem id="favoris" icon="favorite" title="Favoris" summary={`${favT + favE} technique(s) et exercice(s) · ${favC} combinaison(s)`}>
-            <SetLink to="/favoris" label="Techniques favorites" hint={`${favT} technique(s), ${favE} exercice(s)`} />
-            <SetLink to="/champions" label="Combinaisons favorites" hint={`${favC} combinaison(s)`} />
-          </SetItem>
-          <SetItem id="activite" icon="progress" title="Mon activité" summary={`${formatDuration(sum(sessions))} au total · ${sessionCount(sessions)} séance(s)`}>
-            <div className="stat-tiles">
-              <StatTile value={formatDuration(sum(sessions))} label="Temps actif total" testId="pf-total" />
-              <StatTile value={sessionCount(sessions)} label="Séances" />
-              <StatTile value={formatDuration(weekSec)} label="Cette semaine" />
-            </div>
-            <SetLink to="/stats" label="Voir toute ma progression" />
-          </SetItem>
-          <SetItem id="compte" icon="profile" title="Compte" summary={status === 'signedIn' && user ? (user.email ?? 'Connecté') : 'Mode invité · tout reste sur ce téléphone'}>
-          {status !== 'signedIn' && caps.email && (
-            <SetLink to="/connexion" label="Créer un compte ou se connecter" hint="Tes données d’invité peuvent être gardées dans le compte" />
-          )}
-          {status !== 'signedIn' && !caps.email && <PanelRow label="Mode invité" hint="Les comptes en ligne ne sont pas activés dans cette version. Tout reste sur cet appareil." />}
-          <SetLink to="/reglages/donnees" label="Mes données" hint="Exporter, effacer, confidentialité : dans Réglages" testId="infos-donnees" />
-          {status === 'signedIn' && user && (
-            <>
-              {!user.emailVerified && (
-                <div className="panel-row col">
-                  <span className="small">Un e-mail de vérification a été envoyé à {user.email}. Ouvre le lien puis reviens ici.</span>
-                  <div className="row" style={{ gap: 8 }}>
-                    <button type="button" className="btn secondary sm" disabled={busy} onClick={() => run(async () => (await sendVerification(), toast('E-mail renvoyé.')))}>
-                      Renvoyer l’e-mail
-                    </button>
-                    <button type="button" className="btn secondary sm" disabled={busy} onClick={() => run(async () => void toast((await refreshUser())?.emailVerified ? 'Adresse vérifiée.' : 'Adresse pas encore vérifiée.'))}>
-                      J’ai vérifié
-                    </button>
-                  </div>
-                </div>
-              )}
-              <div className="panel-row col">
-                <span>Méthodes de connexion</span>
-                <ul className="acc-methods">
-                  {user.methods.map((m) => (
-                    <li key={m}>
-                      <span className="small">{METHOD_LABEL[m]}</span>
-                      {user.methods.length > 1 && (
-                        <button type="button" className="btn ghost sm" disabled={busy} onClick={() => run(async () => (await unlinkMethod(m), toast('Méthode retirée.')))}>
-                          Retirer
-                        </button>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-                {caps.link && (
-                  <div className="row" style={{ gap: 8 }}>
-                    {!user.methods.includes('password') && (
-                      <button type="button" className="btn secondary sm" onClick={() => setDialog('link-email')}>
-                        Ajouter e-mail et mot de passe
-                      </button>
-                    )}
-                    {caps.google && !user.methods.includes('google.com') && (
-                      <button type="button" className="btn secondary sm" disabled={busy} onClick={() => run(async () => (await linkGoogle(), toast('Google relié à ton compte.')))}>
-                        Relier Google
-                      </button>
-                    )}
-                  </div>
+            {tab === 'compte' && (
+              <SetGroup title="Mon compte">
+                <SetItem id="favoris" icon="favorite" title="Favoris" summary={`${favT + favE} technique(s) et exercice(s) · ${favC} combinaison(s)`}>
+                  <SetLink to="/favoris" label="Techniques favorites" hint={`${favT} technique(s), ${favE} exercice(s)`} />
+                  <SetLink to="/champions" label="Combinaisons favorites" hint={`${favC} combinaison(s)`} />
+                </SetItem>
+                <SetAction icon="progress" title="Mon activité" summary="Voir toute ma progression" to="/stats" testId="pf-activite" />
+                <SetItem id="compte" icon="profile" title="Compte" summary={status === 'signedIn' && user ? (user.email ?? 'Connecté') : 'Mode invité · tout reste sur ce téléphone'}>
+                {status !== 'signedIn' && caps.email && (
+                  <SetLink to="/connexion" label="Créer un compte ou se connecter" hint="Tes données d’invité peuvent être gardées dans le compte" />
                 )}
-              </div>
-              {user.methods.includes('password') && (
-                <div className="panel-row col">
-                  <span>Identifiants</span>
-                  <div className="row" style={{ gap: 8 }}>
-                    <button type="button" className="btn secondary sm" onClick={() => setDialog('email')} data-testid="change-email">
-                      Modifier l’adresse e-mail
-                    </button>
-                    <button type="button" className="btn secondary sm" onClick={() => setDialog('password')} data-testid="change-password">
-                      Modifier le mot de passe
-                    </button>
-                  </div>
-                </div>
-              )}
-              <div className="panel-row">
-                <button type="button" className="btn secondary block" onClick={() => setDialog('signout')} data-testid="sign-out">
-                  <AppIcon id="signOut" size={18} /> Se déconnecter
-                </button>
-              </div>
-            </>
-          )}
-          </SetItem>
-        </SetGroup>
-      </SettingsList>
+                {status !== 'signedIn' && !caps.email && <PanelRow label="Mode invité" hint="Les comptes en ligne ne sont pas activés dans cette version. Tout reste sur cet appareil." />}
+                <SetLink to="/reglages/donnees" label="Mes données" hint="Exporter, effacer, confidentialité : dans Réglages" testId="infos-donnees" />
+                {status === 'signedIn' && user && (
+                  <>
+                    {!user.emailVerified && (
+                      <div className="panel-row col">
+                        <span className="small">Un e-mail de vérification a été envoyé à {user.email}. Ouvre le lien puis reviens ici.</span>
+                        <div className="row" style={{ gap: 8 }}>
+                          <button type="button" className="btn secondary sm" disabled={busy} onClick={() => run(async () => (await sendVerification(), toast('E-mail renvoyé.')))}>
+                            Renvoyer l’e-mail
+                          </button>
+                          <button type="button" className="btn secondary sm" disabled={busy} onClick={() => run(async () => void toast((await refreshUser())?.emailVerified ? 'Adresse vérifiée.' : 'Adresse pas encore vérifiée.'))}>
+                            J’ai vérifié
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    <div className="panel-row col">
+                      <span>Méthodes de connexion</span>
+                      <ul className="acc-methods">
+                        {user.methods.map((m) => (
+                          <li key={m}>
+                            <span className="small">{METHOD_LABEL[m]}</span>
+                            {user.methods.length > 1 && (
+                              <button type="button" className="btn ghost sm" disabled={busy} onClick={() => run(async () => (await unlinkMethod(m), toast('Méthode retirée.')))}>
+                                Retirer
+                              </button>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                      {caps.link && (
+                        <div className="row" style={{ gap: 8 }}>
+                          {!user.methods.includes('password') && (
+                            <button type="button" className="btn secondary sm" onClick={() => setDialog('link-email')}>
+                              Ajouter e-mail et mot de passe
+                            </button>
+                          )}
+                          {caps.google && !user.methods.includes('google.com') && (
+                            <button type="button" className="btn secondary sm" disabled={busy} onClick={() => run(async () => (await linkGoogle(), toast('Google relié à ton compte.')))}>
+                              Relier Google
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {user.methods.includes('password') && (
+                      <div className="panel-row col">
+                        <span>Identifiants</span>
+                        <div className="row" style={{ gap: 8 }}>
+                          <button type="button" className="btn secondary sm" onClick={() => setDialog('email')} data-testid="change-email">
+                            Modifier l’adresse e-mail
+                          </button>
+                          <button type="button" className="btn secondary sm" onClick={() => setDialog('password')} data-testid="change-password">
+                            Modifier le mot de passe
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    <div className="panel-row">
+                      <button type="button" className="btn secondary block" onClick={() => setDialog('signout')} data-testid="sign-out">
+                        <AppIcon id="signOut" size={18} /> Se déconnecter
+                      </button>
+                    </div>
+                  </>
+                )}
+                </SetItem>
+              </SetGroup>
+            )}
+          </SettingsList>
+        </div>
+      </div>
 
       {dialog === 'signout' && <SignOutSheet onClose={() => setDialog(null)} />}
       {dialog === 'delete' && user && <DeleteAccountSheet methods={user.methods} onClose={() => setDialog(null)} />}

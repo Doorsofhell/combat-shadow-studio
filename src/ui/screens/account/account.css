@@ -436,3 +436,103 @@
   outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
+
+/* ==========================================================================
+   2.13.0 (Youssef 2026-11-27): Compte in three tabs (Moi / Ma pratique / Mon compte), the pills of Progrès
+   (.sec-tab, nav.css) sharing the width; kept at the top while the page scrolls (there they leave room for the
+   magnifier); one group at a time, slid in from the side it comes from. The four quick links on one row.
+   ========================================================================== */
+.acc-quick {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.acc-quick .acc-q {
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-height: 64px;
+  padding: 8px 4px;
+  font-size: 0.75rem;
+  line-height: 1.15;
+  text-align: center;
+}
+.acc-quick .acc-dot {
+  top: 8px;
+  right: 8px;
+}
+.acc-tabs {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 15;
+  margin-inline: calc(-1 * var(--gutter, 16px));
+  padding: 8px var(--gutter, 16px) 8px;
+  background: linear-gradient(to bottom, var(--bg) 78%, transparent);
+  transition: padding-right var(--t-fast, 140ms) var(--ease);
+}
+/* at the top of the screen the magnifier (48 px, top right) sits beside the pills */
+.acc-tabs.stuck {
+  padding-right: calc(var(--gutter, 16px) + 58px);
+}
+.acc-tabs .sec-tabs-in {
+  margin: 0;
+  max-width: none;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 6%, var(--bg));
+}
+.acc-tabs .sec-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 8px;
+  white-space: nowrap;
+  transition: background-color var(--t-fast, 140ms) var(--ease), color var(--t-fast, 140ms) var(--ease);
+}
+.acc-tabs .sec-tab .me-dot {
+  background: var(--red);
+}
+.acc-swipe {
+  touch-action: pan-y;
+  min-height: 40vh;
+}
+.acc-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+/* the tab says the group's name: the title of the group stays for screen readers only */
+.acc-panel .set-group-t {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.acc-panel.from-right {
+  animation: acc-in-right var(--t-med, 200ms) var(--ease);
+}
+.acc-panel.from-left {
+  animation: acc-in-left var(--t-med, 200ms) var(--ease);
+}
+@keyframes acc-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+@keyframes acc-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .acc-panel.from-right,
+  .acc-panel.from-left {
+    animation: none;
+  }
+  .acc-tabs {
+    transition: none;
+  }
+}

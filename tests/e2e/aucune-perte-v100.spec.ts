@@ -16,10 +16,11 @@ const HUB_TILE: Record<string, string> = { programmes: 'hub-programmes', enchain
 const tab = async (page: Page, id: string) => {
   if (HUB_TILE[id] && /#\/entrainer$/.test(page.url())) return page.getByTestId(HUB_TILE[id]).click();
   // 1.31.0 (nouvelle ergonomie, lot 3): on Compte, « Réglages » is a quick tile and « Mes infos » is the page itself
-  if (/#\/profil$/.test(page.url())) return id === 'infos' ? undefined : page.getByTestId(`compte-${id}`).click();
+  // 2.13.0: Compte may keep its open tab in the address (?onglet=)
+  if (/#\/profil(\?onglet=\w+)?$/.test(page.url())) return id === 'infos' ? undefined : page.getByTestId(`compte-${id}`).click();
   return page.getByTestId(`tab-${id}`).click();
 };
-const PLACE_URL: Record<string, RegExp> = { accueil: /#\/$/, entrainer: /#\/entrainer$/, stats: /#\/stats$/, profil: /#\/profil$/ };
+const PLACE_URL: Record<string, RegExp> = { accueil: /#\/$/, entrainer: /#\/entrainer$/, stats: /#\/stats$/, profil: /#\/profil(\?onglet=\w+)?$/ }; // 2.13.0: Compte keeps its open tab (Moi / Ma pratique / Mon compte)
 const PLACE: Record<string, string> = { accueil: 'accueil', entrainer: 'entrainer', stats: 'progres', profil: 'profil' };
 /** one of the four places of the bar (by its place, not its test id: a screen action may share it); 1.29.0: Apprendre
  * (« techniques ») is reached from the tiles of Entraîner */
